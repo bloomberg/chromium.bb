@@ -23,7 +23,7 @@ class CORE_EXPORT CSSTokenizer {
     WTF_MAKE_NONCOPYABLE(CSSTokenizer);
     WTF_MAKE_FAST_ALLOCATED(CSSTokenizer);
 public:
-    class Scope {
+    class CORE_EXPORT Scope {
     public:
         Scope(const String&);
         Scope(const String&, CSSParserObserverWrapper&); // For the inspector

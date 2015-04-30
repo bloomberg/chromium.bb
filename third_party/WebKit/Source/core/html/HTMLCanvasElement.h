@@ -57,7 +57,7 @@ class ImageBuffer;
 class ImageBufferSurface;
 class IntSize;
 
-class CanvasObserver : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT CanvasObserver : public WillBeGarbageCollectedMixin {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(CanvasObserver);
 public:
     virtual void canvasChanged(HTMLCanvasElement*, const FloatRect& changedRect) = 0;

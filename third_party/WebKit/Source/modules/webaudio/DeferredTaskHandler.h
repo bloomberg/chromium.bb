@@ -25,6 +25,7 @@
 #ifndef DeferredTaskHandler_h
 #define DeferredTaskHandler_h
 
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
@@ -53,7 +54,7 @@ class AudioSummingJunction;
 // - It posts a task of deleteHandlersOnMainThread(), and
 // - GC happens and it collects the AudioContext before the task execution.
 //
-class DeferredTaskHandler final : public ThreadSafeRefCounted<DeferredTaskHandler> {
+class MODULES_EXPORT DeferredTaskHandler final : public ThreadSafeRefCounted<DeferredTaskHandler> {
 public:
     static PassRefPtr<DeferredTaskHandler> create();
     ~DeferredTaskHandler();
@@ -108,7 +109,7 @@ public:
     bool isGraphOwner();
 #endif
 
-    class AutoLocker {
+    class MODULES_EXPORT AutoLocker {
         STACK_ALLOCATED();
     public:
         explicit AutoLocker(DeferredTaskHandler& handler)

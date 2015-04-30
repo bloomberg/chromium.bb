@@ -1,5 +1,5 @@
 namespace="MediaType"
-export=""
+export="CORE_EXPORT"
 
 # http://www.w3.org/TR/CSS2/media.html#media-types
 

@@ -6,6 +6,7 @@
 #define GlobalFetch_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "modules/ModulesExport.h"
 #include "modules/fetch/Request.h"
 #include "wtf/WeakPtr.h"
 
@@ -19,7 +20,7 @@ class WorkerGlobalScope;
 
 class GlobalFetch {
 public:
-    class ScopedFetcher {
+    class MODULES_EXPORT ScopedFetcher {
     public:
         virtual ~ScopedFetcher();
 

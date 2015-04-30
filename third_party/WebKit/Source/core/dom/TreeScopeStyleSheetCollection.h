@@ -28,6 +28,7 @@
 #ifndef TreeScopeStyleSheetCollection_h
 #define TreeScopeStyleSheetCollection_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/StyleSheetCollection.h"
@@ -45,7 +46,7 @@ class Node;
 class StyleSheetContents;
 class StyleRuleFontFace;
 
-class TreeScopeStyleSheetCollection : public StyleSheetCollection {
+class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
 public:
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
     void removeStyleSheetCandidateNode(Node* node) { m_styleSheetCandidateNodes.remove(node); }

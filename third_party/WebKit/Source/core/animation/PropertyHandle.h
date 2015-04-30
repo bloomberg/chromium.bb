@@ -6,11 +6,12 @@
 #define PropertyHandle_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
 
 namespace blink {
 
-class PropertyHandle {
+class CORE_EXPORT PropertyHandle {
 public:
     explicit PropertyHandle(CSSPropertyID property)
         : handleType(HandleCSSProperty)

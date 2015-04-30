@@ -73,7 +73,7 @@ String quoteAndEscapeNonPrintables(const String&);
 
 CORE_EXPORT String counterValueForElement(Element*);
 
-String markerTextForListItem(Element*);
+CORE_EXPORT String markerTextForListItem(Element*);
 
 CORE_EXPORT String nodePositionAsStringForTesting(Node*);
 

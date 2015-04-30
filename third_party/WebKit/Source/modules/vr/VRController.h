@@ -6,13 +6,14 @@
 #define VRController_h
 
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebVR.h"
 #include "public/platform/WebVRClient.h"
 
 namespace blink {
 
-class VRController final
+class MODULES_EXPORT VRController final
     : public GarbageCollectedFinalized<VRController>
     , public WillBeHeapSupplement<LocalFrame>
     , public LocalFrameLifecycleObserver {

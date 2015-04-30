@@ -124,7 +124,7 @@ public:
 
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.
-    class InternalResolver final {
+    class CORE_EXPORT InternalResolver final {
     public:
         explicit InternalResolver(ScriptState*);
         v8::Local<v8::Promise> v8Promise() const;

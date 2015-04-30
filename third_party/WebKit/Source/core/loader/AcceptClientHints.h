@@ -5,6 +5,7 @@
 #ifndef AcceptClientHints_h
 #define AcceptClientHints_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -34,7 +35,7 @@ private:
     bool m_shouldSendRW;
 };
 
-void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences&);
+CORE_EXPORT void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences&);
 } // namespace blink
 #endif
 

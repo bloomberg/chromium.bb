@@ -82,7 +82,7 @@ public:
         explicit TableLayoutScope(LayoutTable*);
     };
 
-    class DeferUpdatePageInfo {
+    class CORE_EXPORT DeferUpdatePageInfo {
         STACK_ALLOCATED();
     public:
         explicit DeferUpdatePageInfo(Page*);

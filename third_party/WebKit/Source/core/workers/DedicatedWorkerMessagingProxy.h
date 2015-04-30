@@ -5,11 +5,12 @@
 #ifndef DedicatedWorkerMessagingProxy_h
 #define DedicatedWorkerMessagingProxy_h
 
+#include "core/CoreExport.h"
 #include "core/workers/WorkerMessagingProxy.h"
 
 namespace blink {
 
-class DedicatedWorkerMessagingProxy final : public WorkerMessagingProxy {
+class CORE_EXPORT DedicatedWorkerMessagingProxy final : public WorkerMessagingProxy {
     WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxy);
     WTF_MAKE_FAST_ALLOCATED(WorkerMessagingProxy);
 public:

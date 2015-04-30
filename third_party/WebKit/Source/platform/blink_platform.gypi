@@ -320,6 +320,7 @@
       'exported/WebSecurityOrigin.cpp',
       'exported/WebSerializedOrigin.cpp',
       'exported/WebServiceWorkerProviderClient.cpp',
+      'exported/WebServiceWorkerProxy.cpp',
       'exported/WebServiceWorkerRequest.cpp',
       'exported/WebServiceWorkerResponse.cpp',
       'exported/WebSocketHandshakeRequestInfo.cpp',

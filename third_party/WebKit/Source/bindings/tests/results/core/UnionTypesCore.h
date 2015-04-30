@@ -87,7 +87,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArra
 
 template <>
 struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
-    static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
@@ -150,7 +150,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOr
 
 template <>
 struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> {
-    static BooleanOrStringOrUnrestrictedDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static BooleanOrStringOrUnrestrictedDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT DoubleOrString final {
@@ -206,7 +206,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DoubleOrString& i
 
 template <>
 struct NativeValueTraits<DoubleOrString> {
-    static DoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static DoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT LongOrTestDictionary final {
@@ -264,7 +264,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, LongOrTestDiction
 
 template <>
 struct NativeValueTraits<LongOrTestDictionary> {
-    static LongOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static LongOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT NodeOrNodeList final {
@@ -322,7 +322,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& i
 
 template <>
 struct NativeValueTraits<NodeOrNodeList> {
-    static NodeOrNodeList nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static NodeOrNodeList nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
@@ -385,7 +385,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrArrayBuff
 
 template <>
 struct NativeValueTraits<StringOrArrayBufferOrArrayBufferView> {
-    static StringOrArrayBufferOrArrayBufferView nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static StringOrArrayBufferOrArrayBufferView nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT StringOrDouble final {
@@ -441,7 +441,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrDouble& i
 
 template <>
 struct NativeValueTraits<StringOrDouble> {
-    static StringOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static StringOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT StringOrStringSequence final {
@@ -497,7 +497,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrStringSeq
 
 template <>
 struct NativeValueTraits<StringOrStringSequence> {
-    static StringOrStringSequence nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static StringOrStringSequence nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT TestEnumOrDouble final {
@@ -553,7 +553,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble&
 
 template <>
 struct NativeValueTraits<TestEnumOrDouble> {
-    static TestEnumOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static TestEnumOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT TestInterface2OrUint8Array final {
@@ -609,7 +609,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrU
 
 template <>
 struct NativeValueTraits<TestInterface2OrUint8Array> {
-    static TestInterface2OrUint8Array nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static TestInterface2OrUint8Array nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
@@ -667,7 +667,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarb
 
 template <>
 struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> {
-    static TestInterfaceGarbageCollectedOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static TestInterfaceGarbageCollectedOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT TestInterfaceOrLong final {
@@ -723,7 +723,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLo
 
 template <>
 struct NativeValueTraits<TestInterfaceOrLong> {
-    static TestInterfaceOrLong nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static TestInterfaceOrLong nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
@@ -779,7 +779,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrTe
 
 template <>
 struct NativeValueTraits<TestInterfaceOrTestInterfaceEmpty> {
-    static TestInterfaceOrTestInterfaceEmpty nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static TestInterfaceOrTestInterfaceEmpty nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
@@ -837,7 +837,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceWill
 
 template <>
 struct NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary> {
-    static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class CORE_EXPORT UnrestrictedDoubleOrString final {
@@ -893,7 +893,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubl
 
 template <>
 struct NativeValueTraits<UnrestrictedDoubleOrString> {
-    static UnrestrictedDoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    CORE_EXPORT static UnrestrictedDoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 class V8DoubleOrStringOrNull final {

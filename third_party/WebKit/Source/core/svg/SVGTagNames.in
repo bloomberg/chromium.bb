@@ -2,6 +2,7 @@ namespace="SVG"
 namespaceURI="http://www.w3.org/2000/svg"
 fallbackInterfaceName="SVGUnknownElement"
 fallbackJSInterfaceName="SVGElement"
+export="CORE_EXPORT"
 
 a
 animate noTypeHelpers

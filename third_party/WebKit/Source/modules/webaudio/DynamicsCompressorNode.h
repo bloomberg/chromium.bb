@@ -25,6 +25,7 @@
 #ifndef DynamicsCompressorNode_h
 #define DynamicsCompressorNode_h
 
+#include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
 #include "wtf/OwnPtr.h"
@@ -33,7 +34,7 @@ namespace blink {
 
 class DynamicsCompressor;
 
-class DynamicsCompressorHandler final : public AudioHandler {
+class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
 public:
     static PassRefPtr<DynamicsCompressorHandler> create(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
     ~DynamicsCompressorHandler();
@@ -60,7 +61,7 @@ private:
     friend class DynamicsCompressorNodeTest_ProcessorLifetime_Test;
 };
 
-class DynamicsCompressorNode final : public AudioNode {
+class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DynamicsCompressorNode* create(AudioContext&, float sampleRate);

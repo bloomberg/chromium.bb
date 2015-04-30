@@ -271,7 +271,7 @@ protected:
     ChannelCountMode m_newChannelCountMode;
 };
 
-class AudioNode : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode> {
+class MODULES_EXPORT AudioNode : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode> {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioNode>);
     DEFINE_WRAPPERTYPEINFO();
     USING_PRE_FINALIZER(AudioNode, dispose);

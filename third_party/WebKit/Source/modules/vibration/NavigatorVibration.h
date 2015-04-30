@@ -22,6 +22,7 @@
 
 #include "core/page/Page.h"
 #include "core/page/PageLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "platform/Timer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -32,7 +33,7 @@ class LocalFrame;
 class Navigator;
 class UnsignedLongOrUnsignedLongSequence;
 
-class NavigatorVibration final
+class MODULES_EXPORT NavigatorVibration final
     : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVibration>
     , public WillBeHeapSupplement<Page>
     , public PageLifecycleObserver {

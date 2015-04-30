@@ -52,7 +52,7 @@ protected:
     PrerendererClient() { }
 };
 
-void providePrerendererClientTo(Page&, PrerendererClient*);
+CORE_EXPORT void providePrerendererClientTo(Page&, PrerendererClient*);
 
 } // namespace blink
 

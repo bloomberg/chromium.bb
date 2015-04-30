@@ -25,6 +25,7 @@
 #ifndef AudioBasicProcessorHandler_h
 #define AudioBasicProcessorHandler_h
 
+#include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/Forward.h"
 
@@ -35,7 +36,7 @@ class AudioProcessor;
 
 // AudioBasicProcessorHandler is an AudioHandler with one input and one output
 // where the input and output have the same number of channels.
-class AudioBasicProcessorHandler : public AudioHandler {
+class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
 public:
     static PassRefPtr<AudioBasicProcessorHandler> create(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
     virtual ~AudioBasicProcessorHandler();

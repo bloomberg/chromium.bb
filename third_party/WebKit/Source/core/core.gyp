@@ -769,6 +769,17 @@
               # XPathGrammar.cpp and CSSGrammar.cpp.
               # Disable c4267 warnings until we fix size_t to int truncations.
               'msvs_disabled_warnings': [ 4065, 4267, 4305, 4334, 4701, 4702 ],
+              # Disable incremental link when building debug binary to avoid
+              # "LNK1210: exceeded internal ILK size limit;".
+              'configurations': {
+                'Debug_Base': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '1',
+                    },
+                  },
+                },
+              },
             }, {
               'sources!': [
                 'layout/LayoutThemeFontProviderWin.cpp',

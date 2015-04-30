@@ -31,6 +31,7 @@
 #include "core/dom/DOMTypedArray.h"
 #include "core/events/EventListener.h"
 #include "modules/EventTargetModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "modules/webaudio/DeferredTaskHandler.h"
@@ -76,7 +77,7 @@ class WaveShaperNode;
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-class AudioContext : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioContext>, public ActiveDOMObject {
+class MODULES_EXPORT AudioContext : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioContext>, public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioContext>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
     DEFINE_WRAPPERTYPEINFO();

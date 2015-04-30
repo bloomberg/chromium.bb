@@ -5,11 +5,13 @@
 #ifndef WebServiceWorkerProxy_h
 #define WebServiceWorkerProxy_h
 
+#include "public/platform/WebCommon.h"
+
 namespace blink {
 
 // A proxy interface, passed via WebServiceWorker.setProxy() from blink to
 // the embedder, to talk to the ServiceWorker object from embedder.
-class WebServiceWorkerProxy {
+class BLINK_PLATFORM_EXPORT WebServiceWorkerProxy {
 public:
     // Notifies the proxy that the service worker state changed. The new state
     // should be accessible via WebServiceWorker.state().

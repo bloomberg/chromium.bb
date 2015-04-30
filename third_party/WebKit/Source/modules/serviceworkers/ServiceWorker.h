@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/workers/AbstractWorker.h"
+#include "modules/ModulesExport.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProxy.h"
 #include "wtf/OwnPtr.h"
@@ -45,7 +46,7 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-class ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
+class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_PRE_FINALIZER(ServiceWorker, dispose);
 public:

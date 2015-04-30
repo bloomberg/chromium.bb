@@ -90,7 +90,7 @@ public:
         UChar32 m_to;
     };
 
-    class UnicodeRangeSet {
+    class CORE_EXPORT UnicodeRangeSet {
     public:
         explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
         bool contains(UChar32) const;

@@ -25,6 +25,7 @@
 #ifndef ConvolverNode_h
 #define ConvolverNode_h
 
+#include "modules/ModulesExport.h"
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -36,7 +37,7 @@ class AudioBuffer;
 class ExceptionState;
 class Reverb;
 
-class ConvolverHandler final : public AudioHandler {
+class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
 public:
     static PassRefPtr<ConvolverHandler> create(AudioNode&, float sampleRate);
     virtual ~ConvolverHandler();
@@ -71,7 +72,7 @@ private:
     friend class ConvolverNodeTest_ReverbLifetime_Test;
 };
 
-class ConvolverNode final : public AudioNode {
+class MODULES_EXPORT ConvolverNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static ConvolverNode* create(AudioContext&, float sampleRate);
