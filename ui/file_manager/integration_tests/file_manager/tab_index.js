@@ -198,19 +198,22 @@ testcase.tabindexFocusDirectorySelected = function() {
 /**
  * Tests the tab focus in the dialog and closes the dialog.
  *
- * @param {Object} dialogParams Dialog parameters to be passed to
+ * @param {!Object} dialogParams Dialog parameters to be passed to
  *     chrome.fileSystem.chooseEntry.
  * @param {string} volumeName Volume name passed to the selectVolume remote
  *     function.
- * @param {Array.<TestEntryInfo>} expectedSet Expected set of the entries.
- * @param {boolean} selectFile True to select 'hello.txt' before the tab order
- *     check, false do not select any file before the check.
- * @param {string} initialElement Selector of the element which shows ready.
+ * @param {!Array.<TestEntryInfo>} expectedSet Expected set of the entries.
+ * @param {?function(string):(!Promise|Object)} initialize Initialization before
+ *     test runs. The window ID is passed as an argument. If null, do nothing as
+ *     initialization.
+ * @param {!Array.<string>} initialElements Selectors of the elements which
+ *     shows the Files.app is ready. After all the elements show up, the
+ *     tabfocus tests starts.
  * @param {Array.<string>} expectedTabOrder Array with the IDs of the element
  *     with the corresponding order of expected tab-indexes.
  */
-function tabindexFocus(dialogParams, volumeName, expectedSet, selectFile,
-                       initialElement, expectedTabOrder) {
+function tabindexFocus(dialogParams, volumeName, expectedSet, initialize,
+                       initialElements, expectedTabOrder) {
   var localEntriesPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
   var driveEntriesPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
   var setupPromise = Promise.all([localEntriesPromise, driveEntriesPromise]);
@@ -218,20 +221,25 @@ function tabindexFocus(dialogParams, volumeName, expectedSet, selectFile,
   var selectAndCheckAndClose = function(appId) {
     var promise = Promise.resolve();
 
-    if (selectFile) {
+    if (dialogParams.type === 'saveFile') {
       promise = promise.then(function() {
-        return remoteCall.callRemoteTestUtil(
-            'selectFile', appId, ['hello.txt']);
+        return remoteCall.waitForElement(
+            appId, ['#filename-input-textbox:focus']);
+      });
+    } else {
+      promise = promise.then(function() {
+        return remoteCall.waitForElement(appId, ['#file-list:focus']);
       });
     }
 
-    promise = promise.then(function() {
-      return remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
-    });
+    if (initialize)
+      promise = promise.then(initialize.bind(null, appId));
 
     // Waits for the initial element.
     promise = promise.then(function() {
-      return remoteCall.waitForElement(appId, [initialElement]);
+      return Promise.all(initialElements.map(function(selector) {
+        return remoteCall.waitForElement(appId, [selector]);
+      }));
     });
 
     // Checks tabfocus.
@@ -263,8 +271,12 @@ function tabindexFocus(dialogParams, volumeName, expectedSet, selectFile,
  */
 testcase.tabindexOpenDialogDownloads = function() {
   testPromise(tabindexFocus(
-      {type: 'openFile'}, 'downloads', BASIC_LOCAL_ENTRY_SET, true,
-      '#ok-button:not([disabled])',
+      {type: 'openFile'}, 'downloads', BASIC_LOCAL_ENTRY_SET,
+      function(appId) {
+        return remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['hello.txt']);
+      },
+      ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
        'gear-button', 'directory-tree', 'file-list']));
 };
@@ -274,8 +286,12 @@ testcase.tabindexOpenDialogDownloads = function() {
  */
 testcase.tabindexOpenDialogDrive = function() {
   testPromise(tabindexFocus(
-      {type: 'openFile'}, 'drive', BASIC_DRIVE_ENTRY_SET, true,
-      '#ok-button:not([disabled])',
+      {type: 'openFile'}, 'drive', BASIC_DRIVE_ENTRY_SET,
+      function(appId) {
+        return remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['hello.txt']);
+      },
+      ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
        'gear-button', 'directory-tree', 'file-list']));
 };
@@ -289,8 +305,8 @@ testcase.tabindexSaveFileDialogDownloads = function() {
         type: 'saveFile',
         suggestedName: 'hoge.txt'  // Prevent showing a override prompt
       },
-      'downloads', BASIC_LOCAL_ENTRY_SET, false,
-      '#ok-button:not([disabled])',
+      'downloads', BASIC_LOCAL_ENTRY_SET, null,
+      ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
        'gear-button', 'directory-tree', 'file-list', 'new-folder-button',
        'filename-input-textbox']));
@@ -305,8 +321,8 @@ testcase.tabindexSaveFileDialogDrive = function() {
         type: 'saveFile',
         suggestedName: 'hoge.txt'  // Prevent showing a override prompt
       },
-      'drive', BASIC_DRIVE_ENTRY_SET, false,
-      '#ok-button:not([disabled])',
+      'drive', BASIC_DRIVE_ENTRY_SET, null,
+      ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
        'gear-button', 'directory-tree', 'file-list', 'new-folder-button',
        'filename-input-textbox']));
