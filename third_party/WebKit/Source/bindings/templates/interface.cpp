@@ -302,6 +302,7 @@ static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::
 {% block named_property_query %}
 {% if named_property_getter and named_property_getter.is_enumerable and
       not named_property_getter.is_custom_property_query %}
+{% set getter = named_property_getter %}
 {# If there is an enumerator, there MUST be a query method to properly
    communicate property attributes. #}
 static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
@@ -310,7 +311,12 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    bool result = impl->namedPropertyQuery(propertyName, exceptionState);
+    {% set getter_arguments = ['propertyName', 'exceptionState'] %}
+    {% if getter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    {% set getter_arguments = ['scriptState'] + getter_arguments %}
+    {% endif %}
+    bool result = impl->namedPropertyQuery({{getter_arguments | join(', ')}});
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)

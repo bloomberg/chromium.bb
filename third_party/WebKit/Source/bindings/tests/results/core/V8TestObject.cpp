@@ -12291,7 +12291,8 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     v8::String::Utf8Value namedProperty(name);
     ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestObject", info.Holder(), info.GetIsolate());
-    bool result = impl->namedPropertyQuery(propertyName, exceptionState);
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
+    bool result = impl->namedPropertyQuery(scriptState, propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (!result)
