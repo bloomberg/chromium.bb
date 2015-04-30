@@ -24,6 +24,8 @@ include_rules = [
   "+content/public/browser",
   "+content/public/test",
 
+  "+media/base/android",
+
   "+printing",
 
   "+ui/gfx",

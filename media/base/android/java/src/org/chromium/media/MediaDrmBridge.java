@@ -22,7 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -107,11 +106,14 @@ public class MediaDrmBridge {
     private static class PendingCreateSessionData {
         private final byte[] mInitData;
         private final String mMimeType;
+        private final HashMap<String, String> mOptionalParameters;
         private final long mPromiseId;
 
-        private PendingCreateSessionData(byte[] initData, String mimeType, long promiseId) {
+        private PendingCreateSessionData(byte[] initData, String mimeType,
+                HashMap<String, String> optionalParameters, long promiseId) {
             mInitData = initData;
             mMimeType = mimeType;
+            mOptionalParameters = optionalParameters;
             mPromiseId = promiseId;
         }
 
@@ -121,6 +123,10 @@ public class MediaDrmBridge {
 
         private String mimeType() {
             return mMimeType;
+        }
+
+        private HashMap<String, String> optionalParameters() {
+            return mOptionalParameters;
         }
 
         private long promiseId() {
@@ -410,16 +416,20 @@ public class MediaDrmBridge {
      * @param sessionId ID of session on which we need to get the key request.
      * @param data Data needed to get the key request.
      * @param mime Mime type to get the key request.
+     * @param optionalParameters Optional parameters to pass to the DRM plugin.
      *
      * @return the key request.
      */
-    private MediaDrm.KeyRequest getKeyRequest(byte[] sessionId, byte[] data, String mime)
+    private MediaDrm.KeyRequest getKeyRequest(
+            byte[] sessionId, byte[] data, String mime, HashMap<String, String> optionalParameters)
             throws android.media.NotProvisionedException {
         assert mMediaDrm != null;
         assert mMediaCrypto != null;
         assert !mProvisioningPending;
 
-        HashMap<String, String> optionalParameters = new HashMap<String, String>();
+        if (optionalParameters == null) {
+            optionalParameters = new HashMap<String, String>();
+        }
         MediaDrm.KeyRequest request = mMediaDrm.getKeyRequest(
                 sessionId, data, mime, MediaDrm.KEY_TYPE_STREAMING, optionalParameters);
         String result = (request != null) ? "successed" : "failed";
@@ -433,12 +443,14 @@ public class MediaDrmBridge {
      *
      * @param initData Data needed to generate the key request.
      * @param mime Mime type.
+     * @param optionalParameters Optional parameters to pass to the DRM plugin.
      * @param promiseId Promise ID for the createSession() call.
      */
-    private void savePendingCreateSessionData(byte[] initData, String mime, long promiseId) {
+    private void savePendingCreateSessionData(byte[] initData, String mime,
+            HashMap<String, String> optionalParameters, long promiseId) {
         Log.d(TAG, "savePendingCreateSessionData()");
         mPendingCreateSessionDataQueue.offer(
-                new PendingCreateSessionData(initData, mime, promiseId));
+                new PendingCreateSessionData(initData, mime, optionalParameters, promiseId));
     }
 
     /**
@@ -456,8 +468,9 @@ public class MediaDrmBridge {
             PendingCreateSessionData pendingData = mPendingCreateSessionDataQueue.poll();
             byte[] initData = pendingData.initData();
             String mime = pendingData.mimeType();
+            HashMap<String, String> optionalParameters = pendingData.optionalParameters();
             long promiseId = pendingData.promiseId();
-            createSession(initData, mime, promiseId);
+            createSession(initData, mime, optionalParameters, promiseId);
         }
     }
 
@@ -474,14 +487,35 @@ public class MediaDrmBridge {
     }
 
     /**
+     * createSession interface to be called from native using primitive types.
+     * @see createSession(byte[], String, HashMap<String, String>, long)
+     */
+    @CalledByNative
+    private void createSessionFromNative(
+            byte[] initData, String mime, String[] optionalParamsArray, long promiseId) {
+        HashMap<String, String> optionalParameters = new HashMap<String, String>();
+        if (optionalParamsArray != null) {
+            if (optionalParamsArray.length % 2 != 0) {
+                throw new IllegalArgumentException(
+                        "Additional data array doesn't have equal keys/values");
+            }
+            for (int i = 0; i < optionalParamsArray.length; i += 2) {
+                optionalParameters.put(optionalParamsArray[i], optionalParamsArray[i + 1]);
+            }
+        }
+        createSession(initData, mime, optionalParameters, promiseId);
+    }
+
+    /**
      * Create a session, and generate a request with |initData| and |mime|.
      *
      * @param initData Data needed to generate the key request.
      * @param mime Mime type.
+     * @param optionalParameters Additional data to pass to getKeyRequest.
      * @param promiseId Promise ID for this call.
      */
-    @CalledByNative
-    private void createSession(byte[] initData, String mime, long promiseId) {
+    private void createSession(byte[] initData, String mime,
+            HashMap<String, String> optionalParameters, long promiseId) {
         Log.d(TAG, "createSession()");
         if (mMediaDrm == null) {
             Log.e(TAG, "createSession() called when MediaDrm is null.");
@@ -490,7 +524,7 @@ public class MediaDrmBridge {
 
         if (mProvisioningPending) {
             assert mMediaCrypto == null;
-            savePendingCreateSessionData(initData, mime, promiseId);
+            savePendingCreateSessionData(initData, mime, optionalParameters, promiseId);
             return;
         }
 
@@ -514,7 +548,7 @@ public class MediaDrmBridge {
             assert !sessionExists(sessionId);
 
             MediaDrm.KeyRequest request = null;
-            request = getKeyRequest(sessionId, initData, mime);
+            request = getKeyRequest(sessionId, initData, mime, optionalParameters);
             if (request == null) {
                 mMediaDrm.closeSession(sessionId);
                 onPromiseRejected(promiseId, "Generate request failed.");
@@ -531,7 +565,7 @@ public class MediaDrmBridge {
             if (newSessionOpened) {
                 mMediaDrm.closeSession(sessionId);
             }
-            savePendingCreateSessionData(initData, mime, promiseId);
+            savePendingCreateSessionData(initData, mime, optionalParameters, promiseId);
             startProvisioning();
         }
     }
@@ -832,7 +866,7 @@ public class MediaDrmBridge {
                     String mime = mSessionIds.get(ByteBuffer.wrap(sessionId));
                     MediaDrm.KeyRequest request = null;
                     try {
-                        request = getKeyRequest(sessionId, data, mime);
+                        request = getKeyRequest(sessionId, data, mime, null);
                     } catch (android.media.NotProvisionedException e) {
                         Log.e(TAG, "Device not provisioned", e);
                         startProvisioning();
@@ -933,15 +967,6 @@ public class MediaDrmBridge {
         }
     }
 
-    public static void addKeySystemUuidMapping(String keySystem, UUID uuid) {
-        ByteBuffer uuidBuffer = ByteBuffer.allocateDirect(16);
-        // MSB (byte) should be positioned at the first element.
-        uuidBuffer.order(ByteOrder.BIG_ENDIAN);
-        uuidBuffer.putLong(uuid.getMostSignificantBits());
-        uuidBuffer.putLong(uuid.getLeastSignificantBits());
-        nativeAddKeySystemUuidMapping(keySystem, uuidBuffer);
-    }
-
     private native void nativeOnMediaCryptoReady(long nativeMediaDrmBridge);
 
     private native void nativeOnPromiseResolved(long nativeMediaDrmBridge, long promiseId);
@@ -960,6 +985,4 @@ public class MediaDrmBridge {
 
     private native void nativeOnResetDeviceCredentialsCompleted(
             long nativeMediaDrmBridge, boolean success);
-
-    private static native void nativeAddKeySystemUuidMapping(String keySystem, ByteBuffer uuid);
 }

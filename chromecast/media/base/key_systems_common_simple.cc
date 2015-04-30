@@ -11,5 +11,13 @@ CastKeySystem GetPlatformKeySystemByName(const std::string& key_system_name) {
   return KEY_SYSTEM_NONE;
 }
 
+#if defined(OS_ANDROID)
+std::vector<::media::MediaClientAndroid::KeySystemUuidMap::value_type>
+GetPlatformKeySystemUUIDMappings() {
+  return std::vector<
+      ::media::MediaClientAndroid::KeySystemUuidMap::value_type>();
+}
+#endif
+
 }  // namespace media
 }  // namespace chromecast

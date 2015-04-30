@@ -54,6 +54,14 @@
         'cdm/browser_cdm_cast.cc',
         'cdm/browser_cdm_cast.h',
       ],
+      'conditions': [
+        ['use_playready==1', {
+          'sources': [
+            'cdm/playready_drm_delegate_android.cc',
+            'cdm/playready_drm_delegate_android.h',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'cma_base',

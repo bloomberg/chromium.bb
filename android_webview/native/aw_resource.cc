@@ -4,6 +4,7 @@
 
 #include "android_webview/native/aw_resource.h"
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/AwResource_jni.h"
@@ -28,6 +29,16 @@ std::string GetNoDomainPageContent() {
   ScopedJavaLocalRef<jstring> content =
       Java_AwResource_getNoDomainPageContent(env);
   return base::android::ConvertJavaStringToUTF8(content);
+}
+
+std::vector<std::string> GetConfigKeySystemUuidMapping() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::vector<std::string> key_system_uuid_mappings;
+  ScopedJavaLocalRef<jobjectArray> mappings =
+      Java_AwResource_getConfigKeySystemUuidMapping(env);
+  base::android::AppendJavaStringArrayToStringVector(env, mappings.obj(),
+                                                     &key_system_uuid_mappings);
+  return key_system_uuid_mappings;
 }
 
 bool RegisterAwResource(JNIEnv* env) {

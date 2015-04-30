@@ -29,6 +29,7 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/common/platform_client_auth.h"
+#include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -36,8 +37,10 @@
 #include "media/base/media_switches.h"
 
 #if defined(OS_ANDROID)
+#include "chromecast/browser/media/cast_media_client_android.h"
 #include "chromecast/crash/android/crash_handler.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
+#include "media/base/android/media_client_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #else
 #include "chromecast/browser/media/cast_browser_cdm_factory.h"
@@ -259,11 +262,13 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetPrefService(
       PrefServiceHelper::CreatePrefService(pref_registry.get()));
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  ::media::SetMediaClientAndroid(new media::CastMediaClientAndroid());
+#else
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kEnableCmaMediaPipeline))
-    ::media::SetBrowserCdmFactory(new media::CastBrowserCdmFactory);
-#endif  // !defined(OS_ANDROID)
+    ::media::SetBrowserCdmFactory(new media::CastBrowserCdmFactory());
+#endif  // defined(OS_ANDROID)
 
   cast_browser_process_->SetConnectivityChecker(
       make_scoped_refptr(new ConnectivityChecker(

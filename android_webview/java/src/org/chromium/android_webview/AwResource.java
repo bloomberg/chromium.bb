@@ -60,16 +60,17 @@ public class AwResource {
     }
 
     @CalledByNative
-    public static String getNoDomainPageContent() {
+    private static String getNoDomainPageContent() {
         return getResource(sRawNoDomain, TYPE_RAW);
     }
 
     @CalledByNative
-    public static String getLoadErrorPageContent() {
+    private static String getLoadErrorPageContent() {
         return getResource(sRawLoadError, TYPE_RAW);
     }
 
-    public static String[] getConfigKeySystemUuidMapping() {
+    @CalledByNative
+    private static String[] getConfigKeySystemUuidMapping() {
         // No need to cache, since this should be called only once.
         return sResources.getStringArray(sStringArrayConfigKeySystemUUIDMapping);
     }

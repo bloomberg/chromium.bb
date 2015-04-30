@@ -45,6 +45,8 @@
       'browser/android/bookmarks/partner_bookmarks_shim.h',
       'browser/android/chrome_jni_registrar.cc',
       'browser/android/chrome_jni_registrar.h',
+      'browser/android/chrome_media_client_android.cc',
+      'browser/android/chrome_media_client_android.h',
       'browser/android/chrome_startup_flags.cc',
       'browser/android/chrome_startup_flags.h',
       'browser/android/chrome_web_contents_delegate_android.cc',

@@ -222,6 +222,8 @@
         'browser/aw_javascript_dialog_manager.h',
         'browser/aw_login_delegate.cc',
         'browser/aw_login_delegate.h',
+        'browser/aw_media_client_android.cc',
+        'browser/aw_media_client_android.h',
         'browser/aw_message_port_message_filter.cc',
         'browser/aw_message_port_message_filter.h',
         'browser/aw_message_port_service.h',

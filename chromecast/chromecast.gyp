@@ -189,6 +189,7 @@
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
         'media/media.gyp:media_base',
+        'media/media.gyp:media_cdm',
         '../base/base.gyp:base',
         '../components/components.gyp:breakpad_host',
         '../components/components.gyp:cdm_renderer',
@@ -239,6 +240,8 @@
         'browser/devtools/remote_debugging_server.h',
         'browser/geolocation/cast_access_token_store.cc',
         'browser/geolocation/cast_access_token_store.h',
+        'browser/media/cast_media_client_android.cc',
+        'browser/media/cast_media_client_android.h',
         'browser/metrics/cast_metrics_prefs.cc',
         'browser/metrics/cast_metrics_prefs.h',
         'browser/metrics/cast_metrics_service_client.cc',
@@ -317,6 +320,11 @@
           'dependencies': [
             '../components/components.gyp:metrics_serialization',
             '../ui/aura/aura.gyp:aura_test_support',
+          ],
+        }],
+        ['OS=="android"', {
+          'dependencies': [
+            '../components/components.gyp:cdm_browser',
           ],
         }],
       ],

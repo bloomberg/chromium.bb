@@ -64,6 +64,8 @@
           'sources': [
             'cdm/browser/cdm_message_filter_android.cc',
             'cdm/browser/cdm_message_filter_android.h',
+            'cdm/browser/widevine_drm_delegate_android.cc',
+            'cdm/browser/widevine_drm_delegate_android.h',
           ],
         },
       ],

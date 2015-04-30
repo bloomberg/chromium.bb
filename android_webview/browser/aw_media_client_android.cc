@@ -1,0 +1,71 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "android_webview/browser/aw_media_client_android.h"
+
+#include <utility>
+
+#include "base/logging.h"
+#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+
+namespace android_webview {
+
+namespace {
+
+const size_t kGUIDLength = 36U;
+
+#define RCHECK(x)                                    \
+  if (!(x)) {                                        \
+    LOG(ERROR) << "Can't parse key-system mapping: " \
+               << key_system_uuid_mapping;           \
+    return std::make_pair("", uuid);                 \
+  }
+
+media::MediaClientAndroid::KeySystemUuidMap::value_type CreateMappingFromString(
+    const std::string& key_system_uuid_mapping) {
+  std::vector<uint8_t> uuid;
+
+  std::vector<std::string> tokens;
+  Tokenize(key_system_uuid_mapping, ",", &tokens);
+  RCHECK(tokens.size() == 2);
+
+  std::string key_system;
+  base::TrimWhitespaceASCII(tokens[0], base::TRIM_ALL, &key_system);
+
+  std::string guid(tokens[1]);
+  RCHECK(guid.length() == kGUIDLength);
+  base::RemoveChars(guid, "-", &guid);
+  RCHECK(base::HexStringToBytes(guid, &uuid));
+
+  return std::make_pair(key_system, uuid);
+}
+
+}  // namespace
+
+AwMediaClientAndroid::AwMediaClientAndroid(
+    const std::vector<std::string>& key_system_uuid_mappings)
+    : key_system_uuid_mappings_(key_system_uuid_mappings) {
+}
+
+AwMediaClientAndroid::~AwMediaClientAndroid() {
+}
+
+void AwMediaClientAndroid::AddKeySystemUUIDMappings(KeySystemUuidMap* map) {
+  for (const std::string& key_system_uuid_mapping : key_system_uuid_mappings_) {
+    auto mapping = CreateMappingFromString(key_system_uuid_mapping);
+    if (!mapping.first.empty())
+      map->insert(mapping);
+  }
+}
+
+media::MediaDrmBridgeDelegate* AwMediaClientAndroid::GetMediaDrmBridgeDelegate(
+    const media::UUID& scheme_uuid) {
+  if (scheme_uuid == widevine_delegate_.GetUUID())
+    return &widevine_delegate_;
+  return nullptr;
+}
+
+}  // namespace android_webview

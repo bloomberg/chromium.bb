@@ -44,9 +44,6 @@
 
 #if defined(OS_ANDROID)
 #include "chromecast/browser/android/external_video_surface_container_impl.h"
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
 #include "components/crash/browser/crash_dump_manager_android.h"
 #endif  // defined(OS_ANDROID)
 
