@@ -11,12 +11,10 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     {% if getter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedGetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
-    {% if getter.is_call_with_script_state %}
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    {% endif %}
     {% set getter_name = getter.name or 'anonymousIndexedGetter' %}
     {% set getter_arguments = ['index'] %}
     {% if getter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     {% set getter_arguments = ['scriptState'] + getter_arguments %}
     {% endif %}
     {% if getter.is_raises_exception %}
@@ -76,12 +74,10 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, 
         return;
     }
     {% endif %}
-    {% if setter.is_call_with_script_state %}
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    {% endif %}
     {% set setter_name = setter.name or 'anonymousIndexedSetter' %}
     {% set setter_arguments = ['index', 'propertyValue'] %}
     {% if setter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     {% set setter_arguments = ['scriptState'] + setter_arguments %}
     {% endif %}
     {% if setter.is_raises_exception %}
@@ -130,12 +126,10 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
     {% if deleter.is_raises_exception %}
     ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
-    {% if deleter.is_call_with_script_state %}
-    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    {% endif %}
     {% set deleter_name = deleter.name or 'anonymousIndexedDeleter' %}
     {% set deleter_arguments = ['index'] %}
     {% if deleter.is_call_with_script_state %}
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     {% set deleter_arguments = ['scriptState'] + deleter_arguments %}
     {% endif %}
     {% if deleter.is_raises_exception %}
