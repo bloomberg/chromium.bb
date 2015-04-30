@@ -219,6 +219,9 @@ bool ShellExtensionsClient::ShouldSuppressFatalErrors() const {
   return true;
 }
 
+void ShellExtensionsClient::RecordDidSuppressFatalError() {
+}
+
 std::string ShellExtensionsClient::GetWebstoreBaseURL() const {
   return extension_urls::kChromeWebstoreBaseURL;
 }

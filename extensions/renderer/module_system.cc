@@ -52,10 +52,13 @@ void Fatal(ScriptContext* context, const std::string& message) {
   full_message += ") ";
   full_message += message;
 
-  if (ExtensionsClient::Get()->ShouldSuppressFatalErrors())
+  ExtensionsClient* client = ExtensionsClient::Get();
+  if (client->ShouldSuppressFatalErrors()) {
     console::Error(context->isolate()->GetCallingContext(), full_message);
-  else
+    client->RecordDidSuppressFatalError();
+  } else {
     console::Fatal(context->isolate()->GetCallingContext(), full_message);
+  }
 }
 
 void Warn(v8::Isolate* isolate, const std::string& message) {

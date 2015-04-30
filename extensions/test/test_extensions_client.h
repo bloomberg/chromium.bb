@@ -52,6 +52,7 @@ class TestExtensionsClient : public ExtensionsClient {
   base::StringPiece GetAPISchema(const std::string& name) const override;
   void RegisterAPISchemaResources(ExtensionAPI* api) const override;
   bool ShouldSuppressFatalErrors() const override;
+  void RecordDidSuppressFatalError() override;
   std::string GetWebstoreBaseURL() const override;
   std::string GetWebstoreUpdateURL() const override;
   bool IsBlacklistUpdateURL(const GURL& url) const override;

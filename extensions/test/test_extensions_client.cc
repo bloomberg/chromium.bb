@@ -166,6 +166,9 @@ bool TestExtensionsClient::ShouldSuppressFatalErrors() const {
   return true;
 }
 
+void TestExtensionsClient::RecordDidSuppressFatalError() {
+}
+
 std::string TestExtensionsClient::GetWebstoreBaseURL() const {
   return extension_urls::kChromeWebstoreBaseURL;
 }

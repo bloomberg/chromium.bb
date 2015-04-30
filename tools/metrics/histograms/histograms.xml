@@ -9113,6 +9113,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DidSuppressJavaScriptException"
+    enum="ChromeChannelForHistogram">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Records the Chrome channel when JavaScript exceptions are not gracefully
+    dealt with, and suppressed by C++ instead. These are exceptions generated
+    (or simply not caught and gracefully recovered) in our own internal
+    JavaScript, not from JavaScript code written by developers (that which is
+    typically hosted in CRX files). This should be 0 for unstable channels like
+    canary and dev, because we try *not* to suppress errors and instead kill the
+    renderer and generate a crash report. However, at times we need to suppress
+    even those. Note that this histogram is intended to be tracked over time,
+    per channel, to observe crash rates. Comparisons between
+    stable/beta/dev/canary are unlikely to be meaningful.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Disabled">
   <owner>kalman@chromium.org</owner>
   <summary>
@@ -47640,6 +47657,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="CRC check not done"/>
   <int value="2" label="CRC check done"/>
   <int value="3" label="Stream was never read at all"/>
+</enum>
+
+<enum name="ChromeChannelForHistogram" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="CANARY"/>
+  <int value="2" label="DEV"/>
+  <int value="3" label="BETA"/>
+  <int value="4" label="STABLE"/>
 </enum>
 
 <enum name="ChromeDownloadCountType" type="int">

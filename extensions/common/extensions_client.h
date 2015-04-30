@@ -112,6 +112,11 @@ class ExtensionsClient {
   // (i.e., only logged) or allowed (i.e., logged before crashing).
   virtual bool ShouldSuppressFatalErrors() const = 0;
 
+  // Records that a fatal error was caught and suppressed. It is expected that
+  // embedders will only do so if ShouldSuppressFatalErrors at some point
+  // returned true.
+  virtual void RecordDidSuppressFatalError() = 0;
+
   // Returns the base webstore URL prefix.
   virtual std::string GetWebstoreBaseURL() const = 0;
 

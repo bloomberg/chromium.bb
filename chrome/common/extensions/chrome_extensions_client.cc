@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
@@ -68,6 +69,34 @@ SimpleFeature* CreateFeature() {
   feature->AddFilter(
       scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
   return feature;
+}
+
+// Mirrors chrome::VersionInfo for histograms.
+enum ChromeChannelForHistogram {
+  CHANNEL_UNKNOWN,
+  CHANNEL_CANARY,
+  CHANNEL_DEV,
+  CHANNEL_BETA,
+  CHANNEL_STABLE,
+  NUM_CHANNELS_FOR_HISTOGRAM
+};
+
+ChromeChannelForHistogram GetChromeChannelForHistogram(
+    chrome::VersionInfo::Channel channel) {
+  switch (channel) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      return CHANNEL_UNKNOWN;
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      return CHANNEL_CANARY;
+    case chrome::VersionInfo::CHANNEL_DEV:
+      return CHANNEL_DEV;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      return CHANNEL_BETA;
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      return CHANNEL_STABLE;
+  }
+  NOTREACHED() << channel;
+  return CHANNEL_UNKNOWN;
 }
 
 }  // namespace
@@ -303,6 +332,12 @@ bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
   // are fixed. This would typically be:
   // return GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
   return true;
+}
+
+void ChromeExtensionsClient::RecordDidSuppressFatalError() {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.DidSuppressJavaScriptException",
+                            GetChromeChannelForHistogram(GetCurrentChannel()),
+                            NUM_CHANNELS_FOR_HISTOGRAM);
 }
 
 std::string ChromeExtensionsClient::GetWebstoreBaseURL() const {
