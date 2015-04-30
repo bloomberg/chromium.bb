@@ -24,6 +24,8 @@ PasswordStoreDefault::PasswordStoreDefault(
 }
 
 PasswordStoreDefault::~PasswordStoreDefault() {
+  if (!GetBackgroundTaskRunner()->BelongsToCurrentThread())
+    GetBackgroundTaskRunner()->DeleteSoon(FROM_HERE, login_db_.release());
 }
 
 bool PasswordStoreDefault::Init(
