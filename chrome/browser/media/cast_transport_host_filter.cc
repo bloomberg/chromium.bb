@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/cast_transport_host_filter.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "content/public/browser/power_save_blocker.h"
@@ -118,7 +119,7 @@ void CastTransportHostFilter::OnNew(
           base::Bind(&CastTransportHostFilter::ReceivedPacket,
                      weak_factory_.GetWeakPtr(),
                      channel_id),
-          base::MessageLoopProxy::current());
+          base::ThreadTaskRunnerHandle::Get());
   id_map_.AddWithID(sender.release(), channel_id);
 }
 
