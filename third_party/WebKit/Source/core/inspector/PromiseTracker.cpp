@@ -32,9 +32,7 @@ public:
     {
         if (!m_tracker)
             return;
-        RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create()
-            .setId(m_id)
-            .setStatus(PromiseDetails::Status::Pending); // FIXME: drop this parameter
+        RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create().setId(m_id);
         m_tracker->m_listener->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseDetails.release());
     }
 
@@ -153,9 +151,8 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Loca
     default:
         promiseStatus = PromiseDetails::Status::Rejected;
     };
-    RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create()
-        .setId(id)
-        .setStatus(promiseStatus);
+    RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create().setId(id);
+    promiseDetails->setStatus(promiseStatus);
 
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
         v8::Local<v8::Object> handle = parentPromise->ToObject(scriptState->isolate());
