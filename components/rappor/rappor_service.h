@@ -33,10 +33,13 @@ class RapporReports;
 
 // The type of data stored in a metric.
 enum RapporType {
-  // For sampling the eTLD+1 of a URL.
-  ETLD_PLUS_ONE_RAPPOR_TYPE = 0,
+  // Generic metrics from UMA opt-in users.
+  UMA_RAPPOR_TYPE = 0,
+  // Generic metrics for SafeBrowsing users.
   COARSE_RAPPOR_TYPE,
-  NUM_RAPPOR_TYPES
+  // Deprecated: Use UMA_RAPPOR_TYPE for new metrics
+  ETLD_PLUS_ONE_RAPPOR_TYPE,
+  NUM_RAPPOR_TYPES,
 };
 
 // This class provides an interface for recording samples for rappor metrics,

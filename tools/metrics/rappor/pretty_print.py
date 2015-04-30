@@ -49,12 +49,30 @@ _RAPPOR_PARAMETERS_TYPES_TYPE = models.ObjectNodeType('rappor-parameter-types',
 
 _OWNER_TYPE = models.TextNodeType('owner', single_line=True)
 
+_STRING_FIELD_TYPE = models.ObjectNodeType('string-field',
+    extra_newlines=(1, 1, 0),
+    string_attributes=['name'],
+    children=[
+      models.ChildType('summary', _SUMMARY_TYPE, False),
+    ])
+
+_FLAG_TYPE = models.TextNodeType('flag', single_line=True)
+
+_FLAGS_FIELD_TYPE = models.ObjectNodeType('flags-field',
+    extra_newlines=(1, 1, 0),
+    string_attributes=['name'],
+    children=[
+      models.ChildType('flags', _FLAG_TYPE, True),
+    ])
+
 _RAPPOR_METRIC_TYPE = models.ObjectNodeType('rappor-metric',
     extra_newlines=(1, 1, 1),
     string_attributes=['name', 'type'],
     children=[
       models.ChildType('owners', _OWNER_TYPE, True),
       models.ChildType('summary', _SUMMARY_TYPE, False),
+      models.ChildType('strings', _STRING_FIELD_TYPE, True),
+      models.ChildType('flags', _FLAGS_FIELD_TYPE, True),
     ])
 
 _RAPPOR_METRICS_TYPE = models.ObjectNodeType('rappor-metrics',
@@ -79,23 +97,21 @@ def GetTypeNames(config):
   return set(p['name'] for p in config['parameterTypes']['types'])
 
 
-def HasMissingOwners(metrics):
+def GetMissingOwnerErrors(metrics):
   """Check that all of the metrics have owners.
 
   Args:
     metrics: A list of rappor metric description objects.
 
   Returns:
-    True iff some metrics are missing owners.
+    A list of errors about metrics missing owners.
   """
   missing_owners = [m for m in metrics if not m['owners']]
-  for metric in missing_owners:
-    logging.error('Rappor metric "%s" is missing an owner.', metric['name'])
-    print metric
-  return bool(missing_owners)
+  return ['Rappor metric "%s" is missing an owner.' % metric['name']
+          for metric in missing_owners]
 
 
-def HasInvalidTypes(type_names, metrics):
+def GetInvalidTypeErrors(type_names, metrics):
   """Check that all of the metrics have valid types.
 
   Args:
@@ -103,28 +119,27 @@ def HasInvalidTypes(type_names, metrics):
     metrics: A list of rappor metric description objects.
 
   Returns:
-    True iff some metrics have invalid types.
+    A list of errors about metrics with invalid_types.
   """
   invalid_types = [m for m in metrics if m['type'] not in type_names]
-  for metric in invalid_types:
-    logging.error('Rappor metric "%s" has invalid type "%s"',
-        metric['name'], metric['type'])
-  return bool(invalid_types)
+  return ['Rappor metric "%s" has invalid type "%s"' % (
+              metric['name'], metric['type'])
+          for metric in invalid_types]
 
 
-def HasErrors(config):
+def GetErrors(config):
   """Check that rappor.xml passes some basic validation checks.
 
   Args:
     config: The parsed rappor.xml contents.
 
   Returns:
-    True iff there are validation errors.
+    A list of validation errors.
   """
   metrics = config['metrics']['metrics']
   type_names = GetTypeNames(config)
-  return (HasMissingOwners(metrics) or
-          HasInvalidTypes(type_names, metrics))
+  return (GetMissingOwnerErrors(metrics) or
+          GetInvalidTypeErrors(type_names, metrics))
 
 
 def Cleanup(config):
@@ -150,7 +165,10 @@ def UpdateXML(original_xml):
   """
   comments, config = RAPPOR_XML_TYPE.Parse(original_xml)
 
-  if HasErrors(config):
+  errors = GetErrors(config)
+  if errors:
+    for error in errors:
+      logging.error("%s", error)
     return None
 
   Cleanup(config)

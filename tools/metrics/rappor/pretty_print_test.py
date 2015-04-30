@@ -39,6 +39,23 @@ PRETTY_XML = """
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Test.Rappor.Metric2" type="TEST_RAPPOR_TYPE">
+  <owner>user1@chromium.org</owner>
+  <owner>user2@chromium.org</owner>
+  <summary>
+    A fake metric summary.
+  </summary>
+  <string-field name="Url">
+    <summary>
+      The url of the event.
+    </summary>
+  </string-field>
+  <flags-field name="Flags">
+    <flag>Flag bit #1</flag>
+    <flag>Flag bit #2</flag>
+  </flags-field>
+</rappor-metric>
+
 </rappor-metrics>
 
 </rappor-configuration>
@@ -50,6 +67,29 @@ BASIC_METRIC = {
   'type': 'TEST_RAPPOR_TYPE',
   'owners': ['user1@chromium.org', 'user2@chromium.org'],
   'summary': 'A fake metric summary.',
+  'flags': [],
+  'strings': [],
+}
+
+MULTI_FIELD_METRIC = {
+  'comments': [],
+  'name': 'Test.Rappor.Metric2',
+  'type': 'TEST_RAPPOR_TYPE',
+  'owners': ['user1@chromium.org', 'user2@chromium.org'],
+  'summary': 'A fake metric summary.',
+  'strings': [{
+    'comments': [],
+    'name': 'Url',
+    'summary': 'The url of the event.',
+  }],
+  'flags': [{
+    'comments': [],
+    'name': 'Flags',
+    'flags': [
+      'Flag bit #1',
+      'Flag bit #2',
+    ]
+  }]
 }
 
 
@@ -57,24 +97,25 @@ class ActionXmlTest(unittest.TestCase):
 
   def testIsPretty(self):
     result = pretty_print.UpdateXML(PRETTY_XML)
-    self.assertEqual(PRETTY_XML, result)
+    self.assertMultiLineEqual(PRETTY_XML, result.strip())
 
   def testParsing(self):
     comments, config = pretty_print.RAPPOR_XML_TYPE.Parse(PRETTY_XML)
     self.assertEqual(BASIC_METRIC, config['metrics']['metrics'][0])
+    self.assertEqual(MULTI_FIELD_METRIC, config['metrics']['metrics'][1])
     self.assertEqual(set(['TEST_RAPPOR_TYPE']),
                      pretty_print.GetTypeNames(config))
 
   def testMissingOwners(self):
-    self.assertFalse(pretty_print.HasMissingOwners([BASIC_METRIC]))
+    self.assertFalse(pretty_print.GetMissingOwnerErrors([BASIC_METRIC]))
     no_owners = BASIC_METRIC.copy()
     no_owners['owners'] = []
-    self.assertTrue(pretty_print.HasMissingOwners([no_owners]))
+    self.assertTrue(pretty_print.GetMissingOwnerErrors([no_owners]))
 
   def testInvalidTypes(self):
-    self.assertFalse(pretty_print.HasInvalidTypes(
+    self.assertFalse(pretty_print.GetInvalidTypeErrors(
         set(['TEST_RAPPOR_TYPE']), [BASIC_METRIC]))
-    self.assertTrue(pretty_print.HasInvalidTypes(
+    self.assertTrue(pretty_print.GetInvalidTypeErrors(
         set(['OTHER_TYPE']), [BASIC_METRIC]))
 
 
