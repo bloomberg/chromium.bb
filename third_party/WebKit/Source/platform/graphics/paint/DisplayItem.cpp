@@ -36,49 +36,56 @@ static WTF::String paintPhaseAsDebugString(int paintPhase)
     if (type >= DisplayItem::Category##PaintPhaseFirst && type <= DisplayItem::Category##PaintPhaseLast) \
         return #Category + paintPhaseAsDebugString(type - DisplayItem::Category##PaintPhaseFirst);
 
+#define DEBUG_STRING_CASE(DisplayItemName) \
+    case DisplayItem::DisplayItemName: return #DisplayItemName
+
+#define DEFAULT_CASE default: ASSERT_NOT_REACHED(); return "Unknown"
+
+static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
+{
+    switch (type) {
+        DEBUG_STRING_CASE(BoxDecorationBackground);
+        DEBUG_STRING_CASE(Caret);
+        DEBUG_STRING_CASE(ColumnRules);
+        DEBUG_STRING_CASE(DebugRedFill);
+        DEBUG_STRING_CASE(DragImage);
+        DEBUG_STRING_CASE(SVGImage);
+        DEBUG_STRING_CASE(LinkHighlight);
+        DEBUG_STRING_CASE(PageOverlay);
+        DEBUG_STRING_CASE(PageWidgetDelegateBackgroundFallback);
+        DEBUG_STRING_CASE(PopupContainerBorder);
+        DEBUG_STRING_CASE(PopupListBoxBackground);
+        DEBUG_STRING_CASE(PopupListBoxRow);
+        DEBUG_STRING_CASE(Resizer);
+        DEBUG_STRING_CASE(SVGClip);
+        DEBUG_STRING_CASE(SVGFilter);
+        DEBUG_STRING_CASE(SVGMask);
+        DEBUG_STRING_CASE(ScrollbarBackButtonEnd);
+        DEBUG_STRING_CASE(ScrollbarBackButtonStart);
+        DEBUG_STRING_CASE(ScrollbarBackground);
+        DEBUG_STRING_CASE(ScrollbarBackTrack);
+        DEBUG_STRING_CASE(ScrollbarCorner);
+        DEBUG_STRING_CASE(ScrollbarForwardButtonEnd);
+        DEBUG_STRING_CASE(ScrollbarForwardButtonStart);
+        DEBUG_STRING_CASE(ScrollbarForwardTrack);
+        DEBUG_STRING_CASE(ScrollbarHorizontal);
+        DEBUG_STRING_CASE(ScrollbarThumb);
+        DEBUG_STRING_CASE(ScrollbarTickmarks);
+        DEBUG_STRING_CASE(ScrollbarTrackBackground);
+        DEBUG_STRING_CASE(ScrollbarVertical);
+        DEBUG_STRING_CASE(SelectionGap);
+        DEBUG_STRING_CASE(SelectionTint);
+        DEBUG_STRING_CASE(TableCellBackgroundFromSelfPaintingRow);
+        DEBUG_STRING_CASE(VideoBitmap);
+        DEBUG_STRING_CASE(WebPlugin);
+        DEFAULT_CASE;
+    }
+}
+
 static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
 {
     PAINT_PHASE_BASED_DEBUG_STRINGS(Drawing);
-
-    switch (type) {
-    case DisplayItem::BoxDecorationBackground: return "DrawingBoxDecorationBackground";
-    case DisplayItem::Caret: return "DrawingCaret";
-    case DisplayItem::ColumnRules: return "DrawingColumnRules";
-    case DisplayItem::DebugRedFill: return "DrawingDebugRedFill";
-    case DisplayItem::DragImage: return "DrawingDragImage";
-    case DisplayItem::SVGImage: return "DrawingSVGImage";
-    case DisplayItem::LinkHighlight: return "DrawingLinkHighlight";
-    case DisplayItem::PageOverlay: return "PageOverlay";
-    case DisplayItem::PageWidgetDelegateBackgroundFallback: return "DrawingPageWidgetDelegateBackgroundFallback";
-    case DisplayItem::PopupContainerBorder: return "DrawingPopupContainerBorder";
-    case DisplayItem::PopupListBoxBackground: return "DrawingPopupListBoxBackground";
-    case DisplayItem::PopupListBoxRow: return "DrawingPopupListBoxRow";
-    case DisplayItem::Resizer: return "DrawingResizer";
-    case DisplayItem::SVGClip: return "DrawingSVGClip";
-    case DisplayItem::SVGFilter: return "DrawingSVGFilter";
-    case DisplayItem::SVGMask: return "DrawingSVGMask";
-    case DisplayItem::ScrollbarBackButtonEnd: return "ScrollbarBackButtonEnd";
-    case DisplayItem::ScrollbarBackButtonStart: return "ScrollbarBackButtonStart";
-    case DisplayItem::ScrollbarBackground: return "ScrollbarBackground";
-    case DisplayItem::ScrollbarBackTrack: return "ScrollbarBackTrack";
-    case DisplayItem::ScrollbarCorner: return "DrawingScrollbarCorner";
-    case DisplayItem::ScrollbarForwardButtonEnd: return "ScrollbarForwardButtonEnd";
-    case DisplayItem::ScrollbarForwardButtonStart: return "ScrollbarForwardButtonStart";
-    case DisplayItem::ScrollbarForwardTrack: return "ScrollbarForwardTrack";
-    case DisplayItem::ScrollbarHorizontal: return "ScrollbarHorizontal";
-    case DisplayItem::ScrollbarThumb: return "ScrollbarThumb";
-    case DisplayItem::ScrollbarTickmarks: return "ScrollbarTickmarks";
-    case DisplayItem::ScrollbarTrackBackground: return "ScrollbarTrackBackground";
-    case DisplayItem::ScrollbarVertical: return "ScrollbarVertical";
-    case DisplayItem::SelectionGap: return "DrawingSelectionGap";
-    case DisplayItem::SelectionTint: return "DrawingSelectionTint";
-    case DisplayItem::TableCellBackgroundFromSelfPaintingRow: return "TableCellBackgroundFromSelfPaintingRow";
-    case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
-    case DisplayItem::WebPlugin: return "DrawingWebPlugin";
-    default:
-        ASSERT_NOT_REACHED();
-        return "Unknown";
-    }
+    return "Drawing" + specialDrawingTypeAsDebugString(type);
 }
 
 static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
@@ -88,33 +95,29 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
     PAINT_PHASE_BASED_DEBUG_STRINGS(ClipLayerFragment);
 
     switch (type) {
-    case DisplayItem::ClipFileUploadControlRect: return "ClipFileUploadControlRect";
-    case DisplayItem::ClipFrameToVisibleContentRect: return "ClipFrameToVisibleContentRect";
-    case DisplayItem::ClipFrameScrollbars: return "ClipFrameScrollbars";
-    case DisplayItem::ClipLayerBackground: return "ClipLayerBackground";
-    case DisplayItem::ClipLayerColumnBounds: return "ClipLayerColumnBounds";
-    case DisplayItem::ClipLayerFilter: return "ClipLayerFilter";
-    case DisplayItem::ClipLayerForeground: return "ClipLayerForeground";
-    case DisplayItem::ClipLayerParent: return "ClipLayerParent";
-    case DisplayItem::ClipLayerOverflowControls: return "ClipLayerOverflowControls";
-    case DisplayItem::ClipNodeImage: return "ClipNodeImage";
-    case DisplayItem::ClipPopupListBoxFrame: return "ClipPopupListBoxFrame";
-    case DisplayItem::ClipSelectionImage: return "ClipSelectionImage";
-    case DisplayItem::PageWidgetDelegateClip: return "PageWidgetDelegateClip";
-    case DisplayItem::TransparencyClip: return "TransparencyClip";
-    default:
-        ASSERT_NOT_REACHED();
-        return "Unknown";
+        DEBUG_STRING_CASE(ClipFileUploadControlRect);
+        DEBUG_STRING_CASE(ClipFrameToVisibleContentRect);
+        DEBUG_STRING_CASE(ClipFrameScrollbars);
+        DEBUG_STRING_CASE(ClipLayerBackground);
+        DEBUG_STRING_CASE(ClipLayerColumnBounds);
+        DEBUG_STRING_CASE(ClipLayerFilter);
+        DEBUG_STRING_CASE(ClipLayerForeground);
+        DEBUG_STRING_CASE(ClipLayerParent);
+        DEBUG_STRING_CASE(ClipLayerOverflowControls);
+        DEBUG_STRING_CASE(ClipNodeImage);
+        DEBUG_STRING_CASE(ClipPopupListBoxFrame);
+        DEBUG_STRING_CASE(ClipSelectionImage);
+        DEBUG_STRING_CASE(PageWidgetDelegateClip);
+        DEBUG_STRING_CASE(TransparencyClip);
+        DEFAULT_CASE;
     }
 }
 
 static String transform3DTypeAsDebugString(DisplayItem::Type type)
 {
     switch (type) {
-    case DisplayItem::Transform3DElementTransform: return "Transform3DElementTransform";
-    default:
-        ASSERT_NOT_REACHED();
-        return "Unknown";
+        DEBUG_STRING_CASE(Transform3DElementTransform);
+        DEFAULT_CASE;
     }
 }
 
@@ -147,17 +150,15 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     PAINT_PHASE_BASED_DEBUG_STRINGS(EndSubtree);
 
     switch (type) {
-    case BeginFilter: return "BeginFilter";
-    case EndFilter: return "EndFilter";
-    case BeginCompositing: return "BeginCompositing";
-    case EndCompositing: return "EndCompositing";
-    case BeginTransform: return "BeginTransform";
-    case EndTransform: return "EndTransform";
-    case BeginClipPath: return "BeginClipPath";
-    case EndClipPath: return "EndClipPath";
-    default:
-        ASSERT_NOT_REACHED();
-        return "Unknown";
+        DEBUG_STRING_CASE(BeginFilter);
+        DEBUG_STRING_CASE(EndFilter);
+        DEBUG_STRING_CASE(BeginCompositing);
+        DEBUG_STRING_CASE(EndCompositing);
+        DEBUG_STRING_CASE(BeginTransform);
+        DEBUG_STRING_CASE(EndTransform);
+        DEBUG_STRING_CASE(BeginClipPath);
+        DEBUG_STRING_CASE(EndClipPath);
+        DEFAULT_CASE;
     }
 }
 
