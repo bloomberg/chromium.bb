@@ -425,6 +425,10 @@ public:
     // it is recommended that the fixed point be no further in the past than the epoch.
     virtual double monotonicallyIncreasingTime() { return 0; }
 
+    // System trace time in seconds. For example, on Chrome OS, this timestamp should be
+    // synchronized with ftrace timestamps.
+    virtual double systemTraceTime() { return 0; }
+
     // WebKit clients must implement this funcion if they use cryptographic randomness.
     virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) = 0;
 

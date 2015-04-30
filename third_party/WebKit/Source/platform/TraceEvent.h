@@ -1160,7 +1160,7 @@ static inline TraceEventHandle addTraceEvent(
     unsigned long long id,
     unsigned char flags)
 {
-    return addTraceEvent(phase, categoryEnabled, name, id, monotonicallyIncreasingTime(), flags);
+    return addTraceEvent(phase, categoryEnabled, name, id, systemTraceTime(), flags);
 }
 
 template<typename ARG1_TYPE>
@@ -1173,7 +1173,7 @@ static inline TraceEventHandle addTraceEvent(
     const char* arg1Name,
     const ARG1_TYPE& arg1Val)
 {
-    return addTraceEvent(phase, categoryEnabled, name, id, monotonicallyIncreasingTime(), flags, arg1Name, arg1Val);
+    return addTraceEvent(phase, categoryEnabled, name, id, systemTraceTime(), flags, arg1Name, arg1Val);
 }
 
 
@@ -1189,7 +1189,7 @@ static inline TraceEventHandle addTraceEvent(
     const char* arg2Name,
     const ARG2_TYPE& arg2Val)
 {
-    return addTraceEvent(phase, categoryEnabled, name, id, monotonicallyIncreasingTime(), flags, arg1Name, arg1Val, arg2Name, arg2Val);
+    return addTraceEvent(phase, categoryEnabled, name, id, systemTraceTime(), flags, arg1Name, arg1Val, arg2Name, arg2Val);
 }
 
 // Used by TRACE_EVENTx macro. Do not use directly.

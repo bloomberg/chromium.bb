@@ -51,9 +51,14 @@ inline double currentTimeMS()
 // On unsupported platforms, this function only guarantees the result will be non-decreasing.
 WTF_EXPORT double monotonicallyIncreasingTime();
 
+// Provides a timestamp that aligns with system tracing utilities on the host operating
+// system.
+WTF_EXPORT double systemTraceTime();
+
 typedef double(*TimeFunction)(void);
 void setCurrentTimeFunction(TimeFunction);
 void setMonotonicallyIncreasingTimeFunction(TimeFunction);
+void setSystemTraceTimeFunction(TimeFunction);
 
 
 } // namespace WTF
@@ -61,5 +66,6 @@ void setMonotonicallyIncreasingTimeFunction(TimeFunction);
 using WTF::currentTime;
 using WTF::currentTimeMS;
 using WTF::monotonicallyIncreasingTime;
+using WTF::systemTraceTime;
 
 #endif // CurrentTime_h
