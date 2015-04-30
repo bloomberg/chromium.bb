@@ -154,8 +154,9 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
   EXPECT_TRUE(IsPluginPeripheral("plugin_embed_srcset"));
 }
 
+// flaky: crbug.com/481687
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
-                       PluginMarkedEssentialAfterPosterClicked) {
+                       DISABLED_PluginMarkedEssentialAfterPosterClicked) {
   LoadHTML(
       "<object id='plugin' type='application/x-ppapi-tests' "
       "    width='400' height='100' poster='snapshot1x.png' />");

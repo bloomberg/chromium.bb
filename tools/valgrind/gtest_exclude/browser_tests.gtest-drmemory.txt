@@ -35,6 +35,3 @@ BasicExtensionSettingsWebUITest.testUninstall
 
 # https://crbug.com/480721
 OutOfProcessProxyResolverBrowserTest.Verify
-
-# https://crbug.com/481687
-PluginPowerSaverBrowserTest.PluginMarkedEssentialAfterPosterClicked
