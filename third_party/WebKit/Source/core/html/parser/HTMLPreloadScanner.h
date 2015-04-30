@@ -27,6 +27,7 @@
 #ifndef HTMLPreloadScanner_h
 #define HTMLPreloadScanner_h
 
+#include "core/css/MediaValues.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
@@ -40,7 +41,6 @@ typedef size_t TokenPreloadScannerCheckpoint;
 class HTMLParserOptions;
 class HTMLTokenizer;
 class SegmentedString;
-class MediaValues;
 
 class TokenPreloadScanner {
     WTF_MAKE_NONCOPYABLE(TokenPreloadScanner); WTF_MAKE_FAST_ALLOCATED(TokenPreloadScanner);
@@ -107,11 +107,17 @@ private:
 class HTMLPreloadScanner {
     WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner); WTF_MAKE_FAST_ALLOCATED(HTMLPreloadScanner);
 public:
+    static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassRefPtr<MediaValues> mediaValues)
+    {
+        return adoptPtr(new HTMLPreloadScanner(options, documentURL, mediaValues));
+    }
+
+
     HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassRefPtr<MediaValues>);
     ~HTMLPreloadScanner();
 
     void appendToEnd(const SegmentedString&);
-    void scan(HTMLResourcePreloader*, const KURL& documentBaseElementURL);
+    void scan(ResourcePreloader*, const KURL& documentBaseElementURL);
 
 private:
     TokenPreloadScanner m_scanner;

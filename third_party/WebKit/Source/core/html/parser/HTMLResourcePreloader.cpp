@@ -29,41 +29,9 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/html/imports/HTMLImport.h"
-#include "core/layout/LayoutObject.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
-
-bool PreloadRequest::isSafeToSendToAnotherThread() const
-{
-    return m_initiatorName.isSafeToSendToAnotherThread()
-        && m_charset.isSafeToSendToAnotherThread()
-        && m_resourceURL.isSafeToSendToAnotherThread()
-        && m_baseURL.isSafeToSendToAnotherThread();
-}
-
-KURL PreloadRequest::completeURL(Document* document)
-{
-    return document->completeURLWithOverride(m_resourceURL, m_baseURL.isEmpty() ? document->url() : m_baseURL);
-}
-
-FetchRequest PreloadRequest::resourceRequest(Document* document)
-{
-    ASSERT(isMainThread());
-    FetchInitiatorInfo initiatorInfo;
-    initiatorInfo.name = AtomicString(m_initiatorName);
-    initiatorInfo.position = m_initiatorPosition;
-    FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
-
-    if (m_isCORSEnabled)
-        request.setCrossOriginAccessControl(document->securityOrigin(), m_allowCredentials);
-
-    request.setDefer(m_defer);
-    request.setResourceWidth(m_resourceWidth);
-
-    return request;
-}
 
 inline HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
     : m_document(document)
@@ -78,15 +46,6 @@ PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> HTMLResourcePreloader::create(Docu
 DEFINE_TRACE(HTMLResourcePreloader)
 {
     visitor->trace(m_document);
-}
-
-void HTMLResourcePreloader::takeAndPreload(PreloadRequestStream& r)
-{
-    PreloadRequestStream requests;
-    requests.swap(r);
-
-    for (PreloadRequestStream::iterator it = requests.begin(); it != requests.end(); ++it)
-        preload(it->release());
 }
 
 void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)

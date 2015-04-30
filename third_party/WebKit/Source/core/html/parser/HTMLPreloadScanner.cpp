@@ -32,7 +32,6 @@
 #include "core/InputTypeNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
-#include "core/css/MediaValues.h"
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -541,7 +540,7 @@ void HTMLPreloadScanner::appendToEnd(const SegmentedString& source)
     m_source.append(source);
 }
 
-void HTMLPreloadScanner::scan(HTMLResourcePreloader* preloader, const KURL& startingBaseElementURL)
+void HTMLPreloadScanner::scan(ResourcePreloader* preloader, const KURL& startingBaseElementURL)
 {
     ASSERT(isMainThread()); // HTMLTokenizer::updateStateFor only works on the main thread.
 

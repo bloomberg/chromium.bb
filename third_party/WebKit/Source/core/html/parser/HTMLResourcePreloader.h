@@ -28,80 +28,24 @@
 
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
+#include "core/html/parser/PreloadRequest.h"
+#include "core/html/parser/ResourcePreloader.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
 
-class Document;
-
-class PreloadRequest {
-public:
-    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const FetchRequest::ResourceWidth& resourceWidth = FetchRequest::ResourceWidth())
-    {
-        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, resourceWidth));
-    }
-
-    bool isSafeToSendToAnotherThread() const;
-
-    FetchRequest resourceRequest(Document*);
-
-    const String& charset() const { return m_charset; }
-    double discoveryTime() const { return m_discoveryTime; }
-    void setDefer(FetchRequest::DeferOption defer) { m_defer = defer; }
-    void setCharset(const String& charset) { m_charset = charset.isolatedCopy(); }
-    void setCrossOriginEnabled(StoredCredentials allowCredentials)
-    {
-        m_isCORSEnabled = true;
-        m_allowCredentials = allowCredentials;
-    }
-
-    Resource::Type resourceType() const { return m_resourceType; }
-
-private:
-    PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const FetchRequest::ResourceWidth& resourceWidth)
-        : m_initiatorName(initiatorName)
-        , m_initiatorPosition(initiatorPosition)
-        , m_resourceURL(resourceURL.isolatedCopy())
-        , m_baseURL(baseURL.copy())
-        , m_resourceType(resourceType)
-        , m_isCORSEnabled(false)
-        , m_allowCredentials(DoNotAllowStoredCredentials)
-        , m_discoveryTime(monotonicallyIncreasingTime())
-        , m_defer(FetchRequest::NoDefer)
-        , m_resourceWidth(resourceWidth)
-    {
-    }
-
-    KURL completeURL(Document*);
-
-    String m_initiatorName;
-    TextPosition m_initiatorPosition;
-    String m_resourceURL;
-    KURL m_baseURL;
-    String m_charset;
-    Resource::Type m_resourceType;
-    bool m_isCORSEnabled;
-    StoredCredentials m_allowCredentials;
-    double m_discoveryTime;
-    FetchRequest::DeferOption m_defer;
-    FetchRequest::ResourceWidth m_resourceWidth;
-};
-
-typedef Vector<OwnPtr<PreloadRequest>> PreloadRequestStream;
-
-class HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader> {
+class HTMLResourcePreloader final : public NoBaseWillBeGarbageCollected<HTMLResourcePreloader>, public ResourcePreloader {
     WTF_MAKE_NONCOPYABLE(HTMLResourcePreloader); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(HTMLResourcePreloader);
 public:
     static PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> create(Document&);
     DECLARE_TRACE();
 
-    void takeAndPreload(PreloadRequestStream&);
+protected:
+    virtual void preload(PassOwnPtr<PreloadRequest>) override;
 
 private:
     explicit HTMLResourcePreloader(Document&);
-
-    void preload(PassOwnPtr<PreloadRequest>);
 
     RawPtrWillBeMember<Document> m_document;
 };
