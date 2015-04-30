@@ -5,6 +5,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
@@ -19,68 +21,53 @@ namespace content {
 class ChildDiscardableSharedMemoryManagerBrowserTest
     : public ContentBrowserTest {
  public:
+  ChildDiscardableSharedMemoryManagerBrowserTest()
+      : child_discardable_shared_memory_manager_(nullptr) {}
+
+  // Overridden from BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
   }
-
-  static void ReleaseFreeMemory() {
-    ChildThreadImpl::current()
-        ->discardable_shared_memory_manager()
-        ->ReleaseFreeMemory();
+  void SetUpOnMainThread() override {
+    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+    PostTaskToInProcessRendererAndWait(base::Bind(
+        &ChildDiscardableSharedMemoryManagerBrowserTest::SetUpOnChildThread,
+        this));
   }
 
-  static void AllocateLockedMemory(
-      size_t size,
-      scoped_ptr<base::DiscardableMemory>* memory) {
-    *memory = ChildThreadImpl::current()
-                  ->discardable_shared_memory_manager()
-                  ->AllocateLockedDiscardableMemory(size);
+  ChildDiscardableSharedMemoryManager*
+  child_discardable_shared_memory_manager() {
+    return child_discardable_shared_memory_manager_;
   }
 
-  static void LockMemory(base::DiscardableMemory* memory, bool* result) {
-    *result = memory->Lock();
+ private:
+  void SetUpOnChildThread() {
+    child_discardable_shared_memory_manager_ =
+        ChildThreadImpl::current()->discardable_shared_memory_manager();
   }
 
-  static void UnlockMemory(base::DiscardableMemory* memory) {
-    memory->Unlock();
-  }
-
-  static void FreeMemory(scoped_ptr<base::DiscardableMemory> memory) {}
+  ChildDiscardableSharedMemoryManager* child_discardable_shared_memory_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
                        DISABLED_LockMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  scoped_ptr<base::DiscardableMemory> memory;
-  PostTaskToInProcessRendererAndWait(base::Bind(
-      &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
-      kSize, &memory));
+  scoped_ptr<base::DiscardableMemory> memory =
+      child_discardable_shared_memory_manager()
+          ->AllocateLockedDiscardableMemory(kSize);
 
   ASSERT_TRUE(memory);
   void* addr = memory->data();
   ASSERT_NE(nullptr, addr);
 
-  PostTaskToInProcessRendererAndWait(
-      base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::UnlockMemory,
-                 memory.get()));
+  memory->Unlock();
 
   // Purge all unlocked memory.
   HostDiscardableSharedMemoryManager::current()->SetMemoryLimit(0);
 
-  bool result = true;
-  PostTaskToInProcessRendererAndWait(
-      base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::LockMemory,
-                 memory.get(), &result));
-
   // Should fail as memory should have been purged.
-  EXPECT_FALSE(result);
-
-  PostTaskToInProcessRendererAndWait(
-      base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::FreeMemory,
-                 base::Passed(&memory)));
+  EXPECT_FALSE(memory->Lock());
 }
 
 IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
@@ -88,25 +75,16 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
   const size_t kLargeSize = 4 * 1024 * 1024;   // 4MiB.
   const size_t kNumberOfInstances = 1024 + 1;  // >4GiB total.
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
-  scoped_ptr<base::DiscardableMemory> instances[kNumberOfInstances];
-  for (auto& memory : instances) {
-    PostTaskToInProcessRendererAndWait(base::Bind(
-        &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
-        kLargeSize, &memory));
+  ScopedVector<base::DiscardableMemory> instances;
+  for (size_t i = 0; i < kNumberOfInstances; ++i) {
+    scoped_ptr<base::DiscardableMemory> memory =
+        child_discardable_shared_memory_manager()
+            ->AllocateLockedDiscardableMemory(kLargeSize);
     ASSERT_TRUE(memory);
     void* addr = memory->data();
     ASSERT_NE(nullptr, addr);
-    PostTaskToInProcessRendererAndWait(base::Bind(
-        &ChildDiscardableSharedMemoryManagerBrowserTest::UnlockMemory,
-        memory.get()));
-  }
-
-  for (auto& memory : instances) {
-    PostTaskToInProcessRendererAndWait(
-        base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::FreeMemory,
-                   base::Passed(&memory)));
+    memory->Unlock();
+    instances.push_back(memory.Pass());
   }
 }
 
@@ -114,27 +92,27 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
                        DISABLED_ReleaseFreeMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  scoped_ptr<base::DiscardableMemory> memory =
+      child_discardable_shared_memory_manager()
+          ->AllocateLockedDiscardableMemory(kSize);
 
-  scoped_ptr<base::DiscardableMemory> memory;
-  PostTaskToInProcessRendererAndWait(base::Bind(
-      &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
-      kSize, &memory));
-  PostTaskToInProcessRendererAndWait(
-      base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::UnlockMemory,
-                 memory.get()));
-  PostTaskToInProcessRendererAndWait(
-      base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::FreeMemory,
-                 base::Passed(&memory)));
+  EXPECT_TRUE(memory);
+  memory.reset();
 
   EXPECT_GE(HostDiscardableSharedMemoryManager::current()->GetBytesAllocated(),
             kSize);
 
-  PostTaskToInProcessRendererAndWait(base::Bind(
-      &ChildDiscardableSharedMemoryManagerBrowserTest::ReleaseFreeMemory));
+  child_discardable_shared_memory_manager()->ReleaseFreeMemory();
 
-  EXPECT_EQ(HostDiscardableSharedMemoryManager::current()->GetBytesAllocated(),
-            0u);
+  // Busy wait for host memory usage to be reduced.
+  base::TimeTicks end =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(5);
+  while (base::TimeTicks::Now() < end) {
+    if (!HostDiscardableSharedMemoryManager::current()->GetBytesAllocated())
+      break;
+  }
+
+  EXPECT_LT(base::TimeTicks::Now(), end);
 }
 
 }  // content
