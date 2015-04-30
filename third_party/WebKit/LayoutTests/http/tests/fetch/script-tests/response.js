@@ -118,7 +118,7 @@ test(function() {
                         new Response(new Blob(), {status: status});
                       },
                       'new Response with status = ' + status +
-                      'should throw');
+                      ' should throw');
       });
 
     [300, 0, 304, 305, 306, 309, 500].forEach(function(status) {
@@ -128,7 +128,7 @@ test(function() {
                                           status);
                       },
                       'Response.redirect() with invalid status = ' + status +
-                      'should throw');
+                      ' should throw');
       });
 
     assert_throws(
