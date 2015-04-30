@@ -563,6 +563,7 @@
       'common/search_urls_unittest.cc',
       'common/switch_utils_unittest.cc',
       'common/variations/experiment_labels_unittest.cc',
+      'common/variations/variations_util_unittest.cc',
       'common/worker_thread_ticker_unittest.cc',
       'renderer/chrome_content_renderer_client_unittest.cc',
       'renderer/content_settings_observer_unittest.cc',

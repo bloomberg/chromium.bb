@@ -105,6 +105,7 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
+#include "chrome/common/variations/variations_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
@@ -628,6 +629,13 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     base::FieldTrial::EnableBenchmarking();
+  }
+
+  if (command_line->HasSwitch(switches::kForceFieldTrialParams)) {
+    bool result = chrome_variations::AssociateParamsFromString(
+        command_line->GetSwitchValueASCII(switches::kForceFieldTrialParams));
+    CHECK(result) << "Invalid --" << switches::kForceFieldTrialParams
+                  << " list specified.";
   }
 
   // Ensure any field trials specified on the command line are initialized.

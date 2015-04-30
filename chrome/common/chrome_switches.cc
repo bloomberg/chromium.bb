@@ -639,6 +639,16 @@ const char kFlagSwitchesEnd[]               = "flag-switches-end";
 // the app to be installed if it hasn't been already.
 const char kForceAppMode[]                  = "force-app-mode";
 
+// This option can be used to force parameters of field trials when testing
+// changes locally. The argument is a list of key/value pairs prefixed by
+// Trial/Group pair. The following shows setting parameters to 2 experiments
+// where in the first, it forces "id" to be "foo" for the "Enabled" group of
+// the "EnhancedBookmarks" trial:
+// "EnhancedBookmarks.Enabled:id/foo,Experiment2.Group1:key1/value1"
+// Trial names, groups names, parameter names, and value should all be URL
+// escaped for all non-alphanumeric characters.
+const char kForceFieldTrialParams[] = "force-fieldtrial-params";
+
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
