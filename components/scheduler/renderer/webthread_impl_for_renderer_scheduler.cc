@@ -33,11 +33,6 @@ blink::WebScheduler* WebThreadImplForRendererScheduler::scheduler() const {
   return web_scheduler_.get();
 }
 
-base::MessageLoop* WebThreadImplForRendererScheduler::MessageLoop() const {
-  DCHECK(isCurrentThread());
-  return base::MessageLoop::current();
-}
-
 base::SingleThreadTaskRunner* WebThreadImplForRendererScheduler::TaskRunner()
     const {
   return task_runner_.get();

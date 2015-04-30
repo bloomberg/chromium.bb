@@ -143,20 +143,6 @@ void WebThreadBase::postIdleTaskAfterWakeup(
                            base::Passed(make_scoped_ptr(idle_task))));
 }
 
-void WebThreadBase::enterRunLoop() {
-  CHECK(isCurrentThread());
-  CHECK(MessageLoop());
-  CHECK(!MessageLoop()->is_running());  // We don't support nesting.
-  MessageLoop()->Run();
-}
-
-void WebThreadBase::exitRunLoop() {
-  CHECK(isCurrentThread());
-  CHECK(MessageLoop());
-  CHECK(MessageLoop()->is_running());
-  MessageLoop()->Quit();
-}
-
 bool WebThreadBase::isCurrentThread() const {
   return TaskRunner()->BelongsToCurrentThread();
 }

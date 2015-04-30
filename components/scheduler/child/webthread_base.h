@@ -36,9 +36,6 @@ class SCHEDULER_EXPORT WebThreadBase : public blink::WebThread {
   virtual void postIdleTaskAfterWakeup(const blink::WebTraceLocation& location,
                                        IdleTask* idle_task);
 
-  virtual void enterRunLoop();
-  virtual void exitRunLoop();
-
   virtual void addTaskObserver(TaskObserver* observer);
   virtual void removeTaskObserver(TaskObserver* observer);
 
@@ -54,11 +51,6 @@ class SCHEDULER_EXPORT WebThreadBase : public blink::WebThread {
   class TaskObserverAdapter;
 
   WebThreadBase();
-
-  // Returns the underlying MessageLoop for this thread. Only used for entering
-  // and exiting a nested run loop. Only called on the thread that the
-  // WebThread belongs to.
-  virtual base::MessageLoop* MessageLoop() const = 0;
 
   virtual void AddTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer);

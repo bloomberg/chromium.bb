@@ -31,7 +31,6 @@ class SCHEDULER_EXPORT WebThreadImplForRendererScheduler
   SingleThreadIdleTaskRunner* IdleTaskRunner() const override;
 
  private:
-  base::MessageLoop* MessageLoop() const override;
   void AddTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
   void RemoveTaskObserverInternal(
