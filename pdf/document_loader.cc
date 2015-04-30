@@ -274,9 +274,10 @@ void DocumentLoader::DownloadPendingRequests() {
 pp::URLRequestInfo DocumentLoader::GetRequest(uint32 position,
                                               uint32 size) const {
   pp::URLRequestInfo request(client_->GetPluginInstance());
-  request.SetURL(url_.c_str());
+  request.SetURL(url_);
   request.SetMethod("GET");
   request.SetFollowRedirects(true);
+  request.SetCustomReferrerURL(url_);
 
   const size_t kBufSize = 100;
   char buf[kBufSize];
