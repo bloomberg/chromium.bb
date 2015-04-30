@@ -654,7 +654,7 @@ private:
 
     bool isJavaScriptURLAttribute(const Attribute&) const;
 
-    v8::Handle<v8::Object> wrapCustomElement(v8::Isolate*, v8::Handle<v8::Object> creationContext);
+    v8::Local<v8::Object> wrapCustomElement(v8::Isolate*, v8::Local<v8::Object> creationContext);
 
     RefPtrWillBeMember<ElementData> m_elementData;
 };

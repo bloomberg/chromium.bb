@@ -47,15 +47,15 @@ public:
     unsigned byteLength() const { return view()->byteLength(); }
     void setNeuterable(bool flag) { return view()->setNeuterable(flag); }
 
-    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override
+    virtual v8::Local<v8::Object> wrap(v8::Local<v8::Object> creationContext, v8::Isolate*) override
     {
         ASSERT_NOT_REACHED();
-        return v8::Handle<v8::Object>();
+        return v8::Local<v8::Object>();
     }
-    virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override
+    virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override
     {
         ASSERT_NOT_REACHED();
-        return v8::Handle<v8::Object>();
+        return v8::Local<v8::Object>();
     }
 
 protected:

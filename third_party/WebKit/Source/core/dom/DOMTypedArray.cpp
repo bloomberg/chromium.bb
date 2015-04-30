@@ -21,7 +21,7 @@
 namespace blink {
 
 template<typename WTFTypedArray, typename V8TypedArray>
-v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
@@ -35,13 +35,13 @@ v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Hand
     v8::Local<v8::Value> v8Buffer = toV8(buffer.get(), creationContext, isolate);
     ASSERT(v8Buffer->IsArrayBuffer());
 
-    v8::Handle<v8::Object> wrapper = V8TypedArray::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), length());
+    v8::Local<v8::Object> wrapper = V8TypedArray::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), length());
 
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
 template<typename WTFTypedArray, typename V8TypedArray>
-v8::Handle<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
+v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
 {
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
