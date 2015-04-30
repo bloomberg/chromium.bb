@@ -107,20 +107,7 @@ TEST_F(PluginInstanceThrottlerImplTest, ThrottleByKeyframe) {
   EXPECT_FALSE(throttler()->IsThrottled());
   EXPECT_EQ(0, change_callback_calls());
 
-  // Don't throttle for non-consecutive interesting frames.
-  throttler()->OnImageFlush(&interesting_bitmap);
-  throttler()->OnImageFlush(&boring_bitmap);
-  throttler()->OnImageFlush(&interesting_bitmap);
-  throttler()->OnImageFlush(&boring_bitmap);
-  throttler()->OnImageFlush(&interesting_bitmap);
-  throttler()->OnImageFlush(&boring_bitmap);
-  EXPECT_FALSE(throttler()->IsThrottled());
-  EXPECT_EQ(0, change_callback_calls());
-
-  // Throttle after consecutive interesting frames.
-  throttler()->OnImageFlush(&interesting_bitmap);
-  throttler()->OnImageFlush(&interesting_bitmap);
-  throttler()->OnImageFlush(&interesting_bitmap);
+  // Throttle after an interesting frame.
   throttler()->OnImageFlush(&interesting_bitmap);
   EXPECT_TRUE(throttler()->IsThrottled());
   EXPECT_EQ(1, change_callback_calls());

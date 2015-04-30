@@ -95,9 +95,6 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   // the pixel data, but rather increments the reference count to the pixels.
   SkBitmap last_received_frame_;
 
-  // Number of consecutive interesting frames we've encountered.
-  int consecutive_interesting_frames_;
-
   // Number of frames we've examined to find a keyframe.
   int frames_examined_;
 

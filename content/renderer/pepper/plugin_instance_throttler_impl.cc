@@ -29,8 +29,6 @@ namespace {
 // the most common luma bin. The same threshold is used for history thumbnails.
 const double kAcceptableFrameMaximumBoringness = 0.94;
 
-const int kMinimumConsecutiveInterestingFrames = 4;
-
 // When plugin audio is throttled, the plugin will sometimes stop generating
 // video frames. We use this timeout to prevent waiting forever for a good
 // poster image. Chosen arbitrarily.
@@ -58,7 +56,6 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl()
     : state_(THROTTLER_STATE_AWAITING_KEYFRAME),
       is_hidden_for_placeholder_(false),
       web_plugin_(nullptr),
-      consecutive_interesting_frames_(0),
       frames_examined_(0),
       audio_throttled_(false),
       audio_throttled_frame_timeout_(
@@ -178,20 +175,15 @@ void PluginInstanceThrottlerImpl::OnImageFlush(const SkBitmap* bitmap) {
 
   ++frames_examined_;
 
-  double boring_score = color_utils::CalculateBoringScore(*bitmap);
-  if (boring_score <= kAcceptableFrameMaximumBoringness)
-    ++consecutive_interesting_frames_;
-  else
-    consecutive_interesting_frames_ = 0;
-
   // Does not make a copy, just takes a reference to the underlying pixel data.
   last_received_frame_ = *bitmap;
 
   if (audio_throttled_)
     audio_throttled_frame_timeout_.Reset();
 
-  if (frames_examined_ >= kMaximumFramesToExamine ||
-      consecutive_interesting_frames_ >= kMinimumConsecutiveInterestingFrames) {
+  double boring_score = color_utils::CalculateBoringScore(*bitmap);
+  if (boring_score <= kAcceptableFrameMaximumBoringness ||
+      frames_examined_ >= kMaximumFramesToExamine) {
     EngageThrottle();
   }
 }
