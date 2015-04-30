@@ -273,10 +273,9 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
     return 'smoothness.gpu_rasterization.polymer'
 
 
-class SmoothnessToughFastScrollingCases(benchmark.Benchmark):
+class SmoothnessToughScrollingCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughScrollingCasesPageSet
-  options = {'story_label_filter': 'fastscrolling'}
 
   @classmethod
   def Name(cls):
