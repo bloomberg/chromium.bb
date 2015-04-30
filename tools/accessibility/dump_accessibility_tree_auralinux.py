@@ -25,7 +25,10 @@ def Dump(obj, indent):
   indent_str = '  ' * indent
   role = obj.get_role_name()
   name = obj.get_name()
-  print '%s%s name="%s"' % (indent_str, role, name)
+  bounds = obj.get_extents(pyatspi.DESKTOP_COORDS)
+  bounds_str = '(%d, %d) size (%d x %d)' % (
+      bounds.x, bounds.y, bounds.width, bounds.height)
+  print '%s%s name="%s" %s' % (indent_str, role, name, bounds_str)
 
   # Don't recurse into applications other than Chrome
   if role == 'application':
