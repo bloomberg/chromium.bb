@@ -43,7 +43,7 @@ InspectorTest.dumpCacheTree = function()
                         return;
                     }
                     for (var entry of view._entries)
-                        InspectorTest.addResult("        '" + entry.request._value + "': '" + entry.response._value + "'");
+                        InspectorTest.addResult("        '" + entry.request + "': '" + entry.response + "'");
                     nextOrResolve();
                 }
 
@@ -62,28 +62,59 @@ InspectorTest.dumpCacheTree = function()
     return promise;
 }
 
-InspectorTest.deleteCacheFromInspector = function(cacheName)
+// If optionalEntry is not specified, then the whole cache is deleted.
+InspectorTest.deleteCacheFromInspector = function(cacheName, optionalEntry)
 {
     WebInspector.panels.resources.cacheStorageListTreeElement.expand();
-    InspectorTest.addResult("Deleting CacheStorage cache " + cacheName);
+    if (optionalEntry) {
+        InspectorTest.addResult("Deleting CacheStorage entry " + optionalEntry + " in cache " + cacheName);
+    } else {
+        InspectorTest.addResult("Deleting CacheStorage cache " + cacheName);
+    }
     var cachesTreeElement = WebInspector.panels.resources.cacheStorageListTreeElement;
     var promise = new Promise(function(resolve, reject) {
         InspectorTest.addSnifferPromise(WebInspector.ServiceWorkerCacheModel.prototype, "_updateCacheNames")
             .then(function() {
-                if (!cachesTreeElement.childCount())
-                    return resolve();
+                if (!cachesTreeElement.childCount()) {
+                    reject("Error: Could not find CacheStorage cache " + cacheName);
+                    return;
+                }
                 for (var i = 0; i < cachesTreeElement.childCount(); i++) {
                     var cacheTreeElement = cachesTreeElement.childAt(i);
                     var title = cacheTreeElement.titleText;
                     var elementCacheName = title.substring(0, title.lastIndexOf(" - "));
                     if (elementCacheName != cacheName)
                         continue;
-                    InspectorTest.addSniffer(WebInspector.ServiceWorkerCacheModel.prototype, "_cacheRemoved", resolve)
-                    cacheTreeElement._clearCache();
+                    if (!optionalEntry) {
+                        // Here we're deleting the whole cache.
+                        InspectorTest.addSniffer(WebInspector.ServiceWorkerCacheModel.prototype, "_cacheRemoved", resolve)
+                        cacheTreeElement._clearCache();
+                        return;
+                    }
+
+                    // Here we're deleting only the entry.  We verify that it is present in the table.
+                    var view = cacheTreeElement._view;
+                    InspectorTest.addSniffer(WebInspector.ServiceWorkerCacheView.prototype, "_updateDataCallback", deleteEntryOrReject, false);
+                    if (!view)
+                        cacheTreeElement.onselect(false);
+                    else
+                        view._updateData(true);
+                    view = cacheTreeElement._view;
+
+                    function deleteEntryOrReject()
+                    {
+                        for (var entry of view._entries) {
+                            if (entry.request == optionalEntry) {
+                                view._model.deleteCacheEntry(view._cache, entry.request, resolve);
+                                return;
+                            }
+                        }
+                        reject("Error: Could not find cache entry to delete: " + optionalEntry);
+                        return;
+                    }
                     return;
                 }
-                InspectorTest.addResult("Error: Could not find cache to delete.");
-                reject();
+                reject("Error: Could not find CacheStorage cache " + cacheName);
             }).catch(reject);
     });
     WebInspector.panels.resources.cacheStorageListTreeElement._refreshCaches();
@@ -108,6 +139,11 @@ InspectorTest.addCacheEntry = function(cacheName, requestUrl, responseText)
 InspectorTest.deleteCache = function(cacheName)
 {
     return InspectorTest.invokePageFunctionPromise("deleteCache", [cacheName]);
+}
+
+InspectorTest.deleteCacheEntry = function(cacheName, requestUrl)
+{
+    return InspectorTest.invokePageFunctionPromise("deleteCacheEntry", [cacheName, requestUrl]);
 }
 
 InspectorTest.clearAllCaches = function()
@@ -150,6 +186,17 @@ function deleteCache(resolve, reject, cacheName)
             else
                 onCacheStorageError(reject, "Could not find cache " + cacheName);
         }).catch(onCacheStorageError.bind(this, reject));
+}
+
+function deleteCacheEntry(resolve, reject, cacheName, requestUrl)
+{
+    caches.open(cacheName)
+        .then(function(cache) {
+            var request = new Request(requestUrl);
+            return cache.delete(request);
+        })
+        .then(resolve)
+        .catch(onCacheStorageError.bind(this, reject));
 }
 
 function clearAllCaches(resolve, reject)

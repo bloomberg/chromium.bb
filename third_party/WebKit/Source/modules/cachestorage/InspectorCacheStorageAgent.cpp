@@ -10,6 +10,7 @@
 #include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebServiceWorkerCache.h"
@@ -35,9 +36,11 @@ using blink::TypeBuilder::CacheStorage::Cache;
 using blink::TypeBuilder::CacheStorage::DataEntry;
 
 typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::DeleteCacheCallback DeleteCacheCallback;
+typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::DeleteEntryCallback DeleteEntryCallback;
 typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::RequestCacheNamesCallback RequestCacheNamesCallback;
 typedef blink::InspectorBackendDispatcher::CacheStorageCommandHandler::RequestEntriesCallback RequestEntriesCallback;
 typedef blink::InspectorBackendDispatcher::CallbackBase RequestCallback;
+typedef blink::WebServiceWorkerCache::BatchOperation BatchOperation;
 
 namespace blink {
 
@@ -191,8 +194,8 @@ public:
         RefPtr<Array<DataEntry>> array = Array<DataEntry>::create();
         for (const auto& requestResponse : m_responses) {
             RefPtr<DataEntry> entry = DataEntry::create()
-                .setRequest(JSONString::create(requestResponse.request)->toJSONString())
-                .setResponse(JSONString::create(requestResponse.response)->toJSONString());
+                .setRequest(requestResponse.request)
+                .setResponse(requestResponse.response);
             array->addItem(entry);
         }
         m_callback->sendSuccess(array, hasMore);
@@ -328,6 +331,66 @@ private:
     RefPtrWillBePersistent<DeleteCacheCallback> m_callback;
 };
 
+class DeleteCacheEntry
+    : public WebServiceWorkerCache::CacheWithResponsesCallbacks {
+    WTF_MAKE_NONCOPYABLE(DeleteCacheEntry);
+public:
+
+    DeleteCacheEntry(PassRefPtrWillBeRawPtr<DeleteEntryCallback> callback)
+        : m_callback(callback)
+    {
+    }
+    virtual ~DeleteCacheEntry() { }
+
+    void onSuccess(WebVector<WebServiceWorkerResponse>* requests)
+    {
+        m_callback->sendSuccess();
+    }
+
+    void onError(WebServiceWorkerCacheError* error)
+    {
+        m_callback->sendFailure(String::format("Error requesting cache names: %s", serviceWorkerCacheErrorString(error).data()));
+    }
+
+private:
+    RefPtrWillBePersistent<DeleteEntryCallback> m_callback;
+};
+
+class GetCacheForDeleteEntry
+    : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
+    WTF_MAKE_NONCOPYABLE(GetCacheForDeleteEntry);
+
+public:
+    GetCacheForDeleteEntry(const String& requestSpec, const String& cacheName, PassRefPtrWillBeRawPtr<DeleteEntryCallback> callback)
+        : m_requestSpec(requestSpec)
+        , m_cacheName(cacheName)
+        , m_callback(callback)
+    {
+    }
+    virtual ~GetCacheForDeleteEntry() { }
+
+    void onSuccess(WebServiceWorkerCache* cache)
+    {
+        auto* deleteRequest = new DeleteCacheEntry( m_callback);
+        BatchOperation deleteOperation;
+        deleteOperation.operationType = WebServiceWorkerCache::OperationTypeDelete;
+        deleteOperation.request.setURL(KURL(ParsedURLString, m_requestSpec));
+        Vector<BatchOperation> operations;
+        operations.append(deleteOperation);
+        cache->dispatchBatch(deleteRequest, WebVector<BatchOperation>(operations));
+    }
+
+    void onError(WebServiceWorkerCacheError* error)
+    {
+        m_callback->sendFailure(String::format("Error requesting cache %s: %s", m_cacheName.utf8().data(), serviceWorkerCacheErrorString(error).data()));
+    }
+
+private:
+    String m_requestSpec;
+    String m_cacheName;
+    RefPtrWillBePersistent<DeleteEntryCallback> m_callback;
+};
+
 } // namespace
 
 InspectorCacheStorageAgent::InspectorCacheStorageAgent()
@@ -377,5 +440,17 @@ void InspectorCacheStorageAgent::deleteCache(ErrorString* errorString, const Str
     }
     cache->dispatchDelete(new DeleteCache(callback), WebString(cacheName));
 }
+
+void InspectorCacheStorageAgent::deleteEntry(ErrorString* errorString, const String& cacheId, const String& request, PassRefPtrWillBeRawPtr<DeleteEntryCallback> callback)
+{
+    String cacheName;
+    OwnPtr<WebServiceWorkerCacheStorage> cache = assertCacheStorageAndNameForId(errorString, cacheId, &cacheName);
+    if (!cache) {
+        callback->sendFailure(*errorString);
+        return;
+    }
+    cache->dispatchOpen(new GetCacheForDeleteEntry(request, cacheName, callback), WebString(cacheName));
+}
+
 
 } // namespace blink
