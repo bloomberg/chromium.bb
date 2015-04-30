@@ -35,6 +35,10 @@
       ],
       "paintInvalidationClients": [
         "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
         "LayoutTableSection TBODY id='tbody'",
         "LayoutTableRow TR",
         "LayoutTableCell TD",

@@ -15,6 +15,10 @@
       "paintInvalidationClients": [
         "LayoutTableCell TD id='moveMe' class='fixed'",
         "LayoutTable (positioned) TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell (anonymous)",
+        "LayoutTableCell TD class='red'",
         "LayoutTableSection TBODY",
         "LayoutTableCell (anonymous)",
         "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'"

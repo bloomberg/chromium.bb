@@ -29,6 +29,8 @@
       ],
       "paintInvalidationClients": [
         "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
         "LayoutTableCol COL id='col'",
         "LayoutTableSection TBODY",
         "LayoutTableRow TR",

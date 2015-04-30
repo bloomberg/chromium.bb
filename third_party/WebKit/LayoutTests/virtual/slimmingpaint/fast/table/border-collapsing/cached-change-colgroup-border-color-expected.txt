@@ -15,6 +15,10 @@
         [7, 7, 58, 53]
       ],
       "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
         "LayoutTableCol COLGROUP id='colgroup'",
         "LayoutTableCell TD",
         "LayoutTableCell TD",

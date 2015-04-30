@@ -10,6 +10,7 @@
         [8, 10, 106, 100]
       ],
       "paintInvalidationClients": [
+        "LayoutTableCell TD",
         "LayoutTableRow TR id='target' class='green'",
         "LayoutTableCell TD"
       ]

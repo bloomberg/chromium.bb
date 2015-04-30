@@ -9,6 +9,8 @@
         [8, 218, 70, 26]
       ],
       "paintInvalidationClients": [
+        "LayoutTableCell TD id='secondRowSpan'",
+        "LayoutTableCell TD",
         "LayoutTableRow TR class='bla'"
       ]
     }
