@@ -31,8 +31,10 @@ function getAvailableLaunchTypes(app) {
 
   types.push("OPEN_AS_REGULAR_TAB");
   types.push("OPEN_AS_WINDOW");
-  types.push("OPEN_AS_PINNED_TAB");
-  types.push("OPEN_FULL_SCREEN");
+  if (navigator.userAgent.indexOf("Mac") != -1) {
+    types.push("OPEN_AS_PINNED_TAB");
+    types.push("OPEN_FULL_SCREEN");
+  }
 
   return types;
 }
