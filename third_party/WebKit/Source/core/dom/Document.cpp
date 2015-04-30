@@ -529,6 +529,9 @@ Document::~Document()
 {
     ASSERT(!layoutView());
     ASSERT(!parentTreeScope());
+    // If a top document with a cache, verify that it was comprehensively
+    // cleared during detach.
+    ASSERT(!m_axObjectCache);
 #if !ENABLE(OILPAN)
     ASSERT(m_ranges.isEmpty());
     ASSERT(!hasGuardRefCount());
@@ -557,12 +560,7 @@ Document::~Document()
     // if the DocumentParser outlives the Document it won't cause badness.
     ASSERT(!m_parser || m_parser->refCount() == 1);
     detachParser();
-#endif
 
-    if (this == &axObjectCacheOwner())
-        clearAXObjectCache();
-
-#if !ENABLE(OILPAN)
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
 
