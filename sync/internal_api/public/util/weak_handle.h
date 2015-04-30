@@ -58,11 +58,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "sync/base/sync_export.h"
-
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
 
 namespace tracked_objects {
 class Location;
@@ -118,7 +115,7 @@ class SYNC_EXPORT WeakHandleCoreBase {
 
  private:
   // May be used on any thread.
-  const scoped_refptr<base::MessageLoopProxy> owner_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> owner_loop_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WeakHandleCoreBase);
 };
