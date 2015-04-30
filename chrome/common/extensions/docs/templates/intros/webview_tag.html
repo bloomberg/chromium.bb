@@ -75,7 +75,10 @@ onload = function() {
     Assigning <code>src</code> its own value will reload the current page.
     </p>
     <p>
-    The <code>src</code> attribute can also accept data URLs, such as <code>"data:text/plain,Hello, world!"</code>.
+      The <code>src</code> attribute cannot be cleared or removed once it has been set, unless the <code>webview</code> is removed from the DOM.
+    </p>
+    <p>
+      The <code>src</code> attribute can also accept data URLs, such as <code>"data:text/plain,Hello, world!"</code>.
   </div>
 
 <h3 id="partition">partition</h3>
@@ -125,7 +128,7 @@ onload = function() {
     If "on", the <code>webview</code> container will automatically resize within the bounds specified
     by the attributes <code>minwidth</code>, <code>minheight</code>,
     <code>maxwidth</code>, and <code>maxheight</code>.
-    These contraints do not impact the <code>webview</code> UNLESS <code>autosize</code> is enabled.
+    These constraints do not impact the <code>webview</code> UNLESS <code>autosize</code> is enabled.
     When autosize is enabled, the <code>webview</code> container size cannot be less than the minimum values
     or greater than the maximum.
     </p>
