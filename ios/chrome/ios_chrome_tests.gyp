@@ -29,6 +29,8 @@
         'browser/experimental_flags_unittest.mm',
         'browser/geolocation/CLLocation+XGeoHeaderTest.mm',
         'browser/geolocation/location_manager_unittest.mm',
+        'browser/install_time_util_unittest.mm',
+        'browser/installation_notifier_unittest.mm',
         'browser/memory/memory_wedge_unittest.cc',
         'browser/net/image_fetcher_unittest.mm',
         'browser/net/metrics_network_client_unittest.mm',
