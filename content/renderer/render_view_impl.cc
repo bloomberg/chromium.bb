@@ -2928,6 +2928,9 @@ void RenderViewImpl::DidFlushPaint() {
   // of loading and we don't want to save stats.
   if (!main_frame->provisionalDataSource()) {
     WebDataSource* ds = main_frame->dataSource();
+    if (!ds)
+      return;
+
     DocumentState* document_state = DocumentState::FromDataSource(ds);
 
     // TODO(jar): The following code should all be inside a method, probably in
