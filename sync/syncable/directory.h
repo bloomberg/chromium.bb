@@ -533,6 +533,7 @@ class SYNC_EXPORT Directory {
                            TakeSnapshotGetsOnlyDirtyHandlesTest);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsMetahandlesToPurge);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, CatastrophicError);
 
   // You'll notice that some of the methods below are private overloads of the
   // public ones declared above. The general pattern is that the public overload
@@ -622,6 +623,10 @@ class SYNC_EXPORT Directory {
                             ModelType type,
                             std::vector<int64>* result);
 
+  // Invoked by DirectoryBackingStore when a catastrophic database error is
+  // detected.
+  void OnCatastrophicError();
+
   // Returns true if the initial sync for |type| has completed.
   bool InitialSyncEndedForType(BaseTransaction* trans, ModelType type);
 
@@ -652,6 +657,8 @@ class SYNC_EXPORT Directory {
   // Maintain deleted entries not in |kernel_| until it's verified that they
   // are deleted in native models as well.
   scoped_ptr<DeleteJournal> delete_journal_;
+
+  base::WeakPtrFactory<Directory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Directory);
 };

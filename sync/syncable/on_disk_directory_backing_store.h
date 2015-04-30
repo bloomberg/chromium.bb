@@ -40,8 +40,8 @@ class SYNC_EXPORT_PRIVATE OnDiskDirectoryBackingStore
                         MetahandleSet* metahandles_to_purge,
                         Directory::KernelLoadInfo* kernel_load_info);
 
-  bool allow_failure_for_test_;
-  base::FilePath backing_file_path_;
+  // The path to the sync DB.
+  const base::FilePath backing_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(OnDiskDirectoryBackingStore);
 };
