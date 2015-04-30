@@ -1283,6 +1283,7 @@
       'browser/chromeos/policy/heartbeat_scheduler_unittest.cc',
       'browser/chromeos/policy/network_configuration_updater_unittest.cc',
       'browser/chromeos/policy/recommendation_restorer_unittest.cc',
+      'browser/chromeos/policy/remote_commands/device_command_screenshot_job_unittest.cc',
       'browser/chromeos/policy/server_backed_state_keys_broker_unittest.cc',
       'browser/chromeos/policy/status_uploader_unittest.cc',
       'browser/chromeos/policy/upload_job_unittest.cc',
