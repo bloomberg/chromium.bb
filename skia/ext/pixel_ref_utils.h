@@ -18,6 +18,8 @@ class SK_API PixelRefUtils {
   struct PositionPixelRef {
     SkPixelRef* pixel_ref;
     SkRect pixel_ref_rect;
+    SkMatrix matrix;
+    SkFilterQuality filter_quality;
   };
 
   static void GatherDiscardablePixelRefs(

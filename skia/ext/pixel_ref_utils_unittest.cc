@@ -90,6 +90,17 @@ SkPicture* StopRecording(SkPictureRecorder* recorder, SkCanvas* canvas) {
 
 }  // namespace
 
+void VerifyScales(SkScalar x_scale,
+                  SkScalar y_scale,
+                  const SkMatrix& matrix,
+                  int source_line) {
+  SkSize scales;
+  bool success = matrix.decomposeScale(&scales);
+  EXPECT_TRUE(success) << "line: " << source_line;
+  EXPECT_FLOAT_EQ(x_scale, scales.width()) << "line: " << source_line;
+  EXPECT_FLOAT_EQ(y_scale, scales.height()) << "line: " << source_line;
+}
+
 TEST(PixelRefUtilsTest, DrawPaint) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
@@ -111,6 +122,12 @@ TEST(PixelRefUtilsTest, DrawPaint) {
   canvas->drawPaint(first_paint);
   canvas->clipRect(SkRect::MakeXYWH(34, 45, 56, 67));
   canvas->drawPaint(second_paint);
+
+  canvas->save();
+  canvas->scale(2.f, 3.f);
+  canvas->drawPaint(second_paint);
+  canvas->restore();
+
   // Total clip is now (34, 45, 56, 55)
   canvas->clipRect(SkRect::MakeWH(100, 100));
   canvas->drawPaint(third_paint);
@@ -121,13 +138,22 @@ TEST(PixelRefUtilsTest, DrawPaint) {
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
-  EXPECT_EQ(3u, pixel_refs.size());
+  EXPECT_EQ(4u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 256, 256),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(34, 45, 56, 67),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(34, 45, 56, 67),
+                       gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(2.f, 3.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(34, 45, 56, 55),
-                       gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+                       gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[3].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[3].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawPoints) {
@@ -178,10 +204,16 @@ TEST(PixelRefUtilsTest, DrawPoints) {
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 90, 90),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 40, 40),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 55, 150, 145),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawRect) {
@@ -227,10 +259,16 @@ TEST(PixelRefUtilsTest, DrawRect) {
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 20, 30, 40),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(5, 50, 25, 35),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawRRect) {
@@ -281,10 +319,16 @@ TEST(PixelRefUtilsTest, DrawRRect) {
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 20, 30, 40),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(5, 50, 25, 35),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawOval) {
@@ -307,7 +351,7 @@ TEST(PixelRefUtilsTest, DrawOval) {
 
   canvas->save();
 
-  canvas->scale(2, 0.5);
+  canvas->scale(2.f, 0.5f);
   // (20, 10, 60, 20).
   canvas->drawOval(SkRect::MakeXYWH(10, 20, 30, 40), first_paint);
 
@@ -334,10 +378,16 @@ TEST(PixelRefUtilsTest, DrawOval) {
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(20, 10, 60, 20),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(2.f, 0.5f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(1, 35, 25, 35),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawPath) {
@@ -379,8 +429,12 @@ TEST(PixelRefUtilsTest, DrawPath) {
   EXPECT_EQ(2u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(12, 13, 38, 88),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(12, 13, 38, 37),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawBitmap) {
@@ -399,6 +453,8 @@ TEST(PixelRefUtilsTest, DrawBitmap) {
   CreateBitmap(gfx::Size(50, 1), "discardable", &fourth);
   SkBitmap fifth;
   CreateBitmap(gfx::Size(10, 10), "discardable", &fifth);
+  SkBitmap sixth;
+  CreateBitmap(gfx::Size(10, 10), "discardable", &sixth);
 
   canvas->save();
 
@@ -420,10 +476,20 @@ TEST(PixelRefUtilsTest, DrawBitmap) {
   canvas->drawBitmap(fourth, 0, 0);
 
   canvas->restore();
+  canvas->save();
 
-  canvas->scale(5, 6);
+  canvas->scale(5.f, 6.f);
   // At (0, 0), scaled by 5 and 6
   canvas->drawBitmap(fifth, 0, 0);
+
+  canvas->restore();
+
+  canvas->rotate(27);
+  canvas->scale(3.3f, 0.4f);
+
+  canvas->drawBitmap(sixth, 0, 0);
+
+  canvas->restore();
 
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(StopRecording(&recorder, canvas));
@@ -431,17 +497,31 @@ TEST(PixelRefUtilsTest, DrawBitmap) {
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
-  EXPECT_EQ(5u, pixel_refs.size());
+  EXPECT_EQ(6u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(25, 0, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 1, 50),
                        gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[3].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[3].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 60),
                        gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect));
+  VerifyScales(5.f, 6.f, pixel_refs[4].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[4].filter_quality);
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 29.403214f, 18.545712f),
+                       gfx::SkRectToRectF(pixel_refs[5].pixel_ref_rect));
+  VerifyScales(3.3f, 0.4f, pixel_refs[5].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[5].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawBitmapRect) {
@@ -488,12 +568,20 @@ TEST(PixelRefUtilsTest, DrawBitmapRect) {
   EXPECT_EQ(4u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 100, 100),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(2.f, 2.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(75, 50, 10, 10),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(0.2f, 0.2f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 30, 100, 100),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(2.f, 2.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 30, 100, 100),
                        gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
+  VerifyScales(2.f, 2.f, pixel_refs[3].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[3].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawSprite) {
@@ -539,7 +627,7 @@ TEST(PixelRefUtilsTest, DrawSprite) {
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  canvas->scale(5, 6);
+  canvas->scale(5.f, 6.f);
   // (100, 100, 50, 50).
   canvas->drawSprite(fifth, 100, 100, &first_paint);
 
@@ -552,16 +640,28 @@ TEST(PixelRefUtilsTest, DrawSprite) {
   EXPECT_EQ(6u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 0, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(25, 0, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[3].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[3].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(100, 100, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[4].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[4].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(100, 100, 50, 50),
                        gfx::SkRectToRectF(pixel_refs[5].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[5].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[5].filter_quality);
 }
 
 TEST(PixelRefUtilsTest, DrawText) {
@@ -674,10 +774,16 @@ TEST(PixelRefUtilsTest, DrawVertices) {
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 90, 90),
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 40, 40),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 55, 150, 145),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
+  VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
+  EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
 }
 
 }  // namespace skia
