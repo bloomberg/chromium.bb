@@ -33,7 +33,7 @@ using content::BrowserThread;
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
     : thread_id_(params.thread_id),
       thread_name_(params.thread_name),
-      watched_loop_(
+      watched_runner_(
           BrowserThread::GetMessageLoopProxyForThread(params.thread_id)),
       sleep_time_(params.sleep_time),
       unresponsive_time_(params.unresponsive_time),
@@ -141,7 +141,7 @@ void ThreadWatcher::PostPingMessage() {
   base::Closure callback(
       base::Bind(&ThreadWatcher::OnPongMessage, weak_ptr_factory_.GetWeakPtr(),
                  ping_sequence_number_));
-  if (watched_loop_->PostTask(
+  if (watched_runner_->PostTask(
           FROM_HERE,
           base::Bind(&ThreadWatcher::OnPingMessage, thread_id_,
                      callback))) {

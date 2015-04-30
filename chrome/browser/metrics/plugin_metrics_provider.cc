@@ -11,6 +11,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -369,7 +370,7 @@ bool PluginMetricsProvider::RecordCurrentStateWithDelay(int delay_sec) {
   if (weak_ptr_factory_.HasWeakPtrs())
     return false;
 
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PluginMetricsProvider::RecordCurrentState,
                 weak_ptr_factory_.GetWeakPtr()),

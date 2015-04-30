@@ -53,6 +53,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -219,7 +220,7 @@ class ThreadWatcher {
   const std::string thread_name_;
 
   // Used to post messages to watched thread.
-  scoped_refptr<base::MessageLoopProxy> watched_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> watched_runner_;
 
   // It is the sleep time between the receipt of a pong message back, and the
   // sending of another ping message.
