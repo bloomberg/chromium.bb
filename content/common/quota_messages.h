@@ -13,7 +13,7 @@
 #define IPC_MESSAGE_START QuotaMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(storage::StorageType, storage::kStorageTypeLast)
-IPC_ENUM_TRAITS(storage::QuotaStatusCode)
+IPC_ENUM_TRAITS_MAX_VALUE(storage::QuotaStatusCode, storage::kQuotaStatusLast)
 
 IPC_STRUCT_TRAITS_BEGIN(content::StorageQuotaParams)
   IPC_STRUCT_TRAITS_MEMBER(render_view_id)

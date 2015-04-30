@@ -18,6 +18,8 @@ enum QuotaStatusCode {
   kQuotaErrorInvalidAccess = blink::WebStorageQuotaErrorInvalidAccess,
   kQuotaErrorAbort = blink::WebStorageQuotaErrorAbort,
   kQuotaStatusUnknown = -1,
+
+  kQuotaStatusLast = kQuotaErrorAbort,
 };
 
 STORAGE_COMMON_EXPORT const char* QuotaStatusCodeToString(
