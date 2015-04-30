@@ -254,16 +254,18 @@ if __name__ == '__main__':
     else:
       args.append(os.path.join(script_dir, 'all.gyp'))
 
+  supplemental_includes = GetSupplementalFiles()
+  gyp_vars_dict = GetGypVars(supplemental_includes)
   # There shouldn't be a circular dependency relationship between .gyp files,
   # but in Chromium's .gyp files, on non-Mac platforms, circular relationships
   # currently exist.  The check for circular dependencies is currently
-  # bypassed on other platforms, but is left enabled on the Mac, where a
-  # violation of the rule causes Xcode to misbehave badly.
+  # bypassed on other platforms, but is left enabled on iOS, where a violation
+  # of the rule causes Xcode to misbehave badly.
   # TODO(mark): Find and kill remaining circular dependencies, and remove this
   # option.  http://crbug.com/35878.
   # TODO(tc): Fix circular dependencies in ChromiumOS then add linux2 to the
   # list.
-  if sys.platform not in ('darwin',):
+  if gyp_vars_dict.get('OS') != 'ios':
     args.append('--no-circular-check')
 
   # We explicitly don't support the make gyp generator (crbug.com/348686). Be
@@ -284,9 +286,6 @@ if __name__ == '__main__':
   syntax_check = os.environ.get('CHROMIUM_GYP_SYNTAX_CHECK')
   if syntax_check and int(syntax_check):
     args.append('--check')
-
-  supplemental_includes = GetSupplementalFiles()
-  gyp_vars_dict = GetGypVars(supplemental_includes)
 
   # TODO(dmikurube): Remove these checks and messages after a while.
   if ('linux_use_tcmalloc' in gyp_vars_dict or
