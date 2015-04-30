@@ -38,6 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "gin/v8_initializer.h"
+#include "media/audio/audio_manager_factory.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gl/gl_switches.h"
@@ -66,7 +67,8 @@ CastContentBrowserClient::~CastContentBrowserClient() {
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   return new CastBrowserMainParts(parameters,
-                                  url_request_context_factory_.get());
+                                  url_request_context_factory_.get(),
+                                  PlatformCreateAudioManagerFactory());
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(

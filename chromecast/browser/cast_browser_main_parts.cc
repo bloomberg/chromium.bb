@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_browser_main_parts.h"
 
+#include <string>
 #if !defined(OS_ANDROID)
 #include <signal.h>
 #include <sys/prctl.h>
@@ -33,6 +34,8 @@
 #include "chromecast/net/connectivity_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_factory.h"
 #include "media/base/browser_cdm_factory.h"
 #include "media/base/media_switches.h"
 
@@ -192,11 +195,13 @@ void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
 
 CastBrowserMainParts::CastBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    URLRequestContextFactory* url_request_context_factory)
+    URLRequestContextFactory* url_request_context_factory,
+    scoped_ptr<::media::AudioManagerFactory> audio_manager_factory)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
       parameters_(parameters),
-      url_request_context_factory_(url_request_context_factory) {
+      url_request_context_factory_(url_request_context_factory),
+      audio_manager_factory_(audio_manager_factory.Pass()) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
 }
@@ -211,6 +216,10 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
   // This call must also be before NetworkChangeNotifier, as it generates
   // Net/DNS metrics.
   metrics::PreregisterAllGroupedHistograms();
+
+  // Set the platform's implementation of AudioManagerFactory.
+  if (audio_manager_factory_)
+    ::media::AudioManager::SetFactory(audio_manager_factory_.release());
 
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(

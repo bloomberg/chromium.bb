@@ -6,6 +6,8 @@
 #define CHROMECAST_BROWSER_CAST_CONTENT_BROWSER_CLIENT_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,6 +19,10 @@ class CrashHandlerHostLinux;
 
 namespace content {
 class BrowserMessageFilter;
+}
+
+namespace media {
+class AudioManagerFactory;
 }
 
 namespace net {
@@ -108,6 +114,8 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   net::X509Certificate* SelectClientCertificateOnIOThread(
       GURL requesting_url,
       int render_process_id);
+
+  scoped_ptr<::media::AudioManagerFactory> PlatformCreateAudioManagerFactory();
 
 #if !defined(OS_ANDROID)
   // Returns the crash signal FD corresponding to the current process type.
