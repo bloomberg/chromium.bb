@@ -135,7 +135,7 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const Strin
     injectedScript.callFunctionOn(errorString, objectId, expression, arguments, asBool(returnByValue), asBool(generatePreview), &result, wasThrown);
 }
 
-void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties)
+void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
     if (injectedScript.isEmpty()) {
@@ -145,10 +145,10 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String
 
     InjectedScriptCallScope callScope(this, true);
 
-    injectedScript.getProperties(errorString, objectId, asBool(ownProperties), asBool(accessorPropertiesOnly), asBool(generatePreview), &result);
+    injectedScript.getProperties(errorString, objectId, asBool(ownProperties), asBool(accessorPropertiesOnly), asBool(generatePreview), &result, &exceptionDetails);
 
-    if (!asBool(accessorPropertiesOnly))
-        injectedScript.getInternalProperties(errorString, objectId, &internalProperties);
+    if (!exceptionDetails && !asBool(accessorPropertiesOnly))
+        injectedScript.getInternalProperties(errorString, objectId, &internalProperties, &exceptionDetails);
 }
 
 void InspectorRuntimeAgent::getEventListeners(ErrorString* errorString, const String& objectId, const String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::EventListener>>& listenersArray)

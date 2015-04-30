@@ -85,7 +85,7 @@ public:
                         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
                         TypeBuilder::OptOutput<bool>* wasThrown) override final;
     void releaseObject(ErrorString*, const String& objectId) override final;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties) override final;
+    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override final;
     void getEventListeners(ErrorString*, const String& objectId, const String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::EventListener>>& result) override final;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) override final;
     void run(ErrorString*) override;

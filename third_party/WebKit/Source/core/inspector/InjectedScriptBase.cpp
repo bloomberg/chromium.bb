@@ -217,4 +217,20 @@ void InjectedScriptBase::makeEvalCall(ErrorString* errorString, ScriptFunctionCa
     *wasThrown = wasThrownVal;
 }
 
+void InjectedScriptBase::makeCallWithExceptionDetails(ScriptFunctionCall& function, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
+{
+    ScriptState::Scope scope(injectedScriptObject().scriptState());
+    v8::TryCatch tryCatch;
+    ScriptValue resultValue = function.callWithoutExceptionHandling();
+    if (tryCatch.HasCaught()) {
+        v8::Local<v8::Message> message = tryCatch.Message();
+        String text = !message.IsEmpty() ? toCoreStringWithUndefinedOrNullCheck(message->Get()) : "Internal error";
+        *exceptionDetails = TypeBuilder::Debugger::ExceptionDetails::create().setText(text);
+    } else {
+        *result = toJSONValue(resultValue);
+        if (!*result)
+            *result = JSONString::create(String::format("Object has too long reference chain(must not be longer than %d)", JSONValue::maxDepth));
+    }
+}
+
 } // namespace blink

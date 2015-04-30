@@ -209,7 +209,7 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
     *result = Array<CollectionEntry>::runtimeCast(resultValue);
 }
 
-void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<Array<PropertyDescriptor>>* properties)
+void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<Array<PropertyDescriptor>>* properties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     ScriptFunctionCall function(injectedScriptObject(), "getProperties");
     function.appendArgument(objectId);
@@ -218,7 +218,12 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
     function.appendArgument(generatePreview);
 
     RefPtr<JSONValue> result;
-    makeCall(function, &result);
+    makeCallWithExceptionDetails(function, &result, exceptionDetails);
+    if (*exceptionDetails) {
+        // FIXME: make properties optional
+        *properties = Array<PropertyDescriptor>::create();
+        return;
+    }
     if (!result || result->type() != JSONValue::TypeArray) {
         *errorString = "Internal error";
         return;
@@ -226,13 +231,15 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
     *properties = Array<PropertyDescriptor>::runtimeCast(result);
 }
 
-void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, RefPtr<Array<InternalPropertyDescriptor> >* properties)
+void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, RefPtr<Array<InternalPropertyDescriptor>>* properties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* exceptionDetails)
 {
     ScriptFunctionCall function(injectedScriptObject(), "getInternalProperties");
     function.appendArgument(objectId);
 
     RefPtr<JSONValue> result;
-    makeCall(function, &result);
+    makeCallWithExceptionDetails(function, &result, exceptionDetails);
+    if (*exceptionDetails)
+        return;
     if (!result || result->type() != JSONValue::TypeArray) {
         *errorString = "Internal error";
         return;

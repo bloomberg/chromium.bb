@@ -67,6 +67,7 @@ protected:
     ScriptValue callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
     void makeCall(ScriptFunctionCall&, RefPtr<JSONValue>* result);
     void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* = 0);
+    void makeCallWithExceptionDetails(ScriptFunctionCall&, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
 
 private:
     String m_name;

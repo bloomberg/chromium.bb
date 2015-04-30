@@ -10,6 +10,13 @@ function test()
 {
     var obj1, obj2;
 
+    function dumpProperties(next, properties)
+    {
+        for (var i = 0; i < properties.length; ++i)
+            dumpProperty(properties[i]);
+        next();
+    }
+
     InspectorTest.runTestSuite([
         function testSetUp(next)
         {
@@ -35,28 +42,12 @@ function test()
 
         function testGetterAndSetter(next)
         {
-            obj1.getOwnProperties(step1);
-
-            function step1(properties)
-            {
-                for (var i = 0; i < properties.length; ++i)
-                    dumpProperty(properties[i]);
-
-                next();
-            }
+            obj1.getOwnProperties(dumpProperties.bind(this, next));
         },
 
         function testGetterOnly(next)
         {
-            obj2.getOwnProperties(step1);
-
-            function step1(properties)
-            {
-                for (var i = 0; i < properties.length; ++i)
-                    dumpProperty(properties[i]);
-
-                next();
-            }
+            obj2.getOwnProperties(dumpProperties.bind(this, next));
         }
     ]);
 
