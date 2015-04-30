@@ -1,12 +1,32 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import os
 
 from gpu_test_expectations import GpuTestExpectations
 
 # See the GpuTestExpectations class for documentation.
 
 class WebGLConformanceExpectations(GpuTestExpectations):
+  def __init__(self, conformance_path):
+    self.conformance_path = conformance_path
+    GpuTestExpectations.__init__(self)
+
+  def Fail(self, pattern, condition=None, bug=None):
+    self.CheckPatternIsValid(pattern)
+    GpuTestExpectations.Fail(self, pattern, condition, bug)
+
+  def Skip(self, pattern, condition=None, bug=None):
+    self.CheckPatternIsValid(pattern)
+    GpuTestExpectations.Skip(self, pattern, condition, bug)
+
+  def CheckPatternIsValid(self, pattern):
+    full_path = os.path.normpath(os.path.join(self.conformance_path, pattern))
+
+    if not os.path.exists(full_path):
+      raise Exception('The WebGL conformance test path specified in' +
+        'expectation does not exist: ' + full_path)
+
   def SetExpectations(self):
     # Fails on all platforms
     self.Fail(
@@ -204,6 +224,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('amd', 0x6779)], bug=479981)
     self.Fail('conformance/textures/texture-size-cube-maps.html',
         ['linux', ('amd', 0x6779)], bug=479983)
+    self.Fail('conformance/uniforms/uniform-default-values.html',
+        ['linux', ('amd', 0x6779)], bug=482013)
 
     # Android failures
     self.Fail('deqp/data/gles2/shaders/constants.html',

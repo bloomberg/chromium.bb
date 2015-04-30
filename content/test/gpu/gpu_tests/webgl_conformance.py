@@ -127,7 +127,8 @@ class WebglConformance(benchmark_module.Benchmark):
     return ps
 
   def CreateExpectations(self):
-    return webgl_conformance_expectations.WebGLConformanceExpectations()
+    return webgl_conformance_expectations.WebGLConformanceExpectations(
+        conformance_path)
 
   @staticmethod
   def _ParseTests(path, version=None):
