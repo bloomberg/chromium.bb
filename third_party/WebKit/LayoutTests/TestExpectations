@@ -1122,9 +1122,6 @@ crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 crbug.com/361729 fast/multicol/pagination-h-horizontal-bt.html [ Pass Failure ]
 crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 
-# https://codereview.chromium.org/1115823002/
-crbug.com/382491 css3/masking/mask-repeat-space-padding.html [ NeedsRebaseline ]
-
 crbug.com/437112 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
 crbug.com/437112 virtual/slimmingpaint/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
 
