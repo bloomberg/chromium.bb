@@ -278,13 +278,14 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
             break;
         case PT_STROKE:
             if (svgDecorationStyle.hasVisibleStroke()) {
-                // FIXME: Non-scaling stroke is not applied here.
                 SkPaint strokePaint;
                 if (!SVGPaintContext::paintForLayoutObject(paintInfo, decorationStyle, *decorationRenderer, ApplyToStrokeMode, strokePaint))
                     break;
                 strokePaint.setAntiAlias(true);
                 StrokeData strokeData;
                 SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, decorationStyle, *decorationRenderer);
+                if (svgDecorationStyle.vectorEffect() == VE_NON_SCALING_STROKE)
+                    strokeData.setThickness(strokeData.thickness() / scalingFactor);
                 strokeData.setupPaint(&strokePaint);
                 paintInfo.context->drawPath(path.skPath(), strokePaint);
             }
