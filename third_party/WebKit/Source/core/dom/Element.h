@@ -32,6 +32,7 @@
 #include "core/css/CSSSelector.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ContainerNode.h"
+#include "core/dom/Document.h"
 #include "core/dom/ElementData.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
@@ -50,7 +51,6 @@ class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
 class Dictionary;
-class Document;
 class ElementRareData;
 class ElementShadow;
 class ExceptionState;
@@ -872,6 +872,17 @@ inline bool isAtShadowBoundary(const Element* element)
         return false;
     ContainerNode* parentNode = element->parentNode();
     return parentNode && parentNode->isShadowRoot();
+}
+
+inline bool shadowHostContainsFocusedElement(const Element* host)
+{
+    ASSERT(isShadowHost(host));
+    Element* element = host->document().focusedElement();
+    for (; element; element = element->shadowHost()) {
+        if (host == element)
+            return true;
+    }
+    return false;
 }
 
 // These macros do the same as their NODE equivalents but additionally provide a template specialization

@@ -1039,6 +1039,18 @@ void ContainerNode::focusStateChanged()
     if (!layoutObject())
         return;
 
+    if (isElementNode() && toElement(this)->shadowRoot()) {
+        Element* host = toElement(this);
+        bool newFocused = tabIndex() >= 0 && !host->tabStop() && computedStyle()->affectedByFocus() && shadowHostContainsFocusedElement(host);
+        Node::setFocus(newFocused);
+    }
+
+    handleStyleChangeOnFocusStateChange();
+}
+
+void ContainerNode::handleStyleChangeOnFocusStateChange()
+{
+    ASSERT(layoutObject());
     if (styleChangeType() < SubtreeStyleChange) {
         if (computedStyle()->affectedByFocus() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
@@ -1048,7 +1060,7 @@ void ContainerNode::focusStateChanged()
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
 
-    if (layoutObject() && layoutObject()->style()->hasAppearance())
+    if (layoutObject()->style()->hasAppearance())
         LayoutTheme::theme().stateChanged(layoutObject(), FocusControlState);
 }
 
@@ -1059,18 +1071,15 @@ void ContainerNode::setFocus(bool received)
 
     Node::setFocus(received);
 
-    focusStateChanged();
+    if (layoutObject())
+        handleStyleChangeOnFocusStateChange();
 
-    // If any of the shadow hosts above has :focus CSS style rule, this focus has to affect the
-    // style of the shadow host.
-    if (isInShadowTree()) {
-        // TODO(kochi): Thic is not symmetric with click-focus sliding for shadow DOMs.
-        // crbug.com/476841
-        for (Element* host = shadowHost(); host; host = host->shadowHost()) {
-            if (!host->supportsFocus() || host->tabStop())
-                break;
-            host->focusStateChanged();
-            host->document().userActionElements().setFocused(host, received);
+    // Traverse up shadow trees to mark shadow hosts as focused where appropriate.
+    for (Element* host = shadowHost(); host; host = host->shadowHost()) {
+        bool newFocused = received && host->tabIndex() >= 0 && !host->tabStop();
+        if (host->focused() != newFocused) {
+            host->Node::setFocus(newFocused);
+            host->handleStyleChangeOnFocusStateChange();
         }
     }
 

@@ -268,6 +268,8 @@ private:
     bool getUpperLeftCorner(FloatPoint&) const;
     bool getLowerRightCorner(FloatPoint&) const;
 
+    void handleStyleChangeOnFocusStateChange();
+
     RawPtrWillBeMember<Node> m_firstChild;
     RawPtrWillBeMember<Node> m_lastChild;
 };

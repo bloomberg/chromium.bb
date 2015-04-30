@@ -2106,11 +2106,11 @@ void Element::parseAttribute(const QualifiedName& name, const AtomicString& valu
         } else {
             // Treat empty attribute as true.
             if (equalIgnoringCase(value, "true") || equalIgnoringCase(value, "")) {
+                setElementFlag(TabStopWasSetExplicitly, true);
                 setTabStopInternal(true);
-                setElementFlag(TabStopWasSetExplicitly, true);
             } else if (equalIgnoringCase(value, "false")) {
-                setTabStopInternal(false);
                 setElementFlag(TabStopWasSetExplicitly, true);
+                setTabStopInternal(false);
             } else {
                 // When value is other than "true", "false", "", the value is ignored and
                 // falls back the default state.

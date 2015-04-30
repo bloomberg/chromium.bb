@@ -139,7 +139,10 @@ void DateTimeFieldElement::setFocus(bool value)
 {
     if (m_fieldOwner)
         value ? m_fieldOwner->didFocusOnField() : m_fieldOwner->didBlurFromField();
-    ContainerNode::setFocus(value);
+    if (focused() == value)
+        return;
+    Node::setFocus(value);
+    focusStateChanged();
 }
 
 void DateTimeFieldElement::focusOnNextField()
