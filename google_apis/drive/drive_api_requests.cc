@@ -9,6 +9,8 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
@@ -16,6 +18,7 @@
 #include "google_apis/drive/request_util.h"
 #include "google_apis/drive/time_util.h"
 #include "net/base/url_util.h"
+#include "net/http/http_response_headers.h"
 
 namespace google_apis {
 namespace drive {
@@ -35,6 +38,12 @@ const char kBatchUploadHeader[] = "X-Goog-Upload-Protocol: batch";
 
 // Content type of HTTP request.
 const char kHttpContentType[] = "application/http";
+
+// Break line in HTTP message.
+const char kHttpBr[] = "\r\n";
+
+// Mime type of multipart mixed.
+const char kMultipartMixedMimeTypePrefix[] = "multipart/mixed; boundary=";
 
 // Parses the JSON value to FileResource instance and runs |callback| on the
 // UI thread once parsing is done.
@@ -126,7 +135,173 @@ std::string CreateMultipartUploadMetadataJson(
   return json_string;
 }
 
+// Splits |string| into lines by |kHttpBr|.
+// Each line does not include |kHttpBr|.
+void SplitIntoLines(const std::string& string,
+                    std::vector<base::StringPiece>* output) {
+  const size_t br_size = std::string(kHttpBr).size();
+  std::string::const_iterator it = string.begin();
+  std::vector<base::StringPiece> lines;
+  while (true) {
+    const std::string::const_iterator next_pos =
+        std::search(it, string.end(), kHttpBr, kHttpBr + br_size);
+    lines.push_back(base::StringPiece(it, next_pos));
+    if (next_pos == string.end())
+      break;
+    it = next_pos + br_size;
+  }
+  output->swap(lines);
+}
+
+// Remove transport padding (spaces and tabs at the end of line) from |piece|.
+base::StringPiece TrimTransportPadding(const base::StringPiece& piece) {
+  size_t trim_size = 0;
+  while (trim_size < piece.size() &&
+         (piece[piece.size() - 1 - trim_size] == ' ' ||
+          piece[piece.size() - 1 - trim_size] == '\t')) {
+    ++trim_size;
+  }
+  return piece.substr(0, piece.size() - trim_size);
+}
+
 }  // namespace
+
+MultipartHttpResponse::MultipartHttpResponse() : code(HTTP_SUCCESS) {
+}
+
+MultipartHttpResponse::~MultipartHttpResponse() {
+}
+
+// The |response| must be multipart/mixed format that contains child HTTP
+// response of drive batch request.
+// https://www.ietf.org/rfc/rfc2046.txt
+//
+// It looks like:
+// --Boundary
+// Content-type: application/http
+//
+// HTTP/1.1 200 OK
+// Header of child response
+//
+// Body of child response
+// --Boundary
+// Content-type: application/http
+//
+// HTTP/1.1 404 Not Found
+// Header of child response
+//
+// Body of child response
+// --Boundary--
+bool ParseMultipartResponse(const std::string& content_type,
+                            const std::string& response,
+                            std::vector<MultipartHttpResponse>* parts) {
+  if (response.empty())
+    return false;
+
+  base::StringPiece content_type_piece(content_type);
+  if (!content_type_piece.starts_with(kMultipartMixedMimeTypePrefix)) {
+    return false;
+  }
+  content_type_piece.remove_prefix(
+      base::StringPiece(kMultipartMixedMimeTypePrefix).size());
+
+  if (content_type_piece.empty())
+    return false;
+  if (content_type_piece[0] == '"') {
+    if (content_type_piece.size() <= 2 ||
+        content_type_piece[content_type_piece.size() - 1] != '"') {
+      return false;
+    }
+    content_type_piece =
+        content_type_piece.substr(1, content_type_piece.size() - 2);
+  }
+
+  std::string boundary;
+  content_type_piece.CopyToString(&boundary);
+  const std::string header = "--" + boundary;
+  const std::string terminator = "--" + boundary + "--";
+
+  std::vector<base::StringPiece> lines;
+  SplitIntoLines(response, &lines);
+
+  enum {
+    STATE_START,
+    STATE_PART_HEADER,
+    STATE_PART_HTTP_STATUS_LINE,
+    STATE_PART_HTTP_HEADER,
+    STATE_PART_HTTP_BODY
+  } state = STATE_START;
+
+  const std::string kHttpStatusPrefix = "HTTP/1.1 ";
+  std::vector<MultipartHttpResponse> responses;
+  DriveApiErrorCode code = DRIVE_PARSE_ERROR;
+  std::string body;
+  for (const auto& line : lines) {
+    if (state == STATE_PART_HEADER && line.empty()) {
+      state = STATE_PART_HTTP_STATUS_LINE;
+      continue;
+    }
+
+    if (state == STATE_PART_HTTP_STATUS_LINE) {
+      if (line.starts_with(kHttpStatusPrefix)) {
+        int int_code;
+        base::StringToInt(
+            line.substr(base::StringPiece(kHttpStatusPrefix).size()),
+            &int_code);
+        if (int_code > 0)
+          code = static_cast<DriveApiErrorCode>(int_code);
+        else
+          code = DRIVE_PARSE_ERROR;
+      } else {
+        code = DRIVE_PARSE_ERROR;
+      }
+      state = STATE_PART_HTTP_HEADER;
+      continue;
+    }
+
+    if (state == STATE_PART_HTTP_HEADER && line.empty()) {
+      state = STATE_PART_HTTP_BODY;
+      body.clear();
+      continue;
+    }
+    const base::StringPiece chopped_line = TrimTransportPadding(line);
+    const bool is_new_part = chopped_line == header;
+    const bool was_last_part = chopped_line == terminator;
+    if (is_new_part || was_last_part) {
+      switch (state) {
+        case STATE_START:
+          break;
+        case STATE_PART_HEADER:
+        case STATE_PART_HTTP_STATUS_LINE:
+          responses.push_back(MultipartHttpResponse());
+          responses.back().code = DRIVE_PARSE_ERROR;
+          break;
+        case STATE_PART_HTTP_HEADER:
+          responses.push_back(MultipartHttpResponse());
+          responses.back().code = code;
+          break;
+        case STATE_PART_HTTP_BODY:
+          // Drop the last kHttpBr.
+          if (!body.empty())
+            body.resize(body.size() - 2);
+          responses.push_back(MultipartHttpResponse());
+          responses.back().code = code;
+          responses.back().body.swap(body);
+          break;
+      }
+      if (is_new_part)
+        state = STATE_PART_HEADER;
+      if (was_last_part)
+        break;
+    } else if (state == STATE_PART_HTTP_BODY) {
+      line.AppendToString(&body);
+      body.append(kHttpBr);
+    }
+  }
+
+  parts->swap(responses);
+  return true;
+}
 
 Property::Property() : visibility_(VISIBILITY_PRIVATE) {
 }
@@ -1014,14 +1189,12 @@ void BatchUploadRequest::AddRequest(BatchableRequestBase* request) {
   DCHECK(GetChildEntry(request) == child_requests_.end());
   DCHECK(!committed_);
   child_requests_.push_back(BatchUploadChildEntry(request));
-  request->Prepare(
-      base::Bind(&BatchUploadRequest::OnChildRequestPrepared,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 request));
+  request->Prepare(base::Bind(&BatchUploadRequest::OnChildRequestPrepared,
+                              weak_ptr_factory_.GetWeakPtr(), request));
 }
 
-void BatchUploadRequest::OnChildRequestPrepared(
-    RequestID request_id, DriveApiErrorCode result) {
+void BatchUploadRequest::OnChildRequestPrepared(RequestID request_id,
+                                                DriveApiErrorCode result) {
   DCHECK(CalledOnValidThread());
   auto const child = GetChildEntry(request_id);
   DCHECK(child != child_requests_.end());
@@ -1061,8 +1234,8 @@ void BatchUploadRequest::Cancel() {
 
 // Obtains corresponding child entry of |request_id|. Returns NULL if the
 // entry is not found.
-std::vector<BatchUploadChildEntry>::iterator
-BatchUploadRequest::GetChildEntry(RequestID request_id) {
+std::vector<BatchUploadChildEntry>::iterator BatchUploadRequest::GetChildEntry(
+    RequestID request_id) {
   for (auto it = child_requests_.begin(); it != child_requests_.end(); ++it) {
     if (it->request == request_id)
       return it;
@@ -1104,11 +1277,8 @@ void BatchUploadRequest::MayCompletePrepare() {
     parts.push_back(ContentTypeAndData());
     parts.back().type = kHttpContentType;
     parts.back().data = base::StringPrintf(
-        kBatchUploadRequestFormat,
-        method.c_str(),
-        url.path().c_str(),
-        url_generator_.GetBatchUploadUrl().host().c_str(),
-        type.c_str(),
+        kBatchUploadRequestFormat, method.c_str(), url.path().c_str(),
+        url_generator_.GetBatchUploadUrl().host().c_str(), type.c_str(),
         data.c_str());
   }
 
@@ -1149,14 +1319,26 @@ void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
     return;
   }
 
-  for (auto& child : child_requests_) {
-    // TODO(hirono): Split the mutlipart result and return the correct code and
-    // body.
-    child.request->ProcessURLFetchResults(HTTP_SERVICE_UNAVAILABLE, "");
-    // Request deletes itself after processing.
+  std::string content_type;
+  source->GetResponseHeaders()->EnumerateHeader(
+      /* need only first header */ NULL, "Content-Type", &content_type);
+
+  std::vector<MultipartHttpResponse> parts;
+  if (!ParseMultipartResponse(content_type, response_writer()->data(),
+                              &parts) ||
+      child_requests_.size() != parts.size()) {
+    RunCallbackOnPrematureFailure(DRIVE_PARSE_ERROR);
+    sender_->RequestFinished(this);
+    return;
+  }
+
+  for (size_t i = 0; i < parts.size(); ++i) {
+    child_requests_[i].request->ProcessURLFetchResults(parts[i].code,
+                                                       parts[i].body);
   }
 
   child_requests_.clear();
+  sender_->RequestFinished(this);
 }
 
 void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {

@@ -364,9 +364,8 @@ TEST_F(DriveApiUrlGeneratorTest, GenerateThumbnailUrl) {
 }
 
 TEST_F(DriveApiUrlGeneratorTest, BatchUploadUrl) {
-  EXPECT_EQ(
-      "https://www.example.com/upload/drive",
-      url_generator_.GetBatchUploadUrl().spec());
+  EXPECT_EQ("https://www.example.com/upload/drive",
+            url_generator_.GetBatchUploadUrl().spec());
 }
 
 }  // namespace google_apis

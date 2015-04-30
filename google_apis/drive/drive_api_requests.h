@@ -66,6 +66,21 @@ class Property {
 // List of properties for a single file or a directory.
 typedef std::vector<Property> Properties;
 
+// Child response embedded in multipart parent response.
+struct MultipartHttpResponse {
+  MultipartHttpResponse();
+  ~MultipartHttpResponse();
+  DriveApiErrorCode code;
+  std::string body;
+};
+
+// Splits multipart |response| into |parts|. Each part must be HTTP sub-response
+// of drive batch request. |content_type| is a value of Content-Type response
+// header. Returns true on succcess.
+bool ParseMultipartResponse(const std::string& content_type,
+                            const std::string& response,
+                            std::vector<MultipartHttpResponse>* parts);
+
 //============================ DriveApiPartialFieldRequest ====================
 
 // This is base class of the Drive API related requests. All Drive API requests
@@ -1135,9 +1150,8 @@ class BatchUploadRequest : public UrlFetchRequestBase {
   GURL GetURL() const override;
   net::URLFetcher::RequestType GetRequestType() const override;
   std::vector<std::string> GetExtraRequestHeaders() const override;
-  bool GetContentData(
-      std::string* upload_content_type,
-      std::string* upload_content) override;
+  bool GetContentData(std::string* upload_content_type,
+                      std::string* upload_content) override;
   void ProcessURLFetchResults(const net::URLFetcher* source) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
 
@@ -1145,8 +1159,8 @@ class BatchUploadRequest : public UrlFetchRequestBase {
   typedef void* RequestID;
   // Obtains corresponding child entry of |request_id|. Returns NULL if the
   // entry is not found.
-  std::vector<BatchUploadChildEntry>::iterator
-  GetChildEntry(RequestID request_id);
+  std::vector<BatchUploadChildEntry>::iterator GetChildEntry(
+      RequestID request_id);
 
   // Called after child requests' |Prepare| method.
   void OnChildRequestPrepared(RequestID request_id, DriveApiErrorCode result);

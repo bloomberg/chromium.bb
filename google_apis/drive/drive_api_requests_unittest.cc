@@ -410,6 +410,28 @@ class DriveApiRequestsTest : public testing::Test {
     scoped_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
     response->set_code(net::HTTP_OK);
+    response->set_content_type("multipart/mixed; boundary=BOUNDARY");
+    response->set_content(
+        "--BOUNDARY\r\n"
+        "Content-Type: application/http\r\n"
+        "\r\n"
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: application/json; charset=UTF-8\r\n"
+        "\r\n"
+        "{\r\n"
+        " \"kind\": \"drive#file\",\r\n"
+        " \"id\": \"file_id_1\"\r\n"
+        "}\r\n"
+        "\r\n"
+        "--BOUNDARY\r\n"
+        "Content-Type: application/http\r\n"
+        "\r\n"
+        "HTTP/1.1 503 Service Unavailable\r\n"
+        "Content-Type: application/json; charset=UTF-8\r\n"
+        "\r\n"
+        "{}\r\n"
+        "\r\n"
+        "--BOUNDARY--\r\n");
     return response.Pass();
   }
 
@@ -1916,33 +1938,25 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
   ASSERT_TRUE(test_util::WriteStringToFile(kTestFilePath, kTestContent));
 
   // Create batch request.
-  drive::BatchUploadRequest* const request = new drive::BatchUploadRequest(
-      request_sender_.get(), *url_generator_);
+  drive::BatchUploadRequest* const request =
+      new drive::BatchUploadRequest(request_sender_.get(), *url_generator_);
   request->SetBoundaryForTesting("OUTERBOUNDARY");
   request_sender_->StartRequestWithRetry(request);
 
   // Create child request.
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
-  scoped_ptr<FileResource> file_resource;
+  DriveApiErrorCode errors[] = {DRIVE_OTHER_ERROR, DRIVE_OTHER_ERROR};
+  scoped_ptr<FileResource> file_resources[2];
   base::RunLoop run_loop[2];
   for (int i = 0; i < 2; ++i) {
     const FileResourceCallback callback = test_util::CreateQuitCallback(
         &run_loop[i],
-        test_util::CreateCopyResultCallback(&error, &file_resource));
+        test_util::CreateCopyResultCallback(&errors[i], &file_resources[i]));
     drive::MultipartUploadNewFileRequest* const child_request =
         new drive::MultipartUploadNewFileRequest(
-            request_sender_.get(),
-            base::StringPrintf("new file title %d", i),
-            "parent_resource_id",
-            kTestContentType,
-            kTestContent.size(),
-            base::Time(),
-            base::Time(),
-            kTestFilePath,
-            drive::Properties(),
-            *url_generator_,
-            callback,
-            ProgressCallback());
+            request_sender_.get(), base::StringPrintf("new file title %d", i),
+            "parent_resource_id", kTestContentType, kTestContent.size(),
+            base::Time(), base::Time(), kTestFilePath, drive::Properties(),
+            *url_generator_, callback, ProgressCallback());
     child_request->SetBoundaryForTesting("INNERBOUNDARY");
     request->AddRequest(child_request);
   }
@@ -1954,44 +1968,50 @@ TEST_F(DriveApiRequestsTest, BatchUploadRequest) {
   EXPECT_EQ("batch", http_request_.headers["X-Goog-Upload-Protocol"]);
   EXPECT_EQ("multipart/mixed; boundary=OUTERBOUNDARY",
             http_request_.headers["Content-Type"]);
-  EXPECT_EQ("--OUTERBOUNDARY\n"
-            "Content-Type: application/http\n"
-            "\n"
-            "POST /upload/drive/v2/files HTTP/1.1\n"
-            "Host: 127.0.0.1\n"
-            "X-Goog-Upload-Protocol: multipart\n"
-            "Content-Type: multipart/related; boundary=INNERBOUNDARY\n"
-            "\n"
-            "--INNERBOUNDARY\n"
-            "Content-Type: application/json\n"
-            "\n"
-            "{\"parents\":[{\"id\":\"parent_resource_id\","
-            "\"kind\":\"drive#fileLink\"}],\"title\":\"new file title 0\"}\n"
-            "--INNERBOUNDARY\n"
-            "Content-Type: text/plain\n"
-            "\n"
-            "aaaaaaaaaa\n"
-            "--INNERBOUNDARY--\n"
-            "--OUTERBOUNDARY\n"
-            "Content-Type: application/http\n"
-            "\n"
-            "POST /upload/drive/v2/files HTTP/1.1\n"
-            "Host: 127.0.0.1\n"
-            "X-Goog-Upload-Protocol: multipart\n"
-            "Content-Type: multipart/related; boundary=INNERBOUNDARY\n"
-            "\n"
-            "--INNERBOUNDARY\n"
-            "Content-Type: application/json\n"
-            "\n"
-            "{\"parents\":[{\"id\":\"parent_resource_id\","
-            "\"kind\":\"drive#fileLink\"}],\"title\":\"new file title 1\"}\n"
-            "--INNERBOUNDARY\n"
-            "Content-Type: text/plain\n"
-            "\n"
-            "aaaaaaaaaa\n"
-            "--INNERBOUNDARY--\n"
-            "--OUTERBOUNDARY--",
-            http_request_.content);
+  EXPECT_EQ(
+      "--OUTERBOUNDARY\n"
+      "Content-Type: application/http\n"
+      "\n"
+      "POST /upload/drive/v2/files HTTP/1.1\n"
+      "Host: 127.0.0.1\n"
+      "X-Goog-Upload-Protocol: multipart\n"
+      "Content-Type: multipart/related; boundary=INNERBOUNDARY\n"
+      "\n"
+      "--INNERBOUNDARY\n"
+      "Content-Type: application/json\n"
+      "\n"
+      "{\"parents\":[{\"id\":\"parent_resource_id\","
+      "\"kind\":\"drive#fileLink\"}],\"title\":\"new file title 0\"}\n"
+      "--INNERBOUNDARY\n"
+      "Content-Type: text/plain\n"
+      "\n"
+      "aaaaaaaaaa\n"
+      "--INNERBOUNDARY--\n"
+      "--OUTERBOUNDARY\n"
+      "Content-Type: application/http\n"
+      "\n"
+      "POST /upload/drive/v2/files HTTP/1.1\n"
+      "Host: 127.0.0.1\n"
+      "X-Goog-Upload-Protocol: multipart\n"
+      "Content-Type: multipart/related; boundary=INNERBOUNDARY\n"
+      "\n"
+      "--INNERBOUNDARY\n"
+      "Content-Type: application/json\n"
+      "\n"
+      "{\"parents\":[{\"id\":\"parent_resource_id\","
+      "\"kind\":\"drive#fileLink\"}],\"title\":\"new file title 1\"}\n"
+      "--INNERBOUNDARY\n"
+      "Content-Type: text/plain\n"
+      "\n"
+      "aaaaaaaaaa\n"
+      "--INNERBOUNDARY--\n"
+      "--OUTERBOUNDARY--",
+      http_request_.content);
+  EXPECT_EQ(HTTP_SUCCESS, errors[0]);
+  ASSERT_TRUE(file_resources[0]);
+  EXPECT_EQ("file_id_1", file_resources[0]->file_id());
+  ASSERT_FALSE(file_resources[1]);
+  EXPECT_EQ(DRIVE_PARSE_ERROR, errors[1]);
 }
 
 TEST_F(DriveApiRequestsTest, EmptyBatchUploadRequest) {
@@ -2000,4 +2020,111 @@ TEST_F(DriveApiRequestsTest, EmptyBatchUploadRequest) {
   EXPECT_DEATH(request->Commit(), "");
 }
 
+TEST(ParseMultipartResponseTest, Empty) {
+  std::vector<drive::MultipartHttpResponse> parts;
+  EXPECT_FALSE(drive::ParseMultipartResponse(
+      "multipart/mixed; boundary=BOUNDARY", "", &parts));
+  EXPECT_FALSE(drive::ParseMultipartResponse("multipart/mixed; boundary=",
+                                             "CONTENT", &parts));
+}
+
+TEST(ParseMultipartResponseTest, Basic) {
+  std::vector<drive::MultipartHttpResponse> parts;
+  ASSERT_TRUE(
+      drive::ParseMultipartResponse("multipart/mixed; boundary=BOUNDARY",
+                                    "--BOUNDARY\r\n"
+                                    "Content-Type: application/http\r\n"
+                                    "\r\n"
+                                    "HTTP/1.1 200 OK\r\n"
+                                    "Header: value\r\n"
+                                    "\r\n"
+                                    "First line\r\n"
+                                    "Second line\r\n"
+                                    "--BOUNDARY\r\n"
+                                    "Content-Type: application/http\r\n"
+                                    "\r\n"
+                                    "HTTP/1.1 404 Not Found\r\n"
+                                    "Header: value\r\n"
+                                    "--BOUNDARY--",
+                                    &parts));
+  ASSERT_EQ(2u, parts.size());
+  EXPECT_EQ(HTTP_SUCCESS, parts[0].code);
+  EXPECT_EQ("First line\r\nSecond line", parts[0].body);
+  EXPECT_EQ(HTTP_NOT_FOUND, parts[1].code);
+  EXPECT_EQ("", parts[1].body);
+}
+
+TEST(ParseMultipartResponseTest, InvalidStatusLine) {
+  std::vector<drive::MultipartHttpResponse> parts;
+  ASSERT_TRUE(
+      drive::ParseMultipartResponse("multipart/mixed; boundary=BOUNDARY",
+                                    "--BOUNDARY\r\n"
+                                    "Content-Type: application/http\r\n"
+                                    "\r\n"
+                                    "InvalidStatusLine 200 \r\n"
+                                    "Header: value\r\n"
+                                    "\r\n"
+                                    "{}\r\n"
+                                    "--BOUNDARY--",
+                                    &parts));
+  ASSERT_EQ(1u, parts.size());
+  EXPECT_EQ(DRIVE_PARSE_ERROR, parts[0].code);
+  EXPECT_EQ("{}", parts[0].body);
+}
+
+TEST(ParseMultipartResponseTest, BoundaryInTheBodyAndPreamble) {
+  std::vector<drive::MultipartHttpResponse> parts;
+  ASSERT_TRUE(
+      drive::ParseMultipartResponse("multipart/mixed; boundary=BOUNDARY",
+                                    "BOUNDARY\r\n"
+                                    "PREUMBLE\r\n"
+                                    "--BOUNDARY\r\n"
+                                    "Content-Type: application/http\r\n"
+                                    "\r\n"
+                                    "HTTP/1.1 200 OK\r\n"
+                                    "Header: value\r\n"
+                                    "\r\n"
+                                    "{--BOUNDARY}\r\n"
+                                    "--BOUNDARY--",
+                                    &parts));
+  ASSERT_EQ(1u, parts.size());
+  EXPECT_EQ(HTTP_SUCCESS, parts[0].code);
+  EXPECT_EQ("{--BOUNDARY}", parts[0].body);
+}
+
+TEST(ParseMultipartResponseTest, QuatedBoundary) {
+  std::vector<drive::MultipartHttpResponse> parts;
+  ASSERT_TRUE(
+      drive::ParseMultipartResponse("multipart/mixed; boundary=\"BOUNDARY\"",
+                                    "--BOUNDARY\r\n"
+                                    "Content-Type: application/http\r\n"
+                                    "\r\n"
+                                    "HTTP/1.1 200 OK\r\n"
+                                    "Header: value\r\n"
+                                    "\r\n"
+                                    "BODY\r\n"
+                                    "--BOUNDARY--",
+                                    &parts));
+  ASSERT_EQ(1u, parts.size());
+  EXPECT_EQ(HTTP_SUCCESS, parts[0].code);
+  EXPECT_EQ("BODY", parts[0].body);
+}
+
+TEST(ParseMultipartResponseTest, BoundaryWithTransportPadding) {
+  std::vector<drive::MultipartHttpResponse> parts;
+  ASSERT_TRUE(
+      drive::ParseMultipartResponse("multipart/mixed; boundary=BOUNDARY",
+                                    "--BOUNDARY \t\r\n"
+                                    "Content-Type: application/http\r\n"
+                                    "\r\n"
+                                    "HTTP/1.1 200 OK\r\n"
+                                    "Header: value\r\n"
+                                    "\r\n"
+                                    "BODY\r\n"
+                                    "--BOUNDARY-- \t",
+                                    &parts));
+  ASSERT_EQ(1u, parts.size());
+  EXPECT_EQ(HTTP_SUCCESS, parts[0].code);
+  EXPECT_EQ("BODY", parts[0].body);
+}
 }  // namespace google_apis
