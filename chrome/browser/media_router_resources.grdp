@@ -3,7 +3,7 @@
   <!-- General -->
   <include name="IDR_MEDIA_ROUTER_DATA_JS" file="resources\media_router\media_router_data.js" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_HTML" file="resources\media_router\media_router.html" type="BINDATA" />
-  <include name="IRD_MEDIA_ROUTER_COMMON_CSS" file="resources\media_router\media_router_common.css" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_COMMON_CSS" file="resources\media_router\media_router_common.css" type="BINDATA" />
 
   <!-- Polymer -->
   <include name="IDR_CAST_MODE_PICKER_HTML" file="resources\media_router\elements\cast_mode_picker\cast_mode_picker.html" type="BINDATA" />
