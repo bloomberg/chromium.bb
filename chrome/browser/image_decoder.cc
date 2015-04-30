@@ -28,7 +28,7 @@ const int kBatchModeTimeoutSeconds = 5;
 }  // namespace
 
 ImageDecoder::ImageDecoder()
-    : image_request_id_counter_(0), last_request_(base::TimeTicks::Now()) {
+    : image_request_id_counter_(0) {
   // A single ImageDecoder instance should live for the life of the program.
   // Explicitly add a reference so the object isn't deleted.
   AddRef();
@@ -123,7 +123,15 @@ void ImageDecoder::DecodeImageInSandbox(
     return;
   }
 
-  last_request_ = base::TimeTicks::Now();
+  if (!batch_mode_timer_) {
+    // Created here so it will call StopBatchMode() on the right thread.
+    batch_mode_timer_.reset(new base::DelayTimer<ImageDecoder>(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kBatchModeTimeoutSeconds),
+        this,
+        &ImageDecoder::StopBatchMode));
+  }
+  batch_mode_timer_->Reset();
 
   switch (image_codec) {
     case ROBUST_JPEG_CODEC:
@@ -160,23 +168,14 @@ void ImageDecoder::StartBatchMode() {
      utility_process_host_.reset();
      return;
   }
-  batch_mode_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kBatchModeTimeoutSeconds),
-      this, &ImageDecoder::StopBatchMode);
 }
 
 void ImageDecoder::StopBatchMode() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if ((base::TimeTicks::Now() - last_request_)
-      < base::TimeDelta::FromSeconds(kBatchModeTimeoutSeconds)) {
-    return;
-  }
-
   if (utility_process_host_) {
     utility_process_host_->EndBatchMode();
     utility_process_host_.reset();
   }
-  batch_mode_timer_.Stop();
 }
 
 bool ImageDecoder::OnMessageReceived(

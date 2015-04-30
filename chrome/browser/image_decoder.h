@@ -141,11 +141,9 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   // The UtilityProcessHost requests are sent to.
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
 
-  // Calls StopBatchMode() after |kBatchModeTimeoutSeconds| have elapsed.
-  base::RepeatingTimer<ImageDecoder> batch_mode_timer_;
-
-  // The time Start() was last called.
-  base::TimeTicks last_request_;
+  // Calls StopBatchMode() after |kBatchModeTimeoutSeconds| have elapsed,
+  // unless a new decoding request resets the timer.
+  scoped_ptr<base::DelayTimer<ImageDecoder>> batch_mode_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };
