@@ -108,7 +108,7 @@ touch_focus_view_destroyed(struct wl_listener *listener, void *data)
 		container_of(listener, struct weston_touch,
 			     focus_view_listener);
 
-	weston_touch_set_focus(touch->seat, NULL);
+	weston_touch_set_focus(touch, NULL);
 }
 
 static void
@@ -118,7 +118,7 @@ touch_focus_resource_destroyed(struct wl_listener *listener, void *data)
 		container_of(listener, struct weston_touch,
 			     focus_resource_listener);
 
-	weston_touch_set_focus(touch->seat, NULL);
+	weston_touch_set_focus(touch, NULL);
 }
 
 static void
@@ -1449,25 +1449,25 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 }
 
 WL_EXPORT void
-weston_touch_set_focus(struct weston_seat *seat, struct weston_view *view)
+weston_touch_set_focus(struct weston_touch *touch, struct weston_view *view)
 {
 	struct wl_list *focus_resource_list;
 
-	focus_resource_list = &seat->touch->focus_resource_list;
+	focus_resource_list = &touch->focus_resource_list;
 
-	if (view && seat->touch->focus &&
-	    seat->touch->focus->surface == view->surface) {
-		seat->touch->focus = view;
+	if (view && touch->focus &&
+	    touch->focus->surface == view->surface) {
+		touch->focus = view;
 		return;
 	}
 
-	wl_list_remove(&seat->touch->focus_resource_listener.link);
-	wl_list_init(&seat->touch->focus_resource_listener.link);
-	wl_list_remove(&seat->touch->focus_view_listener.link);
-	wl_list_init(&seat->touch->focus_view_listener.link);
+	wl_list_remove(&touch->focus_resource_listener.link);
+	wl_list_init(&touch->focus_resource_listener.link);
+	wl_list_remove(&touch->focus_view_listener.link);
+	wl_list_init(&touch->focus_view_listener.link);
 
 	if (!wl_list_empty(focus_resource_list)) {
-		move_resources(&seat->touch->resource_list,
+		move_resources(&touch->resource_list,
 			       focus_resource_list);
 	}
 
@@ -1475,19 +1475,19 @@ weston_touch_set_focus(struct weston_seat *seat, struct weston_view *view)
 		struct wl_client *surface_client;
 
 		if (!view->surface->resource) {
-			seat->touch->focus = NULL;
+			touch->focus = NULL;
 			return;
 		}
 
 		surface_client = wl_resource_get_client(view->surface->resource);
 		move_resources_for_client(focus_resource_list,
-					  &seat->touch->resource_list,
+					  &touch->resource_list,
 					  surface_client);
 		wl_resource_add_destroy_listener(view->surface->resource,
-						 &seat->touch->focus_resource_listener);
-		wl_signal_add(&view->destroy_signal, &seat->touch->focus_view_listener);
+						 &touch->focus_resource_listener);
+		wl_signal_add(&view->destroy_signal, &touch->focus_view_listener);
 	}
-	seat->touch->focus = view;
+	touch->focus = view;
 }
 
 /**
@@ -1525,7 +1525,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		 * until all touch points are up again. */
 		if (touch->num_tp == 1) {
 			ev = weston_compositor_pick_view(ec, x, y, &sx, &sy);
-			weston_touch_set_focus(seat, ev);
+			weston_touch_set_focus(touch, ev);
 		} else if (touch->focus) {
 			ev = touch->focus;
 			weston_view_from_global_fixed(ev, x, y, &sx, &sy);
@@ -1574,7 +1574,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 
 		grab->interface->up(grab, time, touch_id);
 		if (touch->num_tp == 0)
-			weston_touch_set_focus(seat, NULL);
+			weston_touch_set_focus(touch, NULL);
 		break;
 	}
 }
@@ -2275,7 +2275,7 @@ weston_seat_release_touch(struct weston_seat *seat)
 {
 	seat->touch_device_count--;
 	if (seat->touch_device_count == 0) {
-		weston_touch_set_focus(seat, NULL);
+		weston_touch_set_focus(seat->touch, NULL);
 		weston_touch_cancel_grab(seat->touch);
 		weston_touch_reset_state(seat->touch);
 		seat_send_updated_caps(seat);

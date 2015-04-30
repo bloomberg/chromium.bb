@@ -543,7 +543,7 @@ shell_touch_grab_start(struct shell_touch_grab *grab,
 
 	weston_touch_start_grab(touch, &grab->grab);
 	if (shell->child.desktop_shell)
-		weston_touch_set_focus(touch->seat,
+		weston_touch_set_focus(touch,
 				       get_default_view(shell->grab_surface));
 }
 

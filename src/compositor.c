@@ -1814,7 +1814,7 @@ weston_view_unmap(struct weston_view *view)
 						 wl_fixed_from_int(0),
 						 wl_fixed_from_int(0));
 		if (seat->touch && seat->touch->focus == view)
-			weston_touch_set_focus(seat, NULL);
+			weston_touch_set_focus(seat->touch, NULL);
 	}
 }
 

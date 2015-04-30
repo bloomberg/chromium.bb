@@ -418,7 +418,7 @@ weston_touch_create(void);
 void
 weston_touch_destroy(struct weston_touch *touch);
 void
-weston_touch_set_focus(struct weston_seat *seat,
+weston_touch_set_focus(struct weston_touch *touch,
 		       struct weston_view *view);
 void
 weston_touch_start_grab(struct weston_touch *device,
