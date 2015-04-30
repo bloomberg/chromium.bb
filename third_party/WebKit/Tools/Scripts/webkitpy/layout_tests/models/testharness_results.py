@@ -81,7 +81,7 @@ def is_testharness_output_passing(content_text):
     return True
 
 
-def is_testharness_output_with_console_errors(content_text):
+def is_testharness_output_with_console_errors_or_warnings(content_text):
     """
     Returns whether the content_text in parameter is a testharness output with
     console errors.
@@ -92,7 +92,7 @@ def is_testharness_output_with_console_errors(content_text):
 
     lines = content_text.strip().splitlines()
     for line in lines:
-        if line.startswith('CONSOLE ERROR:'):
+        if line.startswith('CONSOLE ERROR:') or line.startswith('CONSOLE WARNING:'):
             return True
 
     return False
