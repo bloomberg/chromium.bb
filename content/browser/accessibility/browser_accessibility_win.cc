@@ -186,6 +186,9 @@ BrowserAccessibilityWin::WinAttributes::WinAttributes()
       ia2_state(0) {
 }
 
+BrowserAccessibilityWin::WinAttributes::~WinAttributes() {
+}
+
 //
 // BrowserAccessibilityWin
 //
@@ -689,6 +692,15 @@ STDMETHODIMP BrowserAccessibilityWin::accSelect(
   return S_FALSE;
 }
 
+STDMETHODIMP
+BrowserAccessibilityWin::put_accName(VARIANT var_id, BSTR put_name) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::put_accValue(VARIANT var_id, BSTR put_val) {
+  return E_NOTIMPL;
+}
+
 //
 // IAccessible2 methods.
 //
@@ -908,6 +920,39 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   *similar_items_in_group = GetIntAttribute(ui::AX_ATTR_SET_SIZE);
   *position_in_group = GetIntAttribute(ui::AX_ATTR_POS_IN_SET);
   return S_OK;
+}
+
+//
+// IAccessibleEx methods not implemented.
+//
+
+STDMETHODIMP BrowserAccessibilityWin::get_extendedRole(BSTR* extended_role) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::get_localizedExtendedRole(
+    BSTR* localized_extended_role) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::get_nExtendedStates(LONG* n_extended_states) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::get_extendedStates(LONG max_extended_states,
+                                            BSTR** extended_states,
+                                            LONG* n_extended_states) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::get_localizedExtendedStates(
+    LONG max_localized_extended_states,
+    BSTR** localized_extended_states,
+    LONG* n_localized_extended_states) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP BrowserAccessibilityWin::get_locale(IA2Locale* locale) {
+  return E_NOTIMPL;
 }
 
 //
@@ -1583,6 +1628,27 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
   }
 
   return S_FALSE;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::selectRow(long row) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::selectColumn(long column) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::unselectRow(long row) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::unselectColumn(long column) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP
+BrowserAccessibilityWin::get_modelChange(IA2TableModelChange* model_change) {
+  return E_NOTIMPL;
 }
 
 //
@@ -2317,6 +2383,17 @@ STDMETHODIMP BrowserAccessibilityWin::setSelection(LONG selection_index,
 }
 
 //
+// IAccessibleText methods not implemented.
+//
+
+STDMETHODIMP BrowserAccessibilityWin::get_attributes(LONG offset,
+                                                     LONG* start_offset,
+                                                     LONG* end_offset,
+                                                     BSTR* text_attributes) {
+  return E_NOTIMPL;
+}
+
+//
 // IAccessibleHypertext methods.
 //
 
@@ -2377,6 +2454,56 @@ STDMETHODIMP BrowserAccessibilityWin::get_hyperlinkIndex(
 
   *hyperlink_index = it->second;
   return S_OK;
+}
+
+//
+// IAccessibleHyperlink not implemented.
+//
+
+STDMETHODIMP BrowserAccessibilityWin::get_anchor(long index, VARIANT* anchor) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::get_anchorTarget(long index, VARIANT* anchor_target) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP BrowserAccessibilityWin::get_startIndex(long* index) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP BrowserAccessibilityWin::get_endIndex(long* index) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP BrowserAccessibilityWin::get_valid(boolean* valid) {
+  return E_NOTIMPL;
+}
+
+//
+// IAccessibleAction not implemented.
+//
+
+STDMETHODIMP BrowserAccessibilityWin::nActions(long* n_actions) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP BrowserAccessibilityWin::doAction(long action_index) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::get_description(long action_index, BSTR* description) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP BrowserAccessibilityWin::get_keyBinding(long action_index,
+                                                     long n_max_bindings,
+                                                     BSTR** key_bindings,
+                                                     long* n_bindings) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP BrowserAccessibilityWin::get_name(long action_index, BSTR* name) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::get_localizedName(long action_index,
+                                           BSTR* localized_name) {
+  return E_NOTIMPL;
 }
 
 //
@@ -2489,6 +2616,17 @@ STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
 
   return GetStringAttributeAsBstr(
       ui::AX_ATTR_DOC_DOCTYPE, doc_type);
+}
+
+STDMETHODIMP
+BrowserAccessibilityWin::get_nameSpaceURIForID(short name_space_id,
+                                               BSTR* name_space_uri) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP
+BrowserAccessibilityWin::put_alternateViewMediaTypes(
+    BSTR* comma_separated_media_types) {
+  return E_NOTIMPL;
 }
 
 //
@@ -2754,6 +2892,19 @@ STDMETHODIMP BrowserAccessibilityWin::get_childAt(
   return S_OK;
 }
 
+STDMETHODIMP BrowserAccessibilityWin::get_innerHTML(BSTR* innerHTML) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP
+BrowserAccessibilityWin::get_localInterface(void** local_interface) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_language(BSTR* language) {
+  return E_NOTIMPL;
+}
+
 //
 // ISimpleDOMText methods.
 //
@@ -2831,6 +2982,10 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
   return S_OK;
 }
 
+STDMETHODIMP BrowserAccessibilityWin::get_fontFamily(BSTR* font_family) {
+  return E_NOTIMPL;
+}
+
 //
 // IServiceProvider methods.
 //
@@ -2887,6 +3042,27 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guidService,
   return E_FAIL;
 }
 
+STDMETHODIMP
+BrowserAccessibilityWin::GetObjectForChild(long child_id, IAccessibleEx** ret) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP
+BrowserAccessibilityWin::GetIAccessiblePair(IAccessible** acc, long* child_id) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::GetRuntimeId(SAFEARRAY** runtime_id) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP
+BrowserAccessibilityWin::ConvertReturnedElement(
+    IRawElementProviderSimple* element,
+    IAccessibleEx** acc) {
+  return E_NOTIMPL;
+}
+
 STDMETHODIMP BrowserAccessibilityWin::GetPatternProvider(PATTERNID id,
                                                          IUnknown** provider) {
   DVLOG(1) << "In Function: "
@@ -2921,6 +3097,16 @@ STDMETHODIMP BrowserAccessibilityWin::GetPropertyValue(PROPERTYID id,
     }
   }
   return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_ProviderOptions(
+    enum ProviderOptions* ret) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_HostRawElementProvider(
+    IRawElementProviderSimple** provider) {
+  return E_NOTIMPL;
 }
 
 //

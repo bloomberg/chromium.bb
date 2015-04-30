@@ -190,13 +190,9 @@ BrowserAccessibilityWin
 
   // Deprecated methods, not implemented.
   CONTENT_EXPORT STDMETHODIMP
-  put_accName(VARIANT var_id, BSTR put_name) override {
-    return E_NOTIMPL;
-  }
+  put_accName(VARIANT var_id, BSTR put_name) override;
   CONTENT_EXPORT STDMETHODIMP
-  put_accValue(VARIANT var_id, BSTR put_val) override {
-    return E_NOTIMPL;
-  }
+  put_accValue(VARIANT var_id, BSTR put_val) override;
 
   //
   // IAccessible2 methods.
@@ -246,32 +242,20 @@ BrowserAccessibilityWin
   //
   // IAccessibleEx methods not implemented.
   //
-  CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP get_extendedRole(BSTR* extended_role) override;
   CONTENT_EXPORT STDMETHODIMP
-  get_localizedExtendedRole(BSTR* localized_extended_role) override {
-    return E_NOTIMPL;
-  }
+  get_localizedExtendedRole(BSTR* localized_extended_role) override;
   CONTENT_EXPORT STDMETHODIMP
-  get_nExtendedStates(LONG* n_extended_states) override {
-    return E_NOTIMPL;
-  }
+  get_nExtendedStates(LONG* n_extended_states) override;
   CONTENT_EXPORT STDMETHODIMP
   get_extendedStates(LONG max_extended_states,
                      BSTR** extended_states,
-                     LONG* n_extended_states) override {
-    return E_NOTIMPL;
-  }
+                     LONG* n_extended_states) override;
   CONTENT_EXPORT STDMETHODIMP
   get_localizedExtendedStates(LONG max_localized_extended_states,
                               BSTR** localized_extended_states,
-                              LONG* n_localized_extended_states) override {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_locale(IA2Locale* locale) override {
-    return E_NOTIMPL;
-  }
+                              LONG* n_localized_extended_states) override;
+  CONTENT_EXPORT STDMETHODIMP get_locale(IA2Locale* locale) override;
 
   //
   // IAccessibleApplication methods.
@@ -377,24 +361,16 @@ BrowserAccessibilityWin
                               long* column_extents,
                               boolean* is_selected) override;
 
-  CONTENT_EXPORT STDMETHODIMP selectRow(long row) override { return E_NOTIMPL; }
+  CONTENT_EXPORT STDMETHODIMP selectRow(long row) override;
 
-  CONTENT_EXPORT STDMETHODIMP selectColumn(long column) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP selectColumn(long column) override;
 
-  CONTENT_EXPORT STDMETHODIMP unselectRow(long row) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP unselectRow(long row) override;
 
-  CONTENT_EXPORT STDMETHODIMP unselectColumn(long column) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP unselectColumn(long column) override;
 
   CONTENT_EXPORT STDMETHODIMP
-  get_modelChange(IA2TableModelChange* model_change) override {
-    return E_NOTIMPL;
-  }
+  get_modelChange(IA2TableModelChange* model_change) override;
 
   //
   // IAccessibleTable2 methods.
@@ -532,9 +508,7 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP get_attributes(LONG offset,
                                              LONG* start_offset,
                                              LONG* end_offset,
-                                             BSTR* text_attributes) override {
-    return E_NOTIMPL;
-  }
+                                             BSTR* text_attributes) override;
 
   //
   // IAccessibleHypertext methods.
@@ -549,47 +523,25 @@ BrowserAccessibilityWin
   get_hyperlinkIndex(long char_index, long* hyperlink_index) override;
 
   // IAccessibleHyperlink not implemented.
-  CONTENT_EXPORT STDMETHODIMP get_anchor(long index, VARIANT* anchor) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP get_anchor(long index, VARIANT* anchor) override;
   CONTENT_EXPORT STDMETHODIMP
-  get_anchorTarget(long index, VARIANT* anchor_target) override {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_startIndex(long* index) override {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_endIndex(long* index) override {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_valid(boolean* valid) override {
-    return E_NOTIMPL;
-  }
+  get_anchorTarget(long index, VARIANT* anchor_target) override;
+  CONTENT_EXPORT STDMETHODIMP get_startIndex(long* index) override;
+  CONTENT_EXPORT STDMETHODIMP get_endIndex(long* index) override;
+  CONTENT_EXPORT STDMETHODIMP get_valid(boolean* valid) override;
 
   // IAccessibleAction not implemented.
-  CONTENT_EXPORT STDMETHODIMP nActions(long* n_actions) override {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP doAction(long action_index) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP nActions(long* n_actions) override;
+  CONTENT_EXPORT STDMETHODIMP doAction(long action_index) override;
   CONTENT_EXPORT STDMETHODIMP
-  get_description(long action_index, BSTR* description) override {
-    return E_NOTIMPL;
-  }
+  get_description(long action_index, BSTR* description) override;
   CONTENT_EXPORT STDMETHODIMP get_keyBinding(long action_index,
                                              long n_max_bindings,
                                              BSTR** key_bindings,
-                                             long* n_bindings) override {
-    return E_NOTIMPL;
-  }
-  CONTENT_EXPORT STDMETHODIMP get_name(long action_index, BSTR* name) override {
-    return E_NOTIMPL;
-  }
+                                             long* n_bindings) override;
+  CONTENT_EXPORT STDMETHODIMP get_name(long action_index, BSTR* name) override;
   CONTENT_EXPORT STDMETHODIMP
-  get_localizedName(long action_index, BSTR* localized_name) override {
-    return E_NOTIMPL;
-  }
+  get_localizedName(long action_index, BSTR* localized_name) override;
 
   //
   // IAccessibleValue methods.
@@ -616,13 +568,9 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP get_docType(BSTR* doc_type) override;
 
   CONTENT_EXPORT STDMETHODIMP
-  get_nameSpaceURIForID(short name_space_id, BSTR* name_space_uri) override {
-    return E_NOTIMPL;
-  }
+  get_nameSpaceURIForID(short name_space_id, BSTR* name_space_uri) override;
   CONTENT_EXPORT STDMETHODIMP
-  put_alternateViewMediaTypes(BSTR* comma_separated_media_types) override {
-    return E_NOTIMPL;
-  }
+  put_alternateViewMediaTypes(BSTR* comma_separated_media_types) override;
 
   //
   // ISimpleDOMNode methods.
@@ -677,18 +625,12 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP
   get_childAt(unsigned int child_index, ISimpleDOMNode** node) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_innerHTML(BSTR* innerHTML) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP get_innerHTML(BSTR* innerHTML) override;
 
   CONTENT_EXPORT STDMETHODIMP
-  get_localInterface(void** local_interface) override {
-    return E_NOTIMPL;
-  }
+  get_localInterface(void** local_interface) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_language(BSTR* language) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP get_language(BSTR* language) override;
 
   //
   // ISimpleDOMText methods.
@@ -715,9 +657,7 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP
   scrollToSubstring(unsigned int start_index, unsigned int end_index) override;
 
-  CONTENT_EXPORT STDMETHODIMP get_fontFamily(BSTR* font_family) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP get_fontFamily(BSTR* font_family) override;
 
   //
   // IServiceProvider methods.
@@ -728,24 +668,16 @@ BrowserAccessibilityWin
 
   // IAccessibleEx methods not implemented.
   CONTENT_EXPORT STDMETHODIMP
-  GetObjectForChild(long child_id, IAccessibleEx** ret) override {
-    return E_NOTIMPL;
-  }
+  GetObjectForChild(long child_id, IAccessibleEx** ret) override;
 
   CONTENT_EXPORT STDMETHODIMP
-  GetIAccessiblePair(IAccessible** acc, long* child_id) override {
-    return E_NOTIMPL;
-  }
+  GetIAccessiblePair(IAccessible** acc, long* child_id) override;
 
-  CONTENT_EXPORT STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override {
-    return E_NOTIMPL;
-  }
+  CONTENT_EXPORT STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
 
   CONTENT_EXPORT STDMETHODIMP
   ConvertReturnedElement(IRawElementProviderSimple* element,
-                         IAccessibleEx** acc) override {
-    return E_NOTIMPL;
-  }
+                         IAccessibleEx** acc) override;
 
   //
   // IRawElementProviderSimple methods.
@@ -761,14 +693,9 @@ BrowserAccessibilityWin
   // IRawElementProviderSimple methods not implemented
   //
   CONTENT_EXPORT STDMETHODIMP
-  get_ProviderOptions(enum ProviderOptions* ret) override {
-    return E_NOTIMPL;
-  }
-
+  get_ProviderOptions(enum ProviderOptions* ret) override;
   CONTENT_EXPORT STDMETHODIMP
-  get_HostRawElementProvider(IRawElementProviderSimple** provider) override {
-    return E_NOTIMPL;
-  }
+  get_HostRawElementProvider(IRawElementProviderSimple** provider) override;
 
   //
   // CComObjectRootEx methods.
@@ -884,6 +811,7 @@ BrowserAccessibilityWin
 
   struct WinAttributes {
     WinAttributes();
+    ~WinAttributes();
 
     // IAccessible role and state.
     int32 ia_role;
