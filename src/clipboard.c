@@ -254,7 +254,7 @@ clipboard_set_selection(struct wl_listener *listener, void *data)
 
 	mime_types = source->mime_types.data;
 
-	if (pipe2(p, O_CLOEXEC) == -1)
+	if (!mime_types || pipe2(p, O_CLOEXEC) == -1)
 		return;
 
 	source->send(source, mime_types[0], p[1]);
