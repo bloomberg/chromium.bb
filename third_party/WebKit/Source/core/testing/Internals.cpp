@@ -269,7 +269,7 @@ String Internals::address(Node* node)
 
 GCObservation* Internals::observeGC(ScriptValue scriptValue)
 {
-    v8::Handle<v8::Value> observedValue = scriptValue.v8Value();
+    v8::Local<v8::Value> observedValue = scriptValue.v8Value();
     ASSERT(!observedValue.IsEmpty());
     if (observedValue->IsNull() || observedValue->IsUndefined()) {
         V8ThrowException::throwTypeError(v8::Isolate::GetCurrent(), "value to observe is null or undefined");
@@ -2090,7 +2090,7 @@ namespace {
 
 class AddOneFunction : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState)
     {
         AddOneFunction* self = new AddOneFunction(scriptState);
         return self->bindToV8Function();

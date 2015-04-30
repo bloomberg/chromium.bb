@@ -45,7 +45,7 @@ void GCObservation::setWasCollected()
     m_collected = true;
 }
 
-GCObservation::GCObservation(v8::Handle<v8::Value> observedValue)
+GCObservation::GCObservation(v8::Local<v8::Value> observedValue)
     : m_observed(v8::Isolate::GetCurrent(), observedValue)
     , m_collected(false)
 {
