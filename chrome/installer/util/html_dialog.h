@@ -5,8 +5,6 @@
 #ifndef CHROME_INSTALLER_UTIL_HTML_DIALOG_H_
 #define CHROME_INSTALLER_UTIL_HTML_DIALOG_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 
