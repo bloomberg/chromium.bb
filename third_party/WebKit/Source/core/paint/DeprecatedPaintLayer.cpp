@@ -1379,7 +1379,8 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
     if (position == FixedPosition) {
         // For a fixed layers, we need to walk up to the root to see if there's a fixed position container
         // (e.g. a transformed layer). It's an error to call convertToLayerCoords() across a layer with a transform,
-        // so we should always find the ancestor at or before we find the fixed position container.
+        // so we should always find the ancestor at or before we find the fixed position container, if
+        // the container is transformed.
         DeprecatedPaintLayer* fixedPositionContainerLayer = 0;
         bool foundAncestor = false;
         for (DeprecatedPaintLayer* currLayer = layer->parent(); currLayer; currLayer = currLayer->parent()) {
@@ -1388,7 +1389,11 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
 
             if (isFixedPositionedContainer(currLayer)) {
                 fixedPositionContainerLayer = currLayer;
-                ASSERT_UNUSED(foundAncestor, foundAncestor);
+                // A layer that has a transform-related property but not a
+                // transform still acts as a fixed-position container.
+                // Accumulating offsets across such layers is allowed.
+                if (currLayer->transform())
+                    ASSERT_UNUSED(foundAncestor, foundAncestor);
                 break;
             }
         }
@@ -1398,11 +1403,13 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
         if (fixedPositionContainerLayer != ancestorLayer) {
             LayoutPoint fixedContainerCoords;
             layer->convertToLayerCoords(fixedPositionContainerLayer, fixedContainerCoords);
+            location += fixedContainerCoords;
 
-            LayoutPoint ancestorCoords;
-            ancestorLayer->convertToLayerCoords(fixedPositionContainerLayer, ancestorCoords);
-
-            location += (fixedContainerCoords - ancestorCoords);
+            if (foundAncestor) {
+                LayoutPoint ancestorCoords;
+                ancestorLayer->convertToLayerCoords(fixedPositionContainerLayer, ancestorCoords);
+                location += -ancestorCoords;
+            }
         } else {
             // LayoutView has been handled in the first top-level 'if' block above.
             ASSERT(ancestorLayer != layoutObject->view()->layer());
@@ -1410,7 +1417,7 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
 
             location += layer->location();
         }
-        return ancestorLayer;
+        return foundAncestor ? ancestorLayer : fixedPositionContainerLayer;
     }
 
     DeprecatedPaintLayer* parentLayer;
