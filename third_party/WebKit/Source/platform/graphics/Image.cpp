@@ -44,6 +44,7 @@
 #include "public/platform/WebData.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 
@@ -221,18 +222,32 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
     startAnimation();
 }
 
-static SkBitmap createBitmapWithSpace(const SkBitmap& bitmap, int spaceWidth, int spaceHeight)
+namespace {
+
+PassRefPtr<SkShader> createPatternShader(const SkBitmap& bitmap, const SkMatrix& shaderMatrix,
+    const SkPaint& paint, const FloatSize& spacing)
 {
-    SkImageInfo info = bitmap.info();
-    info = SkImageInfo::Make(info.width() + spaceWidth, info.height() + spaceHeight, info.colorType(), kPremul_SkAlphaType);
+    if (spacing.isZero()) {
+        return adoptRef(SkShader::CreateBitmapShader(
+            bitmap, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix));
+    }
 
-    SkBitmap result;
-    result.allocPixels(info);
-    result.eraseColor(SK_ColorTRANSPARENT);
-    bitmap.copyPixelsTo(reinterpret_cast<uint8_t*>(result.getPixels()), result.rowBytes() * result.height(), result.rowBytes());
+    // Arbitrary tiling is currently only supported for SkPictureShader - so we use it instead
+    // of a plain bitmap shader to implement spacing.
+    const SkRect tileRect = SkRect::MakeWH(
+        bitmap.width() + spacing.width(),
+        bitmap.height() + spacing.height());
 
-    return result;
+    SkPictureRecorder recorder;
+    SkCanvas* canvas = recorder.beginRecording(tileRect);
+    canvas->drawBitmap(bitmap, 0, 0, &paint);
+    RefPtr<const SkPicture> picture = adoptRef(recorder.endRecordingAsPicture());
+
+    return adoptRef(SkShader::CreatePictureShader(
+        picture.get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix, nullptr));
 }
+
+} // anonymous namespace
 
 void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect, const FloatSize& scale,
     const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect, const IntSize& repeatSpacing)
@@ -263,28 +278,15 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
 
     SkBitmap bitmapToPaint;
     bitmap.extractSubset(&bitmapToPaint, enclosingIntRect(normSrcRect));
-    if (!repeatSpacing.isZero()) {
-        SkScalar ctmScaleX = 1.0;
-        SkScalar ctmScaleY = 1.0;
-
-        if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            AffineTransform ctm = context->getCTM();
-            ctmScaleX = ctm.xScale();
-            ctmScaleY = ctm.yScale();
-        }
-
-        bitmapToPaint = createBitmapWithSpace(
-            bitmapToPaint,
-            repeatSpacing.width() * ctmScaleX / scale.width(),
-            repeatSpacing.height() * ctmScaleY / scale.height());
-    }
-    RefPtr<SkShader> shader = adoptRef(SkShader::CreateBitmapShader(bitmapToPaint, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
 
     bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap);
     {
         SkPaint paint;
         int initialSaveCount = context->preparePaintForDrawRectToRect(&paint, floatSrcRect,
             destRect, compositeOp, !bitmap.isOpaque(), isLazyDecoded, bitmap.isImmutable());
+        RefPtr<SkShader> shader = createPatternShader(bitmapToPaint, localMatrix, paint,
+            FloatSize(repeatSpacing.width() / scale.width(), repeatSpacing.height() / scale.height()));
+
         paint.setShader(shader.get());
         context->drawRect(destRect, paint);
         context->canvas()->restoreToCount(initialSaveCount);
