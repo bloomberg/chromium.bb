@@ -172,6 +172,18 @@ class WebView {
   // CPUProfile objects. The format for the captured profile is defined
   // (by DevTools) in protocol.json.
   virtual Status EndProfile(scoped_ptr<base::Value>* profile_data) = 0;
+
+  virtual Status SynthesizeTapGesture(int x,
+                                      int y,
+                                      int tap_count,
+                                      bool is_long_press) = 0;
+
+  virtual Status SynthesizeScrollGesture(int x,
+                                         int y,
+                                         int xoffset,
+                                         int yoffset) = 0;
+
+  virtual Status SynthesizePinchGesture(int x, int y, double scale_factor) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

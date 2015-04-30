@@ -494,6 +494,8 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
     return;
   if (page_handler_)
     page_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
+  if (input_handler_)
+    input_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
   if (frame_trace_recorder_) {
     frame_trace_recorder_->OnSwapCompositorFrame(
         render_frame_host_, get<1>(param).metadata);
@@ -506,6 +508,8 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
     return;
   if (page_handler_)
     page_handler_->OnSwapCompositorFrame(frame_metadata);
+  if (input_handler_)
+    input_handler_->OnSwapCompositorFrame(frame_metadata);
   if (frame_trace_recorder_) {
     frame_trace_recorder_->OnSwapCompositorFrame(
         render_frame_host_, frame_metadata);

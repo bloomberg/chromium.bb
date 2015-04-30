@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -191,13 +192,52 @@ Status ExecuteTouchSingleTap(
       session, web_view, element_id, &location);
   if (status.IsError())
     return status;
+  if (session->chrome->GetBrowserInfo()->build_no < 2388) {
+    // TODO(samuong): remove this once we stop supporting M44.
+    std::list<TouchEvent> events;
+    events.push_back(
+        TouchEvent(kTouchStart, location.x, location.y));
+    events.push_back(
+        TouchEvent(kTouchEnd, location.x, location.y));
+    return web_view->DispatchTouchEvents(events);
+  }
+  return web_view->SynthesizeTapGesture(location.x, location.y, 1, false);
+}
 
-  std::list<TouchEvent> events;
-  events.push_back(
-      TouchEvent(kTouchStart, location.x, location.y));
-  events.push_back(
-      TouchEvent(kTouchEnd, location.x, location.y));
-  return web_view->DispatchTouchEvents(events);
+Status ExecuteTouchDoubleTap(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  if (session->chrome->GetBrowserInfo()->build_no < 2388) {
+    // TODO(samuong): remove this once we stop supporting M44.
+    return Status(kUnknownCommand, "Double tap command requires Chrome 44+");
+  }
+  WebPoint location;
+  Status status = GetElementClickableLocation(
+      session, web_view, element_id, &location);
+  if (status.IsError())
+    return status;
+  return web_view->SynthesizeTapGesture(location.x, location.y, 2, false);
+}
+
+Status ExecuteTouchLongPress(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  if (session->chrome->GetBrowserInfo()->build_no < 2388) {
+    // TODO(samuong): remove this once we stop supporting M44.
+    return Status(kUnknownCommand, "Long press command requires Chrome 44+");
+  }
+  WebPoint location;
+  Status status = GetElementClickableLocation(
+      session, web_view, element_id, &location);
+  if (status.IsError())
+    return status;
+  return web_view->SynthesizeTapGesture(location.x, location.y, 1, true);
 }
 
 Status ExecuteFlick(

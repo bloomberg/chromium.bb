@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Touch Action Test Page</title>
+  </head>
+  <body>
+    <div id="events">events: </div>
+    <div id="padding">
+      We need some padding here so that the page is large enough to test swipe
+      and scroll actions.
+    </div>
+    <div id="bottom">This is the bottom of the page.</div>
+    <script>
+      events = document.getElementById('events');
+      var eventTypes = ['touchstart', 'touchend', 'touchmove', 'touchcancel'];
+      var eventListener = function(evt) {
+        events.innerHTML += ' ' + evt.type;
+      };
+
+      for (var i = 0; i < eventTypes.length; i++) {
+        events.addEventListener(eventTypes[i], eventListener);
+      }
+
+      var padding = document.getElementById('padding');
+      padding.style.border = 'solid';
+      padding.style.height = window.screen.height * 2 + 'px';
+    </script>
+  </body>
+</html>

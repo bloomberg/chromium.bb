@@ -97,6 +97,15 @@ class WebViewImpl : public WebView {
   Status TakeHeapSnapshot(scoped_ptr<base::Value>* snapshot) override;
   Status StartProfile() override;
   Status EndProfile(scoped_ptr<base::Value>* profile_data) override;
+  Status SynthesizeTapGesture(int x,
+                              int y,
+                              int tap_count,
+                              bool is_long_press) override;
+  Status SynthesizeScrollGesture(int x,
+                                 int y,
+                                 int xoffset,
+                                 int yoffset) override;
+  Status SynthesizePinchGesture(int x, int y, double scale_factor) override;
 
  private:
   Status TraverseHistoryWithJavaScript(int delta);

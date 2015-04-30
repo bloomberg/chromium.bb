@@ -37,6 +37,12 @@ class WebElement(object):
   def SingleTap(self):
     self._Execute(Command.TOUCH_SINGLE_TAP)
 
+  def DoubleTap(self):
+    self._Execute(Command.TOUCH_DOUBLE_TAP)
+
+  def LongPress(self):
+    self._Execute(Command.TOUCH_LONG_PRESS)
+
   def Clear(self):
     self._Execute(Command.CLEAR_ELEMENT)
 

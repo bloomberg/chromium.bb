@@ -76,6 +76,22 @@ Status ExecuteTouchSingleTap(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Double tap on the element.
+Status ExecuteTouchDoubleTap(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Long press on the element.
+Status ExecuteTouchLongPress(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 // Touch flick starting on the element.
 Status ExecuteFlick(
     Session* session,

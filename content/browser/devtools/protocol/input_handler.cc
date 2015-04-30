@@ -6,13 +6,46 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/input/synthetic_pinch_gesture_params.h"
+#include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
+#include "content/common/input/synthetic_tap_gesture_params.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace content {
 namespace devtools {
 namespace input {
+
+namespace {
+
+gfx::Point CssPixelsToPoint(int x, int y, float page_scale_factor) {
+  return gfx::Point(x * page_scale_factor, y * page_scale_factor);
+}
+
+gfx::Vector2d CssPixelsToVector2d(int x, int y, float page_scale_factor) {
+  return gfx::Vector2d(x * page_scale_factor, y * page_scale_factor);
+}
+
+bool StringToGestureSourceType(const std::string& in,
+                               SyntheticGestureParams::GestureSourceType& out) {
+  if (in == kGestureSourceTypeDefault) {
+    out = SyntheticGestureParams::GestureSourceType::DEFAULT_INPUT;
+    return true;
+  } else if (in == kGestureSourceTypeTouch) {
+    out = SyntheticGestureParams::GestureSourceType::TOUCH_INPUT;
+    return true;
+  } else if (in == kGestureSourceTypeMouse) {
+    out = SyntheticGestureParams::GestureSourceType::MOUSE_INPUT;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+}
 
 typedef DevToolsProtocolClient::Response Response;
 
@@ -87,7 +120,9 @@ bool SetMouseEventType(blink::WebMouseEvent* event, const std::string& type) {
 }  // namespace
 
 InputHandler::InputHandler()
-  : host_(NULL) {
+    : host_(NULL),
+      page_scale_factor_(1.0),
+      weak_factory_(this) {
 }
 
 InputHandler::~InputHandler() {
@@ -97,7 +132,14 @@ void InputHandler::SetRenderWidgetHost(RenderWidgetHostImpl* host) {
   host_ = host;
 }
 
-void InputHandler::SetClient(scoped_ptr<DevToolsProtocolClient> client) {
+void InputHandler::SetClient(scoped_ptr<Client> client) {
+  client_.swap(client);
+}
+
+void InputHandler::OnSwapCompositorFrame(
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  page_scale_factor_ = frame_metadata.page_scale_factor;
+  scrollable_viewport_size_ = frame_metadata.scrollable_viewport_size;
 }
 
 Response InputHandler::DispatchKeyEvent(
@@ -260,7 +302,29 @@ Response InputHandler::SynthesizePinchGesture(
     double scale_factor,
     const int* relative_speed,
     const std::string* gesture_source_type) {
-  return Response::InternalError("Not yet implemented");
+  if (!host_)
+    return Response::ServerError("Could not connect to view");
+
+  SyntheticPinchGestureParams gesture_params;
+  const int kDefaultRelativeSpeed = 800;
+
+  gesture_params.scale_factor = scale_factor;
+  gesture_params.anchor = CssPixelsToPoint(x, y, page_scale_factor_);
+  gesture_params.relative_pointer_speed_in_pixels_s =
+      relative_speed ? *relative_speed : kDefaultRelativeSpeed;
+
+  if (!StringToGestureSourceType(
+      gesture_source_type ? *gesture_source_type : kGestureSourceTypeDefault,
+      gesture_params.gesture_source_type)) {
+    return Response::InvalidParams("gestureSourceType");
+  }
+
+  host_->QueueSyntheticGesture(
+      SyntheticGesture::Create(gesture_params),
+      base::Bind(&InputHandler::SendSynthesizePinchGestureResponse,
+                 weak_factory_.GetWeakPtr(), command_id));
+
+  return Response::OK();
 }
 
 Response InputHandler::SynthesizeScrollGesture(
@@ -274,7 +338,44 @@ Response InputHandler::SynthesizeScrollGesture(
     const bool* prevent_fling,
     const int* speed,
     const std::string* gesture_source_type) {
-  return Response::InternalError("Not yet implemented");
+  if (!host_)
+    return Response::ServerError("Could not connect to view");
+
+  SyntheticSmoothScrollGestureParams gesture_params;
+  const bool kDefaultPreventFling = true;
+  const int kDefaultSpeed = 800;
+
+  gesture_params.anchor = CssPixelsToPoint(x, y, page_scale_factor_);
+  gesture_params.prevent_fling =
+      prevent_fling ? *prevent_fling : kDefaultPreventFling;
+  gesture_params.speed_in_pixels_s = speed ? *speed : kDefaultSpeed;
+
+  if (x_distance || y_distance) {
+    gesture_params.distances.push_back(
+        CssPixelsToVector2d(x_distance ? *x_distance : 0,
+                            y_distance ? *y_distance : 0,
+                            page_scale_factor_));
+  }
+
+  if (x_overscroll || y_overscroll) {
+    gesture_params.distances.push_back(
+        CssPixelsToVector2d(x_overscroll ? -*x_overscroll : 0,
+                            y_overscroll ? -*y_overscroll : 0,
+                            page_scale_factor_));
+  }
+
+  if (!StringToGestureSourceType(
+      gesture_source_type ? *gesture_source_type : kGestureSourceTypeDefault,
+      gesture_params.gesture_source_type)) {
+    return Response::InvalidParams("gestureSourceType");
+  }
+
+  host_->QueueSyntheticGesture(
+      SyntheticGesture::Create(gesture_params),
+      base::Bind(&InputHandler::SendSynthesizeScrollGestureResponse,
+                 weak_factory_.GetWeakPtr(), command_id));
+
+  return Response::OK();
 }
 
 Response InputHandler::SynthesizeTapGesture(
@@ -284,7 +385,78 @@ Response InputHandler::SynthesizeTapGesture(
     const int* duration,
     const int* tap_count,
     const std::string* gesture_source_type) {
-  return Response::InternalError("Not yet implemented");
+  if (!host_)
+    return Response::ServerError("Could not connect to view");
+
+  SyntheticTapGestureParams gesture_params;
+  const int kDefaultDuration = 50;
+  const int kDefaultTapCount = 1;
+
+  gesture_params.position = CssPixelsToPoint(x, y, page_scale_factor_);
+  gesture_params.duration_ms = duration ? *duration : kDefaultDuration;
+
+  if (!StringToGestureSourceType(
+      gesture_source_type ? *gesture_source_type : kGestureSourceTypeDefault,
+      gesture_params.gesture_source_type)) {
+    return Response::InvalidParams("gestureSourceType");
+  }
+
+  if (!tap_count)
+    tap_count = &kDefaultTapCount;
+
+  for (int i = 0; i < *tap_count; i++) {
+    // If we're doing more than one tap, don't send the response to the client
+    // until we've completed the last tap.
+    bool is_last_tap = i == *tap_count - 1;
+    host_->QueueSyntheticGesture(
+        SyntheticGesture::Create(gesture_params),
+        base::Bind(&InputHandler::SendSynthesizeTapGestureResponse,
+                   weak_factory_.GetWeakPtr(), command_id, is_last_tap));
+  }
+
+  return Response::OK();
+}
+
+void InputHandler::SendSynthesizePinchGestureResponse(
+    DevToolsCommandId command_id,
+    SyntheticGesture::Result result) {
+  if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
+    client_->SendSynthesizePinchGestureResponse(
+        command_id, SynthesizePinchGestureResponse::Create());
+  } else {
+    client_->SendError(command_id,
+                       Response::InternalError(base::StringPrintf(
+                           "Synthetic pinch failed, result was %d", result)));
+  }
+}
+
+void InputHandler::SendSynthesizeScrollGestureResponse(
+    DevToolsCommandId command_id,
+    SyntheticGesture::Result result) {
+  if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
+    client_->SendSynthesizeScrollGestureResponse(
+        command_id, SynthesizeScrollGestureResponse::Create());
+  } else {
+    client_->SendError(command_id,
+                       Response::InternalError(base::StringPrintf(
+                           "Synthetic scroll failed, result was %d", result)));
+  }
+}
+
+void InputHandler::SendSynthesizeTapGestureResponse(
+    DevToolsCommandId command_id,
+    bool send_success,
+    SyntheticGesture::Result result) {
+  if (result == SyntheticGesture::Result::GESTURE_FINISHED) {
+    if (send_success) {
+      client_->SendSynthesizeTapGestureResponse(
+          command_id, SynthesizeTapGestureResponse::Create());
+    }
+  } else {
+    client_->SendError(command_id,
+                       Response::InternalError(base::StringPrintf(
+                           "Synthetic tap failed, result was %d", result)));
+  }
 }
 
 }  // namespace input

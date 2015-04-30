@@ -54,6 +54,8 @@ _NEGATIVE_FILTER = [
     # on developer workstations.
     'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
+    # crbug.com/469947
+    'ChromeDriverTest.testTouchPinch'
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -93,10 +95,13 @@ _OS_SPECIFIC_FILTER['mac'] = [
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
-    'ChromeDriverTest.testSingleTapElement',
-    'ChromeDriverTest.testTouchDownUpElement',
+    'ChromeDriverTest.testTouchSingleTapElement',
+    'ChromeDriverTest.testTouchDownMoveUpElement',
+    'ChromeDriverTest.testTouchScrollElement',
+    'ChromeDriverTest.testTouchDoubleTapElement',
+    'ChromeDriverTest.testTouchLongPressElement',
     'ChromeDriverTest.testTouchFlickElement',
-    'ChromeDriverTest.testTouchMovedElement',
+    'ChromeDriverTest.testTouchPinch',
     'ChromeDriverAndroidTest.*',
 ]
 
@@ -141,9 +146,25 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'])
+    _ANDROID_NEGATIVE_FILTER['chrome'] + [
+        # The stable channel Chrome for Android does not yet support Synthetic
+        # Gesture DevTools commands.
+        # TODO(samuong): reenable when it does.
+        'ChromeDriverTest.testTouchScrollElement',
+        'ChromeDriverTest.testTouchDoubleTapElement',
+        'ChromeDriverTest.testTouchLongPressElement',
+        'ChromeDriverTest.testTouchPinch',
+    ])
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
-    _ANDROID_NEGATIVE_FILTER['chrome'])
+    _ANDROID_NEGATIVE_FILTER['chrome'] + [
+        # The beta channel Chrome for Android does not yet support Synthetic
+        # Gesture DevTools commands.
+        # TODO(samuong): reenable when it does.
+        'ChromeDriverTest.testTouchScrollElement',
+        'ChromeDriverTest.testTouchDoubleTapElement',
+        'ChromeDriverTest.testTouchLongPressElement',
+        'ChromeDriverTest.testTouchPinch',
+    ])
 _ANDROID_NEGATIVE_FILTER['chrome_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
         # ChromeShell doesn't support multiple tabs.
@@ -445,72 +466,6 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         '});'
         'return div;')
     div.Click()
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
-  def testSingleTapElement(self):
-    div = self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("touchend", function() {'
-        '  div.innerHTML="new<br>";'
-        '});'
-        'return div;')
-    div.SingleTap()
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
-  def testTouchDownUpElement(self):
-    div = self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("touchend", function() {'
-        '  div.innerHTML="new<br>";'
-        '});'
-        'return div;')
-    loc = div.GetLocation()
-    self._driver.TouchDown(loc['x'], loc['y'])
-    self._driver.TouchUp(loc['x'], loc['y'])
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
-  def testTouchFlickElement(self):
-    dx = 3
-    dy = 4
-    speed = 5
-    flickTouchEventsPerSecond = 30
-    moveEvents = int(
-        math.sqrt(dx * dx + dy * dy) * flickTouchEventsPerSecond / speed)
-    div = self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("touchstart", function() {'
-        '  div.innerHTML = "preMove0";'
-        '});'
-        'div.addEventListener("touchmove", function() {'
-        '  res = div.innerHTML.match(/preMove(\d+)/);'
-        '  if (res != null) {'
-        '    div.innerHTML = "preMove" + (parseInt(res[1], 10) + 1);'
-        '  }'
-        '});'
-        'div.addEventListener("touchend", function() {'
-        '  if (div.innerHTML == "preMove' + str(moveEvents) + '") {'
-        '    div.innerHTML = "new<br>";'
-        '  }'
-        '});'
-        'return div;')
-    self._driver.TouchFlick(div, dx, dy, speed)
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
-  def testTouchMovedElement(self):
-    div = self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("touchmove", function() {'
-        '  div.innerHTML="new<br>";'
-        '});'
-        'return div;')
-    loc = div.GetLocation()
-    self._driver.TouchDown(loc['x'], loc['y'])
-    self._driver.TouchMove(loc['x'] + 1, loc['y'] + 1)
-    self._driver.TouchUp(loc['x'] + 1, loc['y'] + 1)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testClickElementInSubFrame(self):
@@ -988,6 +943,104 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         'document.querySelector("#outerDiv").style.display="None";')
     self.assertFalse(elem.IsDisplayed())
 
+  def testTouchSingleTapElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/touch_action_tests.html'))
+    events = self._driver.FindElement('id', 'events')
+    events.SingleTap()
+    self.assertEquals('events: touchstart touchend', events.GetText())
+
+  def testTouchDownMoveUpElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/touch_action_tests.html'))
+    events = self._driver.FindElement('id', 'events')
+    location = events.GetLocation()
+    self._driver.TouchDown(location['x'], location['y'])
+    self.assertEquals('events: touchstart', events.GetText())
+    self._driver.TouchMove(location['x'] + 1, location['y'] + 1)
+    self.assertEquals('events: touchstart touchmove', events.GetText())
+    self._driver.TouchUp(location['x'] + 1, location['y'] + 1)
+    self.assertEquals('events: touchstart touchmove touchend', events.GetText())
+
+  def testTouchScrollElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/touch_action_tests.html'))
+    events = self._driver.FindElement('id', 'events')
+    self.assertTrue(events.IsDisplayed())
+    xoffset = 0
+    yoffset = self._driver.ExecuteScript('return window.screen.height * 2;')
+    self._driver.TouchScroll(events, xoffset, yoffset)
+    bottom = self._driver.FindElement('id', 'bottom')
+    self.assertTrue(bottom.IsDisplayed())
+
+  def testTouchDoubleTapElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/touch_action_tests.html'))
+    events = self._driver.FindElement('id', 'events')
+    events.DoubleTap()
+    self.assertEquals('events: touchstart touchend touchstart touchend',
+        events.GetText())
+
+  def testTouchLongPressElement(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/touch_action_tests.html'))
+    events = self._driver.FindElement('id', 'events')
+    events.LongPress()
+    self.assertEquals('events: touchstart touchcancel', events.GetText())
+
+  def testTouchFlickElement(self):
+    dx = 3
+    dy = 4
+    speed = 5
+    flickTouchEventsPerSecond = 30
+    moveEvents = int(
+        math.sqrt(dx * dx + dy * dy) * flickTouchEventsPerSecond / speed)
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("touchstart", function() {'
+        '  div.innerHTML = "preMove0";'
+        '});'
+        'div.addEventListener("touchmove", function() {'
+        '  res = div.innerHTML.match(/preMove(\d+)/);'
+        '  if (res != null) {'
+        '    div.innerHTML = "preMove" + (parseInt(res[1], 10) + 1);'
+        '  }'
+        '});'
+        'div.addEventListener("touchend", function() {'
+        '  if (div.innerHTML == "preMove' + str(moveEvents) + '") {'
+        '    div.innerHTML = "new<br>";'
+        '  }'
+        '});'
+        'return div;')
+    self._driver.TouchFlick(div, dx, dy, speed)
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testTouchPinch(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/touch_action_tests.html'))
+    width_before_pinch = self._driver.ExecuteScript('return window.innerWidth;')
+    height_before_pinch = self._driver.ExecuteScript(
+        'return window.innerHeight;')
+    self._driver.TouchPinch(width_before_pinch / 2,
+                            height_before_pinch / 2,
+                            2.0)
+    width_after_pinch = self._driver.ExecuteScript('return window.innerWidth;')
+    self.assertAlmostEqual(2.0, float(width_before_pinch) / width_after_pinch)
+
+  def testBrowserDoesntSupportSyntheticGestures(self):
+    # Current versions of stable and beta channel Chrome for Android do not
+    # support synthetic gesture commands in DevTools, so touch action tests have
+    # been disabled for chrome_stable and chrome_beta.
+    # TODO(samuong): when this test starts failing, re-enable touch tests and
+    # delete this test.
+    if _ANDROID_PACKAGE_KEY:
+      if _ANDROID_PACKAGE_KEY in ['chrome_stable', 'chrome_beta']:
+        self.assertRaisesRegexp(RuntimeError,
+                                'Server returned error: Not Implemented',
+                                self._driver.TouchPinch, 1, 2, 3.0)
+
+
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""
 
@@ -1277,35 +1330,6 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
         '});'
         'return div;')
     div.Click()
-    self.assertEquals(1, len(driver.FindElements('tag name', 'br')))
-
-  def testSingleTapElement(self):
-    driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
-    driver.Load('about:blank')
-    div = driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("touchend", function() {'
-        '  div.innerHTML="new<br>";'
-        '});'
-        'return div;')
-    div.SingleTap()
-    self.assertEquals(1, len(driver.FindElements('tag name', 'br')))
-
-  def testTouchDownUpElement(self):
-    driver = self.CreateDriver(
-        mobile_emulation = {'deviceName': 'Google Nexus 5'})
-    div = driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("touchend", function() {'
-        '  div.innerHTML="new<br>";'
-        '});'
-        'return div;')
-    loc = div.GetLocation()
-    driver.TouchDown(loc['x'], loc['y'])
-    driver.TouchUp(loc['x'], loc['y'])
     self.assertEquals(1, len(driver.FindElements('tag name', 'br')))
 
 

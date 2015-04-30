@@ -148,3 +148,21 @@ Status StubWebView::StartProfile() {
 Status StubWebView::EndProfile(scoped_ptr<base::Value>* profile_data) {
   return Status(kOk);
 }
+
+Status StubWebView::SynthesizeTapGesture(int x,
+                                         int y,
+                                         int tap_count,
+                                         bool is_long_press) {
+  return Status(kOk);
+}
+
+Status StubWebView::SynthesizeScrollGesture(int x,
+                                            int y,
+                                            int xoffset,
+                                            int yoffset) {
+  return Status(kOk);
+}
+
+Status StubWebView::SynthesizePinchGesture(int x, int y, double scale_factor) {
+  return Status(kOk);
+}

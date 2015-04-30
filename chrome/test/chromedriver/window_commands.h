@@ -181,6 +181,19 @@ Status ExecuteTouchMove(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Do a swipe (scroll) gesture beginning at the element.
+Status ExecuteTouchScroll(
+    Session *session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+Status ExecuteTouchPinch(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 Status ExecuteGetActiveElement(
     Session* session,
     WebView* web_view,

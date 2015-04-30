@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/chrome/automation_extension.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
@@ -591,6 +592,53 @@ Status ExecuteTouchMove(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
   return ExecuteTouchEvent(session, web_view, kTouchMove, params);
+}
+
+Status ExecuteTouchScroll(
+    Session *session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  if (session->chrome->GetBrowserInfo()->build_no < 2286) {
+    // TODO(samuong): remove this once we stop supporting M41.
+    return Status(kUnknownCommand, "Touch scroll action requires Chrome 42+");
+  }
+  WebPoint location = session->mouse_position;
+  std::string element;
+  if (params.GetString("element", &element)) {
+    Status status = GetElementClickableLocation(
+        session, web_view, element, &location);
+    if (status.IsError())
+      return status;
+  }
+  int xoffset;
+  if (!params.GetInteger("xoffset", &xoffset))
+    return Status(kUnknownError, "'xoffset' must be an integer");
+  int yoffset;
+  if (!params.GetInteger("yoffset", &yoffset))
+    return Status(kUnknownError, "'yoffset' must be an integer");
+  return web_view->SynthesizeScrollGesture(
+      location.x, location.y, xoffset, yoffset);
+}
+
+Status ExecuteTouchPinch(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  if (session->chrome->GetBrowserInfo()->build_no < 2286) {
+    // TODO(samuong): remove this once we stop supporting M41.
+    return Status(kUnknownCommand, "Pinch action requires Chrome 42+");
+  }
+  WebPoint location;
+  if (!params.GetInteger("x", &location.x))
+    return Status(kUnknownError, "'x' must be an integer");
+  if (!params.GetInteger("y", &location.y))
+    return Status(kUnknownError, "'y' must be an integer");
+  double scale_factor;
+  if (!params.GetDouble("scale", &scale_factor))
+    return Status(kUnknownError, "'scale' must be an integer");
+  return web_view->SynthesizePinchGesture(location.x, location.y, scale_factor);
 }
 
 Status ExecuteGetActiveElement(

@@ -512,13 +512,16 @@ HttpHandler::HttpHandler(
                      WrapToCommand("TouchMove", base::Bind(&ExecuteTouchMove))),
       CommandMapping(kPost,
                      "session/:sessionId/touch/scroll",
-                     base::Bind(&UnimplementedCommand)),
+                     WrapToCommand("TouchScroll",
+                                   base::Bind(&ExecuteTouchScroll))),
       CommandMapping(kPost,
                      "session/:sessionId/touch/doubleclick",
-                     base::Bind(&UnimplementedCommand)),
+                     WrapToCommand("TouchDoubleTap",
+                                   base::Bind(&ExecuteTouchDoubleTap))),
       CommandMapping(kPost,
                      "session/:sessionId/touch/longclick",
-                     base::Bind(&UnimplementedCommand)),
+                     WrapToCommand("TouchLongPress",
+                                   base::Bind(&ExecuteTouchLongPress))),
       CommandMapping(kPost,
                      "session/:sessionId/touch/flick",
                      WrapToCommand("TouchFlick", base::Bind(&ExecuteFlick))),
@@ -558,6 +561,10 @@ HttpHandler::HttpHandler(
                      WrapToCommand(
                          "SetAutoReporting",
                          base::Bind(&ExecuteSetAutoReporting))),
+      CommandMapping(kPost,
+                     "session/:sessionId/touch/pinch",
+                     WrapToCommand("TouchPinch",
+                                   base::Bind(&ExecuteTouchPinch))),
   };
   command_map_.reset(
       new CommandMap(commands, commands + arraysize(commands)));

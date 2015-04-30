@@ -281,6 +281,10 @@ class ChromeDriver(object):
   def TouchMove(self, x, y):
     self.ExecuteCommand(Command.TOUCH_MOVE, {'x': x, 'y': y})
 
+  def TouchScroll(self, element, xoffset, yoffset):
+    params = {'element': element._id, 'xoffset': xoffset, 'yoffset': yoffset}
+    self.ExecuteCommand(Command.TOUCH_SCROLL, params)
+
   def TouchFlick(self, element, xoffset, yoffset, speed):
     params = {
         'element': element._id,
@@ -289,6 +293,10 @@ class ChromeDriver(object):
         'speed': speed
     }
     self.ExecuteCommand(Command.TOUCH_FLICK, params)
+
+  def TouchPinch(self, x, y, scale):
+    params = {'x': x, 'y': y, 'scale': scale}
+    self.ExecuteCommand(Command.TOUCH_PINCH, params)
 
   def GetCookies(self):
     return self.ExecuteCommand(Command.GET_COOKIES)

@@ -540,6 +540,39 @@ Status WebViewImpl::EndProfile(scoped_ptr<base::Value>* profile_data) {
   return status;
 }
 
+Status WebViewImpl::SynthesizeTapGesture(int x,
+                                         int y,
+                                         int tap_count,
+                                         bool is_long_press) {
+  base::DictionaryValue params;
+  params.SetInteger("x", x);
+  params.SetInteger("y", y);
+  params.SetInteger("tapCount", tap_count);
+  if (is_long_press)
+    params.SetInteger("duration", 1500);
+  return client_->SendCommand("Input.synthesizeTapGesture", params);
+}
+
+Status WebViewImpl::SynthesizeScrollGesture(int x,
+                                            int y,
+                                            int xoffset,
+                                            int yoffset) {
+  base::DictionaryValue params;
+  params.SetInteger("x", x);
+  params.SetInteger("y", y);
+  params.SetInteger("xdistance", xoffset);
+  params.SetInteger("ydistance", yoffset);
+  return client_->SendCommand("Input.synthesizeScrollGesture", params);
+}
+
+Status WebViewImpl::SynthesizePinchGesture(int x, int y, double scale_factor) {
+  base::DictionaryValue params;
+  params.SetInteger("x", x);
+  params.SetInteger("y", y);
+  params.SetDouble("scaleFactor", scale_factor);
+  return client_->SendCommand("Input.synthesizePinchGesture", params);
+}
+
 Status WebViewImpl::CallAsyncFunctionInternal(const std::string& frame,
                                               const std::string& function,
                                               const base::ListValue& args,
