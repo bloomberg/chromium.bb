@@ -302,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
 }
 
 // Verifies that the webui for login comes up successfully.
-IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
+// http://crbug.com/458054
+IN_PROC_BROWSER_TEST_F(LoginSigninTest, DISABLED_WebUIVisible) {
   base::TimeDelta no_timeout;
   EXPECT_TRUE(tracing::WaitForWatchEvent(no_timeout));
   std::string json_events;
