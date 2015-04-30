@@ -26,20 +26,22 @@
  */
 
 #include "config.h"
-#include "core/layout/LayoutMediaControls.h"
+#include "core/paint/MediaControlsPainter.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/paint/PaintInfo.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
+static double kCurrentTimeBufferedDelta = 1.0;
+
 typedef WTF::HashMap<const char*, Image*> MediaControlImageMap;
 static MediaControlImageMap* gMediaControlImageMap = 0;
-static double kCurrentTimeBufferedDelta = 1.0;
 
 static Image* platformResource(const char* name)
 {
@@ -375,7 +377,7 @@ static bool paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInf
     }
 }
 
-bool LayoutMediaControls::paintMediaControlsPart(MediaControlElementType part, LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaControlsPart(MediaControlElementType part, LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     switch (part) {
     case MediaMuteButton:
@@ -421,7 +423,7 @@ bool LayoutMediaControls::paintMediaControlsPart(MediaControlElementType part, L
 const int mediaSliderThumbHeight = 24;
 const int mediaVolumeSliderThumbHeight = 24;
 
-void LayoutMediaControls::adjustMediaSliderThumbSize(ComputedStyle& style)
+void MediaControlsPainter::adjustMediaSliderThumbSize(ComputedStyle& style)
 {
     static Image* mediaSliderThumb = platformResource("mediaplayerSliderThumb");
     static Image* mediaVolumeSliderThumb = platformResource("mediaplayerVolumeSliderThumb");
@@ -444,40 +446,6 @@ void LayoutMediaControls::adjustMediaSliderThumbSize(ComputedStyle& style)
         style.setWidth(Length(static_cast<int>(width * zoomLevel), Fixed));
         style.setHeight(Length(static_cast<int>(height * zoomLevel), Fixed));
     }
-}
-
-static String formatChromiumMediaControlsTime(float time, float duration)
-{
-    if (!std::isfinite(time))
-        time = 0;
-    if (!std::isfinite(duration))
-        duration = 0;
-    int seconds = static_cast<int>(fabsf(time));
-    int hours = seconds / (60 * 60);
-    int minutes = (seconds / 60) % 60;
-    seconds %= 60;
-
-    // duration defines the format of how the time is rendered
-    int durationSecs = static_cast<int>(fabsf(duration));
-    int durationHours = durationSecs / (60 * 60);
-    int durationMins = (durationSecs / 60) % 60;
-
-    if (durationHours || hours)
-        return String::format("%s%01d:%02d:%02d", (time < 0 ? "-" : ""), hours, minutes, seconds);
-    if (durationMins > 9)
-        return String::format("%s%02d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
-
-    return String::format("%s%01d:%02d", (time < 0 ? "-" : ""), minutes, seconds);
-}
-
-String LayoutMediaControls::formatMediaControlsTime(float time)
-{
-    return formatChromiumMediaControlsTime(time, time);
-}
-
-String LayoutMediaControls::formatMediaControlsCurrentTime(float currentTime, float duration)
-{
-    return formatChromiumMediaControlsTime(currentTime, duration);
 }
 
 } // namespace blink

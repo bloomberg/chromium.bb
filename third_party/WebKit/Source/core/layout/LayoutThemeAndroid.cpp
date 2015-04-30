@@ -28,7 +28,6 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
-#include "core/layout/LayoutMediaControls.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutSlider.h"

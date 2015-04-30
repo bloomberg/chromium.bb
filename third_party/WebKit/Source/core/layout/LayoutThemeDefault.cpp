@@ -26,21 +26,16 @@
 #include "core/layout/LayoutThemeDefault.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/layout/LayoutMediaControls.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutThemeFontProvider.h"
-#include "core/paint/PaintInfo.h"
+#include "core/paint/MediaControlsPainter.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebRect.h"
 #include "public/platform/WebThemeEngine.h"
-#include "wtf/StdLibExtras.h"
 
 namespace blink {
 
@@ -73,24 +68,6 @@ unsigned LayoutThemeDefault::m_inactiveSelectionBackgroundColor = 0xffc8c8c8;
 unsigned LayoutThemeDefault::m_inactiveSelectionForegroundColor = 0xff323232;
 
 double LayoutThemeDefault::m_caretBlinkInterval;
-
-static const unsigned defaultButtonBackgroundColor = 0xffdddddd;
-
-static WebThemeEngine::State getWebThemeState(const LayoutTheme* theme, const LayoutObject* o)
-{
-    if (!theme->isEnabled(o))
-        return WebThemeEngine::StateDisabled;
-    if (useMockTheme() && theme->isReadOnlyControl(o))
-        return WebThemeEngine::StateReadonly;
-    if (theme->isPressed(o))
-        return WebThemeEngine::StatePressed;
-    if (useMockTheme() && theme->isFocused(o))
-        return WebThemeEngine::StateFocused;
-    if (theme->isHovered(o))
-        return WebThemeEngine::StateHover;
-
-    return WebThemeEngine::StateNormal;
-}
 
 LayoutThemeDefault::LayoutThemeDefault()
 {
@@ -229,7 +206,7 @@ void LayoutThemeDefault::adjustSliderThumbSize(ComputedStyle& style, Element* el
         style.setWidth(Length(size.height() * zoomLevel, Fixed));
         style.setHeight(Length(size.width() * zoomLevel, Fixed));
     } else {
-        LayoutMediaControls::adjustMediaSliderThumbSize(style);
+        MediaControlsPainter::adjustMediaSliderThumbSize(style);
     }
 }
 
@@ -250,29 +227,6 @@ void LayoutThemeDefault::setSelectionColors(
     m_inactiveSelectionForegroundColor = inactiveForegroundColor;
 }
 
-bool LayoutThemeDefault::paintCheckbox(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    WebThemeEngine::ExtraParams extraParams;
-    WebCanvas* canvas = i.context->canvas();
-    extraParams.button.checked = isChecked(o);
-    extraParams.button.indeterminate = isIndeterminate(o);
-
-    float zoomLevel = o->style()->effectiveZoom();
-    GraphicsContextStateSaver stateSaver(*i.context, false);
-    IntRect unzoomedRect = rect;
-    if (zoomLevel != 1) {
-        stateSaver.save();
-        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
-        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
-        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        i.context->scale(zoomLevel, zoomLevel);
-        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
-    }
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartCheckbox, getWebThemeState(this, o), WebRect(unzoomedRect), &extraParams);
-    return false;
-}
-
 void LayoutThemeDefault::setCheckboxSize(ComputedStyle& style) const
 {
     // If the width and height are both specified, then we have nothing to do.
@@ -284,16 +238,6 @@ void LayoutThemeDefault::setCheckboxSize(ComputedStyle& style) const
     size.setWidth(size.width() * zoomLevel);
     size.setHeight(size.height() * zoomLevel);
     setSizeIfAuto(style, size);
-}
-
-bool LayoutThemeDefault::paintRadio(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    WebThemeEngine::ExtraParams extraParams;
-    WebCanvas* canvas = i.context->canvas();
-    extraParams.button.checked = isChecked(o);
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartRadio, getWebThemeState(this, o), WebRect(rect), &extraParams);
-    return false;
 }
 
 void LayoutThemeDefault::setRadioSize(ComputedStyle& style) const
@@ -309,208 +253,12 @@ void LayoutThemeDefault::setRadioSize(ComputedStyle& style) const
     setSizeIfAuto(style, size);
 }
 
-bool LayoutThemeDefault::paintButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    WebThemeEngine::ExtraParams extraParams;
-    WebCanvas* canvas = i.context->canvas();
-    extraParams.button.hasBorder = true;
-    extraParams.button.backgroundColor = useMockTheme() ? 0xffc0c0c0 : defaultButtonBackgroundColor;
-    if (o->hasBackground())
-        extraParams.button.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartButton, getWebThemeState(this, o), WebRect(rect), &extraParams);
-    return false;
-}
-
-bool LayoutThemeDefault::paintTextField(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    // WebThemeEngine does not handle border rounded corner and background image
-    // so return true to draw CSS border and background.
-    if (o->style()->hasBorderRadius() || o->style()->hasBackgroundImage())
-        return true;
-
-    ControlPart part = o->style()->appearance();
-
-    WebThemeEngine::ExtraParams extraParams;
-    extraParams.textField.isTextArea = part == TextAreaPart;
-    extraParams.textField.isListbox = part == ListboxPart;
-
-    WebCanvas* canvas = i.context->canvas();
-
-    Color backgroundColor = o->resolveColor(CSSPropertyBackgroundColor);
-    extraParams.textField.backgroundColor = backgroundColor.rgb();
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartTextField, getWebThemeState(this, o), WebRect(rect), &extraParams);
-    return false;
-}
-
-bool LayoutThemeDefault::paintMenuList(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    if (!o->isBox())
-        return false;
-
-    const int right = rect.x() + rect.width();
-    const int middle = rect.y() + rect.height() / 2;
-
-    WebThemeEngine::ExtraParams extraParams;
-    extraParams.menuList.arrowY = middle;
-    const LayoutBox* box = toLayoutBox(o);
-    // Match Chromium Win behaviour of showing all borders if any are shown.
-    extraParams.menuList.hasBorder = box->borderRight() || box->borderLeft() || box->borderTop() || box->borderBottom();
-    extraParams.menuList.hasBorderRadius = o->style()->hasBorderRadius();
-    // Fallback to transparent if the specified color object is invalid.
-    Color backgroundColor(Color::transparent);
-    if (o->hasBackground())
-        backgroundColor = o->resolveColor(CSSPropertyBackgroundColor);
-    extraParams.menuList.backgroundColor = backgroundColor.rgb();
-
-    // If we have a background image, don't fill the content area to expose the
-    // parent's background. Also, we shouldn't fill the content area if the
-    // alpha of the color is 0. The API of Windows GDI ignores the alpha.
-    // FIXME: the normal Aura theme doesn't care about this, so we should
-    // investigate if we really need fillContentArea.
-    extraParams.menuList.fillContentArea = !o->style()->hasBackgroundImage() && backgroundColor.alpha();
-
-    if (useMockTheme()) {
-        // The size and position of the drop-down button is different between
-        // the mock theme and the regular aura theme.
-        int spacingTop = box->borderTop() + box->paddingTop();
-        int spacingBottom = box->borderBottom() + box->paddingBottom();
-        int spacingRight = box->borderRight() + box->paddingRight();
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
-        extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
-    } else {
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
-    }
-
-    WebCanvas* canvas = i.context->canvas();
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartMenuList, getWebThemeState(this, o), WebRect(rect), &extraParams);
-    return false;
-}
-
-bool LayoutThemeDefault::paintMenuListButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    if (!o->isBox())
-        return false;
-
-    const int right = rect.x() + rect.width();
-    const int middle = rect.y() + rect.height() / 2;
-
-    WebThemeEngine::ExtraParams extraParams;
-    extraParams.menuList.arrowY = middle;
-    extraParams.menuList.hasBorder = false;
-    extraParams.menuList.hasBorderRadius = o->style()->hasBorderRadius();
-    extraParams.menuList.backgroundColor = Color::transparent;
-    extraParams.menuList.fillContentArea = false;
-
-    if (useMockTheme()) {
-        const LayoutBox* box = toLayoutBox(o);
-        // The size and position of the drop-down button is different between
-        // the mock theme and the regular aura theme.
-        int spacingTop = box->borderTop() + box->paddingTop();
-        int spacingBottom = box->borderBottom() + box->paddingBottom();
-        int spacingRight = box->borderRight() + box->paddingRight();
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
-        extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
-    } else {
-        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
-    }
-
-    WebCanvas* canvas = i.context->canvas();
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartMenuList, getWebThemeState(this, o), WebRect(rect), &extraParams);
-    return false;
-}
-
-bool LayoutThemeDefault::paintSliderTrack(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    WebThemeEngine::ExtraParams extraParams;
-    WebCanvas* canvas = i.context->canvas();
-    extraParams.slider.vertical = o->style()->appearance() == SliderVerticalPart;
-
-    paintSliderTicks(o, i, rect);
-
-    // FIXME: Mock theme doesn't handle zoomed sliders.
-    float zoomLevel = useMockTheme() ? 1 : o->style()->effectiveZoom();
-    GraphicsContextStateSaver stateSaver(*i.context, false);
-    IntRect unzoomedRect = rect;
-    if (zoomLevel != 1) {
-        stateSaver.save();
-        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
-        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
-        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        i.context->scale(zoomLevel, zoomLevel);
-        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
-    }
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartSliderTrack, getWebThemeState(this, o), WebRect(unzoomedRect), &extraParams);
-
-    return false;
-}
-
-bool LayoutThemeDefault::paintSliderThumb(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    WebThemeEngine::ExtraParams extraParams;
-    WebCanvas* canvas = i.context->canvas();
-    extraParams.slider.vertical = o->style()->appearance() == SliderThumbVerticalPart;
-    extraParams.slider.inDrag = isPressed(o);
-
-    // FIXME: Mock theme doesn't handle zoomed sliders.
-    float zoomLevel = useMockTheme() ? 1 : o->style()->effectiveZoom();
-    GraphicsContextStateSaver stateSaver(*i.context, false);
-    IntRect unzoomedRect = rect;
-    if (zoomLevel != 1) {
-        stateSaver.save();
-        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
-        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
-        i.context->translate(unzoomedRect.x(), unzoomedRect.y());
-        i.context->scale(zoomLevel, zoomLevel);
-        i.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
-    }
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartSliderThumb, getWebThemeState(this, o), WebRect(unzoomedRect), &extraParams);
-    return false;
-}
-
 void LayoutThemeDefault::adjustInnerSpinButtonStyle(ComputedStyle& style, Element*) const
 {
     IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartInnerSpinButton);
 
     style.setWidth(Length(size.width(), Fixed));
     style.setMinWidth(Length(size.width(), Fixed));
-}
-
-bool LayoutThemeDefault::paintInnerSpinButton(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    WebThemeEngine::ExtraParams extraParams;
-    WebCanvas* canvas = i.context->canvas();
-    extraParams.innerSpin.spinUp = (controlStatesForLayoutObject(o) & SpinUpControlState);
-    extraParams.innerSpin.readOnly = isReadOnlyControl(o);
-
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartInnerSpinButton, getWebThemeState(this, o), WebRect(rect), &extraParams);
-    return false;
-}
-
-bool LayoutThemeDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, const IntRect& rect)
-{
-    if (!o->isProgress())
-        return true;
-
-    LayoutProgress* layoutProgress = toLayoutProgress(o);
-    IntRect valueRect = progressValueRectFor(layoutProgress, rect);
-
-    WebThemeEngine::ExtraParams extraParams;
-    extraParams.progressBar.determinate = layoutProgress->isDeterminate();
-    extraParams.progressBar.valueRectX = valueRect.x();
-    extraParams.progressBar.valueRectY = valueRect.y();
-    extraParams.progressBar.valueRectWidth = valueRect.width();
-    extraParams.progressBar.valueRectHeight = valueRect.height();
-
-    DirectionFlippingScope scope(o, i, rect);
-    WebCanvas* canvas = i.context->canvas();
-    Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartProgressBar, getWebThemeState(this, o), WebRect(rect), &extraParams);
-    return false;
 }
 
 bool LayoutThemeDefault::shouldOpenPickerWithF4Key() const
@@ -580,20 +328,10 @@ void LayoutThemeDefault::adjustButtonStyle(ComputedStyle& style, Element*) const
     }
 }
 
-bool LayoutThemeDefault::paintTextArea(LayoutObject* o, const PaintInfo& i, const IntRect& r)
-{
-    return paintTextField(o, i, r);
-}
-
 void LayoutThemeDefault::adjustSearchFieldStyle(ComputedStyle& style, Element*) const
 {
     // Ignore line-height.
     style.setLineHeight(ComputedStyle::initialLineHeight());
-}
-
-bool LayoutThemeDefault::paintSearchField(LayoutObject* o, const PaintInfo& i, const IntRect& r)
-{
-    return paintTextField(o, i, r);
 }
 
 void LayoutThemeDefault::adjustSearchFieldCancelButtonStyle(ComputedStyle& style, Element*) const
@@ -603,46 +341,6 @@ void LayoutThemeDefault::adjustSearchFieldCancelButtonStyle(ComputedStyle& style
     int cancelButtonSize = lroundf(std::min(std::max(minCancelButtonSize, defaultCancelButtonSize * fontScale), maxCancelButtonSize));
     style.setWidth(Length(cancelButtonSize, Fixed));
     style.setHeight(Length(cancelButtonSize, Fixed));
-}
-
-IntRect LayoutThemeDefault::convertToPaintingRect(LayoutObject* inputLayoutObject, const LayoutObject* partLayoutObject, LayoutRect partRect, const IntRect& localOffset) const
-{
-    // Compute an offset between the part layoutObject and the input layoutObject.
-    LayoutSize offsetFromInputLayoutObject = -partLayoutObject->offsetFromAncestorContainer(inputLayoutObject);
-    // Move the rect into partLayoutObject's coords.
-    partRect.move(offsetFromInputLayoutObject);
-    // Account for the local drawing offset.
-    partRect.move(localOffset.x(), localOffset.y());
-
-    return pixelSnappedIntRect(partRect);
-}
-
-bool LayoutThemeDefault::paintSearchFieldCancelButton(LayoutObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
-{
-    // Get the layoutObject of <input> element.
-    if (!cancelButtonObject->node())
-        return false;
-    Node* input = cancelButtonObject->node()->shadowHost();
-    LayoutObject* baseLayoutObject = input ? input->layoutObject() : cancelButtonObject;
-    if (!baseLayoutObject->isBox())
-        return false;
-    LayoutBox* inputLayoutBox = toLayoutBox(baseLayoutObject);
-    LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
-
-    // Make sure the scaled button stays square and will fit in its parent's box.
-    LayoutUnit cancelButtonSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
-    // Calculate cancel button's coordinates relative to the input element.
-    // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
-    // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    LayoutRect cancelButtonRect(cancelButtonObject->offsetFromAncestorContainer(inputLayoutBox).width(),
-        inputContentBox.y() + (inputContentBox.height() - cancelButtonSize + 1) / 2,
-        cancelButtonSize, cancelButtonSize);
-    IntRect paintingRect = convertToPaintingRect(inputLayoutBox, cancelButtonObject, cancelButtonRect, r);
-
-    DEFINE_STATIC_REF(Image, cancelImage, (Image::loadPlatformResource("searchCancel")));
-    DEFINE_STATIC_REF(Image, cancelPressedImage, (Image::loadPlatformResource("searchCancelPressed")));
-    paintInfo.context->drawImage(isPressed(cancelButtonObject) ? cancelPressedImage : cancelImage, paintingRect);
-    return false;
 }
 
 void LayoutThemeDefault::adjustSearchFieldDecorationStyle(ComputedStyle& style, Element*) const
@@ -660,93 +358,6 @@ void LayoutThemeDefault::adjustSearchFieldResultsDecorationStyle(ComputedStyle& 
         maxSearchFieldResultsDecorationSize));
     style.setWidth(Length(magnifierSize, Fixed));
     style.setHeight(Length(magnifierSize, Fixed));
-}
-
-bool LayoutThemeDefault::paintSearchFieldResultsDecoration(LayoutObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
-{
-    // Get the layoutObject of <input> element.
-    if (!magnifierObject->node())
-        return false;
-    Node* input = magnifierObject->node()->shadowHost();
-    LayoutObject* baseLayoutObject = input ? input->layoutObject() : magnifierObject;
-    if (!baseLayoutObject->isBox())
-        return false;
-    LayoutBox* inputLayoutBox = toLayoutBox(baseLayoutObject);
-    LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
-
-    // Make sure the scaled decoration stays square and will fit in its parent's box.
-    LayoutUnit magnifierSize = std::min(inputContentBox.width(), std::min<LayoutUnit>(inputContentBox.height(), r.height()));
-    // Calculate decoration's coordinates relative to the input element.
-    // Center the decoration vertically.  Round up though, so if it has to be one pixel off-center, it will
-    // be one pixel closer to the bottom of the field.  This tends to look better with the text.
-    LayoutRect magnifierRect(magnifierObject->offsetFromAncestorContainer(inputLayoutBox).width(),
-        inputContentBox.y() + (inputContentBox.height() - magnifierSize + 1) / 2,
-        magnifierSize, magnifierSize);
-    IntRect paintingRect = convertToPaintingRect(inputLayoutBox, magnifierObject, magnifierRect, r);
-
-    DEFINE_STATIC_REF(Image, magnifierImage, (Image::loadPlatformResource("searchMagnifier")));
-    paintInfo.context->drawImage(magnifierImage, paintingRect);
-    return false;
-}
-
-bool LayoutThemeDefault::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
-}
-
-bool LayoutThemeDefault::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
-}
-
-bool LayoutThemeDefault::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
-}
-
-bool LayoutThemeDefault::paintMediaToggleClosedCaptionsButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
-}
-
-bool LayoutThemeDefault::paintMediaCastButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaCastOffButton, o, paintInfo, r);
-}
-
-bool LayoutThemeDefault::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
-}
-
-bool LayoutThemeDefault::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
-}
-
-bool LayoutThemeDefault::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
-}
-
-bool LayoutThemeDefault::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
-}
-
-String LayoutThemeDefault::formatMediaControlsTime(float time) const
-{
-    return LayoutMediaControls::formatMediaControlsTime(time);
-}
-
-String LayoutThemeDefault::formatMediaControlsCurrentTime(float currentTime, float duration) const
-{
-    return LayoutMediaControls::formatMediaControlsCurrentTime(currentTime, duration);
-}
-
-bool LayoutThemeDefault::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return LayoutMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
 void LayoutThemeDefault::adjustMenuListStyle(ComputedStyle& style, Element*) const
@@ -817,29 +428,8 @@ bool LayoutThemeDefault::shouldShowPlaceholderWhenFocused() const
 //
 // Following values are come from default of GTK+
 //
-static const int progressActivityBlocks = 5;
 static const int progressAnimationFrames = 10;
 static const double progressAnimationInterval = 0.125;
-
-IntRect LayoutThemeDefault::determinateProgressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect) const
-{
-    int dx = rect.width() * layoutProgress->position();
-    return IntRect(rect.x(), rect.y(), dx, rect.height());
-}
-
-IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect) const
-{
-
-    int valueWidth = rect.width() / progressActivityBlocks;
-    int movableWidth = rect.width() - valueWidth;
-    if (movableWidth <= 0)
-        return IntRect();
-
-    double progress = layoutProgress->animationProgress();
-    if (progress < 0.5)
-        return IntRect(rect.x() + progress * 2 * movableWidth, rect.y(), valueWidth, rect.height());
-    return IntRect(rect.x() + (1.0 - progress) * 2 * movableWidth, rect.y(), valueWidth, rect.height());
-}
 
 double LayoutThemeDefault::animationRepeatIntervalForProgressBar() const
 {
@@ -849,29 +439,6 @@ double LayoutThemeDefault::animationRepeatIntervalForProgressBar() const
 double LayoutThemeDefault::animationDurationForProgressBar() const
 {
     return progressAnimationInterval * progressAnimationFrames * 2; // "2" for back and forth
-}
-
-IntRect LayoutThemeDefault::progressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect) const
-{
-    return layoutProgress->isDeterminate() ? determinateProgressValueRectFor(layoutProgress, rect) : indeterminateProgressValueRectFor(layoutProgress, rect);
-}
-
-LayoutThemeDefault::DirectionFlippingScope::DirectionFlippingScope(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
-    : m_needsFlipping(!layoutObject->style()->isLeftToRightDirection())
-    , m_paintInfo(paintInfo)
-{
-    if (!m_needsFlipping)
-        return;
-    m_paintInfo.context->save();
-    m_paintInfo.context->translate(2 * rect.x() + rect.width(), 0);
-    m_paintInfo.context->scale(-1, 1);
-}
-
-LayoutThemeDefault::DirectionFlippingScope::~DirectionFlippingScope()
-{
-    if (!m_needsFlipping)
-        return;
-    m_paintInfo.context->restore();
 }
 
 } // namespace blink

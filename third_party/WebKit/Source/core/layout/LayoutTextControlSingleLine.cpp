@@ -35,6 +35,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/ThemePainter.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/fonts/SimpleFontData.h"
 
@@ -83,7 +84,7 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
 
         // Convert the rect into the coords used for painting the content
         contentsRect.moveBy(paintOffset + location());
-        LayoutTheme::theme().paintCapsLockIndicator(this, paintInfo, pixelSnappedIntRect(contentsRect));
+        LayoutTheme::theme().painter().paintCapsLockIndicator(this, paintInfo, pixelSnappedIntRect(contentsRect));
     }
 }
 

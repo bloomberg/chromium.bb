@@ -24,6 +24,7 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/RoundedInnerRectClipper.h"
+#include "core/paint/ThemePainter.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRectOutsets.h"
@@ -113,7 +114,8 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     // If we have a native theme appearance, paint that before painting our background.
     // The theme will tell us whether or not we should also paint the CSS background.
     IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
-    bool themePainted = boxDecorationData.hasAppearance && !LayoutTheme::theme().paint(&m_layoutBox, paintInfo, snappedPaintRect);
+    ThemePainter& themePainter = LayoutTheme::theme().painter();
+    bool themePainted = boxDecorationData.hasAppearance && !themePainter.paint(&m_layoutBox, paintInfo, snappedPaintRect);
     if (!themePainted) {
         if (boxDecorationData.bleedAvoidance == BackgroundBleedBackgroundOverBorder)
             paintBorder(m_layoutBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance);
@@ -121,13 +123,13 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
         paintBackground(paintInfo, paintRect, boxDecorationData.backgroundColor, boxDecorationData.bleedAvoidance);
 
         if (boxDecorationData.hasAppearance)
-            LayoutTheme::theme().paintDecorations(&m_layoutBox, paintInfo, snappedPaintRect);
+            themePainter.paintDecorations(&m_layoutBox, paintInfo, snappedPaintRect);
     }
     paintBoxShadow(paintInfo, paintRect, style, Inset);
 
     // The theme will tell us whether or not we should also paint the CSS border.
     if (boxDecorationData.hasBorder && boxDecorationData.bleedAvoidance != BackgroundBleedBackgroundOverBorder
-        && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().paintBorderOnly(&m_layoutBox, paintInfo, snappedPaintRect)))
+        && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().painter().paintBorderOnly(&m_layoutBox, paintInfo, snappedPaintRect)))
         && !(m_layoutBox.isTable() && toLayoutTable(&m_layoutBox)->collapseBorders()))
         paintBorder(m_layoutBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance);
 

@@ -576,6 +576,12 @@
             ['include', '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
           ],
         }],
+        ['use_default_render_theme==0 and OS != "android"', {
+          'sources!': [
+            'paint/ThemePainterDefault.cpp',
+            'paint/ThemePainterDefault.h',
+          ],
+        }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, 4334, ],
@@ -759,6 +765,8 @@
               'sources!': [
                 'layout/LayoutThemeDefault.cpp',
                 'layout/LayoutThemeDefault.h',
+                'paint/ThemePainterDefault.cpp',
+                'paint/ThemePainterDefault.h',
               ],
             }],
             ['OS=="win"', {

@@ -25,6 +25,7 @@
 #define LayoutThemeMac_h
 
 #import "core/layout/LayoutTheme.h"
+#import "core/paint/ThemePainterMac.h"
 #import "wtf/HashMap.h"
 #import "wtf/RetainPtr.h"
 
@@ -68,13 +69,10 @@ public:
     virtual int popupInternalPaddingTop(const ComputedStyle&) const override;
     virtual int popupInternalPaddingBottom(const ComputedStyle&) const override;
 
-    virtual bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
     virtual bool popsMenuByArrowKeys() const override { return true; }
     virtual bool popsMenuBySpaceKey() const override final { return true; }
 
     virtual IntSize meterSizeForBounds(const LayoutMeter*, const IntRect&) const override;
-    virtual bool paintMeter(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual bool supportsMeter(ControlPart) const override;
 
     // Returns the repeat interval of the animation for the progress bar.
@@ -92,38 +90,15 @@ protected:
     LayoutThemeMac();
     virtual ~LayoutThemeMac();
 
-    virtual bool paintTextField(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
-    virtual bool paintTextArea(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
-    virtual bool paintMenuList(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void adjustMenuListStyle(ComputedStyle&, Element*) const override;
-
-    virtual bool paintMenuListButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
-
-    virtual bool paintProgressBar(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
-    virtual bool paintSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
-    virtual bool paintSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
-    virtual bool paintSearchField(LayoutObject*, const PaintInfo&, const IntRect&) override;
     virtual void adjustSearchFieldStyle(ComputedStyle&, Element*) const override;
-
     virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&, Element*) const override;
-    virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
     virtual void adjustSearchFieldDecorationStyle(ComputedStyle&, Element*) const override;
-    virtual bool paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
-
     virtual void adjustSearchFieldResultsDecorationStyle(ComputedStyle&, Element*) const override;
-    virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) override;
 
-private:
-    virtual String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
-
-    FloatRect convertToPaintingRect(const LayoutObject* inputRenderer, const LayoutObject* partRenderer, const FloatRect& inputRect, const IntRect&) const;
+public:
+    // Constants and methods shared with ThemePainterMac
 
     // Get the control size based off the font. Used by some of the controls (like buttons).
     NSControlSize controlSizeForFont(const ComputedStyle&) const;
@@ -160,38 +135,49 @@ private:
     NSLevelIndicatorStyle levelIndicatorStyleFor(ControlPart) const;
     NSLevelIndicatorCell* levelIndicatorFor(const LayoutMeter*) const;
 
+    // A view associated to the contained document. Subclasses may not have such a view and return a fake.
+    NSView* documentViewFor(LayoutObject*) const;
+
     int minimumProgressBarHeight(const ComputedStyle&) const;
     const IntSize* progressBarSizes() const;
     const int* progressBarMargins(NSControlSize) const;
 
-protected:
-    virtual void adjustMediaSliderThumbSize(ComputedStyle&) const;
-    virtual bool paintMediaPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaOverlayPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaMuteButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual String extraFullScreenStyleSheet() override;
+    void updateActiveState(NSCell*, const LayoutObject*);
 
-    virtual bool paintMediaSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderContainer(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual String formatMediaControlsTime(float time) const override;
-    virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const override;
-    virtual bool paintMediaFullscreenButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
-    virtual bool paintMediaToggleClosedCaptionsButton(LayoutObject*, const PaintInfo&, const IntRect&) override;
+    // We estimate the animation rate of a Mac OS X progress bar is 33 fps.
+    // Hard code the value here because we haven't found API for it.
+    static constexpr double progressAnimationFrameRate = 0.033;
+    // Mac OS X progress bar animation seems to have 256 frames.
+    static constexpr double progressAnimationNumFrames = 256;
+
+    static constexpr float baseFontSize = 11.0f;
+    static constexpr float menuListBaseArrowHeight = 4.0f;
+    static constexpr float menuListBaseArrowWidth = 5.0f;
+    static constexpr float menuListBaseSpaceBetweenArrows = 2.0f;
+    static const int menuListArrowPaddingLeft = 6;
+    static const int menuListArrowPaddingRight = 6;
+    static const int sliderThumbWidth = 15;
+    static const int sliderThumbHeight = 15;
+    static const int sliderThumbShadowBlur = 1;
+    static const int sliderThumbBorderWidth = 1;
+    static const int sliderTrackWidth = 5;
+    static const int sliderTrackBorderWidth = 1;
+
+protected:
+    void adjustMediaSliderThumbSize(ComputedStyle&) const;
+    virtual String extraFullScreenStyleSheet() override;
 
     // Controls color values returned from platformFocusRingColor(). systemColor() will be used when false.
     bool usesTestModeFocusRingColor() const;
-    // A view associated to the contained document. Subclasses may not have such a view and return a fake.
-    NSView* documentViewFor(LayoutObject*) const;
 
     virtual bool shouldUseFallbackTheme(const ComputedStyle&) const override;
 
 private:
-    virtual void updateActiveState(NSCell*, const LayoutObject*);
+    virtual String fileListNameForWidth(Locale&, const FileList*, const Font&, int width) const override;
     virtual String extraDefaultStyleSheet() override;
     virtual bool shouldShowPlaceholderWhenFocused() const override;
+
+    virtual ThemePainter& painter() override { return m_painter; }
 
     mutable RetainPtr<NSPopUpButtonCell> m_popupButton;
     mutable RetainPtr<NSSearchFieldCell> m_search;
@@ -202,6 +188,8 @@ private:
     mutable HashMap<int, RGBA32> m_systemColorCache;
 
     RetainPtr<LayoutThemeNotificationObserver> m_notificationObserver;
+
+    ThemePainterMac m_painter;
 };
 
 } // namespace blink

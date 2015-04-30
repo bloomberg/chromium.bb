@@ -25,26 +25,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutMediaControls_h
-#define LayoutMediaControls_h
+#ifndef MediaControlsPainter_h
+#define MediaControlsPainter_h
 
-#include "core/html/shadow/MediaControlElements.h"
+#include "core/html/shadow/MediaControlElementTypes.h"
 
 namespace blink {
 
 struct PaintInfo;
 
+class ComputedStyle;
 class IntRect;
 class LayoutObject;
 
-class LayoutMediaControls {
+class MediaControlsPainter {
 public:
     static bool paintMediaControlsPart(MediaControlElementType, LayoutObject*, const PaintInfo&, const IntRect&);
     static void adjustMediaSliderThumbSize(ComputedStyle&);
-    static String formatMediaControlsTime(float time);
-    static String formatMediaControlsCurrentTime(float currentTime, float duration);
 };
 
 } // namespace blink
 
-#endif // LayoutMediaControls_h
+#endif // MediaControlsPainter_h
