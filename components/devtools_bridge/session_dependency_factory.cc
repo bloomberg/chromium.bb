@@ -169,7 +169,7 @@ class DataChannelProxyImpl : public AbstractDataChannel::Proxy {
 
   void SendBinaryMessage(const void* data, size_t length) override {
     auto buffer = make_scoped_ptr(new webrtc::DataBuffer(rtc::Buffer(), true));
-    buffer->data.SetData(data, length);
+    buffer->data.SetData(static_cast<const uint8_t*>(data), length);
 
     signaling_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(
@@ -243,7 +243,8 @@ class DataChannelImpl : public AbstractDataChannel {
   }
 
   void SendMessage(void* data, size_t length, bool is_binary) {
-    impl_->Send(webrtc::DataBuffer(rtc::Buffer(data, length), is_binary));
+    impl_->Send(webrtc::DataBuffer(
+        rtc::Buffer(static_cast<uint8_t*>(data), length), is_binary));
   }
 
   void Close() override {
