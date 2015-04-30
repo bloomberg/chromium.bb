@@ -25,15 +25,6 @@ public final class ChildAccountFeedbackReporter {
 
     private static ExternalFeedbackReporter sExternalFeedbackReporter;
 
-    /**
-     * This method should not be called. Instead override the method
-     * {@link ChromiumApplication#createChildAccountFeedbackLauncher()}.
-     */
-    @Deprecated
-    public static void setExternalFeedbackReporter(ExternalFeedbackReporter reporter) {
-        sExternalFeedbackReporter = reporter;
-    }
-
     public static void reportFeedback(Activity activity,
                                       String description,
                                       String url) {

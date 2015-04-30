@@ -29,15 +29,6 @@ public final class DomDistillerFeedbackReporter {
     private static ExternalFeedbackReporter sExternalFeedbackReporter;
 
     /**
-     * This method should not be called. Instead override the method
-     * {@link ChromiumApplication#createDomDistillerFeedbackLauncher}.
-     */
-    @Deprecated
-    public static void setExternalFeedbackReporter(ExternalFeedbackReporter reporter) {
-        sExternalFeedbackReporter = reporter;
-    }
-
-    /**
      * A static method for native code to call to call the external feedback form.
      * @param window WindowAndroid object to get an activity from.
      * @param url The URL to report feedback for.
