@@ -483,8 +483,7 @@ scoped_ptr<disk_cache::Backend::Iterator> MockDiskCache::CreateIterator() {
   return scoped_ptr<Iterator>(new NotImplementedIterator());
 }
 
-void MockDiskCache::GetStats(
-    std::vector<std::pair<std::string, std::string> >* stats) {
+void MockDiskCache::GetStats(base::StringPairs* stats) {
 }
 
 void MockDiskCache::OnExternalCacheHit(const std::string& key) {

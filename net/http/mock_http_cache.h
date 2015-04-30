@@ -11,6 +11,7 @@
 #define NET_HTTP_MOCK_HTTP_CACHE_H_
 
 #include "base/containers/hash_tables.h"
+#include "base/strings/string_split.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_test_util.h"
@@ -127,8 +128,7 @@ class MockDiskCache : public disk_cache::Backend {
   int DoomEntriesSince(base::Time initial_time,
                        const CompletionCallback& callback) override;
   scoped_ptr<Iterator> CreateIterator() override;
-  void GetStats(
-      std::vector<std::pair<std::string, std::string>>* stats) override;
+  void GetStats(base::StringPairs* stats) override;
   void OnExternalCacheHit(const std::string& key) override;
 
   // Returns number of times a cache entry was successfully opened.
