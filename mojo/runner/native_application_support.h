@@ -9,10 +9,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/native_runner.h"
 
-#if defined(OS_WIN)
-#undef DELETE
-#endif
-
 namespace base {
 class FilePath;
 }
