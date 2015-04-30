@@ -49,9 +49,11 @@ int FrameBorderHitTestController::NonClientHitTest(
   bool can_ever_resize = frame->widget_delegate()->CanResize();
   // Don't allow overlapping resize handles when the window is maximized or
   // fullscreen, as it can't be resized in those states.
-  int resize_border =
-      frame->IsMaximized() || frame->IsFullscreen() ? 0 :
-      kResizeInsideBoundsSize;
+  int resize_border = kResizeInsideBoundsSize;
+  if (frame->IsMaximized() || frame->IsFullscreen()) {
+    resize_border = 0;
+    can_ever_resize = false;
+  }
   int frame_component = view->GetHTComponentForFrame(point_in_widget,
                                                      resize_border,
                                                      resize_border,
