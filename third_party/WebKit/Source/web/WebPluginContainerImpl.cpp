@@ -518,6 +518,9 @@ void WebPluginContainerImpl::zoomLevelChanged(double zoomLevel)
 
 bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect)
 {
+    if (m_element->document().isDetached())
+        return false;
+
     LocalFrame* frame = m_element->document().frame();
     if (!frame)
         return false;
