@@ -41,9 +41,12 @@ def _RunBisectionScript(options):
   Returns:
     An exit code; 0 for success, 1 for failure.
   """
+  script_path = os.path.join(options.working_directory,
+      'bisect', 'src', 'tools','bisect-manual-test.py')
+  abs_script_path = os.path.abspath(script_path)
+
   test_command = ('python %s --browser=%s --chrome-root=.' %
-                  (os.path.join(_TOOLS_DIR, 'bisect-manual-test.py'),
-                   options.browser_type))
+                  (abs_script_path, options.browser_type))
 
   cmd = ['python', _BISECT_SCRIPT_PATH,
          '-c', test_command,
@@ -53,8 +56,8 @@ def _RunBisectionScript(options):
          '-r', '1',
          '--working_directory', options.working_directory,
          '--build_preference', 'ninja',
-         '--use_goma',
-         '--no_custom_deps']
+         '--no_custom_deps',
+         '--builder_type', options.builder_type]
 
   if options.extra_src:
     cmd.extend(['--extra_src', options.extra_src])
@@ -69,7 +72,10 @@ def _RunBisectionScript(options):
       print ('Error: Cros build selected, but BISECT_CROS_IP or'
              'BISECT_CROS_BOARD undefined.\n')
       return 1
-  elif 'android-chrome' in options.browser_type:
+  elif 'android-chrome' == options.browser_type:
+    if not options.extra_src:
+      print 'Error: Missing --extra_src to run bisect for android-chrome.'
+      sys.exit(-1)
     cmd.extend(['--target_platform', 'android-chrome'])
   elif 'android' in options.browser_type:
     cmd.extend(['--target_platform', 'android'])
@@ -80,7 +86,7 @@ def _RunBisectionScript(options):
     cmd.extend(['--target_build_type', options.target_build_type])
 
   if options.goma_threads:
-    cmd.extend(['--goma_threads', options.goma_threads])
+    cmd.extend(['--use_goma', '--goma_threads', options.goma_threads])
 
   cmd = [str(c) for c in cmd]
 
@@ -129,9 +135,16 @@ def main():
                     choices=['Release', 'Debug'],
                     help='The target build type. Choices are "Release" '
                     'or "Debug".')
-  parser.add_option('--goma_threads',
+  parser.add_option('--goma_threads', default=64,
                     type='int',
-                    help='Number of goma threads to use.')
+                    help='Number of goma threads to use.  0 will disable goma.')
+  parser.add_option('--builder_type', default='',
+                    choices=['perf',
+                             'full',
+                             'android-chrome-perf', ''],
+                    help='Type of builder to get build from. This allows '
+                    'script to use cached builds. By default (empty), binaries '
+                    'are built locally.')
   options, _ = parser.parse_args()
   error_msg = ''
   if not options.good_revision:
