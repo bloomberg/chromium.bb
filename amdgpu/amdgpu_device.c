@@ -42,7 +42,6 @@
 
 #define PTR_TO_UINT(x) ((unsigned)((intptr_t)(x)))
 #define UINT_TO_PTR(x) ((void *)((intptr_t)(x)))
-#define RENDERNODE_MINOR_MASK 0xff7f
 
 pthread_mutex_t fd_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct util_hash_table *fd_tab;
@@ -60,30 +59,40 @@ static int handle_compare(void *key1, void *key2)
 static unsigned fd_hash(void *key)
 {
 	int fd = PTR_TO_UINT(key);
-	struct stat stat;
-	fstat(fd, &stat);
+	char *name = drmGetPrimaryDeviceNameFromFd(fd);
+	unsigned result = 0;
+	char *c;
 
-	if (!S_ISCHR(stat.st_mode))
-		return stat.st_dev ^ stat.st_ino;
-	else
-		return stat.st_dev ^ (stat.st_rdev & RENDERNODE_MINOR_MASK);
+	if (name == NULL)
+		return 0;
+
+	for (c = name; *c; ++c)
+		result += *c;
+
+	free(name);
+
+	return result;
 }
 
 static int fd_compare(void *key1, void *key2)
 {
 	int fd1 = PTR_TO_UINT(key1);
 	int fd2 = PTR_TO_UINT(key2);
-	struct stat stat1, stat2;
-	fstat(fd1, &stat1);
-	fstat(fd2, &stat2);
+	char *name1 = drmGetPrimaryDeviceNameFromFd(fd1);
+	char *name2 = drmGetPrimaryDeviceNameFromFd(fd2);
+	int result;
 
-	if (!S_ISCHR(stat1.st_mode) || !S_ISCHR(stat2.st_mode))
-		return stat1.st_dev != stat2.st_dev ||
-			stat1.st_ino != stat2.st_ino;
-        else
-		return major(stat1.st_rdev) != major(stat2.st_rdev) ||
-			(minor(stat1.st_rdev) & RENDERNODE_MINOR_MASK) !=
-			(minor(stat2.st_rdev) & RENDERNODE_MINOR_MASK);
+	if (name1 == NULL || name2 == NULL) {
+		free(name1);
+		free(name2);
+		return 0;
+	}
+
+	result = strcmp(name1, name2);
+	free(name1);
+	free(name2);
+
+	return result;
 }
 
 /**
