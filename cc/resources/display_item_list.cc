@@ -20,13 +20,29 @@
 
 namespace cc {
 
-DisplayItemList::DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture)
+namespace {
+
+bool PictureTracingEnabled() {
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+    TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
+    TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
+    &tracing_enabled);
+  return tracing_enabled;
+}
+
+}  // namespace
+
+DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
+                                 bool use_cached_picture,
+                                 bool retain_individual_display_items)
     : recorder_(new SkPictureRecorder()),
       use_cached_picture_(use_cached_picture),
-      retain_individual_display_items_(!use_cached_picture),
+      retain_individual_display_items_(retain_individual_display_items),
       layer_rect_(layer_rect),
       is_suitable_for_gpu_rasterization_(true),
-      approximate_op_count_(0) {
+      approximate_op_count_(0),
+      picture_memory_usage_(0) {
   if (use_cached_picture_) {
     SkRTreeFactory factory;
     recorder_.reset(new SkPictureRecorder());
@@ -34,15 +50,13 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture)
         layer_rect_.width(), layer_rect_.height(), &factory));
     canvas_->translate(-layer_rect_.x(), -layer_rect_.y());
     canvas_->clipRect(gfx::RectToSkRect(layer_rect_));
-
-    bool tracing_enabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
-      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
-      &tracing_enabled);
-    if (tracing_enabled)
-      retain_individual_display_items_ = true;
   }
+}
+
+DisplayItemList::DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture)
+    : DisplayItemList(layer_rect,
+                      use_cached_picture,
+                      !use_cached_picture || PictureTracingEnabled()) {
 }
 
 scoped_refptr<DisplayItemList> DisplayItemList::Create(
@@ -88,8 +102,10 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 void DisplayItemList::CreateAndCacheSkPicture() {
   // Convert to an SkPicture for faster rasterization.
   DCHECK(use_cached_picture_);
+  DCHECK(!picture_);
   picture_ = skia::AdoptRef(recorder_->endRecordingAsPicture());
   DCHECK(picture_);
+  picture_memory_usage_ += SkPictureUtils::ApproximateBytesUsed(picture_.get());
   recorder_.reset();
   canvas_.clear();
 }
@@ -103,8 +119,12 @@ void DisplayItemList::AppendItem(scoped_ptr<DisplayItem> item) {
     item->Raster(canvas_.get(), NULL);
   }
 
-  if (retain_individual_display_items_)
+  if (retain_individual_display_items_) {
+    // Warning: this double-counts SkPicture data if use_cached_picture_ is also
+    // true.
+    picture_memory_usage_ += item->PictureMemoryUsage();
     items_.push_back(item.Pass());
+  }
 }
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {
@@ -119,16 +139,12 @@ int DisplayItemList::ApproximateOpCount() const {
 }
 
 size_t DisplayItemList::PictureMemoryUsage() const {
-  size_t total_size = 0;
+  // We double-count in this case. Produce zero to avoid being misleading.
+  if (use_cached_picture_ && retain_individual_display_items_)
+    return 0;
 
-  for (const auto& item : items_) {
-    total_size += item->PictureMemoryUsage();
-  }
-
-  if (picture_)
-    total_size += SkPictureUtils::ApproximateBytesUsed(picture_.get());
-
-  return total_size;
+  DCHECK_IMPLIES(use_cached_picture_, picture_);
+  return picture_memory_usage_;
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>

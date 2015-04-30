@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_DISPLAY_ITEM_LIST_H_
 #define CC_RESOURCES_DISPLAY_ITEM_LIST_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
@@ -47,6 +48,9 @@ class CC_EXPORT DisplayItemList
   void GatherPixelRefs(const gfx::Size& grid_cell_size);
 
  private:
+  DisplayItemList(gfx::Rect layer_rect,
+                  bool use_cached_picture,
+                  bool retain_individual_display_items);
   DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture);
   ~DisplayItemList();
   ScopedPtrVector<DisplayItem> items_;
@@ -60,11 +64,13 @@ class CC_EXPORT DisplayItemList
   gfx::Rect layer_rect_;
   bool is_suitable_for_gpu_rasterization_;
   int approximate_op_count_;
+  size_t picture_memory_usage_;
 
   scoped_ptr<PixelRefMap> pixel_refs_;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   friend class PixelRefMap::Iterator;
+  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, PictureMemoryUsage);
   DISALLOW_COPY_AND_ASSIGN(DisplayItemList);
 };
 

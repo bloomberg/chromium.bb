@@ -971,6 +971,14 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Compositing.NumActiveLayers", active_tree_->NumLayers(), 1, 400, 20);
 
+  size_t total_picture_memory = 0;
+  for (const PictureLayerImpl* layer : active_tree()->picture_layers())
+    total_picture_memory += layer->GetRasterSource()->GetPictureMemoryUsage();
+  if (total_picture_memory != 0) {
+    UMA_HISTOGRAM_COUNTS("Compositing.PictureMemoryUsageKb",
+                         total_picture_memory / 1024);
+  }
+
   bool update_lcd_text = false;
   bool ok = active_tree_->UpdateDrawProperties(update_lcd_text);
   DCHECK(ok) << "UpdateDrawProperties failed during draw";

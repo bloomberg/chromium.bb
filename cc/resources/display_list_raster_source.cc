@@ -137,6 +137,8 @@ skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
 }
 
 size_t DisplayListRasterSource::GetPictureMemoryUsage() const {
+  if (!display_list_)
+    return 0;
   return display_list_->PictureMemoryUsage();
 }
 

@@ -20,11 +20,11 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/effects/SkBitmapSource.h"
+#include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
-namespace {
 
 TEST(DisplayItemListTest, SingleDrawingItem) {
   gfx::Rect layer_rect(100, 100);
@@ -272,5 +272,47 @@ TEST(DisplayItemListTest, CompactingItems) {
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
 
-}  // namespace
+TEST(DisplayItemListTest, PictureMemoryUsage) {
+  scoped_refptr<DisplayItemList> list;
+  size_t memory_usage;
+
+  // Make an SkPicture whose size is known.
+  gfx::Rect layer_rect(100, 100);
+  SkPictureRecorder recorder;
+  SkPaint blue_paint;
+  blue_paint.setColor(SK_ColorBLUE);
+  SkCanvas* canvas = recorder.beginRecording(gfx::RectFToSkRect(layer_rect));
+  for (int i = 0; i < 100; i++)
+    canvas->drawPaint(blue_paint);
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(recorder.endRecordingAsPicture());
+  size_t picture_size = SkPictureUtils::ApproximateBytesUsed(picture.get());
+  ASSERT_GE(picture_size, 100 * sizeof(SkPaint));
+  ASSERT_LE(picture_size, 200 * sizeof(SkPaint));
+
+  // Using a cached picture, we should get about the right size.
+  list = DisplayItemList::Create(layer_rect, true);
+  list->AppendItem(DrawingDisplayItem::Create(picture));
+  list->CreateAndCacheSkPicture();
+  memory_usage = list->PictureMemoryUsage();
+  EXPECT_GE(memory_usage, picture_size);
+  EXPECT_LE(memory_usage, 2 * picture_size);
+
+  // Using no cached picture, we should still get the right size.
+  list = DisplayItemList::Create(layer_rect, false);
+  list->AppendItem(DrawingDisplayItem::Create(picture));
+  memory_usage = list->PictureMemoryUsage();
+  EXPECT_GE(memory_usage, picture_size);
+  EXPECT_LE(memory_usage, 2 * picture_size);
+
+  // To avoid double counting, we expect zero size to be computed if both the
+  // picture and items are retained (currently this only happens due to certain
+  // categories being traced).
+  list = new DisplayItemList(layer_rect, true, true);
+  list->AppendItem(DrawingDisplayItem::Create(picture));
+  list->CreateAndCacheSkPicture();
+  memory_usage = list->PictureMemoryUsage();
+  EXPECT_EQ(static_cast<size_t>(0), memory_usage);
+}
+
 }  // namespace cc
