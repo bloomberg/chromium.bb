@@ -1941,10 +1941,6 @@ crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure
 
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
-crbug.com/429536 svg/W3C-SVG-1.1/struct-dom-03-b.svg [ NeedsRebaseline ]
-crbug.com/429536 svg/W3C-SVG-1.1/struct-dom-04-b.svg [ NeedsRebaseline ]
-crbug.com/429536 svg/W3C-SVG-1.1/struct-dom-05-b.svg [ NeedsRebaseline ]
-
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/45621.html [ Pass ImageOnlyFailure ]
