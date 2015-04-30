@@ -14,9 +14,10 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,7 +178,7 @@ class ObserverListThreadSafe
     base::AutoLock lock(list_lock_);
     for (const auto& entry : observer_lists_) {
       ObserverListContext* context = entry.second;
-      context->loop->PostTask(
+      context->task_runner->PostTask(
           from_here,
           base::Bind(
               &ObserverListThreadSafe<ObserverType>::template NotifyWrapper<
@@ -192,11 +193,9 @@ class ObserverListThreadSafe
 
   struct ObserverListContext {
     explicit ObserverListContext(NotificationType type)
-        : loop(base::MessageLoopProxy::current()),
-          list(type) {
-    }
+        : task_runner(base::ThreadTaskRunnerHandle::Get()), list(type) {}
 
-    scoped_refptr<base::MessageLoopProxy> loop;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
     ObserverList<ObserverType> list;
 
    private:

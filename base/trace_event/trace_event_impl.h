@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -798,8 +799,8 @@ class BASE_EXPORT TraceLog {
   ThreadLocalBoolean thread_is_in_trace_event_;
 
   // Contains the message loops of threads that have had at least one event
-  // added into the local event buffer. Not using MessageLoopProxy because we
-  // need to know the life time of the message loops.
+  // added into the local event buffer. Not using SingleThreadTaskRunner
+  // because we need to know the life time of the message loops.
   hash_set<MessageLoop*> thread_message_loops_;
 
   // For events which can't be added into the thread local buffer, e.g. events
@@ -809,7 +810,7 @@ class BASE_EXPORT TraceLog {
 
   // Set when asynchronous Flush is in progress.
   OutputCallback flush_output_callback_;
-  scoped_refptr<MessageLoopProxy> flush_message_loop_proxy_;
+  scoped_refptr<SingleThreadTaskRunner> flush_task_runner_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
 

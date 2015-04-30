@@ -5,7 +5,7 @@
 #include "base/task_runner_util.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,8 +69,7 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResult) {
   int result = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
-                             FROM_HERE,
+  PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
                              Bind(&ReturnFourtyTwo),
                              Bind(&StoreValue, &result));
 
@@ -83,8 +82,7 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultImplicitConvert) {
   double result = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
-                             FROM_HERE,
+  PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
                              Bind(&ReturnFourtyTwo),
                              Bind(&StoreDoubleValue, &result));
 
@@ -98,10 +96,8 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultPassed) {
   g_foo_free_count = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
-                             FROM_HERE,
-                             Bind(&CreateFoo),
-                             Bind(&ExpectFoo));
+  PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
+                             Bind(&CreateFoo), Bind(&ExpectFoo));
 
   RunLoop().RunUntilIdle();
 
@@ -114,10 +110,8 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultPassedFreeProc) {
   g_foo_free_count = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
-                             FROM_HERE,
-                             Bind(&CreateScopedFoo),
-                             Bind(&ExpectScopedFoo));
+  PostTaskAndReplyWithResult(message_loop.task_runner().get(), FROM_HERE,
+                             Bind(&CreateScopedFoo), Bind(&ExpectScopedFoo));
 
   RunLoop().RunUntilIdle();
 

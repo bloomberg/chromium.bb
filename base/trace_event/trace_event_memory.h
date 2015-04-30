@@ -20,7 +20,7 @@
 
 namespace base {
 
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 
 namespace trace_event {
 
@@ -35,15 +35,14 @@ class BASE_EXPORT TraceMemoryController
   typedef void (*HeapProfilerStopFunction)();
   typedef char* (*GetHeapProfileFunction)();
 
-  // |message_loop_proxy| must be a proxy to the primary thread for the client
+  // |task_runner| must be a task runner for the primary thread for the client
   // process, e.g. the UI thread in a browser. The function pointers must be
   // pointers to tcmalloc heap profiling functions; by avoiding direct calls to
   // these functions we avoid a dependency on third_party/tcmalloc from base.
-  TraceMemoryController(
-      scoped_refptr<MessageLoopProxy> message_loop_proxy,
-      HeapProfilerStartFunction heap_profiler_start_function,
-      HeapProfilerStopFunction heap_profiler_stop_function,
-      GetHeapProfileFunction get_heap_profile_function);
+  TraceMemoryController(scoped_refptr<SingleThreadTaskRunner> task_runner,
+                        HeapProfilerStartFunction heap_profiler_start_function,
+                        HeapProfilerStopFunction heap_profiler_stop_function,
+                        GetHeapProfileFunction get_heap_profile_function);
   virtual ~TraceMemoryController();
 
   // base::trace_event::TraceLog::EnabledStateChangedObserver overrides:
@@ -65,7 +64,7 @@ class BASE_EXPORT TraceMemoryController
   bool IsTimerRunningForTest() const;
 
   // Ensures the observer starts and stops tracing on the primary thread.
-  scoped_refptr<MessageLoopProxy> message_loop_proxy_;
+  scoped_refptr<SingleThreadTaskRunner> task_runner_;
 
   // Pointers to tcmalloc heap profiling functions. Allows this class to use
   // tcmalloc functions without introducing a dependency from base to tcmalloc.

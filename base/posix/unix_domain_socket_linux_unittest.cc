@@ -10,9 +10,11 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/location.h"
 #include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,11 +34,10 @@ TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
 
   // Have the thread send a synchronous message via the socket.
   Pickle request;
-  message_thread.message_loop()->PostTask(
+  message_thread.task_runner()->PostTask(
       FROM_HERE,
-      Bind(IgnoreResult(&UnixDomainSocket::SendRecvMsg),
-           fds[1], static_cast<uint8_t*>(NULL), 0U, static_cast<int*>(NULL),
-           request));
+      Bind(IgnoreResult(&UnixDomainSocket::SendRecvMsg), fds[1],
+           static_cast<uint8_t*>(NULL), 0U, static_cast<int*>(NULL), request));
 
   // Receive the message.
   ScopedVector<base::ScopedFD> message_fds;
@@ -51,9 +52,8 @@ TEST(UnixDomainSocketTest, SendRecvMsgAbortOnReplyFDClose) {
 
   // Check that the thread didn't get blocked.
   WaitableEvent event(false, false);
-  message_thread.message_loop()->PostTask(
-      FROM_HERE,
-      Bind(&WaitableEvent::Signal, Unretained(&event)));
+  message_thread.task_runner()->PostTask(
+      FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&event)));
   ASSERT_TRUE(event.TimedWait(TimeDelta::FromMilliseconds(5000)));
 }
 

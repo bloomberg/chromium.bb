@@ -11,9 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 using base::Bind;
 using base::CancellationFlag;
@@ -85,7 +86,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // We need a MessageLoop to run reply.
-  DCHECK(base::MessageLoopProxy::current().get());
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   // Owned by reply callback below.
   CancellationFlag* flag = new CancellationFlag();
@@ -113,7 +114,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
 CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
     IsCanceledCallback* is_canceled_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(base::MessageLoopProxy::current().get());
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   TaskId id = next_id_;
   next_id_++;  // int64 is big enough that we ignore the potential overflow.
@@ -129,7 +130,7 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
   // Will always run |untrack_and_delete_flag| on current MessageLoop.
   base::ScopedClosureRunner* untrack_and_delete_flag_runner =
       new base::ScopedClosureRunner(Bind(&RunOrPostToTaskRunner,
-                                         base::MessageLoopProxy::current(),
+                                         base::ThreadTaskRunnerHandle::Get(),
                                          untrack_and_delete_flag));
 
   *is_canceled_cb =

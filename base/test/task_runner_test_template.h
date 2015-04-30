@@ -53,7 +53,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
@@ -195,7 +197,7 @@ TYPED_TEST_P(TaskRunnerTest, RunsTasksOnCurrentThread) {
             i);
     for (int j = 0; j < i + 1; ++j) {
       task_runner->PostTask(FROM_HERE, ith_task_runner_task);
-      thread.message_loop()->PostTask(FROM_HERE, ith_non_task_runner_task);
+      thread.task_runner()->PostTask(FROM_HERE, ith_non_task_runner_task);
       expected_task_run_counts[i] += 2;
     }
   }

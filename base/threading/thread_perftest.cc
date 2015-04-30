@@ -5,7 +5,9 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/scoped_vector.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -54,12 +56,9 @@ class ThreadPerfTest : public testing::Test {
   base::TimeTicks ThreadNow(base::Thread* thread) {
     base::WaitableEvent done(false, false);
     base::TimeTicks ticks;
-    thread->message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadPerfTest::TimeOnThread,
-                   base::Unretained(this),
-                   &ticks,
-                   &done));
+    thread->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ThreadPerfTest::TimeOnThread,
+                              base::Unretained(this), &ticks, &done));
     done.Wait();
     return ticks;
   }
@@ -128,10 +127,9 @@ class TaskPerfTest : public ThreadPerfTest {
       FinishMeasurement();
       return;
     }
-    NextThread(hops)->message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &ThreadPerfTest::PingPong, base::Unretained(this), hops - 1));
+    NextThread(hops)->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ThreadPerfTest::PingPong, base::Unretained(this),
+                              hops - 1));
   }
 };
 
@@ -198,11 +196,9 @@ class EventPerfTest : public ThreadPerfTest {
   void PingPong(int hops) override {
     remaining_hops_ = hops;
     for (size_t i = 0; i < threads_.size(); i++) {
-      threads_[i]->message_loop_proxy()->PostTask(
-          FROM_HERE,
-          base::Bind(&EventPerfTest::WaitAndSignalOnThread,
-                     base::Unretained(this),
-                     i));
+      threads_[i]->task_runner()->PostTask(
+          FROM_HERE, base::Bind(&EventPerfTest::WaitAndSignalOnThread,
+                                base::Unretained(this), i));
     }
 
     // Kick off the Signal ping-ponging.

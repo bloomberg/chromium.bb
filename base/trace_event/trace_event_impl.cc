@@ -14,8 +14,8 @@
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,6 +28,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/worker_pool.h"
@@ -1406,7 +1407,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     AutoLock lock(lock_);
 
     // Can't enable tracing when Flush() is in progress.
-    DCHECK(!flush_message_loop_proxy_.get());
+    DCHECK(!flush_task_runner_);
 
     InternalTraceOptions new_options =
         GetInternalOptionsFromTraceOptions(options);
@@ -1680,9 +1681,9 @@ void TraceLog::SetEventCallbackDisabled() {
 }
 
 // Flush() works as the following:
-// 1. Flush() is called in threadA whose message loop is saved in
-//    flush_message_loop_proxy_;
-// 2. If thread_message_loops_ is not empty, threadA posts task to each message
+// 1. Flush() is called in thread A whose task runner is saved in
+//    flush_task_runner_;
+// 2. If thread_message_loops_ is not empty, thread A posts task to each message
 //    loop to flush the thread local buffers; otherwise finish the flush;
 // 3. FlushCurrentThread() deletes the thread local event buffer:
 //    - The last batch of events of the thread are flushed into the main buffer;
@@ -1710,9 +1711,11 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb,
       thread_message_loop_task_runners;
   {
     AutoLock lock(lock_);
-    DCHECK(!flush_message_loop_proxy_.get());
-    flush_message_loop_proxy_ = MessageLoopProxy::current();
-    DCHECK(!thread_message_loops_.size() || flush_message_loop_proxy_.get());
+    DCHECK(!flush_task_runner_);
+    flush_task_runner_ = ThreadTaskRunnerHandle::IsSet()
+                             ? ThreadTaskRunnerHandle::Get()
+                             : nullptr;
+    DCHECK_IMPLIES(thread_message_loops_.size(), flush_task_runner_);
     flush_output_callback_ = cb;
 
     if (thread_shared_chunk_) {
@@ -1735,7 +1738,7 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb,
           FROM_HERE,
           Bind(&TraceLog::FlushCurrentThread, Unretained(this), generation));
     }
-    flush_message_loop_proxy_->PostDelayedTask(
+    flush_task_runner_->PostDelayedTask(
         FROM_HERE,
         Bind(&TraceLog::OnFlushTimeout, Unretained(this), generation),
         TimeDelta::FromMilliseconds(kThreadFlushTimeoutMs));
@@ -1789,7 +1792,7 @@ void TraceLog::FinishFlush(int generation) {
     UseNextTraceBuffer();
     thread_message_loops_.clear();
 
-    flush_message_loop_proxy_ = NULL;
+    flush_task_runner_ = NULL;
     flush_output_callback = flush_output_callback_;
     flush_output_callback_.Reset();
   }
@@ -1812,7 +1815,7 @@ void TraceLog::FinishFlush(int generation) {
 void TraceLog::FlushCurrentThread(int generation) {
   {
     AutoLock lock(lock_);
-    if (!CheckGeneration(generation) || !flush_message_loop_proxy_.get()) {
+    if (!CheckGeneration(generation) || !flush_task_runner_) {
       // This is late. The corresponding flush has finished.
       return;
     }
@@ -1822,19 +1825,18 @@ void TraceLog::FlushCurrentThread(int generation) {
   delete thread_local_event_buffer_.Get();
 
   AutoLock lock(lock_);
-  if (!CheckGeneration(generation) || !flush_message_loop_proxy_.get() ||
+  if (!CheckGeneration(generation) || !flush_task_runner_ ||
       thread_message_loops_.size())
     return;
 
-  flush_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      Bind(&TraceLog::FinishFlush, Unretained(this), generation));
+  flush_task_runner_->PostTask(
+      FROM_HERE, Bind(&TraceLog::FinishFlush, Unretained(this), generation));
 }
 
 void TraceLog::OnFlushTimeout(int generation) {
   {
     AutoLock lock(lock_);
-    if (!CheckGeneration(generation) || !flush_message_loop_proxy_.get()) {
+    if (!CheckGeneration(generation) || !flush_task_runner_) {
       // Flush has finished before timeout.
       return;
     }

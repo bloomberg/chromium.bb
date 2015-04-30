@@ -14,6 +14,11 @@
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/user_context.h"
 
+namespace base {
+// TODO(skyostil): Migrate to SingleThreadTaskRunner (crbug.com/465354).
+class MessageLoopProxy;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }

@@ -11,9 +11,9 @@
 namespace base {
 
 ThreadTestHelper::ThreadTestHelper(
-    const scoped_refptr<MessageLoopProxy>& target_thread)
+    scoped_refptr<SingleThreadTaskRunner> target_thread)
     : test_result_(false),
-      target_thread_(target_thread),
+      target_thread_(target_thread.Pass()),
       done_event_(false, false) {
 }
 

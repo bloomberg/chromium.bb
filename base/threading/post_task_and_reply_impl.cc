@@ -25,30 +25,30 @@ namespace {
 class PostTaskAndReplyRelay {
  public:
   PostTaskAndReplyRelay(const tracked_objects::Location& from_here,
-                        const Closure& task, const Closure& reply)
+                        const Closure& task,
+                        const Closure& reply)
       : from_here_(from_here),
-        origin_loop_(ThreadTaskRunnerHandle::Get()) {
+        origin_task_runner_(ThreadTaskRunnerHandle::Get()) {
     task_ = task;
     reply_ = reply;
   }
 
   ~PostTaskAndReplyRelay() {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
     task_.Reset();
     reply_.Reset();
   }
 
   void Run() {
     task_.Run();
-    origin_loop_->PostTask(
-        from_here_,
-        Bind(&PostTaskAndReplyRelay::RunReplyAndSelfDestruct,
-             base::Unretained(this)));
+    origin_task_runner_->PostTask(
+        from_here_, Bind(&PostTaskAndReplyRelay::RunReplyAndSelfDestruct,
+                         base::Unretained(this)));
   }
 
  private:
   void RunReplyAndSelfDestruct() {
-    DCHECK(origin_loop_->BelongsToCurrentThread());
+    DCHECK(origin_task_runner_->BelongsToCurrentThread());
 
     // Force |task_| to be released before |reply_| is to ensure that no one
     // accidentally depends on |task_| keeping one of its arguments alive while
@@ -62,7 +62,7 @@ class PostTaskAndReplyRelay {
   }
 
   tracked_objects::Location from_here_;
-  scoped_refptr<SingleThreadTaskRunner> origin_loop_;
+  scoped_refptr<SingleThreadTaskRunner> origin_task_runner_;
   Closure reply_;
   Closure task_;
 };

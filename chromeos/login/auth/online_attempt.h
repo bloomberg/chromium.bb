@@ -19,6 +19,11 @@
 
 class GaiaAuthFetcher;
 
+namespace base {
+// TODO(skyostil): Migrate to SingleThreadTaskRunner (crbug.com/465354).
+class MessageLoopProxy;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }

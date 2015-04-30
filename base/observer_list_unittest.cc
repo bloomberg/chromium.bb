@@ -8,9 +8,10 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,7 +108,7 @@ class AddRemoveThread : public PlatformThread::Delegate,
 
   void ThreadMain() override {
     loop_ = new MessageLoop();  // Fire up a message loop.
-    loop_->PostTask(
+    loop_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
     loop_->Run();
@@ -137,13 +138,14 @@ class AddRemoveThread : public PlatformThread::Delegate,
       list_->Notify(FROM_HERE, &Foo::Observe, 10);
     }
 
-    loop_->PostTask(
+    loop_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&AddRemoveThread::AddTask, weak_factory_.GetWeakPtr()));
   }
 
   void Quit() {
-    loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+    loop_->task_runner()->PostTask(FROM_HERE,
+                                   MessageLoop::QuitWhenIdleClosure());
   }
 
   void Observe(int x) override {

@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 
 namespace base {
 
@@ -58,12 +58,13 @@ class BASE_EXPORT FilePathWatcher {
     // check |is_cancelled()| to avoid duplicate work.
     virtual void CancelOnMessageLoopThread() = 0;
 
-    scoped_refptr<base::MessageLoopProxy> message_loop() const {
-      return message_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+      return task_runner_;
     }
 
-    void set_message_loop(const scoped_refptr<base::MessageLoopProxy>& loop) {
-      message_loop_ = loop;
+    void set_task_runner(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+      task_runner_ = task_runner.Pass();
     }
 
     // Must be called before the PlatformDelegate is deleted.
@@ -76,7 +77,7 @@ class BASE_EXPORT FilePathWatcher {
     }
 
    private:
-    scoped_refptr<base::MessageLoopProxy> message_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
     bool cancelled_;
   };
 

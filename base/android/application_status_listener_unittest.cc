@@ -7,7 +7,7 @@
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -49,9 +49,8 @@ class MultiThreadedTest {
   void Run() {
     // Start the thread and tell it to register for events.
     thread_.Start();
-    thread_.message_loop()
-        ->PostTask(FROM_HERE,
-                   base::Bind(&MultiThreadedTest::RegisterThreadForEvents,
+    thread_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&MultiThreadedTest::RegisterThreadForEvents,
                               base::Unretained(this)));
 
     // Wait for its completion.

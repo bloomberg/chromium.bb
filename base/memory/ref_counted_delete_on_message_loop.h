@@ -32,6 +32,7 @@ namespace base {
 //   ~Foo();
 // };
 
+// TODO(skyostil): Rename this to RefCountedDeleteOnTaskRunner.
 template <class T>
 class RefCountedDeleteOnMessageLoop : public subtle::RefCountedThreadSafeBase {
  public:
@@ -42,7 +43,7 @@ class RefCountedDeleteOnMessageLoop : public subtle::RefCountedThreadSafeBase {
   RefCountedDeleteOnMessageLoop(
       const scoped_refptr<SingleThreadTaskRunner>& task_runner)
       : task_runner_(task_runner) {
-    DCHECK(task_runner_.get());
+    DCHECK(task_runner_);
   }
 
   void AddRef() const {

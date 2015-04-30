@@ -7,10 +7,11 @@
 #include <fcntl.h>
 #include <sys/select.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -120,10 +121,9 @@ MemoryPressureMonitorChromeOS::~MemoryPressureMonitorChromeOS() {
 }
 
 void MemoryPressureMonitorChromeOS::ScheduleEarlyCheck() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&MemoryPressureMonitorChromeOS::CheckMemoryPressure,
-           weak_ptr_factory_.GetWeakPtr()));
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, Bind(&MemoryPressureMonitorChromeOS::CheckMemoryPressure,
+                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 MemoryPressureListener::MemoryPressureLevel

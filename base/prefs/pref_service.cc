@@ -8,16 +8,18 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_value_store.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
 
@@ -79,10 +81,9 @@ void PrefService::InitFromStorage(bool async) {
     read_error_callback_.Run(user_pref_store_->ReadPrefs());
   } else {
     // Guarantee that initialization happens after this function returned.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&PersistentPrefStore::ReadPrefsAsync,
-                   user_pref_store_.get(),
+        base::Bind(&PersistentPrefStore::ReadPrefsAsync, user_pref_store_.get(),
                    new ReadErrorHandler(read_error_callback_)));
   }
 }

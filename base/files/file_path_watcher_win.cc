@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/object_watcher.h"
 
@@ -57,7 +57,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // Destroy the watch handle.
   void DestroyWatch();
 
-  // Cleans up and stops observing the |message_loop_| thread.
+  // Cleans up and stops observing the |task_runner_| thread.
   void CancelOnMessageLoopThread() override;
 
   // Callback to notify upon changes.
@@ -91,7 +91,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
                                 const FilePathWatcher::Callback& callback) {
   DCHECK(target_.value().empty());  // Can only watch one path.
 
-  set_message_loop(MessageLoopProxy::current());
+  set_task_runner(ThreadTaskRunnerHandle::Get());
   callback_ = callback;
   target_ = path;
   recursive_watch_ = recursive;
@@ -113,23 +113,22 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 
 void FilePathWatcherImpl::Cancel() {
   if (callback_.is_null()) {
-    // Watch was never called, or the |message_loop_| has already quit.
+    // Watch was never called, or the |task_runner_| has already quit.
     set_cancelled();
     return;
   }
 
   // Switch to the file thread if necessary so we can stop |watcher_|.
-  if (!message_loop()->BelongsToCurrentThread()) {
-    message_loop()->PostTask(FROM_HERE,
-                             Bind(&FilePathWatcher::CancelWatch,
-                                  make_scoped_refptr(this)));
+  if (!task_runner()->BelongsToCurrentThread()) {
+    task_runner()->PostTask(FROM_HERE, Bind(&FilePathWatcher::CancelWatch,
+                                            make_scoped_refptr(this)));
   } else {
     CancelOnMessageLoopThread();
   }
 }
 
 void FilePathWatcherImpl::CancelOnMessageLoopThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   set_cancelled();
 
   if (handle_ != INVALID_HANDLE_VALUE)

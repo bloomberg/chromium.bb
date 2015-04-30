@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 
@@ -68,7 +68,7 @@ class AsyncWaiter : public WaitableEvent::Waiter {
   bool Fire(WaitableEvent* event) override {
     // Post the callback if we haven't been cancelled.
     if (!flag_->value()) {
-      message_loop_->PostTask(FROM_HERE, callback_);
+      message_loop_->task_runner()->PostTask(FROM_HERE, callback_);
     }
 
     // We are removed from the wait-list by the WaitableEvent itself. It only
@@ -158,7 +158,7 @@ bool WaitableEventWatcher::StartWatching(
 
     // No hairpinning - we can't call the delegate directly here. We have to
     // enqueue a task on the MessageLoop as normal.
-    current_ml->PostTask(FROM_HERE, internal_callback_);
+    current_ml->task_runner()->PostTask(FROM_HERE, internal_callback_);
     return true;
   }
 

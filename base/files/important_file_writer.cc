@@ -130,7 +130,7 @@ ImportantFileWriter::ImportantFileWriter(
       commit_interval_(TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)),
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());
-  DCHECK(task_runner_.get());
+  DCHECK(task_runner_);
 }
 
 ImportantFileWriter::~ImportantFileWriter() {
