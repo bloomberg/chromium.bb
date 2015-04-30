@@ -251,6 +251,11 @@ public:
         Platform::initialize(m_oldPlatform);
     }
 
+    void enterRunLoop()
+    {
+        m_mockPlatform.enterRunLoop();
+    }
+
 private:
     class CurrentThreadMock : public WebThread {
     public:
@@ -288,7 +293,13 @@ private:
             m_taskObserver = 0;
         }
 
-        virtual void enterRunLoop() override
+        virtual WebScheduler* scheduler() const override
+        {
+            ASSERT_NOT_REACHED();
+            return nullptr;
+        }
+
+        void enterRunLoop()
         {
             if (m_taskObserver)
                 m_taskObserver->willProcessTask();
@@ -301,14 +312,6 @@ private:
                 m_taskObserver->didProcessTask();
         }
 
-        virtual void exitRunLoop() override { ASSERT_NOT_REACHED(); }
-
-        virtual WebScheduler* scheduler() const override
-        {
-            ASSERT_NOT_REACHED();
-            return nullptr;
-        }
-
     private:
         TaskObserver* m_taskObserver;
         Task* m_task;
@@ -319,6 +322,8 @@ private:
         CurrentThreadPlatformMock() { }
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
         virtual WebThread* currentThread() override { return &m_currentThread; }
+
+        void enterRunLoop() { m_currentThread.enterRunLoop(); }
     private:
         CurrentThreadMock m_currentThread;
     };
@@ -341,7 +346,7 @@ class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                
     {                                                                                                     \
         AutoInstallCurrentThreadPlatformMock ctpm;                                                        \
         Platform::current()->currentThread()->postTask(FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
-        Platform::current()->currentThread()->enterRunLoop();                                      \
+        ctpm.enterRunLoop();                                      \
     }
 
 TEST_F(RecordingImageBufferSurfaceTest, testEmptyPicture)

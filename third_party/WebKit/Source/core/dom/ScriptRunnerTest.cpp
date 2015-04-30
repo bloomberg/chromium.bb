@@ -53,9 +53,6 @@ public:
 
     WebScheduler* scheduler() const override { return m_webScheduler; }
 
-    void enterRunLoop() override { ASSERT_NOT_REACHED(); }
-    void exitRunLoop() override { ASSERT_NOT_REACHED(); }
-
 private:
     WebScheduler* m_webScheduler;
 };

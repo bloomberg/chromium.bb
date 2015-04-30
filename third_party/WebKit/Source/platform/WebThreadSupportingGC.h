@@ -52,16 +52,6 @@ public:
         m_thread->removeTaskObserver(observer);
     }
 
-    void enterRunLoop()
-    {
-        m_thread->enterRunLoop();
-    }
-
-    void exitRunLoop()
-    {
-        m_thread->exitRunLoop();
-    }
-
     void attachGC();
     void detachGC();
 

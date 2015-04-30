@@ -84,7 +84,7 @@ public:
         if (m_client->isLoading())
             Platform::current()->currentThread()->postTask(FROM_HERE, new ServeAsyncRequestsTask(m_client));
         else
-            Platform::current()->currentThread()->exitRunLoop();
+            Platform::current()->unitTestSupport()->exitRunLoop();
     }
 
 private:
@@ -94,7 +94,7 @@ private:
 void pumpPendingRequests(WebFrame* frame)
 {
     Platform::current()->currentThread()->postTask(FROM_HERE, new ServeAsyncRequestsTask(testClientForFrame(frame)));
-    Platform::current()->currentThread()->enterRunLoop();
+    Platform::current()->unitTestSupport()->enterRunLoop();
 }
 
 class LoadTask : public WebThread::Task {

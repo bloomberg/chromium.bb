@@ -66,6 +66,9 @@ public:
     // Gets the blob items from the blob handle's uuid.
     // The ownership of WebBlobData::Items is not transferred.
     virtual bool getBlobItems(const WebString& uuid, WebVector<WebBlobData::Item*>*) { return false; }
+
+    virtual void enterRunLoop() { }
+    virtual void exitRunLoop() { }
 };
 
 }

@@ -29,6 +29,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/platform/WebUnitTestSupport.h"
 
 namespace blink {
 namespace testing {
@@ -37,14 +38,14 @@ class QuitTask : public WebThread::Task {
 public:
     virtual void run()
     {
-        Platform::current()->currentThread()->exitRunLoop();
+        Platform::current()->unitTestSupport()->exitRunLoop();
     }
 };
 
 void runPendingTasks()
 {
     Platform::current()->currentThread()->postTask(FROM_HERE, new QuitTask);
-    Platform::current()->currentThread()->enterRunLoop();
+    Platform::current()->unitTestSupport()->enterRunLoop();
 }
 
 }
