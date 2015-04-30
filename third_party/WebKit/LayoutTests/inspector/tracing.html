@@ -25,8 +25,15 @@ InspectorTest.TracingManagerClient = function(tracingManager, callback)
 InspectorTest.TracingManagerClient.prototype = {
     tracingStarted: function()
     {
+        InspectorTest.addResult("Tracing started");
         this._tracingModel.reset();
         InspectorTest.evaluateInPage("doWork()", this._tracingManager.stop.bind(this._tracingManager));
+    },
+
+    tracingFailed: function(error)
+    {
+         InspectorTest.addResult("Tracing failed to start: " + JSON.stringify(error) + ")");
+         InspectorTest.completeTest();
     },
 
     traceEventsCollected: function(events)
@@ -55,12 +62,8 @@ function doWork()
 function test()
 {
     var tracingClient = new InspectorTest.TracingManagerClient(InspectorTest.tracingManager, runEventsSanityCheck);
-    InspectorTest.tracingManager.start(tracingClient, "", "", onTracingStarted);
+    InspectorTest.tracingManager.start(tracingClient, "", "");
 
-    function onTracingStarted(error)
-    {
-        InspectorTest.addResult("Tracing started (error: " + JSON.stringify(error) + ")");
-    }
 
     function runEventsSanityCheck(tracingModel)
     {
