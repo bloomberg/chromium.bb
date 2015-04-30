@@ -724,7 +724,7 @@ class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
     return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
-  const std::string GetPrimaryAccountId() {
+  const std::string& GetPrimaryAccountId() {
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
     return signin_manager->GetAuthenticatedAccountId();
