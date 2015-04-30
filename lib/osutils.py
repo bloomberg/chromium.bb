@@ -13,6 +13,7 @@ import ctypes
 import ctypes.util
 import datetime
 import errno
+import glob
 import operator
 import os
 import pwd
@@ -1122,3 +1123,17 @@ def ResolveSymlink(file_name, root='/'):
     else:
       file_name = os.path.join(os.path.dirname(file_name), link)
   return file_name
+
+
+def IsInsideVm():
+  """Return True if we are running inside a virtual machine.
+
+  This function only supports VirtualBox at the moment. The detection is based
+  on the model of the hard drive.
+  """
+  for blk_model in glob.glob('/sys/block/*/device/model'):
+    if os.path.isfile(blk_model):
+      if ReadFile(blk_model).startswith('VBOX'):
+        return True
+
+  return False

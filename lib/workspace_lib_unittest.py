@@ -109,6 +109,15 @@ class WorkspaceLibTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.bogus_dir,
                      workspace_lib.ChrootPath(self.workspace_dir))
 
+  @mock.patch.object(osutils, 'IsInsideVm', return_value=True)
+  def testChrootPathUnderVm(self, _mock_inside_vm):
+    """Make sure that inside the VM, chroot dir is under /chroots/..."""
+    self.assertEqual(
+        os.path.join(workspace_lib.MAIN_CHROOT_DIR_IN_VM,
+                     os.path.basename(self.workspace_dir)),
+        workspace_lib.ChrootPath(self.workspace_dir)
+    )
+
   def testReadWriteLocalConfig(self):
     # Non-existent config should read as an empty dictionary.
     config = workspace_lib._ReadLocalConfig(self.workspace_dir)

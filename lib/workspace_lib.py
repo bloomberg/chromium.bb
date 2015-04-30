@@ -29,6 +29,8 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
+MAIN_CHROOT_DIR_IN_VM = '/chroots'
+
 # The presence of this file signifies the root of a workspace.
 WORKSPACE_CONFIG = 'workspace-config.json'
 WORKSPACE_LOCAL_CONFIG = '.local.json'
@@ -90,6 +92,8 @@ def ChrootPath(workspace_path):
 
   if config_value:
     return config_value
+  elif osutils.IsInsideVm():
+    return os.path.join(MAIN_CHROOT_DIR_IN_VM, os.path.basename(workspace_path))
 
   # Return the default value.
   return os.path.join(workspace_path, WORKSPACE_CHROOT_DIR)

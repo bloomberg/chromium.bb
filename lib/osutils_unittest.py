@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import collections
+import glob
 import mock
 import os
 
@@ -670,3 +671,23 @@ class ResolveSymlinkTest(cros_test_lib.TestCase):
     self.assertEqual(osutils.ResolveSymlink('link2', '.'), './target')
     os.unlink('link2')
     os.unlink('link1')
+
+
+class IsInsideVmTest(cros_test_lib.MockTempDirTestCase):
+  """Test osutils.IsInsideVmTest function."""
+
+  def setUp(self):
+    self.model_file = os.path.join(self.tempdir, 'sda', 'device', 'model')
+    osutils.SafeMakedirs(os.path.dirname(self.model_file))
+    self.mock_glob = self.PatchObject(
+        glob, 'glob', return_value=[self.model_file])
+
+  def testIsInsideVm(self):
+    osutils.WriteFile(self.model_file, "VBOX")
+    self.assertTrue(osutils.IsInsideVm())
+    self.assertEqual(self.mock_glob.call_args[0][0],
+                     "/sys/block/*/device/model")
+
+  def testIsNotInsideVm(self):
+    osutils.WriteFile(self.model_file, "ST1000DM000-1CH1")
+    self.assertFalse(osutils.IsInsideVm())
