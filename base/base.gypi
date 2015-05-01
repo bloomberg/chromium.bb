@@ -292,6 +292,8 @@
           'mac/mac_util.mm',
           'mac/mach_logging.cc',
           'mac/mach_logging.h',
+          'mac/memory_pressure_monitor_mac.cc',
+          'mac/memory_pressure_monitor_mac.h',
           'mac/objc_property_releaser.h',
           'mac/objc_property_releaser.mm',
           'mac/os_crash_dumps.cc',

@@ -88,6 +88,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/memory_pressure_monitor_mac.h"
 #include "content/browser/bootstrap_sandbox_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
@@ -609,6 +610,8 @@ int BrowserMainLoop::PreCreateThreads() {
     memory_pressure_monitor_.reset(new base::MemoryPressureMonitorChromeOS(
         chromeos::switches::GetMemoryPressureThresholds()));
   }
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  memory_pressure_monitor_.reset(new base::MemoryPressureMonitorMac());
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -872,7 +875,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     resource_dispatcher_host_.get()->Shutdown();
   }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   memory_pressure_monitor_.reset();
 #endif
 

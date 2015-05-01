@@ -517,6 +517,7 @@
         'mac/foundation_util_unittest.mm',
         'mac/libdispatch_task_runner_unittest.cc',
         'mac/mac_util_unittest.mm',
+        'mac/memory_pressure_monitor_mac_unittest.cc',
         'mac/objc_property_releaser_unittest.mm',
         'mac/scoped_nsobject_unittest.mm',
         'mac/scoped_objc_class_swizzler_unittest.mm',

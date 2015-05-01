@@ -22,6 +22,8 @@ class PowerMonitor;
 class SystemMonitor;
 #if defined(OS_CHROMEOS)
 class MemoryPressureMonitorChromeOS;
+#elif defined(OS_MACOSX)
+class MemoryPressureMonitorMac;
 #endif
 namespace trace_event {
 class TraceMemoryController;
@@ -180,6 +182,8 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 #if defined(OS_CHROMEOS)
   scoped_ptr<base::MemoryPressureMonitorChromeOS> memory_pressure_monitor_;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  scoped_ptr<base::MemoryPressureMonitorMac> memory_pressure_monitor_;
 #endif
   // The startup task runner is created by CreateStartupTasks()
   scoped_ptr<StartupTaskRunner> startup_task_runner_;
