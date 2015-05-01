@@ -313,6 +313,16 @@ void ApplicationManager::HandleFetchCallback(
     return;
   }
 
+  auto alias_iter = application_package_alias_.find(app_url);
+  if (alias_iter != application_package_alias_.end()) {
+    URLResponsePtr response(URLResponse::New());
+    response->url = String::From(app_url.spec());
+    LoadWithContentHandler(alias_iter->second,
+                           request.Pass(),
+                           response.Pass());
+    return;
+  }
+
   // TODO(aa): Sanity check that the thing we got looks vaguely like a mojo
   // application. That could either mean looking for the platform-specific dll
   // header, or looking for some specific mojo signature prepended to the
@@ -368,6 +378,13 @@ void ApplicationManager::RegisterContentHandler(
   DCHECK(content_handler_url.is_valid())
       << "Content handler URL is invalid for mime type " << mime_type;
   mime_type_to_url_[mime_type] = content_handler_url;
+}
+
+
+void ApplicationManager::RegisterApplicationPackageAlias(
+    const GURL& alias,
+    const GURL& content_handler_package) {
+  application_package_alias_[alias] = content_handler_package;
 }
 
 void ApplicationManager::LoadWithContentHandler(

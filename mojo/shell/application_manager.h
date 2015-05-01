@@ -89,6 +89,12 @@ class ApplicationManager {
   void RegisterContentHandler(const std::string& mime_type,
                               const GURL& content_handler_url);
 
+  // Registers a package alias. When attempting to load |alias|, it will
+  // instead redirect to |content_handler_package|, which is a content handler
+  // which will be passed the |alias| as the URLResponse::url.
+  void RegisterApplicationPackageAlias(const GURL& alias,
+                                       const GURL& content_handler_package);
+
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
@@ -128,12 +134,13 @@ class ApplicationManager {
  private:
   class ContentHandlerConnection;
 
-  typedef std::map<std::string, ApplicationLoader*> SchemeToLoaderMap;
-  typedef std::map<GURL, ApplicationLoader*> URLToLoaderMap;
-  typedef std::map<Identity, ShellImpl*> IdentityToShellImplMap;
-  typedef std::map<GURL, ContentHandlerConnection*> URLToContentHandlerMap;
-  typedef std::map<std::string, GURL> MimeTypeToURLMap;
-  typedef std::map<GURL, NativeRunnerFactory::Options> URLToNativeOptionsMap;
+  using ApplicationPackagedAlias = std::map<GURL, GURL>;
+  using IdentityToShellImplMap = std::map<Identity, ShellImpl*>;
+  using MimeTypeToURLMap = std::map<std::string, GURL>;
+  using SchemeToLoaderMap = std::map<std::string, ApplicationLoader*>;
+  using URLToContentHandlerMap = std::map<GURL, ContentHandlerConnection*>;
+  using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
+  using URLToNativeOptionsMap = std::map<GURL, NativeRunnerFactory::Options>;
 
   void ConnectToApplicationWithParameters(
       const GURL& application_url,
@@ -213,6 +220,7 @@ class ApplicationManager {
   scoped_ptr<ApplicationLoader> default_loader_;
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
 
+  ApplicationPackagedAlias application_package_alias_;
   IdentityToShellImplMap identity_to_shell_impl_;
   URLToContentHandlerMap url_to_content_handler_;
   // Note: The keys are URLs after mapping and resolving.

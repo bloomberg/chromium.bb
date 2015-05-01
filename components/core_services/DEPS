@@ -4,4 +4,5 @@ include_rules = [
   "+mojo/common",
   "+third_party/mojo_services/src/clipboard",
   "+third_party/mojo/src/mojo/public",
+  "+third_party/mojo_services/src/content_handler/public",
 ]

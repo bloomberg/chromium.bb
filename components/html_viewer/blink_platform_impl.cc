@@ -78,10 +78,8 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     network_service_->GetCookieStore(GetProxy(&cookie_store));
     cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
-    mojo::ServiceProviderPtr service_provider;
-    app->ConnectToService("mojo:core_services", &service_provider);
     mojo::ClipboardPtr clipboard;
-    mojo::ConnectToService(service_provider.get(), &clipboard);
+    app->ConnectToService("mojo:clipboard", &clipboard);
     clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
   }
   shared_timer_.SetTaskRunner(main_thread_task_runner_);

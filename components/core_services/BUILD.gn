@@ -22,5 +22,6 @@ mojo_native_application("core_services") {
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+    "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
 }

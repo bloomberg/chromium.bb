@@ -6,6 +6,8 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 source_set("lib") {
   sources = [
+    "clipboard_application_delegate.cc",
+    "clipboard_application_delegate.h",
     "clipboard_standalone_impl.cc",
     "clipboard_standalone_impl.h",
   ]
