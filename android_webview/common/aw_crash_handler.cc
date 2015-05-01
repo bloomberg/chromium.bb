@@ -49,7 +49,7 @@ void AwExceptionHandler(int sig, siginfo_t* info, void* uc) {
     }
   }
 
-  if ((info != NULL && info->si_pid) || sig == SIGABRT) {
+  if ((info != NULL && SI_FROMUSER(info)) || sig == SIGABRT) {
     // This signal was triggered by somebody sending us the signal with kill().
     // In order to retrigger it, we have to queue a new signal by calling
     // kill() ourselves.  The special case (si_pid == 0 && sig == SIGABRT) is
