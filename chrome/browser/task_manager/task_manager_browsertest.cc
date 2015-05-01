@@ -60,6 +60,7 @@ using task_manager::browsertest_util::MatchExtension;
 using task_manager::browsertest_util::MatchSubframe;
 using task_manager::browsertest_util::MatchTab;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
+using task_manager::browsertest_util::WaitForTaskManagerStatToExceed;
 
 namespace {
 
@@ -778,44 +779,66 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 
 // Checks that task manager counts a worker thread JS heap size.
 // http://crbug.com/241066
-// Disabled because this test is inherently flaky: http://crbug.com/259368
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_WebWorkerJSHeapMemory) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
   ShowTaskManager();
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
-  const int extra_timeout_ms = 500;
-  size_t minimal_heap_size = 2 * 1024 * 1024 * sizeof(void*);
+  size_t minimal_heap_size = 4 * 1024 * 1024 * sizeof(void*);
   std::string test_js = base::StringPrintf(
       "var blob = new Blob([\n"
       "    'mem = new Array(%lu);',\n"
-      "    'for (var i = 0; i < mem.length; i += 16) mem[i] = i;',\n"
-      "    'postMessage(i);']);\n"
+      "    'for (var i = 0; i < mem.length; i += 16)',"
+      "    '  mem[i] = i;',\n"
+      "    'postMessage(\"okay\");']);\n"
       "blobURL = window.URL.createObjectURL(blob);\n"
-      "worker = new Worker(blobURL);\n"
-      "// Give the task manager few seconds to poll for JS heap sizes.\n"
-      "worker.onmessage = setTimeout.bind(\n"
-      "    this,\n"
-      "    function () { window.domAutomationController.send(true); },\n"
-      "    %d);\n"
+      "var worker = new Worker(blobURL);\n"
+      "worker.addEventListener('message', function(e) {\n"
+      "  window.domAutomationController.send(e.data);\n"  // e.data == "okay"
+      "});\n"
       "worker.postMessage('go');\n",
-      static_cast<unsigned long>(minimal_heap_size),
-      GetUpdateTimeMs() + extra_timeout_ms);
-  bool ok;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      static_cast<unsigned long>(minimal_heap_size));
+  std::string ok;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(), test_js, &ok));
-  ASSERT_TRUE(ok);
+  ASSERT_EQ("okay", ok);
 
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+  // The worker has allocated objects of at least |minimal_heap_size| bytes.
+  // Wait for the heap stats to reflect this.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY,
+      minimal_heap_size));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY_USED,
+      minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
-  int resource_index = FindResourceIndex(MatchTab("title1.html"));
-  size_t result;
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+}
 
-  ASSERT_TRUE(model()->GetV8Memory(resource_index, &result));
-  LOG(INFO) << "Got V8 Heap Size " << result << " bytes";
-  EXPECT_GE(result, minimal_heap_size);
+// Checks that task manager counts renderer JS heap size.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
+  ShowTaskManager();
+  ui_test_utils::NavigateToURL(browser(), GetTestURL());
+  size_t minimal_heap_size = 4 * 1024 * 1024 * sizeof(void*);
+  std::string test_js = base::StringPrintf(
+      "mem = new Array(%lu);\n"
+      "for (var i = 0; i < mem.length; i += 16)\n"
+      "  mem[i] = i;\n"
+      "window.domAutomationController.send(\"okay\");\n",
+      static_cast<unsigned long>(minimal_heap_size));
+  std::string ok;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(), test_js, &ok));
+  ASSERT_EQ("okay", ok);
 
-  ASSERT_TRUE(model()->GetV8MemoryUsed(resource_index, &result));
-  LOG(INFO) << "Got V8 Used Heap Size " << result << " bytes";
-  EXPECT_GE(result, minimal_heap_size);
+  // The page's js has allocated objects of at least |minimal_heap_size| bytes.
+  // Wait for the heap stats to reflect this.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY,
+      minimal_heap_size));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY_USED,
+      minimal_heap_size));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
