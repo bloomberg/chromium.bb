@@ -48,4 +48,10 @@
 #
 # START OVERRIDES HERE
 
+# http://crrev.com/1118693003
+crbug.com/483484 virtual/slimmingpaint/fast/table/multiple-captions-display.xhtml [ NeedsManualRebaseline ]
+crbug.com/483484 virtual/slimmingpaint/fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
+crbug.com/483484 virtual/slimmingpaint/svg/as-background-image/svg-as-background-5.html [ NeedsManualRebaseline ]
+crbug.com/483484 virtual/slimmingpaint/svg/as-background-image/svg-as-background-6.html [ NeedsManualRebaseline ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
