@@ -77,6 +77,11 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_CONTEXTUAL_SEARCH_FOR_TESTING =
             "enable-contextual-search-for-testing";
 
+    /**
+     * Enable embedded mode so that embedded activity can be launched.
+     */
+    public static final String ENABLE_EMBEDDED_MODE = "enable-embedded-mode";
+
     // How many thumbnails should we allow in the cache (per tab stack)?
     public static final String THUMBNAILS = "thumbnails";
 
