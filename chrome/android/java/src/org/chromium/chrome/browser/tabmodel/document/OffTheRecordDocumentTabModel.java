@@ -21,9 +21,12 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
  * the Activity is dead when it occurs.
  */
 public class OffTheRecordDocumentTabModel extends OffTheRecordTabModel implements DocumentTabModel {
-    public OffTheRecordDocumentTabModel(OffTheRecordTabModelDelegate tabModelCreator,
+    private final ActivityDelegate mActivityDelegate;
+
+    public OffTheRecordDocumentTabModel(OffTheRecordTabModelDelegate offTheRecordDelegate,
             ActivityDelegate delegate) {
-        super(tabModelCreator);
+        super(offTheRecordDelegate);
+        mActivityDelegate = delegate;
         if (delegate.getTasksFromRecents(true).size() > 0) {
             ensureTabModelImpl();
         }
@@ -37,7 +40,7 @@ public class OffTheRecordDocumentTabModel extends OffTheRecordTabModel implement
     @Override
     protected void destroyIncognitoIfNecessary() {
         super.destroyIncognitoIfNecessary();
-        if (!isDocumentTabModelImplCreated()) {
+        if (!mActivityDelegate.isIncognitoDocumentAccessibleToUser()) {
             IncognitoNotificationManager.dismissIncognitoNotification();
         }
     }

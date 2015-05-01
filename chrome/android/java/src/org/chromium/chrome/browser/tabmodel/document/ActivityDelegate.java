@@ -184,4 +184,19 @@ public class ActivityDelegate {
         return TextUtils.equals(data.getScheme(), UrlConstants.DOCUMENT_SCHEME)
                 ? data.getQuery() : null;
     }
+
+    /**
+     * Return whether any incognito tabs are visible to the user in Android's Overview list.
+     */
+    public boolean isIncognitoDocumentAccessibleToUser() {
+        Context context = ApplicationStatus.getApplicationContext();
+        ActivityManager activityManager =
+                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
+            Intent intent = DocumentUtils.getBaseIntentFromTask(task);
+            if (isValidActivity(true, intent)) return true;
+        }
+        return false;
+    }
 }
