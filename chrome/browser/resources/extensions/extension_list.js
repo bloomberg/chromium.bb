@@ -57,6 +57,15 @@ ExtensionFocusRow.prototype = {
     return equivalent || this.focusableElements[0];
   },
 
+  /** @override */
+  makeActive: function(active) {
+    cr.ui.FocusRow.prototype.makeActive.call(this, active);
+
+    // Only highlight if the row has focus.
+    this.classList.toggle('extension-highlight',
+                          active && this.contains(document.activeElement));
+  },
+
   /** Updates the list of focusable elements. */
   updateFocusableElements: function() {
     this.focusableElements.length = 0;
@@ -336,8 +345,10 @@ cr.define('extensions', function() {
       this.updateFocusableElements();
 
       var idToHighlight = this.getIdQueryParam_();
-      if (idToHighlight && $(idToHighlight))
+      if (idToHighlight && $(idToHighlight)) {
         this.scrollToNode_(idToHighlight);
+        this.setInitialFocus_(idToHighlight);
+      }
 
       var idToOpenOptions = this.getOptionsQueryParam_();
       if (idToOpenOptions && $(idToOpenOptions))
@@ -430,6 +441,30 @@ cr.define('extensions', function() {
       var scrollTop = $(extensionId).offsetTop - scrollFudge *
           $(extensionId).clientHeight;
       setScrollTopForDocument(document, scrollTop);
+    },
+
+    /**
+     * @param {string} extensionId The id of the extension that should have
+     *     initial focus
+     * @private
+     */
+    setInitialFocus_: function(extensionId) {
+      var focusRow = assertInstanceof($(extensionId), ExtensionFocusRow);
+      var columnTypePriority = ['enabled', 'enterprise', 'website', 'details'];
+      var elementToFocus = null;
+      var elementPriority = columnTypePriority.length;
+
+      for (var i = 0; i < focusRow.focusableElements.length; ++i) {
+        var element = focusRow.focusableElements[i];
+        var priority =
+            columnTypePriority.indexOf(element.getAttribute('column-type'));
+        if (priority > -1 && priority < elementPriority) {
+          elementToFocus = element;
+          elementPriority = priority;
+        }
+      }
+
+      focusRow.getEquivalentElement(elementToFocus).focus();
     },
 
     /**
@@ -663,9 +698,6 @@ cr.define('extensions', function() {
         classes.push('may-not-modify');
       }
       row.classList.add.apply(row.classList, classes);
-
-      row.classList.toggle('extension-highlight',
-                           row.id == this.getIdQueryParam_());
 
       var item = row.querySelector('.extension-list-item');
       item.style.backgroundImage = 'url(' + extension.iconUrl + ')';
