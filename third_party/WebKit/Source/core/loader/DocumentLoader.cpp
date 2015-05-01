@@ -108,7 +108,6 @@ ResourceLoader* DocumentLoader::mainResourceLoader() const
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || !isLoading());
-    static_cast<FrameFetchContext&>(m_fetcher->context()).clearDocumentLoader();
     clearMainResourceHandle();
     m_applicationCacheHost->dispose();
 }
@@ -563,6 +562,7 @@ void DocumentLoader::detachFromFrame()
     // frame have any loads active, so go ahead and kill all the loads.
     stopLoading();
 
+    m_fetcher->clearContext();
     m_applicationCacheHost->setApplicationCache(0);
     WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);
     m_frame = 0;

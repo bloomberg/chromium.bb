@@ -62,6 +62,8 @@ void HTMLImportLoader::dispose()
 {
     m_controller = nullptr;
     if (m_document) {
+        if (m_document->parser())
+            m_document->parser()->removeClient(this);
         m_document->setImportsController(nullptr);
         m_document->cancelParsing();
         m_document.clear();
