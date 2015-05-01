@@ -118,6 +118,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
     if (m_registeredAsCandidate) {
         ASSERT(element->inDocument());
         document.styleEngine().removeStyleSheetCandidateNode(element, element->treeScope());
+        m_registeredAsCandidate = false;
     }
 }
 
