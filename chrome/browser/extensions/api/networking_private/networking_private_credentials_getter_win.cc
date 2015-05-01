@@ -27,8 +27,6 @@ class CredentialsGetterHostClient : public UtilityProcessHostClient {
  public:
   explicit CredentialsGetterHostClient(const std::string& public_key);
 
-  ~CredentialsGetterHostClient() override;
-
   // UtilityProcessHostClient
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnProcessCrashed(int exit_code) override;
@@ -43,6 +41,8 @@ class CredentialsGetterHostClient : public UtilityProcessHostClient {
       const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback);
 
  private:
+  ~CredentialsGetterHostClient() override;
+
   // Public key used to encrypt results
   std::vector<uint8> public_key_;
 
@@ -56,8 +56,6 @@ CredentialsGetterHostClient::CredentialsGetterHostClient(
     const std::string& public_key)
     : public_key_(public_key.begin(), public_key.end()) {
 }
-
-CredentialsGetterHostClient::~CredentialsGetterHostClient() {}
 
 bool CredentialsGetterHostClient::OnMessageReceived(
     const IPC::Message& message) {
@@ -107,6 +105,9 @@ void CredentialsGetterHostClient::StartProcessOnIOThread(
       IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME));
   host->ElevatePrivileges();
   host->Send(new ChromeUtilityHostMsg_GetWiFiCredentials(network_guid));
+}
+
+CredentialsGetterHostClient::~CredentialsGetterHostClient() {
 }
 
 }  // namespace

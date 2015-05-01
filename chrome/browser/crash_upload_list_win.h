@@ -19,6 +19,8 @@ class CrashUploadListWin : public CrashUploadList {
   void LoadUploadList() override;
 
  private:
+  ~CrashUploadListWin() override;
+
   // Returns whether the event record is likely a Chrome crash log.
   bool IsPossibleCrashLogRecord(EVENTLOGRECORD* record) const;
 

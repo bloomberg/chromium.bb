@@ -103,6 +103,8 @@ class VersionReader
  private:
   friend class base::RefCountedThreadSafe<VersionReader>;
 
+  ~VersionReader() {}
+
   // The version updater that must be called back when we are done.
   // We use a weak pointer in case the updater gets destroyed while waiting.
   base::WeakPtr<VersionUpdaterWin> version_updater_;

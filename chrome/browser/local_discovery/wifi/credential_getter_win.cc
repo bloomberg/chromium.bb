@@ -17,9 +17,6 @@ namespace wifi {
 CredentialGetterWin::CredentialGetterWin() {
 }
 
-CredentialGetterWin::~CredentialGetterWin() {
-}
-
 void CredentialGetterWin::StartGetCredentials(
     const std::string& network_guid,
     const CredentialsCallback& callback) {
@@ -39,6 +36,9 @@ void CredentialGetterWin::StartOnIOThread(const std::string& network_guid) {
       IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME));
   host->ElevatePrivileges();
   host->Send(new ChromeUtilityHostMsg_GetWiFiCredentials(network_guid));
+}
+
+CredentialGetterWin::~CredentialGetterWin() {
 }
 
 bool CredentialGetterWin::OnMessageReceived(const IPC::Message& message) {

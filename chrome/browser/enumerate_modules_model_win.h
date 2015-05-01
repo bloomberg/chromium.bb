@@ -126,7 +126,6 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
                             const BlacklistEntry& blacklisted);
 
   explicit ModuleEnumerator(EnumerateModulesModel* observer);
-  ~ModuleEnumerator();
 
   // Start scanning the loaded module list (if a scan is not already in
   // progress). This function does not block while reading the module list
@@ -141,6 +140,9 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnumerateModulesTest, CollapsePath);
+
+  friend class base::RefCountedThreadSafe<ModuleEnumerator>;
+  ~ModuleEnumerator();
 
   // The (currently) hard coded blacklist of known bad modules.
   static const BlacklistEntry kModuleBlacklist[];

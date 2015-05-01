@@ -54,6 +54,9 @@ void CrashUploadListWin::LoadUploadList() {
   }
 }
 
+CrashUploadListWin::~CrashUploadListWin() {
+}
+
 bool CrashUploadListWin::IsPossibleCrashLogRecord(
     EVENTLOGRECORD* record) const {
   LPWSTR provider_name = (LPWSTR)((uint8*)record + sizeof(EVENTLOGRECORD));

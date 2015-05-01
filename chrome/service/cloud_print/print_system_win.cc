@@ -246,8 +246,6 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
    public:
     Core() : job_id_(-1), delegate_(NULL), saved_dc_(0) {}
 
-    ~Core() override {}
-
     bool Spool(const std::string& print_ticket,
                const std::string& print_ticket_mime_type,
                const base::FilePath& print_data_file_path,
@@ -369,6 +367,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     }
 
    private:
+    ~Core() override {}
+
     // Helper class to allow PrintXPSDocument() to have multiple exits.
     class PrintJobCanceler {
      public:
@@ -569,6 +569,8 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   }
 
  private:
+  ~PrinterCapsHandler() {}
+
   void GetPrinterCapsAndDefaultsImpl(
       const scoped_refptr<base::MessageLoopProxy>&
           client_message_loop_proxy) {
@@ -634,6 +636,8 @@ class PrintSystemWin : public PrintSystem {
   std::string GetSupportedMimeTypes() override;
 
  private:
+  ~PrintSystemWin() {}
+
   std::string PrintSystemWin::GetPrinterDriverInfo(
       const std::string& printer_name) const;
 

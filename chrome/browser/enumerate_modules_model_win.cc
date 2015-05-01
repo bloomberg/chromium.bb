@@ -430,9 +430,6 @@ ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
       callback_thread_id_(BrowserThread::ID_COUNT) {
 }
 
-ModuleEnumerator::~ModuleEnumerator() {
-}
-
 void ModuleEnumerator::ScanNow(ModulesVector* list, bool limited_mode) {
   enumerated_modules_ = list;
 
@@ -446,6 +443,9 @@ void ModuleEnumerator::ScanNow(ModulesVector* list, bool limited_mode) {
     // Run it synchronously.
     ScanImpl();
   }
+}
+
+ModuleEnumerator::~ModuleEnumerator() {
 }
 
 void ModuleEnumerator::ScanImpl() {
