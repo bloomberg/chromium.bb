@@ -585,6 +585,24 @@ TEST_F(SequencedSocketDataTest, SingleAsyncReadLargeBuffer) {
   ASSERT_EQ(std::string(kMsg1, kLen1), std::string(read_buf->data(), kLen1));
 }
 
+TEST_F(SequencedSocketDataTest, HangingRead) {
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 0),
+  };
+
+  Initialize(reads, arraysize(reads), nullptr, 0);
+
+  scoped_refptr<IOBuffer> read_buf(new IOBuffer(1));
+  ASSERT_EQ(ERR_IO_PENDING,
+            sock_->Read(read_buf.get(), 1, read_callback_.callback()));
+  ASSERT_FALSE(read_callback_.have_result());
+
+  // Even though the read is scheduled to complete at sequence number 0,
+  // verify that the read callback in never called.
+  base::MessageLoop::current()->RunUntilIdle();
+  ASSERT_FALSE(read_callback_.have_result());
+}
+
 // ----------- Write
 
 TEST_F(SequencedSocketDataTest, SingleSyncWriteTooEarly) {

@@ -501,10 +501,10 @@ class SequencedSocketData : public SocketDataProvider {
   void Reset() override;
 
   // Returns true if all data has been read.
-  bool at_read_eof();
+  bool at_read_eof() const;
 
   // Returns true if all data has been written.
-  bool at_write_eof();
+  bool at_write_eof() const;
 
  private:
   // Defines the state for the read or write path.

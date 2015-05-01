@@ -515,6 +515,15 @@ MockRead SequencedSocketData::OnRead() {
   NET_TRACE(1, " *** ") << "next_read: " << next_read.sequence_number;
   CHECK_GE(next_read.sequence_number, sequence_number_);
 
+  // Special case handling for hanging reads.
+  if (next_read.mode == ASYNC && next_read.result == ERR_IO_PENDING) {
+    NET_TRACE(1, " *** ") << "Hanging read";
+    helper_.AdvanceRead();
+    ++sequence_number_;
+    CHECK(helper_.at_read_eof());
+    return MockRead(SYNCHRONOUS, ERR_IO_PENDING);
+  }
+
   if (next_read.sequence_number <= sequence_number_) {
     if (next_read.mode == SYNCHRONOUS) {
       NET_TRACE(1, " *** ") << "Returning synchronously";
@@ -591,11 +600,11 @@ void SequencedSocketData::Reset() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-bool SequencedSocketData::at_read_eof() {
+bool SequencedSocketData::at_read_eof() const {
   return helper_.at_read_eof();
 }
 
-bool SequencedSocketData::at_write_eof() {
+bool SequencedSocketData::at_write_eof() const {
   return helper_.at_read_eof();
 }
 
