@@ -110,16 +110,27 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
     buffer->GetStride(strides.get());
 
     // Copy and compare mapped buffers.
-    for (size_t i = 0; i < num_planes; ++i) {
-      size_t width_in_bytes = 0u;
-      EXPECT_TRUE(GpuMemoryBufferImpl::StrideInBytes(
-          buffer_size.width(), configuration.format, i, &width_in_bytes));
-      EXPECT_GT(width_in_bytes, 0u);
+    for (size_t plane = 0; plane < num_planes; ++plane) {
+      size_t row_size_in_bytes = 0;
+      EXPECT_TRUE(GpuMemoryBufferImpl::RowSizeInBytes(
+          buffer_size.width(), configuration.format, plane,
+          &row_size_in_bytes));
+      EXPECT_GT(row_size_in_bytes, 0u);
 
-      scoped_ptr<char[]> data(new char[width_in_bytes]);
-      memset(data.get(), 0x2a + i, width_in_bytes);
-      memcpy(mapped_buffers[i], data.get(), width_in_bytes);
-      EXPECT_EQ(memcmp(mapped_buffers[i], data.get(), width_in_bytes), 0);
+      scoped_ptr<char[]> data(new char[row_size_in_bytes]);
+      memset(data.get(), 0x2a + plane, row_size_in_bytes);
+
+      size_t height =
+          buffer_size.height() /
+          GpuMemoryBufferImpl::SubsamplingFactor(configuration.format, plane);
+      for (size_t y = 0; y < height; ++y) {
+        memcpy(static_cast<char*>(mapped_buffers[plane]) + y * strides[plane],
+               data.get(), row_size_in_bytes);
+        EXPECT_EQ(memcmp(static_cast<char*>(mapped_buffers[plane]) +
+                             y * strides[plane],
+                         data.get(), row_size_in_bytes),
+                  0);
+      }
     }
 
     buffer->Unmap();

@@ -28,6 +28,7 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gamepad/gamepad_service.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -1100,6 +1101,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   established_gpu_channel = false;
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
 #endif
+
+  // Enable the GpuMemoryBuffer dump provider with IO thread affinity. Note that
+  // unregistration happens on the IO thread (See
+  // BrowserProcessSubThread::IOThreadPreCleanUp).
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      BrowserGpuMemoryBufferManager::current(), io_thread_->task_runner());
 
   {
     TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:AudioMan");

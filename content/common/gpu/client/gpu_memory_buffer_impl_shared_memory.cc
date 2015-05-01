@@ -71,28 +71,6 @@ GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
 }
 
 // static
-bool GpuMemoryBufferImplSharedMemory::BufferSizeInBytes(const gfx::Size& size,
-                                                        Format format,
-                                                        size_t* size_in_bytes) {
-  base::CheckedNumeric<size_t> checked_size_in_bytes = 0u;
-  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
-  for (size_t i = 0; i < num_planes; ++i) {
-    size_t stride_in_bytes = 0;
-    if (!StrideInBytes(size.width(), format, i, &stride_in_bytes))
-      return false;
-    base::CheckedNumeric<size_t> checked_plane_size_in_bytes = stride_in_bytes;
-    checked_plane_size_in_bytes *= size.height() / SubsamplingFactor(format, i);
-    if (!checked_plane_size_in_bytes.IsValid())
-      return false;
-    checked_size_in_bytes += checked_plane_size_in_bytes.ValueOrDie();
-    if (!checked_size_in_bytes.IsValid())
-      return false;
-  }
-  *size_in_bytes = checked_size_in_bytes.ValueOrDie();
-  return true;
-}
-
-// static
 scoped_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
@@ -180,12 +158,12 @@ bool GpuMemoryBufferImplSharedMemory::Map(void** data) {
   size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
   for (size_t i = 0; i < num_planes; ++i) {
     data[i] = reinterpret_cast<uint8*>(shared_memory_->memory()) + offset;
-    size_t stride_in_bytes = 0;
-    bool valid_stride =
-        StrideInBytes(size_.width(), format_, i, &stride_in_bytes);
-    DCHECK(valid_stride);
+    size_t row_size_in_bytes = 0;
+    bool valid_row_size =
+        RowSizeInBytes(size_.width(), format_, i, &row_size_in_bytes);
+    DCHECK(valid_row_size);
     offset +=
-        stride_in_bytes * (size_.height() / SubsamplingFactor(format_, i));
+        row_size_in_bytes * (size_.height() / SubsamplingFactor(format_, i));
   }
   mapped_ = true;
   return true;
@@ -199,11 +177,11 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
 void GpuMemoryBufferImplSharedMemory::GetStride(int* stride) const {
   size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
   for (size_t i = 0; i < num_planes; ++i) {
-    size_t stride_in_bytes = 0;
-    bool valid_stride =
-        StrideInBytes(size_.width(), format_, i, &stride_in_bytes);
-    DCHECK(valid_stride);
-    stride[i] = stride_in_bytes;
+    size_t row_size_in_bytes = 0;
+    bool valid_row_size =
+        RowSizeInBytes(size_.width(), format_, i, &row_size_in_bytes);
+    DCHECK(valid_row_size);
+    stride[i] = row_size_in_bytes;
   }
 }
 

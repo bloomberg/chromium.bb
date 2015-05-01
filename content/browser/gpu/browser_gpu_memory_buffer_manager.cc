@@ -6,9 +6,10 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/lazy_instance.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
@@ -22,6 +23,8 @@ BrowserGpuMemoryBufferManager* g_gpu_memory_buffer_manager = nullptr;
 
 // Global atomic to generate gpu memory buffer unique IDs.
 base::StaticAtomicSequenceNumber g_next_gpu_memory_buffer_id;
+
+const char kMemoryAllocatorName[] = "gpumemorybuffer";
 
 }  // namespace
 
@@ -145,7 +148,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
       return;
     }
 
-    buffers[new_id] = gfx::SHARED_MEMORY_BUFFER;
+    buffers[new_id] = BufferInfo(size, format, gfx::SHARED_MEMORY_BUFFER);
     callback.Run(GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
         new_id, size, format, child_process_handle));
     return;
@@ -155,7 +158,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   // allocation completes is less subtle if we set the buffer type to
   // EMPTY_BUFFER here and verify that this has not changed when allocation
   // completes.
-  buffers[new_id] = gfx::EMPTY_BUFFER;
+  buffers[new_id] = BufferInfo(size, format, gfx::EMPTY_BUFFER);
 
   gpu_memory_buffer_factory_host_->CreateGpuMemoryBuffer(
       new_id, size, format, usage, child_client_id, 0,
@@ -177,6 +180,37 @@ void BrowserGpuMemoryBufferManager::SetDestructionSyncPoint(
       ->set_destruction_sync_point(sync_point);
 }
 
+bool BrowserGpuMemoryBufferManager::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (const auto& client : clients_) {
+    for (const auto& buffer : client.second) {
+      if (buffer.second.type == gfx::EMPTY_BUFFER)
+        continue;
+
+      base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+          base::StringPrintf("%s/%d", kMemoryAllocatorName, buffer.first));
+      if (!dump)
+        return false;
+
+      size_t buffer_size_in_bytes = 0;
+      // Note: BufferSizeInBytes returns an approximated size for the buffer
+      // but the factory can be made to return the exact size if this
+      // approximation is not good enough.
+      bool valid_size = GpuMemoryBufferImpl::BufferSizeInBytes(
+          buffer.second.size, buffer.second.format, &buffer_size_in_bytes);
+      DCHECK(valid_size);
+
+      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameOuterSize,
+                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                      buffer_size_in_bytes);
+    }
+  }
+
+  return true;
+}
+
 void BrowserGpuMemoryBufferManager::ChildProcessDeletedGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     base::ProcessHandle child_process_handle,
@@ -195,14 +229,14 @@ void BrowserGpuMemoryBufferManager::ChildProcessDeletedGpuMemoryBuffer(
 
   // This can happen if a child process managed to trigger a call to this while
   // a buffer is in the process of being allocated.
-  if (buffer_it->second == gfx::EMPTY_BUFFER) {
+  if (buffer_it->second.type == gfx::EMPTY_BUFFER) {
     LOG(ERROR) << "Invalid GpuMemoryBuffer type.";
     return;
   }
 
   // Buffers allocated using the factory need to be destroyed through the
   // factory.
-  if (buffer_it->second != gfx::SHARED_MEMORY_BUFFER) {
+  if (buffer_it->second.type != gfx::SHARED_MEMORY_BUFFER) {
     gpu_memory_buffer_factory_host_->DestroyGpuMemoryBuffer(id,
                                                             child_client_id,
                                                             sync_point);
@@ -220,20 +254,19 @@ void BrowserGpuMemoryBufferManager::ProcessRemoved(
   if (client_it == clients_.end())
     return;
 
-  for (auto &buffer_it : client_it->second) {
+  for (const auto& buffer : client_it->second) {
     // This might happen if buffer is currenlty in the process of being
     // allocated. The buffer will in that case be cleaned up when allocation
     // completes.
-    if (buffer_it.second == gfx::EMPTY_BUFFER)
+    if (buffer.second.type == gfx::EMPTY_BUFFER)
       continue;
 
     // Skip shared memory buffers as they were not allocated using the factory.
-    if (buffer_it.second == gfx::SHARED_MEMORY_BUFFER)
+    if (buffer.second.type == gfx::SHARED_MEMORY_BUFFER)
       continue;
 
-    gpu_memory_buffer_factory_host_->DestroyGpuMemoryBuffer(buffer_it.first,
-                                                            client_id,
-                                                            0);
+    gpu_memory_buffer_factory_host_->DestroyGpuMemoryBuffer(buffer.first,
+                                                            client_id, 0);
   }
 
   clients_.erase(client_it);
@@ -305,7 +338,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedForChildProcess(
 
   BufferMap::iterator buffer_it = buffers.find(handle.id);
   DCHECK(buffer_it != buffers.end());
-  DCHECK_EQ(buffer_it->second, gfx::EMPTY_BUFFER);
+  DCHECK_EQ(buffer_it->second.type, gfx::EMPTY_BUFFER);
 
   if (handle.is_null()) {
     buffers.erase(buffer_it);
@@ -318,7 +351,7 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedForChildProcess(
 
   // Store the type of this buffer so it can be cleaned up if the child
   // process is removed.
-  buffer_it->second = handle.type;
+  buffer_it->second.type = handle.type;
 
   callback.Run(handle);
 }

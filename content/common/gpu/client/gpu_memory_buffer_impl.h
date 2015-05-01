@@ -36,16 +36,26 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Returns the number of planes based on the format of the buffer.
   static size_t NumberOfPlanesForGpuMemoryBufferFormat(Format format);
 
-  // Calculates the number of bytes that an implementation must use to store
-  // one row of pixel data.
-  static bool StrideInBytes(size_t width,
-                            Format format,
-                            int plane,
-                            size_t* stride_in_bytes);
-
   // Returns the subsampling factor applied to the given zero-indexed |plane| of
   // the |format| both horizontally and vertically.
   static size_t SubsamplingFactor(Format format, int plane);
+
+  // Returns the number of bytes used to store a row of the given zero-indexed
+  // |plane| of |format|.
+  // Note: This is an approximation and the exact size used by an implementation
+  // might be different.
+  static bool RowSizeInBytes(size_t width,
+                             Format format,
+                             int plane,
+                             size_t* size_in_bytes);
+
+  // Returns the number of bytes used to store all the planes of a given
+  // |format|.
+  // Note: This is an approximation and the exact size used by an implementation
+  // might be different.
+  static bool BufferSizeInBytes(const gfx::Size& size,
+                                Format format,
+                                size_t* size_in_bytes);
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool IsMapped() const override;

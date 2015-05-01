@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
@@ -15,7 +16,8 @@ class GpuMemoryBufferFactoryHost;
 class GpuMemoryBufferImpl;
 
 class CONTENT_EXPORT BrowserGpuMemoryBufferManager
-    : public gpu::GpuMemoryBufferManager {
+    : public gpu::GpuMemoryBufferManager,
+      public base::trace_event::MemoryDumpProvider {
  public:
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       AllocationCallback;
@@ -37,11 +39,15 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
                                uint32 sync_point) override;
 
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+
   // Virtual for testing.
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       int32 surface_id);
+
   void AllocateGpuMemoryBufferForChildProcess(
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
@@ -57,6 +63,18 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   void ProcessRemoved(base::ProcessHandle process_handle, int client_id);
 
  private:
+  struct BufferInfo {
+    BufferInfo()
+        : format(gfx::GpuMemoryBuffer::RGBA_8888), type(gfx::EMPTY_BUFFER) {}
+    BufferInfo(const gfx::Size& size,
+               gfx::GpuMemoryBuffer::Format format,
+               gfx::GpuMemoryBufferType type)
+        : size(size), format(format), type(type) {}
+
+    gfx::Size size;
+    gfx::GpuMemoryBuffer::Format format;
+    gfx::GpuMemoryBufferType type;
+  };
   struct AllocateGpuMemoryBufferRequest;
 
   scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferCommon(
@@ -78,8 +96,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   GpuMemoryBufferFactoryHost* gpu_memory_buffer_factory_host_;
   int gpu_client_id_;
 
-  typedef base::hash_map<gfx::GpuMemoryBufferId, gfx::GpuMemoryBufferType>
-      BufferMap;
+  typedef base::hash_map<gfx::GpuMemoryBufferId, BufferInfo> BufferMap;
   typedef base::hash_map<int, BufferMap> ClientMap;
   ClientMap clients_;
 

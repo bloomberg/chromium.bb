@@ -6,8 +6,10 @@
 
 #include "base/debug/leak_tracker.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/notification_service_impl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
@@ -70,6 +72,10 @@ void BrowserProcessSubThread::IOThreadPreCleanUp() {
   // IO thread only resources they are referencing.
   BrowserChildProcessHostImpl::TerminateAll();
 #endif  // !defined(OS_IOS)
+
+  // Unregister GpuMemoryBuffer dump provider before IO thread is shut down.
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      BrowserGpuMemoryBufferManager::current());
 }
 
 }  // namespace content

@@ -98,51 +98,7 @@ size_t GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
 }
 
 // static
-bool GpuMemoryBufferImpl::StrideInBytes(size_t width,
-                                        Format format,
-                                        int plane,
-                                        size_t* stride_in_bytes) {
-  base::CheckedNumeric<size_t> checked_stride = width;
-  switch (format) {
-    case ATCIA:
-    case DXT5:
-      DCHECK_EQ(plane, 0);
-      *stride_in_bytes = width;
-      return true;
-    case ATC:
-    case DXT1:
-    case ETC1:
-      DCHECK_EQ(plane, 0);
-      DCHECK_EQ(width % 2, 0u);
-      *stride_in_bytes = width / 2;
-      return true;
-    case R_8:
-      checked_stride += 3;
-      if (!checked_stride.IsValid())
-        return false;
-      *stride_in_bytes = checked_stride.ValueOrDie() & ~0x3;
-      return true;
-    case RGBX_8888:
-    case RGBA_8888:
-    case BGRA_8888:
-      checked_stride *= 4;
-      if (!checked_stride.IsValid())
-        return false;
-      *stride_in_bytes = checked_stride.ValueOrDie();
-      return true;
-    case YUV_420:
-      DCHECK_EQ(width % 2, 0u);
-      *stride_in_bytes = width / SubsamplingFactor(format, plane);
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-// static
-size_t GpuMemoryBufferImpl::SubsamplingFactor(
-    Format format,
-    int plane) {
+size_t GpuMemoryBufferImpl::SubsamplingFactor(Format format, int plane) {
   switch (format) {
     case ATC:
     case ATCIA:
@@ -162,6 +118,70 @@ size_t GpuMemoryBufferImpl::SubsamplingFactor(
   }
   NOTREACHED();
   return 0;
+}
+
+// static
+bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
+                                         Format format,
+                                         int plane,
+                                         size_t* size_in_bytes) {
+  base::CheckedNumeric<size_t> checked_size = width;
+  switch (format) {
+    case ATCIA:
+    case DXT5:
+      DCHECK_EQ(plane, 0);
+      *size_in_bytes = width;
+      return true;
+    case ATC:
+    case DXT1:
+    case ETC1:
+      DCHECK_EQ(plane, 0);
+      DCHECK_EQ(width % 2, 0u);
+      *size_in_bytes = width / 2;
+      return true;
+    case R_8:
+      checked_size += 3;
+      if (!checked_size.IsValid())
+        return false;
+      *size_in_bytes = checked_size.ValueOrDie() & ~0x3;
+      return true;
+    case RGBX_8888:
+    case RGBA_8888:
+    case BGRA_8888:
+      checked_size *= 4;
+      if (!checked_size.IsValid())
+        return false;
+      *size_in_bytes = checked_size.ValueOrDie();
+      return true;
+    case YUV_420:
+      DCHECK_EQ(width % 2, 0u);
+      *size_in_bytes = width / SubsamplingFactor(format, plane);
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+bool GpuMemoryBufferImpl::BufferSizeInBytes(const gfx::Size& size,
+                                            Format format,
+                                            size_t* size_in_bytes) {
+  base::CheckedNumeric<size_t> checked_size = 0;
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
+  for (size_t i = 0; i < num_planes; ++i) {
+    size_t row_size_in_bytes = 0;
+    if (!RowSizeInBytes(size.width(), format, i, &row_size_in_bytes))
+      return false;
+    base::CheckedNumeric<size_t> checked_plane_size = row_size_in_bytes;
+    checked_plane_size *= size.height() / SubsamplingFactor(format, i);
+    if (!checked_plane_size.IsValid())
+      return false;
+    checked_size += checked_plane_size.ValueOrDie();
+    if (!checked_size.IsValid())
+      return false;
+  }
+  *size_in_bytes = checked_size.ValueOrDie();
+  return true;
 }
 
 gfx::GpuMemoryBuffer::Format GpuMemoryBufferImpl::GetFormat() const {
