@@ -149,7 +149,7 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
     return;
 
   driver_->GeneratedPasswordAccepted(current_password_);
-  password_manager_->SetFormHasGeneratedPassword(driver_, form_);
+  password_manager_->SetHasGeneratedPasswordForForm(driver_, form_, true);
   Hide();
 }
 

@@ -372,10 +372,12 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
           password_generation::PASSWORD_DELETED);
       CopyElementValueToOtherInputElements(&element,
           &generation_form_data_->password_elements);
+      Send(new AutofillHostMsg_PasswordNoLongerGenerated(
+          routing_id(),
+          *generation_form_data_->form));
     }
 
-    // Do not treat the password as generated.
-    // TODO(gcasto): Set PasswordForm::type in the browser to TYPE_NORMAL.
+    // Do not treat the password as generated, either here or in the browser.
     password_is_generated_ = false;
     generation_element_.setShouldRevealPassword(false);
 

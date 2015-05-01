@@ -119,9 +119,10 @@ PasswordManager::~PasswordManager() {
   FOR_EACH_OBSERVER(LoginModelObserver, observers_, OnLoginModelDestroying());
 }
 
-void PasswordManager::SetFormHasGeneratedPassword(
+void PasswordManager::SetHasGeneratedPasswordForForm(
     password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& form) {
+    const PasswordForm& form,
+    bool password_is_generated) {
   DCHECK(client_->IsSavingEnabledForCurrentPage());
 
   for (ScopedVector<PasswordFormManager>::iterator iter =
@@ -129,10 +130,15 @@ void PasswordManager::SetFormHasGeneratedPassword(
        iter != pending_login_managers_.end(); ++iter) {
     if ((*iter)->DoesManage(form) ==
         PasswordFormManager::RESULT_COMPLETE_MATCH) {
-      (*iter)->SetHasGeneratedPassword();
+      (*iter)->set_has_generated_password(password_is_generated);
       return;
     }
   }
+
+  if (!password_is_generated) {
+    return;
+  }
+
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
@@ -140,7 +146,7 @@ void PasswordManager::SetFormHasGeneratedPassword(
   PasswordFormManager* manager = new PasswordFormManager(
       this, client_, driver->AsWeakPtr(), form, ssl_valid);
   pending_login_managers_.push_back(manager);
-  manager->SetHasGeneratedPassword();
+  manager->set_has_generated_password(true);
   // TODO(gcasto): Add UMA stats to track this.
 }
 
@@ -435,7 +441,7 @@ void PasswordManager::CreatePendingLoginManagers(
 bool PasswordManager::ShouldPromptUserToSavePassword() const {
   return !client_->IsAutomaticPasswordSavingEnabled() &&
          provisional_save_manager_->IsNewLogin() &&
-         !provisional_save_manager_->HasGeneratedPassword() &&
+         !provisional_save_manager_->has_generated_password() &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
 
@@ -588,7 +594,7 @@ void PasswordManager::AskUserOrSavePassword() {
       logger->LogMessage(Logger::STRING_DECISION_SAVE);
     provisional_save_manager_->Save();
 
-    if (provisional_save_manager_->HasGeneratedPassword()) {
+    if (provisional_save_manager_->has_generated_password()) {
       client_->AutomaticPasswordSave(provisional_save_manager_.Pass());
     } else {
       provisional_save_manager_.reset();

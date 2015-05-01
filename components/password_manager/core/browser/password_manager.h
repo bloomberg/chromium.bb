@@ -71,10 +71,11 @@ class PasswordManager : public LoginModel {
   void AddObserver(LoginModelObserver* observer) override;
   void RemoveObserver(LoginModelObserver* observer) override;
 
-  // Mark this form as having a generated password.
-  void SetFormHasGeneratedPassword(
+  // Update the state of generation for this form.
+  void SetHasGeneratedPasswordForForm(
       password_manager::PasswordManagerDriver* driver,
-      const autofill::PasswordForm& form);
+      const autofill::PasswordForm& form,
+      bool password_is_generated);
 
   // TODO(isherman): This should not be public, but is currently being used by
   // the LoginPrompt code.

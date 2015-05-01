@@ -334,7 +334,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
   // Simulate the user generating the password and submitting the form.
-  manager()->SetFormHasGeneratedPassword(&driver_, form);
+  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
   manager()->ProvisionallySavePassword(form);
 
   // The user should not be presented with an infobar as they have already given
@@ -641,7 +641,7 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
                                      true);  // The initial layout.
 
   // Simulate the user generating the password and submitting the form.
-  manager()->SetFormHasGeneratedPassword(&driver_, form);
+  manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
   manager()->ProvisionallySavePassword(form);
 
   // The user should not be presented with an infobar as they have already given

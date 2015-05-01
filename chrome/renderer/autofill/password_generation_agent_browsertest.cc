@@ -317,11 +317,22 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_EQ(edited_password, first_password_element.value());
   EXPECT_EQ(edited_password, second_password_element.value());
 
+  // Clear any uninteresting sent messages.
+  password_generation_->clear_messages();
+
   // Verify that password mirroring works correctly even when the password
   // is deleted.
   SimulateUserInputChangeForElement(&first_password_element, std::string());
   EXPECT_EQ(base::string16(), first_password_element.value());
   EXPECT_EQ(base::string16(), second_password_element.value());
+
+  // Should have notified the browser that the password is no longer generated
+  // and trigger generation again.
+  ASSERT_EQ(2u, password_generation_->messages().size());
+  EXPECT_EQ(AutofillHostMsg_PasswordNoLongerGenerated::ID,
+            password_generation_->messages()[0]->type());
+  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
+            password_generation_->messages()[1]->type());
 }
 
 TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {

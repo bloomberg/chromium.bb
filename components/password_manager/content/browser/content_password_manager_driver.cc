@@ -128,6 +128,8 @@ bool ContentPasswordManagerDriver::HandleMessage(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormSubmitted,
                       OnPasswordFormSubmitted)
   IPC_MESSAGE_HANDLER(AutofillHostMsg_InPageNavigation, OnInPageNavigation)
+  IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordNoLongerGenerated,
+                      OnPasswordNoLongerGenerated)
   IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordSuggestions,
                       &password_autofill_manager_,
                       PasswordAutofillManager::OnShowPasswordSuggestions)
@@ -168,6 +170,12 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
 void ContentPasswordManagerDriver::OnInPageNavigation(
     const autofill::PasswordForm& password_form) {
   GetPasswordManager()->OnInPageNavigation(this, password_form);
+}
+
+void ContentPasswordManagerDriver::OnPasswordNoLongerGenerated(
+    const autofill::PasswordForm& password_form) {
+  GetPasswordManager()->SetHasGeneratedPasswordForForm(this, password_form,
+                                                       false);
 }
 
 }  // namespace password_manager

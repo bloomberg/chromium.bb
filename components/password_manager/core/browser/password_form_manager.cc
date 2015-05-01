@@ -250,17 +250,6 @@ bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
   return pending_credentials_.IsPublicSuffixMatch();
 }
 
-void PasswordFormManager::SetHasGeneratedPassword() {
-  has_generated_password_ = true;
-}
-
-bool PasswordFormManager::HasGeneratedPassword() const {
-  // This check is permissive, as the user may have generated a password and
-  // then edited it in the form itself. However, even in this case the user
-  // has already given consent, so we treat these cases the same.
-  return has_generated_password_;
-}
-
 bool PasswordFormManager::HasValidPasswordForm() const {
   DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
   // Non-HTML password forms (primarily HTTP and FTP autentication)

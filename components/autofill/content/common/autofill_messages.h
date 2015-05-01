@@ -319,6 +319,10 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_ShowPasswordEditingPopup,
 // Instructs the browser to hide any password generation popups.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePasswordGenerationPopup)
 
+// Instructs the browsr that form no longer contains a generated password.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordNoLongerGenerated,
+                    autofill::PasswordForm);
+
 // Instruct the browser to show a popup with suggestions filled from data
 // associated with |key|. The popup will use |text_direction| for displaying
 // text.
