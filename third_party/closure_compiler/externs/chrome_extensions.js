@@ -190,6 +190,45 @@
 
 
 /**
+ * @see https://developer.chrome.com/extensions/accessibilityFeatures
+ * @const
+ */
+chrome.accessibilityFeatures = {};
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.spokenFeedback;
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.largeCursor;
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.stickyKeys;
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.highContrast;
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.screenMagnifier;
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.autoclick;
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.virtualKeyboard;
+
+
+/** @type {!ChromeSetting} */
+chrome.accessibilityFeatures.animationPolicy;
+
+
+/**
  * TODO(tbreisacher): Move all chrome.app.* externs into their own file.
  * @const
  */
@@ -1827,6 +1866,78 @@ chrome.copresence.onMessagesReceived;
  * @see https://developer.chrome.com/apps/copresence#event-onStatusUpdated
  */
 chrome.copresence.onStatusUpdated;
+
+
+/**
+ * @see https://developer.chrome.com/extensions/enterprise_platformKeys
+ * @const
+ */
+chrome.enterprise = {};
+
+
+/**
+ * @constructor
+ * platformKeys allows for generating hardware-backed keys and the installation
+ * of certificates for these keys.
+ * @see https://developer.chrome.com/extensions/enterprise_platformKeys.
+ */
+chrome.enterprise.platformKeys = function() {};
+
+
+/**
+ * @constructor
+ * @see https://developer.chrome.com/extensions/enterprise_platformKeys#type-Token
+ */
+chrome.enterprise.Token = function() {};
+
+
+/**
+ * @type {string} Unique id for the Token, either "user" or "system."
+ */
+chrome.enterprise.Token.prototype.id;
+
+
+/**
+ * @type {!webCrypto.SubtleCrypto} Implements the WebCrypto's
+ *     SubtleCrypto interface. The cryptographic operations, including key
+ *     generation, are hardware-backed.
+ */
+chrome.enterprise.Token.prototype.subtleCrypto;
+
+
+/**
+ * @param {function(!Array.<!chrome.enterprise.Token>): void} callback Called
+ * with an array of Tokens.
+ */
+chrome.enterprise.platformKeys.getTokens = function(callback) {};
+
+
+/**
+ * @param {string} tokenId Id of cetificate token either "user" or "system".
+ * @param {(function(!Array.<!ArrayBuffer>): void)} callback Array of DER
+ *     encoded x.509 certificates.
+ */
+chrome.enterprise.platformKeys.getCertificates = function(tokenId, callback) {};
+
+
+/**
+ * @param {string} tokenId The id of a Token returned by getTokens.
+ * @param {!ArrayBuffer} certificate The DER encoding of a X.509 certificate.
+ * @param {function(): void=} opt_callback Called back when this operation is
+ *     finished.
+ */
+chrome.enterprise.platformKeys.importCertificate =
+    function(tokenId, certificate, opt_callback) {};
+
+
+/**
+ * @param {string} tokenId The id of a Token returned by getTokens.
+ * @param {!ArrayBuffer} certificate The DER encoding of a X.509 certificate.
+ * @param {(function(): void)=} opt_callback Called back when this operation is
+ *     finished.
+ */
+chrome.enterprise.platformKeys.removeCertificate =
+    function(tokenId, certificate, opt_callback) {};
 
 
 /**
@@ -4015,8 +4126,6 @@ chrome.history.onVisited;
 /**
  * @const
  * @see http://developer.chrome.com/apps/identity.html
- * TODO: replace TokenDetails, InvalidTokenDetails and
- *     WebAuthFlowDetails with Object.
  */
 chrome.identity = {};
 
@@ -4057,7 +4166,7 @@ chrome.identity.launchWebAuthFlow = function(details, callback) {};
 chrome.identity.WebAuthFlowDetails;
 
 
-/** @param {!function(!Object=):void} callback */
+/** @param {function(!Object):void} callback */
 chrome.identity.getProfileUserInfo = function(callback) {};
 
 
@@ -6809,6 +6918,10 @@ ChromeSetting.prototype.get = function(details, callback) {};
 ChromeSetting.prototype.set = function(details, opt_callback) {};
 
 
+/** @type {!ChromeObjectEvent} */
+ChromeSetting.prototype.onChange;
+
+
 
 /**
  * @see https://developer.chrome.com/extensions/webRequest.html#type-RequestFilter
@@ -8963,17 +9076,15 @@ chrome.gcdPrivate.prefetchWifiPassword = function(ssid, callback) {};
 
 
 /**
- * Establish the session.
- * TODO(user): Deprecated. Remove after app updated to use createSession.
- * @param {string} ipAddress
- * @param {number} port
- * @param {function(number, string, !Array.<string>): void}
- *     callback Called when the session is established or on error. 1st param,
- *     |sessionId|, is the session ID (identifies the session for future calls).
- *     2nd param, |status|, is the status (success or type of error). 3rd param,
- *     |pairingTypes|, is a list of pairing types supported by this device.
+ * Returns local device information.
+ * @param {string} serviceName The mDNS service name of the device.
+ * @param {function(string, !Object): void}
+ *     callback Called when when the device info is available or on error.
+ *     |status|: The status of the operation (success or type of error).
+ *     |deviceInfo|: Content of /privet/info response.
+ *     https://developers.google.com/cloud-devices/v1/reference/local-api/info
  */
-chrome.gcdPrivate.establishSession = function(ipAddress, port, callback) {};
+chrome.gcdPrivate.getDeviceInfo = function(serviceName, callback) {};
 
 
 /**
