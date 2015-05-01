@@ -1463,6 +1463,10 @@
       'browser/ui/webui/media_router/media_router_localized_strings_provider.h',
       'browser/ui/webui/media_router/media_router_resources_provider.cc',
       'browser/ui/webui/media_router/media_router_resources_provider.h',
+      'browser/ui/webui/media_router/media_router_ui.cc',
+      'browser/ui/webui/media_router/media_router_ui.h',
+      'browser/ui/webui/media_router/media_router_webui_message_handler.cc',
+      'browser/ui/webui/media_router/media_router_webui_message_handler.h',
     ],
     'chrome_browser_ui_non_mac_sources': [
       'browser/ui/web_contents_sizer.cc',
@@ -3145,9 +3149,9 @@
           'sources': [ '<@(chrome_browser_ui_google_now_non_android_sources)' ],
         }],
         ['enable_media_router==1', {
-	  'dependencies': [
-	      'browser/media/router/media_router.gyp:media_router',
-	  ],
+          'dependencies': [
+              'browser/media/router/media_router.gyp:media_router',
+          ],
           'sources': [ '<@(chrome_browser_ui_media_router_sources)' ],
         }],
         ['enable_supervised_users==0', {

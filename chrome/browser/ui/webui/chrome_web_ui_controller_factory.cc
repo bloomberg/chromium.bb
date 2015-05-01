@@ -89,6 +89,10 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #endif
 
+#if defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
@@ -552,7 +556,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIWebRtcLogsHost)
     return &NewWebUI<WebRtcLogsUI>;
 #endif
-
+#if defined(ENABLE_MEDIA_ROUTER)
+  if (url.host() == chrome::kChromeUIMediaRouterHost &&
+      switches::MediaRouterEnabled()) {
+    return &NewWebUI<media_router::MediaRouterUI>;
+  }
+#endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;
 

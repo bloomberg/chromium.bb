@@ -428,6 +428,7 @@ source_set("ui") {
                            ".",
                            "//chrome")
     deps += [ "//chrome/browser/media/router:router_core" ]
+    defines += [ "ENABLE_MEDIA_ROUTER=1" ]
   }
   if (enable_webrtc) {
     sources += rebase_path(gypi_values.chrome_browser_ui_webrtc_sources,
