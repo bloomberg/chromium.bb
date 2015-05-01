@@ -50,6 +50,12 @@ struct PasswordEntry {
 };
 }  // namespace
 
+IE7PasswordInfo::IE7PasswordInfo() {
+}
+
+IE7PasswordInfo::~IE7PasswordInfo() {
+}
+
 namespace ie7_password {
 
 bool GetUserPassFromData(const std::vector<unsigned char>& data,

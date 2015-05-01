@@ -120,12 +120,11 @@ void TestPortableDeviceWatcherWin::EnumerateAttachedDevices() {
 
 void TestPortableDeviceWatcherWin::HandleDeviceAttachEvent(
     const base::string16& pnp_device_id) {
-  DeviceDetails device_details = {
-      (pnp_device_id != kMTPDeviceWithInvalidInfo) ?
-           kMTPDeviceFriendlyName : base::string16(),
-      pnp_device_id,
-      GetDeviceStorageObjects(pnp_device_id)
-  };
+  DeviceDetails device_details;
+  if (pnp_device_id != kMTPDeviceWithInvalidInfo)
+    device_details.name = kMTPDeviceFriendlyName;
+  device_details.location = pnp_device_id;
+  device_details.storage_objects = GetDeviceStorageObjects(pnp_device_id);
   OnDidHandleDeviceAttachEvent(&device_details, true);
 }
 

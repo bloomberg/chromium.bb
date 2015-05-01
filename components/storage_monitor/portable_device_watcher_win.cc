@@ -478,6 +478,12 @@ PortableDeviceWatcherWin::DeviceStorageObject::DeviceStorageObject(
       object_persistent_id(persistent_id) {
 }
 
+PortableDeviceWatcherWin::DeviceDetails::DeviceDetails() {
+}
+
+PortableDeviceWatcherWin::DeviceDetails::~DeviceDetails() {
+}
+
 PortableDeviceWatcherWin::PortableDeviceWatcherWin()
     : notifications_(NULL),
       storage_notifications_(NULL),

@@ -51,6 +51,9 @@ class PortableDeviceWatcherWin {
 
   // Struct to store attached MTP device details.
   struct DeviceDetails {
+    DeviceDetails();
+    ~DeviceDetails();
+
     // Device name.
     base::string16 name;
 

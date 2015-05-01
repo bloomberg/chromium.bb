@@ -54,7 +54,7 @@ class NaClBrokerService {
   friend struct DefaultSingletonTraits<NaClBrokerService>;
 
   NaClBrokerService();
-  ~NaClBrokerService() {}
+  ~NaClBrokerService();
 
   NaClBrokerHost* GetBrokerHost();
 

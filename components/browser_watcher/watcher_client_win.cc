@@ -30,6 +30,9 @@ WatcherClient::WatcherClient(const CommandLineGenerator& command_line_generator)
       process_(base::kNullProcessHandle) {
 }
 
+WatcherClient::~WatcherClient() {
+}
+
 void WatcherClient::LaunchWatcher() {
   DCHECK(!process_.IsValid());
 

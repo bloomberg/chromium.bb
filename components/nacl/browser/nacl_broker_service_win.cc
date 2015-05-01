@@ -20,6 +20,9 @@ NaClBrokerService::NaClBrokerService()
     : loaders_running_(0) {
 }
 
+NaClBrokerService::~NaClBrokerService() {
+}
+
 bool NaClBrokerService::StartBroker() {
   NaClBrokerHost* broker_host = new NaClBrokerHost;
   if (!broker_host->Init()) {
