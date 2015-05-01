@@ -152,6 +152,10 @@ static_library("browser") {
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  if (is_mac) {
+    libs = [ "AddressBook.framework" ]
+  }
 }
 
 static_library("test_support") {

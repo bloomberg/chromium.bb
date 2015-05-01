@@ -18,6 +18,7 @@ component("wifi") {
   deps = [
     "//base",
     "//components/onc",
+    "//crypto",
     "//third_party/libxml",
   ]
 
