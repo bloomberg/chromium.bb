@@ -1628,29 +1628,37 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   std::string encoded_xml;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
-            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
-            "formsignature=\"8736493185895608956\" autofillused=\"false\" "
-            "datapresent=\"144200030e\">"
-            "<field signature=\"3763331450\" autofilltype=\"3\"/>"
-            "<field signature=\"3494530716\" autofilltype=\"5\"/>"
-            "<field signature=\"1029417091\" autofilltype=\"9\"/>"
-            "<field signature=\"466116101\" autofilltype=\"14\"/>"
-            "<field signature=\"2799270304\" autofilltype=\"36\"/>"
-            "</autofillupload>",
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"8736493185895608956\" autofillused=\"false\""
+            " datapresent=\"144200030e\">"
+            "<field signature=\"3763331450\" name=\"firstname\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"3494530716\" name=\"lastname\" type=\"text\""
+            " autofilltype=\"5\"/>"
+            "<field signature=\"1029417091\" name=\"email\" type=\"email\""
+            " autofilltype=\"9\"/>"
+            "<field signature=\"466116101\" name=\"phone\" type=\"number\""
+            " autofilltype=\"14\"/>"
+            "<field signature=\"2799270304\" name=\"country\""
+            " type=\"select-one\" autofilltype=\"36\"/></autofillupload>",
             encoded_xml);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
                                                   &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
-            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
-            "formsignature=\"8736493185895608956\" autofillused=\"true\" "
-            "datapresent=\"144200030e\">"
-            "<field signature=\"3763331450\" autofilltype=\"3\"/>"
-            "<field signature=\"3494530716\" autofilltype=\"5\"/>"
-            "<field signature=\"1029417091\" autofilltype=\"9\"/>"
-            "<field signature=\"466116101\" autofilltype=\"14\"/>"
-            "<field signature=\"2799270304\" autofilltype=\"36\"/>"
-            "</autofillupload>",
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"8736493185895608956\" autofillused=\"true\""
+            " datapresent=\"144200030e\">"
+            "<field signature=\"3763331450\" name=\"firstname\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"3494530716\" name=\"lastname\" type=\"text\""
+            " autofilltype=\"5\"/>"
+            "<field signature=\"1029417091\" name=\"email\" type=\"email\""
+            " autofilltype=\"9\"/>"
+            "<field signature=\"466116101\" name=\"phone\" type=\"number\""
+            " autofilltype=\"14\"/>"
+            "<field signature=\"2799270304\" name=\"country\""
+            " type=\"select-one\" autofilltype=\"36\"/></autofillupload>",
             encoded_xml);
 
   // Add 2 address fields - this should be still a valid form.
@@ -1673,24 +1681,36 @@ TEST(FormStructureTest, EncodeUploadRequest) {
 
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
-            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\" "
-            "formsignature=\"7816485729218079147\" autofillused=\"false\" "
-            "datapresent=\"144200030e\">"
-            "<field signature=\"3763331450\" autofilltype=\"3\"/>"
-            "<field signature=\"3494530716\" autofilltype=\"5\"/>"
-            "<field signature=\"1029417091\" autofilltype=\"9\"/>"
-            "<field signature=\"466116101\" autofilltype=\"14\"/>"
-            "<field signature=\"2799270304\" autofilltype=\"36\"/>"
-            "<field signature=\"509334676\" autofilltype=\"30\"/>"
-            "<field signature=\"509334676\" autofilltype=\"31\"/>"
-            "<field signature=\"509334676\" autofilltype=\"37\"/>"
-            "<field signature=\"509334676\" autofilltype=\"38\"/>"
-            "<field signature=\"509334676\" autofilltype=\"30\"/>"
-            "<field signature=\"509334676\" autofilltype=\"31\"/>"
-            "<field signature=\"509334676\" autofilltype=\"37\"/>"
-            "<field signature=\"509334676\" autofilltype=\"38\"/>"
-            "</autofillupload>",
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"7816485729218079147\" autofillused=\"false\""
+            " datapresent=\"144200030e\">"
+            "<field signature=\"3763331450\" name=\"firstname\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"3494530716\" name=\"lastname\" type=\"text\""
+            " autofilltype=\"5\"/>"
+            "<field signature=\"1029417091\" name=\"email\" type=\"email\""
+            " autofilltype=\"9\"/>"
+            "<field signature=\"466116101\" name=\"phone\" type=\"number\""
+            " autofilltype=\"14\"/>"
+            "<field signature=\"2799270304\" name=\"country\""
+            " type=\"select-one\" autofilltype=\"36\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"30\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"31\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"37\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"38\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"30\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"31\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"37\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"38\"/></autofillupload>",
             encoded_xml);
 
   // Add 50 address fields - now the form is invalid, as it has too many fields.
@@ -1711,6 +1731,122 @@ TEST(FormStructureTest, EncodeUploadRequest) {
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
   EXPECT_FALSE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                    &encoded_xml));
+}
+
+TEST(FormStructureTest, EncodeUploadRequestWithAutocomplete) {
+  scoped_ptr<FormStructure> form_structure;
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  FormData form;
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_FIRST);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  field.autocomplete_attribute = "family-name";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_LAST);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "email";
+  field.autocomplete_attribute = "email";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(EMAIL_ADDRESS);
+
+  form_structure.reset(new FormStructure(form));
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+
+  ServerFieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(EMAIL_ADDRESS);
+
+  std::string encoded_xml;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
+                                                  &encoded_xml));
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"14746822798145140279\" autofillused=\"true\""
+            " datapresent=\"1440\">"
+            "<field signature=\"3763331450\" name=\"firstname\" type=\"text\""
+            " autocomplete=\"given-name\" autofilltype=\"3\"/>"
+            "<field signature=\"3494530716\" name=\"lastname\" type=\"text\""
+            " autocomplete=\"family-name\" autofilltype=\"5\"/>"
+            "<field signature=\"1029417091\" name=\"email\" type=\"email\""
+            " autocomplete=\"email\" autofilltype=\"9\"/></autofillupload>",
+            encoded_xml);
+}
+
+TEST(FormStructureTest, EncodeUploadRequestPartialMetadata) {
+  scoped_ptr<FormStructure> form_structure;
+  std::vector<ServerFieldTypeSet> possible_field_types;
+  FormData form;
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  // Some fields don't have "name" or "autocomplete" attributes, and some have
+  // neither.
+  field.label = ASCIIToUTF16("First Name");
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_FIRST);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  field.autocomplete_attribute = "family-name";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(NAME_LAST);
+
+  field.label = ASCIIToUTF16("Email");
+  field.form_control_type = "email";
+  field.autocomplete_attribute = "email";
+  form.fields.push_back(field);
+  possible_field_types.push_back(ServerFieldTypeSet());
+  possible_field_types.back().insert(EMAIL_ADDRESS);
+
+  form_structure.reset(new FormStructure(form));
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+
+  ServerFieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(EMAIL_ADDRESS);
+
+  std::string encoded_xml;
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
+                                                  &encoded_xml));
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
+            " formsignature=\"13043654279838250996\" autofillused=\"true\""
+            " datapresent=\"1440\">"
+            "<field signature=\"1318412689\" type=\"text\" autofilltype=\"3\"/>"
+            "<field signature=\"3494530716\" name=\"lastname\" type=\"text\""
+            " autocomplete=\"family-name\" autofilltype=\"5\"/>"
+            "<field signature=\"1545468175\" name=\"lastname\" type=\"email\""
+            " autocomplete=\"email\" autofilltype=\"9\"/></autofillupload>",
+            encoded_xml);
 }
 
 TEST(FormStructureTest, EncodeFieldAssignments) {
@@ -1873,14 +2009,16 @@ TEST(FormStructureTest, CheckDataPresence) {
   std::string encoded_xml;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
                                                  &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"6402244543831589061\" autofillused=\"false\""
             " datapresent=\"\">"
-            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
-            "<field signature=\"420638584\" autofilltype=\"1\"/>"
-            "</autofillupload>",
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"1\"/></autofillupload>",
             encoded_xml);
 
   // Only a few types available.
@@ -1903,14 +2041,16 @@ TEST(FormStructureTest, CheckDataPresence) {
 
   EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
                                                  &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"6402244543831589061\" autofillused=\"false\""
             " datapresent=\"1540000240\">"
-            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
-            "<field signature=\"420638584\" autofilltype=\"1\"/>"
-            "</autofillupload>",
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"1\"/></autofillupload>",
             encoded_xml);
 
   // All supported non-credit card types available.
@@ -1957,14 +2097,16 @@ TEST(FormStructureTest, CheckDataPresence) {
 
   EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
                                                  &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"6402244543831589061\" autofillused=\"false\""
             " datapresent=\"1f7e000378000008\">"
-            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
-            "<field signature=\"420638584\" autofilltype=\"1\"/>"
-            "</autofillupload>",
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"1\"/></autofillupload>",
             encoded_xml);
 
   // All supported credit card types available.
@@ -1989,14 +2131,15 @@ TEST(FormStructureTest, CheckDataPresence) {
 
   EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
                                                  &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"6402244543831589061\" autofillused=\"false\""
             " datapresent=\"0000000000001fc0\">"
-            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
-            "<field signature=\"420638584\" autofilltype=\"1\"/>"
-            "</autofillupload>",
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"1\"/><field signature=\"2404144663\" name=\"last\""
+            " type=\"text\" autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"1\"/></autofillupload>",
             encoded_xml);
 
   // All supported types available.
@@ -2057,14 +2200,16 @@ TEST(FormStructureTest, CheckDataPresence) {
 
   EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
                                                  &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"6402244543831589061\" autofillused=\"false\""
             " datapresent=\"1f7e000378001fc8\">"
-            "<field signature=\"1089846351\" autofilltype=\"1\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"1\"/>"
-            "<field signature=\"420638584\" autofilltype=\"1\"/>"
-            "</autofillupload>",
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"1\"/>"
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"1\"/></autofillupload>",
             encoded_xml);
 }
 
@@ -2132,48 +2277,59 @@ TEST(FormStructureTest, CheckMultipleTypes) {
   // Now we matched both fields singularly.
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"18062476096658145866\" autofillused=\"false\""
             " datapresent=\"1440000360000008\">"
-            "<field signature=\"420638584\" autofilltype=\"9\"/>"
-            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
-            "<field signature=\"509334676\" autofilltype=\"30\"/>"
-            "</autofillupload>",
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"9\"/><field signature=\"1089846351\""
+            " name=\"first\" type=\"text\" autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"30\"/></autofillupload>",
             encoded_xml);
   // Match third field as both first and last.
   possible_field_types[2].insert(NAME_FIRST);
   form_structure->field(2)->set_possible_types(possible_field_types[2]);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"18062476096658145866\" autofillused=\"false\""
             " datapresent=\"1440000360000008\">"
-            "<field signature=\"420638584\" autofilltype=\"9\"/>"
-            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"3\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
-            "<field signature=\"509334676\" autofilltype=\"30\"/>"
-            "</autofillupload>",
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"9\"/>"
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"30\"/></autofillupload>",
             encoded_xml);
   possible_field_types[3].insert(ADDRESS_HOME_LINE2);
   form_structure->field(form_structure->field_count() - 1)->set_possible_types(
       possible_field_types[form_structure->field_count() - 1]);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"18062476096658145866\" autofillused=\"false\""
             " datapresent=\"1440000360000008\">"
-            "<field signature=\"420638584\" autofilltype=\"9\"/>"
-            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"3\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
-            "<field signature=\"509334676\" autofilltype=\"30\"/>"
-            "<field signature=\"509334676\" autofilltype=\"31\"/>"
-            "</autofillupload>",
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"9\"/>"
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"30\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"31\"/></autofillupload>",
             encoded_xml);
   possible_field_types[3].clear();
   possible_field_types[3].insert(ADDRESS_HOME_LINE1);
@@ -2182,17 +2338,22 @@ TEST(FormStructureTest, CheckMultipleTypes) {
       possible_field_types[form_structure->field_count() - 1]);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
-  EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
+  EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             "<autofillupload clientversion=\"6.1.1715.1442/en (GGLL)\""
             " formsignature=\"18062476096658145866\" autofillused=\"false\""
             " datapresent=\"1440000360000008\">"
-            "<field signature=\"420638584\" autofilltype=\"9\"/>"
-            "<field signature=\"1089846351\" autofilltype=\"3\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"3\"/>"
-            "<field signature=\"2404144663\" autofilltype=\"5\"/>"
-            "<field signature=\"509334676\" autofilltype=\"30\"/>"
-            "<field signature=\"509334676\" autofilltype=\"60\"/>"
-            "</autofillupload>",
+            "<field signature=\"420638584\" name=\"email\" type=\"text\""
+            " autofilltype=\"9\"/>"
+            "<field signature=\"1089846351\" name=\"first\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"3\"/>"
+            "<field signature=\"2404144663\" name=\"last\" type=\"text\""
+            " autofilltype=\"5\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"30\"/>"
+            "<field signature=\"509334676\" name=\"address\" type=\"text\""
+            " autofilltype=\"60\"/></autofillupload>",
             encoded_xml);
 }
 

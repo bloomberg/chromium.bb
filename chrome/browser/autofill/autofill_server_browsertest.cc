@@ -156,11 +156,16 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
       " formsignature=\"15916856893790176210\""
       " autofillused=\"false\""
       " datapresent=\"1f7e0003780000080004\">"
-      "<field signature=\"2594484045\" autofilltype=\"2\"/>"
-      "<field signature=\"2750915947\" autofilltype=\"2\"/>"
-      "<field signature=\"3494787134\" autofilltype=\"2\"/>"
-      "<field signature=\"1236501728\" autofilltype=\"2\"/>"
+      "<field signature=\"2594484045\" name=\"one\" type=\"text\""
+      " autofilltype=\"2\"/>"
+      "<field signature=\"2750915947\" name=\"two\" type=\"text\""
+      " autocomplete=\"off\" autofilltype=\"2\"/>"
+      "<field signature=\"3494787134\" name=\"three\" type=\"text\""
+      " autofilltype=\"2\"/>"
+      "<field signature=\"1236501728\" name=\"four\" type=\"text\""
+      " autocomplete=\"off\" autofilltype=\"2\"/>"
       "</autofillupload>";
+
   WindowedNetworkObserver upload_network_observer(kUploadRequest);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

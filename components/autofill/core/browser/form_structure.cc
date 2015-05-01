@@ -45,6 +45,8 @@ const char kAttributeFieldType[] = "fieldtype";
 const char kAttributeFormSignature[] = "formsignature";
 const char kAttributeName[] = "name";
 const char kAttributeSignature[] = "signature";
+const char kAttributeControlType[] = "type";
+const char kAttributeAutocomplete[] = "autocomplete";
 const char kClientVersion[] = "6.1.1715.1442/en (GGLL)";
 const char kXMLDeclaration[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 const char kXMLElementAutofillQuery[] = "autofillquery";
@@ -117,6 +119,16 @@ void EncodeFieldForUpload(const AutofillField& field,
 
     field_element->SetAttr(buzz::QName(kAttributeSignature),
                            field.FieldSignature());
+    if (!field.name.empty()) {
+      field_element->SetAttr(buzz::QName(kAttributeName),
+                             base::UTF16ToUTF8(field.name));
+    }
+    field_element->SetAttr(buzz::QName(kAttributeControlType),
+                           field.form_control_type);
+    if (!field.autocomplete_attribute.empty()) {
+      field_element->SetAttr(buzz::QName(kAttributeAutocomplete),
+                             field.autocomplete_attribute);
+    }
     field_element->SetAttr(buzz::QName(kAttributeAutofillType),
                            base::IntToString(*field_type));
     parent->AddElement(field_element);
