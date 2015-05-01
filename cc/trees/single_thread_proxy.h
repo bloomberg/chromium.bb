@@ -129,7 +129,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
-  void BeginMainFrame();
+  void BeginMainFrame(const BeginFrameArgs& begin_frame_args);
   void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void DoAnimate();
   void DoBeginMainFrame(const BeginFrameArgs& begin_frame_args);
@@ -160,6 +160,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   scoped_ptr<ResourceUpdateQueue> queue_for_commit_;
   bool next_frame_is_newly_committed_frame_;
 
+  bool inside_impl_frame_;
   bool inside_draw_;
   bool defer_commits_;
   bool animate_requested_;

@@ -45,6 +45,7 @@ SingleThreadProxy::SingleThreadProxy(
       client_(client),
       timing_history_(layer_tree_host->rendering_stats_instrumentation()),
       next_frame_is_newly_committed_frame_(false),
+      inside_impl_frame_(false),
       inside_draw_(false),
       defer_commits_(false),
       animate_requested_(false),
@@ -791,6 +792,9 @@ void SingleThreadProxy::SetAuthoritativeVSyncInterval(
 }
 
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
+  DCHECK(!inside_impl_frame_)
+      << "WillBeginImplFrame called while already inside an impl frame!";
+  inside_impl_frame_ = true;
   layer_tree_host_impl_->WillBeginImplFrame(args);
 }
 
@@ -803,17 +807,21 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame() {
   // fall on the next.  Doing it asynchronously instead matches the semantics of
   // ThreadProxy::SetNeedsCommit where SetNeedsCommit will not cause a
   // synchronous commit.
+  DCHECK(inside_impl_frame_)
+      << "BeginMainFrame should only be sent inside a BeginImplFrame";
+  const BeginFrameArgs& begin_frame_args =
+      layer_tree_host_impl_->CurrentBeginFrameArgs();
+
   MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SingleThreadProxy::BeginMainFrame,
-                 weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::Bind(&SingleThreadProxy::BeginMainFrame,
+                            weak_factory_.GetWeakPtr(), begin_frame_args));
 }
 
 void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
   layer_tree_host_->BeginMainFrameNotExpectedSoon();
 }
 
-void SingleThreadProxy::BeginMainFrame() {
+void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
   commit_requested_ = false;
   animate_requested_ = false;
 
@@ -849,8 +857,6 @@ void SingleThreadProxy::BeginMainFrame() {
   // a commit here.
   commit_requested_ = true;
 
-  const BeginFrameArgs& begin_frame_args =
-      layer_tree_host_impl_->CurrentBeginFrameArgs();
   DoBeginMainFrame(begin_frame_args);
 }
 
@@ -969,6 +975,9 @@ base::TimeDelta SingleThreadProxy::CommitToActivateDurationEstimate() {
 
 void SingleThreadProxy::DidBeginImplFrameDeadline() {
   layer_tree_host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
+  DCHECK(inside_impl_frame_)
+      << "DidBeginImplFrameDeadline called while not inside an impl frame!";
+  inside_impl_frame_ = false;
 }
 
 void SingleThreadProxy::SendBeginFramesToChildren(const BeginFrameArgs& args) {
