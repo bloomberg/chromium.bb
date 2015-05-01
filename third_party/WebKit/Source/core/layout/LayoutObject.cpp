@@ -1965,7 +1965,7 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
 
     if (oldStyle && !areCursorsEqual(oldStyle, style())) {
         if (LocalFrame* frame = this->frame())
-            frame->eventHandler().scheduleCursorUpdate();
+            frame->page()->deprecatedLocalMainFrame()->eventHandler().scheduleCursorUpdate();
     }
 }
 

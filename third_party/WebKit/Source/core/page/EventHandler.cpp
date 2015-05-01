@@ -331,9 +331,7 @@ void EventHandler::clear()
     m_longTapShouldInvokeContextMenu = false;
     m_dragStartPos = LayoutPoint();
     m_offsetFromResizeCorner = LayoutSize();
-    m_currentMouseCursor = Cursor();
     m_mouseDown = PlatformMouseEvent();
-
 }
 
 void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
@@ -1049,6 +1047,10 @@ void EventHandler::cursorUpdateTimerFired(Timer<EventHandler>*)
 
 void EventHandler::updateCursor()
 {
+    // We must do a cross-frame hit test because the frame that triggered the cursor
+    // update could be occluded by a different frame.
+    ASSERT(m_frame == m_frame->localFrameRoot());
+
     if (m_mousePositionIsUnknown)
         return;
 
@@ -1062,14 +1064,15 @@ void EventHandler::updateCursor()
 
     m_frame->document()->updateLayout();
 
-    HitTestRequest request(HitTestRequest::ReadOnly);
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent);
     HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
     layoutView->hitTest(result);
 
-    OptionalCursor optionalCursor = selectCursor(result);
-    if (optionalCursor.isCursorChange()) {
-        m_currentMouseCursor = optionalCursor.cursor();
-        view->setCursor(m_currentMouseCursor);
+    if (LocalFrame* frame = result.innerNodeFrame()) {
+        OptionalCursor optionalCursor = frame->eventHandler().selectCursor(result);
+        if (optionalCursor.isCursorChange()) {
+            view->setCursor(optionalCursor.cursor());
+        }
     }
 }
 
@@ -1081,10 +1084,8 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
     Page* page = m_frame->page();
     if (!page)
         return NoCursorChange;
-#if OS(WIN)
     if (panScrollInProgress())
         return NoCursorChange;
-#endif
 
     Node* node = result.innerPossiblyPseudoNode();
     if (!node)
@@ -1522,8 +1523,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
         if (FrameView* view = m_frame->view()) {
             OptionalCursor optionalCursor = selectCursor(mev.hitTestResult());
             if (optionalCursor.isCursorChange()) {
-                m_currentMouseCursor = optionalCursor.cursor();
-                view->setCursor(m_currentMouseCursor);
+                view->setCursor(optionalCursor.cursor());
             }
         }
     }
@@ -3136,6 +3136,10 @@ void EventHandler::scheduleHoverStateUpdate()
 
 void EventHandler::scheduleCursorUpdate()
 {
+    // We only want one timer for the page, rather than each frame having it's own timer
+    // competing which eachother (since there's only one mouse cursor).
+    ASSERT(m_frame == m_frame->localFrameRoot());
+
     if (!m_cursorUpdateTimer.isActive())
         m_cursorUpdateTimer.startOneShot(cursorUpdateInterval, FROM_HERE);
 }

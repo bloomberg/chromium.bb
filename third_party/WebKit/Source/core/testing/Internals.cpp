@@ -1919,7 +1919,7 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionState& excep
         return String();
     }
 
-    Cursor cursor = document->frame()->eventHandler().currentMouseCursor();
+    Cursor cursor = frame()->page()->chrome().getLastSetCursorForTesting();
 
     StringBuilder result;
     result.appendLiteral("type=");

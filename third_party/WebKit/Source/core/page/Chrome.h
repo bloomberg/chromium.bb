@@ -72,6 +72,7 @@ public:
     void contentsSizeChanged(LocalFrame*, const IntSize&) const;
 
     void setCursor(const Cursor&);
+    Cursor getLastSetCursorForTesting() const;
 
     void setWindowRect(const IntRect&) const;
     IntRect windowRect() const;
@@ -138,6 +139,7 @@ private:
     Page* m_page;
     ChromeClient* m_client;
     Vector<PopupOpeningObserver*> m_popupOpeningObservers;
+    Cursor m_lastSetMouseCursorForTesting;
 };
 
 } // namespace blink

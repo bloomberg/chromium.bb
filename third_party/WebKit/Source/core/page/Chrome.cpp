@@ -336,7 +336,13 @@ void Chrome::dispatchViewportPropertiesDidChange(const ViewportDescription& desc
 
 void Chrome::setCursor(const Cursor& cursor)
 {
+    m_lastSetMouseCursorForTesting = cursor;
     m_client->setCursor(cursor);
+}
+
+Cursor Chrome::getLastSetCursorForTesting() const
+{
+    return m_lastSetMouseCursorForTesting;
 }
 
 void Chrome::scheduleAnimation()

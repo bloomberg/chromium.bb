@@ -126,7 +126,6 @@ public:
     void resizeScrollableAreaDestroyed();
 
     IntPoint lastKnownMousePosition() const;
-    Cursor currentMouseCursor() const { return m_currentMouseCursor; }
 
     // Attempts to scroll the DOM tree. If that fails, scrolls the view.
     // If the view can't be scrolled either, recursively bubble to the parent frame.
@@ -345,6 +344,9 @@ private:
     LayoutPoint m_dragStartPos;
 
     Timer<EventHandler> m_hoverTimer;
+
+    // TODO(rbyers): Mouse cursor update is page-wide, not per-frame.  Page-wide state
+    // should move out of EventHandler to a new PageEventHandler class. crbug.com/449649
     Timer<EventHandler> m_cursorUpdateTimer;
 
     bool m_mouseDownMayStartAutoscroll;
@@ -362,7 +364,6 @@ private:
     RefPtrWillBeMember<Node> m_lastNodeUnderMouse;
     RefPtrWillBeMember<LocalFrame> m_lastMouseMoveEventSubframe;
     RefPtrWillBeMember<Scrollbar> m_lastScrollbarUnderMouse;
-    Cursor m_currentMouseCursor;
 
     int m_clickCount;
     RefPtrWillBeMember<Node> m_clickNode;
@@ -375,6 +376,7 @@ private:
     LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeScrollableArea.
 
     bool m_mousePositionIsUnknown;
+    // The last mouse movement position this frame has seen in root frame coordinates.
     IntPoint m_lastKnownMousePosition;
     IntPoint m_lastKnownMouseGlobalPosition;
     IntPoint m_mouseDownPos; // In our view's coords.
