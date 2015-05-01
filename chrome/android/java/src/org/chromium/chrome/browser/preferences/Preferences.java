@@ -4,16 +4,19 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Process;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
@@ -152,10 +155,14 @@ public abstract class Preferences extends AppCompatActivity implements
                     .commit();
         }
 
-        // Disable Android Beam on JB and later devices.
-        // In ICS it does nothing - i.e. we will send a Play Store link if NFC is used.
-        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        if (nfcAdapter != null) nfcAdapter.setNdefPushMessage(null, this);
+        if (checkPermission(Manifest.permission.NFC, Process.myPid(), Process.myUid())
+                == PackageManager.PERMISSION_GRANTED) {
+            // Disable Android Beam on JB and later devices.
+            // In ICS it does nothing - i.e. we will send a Play Store link if NFC is used.
+            NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+            if (nfcAdapter != null) nfcAdapter.setNdefPushMessage(null, this);
+        }
+
 
         Resources res = getResources();
         ApiCompatibilityUtils.setTaskDescription(this, res.getString(R.string.app_name),
