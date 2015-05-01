@@ -18,6 +18,8 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
         "LayoutBlockFlow (positioned) DIV class='absolute green'",
+        "LayoutBlockFlow DIV id='container' class='fixed blue'",
+        "LayoutBlockFlow (positioned) DIV class='absolute green'",
         "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='container' class='fixed blue'",

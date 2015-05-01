@@ -158,6 +158,10 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         DEBUG_STRING_CASE(EndTransform);
         DEBUG_STRING_CASE(BeginClipPath);
         DEBUG_STRING_CASE(EndClipPath);
+        DEBUG_STRING_CASE(BeginFixedPosition);
+        DEBUG_STRING_CASE(EndFixedPosition);
+        DEBUG_STRING_CASE(BeginFixedPositionContainer);
+        DEBUG_STRING_CASE(EndFixedPositionContainer);
         DEFAULT_CASE;
     }
 }

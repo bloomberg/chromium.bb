@@ -15,6 +15,7 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
+#include "core/paint/LayerFixedPositionRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGClipPainter.h"
 #include "core/paint/ScopeRecorder.h"
@@ -78,6 +79,8 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
 
     if (m_paintLayer.paintsWithTransparency(paintingInfo.paintBehavior))
         paintFlags |= PaintLayerHaveTransparency;
+
+    LayerFixedPositionRecorder fixedPositionRecorder(*context, *m_paintLayer.layoutObject());
 
     // PaintLayerAppliedTransform is used in LayoutReplica, to avoid applying the transform twice.
     if (m_paintLayer.paintsWithTransform(paintingInfo.paintBehavior) && !(paintFlags & PaintLayerAppliedTransform)) {

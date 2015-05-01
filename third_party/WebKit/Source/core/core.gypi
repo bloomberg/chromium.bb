@@ -1885,6 +1885,8 @@
             'paint/InlineTextBoxPainter.h',
             'paint/LayerClipRecorder.cpp',
             'paint/LayerClipRecorder.h',
+            'paint/LayerFixedPositionRecorder.cpp',
+            'paint/LayerFixedPositionRecorder.h',
             'paint/LayoutObjectDrawingRecorder.h',
             'paint/LineBoxListPainter.cpp',
             'paint/LineBoxListPainter.h',
