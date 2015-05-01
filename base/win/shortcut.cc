@@ -321,8 +321,8 @@ bool TaskbarPinShortcutLink(const wchar_t* shortcut) {
   if (GetVersion() < VERSION_WIN7)
     return false;
 
-  int result = reinterpret_cast<int>(ShellExecute(NULL, L"taskbarpin", shortcut,
-      NULL, NULL, 0));
+  intptr_t result = reinterpret_cast<intptr_t>(
+      ShellExecute(NULL, L"taskbarpin", shortcut, NULL, NULL, 0));
   return result > 32;
 }
 
@@ -333,8 +333,8 @@ bool TaskbarUnpinShortcutLink(const wchar_t* shortcut) {
   if (GetVersion() < VERSION_WIN7)
     return false;
 
-  int result = reinterpret_cast<int>(ShellExecute(NULL, L"taskbarunpin",
-      shortcut, NULL, NULL, 0));
+  intptr_t result = reinterpret_cast<intptr_t>(
+      ShellExecute(NULL, L"taskbarunpin", shortcut, NULL, NULL, 0));
   return result > 32;
 }
 

@@ -428,7 +428,7 @@ bool DisplayVirtualKeyboard() {
                                   NULL,
                                   NULL,
                                   SW_SHOW);
-  return reinterpret_cast<int>(ret) > 32;
+  return reinterpret_cast<intptr_t>(ret) > 32;
 }
 
 bool DismissVirtualKeyboard() {
