@@ -23,7 +23,7 @@ URLFetcherBlockAdapter::~URLFetcherBlockAdapter() {
 }
 
 void URLFetcherBlockAdapter::Start() {
-  fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+  fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_);
   fetcher_->Start();
 }

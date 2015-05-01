@@ -58,8 +58,8 @@ HttpPost::HttpPost(net::URLRequestContextGetter* url_context_getter,
   DCHECK(serialize_success);
 
   // Configure and send the request.
-  url_fetcher_.reset(net::URLFetcher::Create(
-      kUrlFetcherId, url, net::URLFetcher::POST, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(kUrlFetcherId, url, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(url_context_getter);
   url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE |
                              net::LOAD_DISABLE_CACHE |

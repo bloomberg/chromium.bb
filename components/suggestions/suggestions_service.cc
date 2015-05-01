@@ -219,13 +219,14 @@ void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
   if (pending_request_.get()) {
     return;
   }
-  pending_request_.reset(CreateSuggestionsRequest(url));
+  pending_request_ = CreateSuggestionsRequest(url);
   pending_request_->Start();
   last_request_started_time_ = TimeTicks::Now();
 }
 
-net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
-  net::URLFetcher* request =
+scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
+    const GURL& url) {
+  scoped_ptr<net::URLFetcher> request =
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request->SetRequestContext(url_request_context_);

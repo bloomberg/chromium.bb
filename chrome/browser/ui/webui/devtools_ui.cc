@@ -208,7 +208,7 @@ void DevToolsDataSource::StartRemoteDataRequest(
     return;
   }
   net::URLFetcher* fetcher =
-      net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+      net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
   pending_[fetcher] = callback;
   fetcher->SetRequestContext(request_context_.get());
   fetcher->Start();

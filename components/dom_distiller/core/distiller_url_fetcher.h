@@ -43,7 +43,7 @@ class DistillerURLFetcher : public net::URLFetcherDelegate {
                         const URLFetcherCallback& callback);
 
  protected:
-  virtual net::URLFetcher* CreateURLFetcher(
+  virtual scoped_ptr<net::URLFetcher> CreateURLFetcher(
       net::URLRequestContextGetter* context_getter,
       const std::string& url);
 

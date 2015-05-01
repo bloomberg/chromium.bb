@@ -46,8 +46,8 @@ void RequestSender::SendInternal() {
   DCHECK(cur_url_->is_valid());
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  url_fetcher_.reset(SendProtocolRequest(*cur_url_, request_string_, this,
-                                         config_.RequestContext()));
+  url_fetcher_ = SendProtocolRequest(*cur_url_, request_string_, this,
+                                     config_.RequestContext());
 }
 
 void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {

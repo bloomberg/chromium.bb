@@ -183,8 +183,9 @@ void SafeBrowsingProtocolManager::GetFullHash(
     return;
   }
   GURL gethash_url = GetHashUrl();
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      url_fetcher_id_++, gethash_url, net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
+                              net::URLFetcher::POST, this).release();
   hash_requests_[fetcher] = FullHashDetails(callback, is_download);
 
   const std::string get_hash = safe_browsing::FormatGetHash(prefixes);
@@ -557,8 +558,8 @@ bool SafeBrowsingProtocolManager::IssueBackupUpdateRequest(
   backup_update_reason_ = backup_update_reason;
 
   GURL backup_update_url = BackupUpdateUrl(backup_update_reason);
-  request_.reset(net::URLFetcher::Create(
-      url_fetcher_id_++, backup_update_url, net::URLFetcher::POST, this));
+  request_ = net::URLFetcher::Create(url_fetcher_id_++, backup_update_url,
+                                     net::URLFetcher::POST, this);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("text/plain", update_list_data_);
@@ -584,8 +585,8 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   DCHECK(!next_chunk.url.empty());
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
-  request_.reset(net::URLFetcher::Create(
-      url_fetcher_id_++, chunk_url, net::URLFetcher::GET, this));
+  request_ = net::URLFetcher::Create(url_fetcher_id_++, chunk_url,
+                                     net::URLFetcher::GET, this);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
   chunk_request_start_ = base::Time::Now();
@@ -635,8 +636,8 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   UMA_HISTOGRAM_COUNTS("SB2.UpdateRequestSize", update_list_data_.size());
 
   GURL update_url = UpdateUrl();
-  request_.reset(net::URLFetcher::Create(
-      url_fetcher_id_++, update_url, net::URLFetcher::POST, this));
+  request_ = net::URLFetcher::Create(url_fetcher_id_++, update_url,
+                                     net::URLFetcher::POST, this);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("text/plain", update_list_data_);

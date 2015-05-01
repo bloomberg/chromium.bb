@@ -26,7 +26,7 @@ void BitmapFetcher::Start(net::URLRequestContextGetter* request_context,
   if (url_fetcher_ != NULL)
     return;
 
-  url_fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+  url_fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->SetReferrer(referrer);
   url_fetcher_->SetReferrerPolicy(referrer_policy);

@@ -69,8 +69,8 @@ bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
       base::ThreadTaskRunnerHandle::Get(),   // network_runner
       base::ThreadTaskRunnerHandle::Get());  // file_runner
 
-  request_.reset(
-      net::URLFetcher::Create(GURL(service_url), net::URLFetcher::POST, this));
+  request_ =
+      net::URLFetcher::Create(GURL(service_url), net::URLFetcher::POST, this);
   request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + access_token);
   request_->AddExtraRequestHeader(kRequestTestOrigin);

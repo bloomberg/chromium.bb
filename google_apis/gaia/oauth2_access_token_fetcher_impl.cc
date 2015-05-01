@@ -90,12 +90,12 @@ static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
   }
 }
 
-static URLFetcher* CreateFetcher(URLRequestContextGetter* getter,
-                                 const GURL& url,
-                                 const std::string& body,
-                                 URLFetcherDelegate* delegate) {
+static scoped_ptr<URLFetcher> CreateFetcher(URLRequestContextGetter* getter,
+                                            const GURL& url,
+                                            const std::string& body,
+                                            URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
-  URLFetcher* result = net::URLFetcher::Create(
+  scoped_ptr<URLFetcher> result = net::URLFetcher::Create(
       0, url, empty_body ? URLFetcher::GET : URLFetcher::POST, delegate);
 
   result->SetRequestContext(getter);
@@ -155,12 +155,10 @@ void OAuth2AccessTokenFetcherImpl::Start(
 void OAuth2AccessTokenFetcherImpl::StartGetAccessToken() {
   CHECK_EQ(INITIAL, state_);
   state_ = GET_ACCESS_TOKEN_STARTED;
-  fetcher_.reset(
-      CreateFetcher(getter_,
-                    MakeGetAccessTokenUrl(),
-                    MakeGetAccessTokenBody(
-                        client_id_, client_secret_, refresh_token_, scopes_),
-                    this));
+  fetcher_ = CreateFetcher(getter_, MakeGetAccessTokenUrl(),
+                           MakeGetAccessTokenBody(client_id_, client_secret_,
+                                                  refresh_token_, scopes_),
+                           this);
   fetcher_->Start();  // OnURLFetchComplete will be called.
 }
 

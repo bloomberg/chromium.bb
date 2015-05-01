@@ -590,7 +590,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
   }
 
   net::URLFetcher* fetcher =
-      net::URLFetcher::Create(gurl, net::URLFetcher::GET, this);
+      net::URLFetcher::Create(gurl, net::URLFetcher::GET, this).release();
   pending_requests_[fetcher] = callback;
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->SetExtraRequestHeaders(headers);

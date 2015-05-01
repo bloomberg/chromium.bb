@@ -475,8 +475,9 @@ DeviceManagementService::DeviceManagementService(
 
 void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
   std::string server_url = GetServerUrl();
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      kURLFetcherID, job->GetURL(server_url), net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(kURLFetcherID, job->GetURL(server_url),
+                              net::URLFetcher::POST, this).release();
   job->ConfigureRequest(fetcher);
   pending_jobs_[fetcher] = job;
   fetcher->Start();

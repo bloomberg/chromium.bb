@@ -411,7 +411,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   //
   // |load_flags| are passed to directly to net::URLFetcher::Create() when
   // creating the URL fetcher.
-  static net::URLFetcher* CreateGaiaFetcher(
+  static scoped_ptr<net::URLFetcher> CreateGaiaFetcher(
       net::URLRequestContextGetter* getter,
       const std::string& body,
       const std::string& headers,

@@ -623,8 +623,8 @@ void StartPageService::FetchDoodleJson() {
 
   GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
   GURL doodle_url = google_base_url.ReplaceComponents(replacements);
-  doodle_fetcher_.reset(
-      net::URLFetcher::Create(0, doodle_url, net::URLFetcher::GET, this));
+  doodle_fetcher_ =
+      net::URLFetcher::Create(0, doodle_url, net::URLFetcher::GET, this);
   doodle_fetcher_->SetRequestContext(profile_->GetRequestContext());
   doodle_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   doodle_fetcher_->Start();

@@ -123,8 +123,8 @@ scoped_ptr<net::URLFetcher> CreateURLFetcher(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* delegate) {
-  scoped_ptr<net::URLFetcher> url_fetcher(
-      net::URLFetcher::Create(url, request_type, delegate));
+  scoped_ptr<net::URLFetcher> url_fetcher =
+      net::URLFetcher::Create(url, request_type, delegate);
 
   url_fetcher->SetRequestContext(request_context_getter.get());
 

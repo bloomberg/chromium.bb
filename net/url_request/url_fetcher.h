@@ -37,9 +37,10 @@ typedef std::vector<std::string> ResponseCookies;
 
 // To use this class, create an instance with the desired URL and a pointer to
 // the object to be notified when the URL has been loaded:
-//   scoped_ptr<URLFetcher> fetcher(URLFetcher::Create("http://www.google.com",
+//   scoped_ptr<URLFetcher> fetcher =
+//   URLFetcher::Create("http://www.google.com",
 //                                                     URLFetcher::GET,
-//                                                     this));
+//                                                     this);
 //
 // You must also set a request context getter:
 //
@@ -102,19 +103,17 @@ class NET_EXPORT URLFetcher {
   // |url| is the URL to send the request to.
   // |request_type| is the type of request to make.
   // |d| the object that will receive the callback on fetch completion.
-  // Caller is responsible for destroying the returned URLFetcher.
-  static URLFetcher* Create(const GURL& url,
-                            URLFetcher::RequestType request_type,
-                            URLFetcherDelegate* d);
+  static scoped_ptr<URLFetcher> Create(const GURL& url,
+                                       URLFetcher::RequestType request_type,
+                                       URLFetcherDelegate* d);
 
   // Like above, but if there's a URLFetcherFactory registered with the
   // implementation it will be used. |id| may be used during testing to identify
   // who is creating the URLFetcher.
-  // Caller is responsible for destroying the returned URLFetcher.
-  static URLFetcher* Create(int id,
-                            const GURL& url,
-                            URLFetcher::RequestType request_type,
-                            URLFetcherDelegate* d);
+  static scoped_ptr<URLFetcher> Create(int id,
+                                       const GURL& url,
+                                       URLFetcher::RequestType request_type,
+                                       URLFetcherDelegate* d);
 
   // Cancels all existing URLFetchers.  Will notify the URLFetcherDelegates.
   // Note that any new URLFetchers created while this is running will not be

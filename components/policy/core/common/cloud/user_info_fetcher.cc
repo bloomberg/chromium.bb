@@ -41,9 +41,9 @@ UserInfoFetcher::~UserInfoFetcher() {
 
 void UserInfoFetcher::Start(const std::string& access_token) {
   // Create a URLFetcher and start it.
-  url_fetcher_.reset(net::URLFetcher::Create(
-      0, GaiaUrls::GetInstance()->oauth_user_info_url(),
-      net::URLFetcher::GET, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(0, GaiaUrls::GetInstance()->oauth_user_info_url(),
+                              net::URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(context_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);

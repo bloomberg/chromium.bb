@@ -216,8 +216,8 @@ void RealPanWalletClient::OnGetTokenFailure(
 }
 
 void RealPanWalletClient::CreateRequest() {
-  request_.reset(net::URLFetcher::Create(
-      0, GetUnmaskCardRequestUrl(), net::URLFetcher::POST, this));
+  request_ = net::URLFetcher::Create(0, GetUnmaskCardRequestUrl(),
+                                     net::URLFetcher::POST, this);
   request_->SetRequestContext(context_getter_.get());
   request_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DISABLE_CACHE);

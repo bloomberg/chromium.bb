@@ -48,9 +48,7 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
   void FetchWallpaper(const GURL& url, FetchCallback callback) {
     CancelPreviousFetch();
     callback_ = callback;
-    url_fetcher_.reset(net::URLFetcher::Create(url,
-                                               net::URLFetcher::GET,
-                                               this));
+    url_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
     url_fetcher_->SetRequestContext(
         g_browser_process->system_request_context());
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);

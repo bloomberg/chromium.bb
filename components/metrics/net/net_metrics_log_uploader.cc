@@ -39,8 +39,8 @@ NetMetricsLogUploader::~NetMetricsLogUploader() {
 
 bool NetMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
                                       const std::string& log_hash) {
-  current_fetch_.reset(
-      net::URLFetcher::Create(GURL(server_url_), net::URLFetcher::POST, this));
+  current_fetch_ =
+      net::URLFetcher::Create(GURL(server_url_), net::URLFetcher::POST, this);
   current_fetch_->SetRequestContext(request_context_getter_);
   current_fetch_->SetUploadData(mime_type_, compressed_log_data);
 

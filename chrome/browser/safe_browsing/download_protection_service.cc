@@ -773,10 +773,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     DVLOG(2) << "Sending a request for URL: "
              << item_->GetUrlChain().back();
-    fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
-                                           GetDownloadRequestUrl(),
-                                           net::URLFetcher::POST,
-                                           this));
+    fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */,
+                                       GetDownloadRequestUrl(),
+                                       net::URLFetcher::POST, this);
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     fetcher_->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
     fetcher_->SetRequestContext(service_->request_context_getter_.get());

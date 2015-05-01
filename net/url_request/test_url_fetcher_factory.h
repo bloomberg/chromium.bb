@@ -242,10 +242,10 @@ class TestURLFetcherFactory : public URLFetcherFactory,
   TestURLFetcherFactory();
   ~TestURLFetcherFactory() override;
 
-  URLFetcher* CreateURLFetcher(int id,
-                               const GURL& url,
-                               URLFetcher::RequestType request_type,
-                               URLFetcherDelegate* d) override;
+  scoped_ptr<URLFetcher> CreateURLFetcher(int id,
+                                          const GURL& url,
+                                          URLFetcher::RequestType request_type,
+                                          URLFetcherDelegate* d) override;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
   void SetDelegateForTests(TestURLFetcherDelegateForTests* delegate_for_tests);
@@ -401,10 +401,10 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
   // NULL.
   // Otherwise, it will return a URLFetcher object which will respond with the
   // pre-baked response that the client has set by calling SetFakeResponse().
-  URLFetcher* CreateURLFetcher(int id,
-                               const GURL& url,
-                               URLFetcher::RequestType request_type,
-                               URLFetcherDelegate* d) override;
+  scoped_ptr<URLFetcher> CreateURLFetcher(int id,
+                                          const GURL& url,
+                                          URLFetcher::RequestType request_type,
+                                          URLFetcherDelegate* d) override;
 
   // Sets the fake response for a given URL. The |response_data| may be empty.
   // The |response_code| may be any HttpStatusCode. For instance, HTTP_OK will
@@ -453,10 +453,10 @@ class URLFetcherImplFactory : public URLFetcherFactory {
   ~URLFetcherImplFactory() override;
 
   // This method will create a real URLFetcher.
-  URLFetcher* CreateURLFetcher(int id,
-                               const GURL& url,
-                               URLFetcher::RequestType request_type,
-                               URLFetcherDelegate* d) override;
+  scoped_ptr<URLFetcher> CreateURLFetcher(int id,
+                                          const GURL& url,
+                                          URLFetcher::RequestType request_type,
+                                          URLFetcherDelegate* d) override;
 };
 
 }  // namespace net

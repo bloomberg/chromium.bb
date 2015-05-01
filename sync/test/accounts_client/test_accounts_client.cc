@@ -142,8 +142,8 @@ bool TestAccountsClient::SendRequest(const GURL& url, string* response) {
   base::RunLoop run_loop;
 
   AccountsRequestDelegate delegate(&run_loop);
-  scoped_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
-          url, net::URLFetcher::POST, &delegate));
+  scoped_ptr<net::URLFetcher> fetcher =
+      net::URLFetcher::Create(url, net::URLFetcher::POST, &delegate);
   fetcher->SetRequestContext(context_getter.get());
   fetcher->SetUploadData("application/json", "");
   fetcher->Start();

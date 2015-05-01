@@ -115,13 +115,13 @@ std::string BuildProtocolRequest(const std::string& browser_version,
   return request;
 }
 
-net::URLFetcher* SendProtocolRequest(
+scoped_ptr<net::URLFetcher> SendProtocolRequest(
     const GURL& url,
     const std::string& protocol_request,
     net::URLFetcherDelegate* url_fetcher_delegate,
     net::URLRequestContextGetter* url_request_context_getter) {
-  net::URLFetcher* url_fetcher(net::URLFetcher::Create(
-      0, url, net::URLFetcher::POST, url_fetcher_delegate));
+  scoped_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
+      0, url, net::URLFetcher::POST, url_fetcher_delegate);
 
   url_fetcher->SetUploadData("application/xml", protocol_request);
   url_fetcher->SetRequestContext(url_request_context_getter);

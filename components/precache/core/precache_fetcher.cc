@@ -121,7 +121,7 @@ PrecacheFetcher::Fetcher::Fetcher(
     net::URLRequestContextGetter* request_context, const GURL& url,
     const base::Callback<void(const URLFetcher&)>& callback)
     : callback_(callback) {
-  url_fetcher_.reset(URLFetcher::Create(url, URLFetcher::GET, this));
+  url_fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->Start();
 }

@@ -64,9 +64,9 @@ class OAuth2ApiCallFlow : public net::URLFetcherDelegate {
   // Template method CreateApiCallUrl is used to get the URL.
   // Template method CreateApiCallBody is used to get the body.
   // The URLFether's method will be GET if body is empty, POST otherwise.
-  // Caller owns the returned instance.
-  net::URLFetcher* CreateURLFetcher(net::URLRequestContextGetter* context,
-                                    const std::string& access_token);
+  scoped_ptr<net::URLFetcher> CreateURLFetcher(
+      net::URLRequestContextGetter* context,
+      const std::string& access_token);
 
   // Helper methods to implement the state machine for the flow.
   void BeginApiCall();

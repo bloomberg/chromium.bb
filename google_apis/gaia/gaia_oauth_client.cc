@@ -173,9 +173,9 @@ void GaiaOAuthClient::Core::GetUserInfoImpl(
   request_type_ = type;
   delegate_ = delegate;
   num_retries_ = 0;
-  request_.reset(net::URLFetcher::Create(
+  request_ = net::URLFetcher::Create(
       kUrlFetcherId, GURL(GaiaUrls::GetInstance()->oauth_user_info_url()),
-      net::URLFetcher::GET, this));
+      net::URLFetcher::GET, this);
   request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + oauth_access_token);
   request_->SetMaxRetriesOn5xx(max_retries);
@@ -213,8 +213,8 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   DCHECK(!request_.get()) << "Tried to fetch two things at once!";
   delegate_ = delegate;
   num_retries_ = 0;
-  request_.reset(net::URLFetcher::Create(
-      kUrlFetcherId, url, net::URLFetcher::POST, this));
+  request_ =
+      net::URLFetcher::Create(kUrlFetcherId, url, net::URLFetcher::POST, this);
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
   request_->SetMaxRetriesOn5xx(max_retries);

@@ -30,10 +30,7 @@ JSONResponseFetcher::~JSONResponseFetcher() {}
 void JSONResponseFetcher::Start(const GURL& query_url) {
   Stop();
 
-  fetcher_.reset(net::URLFetcher::Create(
-      query_url,
-      net::URLFetcher::GET,
-      this));
+  fetcher_ = net::URLFetcher::Create(query_url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(context_getter_);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                          net::LOAD_DISABLE_CACHE);

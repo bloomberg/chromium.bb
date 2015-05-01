@@ -446,8 +446,8 @@ scoped_ptr<VariationsService> VariationsService::Create(
 }
 
 void VariationsService::DoActualFetch() {
-  pending_seed_request_.reset(net::URLFetcher::Create(
-      0, variations_server_url_, net::URLFetcher::GET, this));
+  pending_seed_request_ = net::URLFetcher::Create(0, variations_server_url_,
+                                                  net::URLFetcher::GET, this);
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES);
   pending_seed_request_->SetRequestContext(

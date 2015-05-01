@@ -108,8 +108,8 @@ void LogUploader::StartScheduledUpload() {
     return;
   DVLOG(2) << "Upload to " << server_url_.spec() << " starting.";
   has_callback_pending_ = true;
-  current_fetch_.reset(
-      net::URLFetcher::Create(server_url_, net::URLFetcher::POST, this));
+  current_fetch_ =
+      net::URLFetcher::Create(server_url_, net::URLFetcher::POST, this);
   current_fetch_->SetRequestContext(request_context_.get());
   current_fetch_->SetUploadData(mime_type_, queued_logs_.front());
 

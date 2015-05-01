@@ -33,8 +33,7 @@ UrlFetcherDownloader::~UrlFetcherDownloader() {
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  url_fetcher_.reset(
-      net::URLFetcher::Create(0, url, net::URLFetcher::GET, this));
+  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(context_getter_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES |

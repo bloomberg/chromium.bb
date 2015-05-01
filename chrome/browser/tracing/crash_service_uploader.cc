@@ -256,8 +256,8 @@ void TraceCrashServiceUploader::CreateAndStartURLFetcher(
   content_type.append("; boundary=");
   content_type.append(kMultipartBoundary);
 
-  url_fetcher_.reset(
-      net::URLFetcher::Create(GURL(upload_url), net::URLFetcher::POST, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(GURL(upload_url), net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SetUploadData(content_type, post_data);
   url_fetcher_->Start();

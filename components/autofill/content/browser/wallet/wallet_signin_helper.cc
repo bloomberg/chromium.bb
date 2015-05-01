@@ -103,8 +103,7 @@ void WalletSigninHelper::StartPassiveSignin(size_t user_index) {
   DCHECK(!url_fetcher_);
 
   const GURL& url = wallet::GetPassiveAuthUrl(user_index);
-  url_fetcher_.reset(net::URLFetcher::Create(
-      0, url, net::URLFetcher::GET, this));
+  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(getter_);
   url_fetcher_->Start();
 }

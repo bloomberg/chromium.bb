@@ -210,8 +210,7 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_request_.reset();
   access_token_ = access_token;
-  fetcher_.reset(
-      net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this));
+  fetcher_ = net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this);
   ConfigureURLFetcherCommon(fetcher_.get(), access_token_, raw_store_birthday_,
                             model_type_, url_request_context_getter_.get());
 

@@ -57,7 +57,7 @@ class ConfigFetcher : public net::URLFetcherDelegate {
 
   // Starts fetching |url| for updated configuration.
   void Fetch(const GURL& url, net::URLRequestContextGetter* context) {
-    fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
+    fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
     fetcher_->SetRequestContext(context);
     fetcher_->Start();
   }

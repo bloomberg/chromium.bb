@@ -83,9 +83,8 @@ void ImageFetcher::StartDownload(
     const std::string& referrer,
     net::URLRequest::ReferrerPolicy referrer_policy) {
   DCHECK(request_context_getter_.get());
-  net::URLFetcher* fetcher = net::URLFetcher::Create(url,
-                                                     net::URLFetcher::GET,
-                                                     this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
   downloads_in_progress_[fetcher] = [callback copy];
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |

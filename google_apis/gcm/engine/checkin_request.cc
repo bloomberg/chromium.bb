@@ -143,8 +143,8 @@ void CheckinRequest::Start() {
   std::string upload_data;
   CHECK(request.SerializeToString(&upload_data));
 
-  url_fetcher_.reset(
-      net::URLFetcher::Create(checkin_url_, net::URLFetcher::POST, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(checkin_url_, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(request_context_getter_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

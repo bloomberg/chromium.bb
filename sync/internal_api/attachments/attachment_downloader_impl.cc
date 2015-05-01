@@ -206,8 +206,8 @@ void AttachmentDownloaderImpl::OnURLFetchComplete(
 scoped_ptr<net::URLFetcher> AttachmentDownloaderImpl::CreateFetcher(
     const AttachmentUrl& url,
     const std::string& access_token) {
-  scoped_ptr<net::URLFetcher> url_fetcher(
-      net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this));
+  scoped_ptr<net::URLFetcher> url_fetcher =
+      net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, this);
   AttachmentUploaderImpl::ConfigureURLFetcherCommon(
       url_fetcher.get(), access_token, raw_store_birthday_, model_type_,
       url_request_context_getter_.get());

@@ -322,8 +322,8 @@ void ProfileDownloader::OnGetUserInfoResponse(
   }
   VLOG(1) << "Fetching profile image from " << image_url;
   picture_url_ = image_url;
-  profile_image_fetcher_.reset(net::URLFetcher::Create(
-      GURL(image_url), net::URLFetcher::GET, this));
+  profile_image_fetcher_ =
+      net::URLFetcher::Create(GURL(image_url), net::URLFetcher::GET, this);
   profile_image_fetcher_->SetRequestContext(
       delegate_->GetBrowserProfile()->GetRequestContext());
   profile_image_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

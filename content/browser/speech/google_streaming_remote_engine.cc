@@ -322,9 +322,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
                       std::string(kDownstreamUrl) +
                       JoinString(downstream_args, '&'));
 
-  downstream_fetcher_.reset(URLFetcher::Create(
-      kDownstreamUrlFetcherIdForTesting, downstream_url, URLFetcher::GET,
-      this));
+  downstream_fetcher_ = URLFetcher::Create(
+      kDownstreamUrlFetcherIdForTesting, downstream_url, URLFetcher::GET, this);
   downstream_fetcher_->SetRequestContext(url_context_.get());
   downstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                     net::LOAD_DO_NOT_SEND_COOKIES |
@@ -375,8 +374,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
                     std::string(kUpstreamUrl) +
                     JoinString(upstream_args, '&'));
 
-  upstream_fetcher_.reset(URLFetcher::Create(
-      kUpstreamUrlFetcherIdForTesting, upstream_url, URLFetcher::POST, this));
+  upstream_fetcher_ = URLFetcher::Create(kUpstreamUrlFetcherIdForTesting,
+                                         upstream_url, URLFetcher::POST, this);
   if (use_framed_post_data_)
     upstream_fetcher_->SetChunkedUpload("application/octet-stream");
   else

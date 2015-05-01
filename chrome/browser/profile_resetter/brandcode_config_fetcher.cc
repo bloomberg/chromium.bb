@@ -142,10 +142,8 @@ BrandcodeConfigFetcher::BrandcodeConfigFetcher(const FetchCallback& callback,
                                                const std::string& brandcode)
     : fetch_callback_(callback) {
   DCHECK(!brandcode.empty());
-  config_fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
-                                                url,
-                                                net::URLFetcher::POST,
-                                                this));
+  config_fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */, url,
+                                            net::URLFetcher::POST, this);
   config_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
   config_fetcher_->SetUploadData("text/xml", GetUploadData(brandcode));

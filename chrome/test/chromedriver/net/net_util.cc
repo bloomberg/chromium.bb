@@ -37,7 +37,7 @@ class SyncUrlFetcher : public net::URLFetcherDelegate {
   }
 
   void FetchOnIOThread() {
-    fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+    fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
     fetcher_->SetRequestContext(getter_);
     fetcher_->Start();
   }

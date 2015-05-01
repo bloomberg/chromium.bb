@@ -313,8 +313,8 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
                                        kFinancialServer, kFinancialPort,
                                        request);
 
-  scoped_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
-      GURL(url), net::URLFetcher::GET, &delegate));
+  scoped_ptr<net::URLFetcher> fetcher =
+      net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, &delegate);
 
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                         net::LOAD_DO_NOT_SEND_AUTH_DATA |

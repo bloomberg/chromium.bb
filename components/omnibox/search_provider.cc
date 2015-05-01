@@ -555,15 +555,13 @@ void SearchProvider::Run(bool query_is_private) {
   time_suggest_request_sent_ = base::TimeTicks::Now();
 
   if (!query_is_private) {
-    default_fetcher_.reset(CreateSuggestFetcher(
-        kDefaultProviderURLFetcherID,
-        providers_.GetDefaultProviderURL(),
-        input_));
+    default_fetcher_ =
+        CreateSuggestFetcher(kDefaultProviderURLFetcherID,
+                             providers_.GetDefaultProviderURL(), input_);
   }
-  keyword_fetcher_.reset(CreateSuggestFetcher(
-      kKeywordProviderURLFetcherID,
-      providers_.GetKeywordProviderURL(),
-      keyword_input_));
+  keyword_fetcher_ =
+      CreateSuggestFetcher(kKeywordProviderURLFetcherID,
+                           providers_.GetKeywordProviderURL(), keyword_input_);
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
@@ -822,7 +820,7 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(
   }
 }
 
-net::URLFetcher* SearchProvider::CreateSuggestFetcher(
+scoped_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
     int id,
     const TemplateURL* template_url,
     const AutocompleteInput& input) {
@@ -863,7 +861,7 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
 
   LogOmniboxSuggestRequest(REQUEST_SENT);
 
-  net::URLFetcher* fetcher =
+  scoped_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(id, suggest_url, net::URLFetcher::GET, this);
   fetcher->SetRequestContext(client_->RequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);

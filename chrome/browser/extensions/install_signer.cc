@@ -369,8 +369,8 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
                                      base::Unretained(this));
 
   delegate_.reset(new FetcherDelegate(closure));
-  url_fetcher_.reset(net::URLFetcher::Create(
-      GetBackendUrl(), net::URLFetcher::POST, delegate_.get()));
+  url_fetcher_ = net::URLFetcher::Create(GetBackendUrl(), net::URLFetcher::POST,
+                                         delegate_.get());
   url_fetcher_->SetRequestContext(context_getter_);
 
   // The request protocol is JSON of the form:

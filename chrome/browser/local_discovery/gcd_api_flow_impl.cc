@@ -63,7 +63,7 @@ void GCDApiFlowImpl::OnGetTokenFailure(
 void GCDApiFlowImpl::CreateRequest(const GURL& url) {
   net::URLFetcher::RequestType request_type = request_->GetRequestType();
 
-  url_fetcher_.reset(net::URLFetcher::Create(url, request_type, this));
+  url_fetcher_ = net::URLFetcher::Create(url, request_type, this);
 
   if (request_type != net::URLFetcher::GET) {
     std::string upload_type;

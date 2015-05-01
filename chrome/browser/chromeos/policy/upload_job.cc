@@ -314,8 +314,8 @@ void UploadJob::CreateAndStartURLFetcher(const std::string& access_token) {
   std::string content_type = kUploadContentType;
   content_type.append("; boundary=");
   content_type.append(*mime_boundary_.get());
-  upload_fetcher_.reset(
-      net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this));
+  upload_fetcher_ =
+      net::URLFetcher::Create(upload_url_, net::URLFetcher::POST, this);
   upload_fetcher_->SetRequestContext(url_context_getter_.get());
   upload_fetcher_->SetUploadData(content_type, *post_data_);
   upload_fetcher_->AddExtraRequestHeader(

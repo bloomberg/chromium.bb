@@ -376,28 +376,25 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
 class WizardControllerTestURLFetcherFactory
     : public net::TestURLFetcherFactory {
  public:
-  net::URLFetcher* CreateURLFetcher(int id,
-                                    const GURL& url,
-                                    net::URLFetcher::RequestType request_type,
-                                    net::URLFetcherDelegate* d) override {
+  scoped_ptr<net::URLFetcher> CreateURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* d) override {
     if (StartsWithASCII(
             url.spec(),
             SimpleGeolocationProvider::DefaultGeolocationProviderURL().spec(),
             true)) {
-      return new net::FakeURLFetcher(url,
-                                     d,
-                                     std::string(kGeolocationResponseBody),
-                                     net::HTTP_OK,
-                                     net::URLRequestStatus::SUCCESS);
+      return scoped_ptr<net::URLFetcher>(new net::FakeURLFetcher(
+          url, d, std::string(kGeolocationResponseBody), net::HTTP_OK,
+          net::URLRequestStatus::SUCCESS));
     }
     if (StartsWithASCII(url.spec(),
                         chromeos::DefaultTimezoneProviderURL().spec(),
                         true)) {
-      return new net::FakeURLFetcher(url,
-                                     d,
-                                     std::string(kTimezoneResponseBody),
-                                     net::HTTP_OK,
-                                     net::URLRequestStatus::SUCCESS);
+      return scoped_ptr<net::URLFetcher>(new net::FakeURLFetcher(
+          url, d, std::string(kTimezoneResponseBody), net::HTTP_OK,
+          net::URLRequestStatus::SUCCESS));
     }
     return net::TestURLFetcherFactory::CreateURLFetcher(
         id, url, request_type, d);

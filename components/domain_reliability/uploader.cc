@@ -76,7 +76,8 @@ class DomainReliabilityUploaderImpl
     }
 
     net::URLFetcher* fetcher =
-        net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this);
+        net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this)
+            .release();
     fetcher->SetRequestContext(url_request_context_getter_.get());
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);

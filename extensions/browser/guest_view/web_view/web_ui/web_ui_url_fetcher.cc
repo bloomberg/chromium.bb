@@ -25,7 +25,7 @@ WebUIURLFetcher::~WebUIURLFetcher() {
 }
 
 void WebUIURLFetcher::Start() {
-  fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+  fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(context_->GetRequestContext());
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
 

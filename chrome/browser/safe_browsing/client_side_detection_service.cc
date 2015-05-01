@@ -273,9 +273,9 @@ void ClientSideDetectionService::StartFetchModel() {
   if (enabled_) {
     // Start fetching the model either from the cache or possibly from the
     // network if the model isn't in the cache.
-    model_fetcher_.reset(net::URLFetcher::Create(
-        0 /* ID used for testing */, GURL(kClientModelUrl),
-        net::URLFetcher::GET, this));
+    model_fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */,
+                                             GURL(kClientModelUrl),
+                                             net::URLFetcher::GET, this);
     model_fetcher_->SetRequestContext(request_context_getter_.get());
     model_fetcher_->Start();
   }
@@ -326,10 +326,10 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     return;
   }
 
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      0 /* ID used for testing */,
-      GetClientReportUrl(kClientReportPhishingUrl),
-      net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(0 /* ID used for testing */,
+                              GetClientReportUrl(kClientReportPhishingUrl),
+                              net::URLFetcher::POST, this).release();
 
   // Remember which callback and URL correspond to the current fetcher object.
   ClientReportInfo* info = new ClientReportInfo;
@@ -367,10 +367,10 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
     return;
   }
 
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      0 /* ID used for testing */,
-      GetClientReportUrl(kClientReportMalwareUrl),
-      net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(0 /* ID used for testing */,
+                              GetClientReportUrl(kClientReportMalwareUrl),
+                              net::URLFetcher::POST, this).release();
 
   // Remember which callback and URL correspond to the current fetcher object.
   ClientMalwareReportInfo* info = new ClientMalwareReportInfo;

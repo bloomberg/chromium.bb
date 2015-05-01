@@ -123,8 +123,8 @@ bool NetworkLocationRequest::MakeRequest(const base::string16& access_token,
   wifi_data_timestamp_ = timestamp;
 
   GURL request_url = FormRequestURL(url_);
-  url_fetcher_.reset(net::URLFetcher::Create(
-      url_fetcher_id_for_tests, request_url, net::URLFetcher::POST, this));
+  url_fetcher_ = net::URLFetcher::Create(url_fetcher_id_for_tests, request_url,
+                                         net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(url_context_.get());
   std::string upload_data;
   FormUploadData(wifi_data, timestamp, access_token, &upload_data);

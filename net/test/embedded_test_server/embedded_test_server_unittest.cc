@@ -137,10 +137,8 @@ TEST_F(EmbeddedTestServerTest, RegisterRequestHandler) {
                  "text/html",
                  HTTP_OK));
 
-  scoped_ptr<URLFetcher> fetcher(
-      URLFetcher::Create(server_->GetURL("/test?q=foo"),
-                              URLFetcher::GET,
-                              this));
+  scoped_ptr<URLFetcher> fetcher =
+      URLFetcher::Create(server_->GetURL("/test?q=foo"), URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->Start();
   WaitForResponses(1);
@@ -159,10 +157,8 @@ TEST_F(EmbeddedTestServerTest, ServeFilesFromDirectory) {
   server_->ServeFilesFromDirectory(
       src_dir.AppendASCII("net").AppendASCII("data"));
 
-  scoped_ptr<URLFetcher> fetcher(
-      URLFetcher::Create(server_->GetURL("/test.html"),
-                              URLFetcher::GET,
-                              this));
+  scoped_ptr<URLFetcher> fetcher =
+      URLFetcher::Create(server_->GetURL("/test.html"), URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->Start();
   WaitForResponses(1);
@@ -174,10 +170,8 @@ TEST_F(EmbeddedTestServerTest, ServeFilesFromDirectory) {
 }
 
 TEST_F(EmbeddedTestServerTest, DefaultNotFoundResponse) {
-  scoped_ptr<URLFetcher> fetcher(
-      URLFetcher::Create(server_->GetURL("/non-existent"),
-                              URLFetcher::GET,
-                              this));
+  scoped_ptr<URLFetcher> fetcher = URLFetcher::Create(
+      server_->GetURL("/non-existent"), URLFetcher::GET, this);
   fetcher->SetRequestContext(request_context_getter_.get());
 
   fetcher->Start();
@@ -209,20 +203,14 @@ TEST_F(EmbeddedTestServerTest, ConcurrentFetches) {
                  "text/plain",
                  HTTP_NOT_FOUND));
 
-  scoped_ptr<URLFetcher> fetcher1 = scoped_ptr<URLFetcher>(
-      URLFetcher::Create(server_->GetURL("/test1"),
-                              URLFetcher::GET,
-                              this));
+  scoped_ptr<URLFetcher> fetcher1 =
+      URLFetcher::Create(server_->GetURL("/test1"), URLFetcher::GET, this);
   fetcher1->SetRequestContext(request_context_getter_.get());
-  scoped_ptr<URLFetcher> fetcher2 = scoped_ptr<URLFetcher>(
-      URLFetcher::Create(server_->GetURL("/test2"),
-                              URLFetcher::GET,
-                              this));
+  scoped_ptr<URLFetcher> fetcher2 =
+      URLFetcher::Create(server_->GetURL("/test2"), URLFetcher::GET, this);
   fetcher2->SetRequestContext(request_context_getter_.get());
-  scoped_ptr<URLFetcher> fetcher3 = scoped_ptr<URLFetcher>(
-      URLFetcher::Create(server_->GetURL("/test3"),
-                              URLFetcher::GET,
-                              this));
+  scoped_ptr<URLFetcher> fetcher3 =
+      URLFetcher::Create(server_->GetURL("/test3"), URLFetcher::GET, this);
   fetcher3->SetRequestContext(request_context_getter_.get());
 
   // Fetch the three URLs concurrently.
@@ -289,8 +277,8 @@ class EmbeddedTestServerThreadingTestDelegate
     if (!loop)
       loop.reset(new base::MessageLoopForIO);
 
-    scoped_ptr<URLFetcher> fetcher(URLFetcher::Create(
-        server.GetURL("/test?q=foo"), URLFetcher::GET, this));
+    scoped_ptr<URLFetcher> fetcher =
+        URLFetcher::Create(server.GetURL("/test?q=foo"), URLFetcher::GET, this);
     fetcher->SetRequestContext(
         new TestURLRequestContextGetter(loop->message_loop_proxy()));
     fetcher->Start();

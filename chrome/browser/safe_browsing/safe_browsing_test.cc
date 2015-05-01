@@ -472,8 +472,7 @@ class SafeBrowsingServerTestHelper
   // Fetch a URL. If message_loop_started is true, starts the message loop
   // so the caller could wait till OnURLFetchComplete is called.
   net::URLRequestStatus::Status FetchUrl(const GURL& url) {
-    url_fetcher_.reset(net::URLFetcher::Create(
-        url, net::URLFetcher::GET, this));
+    url_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     url_fetcher_->SetRequestContext(request_context_);
     url_fetcher_->Start();

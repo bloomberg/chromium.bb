@@ -95,10 +95,11 @@ void SafeBrowsingPingManager::ReportSafeBrowsingHit(
   GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
                                        referrer_url, is_subresource,
                                        threat_type);
-  net::URLFetcher* report = net::URLFetcher::Create(
-      report_url,
-      post_data.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
-      this);
+  net::URLFetcher* report =
+      net::URLFetcher::Create(
+          report_url,
+          post_data.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
+          this).release();
   report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   report->SetRequestContext(request_context_getter_.get());
   if (!post_data.empty())
@@ -111,8 +112,9 @@ void SafeBrowsingPingManager::ReportSafeBrowsingHit(
 void SafeBrowsingPingManager::ReportMalwareDetails(
     const std::string& report) {
   GURL report_url = MalwareDetailsUrl();
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      report_url, net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(report_url, net::URLFetcher::POST, this)
+          .release();
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetUploadData("application/octet-stream", report);

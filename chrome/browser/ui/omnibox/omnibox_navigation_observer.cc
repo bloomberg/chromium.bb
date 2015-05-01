@@ -63,8 +63,8 @@ OmniboxNavigationObserver::OmniboxNavigationObserver(
       load_state_(LOAD_NOT_SEEN),
       fetch_state_(FETCH_NOT_COMPLETE) {
   if (alternate_nav_match_.destination_url.is_valid()) {
-    fetcher_.reset(net::URLFetcher::Create(alternate_nav_match_.destination_url,
-                                           net::URLFetcher::HEAD, this));
+    fetcher_ = net::URLFetcher::Create(alternate_nav_match_.destination_url,
+                                       net::URLFetcher::HEAD, this);
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher_->SetStopOnRedirect(true);
   }

@@ -111,7 +111,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
 
   // Creates a request to the suggestions service, properly setting headers.
-  net::URLFetcher* CreateSuggestionsRequest(const GURL& url);
+  scoped_ptr<net::URLFetcher> CreateSuggestionsRequest(const GURL& url);
 
   // net::URLFetcherDelegate implementation.
   // Called when fetch request completes. Parses the received suggestions data,

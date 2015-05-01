@@ -302,8 +302,9 @@ void HttpBridge::MakeAsynchronousPost() {
       base::Bind(&HttpBridge::OnURLFetchTimedOut, this));
 
   DCHECK(context_getter_for_request_.get());
-  fetch_state_.url_poster = net::URLFetcher::Create(
-      url_for_request_, net::URLFetcher::POST, this);
+  fetch_state_.url_poster =
+      net::URLFetcher::Create(url_for_request_, net::URLFetcher::POST, this)
+          .release();
   fetch_state_.url_poster->SetRequestContext(context_getter_for_request_.get());
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);

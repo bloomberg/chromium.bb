@@ -87,8 +87,8 @@ scoped_ptr<net::URLFetcher> CreateFetcher(
   const int kSafeId = 0;
   const int kUnsafeId = 1;
   int id = safe ? kSafeId : kUnsafeId;
-  scoped_ptr<net::URLFetcher> fetcher(URLFetcher::Create(
-      id, BuildSearchURL(api_key, url, safe), URLFetcher::GET, delegate));
+  scoped_ptr<net::URLFetcher> fetcher = URLFetcher::Create(
+      id, BuildSearchURL(api_key, url, safe), URLFetcher::GET, delegate);
   fetcher->SetRequestContext(context);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);

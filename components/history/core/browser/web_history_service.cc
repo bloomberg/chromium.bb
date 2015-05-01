@@ -139,7 +139,7 @@ class RequestImpl : public WebHistoryService::Request,
     UMA_HISTOGRAM_BOOLEAN("WebHistory.OAuthTokenCompletion", true);
 
     // Got an access token -- start the actual API request.
-    url_fetcher_.reset(CreateUrlFetcher(access_token));
+    url_fetcher_ = CreateUrlFetcher(access_token);
     url_fetcher_->Start();
   }
 
@@ -156,11 +156,12 @@ class RequestImpl : public WebHistoryService::Request,
   }
 
   // Helper for creating a new URLFetcher for the API request.
-  net::URLFetcher* CreateUrlFetcher(const std::string& access_token) {
+  scoped_ptr<net::URLFetcher> CreateUrlFetcher(
+      const std::string& access_token) {
     net::URLFetcher::RequestType request_type = post_data_.empty() ?
         net::URLFetcher::GET : net::URLFetcher::POST;
-    net::URLFetcher* fetcher = net::URLFetcher::Create(
-        url_, request_type, this);
+    scoped_ptr<net::URLFetcher> fetcher =
+        net::URLFetcher::Create(url_, request_type, this);
     fetcher->SetRequestContext(request_context_.get());
     fetcher->SetMaxRetriesOn5xx(kMaxRetries);
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

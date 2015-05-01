@@ -354,7 +354,7 @@ void UrlFetchRequestBase::StartAfterPrepare(
   DVLOG(1) << "URL: " << url.spec();
 
   URLFetcher::RequestType request_type = GetRequestType();
-  url_fetcher_.reset(URLFetcher::Create(url, request_type, this));
+  url_fetcher_ = URLFetcher::Create(url, request_type, this);
   url_fetcher_->SetRequestContext(sender_->url_request_context_getter());
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(

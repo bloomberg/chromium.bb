@@ -37,8 +37,8 @@ UrlIconSource::~UrlIconSource() {
 void UrlIconSource::StartIconFetch() {
   icon_fetch_attempted_ = true;
 
-  icon_fetcher_.reset(
-      net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this));
+  icon_fetcher_ =
+      net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this);
   icon_fetcher_->SetRequestContext(context_getter_);
   icon_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   icon_fetcher_->Start();

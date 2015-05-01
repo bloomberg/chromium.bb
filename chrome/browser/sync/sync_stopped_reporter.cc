@@ -56,8 +56,8 @@ void SyncStoppedReporter::ReportSyncStopped(const std::string& access_token,
   std::string msg;
   event_request.SerializeToString(&msg);
 
-  fetcher_.reset(net::URLFetcher::Create(
-      sync_event_url_, net::URLFetcher::POST, this));
+  fetcher_ =
+      net::URLFetcher::Create(sync_event_url_, net::URLFetcher::POST, this);
   fetcher_->AddExtraRequestHeader(base::StringPrintf(
       "%s: Bearer %s", net::HttpRequestHeaders::kAuthorization,
       access_token.c_str()));

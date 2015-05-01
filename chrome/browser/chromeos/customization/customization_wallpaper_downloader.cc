@@ -86,8 +86,8 @@ void CustomizationWallpaperDownloader::StartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(wallpaper_url_.is_valid());
 
-  url_fetcher_.reset(
-      net::URLFetcher::Create(wallpaper_url_, net::URLFetcher::GET, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(wallpaper_url_, net::URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(url_context_getter_.get());
   url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE |
                              net::LOAD_DISABLE_CACHE |

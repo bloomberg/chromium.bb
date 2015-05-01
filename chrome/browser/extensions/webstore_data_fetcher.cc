@@ -38,8 +38,8 @@ WebstoreDataFetcher::~WebstoreDataFetcher() {}
 void WebstoreDataFetcher::Start() {
   GURL webstore_data_url(extension_urls::GetWebstoreItemJsonDataURL(id_));
 
-  webstore_data_url_fetcher_.reset(net::URLFetcher::Create(
-      webstore_data_url, net::URLFetcher::GET, this));
+  webstore_data_url_fetcher_ =
+      net::URLFetcher::Create(webstore_data_url, net::URLFetcher::GET, this);
   webstore_data_url_fetcher_->SetRequestContext(request_context_);
   webstore_data_url_fetcher_->SetReferrer(referrer_url_.spec());
   webstore_data_url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |

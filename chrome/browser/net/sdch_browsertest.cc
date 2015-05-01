@@ -277,7 +277,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
 
   void FetchUrlDetailed(GURL url, net::URLRequestContextGetter* getter) {
     url_fetch_complete_ = false;
-    fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
+    fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
     fetcher_->SetRequestContext(getter);
     fetcher_->Start();
     if (!url_fetch_complete_) {

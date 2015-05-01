@@ -44,8 +44,7 @@ class DriveAppConverter::IconFetcher : public net::URLFetcherDelegate,
   ~IconFetcher() override {}
 
   void Start() {
-    fetcher_.reset(
-        net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this));
+    fetcher_ = net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this);
     fetcher_->SetRequestContext(converter_->profile_->GetRequestContext());
     fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher_->Start();

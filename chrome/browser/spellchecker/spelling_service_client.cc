@@ -90,7 +90,7 @@ bool SpellingServiceClient::RequestTextCheck(
       api_key.c_str());
 
   GURL url = GURL(kSpellingServiceURL);
-  net::URLFetcher* fetcher = CreateURLFetcher(url);
+  net::URLFetcher* fetcher = CreateURLFetcher(url).release();
   fetcher->SetRequestContext(context->GetRequestContext());
   fetcher->SetUploadData("application/json", request);
   fetcher->SetLoadFlags(
@@ -253,6 +253,7 @@ void SpellingServiceClient::OnURLFetchComplete(
   callback_data->callback.Run(success, callback_data->text, results);
 }
 
-net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
+scoped_ptr<net::URLFetcher> SpellingServiceClient::CreateURLFetcher(
+    const GURL& url) {
   return net::URLFetcher::Create(url, net::URLFetcher::POST, this);
 }

@@ -69,8 +69,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     const URLFetcherCustomizeCallback& url_fetcher_customize_callback,
     const ConfirmAddSearchProviderCallback& confirm_add_callback,
     ProviderType provider_type)
-    : url_fetcher_(net::URLFetcher::Create(
-          osdd_url, net::URLFetcher::GET, this)),
+    : url_fetcher_(
+          net::URLFetcher::Create(osdd_url, net::URLFetcher::GET, this).Pass()),
       fetcher_(fetcher),
       keyword_(keyword),
       osdd_url_(osdd_url),

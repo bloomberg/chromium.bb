@@ -58,8 +58,8 @@ class URLRequestDelegate : public net::URLFetcherDelegate {
   GURL url(base::SysNSStringToUTF8([delegate_ urlToFetch]));
   if (url.is_valid()) {
     fetcherDelegate_.reset(new URLRequestDelegate(self));
-    fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET,
-                                           fetcherDelegate_.get()));
+    fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET,
+                                       fetcherDelegate_.get());
     fetcher_->SetRequestContext(requestContextGetter_.get());
     fetcher_->Start();
   }

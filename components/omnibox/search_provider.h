@@ -250,9 +250,10 @@ class SearchProvider : public BaseSearchProvider,
 
   // Starts a new URLFetcher requesting suggest results from |template_url|;
   // callers own the returned URLFetcher, which is NULL for invalid providers.
-  net::URLFetcher* CreateSuggestFetcher(int id,
-                                        const TemplateURL* template_url,
-                                        const AutocompleteInput& input);
+  scoped_ptr<net::URLFetcher> CreateSuggestFetcher(
+      int id,
+      const TemplateURL* template_url,
+      const AutocompleteInput& input);
 
   // Converts the parsed results to a set of AutocompleteMatches, |matches_|.
   void ConvertResultsToAutocompleteMatches();

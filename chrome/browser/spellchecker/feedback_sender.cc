@@ -407,8 +407,9 @@ void FeedbackSender::SendFeedback(const std::vector<Misspelling>& feedback_data,
 
   // The tests use this identifier to mock the URL fetcher.
   static const int kUrlFetcherId = 0;
-  net::URLFetcher* sender = net::URLFetcher::Create(
-      kUrlFetcherId, feedback_service_url_, net::URLFetcher::POST, this);
+  net::URLFetcher* sender =
+      net::URLFetcher::Create(kUrlFetcherId, feedback_service_url_,
+                              net::URLFetcher::POST, this).release();
   sender->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                        net::LOAD_DO_NOT_SAVE_COOKIES);
   sender->SetUploadData("application/json", feedback);

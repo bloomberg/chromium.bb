@@ -111,8 +111,8 @@ void ServiceClient::Core::MakeChromotingRequest(
     const std::string& oauth_access_token,
     ServiceClient::Delegate* delegate) {
   delegate_ = delegate;
-  request_.reset(net::URLFetcher::Create(
-      0, GURL(chromoting_hosts_url_ + url_suffix), request_type, this));
+  request_ = net::URLFetcher::Create(
+      0, GURL(chromoting_hosts_url_ + url_suffix), request_type, this);
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("application/json; charset=UTF-8", request_body);
   request_->AddExtraRequestHeader("Authorization: OAuth " + oauth_access_token);

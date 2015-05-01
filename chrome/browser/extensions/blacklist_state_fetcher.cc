@@ -139,10 +139,9 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
   request.SerializeToString(&request_str);
 
   GURL request_url = RequestUrl();
-  net::URLFetcher* fetcher = net::URLFetcher::Create(url_fetcher_id_++,
-                                                     request_url,
-                                                     net::URLFetcher::POST,
-                                                     this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(url_fetcher_id_++, request_url,
+                              net::URLFetcher::POST, this).release();
   requests_[fetcher] = id;
   fetcher->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
   fetcher->SetRequestContext(url_request_context_getter_.get());

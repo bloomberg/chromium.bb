@@ -112,8 +112,8 @@ void WebResourceService::StartFetch() {
                                                  application_locale_);
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
-  url_fetcher_.reset(
-      net::URLFetcher::Create(web_resource_server, net::URLFetcher::GET, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(web_resource_server, net::URLFetcher::GET, this);
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).
   url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |

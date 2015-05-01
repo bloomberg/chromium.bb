@@ -77,10 +77,9 @@ void AttestationCAClient::FetchURL(const std::string& url,
                                    const std::string& request,
                                    const DataCallback& on_response) {
   // The first argument allows the use of TestURLFetcherFactory in tests.
-  net::URLFetcher* fetcher = net::URLFetcher::Create(0,
-                                                     GURL(url),
-                                                     net::URLFetcher::POST,
-                                                     this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(0, GURL(url), net::URLFetcher::POST, this)
+          .release();
   fetcher->SetRequestContext(g_browser_process->system_request_context());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES |

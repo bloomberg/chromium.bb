@@ -170,8 +170,9 @@ scoped_ptr<ExternalPolicyDataFetcher>
 void ExternalPolicyDataFetcherBackend::StartJob(
     ExternalPolicyDataFetcher::Job* job) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      ++last_fetch_id_, job->url, net::URLFetcher::GET, this);
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(++last_fetch_id_, job->url, net::URLFetcher::GET,
+                              this).release();
   fetcher->SetRequestContext(request_context_.get());
   fetcher->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
                         net::LOAD_DO_NOT_SAVE_COOKIES |

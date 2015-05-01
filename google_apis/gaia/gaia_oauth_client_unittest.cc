@@ -88,10 +88,11 @@ class MockOAuthFetcherFactory : public net::URLFetcherFactory,
         complete_immediately_(true) {
   }
   ~MockOAuthFetcherFactory() override {}
-  net::URLFetcher* CreateURLFetcher(int id,
-                                    const GURL& url,
-                                    net::URLFetcher::RequestType request_type,
-                                    net::URLFetcherDelegate* d) override {
+  scoped_ptr<net::URLFetcher> CreateURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* d) override {
     url_fetcher_ = new MockOAuthFetcher(
         response_code_,
         max_failure_count_,
@@ -100,7 +101,7 @@ class MockOAuthFetcherFactory : public net::URLFetcherFactory,
         results_,
         request_type,
         d);
-    return url_fetcher_;
+    return scoped_ptr<net::URLFetcher>(url_fetcher_);
   }
   void set_response_code(int response_code) {
     response_code_ = response_code;

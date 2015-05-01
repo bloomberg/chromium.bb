@@ -45,11 +45,7 @@ bool TranslateURLFetcher::Request(
   url_ = url;
   callback_ = callback;
 
-  fetcher_.reset(net::URLFetcher::Create(
-      id_,
-      url_,
-      net::URLFetcher::GET,
-      this));
+  fetcher_ = net::URLFetcher::Create(id_, url_, net::URLFetcher::GET, this);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(

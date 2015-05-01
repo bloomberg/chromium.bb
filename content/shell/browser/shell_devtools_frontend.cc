@@ -216,7 +216,7 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
     }
 
     net::URLFetcher* fetcher =
-        net::URLFetcher::Create(gurl, net::URLFetcher::GET, this);
+        net::URLFetcher::Create(gurl, net::URLFetcher::GET, this).release();
     pending_requests_[fetcher] = request_id;
     fetcher->SetRequestContext(web_contents()->GetBrowserContext()->
         GetRequestContext());

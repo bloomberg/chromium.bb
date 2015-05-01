@@ -295,8 +295,8 @@ void SimpleGeolocationRequest::StartRequest() {
   RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_REQUEST_START);
   ++retries_;
 
-  url_fetcher_.reset(
-      net::URLFetcher::Create(request_url_, net::URLFetcher::POST, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(request_url_, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(url_context_getter_.get());
   url_fetcher_->SetUploadData("application/json",
                               std::string(kSimpleGeolocationRequestBody));

@@ -146,9 +146,7 @@ void PrivetURLFetcher::SetByteRange(int start, int end) {
 void PrivetURLFetcher::Try() {
   tries_++;
   if (tries_ < kPrivetMaxRetries) {
-
-
-    url_fetcher_.reset(net::URLFetcher::Create(url_, request_type_, this));
+    url_fetcher_ = net::URLFetcher::Create(url_, request_type_, this);
     // Privet requests are relevant to hosts on local network only.
     url_fetcher_->SetLoadFlags(url_fetcher_->GetLoadFlags() |
                                net::LOAD_BYPASS_PROXY |

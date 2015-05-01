@@ -115,7 +115,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // Creates a URLFetcher object used for sending a JSON-RPC request. This
   // function is overridden by unit tests to prevent them from actually sending
   // requests to the Spelling service.
-  virtual net::URLFetcher* CreateURLFetcher(const GURL& url);
+  virtual scoped_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url);
 
   // The URLFetcher object used for sending a JSON-RPC request.
   std::map<const net::URLFetcher*, TextCheckCallbackData*> spellcheck_fetchers_;

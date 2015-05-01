@@ -56,11 +56,9 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
   GURL url(deletion_url);
   DCHECK(url.is_valid());
 
-  deletion_fetcher_.reset(net::URLFetcher::Create(
-      BaseSearchProvider::kDeletionURLFetcherID,
-      url,
-      net::URLFetcher::GET,
-      this));
+  deletion_fetcher_ =
+      net::URLFetcher::Create(BaseSearchProvider::kDeletionURLFetcherID, url,
+                              net::URLFetcher::GET, this);
   deletion_fetcher_->SetRequestContext(request_context);
   deletion_fetcher_->Start();
 }

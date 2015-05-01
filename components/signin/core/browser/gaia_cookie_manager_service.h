@@ -128,7 +128,7 @@ class GaiaCookieManagerService : public KeyedService,
         const GoogleServiceAuthError& error) override;
 
     // Creates and initializes a URL fetcher for doing a connection check.
-    net::URLFetcher* CreateFetcher(const GURL& url);
+    scoped_ptr<net::URLFetcher> CreateFetcher(const GURL& url);
 
     // Overridden from URLFetcherDelgate.
     void OnURLFetchComplete(const net::URLFetcher* source) override;

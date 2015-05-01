@@ -39,14 +39,14 @@ void DistillerURLFetcher::FetchURL(const std::string& url,
   // Don't allow a fetch if one is pending.
   DCHECK(!url_fetcher_ || !url_fetcher_->GetStatus().is_io_pending());
   callback_ = callback;
-  url_fetcher_.reset(CreateURLFetcher(context_getter_, url));
+  url_fetcher_ = CreateURLFetcher(context_getter_, url);
   url_fetcher_->Start();
 }
 
-URLFetcher*  DistillerURLFetcher::CreateURLFetcher(
+scoped_ptr<URLFetcher> DistillerURLFetcher::CreateURLFetcher(
     net::URLRequestContextGetter* context_getter,
     const std::string& url) {
-  net::URLFetcher* fetcher =
+  scoped_ptr<net::URLFetcher> fetcher =
       URLFetcher::Create(GURL(url), URLFetcher::GET, this);
   fetcher->SetRequestContext(context_getter);
   static const int kMaxRetries = 5;

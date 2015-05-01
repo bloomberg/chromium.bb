@@ -133,8 +133,8 @@ void UnregistrationRequest::Start() {
   DCHECK(request_info_.security_token != 0UL);
   DCHECK(!url_fetcher_.get());
 
-  url_fetcher_.reset(net::URLFetcher::Create(
-      registration_url_, net::URLFetcher::POST, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(registration_url_, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(request_context_getter_.get());
 
   std::string android_id = base::Uint64ToString(request_info_.android_id);

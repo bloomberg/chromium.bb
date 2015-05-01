@@ -421,11 +421,10 @@ TEST_F(HttpServerTest, RequestWithTooLargeBody) {
 
   scoped_refptr<URLRequestContextGetter> request_context_getter(
       new TestURLRequestContextGetter(base::MessageLoopProxy::current()));
-  scoped_ptr<URLFetcher> fetcher(
+  scoped_ptr<URLFetcher> fetcher =
       URLFetcher::Create(GURL(base::StringPrintf("http://127.0.0.1:%d/test",
                                                  server_address_.port())),
-                         URLFetcher::GET,
-                         &delegate));
+                         URLFetcher::GET, &delegate);
   fetcher->SetRequestContext(request_context_getter.get());
   fetcher->AddExtraRequestHeader(
       base::StringPrintf("content-length:%d", 1 << 30));

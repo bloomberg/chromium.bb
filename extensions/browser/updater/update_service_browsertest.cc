@@ -105,7 +105,7 @@ class FakeUpdateURLFetcherFactory : public net::URLFetcherFactory {
   }
 
   // net::URLFetcherFactory:
-  net::URLFetcher* CreateURLFetcher(
+  scoped_ptr<net::URLFetcher> CreateURLFetcher(
       int id,
       const GURL& url,
       net::URLFetcher::RequestType request_type,
@@ -122,7 +122,7 @@ class FakeUpdateURLFetcherFactory : public net::URLFetcherFactory {
   }
 
  private:
-  net::URLFetcher* CreateUpdateManifestFetcher(
+  scoped_ptr<net::URLFetcher> CreateUpdateManifestFetcher(
       const GURL& url,
       net::URLFetcherDelegate* delegate) {
     // If we have a fake CRX for the ID, return a fake update blob for it.
@@ -138,13 +138,14 @@ class FakeUpdateURLFetcherFactory : public net::URLFetcherFactory {
       else
         response = CreateFakeUpdateResponse(extension_id, iter->second.size());
     }
-    return new net::FakeURLFetcher(url, delegate, response.first,
-                                   response.second,
-                                   net::URLRequestStatus::SUCCESS);
+    return scoped_ptr<net::URLFetcher>(
+        new net::FakeURLFetcher(url, delegate, response.first, response.second,
+                                net::URLRequestStatus::SUCCESS));
   }
 
-  net::URLFetcher* CreateCrxFetcher(const GURL& url,
-                                    net::URLFetcherDelegate* delegate) {
+  scoped_ptr<net::URLFetcher> CreateCrxFetcher(
+      const GURL& url,
+      net::URLFetcherDelegate* delegate) {
     FakeResponse response;
     std::string extension_id = url.path().substr(1, 32);
     const auto& iter = fake_extensions_.find(extension_id);
@@ -156,7 +157,7 @@ class FakeUpdateURLFetcherFactory : public net::URLFetcherFactory {
         new net::FakeURLFetcher(url, delegate, response.first, response.second,
                                 net::URLRequestStatus::SUCCESS);
     fetcher->SetResponseFilePath(base::FilePath::FromUTF8Unsafe(url.path()));
-    return fetcher;
+    return scoped_ptr<net::URLFetcher>(fetcher);
   }
 
   std::map<std::string, std::string> fake_extensions_;

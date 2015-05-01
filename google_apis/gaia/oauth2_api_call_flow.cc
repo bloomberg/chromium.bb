@@ -42,7 +42,7 @@ void OAuth2ApiCallFlow::Start(net::URLRequestContextGetter* context,
   CHECK(state_ == INITIAL);
   state_ = API_CALL_STARTED;
 
-  url_fetcher_.reset(CreateURLFetcher(context, access_token));
+  url_fetcher_ = CreateURLFetcher(context, access_token);
   url_fetcher_->Start();  // OnURLFetchComplete will be called.
 }
 
@@ -71,15 +71,13 @@ void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {
   EndApiCall(source);
 }
 
-URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher(
+scoped_ptr<URLFetcher> OAuth2ApiCallFlow::CreateURLFetcher(
     net::URLRequestContextGetter* context,
     const std::string& access_token) {
   std::string body = CreateApiCallBody();
   bool empty_body = body.empty();
-  URLFetcher* result = net::URLFetcher::Create(
-      0,
-      CreateApiCallUrl(),
-      empty_body ? URLFetcher::GET : URLFetcher::POST,
+  scoped_ptr<URLFetcher> result = net::URLFetcher::Create(
+      0, CreateApiCallUrl(), empty_body ? URLFetcher::GET : URLFetcher::POST,
       this);
 
   result->SetRequestContext(context);

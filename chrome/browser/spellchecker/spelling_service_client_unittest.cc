@@ -166,13 +166,13 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
  private:
-  net::URLFetcher* CreateURLFetcher(const GURL& url) override {
+  scoped_ptr<net::URLFetcher> CreateURLFetcher(const GURL& url) override {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
     fetcher_ = new TestSpellingURLFetcher(0, url, this,
                                           request_type_, request_text_,
                                           request_language_,
                                           response_status_, response_data_);
-    return fetcher_;
+    return scoped_ptr<net::URLFetcher>(fetcher_);
   }
 
   int request_type_;

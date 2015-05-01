@@ -70,10 +70,11 @@ class FakeURLFetcherFactory : public net::FakeURLFetcherFactory {
   ~FakeURLFetcherFactory() override;
 
   // net::FakeURLFetcherFactory:
-  net::URLFetcher* CreateURLFetcher(int id,
-                                    const GURL& url,
-                                    net::URLFetcher::RequestType request_type,
-                                    net::URLFetcherDelegate* delegate) override;
+  scoped_ptr<net::URLFetcher> CreateURLFetcher(
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* delegate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
@@ -86,15 +87,16 @@ FakeURLFetcherFactory::FakeURLFetcherFactory()
 FakeURLFetcherFactory::~FakeURLFetcherFactory() {
 }
 
-net::URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
+scoped_ptr<net::URLFetcher> FakeURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* delegate) {
-  net::URLFetcher* fetcher = net::FakeURLFetcherFactory::CreateURLFetcher(
-      id, url, request_type, delegate);
+  scoped_ptr<net::URLFetcher> fetcher =
+      net::FakeURLFetcherFactory::CreateURLFetcher(id, url, request_type,
+                                                   delegate);
   EXPECT_TRUE(fetcher);
-  return fetcher;
+  return fetcher.Pass();
 }
 
 }  // namespace

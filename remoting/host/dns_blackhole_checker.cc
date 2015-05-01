@@ -58,8 +58,8 @@ void DnsBlackholeChecker::CheckForDnsBlackhole(
     }
     talkgadget_url += kTalkGadgetUrl;
     HOST_LOG << "Verifying connection to " << talkgadget_url;
-    url_fetcher_.reset(net::URLFetcher::Create(GURL(talkgadget_url),
-                                               net::URLFetcher::GET, this));
+    url_fetcher_ = net::URLFetcher::Create(GURL(talkgadget_url),
+                                           net::URLFetcher::GET, this);
     url_fetcher_->SetRequestContext(url_request_context_getter_.get());
     url_fetcher_->Start();
   } else {

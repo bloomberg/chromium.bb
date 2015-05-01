@@ -176,7 +176,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
       if (dict->GetString("carryBackToken", &token) &&
           dict->GetString("url", &url)) {
         results_[token] = "null";
-        net::URLFetcher* fetcher = CreateFetcher(GURL(url));
+        net::URLFetcher* fetcher = CreateFetcher(GURL(url)).release();
         fetchers_[fetcher->GetOriginalURL()] = std::make_pair(token, fetcher);
         fetcher->Start();
       }
@@ -199,10 +199,10 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
   GetCheckConnectionInfoCompleted(false);
 }
 
-net::URLFetcher*
+scoped_ptr<net::URLFetcher>
 GaiaCookieManagerService::ExternalCcResultFetcher::CreateFetcher(
     const GURL& url) {
-  net::URLFetcher* fetcher =
+  scoped_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   fetcher->SetRequestContext(helper_->request_context());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -457,8 +457,8 @@ void GaiaCookieManagerService::StartLogOutUrlFetch() {
   VLOG(1) << "GaiaCookieManagerService::StartLogOutUrlFetch";
   GURL logout_url(GaiaUrls::GetInstance()->service_logout_url().Resolve(
       base::StringPrintf("?source=%s", source_.c_str())));
-  logout_url_request_.reset(
-      net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this));
+  logout_url_request_ =
+      net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this);
   logout_url_request_->SetRequestContext(
       signin_client_->GetURLRequestContext());
   logout_url_request_->Start();

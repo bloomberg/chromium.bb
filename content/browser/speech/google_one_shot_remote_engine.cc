@@ -210,10 +210,8 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
                                       config_.audio_sample_rate,
                                       config_.audio_num_bits_per_sample));
   DCHECK(encoder_.get());
-  url_fetcher_.reset(net::URLFetcher::Create(url_fetcher_id_for_tests,
-                                             url,
-                                             net::URLFetcher::POST,
-                                             this));
+  url_fetcher_ = net::URLFetcher::Create(url_fetcher_id_for_tests, url,
+                                         net::URLFetcher::POST, this);
   url_fetcher_->SetChunkedUpload(encoder_->mime_type());
   url_fetcher_->SetRequestContext(url_context_.get());
   url_fetcher_->SetReferrer(config_.origin_url);

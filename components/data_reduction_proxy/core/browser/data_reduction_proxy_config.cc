@@ -69,8 +69,8 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
 
   void CheckIfSecureProxyIsAllowed(const GURL& secure_proxy_check_url,
                                    FetcherResponseCallback fetcher_callback) {
-    fetcher_.reset(net::URLFetcher::Create(secure_proxy_check_url,
-                                           net::URLFetcher::GET, this));
+    fetcher_ = net::URLFetcher::Create(secure_proxy_check_url,
+                                       net::URLFetcher::GET, this);
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
     fetcher_->SetRequestContext(url_request_context_getter_.get());
     // Configure max retries to be at most kMaxRetries times for 5xx errors.

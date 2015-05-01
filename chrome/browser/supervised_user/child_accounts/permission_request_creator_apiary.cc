@@ -174,10 +174,8 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
   DCHECK(it != requests_.end());
   (*it)->access_token = access_token;
 
-  (*it)->url_fetcher.reset(URLFetcher::Create((*it)->url_fetcher_id,
-                                              GetApiUrl(),
-                                              URLFetcher::POST,
-                                              this));
+  (*it)->url_fetcher = URLFetcher::Create((*it)->url_fetcher_id, GetApiUrl(),
+                                          URLFetcher::POST, this);
 
   (*it)->url_fetcher->SetRequestContext(context_);
   (*it)->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

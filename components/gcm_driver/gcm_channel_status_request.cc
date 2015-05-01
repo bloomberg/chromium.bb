@@ -64,8 +64,8 @@ void GCMChannelStatusRequest::Start() {
      NOTREACHED();
   }
 
-  url_fetcher_.reset(
-      net::URLFetcher::Create(request_url, net::URLFetcher::POST, this));
+  url_fetcher_ =
+      net::URLFetcher::Create(request_url, net::URLFetcher::POST, this);
   url_fetcher_->SetRequestContext(request_context_getter_.get());
   url_fetcher_->AddExtraRequestHeader("User-Agent: " + user_agent_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);

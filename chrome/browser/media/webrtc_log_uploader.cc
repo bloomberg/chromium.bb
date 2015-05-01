@@ -449,8 +449,8 @@ void WebRtcLogUploader::CreateAndStartURLFetcher(
   content_type.append(kMultipartBoundary);
 
   net::URLFetcher* url_fetcher =
-      net::URLFetcher::Create(GURL(chrome::kUploadURL),
-                              net::URLFetcher::POST, this);
+      net::URLFetcher::Create(GURL(chrome::kUploadURL), net::URLFetcher::POST,
+                              this).release();
   url_fetcher->SetRequestContext(g_browser_process->system_request_context());
   url_fetcher->SetUploadData(content_type, *post_data);
   url_fetcher->Start();

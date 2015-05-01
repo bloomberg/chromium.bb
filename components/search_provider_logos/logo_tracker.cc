@@ -208,7 +208,7 @@ void LogoTracker::FetchLogo() {
   }
   url = append_queryparams_func_.Run(logo_url_, fingerprint, wants_cta_);
 
-  fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
+  fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_getter_.get());
   fetcher_->Start();
 }

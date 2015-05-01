@@ -46,12 +46,14 @@ void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
   GURL post_url(url_);
 
   // Note: FeedbackUploaderDelegate deletes itself and the fetcher.
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      post_url, net::URLFetcher::POST,
-      new FeedbackUploaderDelegate(
-          data,
-          base::Bind(&FeedbackUploaderChrome::UpdateUploadTimer, AsWeakPtr()),
-          base::Bind(&FeedbackUploaderChrome::RetryReport, AsWeakPtr())));
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(
+          post_url, net::URLFetcher::POST,
+          new FeedbackUploaderDelegate(
+              data, base::Bind(&FeedbackUploaderChrome::UpdateUploadTimer,
+                               AsWeakPtr()),
+              base::Bind(&FeedbackUploaderChrome::RetryReport, AsWeakPtr())))
+          .release();
 
   // Tell feedback server about the variation state of this install.
   net::HttpRequestHeaders headers;

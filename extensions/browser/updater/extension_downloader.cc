@@ -473,11 +473,9 @@ void ExtensionDownloader::CreateManifestFetcher() {
             << " for " << id_list;
   }
 
-  manifest_fetcher_.reset(
-      net::URLFetcher::Create(kManifestFetcherId,
-                              manifests_queue_.active_request()->full_url(),
-                              net::URLFetcher::GET,
-                              this));
+  manifest_fetcher_ = net::URLFetcher::Create(
+      kManifestFetcherId, manifests_queue_.active_request()->full_url(),
+      net::URLFetcher::GET, this);
   manifest_fetcher_->SetRequestContext(request_context_.get());
   manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                   net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -762,8 +760,8 @@ void ExtensionDownloader::CacheInstallDone(
 
 void ExtensionDownloader::CreateExtensionFetcher() {
   const ExtensionFetch* fetch = extensions_queue_.active_request();
-  extension_fetcher_.reset(net::URLFetcher::Create(
-      kExtensionFetcherId, fetch->url, net::URLFetcher::GET, this));
+  extension_fetcher_ = net::URLFetcher::Create(kExtensionFetcherId, fetch->url,
+                                               net::URLFetcher::GET, this);
   extension_fetcher_->SetRequestContext(request_context_.get());
   extension_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
 

@@ -93,8 +93,8 @@ void ChromeMetadataSource::Download(const std::string& key,
     return;
   }
 
-  scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(resource, net::URLFetcher::GET, this));
+  scoped_ptr<net::URLFetcher> fetcher =
+      net::URLFetcher::Create(resource, net::URLFetcher::GET, this);
   fetcher->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetRequestContext(getter_);

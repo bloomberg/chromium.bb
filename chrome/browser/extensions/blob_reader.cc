@@ -28,9 +28,7 @@ BlobReader::BlobReader(Profile* profile,
     blob_url = GURL(std::string("blob:uuid/") + blob_uuid);
   }
   DCHECK(blob_url.is_valid());
-  fetcher_.reset(net::URLFetcher::Create(
-      blob_url, net::URLFetcher::GET,
-      this));
+  fetcher_ = net::URLFetcher::Create(blob_url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(profile->GetRequestContext());
 }
 

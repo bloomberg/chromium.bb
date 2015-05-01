@@ -88,8 +88,8 @@ void AffiliationFetcher::SetFactoryForTesting(
 void AffiliationFetcher::StartRequest() {
   DCHECK(!fetcher_);
 
-  fetcher_.reset(
-      net::URLFetcher::Create(BuildQueryURL(), net::URLFetcher::POST, this));
+  fetcher_ =
+      net::URLFetcher::Create(BuildQueryURL(), net::URLFetcher::POST, this);
   fetcher_->SetRequestContext(request_context_getter_.get());
   fetcher_->SetUploadData("application/x-protobuf", PreparePayload());
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |

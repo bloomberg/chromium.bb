@@ -156,7 +156,7 @@ void SupervisedUserRefreshTokenFetcherImpl::OnGetTokenSuccess(
   // unit tests.
   const int id = 1;
 
-  url_fetcher_.reset(URLFetcher::Create(id, url, URLFetcher::POST, this));
+  url_fetcher_ = URLFetcher::Create(id, url, URLFetcher::POST, this);
 
   url_fetcher_->SetRequestContext(context_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
