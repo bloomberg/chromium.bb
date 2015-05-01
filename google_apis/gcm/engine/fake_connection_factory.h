@@ -50,6 +50,8 @@ class FakeConnectionFactory : public ConnectionFactory {
   bool reconnect_pending_;
   bool delay_reconnect_;
 
+  ConnectionListener* connection_listener_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionFactory);
 };
 

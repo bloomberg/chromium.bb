@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/base/mcs_message.h"
+#include "google_apis/gcm/engine/connection_factory.h"
 #include "google_apis/gcm/engine/connection_handler.h"
 #include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/engine/heartbeat_manager.h"
@@ -110,7 +111,7 @@ class GCM_EXPORT MCSClient {
   // this is therefore a fresh client), a clean GCM store will be created and
   // values of 0 will be returned via |initialization_callback| with
   // |success == true|.
-  /// If an error loading the GCM store is encountered,
+  // If an error loading the GCM store is encountered,
   // |initialization_callback| will be invoked with |success == false|.
   void Initialize(const ErrorCallback& initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
@@ -149,6 +150,19 @@ class GCM_EXPORT MCSClient {
 
   // Updates the timer used by |heartbeat_manager_| for sending heartbeats.
   void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer);
+
+  // Allows a caller to set a heartbeat interval (in milliseconds) with which
+  // the MCS connection will be monitored on both ends, to detect device
+  // presence. In case the newly set interval is less then the current one,
+  // connection will be restarted with new heartbeat interval. Valid values have
+  // to be between GetMax/GetMinClientHeartbeatIntervalMs of HeartbeatManager,
+  // otherwise the setting won't take effect.
+  void AddHeartbeatInterval(const std::string& scope, int interval_ms);
+  void RemoveHeartbeatInterval(const std::string& scope);
+
+  HeartbeatManager& GetHeartbeatManagerForTesting() {
+    return heartbeat_manager_;
+  }
 
  private:
   typedef uint32 StreamId;
@@ -200,7 +214,8 @@ class GCM_EXPORT MCSClient {
   virtual PersistentId GetNextPersistentId();
 
   // Helper for the heartbeat manager to signal a connection reset.
-  void OnConnectionResetByHeartbeat();
+  void OnConnectionResetByHeartbeat(
+      ConnectionFactory::ConnectionResetReason reason);
 
   // Runs the message_sent_callback_ with send |status| of the |protobuf|.
   void NotifyMessageSendStatus(const google::protobuf::MessageLite& protobuf,
@@ -209,6 +224,9 @@ class GCM_EXPORT MCSClient {
   // Pops the next message from the front of the send queue (cleaning up
   // any associated state).
   MCSPacketInternal PopMessageForSend();
+
+  // Gets the minimum interval from the map of scopes to intervals.
+  int GetMinCustomHeartbeatInterval();
 
   // Local version string. Sent on login.
   const std::string version_string_;
@@ -278,6 +296,9 @@ class GCM_EXPORT MCSClient {
 
   // Manager to handle triggering/detecting heartbeats.
   HeartbeatManager heartbeat_manager_;
+
+  // Custom heartbeat intervals requested by different components.
+  std::map<std::string, int> custom_heartbeat_intervals_;
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;

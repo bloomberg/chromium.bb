@@ -86,6 +86,22 @@ class TestMCSClient : public MCSClient {
   uint32 next_id_;
 };
 
+class TestConnectionListener : public ConnectionFactory::ConnectionListener {
+ public:
+  TestConnectionListener() : disconnect_counter_(0) { }
+  ~TestConnectionListener() override { }
+
+  void OnConnected(const GURL& current_server,
+                   const net::IPEndPoint& ip_endpoint) override { }
+  void OnDisconnected() override {
+    ++disconnect_counter_;
+  }
+
+  int get_disconnect_counter() const { return disconnect_counter_; }
+ private:
+  int disconnect_counter_;
+};
+
 class MCSClientTest : public testing::Test {
  public:
   MCSClientTest();
@@ -97,6 +113,8 @@ class MCSClientTest : public testing::Test {
   void InitializeClient();
   void StoreCredentials();
   void LoginClient(const std::vector<std::string>& acknowledged_ids);
+  void AddExpectedLoginRequest(const std::vector<std::string>& acknowledged_ids,
+                               int custom_heartbeat_interval);
 
   base::SimpleTestClock* clock() { return &clock_; }
   TestMCSClient* mcs_client() const { return mcs_client_.get(); }
@@ -191,15 +209,26 @@ void MCSClientTest::InitializeClient() {
 
 void MCSClientTest::LoginClient(
     const std::vector<std::string>& acknowledged_ids) {
+  AddExpectedLoginRequest(acknowledged_ids, 0);
+  mcs_client_->Login(kAndroidId, kSecurityToken);
+  run_loop_->Run();
+  run_loop_.reset(new base::RunLoop());
+}
+
+void MCSClientTest::AddExpectedLoginRequest(
+    const std::vector<std::string>& acknowledged_ids,
+    int custom_heartbeat_interval) {
   scoped_ptr<mcs_proto::LoginRequest> login_request =
       BuildLoginRequest(kAndroidId, kSecurityToken, "");
   for (size_t i = 0; i < acknowledged_ids.size(); ++i)
     login_request->add_received_persistent_id(acknowledged_ids[i]);
+  if (custom_heartbeat_interval) {
+    mcs_proto::Setting* setting = login_request->add_setting();
+    setting->set_name("hbping");
+    setting->set_value(base::IntToString(custom_heartbeat_interval));
+  }
   GetFakeHandler()->ExpectOutgoingMessage(
       MCSMessage(kLoginRequestTag, login_request.Pass()));
-  mcs_client_->Login(kAndroidId, kSecurityToken);
-  run_loop_->Run();
-  run_loop_.reset(new base::RunLoop());
 }
 
 void MCSClientTest::StoreCredentials() {
@@ -867,6 +896,99 @@ TEST_F(MCSClientTest, CollapseKeysDifferentUser) {
   GetFakeHandler()->ExpectOutgoingMessage(message);
   GetFakeHandler()->ExpectOutgoingMessage(message2);
   PumpLoop();
+}
+
+// Tests adding and removing custom heartbeat interval.
+TEST_F(MCSClientTest, CustomHeartbeatInterval) {
+  BuildMCSClient();
+  InitializeClient();
+  LoginClient(std::vector<std::string>());
+
+  TestConnectionListener test_connection_listener;
+  connection_factory()->SetConnectionListener(&test_connection_listener);
+
+  HeartbeatManager& hb_manager = mcs_client()->GetHeartbeatManagerForTesting();
+  // By default custom client interval is not set.
+  EXPECT_FALSE(hb_manager.HasClientHeartbeatInterval());
+
+  const std::string component_1 = "component1";
+  int interval_ms = 30 * 1000;  // 30 seconds, too low.
+  mcs_client()->AddHeartbeatInterval(component_1, interval_ms);
+  // Setting was too low so it was ignored.
+  EXPECT_FALSE(hb_manager.HasClientHeartbeatInterval());
+
+  interval_ms = 60 * 60 * 1000;  // 1 hour, too high.
+  mcs_client()->AddHeartbeatInterval(component_1, interval_ms);
+  // Setting was too high, again it was ignored.
+  EXPECT_FALSE(hb_manager.HasClientHeartbeatInterval());
+
+  int expected_disconnect_counter = 0;
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
+
+  interval_ms = 5 * 60 * 1000;  // 5 minutes. A valid setting.
+  AddExpectedLoginRequest(std::vector<std::string>(), interval_ms);
+  mcs_client()->AddHeartbeatInterval(component_1, interval_ms);
+  // Setting was OK. HearbeatManager should get that setting now.
+  EXPECT_TRUE(hb_manager.HasClientHeartbeatInterval());
+  EXPECT_EQ(interval_ms, hb_manager.GetClientHeartbeatIntervalMs());
+
+  ++expected_disconnect_counter;
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
+
+  const std::string component_2 = "component2";
+  int other_interval_ms = 10 * 60 * 1000;  // 10 minutes. A valid setting.
+  mcs_client()->AddHeartbeatInterval(component_2, other_interval_ms);
+  // Setting was OK, but higher than the previous setting and HearbeatManager
+  // will not be updated.
+  EXPECT_TRUE(hb_manager.HasClientHeartbeatInterval());
+  EXPECT_EQ(interval_ms, hb_manager.GetClientHeartbeatIntervalMs());
+  // No connection reset expected.
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
+
+  other_interval_ms = 3 * 60 * 1000;  // 3 minutes. A valid setting.
+  AddExpectedLoginRequest(std::vector<std::string>(), other_interval_ms);
+  mcs_client()->AddHeartbeatInterval(component_2, other_interval_ms);
+  // Setting was OK and lower then present setting. HearbeatManager should get
+  // that setting now.
+  EXPECT_TRUE(hb_manager.HasClientHeartbeatInterval());
+  EXPECT_EQ(other_interval_ms, hb_manager.GetClientHeartbeatIntervalMs());
+  ++expected_disconnect_counter;
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
+
+  mcs_client()->RemoveHeartbeatInterval(component_2);
+  // Removing the lowest setting reverts to second lowest.
+  EXPECT_TRUE(hb_manager.HasClientHeartbeatInterval());
+  EXPECT_EQ(interval_ms, hb_manager.GetClientHeartbeatIntervalMs());
+  // No connection reset expected.
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
+
+  mcs_client()->RemoveHeartbeatInterval(component_1);
+  // Removing all of the intervals, removes it from the HeartbeatManager.
+  EXPECT_FALSE(hb_manager.HasClientHeartbeatInterval());
+  // No connection reset expected.
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
+
+  mcs_client()->AddHeartbeatInterval(component_2, other_interval_ms);
+  mcs_client()->AddHeartbeatInterval(component_1, interval_ms);
+  EXPECT_TRUE(hb_manager.HasClientHeartbeatInterval());
+  EXPECT_EQ(other_interval_ms, hb_manager.GetClientHeartbeatIntervalMs());
+  // No connection reset expected.
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
+
+  // Removing interval other than lowest does not change anything.
+  mcs_client()->RemoveHeartbeatInterval(component_1);
+  EXPECT_TRUE(hb_manager.HasClientHeartbeatInterval());
+  EXPECT_EQ(other_interval_ms, hb_manager.GetClientHeartbeatIntervalMs());
+  // No connection reset expected.
+  EXPECT_EQ(expected_disconnect_counter,
+            test_connection_listener.get_disconnect_counter());
 }
 
 } // namespace

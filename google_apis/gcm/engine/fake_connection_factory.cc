@@ -12,7 +12,8 @@ namespace gcm {
 
 FakeConnectionFactory::FakeConnectionFactory()
     : reconnect_pending_(false),
-      delay_reconnect_(false) {
+      delay_reconnect_(false),
+      connection_listener_(nullptr) {
 }
 
 FakeConnectionFactory::~FakeConnectionFactory() {
@@ -55,10 +56,13 @@ void FakeConnectionFactory::SignalConnectionReset(
     Connect();
   else
     reconnect_pending_ = true;
+  if (connection_listener_)
+    connection_listener_->OnDisconnected();
 }
 
 void FakeConnectionFactory::SetConnectionListener(
     ConnectionListener* listener) {
+  connection_listener_ = listener;
 }
 
 }  // namespace gcm

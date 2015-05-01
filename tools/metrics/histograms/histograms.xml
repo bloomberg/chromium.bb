@@ -53145,6 +53145,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Heartbeat failure"/>
   <int value="3" label="Socket failure"/>
   <int value="4" label="Network change"/>
+  <int value="5" label="New heartbeat interval"/>
 </enum>
 
 <enum name="GCMEndpoints" type="int">

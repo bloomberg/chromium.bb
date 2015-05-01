@@ -40,6 +40,10 @@ const char kIdleNotification[] = "IdleNotification";
 // const char kPowerNotification[] = "PowerNotification";
 // const char kDataActiveNotification[] = "DataActiveNotification";
 
+// Settings for MCS Login packet.
+const char kHeartbeatIntervalSettingName[] = "hbping";
+const int kNoCustomHeartbeat = 0;
+
 // The number of unacked messages to allow before sending a stream ack.
 // Applies to both incoming and outgoing messages.
 // TODO(zea): make this server configurable.
@@ -370,6 +374,39 @@ void MCSClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
   heartbeat_manager_.UpdateHeartbeatTimer(timer.Pass());
 }
 
+void MCSClient::AddHeartbeatInterval(const std::string& scope,
+                                     int interval_ms) {
+  if (!heartbeat_manager_.IsValidClientHeartbeatInterval(interval_ms))
+    return;
+
+  custom_heartbeat_intervals_[scope] = interval_ms;
+  // TODO(fgorski): Save in the gcm store as well.
+
+  int min_interval_ms = GetMinCustomHeartbeatInterval();
+  heartbeat_manager_.SetClientHeartbeatIntervalMs(min_interval_ms);
+}
+
+void MCSClient::RemoveHeartbeatInterval(const std::string& scope) {
+  custom_heartbeat_intervals_.erase(scope);
+  int min_interval = GetMinCustomHeartbeatInterval();
+  heartbeat_manager_.SetClientHeartbeatIntervalMs(min_interval);
+}
+
+int MCSClient::GetMinCustomHeartbeatInterval() {
+  if (custom_heartbeat_intervals_.empty())
+    return kNoCustomHeartbeat;
+
+  int min_interval = custom_heartbeat_intervals_.begin()->second;
+  for (std::map<std::string, int>::const_iterator it =
+           custom_heartbeat_intervals_.begin();
+       it != custom_heartbeat_intervals_.end();
+       ++it) {
+    if (it->second < min_interval)
+      min_interval = it->second;
+  }
+  return min_interval;
+}
+
 void MCSClient::ResetStateAndBuildLoginRequest(
     mcs_proto::LoginRequest* request) {
   DCHECK(android_id_);
@@ -404,6 +441,16 @@ void MCSClient::ResetStateAndBuildLoginRequest(
   request->Swap(BuildLoginRequest(android_id_,
                                   security_token_,
                                   version_string_).get());
+
+  // Set custom heartbeat interval if specified.
+  if (heartbeat_manager_.HasClientHeartbeatInterval()) {
+    // Ensure that the custom heartbeat interval is communicated to the server.
+    mcs_proto::Setting* setting = request->add_setting();
+    setting->set_name(kHeartbeatIntervalSettingName);
+    setting->set_value(base::IntToString(
+        heartbeat_manager_.GetClientHeartbeatIntervalMs()));
+  }
+
   for (PersistentIdList::const_iterator iter =
            restored_unackeds_server_ids_.begin();
        iter != restored_unackeds_server_ids_.end(); ++iter) {
@@ -867,9 +914,9 @@ MCSClient::PersistentId MCSClient::GetNextPersistentId() {
   return base::Uint64ToString(base::TimeTicks::Now().ToInternalValue());
 }
 
-void MCSClient::OnConnectionResetByHeartbeat() {
-  connection_factory_->SignalConnectionReset(
-      ConnectionFactory::HEARTBEAT_FAILURE);
+void MCSClient::OnConnectionResetByHeartbeat(
+    ConnectionFactory::ConnectionResetReason reason) {
+  connection_factory_->SignalConnectionReset(reason);
 }
 
 void MCSClient::NotifyMessageSendStatus(
