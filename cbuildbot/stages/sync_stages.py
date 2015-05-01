@@ -9,6 +9,7 @@ from __future__ import print_function
 import ConfigParser
 import contextlib
 import datetime
+import itertools
 import os
 import shutil
 import sys
@@ -1249,17 +1250,16 @@ class PreCQLauncherStage(SyncStage):
       logging.error('%s has malformed config file', change, exc_info=True)
     return bool(result and result.lower() == 'yes')
 
-
-  def LaunchTrybot(self, plan, config):
+  def LaunchTrybot(self, plan, configs):
     """Launch a Pre-CQ run with the provided list of CLs.
 
     Args:
       pool: ValidationPool corresponding to |plan|.
       plan: The list of patches to test in the pre-cq tryjob.
-      config: The pre-cq config name to launch.
+      configs: A list of pre-cq config names to launch.
     """
-    cmd = ['cbuildbot', '--remote', config,
-           '--timeout', str(self.INFLIGHT_TIMEOUT * 60)]
+    cmd = ['cbuildbot', '--remote',
+           '--timeout', str(self.INFLIGHT_TIMEOUT * 60)] + configs
     for patch in plan:
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
       self._PrintPatchStatus(patch, 'testing')
@@ -1267,13 +1267,13 @@ class PreCQLauncherStage(SyncStage):
       logging.debug('Would have launched tryjob with %s', cmd)
     else:
       cros_build_lib.RunCommand(cmd, cwd=self._build_root)
+
     build_id, db = self._run.GetCIDBHandle()
     actions = [
         clactions.CLAction.FromGerritPatchAndAction(
             patch, constants.CL_ACTION_TRYBOT_LAUNCHING, config)
-        for patch in plan]
+        for patch, config in itertools.product(plan, configs)]
     db.InsertCLActions(build_id, actions)
-
 
   def GetDisjointTransactionsToTest(self, pool, progress_map):
     """Get the list of disjoint transactions to test.
@@ -1543,20 +1543,23 @@ class PreCQLauncherStage(SyncStage):
     launch_count = 0
     launch_count_limit = (self.last_cycle_launch_count +
                           self.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
+    launches = {}
     for plan, config in self.GetDisjointTransactionsToTest(
         pool, launchable_progress_map):
-      if is_tree_open:
-        if launch_count < launch_count_limit:
-          self.LaunchTrybot(plan, config)
-          launch_count += 1
-        else:
-          logging.info('Hit maximum launch count of %s this cycle, not '
-                       'launching config %s for plan %s.',
-                       launch_count_limit, config,
-                       cros_patch.GetChangesAsString(plan))
+      launches.setdefault(frozenset(plan), []).append(config)
+
+    for plan, configs in launches.iteritems():
+      if not is_tree_open:
+        logging.info('Tree is closed, not launching configs %r for plan %s.',
+                     configs, cros_patch.GetChangesAsString(plan))
+      elif launch_count >= launch_count_limit:
+        logging.info('Hit or exceeded maximum launch count of %s this cycle, '
+                     'not launching configs %r for plan %s.',
+                     launch_count_limit, configs,
+                     cros_patch.GetChangesAsString(plan))
       else:
-        logging.info('Tree is closed, not launching config %s for plan %s.',
-                     config, cros_patch.GetChangesAsString(plan))
+        self.LaunchTrybot(plan, configs)
+        launch_count += len(configs)
 
     graphite.StatsFactory.GetInstance().Counter('precq').increment(
         subname='launch_count', delta=launch_count)
