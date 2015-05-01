@@ -12,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -101,11 +102,10 @@ void InspectableViewsFinder::GetViewsForExtensionForProfile(
     ViewList* result) {
   ProcessManager* process_manager = ProcessManager::Get(profile);
   // Get the extension process's active views.
-  GetViewsForExtensionProcess(
-      extension,
-      process_manager->GetRenderFrameHostsForExtension(extension.id()),
-      is_incognito,
-      result);
+  GetViewsForExtensionProcess(extension,
+                              process_manager,
+                              is_incognito,
+                              result);
   // Get app window views, if not incognito.
   if (!is_incognito)
     GetAppWindowViewsForExtension(extension, result);
@@ -124,9 +124,11 @@ void InspectableViewsFinder::GetViewsForExtensionForProfile(
 
 void InspectableViewsFinder::GetViewsForExtensionProcess(
     const Extension& extension,
-    const std::set<content::RenderFrameHost*>& hosts,
+    ProcessManager* process_manager,
     bool is_incognito,
     ViewList* result) {
+  const std::set<content::RenderFrameHost*>& hosts =
+      process_manager->GetRenderFrameHostsForExtension(extension.id());
   for (content::RenderFrameHost* host : hosts) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(host);
@@ -136,7 +138,16 @@ void InspectableViewsFinder::GetViewsForExtensionProcess(
       continue;
     }
 
-    const GURL& url = web_contents->GetURL();
+    GURL url = web_contents->GetURL();
+    // If this is a background page that just opened, there might not be a
+    // committed (or visible) url yet. In this case, use the initial url.
+    if (url.is_empty()) {
+      ExtensionHost* extension_host =
+          process_manager->GetExtensionHostForRenderFrameHost(host);
+      if (extension_host)
+        url = extension_host->initial_url();
+    }
+
     content::RenderProcessHost* process = host->GetProcess();
     result->push_back(ConstructView(
         url,

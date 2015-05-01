@@ -414,6 +414,17 @@ ExtensionHost* ProcessManager::GetBackgroundHostForExtension(
   return nullptr;
 }
 
+ExtensionHost* ProcessManager::GetExtensionHostForRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  for (ExtensionHost* extension_host : background_hosts_) {
+    if (extension_host->host_contents() == web_contents)
+      return extension_host;
+  }
+  return nullptr;
+}
+
 bool ProcessManager::IsEventPageSuspended(const std::string& extension_id) {
   return GetBackgroundHostForExtension(extension_id) == nullptr;
 }

@@ -60,6 +60,7 @@ class ExtensionHost : public DeferredStartRenderHost,
   content::RenderViewHost* render_view_host() const;
   content::RenderProcessHost* render_process_host() const;
   bool has_loaded_once() const { return has_loaded_once_; }
+  const GURL& initial_url() const { return initial_url_; }
   bool document_element_available() const {
     return document_element_available_;
   }
