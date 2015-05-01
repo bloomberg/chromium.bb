@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/observer_list.h"
+#include "content/browser/android/in_process/context_provider_in_process.h"
 #include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
@@ -18,7 +19,6 @@
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_stub.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
 
 using cc_blink::ContextProviderWebContext;
 using gpu_blink::WebGraphicsContext3DImpl;
@@ -176,8 +176,8 @@ SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
     const std::string& debug_name) {
   ContextHolder holder = CreateContextHolder(
       attributes, nullptr, gpu::GLInProcessContextSharedMemoryLimits(), true);
-  return webkit::gpu::ContextProviderInProcess::Create(
-      holder.command_buffer.Pass(), debug_name);
+  return ContextProviderInProcess::Create(holder.command_buffer.Pass(),
+                                          debug_name);
 }
 
 scoped_refptr<cc::ContextProvider>
@@ -189,8 +189,8 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor() {
   mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
   ContextHolder holder =
       CreateContextHolder(attributes, nullptr, mem_limits, true);
-  return webkit::gpu::ContextProviderInProcess::Create(
-      holder.command_buffer.Pass(), "Child-Compositor");
+  return ContextProviderInProcess::Create(holder.command_buffer.Pass(),
+                                          "Child-Compositor");
 }
 
 scoped_refptr<StreamTextureFactory>
@@ -268,8 +268,8 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
         CreateContextHolder(attributes, service_,
                             gpu::GLInProcessContextSharedMemoryLimits(), false);
     video_context_provider_ = new VideoContextProvider(
-        webkit::gpu::ContextProviderInProcess::Create(
-            holder.command_buffer.Pass(), "Video-Offscreen-main-thread"),
+        ContextProviderInProcess::Create(holder.command_buffer.Pass(),
+                                         "Video-Offscreen-main-thread"),
         holder.gl_in_process_context);
   }
   return video_context_provider_;

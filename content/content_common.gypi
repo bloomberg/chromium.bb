@@ -290,6 +290,8 @@
       'common/gpu/client/gpu_video_decode_accelerator_host.h',
       'common/gpu/client/gpu_video_encode_accelerator_host.cc',
       'common/gpu/client/gpu_video_encode_accelerator_host.h',
+      'common/gpu/client/grcontext_for_webgraphicscontext3d.cc',
+      'common/gpu/client/grcontext_for_webgraphicscontext3d.h',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.cc',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.h',
       'common/gpu/gpu_channel.cc',
@@ -602,7 +604,6 @@
         '../third_party/mojo/mojo_public.gyp:mojo_application_bindings',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../ui/gl/gl.gyp:gl',
-        '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
       ],
       'export_dependent_settings' : [
         '../third_party/mojo/mojo_public.gyp:mojo_application_bindings',

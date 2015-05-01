@@ -293,7 +293,6 @@ source_set("browser") {
   # android, chromeos, linux and use_dbus.
   if (is_android) {
     sources -= [ "geolocation/wifi_data_provider_common.cc" ]
-    deps += [ "//webkit/common/gpu" ]
   }
   if (is_chromeos || (is_linux && !use_dbus)) {
     sources -= [ "geolocation/wifi_data_provider_linux.cc" ]

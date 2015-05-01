@@ -186,7 +186,6 @@ source_set("common") {
       "//third_party/mojo/src/mojo/edk/system",
       "//third_party/mojo/src/mojo/public/interfaces/application",
       "//ui/gl",
-      "//webkit/common/gpu",
     ]
   }
 

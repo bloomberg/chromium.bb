@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/gpu/context_provider_in_process.h"
+#include "content/browser/android/in_process/context_provider_in_process.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/managed_memory_policy.h"
+#include "content/common/gpu/client/grcontext_for_webgraphicscontext3d.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
 using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
 
-namespace webkit {
-namespace gpu {
+namespace content {
 
 class ContextProviderInProcess::LostContextCallbackProxy
     : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
@@ -224,5 +223,4 @@ void ContextProviderInProcess::SetMemoryPolicyChangedCallback(
   // There's no memory manager for the in-process implementation.
 }
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace content

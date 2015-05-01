@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
+#include "content/common/gpu/client/grcontext_for_webgraphicscontext3d.h"
 
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
@@ -13,8 +13,7 @@
 
 using gpu_blink::WebGraphicsContext3DImpl;
 
-namespace webkit {
-namespace gpu {
+namespace content {
 
 namespace {
 
@@ -88,5 +87,4 @@ void GrContextForWebGraphicsContext3D::FreeGpuResources() {
   }
 }
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace content

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
-#define WEBKIT_COMMON_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
+#ifndef CONTENT_COMMON_GPU_CLIENT_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
+#define CONTENT_COMMON_GPU_CLIENT_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "skia/ext/refptr.h"
-#include "webkit/common/gpu/webkit_gpu_export.h"
 
 class GrContext;
 
@@ -15,13 +14,12 @@ namespace gpu_blink {
 class WebGraphicsContext3DImpl;
 }
 
-namespace webkit {
-namespace gpu {
+namespace content {
 
 // This class binds an offscreen GrContext to an offscreen context3d. The
 // context3d is used by the GrContext so must be valid as long as this class
 // is alive.
-class WEBKIT_GPU_EXPORT GrContextForWebGraphicsContext3D {
+class GrContextForWebGraphicsContext3D {
  public:
   explicit GrContextForWebGraphicsContext3D(
       gpu_blink::WebGraphicsContext3DImpl* context3d);
@@ -38,7 +36,6 @@ class WEBKIT_GPU_EXPORT GrContextForWebGraphicsContext3D {
   DISALLOW_COPY_AND_ASSIGN(GrContextForWebGraphicsContext3D);
 };
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace content
 
-#endif  // WEBKIT_COMMON_GPU_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_
+#endif  // CONTENT_COMMON_GPU_CLIENT_GRCONTEXT_FOR_WEBGRAPHICSCONTEXT3D_H_

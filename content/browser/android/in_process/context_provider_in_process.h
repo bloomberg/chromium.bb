@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
-#define WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
+#ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_CONTEXT_PROVIDER_IN_PROCESS_H_
+#define CONTENT_BROWSER_ANDROID_IN_PROCESS_CONTEXT_PROVIDER_IN_PROCESS_H_
 
 #include <string>
 
@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/blink/context_provider_web_context.h"
-#include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace blink { class WebGraphicsContext3D; }
 
@@ -20,11 +19,11 @@ namespace gpu_blink {
 class WebGraphicsContext3DInProcessCommandBufferImpl;
 }
 
-namespace webkit {
-namespace gpu {
+namespace content {
+
 class GrContextForWebGraphicsContext3D;
 
-class WEBKIT_GPU_EXPORT ContextProviderInProcess
+class ContextProviderInProcess
     : NON_EXPORTED_BASE(public cc_blink::ContextProviderWebContext) {
  public:
   static scoped_refptr<ContextProviderInProcess> Create(
@@ -90,7 +89,6 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   DISALLOW_COPY_AND_ASSIGN(ContextProviderInProcess);
 };
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace content
 
-#endif  // WEBKIT_COMMON_GPU_CONTEXT_PROVIDER_IN_PROCESS_H_
+#endif  // CONTENT_BROWSER_ANDROID_IN_PROCESS_CONTEXT_PROVIDER_IN_PROCESS_H_
