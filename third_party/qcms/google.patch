@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..208ebee 100644
+index 36b7011..980f86b 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -34,21 +34,83 @@ index 36b7011..208ebee 100644
         // Compare with our tolerance
         for (i = 0; i < 3; ++i) {
             if (!(((sum[i] - tolerance[i]) <= target[i]) &&
-@@ -331,6 +340,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
+@@ -331,6 +340,8 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
  #define TAG_A2B0 0x41324230
  #define TAG_B2A0 0x42324130
  #define TAG_CHAD 0x63686164
 +#define TAG_desc 0x64657363
++#define TAG_vcgt 0x76636774
  
  static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
  {
-@@ -344,6 +354,152 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
+@@ -344,6 +355,213 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
  	return tag;
  }
  
 +#define DESC_TYPE 0x64657363 // 'desc'
 +#define MLUC_TYPE 0x6d6c7563 // 'mluc'
 +#define MMOD_TYPE 0x6D6D6F64 // 'mmod'
++#define VCGT_TYPE 0x76636774 // 'vcgt'
++
++// Check unsigned short is the same as uint16_t.
++typedef char assert_short_not_16b[(sizeof(uint16_t) == sizeof(unsigned short)) ? 1 : -1];
++
++qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struct tag_index index) {
++	size_t tag_offset = find_tag(index, TAG_vcgt)->offset;
++	uint32_t tag_type = read_u32(src, tag_offset);
++	uint32_t vcgt_type = read_u32(src, tag_offset + 8);
++	uint16_t channels = read_u16(src, tag_offset + 12);
++	uint16_t elements = read_u16(src, tag_offset + 14);
++	uint16_t byte_depth = read_u16(src, tag_offset + 16);
++	size_t table_offset = tag_offset + 18;
++	int c, i;
++	uint16_t *dest;
++
++	if (!src->valid || tag_type != VCGT_TYPE)
++		goto invalid_vcgt_tag;
++
++	// Only support 3 channels.
++	if (channels != 3)
++		return true;
++	// Only support single or double byte values.
++	if (byte_depth != 1 && byte_depth != 2)
++		return true;
++	// Only support table data, not equation.
++	if (vcgt_type != 0)
++		return true;
++
++	// Empty table is invalid.
++	if (!elements)
++		goto invalid_vcgt_tag;
++
++	profile->vcgt.length = elements;
++	profile->vcgt.data = malloc(3 * elements * sizeof(uint16_t));
++	if (!profile->vcgt.data)
++		return false;
++
++	dest = profile->vcgt.data;
++
++	for (c = 0; c < 3; c++) {
++		for (i = 0; i < elements; i++) {
++			if (byte_depth == 1) {
++				*dest++ = read_u8(src, table_offset) * 256;
++			} else {
++				*dest++ = read_u16(src, table_offset);
++			}
++
++			table_offset += byte_depth;
++
++			if (!src->valid)
++				goto invalid_vcgt_tag;
++		}
++	}
++
++	return true;
++
++invalid_vcgt_tag:
++	invalid_source(src, "invalid vcgt tag");
++	return false;
++}
 +
 +static bool read_tag_descType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
 +{
@@ -195,7 +257,7 @@ index 36b7011..208ebee 100644
  #define XYZ_TYPE		0x58595a20 // 'XYZ '
  #define CURVE_TYPE		0x63757276 // 'curv'
  #define PARAMETRIC_CURVE_TYPE	0x70617261 // 'para'
-@@ -402,7 +558,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
+@@ -402,7 +620,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
  // present that are not part of the tag_index.
  static struct curveType *read_curveType(struct mem_source *src, uint32_t offset, uint32_t *len)
  {
@@ -204,7 +266,7 @@ index 36b7011..208ebee 100644
  	struct curveType *curve = NULL;
  	uint32_t type = read_u32(src, offset);
  	uint32_t count;
-@@ -484,19 +640,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
+@@ -484,19 +702,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
  	uint32_t channel_offset = 0;
  	int i;
  	for (i = 0; i < num_channels; i++) {
@@ -230,7 +292,7 @@ index 36b7011..208ebee 100644
  }
  
  static void mAB_release(struct lutmABType *lut)
-@@ -540,7 +700,7 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
+@@ -540,7 +762,7 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
  	// We require 3in/out channels since we only support RGB->XYZ (or RGB->LAB)
  	// XXX: If we remove this restriction make sure that the number of channels
  	//      is less or equal to the maximum number of mAB curves in qcmsint.h
@@ -239,7 +301,7 @@ index 36b7011..208ebee 100644
  	if (num_in_channels != 3 || num_out_channels != 3)
  		return NULL;
  
-@@ -570,6 +730,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
+@@ -570,6 +792,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
  		// clut_size can not overflow since lg(256^num_in_channels) = 24 bits.
  		for (i = 0; i < num_in_channels; i++) {
  			clut_size *= read_u8(src, clut_offset + i);
@@ -249,7 +311,7 @@ index 36b7011..208ebee 100644
  		}
  	} else {
  		clut_size = 0;
-@@ -590,6 +753,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
+@@ -590,6 +815,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
  
  	for (i = 0; i < num_in_channels; i++) {
  		lut->num_grid_points[i] = read_u8(src, clut_offset + i);
@@ -259,7 +321,7 @@ index 36b7011..208ebee 100644
  	}
  
  	// Reverse the processing of transformation elements for mBA type.
-@@ -657,7 +823,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -657,7 +885,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  	uint16_t num_input_table_entries;
  	uint16_t num_output_table_entries;
  	uint8_t in_chan, grid_points, out_chan;
@@ -268,7 +330,7 @@ index 36b7011..208ebee 100644
  	uint32_t clut_size;
  	size_t entry_size;
  	struct lutType *lut;
-@@ -672,6 +838,10 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -672,6 +900,10 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  	} else if (type == LUT16_TYPE) {
  		num_input_table_entries  = read_u16(src, offset + 48);
  		num_output_table_entries = read_u16(src, offset + 50);
@@ -279,7 +341,7 @@ index 36b7011..208ebee 100644
  		entry_size = 2;
  	} else {
  		assert(0); // the caller checks that this doesn't happen
-@@ -685,15 +855,18 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -685,15 +917,18 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  
  	clut_size = pow(grid_points, in_chan);
  	if (clut_size > MAX_CLUT_SIZE) {
@@ -298,7 +360,7 @@ index 36b7011..208ebee 100644
  		return NULL;
  	}
  
-@@ -704,9 +877,9 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -704,9 +939,9 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  
  	lut->num_input_table_entries  = num_input_table_entries;
  	lut->num_output_table_entries = num_output_table_entries;
@@ -311,7 +373,7 @@ index 36b7011..208ebee 100644
  	lut->e00 = read_s15Fixed16Number(src, offset+12);
  	lut->e01 = read_s15Fixed16Number(src, offset+16);
  	lut->e02 = read_s15Fixed16Number(src, offset+20);
-@@ -979,6 +1152,9 @@ qcms_profile* qcms_profile_sRGB(void)
+@@ -979,11 +1214,13 @@ qcms_profile* qcms_profile_sRGB(void)
  		return NO_MEM_PROFILE;
  
  	profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024);
@@ -321,7 +383,12 @@ index 36b7011..208ebee 100644
  	free(table);
  	return profile;
  }
-@@ -997,6 +1173,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+ 
+-
+ /* qcms_profile_from_memory does not hold a reference to the memory passed in */
+ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+ {
+@@ -997,6 +1234,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	source.size = size;
  	source.valid = true;
  
@@ -331,7 +398,7 @@ index 36b7011..208ebee 100644
  	length = read_u32(src, 0);
  	if (length <= size) {
  		// shrink the area that we can read if appropriate
-@@ -1028,6 +1207,15 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+@@ -1028,12 +1268,26 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	if (!src->valid || !index.tags)
  		goto invalid_tag_table;
  
@@ -347,7 +414,18 @@ index 36b7011..208ebee 100644
  	if (find_tag(index, TAG_CHAD)) {
  		profile->chromaticAdaption = read_tag_s15Fixed16ArrayType(src, index, TAG_CHAD);
  	} else {
-@@ -1098,6 +1286,16 @@ invalid_profile:
+ 		profile->chromaticAdaption.invalid = true; //Signal the data is not present
+ 	}
+ 
++	if (find_tag(index, TAG_vcgt)) {
++		if (!read_tag_vcgtType(profile, src, index))
++			goto invalid_tag_table;
++	}
++
+ 	if (profile->class == DISPLAY_DEVICE_PROFILE || profile->class == INPUT_DEVICE_PROFILE ||
+             profile->class == OUTPUT_DEVICE_PROFILE  || profile->class == COLOR_SPACE_PROFILE) {
+ 		if (profile->color_space == RGB_SIGNATURE) {
+@@ -1098,6 +1352,16 @@ invalid_profile:
  	return INVALID_PROFILE;
  }
  
@@ -364,8 +442,37 @@ index 36b7011..208ebee 100644
  qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
  {
  	return profile->rendering_intent;
+@@ -1114,6 +1378,18 @@ static void lut_release(struct lutType *lut)
+ 	free(lut);
+ }
+ 
++size_t qcms_profile_get_vcgt_channel_length(qcms_profile *profile) {
++	return profile->vcgt.length;
++}
++
++qcms_bool qcms_profile_get_vcgt_rgb_channels(qcms_profile *profile, unsigned short *data) {
++	size_t vcgt_channel_bytes = qcms_profile_get_vcgt_channel_length(profile) * sizeof(uint16_t);
++	if (!vcgt_channel_bytes || !data)
++		return false;
++	memcpy(data, profile->vcgt.data, 3 * vcgt_channel_bytes);
++	return true;
++}
++
+ void qcms_profile_release(qcms_profile *profile)
+ {
+ 	if (profile->output_table_r)
+@@ -1133,6 +1409,9 @@ void qcms_profile_release(qcms_profile *profile)
+ 	if (profile->mBA)
+ 		mAB_release(profile->mBA);
+ 
++	if (profile->vcgt.data)
++		free(profile->vcgt.data);
++
+ 	free(profile->redTRC);
+ 	free(profile->blueTRC);
+ 	free(profile->greenTRC);
 diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
-index 7d83623..e9c0b09 100644
+index 7d83623..be74717 100644
 --- a/third_party/qcms/src/qcms.h
 +++ b/third_party/qcms/src/qcms.h
 @@ -40,6 +40,12 @@ sale, use or other dealings in this Software without written
@@ -394,7 +501,7 @@ index 7d83623..e9c0b09 100644
  /* the names for the following two types are sort of ugly */
  typedef struct
  {
-@@ -136,6 +148,9 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile);
+@@ -136,16 +148,27 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile);
  qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile);
  icColorSpaceSignature qcms_profile_get_color_space(qcms_profile *profile);
  
@@ -403,8 +510,11 @@ index 7d83623..e9c0b09 100644
 +
  void qcms_profile_precache_output_transform(qcms_profile *profile);
  
++size_t qcms_profile_get_vcgt_channel_length(qcms_profile *profile);
++qcms_bool qcms_profile_get_vcgt_rgb_channels(qcms_profile *profile, unsigned short *data);
++
  qcms_transform* qcms_transform_create(
-@@ -143,9 +158,14 @@ qcms_transform* qcms_transform_create(
+ 		qcms_profile *in, qcms_data_type in_type,
  		qcms_profile* out, qcms_data_type out_type,
  		qcms_intent intent);
  
@@ -421,7 +531,7 @@ index 7d83623..e9c0b09 100644
  void qcms_enable_iccv4();
  
 diff --git a/third_party/qcms/src/qcmsint.h b/third_party/qcms/src/qcmsint.h
-index 53a3420..4116ed5 100644
+index 53a3420..6b22c5a 100644
 --- a/third_party/qcms/src/qcmsint.h
 +++ b/third_party/qcms/src/qcmsint.h
 @@ -45,6 +45,11 @@ struct precache_output
@@ -445,7 +555,22 @@ index 53a3420..4116ed5 100644
  };
  
  struct matrix {
-@@ -225,6 +230,7 @@ struct tag_value {
+@@ -200,6 +205,14 @@ struct lutType { // used by lut8Type/lut16Type (mft2) only
+ 
+ 	float table_data[];
+ };
++
++struct vcgtType {
++	/* data contains three gamma channels: R[length], then G[length], then
++	 * B[length]. */
++	uint16_t *data;
++	size_t length;
++};
++
+ #if 0
+ /* this is from an intial idea of having the struct correspond to the data in
+  * the file. I decided that it wasn't a good idea.
+@@ -225,6 +238,7 @@ struct tag_value {
  #define LAB_SIGNATURE  0x4C616220
  
  struct _qcms_profile {
@@ -453,7 +578,15 @@ index 53a3420..4116ed5 100644
  	uint32_t class;
  	uint32_t color_space;
  	uint32_t pcs;
-@@ -280,18 +286,40 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
+@@ -241,6 +255,7 @@ struct _qcms_profile {
+ 	struct lutmABType *mAB;
+ 	struct lutmABType *mBA;
+ 	struct matrix chromaticAdaption;
++	struct vcgtType vcgt;
+ 
+ 	struct precache_output *output_table_r;
+ 	struct precache_output *output_table_g;
+@@ -280,18 +295,40 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
  void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
                                            unsigned char *src,
                                            unsigned char *dest,
@@ -1354,7 +1487,7 @@ index 9a6562b..f669a6b 100644
  
  qcms_bool qcms_supports_iccv4;
 diff --git a/third_party/qcms/src/transform_util.c b/third_party/qcms/src/transform_util.c
-index e8447e5..f616c3f 100644
+index e8447e5..5eeafa2 100644
 --- a/third_party/qcms/src/transform_util.c
 +++ b/third_party/qcms/src/transform_util.c
 @@ -36,7 +36,7 @@
@@ -1446,7 +1579,7 @@ index e8447e5..f616c3f 100644
  
          // There are no zeros at the beginning and we are trying to find a zero, so
          // return anything. It seems zero would be the less destructive choice
-@@ -305,22 +323,22 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
+@@ -305,26 +323,37 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
  
          NumPoles = 0;
          while (LutTable[length-1- NumPoles] == 0xFFFF && NumPoles < length-1)
@@ -1456,13 +1589,20 @@ index e8447e5..f616c3f 100644
          // Does the curve belong to this case?
          if (NumZeroes > 1 || NumPoles > 1)
 -        {               
+-                int a, b;
 +        {
-                 int a, b;
++                int a, b, sample;
  
 -                // Identify if value fall downto 0 or FFFF zone             
 +                // Identify if value fall downto 0 or FFFF zone
                  if (Value == 0) return 0;
-                // if (Value == 0xFFFF) return 0xFFFF;
+-               // if (Value == 0xFFFF) return 0xFFFF;
++                // if (Value == 0xFFFF) return 0xFFFF;
++                sample = (length-1) * ((double) Value * (1./65535.));
++                if (LutTable[sample] == 0)
++                    return 0;
++                if (LutTable[sample] == 0xffff)
++                    return 0xffff;
  
                  // else restrict to valid zone
  
@@ -1473,8 +1613,19 @@ index e8447e5..f616c3f 100644
 +
                  l = a - 1;
                  r = b + 1;
-         }
-@@ -332,12 +350,12 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
+-        }
+ 
++                // Ensure a valid binary search range
++
++                if (l < 1)
++                    l = 1;
++                if (r > 0x10000)
++                    r = 0x10000;
++        }
+ 
+         // Seems not a degenerated case... apply binary search
+ 
+@@ -332,12 +361,12 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
  
                  x = (l + r) / 2;
  
@@ -1490,7 +1641,7 @@ index e8447e5..f616c3f 100644
                      return (uint16_fract_t) (x - 1);
                  }
  
-@@ -347,14 +365,14 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
+@@ -347,14 +376,14 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
  
          // Not found, should we interpolate?
  
@@ -1508,7 +1659,7 @@ index e8447e5..f616c3f 100644
          if (cell0 == cell1) return (uint16_fract_t) x;
  
          y0 = LutTable[cell0] ;
-@@ -373,8 +391,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
+@@ -373,8 +402,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
          if (f < 0.0) return (uint16_fract_t) 0;
          if (f >= 65535.0) return (uint16_fract_t) 0xFFFF;
  
@@ -1518,7 +1669,7 @@ index e8447e5..f616c3f 100644
  }
  
  /*
-@@ -390,7 +407,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
+@@ -390,7 +418,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
   which has an maximum error of about 9855 (pixel difference of ~38.346)
  
   For now, we punt the decision of output size to the caller. */

@@ -205,6 +205,14 @@ struct lutType { // used by lut8Type/lut16Type (mft2) only
 
 	float table_data[];
 };
+
+struct vcgtType {
+	/* data contains three gamma channels: R[length], then G[length], then
+	 * B[length]. */
+	uint16_t *data;
+	size_t length;
+};
+
 #if 0
 /* this is from an intial idea of having the struct correspond to the data in
  * the file. I decided that it wasn't a good idea.
@@ -247,6 +255,7 @@ struct _qcms_profile {
 	struct lutmABType *mAB;
 	struct lutmABType *mBA;
 	struct matrix chromaticAdaption;
+	struct vcgtType vcgt;
 
 	struct precache_output *output_table_r;
 	struct precache_output *output_table_g;

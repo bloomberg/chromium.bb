@@ -341,6 +341,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
 #define TAG_B2A0 0x42324130
 #define TAG_CHAD 0x63686164
 #define TAG_desc 0x64657363
+#define TAG_vcgt 0x76636774
 
 static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 {
@@ -357,6 +358,67 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
 #define DESC_TYPE 0x64657363 // 'desc'
 #define MLUC_TYPE 0x6d6c7563 // 'mluc'
 #define MMOD_TYPE 0x6D6D6F64 // 'mmod'
+#define VCGT_TYPE 0x76636774 // 'vcgt'
+
+// Check unsigned short is uint16_t.
+typedef char assert_short_not_16b[(sizeof(unsigned short) == sizeof(uint16_t)) ? 1 : -1];
+
+qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struct tag_index index) {
+	size_t tag_offset = find_tag(index, TAG_vcgt)->offset;
+	uint32_t tag_type = read_u32(src, tag_offset);
+	uint32_t vcgt_type = read_u32(src, tag_offset + 8);
+	uint16_t channels = read_u16(src, tag_offset + 12);
+	uint16_t elements = read_u16(src, tag_offset + 14);
+	uint16_t byte_depth = read_u16(src, tag_offset + 16);
+	size_t table_offset = tag_offset + 18;
+	int c, i;
+	uint16_t *dest;
+
+	if (!src->valid || tag_type != VCGT_TYPE)
+		goto invalid_vcgt_tag;
+
+	// Only support 3 channels.
+	if (channels != 3)
+		return true;
+	// Only support single or double byte values.
+	if (byte_depth != 1 && byte_depth != 2)
+		return true;
+	// Only support table data, not equation.
+	if (vcgt_type != 0)
+		return true;
+
+	// Empty table is invalid.
+	if (!elements)
+		goto invalid_vcgt_tag;
+
+	profile->vcgt.length = elements;
+	profile->vcgt.data = malloc(3 * elements * sizeof(uint16_t));
+	if (!profile->vcgt.data)
+		return false;
+
+	dest = profile->vcgt.data;
+
+	for (c = 0; c < 3; c++) {
+		for (i = 0; i < elements; i++) {
+			if (byte_depth == 1) {
+				*dest++ = read_u8(src, table_offset) * 256;
+			} else {
+				*dest++ = read_u16(src, table_offset);
+			}
+
+			table_offset += byte_depth;
+
+			if (!src->valid)
+				goto invalid_vcgt_tag;
+		}
+	}
+
+	return true;
+
+invalid_vcgt_tag:
+	invalid_source(src, "invalid vcgt tag");
+	return false;
+}
 
 static bool read_tag_descType(qcms_profile *profile, struct mem_source *src, struct tag_index index, uint32_t tag_id)
 {
@@ -1159,7 +1221,6 @@ qcms_profile* qcms_profile_sRGB(void)
 	return profile;
 }
 
-
 /* qcms_profile_from_memory does not hold a reference to the memory passed in */
 qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 {
@@ -1220,6 +1281,11 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
 		profile->chromaticAdaption = read_tag_s15Fixed16ArrayType(src, index, TAG_CHAD);
 	} else {
 		profile->chromaticAdaption.invalid = true; //Signal the data is not present
+	}
+
+	if (find_tag(index, TAG_vcgt)) {
+		if (!read_tag_vcgtType(profile, src, index))
+			goto invalid_tag_table;
 	}
 
 	if (profile->class == DISPLAY_DEVICE_PROFILE || profile->class == INPUT_DEVICE_PROFILE ||
@@ -1312,6 +1378,18 @@ static void lut_release(struct lutType *lut)
 	free(lut);
 }
 
+size_t qcms_profile_get_vcgt_channel_length(qcms_profile *profile) {
+	return profile->vcgt.length;
+}
+
+qcms_bool qcms_profile_get_vcgt_rgb_channels(qcms_profile *profile, unsigned short *data) {
+	size_t vcgt_channel_bytes = qcms_profile_get_vcgt_channel_length(profile) * sizeof(uint16_t);
+	if (!vcgt_channel_bytes || !data)
+		return false;
+	memcpy(data, profile->vcgt.data, 3 * vcgt_channel_bytes);
+	return true;
+}
+
 void qcms_profile_release(qcms_profile *profile)
 {
 	if (profile->output_table_r)
@@ -1330,6 +1408,9 @@ void qcms_profile_release(qcms_profile *profile)
 		mAB_release(profile->mAB);
 	if (profile->mBA)
 		mAB_release(profile->mBA);
+
+	if (profile->vcgt.data)
+		free(profile->vcgt.data);
 
 	free(profile->redTRC);
 	free(profile->blueTRC);
