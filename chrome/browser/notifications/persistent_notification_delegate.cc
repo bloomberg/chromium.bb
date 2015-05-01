@@ -22,7 +22,12 @@ PersistentNotificationDelegate::~PersistentNotificationDelegate() {}
 
 void PersistentNotificationDelegate::Display() {}
 
-void PersistentNotificationDelegate::Close(bool by_user) {}
+void PersistentNotificationDelegate::Close(bool by_user) {
+  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClose(
+      browser_context_,
+      persistent_notification_id_,
+      origin_);
+}
 
 void PersistentNotificationDelegate::Click() {
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(

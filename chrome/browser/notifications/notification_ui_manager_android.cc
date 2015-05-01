@@ -80,8 +80,20 @@ bool NotificationUIManagerAndroid::OnNotificationClosed(
     jlong persistent_notification_id,
     jstring java_origin,
     jstring java_tag) {
-  // TODO(peter): Implement handling when a notification has been closed. The
-  // notification database has to reflect this in its own state.
+  GURL origin(ConvertJavaStringToUTF8(env, java_origin));
+  std::string tag = ConvertJavaStringToUTF8(env, java_tag);
+
+  // The notification was closed by the platform, so clear all local state.
+  regenerated_notification_infos_.erase(persistent_notification_id);
+
+  // TODO(peter): Rather than assuming that the last used profile is the
+  // appropriate one for this notification, the used profile should be
+  // stored as part of the notification's data. See https://crbug.com/437574.
+  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClose(
+      ProfileManager::GetLastUsedProfile(),
+      persistent_notification_id,
+      origin);
+
   return true;
 }
 

@@ -40,6 +40,15 @@ class PlatformNotificationServiceImpl
       int64_t persistent_notification_id,
       const GURL& origin) const;
 
+  // To be called when a persistent notification has been closed. The data
+  // associated with the notification has to be pruned from the database in this
+  // case, to make sure that it continues to be in sync. Must be called on the
+  // UI thread.
+  void OnPersistentNotificationClose(
+      content::BrowserContext* browser_context,
+      int64_t persistent_notification_id,
+      const GURL& origin) const;
+
   // Returns the Notification UI Manager through which notifications can be
   // displayed to the user. Can be overridden for testing.
   NotificationUIManager* GetNotificationUIManager() const;

@@ -19,6 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "content/public/browser/platform_notification_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/platform_notification_data.h"
 #include "net/base/net_util.h"
 #include "ui/message_center/notifier_settings.h"
@@ -40,10 +42,19 @@
 #include "base/strings/string_number_conversions.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
+using content::PlatformNotificationContext;
 using message_center::NotifierId;
 
 namespace {
+
+// Callback to provide when deleting the data associated with persistent Web
+// Notifications from the notification database.
+void OnPersistentNotificationDataDeleted(bool success) {
+  // TODO(peter): Record UMA for notification deletion requests created by the
+  // PlatformNotificationService.
+}
 
 // Persistent notifications fired through the delegate do not care about the
 // lifetime of the Service Worker responsible for executing the event.
@@ -71,7 +82,7 @@ PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
 
 void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     int64_t persistent_notification_id,
     const GURL& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -83,9 +94,28 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
             base::Bind(&OnEventDispatchComplete));
 }
 
+void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
+    BrowserContext* browser_context,
+    int64_t persistent_notification_id,
+    const GURL& origin) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PlatformNotificationContext* context =
+      BrowserContext::GetStoragePartitionForSite(browser_context, origin)
+          ->GetPlatformNotificationContext();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&PlatformNotificationContext::DeleteNotificationData,
+                 context,
+                 persistent_notification_id,
+                 origin,
+                 base::Bind(&OnPersistentNotificationDataDeleted)));
+}
+
 blink::WebNotificationPermission
 PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     const GURL& origin,
     int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -195,7 +225,7 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
 }
 
 void PlatformNotificationServiceImpl::DisplayNotification(
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     const GURL& origin,
     const SkBitmap& icon,
     const content::PlatformNotificationData& notification_data,
@@ -222,7 +252,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     int64_t persistent_notification_id,
     const GURL& origin,
     const SkBitmap& icon,
@@ -249,7 +279,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
 }
 
 void PlatformNotificationServiceImpl::ClosePersistentNotification(
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     int64_t persistent_notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
