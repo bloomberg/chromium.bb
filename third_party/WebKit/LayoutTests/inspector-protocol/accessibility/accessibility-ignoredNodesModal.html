@@ -1,0 +1,28 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="accessibility-ignoredNodesTest.js"></script>
+<script>
+
+function test()
+{
+    var nodeInfo = {};
+    InspectorTest.trackGetChildNodesEvents(nodeInfo);
+
+    var ids = ["_1", "_2", "_3"];
+    InspectorTest.sendCommand("DOM.getDocument", {}, InspectorTest.dumpAccessibilityNodesByIdrefAndCompleteTest.bind(null, ids));
+}
+</script>
+</head>
+<body onLoad="runTest();">
+    <div id="_1">Hidden by modal dialog</div>
+    <dialog id="_2">
+        (Dialog itself is not hidden)
+        <div id="_3">Non-hidden element inside dialog</div>
+    </dialog>
+    <script>
+       document.querySelector("dialog").showModal();
+    </script>
+</body>
+</html>

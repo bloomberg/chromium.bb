@@ -313,11 +313,13 @@ enum AXIgnoredReason {
     AXAriaHiddenRoot,
     AXEmptyAlt,
     AXEmptyText,
+    AXInert,
     AXInheritsPresentation,
     AXLabelContainer,
     AXLabelFor,
     AXNotRendered,
     AXNotVisible,
+    AXPresentationalRole,
     AXProbablyPresentational,
     AXStaticTextUsedAsNameFor,
     AXUninteresting

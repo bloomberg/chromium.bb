@@ -29,11 +29,12 @@
 #include "config.h"
 #include "modules/accessibility/AXObject.h"
 
-#include "core/dom/NodeTraversal.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLDialogElement.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
@@ -359,6 +360,12 @@ const char* ariaInteractiveWidgetAttributes[] = {
     "aria-selected"
 };
 
+
+HTMLDialogElement* getActiveDialogElement(Node* node)
+{
+    return node->document().activeModalDialog();
+}
+
 } // namespace
 
 AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
@@ -526,8 +533,13 @@ AXObjectInclusion AXObject::defaultObjectInclusion(IgnoredReasons* ignoredReason
         return IgnoreObject;
     }
 
-    if (isPresentationalChild())
+    if (isPresentationalChild()) {
+        if (ignoredReasons) {
+            AXObject* ancestor = ancestorForWhichThisIsAPresentationalChild();
+            ignoredReasons->append(IgnoredReason(AXAncestorDisallowsChild, ancestor));
+        }
         return IgnoreObject;
+    }
 
     return accessibilityPlatformIncludesObject();
 }
@@ -541,8 +553,22 @@ bool AXObject::isInertOrAriaHidden() const
 bool AXObject::computeIsInertOrAriaHidden(IgnoredReasons* ignoredReasons) const
 {
     if (node()) {
-        if (node()->isInert())
+        if (node()->isInert()) {
+            if (ignoredReasons) {
+                HTMLDialogElement* dialog = getActiveDialogElement(node());
+                if (dialog) {
+                    AXObject* dialogObject = axObjectCache()->getOrCreate(dialog);
+                    if (dialogObject)
+                        ignoredReasons->append(IgnoredReason(AXActiveModalDialog, dialogObject));
+                    else
+                        ignoredReasons->append(IgnoredReason(AXInert));
+                } else {
+                    // TODO(aboxhall): handle inert attribute if it eventuates
+                    ignoredReasons->append(IgnoredReason(AXInert));
+                }
+            }
             return true;
+        }
     } else {
         AXObject* parent = parentObject();
         if (parent && parent->isInertOrAriaHidden()) {

@@ -21,13 +21,13 @@ function test()
         }
         var rootNode = msg.result.root;
 
-        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg1" }, onQuerySelector.bind(null, { labelledby: ["h3#rg1_label"], activedescendant: "li#rg1-r4" }));
+        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg1" }, onQuerySelector);
         numPendingQuerySelectors++;
-        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg2" }, onQuerySelector.bind(null, { labelledby: ["h3#rg2_label"], activedescendant: null }));
+        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg2" }, onQuerySelector);
         numPendingQuerySelectors++;
     }
 
-    function onQuerySelector(expectation, msg)
+    function onQuerySelector(msg)
     {
         if (msg.error) {
             InspectorTest.log(msg.error.message);

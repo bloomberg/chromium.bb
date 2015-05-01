@@ -17,6 +17,7 @@ Ginger Ale
   "result": {
     "accessibilityNode": {
       "nodeId": "<string>",
+      "ignored": false,
       "role": {
         "type": "role",
         "value": "radiogroup"
@@ -68,6 +69,7 @@ Ginger Ale
   "result": {
     "accessibilityNode": {
       "nodeId": "<string>",
+      "ignored": false,
       "role": {
         "type": "role",
         "value": "radiogroup"

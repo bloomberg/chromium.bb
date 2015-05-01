@@ -1,0 +1,57 @@
+Hidden by modal dialog
+(Dialog itself is not hidden)
+Non-hidden element inside dialog
+#_1: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "ignoredReasons": [
+        {
+          "name": "activeModalDialog",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>",
+              "idref": "_2"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_2: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "dialog"
+      },
+      "properties": []
+    }
+  }
+}
+#_3: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "properties": []
+    }
+  }
+}
+

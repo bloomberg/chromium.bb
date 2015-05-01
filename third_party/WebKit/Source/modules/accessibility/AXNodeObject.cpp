@@ -167,15 +167,33 @@ bool AXNodeObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons)
 #endif
 
     // If this element is within a parent that cannot have children, it should not be exposed.
-    if (isDescendantOfLeafNode())
+    if (isDescendantOfLeafNode()) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXAncestorIsLeafNode, leafNodeAncestor()));
         return true;
+    }
 
     // Ignore labels that are already referenced by a control's title UI element.
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio())
-        return true;
+    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio()) {
+        if (ignoredReasons) {
+            HTMLLabelElement* label = labelElementContainer();
+            if (label && !label->isSameNode(node())) {
+                AXObject* labelAXObject = axObjectCache()->getOrCreate(label);
+                ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
+            }
 
-    return m_role == UnknownRole;
+            ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+        }
+        return true;
+    }
+
+    if (m_role == UnknownRole) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXUninteresting));
+        return true;
+    }
+    return false;
 }
 
 static bool isListElement(Node* node)

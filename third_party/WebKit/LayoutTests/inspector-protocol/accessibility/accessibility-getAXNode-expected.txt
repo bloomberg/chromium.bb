@@ -2,6 +2,7 @@
 result: {
   "accessibilityNode": {
     "nodeId": "3",
+    "ignored": false,
     "role": {
       "type": "role",
       "value": "textbox"

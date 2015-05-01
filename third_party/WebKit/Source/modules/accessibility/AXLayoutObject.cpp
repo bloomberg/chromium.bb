@@ -468,14 +468,19 @@ AXObjectInclusion AXLayoutObject::defaultObjectInclusion(IgnoredReasons* ignored
 {
     // The following cases can apply to any element that's a subclass of AXLayoutObject.
 
-    if (!m_layoutObject)
+    if (!m_layoutObject) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXNotRendered));
         return IgnoreObject;
+    }
 
     if (m_layoutObject->style()->visibility() != VISIBLE) {
         // aria-hidden is meant to override visibility as the determinant in AX hierarchy inclusion.
         if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "false"))
             return DefaultBehavior;
 
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXNotVisible));
         return IgnoreObject;
     }
 
@@ -497,49 +502,75 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (decision == IgnoreObject)
         return true;
 
-    // If this element is within a parent that cannot have children, it should not be exposed.
-    if (isDescendantOfLeafNode())
+    // If this element is within a parent that cannot have children, it should not be exposed
+    if (isDescendantOfLeafNode()) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXAncestorIsLeafNode, leafNodeAncestor()));
         return true;
+    }
 
-    if (roleValue() == IgnoredRole)
+    if (roleValue() == IgnoredRole) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXUninteresting));
         return true;
+    }
 
-    if (hasInheritedPresentationalRole())
+    if (hasInheritedPresentationalRole()) {
+        if (ignoredReasons) {
+            const AXObject* inheritsFrom = inheritsPresentationalRoleFrom();
+            if (inheritsFrom == this)
+                ignoredReasons->append(IgnoredReason(AXPresentationalRole));
+            else
+                ignoredReasons->append(IgnoredReason(AXInheritsPresentation, inheritsFrom));
+        }
         return true;
+    }
 
     // An ARIA tree can only have tree items and static text as children.
-    if (treeAncestorDisallowingChild())
+    if (AXObject* treeAncestor = treeAncestorDisallowingChild()) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXAncestorDisallowsChild, treeAncestor));
         return true;
+    }
 
     // TODO: we should refactor this - but right now this is necessary to make
     // sure scroll areas stay in the tree.
     if (isAttachment())
         return false;
 
-    // ignore popup menu items because AppKit does
-    for (LayoutObject* parent = m_layoutObject->parent(); parent; parent = parent->parent()) {
-        if (parent->isBoxModelObject() && toLayoutBoxModelObject(parent)->isMenuList())
-            return true;
-    }
-
     // find out if this element is inside of a label element.
     // if so, it may be ignored because it's the label for a checkbox or radio button
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio())
+    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio()) {
+        if (ignoredReasons) {
+            HTMLLabelElement* label = labelElementContainer();
+            if (label && !label->isSameNode(node())) {
+                AXObject* labelAXObject = axObjectCache()->getOrCreate(label);
+                ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
+            }
+
+            ignoredReasons->append(IgnoredReason(AXLabelFor, controlObject));
+        }
         return true;
+    }
 
     if (m_layoutObject->isBR())
         return false;
 
-    // NOTE: BRs always have text boxes now, so the text box check here can be removed
     if (m_layoutObject->isText()) {
         // static text beneath MenuItems and MenuButtons are just reported along with the menu item, so it's ignored on an individual level
         AXObject* parent = parentObjectUnignored();
-        if (parent && (parent->ariaRoleAttribute() == MenuItemRole || parent->ariaRoleAttribute() == MenuButtonRole))
+        if (parent && (parent->ariaRoleAttribute() == MenuItemRole || parent->ariaRoleAttribute() == MenuButtonRole)) {
+            if (ignoredReasons)
+                ignoredReasons->append(IgnoredReason(AXStaticTextUsedAsNameFor, parent));
             return true;
+        }
         LayoutText* layoutText = toLayoutText(m_layoutObject);
-        if (m_layoutObject->isBR() || !layoutText->firstTextBox())
+        if (!layoutText->firstTextBox()) {
+            if (ignoredReasons)
+                ignoredReasons->append(IgnoredReason(AXEmptyText));
             return true;
+        }
 
         // Don't ignore static text in editable text controls.
         for (AXObject* parent = parentObject(); parent; parent = parent->parentObject()) {
@@ -549,9 +580,13 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
 
         // text elements that are just empty whitespace should not be returned
         // FIXME(dmazzoni): we probably shouldn't ignore this if the style is 'pre', or similar...
-        return layoutText->text().impl()->containsOnlyWhitespace();
+        if (layoutText->text().impl()->containsOnlyWhitespace()) {
+            if (ignoredReasons)
+                ignoredReasons->append(IgnoredReason(AXEmptyText));
+            return true;
+        }
+        return false;
     }
-
     if (isHeading())
         return false;
 
@@ -617,15 +652,23 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     // objects are often containers with meaningful information, the inclusion of a span can have
     // the side effect of causing the immediate parent accessible to be ignored. This is especially
     // problematic for platforms which have distinct roles for textual block elements.
-    if (isHTMLSpanElement(node))
+    if (isHTMLSpanElement(node)) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXUninteresting));
         return true;
+    }
 
-    if (m_layoutObject->isLayoutBlockFlow() && m_layoutObject->childrenInline() && !canSetFocusAttribute())
-        return !toLayoutBlockFlow(m_layoutObject)->firstLineBox() && !mouseButtonListener();
+    if (m_layoutObject->isLayoutBlockFlow() && m_layoutObject->childrenInline() && !canSetFocusAttribute()) {
+        if (toLayoutBlockFlow(m_layoutObject)->firstLineBox() || mouseButtonListener())
+            return false;
+
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXUninteresting));
+        return true;
+    }
 
     // ignore images seemingly used as spacers
     if (isImage()) {
-
         // If the image can take focus, it should not be ignored, lest the user not be able to interact with something important.
         if (canSetFocusAttribute())
             return false;
@@ -637,20 +680,31 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
             if (!alt.string().containsOnlyWhitespace())
                 return false;
             // informal standard is to ignore images with zero-length alt strings
-            if (!alt.isNull())
+            if (!alt.isNull()) {
+                if (ignoredReasons)
+                    ignoredReasons->append(IgnoredReason(AXEmptyAlt));
                 return true;
+            }
         }
 
         if (isNativeImage() && m_layoutObject->isImage()) {
             // check for one-dimensional image
             LayoutImage* image = toLayoutImage(m_layoutObject);
-            if (image->size().height() <= 1 || image->size().width() <= 1)
+            if (image->size().height() <= 1 || image->size().width() <= 1) {
+                if (ignoredReasons)
+                    ignoredReasons->append(IgnoredReason(AXProbablyPresentational));
                 return true;
+            }
 
             // check whether laid out image was stretched from one-dimensional file image
             if (image->cachedImage()) {
                 LayoutSize imageSize = image->cachedImage()->imageSizeForLayoutObject(m_layoutObject, image->view()->zoomFactor());
-                return imageSize.height() <= 1 || imageSize.width() <= 1;
+                if (imageSize.height() <= 1 || imageSize.width() <= 1) {
+                    if (ignoredReasons)
+                        ignoredReasons->append(IgnoredReason(AXProbablyPresentational));
+                    return true;
+                }
+                return false;
             }
         }
         return false;
@@ -660,8 +714,11 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
         if (canvasHasFallbackContent())
             return false;
         LayoutHTMLCanvas* canvas = toLayoutHTMLCanvas(m_layoutObject);
-        if (canvas->size().height() <= 1 || canvas->size().width() <= 1)
+        if (canvas->size().height() <= 1 || canvas->size().width() <= 1) {
+            if (ignoredReasons)
+                ignoredReasons->append(IgnoredReason(AXProbablyPresentational));
             return true;
+        }
         // Otherwise fall through; use presence of help text, title, or description to decide.
     }
 
@@ -689,6 +746,8 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
 
     // By default, objects should be ignored so that the AX hierarchy is not
     // filled with unnecessary items.
+    if (ignoredReasons)
+        ignoredReasons->append(IgnoredReason(AXUninteresting));
     return true;
 }
 

@@ -556,6 +556,8 @@
       'accessibility/AXTableRow.h',
       'accessibility/InspectorAccessibilityAgent.cpp',
       'accessibility/InspectorAccessibilityAgent.h',
+      'accessibility/InspectorTypeBuilderHelper.cpp',
+      'accessibility/InspectorTypeBuilderHelper.h',
       'app_banner/AppBannerController.cpp',
       'app_banner/AppBannerController.h',
       'app_banner/BeforeInstallPromptEvent.cpp',
