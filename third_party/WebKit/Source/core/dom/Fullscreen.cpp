@@ -614,9 +614,11 @@ void Fullscreen::pushFullscreenElementStack(Element& element, RequestType reques
 
 DEFINE_TRACE(Fullscreen)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_fullScreenElement);
     visitor->trace(m_fullScreenElementStack);
     visitor->trace(m_eventQueue);
+#endif
     WillBeHeapSupplement<Document>::trace(visitor);
     DocumentLifecycleObserver::trace(visitor);
 }

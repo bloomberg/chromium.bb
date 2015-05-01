@@ -2175,47 +2175,6 @@ struct ShouldBeTraced {
     Member<IntWrapper> m_wrapper;
 };
 
-class OffHeapContainer : public GarbageCollectedFinalized<OffHeapContainer> {
-public:
-    static OffHeapContainer* create() { return new OffHeapContainer(); }
-
-    static const int iterations = 300;
-    static const int deadWrappers = 600;
-
-    OffHeapContainer()
-    {
-        for (int i = 0; i < iterations; i++) {
-            m_deque1.append(ShouldBeTraced(IntWrapper::create(i)));
-            m_vector1.append(ShouldBeTraced(IntWrapper::create(i)));
-        }
-
-        Deque<ShouldBeTraced>::iterator d1Iterator(m_deque1.begin());
-        Vector<ShouldBeTraced>::iterator v1Iterator(m_vector1.begin());
-
-        for (int i = 0; i < iterations; i++) {
-            EXPECT_EQ(i, m_vector1[i].m_wrapper->value());
-            EXPECT_EQ(i, d1Iterator->m_wrapper->value());
-            EXPECT_EQ(i, v1Iterator->m_wrapper->value());
-            ++d1Iterator;
-            ++v1Iterator;
-        }
-        EXPECT_EQ(d1Iterator, m_deque1.end());
-        EXPECT_EQ(v1Iterator, m_vector1.end());
-    }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_deque1);
-        visitor->trace(m_vector1);
-    }
-
-    Deque<ShouldBeTraced> m_deque1;
-    Vector<ShouldBeTraced> m_vector1;
-};
-
-const int OffHeapContainer::iterations;
-const int OffHeapContainer::deadWrappers;
-
 // These class definitions test compile-time asserts with transition
 // types. They are therefore unused in test code and just need to
 // compile. This is intentional; do not delete the A and B classes below.
@@ -3621,18 +3580,6 @@ TEST(HeapTest, CheckAndMarkPointer)
     // This round of GC is important to make sure that the object start
     // bitmap are cleared out and that the free lists are rebuild.
     clearOutOldGarbage();
-}
-
-TEST(HeapTest, VisitOffHeapCollections)
-{
-    clearOutOldGarbage();
-    IntWrapper::s_destructorCalls = 0;
-    Persistent<OffHeapContainer> container = OffHeapContainer::create();
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-    container = nullptr;
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
-    EXPECT_EQ(OffHeapContainer::deadWrappers, IntWrapper::s_destructorCalls);
 }
 
 TEST(HeapTest, PersistentHeapCollectionTypes)

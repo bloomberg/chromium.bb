@@ -37,7 +37,7 @@ static WebVector<WebEncryptedMediaInitDataType> convertInitDataTypes(const Vecto
     return result;
 }
 
-static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(const Vector<MediaKeySystemMediaCapability>& capabilities)
+static WebVector<WebMediaKeySystemMediaCapability> convertCapabilities(const HeapVector<MediaKeySystemMediaCapability>& capabilities)
 {
     WebVector<WebMediaKeySystemMediaCapability> result(capabilities.size());
     for (size_t i = 0; i < capabilities.size(); ++i) {
@@ -82,7 +82,7 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
     WTF_MAKE_NONCOPYABLE(MediaKeySystemAccessInitializer);
 
 public:
-    MediaKeySystemAccessInitializer(ScriptState*, const String& keySystem, const Vector<MediaKeySystemConfiguration>& supportedConfigurations);
+    MediaKeySystemAccessInitializer(ScriptState*, const String& keySystem, const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations);
     virtual ~MediaKeySystemAccessInitializer() { }
 
     // EncryptedMediaRequest implementation.
@@ -100,7 +100,7 @@ private:
     WebVector<WebMediaKeySystemConfiguration> m_supportedConfigurations;
 };
 
-MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* scriptState, const String& keySystem, const Vector<MediaKeySystemConfiguration>& supportedConfigurations)
+MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* scriptState, const String& keySystem, const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations)
     : m_resolver(ScriptPromiseResolver::create(scriptState))
     , m_keySystem(keySystem)
     , m_supportedConfigurations(supportedConfigurations.size())
@@ -152,7 +152,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     ScriptState* scriptState,
     Navigator& navigator,
     const String& keySystem,
-    const Vector<MediaKeySystemConfiguration>& supportedConfigurations)
+    const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations)
 {
     WTF_LOG(Media, "NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess()");
 

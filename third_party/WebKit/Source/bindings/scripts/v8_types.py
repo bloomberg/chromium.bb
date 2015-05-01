@@ -310,7 +310,7 @@ IdlType.set_will_be_garbage_collected_types = classmethod(
 
 
 def gc_type(idl_type):
-    if idl_type.is_garbage_collected:
+    if idl_type.is_garbage_collected or idl_type.is_dictionary:
         return 'GarbageCollectedObject'
     if idl_type.is_will_be_garbage_collected:
         return 'WillBeGarbageCollectedObject'
@@ -590,6 +590,10 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
         this_cpp_type = None
         ref_ptr_type = cpp_ptr_type('RefPtr', 'Member', native_array_element_type.gc_type)
         expression_format = '(to{ref_ptr_type}NativeArray<{native_array_element_type}, V8{native_array_element_type}>({v8_value}, {index}, {isolate}, exceptionState))'
+    elif native_array_element_type.is_dictionary:
+        ref_ptr_type = None
+        this_cpp_type = native_array_element_type.cpp_type
+        expression_format = 'toImplHeapArray<{cpp_type}>({v8_value}, {index}, {isolate}, exceptionState)'
     else:
         ref_ptr_type = None
         this_cpp_type = native_array_element_type.cpp_type

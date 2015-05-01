@@ -177,7 +177,9 @@ DEFINE_TRACE(SelectorFilter::ParentStackFrame)
 
 DEFINE_TRACE(SelectorFilter)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_parentStack);
+#endif
 }
 
 }

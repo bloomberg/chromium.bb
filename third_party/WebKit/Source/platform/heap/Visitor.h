@@ -267,9 +267,6 @@ public:
     static const bool value = false;
 };
 
-template<typename Collection>
-struct OffHeapCollectionTraceTrait;
-
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class ObjectAliveTrait;
 
 template<typename T>
@@ -379,19 +376,6 @@ public:
                 return;
         }
         TraceTrait<T>::trace(Derived::fromHelper(this), &const_cast<T&>(t));
-    }
-
-    // The following trace methods are for off-heap collections.
-    template<typename T, size_t inlineCapacity>
-    void trace(const Vector<T, inlineCapacity>& vector)
-    {
-        OffHeapCollectionTraceTrait<Vector<T, inlineCapacity, WTF::DefaultAllocator>>::trace(Derived::fromHelper(this), vector);
-    }
-
-    template<typename T, size_t N>
-    void trace(const Deque<T, N>& deque)
-    {
-        OffHeapCollectionTraceTrait<Deque<T, N>>::trace(Derived::fromHelper(this), deque);
     }
 
 #if !ENABLE(OILPAN)
@@ -612,37 +596,6 @@ void VisitorHelper<Derived>::handleWeakCell(Visitor* self, void* obj)
     if (*cell && !self->isHeapObjectAlive(*cell))
         *cell = nullptr;
 }
-
-// We trace vectors by using the trace trait on each element, which means you
-// can have vectors of general objects (not just pointers to objects) that can
-// be traced.
-template<typename T, size_t N>
-struct OffHeapCollectionTraceTrait<WTF::Vector<T, N, WTF::DefaultAllocator>> {
-    typedef WTF::Vector<T, N, WTF::DefaultAllocator> Vector;
-
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, const Vector& vector)
-    {
-        if (vector.isEmpty())
-            return;
-        for (typename Vector::const_iterator it = vector.begin(), end = vector.end(); it != end; ++it)
-            TraceTrait<T>::trace(visitor, const_cast<T*>(it));
-    }
-};
-
-template<typename T, size_t N>
-struct OffHeapCollectionTraceTrait<WTF::Deque<T, N>> {
-    typedef WTF::Deque<T, N> Deque;
-
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, const Deque& deque)
-    {
-        if (deque.isEmpty())
-            return;
-        for (typename Deque::const_iterator it = deque.begin(), end = deque.end(); it != end; ++it)
-            TraceTrait<T>::trace(visitor, const_cast<T*>(&(*it)));
-    }
-};
 
 template<typename T> struct GCInfoTrait;
 

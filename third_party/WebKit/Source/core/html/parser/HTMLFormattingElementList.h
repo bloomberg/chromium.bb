@@ -125,7 +125,12 @@ public:
     const Entry& at(size_t i) const { return m_entries[i]; }
     Entry& at(size_t i) { return m_entries[i]; }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(m_entries); }
+    DEFINE_INLINE_TRACE()
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(m_entries);
+#endif
+    }
 
 #ifndef NDEBUG
     void show();

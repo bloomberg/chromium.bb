@@ -46,7 +46,12 @@ public:
 
     void set(const ComputedStyle&, const ComputedStyle& parentStyle, const MatchResult&);
     void clear();
-    DEFINE_INLINE_TRACE() { visitor->trace(matchedProperties); }
+    DEFINE_INLINE_TRACE()
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(matchedProperties);
+#endif
+    }
 };
 
 // Specialize the HashTraits for CachedMatchedProperties to check for dead

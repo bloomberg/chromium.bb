@@ -216,7 +216,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         if (internalDictionarySequenceMemberValue.IsEmpty() || internalDictionarySequenceMemberValue->IsUndefined()) {
             // Do nothing.
         } else {
-            Vector<InternalDictionary> internalDictionarySequenceMember = toImplArray<InternalDictionary>(internalDictionarySequenceMemberValue, 0, isolate, exceptionState);
+            HeapVector<InternalDictionary> internalDictionarySequenceMember = toImplHeapArray<InternalDictionary>(internalDictionarySequenceMemberValue, 0, isolate, exceptionState);
             if (exceptionState.hadException())
                 return;
             impl.setInternalDictionarySequenceMember(internalDictionarySequenceMember);

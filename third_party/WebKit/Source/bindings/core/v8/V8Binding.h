@@ -594,7 +594,7 @@ bool toV8Sequence(v8::Local<v8::Value>, uint32_t& length, v8::Isolate*, Exceptio
 
 // Converts a JavaScript value to an array as per the Web IDL specification:
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
-template <class T, class V8T>
+template <typename T, typename V8T>
 Vector<RefPtr<T>> toRefPtrNativeArrayUnchecked(v8::Local<v8::Value> v8Value, uint32_t length, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     Vector<RefPtr<T>> result;
@@ -618,7 +618,7 @@ Vector<RefPtr<T>> toRefPtrNativeArrayUnchecked(v8::Local<v8::Value> v8Value, uin
     return result;
 }
 
-template <class T, class V8T>
+template <typename T, typename V8T>
 Vector<RefPtr<T>> toRefPtrNativeArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
@@ -633,7 +633,7 @@ Vector<RefPtr<T>> toRefPtrNativeArray(v8::Local<v8::Value> value, int argumentIn
     return toRefPtrNativeArrayUnchecked<T, V8T>(v8Value, length, isolate, exceptionState);
 }
 
-template <class T, class V8T>
+template <typename T, typename V8T>
 Vector<RefPtr<T>> toRefPtrNativeArray(v8::Local<v8::Value> value, const String& propertyName, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
@@ -648,7 +648,7 @@ Vector<RefPtr<T>> toRefPtrNativeArray(v8::Local<v8::Value> value, const String& 
     return toRefPtrNativeArrayUnchecked<T, V8T>(v8Value, length, isolate, exceptionState);
 }
 
-template <class T, class V8T>
+template <typename T, typename V8T>
 WillBeHeapVector<RefPtrWillBeMember<T>> toRefPtrWillBeMemberNativeArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
@@ -682,7 +682,7 @@ WillBeHeapVector<RefPtrWillBeMember<T>> toRefPtrWillBeMemberNativeArray(v8::Loca
     return result;
 }
 
-template <class T, class V8T>
+template <typename T, typename V8T>
 WillBeHeapVector<RefPtrWillBeMember<T>> toRefPtrWillBeMemberNativeArray(v8::Local<v8::Value> value, const String& propertyName, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
@@ -716,7 +716,7 @@ WillBeHeapVector<RefPtrWillBeMember<T>> toRefPtrWillBeMemberNativeArray(v8::Loca
     return result;
 }
 
-template <class T, class V8T>
+template <typename T, typename V8T>
 HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
@@ -752,13 +752,12 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value, int argume
 
 // Converts a JavaScript value to an array as per the Web IDL specification:
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
-template <class T>
+template <typename T>
 Vector<T> toImplArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
-    v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
     uint32_t length = 0;
     if (value->IsArray()) {
-        length = v8::Local<v8::Array>::Cast(v8Value)->Length();
+        length = v8::Local<v8::Array>::Cast(value)->Length();
     } else if (!toV8Sequence(value, length, isolate, exceptionState)) {
         if (!exceptionState.hadException())
             exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex));
@@ -773,7 +772,7 @@ Vector<T> toImplArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate
     Vector<T> result;
     result.reserveInitialCapacity(length);
     typedef NativeValueTraits<T> TraitsType;
-    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
     v8::TryCatch block;
     for (uint32_t i = 0; i < length; ++i) {
         v8::Local<v8::Value> element;
@@ -784,6 +783,41 @@ Vector<T> toImplArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate
         result.uncheckedAppend(TraitsType::nativeValue(isolate, element, exceptionState));
         if (exceptionState.hadException())
             return Vector<T>();
+    }
+    return result;
+}
+
+template <typename T>
+HeapVector<T> toImplHeapArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    uint32_t length = 0;
+    if (value->IsArray()) {
+        length = v8::Local<v8::Array>::Cast(value)->Length();
+    } else if (!toV8Sequence(value, length, isolate, exceptionState)) {
+        if (!exceptionState.hadException())
+            exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex));
+        return HeapVector<T>();
+    }
+
+    if (length > WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(T)) {
+        exceptionState.throwTypeError("Array length exceeds supported limit.");
+        return HeapVector<T>();
+    }
+
+    HeapVector<T> result;
+    result.reserveInitialCapacity(length);
+    typedef NativeValueTraits<T> TraitsType;
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
+    v8::TryCatch block;
+    for (uint32_t i = 0; i < length; ++i) {
+        v8::Local<v8::Value> element;
+        if (!v8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return HeapVector<T>();
+        }
+        result.uncheckedAppend(TraitsType::nativeValue(isolate, element, exceptionState));
+        if (exceptionState.hadException())
+            return HeapVector<T>();
     }
     return result;
 }
@@ -801,7 +835,7 @@ Vector<T> toImplArray(const Vector<ScriptValue>& value, v8::Isolate* isolate, Ex
     return result;
 }
 
-template <class T>
+template <typename T>
 Vector<T> toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex, ExceptionState& exceptionState)
 {
     Vector<T> result;
@@ -977,7 +1011,7 @@ inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::
 }
 
 // FIXME: This will be soon embedded in the generated code.
-template<class Collection> static void indexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+template<typename Collection> static void indexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     Collection* collection = toScriptWrappable(info.Holder())->toImpl<Collection>();
     int length = collection->length();

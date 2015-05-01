@@ -20,7 +20,7 @@ public:
         ScriptState*,
         Navigator&,
         const String& keySystem,
-        const Vector<MediaKeySystemConfiguration>& supportedConfigurations);
+        const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations);
 
 private:
     NavigatorRequestMediaKeySystemAccess();

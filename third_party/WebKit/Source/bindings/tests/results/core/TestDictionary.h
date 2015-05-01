@@ -65,8 +65,8 @@ public:
     void setEventTargetMember(PassRefPtrWillBeRawPtr<EventTarget> value) { m_eventTargetMember = value; }
 
     bool hasInternalDictionarySequenceMember() const { return !m_internalDictionarySequenceMember.isNull(); }
-    const Vector<InternalDictionary>& internalDictionarySequenceMember() const { return m_internalDictionarySequenceMember.get(); }
-    void setInternalDictionarySequenceMember(const Vector<InternalDictionary>& value) { m_internalDictionarySequenceMember = value; }
+    const HeapVector<InternalDictionary>& internalDictionarySequenceMember() const { return m_internalDictionarySequenceMember.get(); }
+    void setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>& value) { m_internalDictionarySequenceMember = value; }
 
     bool hasLongMember() const { return !m_longMember.isNull(); }
     int longMember() const { return m_longMember.get(); }
@@ -156,7 +156,7 @@ private:
     String m_enumMember;
     Nullable<Vector<String>> m_enumSequenceMember;
     RefPtrWillBeMember<EventTarget> m_eventTargetMember;
-    Nullable<Vector<InternalDictionary>> m_internalDictionarySequenceMember;
+    Nullable<HeapVector<InternalDictionary>> m_internalDictionarySequenceMember;
     Nullable<int> m_longMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMember;

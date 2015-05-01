@@ -73,9 +73,9 @@ static Vector<String> convertInitDataTypes(const WebVector<WebEncryptedMediaInit
     return result;
 }
 
-static Vector<MediaKeySystemMediaCapability> convertCapabilities(const WebVector<WebMediaKeySystemMediaCapability>& capabilities)
+static HeapVector<MediaKeySystemMediaCapability> convertCapabilities(const WebVector<WebMediaKeySystemMediaCapability>& capabilities)
 {
-    Vector<MediaKeySystemMediaCapability> result;
+    HeapVector<MediaKeySystemMediaCapability> result;
     result.reserveCapacity(capabilities.size());
     for (size_t i = 0; i < capabilities.size(); i++) {
         MediaKeySystemMediaCapability capability;

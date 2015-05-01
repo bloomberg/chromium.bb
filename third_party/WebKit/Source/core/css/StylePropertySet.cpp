@@ -519,8 +519,10 @@ int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
 
 DEFINE_TRACE_AFTER_DISPATCH(MutableStylePropertySet)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_cssomWrapper);
     visitor->trace(m_propertyVector);
+#endif
     StylePropertySet::traceAfterDispatch(visitor);
 }
 

@@ -6135,7 +6135,6 @@ DEFINE_TRACE(WebGLRenderingContextBase)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_contextObjects);
-#endif
     visitor->trace(m_contextLostCallbackAdapter);
     visitor->trace(m_errorMessageCallbackAdapter);
     visitor->trace(m_boundArrayBuffer);
@@ -6151,6 +6150,7 @@ DEFINE_TRACE(WebGLRenderingContextBase)
     visitor->trace(m_blackTextureCubeMap);
     visitor->trace(m_requestedAttributes);
     visitor->trace(m_extensions);
+#endif
     CanvasRenderingContext::trace(visitor);
 }
 

@@ -75,7 +75,12 @@ struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSour
         return adoptRefWillBeNoop(new CSSStyleSourceData());
     }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(propertyData); }
+    DEFINE_INLINE_TRACE()
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(propertyData);
+#endif
+    }
 
     WillBeHeapVector<CSSPropertySourceData> propertyData;
 };
@@ -97,7 +102,12 @@ struct CSSMediaQuerySourceData : public RefCountedWillBeGarbageCollected<CSSMedi
         return adoptRefWillBeNoop(new CSSMediaQuerySourceData());
     }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(expData); }
+    DEFINE_INLINE_TRACE()
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(expData);
+#endif
+    }
 
     WillBeHeapVector<CSSMediaQueryExpSourceData> expData;
 };
@@ -108,7 +118,12 @@ struct CSSMediaSourceData : public RefCountedWillBeGarbageCollected<CSSMediaSour
         return adoptRefWillBeNoop(new CSSMediaSourceData());
     }
 
-    DEFINE_INLINE_TRACE() { visitor->trace(queryData); }
+    DEFINE_INLINE_TRACE()
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(queryData);
+#endif
+    }
 
     WillBeHeapVector<RefPtrWillBeMember<CSSMediaQuerySourceData>> queryData;
 };

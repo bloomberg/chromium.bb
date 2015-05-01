@@ -571,11 +571,13 @@ bool CSSGradientValue::knownToBeOpaque(const LayoutObject* object) const
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSGradientValue)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_firstX);
     visitor->trace(m_firstY);
     visitor->trace(m_secondX);
     visitor->trace(m_secondY);
     visitor->trace(m_stops);
+#endif
     CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 

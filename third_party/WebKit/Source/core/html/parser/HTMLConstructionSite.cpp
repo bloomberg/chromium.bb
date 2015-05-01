@@ -355,6 +355,7 @@ HTMLConstructionSite::~HTMLConstructionSite()
 
 DEFINE_TRACE(HTMLConstructionSite)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_attachmentRoot);
     visitor->trace(m_head);
@@ -363,6 +364,7 @@ DEFINE_TRACE(HTMLConstructionSite)
     visitor->trace(m_activeFormattingElements);
     visitor->trace(m_taskQueue);
     visitor->trace(m_pendingText);
+#endif
 }
 
 void HTMLConstructionSite::detach()
