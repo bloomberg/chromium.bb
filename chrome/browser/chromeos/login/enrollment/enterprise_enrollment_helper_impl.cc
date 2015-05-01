@@ -158,6 +158,8 @@ void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
 
 void EnterpriseEnrollmentHelperImpl::DoEnrollUsingToken(
     const std::string& token) {
+  DCHECK(token == oauth_token_ || oauth_token_.empty());
+  oauth_token_ = token;
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (connector->IsEnterpriseManaged() &&
@@ -194,7 +196,7 @@ void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
   policy::CloudPolicyClient* client = policy_manager->core()->client();
 
   client->GetDeviceAttributeUpdatePermission(
-      GetOAuthToken(),
+      oauth_token_,
       base::Bind(
           &EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUpdatePermission,
           weak_ptr_factory_.GetWeakPtr()));
@@ -210,7 +212,7 @@ void EnterpriseEnrollmentHelperImpl::UpdateDeviceAttributes(
   policy::CloudPolicyClient* client = policy_manager->core()->client();
 
   client->UpdateDeviceAttributes(
-      GetOAuthToken(), asset_id, location,
+      oauth_token_, asset_id, location,
       base::Bind(
           &EnterpriseEnrollmentHelperImpl::OnDeviceAttributeUploadCompleted,
           weak_ptr_factory_.GetWeakPtr()));
@@ -238,7 +240,9 @@ void EnterpriseEnrollmentHelperImpl::OnTokenFetched(
 
   if (oauth_fetchers_.size() == 2)
     additional_token_ = oauth_fetchers_[1]->oauth2_access_token();
-  DoEnrollUsingToken(oauth_fetchers_[0]->oauth2_access_token());
+
+  oauth_token_ = oauth_fetchers_[0]->oauth2_access_token();
+  DoEnrollUsingToken(oauth_token_);
 }
 
 void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
@@ -445,11 +449,6 @@ void EnterpriseEnrollmentHelperImpl::OnBrowsingDataRemoverDone() {
        ++callback) {
     callback->Run();
   }
-}
-
-const std::string& EnterpriseEnrollmentHelperImpl::GetOAuthToken() {
-  DCHECK(oauth_fetchers_.size() > 0);
-  return oauth_fetchers_[0]->oauth2_access_token();
 }
 
 }  // namespace chromeos

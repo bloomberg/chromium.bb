@@ -73,9 +73,6 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   // Overridden from BrowsingDataRemover::Observer:
   void OnBrowsingDataRemoverDone() override;
 
-  // Gets oauth token, used during enterprise enrollment.
-  const std::string& GetOAuthToken();
-
   const policy::EnrollmentConfig enrollment_config_;
   const std::string enrolling_user_domain_;
   Profile* profile_;
@@ -88,6 +85,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   bool finished_;
   bool success_;
   bool auth_data_cleared_;
+  std::string oauth_token_;
 
   // The browsing data remover instance currently active, if any.
   BrowsingDataRemover* browsing_data_remover_;
