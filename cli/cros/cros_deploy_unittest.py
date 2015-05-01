@@ -74,6 +74,7 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     expected_kwargs = {
         'board': None,
         'brick_name': None,
+        'blueprint': None,
         'strip': True,
         'emerge': True,
         'root': '/',

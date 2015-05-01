@@ -60,6 +60,9 @@ For more information of cros build usage:
         '--brick', type='brick_path',
         help='The brick to use. Will be detected from CWD if possible and take '
         'precedence over the detected board.')
+    target.add_argument(
+        '--blueprint',
+        help='The blueprint to use. Takes precedence over board and brick.')
     parser.add_argument(
         '--no-strip', dest='strip', action='store_false', default=True,
         help='Do not run strip_package to filter out preset paths in the '
@@ -117,6 +120,7 @@ For more information of cros build usage:
           self.options.packages,
           board=self.options.board,
           brick_name=self.options.brick or self.curr_brick_locator,
+          blueprint=self.options.blueprint,
           emerge=self.options.emerge,
           update=self.options.update,
           deep=self.options.deep,

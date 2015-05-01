@@ -11,6 +11,7 @@ import json
 import os
 
 from chromite.cli import flash
+from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -842,10 +843,11 @@ def _CheckDeviceVersion(device):
                       (device.sdk_version or 'unknown', sdk_version))
 
 
-def Deploy(device, packages, board=None, brick_name=None, emerge=True,
-           update=False, deep=False, deep_rev=False, clean_binpkg=True,
-           root='/', strip=True, emerge_args=None, ssh_private_key=None,
-           ping=True, reflash=False, force=False, dry_run=False):
+def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
+           emerge=True, update=False, deep=False, deep_rev=False,
+           clean_binpkg=True, root='/', strip=True, emerge_args=None,
+           ssh_private_key=None, ping=True, reflash=True, force=False,
+           dry_run=False):
   """Deploys packages to a device.
 
   Args:
@@ -853,6 +855,7 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
     packages: List of packages (strings) to deploy to device.
     board: Board to use; None to automatically detect.
     brick_name: Brick locator to use. Overrides |board| if not None.
+    blueprint: Blueprint to use. Overrides |board| and |brick| if not None.
     emerge: True to emerge package, False to unmerge.
     update: Check installed version on device.
     deep: Install dependencies also. Implies |update|.
@@ -879,10 +882,6 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
   if update and not emerge:
     raise ValueError('Cannot update and unmerge.')
 
-  brick = brick_lib.Brick(brick_name) if brick_name else None
-  if brick:
-    board = brick.FriendlyName()
-
   if device:
     hostname, username, port = device.hostname, device.username, device.port
   else:
@@ -890,24 +889,36 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
 
   do_flash = False
   lsb_release = None
+  sysroot = None
   try:
     with remote_access.ChromiumOSDeviceHandler(
         hostname, port=port, username=username, private_key=ssh_private_key,
         base_dir=_DEVICE_BASE_DIR, ping=ping) as device_handler:
       lsb_release = device_handler.lsb_release
-      board = cros_build_lib.GetBoard(device_board=device_handler.board,
-                                      override_board=board)
-      logging.info('Board is %s', board)
 
-      # The brick or board must be compatible with the device.
-      if not force:
-        if brick:
-          if not brick.Inherits(device_handler.board):
-            raise DeployError('Device (%s) is incompatible with brick' %
-                              device_handler.board)
-        elif board != device_handler.board:
-          raise DeployError('Device (%s) is incompatible with board' %
-                            device_handler.board)
+      # We don't check for compatibility correctly in the brick/blueprint case
+      # as we don't have enough information to determine whether it is safe or
+      # not to deploy.
+      # TODO(bsimonnet): Check for compatibility correctly (brbug.com/969).
+      if blueprint:
+        blueprint = blueprint_lib.Blueprint(blueprint)
+        sysroot = cros_build_lib.GetSysroot(blueprint.FriendlyName())
+
+      elif brick_name:
+        brick = brick_lib.Brick(brick_name)
+        sysroot = cros_build_lib.GetSysroot(board=brick.FriendlyName())
+
+        # If no packages were listed, find the brick's main packages.
+        packages = packages or brick.MainPackages()
+
+      else:
+        board = cros_build_lib.GetBoard(device_board=device_handler.board,
+                                        override_board=board)
+        if not force and board != device_handler.board:
+          raise DeployError('Device (%s) is incompatible with board %s. Use '
+                            '--force to deploy anyway.' % (device, board))
+
+        sysroot = cros_build_lib.GetSysroot(board=board)
 
       # Check that the target is compatible with the SDK (if any).
       if reflash or not force:
@@ -938,10 +949,6 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
         except DeployError as e:
           raise DeployError('%s, reflashing failed' % e)
 
-      sysroot = cros_build_lib.GetSysroot(board=board)
-
-      # If no packages were listed, find the brick's main packages.
-      packages = packages or (brick and brick.MainPackages())
       if not packages:
         raise DeployError('No packages found, nothing to deploy.')
 
