@@ -125,12 +125,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-#ifndef WEB_CONVERTABLE_TO_TRACE_FORMAT_IS_MOVED
-      // TODO(hiroshige): Remove #ifndef once the Blink-side CL is landed.
-      const blink::WebConvertableToTraceFormat* convertable_values,
-#else
       blink::WebConvertableToTraceFormat* convertable_values,
-#endif
       unsigned char flags);
   virtual void updateTraceEventDuration(
       const unsigned char* category_group_enabled,

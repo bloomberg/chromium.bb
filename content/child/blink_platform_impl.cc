@@ -144,19 +144,12 @@ class MemoryUsageCache {
 class ConvertableToTraceFormatWrapper
     : public base::trace_event::ConvertableToTraceFormat {
  public:
-#ifndef WEB_CONVERTABLE_TO_TRACE_FORMAT_IS_MOVED
-  // TODO(hiroshige): Remove #ifndef once the Blink-side CL is landed.
-  explicit ConvertableToTraceFormatWrapper(
-      const blink::WebConvertableToTraceFormat& convertable)
-      : convertable_(convertable) {}
-#else
   // We move a reference pointer from |convertable| to |convertable_|,
   // rather than copying, for thread safety. https://crbug.com/478149
   explicit ConvertableToTraceFormatWrapper(
       blink::WebConvertableToTraceFormat& convertable) {
     convertable_.moveFrom(convertable);
   }
-#endif
   void AppendAsTraceFormat(std::string* out) const override {
     *out += convertable_.asTraceFormat().utf8();
   }
