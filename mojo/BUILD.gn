@@ -38,4 +38,13 @@ group("tests") {
     "//third_party/mojo/src/mojo/edk/test:mojo_public_system_unittests",
     "//third_party/mojo/src/mojo/edk/test:mojo_public_utility_unittests",
   ]
+
+  # TODO: get these working on android.
+  if (!is_android && !is_component_build) {
+    deps += [
+      "//mojo/runner:apptests",
+      "//mojo/runner:mojo_runner_unittests",
+      "//mojo/shell:mojo_shell_unittests",
+    ]
+  }
 }
