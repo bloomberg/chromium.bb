@@ -737,8 +737,7 @@ Element* LocalDOMWindow::frameElement() const
         return nullptr;
 
     // The bindings security check should ensure we're same origin...
-    ASSERT(!frame()->owner() || frame()->owner()->isLocal());
-    return frame()->deprecatedLocalOwner();
+    return toHTMLFrameOwnerElement(frame()->owner());
 }
 
 void LocalDOMWindow::focus(ExecutionContext* context)

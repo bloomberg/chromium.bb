@@ -7027,6 +7027,28 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
     reset();
 }
 
+// Check that frames with a remote parent don't crash while accessing window.frameElement.
+TEST_F(WebFrameSwapTest, FrameElementInFramesWithRemoteParent)
+{
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteParentFrame = remoteClient.frame();
+    mainFrame()->swap(remoteParentFrame);
+    remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+
+    FrameTestHelpers::TestWebFrameClient childFrameClient;
+    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
+    FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
+
+    v8::Local<v8::Value> frameElement = childFrame->executeScriptAndReturnValue(WebScriptSource("window.frameElement"));
+    // frameElement shouldn't be accessible cross-origin.
+    EXPECT_TRUE(frameElement.IsEmpty());
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated clients.
+    reset();
+}
+
 class RemoteToLocalSwapWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit RemoteToLocalSwapWebFrameClient(WebRemoteFrame* remoteFrame)
