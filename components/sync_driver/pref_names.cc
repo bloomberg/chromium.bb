@@ -96,6 +96,11 @@ const char kSyncRemainingRollbackTries[] = "sync.remaining_rollback_tries";
 // Stores the timestamp of first sync.
 const char kSyncFirstSyncTime[] = "sync.first_sync_time";
 
+// Stores whether a platform specific passphrase error prompt has been shown to
+// the user (e.g. an Android system notification). Used for out of band prompts
+// that we only want to use once.
+const char kSyncPassphrasePrompted[] = "sync.passphrase_prompted";
+
 }  // namespace prefs
 
 }  // namespace sync_driver

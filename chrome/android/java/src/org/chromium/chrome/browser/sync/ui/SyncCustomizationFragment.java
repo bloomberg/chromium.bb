@@ -410,7 +410,10 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         configureEncryption(passphrase, false);
     }
 
-    private void handleDecryption(String passphrase) {
+    /**
+     * @return whether the passphrase successfully decrypted the pending keys.
+     */
+    private boolean handleDecryption(String passphrase) {
         if (!passphrase.isEmpty() && mProfileSyncService.setDecryptionPassphrase(passphrase)) {
             // PassphraseDialogFragment doesn't handle closing itself, so do it here. This is
             // not done in updateSyncState() because that happens onResume and possibly in other
@@ -418,9 +421,11 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             closeDialogIfOpen(FRAGMENT_ENTER_PASSWORD);
             // Update our configuration UI.
             updateSyncState();
+            return true;
         } else {
             // Let the user know that the passphrase was not valid.
             notifyInvalidPassphrase();
+            return false;
         }
     }
 
@@ -428,11 +433,14 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
      * Callback for PassphraseDialogFragment.Listener
      */
     @Override
-    public void onPassphraseEntered(String passphrase, boolean isGaia, boolean isUpdate) {
+    public boolean onPassphraseEntered(String passphrase, boolean isGaia, boolean isUpdate) {
         if (isUpdate) {
             handleEncryptWithCustomPassphrase(passphrase);
+            // Setting a new passphrase should always succeed (validation that
+            // it's not an empty passphrase should already have happened).
+            return true;
         } else {
-            handleDecryption(passphrase);
+            return handleDecryption(passphrase);
         }
     }
 

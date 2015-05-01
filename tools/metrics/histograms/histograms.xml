@@ -40902,6 +40902,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sync.PassphraseDecryptionSucceeded" enum="BooleanSuccess">
+  <owner>zea@chromium.org</owner>
+  <summary>Whether a passphrase decryption attempt succeeded or not.</summary>
+</histogram>
+
+<histogram name="Sync.PassphraseDialogDismissed" enum="SyncPassphraseDismissal">
+  <owner>zea@chromium.org</owner>
+  <summary>Enumeration of how a user dismissed the passphrase dialog.</summary>
+</histogram>
+
 <histogram name="Sync.PassphraseType" enum="SyncPassphraseType">
   <owner>maxbogue@chromium.org</owner>
   <summary>The active sync passphrase type at sync startup.</summary>
@@ -63375,6 +63385,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Not migrated due to cryptographer not ready"/>
   <int value="2" label="Not migrated due to missing keystore key"/>
   <int value="3" label="Not migrated for an unknown reason"/>
+</enum>
+
+<enum name="SyncPassphraseDismissal" type="int">
+  <int value="0" label="Passphrase accepted"/>
+  <int value="1" label="Cancel with wrong passphrase error"/>
+  <int value="2" label="Cancel without any passphrase attempted"/>
+  <int value="3" label="Followed reset link"/>
 </enum>
 
 <enum name="SyncPassphraseType" type="int">

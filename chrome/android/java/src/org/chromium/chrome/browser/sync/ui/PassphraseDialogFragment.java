@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.internal_api.pub.PassphraseType;
@@ -47,13 +48,22 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
      * Move back to package scope once PassphraseActivity is upstream.
      */
     public interface Listener {
-        public void onPassphraseEntered(String password, boolean isGaia, boolean isUpdate);
+        /**
+         * @return whether passphrase was valid.
+         */
+        public boolean onPassphraseEntered(String password, boolean isGaia, boolean isUpdate);
 
         public void onPassphraseCanceled(boolean isGaia, boolean isUpdate);
     }
 
     static final String ARG_IS_GAIA = "is_gaia";
     static final String ARG_IS_UPDATE = "is_update";
+
+    private static final int PASSPHRASE_DIALOG_OK = 0;
+    private static final int PASSPHRASE_DIALOG_ERROR = 1;
+    private static final int PASSPHRASE_DIALOG_CANCEL = 2;
+    private static final int PASSPHRASE_DIALOG_RESET_LINK = 3;
+    private static final int PASSPHRASE_DIALOG_LIMIT = 3;
 
     /**
      * Create a new instanceof of {@link PassphraseDialogFragment} and set its arguments.
@@ -69,6 +79,13 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         args.putBoolean(PassphraseDialogFragment.ARG_IS_UPDATE, isUpdate);
         dialog.setArguments(args);
         return dialog;
+    }
+
+    private void recordPassphraseDialogDismissal(int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Sync.PassphraseDialogDismissed",
+                result,
+                PASSPHRASE_DIALOG_LIMIT);
     }
 
     @Override
@@ -87,6 +104,7 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
                 new SpanInfo("<link>", "</link>", new ClickableSpan() {
                     @Override
                     public void onClick(View view) {
+                        recordPassphraseDialogDismissal(PASSPHRASE_DIALOG_RESET_LINK);
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
                                 context.getText(R.string.sync_dashboard_url).toString()));
                         intent.putExtra(Browser.EXTRA_APPLICATION_ID,
@@ -171,9 +189,27 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         }
     }
 
+    /**
+      * @return whether the incorrect passphrase text is currently visible.
+      */
+    private boolean isIncorrectPassphraseVisible() {
+        // Check if the verifying TextView is currently showing the incorrect
+        // passphrase text.
+        TextView verifying = (TextView) getDialog().findViewById(R.id.verifying);
+        String incorrectPassphraseMessage = getResources().getString(
+                R.string.sync_passphrase_incorrect);
+        String verifyMessage = verifying.getText().toString();
+        return verifyMessage.equals(incorrectPassphraseMessage);
+    }
+
     private void handleCancel() {
         boolean isUpdate = getArguments().getBoolean(ARG_IS_UPDATE);
         boolean isGaia = getArguments().getBoolean(ARG_IS_GAIA);
+
+        int cancelReason = isIncorrectPassphraseVisible()
+                ? PASSPHRASE_DIALOG_ERROR
+                : PASSPHRASE_DIALOG_CANCEL;
+        recordPassphraseDialogDismissal(cancelReason);
         getListener().onPassphraseCanceled(isGaia, isUpdate);
     }
 
@@ -186,7 +222,11 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
 
         boolean isUpdate = getArguments().getBoolean(ARG_IS_UPDATE);
         boolean isGaia = getArguments().getBoolean(ARG_IS_GAIA);
-        getListener().onPassphraseEntered(passphrase, isGaia, isUpdate);
+        boolean success =
+                getListener().onPassphraseEntered(passphrase, isGaia, isUpdate);
+        if (success) {
+            recordPassphraseDialogDismissal(PASSPHRASE_DIALOG_OK);
+        }
     }
 
     private Listener getListener() {

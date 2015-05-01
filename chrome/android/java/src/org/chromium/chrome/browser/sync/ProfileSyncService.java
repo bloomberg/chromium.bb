@@ -561,6 +561,31 @@ public class ProfileSyncService {
             && getPassphraseType().equals(PassphraseType.KEYSTORE_PASSPHRASE);
     }
 
+    /**
+     * Returns whether this client has previously prompted the user for a
+     * passphrase error via the android system notifications.
+     *
+     * Can be called whether or not sync is initialized.
+     *
+     * @return Whether client has prompted for a passphrase error previously.
+     */
+    public boolean isPassphrasePrompted() {
+        return nativeIsPassphrasePrompted(mNativeProfileSyncServiceAndroid);
+    }
+
+    /**
+     * Sets whether this client has previously prompted the user for a
+     * passphrase error via the android system notifications.
+     *
+     * Can be called whether or not sync is initialized.
+     *
+     * @param prompted whether the client has prompted the user previously.
+     */
+    public void setPassphrasePrompted(boolean prompted) {
+        nativeSetPassphrasePrompted(mNativeProfileSyncServiceAndroid,
+                                    prompted);
+    }
+
     // Native methods
     private native long nativeInit();
     private native void nativeEnableSync(long nativeProfileSyncServiceAndroid);
@@ -609,6 +634,9 @@ public class ProfileSyncService {
     private native boolean nativeIsStartSuppressed(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);
+    private native void nativeSetPassphrasePrompted(long nativeProfileSyncServiceAndroid,
+                                                    boolean prompted);
     private native String nativeGetAboutInfoForTest(long nativeProfileSyncServiceAndroid);
     private native long nativeGetLastSyncedTimeForTest(long nativeProfileSyncServiceAndroid);
     private native void nativeOverrideNetworkResourcesForTest(

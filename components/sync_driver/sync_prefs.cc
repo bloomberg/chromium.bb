@@ -80,6 +80,8 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kSyncSessionsGUID, std::string());
 
   registry->RegisterIntegerPref(prefs::kSyncRemainingRollbackTries, 0);
+
+  registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -98,6 +100,7 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncHasSetupCompleted);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
+  pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
 
   // TODO(nick): The current behavior does not clear
   // e.g. prefs::kSyncBookmarks.  Is that really what we want?
@@ -429,6 +432,14 @@ void SyncPrefs::SetFirstSyncTime(base::Time time) {
 
 void SyncPrefs::ClearFirstSyncTime() {
   pref_service_->ClearPref(prefs::kSyncFirstSyncTime);
+}
+
+bool SyncPrefs::IsPassphrasePrompted() const {
+  return pref_service_->GetBoolean(prefs::kSyncPassphrasePrompted);
+}
+
+void SyncPrefs::SetPassphrasePrompted(bool value) {
+  pref_service_->SetBoolean(prefs::kSyncPassphrasePrompted, value);
 }
 
 }  // namespace sync_driver

@@ -63,6 +63,8 @@ extern const char kSyncSpareBootstrapToken[];
 extern const char kSyncRemainingRollbackTries[];
 extern const char kSyncFirstSyncTime[];
 
+extern const char kSyncPassphrasePrompted[];
+
 }  // namespace prefs
 
 }  // namespace sync_driver

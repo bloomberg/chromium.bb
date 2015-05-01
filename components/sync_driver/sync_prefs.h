@@ -133,8 +133,11 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void SetFirstSyncTime(base::Time time);
   void ClearFirstSyncTime();
 
-  // For testing.
+  // Out of band sync passphrase prompt getter/setter.
+  bool IsPassphrasePrompted() const;
+  void SetPassphrasePrompted(bool value);
 
+  // For testing.
   void SetManagedForTest(bool is_managed);
 
  private:

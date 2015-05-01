@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -111,6 +112,21 @@ void ProfileSyncServiceAndroid::OnStateChanged() {
   JNIEnv* env = AttachCurrentThread();
   Java_ProfileSyncService_syncStateChanged(
       env, weak_java_profile_sync_service_.get(env).obj());
+}
+
+jboolean ProfileSyncServiceAndroid::IsPassphrasePrompted(JNIEnv* env,
+                                                         jobject obj) {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("LimitSyncPassphrasePrompt");
+  if (group_name != "Enabled")
+    return false;
+  return sync_prefs_->IsPassphrasePrompted();
+}
+
+void ProfileSyncServiceAndroid::SetPassphrasePrompted(JNIEnv* env,
+                                                      jobject obj,
+                                                      jboolean prompted) {
+  sync_prefs_->SetPassphrasePrompted(prompted);
 }
 
 void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {

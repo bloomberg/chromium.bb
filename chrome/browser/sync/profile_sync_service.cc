@@ -2146,7 +2146,9 @@ bool ProfileSyncService::SetDecryptionPassphrase(
     const std::string& passphrase) {
   if (IsPassphraseRequired()) {
     DVLOG(1) << "Setting passphrase for decryption.";
-    return backend_->SetDecryptionPassphrase(passphrase);
+    bool result = backend_->SetDecryptionPassphrase(passphrase);
+    UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
+    return result;
   } else {
     NOTREACHED() << "SetDecryptionPassphrase must not be called when "
                     "IsPassphraseRequired() is false.";

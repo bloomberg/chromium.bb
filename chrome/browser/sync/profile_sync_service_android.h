@@ -195,6 +195,10 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
 
+  // Getter/setter for out of band (system notification) passphrase prompt.
+  jboolean IsPassphrasePrompted(JNIEnv* env, jobject obj);
+  void SetPassphrasePrompted(JNIEnv* env, jobject obj, jboolean prompted);
+
   // Returns a timestamp for when a sync was last executed. The return value is
   // the internal value of base::Time.
   jlong GetLastSyncedTimeForTest(JNIEnv* env, jobject obj);

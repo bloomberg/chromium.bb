@@ -71,6 +71,9 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             intent = createSettingsIntent();
         } else if (mProfileSyncService.isSyncInitialized()
                 && mProfileSyncService.isPassphraseRequiredForDecryption()) {
+            if (mProfileSyncService.isPassphrasePrompted()) {
+                return;
+            }
             switch (mProfileSyncService.getPassphraseType()) {
                 case IMPLICIT_PASSPHRASE: // Falling through intentionally.
                 case FROZEN_IMPLICIT_PASSPHRASE: // Falling through intentionally.
@@ -133,6 +136,9 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @return the intent for opening the password/passphrase activity
      */
     private Intent createPasswordIntent() {
+        // Make sure we don't prompt too many times.
+        mProfileSyncService.setPassphrasePrompted(true);
+
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setComponent(new ComponentName(mApplicationContext, mPassphraseRequestActivity));
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
