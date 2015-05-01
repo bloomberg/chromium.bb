@@ -418,7 +418,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void navigationStateChanged(int flags) {
             if ((flags & InvalidateTypes.TITLE) != 0) {
-                for (TabObserver observer : mObservers) observer.onTitleUpdated(Tab.this);
+                // Update cached title then notify observers.
+                updateTitle();
             }
             if ((flags & InvalidateTypes.URL) != 0) {
                 for (TabObserver observer : mObservers) observer.onUrlUpdated(Tab.this);
