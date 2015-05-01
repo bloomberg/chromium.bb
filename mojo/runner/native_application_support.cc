@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "mojo/platform_handle/platform_handle_private_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_miscellaneous_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_sub_image_thunks.h"
 #include "mojo/public/platform/native/gles2_impl_chromium_sync_point_thunks.h"
@@ -125,6 +126,10 @@ bool RunNativeApplication(base::NativeLibrary app_library,
     init_command_line_args(argc, argv);
   }
 #endif
+
+  // Apps need not include platform handle thunks.
+  SetThunks(&MojoMakePlatformHandlePrivateThunks,
+            "MojoSetPlatformHandlePrivateThunks", app_library);
 
   typedef MojoResult (*MojoMainFunction)(MojoHandle);
   MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(
