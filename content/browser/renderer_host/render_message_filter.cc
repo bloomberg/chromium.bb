@@ -369,9 +369,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
                         OnCreateFullscreenWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CookiesEnabled, OnCookiesEnabled)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SetCookie, OnSetCookie)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetCookies, OnGetCookies)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_CookiesEnabled, OnCookiesEnabled)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
@@ -604,9 +604,9 @@ void RenderMessageFilter::OnCookiesEnabled(
     const GURL& url,
     const GURL& first_party_for_cookies,
     bool* cookies_enabled) {
-  // TODO(ananta): If this render view is associated with an automation channel,
-  // aka ChromeFrame then we need to retrieve cookie settings from the external
-  // host.
+  // TODO(ananta): If this render frame is associated with an automation
+  // channel, aka ChromeFrame then we need to retrieve cookie settings from the
+  // external host.
   *cookies_enabled = GetContentClient()->browser()->AllowGetCookie(
       url, first_party_for_cookies, net::CookieList(), resource_context_,
       render_process_id_, render_frame_id);
@@ -1079,7 +1079,7 @@ void RenderMessageFilter::CheckPolicyForCookies(
 
 void RenderMessageFilter::SendGetCookiesResponse(IPC::Message* reply_msg,
                                                  const std::string& cookies) {
-  ViewHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
+  FrameHostMsg_GetCookies::WriteReplyParams(reply_msg, cookies);
   Send(reply_msg);
 }
 

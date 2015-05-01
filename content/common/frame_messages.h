@@ -719,6 +719,30 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DomOperationResponse,
                     std::string  /* json_string */,
                     int  /* automation_id */)
 
+// Used to set a cookie. The cookie is set asynchronously, but will be
+// available to a subsequent FrameHostMsg_GetCookies request.
+IPC_MESSAGE_CONTROL4(FrameHostMsg_SetCookie,
+                     int /* render_frame_id */,
+                     GURL /* url */,
+                     GURL /* first_party_for_cookies */,
+                     std::string /* cookie */)
+
+// Used to get cookies for the given URL. This may block waiting for a
+// previous SetCookie message to be processed.
+IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_GetCookies,
+                            int /* render_frame_id */,
+                            GURL /* url */,
+                            GURL /* first_party_for_cookies */,
+                            std::string /* cookies */)
+
+// Used to check if cookies are enabled for the given URL. This may block
+// waiting for a previous SetCookie message to be processed.
+IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_CookiesEnabled,
+                            int /* render_frame_id */,
+                            GURL /* url */,
+                            GURL /* first_party_for_cookies */,
+                            bool /* cookies_enabled */)
+
 #if defined(ENABLE_PLUGINS)
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
