@@ -302,8 +302,9 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
           ts);
     }
 
-    TRACE_EVENT_FLOW_BEGIN0(
-        "input,benchmark", "LatencyInfo.Flow", TRACE_ID_DONT_MANGLE(trace_id));
+    TRACE_EVENT_FLOW_BEGIN1(
+        "input,benchmark", "LatencyInfo.Flow", TRACE_ID_DONT_MANGLE(trace_id),
+        "trace_id", trace_id);
   }
 
   LatencyMap::key_type key = std::make_pair(component, id);
