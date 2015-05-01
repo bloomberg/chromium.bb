@@ -287,16 +287,12 @@ class ASH_EXPORT DisplayManager
   void SetSoftwareMirroring(bool enabled) override;
   bool SoftwareMirroringEnabled() const override;
 #endif
-  bool software_mirroring_enabled() const {
-    return multi_display_mode_ == MIRRORING;
-  };
 
   // Sets/gets multi display mode.
   void SetMultiDisplayMode(MultiDisplayMode mode);
-  MultiDisplayMode multi_display_mode() const { return multi_display_mode_; }
 
   // Sets/gets default multi display mode.
-  void SetDefaultMultiDisplayMode(MultiDisplayMode mode);
+
   MultiDisplayMode default_multi_display_mode() const {
     return default_multi_display_mode_;
   }
@@ -336,6 +332,10 @@ private:
   friend class test::SystemGestureEventFilterTest;
 
   typedef std::vector<DisplayInfo> DisplayInfoList;
+
+  bool software_mirroring_enabled() const {
+    return multi_display_mode_ == MIRRORING;
+  };
 
   void set_change_display_upon_host_resize(bool value) {
     change_display_upon_host_resize_ = value;

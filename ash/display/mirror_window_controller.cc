@@ -219,28 +219,23 @@ void MirrorWindowController::UpdateWindow(
 
     AshWindowTreeHost* mirroring_ash_host =
         mirroring_host_info_map_[display_info.id()]->ash_host.get();
-    switch (display_manager->multi_display_mode()) {
-      case DisplayManager::MIRRORING: {
-        scoped_ptr<RootWindowTransformer> transformer(
-            CreateRootWindowTransformerForMirroredDisplay(source_display_info,
-                                                          display_info));
-        mirroring_ash_host->SetRootWindowTransformer(transformer.Pass());
-        break;
-      }
-      case DisplayManager::UNIFIED: {
-        gfx::Display display;
-        display.SetScaleAndBounds(
-            1.0f, gfx::Rect(mirroring_origin,
-                            display_info.bounds_in_native().size()));
-        mirroring_origin.SetPoint(display.bounds().right(), 0);
-        scoped_ptr<RootWindowTransformer> transformer(
-            CreateRootWindowTransformerForUnifiedDesktop(primary.bounds(),
-                                                         display));
-        mirroring_ash_host->SetRootWindowTransformer(transformer.Pass());
-        break;
-      }
-      case DisplayManager::EXTENDED:
-        NOTREACHED();
+    if (display_manager->IsInMirrorMode()) {
+      scoped_ptr<RootWindowTransformer> transformer(
+          CreateRootWindowTransformerForMirroredDisplay(source_display_info,
+                                                        display_info));
+      mirroring_ash_host->SetRootWindowTransformer(transformer.Pass());
+    } else if (display_manager->IsInUnifiedMode()) {
+      gfx::Display display;
+      display.SetScaleAndBounds(
+          1.0f,
+          gfx::Rect(mirroring_origin, display_info.bounds_in_native().size()));
+      mirroring_origin.SetPoint(display.bounds().right(), 0);
+      scoped_ptr<RootWindowTransformer> transformer(
+          CreateRootWindowTransformerForUnifiedDesktop(primary.bounds(),
+                                                       display));
+      mirroring_ash_host->SetRootWindowTransformer(transformer.Pass());
+    } else {
+      NOTREACHED();
     }
   }
 
@@ -304,11 +299,9 @@ void MirrorWindowController::OnHostResized(const aura::WindowTreeHost* host) {
 
 aura::Window* MirrorWindowController::GetWindow() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (display_manager->multi_display_mode() != DisplayManager::MIRRORING ||
-      mirroring_host_info_map_.empty()) {
+  // TODO(oshima): Support software cursor in Unified Mode.
+  if (!display_manager->IsInMirrorMode() || mirroring_host_info_map_.empty())
     return nullptr;
-  }
-
   DCHECK_EQ(1U, mirroring_host_info_map_.size());
   return mirroring_host_info_map_.begin()
       ->second->ash_host->AsWindowTreeHost()

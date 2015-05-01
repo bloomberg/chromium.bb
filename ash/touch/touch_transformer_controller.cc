@@ -143,7 +143,7 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   if (display_manager->num_connected_displays() == 0) {
     return;
   } else if (display_manager->num_connected_displays() == 1 ||
-             display_manager->multi_display_mode() == DisplayManager::UNIFIED) {
+             display_manager->IsInUnifiedMode()) {
     single_display_id = display_manager->first_display_id();
     DCHECK(single_display_id != gfx::Display::kInvalidDisplayID);
     single_display = display_manager->GetDisplayInfo(single_display_id);
@@ -176,7 +176,7 @@ void TouchTransformerController::UpdateTouchTransformer() const {
       Shell::GetInstance()->display_configurator()->framebuffer_size();
 
   if (display_manager->IsInMirrorMode()) {
-    if (GetDisplayManager()->software_mirroring_enabled()) {
+    if (GetDisplayManager()->SoftwareMirroringEnabled()) {
       // In extended but software mirroring mode, there is a WindowTreeHost for
       // each display, but all touches are forwarded to the primary root
       // window's WindowTreeHost.

@@ -767,14 +767,12 @@ void DisplayController::OnHostResized(const aura::WindowTreeHost* host) {
 
 void DisplayController::CreateOrUpdateMirroringDisplay(
     const DisplayInfoList& info_list) {
-  switch (GetDisplayManager()->multi_display_mode()) {
-    case DisplayManager::MIRRORING:
-    case DisplayManager::UNIFIED:
-      mirror_window_controller_->UpdateWindow(info_list);
-      cursor_window_controller_->UpdateContainer();
-      break;
-    case DisplayManager::EXTENDED:
-      NOTREACHED();
+  if (GetDisplayManager()->IsInMirrorMode() ||
+      GetDisplayManager()->IsInUnifiedMode()) {
+    mirror_window_controller_->UpdateWindow(info_list);
+    cursor_window_controller_->UpdateContainer();
+  } else {
+    NOTREACHED();
   }
 }
 

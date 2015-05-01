@@ -76,6 +76,8 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
           current_state_type_ != wm::WINDOW_STATE_TYPE_FULLSCREEN) {
         UpdateWindow(window_state,
                      GetMaximizedOrCenteredWindowType(window_state));
+      } else {
+        UpdateBounds(window_state);
       }
       break;
     case wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED:

@@ -149,5 +149,10 @@ void DisplayManagerTestApi::SetAvailableColorProfiles(
       profiles);
 }
 
+void DisplayManagerTestApi::SetDefaultMultiDisplayMode(
+    DisplayManager::MultiDisplayMode mode) {
+  display_manager_->default_multi_display_mode_ = mode;
+}
+
 }  // namespace test
 }  // namespace ash

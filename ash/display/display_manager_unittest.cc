@@ -1465,7 +1465,8 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
 #if !defined(OS_WIN) && defined(USE_X11)
 
 TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
-  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  test::DisplayManagerTestApi test_api(display_manager());
+  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager()->SetMultiDisplayMode(DisplayManager::UNIFIED);
   UpdateDisplay("300x200,400x500");
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/display/display_manager.h"
 #include "base/basictypes.h"
 #include "ui/display/types/display_constants.h"
 
@@ -22,8 +23,6 @@ class EventGenerator;
 }
 
 namespace ash {
-class DisplayManager;
-
 namespace test {
 
 class DisplayManagerTestApi {
@@ -57,6 +56,9 @@ class DisplayManagerTestApi {
   void SetAvailableColorProfiles(
       int64 display_id,
       const std::vector<ui::ColorCalibrationProfile>& profiles);
+
+  // Sets the default multi display mode.
+  void SetDefaultMultiDisplayMode(DisplayManager::MultiDisplayMode mode);
 
  private:
   DisplayManager* display_manager_;  // not owned

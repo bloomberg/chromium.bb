@@ -162,9 +162,24 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_SystemModalContainer,
       kShellWindowId_LockSystemModalContainer,
       kShellWindowId_UnparentedControlContainer,
-      kShellWindowId_OverlayContainer, };
-  for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
-    int id = kContainerIdsToMove[i];
+      kShellWindowId_OverlayContainer,
+  };
+  const int kExtraContainerIdsToMoveInUnifiedMode[] = {
+      kShellWindowId_LockScreenContainer,
+      kShellWindowId_LockScreenBackgroundContainer,
+  };
+  std::vector<int> container_ids(
+      kContainerIdsToMove,
+      kContainerIdsToMove + arraysize(kContainerIdsToMove));
+  // Check the default_multi_display_mode because this is also necessary
+  // in trasition between mirror <-> unified mode.
+  if (Shell::GetInstance()->display_manager()->default_multi_display_mode() ==
+      DisplayManager::UNIFIED) {
+    for (int id : kExtraContainerIdsToMoveInUnifiedMode)
+      container_ids.push_back(id);
+  }
+
+  for (int id : container_ids) {
     aura::Window* src_container = Shell::GetContainer(src, id);
     aura::Window* dst_container = Shell::GetContainer(dst, id);
     while (!src_container->children().empty()) {
