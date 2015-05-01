@@ -61,7 +61,7 @@ private:
         if (nonInterpolableData)
             nonInterpolableData->reserveCapacity(listValue.length());
         OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(listValue.length());
-        typename InterpolationType::NonInterpolableType elementData = true;
+        typename InterpolationType::NonInterpolableType elementData = typename InterpolationType::NonInterpolableType();
         for (size_t i = 0; i < listValue.length(); i++) {
             result->set(i, InterpolationType::toInterpolableValue(*listValue.item(i), elementData));
             if (nonInterpolableData)

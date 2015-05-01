@@ -12,6 +12,7 @@
 #include "core/animation/DefaultSVGInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
+#include "core/animation/FilterStyleInterpolation.h"
 #include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/ImageStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
@@ -388,6 +389,16 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
         if (interpolation)
             return interpolation.release();
 
+        break;
+    }
+
+    case CSSPropertyWebkitFilter: {
+        RefPtrWillBeRawPtr<Interpolation> interpolation = FilterStyleInterpolation::maybeCreateList(*fromCSSValue, *toCSSValue, property);
+        if (interpolation)
+            return interpolation.release();
+
+        // FIXME: Support drop shadow interpolation.
+        fallBackToLegacy = true;
         break;
     }
 
