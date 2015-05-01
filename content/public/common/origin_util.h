@@ -18,6 +18,9 @@ namespace content {
 // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
 bool CONTENT_EXPORT IsOriginSecure(const GURL& url);
 
+// Resets the internal schemes/origins whitelist. Used only for testing.
+void CONTENT_EXPORT ResetSecureSchemesAndOriginsForTesting();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_ORIGIN_UTIL_H_

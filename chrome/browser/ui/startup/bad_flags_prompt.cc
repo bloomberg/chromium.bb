@@ -80,6 +80,10 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kDisableBlinkFeatures,
     switches::kEnableBlinkFeatures,
 
+    // This flag allows people to whitelist certain origins as secure, even
+    // if they are not.
+    switches::kUnsafetyTreatInsecureOriginAsSecure,
+
     NULL
   };
 

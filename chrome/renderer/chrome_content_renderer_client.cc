@@ -22,6 +22,7 @@
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -508,6 +509,13 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   pdf_print_client_.reset(new ChromePDFPrintClient());
   pdf::PPB_PDF_Impl::SetPrintClient(pdf_print_client_.get());
 #endif
+
+  std::set<GURL> origins;
+  GetSecureOriginWhitelist(&origins);
+  for (const GURL& origin : origins) {
+    WebSecurityPolicy::addOriginTrustworthyWhiteList(
+        WebSecurityOrigin::create(origin));
+  }
 }
 
 void ChromeContentRendererClient::RenderFrameCreated(

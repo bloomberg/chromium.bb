@@ -101,6 +101,8 @@
       'common/search_types.h',
       'common/search_urls.cc',
       'common/search_urls.h',
+      'common/secure_origin_whitelist.cc',
+      'common/secure_origin_whitelist.h',
       'common/spellcheck_common.cc',
       'common/spellcheck_common.h',
       'common/spellcheck_marker.h',

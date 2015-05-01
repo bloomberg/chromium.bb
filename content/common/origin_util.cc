@@ -59,4 +59,8 @@ bool IsOriginSecure(const GURL& url) {
   return false;
 }
 
+void ResetSecureSchemesAndOriginsForTesting() {
+  g_trustworthy_whitelist.Get().Reset();
+}
+
 }  // namespace content

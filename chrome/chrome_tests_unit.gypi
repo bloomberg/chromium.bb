@@ -560,6 +560,7 @@
       'common/partial_circular_buffer_unittest.cc',
       'common/pref_names_util_unittest.cc',
       'common/search_urls_unittest.cc',
+      'common/secure_origin_whitelist_unittest.cc',
       'common/switch_utils_unittest.cc',
       'common/variations/experiment_labels_unittest.cc',
       'common/variations/variations_util_unittest.cc',

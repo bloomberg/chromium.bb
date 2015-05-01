@@ -1163,6 +1163,14 @@ const char kUninstall[]                     = "uninstall";
 // apps/origins.  This should be used only for testing purpose.
 const char kUnlimitedStorage[]              = "unlimited-storage";
 
+// Treat given (insecure) origins as secure origins. Multiple origins can be
+// supplied. Has no effect unless --user-data-dir is also supplied.
+// Example:
+// --unsafety-treat-insecure-origin-as-secure=http://a.test,http://b.test
+// --user-data-dir=/test/only/profile/dir
+const char kUnsafetyTreatInsecureOriginAsSecure[] =
+    "unsafety-treat-insecure-origin-as-secure";
+
 // Uses Spdy for the transport protocol instead of HTTP. This is a temporary
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";

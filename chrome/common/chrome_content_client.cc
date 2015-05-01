@@ -24,6 +24,7 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -558,7 +559,5 @@ void ChromeContentClient::AddSecureSchemesAndOrigins(
   schemes->insert(content::kChromeUIScheme);
   schemes->insert(extensions::kExtensionScheme);
   schemes->insert(extensions::kExtensionResourceScheme);
-
-  // TODO(kinuko): Handle command-line options for whitelisting
-  // insecure origins. crbug.com/441605
+  GetSecureOriginWhitelist(origins);
 }
