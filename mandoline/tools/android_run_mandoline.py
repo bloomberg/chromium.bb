@@ -5,13 +5,17 @@
 
 import argparse
 import logging
+import os
 import sys
+
+sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                '../../mojo/tools'))
 
 from mopy.android import AndroidShell
 from mopy.config import Config
 from mopy.paths import Paths
 
-USAGE = ("android_mojo_shell.py [<shell-and-app-args>] [<mojo-app>]")
+USAGE = ("android_run_mandoline.py [<shell-and-app-args>] [<mojo-app>]")
 
 def main():
   logging.basicConfig()
@@ -32,7 +36,7 @@ def main():
   config = Config(target_os=Config.OS_ANDROID,
                   target_cpu=launcher_args.target_cpu,
                   is_debug=launcher_args.debug,
-                  apk_name="MojoRunner.apk")
+                  apk_name="Mandoline.apk")
   paths = Paths(config)
   shell = AndroidShell(paths.target_mojo_shell_path, paths.build_dir,
                        paths.adb_path, launcher_args.target_device)

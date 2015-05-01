@@ -1,0 +1,32 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo.gni")
+
+group("desktop") {
+  deps = [
+    ":mandoline_exe",
+  ]
+}
+
+executable("mandoline_exe") {
+  # TODO(beng): due to a gn bug this can't actually be "mandoline" otherwise
+  #             we end up with a cycle with //mandoline:mandoline which seems
+  #             counter-intuitive. brettw is looking at it.
+  output_name = "mandoline_exe"
+
+  sources = [
+    "launcher_process.cc",
+    "launcher_process.h",
+    "main.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//build/config/sanitizers:deps",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/runner:lib",
+  ]
+}
