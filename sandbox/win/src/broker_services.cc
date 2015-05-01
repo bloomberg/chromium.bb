@@ -279,7 +279,8 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
         case JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS: {
           {
             AutoLock lock(&broker->lock_);
-            broker->child_process_ids_.erase(reinterpret_cast<DWORD>(ovl));
+            broker->child_process_ids_.erase(
+                static_cast<DWORD>(reinterpret_cast<uintptr_t>(ovl)));
           }
           --target_counter;
           if (0 == target_counter)
@@ -308,8 +309,8 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
     } else if (THREAD_CTRL_REMOVE_PEER == key) {
       // Remove a process from our list of peers.
       AutoLock lock(&broker->lock_);
-      PeerTrackerMap::iterator it =
-          broker->peer_map_.find(reinterpret_cast<DWORD>(ovl));
+      PeerTrackerMap::iterator it = broker->peer_map_.find(
+          static_cast<DWORD>(reinterpret_cast<uintptr_t>(ovl)));
       DeregisterPeerTracker(it->second);
       broker->peer_map_.erase(it);
     } else if (THREAD_CTRL_QUIT == key) {
@@ -542,8 +543,9 @@ bool BrokerServicesBase::IsActiveTarget(DWORD process_id) {
 VOID CALLBACK BrokerServicesBase::RemovePeer(PVOID parameter, BOOLEAN timeout) {
   PeerTracker* peer = reinterpret_cast<PeerTracker*>(parameter);
   // Don't check the return code because we this may fail (safely) at shutdown.
-  ::PostQueuedCompletionStatus(peer->job_port, 0, THREAD_CTRL_REMOVE_PEER,
-                               reinterpret_cast<LPOVERLAPPED>(peer->id));
+  ::PostQueuedCompletionStatus(
+      peer->job_port, 0, THREAD_CTRL_REMOVE_PEER,
+      reinterpret_cast<LPOVERLAPPED>(static_cast<uintptr_t>(peer->id)));
 }
 
 ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
