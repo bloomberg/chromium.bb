@@ -4286,10 +4286,9 @@ void WebViewImpl::updateMainFrameScrollPosition(const DoublePoint& scrollPositio
     if (scrollableArea->scrollPositionDouble() == scrollPosition)
         return;
 
-    bool oldProgrammaticScroll = frameView->inProgrammaticScroll();
-    frameView->setInProgrammaticScroll(programmaticScroll);
     scrollableArea->notifyScrollPositionChanged(scrollPosition);
-    frameView->setInProgrammaticScroll(oldProgrammaticScroll);
+    if (!programmaticScroll)
+        frameView->setWasScrolledByUser(true);
 }
 
 void WebViewImpl::applyViewportDeltas(

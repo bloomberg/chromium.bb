@@ -168,7 +168,6 @@ public:
     void setInputEventsTransformForEmulation(const IntSize&, float);
 
     virtual void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant) override;
-    void setScrollPositionNonProgrammatically(const IntPoint&);
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
     void setElasticOverscroll(const FloatSize&);
@@ -318,9 +317,6 @@ public:
     // On Mac WebKit1 the underlying NSScrollView just does the scrolling, but on most other platforms
     // we need this function in order to do the scroll ourselves.
     ScrollResult wheelEvent(const PlatformWheelEvent&);
-
-    bool inProgrammaticScroll() const { return m_inProgrammaticScroll; }
-    void setInProgrammaticScroll(bool programmaticScroll) { m_inProgrammaticScroll = programmaticScroll; }
 
     virtual bool shouldUseIntegerScrollOffset() const override;
 
@@ -774,7 +770,6 @@ private:
     bool m_verticalOverflow;
 
     bool m_wasScrolledByUser;
-    bool m_inProgrammaticScroll;
     bool m_safeToPropagateScrollToParent;
 
     double m_lastPaintTime;

@@ -115,7 +115,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_mediaType(MediaTypeNames::screen)
     , m_overflowStatusDirty(true)
     , m_wasScrolledByUser(false)
-    , m_inProgrammaticScroll(false)
     , m_safeToPropagateScrollToParent(true)
     , m_isTrackingPaintInvalidations(false)
     , m_scrollCorner(nullptr)
@@ -926,9 +925,6 @@ void FrameView::layout()
     // Protect the view from being deleted during layout (in recalcStyle)
     RefPtrWillBeRawPtr<FrameView> protector(this);
 
-    // Every scroll that happens during layout is programmatic.
-    TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
-
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
 
@@ -1533,7 +1529,6 @@ DoubleSize FrameView::scrollElementToRect(Element* element, const FloatRect& tar
 void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior scrollBehavior)
 {
     cancelProgrammaticScrollAnimation();
-    TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
     m_maintainScrollPositionAnchor = nullptr;
 
     DoublePoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
@@ -1555,17 +1550,6 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
     } else {
         programmaticallyScrollSmoothlyToOffset(toFloatPoint(newScrollPosition));
     }
-}
-
-void FrameView::setScrollPositionNonProgrammatically(const IntPoint& scrollPoint)
-{
-    IntPoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
-
-    if (newScrollPosition == scrollPosition())
-        return;
-
-    TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, false);
-    notifyScrollPositionChanged(newScrollPosition);
 }
 
 void FrameView::setElasticOverscroll(const FloatSize& elasticOverscroll)
@@ -1605,8 +1589,6 @@ void FrameView::setLayoutSize(const IntSize& size)
 
 void FrameView::scrollPositionChanged()
 {
-    setWasScrolledByUser(true);
-
     Document* document = m_frame->document();
     document->enqueueScrollEventForNode(document);
 
@@ -2512,8 +2494,6 @@ bool FrameView::wasScrolledByUser() const
 
 void FrameView::setWasScrolledByUser(bool wasScrolledByUser)
 {
-    if (m_inProgrammaticScroll)
-        return;
     m_maintainScrollPositionAnchor = nullptr;
     m_wasScrolledByUser = wasScrolledByUser;
 }

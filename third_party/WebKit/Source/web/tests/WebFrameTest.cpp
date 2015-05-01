@@ -5338,41 +5338,36 @@ TEST_F(WebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
-class TestMainFrameUserOrProgrammaticScrollFrameClient : public FrameTestHelpers::TestWebFrameClient {
+class TestScrolledFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
-    TestMainFrameUserOrProgrammaticScrollFrameClient() { reset(); }
+    TestScrolledFrameClient() { reset(); }
     void reset()
     {
-        m_didScrollMainFrame = false;
-        m_wasProgrammaticScroll = false;
+        m_didScrollFrame = false;
     }
-    bool wasUserScroll() const { return m_didScrollMainFrame && !m_wasProgrammaticScroll; }
-    bool wasProgrammaticScroll() const { return m_didScrollMainFrame && m_wasProgrammaticScroll; }
+    bool wasFrameScrolled() const { return m_didScrollFrame; }
 
     // WebFrameClient:
     virtual void didChangeScrollOffset(WebLocalFrame* frame) override
     {
         if (frame->parent())
             return;
-        EXPECT_FALSE(m_didScrollMainFrame);
+        EXPECT_FALSE(m_didScrollFrame);
         FrameView* view = toWebLocalFrameImpl(frame)->frameView();
         // FrameView can be scrolled in FrameView::setFixedVisibleContentRect
         // which is called from LocalFrame::createView (before the frame is associated
         // with the the view).
-        if (view) {
-            m_didScrollMainFrame = true;
-            m_wasProgrammaticScroll = view->inProgrammaticScroll();
-        }
+        if (view)
+            m_didScrollFrame = true;
     }
 private:
-    bool m_didScrollMainFrame;
-    bool m_wasProgrammaticScroll;
+    bool m_didScrollFrame;
 };
 
 TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
 {
     registerMockedHttpURLLoad("long_scroll.html");
-    TestMainFrameUserOrProgrammaticScrollFrameClient client;
+    TestScrolledFrameClient client;
 
     // Make sure we initialize to minimum scale, even if the window size
     // only becomes available after the load begins.
@@ -5381,44 +5376,50 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     webViewHelper.webView()->resize(WebSize(1000, 1000));
     webViewHelper.webView()->layout();
 
-    EXPECT_FALSE(client.wasUserScroll());
-    EXPECT_FALSE(client.wasProgrammaticScroll());
+    WebLocalFrameImpl* frameImpl = webViewHelper.webViewImpl()->mainFrameImpl();
+    FrameView* view = frameImpl->frameView();
+
+    EXPECT_FALSE(client.wasFrameScrolled());
+    EXPECT_FALSE(view->wasScrolledByUser());
 
     // Do a compositor scroll, verify that this is counted as a user scroll.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(0, 1), WebFloatSize(), 1.7f, 0);
-    EXPECT_TRUE(client.wasUserScroll());
-    client.reset();
+    EXPECT_TRUE(client.wasFrameScrolled());
+    EXPECT_TRUE(view->wasScrolledByUser());
 
-    EXPECT_FALSE(client.wasUserScroll());
-    EXPECT_FALSE(client.wasProgrammaticScroll());
+    client.reset();
+    view->setWasScrolledByUser(false);
 
     // The page scale 1.0f and scroll.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(0, 1), WebFloatSize(), 1.0f, 0);
-    EXPECT_TRUE(client.wasUserScroll());
+    EXPECT_TRUE(client.wasFrameScrolled());
+    EXPECT_TRUE(view->wasScrolledByUser());
     client.reset();
+    view->setWasScrolledByUser(false);
 
     // No scroll event if there is no scroll delta.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 0);
-    EXPECT_FALSE(client.wasUserScroll());
-    EXPECT_FALSE(client.wasProgrammaticScroll());
+    EXPECT_FALSE(client.wasFrameScrolled());
+    EXPECT_FALSE(view->wasScrolledByUser());
     client.reset();
 
     // Non zero page scale and scroll.
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(9, 13), WebFloatSize(), 0.6f, 0);
-    EXPECT_TRUE(client.wasUserScroll());
+    EXPECT_TRUE(client.wasFrameScrolled());
+    EXPECT_TRUE(view->wasScrolledByUser());
     client.reset();
+    view->setWasScrolledByUser(false);
 
     // Programmatic scroll.
-    WebLocalFrameImpl* frameImpl = webViewHelper.webViewImpl()->mainFrameImpl();
     frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 20);"));
-    EXPECT_FALSE(client.wasUserScroll());
-    EXPECT_TRUE(client.wasProgrammaticScroll());
+    EXPECT_TRUE(client.wasFrameScrolled());
+    EXPECT_FALSE(view->wasScrolledByUser());
     client.reset();
 
     // Programmatic scroll to same offset. No scroll event should be generated.
     frameImpl->executeScript(WebScriptSource("window.scrollTo(0, 20);"));
-    EXPECT_FALSE(client.wasProgrammaticScroll());
-    EXPECT_FALSE(client.wasUserScroll());
+    EXPECT_FALSE(client.wasFrameScrolled());
+    EXPECT_FALSE(view->wasScrolledByUser());
     client.reset();
 }
 
@@ -5946,7 +5947,6 @@ TEST_F(WebFrameTest, DISABLED_FirstFrameNavigationReplacesHistory)
 TEST_F(WebFrameTest, overflowHiddenRewrite)
 {
     registerMockedHttpURLLoad("non-scrollable.html");
-    TestMainFrameUserOrProgrammaticScrollFrameClient client;
     OwnPtr<FakeCompositingWebViewClient> fakeCompositingWebViewClient = adoptPtr(new FakeCompositingWebViewClient());
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initialize(true, 0, fakeCompositingWebViewClient.get(), &configueCompositingWebView);

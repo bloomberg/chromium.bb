@@ -1050,7 +1050,9 @@ void FrameLoader::restoreScrollPositionAndViewState()
 
         m_frame->host()->pinchViewport().setLocation(pinchViewportOffset);
     } else {
-        view->setScrollPositionNonProgrammatically(m_currentItem->scrollPoint());
+        IntPoint adjustedScrollPosition = view->adjustScrollPositionWithinRange(m_currentItem->scrollPoint());
+        if (adjustedScrollPosition != view->scrollPosition())
+            view->notifyScrollPositionChanged(adjustedScrollPosition);
     }
 
     if (m_frame->isMainFrame()) {
