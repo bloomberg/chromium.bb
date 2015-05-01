@@ -24,6 +24,12 @@ enum SyncPeriodicity {
   SYNC_ONE_SHOT = 1;
 }
 
+enum SyncState {
+  SYNC_STATE_PENDING = 0;
+  SYNC_STATE_FIRING = 1;
+  SYNC_STATE_FAILED = 2;
+}
+
 message BackgroundSyncRegistrationProto {
   required int64 id = 1;
   required string tag = 2;
@@ -31,6 +37,7 @@ message BackgroundSyncRegistrationProto {
   required int64 min_period = 4;
   required SyncNetworkState network_state = 5;
   required SyncPowerState power_state = 6;
+  required SyncState sync_state = 7;
 }
 
 message BackgroundSyncRegistrationsProto {

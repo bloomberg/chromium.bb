@@ -64,12 +64,16 @@ class CONTENT_EXPORT BackgroundSyncManager
              power_state == other.power_state;
     }
 
-    RegistrationId id = kInvalidRegistrationId;
+    // Registrations options from the specification
     std::string tag;
-    SyncPeriodicity periodicity = SYNC_ONE_SHOT;
     int64 min_period = 0;
     SyncNetworkState network_state = NETWORK_STATE_ONLINE;
     SyncPowerState power_state = POWER_STATE_AVOID_DRAINING;
+
+    // Implementation specific members
+    RegistrationId id = kInvalidRegistrationId;
+    SyncPeriodicity periodicity = SYNC_ONE_SHOT;
+    SyncState sync_state = SYNC_STATE_PENDING;
   };
 
   using StatusCallback = base::Callback<void(ErrorType)>;
@@ -133,6 +137,9 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::string& backend_key,
       const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
           callback);
+  virtual void FireOneShotSync(
+      const scoped_refptr<ServiceWorkerVersion>& active_version,
+      const ServiceWorkerVersion::StatusCallback& callback);
 
  private:
   class RegistrationKey {
@@ -227,6 +234,38 @@ class CONTENT_EXPORT BackgroundSyncManager
   void GetRegistrationImpl(int64 sw_registration_id,
                            const RegistrationKey& registration_key,
                            const StatusAndRegistrationCallback& callback);
+
+  bool IsRegistrationReadyToFire(
+      const BackgroundSyncRegistration& registration);
+
+  // FireReadyEvents and callbacks
+  void FireReadyEvents();
+  void FireReadyEventsImpl(const base::Closure& callback);
+  void FireReadyEventsDidFindRegistration(
+      const RegistrationKey& registration_key,
+      BackgroundSyncRegistration::RegistrationId registration_id,
+      const base::Closure& callback,
+      ServiceWorkerStatusCode service_worker_status,
+      const scoped_refptr<ServiceWorkerRegistration>&
+          service_worker_registration);
+
+  // Called when a sync event has completed.
+  void EventComplete(
+      const scoped_refptr<ServiceWorkerRegistration>&
+          service_worker_registration,
+      int64 service_worker_id,
+      const RegistrationKey& key,
+      BackgroundSyncRegistration::RegistrationId sync_registration_id,
+      ServiceWorkerStatusCode status_code);
+  void EventCompleteImpl(
+      int64 service_worker_id,
+      const RegistrationKey& key,
+      BackgroundSyncRegistration::RegistrationId sync_registration_id,
+      ServiceWorkerStatusCode status_code,
+      const base::Closure& callback);
+  void EventCompleteDidStore(int64 service_worker_id,
+                             const base::Closure& callback,
+                             ServiceWorkerStatusCode status_code);
 
   // OnRegistrationDeleted callbacks
   void OnRegistrationDeletedImpl(int64 registration_id,
