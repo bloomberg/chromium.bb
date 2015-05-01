@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chrome_build.gni")
+# TODO(GYP) enable chrome_multiple_dll support
+is_chrome_multiple_dll = false
 
 content_app_sources = [
   "android/app_jni_registrar.cc",
@@ -70,7 +71,7 @@ content_app_extra_configs = [
   "//content:content_implementation",
 ]
 
-if (!is_multi_dll_chrome) {
+if (!is_chrome_multiple_dll) {
   content_app_deps += [ "//content/gpu:gpu_sources" ]
 }
 
@@ -85,7 +86,7 @@ source_set("both") {
   deps = content_app_deps
 }
 
-if (is_multi_dll_chrome) {
+if (is_chrome_multiple_dll) {
   # It doesn't make sense to do the browser/child dll split in component mode.
   assert(!is_component_build)
 
@@ -96,7 +97,7 @@ if (is_multi_dll_chrome) {
     configs += content_app_extra_configs
     deps = content_app_deps
 
-    defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
+    defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
   }
 
   source_set("child") {
@@ -106,6 +107,6 @@ if (is_multi_dll_chrome) {
     configs += content_app_extra_configs
     deps = content_app_deps
 
-    defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
+    defines += [ "CHROME_MULTIPLE_DLL_CHILD" ]
   }
 }

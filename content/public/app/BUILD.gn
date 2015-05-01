@@ -20,8 +20,6 @@
 #     //content (shared library) ->
 #       //content/public/app:both_sources (source set)
 
-import("//build/config/chrome_build.gni")
-
 public_app_shared_sources = [
   "content_jni_onload.h",
   "content_main.h",
@@ -93,7 +91,10 @@ if (is_component_build) {
            ]
   }
 
-  if (is_multi_dll_chrome) {
+  # TODO(GYP) enable chrome_multiple_dll support
+  is_chrome_multiple_dll = false
+
+  if (is_chrome_multiple_dll) {
     source_set("browser") {
       check_includes = false  # See comment above.
 

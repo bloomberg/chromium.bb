@@ -326,7 +326,6 @@
     ['chrome_multiple_dll', {
       'targets': [
         {
-          # GN version: //chrome:chrome_child
           'target_name': 'chrome_child_dll',
           'type': 'shared_library',
           'product_name': 'chrome_child',
