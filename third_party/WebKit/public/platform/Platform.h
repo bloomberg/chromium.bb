@@ -88,6 +88,7 @@ class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
+class WebMemoryDumpProvider;
 class WebMessagePortChannel;
 class WebMimeRegistry;
 class WebNavigatorConnectProvider;
@@ -568,6 +569,15 @@ public:
     // recordRappor records a sample string, while recordRapporURL records the domain and registry of a url.
     virtual void recordRappor(const char* metric, const WebString& sample) { }
     virtual void recordRapporURL(const char* metric, const blink::WebURL& url) { }
+
+    // Registers a memory dump provider. The WebMemoryDumpProvider::onMemoryDump
+    // method will be called on the same thread that called the
+    // registerMemoryDumpProvider() method.
+    // See crbug.com/458295 for design docs.
+    virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*) { }
+
+    // Must be called on the thread that called registerMemoryDumpProvider().
+    virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) { }
 
     // GPU ----------------------------------------------------------------
     //
