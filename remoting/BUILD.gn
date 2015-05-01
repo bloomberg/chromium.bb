@@ -24,7 +24,8 @@ group("remoting_all") {
     #"//app_remoting_webapp.gyp:ar_sample_app",
   ]
 
-  if ((is_linux && !is_chromeos) || is_mac || is_win) {
+  # TODO(GYP): add is_mac
+  if ((is_linux && !is_chromeos) || is_win) {
     deps += [ "//remoting/webapp" ]
   }
 
