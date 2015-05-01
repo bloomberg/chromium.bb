@@ -4,12 +4,9 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.AlertDialog;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.v7.app.AlertDialog;
 
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTab;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;

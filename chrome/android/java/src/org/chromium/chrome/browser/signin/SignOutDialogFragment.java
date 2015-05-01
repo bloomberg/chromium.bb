@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 
 import org.chromium.chrome.R;
 
@@ -49,7 +49,7 @@ public class SignOutDialogFragment extends DialogFragment implements
                     R.string.signout_managed_account_message, managementDomain);
         }
 
-        return new AlertDialog.Builder(getActivity())
+        return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.signout_title)
                 .setPositiveButton(R.string.ok, this)
                 .setNegativeButton(R.string.cancel, this)

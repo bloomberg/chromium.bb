@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.sync.ui;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
@@ -83,8 +83,8 @@ public class ConfirmAccountChangeFragment extends DialogFragment
 
         textView.setText(messageWithLink);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
-        return new AlertDialog.Builder(getActivity()).setTitle(
-                R.string.confirm_account_change_dialog_title)
+        return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
+                .setTitle(R.string.confirm_account_change_dialog_title)
                 .setPositiveButton(R.string.confirm_account_change_dialog_signin, this)
                 .setNegativeButton(R.string.cancel, this).setView(v)
                 .create();

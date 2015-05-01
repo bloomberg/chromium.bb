@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 
 import org.chromium.chrome.R;
 
@@ -44,7 +44,7 @@ public class ProtectedContentResetCredentialConfirmDialogFragment extends Dialog
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         super.onCreateDialog(savedInstanceState);
-        return new AlertDialog.Builder(getActivity())
+        return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.protected_content_reset_title)
                 .setMessage(R.string.protected_content_reset_message)
                 .setNegativeButton(R.string.cancel, this)

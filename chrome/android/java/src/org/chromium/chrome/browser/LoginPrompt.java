@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,25 +53,19 @@ public class LoginPrompt implements ChromeHttpAuthHandler.AutofillObserver {
         });
 
         TextView explanationView = (TextView) v.findViewById(R.id.explanation);
-        TextView usernameLabelView = (TextView) v.findViewById(R.id.username_label);
-        TextView passwordLabelView = (TextView) v.findViewById(R.id.password_label);
         explanationView.setText(mAuthHandler.getMessageBody());
-        usernameLabelView.setText(mAuthHandler.getUsernameLabelText());
-        passwordLabelView.setText(mAuthHandler.getPasswordLabelText());
 
-        String okButtonText = mAuthHandler.getOkButtonText();
-        String cancelButtonText = mAuthHandler.getCancelButtonText();
-
-        mDialog = new AlertDialog.Builder(mContext)
-                .setTitle(mAuthHandler.getMessageTitle())
+        mDialog = new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+                .setTitle(R.string.login_dialog_title)
                 .setView(v)
-                .setPositiveButton(okButtonText, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        mAuthHandler.proceed(getUsername(),  getPassword());
-                    }
-                })
-                .setNegativeButton(cancelButtonText, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.login_dialog_ok_button_label,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                mAuthHandler.proceed(getUsername(),  getPassword());
+                            }
+                        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int whichButton) {
                         mAuthHandler.cancel();

@@ -47,17 +47,7 @@ class ChromeHttpAuthHandler {
   void CancelAuth(JNIEnv* env, jobject);
 
   // These functions return the strings needed to display a login form.
-  base::android::ScopedJavaLocalRef<jstring> GetMessageTitle(
-      JNIEnv* env, jobject);
   base::android::ScopedJavaLocalRef<jstring> GetMessageBody(
-      JNIEnv* env, jobject);
-  base::android::ScopedJavaLocalRef<jstring> GetUsernameLabelText(
-      JNIEnv* env, jobject);
-  base::android::ScopedJavaLocalRef<jstring> GetPasswordLabelText(
-      JNIEnv* env, jobject);
-  base::android::ScopedJavaLocalRef<jstring> GetOkButtonText(
-      JNIEnv* env, jobject);
-  base::android::ScopedJavaLocalRef<jstring> GetCancelButtonText(
       JNIEnv* env, jobject);
   // Registers the ChromeHttpAuthHandler native methods.
   static bool RegisterChromeHttpAuthHandler(JNIEnv* env);

@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.shell.sync;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.shell.R;
@@ -31,7 +31,7 @@ public class AccountChooserFragment extends DialogFragment
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         List<String> accountsList = AccountManagerHelper.get(getActivity()).getGoogleAccountNames();
         mAccounts = accountsList.toArray(new String[accountsList.size()]);
-        return new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT)
+        return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.signin_select_account)
                 .setSingleChoiceItems(mAccounts, mSelectedAccount, this)
                 .setPositiveButton(R.string.signin_sign_in, this)

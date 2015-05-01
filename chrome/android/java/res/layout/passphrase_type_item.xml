@@ -10,7 +10,7 @@
     android:gravity="center_vertical"
     android:checkMark="?android:attr/listChoiceIndicatorSingle"
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
+    android:paddingStart="@dimen/dialog_padding_sides"
+    android:paddingEnd="@dimen/dialog_padding_sides"
     android:paddingTop="8dp"
     android:paddingBottom="8dp" />

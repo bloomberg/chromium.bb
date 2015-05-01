@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
@@ -16,6 +15,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -117,11 +117,11 @@ public class CardUnmaskPrompt
         ((ImageView) v.findViewById(R.id.cvc_hint_image)).setImageResource(drawableId);
 
         mDialog = new AlertDialog.Builder(context, R.style.AlertDialogTheme)
-                          .setTitle(title)
-                          .setView(v)
-                          .setNegativeButton(R.string.cancel, null)
-                          .setPositiveButton(R.string.autofill_card_unmask_confirm_button, null)
-                          .create();
+                .setTitle(title)
+                .setView(v)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.autofill_card_unmask_confirm_button, null)
+                .create();
         mDialog.setOnDismissListener(this);
 
         mShouldRequestExpirationDate = shouldRequestExpirationDate;

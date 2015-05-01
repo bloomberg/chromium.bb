@@ -133,4 +133,8 @@
     <!-- Cast related constants -->
     <dimen name="remote_notification_logo_max_width">@android:dimen/notification_large_icon_width</dimen>
     <dimen name="remote_notification_logo_max_height">64dp</dimen>
+    
+    <!-- Alert dialog -->
+    <dimen name="dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
+    <dimen name="dialog_padding_sides">@dimen/abc_dialog_padding_material</dimen>
 </resources>

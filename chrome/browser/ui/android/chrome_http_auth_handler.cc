@@ -77,38 +77,9 @@ void ChromeHttpAuthHandler::CancelAuth(JNIEnv* env, jobject) {
     observer_->CancelAuth();
 }
 
-ScopedJavaLocalRef<jstring> ChromeHttpAuthHandler::GetMessageTitle(
-    JNIEnv* env, jobject) {
-  return ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE));
-}
-
 ScopedJavaLocalRef<jstring> ChromeHttpAuthHandler::GetMessageBody(
     JNIEnv* env, jobject) {
   return ConvertUTF16ToJavaString(env, explanation_);
-}
-
-ScopedJavaLocalRef<jstring> ChromeHttpAuthHandler::GetUsernameLabelText(
-    JNIEnv* env, jobject) {
-  return ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_USERNAME_FIELD));
-}
-
-ScopedJavaLocalRef<jstring> ChromeHttpAuthHandler::GetPasswordLabelText(
-    JNIEnv* env, jobject) {
-  return ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD));
-}
-
-ScopedJavaLocalRef<jstring> ChromeHttpAuthHandler::GetOkButtonText(
-    JNIEnv* env, jobject) {
-  return ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL));
-}
-
-ScopedJavaLocalRef<jstring> ChromeHttpAuthHandler::GetCancelButtonText(
-    JNIEnv* env, jobject) {
-  return ConvertUTF16ToJavaString(env, l10n_util::GetStringUTF16(IDS_CANCEL));
 }
 
 // static

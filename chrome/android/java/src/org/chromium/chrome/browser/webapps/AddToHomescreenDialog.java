@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -40,7 +40,7 @@ public class AddToHomescreenDialog {
     public static void show(final Activity activity, final Tab currentTab) {
         View view = activity.getLayoutInflater().inflate(
                 R.layout.single_line_edit_dialog, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
                 .setTitle(R.string.menu_add_to_homescreen)
                 .setNegativeButton(R.string.cancel,
                         new DialogInterface.OnClickListener() {

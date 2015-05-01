@@ -32,6 +32,9 @@
 -keep class com.google.ipc.invalidation.external.client.** {
   *;
 }
+-keep class  com.google.protos.ipc.invalidation.** {
+  *;
+}
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html
@@ -50,6 +53,10 @@
 # Android using reflection.
 -keep class android.support.v7.widget.SearchView {
   public <init>(...);
+}
+
+-keep class android.support.v7.app.AlertDialog {
+  public ** getButton(int);
 }
 
 # Google Play Services warnings are about its resources.

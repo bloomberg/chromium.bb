@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+<!-- Copyright 2012 The Chromium Authors. All rights reserved.
 
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
@@ -14,25 +14,19 @@
      Android tree.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="5dp">
+    style="@style/AlertDialogContent"
+    android:orientation="vertical">
 
     <ScrollView android:id="@+id/js_modal_dialog_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp">
+        android:layout_weight="1">
 
         <TextView android:id="@+id/js_modal_dialog_message"
+            style="@style/TextAppearance.AppCompat.Subhead"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            />
+            android:layout_gravity="start" />
 
     </ScrollView>
 
@@ -42,15 +36,14 @@
         android:singleLine="true"
         android:visibility="gone"
         android:contentDescription="@string/accessibility_js_modal_dialog_prompt"
-        android:inputType="text"
-        />
+        android:inputType="text" />
 
     <CheckBox android:id="@+id/suppress_js_modal_dialogs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
+        android:layout_marginTop="8dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="@string/suppress_js_modal_dialogs"
-        />
+        android:text="@string/suppress_js_modal_dialogs" />
 
 </LinearLayout>

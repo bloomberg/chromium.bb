@@ -9,10 +9,8 @@
     android:layout_height="wrap_content"
     android:overScrollMode="ifContentScrolls">
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="25dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        style="@style/AlertDialogContent">
         <TextView
             android:id="@+id/prompt_text"
             android:layout_width="match_parent"

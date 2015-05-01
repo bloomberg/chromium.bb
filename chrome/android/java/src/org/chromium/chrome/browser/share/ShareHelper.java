@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
@@ -21,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -131,7 +131,7 @@ public class ShareHelper {
 
         final ShareDialogAdapter adapter =
                 new ShareDialogAdapter(activity, manager, resolveInfoList);
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
         builder.setTitle(activity.getString(R.string.share_link_chooser_title));
         builder.setAdapter(adapter, null);
 

@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.test;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Log;
 import android.view.View;
@@ -208,8 +208,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
      */
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testBeforeUnloadOnReloadDialog()
-            throws InterruptedException, TimeoutException, ExecutionException {
+    public void testBeforeUnloadOnReloadDialog() throws InterruptedException, ExecutionException {
         loadUrlWithSanitization(BEFORE_UNLOAD_URL);
         executeJavaScriptAndWaitForDialog("window.location.reload();");
 

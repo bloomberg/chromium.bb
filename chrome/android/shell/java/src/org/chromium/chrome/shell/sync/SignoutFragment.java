@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.shell.sync;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.shell.R;
@@ -19,7 +19,7 @@ import org.chromium.chrome.shell.R;
 public class SignoutFragment extends DialogFragment implements DialogInterface.OnClickListener {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT)
+        return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.signout_title)
                 .setPositiveButton(R.string.signout_sign_out, this)
                 .setNegativeButton(R.string.signout_cancel, this)

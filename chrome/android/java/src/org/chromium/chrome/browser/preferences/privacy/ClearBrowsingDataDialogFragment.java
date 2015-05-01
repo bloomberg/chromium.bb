@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
@@ -46,7 +46,7 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment
 
         private ClearBrowsingDataAdapter(DialogOption[] options, String[] optionNames,
                 EnumSet<DialogOption> disabledOptions) {
-            super(getActivity(), android.R.layout.simple_list_item_multiple_choice, optionNames);
+            super(getActivity(), R.layout.select_dialog_multichoice_material, optionNames);
             assert options.length == optionNames.length;
             mOptions = options;
             mDisabledOptions = disabledOptions;
@@ -209,7 +209,7 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment
         mSelectedOptions = getDefaultDialogOptionsSelections();
         mAdapter = new ClearBrowsingDataAdapter(options, optionNames, getDisabledDialogOptions());
         final AlertDialog.Builder builder =
-                new AlertDialog.Builder(getActivity())
+                new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                         .setTitle(R.string.clear_browsing_data_title)
                         .setPositiveButton(R.string.clear_data_delete, this)
                         .setNegativeButton(R.string.cancel, this)

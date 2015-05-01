@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
@@ -15,6 +14,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
 import android.widget.ListAdapter;
 
@@ -447,7 +447,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceClick(Preference preference) {
         // Handle the Clear & Reset preference click by showing a confirmation.
-        new AlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.website_reset)
                 .setMessage(R.string.website_reset_confirmation)
                 .setPositiveButton(R.string.website_reset, new DialogInterface.OnClickListener() {

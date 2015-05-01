@@ -62,28 +62,8 @@ public class ChromeHttpAuthHandler {
         nativeSetAuth(mNativeChromeHttpAuthHandler, username, password);
     }
 
-    public String getMessageTitle() {
-        return nativeGetMessageTitle(mNativeChromeHttpAuthHandler);
-    }
-
     public String getMessageBody() {
         return nativeGetMessageBody(mNativeChromeHttpAuthHandler);
-    }
-
-    public String getUsernameLabelText() {
-        return nativeGetUsernameLabelText(mNativeChromeHttpAuthHandler);
-    }
-
-    public String getPasswordLabelText() {
-        return nativeGetPasswordLabelText(mNativeChromeHttpAuthHandler);
-    }
-
-    public String getOkButtonText() {
-        return nativeGetOkButtonText(mNativeChromeHttpAuthHandler);
-    }
-
-    public String getCancelButtonText() {
-        return nativeGetCancelButtonText(mNativeChromeHttpAuthHandler);
     }
 
     @CalledByNative
@@ -142,10 +122,5 @@ public class ChromeHttpAuthHandler {
     private native void nativeSetAuth(long nativeChromeHttpAuthHandler,
             String username, String password);
     private native void nativeCancelAuth(long nativeChromeHttpAuthHandler);
-    private native String nativeGetCancelButtonText(long nativeChromeHttpAuthHandler);
-    private native String nativeGetMessageTitle(long nativeChromeHttpAuthHandler);
     private native String nativeGetMessageBody(long nativeChromeHttpAuthHandler);
-    private native String nativeGetPasswordLabelText(long nativeChromeHttpAuthHandler);
-    private native String nativeGetOkButtonText(long nativeChromeHttpAuthHandler);
-    private native String nativeGetUsernameLabelText(long nativeChromeHttpAuthHandler);
 }

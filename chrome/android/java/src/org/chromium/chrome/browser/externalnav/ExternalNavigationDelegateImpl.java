@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.externalnav;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -16,9 +15,9 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.TransactionTooLargeException;
 import android.provider.Browser;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
-
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -126,7 +125,7 @@ class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
 
     @Override
     public void startIncognitoIntent(final Intent intent) {
-        new AlertDialog.Builder(mActivity)
+        new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme)
             .setTitle(R.string.external_app_leave_incognito_warning_title)
             .setMessage(R.string.external_app_leave_incognito_warning)
             .setPositiveButton(R.string.ok, new OnClickListener() {

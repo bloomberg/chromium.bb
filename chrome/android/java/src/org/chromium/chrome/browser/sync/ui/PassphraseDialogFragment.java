@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.sync.ui;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -16,6 +15,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
+import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
@@ -136,7 +136,7 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
             }
         });
 
-        final AlertDialog d = new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT)
+        final AlertDialog d = new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setView(v)
                 .setPositiveButton(R.string.ok, new Dialog.OnClickListener() {
                     @Override

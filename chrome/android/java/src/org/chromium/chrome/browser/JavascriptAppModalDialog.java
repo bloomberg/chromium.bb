@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -87,7 +87,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
 
         prepare(layout);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme)
                 .setView(layout)
                 .setTitle(mTitle)
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -97,13 +97,13 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
                     }
                 });
         if (hasPositiveButton()) {
-            dialogBuilder.setPositiveButton(getPositiveButtonText(), this);
+            builder.setPositiveButton(getPositiveButtonText(), this);
         }
         if (hasNegativeButton()) {
-            dialogBuilder.setNegativeButton(getNegativeButtonText(), this);
+            builder.setNegativeButton(getNegativeButtonText(), this);
         }
 
-        mDialog = dialogBuilder.create();
+        mDialog = builder.create();
         mDialog.setCanceledOnTouchOutside(false);
         mDialog.show();
     }

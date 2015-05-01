@@ -4,35 +4,39 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    style="@style/AlertDialogContent">
 
-<TableLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:stretchColumns="1"
-    android:paddingTop="5dp"
-    android:paddingEnd="7dp"
-    android:paddingBottom="5dp"
-    android:paddingStart="7dp" >
     <TextView
         android:id="@+id/explanation"
-        android:layout_width="match_parent" />
-    <TableRow>
-        <TextView
-            android:id="@+id/username_label"
-            android:paddingStart="7dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <org.chromium.chrome.browser.widget.FloatLabelLayout
+        android:id="@+id/username_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
         <EditText
             android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/login_dialog_username_field"
             android:inputType="textNoSuggestions"
-            android:contentDescription="@string/accessibility_http_auth_username_input" />
-    </TableRow>
-    <TableRow>
-        <TextView
-            android:id="@+id/password_label"
-            android:paddingStart="7dp"/>
+            android:imeOptions="flagNoExtractUi" />
+    </org.chromium.chrome.browser.widget.FloatLabelLayout>
+
+    <org.chromium.chrome.browser.widget.FloatLabelLayout
+        android:id="@+id/password_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
         <EditText
             android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/login_dialog_password_field"
             android:inputType="textPassword"
-            android:contentDescription="@string/accessibility_http_auth_password_input" />
-    </TableRow>
-</TableLayout>
+            android:imeOptions="flagNoExtractUi" />
+    </org.chromium.chrome.browser.widget.FloatLabelLayout>
+
+</LinearLayout>

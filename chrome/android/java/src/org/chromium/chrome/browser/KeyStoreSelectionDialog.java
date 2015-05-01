@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 
 import org.chromium.chrome.R;
 
@@ -51,7 +51,8 @@ class KeyStoreSelectionDialog extends DialogFragment {
             getString(R.string.smartcard_certificate_option),
             SYSTEM_STORE
         };
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.smartcard_dialog_title)
                 .setSingleChoiceItems(choices, 0, new DialogInterface.OnClickListener() {
                     @Override
