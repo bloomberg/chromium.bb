@@ -600,6 +600,7 @@ def SDKLibs(host, target):
               [sys.executable, '%(scons.py)s',
                '--verbose', '--mode=nacl', '-j%(cores)s', 'naclsdk_validate=0',
                'platform=%s' % target,
+               '--nacl_glibc',
                'nacl_glibc_dir=%(abs_' + sdk_compiler + ')s',
                'DESTINATION_ROOT=%(work_dir)s',
                'includedir=' + command.path.join('%(output)s',

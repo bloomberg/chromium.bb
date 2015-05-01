@@ -33,7 +33,10 @@ TEMP_PACKAGES_FILE = os.path.join(TOOLCHAIN_BUILD_OUT_DIR, 'packages.txt')
 
 TOOLCHAIN_TESTS = {
 #   TOOLCHAIN_NAME:    [(MODE,  ARCH,  CLIB)]
-    'nacl_arm_newlib': [('opt', 'arm', 'newlib')]
+    'nacl_arm_newlib': [('opt', 'arm', 'newlib')],
+    'nacl_arm_newlib_raw': [('opt', 'arm', 'newlib')],
+    'nacl_arm_glibc': [('opt', 'arm', 'glibc')],
+    'nacl_arm_glibc_raw': [('opt', 'arm', 'glibc')],
     }
 
 def main(args):
@@ -78,7 +81,7 @@ def main(args):
   subprocess.check_call([
       sys.executable, os.path.join(NACL_DIR, 'pynacl', 'run_pynacl_tests.py')])
 
-  bot_arg = []
+  bot_arg = ['--bot']
   if options.buildbot:
     bot_arg.append('--buildbot')
   elif options.trybot:

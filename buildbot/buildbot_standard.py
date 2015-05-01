@@ -195,7 +195,7 @@ def BuildScript(status, context):
     TryToCleanContents(tmp_dir, file_name_filter)
 
     # Recreate TEMP, as it may have been clobbered.
-    if not os.path.exists(os.environ['TEMP']):
+    if 'TEMP' in os.environ and not os.path.exists(os.environ['TEMP']):
       os.makedirs(os.environ['TEMP'])
 
     # Mac has an additional temporary directory; clean it up.
@@ -353,12 +353,15 @@ def BuildScript(status, context):
     return
 
   ### BEGIN tests ###
-  with Step('small_tests', status, halt_on_fail=False):
-    SCons(context, args=['small_tests'])
-  with Step('medium_tests', status, halt_on_fail=False):
-    SCons(context, args=['medium_tests'])
-  with Step('large_tests', status, halt_on_fail=False):
-    SCons(context, args=['large_tests'])
+  if not context['use_glibc']:
+    # Bypassing the IRT with glibc is not a supported case,
+    # and in fact does not work at all with the new glibc.
+    with Step('small_tests', status, halt_on_fail=False):
+      SCons(context, args=['small_tests'])
+    with Step('medium_tests', status, halt_on_fail=False):
+      SCons(context, args=['medium_tests'])
+    with Step('large_tests', status, halt_on_fail=False):
+      SCons(context, args=['large_tests'])
 
   with Step('compile IRT tests', status):
     SCons(context, parallel=True, mode=['nacl_irt_test'])

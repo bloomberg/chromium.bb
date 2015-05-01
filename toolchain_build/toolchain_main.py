@@ -447,6 +447,11 @@ class PackageBuilder(object):
         default=False, action='store_true',
         help='Clean source dirs, run and cache as if on a non-trybot buildbot.')
     parser.add_option(
+        '--bot', dest='bot',
+        default=False, action='store_true',
+        help='Clean source dirs, run and cache as if on bot, ' +
+        'but do not upload (unless --trybot or --buildbot).')
+    parser.add_option(
         '--clobber-source', dest='clobber_source',
         default=False, action='store_true',
         help='Clobber source directories before building')
@@ -486,6 +491,8 @@ class PackageBuilder(object):
           'ERROR: Tried to run with both --trybot and --buildbot.')
       sys.exit(1)
     if options.trybot or options.buildbot:
+      options.bot = True
+    if options.bot:
       options.verbose = True
       options.quiet = False
       options.no_annotator = False

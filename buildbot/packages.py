@@ -18,19 +18,6 @@ BUILD_DIR = os.path.join(NACL_DIR, 'build')
 PACKAGE_VERSION_DIR = os.path.join(BUILD_DIR, 'package_version')
 PACKAGE_VERSION_SCRIPT = os.path.join(PACKAGE_VERSION_DIR, 'package_version.py')
 
-BUILDBOT_REVISION = os.getenv('BUILDBOT_GOT_REVISION', None)
-BUILDBOT_BUILDERNAME = os.getenv('BUILDBOT_BUILDERNAME', None)
-BUILDBOT_BUILDNUMBER = os.getenv('BUILDBOT_BUILDNUMBER', None)
-
-if BUILDBOT_REVISION is None:
-  print 'Error - Could not obtain buildbot revision number'
-  sys.exit(1)
-elif BUILDBOT_BUILDERNAME is None:
-  print 'Error - could not obtain buildbot builder name'
-  sys.exit(1)
-elif BUILDBOT_BUILDNUMBER is None:
-  print 'Error - could not obtain buildbot build number'
-  sys.exit(1)
 
 def UploadPackages(filename, is_try):
   """ Upload packages to Google Storage.
@@ -43,10 +30,22 @@ def UploadPackages(filename, is_try):
   sys.stdout.flush()
 
   if not is_try:
-    upload_rev = BUILDBOT_REVISION
+    buildbot_revision = os.getenv('BUILDBOT_GOT_REVISION', None)
+    if buildbot_revision is None:
+      print 'Error - Could not obtain buildbot revision number'
+      sys.exit(1)
+    upload_rev = buildbot_revision
     upload_args = []
   else:
-    upload_rev = '%s/%s' % (BUILDBOT_BUILDERNAME, BUILDBOT_BUILDNUMBER)
+    buildbot_buildername = os.getenv('BUILDBOT_BUILDERNAME', None)
+    if buildbot_buildername is None:
+      print 'Error - could not obtain buildbot builder name'
+      sys.exit(1)
+    buildbot_buildnumber = os.getenv('BUILDBOT_BUILDNUMBER', None)
+    if buildbot_buildnumber is None:
+      print 'Error - could not obtain buildbot build number'
+      sys.exit(1)
+    upload_rev = '%s/%s' % (buildbot_buildername, buildbot_buildnumber)
     upload_args = ['--cloud-bucket', 'nativeclient-trybot/packages']
 
   with open(filename, 'rt') as f:
