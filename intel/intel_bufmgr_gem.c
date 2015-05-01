@@ -211,6 +211,8 @@ struct _drm_intel_bo_gem {
 	void *mem_virtual;
 	/** GTT virtual address for the buffer, saved across map/unmap cycles */
 	void *gtt_virtual;
+	/** WC CPU address for the buffer, saved across map/unmap cycles */
+	void *wc_virtual;
 	/**
 	 * Virtual address of the buffer allocated by user, used for userptr
 	 * objects only.
@@ -1188,6 +1190,11 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 		drm_munmap(bo_gem->mem_virtual, bo_gem->bo.size);
 		bufmgr_gem->vma_count--;
 	}
+	if (bo_gem->wc_virtual) {
+		VG(VALGRIND_FREELIKE_BLOCK(bo_gem->wc_virtual, 0));
+		drm_munmap(bo_gem->wc_virtual, bo_gem->bo.size);
+		bufmgr_gem->vma_count--;
+	}
 	if (bo_gem->gtt_virtual) {
 		drm_munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
 		bufmgr_gem->vma_count--;
@@ -1212,6 +1219,9 @@ drm_intel_gem_bo_mark_mmaps_incoherent(drm_intel_bo *bo)
 
 	if (bo_gem->mem_virtual)
 		VALGRIND_MAKE_MEM_NOACCESS(bo_gem->mem_virtual, bo->size);
+
+	if (bo_gem->wc_virtual)
+		VALGRIND_MAKE_MEM_NOACCESS(bo_gem->wc_virtual, bo->size);
 
 	if (bo_gem->gtt_virtual)
 		VALGRIND_MAKE_MEM_NOACCESS(bo_gem->gtt_virtual, bo->size);
@@ -1277,6 +1287,11 @@ static void drm_intel_gem_bo_purge_vma_cache(drm_intel_bufmgr_gem *bufmgr_gem)
 			bo_gem->mem_virtual = NULL;
 			bufmgr_gem->vma_count--;
 		}
+		if (bo_gem->wc_virtual) {
+			drm_munmap(bo_gem->wc_virtual, bo_gem->bo.size);
+			bo_gem->wc_virtual = NULL;
+			bufmgr_gem->vma_count--;
+		}
 		if (bo_gem->gtt_virtual) {
 			drm_munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
 			bo_gem->gtt_virtual = NULL;
@@ -1292,6 +1307,8 @@ static void drm_intel_gem_bo_close_vma(drm_intel_bufmgr_gem *bufmgr_gem,
 	DRMLISTADDTAIL(&bo_gem->vma_list, &bufmgr_gem->vma_cache);
 	if (bo_gem->mem_virtual)
 		bufmgr_gem->vma_count++;
+	if (bo_gem->wc_virtual)
+		bufmgr_gem->vma_count++;
 	if (bo_gem->gtt_virtual)
 		bufmgr_gem->vma_count++;
 	drm_intel_gem_bo_purge_vma_cache(bufmgr_gem);
@@ -1303,6 +1320,8 @@ static void drm_intel_gem_bo_open_vma(drm_intel_bufmgr_gem *bufmgr_gem,
 	bufmgr_gem->vma_open++;
 	DRMLISTDEL(&bo_gem->vma_list);
 	if (bo_gem->mem_virtual)
+		bufmgr_gem->vma_count--;
+	if (bo_gem->wc_virtual)
 		bufmgr_gem->vma_count--;
 	if (bo_gem->gtt_virtual)
 		bufmgr_gem->vma_count--;
@@ -3328,6 +3347,141 @@ drm_intel_bufmgr_gem_unref(drm_intel_bufmgr *bufmgr)
 
 		pthread_mutex_unlock(&bufmgr_list_mutex);
 	}
+}
+
+void *drm_intel_gem_bo_map__gtt(drm_intel_bo *bo)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	if (bo_gem->gtt_virtual)
+		return bo_gem->gtt_virtual;
+
+	if (bo_gem->is_userptr)
+		return NULL;
+
+	pthread_mutex_lock(&bufmgr_gem->lock);
+	if (bo_gem->gtt_virtual == NULL) {
+		struct drm_i915_gem_mmap_gtt mmap_arg;
+		void *ptr;
+
+		DBG("bo_map_gtt: mmap %d (%s), map_count=%d\n",
+		    bo_gem->gem_handle, bo_gem->name, bo_gem->map_count);
+
+		if (bo_gem->map_count++ == 0)
+			drm_intel_gem_bo_open_vma(bufmgr_gem, bo_gem);
+
+		memclear(mmap_arg);
+		mmap_arg.handle = bo_gem->gem_handle;
+
+		/* Get the fake offset back... */
+		ptr = MAP_FAILED;
+		if (drmIoctl(bufmgr_gem->fd,
+			     DRM_IOCTL_I915_GEM_MMAP_GTT,
+			     &mmap_arg) == 0) {
+			/* and mmap it */
+			ptr = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE,
+				       MAP_SHARED, bufmgr_gem->fd,
+				       mmap_arg.offset);
+		}
+		if (ptr == MAP_FAILED) {
+			if (--bo_gem->map_count == 0)
+				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
+			ptr = NULL;
+		}
+
+		bo_gem->gtt_virtual = ptr;
+	}
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+
+	return bo_gem->gtt_virtual;
+}
+
+void *drm_intel_gem_bo_map__cpu(drm_intel_bo *bo)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	if (bo_gem->mem_virtual)
+		return bo_gem->mem_virtual;
+
+	if (bo_gem->is_userptr) {
+		/* Return the same user ptr */
+		return bo_gem->user_virtual;
+	}
+
+	pthread_mutex_lock(&bufmgr_gem->lock);
+	if (!bo_gem->mem_virtual) {
+		struct drm_i915_gem_mmap mmap_arg;
+
+		if (bo_gem->map_count++ == 0)
+			drm_intel_gem_bo_open_vma(bufmgr_gem, bo_gem);
+
+		DBG("bo_map: %d (%s), map_count=%d\n",
+		    bo_gem->gem_handle, bo_gem->name, bo_gem->map_count);
+
+		memclear(mmap_arg);
+		mmap_arg.handle = bo_gem->gem_handle;
+		mmap_arg.size = bo->size;
+		if (drmIoctl(bufmgr_gem->fd,
+			     DRM_IOCTL_I915_GEM_MMAP,
+			     &mmap_arg)) {
+			DBG("%s:%d: Error mapping buffer %d (%s): %s .\n",
+			    __FILE__, __LINE__, bo_gem->gem_handle,
+			    bo_gem->name, strerror(errno));
+			if (--bo_gem->map_count == 0)
+				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
+		} else {
+			VG(VALGRIND_MALLOCLIKE_BLOCK(mmap_arg.addr_ptr, mmap_arg.size, 0, 1));
+			bo_gem->mem_virtual = (void *)(uintptr_t) mmap_arg.addr_ptr;
+		}
+	}
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+
+	return bo_gem->mem_virtual;
+}
+
+void *drm_intel_gem_bo_map__wc(drm_intel_bo *bo)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	if (bo_gem->wc_virtual)
+		return bo_gem->wc_virtual;
+
+	if (bo_gem->is_userptr)
+		return NULL;
+
+	pthread_mutex_lock(&bufmgr_gem->lock);
+	if (!bo_gem->wc_virtual) {
+		struct drm_i915_gem_mmap mmap_arg;
+
+		if (bo_gem->map_count++ == 0)
+			drm_intel_gem_bo_open_vma(bufmgr_gem, bo_gem);
+
+		DBG("bo_map: %d (%s), map_count=%d\n",
+		    bo_gem->gem_handle, bo_gem->name, bo_gem->map_count);
+
+		memclear(mmap_arg);
+		mmap_arg.handle = bo_gem->gem_handle;
+		mmap_arg.size = bo->size;
+		mmap_arg.flags = I915_MMAP_WC;
+		if (drmIoctl(bufmgr_gem->fd,
+			     DRM_IOCTL_I915_GEM_MMAP,
+			     &mmap_arg)) {
+			DBG("%s:%d: Error mapping buffer %d (%s): %s .\n",
+			    __FILE__, __LINE__, bo_gem->gem_handle,
+			    bo_gem->name, strerror(errno));
+			if (--bo_gem->map_count == 0)
+				drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
+		} else {
+			VG(VALGRIND_MALLOCLIKE_BLOCK(mmap_arg.addr_ptr, mmap_arg.size, 0, 1));
+			bo_gem->wc_virtual = (void *)(uintptr_t) mmap_arg.addr_ptr;
+		}
+	}
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+
+	return bo_gem->wc_virtual;
 }
 
 /**
