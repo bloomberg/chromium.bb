@@ -234,7 +234,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                          anchoredAt:NSZeroPoint])) {
     [self setShouldCloseOnResignKey:NO];
     [self setShouldOpenAsKeyWindow:YES];
-    [[self bubble] setArrowLocation:info_bubble::kTopLeft];
+    [[self bubble] setArrowLocation:bridge->GetArrowLocation()];
     bridge_ = bridge;
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self

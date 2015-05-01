@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_COCOA_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "content/public/browser/web_contents.h"
 
@@ -43,12 +45,23 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
   // Change the parent window to be used the next time the bubble is shown.
   void SwitchParentWindow(NSWindow* parent);
 
-private:
+  info_bubble::BubbleArrowLocation GetArrowLocation();
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(PermissionBubbleBrowserTest,
+                           HasLocationBarByDefault);
+  FRIEND_TEST_ALL_PREFIXES(PermissionBubbleBrowserTest,
+                           FullscreenHasLocationBar);
+  FRIEND_TEST_ALL_PREFIXES(PermissionBubbleAppBrowserTest, AppHasNoLocationBar);
+  FRIEND_TEST_ALL_PREFIXES(PermissionBubbleKioskBrowserTest,
+                           KioskHasNoLocationBar);
+
   NSWindow* parent_window_;  // Weak.
   Delegate* delegate_;  // Weak.
 
   // Cocoa-side UI controller for the bubble.  Weak, as it will close itself.
   PermissionBubbleController* bubbleController_;
+  virtual bool HasLocationBar();
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleCocoa);
 };
