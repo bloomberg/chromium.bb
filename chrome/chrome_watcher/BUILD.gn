@@ -23,7 +23,6 @@ process_version("chrome_watcher_resources") {
 
 shared_library("chrome_watcher") {
   sources = [
-    "$target_gen_dir/chrome_watcher_version.rc",
     "chrome_watcher_main.cc",
   ]
   inputs = [

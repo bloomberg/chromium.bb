@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
 import("//build/config/ui.gni")
@@ -24,7 +25,7 @@ if (!is_android) {
     ]
     defines = []
     deps = []
-    datadeps = []
+    data_deps = []
 
     # TODO(GYP) mac_bundle_resources, xcode_settings
 
@@ -32,7 +33,6 @@ if (!is_android) {
 
     if (is_win) {
       sources += [
-        "$target_gen_dir/chrome_exe_version.rc",
         "//content/app/startup_helper_win.cc",
         "//content/public/common/content_switches.cc",
         "app/chrome_crash_reporter_client.cc",
@@ -60,7 +60,7 @@ if (!is_android) {
       }
 
       deps += [
-        ":chrome_version_resources",
+        ":chrome_exe_version",
         ":image_pre_reader",
         ":main_dll",
 
@@ -145,17 +145,22 @@ if (!is_android) {
         "//third_party/adobe/flash:flapper_binaries",
         "//third_party/widevine/cdm:widevinecdmadapter",
       ]
-      # TODO(GYP) some stuff from GYP including chrome_multiple_dll.
     }
 
     if (is_linux && enable_plugins) {
       deps += [ "//pdf" ]
+    }
+
+    if (is_multi_dll_chrome) {
+      defines += [ "CHROME_MULTIPLE_DLL" ]
+      data_deps += [ ":chrome_child" ]
     }
   }
 }  # !is_android
 
 shared_library("main_dll") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  defines = []
 
   deps = [
     ":browser_dependencies",
@@ -165,7 +170,6 @@ shared_library("main_dll") {
     output_name = "chrome"
 
     sources = [
-      "$root_gen_dir/base/trace_event/etw_manifest/chrome_events_win.rc",
       "//base/win/dllmain.cc",
       "app/chrome_command_ids.h",
       "app/chrome_dll.rc",
@@ -180,9 +184,7 @@ shared_library("main_dll") {
     ]
 
     deps += [
-      # On Windows, link the dependencies (libraries) that make up actual
-      # Chromium functionality into this .dll.
-      ":chrome_version_resources",
+      ":chrome_dll_version",
       "//base/trace_event/etw_manifest:chrome_events_win",
       "//chrome/app/theme:chrome_unscaled_resources",
       "//chrome_elf",
@@ -214,8 +216,7 @@ shared_library("main_dll") {
     deps += [ "//ui/compositor" ]
   }
 
-  #TODO(GYP) add chrome_multiple_dll support
-  if (false) {  #chrome_multiple_dll) {
+  if (is_multi_dll_chrome) {
     defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
     deps += [ "//content/public/app:browser" ]
   } else {
@@ -236,8 +237,52 @@ shared_library("main_dll") {
     # TODO(GYP) Lots of other stuff in the OS=="mac" block.
   }
 
-  if (enable_plugins) {
+  if (enable_plugins && !is_multi_dll_chrome) {
     deps += [ "//pdf" ]
+  }
+}
+
+if (is_multi_dll_chrome) {
+  shared_library("chrome_child") {
+    sources = [
+      "app/chrome_main.cc",
+      "app/chrome_main_delegate.cc",
+      "app/chrome_main_delegate.h",
+      "app/close_handle_hook_win.cc",
+      "app/close_handle_hook_win.h",
+    ]
+
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+    defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
+
+    deps = [
+      ":child_dependencies",
+      ":chrome_dll_version",
+      "//chrome/browser/policy:path_parser",
+      "//content/public/app:child",
+    ]
+
+    if (is_win) {
+      deps += [ "//chrome_elf" ]
+      # TODO(GYP): PGO on Windows.
+      # ['chrome_pgo_phase==1', {
+      #   'msvs_settings': {
+      #     'VCLinkerTool': {
+      #       'LinkTimeCodeGeneration': '2',
+      #     },
+      #   },
+      # }],
+      # ['chrome_pgo_phase==2', {
+      #   'msvs_settings': {
+      #     'VCLinkerTool': {
+      #       'LinkTimeCodeGeneration': '3',
+      #     },
+      #   },
+      # }],
+    }
+    if (enable_plugins) {
+      deps += [ "//pdf" ]
+    }
   }
 }
 
@@ -332,15 +377,6 @@ if (is_win) {
       "app/other.ver",
     ]
     output = "$target_gen_dir/other_version.rc"
-  }
-
-  group("chrome_version_resources") {
-    deps = [
-      ":chrome_exe_version",
-      ":chrome_dll_version",
-      ":nacl64_exe_version",
-      ":other_version",
-    ]
   }
 
   source_set("image_pre_reader") {

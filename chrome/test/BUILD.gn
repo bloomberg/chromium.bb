@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -373,9 +374,8 @@ if (!is_android) {
               chrome_tests_gypi_values.chrome_interactive_ui_test_win_sources,
               ".",
               "//chrome")
-      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
-        "//chrome:chrome_version_resources",
+        "//chrome:other_version",
         "//third_party/isimpledom",
         "//third_party/wtl",
         "//ui/resources",
@@ -846,9 +846,8 @@ if (!is_android) {
       ]
     }
     if (is_win) {
-      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
-        "//chrome:chrome_version_resources",
+        "//chrome:other_version",
         "//third_party/wtl",
         "//ui/resources",
       ]
@@ -1070,9 +1069,8 @@ if (!is_android) {
       ldflags = [ "-Wl,-ObjC" ]
     }
     if (is_win) {
-      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
-        "//chrome:chrome_version_resources",
+        "//chrome:other_version",
         "//third_party/wtl",
         "//ui/resources",
       ]
@@ -1139,9 +1137,9 @@ if (!is_android) {
       ldflags = [ "-Wl,-ObjC" ]
     }
     if (is_win) {
-      sources += [ "$root_gen_dir/chrome/other_version.rc" ]
       deps += [
-        "//chrome:chrome_version_resources",
+        "//chrome:other_version",
+        "//chrome/installer/util:strings",
         "//third_party/wtl",
         "//ui/resources",
       ]
@@ -1596,25 +1594,16 @@ if (!is_android) {
       sources += rebase_path(unit_gypi_values.chrome_unit_tests_win_sources,
                              ".",
                              "//chrome")
-      sources += [
-        # TODO:  It would be nice to have these pulled in
-        # automatically from direct_dependent_settings in
-        # their various targets (net.gyp:net_resources, etc.),
-        # but that causes errors in other targets when
-        # resulting .res files get referenced multiple times.
-        #'<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',  TODO(GYP)
-        #'<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',  TODO(GYP)
-      ]
-
       deps += [
         #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_1',  TODO(GYP)
         #'browser/safe_browsing/incident_reporting/verifier_test/verifier_unittest.gyp:verifier_test_dll_2',  TODO(GYP)
-        #'chrome_version_resources',  TODO(GYP)
+        "//chrome:other_version",
         "//chrome_elf:blacklist_test_dll_1",
         "//chrome/installer/util:strings",
         "//third_party/iaccessible2",
         "//third_party/isimpledom",
         "//third_party/wtl",
+        "//ui/resources",
       ]
 
       configs -= [ "//build/config/win:default_incremental_linking" ]

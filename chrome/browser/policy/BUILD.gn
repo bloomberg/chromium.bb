@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("path_parser") {
+source_set("path_parser") {
   sources = [
     "policy_path_parser.h",
     "policy_path_parser_linux.cc",

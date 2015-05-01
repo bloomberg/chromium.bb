@@ -167,10 +167,11 @@ places are noted in the table below.
 | `arm_neon_optional` (0/1)                       | `arm_optionally_use_neon` (true/false)     | `//build/config/arm.gni`                       |
 | `arm_version`                                   | `arm_version`                              | `//build/config/arm.gni`                       |
 | `asan` (0/1)                                    | `is_asan` (true/false)                     | (global)                                       |
-| `branding` ("Chromium"/"Chrome"")               | `is_chrome_branded` (true/false)           | (global)                                       |
+| `branding` ("Chromium"/"Chrome"")               | `is_chrome_branded` (true/false)           | `//build/config/chrome_build.gni`              |
 | `build_for_tool=="drmemory"`                    | `disable_iterator_debugging` (true/false)  | (internal to `//build/config/BUILD.gn`)        |
 | `build_for_tool=="tsan"`                        | `disable_iterator_debugging` (true/false)  | (internal to `//build/config/BUILD.gn`)        |
-| `buildtype` ("Official"/"Dev")                  | `is_official_build` (true/false)           | (global)                                       |
+| `buildtype` ("Official"/"Dev")                  | `is_official_build` (true/false)           | `//build/config/chrome_build.gni`              |
+| `chrome_multiple_dll` (0/1)                     | `is_multi_dll_chrome` (true/false)         | `//build/config/chrome_build.gni`              |
 | `clang` (0/1)                                   | `is_clang` (true/false)                    | (global)                                       |
 | `clang_use_chrome_plugins` (0/1)                | `clang_use_chrome_plugins` (true/false)    | (internal to `//build/config/clang/BUILD.gn`)  |
 | `component` ("shared_library"/"static_library") | `is_component_build` (true/false)          | (global)                                       |

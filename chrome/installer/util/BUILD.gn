@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//testing/test.gni")
 
 static_library("util") {
@@ -261,7 +262,7 @@ if (is_win) {
       "//base",
       "//base:i18n",
       "//base/test:test_support",
-      "//chrome:chrome_version_resources",
+      "//chrome:other_version",
       "//chrome/installer/test:alternate_version_generator_lib",
       "//content/public/common",
       "//testing/gmock",

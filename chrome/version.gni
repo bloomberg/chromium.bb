@@ -2,9 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
+
 # Runs the version processing script over the given template file to produce
 # an output file. This is used for generating various forms of files that
 # incorporate the product name and version.
+#
+# Unlike GYP, this will actually compile the resulting file, so you don't need
+# to add it separately to the sources, just depend on the target.
 #
 # This template automatically includes VERSION, LASTCHANGE, and BRANDING. It
 # automatically uses the template file .
@@ -50,10 +55,11 @@ template("process_version") {
          "Either sources or template_file must be defined for $target_name")
   assert(defined(invoker.output), "Output must be defined for $target_name")
 
-  action(target_name) {
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
-    }
+  action_name = target_name + "_action"
+  source_set_name = target_name
+
+  action(action_name) {
+    visibility = [ ":$source_set_name" ]
     script = "//build/util/version.py"
 
     lastchange_path = "//build/util/LASTCHANGE"
@@ -106,6 +112,16 @@ template("process_version") {
     args += [
       rebase_path(template_path, root_build_dir),
       rebase_path(invoker.output, root_build_dir),
+    ]
+  }
+
+  source_set(source_set_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+    sources = get_target_outputs(":$action_name")
+    deps = [
+      ":$action_name",
     ]
   }
 }

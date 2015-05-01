@@ -49,22 +49,16 @@ shared_library("clearkeycdm") {
   # TODO(GYP) on Mac: 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
 }
 
-clearkeycdmadapter_rc_file = "$target_gen_dir/clearkeycdmadapter_version.rc"
-
 process_version("clearkeycdmadapter_resources") {
   visibility = [ ":*" ]
   sources = [
     "//media/clearkeycdmadapter.ver",
     "external_clear_key/BRANDING",
   ]
-  output = clearkeycdmadapter_rc_file
+  output =  "$target_gen_dir/clearkeycdmadapter_version.rc"
 }
 
 cdm_adapter("clearkeycdmadapter") {
-  sources = [
-    clearkeycdmadapter_rc_file,
-  ]
-
   # Check whether the plugin's origin URL is valid.
   defines = [ "CHECK_DOCUMENT_URL" ]
   deps = [

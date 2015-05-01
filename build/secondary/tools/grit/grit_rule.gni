@@ -75,6 +75,7 @@
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
 #   }
+import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
