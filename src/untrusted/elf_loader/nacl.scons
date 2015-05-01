@@ -5,7 +5,7 @@
 
 Import('env')
 
-if env.Bit('bitcode'):
+if env.Bit('bitcode') and '-arch' not in env['LINKFLAGS']:
   Return()
 
 env.ComponentProgram('elf_loader', ['elf_loader.c'])

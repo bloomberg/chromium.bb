@@ -1380,6 +1380,19 @@ def GetIrtNexe(env, chrome_irt=False):
 
 pre_base_env.AddMethod(GetIrtNexe)
 
+
+# Note that we build elf_loader in the nacl_irt_env, not because it is
+# actually built like the IRT per se, but just because we need it always to
+# be built against newlib.
+def GetElfLoaderNexe(env):
+  elf_loader_env = nacl_env
+  if env.Bit('nacl_glibc'):
+    elf_loader_env = nacl_irt_env
+  return elf_loader_env.File('${STAGING_DIR}/elf_loader.nexe')
+
+pre_base_env.AddMethod(GetElfLoaderNexe)
+
+
 def ApplyTLSEdit(env, nexe_name, raw_nexe):
   # If the environment was built elsewhere, we do not need to apply tls_edit
   # since it only needs to be done during building.
@@ -1744,11 +1757,8 @@ def CommandSelLdrTestNacl(env, name, nexe,
                    '--library-path', library_path] + command
       else:
         # In the new glibc, we run via elf_loader and direct it where to
-        # find the dynamic linker in the toolchain.  Note that we build
-        # elf_loader in the nacl_irt_env, not because it is actually built
-        # like the IRT per se, but just because we need it always to be
-        # built against newlib.
-        command = [nacl_irt_env.File('${STAGING_DIR}/elf_loader.nexe'),
+        # find the dynamic linker in the toolchain.
+        command = [env.GetElfLoaderNexe(),
                    '--interp-prefix',
                    os.path.dirname(env.subst('${NACL_SDK_LIB}'))] + command
         sel_ldr_flags.extend(['-E', 'LD_LIBRARY_PATH=' + library_path])

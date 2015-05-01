@@ -13,6 +13,10 @@ name = 'run_py_test.out'
 irt = 'none'
 if env.Bit('tests_use_irt'):
   irt = env.GetIrtNexe()
+elif env.Bit('nacl_glibc'):
+  # glibc without an IRT is not a supported case.
+  # With the new glibc port, it won't work at all.
+  Return()
 
 sel_ldr = env.GetSelLdr()
 if sel_ldr is None:
@@ -25,14 +29,20 @@ exe = env.ComponentProgram('run_py_app',
                                        '${NONIRT_LIBS}'])
 exe = env.GetFinalizedPexe(exe)
 
-node = env.CommandTest(name,
-    command=['${PYTHON}', '${SCONSTRUCT_DIR}/run.py',
-             '-arch', env['TARGET_FULLARCH'],
-             # Force specific IRT/sel_ldr executables so that
-             # run.py doesn't try to build it (and time out).
-             '--irt', irt,
-             '--loader', sel_ldr,
-             exe],
+run_py_options = [
+    '-arch', env['TARGET_FULLARCH'],
+    # Force specific IRT/sel_ldr executables so that
+    # run.py doesn't try to build it (and time out).
+    '--irt', irt,
+    '--loader', sel_ldr,
+    ]
+if env.Bit('nacl_glibc') and not env.Bit('build_x86_64'):
+  elf_loader = env.GetElfLoaderNexe()
+  run_py_options += ['--elf_loader', elf_loader]
+
+node = env.CommandTest(
+    name,
+    command=['${PYTHON}', '${SCONSTRUCT_DIR}/run.py'] + run_py_options + [exe],
     direct_emulation=False,
     exit_status=2,
     size='medium')

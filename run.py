@@ -25,21 +25,18 @@ def SetupEnvironment():
   # native_client/ directory
   env.nacl_root = FindBaseDir()
 
-  toolchain_base = os.path.join(env.nacl_root,
-                                'toolchain',
-                                '%s_x86' % pynacl.platform.GetOS())
-
-  # Path to Native NaCl toolchain (glibc)
-  env.nnacl_root = os.path.join(toolchain_base, 'nacl_x86_glibc')
+  env.toolchain_base = os.path.join(env.nacl_root,
+                                    'toolchain',
+                                    '%s_x86' % pynacl.platform.GetOS())
 
   # Path to PNaCl toolchain
-  env.pnacl_base = os.path.join(toolchain_base, 'pnacl_newlib')
+  env.pnacl_base = os.path.join(env.toolchain_base, 'pnacl_newlib')
 
   # QEMU
-  env.arm_root = os.path.join(toolchain_base, 'arm_trusted')
+  env.arm_root = os.path.join(env.toolchain_base, 'arm_trusted')
   env.qemu_arm = os.path.join(env.arm_root, 'run_under_qemu_arm')
 
-  env.mips32_root = os.path.join(toolchain_base, 'mips_trusted')
+  env.mips32_root = os.path.join(env.toolchain_base, 'mips_trusted')
   env.qemu_mips32 = os.path.join(env.mips32_root, 'run_under_qemu_mips32')
 
   # Path to 'readelf'
@@ -48,7 +45,7 @@ def SetupEnvironment():
   # Path to 'scons'
   env.scons = os.path.join(env.nacl_root, 'scons')
 
-  # Library path for runnable-ld.so
+  # Library path for dynamic linker.
   env.library_path = []
 
   # Suppress -S -a
@@ -93,22 +90,26 @@ def PrintCommand(s):
     print s
     print
 
-def GetMultiDir(arch):
-  if arch == 'x86-32':
-    return 'lib32'
-  elif arch == 'x86-64':
-    return 'lib'
-  else:
-    Fatal('nacl-gcc does not support %s' % arch)
-
 def SetupArch(arch, allow_build=True):
   '''Setup environment variables that require knowing the
      architecture. We can only do this after we've seen the
      nexe or once we've read -arch off the command-line.
   '''
   env.arch = arch
+  # Path to Native NaCl toolchain (glibc)
+  toolchain_arch, tooldir_arch, libdir = {
+      'x86-32': ('x86', 'x86_64', 'lib32'),
+      'x86-64': ('x86', 'x86_64', 'lib'),
+      'arm': ('arm', 'arm', 'lib'),
+      }[arch]
+  env.nnacl_tooldir = os.path.join(env.toolchain_base,
+                                   'nacl_%s_glibc' % toolchain_arch,
+                                   '%s-nacl' % tooldir_arch)
+  env.nnacl_libdir = os.path.join(env.nnacl_tooldir, libdir)
   env.sel_ldr = FindOrBuildSelLdr(allow_build=allow_build)
   env.irt = FindOrBuildIRT(allow_build=allow_build)
+  if arch == 'arm':
+    env.elf_loader = FindOrBuildElfLoader(allow_build=allow_build)
 
 
 def SetupLibC(arch, is_dynamic):
@@ -116,7 +117,7 @@ def SetupLibC(arch, is_dynamic):
     if env.is_pnacl:
       libdir = os.path.join(env.pnacl_base, 'lib-' + arch)
     else:
-      libdir = os.path.join(env.nnacl_root, 'x86_64-nacl', GetMultiDir(arch))
+      libdir = env.nnacl_libdir
     env.runnable_ld = os.path.join(libdir, 'runnable-ld.so')
     env.library_path.append(libdir)
 
@@ -180,23 +181,27 @@ def main(argv):
     # Setup LibC-specific environment variables
     SetupLibC(arch, is_dynamic)
 
-    sel_ldr_args = []
-
-    # Add irt to sel_ldr arguments
+    # Add IRT to sel_ldr options.
     if env.irt:
-      sel_ldr_args += ['-B', env.irt]
-
-    # Setup sel_ldr arguments
-    sel_ldr_args += sel_ldr_options + ['--']
-
-    if is_dynamic:
-      sel_ldr_args += [env.runnable_ld,
-                       '--library-path', ':'.join(env.library_path)]
+      sel_ldr_options += ['-B', env.irt]
 
     # The NaCl dynamic loader prefers posixy paths.
     nexe_path = os.path.abspath(nexe)
     nexe_path = nexe_path.replace('\\', '/')
-    sel_ldr_args += [nexe_path] + nexe_params
+    sel_ldr_nexe_args = [nexe_path] + nexe_params
+
+    if is_dynamic:
+      ld_library_path = ':'.join(env.library_path)
+      if arch == 'arm':
+        sel_ldr_nexe_args = [env.elf_loader, '--interp-prefix',
+                             env.nnacl_tooldir] + sel_ldr_nexe_args
+        sel_ldr_options += ['-E', 'LD_LIBRARY_PATH=' + ld_library_path]
+      else:
+        sel_ldr_nexe_args = [env.runnable_ld, '--library-path',
+                             ld_library_path] + sel_ldr_nexe_args
+
+    # Setup sel_ldr arguments.
+    sel_ldr_args = sel_ldr_options + ['--'] + sel_ldr_nexe_args
 
     # Run sel_ldr!
     retries = 0
@@ -311,6 +316,29 @@ def BuildIRT(flavor):
           'sysinfo=0 -j8 %s') % (env.arch, flavor)
   args = args.split()
   Run([env.scons] + args, cwd=env.nacl_root)
+
+def FindOrBuildElfLoader(allow_build=True):
+  if env.force_elf_loader:
+    if not os.path.exists(env.force_elf_loader):
+      Fatal('elf_loader.nexe not found: %s' % env.force_elf_loader)
+    return env.force_elf_loader
+
+  path = os.path.join(env.nacl_root, 'scons-out',
+                      'nacl-' + env.arch,
+                      'staging', 'elf_loader.nexe')
+  if os.path.exists(path):
+    return path
+
+  if allow_build:
+    PrintBanner('elf_loader not found.  Building it with scons.')
+    Run([env.scons, 'platform=' + env.arch,
+         'naclsdk_validate=0', 'sysinfo=0',
+         '-j8', 'elf_loader'],
+        cwd=env.nacl_root)
+    assert(env.dry_run or os.path.exists(path))
+    return path
+
+  return None
 
 def FindOrBuildSelLdr(allow_build=True):
   if env.force_sel_ldr:
@@ -465,7 +493,7 @@ def ArgSplit(argv):
           'translation, building sel_ldr, and building the IRT.')
   parser = argparse.ArgumentParser(description=desc)
   parser.add_argument('-L', action='append', dest='library_path', default=[],
-                      help='Additional library path for runnable-ld.so.')
+                      help='Additional library path for dynamic linker.')
   parser.add_argument('--paranoid', action='store_true', default=False,
                       help='Remove -S (signals) and -a (file access) ' +
                       'from the default sel_ldr options.')
@@ -478,6 +506,10 @@ def ArgSplit(argv):
                       help='Path to IRT nexe.  "core" or "none" means use ' +
                       'Core IRT or no IRT.  By default, use whichever IRT ' +
                       'already exists; otherwise, build irt_core.')
+  parser.add_argument('--elf_loader', dest='force_elf_loader',
+                      metavar='ELF_LOADER',
+                      help='Path to elf_loader nexe.  ' +
+                      'By default find it in scons-out, or build it.')
   parser.add_argument('--dry-run', '-n', action='store_true', default=False,
                       help="Just print commands, don't execute them.")
   parser.add_argument('--quiet', '-q', action='store_true', default=False,
