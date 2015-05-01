@@ -321,7 +321,7 @@ crbug.com/470713 virtual/slimmingpaint/fast/repaint/multicol-as-paint-container.
 crbug.com/470713 virtual/slimmingpaint/fast/dom/Element/getBoundingClientRect.html [ Skip ]
 crbug.com/470713 virtual/slimmingpaint/fast/repaint/multicol-repaint.html [ Skip ]
 
-crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass Failure ]
+crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
 # ref-test failing due to missing --enable-slimming-paint virtual suite reference_args
 crbug.com/470713 virtual/slimmingpaint/fast/sub-pixel/sub-pixel-transparency-layer.html [ Skip ]
