@@ -9,6 +9,9 @@
       'target_name': 'ui_resources',
       'type': 'none',
       'variables': {
+        # Enable to include Polymer 0.8 in the binary.
+        'enable_polymer_v08%': 0,
+
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/resources',
       },
       'actions': [
@@ -23,6 +26,12 @@
           'action_name': 'webui_resources',
           'variables': {
             'grit_grd_file': '../webui/resources/webui_resources.grd',
+
+            'conditions': [
+              ['enable_polymer_v08==1', {
+                'grit_defines': ['-D', 'enable_polymer_v08'],
+              }],
+            ],
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
