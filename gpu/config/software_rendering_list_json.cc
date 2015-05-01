@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.7",
+  "version": "10.8",
   "entries": [
     {
       "id": 1,
@@ -1039,21 +1039,6 @@ LONG_STRING_CONST(
       "features": [
         "gpu_rasterization",
         "accelerated_2d_canvas"
-      ]
-    },
-    {
-      "id": 99,
-      "description": "GPU rasterization is blacklisted on non-Android",
-      "cr_bugs": [362779],
-      "exceptions": [
-        {
-          "os": {
-            "type": "android"
-          }
-        }
-      ],
-      "features": [
-        "gpu_rasterization"
       ]
     },
     {

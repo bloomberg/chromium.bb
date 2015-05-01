@@ -285,7 +285,13 @@ bool IsGpuRasterizationEnabled() {
     return false;
   }
 
+#if defined(OS_ANDROID)
   return true;
+#endif
+
+  // explicitly disable GPU rasterization on all non-android devices until we
+  // have full test coverage.
+  return false;
 }
 
 bool IsForceGpuRasterizationEnabled() {
