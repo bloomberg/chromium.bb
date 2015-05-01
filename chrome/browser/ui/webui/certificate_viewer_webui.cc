@@ -152,9 +152,9 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
   std::string issued_str, expires_str;
   if (x509_certificate_model::GetTimes(cert_hnd, &issued, &expires)) {
     issued_str = base::UTF16ToUTF8(
-        base::TimeFormatShortDateNumeric(issued));
+        base::TimeFormatFriendlyDateAndTime(issued));
     expires_str = base::UTF16ToUTF8(
-        base::TimeFormatShortDateNumeric(expires));
+        base::TimeFormatFriendlyDateAndTime(expires));
   } else {
     issued_str = alternative_text;
     expires_str = alternative_text;
