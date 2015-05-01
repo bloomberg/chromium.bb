@@ -870,8 +870,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
           tracked_objects::ThreadData::PROFILING_ACTIVE;
     if (flag.compare("0") != 0)
       status = tracked_objects::ThreadData::DEACTIVATED;
-    else if (flag.compare("child") != 0)
-      status = tracked_objects::ThreadData::PROFILING_CHILDREN_ACTIVE;
     tracked_objects::ThreadData::InitializeAndSetTrackingStatus(status);
   }
 

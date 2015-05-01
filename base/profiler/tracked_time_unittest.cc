@@ -78,8 +78,7 @@ TEST(TrackedTimeTest, TrackedTimerDisabled) {
 }
 
 TEST(TrackedTimeTest, TrackedTimerEnabled) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-      ThreadData::PROFILING_CHILDREN_ACTIVE))
+  if (!ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE))
     return;
   // Make sure that when we enable tracking, we get a real timer result.
 

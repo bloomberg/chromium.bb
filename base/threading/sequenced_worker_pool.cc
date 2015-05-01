@@ -777,7 +777,6 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
           this_worker->set_running_task_info(
               SequenceToken(task.sequence_token_id), task.shutdown_behavior);
 
-          tracked_objects::ThreadData::PrepareForStartOfRun(task.birth_tally);
           tracked_objects::TaskStopwatch stopwatch;
           stopwatch.Start();
           task.task.Run();

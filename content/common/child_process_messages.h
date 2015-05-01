@@ -47,14 +47,8 @@ IPC_STRUCT_TRAITS_BEGIN(tracked_objects::TaskSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(death_thread_name)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ParentChildPairSnapshot)
-  IPC_STRUCT_TRAITS_MEMBER(parent)
-  IPC_STRUCT_TRAITS_MEMBER(child)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataPhaseSnapshot)
   IPC_STRUCT_TRAITS_MEMBER(tasks)
-  IPC_STRUCT_TRAITS_MEMBER(descendants)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataSnapshot)

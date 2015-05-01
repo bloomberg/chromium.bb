@@ -87,7 +87,6 @@ void WorkerThread::ThreadMain() {
         "src_file", pending_task.posted_from.file_name(),
         "src_func", pending_task.posted_from.function_name());
 
-    tracked_objects::ThreadData::PrepareForStartOfRun(pending_task.birth_tally);
     tracked_objects::TaskStopwatch stopwatch;
     stopwatch.Start();
     pending_task.task.Run();

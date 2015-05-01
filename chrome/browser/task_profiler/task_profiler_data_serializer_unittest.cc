@@ -41,8 +41,6 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     int process_type = content::PROCESS_TYPE_BROWSER;
     ExpectSerialization(process_data_phase, 239, process_type,
                         "{"
-                        "\"descendants\":["
-                        "],"
                         "\"list\":["
                         "],"
                         "\"process_id\":239,"
@@ -92,31 +90,9 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     process_data_phase.tasks.back().death_data.queue_duration_sum = 2079;
     process_data_phase.tasks.back().death_thread_name = "PAC thread #3";
 
-    // Add a parent-child pair.
-    process_data_phase.descendants.push_back(
-        tracked_objects::ParentChildPairSnapshot());
-    process_data_phase.descendants.back().parent = parent;
-    process_data_phase.descendants.back().child = child;
-
     int process_type = content::PROCESS_TYPE_RENDERER;
     ExpectSerialization(process_data_phase, 239, process_type,
                         "{"
-                        "\"descendants\":["
-                        "{"
-                        "\"child_location\":{"
-                        "\"file_name\":\"path/to/bar.cc\","
-                        "\"function_name\":\"FizzBoom\","
-                        "\"line_number\":433"
-                        "},"
-                        "\"child_thread\":\"Chrome_IOThread\","
-                        "\"parent_location\":{"
-                        "\"file_name\":\"path/to/foo.cc\","
-                        "\"function_name\":\"WhizBang\","
-                        "\"line_number\":101"
-                        "},"
-                        "\"parent_thread\":\"CrBrowserMain\""
-                        "}"
-                        "],"
                         "\"list\":[{"
                         "\"birth_location\":{"
                         "\"file_name\":\"path/to/foo.cc\","

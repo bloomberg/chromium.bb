@@ -154,9 +154,8 @@ struct TrackingInfo;
 //
 // The ProcessDataPhaseSnapshot struct is a serialized representation of the
 // list of ThreadData objects for a process for a concrete profiling phase.  It
-// holds a set of TaskSnapshots and tracks parent/child relationships for the
-// executed tasks.  The statistics in a snapshot are gathered asynhcronously
-// relative to their ongoing updates.
+// holds a set of TaskSnapshots.  The statistics in a snapshot are gathered
+// asynhcronously relative to their ongoing updates.
 // It is possible, though highly unlikely, that stats could be incorrectly
 // recorded by this process (all data is held in 32 bit ints, but we are not
 // atomically collecting all data, so we could have count that does not, for
@@ -177,13 +176,6 @@ struct TrackingInfo;
 // achieve this feat, and it *might* be valuable when we are collecting data
 // for upload via UMA (where correctness of data may be more significant than
 // for a single screen of about:profiler).
-//
-// TODO(jar): We should support (optionally) the recording of parent-child
-// relationships for tasks.  This should be done by detecting what tasks are
-// Born during the running of a parent task.  The resulting data can be used by
-// a smarter profiler to aggregate the cost of a series of child tasks into
-// the ancestor task.  It can also be used to illuminate what child or parent is
-// related to each task.
 //
 // TODO(jar): We need to store DataCollections, and provide facilities for
 // taking the difference between two gathered DataCollections.  For now, we're
@@ -430,19 +422,15 @@ class BASE_EXPORT ThreadData {
   // Current allowable states of the tracking system.  The states can vary
   // between ACTIVE and DEACTIVATED, but can never go back to UNINITIALIZED.
   enum Status {
-    UNINITIALIZED,              // PRistine, link-time state before running.
-    DORMANT_DURING_TESTS,       // Only used during testing.
-    DEACTIVATED,                // No longer recording profiling.
-    PROFILING_ACTIVE,           // Recording profiles (no parent-child links).
-    PROFILING_CHILDREN_ACTIVE,  // Fully active, recording parent-child links.
-    STATUS_LAST = PROFILING_CHILDREN_ACTIVE
+    UNINITIALIZED,         // Pristine, link-time state before running.
+    DORMANT_DURING_TESTS,  // Only used during testing.
+    DEACTIVATED,           // No longer recording profiling.
+    PROFILING_ACTIVE,      // Recording profiles.
+    STATUS_LAST = PROFILING_ACTIVE
   };
 
   typedef base::hash_map<Location, Births*, Location::Hash> BirthMap;
   typedef std::map<const Births*, DeathData> DeathMap;
-  typedef std::pair<const Births*, const Births*> ParentChildPair;
-  typedef std::set<ParentChildPair> ParentChildSet;
-  typedef std::stack<const Births*> ParentStack;
 
   // Initialize the current thread context with a new instance of ThreadData.
   // This is used by all threads that have names, and should be explicitly
@@ -514,14 +502,8 @@ class BASE_EXPORT ThreadData {
 
   // Sets internal status_.
   // If |status| is false, then status_ is set to DEACTIVATED.
-  // If |status| is true, then status_ is set to, PROFILING_ACTIVE, or
-  // PROFILING_CHILDREN_ACTIVE.
-  // If tracking is not compiled in, this function will return false.
-  // If parent-child tracking is not compiled in, then an attempt to set the
-  // status to PROFILING_CHILDREN_ACTIVE will only result in a status of
-  // PROFILING_ACTIVE (i.e., it can't be set to a higher level than what is
-  // compiled into the binary, and parent-child tracking at the
-  // PROFILING_CHILDREN_ACTIVE level might not be compiled in).
+  // If |status| is true, then status_ is set to PROFILING_ACTIVE.
+  // If it fails to initialize the TLS slot, this function will return false.
   static bool InitializeAndSetTrackingStatus(Status status);
 
   static Status status();
@@ -529,17 +511,6 @@ class BASE_EXPORT ThreadData {
   // Indicate if any sort of profiling is being done (i.e., we are more than
   // DEACTIVATED).
   static bool TrackingStatus();
-
-  // For testing only, indicate if the status of parent-child tracking is turned
-  // on.  This is currently a compiled option, atop TrackingStatus().
-  static bool TrackingParentChildStatus();
-
-  // Marks a start of a tracked run.  It's super fast when tracking is disabled,
-  // and has some internal side effects when we are tracking, so that we can
-  // deduce the amount of time accumulated outside of execution of tracked runs.
-  // The task that will be tracked is passed in as |parent| so that parent-child
-  // relationships can be (optionally) calculated.
-  static void PrepareForStartOfRun(const Births* parent);
 
   // Enables profiler timing.
   static void EnableProfilerTiming();
@@ -571,7 +542,6 @@ class BASE_EXPORT ThreadData {
   friend class TrackedObjectsTest;
   FRIEND_TEST_ALL_PREFIXES(TrackedObjectsTest, MinimalStartupShutdown);
   FRIEND_TEST_ALL_PREFIXES(TrackedObjectsTest, TinyStartupShutdown);
-  FRIEND_TEST_ALL_PREFIXES(TrackedObjectsTest, ParentChildTest);
 
   typedef std::map<const BirthOnThread*, int> BirthCountMap;
 
@@ -622,8 +592,7 @@ class BASE_EXPORT ThreadData {
   // the map(s) from being reallocated while they are copied.
   void SnapshotMaps(int profiling_phase,
                     BirthMap* birth_map,
-                    DeathsSnapshot* deaths,
-                    ParentChildSet* parent_child_set);
+                    DeathsSnapshot* deaths);
 
   // Called for this thread when the current profiling phase, identified by
   // |profiling_phase|, ends.
@@ -725,11 +694,6 @@ class BASE_EXPORT ThreadData {
   // locking before reading it.
   DeathMap death_map_;
 
-  // A set of parents that created children tasks on this thread.  Each pair
-  // corresponds to potentially non-local Births (location and thread), and a
-  // local Births (that took place on this thread).
-  ParentChildSet parent_child_set_;
-
   // Lock to protect *some* access to BirthMap and DeathMap.  The maps are
   // regularly read and written on this thread, but may only be read from other
   // threads.  To support this, we acquire this lock if we are writing from this
@@ -737,16 +701,6 @@ class BASE_EXPORT ThreadData {
   // don't need a lock, as there is no potential for a conflict since the
   // writing is only done from this thread.
   mutable base::Lock map_lock_;
-
-  // The stack of parents that are currently being profiled.  This includes only
-  // tasks that have started a timer recently via PrepareForStartOfRun(), but
-  // not yet concluded with a NowForEndOfRun().  Usually this stack is one deep,
-  // but if a scoped region is profiled, or <sigh> a task runs a nested-message
-  // loop, then the stack can grow larger.  Note that we don't try to deduct
-  // time in nested profiles, as our current timer is based on wall-clock time,
-  // and not CPU time (and we're hopeful that nested timing won't be a
-  // significant additional cost).
-  ParentStack parent_stack_;
 
   // A random number that we used to select decide which sample to keep as a
   // representative sample in each DeathData instance.  We can't start off with
@@ -828,21 +782,6 @@ class BASE_EXPORT TaskStopwatch {
 };
 
 //------------------------------------------------------------------------------
-// A snapshotted representation of a (parent, child) task pair, for tracking
-// hierarchical profiles.
-
-struct BASE_EXPORT ParentChildPairSnapshot {
- public:
-  ParentChildPairSnapshot();
-  explicit ParentChildPairSnapshot(
-      const ThreadData::ParentChildPair& parent_child);
-  ~ParentChildPairSnapshot();
-
-  BirthOnThreadSnapshot parent;
-  BirthOnThreadSnapshot child;
-};
-
-//------------------------------------------------------------------------------
 // A snapshotted representation of the list of ThreadData objects for a process,
 // for a single profiling phase.
 
@@ -852,7 +791,6 @@ struct BASE_EXPORT ProcessDataPhaseSnapshot {
   ~ProcessDataPhaseSnapshot();
 
   std::vector<TaskSnapshot> tasks;
-  std::vector<ParentChildPairSnapshot> descendants;
 };
 
 //------------------------------------------------------------------------------

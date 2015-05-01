@@ -19,7 +19,6 @@ using base::Value;
 using tracked_objects::BirthOnThreadSnapshot;
 using tracked_objects::DeathDataSnapshot;
 using tracked_objects::LocationSnapshot;
-using tracked_objects::ParentChildPairSnapshot;
 using tracked_objects::TaskSnapshot;
 using tracked_objects::ProcessDataPhaseSnapshot;
 
@@ -95,15 +94,6 @@ void TaskProfilerDataSerializer::ToValue(
   dictionary->SetInteger("process_id", process_id);
   dictionary->SetString("process_type",
                         content::GetProcessTypeNameInEnglish(process_type));
-
-  scoped_ptr<base::ListValue> descendants_list(new base::ListValue);
-  for (const auto& entry : process_data_phase.descendants) {
-    scoped_ptr<base::DictionaryValue> parent_child(new base::DictionaryValue);
-    BirthOnThreadSnapshotToValue(entry.parent, "parent", parent_child.get());
-    BirthOnThreadSnapshotToValue(entry.child, "child", parent_child.get());
-    descendants_list->Append(parent_child.release());
-  }
-  dictionary->Set("descendants", descendants_list.release());
 }
 
 }  // namespace task_profiler

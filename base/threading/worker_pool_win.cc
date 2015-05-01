@@ -25,8 +25,6 @@ DWORD CALLBACK WorkItemCallback(void* param) {
                "src_file", pending_task->posted_from.file_name(),
                "src_func", pending_task->posted_from.function_name());
 
-  tracked_objects::ThreadData::PrepareForStartOfRun(pending_task->birth_tally);
-
   g_worker_pool_running_on_this_thread.Get().Set(true);
 
   tracked_objects::TaskStopwatch stopwatch;

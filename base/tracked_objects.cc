@@ -28,19 +28,13 @@ class TimeDelta;
 namespace tracked_objects {
 
 namespace {
-// TODO(jar): Evaluate the perf impact of enabling this.  If the perf impact is
-// negligible, enable by default.
-// Flag to compile out parent-child link recording.
-const bool kTrackParentChildLinks = false;
-
 // When ThreadData is first initialized, should we start in an ACTIVE state to
 // record all of the startup-time tasks, or should we start up DEACTIVATED, so
 // that we only record after parsing the command line flag --enable-tracking.
 // Note that the flag may force either state, so this really controls only the
 // period of time up until that flag is parsed.  If there is no flag seen, then
 // this state may prevail for much or all of the process lifetime.
-const ThreadData::Status kInitialStartupState =
-    ThreadData::PROFILING_CHILDREN_ACTIVE;
+const ThreadData::Status kInitialStartupState = ThreadData::PROFILING_ACTIVE;
 
 // Control whether an alternate time source (Now() function) is supported by
 // the ThreadData class.  This compile time flag should be set to true if we
@@ -528,18 +522,6 @@ Births* ThreadData::TallyABirth(const Location& location) {
     birth_map_[location] = child;
   }
 
-  if (kTrackParentChildLinks && status_ > PROFILING_ACTIVE &&
-      !parent_stack_.empty()) {
-    const Births* parent = parent_stack_.top();
-    ParentChildPair pair(parent, child);
-    if (parent_child_set_.find(pair) == parent_child_set_.end()) {
-      // Lock since the map may get relocated now, and other threads sometimes
-      // snapshot it (but they lock before copying it).
-      base::AutoLock lock(map_lock_);
-      parent_child_set_.insert(pair);
-    }
-  }
-
   return child;
 }
 
@@ -573,13 +555,6 @@ void ThreadData::TallyADeath(const Births& births,
     death_data = &death_map_[&births];
   }  // Release lock ASAP.
   death_data->RecordDeath(queue_duration, run_duration, random_number_);
-
-  if (!kTrackParentChildLinks)
-    return;
-  if (!parent_stack_.empty()) {  // We might get turned off.
-    DCHECK_EQ(parent_stack_.top(), &births);
-    parent_stack_.pop();
-  }
 }
 
 // static
@@ -678,8 +653,7 @@ void ThreadData::SnapshotExecutedTasks(
   // and processing.
   BirthMap birth_map;
   DeathsSnapshot deaths;
-  ParentChildSet parent_child_set;
-  SnapshotMaps(current_profiling_phase, &birth_map, &deaths, &parent_child_set);
+  SnapshotMaps(current_profiling_phase, &birth_map, &deaths);
 
   for (const auto& birth : birth_map) {
     (*birth_counts)[birth.second] += birth.second->birth_count();
@@ -710,8 +684,7 @@ void ThreadData::SnapshotExecutedTasks(
 // This may be called from another thread.
 void ThreadData::SnapshotMaps(int profiling_phase,
                               BirthMap* birth_map,
-                              DeathsSnapshot* deaths,
-                              ParentChildSet* parent_child_set) {
+                              DeathsSnapshot* deaths) {
   base::AutoLock lock(map_lock_);
 
   for (const auto& birth : birth_map_)
@@ -729,12 +702,6 @@ void ThreadData::SnapshotMaps(int profiling_phase,
                                death.second.queue_duration_sample(),
                                death.second.last_phase_snapshot())));
   }
-
-  if (!kTrackParentChildLinks)
-    return;
-
-  for (const auto& parent_child : parent_child_set_)
-    parent_child_set->insert(parent_child);
 }
 
 void ThreadData::OnProfilingPhaseCompletedOnThread(int profiling_phase) {
@@ -791,9 +758,6 @@ bool ThreadData::Initialize() {
   // ensures that if we have a racy initialization, that we'll bail as soon as
   // we get the lock earlier in this method.
   status_ = kInitialStartupState;
-  if (!kTrackParentChildLinks &&
-      kInitialStartupState == PROFILING_CHILDREN_ACTIVE)
-    status_ = PROFILING_ACTIVE;
   DCHECK(status_ != UNINITIALIZED);
   return true;
 }
@@ -801,12 +765,12 @@ bool ThreadData::Initialize() {
 // static
 bool ThreadData::InitializeAndSetTrackingStatus(Status status) {
   DCHECK_GE(status, DEACTIVATED);
-  DCHECK_LE(status, PROFILING_CHILDREN_ACTIVE);
+  DCHECK_LE(status, PROFILING_ACTIVE);
 
   if (!Initialize())  // No-op if already initialized.
     return false;  // Not compiled in.
 
-  if (!kTrackParentChildLinks && status > DEACTIVATED)
+  if (status > DEACTIVATED)
     status = PROFILING_ACTIVE;
   status_ = status;
   return true;
@@ -820,20 +784,6 @@ ThreadData::Status ThreadData::status() {
 // static
 bool ThreadData::TrackingStatus() {
   return status_ > DEACTIVATED;
-}
-
-// static
-bool ThreadData::TrackingParentChildStatus() {
-  return status_ >= PROFILING_CHILDREN_ACTIVE;
-}
-
-// static
-void ThreadData::PrepareForStartOfRun(const Births* parent) {
-  if (kTrackParentChildLinks && parent && status_ > PROFILING_ACTIVE) {
-    ThreadData* current_thread_data = Get();
-    if (current_thread_data)
-      current_thread_data->parent_stack_.push(parent);
-  }
 }
 
 // static
@@ -1060,21 +1010,6 @@ TaskSnapshot::TaskSnapshot(const BirthOnThreadSnapshot& birth,
 }
 
 TaskSnapshot::~TaskSnapshot() {
-}
-
-//------------------------------------------------------------------------------
-// ParentChildPairSnapshot
-
-ParentChildPairSnapshot::ParentChildPairSnapshot() {
-}
-
-ParentChildPairSnapshot::ParentChildPairSnapshot(
-    const ThreadData::ParentChildPair& parent_child)
-    : parent(*parent_child.first),
-      child(*parent_child.second) {
-}
-
-ParentChildPairSnapshot::~ParentChildPairSnapshot() {
 }
 
 //------------------------------------------------------------------------------
