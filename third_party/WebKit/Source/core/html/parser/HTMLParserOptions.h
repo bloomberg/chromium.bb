@@ -26,11 +26,13 @@
 #ifndef HTMLParserOptions_h
 #define HTMLParserOptions_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
 class Document;
 
-class HTMLParserOptions {
+class CORE_EXPORT HTMLParserOptions {
 public:
     bool scriptEnabled;
     bool pluginsEnabled;

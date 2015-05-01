@@ -5,11 +5,12 @@
 #ifndef ResourcePreloader_h
 #define ResourcePreloader_h
 
+#include "core/CoreExport.h"
 #include "core/html/parser/PreloadRequest.h"
 
 namespace blink {
 
-class ResourcePreloader {
+class CORE_EXPORT ResourcePreloader {
 public:
     virtual void takeAndPreload(PreloadRequestStream&);
 private:

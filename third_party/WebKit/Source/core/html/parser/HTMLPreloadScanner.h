@@ -27,6 +27,7 @@
 #ifndef HTMLPreloadScanner_h
 #define HTMLPreloadScanner_h
 
+#include "core/CoreExport.h"
 #include "core/css/MediaValues.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/CompactHTMLToken.h"
@@ -104,7 +105,7 @@ private:
     Vector<Checkpoint> m_checkpoints;
 };
 
-class HTMLPreloadScanner {
+class CORE_EXPORT HTMLPreloadScanner {
     WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner); WTF_MAKE_FAST_ALLOCATED(HTMLPreloadScanner);
 public:
     static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassRefPtr<MediaValues> mediaValues)
