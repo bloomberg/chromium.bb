@@ -309,6 +309,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
 
     if (colons == 1 && token.valueEqualsIgnoringCase("not")) {
         OwnPtr<CSSParserSelector> innerSelector = consumeCompoundSelector(block);
+        block.consumeWhitespace();
         if (!innerSelector || !innerSelector->isSimple() || !block.atEnd())
             return nullptr;
         Vector<OwnPtr<CSSParserSelector>> selectorVector;
