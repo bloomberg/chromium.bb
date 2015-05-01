@@ -16,7 +16,6 @@
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
-        'common.h',
         'media_route.cc',
         'media_route.h',
         'media_route_id.h',
@@ -40,14 +39,31 @@
       ],
     },
     {
-      # Mojo compiler for the Media Router internal API.
-      'target_name': 'media_router_mojo',
+      # Mojo bindings for the Media Router internal API.
+      'target_name': 'media_router_mojo_gen',
       'type': 'none',
       'sources': [
         'media_router.mojom',
       ],
       'includes': [
         '../../../../third_party/mojo/mojom_bindings_generator.gypi',
+      ],
+    },
+    {
+      'target_name': 'media_router_mojo',
+      'type': 'static_library',
+      'include_dirs': [
+        '<(DEPTH)/third_party/mojo/src',
+      ],
+      'dependencies': [
+        'media_router_mojo_gen',
+        '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
+        '<(DEPTH)/mojo/mojo_base.gyp:mojo_environment_chromium',
+        '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/media_router.mojom.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/media_router.mojom.h',
       ],
     },
   ],
