@@ -160,8 +160,7 @@ Predictor::Predictor(bool preconnect_enabled, bool predictor_enabled)
 }
 
 Predictor::~Predictor() {
-  // TODO(rlp): Add DCHECK for CurrentlyOn(BrowserThread::IO) when the
-  // ProfileManagerTest has been updated with a mock profile.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(shutdown_);
 }
 
