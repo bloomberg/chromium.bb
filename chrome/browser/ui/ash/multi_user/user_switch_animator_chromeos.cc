@@ -12,10 +12,14 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_tree_owner.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace chrome {
@@ -44,6 +48,56 @@ class UserChangeActionDisabler {
   DISALLOW_COPY_AND_ASSIGN(UserChangeActionDisabler);
 };
 
+// Defines an animation watcher for the 'hide' animation of the first maximized
+// window we encounter while looping through the old user's windows. This is
+// to observe the end of the animation so that we can destruct the old detached
+// layer of the window.
+class MaximizedWindowAnimationWatcher : public ui::LayerAnimationObserver {
+ public:
+  MaximizedWindowAnimationWatcher(ui::LayerAnimator* animator_to_watch,
+                                  ui::LayerTreeOwner* old_layer)
+      : animator_(animator_to_watch), old_layer_(old_layer) {
+    animator_->AddObserver(this);
+  }
+
+  ~MaximizedWindowAnimationWatcher() override {
+    animator_->RemoveObserver(this);
+  }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    delete this;
+  }
+
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
+    delete this;
+  }
+
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+ private:
+  ui::LayerAnimator* animator_;
+  scoped_ptr<ui::LayerTreeOwner> old_layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(MaximizedWindowAnimationWatcher);
+};
+
+// Modifies the given |window_list| such that the most-recently used window (if
+// any, and if it exists in |window_list|) will be the last window in the list.
+void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
+  DCHECK(window_list);
+  auto active_window = ash::wm::GetActiveWindow();
+  if (!active_window)
+    return;
+
+  auto itr = std::find(window_list->begin(), window_list->end(), active_window);
+  if (itr != window_list->end()) {
+    window_list->erase(itr);
+    window_list->push_back(active_window);
+  }
+}
+
 }  // namespace
 
 UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
@@ -54,7 +108,9 @@ UserSwitchAnimatorChromeOS::UserSwitchAnimatorChromeOS(
       new_user_id_(new_user_id),
       animation_speed_ms_(animation_speed_ms),
       animation_step_(ANIMATION_STEP_HIDE_OLD_USER),
-      screen_cover_(GetScreenCover(NULL)) {
+      screen_cover_(GetScreenCover(NULL)),
+      windows_by_user_id_() {
+  BuildUserToWindowsListMap();
   AdvanceUserTransitionAnimation();
 
   if (!animation_speed_ms_) {
@@ -228,104 +284,116 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
   // Disable the window position manager and the MRU window tracker temporarily.
   UserChangeActionDisabler disabler;
 
-  if (animation_step == ANIMATION_STEP_HIDE_OLD_USER ||
-      (animation_step == ANIMATION_STEP_FINALIZE &&
-       screen_cover_ == BOTH_USERS_COVER_SCREEN)) {
-    // We need to show/hide the windows in the same order as they were created
-    // in their parent window(s) to keep the layer / window hierarchy in sync.
-    // To achieve that we first collect all parent windows and then enumerate
-    // all windows in those parent windows and show or hide them accordingly.
+  // Animation duration.
+  int duration = std::max(kMinimalAnimationTimeMS, 2 * animation_speed_ms_);
 
-    // Create a list of all parent windows we have to check.
-    std::set<aura::Window*> parent_list;
-    for (MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator it =
-             owner_->window_to_entry().begin();
-         it != owner_->window_to_entry().end(); ++it) {
-      aura::Window* parent = it->first->parent();
-      if (parent_list.find(parent) == parent_list.end())
-        parent_list.insert(parent);
-    }
+  switch (animation_step) {
+    case ANIMATION_STEP_HIDE_OLD_USER: {
+      // Hide the old users.
+      for (auto& user_pair : windows_by_user_id_) {
+        auto& show_for_user_id = user_pair.first;
+        if (show_for_user_id == new_user_id_)
+          continue;
 
-    for (std::set<aura::Window*>::iterator it_parents = parent_list.begin();
-         it_parents != parent_list.end(); ++it_parents) {
-      const aura::Window::Windows window_list = (*it_parents)->children();
-      // In case of |BOTH_USERS_COVER_SCREEN| the desktop might shine through
-      // if all windows fade (in or out). To avoid this we only fade the topmost
-      // covering window (in / out) and make / keep all other covering windows
-      // visible while animating. |foreground_window_found| will get set when
-      // the top fading window was found.
-      bool foreground_window_found = false;
-      // Covering windows which follow the fade direction will also fade - all
-      // others will get immediately shown / kept shown until the animation is
-      // finished.
-      bool foreground_becomes_visible = false;
-      for (aura::Window::Windows::const_reverse_iterator it_window =
-               window_list.rbegin();
-           it_window != window_list.rend(); ++it_window) {
-        aura::Window* window = *it_window;
-        MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator
-            it_map = owner_->window_to_entry().find(window);
-        if (it_map != owner_->window_to_entry().end()) {
-          bool should_be_visible =
-              it_map->second->show_for_user() == new_user_id_ &&
-              it_map->second->show();
-          bool is_visible = window->IsVisible();
-          ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-          if (it_map->second->owner() == new_user_id_ &&
-              it_map->second->show_for_user() != new_user_id_ &&
+        bool found_foreground_maximized_window = false;
+
+        // We hide the windows such that the MRU window is the last one to be
+        // hidden, at which point all other windows have already been hidden,
+        // and hence the FocusController will not be able to find a next
+        // activateable window to restore focus to, and so we don't change
+        // window order (crbug.com/424307).
+        PutMruWindowLast(&(user_pair.second));
+        for (auto& window : user_pair.second) {
+          auto window_state = ash::wm::GetWindowState(window);
+
+          // Minimized visiting windows (minimized windows with an owner
+          // different than that of the for_show_user_id) should retrun to their
+          // original owners' desktops.
+          MultiUserWindowManagerChromeOS::WindowToEntryMap::const_iterator itr =
+              owner_->window_to_entry().find(window);
+          DCHECK(itr != owner_->window_to_entry().end());
+          if (show_for_user_id != itr->second->owner() &&
               window_state->IsMinimized()) {
-            // Pull back minimized visiting windows to the owners desktop.
-            owner_->ShowWindowForUserIntern(window, new_user_id_);
+            owner_->ShowWindowForUserIntern(window, itr->second->owner());
             window_state->Unminimize();
-          } else if (should_be_visible != is_visible) {
-            bool animate = true;
-            int duration = animation_step == ANIMATION_STEP_FINALIZE ?
-                               0 : (2 * animation_speed_ms_);
-            duration = std::max(kMinimalAnimationTimeMS, duration);
-            if (animation_step != ANIMATION_STEP_FINALIZE &&
-                screen_cover_ == BOTH_USERS_COVER_SCREEN &&
-                CoversScreen(window)) {
-              if (!foreground_window_found) {
-                foreground_window_found = true;
-                foreground_becomes_visible = should_be_visible;
-              } else if (should_be_visible != foreground_becomes_visible) {
-                // Covering windows behind the foreground window which are
-                // inverting their visibility should immediately become visible
-                // or stay visible until the animation is finished.
-                duration = kMinimalAnimationTimeMS;
-                if (!should_be_visible)
-                  animate = false;
-              }
-            }
-            if (animate)
-              owner_->SetWindowVisibility(window, should_be_visible, duration);
+            continue;
           }
+
+          if (!found_foreground_maximized_window && CoversScreen(window) &&
+              screen_cover_ == BOTH_USERS_COVER_SCREEN) {
+            // Maximized windows should be hidden, but visually kept visible
+            // in order to prevent showing the background while the animation is
+            // in progress. Therefore we detach the old layer and recreate fresh
+            // ones. The old layers will be destructed at the animation step
+            // |ANIMATION_STEP_FINALIZE|.
+            // old_layers_.push_back(wm::RecreateLayers(window));
+            // We only want to do this for the first (foreground) maximized
+            // window we encounter.
+            found_foreground_maximized_window = true;
+            ui::LayerTreeOwner* old_layer =
+                wm::RecreateLayers(window).release();
+            window->layer()->parent()->StackAtBottom(old_layer->root());
+            new MaximizedWindowAnimationWatcher(window->layer()->GetAnimator(),
+                                                old_layer);
+          }
+
+          owner_->SetWindowVisibility(window, false, duration);
         }
       }
-    }
-  }
 
-  // Activation and real switch are happening after the other user gets shown.
-  if (animation_step == ANIMATION_STEP_SHOW_NEW_USER) {
-    // Finally we need to restore the previously active window.
-    ash::MruWindowTracker::WindowList mru_list =
-        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
-    if (!mru_list.empty()) {
-      aura::Window* window = mru_list[0];
-      ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-      if (owner_->IsWindowOnDesktopOfUser(window, new_user_id_) &&
-          !window_state->IsMinimized()) {
-        aura::client::ActivationClient* client =
-            aura::client::GetActivationClient(window->GetRootWindow());
-        // Several unit tests come here without an activation client.
-        if (client)
-          client->ActivateWindow(window);
+      // Show new user.
+      auto new_user_itr = windows_by_user_id_.find(new_user_id_);
+      if (new_user_itr == windows_by_user_id_.end())
+        return;
+
+      for (auto& window : new_user_itr->second) {
+        auto entry = owner_->window_to_entry().find(window);
+        DCHECK(entry != owner_->window_to_entry().end());
+
+        if (entry->second->show())
+          owner_->SetWindowVisibility(window, true, duration);
       }
-    }
 
-    // This is called directly here to make sure notification_blocker will see
-    // the new window status.
-    owner_->notification_blocker()->ActiveUserChanged(new_user_id_);
+      break;
+    }
+    case ANIMATION_STEP_SHOW_NEW_USER: {
+      // In order to make the animation look better, we had to move the code
+      // that shows the new user to the previous step. Hence, we do nothing
+      // here.
+      break;
+    }
+    case ANIMATION_STEP_FINALIZE: {
+      // Reactivate the MRU window of the new user.
+      ash::MruWindowTracker::WindowList mru_list =
+          ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+      if (!mru_list.empty()) {
+        aura::Window* window = mru_list[0];
+        ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+        if (owner_->IsWindowOnDesktopOfUser(window, new_user_id_) &&
+            !window_state->IsMinimized()) {
+          // Several unit tests come here without an activation client.
+          aura::client::ActivationClient* client =
+              aura::client::GetActivationClient(window->GetRootWindow());
+          if (client)
+            client->ActivateWindow(window);
+        }
+      } else {
+        // If the new user has no windows at all in his MRU windows list, we
+        // must deactivate any active window (by setting the active window to
+        // |nullptr|).
+        aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
+        aura::client::ActivationClient* client =
+            aura::client::GetActivationClient(root_window);
+        if (client)
+          client->ActivateWindow(nullptr);
+      }
+
+      owner_->notification_blocker()->ActiveUserChanged(new_user_id_);
+      break;
+    }
+    case ANIMATION_STEP_ENDED:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -353,6 +421,32 @@ UserSwitchAnimatorChromeOS::GetScreenCover(aura::Window* root_window) {
     }
   }
   return cover;
+}
+
+void UserSwitchAnimatorChromeOS::BuildUserToWindowsListMap() {
+  // This is to be called only at the time this animation is constructed.
+  DCHECK(windows_by_user_id_.empty());
+
+  // For each unique parent window, we enumerate its children windows, and
+  // for each child if it's in the |window_to_entry()| map, we add it to the
+  // |windows_by_user_id_| map.
+  // This gives us a list of windows per each user that is in the same order
+  // they were created in their parent windows.
+  std::set<aura::Window*> parent_windows;
+  auto& window_to_entry_map = owner_->window_to_entry();
+  for (auto& window_entry_pair : window_to_entry_map) {
+    aura::Window* parent_window = window_entry_pair.first->parent();
+    if (parent_windows.find(parent_window) == parent_windows.end()) {
+      parent_windows.insert(parent_window);
+      for (auto& child_window : parent_window->children()) {
+        auto itr = window_to_entry_map.find(child_window);
+        if (itr != window_to_entry_map.end()) {
+          windows_by_user_id_[itr->second->show_for_user()].push_back(
+              child_window);
+        }
+      }
+    }
+  }
 }
 
 }  // namespace chrome

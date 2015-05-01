@@ -204,6 +204,8 @@ std::string GetPrefForRootWindow(PrefService* pref_service,
 ash::ShelfAutoHideBehavior GetShelfAutoHideBehaviorFromPrefs(
     Profile* profile,
     aura::Window* root_window) {
+  DCHECK(profile);
+
   // Don't show the shelf in app mode.
   if (chrome::IsRunningInAppMode())
     return ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
@@ -227,6 +229,8 @@ ash::ShelfAutoHideBehavior GetShelfAutoHideBehaviorFromPrefs(
 // Gets the shelf alignment from prefs for a root window.
 ash::ShelfAlignment GetShelfAlignmentFromPrefs(Profile* profile,
                                                aura::Window* root_window) {
+  DCHECK(profile);
+
   // See comment in |kShelfAlignment| as to why we consider two prefs.
   const std::string alignment_value(
       GetPrefForRootWindow(profile->GetPrefs(),

@@ -421,6 +421,11 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
   // This needs to be set before the animation starts.
   current_user_id_ = user_id;
 
+  // Here to avoid a very nasty race condition, we must destruct any previously
+  // created animation before creating a new one. Otherwise, the newly
+  // constructed will hide all windows of the old user in the first step of the
+  // animation only to be reshown again by the destructor of the old animation.
+  animation_.reset();
   animation_.reset(
       new UserSwitchAnimatorChromeOS(
           this, user_id, GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
@@ -610,13 +615,10 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
   // suppressing any window entry changes while this is going on.
   base::AutoReset<bool> suppressor(&suppress_visibility_changes_, true);
 
-  if (visible) {
+  if (visible)
     ShowWithTransientChildrenRecursive(window, animation_time_in_ms);
-  } else {
-    if (window->HasFocus())
-      window->Blur();
+  else
     SetWindowVisible(window, false, animation_time_in_ms);
-  }
 }
 
 void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {

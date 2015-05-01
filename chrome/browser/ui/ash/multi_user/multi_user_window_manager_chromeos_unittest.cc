@@ -856,11 +856,11 @@ TEST_F(MultiUserWindowManagerChromeOSTest, FullUserSwitchAnimationTests) {
   // Switch the user quickly to another user and before the animation is done
   // switch back and see that this works.
   multi_user_window_manager()->ActiveUserChanged("B");
-  // With the start of the animation B should become visible.
   EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   // Check that after switching to C, C is fully visible.
   SwitchUserAndWaitForAnimation("C");
   EXPECT_EQ("H[A], H[B], S[C]", GetStatus());
+  EXPECT_EQ("C", GetOwnersOfVisibleWindowsAsString());
 }
 
 // Make sure that we do not crash upon shutdown when an animation is pending and
@@ -903,7 +903,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   EXPECT_FALSE(shelf->IsShelfHiddenBehindBlackBar());
 
   // Start the animation and see that the old window is becoming invisible, the
-  // new one visible, the background starts transitionining and the shelf hides.
+  // new one is becoming visible, the background starts transitionining and the
+  // shelf hides.
   StartUserTransitionAnimation("B");
   EXPECT_EQ("->B", GetWallaperUserIdForTest());
   EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
@@ -921,6 +922,8 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   AdvanceUserTransitionAnimation();
   EXPECT_EQ("->B", GetWallaperUserIdForTest());
   EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
+  EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
   EXPECT_EQ(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
             ash::Shell::GetInstance()->GetShelfAutoHideBehavior(
                 window(0)->GetRootWindow()));
@@ -976,6 +979,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizeToNormal) {
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
+  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ("B", GetWallaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
@@ -1016,6 +1020,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsNormalToMaximized) {
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
+  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ("", GetWallaperUserIdForTest());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
@@ -1047,18 +1052,19 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizedToMaximized) {
   EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
 
-  // Start the animation and see that the old window is staying visible, the
-  // new one slowly visible and the background changes immediately.
+  // Start the animation and see that the all windows are hidden (except that of
+  // the new user).
   StartUserTransitionAnimation("B");
-  EXPECT_EQ("S[A], S[B], H[C]", GetStatus());
+  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ("B", GetWallaperUserIdForTest());
-  EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
+  EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
+  EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ("B", GetWallaperUserIdForTest());
-  EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
+  EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
   // The final step however will hide the old window.
@@ -1068,8 +1074,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizedToMaximized) {
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
 
-  // Switching back will preserve the z-order by instantly showing the new
-  // window, hiding the layer above it and switching instantly the wallpaper.
+  // Switching back will do the exact same thing.
   StartUserTransitionAnimation("A");
   EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
   EXPECT_EQ("A", GetWallaperUserIdForTest());
@@ -1078,6 +1083,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationStepsMaximizedToMaximized) {
 
   // The next step will not change anything.
   AdvanceUserTransitionAnimation();
+  EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
   EXPECT_EQ("A", GetWallaperUserIdForTest());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(0.0f, window(1)->layer()->GetTargetOpacity());

@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_ANIMATOR_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_ANIMATOR_CHROMEOS_H_
 
+#include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
+#include "ui/aura/window.h"
 
 namespace chrome {
 
@@ -88,6 +86,11 @@ class UserSwitchAnimatorChromeOS {
   // tested, otherwise all screens.
   TransitioningScreenCover GetScreenCover(aura::Window* root_window);
 
+  // Builds the map that a user ID to the list of windows that should be shown
+  // for this user. This operation happens once upon the construction of this
+  // animation.
+  void BuildUserToWindowsListMap();
+
   // The owning window manager.
   MultiUserWindowManagerChromeOS* owner_;
 
@@ -102,6 +105,10 @@ class UserSwitchAnimatorChromeOS {
 
   // The screen cover status before the animation has started.
   TransitioningScreenCover screen_cover_;
+
+  // Mapping users IDs to the list of windows to show for these users.
+  typedef std::map<std::string, aura::Window::Windows> UserToWindowsMap;
+  UserToWindowsMap windows_by_user_id_;
 
   // A timer which watches to executes the second part of a "user changed"
   // animation. Note that this timer exists only during such an animation.
