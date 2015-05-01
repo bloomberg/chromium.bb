@@ -89,7 +89,7 @@ void StartApp(mojo::runner::Context* context) {
     }
   }
 
-  context->Run(app_url, service_provider.Pass());
+  context->Run(app_url);
 }
 
 }  // namespace
