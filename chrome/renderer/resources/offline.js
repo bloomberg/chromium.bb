@@ -695,8 +695,8 @@ Runner.prototype = {
    * @return {boolean}
    */
   isLeftClickOnCanvas: function(e) {
-    return e.button && e.button < 2 && e.type == Runner.events.MOUSEUP &&
-        e.target == this.canvas;
+    return e.button != null && e.button < 2 &&
+        e.type == Runner.events.MOUSEUP && e.target == this.canvas;
   },
 
   /**
@@ -793,7 +793,8 @@ Runner.prototype = {
   onVisibilityChange: function(e) {
     if (document.hidden || document.webkitHidden || e.type == 'blur') {
       this.stop();
-    } else {
+    } else if (!this.crashed) {
+      this.tRex.reset();
       this.play();
     }
   },

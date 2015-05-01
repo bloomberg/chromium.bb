@@ -12,8 +12,8 @@ function onResize() {
   var helpOuterBox = document.querySelector('#details');
   var mainContent = document.querySelector('#main-content');
   var mediaQuery = '(min-width: 240px) and (max-width: 420px) and ' +
-      '(orientation: portrait), (max-width: 736px) and ' +
-      '(max-height: 420px) and (orientation: landscape)';
+      '(max-height: 736px) and (orientation: portrait),' +
+      '(max-width: 736px) and (max-height: 420px) and (orientation: landscape)';
   var detailsHidden = helpOuterBox.classList.contains('hidden');
   var runnerContainer = document.querySelector('.runner-container');
 
