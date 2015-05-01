@@ -123,8 +123,9 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, CreatedLazily) {
 // Tests that deleting a profile properly clears the app list view delegate, but
 // doesn't destroy it. Disabled on ChromeOS, since profiles can't be deleted
 // this way (the second profile isn't signed in, so the test fails when creating
-// UserCloudPolicyManagerChromeOS).
-#if defined(OS_CHROMEOS)
+// UserCloudPolicyManagerChromeOS). Disabled on Windows because of flakiness.
+// http://crbug.com/483615
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_DeletingProfileUpdatesViewDelegate \
     DISABLED_DeletingProfileUpdatesViewDelegate
 #else
