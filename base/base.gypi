@@ -870,6 +870,7 @@
               ['include', '^mac/scoped_mach_vm\\.'],
               ['include', '^mac/scoped_nsautorelease_pool\\.'],
               ['include', '^mac/scoped_nsobject\\.'],
+              ['include', '^mac/scoped_objc_class_swizzler\\.'],
               ['include', '^message_loop/message_pump_mac\\.'],
               ['include', '^strings/sys_string_conversions_mac\\.'],
               ['include', '^threading/platform_thread_mac\\.'],
