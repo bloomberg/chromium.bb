@@ -68,7 +68,11 @@ void CredentialManagerDispatcher::PendingRequestTask::OnGetPasswordStoreResults(
   autofill::PasswordForm* zero_click_form_to_return = nullptr;
   bool found_zero_clickable_credential = false;
   for (auto& form : results) {
-    if (form->origin == origin_) {
+    // PasswordFrom and GURL have different definition of origin.
+    // PasswordForm definition: scheme, host, port and path.
+    // GURL definition: scheme, host, and port.
+    // So we can't compare them directly.
+    if (form->origin.GetOrigin() == origin_.GetOrigin()) {
       local_results.push_back(form);
 
       // If this is a zero-clickable PasswordForm, and we haven't found any

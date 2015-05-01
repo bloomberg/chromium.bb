@@ -105,6 +105,8 @@ struct PasswordForm {
   // (in longest matching prefix fashion) whether or not a given PasswordForm
   // result from the database is a good fit for a particular form on a page.
   // This should not be empty except for Android based credentials.
+  // TODO(melandory): origin should be renamed in order to be consistent with
+  // GURL definition of origin.
   GURL origin;
 
   // The action target of the form; like |origin| URL consists of the scheme,
