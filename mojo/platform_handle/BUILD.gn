@@ -1,0 +1,29 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("platform_handle") {
+  sources = [
+    "platform_handle_private_thunks.cc",
+    "platform_handle_private_thunks.h",
+  ]
+
+  deps = [
+    ":defs",
+    "//third_party/mojo/src/mojo/public/c/system",
+  ]
+
+  defines = [ "PLATFORM_HANDLE_IMPLEMENTATION" ]
+}
+
+# Only targets that are registering the thunks should depend upon this.
+source_set("defs") {
+  visibility = [
+    ":platform_handle",
+    "//mojo/runner:native_application_support",
+  ]
+  sources = [
+    "native_exports.h",
+    "platform_handle_functions.h",
+  ]
+}
