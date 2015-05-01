@@ -29,6 +29,8 @@ class RemoteDeviceTestRun(test_run.TestRun):
   COMPLETE = 'complete'
   HEARTBEAT_INTERVAL = 300
 
+  _RESULTS_FILE = 'appurify_results/result.txt'
+
   def __init__(self, env, test_instance):
     """Constructor.
 
@@ -173,7 +175,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     """Download the test results from remote device service.
 
     Args:
-      results_path: path to download results to.
+      results_path: Path to download appurify results zipfile.
     """
     if results_path:
       logging.info('Downloading results to %s.' % results_path)
@@ -183,6 +185,18 @@ class RemoteDeviceTestRun(test_run.TestRun):
                                               logging.WARNING):
         appurify_sanitized.utils.wget(self._results['results']['url'],
                                       results_path)
+
+  def _GetRawTestOutput(self):
+    """Returns the test output."""
+    results_zipfile = self._env.results_path
+    if results_zipfile and os.path.exists(results_zipfile):
+      with zipfile.ZipFile(results_zipfile) as z:
+        with z.open(self._RESULTS_FILE, 'r') as r:
+          return r.read()
+    else:
+      # The results from here are sometimes cut off. Therefore, we prefer
+      # getting results from the results zipfile if it is availible.
+      return self._results['results']['output']
 
   def _GetTestStatus(self, test_run_id):
     """Checks the state of the test, and sets self._results

@@ -332,7 +332,8 @@ class RemoteDeviceEnvironment(environment.Environment):
   @property
   def only_output_failures(self):
     # TODO(jbudorick): Remove this once b/18981674 is fixed.
-    return True
+    # If the results zipfile is downloaded we can get the full results.
+    return not self._results_path
 
   @property
   def results_path(self):
