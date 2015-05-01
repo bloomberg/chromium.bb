@@ -52,22 +52,14 @@ class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
                             double timestamp) final;
 
   // MidiServiceWinDelegate overrides:
-  void OnCompleteInitialization(MidiResult result) final {
-    CompleteInitialization(result);
-  }
-  void OnAddInputPort(MidiPortInfo info) final { AddInputPort(info); }
-  void OnAddOutputPort(MidiPortInfo info) final { AddOutputPort(info); }
-  void OnSetInputPortState(uint32 port_index, MidiPortState state) final {
-    SetInputPortState(port_index, state);
-  }
-  void OnSetOutputPortState(uint32 port_index, MidiPortState state) final {
-    SetOutputPortState(port_index, state);
-  }
+  void OnCompleteInitialization(MidiResult result) final;
+  void OnAddInputPort(MidiPortInfo info) final;
+  void OnAddOutputPort(MidiPortInfo info) final;
+  void OnSetInputPortState(uint32 port_index, MidiPortState state) final;
+  void OnSetOutputPortState(uint32 port_index, MidiPortState state) final;
   void OnReceiveMidiData(uint32 port_index,
                          const std::vector<uint8>& data,
-                         base::TimeTicks time) final {
-    ReceiveMidiData(port_index, &data[0], data.size(), time);
-  }
+                         base::TimeTicks time) final;
 
  private:
   scoped_ptr<MidiServiceWin> midi_service_;

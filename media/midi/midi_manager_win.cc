@@ -1126,6 +1126,34 @@ void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
   client->AccumulateMidiBytesSent(data.size());
 }
 
+void MidiManagerWin::OnCompleteInitialization(MidiResult result) {
+  CompleteInitialization(result);
+}
+
+void MidiManagerWin::OnAddInputPort(MidiPortInfo info) {
+  AddInputPort(info);
+}
+
+void MidiManagerWin::OnAddOutputPort(MidiPortInfo info) {
+  AddOutputPort(info);
+}
+
+void MidiManagerWin::OnSetInputPortState(uint32 port_index,
+                                         MidiPortState state) {
+  SetInputPortState(port_index, state);
+}
+
+void MidiManagerWin::OnSetOutputPortState(uint32 port_index,
+                                          MidiPortState state) {
+  SetOutputPortState(port_index, state);
+}
+
+void MidiManagerWin::OnReceiveMidiData(uint32 port_index,
+                                       const std::vector<uint8>& data,
+                                       base::TimeTicks time) {
+  ReceiveMidiData(port_index, &data[0], data.size(), time);
+}
+
 MidiManager* MidiManager::Create() {
   return new MidiManagerWin();
 }

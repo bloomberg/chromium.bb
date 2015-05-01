@@ -185,6 +185,60 @@ int MapFreeContextBufferStatusToError(SECURITY_STATUS status) {
 
 }  // anonymous namespace
 
+SECURITY_STATUS SSPILibraryDefault::AcquireCredentialsHandle(
+    LPWSTR pszPrincipal,
+    LPWSTR pszPackage,
+    unsigned long fCredentialUse,
+    void* pvLogonId,
+    void* pvAuthData,
+    SEC_GET_KEY_FN pGetKeyFn,
+    void* pvGetKeyArgument,
+    PCredHandle phCredential,
+    PTimeStamp ptsExpiry) {
+  return ::AcquireCredentialsHandle(pszPrincipal, pszPackage, fCredentialUse,
+                                    pvLogonId, pvAuthData, pGetKeyFn,
+                                    pvGetKeyArgument, phCredential, ptsExpiry);
+}
+
+SECURITY_STATUS SSPILibraryDefault::InitializeSecurityContext(
+    PCredHandle phCredential,
+    PCtxtHandle phContext,
+    SEC_WCHAR* pszTargetName,
+    unsigned long fContextReq,
+    unsigned long Reserved1,
+    unsigned long TargetDataRep,
+    PSecBufferDesc pInput,
+    unsigned long Reserved2,
+    PCtxtHandle phNewContext,
+    PSecBufferDesc pOutput,
+    unsigned long* contextAttr,
+    PTimeStamp ptsExpiry) {
+  return ::InitializeSecurityContext(phCredential, phContext, pszTargetName,
+                                     fContextReq, Reserved1, TargetDataRep,
+                                     pInput, Reserved2, phNewContext, pOutput,
+                                     contextAttr, ptsExpiry);
+}
+
+SECURITY_STATUS SSPILibraryDefault::QuerySecurityPackageInfo(
+    LPWSTR pszPackageName,
+    PSecPkgInfoW* pkgInfo) {
+  return ::QuerySecurityPackageInfo(pszPackageName, pkgInfo);
+}
+
+SECURITY_STATUS SSPILibraryDefault::FreeCredentialsHandle(
+    PCredHandle phCredential) {
+  return ::FreeCredentialsHandle(phCredential);
+}
+
+SECURITY_STATUS SSPILibraryDefault::DeleteSecurityContext(
+    PCtxtHandle phContext) {
+  return ::DeleteSecurityContext(phContext);
+}
+
+SECURITY_STATUS SSPILibraryDefault::FreeContextBuffer(PVOID pvContextBuffer) {
+  return ::FreeContextBuffer(pvContextBuffer);
+}
+
 HttpAuthSSPI::HttpAuthSSPI(SSPILibrary* library,
                            const std::string& scheme,
                            const SEC_WCHAR* security_package,

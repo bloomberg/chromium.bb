@@ -80,12 +80,7 @@ class SSPILibraryDefault : public SSPILibrary {
                                            SEC_GET_KEY_FN pGetKeyFn,
                                            void* pvGetKeyArgument,
                                            PCredHandle phCredential,
-                                           PTimeStamp ptsExpiry) override {
-    return ::AcquireCredentialsHandle(pszPrincipal, pszPackage, fCredentialUse,
-                                      pvLogonId, pvAuthData, pGetKeyFn,
-                                      pvGetKeyArgument, phCredential,
-                                      ptsExpiry);
-  }
+                                           PTimeStamp ptsExpiry) override;
 
   SECURITY_STATUS InitializeSecurityContext(PCredHandle phCredential,
                                             PCtxtHandle phContext,
@@ -98,29 +93,16 @@ class SSPILibraryDefault : public SSPILibrary {
                                             PCtxtHandle phNewContext,
                                             PSecBufferDesc pOutput,
                                             unsigned long* contextAttr,
-                                            PTimeStamp ptsExpiry) override {
-    return ::InitializeSecurityContext(phCredential, phContext, pszTargetName,
-                                       fContextReq, Reserved1, TargetDataRep,
-                                       pInput, Reserved2, phNewContext, pOutput,
-                                       contextAttr, ptsExpiry);
-  }
+                                            PTimeStamp ptsExpiry) override;
 
   SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
-                                           PSecPkgInfoW* pkgInfo) override {
-    return ::QuerySecurityPackageInfo(pszPackageName, pkgInfo);
-  }
+                                           PSecPkgInfoW* pkgInfo) override;
 
-  SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) override {
-    return ::FreeCredentialsHandle(phCredential);
-  }
+  SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) override;
 
-  SECURITY_STATUS DeleteSecurityContext(PCtxtHandle phContext) override {
-    return ::DeleteSecurityContext(phContext);
-  }
+  SECURITY_STATUS DeleteSecurityContext(PCtxtHandle phContext) override;
 
-  SECURITY_STATUS FreeContextBuffer(PVOID pvContextBuffer) override {
-    return ::FreeContextBuffer(pvContextBuffer);
-  }
+  SECURITY_STATUS FreeContextBuffer(PVOID pvContextBuffer) override;
 };
 
 class NET_EXPORT_PRIVATE HttpAuthSSPI {
