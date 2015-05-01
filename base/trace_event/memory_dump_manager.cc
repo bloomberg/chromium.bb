@@ -12,12 +12,22 @@
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "build/build_config.h"
+
+#if !defined(OS_NACL)
+#include "base/trace_event/process_memory_totals_dump_provider.h"
+#endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/process_memory_maps_dump_provider.h"
-#include "base/trace_event/process_memory_totals_dump_provider.h"
-#elif defined(OS_WIN)
+#endif
+
+#if defined(OS_ANDROID)
+#include "base/trace_event/java_heap_dump_provider_android.h"
+#endif
+
+#if defined(OS_WIN)
 #include "base/trace_event/winheap_dump_provider_win.h"
 #endif
 
@@ -161,12 +171,21 @@ void MemoryDumpManager::Initialize() {
   if (skip_core_dumpers_auto_registration_for_testing_)
     return;
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
   // Enable the core dump providers.
+#if !defined(OS_NACL)
   RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance());
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
   RegisterDumpProvider(MallocDumpProvider::GetInstance());
-#elif defined(OS_WIN)
+#endif
+
+#if defined(OS_ANDROID)
+  RegisterDumpProvider(JavaHeapDumpProvider::GetInstance());
+#endif
+
+#if defined(OS_WIN)
   RegisterDumpProvider(WinHeapDumpProvider::GetInstance());
 #endif
 }
