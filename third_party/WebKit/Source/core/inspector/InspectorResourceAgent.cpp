@@ -52,7 +52,6 @@
 #include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorResolver.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/NetworkResourcesData.h"
@@ -309,7 +308,7 @@ InspectorResourceAgent::~InspectorResourceAgent()
 
 DEFINE_TRACE(InspectorResourceAgent)
 {
-    visitor->trace(m_inspectedFrame);
+    visitor->trace(m_pageAgent);
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingXHRReplayData);
     visitor->trace(m_replayXHRs);
@@ -544,7 +543,7 @@ void InspectorResourceAgent::didFinishXHRLoading(ExecutionContext* context, XMLH
         String message = "XHR finished loading: " + method + " \"" + url + "\".";
         RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
         consoleMessage->setRequestIdentifier(identifier);
-        m_inspectedFrame->host()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
+        m_pageAgent->frameHost()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
     }
 }
 
@@ -736,7 +735,7 @@ bool InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassRe
     if (!resourceData)
         return false;
     if (BlobDataHandle* blob = resourceData->downloadedFileBlob()) {
-        if (LocalFrame* frame = InspectorResolver::resolveFrame(m_inspectedFrame, resourceData->frameId())) {
+        if (LocalFrame* frame = m_pageAgent->frameForId(resourceData->frameId())) {
             if (Document* document = frame->document()) {
                 InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), callback);
                 client->start(document);
@@ -842,7 +841,7 @@ void InspectorResourceAgent::setCacheDisabled(ErrorString*, bool cacheDisabled)
     m_state->setBoolean(ResourceAgentState::cacheDisabled, cacheDisabled);
     if (cacheDisabled)
         memoryCache()->evictResources();
-    for (Frame* frame = m_inspectedFrame; frame; frame = frame->tree().traverseNext(m_inspectedFrame)) {
+    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())
             toLocalFrame(frame)->document()->fetcher()->garbageCollectDocumentResources();
     }
@@ -859,7 +858,7 @@ void InspectorResourceAgent::setDataSizeLimitsForTest(ErrorString*, int maxTotal
 
 void InspectorResourceAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
-    if (loader->frame() != m_inspectedFrame)
+    if (loader->frame() != m_pageAgent->inspectedFrame())
         return;
 
     if (m_state->getBoolean(ResourceAgentState::cacheDisabled))
@@ -909,9 +908,9 @@ void InspectorResourceAgent::removeFinishedReplayXHRFired(Timer<InspectorResourc
     m_replayXHRsToBeDeleted.clear();
 }
 
-InspectorResourceAgent::InspectorResourceAgent(LocalFrame* inspectedFrame)
+InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorResourceAgent, InspectorFrontend::Network>("Network")
-    , m_inspectedFrame(inspectedFrame)
+    , m_pageAgent(pageAgent)
     , m_resourcesData(adoptPtr(new NetworkResourcesData()))
     , m_pendingEventSource(nullptr)
     , m_isRecalculatingStyle(false)

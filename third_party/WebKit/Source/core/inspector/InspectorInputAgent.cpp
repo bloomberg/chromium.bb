@@ -33,6 +33,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -86,9 +87,9 @@ void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& poin
 
 namespace blink {
 
-InspectorInputAgent::InspectorInputAgent(LocalFrame* inspectedFrame)
+InspectorInputAgent::InspectorInputAgent(InspectorPageAgent* pageAgent)
     : InspectorBaseAgent<InspectorInputAgent, InspectorFrontend::Input>("Input")
-    , m_inspectedFrame(inspectedFrame)
+    , m_pageAgent(pageAgent)
 {
 }
 
@@ -172,18 +173,18 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
         // Some platforms may have flipped coordinate systems, but the given coordinates
         // assume the origin is in the top-left of the window. Convert.
         IntPoint convertedPoint, globalPoint;
-        ConvertInspectorPoint(m_inspectedFrame, IntPoint(x, y), &convertedPoint, &globalPoint);
+        ConvertInspectorPoint(m_pageAgent->inspectedFrame(), IntPoint(x, y), &convertedPoint, &globalPoint);
 
         SyntheticInspectorTouchPoint point(id++, convertedState, globalPoint, convertedPoint, radiusX, radiusY, rotationAngle, force);
         event.append(point);
     }
 
-    m_inspectedFrame->eventHandler().handleTouchEvent(event);
+    m_pageAgent->inspectedFrame()->eventHandler().handleTouchEvent(event);
 }
 
 DEFINE_TRACE(InspectorInputAgent)
 {
-    visitor->trace(m_inspectedFrame);
+    visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);
 }
 

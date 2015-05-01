@@ -60,6 +60,7 @@ class InsertionPoint;
 class InspectorFrontend;
 class InspectorHistory;
 class InspectorOverlay;
+class InspectorPageAgent;
 class Node;
 class QualifiedName;
 class PseudoElement;
@@ -85,9 +86,9 @@ public:
         virtual void didModifyDOMAttr(Element*) = 0;
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     {
-        return adoptPtrWillBeNoop(new InspectorDOMAgent(inspectedFrame, injectedScriptManager, overlay));
+        return adoptPtrWillBeNoop(new InspectorDOMAgent(pageAgent, injectedScriptManager, overlay));
     }
 
     static String toErrorString(ExceptionState&);
@@ -205,7 +206,7 @@ public:
 private:
     enum SearchMode { NotSearching, SearchingForNormal, SearchingForUAShadow };
 
-    InspectorDOMAgent(LocalFrame*, InjectedScriptManager*, InspectorOverlay*);
+    InspectorDOMAgent(InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
 
     void setDocument(Document*);
     void innerEnable();
@@ -245,7 +246,7 @@ private:
 
     RawPtrWillBeMember<InspectorRevalidateDOMTask> revalidateTask();
 
-    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     RawPtrWillBeMember<DOMListener> m_domListener;

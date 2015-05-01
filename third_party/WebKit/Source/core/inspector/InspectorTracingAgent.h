@@ -14,8 +14,8 @@
 
 namespace blink {
 
+class InspectorPageAgent;
 class InspectorWorkerAgent;
-class LocalFrame;
 
 class InspectorTracingAgent final
     : public InspectorBaseAgent<InspectorTracingAgent, InspectorFrontend::Tracing>
@@ -30,9 +30,9 @@ public:
         virtual void disableTracing() { }
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorTracingAgent> create(LocalFrame* inspectedFrame, Client* client, InspectorWorkerAgent* workerAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorTracingAgent> create(Client* client, InspectorWorkerAgent* workerAgent, InspectorPageAgent* pageAgent)
     {
-        return adoptPtrWillBeNoop(new InspectorTracingAgent(inspectedFrame, client, workerAgent));
+        return adoptPtrWillBeNoop(new InspectorTracingAgent(client, workerAgent, pageAgent));
     }
 
     DECLARE_VIRTUAL_TRACE();
@@ -49,16 +49,16 @@ public:
     void setLayerTreeId(int);
 
 private:
-    InspectorTracingAgent(LocalFrame*, Client*, InspectorWorkerAgent*);
+    InspectorTracingAgent(Client*, InspectorWorkerAgent*, InspectorPageAgent*);
 
     void emitMetadataEvents();
     void resetSessionId();
     String sessionId();
 
-    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     int m_layerTreeId;
     Client* m_client;
     RawPtrWillBeMember<InspectorWorkerAgent> m_workerAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
 };
 
 } // namespace blink

@@ -124,6 +124,12 @@ public:
     void discardAgent() override;
 
     // Cross-agents API
+    static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
+    LocalFrame* frameForId(const String& frameId);
+    LocalFrame* assertFrame(ErrorString*, const String& frameId);
+    FrameHost* frameHost();
+    LocalFrame* inspectedFrame() const { return m_inspectedFrame.get(); }
+    LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     bool screencastEnabled();
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
 
@@ -136,7 +142,6 @@ private:
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
-    LocalFrame* assertFrame(ErrorString*, const String& frameId);
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 

@@ -39,15 +39,16 @@ namespace blink {
 class ConsoleMessage;
 class ConsoleMessageStorage;
 class InspectorDOMAgent;
+class InspectorPageAgent;
 class WorkerInspectorProxy;
 class WorkerGlobalScopeProxy;
 
 class PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent)
+    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent)
     {
-        return adoptPtrWillBeNoop(new PageConsoleAgent(inspectedFrame, injectedScriptManager, domAgent));
+        return adoptPtrWillBeNoop(new PageConsoleAgent(injectedScriptManager, domAgent, pageAgent));
     }
     virtual ~PageConsoleAgent();
     DECLARE_VIRTUAL_TRACE();
@@ -66,11 +67,11 @@ protected:
     virtual void disableStackCapturingIfNeeded() override;
 
 private:
-    PageConsoleAgent(LocalFrame*, InjectedScriptManager*, InspectorDOMAgent*);
+    PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorPageAgent*);
     virtual void clearMessages(ErrorString*) override;
 
-    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     HashSet<WorkerGlobalScopeProxy*> m_workersWithEnabledConsole;
 
     static int s_enabledAgentCount;

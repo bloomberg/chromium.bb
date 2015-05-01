@@ -35,6 +35,7 @@ namespace blink {
 
 class LocalFrame;
 class InspectorFrontend;
+class InspectorPageAgent;
 
 typedef String ErrorString;
 
@@ -42,9 +43,9 @@ class InspectorApplicationCacheAgent final : public InspectorBaseAgent<Inspector
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorApplicationCacheAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorApplicationCacheAgent> create(LocalFrame* inspectedFrame)
+    static PassOwnPtrWillBeRawPtr<InspectorApplicationCacheAgent> create(InspectorPageAgent* pageAgent)
     {
-        return adoptPtrWillBeNoop(new InspectorApplicationCacheAgent(inspectedFrame));
+        return adoptPtrWillBeNoop(new InspectorApplicationCacheAgent(pageAgent));
     }
     virtual ~InspectorApplicationCacheAgent() { }
     DECLARE_VIRTUAL_TRACE();
@@ -64,14 +65,14 @@ public:
     virtual void getApplicationCacheForFrame(ErrorString*, const String& frameId, RefPtr<TypeBuilder::ApplicationCache::ApplicationCache>&) override;
 
 private:
-    explicit InspectorApplicationCacheAgent(LocalFrame*);
+    InspectorApplicationCacheAgent(InspectorPageAgent*);
     PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCache> buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&, const ApplicationCacheHost::CacheInfo&);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::ApplicationCacheResource> > buildArrayForApplicationCacheResources(const ApplicationCacheHost::ResourceInfoList&);
     PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo&);
 
     DocumentLoader* assertFrameWithDocumentLoader(ErrorString*, String frameId);
 
-    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
+    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
 };
 
 } // namespace blink
