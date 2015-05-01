@@ -3193,6 +3193,7 @@ void LayoutObject::setShouldInvalidateSelection()
     m_bitfields.setShouldInvalidateSelection(true);
     markContainerChainForPaintInvalidation();
 }
+
 void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reason)
 {
     // Only full invalidation reasons are allowed.
@@ -3202,6 +3203,15 @@ void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
         if (reason == PaintInvalidationFull)
             reason = documentLifecycleBasedPaintInvalidationReason(document().lifecycle());
         m_bitfields.setFullPaintInvalidationReason(reason);
+
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() && isBody()) {
+            // The rootObject paints view's background. We need to invalidate it when
+            // view's background changes because of change of body's style.
+            // FIXME: The condition is broader than needed for simplicity.
+            // Might remove this when fixing crbug.com/475115.
+            if (LayoutObject* rootObject = document().documentElement()->layoutObject())
+                rootObject->setShouldDoFullPaintInvalidation();
+        }
     }
 
     ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);

@@ -7,10 +7,12 @@
       "drawsContent": true,
       "repaintRects": [
         [8, 240, 784, 288],
-        [0, 0, 800, 600]
+        [0, 0, 800, 600],
+        [0, 0, 800, 544]
       ],
       "paintInvalidationClients": [
         "LayoutView #document",
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY"
       ]
     }
