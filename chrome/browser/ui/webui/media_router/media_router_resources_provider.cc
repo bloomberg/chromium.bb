@@ -81,6 +81,30 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
       "elements/issue_banner/issue_banner.js",
       IDR_ISSUE_BANNER_JS);
+  html_source->AddResourcePath(
+      "elements/media_router_sink/media_router_sink.css",
+      IDR_MEDIA_ROUTER_SINK_CSS);
+  html_source->AddResourcePath(
+      "elements/media_router_sink/media_router_sink.html",
+      IDR_MEDIA_ROUTER_SINK_HTML);
+  html_source->AddResourcePath(
+      "elements/media_router_sink/media_router_sink.js",
+      IDR_MEDIA_ROUTER_SINK_JS);
+  html_source->AddResourcePath(
+      "elements/media_router_sink_picker/media_router_sink_picker.html",
+      IDR_MEDIA_ROUTER_SINK_PICKER_HTML);
+  html_source->AddResourcePath(
+      "elements/media_router_sink_picker/media_router_sink_picker.js",
+      IDR_MEDIA_ROUTER_SINK_PICKER_JS);
+  html_source->AddResourcePath(
+      "elements/route_details/route_details.css",
+      IDR_ROUTE_DETAILS_CSS);
+  html_source->AddResourcePath(
+      "elements/route_details/route_details.html",
+      IDR_ROUTE_DETAILS_HTML);
+  html_source->AddResourcePath(
+      "elements/route_details/route_details.js",
+      IDR_ROUTE_DETAILS_JS);
 }
 
 }  // namespace
