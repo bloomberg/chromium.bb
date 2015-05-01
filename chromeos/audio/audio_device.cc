@@ -29,6 +29,8 @@ uint8 GetDevicePriority(AudioDeviceType type) {
       return 1;
     case AUDIO_TYPE_KEYBOARD_MIC:
     case AUDIO_TYPE_AOKR:
+    case AUDIO_TYPE_POST_MIX_LOOPBACK:
+    case AUDIO_TYPE_POST_DSP_LOOPBACK:
     case AUDIO_TYPE_OTHER:
     default:
       return 0;
@@ -58,6 +60,10 @@ std::string AudioDevice::GetTypeString(AudioDeviceType type) {
       return "KEYBOARD_MIC";
     case AUDIO_TYPE_AOKR:
       return "AOKR";
+    case AUDIO_TYPE_POST_MIX_LOOPBACK:
+      return "POST_MIX_LOOPBACK";
+    case AUDIO_TYPE_POST_DSP_LOOPBACK:
+      return "POST_DSP_LOOPBACK";
     case AUDIO_TYPE_OTHER:
     default:
       return "OTHER";
@@ -85,6 +91,10 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_INTERNAL_SPEAKER;
   else if (node_type.find("AOKR") != std::string::npos)
     return AUDIO_TYPE_AOKR;
+  else if (node_type.find("POST_MIX_LOOPBACK") != std::string::npos)
+    return AUDIO_TYPE_POST_MIX_LOOPBACK;
+  else if (node_type.find("POST_DSP_LOOPBACK") != std::string::npos)
+    return AUDIO_TYPE_POST_DSP_LOOPBACK;
   else
     return AUDIO_TYPE_OTHER;
 }
