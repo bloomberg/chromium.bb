@@ -30,7 +30,7 @@
           'target_name': 'native_test_jni_headers',
           'type': 'none',
           'sources': [
-            'native_test/java/src/org/chromium/native_test/ChromeNativeTestActivity.java'
+            'native_test/java/src/org/chromium/native_test/NativeTestActivity.java'
           ],
           'variables': {
             'jni_gen_package': 'testing',

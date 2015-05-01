@@ -51,7 +51,7 @@ class TestPackageApk(TestPackage):
   def _GetFifo(self):
     # The test.fifo path is determined by:
     # testing/android/native_test/java/src/org/chromium/native_test/
-    #     ChromeNativeTestActivity.java and
+    #     NativeTestActivity.java and
     # testing/android/native_test_launcher.cc
     return '/data/data/' + self._package_info.package + '/files/test.fifo'
 

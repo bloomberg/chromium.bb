@@ -21,9 +21,9 @@ from pylib.utils import device_temp_file
 _COMMAND_LINE_FLAGS_SUPPORTED = True
 
 _EXTRA_COMMAND_LINE_FILE = (
-    'org.chromium.native_test.ChromeNativeTestActivity.CommandLineFile')
+    'org.chromium.native_test.NativeTestActivity.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
-    'org.chromium.native_test.ChromeNativeTestActivity.CommandLineFlags')
+    'org.chromium.native_test.NativeTestActivity.CommandLineFlags')
 
 _MAX_SHARD_SIZE = 256
 

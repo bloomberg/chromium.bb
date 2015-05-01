@@ -19,10 +19,10 @@ found in the LICENSE file.
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <application android:label="ChromeNativeTests"
+    <application android:label="NativeTests"
             android:name="org.chromium.base.BaseChromiumApplication">
-        <activity android:name=".ChromeNativeTestActivity"
-                android:label="ChromeNativeTest"
+        <activity android:name=".NativeTestActivity"
+                android:label="NativeTest"
                 android:configChanges="orientation|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,7 +31,7 @@ found in the LICENSE file.
         </activity>
     </application>
 
-    <instrumentation android:name="org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.native_test.NativeTestInstrumentationTestRunner"
             android:targetPackage="org.chromium.native_test"
             android:label="Instrumentation entry point for org.chromium.native_test"/>
 

@@ -17,10 +17,10 @@ from pylib.remote.device import remote_device_helper
 
 
 _EXTRA_COMMAND_LINE_FILE = (
-    'org.chromium.native_test.ChromeNativeTestActivity.CommandLineFile')
+    'org.chromium.native_test.NativeTestActivity.CommandLineFile')
 # TODO(jbudorick): Remove this extra when b/18981674 is fixed.
 _EXTRA_ONLY_OUTPUT_FAILURES = (
-    'org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner.'
+    'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'OnlyOutputFailures')
 
 
@@ -28,7 +28,7 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
   """Run gtests and uirobot tests on a remote device."""
 
   DEFAULT_RUNNER_PACKAGE = (
-      'org.chromium.native_test.ChromeNativeTestInstrumentationTestRunner')
+      'org.chromium.native_test.NativeTestInstrumentationTestRunner')
 
   #override
   def TestPackage(self):

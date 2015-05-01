@@ -26,7 +26,7 @@ source_set("native_test_native_code") {
 # GYP: //testing/android/native_test.gyp:native_test_jni_headers
 generate_jni("native_test_jni_headers") {
   sources = [
-    "java/src/org/chromium/native_test/ChromeNativeTestActivity.java",
+    "java/src/org/chromium/native_test/NativeTestActivity.java",
   ]
   jni_package = "testing"
 }

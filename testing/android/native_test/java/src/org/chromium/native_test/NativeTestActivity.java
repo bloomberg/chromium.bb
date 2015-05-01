@@ -9,9 +9,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.ResourceExtractor;
@@ -24,15 +24,15 @@ import java.io.File;
  *  Our tests need to go up to our own java classes, which is not possible using
  *  the native activity class loader.
  */
-public class ChromeNativeTestActivity extends Activity {
+public class NativeTestActivity extends Activity {
     public static final String EXTRA_COMMAND_LINE_FILE =
-            "org.chromium.native_test.ChromeNativeTestActivity.CommandLineFile";
+            "org.chromium.native_test.NativeTestActivity.CommandLineFile";
     public static final String EXTRA_COMMAND_LINE_FLAGS =
-            "org.chromium.native_test.ChromeNativeTestActivity.CommandLineFlags";
+            "org.chromium.native_test.NativeTestActivity.CommandLineFlags";
     public static final String EXTRA_STDOUT_FILE =
-            "org.chromium.native_test.ChromeNativeTestActivity.StdoutFile";
+            "org.chromium.native_test.NativeTestActivity.StdoutFile";
 
-    private static final String TAG = "ChromeNativeTestActivity";
+    private static final String TAG = Log.makeTag("native_test");
     private static final String EXTRA_RUN_IN_SUB_THREAD = "RunInSubThread";
     // We post a delayed task to run tests so that we do not block onCreate().
     private static final long RUN_TESTS_DELAY_IN_MS = 300;
@@ -88,7 +88,7 @@ public class ChromeNativeTestActivity extends Activity {
                 commandLineFilePath = Environment.getExternalStorageDirectory() + "/"
                         + commandLineFilePath;
             }
-            Log.i(TAG, "command line file path: " + commandLineFilePath);
+            Log.i(TAG, "command line file path: %s", commandLineFilePath);
         }
 
         String stdoutFilePath = getIntent().getStringExtra(EXTRA_STDOUT_FILE);
@@ -113,9 +113,9 @@ public class ChromeNativeTestActivity extends Activity {
 
     private void loadLibraries() {
         for (String library : NativeLibraries.LIBRARIES) {
-            Log.i(TAG, "loading: " + library);
+            Log.i(TAG, "loading: %s", library);
             System.loadLibrary(library);
-            Log.i(TAG, "loaded: " + library);
+            Log.i(TAG, "loaded: %s", library);
         }
     }
 

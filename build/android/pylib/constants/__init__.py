@@ -102,7 +102,7 @@ PACKAGE_INFO = {
         'org.chromium.android_webview.test'),
     'gtest': PackageInfo(
         'org.chromium.native_test',
-        'org.chromium.native_test.ChromeNativeTestActivity',
+        'org.chromium.native_test.NativeTestActivity',
         '/data/local/tmp/chrome-native-tests-command-line',
         None,
         None),
