@@ -234,8 +234,8 @@ void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == XMLNames::spaceAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
 
-        if (LayoutObject* renderer = this->layoutObject())
-            markForLayoutAndParentResourceInvalidation(renderer);
+        if (LayoutObject* layoutObject = this->layoutObject())
+            markForLayoutAndParentResourceInvalidation(layoutObject);
 
         return;
     }
@@ -251,15 +251,15 @@ bool SVGTextContentElement::selfHasRelativeLengths() const
     return true;
 }
 
-SVGTextContentElement* SVGTextContentElement::elementFromRenderer(LayoutObject* renderer)
+SVGTextContentElement* SVGTextContentElement::elementFromRenderer(LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return 0;
 
-    if (!renderer->isSVGText() && !renderer->isSVGInline())
+    if (!layoutObject->isSVGText() && !layoutObject->isSVGInline())
         return 0;
 
-    SVGElement* element = toSVGElement(renderer->node());
+    SVGElement* element = toSVGElement(layoutObject->node());
     ASSERT(element);
     return isSVGTextContentElement(*element) ? toSVGTextContentElement(element) : 0;
 }

@@ -76,15 +76,15 @@ void SVGFEDropShadowElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDropShadowElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
         return nullptr;
 
     if (stdDeviationX()->currentValue()->value() < 0 || stdDeviationY()->currentValue()->value() < 0)
         return nullptr;
 
-    ASSERT(renderer->style());
-    const SVGComputedStyle& svgStyle = renderer->style()->svgStyle();
+    ASSERT(layoutObject->style());
+    const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
 
     Color color = svgStyle.floodColor();
     float opacity = svgStyle.floodOpacity();

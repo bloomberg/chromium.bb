@@ -122,14 +122,14 @@ bool SVGFilterPrimitiveStandardAttributes::layoutObjectIsNeeded(const ComputedSt
 
 void SVGFilterPrimitiveStandardAttributes::invalidate()
 {
-    if (LayoutObject* primitiveRenderer = layoutObject())
-        markForLayoutAndParentResourceInvalidation(primitiveRenderer);
+    if (LayoutObject* primitiveLayoutObject = layoutObject())
+        markForLayoutAndParentResourceInvalidation(primitiveLayoutObject);
 }
 
 void SVGFilterPrimitiveStandardAttributes::primitiveAttributeChanged(const QualifiedName& attribute)
 {
-    if (LayoutObject* primitiveRenderer = layoutObject())
-        static_cast<LayoutSVGResourceFilterPrimitive*>(primitiveRenderer)->primitiveAttributeChanged(attribute);
+    if (LayoutObject* primitiveLayoutObject = layoutObject())
+        static_cast<LayoutSVGResourceFilterPrimitive*>(primitiveLayoutObject)->primitiveAttributeChanged(attribute);
 }
 
 void invalidateFilterPrimitiveParent(SVGElement* element)
@@ -142,11 +142,11 @@ void invalidateFilterPrimitiveParent(SVGElement* element)
     if (!parent)
         return;
 
-    LayoutObject* renderer = parent->layoutObject();
-    if (!renderer || !renderer->isSVGResourceFilterPrimitive())
+    LayoutObject* layoutObject = parent->layoutObject();
+    if (!layoutObject || !layoutObject->isSVGResourceFilterPrimitive())
         return;
 
-    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, false);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(layoutObject, false);
 }
 
 }

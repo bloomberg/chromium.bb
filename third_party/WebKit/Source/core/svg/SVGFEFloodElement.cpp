@@ -37,9 +37,9 @@ DEFINE_NODE_FACTORY(SVGFEFloodElement)
 
 bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
-    LayoutObject* renderer = this->layoutObject();
-    ASSERT(renderer);
-    const ComputedStyle& style = renderer->styleRef();
+    LayoutObject* layoutObject = this->layoutObject();
+    ASSERT(layoutObject);
+    const ComputedStyle& style = layoutObject->styleRef();
     FEFlood* flood = static_cast<FEFlood*>(effect);
 
     if (attrName == SVGNames::flood_colorAttr)
@@ -53,12 +53,12 @@ bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter)
 {
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
         return nullptr;
 
-    ASSERT(renderer->style());
-    const SVGComputedStyle& svgStyle = renderer->style()->svgStyle();
+    ASSERT(layoutObject->style());
+    const SVGComputedStyle& svgStyle = layoutObject->style()->svgStyle();
 
     Color color = svgStyle.floodColor();
     float opacity = svgStyle.floodOpacity();

@@ -120,9 +120,9 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
             updateRelativeLengthsInformation();
         }
 
-        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-        if (renderer)
-            renderer->invalidateCacheAndMarkForLayout();
+        LayoutSVGResourceContainer* layoutObject = toLayoutSVGResourceContainer(this->layoutObject());
+        if (layoutObject)
+            layoutObject->invalidateCacheAndMarkForLayout();
 
         return;
     }

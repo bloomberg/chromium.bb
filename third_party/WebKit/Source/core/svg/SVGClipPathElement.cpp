@@ -47,9 +47,9 @@ void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
     if (attrName == SVGNames::clipPathUnitsAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-        if (renderer)
-            renderer->invalidateCacheAndMarkForLayout();
+        LayoutSVGResourceContainer* layoutObject = toLayoutSVGResourceContainer(this->layoutObject());
+        if (layoutObject)
+            layoutObject->invalidateCacheAndMarkForLayout();
         return;
     }
 

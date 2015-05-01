@@ -418,12 +418,12 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
     TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
 #endif
 
-    LayoutObject* renderer = this->layoutObject();
-    if (renderer && selfHasRelativeLengths()) {
-        if (renderer->isSVGResourceContainer())
-            toLayoutSVGResourceContainer(renderer)->invalidateCacheAndMarkForLayout(layoutScope);
+    LayoutObject* layoutObject = this->layoutObject();
+    if (layoutObject && selfHasRelativeLengths()) {
+        if (layoutObject->isSVGResourceContainer())
+            toLayoutSVGResourceContainer(layoutObject)->invalidateCacheAndMarkForLayout(layoutScope);
         else
-            renderer->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown, MarkContainerChain, layoutScope);
+            layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown, MarkContainerChain, layoutScope);
     }
 
     for (SVGElement* element : m_elementsWithRelativeLengths) {
@@ -913,8 +913,8 @@ PassRefPtr<ComputedStyle> SVGElement::customStyleForLayoutObject()
 
     const ComputedStyle* style = nullptr;
     if (Element* parent = parentOrShadowHostElement()) {
-        if (LayoutObject* renderer = parent->layoutObject())
-            style = renderer->style();
+        if (LayoutObject* layoutObject = parent->layoutObject())
+            style = layoutObject->style();
     }
 
     return document().ensureStyleResolver().styleForElement(correspondingElement(), style, DisallowStyleSharing);
@@ -945,8 +945,8 @@ const ComputedStyle* SVGElement::ensureComputedStyle(PseudoId pseudoElementSpeci
 
     const ComputedStyle* parentStyle = nullptr;
     if (Element* parent = parentOrShadowHostElement()) {
-        if (LayoutObject* renderer = parent->layoutObject())
-            parentStyle = renderer->style();
+        if (LayoutObject* layoutObject = parent->layoutObject())
+            parentStyle = layoutObject->style();
     }
 
     return svgRareData()->overrideComputedStyle(this, parentStyle);
@@ -958,10 +958,10 @@ bool SVGElement::hasFocusEventListeners() const
         || hasEventListeners(EventTypeNames::focus) || hasEventListeners(EventTypeNames::blur);
 }
 
-void SVGElement::markForLayoutAndParentResourceInvalidation(LayoutObject* renderer)
+void SVGElement::markForLayoutAndParentResourceInvalidation(LayoutObject* layoutObject)
 {
-    ASSERT(renderer);
-    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, true);
+    ASSERT(layoutObject);
+    LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(layoutObject, true);
 }
 
 void SVGElement::invalidateInstances()

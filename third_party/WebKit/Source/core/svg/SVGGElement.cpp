@@ -37,8 +37,8 @@ DEFINE_NODE_FACTORY(SVGGElement)
 LayoutObject* SVGGElement::createLayoutObject(const ComputedStyle& style)
 {
     // SVG 1.1 testsuite explicitely uses constructs like <g display="none"><linearGradient>
-    // We still have to create renderers for the <g> & <linearGradient> element, though the
-    // subtree may be hidden - we only want the resource renderers to exist so they can be
+    // We still have to create layoutObjects for the <g> & <linearGradient> element, though the
+    // subtree may be hidden - we only want the resource layoutObjects to exist so they can be
     // referenced from somewhere else.
     if (style.display() == NONE)
         return new LayoutSVGHiddenContainer(this);
@@ -48,7 +48,7 @@ LayoutObject* SVGGElement::createLayoutObject(const ComputedStyle& style)
 
 bool SVGGElement::layoutObjectIsNeeded(const ComputedStyle&)
 {
-    // Unlike SVGElement::layoutObjectIsNeeded(), we still create renderers, even if
+    // Unlike SVGElement::layoutObjectIsNeeded(), we still create layoutObjects, even if
     // display is set to 'none' - which is special to SVG <g> container elements.
     return parentOrShadowHostElement() && parentOrShadowHostElement()->isSVGElement();
 }

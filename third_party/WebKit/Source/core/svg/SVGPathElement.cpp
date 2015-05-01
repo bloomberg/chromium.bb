@@ -205,17 +205,17 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
     if (attrName == SVGNames::dAttr || attrName == SVGNames::pathLengthAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
+        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
 
         if (attrName == SVGNames::dAttr) {
-            if (renderer)
-                renderer->setNeedsShapeUpdate();
+            if (layoutObject)
+                layoutObject->setNeedsShapeUpdate();
 
             invalidateMPathDependencies();
         }
 
-        if (renderer)
-            markForLayoutAndParentResourceInvalidation(renderer);
+        if (layoutObject)
+            markForLayoutAndParentResourceInvalidation(layoutObject);
 
         return;
     }
@@ -254,12 +254,12 @@ void SVGPathElement::pathSegListChanged(ListModification listModification)
 
     invalidateSVGAttributes();
 
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-    if (!renderer)
+    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+    if (!layoutObject)
         return;
 
-    renderer->setNeedsShapeUpdate();
-    markForLayoutAndParentResourceInvalidation(renderer);
+    layoutObject->setNeedsShapeUpdate();
+    markForLayoutAndParentResourceInvalidation(layoutObject);
 }
 
 FloatRect SVGPathElement::getBBox()
@@ -273,8 +273,8 @@ FloatRect SVGPathElement::getBBox()
     if (!layoutObject())
         return FloatRect();
 
-    LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-    return renderer->path().boundingRect();
+    LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+    return layoutObject->path().boundingRect();
 }
 
 } // namespace blink

@@ -58,13 +58,13 @@ void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::y2Attr) {
         updateRelativeLengthsInformation();
 
-        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-        if (!renderer)
+        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+        if (!layoutObject)
             return;
 
         SVGElement::InvalidationGuard invalidationGuard(this);
-        renderer->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(renderer);
+        layoutObject->setNeedsShapeUpdate();
+        markForLayoutAndParentResourceInvalidation(layoutObject);
         return;
     }
 

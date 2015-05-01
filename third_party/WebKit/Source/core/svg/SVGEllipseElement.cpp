@@ -93,12 +93,12 @@ void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
             StyleChangeReasonForTracing::fromAttribute(attrName));
         updateRelativeLengthsInformation();
 
-        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-        if (!renderer)
+        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+        if (!layoutObject)
             return;
 
-        renderer->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(renderer);
+        layoutObject->setNeedsShapeUpdate();
+        markForLayoutAndParentResourceInvalidation(layoutObject);
         return;
     }
 

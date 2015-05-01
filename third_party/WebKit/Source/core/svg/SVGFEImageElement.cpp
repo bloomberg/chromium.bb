@@ -153,8 +153,8 @@ void SVGFEImageElement::notifyFinished(Resource*)
     if (!parent || !isSVGFilterElement(parent) || !parent->layoutObject())
         return;
 
-    if (LayoutObject* renderer = this->layoutObject())
-        markForLayoutAndParentResourceInvalidation(renderer);
+    if (LayoutObject* layoutObject = this->layoutObject())
+        markForLayoutAndParentResourceInvalidation(layoutObject);
 }
 
 PassRefPtrWillBeRawPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)

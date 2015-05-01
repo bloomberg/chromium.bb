@@ -58,10 +58,10 @@ bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect,
     FEDiffuseLighting* diffuseLighting = static_cast<FEDiffuseLighting*>(effect);
 
     if (attrName == SVGNames::lighting_colorAttr) {
-        LayoutObject* renderer = this->layoutObject();
-        ASSERT(renderer);
-        ASSERT(renderer->style());
-        return diffuseLighting->setLightingColor(renderer->style()->svgStyle().lightingColor());
+        LayoutObject* layoutObject = this->layoutObject();
+        ASSERT(layoutObject);
+        ASSERT(layoutObject->style());
+        return diffuseLighting->setLightingColor(layoutObject->style()->svgStyle().lightingColor());
     }
     if (attrName == SVGNames::surfaceScaleAttr)
         return diffuseLighting->setSurfaceScale(m_surfaceScale->currentValue()->value());
@@ -136,12 +136,12 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilte
     if (!lightNode)
         return nullptr;
 
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
         return nullptr;
 
-    ASSERT(renderer->style());
-    Color color = renderer->style()->svgStyle().lightingColor();
+    ASSERT(layoutObject->style());
+    Color color = layoutObject->style()->svgStyle().lightingColor();
 
     RefPtr<LightSource> lightSource = lightNode->lightSource(filter);
     RefPtrWillBeRawPtr<FilterEffect> effect = FEDiffuseLighting::create(filter, color, m_surfaceScale->currentValue()->value(), m_diffuseConstant->currentValue()->value(),

@@ -62,10 +62,10 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
     FESpecularLighting* specularLighting = static_cast<FESpecularLighting*>(effect);
 
     if (attrName == SVGNames::lighting_colorAttr) {
-        LayoutObject* renderer = this->layoutObject();
-        ASSERT(renderer);
-        ASSERT(renderer->style());
-        return specularLighting->setLightingColor(renderer->style()->svgStyle().lightingColor());
+        LayoutObject* layoutObject = this->layoutObject();
+        ASSERT(layoutObject);
+        ASSERT(layoutObject->style());
+        return specularLighting->setLightingColor(layoutObject->style()->svgStyle().lightingColor());
     }
     if (attrName == SVGNames::surfaceScaleAttr)
         return specularLighting->setSurfaceScale(m_surfaceScale->currentValue()->value());
@@ -142,12 +142,12 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilt
     if (!lightNode)
         return nullptr;
 
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
         return nullptr;
 
-    ASSERT(renderer->style());
-    Color color = renderer->style()->svgStyle().lightingColor();
+    ASSERT(layoutObject->style());
+    Color color = layoutObject->style()->svgStyle().lightingColor();
 
     RefPtr<LightSource> lightSource = lightNode->lightSource(filter);
     RefPtrWillBeRawPtr<FilterEffect> effect = FESpecularLighting::create(filter, color, m_surfaceScale->currentValue()->value(), m_specularConstant->currentValue()->value(),

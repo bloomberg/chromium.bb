@@ -45,12 +45,12 @@ void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
     if (attrName == SVGNames::pointsAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutSVGShape* renderer = toLayoutSVGShape(this->layoutObject());
-        if (!renderer)
+        LayoutSVGShape* layoutObject = toLayoutSVGShape(this->layoutObject());
+        if (!layoutObject)
             return;
 
-        renderer->setNeedsShapeUpdate();
-        markForLayoutAndParentResourceInvalidation(renderer);
+        layoutObject->setNeedsShapeUpdate();
+        markForLayoutAndParentResourceInvalidation(layoutObject);
         return;
     }
 

@@ -102,9 +102,9 @@ void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::filterUnitsAttr
         || attrName == SVGNames::primitiveUnitsAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
-        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-        if (renderer)
-            renderer->invalidateCacheAndMarkForLayout();
+        LayoutSVGResourceContainer* layoutObject = toLayoutSVGResourceContainer(this->layoutObject());
+        if (layoutObject)
+            layoutObject->invalidateCacheAndMarkForLayout();
 
         return;
     }
@@ -125,13 +125,13 @@ void SVGFilterElement::childrenChanged(const ChildrenChange& change)
 
 LayoutObject* SVGFilterElement::createLayoutObject(const ComputedStyle&)
 {
-    LayoutSVGResourceFilter* renderer = new LayoutSVGResourceFilter(this);
+    LayoutSVGResourceFilter* layoutObject = new LayoutSVGResourceFilter(this);
 
     for (const RefPtrWillBeMember<Node>& node : m_clientsToAdd)
-        renderer->addClientLayer(node.get());
+        layoutObject->addClientLayer(node.get());
     m_clientsToAdd.clear();
 
-    return renderer;
+    return layoutObject;
 }
 
 bool SVGFilterElement::selfHasRelativeLengths() const

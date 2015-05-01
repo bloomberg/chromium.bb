@@ -40,7 +40,7 @@ namespace blink {
 // - Registered custom tag elements in SVG namespace (http://www.w3.org/TR/2013/WD-custom-elements-20130514/#registering-custom-elements)
 //
 // The main purpose of this class at the moment is to override layoutObjectIsNeeded() to return
-// false to make sure we don't attempt to render such elements.
+// false to make sure we don't attempt to layout such elements.
 class SVGUnknownElement final : public SVGElement {
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement);

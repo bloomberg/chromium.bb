@@ -64,9 +64,9 @@ DEFINE_TRACE(SVGImageElement)
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const
 {
-    if (LayoutSVGImage* renderSVGImage = toLayoutSVGImage(layoutObject())) {
-        if (renderSVGImage->imageResource()->hasImage()) {
-            if (Image* image = renderSVGImage->imageResource()->cachedImage()->image())
+    if (LayoutSVGImage* layoutSVGImage = toLayoutSVGImage(layoutObject())) {
+        if (layoutSVGImage->imageResource()->hasImage()) {
+            if (Image* image = layoutSVGImage->imageResource()->cachedImage()->image())
                 return image->currentFrameHasSingleSecurityOrigin();
         }
     }

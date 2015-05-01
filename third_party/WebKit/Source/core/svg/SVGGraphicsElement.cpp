@@ -189,7 +189,7 @@ AffineTransform* SVGGraphicsElement::animateMotionTransform()
 
 void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
 {
-    // Reattach so the isValid() check will be run again during renderer creation.
+    // Reattach so the isValid() check will be run again during layoutObject creation.
     if (SVGTests::isKnownAttribute(attrName)) {
         SVGElement::InvalidationGuard invalidationGuard(this);
         lazyReattachIfAttached();

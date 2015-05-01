@@ -100,8 +100,8 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
             isWidthHeightAttribute ? StyleChangeReasonForTracing::create(StyleChangeReason::SVGContainerSizeChange) : StyleChangeReasonForTracing::fromAttribute(attrName));
 
         updateRelativeLengthsInformation();
-        if (LayoutObject* renderer = this->layoutObject())
-            markForLayoutAndParentResourceInvalidation(renderer);
+        if (LayoutObject* layoutObject = this->layoutObject())
+            markForLayoutAndParentResourceInvalidation(layoutObject);
 
         return;
     }
@@ -116,7 +116,7 @@ LayoutObject* SVGForeignObjectElement::createLayoutObject(const ComputedStyle&)
 
 bool SVGForeignObjectElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
-    // Suppress foreignObject renderers in SVG hidden containers.
+    // Suppress foreignObject layoutObjects in SVG hidden containers.
     // (https://bugs.webkit.org/show_bug.cgi?id=87297)
     // Note that we currently do not support foreignObject instantiation via <use>, hence it is safe
     // to use parentElement() here. If that changes, this method should be updated to use

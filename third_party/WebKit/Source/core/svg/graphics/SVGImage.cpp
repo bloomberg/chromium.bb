@@ -145,10 +145,10 @@ void SVGImage::setContainerSize(const IntSize& size)
     FrameView* view = frameView();
     view->resize(this->containerSize());
 
-    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->layoutObject());
-    if (!renderer)
+    LayoutSVGRoot* layoutObject = toLayoutSVGRoot(rootElement->layoutObject());
+    if (!layoutObject)
         return;
-    renderer->setContainerSize(size);
+    layoutObject->setContainerSize(size);
 }
 
 IntSize SVGImage::containerSize() const
@@ -157,21 +157,21 @@ IntSize SVGImage::containerSize() const
     if (!rootElement)
         return IntSize();
 
-    LayoutSVGRoot* renderer = toLayoutSVGRoot(rootElement->layoutObject());
-    if (!renderer)
+    LayoutSVGRoot* layoutObject = toLayoutSVGRoot(rootElement->layoutObject());
+    if (!layoutObject)
         return IntSize();
 
     // If a container size is available it has precedence.
-    IntSize containerSize = renderer->containerSize();
+    IntSize containerSize = layoutObject->containerSize();
     if (!containerSize.isEmpty())
         return containerSize;
 
     // Assure that a container size is always given for a non-identity zoom level.
-    ASSERT(renderer->style()->effectiveZoom() == 1);
+    ASSERT(layoutObject->style()->effectiveZoom() == 1);
 
     FloatSize intrinsicSize;
     double intrinsicRatio = 0;
-    renderer->computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
+    layoutObject->computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
 
     if (intrinsicSize.isEmpty() && intrinsicRatio) {
         if (!intrinsicSize.width() && intrinsicSize.height())

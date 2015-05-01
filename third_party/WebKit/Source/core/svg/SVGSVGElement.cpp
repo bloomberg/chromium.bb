@@ -145,7 +145,7 @@ float SVGSVGElement::currentScale() const
     const FrameTree& frameTree = frame->tree();
 
     // The behaviour of currentScale() is undefined, when we're dealing with non-standalone SVG documents.
-    // If the svg is embedded, the scaling is handled by the host renderer, so when asking from inside
+    // If the svg is embedded, the scaling is handled by the host layoutObject, so when asking from inside
     // the SVG document, a scale value of 1 seems reasonable, as it doesn't know anything about the parent scale.
     return frameTree.parent() ? 1 : frame->pageZoomFactor();
 }
@@ -342,27 +342,27 @@ static bool intersectsAllowingEmpty(const FloatRect& r1, const FloatRect& r2)
 
 // One of the element types that can cause graphics to be drawn onto the target canvas.
 // Specifically: circle, ellipse, image, line, path, polygon, polyline, rect, text and use.
-static bool isIntersectionOrEnclosureTarget(LayoutObject* renderer)
+static bool isIntersectionOrEnclosureTarget(LayoutObject* layoutObject)
 {
-    return renderer->isSVGShape()
-        || renderer->isSVGText()
-        || renderer->isSVGImage()
-        || isSVGUseElement(*renderer->node());
+    return layoutObject->isSVGShape()
+        || layoutObject->isSVGText()
+        || layoutObject->isSVGImage()
+        || isSVGUseElement(*layoutObject->node());
 }
 
 bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, const FloatRect& rect,
     CheckIntersectionOrEnclosure mode) const
 {
-    LayoutObject* renderer = element.layoutObject();
-    ASSERT(!renderer || renderer->style());
-    if (!renderer || renderer->style()->pointerEvents() == PE_NONE)
+    LayoutObject* layoutObject = element.layoutObject();
+    ASSERT(!layoutObject || layoutObject->style());
+    if (!layoutObject || layoutObject->style()->pointerEvents() == PE_NONE)
         return false;
 
-    if (!isIntersectionOrEnclosureTarget(renderer))
+    if (!isIntersectionOrEnclosureTarget(layoutObject))
         return false;
 
     AffineTransform ctm = toSVGGraphicsElement(element).computeCTM(AncestorScope, DisallowStyleUpdate, this);
-    FloatRect mappedRepaintRect = ctm.mapRect(renderer->paintInvalidationRectInLocalCoordinates());
+    FloatRect mappedRepaintRect = ctm.mapRect(layoutObject->paintInvalidationRectInLocalCoordinates());
 
     bool result = false;
     switch (mode) {
@@ -493,7 +493,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
         SVGLengthContext lengthContext(this);
         transform.translate(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext));
     } else if (mode == SVGElement::ScreenScope) {
-        if (LayoutObject* renderer = this->layoutObject()) {
+        if (LayoutObject* layoutObject = this->layoutObject()) {
             FloatPoint location;
             float zoomFactor = 1;
 
@@ -501,14 +501,14 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
             // to map an element from SVG viewport coordinates to CSS box coordinates.
             // LayoutSVGRoot's localToAbsolute method expects CSS box coordinates.
             // We also need to adjust for the zoom level factored into CSS coordinates (bug #96361).
-            if (renderer->isSVGRoot()) {
-                location = toLayoutSVGRoot(renderer)->localToBorderBoxTransform().mapPoint(location);
-                zoomFactor = 1 / renderer->style()->effectiveZoom();
+            if (layoutObject->isSVGRoot()) {
+                location = toLayoutSVGRoot(layoutObject)->localToBorderBoxTransform().mapPoint(location);
+                zoomFactor = 1 / layoutObject->style()->effectiveZoom();
             }
 
             // Translate in our CSS parent coordinate space
             // FIXME: This doesn't work correctly with CSS transforms.
-            location = renderer->localToAbsolute(location, UseTransforms);
+            location = layoutObject->localToAbsolute(location, UseTransforms);
             location.scale(zoomFactor, zoomFactor);
 
             // Be careful here! localToBorderBoxTransform() included the x/y offset coming from the viewBoxToViewTransform(),
@@ -691,7 +691,7 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
 
 void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* anchorNode)
 {
-    LayoutObject* renderer = this->layoutObject();
+    LayoutObject* layoutObject = this->layoutObject();
     SVGViewSpec* view = m_viewSpec.get();
     if (view)
         view->reset();
@@ -701,8 +701,8 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
 
     if (fragmentIdentifier.startsWith("xpointer(")) {
         // FIXME: XPointer references are ignored (https://bugs.webkit.org/show_bug.cgi?id=17491)
-        if (renderer && hadUseCurrentView)
-            markForLayoutAndParentResourceInvalidation(renderer);
+        if (layoutObject && hadUseCurrentView)
+            markForLayoutAndParentResourceInvalidation(layoutObject);
         return;
     }
 
@@ -717,8 +717,8 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         else
             view->reset();
 
-        if (renderer && (hadUseCurrentView || m_useCurrentView))
-            markForLayoutAndParentResourceInvalidation(renderer);
+        if (layoutObject && (hadUseCurrentView || m_useCurrentView))
+            markForLayoutAndParentResourceInvalidation(layoutObject);
         return;
     }
 
@@ -736,8 +736,8 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         if (SVGSVGElement* svg = viewElement.ownerSVGElement()) {
             svg->inheritViewAttributes(&viewElement);
 
-            if (LayoutObject* renderer = svg->layoutObject())
-                markForLayoutAndParentResourceInvalidation(renderer);
+            if (LayoutObject* layoutObject = svg->layoutObject())
+                markForLayoutAndParentResourceInvalidation(layoutObject);
 
             return;
         }
@@ -745,8 +745,8 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
 
     // If we previously had a view and didn't get a new one, we need to
     // layout again.
-    if (renderer && hadUseCurrentView)
-        markForLayoutAndParentResourceInvalidation(renderer);
+    if (layoutObject && hadUseCurrentView)
+        markForLayoutAndParentResourceInvalidation(layoutObject);
 
     // FIXME: We need to decide which <svg> to focus on, and zoom to it.
     // FIXME: We need to actually "highlight" the viewTarget(s).

@@ -72,9 +72,9 @@ void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)
     {
         SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
-        if (renderer)
-            renderer->invalidateCacheAndMarkForLayout();
+        LayoutSVGResourceContainer* layoutObject = toLayoutSVGResourceContainer(this->layoutObject());
+        if (layoutObject)
+            layoutObject->invalidateCacheAndMarkForLayout();
 
         return;
     }

@@ -67,25 +67,25 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     if (updateRelativeLengths || attrName == SVGNames::rotateAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);
 
-        LayoutObject* renderer = this->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = this->layoutObject();
+        if (!layoutObject)
             return;
 
-        if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(renderer))
-            textRenderer->setNeedsPositioningValuesUpdate();
-        markForLayoutAndParentResourceInvalidation(renderer);
+        if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(layoutObject))
+            textLayoutObject->setNeedsPositioningValuesUpdate();
+        markForLayoutAndParentResourceInvalidation(layoutObject);
         return;
     }
 
     SVGTextContentElement::svgAttributeChanged(attrName);
 }
 
-SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(LayoutObject& renderer)
+SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(LayoutObject& layoutObject)
 {
-    if (!renderer.isSVGText() && !renderer.isSVGInline())
+    if (!layoutObject.isSVGText() && !layoutObject.isSVGInline())
         return 0;
 
-    Node* node = renderer.node();
+    Node* node = layoutObject.node();
     ASSERT(node);
     ASSERT(node->isSVGElement());
 

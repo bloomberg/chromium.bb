@@ -186,9 +186,9 @@ void SVGAnimateMotionElement::clearAnimatedType()
 
     transform->makeIdentity();
 
-    if (LayoutObject* targetRenderer = targetElement->layoutObject()) {
-        targetRenderer->setNeedsTransformUpdate();
-        markForLayoutAndParentResourceInvalidation(targetRenderer);
+    if (LayoutObject* targetLayoutObject = targetElement->layoutObject()) {
+        targetLayoutObject->setNeedsTransformUpdate();
+        markForLayoutAndParentResourceInvalidation(targetLayoutObject);
     }
 }
 
@@ -228,8 +228,8 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
     if (!transform)
         return;
 
-    if (LayoutObject* targetRenderer = targetElement->layoutObject())
-        targetRenderer->setNeedsTransformUpdate();
+    if (LayoutObject* targetLayoutObject = targetElement->layoutObject())
+        targetLayoutObject->setNeedsTransformUpdate();
 
     if (!isAdditive())
         transform->makeIdentity();
@@ -281,8 +281,8 @@ void SVGAnimateMotionElement::applyResultsToTarget()
     if (!targetElement)
         return;
 
-    if (LayoutObject* renderer = targetElement->layoutObject())
-        markForLayoutAndParentResourceInvalidation(renderer);
+    if (LayoutObject* layoutObject = targetElement->layoutObject())
+        markForLayoutAndParentResourceInvalidation(layoutObject);
 
     AffineTransform* t = targetElement->animateMotionTransform();
     if (!t)
@@ -296,9 +296,9 @@ void SVGAnimateMotionElement::applyResultsToTarget()
         if (!transform)
             continue;
         transform->setMatrix(t->a(), t->b(), t->c(), t->d(), t->e(), t->f());
-        if (LayoutObject* renderer = shadowTreeElement->layoutObject()) {
-            renderer->setNeedsTransformUpdate();
-            markForLayoutAndParentResourceInvalidation(renderer);
+        if (LayoutObject* layoutObject = shadowTreeElement->layoutObject()) {
+            layoutObject->setNeedsTransformUpdate();
+            markForLayoutAndParentResourceInvalidation(layoutObject);
         }
     }
 }
