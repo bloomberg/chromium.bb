@@ -64,6 +64,12 @@ def _DidWebGLTestSucceed(tab):
 def _WebGLTestMessages(tab):
   return tab.EvaluateJavaScript('webglTestHarness._messages')
 
+def _CompareVersion(version1, version2):
+  ver_num1 = [int(x) for x in version1.split('.')]
+  ver_num2 = [int(x) for x in version2.split('.')]
+  size = min(len(ver_num1), len(ver_num2))
+  return cmp(ver_num1[0:size], ver_num2[0:size])
+
 class WebglConformanceValidator(page_test.PageTest):
   def __init__(self):
     super(WebglConformanceValidator, self).__init__()
@@ -77,6 +83,19 @@ class WebglConformanceValidator(page_test.PageTest):
         '--disable-gesture-requirement-for-media-playback',
         '--disable-domain-blocking-for-3d-apis',
         '--disable-gpu-process-crash-limit'
+    ])
+
+
+class Webgl2ConformanceValidator(WebglConformanceValidator):
+  def __init__(self):
+    super(Webgl2ConformanceValidator, self).__init__()
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--disable-gesture-requirement-for-media-playback',
+        '--disable-domain-blocking-for-3d-apis',
+        '--disable-gpu-process-crash-limit',
+        '--enable-unsafe-es3-apis'
     ])
 
 
@@ -97,8 +116,6 @@ class WebglConformancePage(page_module.Page):
 
 class WebglConformance(benchmark_module.Benchmark):
   """Conformance with Khronos WebGL Conformance Tests"""
-  test = WebglConformanceValidator
-
   def __init__(self):
     super(WebglConformance, self).__init__(max_failures=10)
 
@@ -111,10 +128,19 @@ class WebglConformance(benchmark_module.Benchmark):
     group.add_option('--webgl-conformance-version',
         help='Version of the WebGL conformance tests to run.',
         default='1.0.3')
+    group.add_option('--webgl2-only',
+        help='Whether we include webgl 1 tests if version is 2.0.0 or above.',
+        default='false')
+
+  def CreatePageTest(self, options):
+    if _CompareVersion(options.webgl_conformance_version, '2.0.0') >= 0:
+      return Webgl2ConformanceValidator()
+    return WebglConformanceValidator()
 
   def CreatePageSet(self, options):
     tests = self._ParseTests('00_test_list.txt',
-        options.webgl_conformance_version)
+        options.webgl_conformance_version,
+        (options.webgl2_only == 'true'))
 
     ps = page_set.PageSet(
       user_agent_type='desktop',
@@ -131,7 +157,7 @@ class WebglConformance(benchmark_module.Benchmark):
         conformance_path)
 
   @staticmethod
-  def _ParseTests(path, version=None):
+  def _ParseTests(path, version, webgl2_only):
     test_paths = []
     current_dir = os.path.dirname(path)
     full_path = os.path.normpath(os.path.join(conformance_path, path))
@@ -161,15 +187,20 @@ class WebglConformance(benchmark_module.Benchmark):
             min_version = line_tokens[i]
           i += 1
 
-        if version and min_version and version < min_version:
+        if (min_version and _CompareVersion(version, min_version) < 0):
+          continue
+
+        if (webgl2_only and
+            (not min_version or _CompareVersion(min_version, '2.0.0') < 0)):
           continue
 
         test_name = line_tokens[-1]
 
         if '.txt' in test_name:
           include_path = os.path.join(current_dir, test_name)
+          # We only check min-version >= 2.0.0 for the top level list.
           test_paths += WebglConformance._ParseTests(
-            include_path, version)
+            include_path, version, False)
         else:
           test = os.path.join(current_dir, test_name)
           test_paths.append(test)
