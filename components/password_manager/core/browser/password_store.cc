@@ -170,6 +170,13 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
   }
 }
 
+void PasswordStore::GetSiteStats(const GURL& origin_domain,
+                                 PasswordStoreConsumer* consumer) {
+  scoped_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
+  ScheduleTask(base::Bind(&PasswordStore::NotifySiteStats, this, origin_domain,
+                          base::Passed(&request)));
+}
+
 void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
   ScheduleTask(base::Bind(&PasswordStore::AddSiteStatsImpl, this, stats));
 }
@@ -177,13 +184,6 @@ void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
 void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
   ScheduleTask(
       base::Bind(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
-}
-
-void PasswordStore::GetSiteStats(const GURL& origin_domain,
-                                 PasswordStoreConsumer* consumer) {
-  scoped_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
-  ScheduleTask(base::Bind(&PasswordStore::NotifySiteStats, this, origin_domain,
-                          base::Passed(&request)));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
