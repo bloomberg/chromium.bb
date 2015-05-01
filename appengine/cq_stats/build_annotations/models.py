@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 from django.db import models
-from django.core import exceptions as django_exceptions
 
 from build_annotations import fields as ba_fields
 
@@ -43,49 +42,6 @@ class BaseModel(models.Model):
 
   def __str__(self):
     return str(unicode(self))
-
-
-class UpdateAwareMixIn(object):
-  """MixIn to optimize database writes by tracking when a model has changed.
-
-  This MixIn adds a |_dirty| bit that is duly updated on object updates and
-  short-circuits save for objects that are known to be fresh.
-  """
-
-  # These fields do not contribute towards dirty-ness of a row.
-  # A 'last_updated' field is an example of fields to ignore.
-  IGNORE_FIELDS = []
-
-  def __init__(self, *args, **kwargs):
-    super(UpdateAwareMixIn, self).__init__(*args, **kwargs)
-    # Clear the dirty bit *after* initialization.
-    # The semantics are that any fields initialized through the constructor do
-    # not dirty the object.
-    self._dirty = False
-
-  @property
-  def dirty(self):
-    return self._dirty
-
-  def __setattr__(self, key, value):
-    # Special case any attributes that might be set in the method body below.
-    if key == '_dirty' or key in self.IGNORE_FIELDS:
-      return super(UpdateAwareMixIn, self).__setattr__(key, value)
-
-    try:
-      old_value = getattr(self, key)
-      if old_value != value:
-        self._dirty = True
-    except (AttributeError, django_exceptions.ObjectDoesNotExist):
-      self._dirty = True
-    return super(UpdateAwareMixIn, self).__setattr__(key, value)
-
-  def save(self, *args, **kwargs):
-    if not self._dirty:
-      return
-
-    super(UpdateAwareMixIn, self).save(*args, **kwargs)
-    self._dirty = False
 
 
 class BuildTable(BaseModel):
@@ -213,17 +169,12 @@ class FailureTable(BaseModel):
   timestamp = ba_fields.ReadOnlyDateTimeField()
 
 
-# The order of inheritence is significant.
-# UpdateAwareMixIn must preceed the django model.Model subclass.
-class AnnotationsTable(UpdateAwareMixIn, BaseModel):
+class AnnotationsTable(BaseModel):
   """Model for cidb.annotationsTable."""
 
   class Meta(object):
     """Set extra table options."""
     db_table = 'annotationsTable'
-
-  # For UpdateAwareMixIn
-  IGNORE_FIELDS = ['last_updated']
 
   BAD_CL = 'bad_cl'
   BUG_IN_TOT = 'bug_in_tot'

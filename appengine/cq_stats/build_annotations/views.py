@@ -175,7 +175,7 @@ class EditAnnotationsView(generic.base.View):
     if self._formset is None:
       build_row = self._GetBuildRow()
       if build_row is not None:
-        queryset = build_row.annotations
+        queryset = build_row.GetAnnotationsQS()
       else:
         queryset = ba_models.AnnotationsTable.objects.none()
       self._formset = ba_forms.AnnotationsFormSet(queryset=queryset)

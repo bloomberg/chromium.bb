@@ -27,7 +27,8 @@ class BuildRow(collections.MutableMapping):
   """A database "view" that collects all relevant stats about a build."""
 
   def __init__(self, build_entry, build_stage_entries,
-               cl_action_entries, failure_entries, annotations):
+               cl_action_entries, failure_entries, annotations,
+               costly_annotations_qs):
     """Initialize a BuildRow.
 
     Do not use QuerySets as arguments. All query sets must have been evaluated
@@ -78,10 +79,18 @@ class BuildRow(collections.MutableMapping):
         ba_models.ClActionTable.SUBMITTED)
     self['kicked_out_count'] = self._CountCLActions(
         ba_models.ClActionTable.KICKED_OUT)
+    self['annotation_summary'] = self._SummaryAnnotations(annotations)
+    self._costly_annotations_qs = costly_annotations_qs
 
-    # Annotations are treated specially. They are not availabe via the dict API.
-    self.annotations = annotations
-    self['annotation_summary'] = self._SummaryAnnotations()
+  def GetAnnotationsQS(self):
+    """Return the queryset backing annotations.
+
+    Executing this queryset is costly because there is no way to optimize the
+    query execution.
+    Since this is a related_set queryset, that was further filtered, each item
+    in the queryset causes a db hit.
+    """
+    return self._costly_annotations_qs
 
   def __getitem__(self, *args, **kwargs):
     return self._data.__getitem__(*args, **kwargs)
@@ -102,13 +111,13 @@ class BuildRow(collections.MutableMapping):
     actions = [x for x in self._cl_action_entries if x.action == cl_action]
     return len(actions)
 
-  def _SummaryAnnotations(self):
-    if not self.annotations:
+  def _SummaryAnnotations(self, annotations):
+    if not annotations:
       return ''
 
-    result = '%d annotations: ' % len(self.annotations)
+    result = '%d annotations: ' % len(annotations)
     summaries = []
-    for annotation in self.annotations:
+    for annotation in annotations:
       summary = annotation.failure_category
       failure_message = annotation.failure_message
       blame_url = annotation.blame_url
@@ -182,9 +191,11 @@ class BuildRowController(object):
       # end up hitting the database again.
       annotations = [a for a in build_entry.annotationstable_set.all() if
                      a.deleted == False]
+      costly_annotations_qs = build_entry.annotationstable_set.filter(
+          deleted=False)
 
       build_row = BuildRow(build_entry, build_stage_entries, cl_action_entries,
-                           failure_entries, annotations)
+                           failure_entries, annotations, costly_annotations_qs)
 
       self._build_rows_map[build_entry.id] = build_row
       build_rows.append(build_row)
