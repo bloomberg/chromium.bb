@@ -5,12 +5,13 @@
 #ifndef FilterStyleInterpolation_h
 #define FilterStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/css/CSSFunctionValue.h"
 
 namespace blink {
 
-class FilterStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT FilterStyleInterpolation : public StyleInterpolation {
 public:
     typedef CSSValueID NonInterpolableType;
     typedef ListStyleInterpolationImpl<FilterStyleInterpolation, NonInterpolableType> FilterListStyleInterpolation;
