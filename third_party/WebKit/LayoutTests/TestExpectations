@@ -155,6 +155,8 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
+crbug.com/483429 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Pass Failure ]
+
 crbug.com/472569 virtual/slimmingpaint/fast/forms/select/popup-menu-appearance-zoom.html [ Failure ImageOnlyFailure Pass NeedsManualRebaseline ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
