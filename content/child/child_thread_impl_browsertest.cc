@@ -47,8 +47,7 @@ class ChildThreadImplBrowserTest : public ContentBrowserTest {
   ChildDiscardableSharedMemoryManager* child_discardable_shared_memory_manager_;
 };
 
-IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
-                       DISABLED_LockDiscardableMemory) {
+IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest, LockDiscardableMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
   scoped_ptr<base::DiscardableMemory> memory =
