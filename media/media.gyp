@@ -1086,6 +1086,7 @@
       'target_name': 'media_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
+        'audio_test_config',
         'media',
         'media_test_support',
         'shared_memory_support',
@@ -1103,36 +1104,6 @@
         '../url/url.gyp:url_lib',
       ],
       'sources': [
-        'audio/alsa/alsa_output_unittest.cc',
-        'audio/android/audio_android_unittest.cc',
-        'audio/audio_input_controller_unittest.cc',
-        'audio/audio_input_unittest.cc',
-        'audio/audio_input_volume_unittest.cc',
-        'audio/audio_low_latency_input_output_unittest.cc',
-        'audio/audio_manager_factory_unittest.cc',
-        'audio/audio_manager_unittest.cc',
-        'audio/audio_output_controller_unittest.cc',
-        'audio/audio_output_device_unittest.cc',
-        'audio/audio_output_proxy_unittest.cc',
-        'audio/audio_parameters_unittest.cc',
-        'audio/audio_power_monitor_unittest.cc',
-        'audio/fake_audio_worker_unittest.cc',
-        'audio/mac/audio_auhal_mac_unittest.cc',
-        'audio/mac/audio_device_listener_mac_unittest.cc',
-        'audio/mac/audio_low_latency_input_mac_unittest.cc',
-        'audio/simple_sources_unittest.cc',
-        'audio/sounds/audio_stream_handler_unittest.cc',
-        'audio/sounds/sounds_manager_unittest.cc',
-        'audio/sounds/test_data.cc',
-        'audio/sounds/test_data.h',
-        'audio/sounds/wav_audio_handler_unittest.cc',
-        'audio/virtual_audio_input_stream_unittest.cc',
-        'audio/virtual_audio_output_stream_unittest.cc',
-        'audio/win/audio_device_listener_win_unittest.cc',
-        'audio/win/audio_low_latency_input_win_unittest.cc',
-        'audio/win/audio_low_latency_output_win_unittest.cc',
-        'audio/win/audio_output_win_unittest.cc',
-        'audio/win/core_audio_util_win_unittest.cc',
         'base/android/media_codec_bridge_unittest.cc',
         'base/android/media_drm_bridge_unittest.cc',
         'base/android/media_source_player_unittest.cc',
@@ -1280,16 +1251,6 @@
             'test/pipeline_integration_test_base.cc',
           ],
         }],
-        ['use_alsa==1', {
-          'defines': [
-            'USE_ALSA',
-          ],
-        }],
-        ['use_pulseaudio==1', {
-          'defines': [
-            'USE_PULSEAUDIO',
-          ],
-        }],
         ['os_posix==1 and OS!="mac"', {
           'conditions': [
             ['use_allocator!="none"', {
@@ -1300,36 +1261,14 @@
           ],
         }],
         ['OS=="android"', {
-          'sources!': [
-            'audio/audio_input_volume_unittest.cc',
-          ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
             'player_android',
           ],
         }],
-        ['OS=="linux"', {
-          'conditions': [
-            ['use_cras==1', {
-              'sources': [
-                'audio/cras/cras_input_unittest.cc',
-                'audio/cras/cras_unified_unittest.cc',
-              ],
-              'defines': [
-                'USE_CRAS',
-              ],
-            }],
-          ],
-        }],
         ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
           'sources': [
             'filters/h264_bitstream_buffer_unittest.cc',
-          ],
-        }],
-        ['use_alsa==0', {
-          'sources!': [
-            'audio/alsa/alsa_output_unittest.cc',
-            'audio/audio_low_latency_input_output_unittest.cc',
           ],
         }],
         ['target_arch=="ia32" or target_arch=="x64"', {
@@ -1362,11 +1301,6 @@
             'formats/mpeg/adts_stream_parser_unittest.cc',
             'formats/mpeg/mpeg1_audio_stream_parser_unittest.cc',
           ],
-        }],
-        # TODO(wolenetz): Fix size_t to int truncations in win64. See
-        # http://crbug.com/171009
-        ['OS=="win" and target_arch=="x64"', {
-          'msvs_disabled_warnings': [ 4267, ],
         }],
         ['OS=="mac"', {
           'sources': [
@@ -1430,6 +1364,111 @@
             'test/pipeline_integration_test_base.cc',
           ],
         }],
+      ],
+    },
+    {
+      # GN version: //media/audio:unittests
+      # For including the sources and configs in multiple test targets.
+      'target_name': 'audio_test_config',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'sources': [
+          'audio/audio_input_controller_unittest.cc',
+          'audio/audio_input_unittest.cc',
+          'audio/audio_manager_factory_unittest.cc',
+          'audio/audio_manager_unittest.cc',
+          'audio/audio_output_controller_unittest.cc',
+          'audio/audio_output_device_unittest.cc',
+          'audio/audio_output_proxy_unittest.cc',
+          'audio/audio_parameters_unittest.cc',
+          'audio/audio_power_monitor_unittest.cc',
+          'audio/fake_audio_worker_unittest.cc',
+          'audio/simple_sources_unittest.cc',
+          'audio/virtual_audio_input_stream_unittest.cc',
+          'audio/virtual_audio_output_stream_unittest.cc',
+        ],
+        'conditions': [
+          # TODO(wolenetz): Fix size_t to int truncations in win64. See
+          # http://crbug.com/171009
+          ['OS=="win" and target_arch=="x64"', {
+            'msvs_disabled_warnings': [ 4267, ],
+          }],
+          ['OS=="android"', {
+            'sources': [
+              'audio/android/audio_android_unittest.cc',
+            ],
+          }, {
+            'sources': [
+              'audio/audio_input_volume_unittest.cc',
+            ],
+          }],
+          ['OS=="mac"', {
+            'sources': [
+              'audio/mac/audio_auhal_mac_unittest.cc',
+              'audio/mac/audio_device_listener_mac_unittest.cc',
+              'audio/mac/audio_low_latency_input_mac_unittest.cc',
+            ],
+          }],
+          ['chromeos==1', {
+            'sources': [
+              'audio/sounds/audio_stream_handler_unittest.cc',
+              'audio/sounds/sounds_manager_unittest.cc',
+              'audio/sounds/test_data.cc',
+              'audio/sounds/test_data.h',
+              'audio/sounds/wav_audio_handler_unittest.cc',
+            ],
+          }],
+          ['OS=="win"', {
+            'sources': [
+              'audio/win/audio_device_listener_win_unittest.cc',
+              'audio/win/audio_low_latency_input_win_unittest.cc',
+              'audio/win/audio_low_latency_output_win_unittest.cc',
+              'audio/win/audio_output_win_unittest.cc',
+              'audio/win/core_audio_util_win_unittest.cc',
+            ],
+          }],
+          ['use_alsa==1', {
+            'sources': [
+              'audio/alsa/alsa_output_unittest.cc',
+              'audio/audio_low_latency_input_output_unittest.cc',
+            ],
+            'defines': [
+              'USE_ALSA',
+            ],
+          }],
+          ['use_pulseaudio==1', {
+            'defines': [
+              'USE_PULSEAUDIO',
+            ],
+          }],
+          ['use_cras==1', {
+            'sources': [
+              'audio/cras/cras_input_unittest.cc',
+              'audio/cras/cras_unified_unittest.cc',
+            ],
+            'defines': [
+              'USE_CRAS',
+            ],
+          }],
+        ],
+      },
+    },
+    {
+      # GN version: //media:audio_unittests
+      # For running the subset of media_unittests that might require audio
+      # hardware separately on GPU bots. media_unittests includes these too.
+      'target_name': 'audio_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'audio_test_config',
+        'media_test_support',
+        '../base/base.gyp:test_support_base',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gfx.gyp:gfx_test_support',
+      ],
+      'sources': [
+        'base/run_all_unittests.cc',
       ],
     },
     {
