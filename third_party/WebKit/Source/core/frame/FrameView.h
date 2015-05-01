@@ -576,7 +576,7 @@ public:
 
     int viewportWidth() const;
 
-    LayoutAnalyzer& layoutAnalyzer() { return m_analyzer; }
+    LayoutAnalyzer* layoutAnalyzer() { return m_analyzer.get(); }
 
 protected:
     // Scroll the content via the compositor.
@@ -717,6 +717,7 @@ private:
 
     ScrollingCoordinator* scrollingCoordinator();
 
+    void prepareLayoutAnalyzer();
     PassRefPtr<TracedValue> analyzerCounters();
 
     // LayoutObject for the viewport-defining element (see Document::viewportDefiningElement).
@@ -850,7 +851,7 @@ private:
 
     bool m_clipsRepaints;
 
-    LayoutAnalyzer m_analyzer;
+    OwnPtr<LayoutAnalyzer> m_analyzer;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

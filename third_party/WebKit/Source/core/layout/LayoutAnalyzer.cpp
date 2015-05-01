@@ -17,12 +17,14 @@ LayoutAnalyzer::Scope::Scope(const LayoutObject& o)
     : m_layoutObject(o)
     , m_analyzer(o.frameView()->layoutAnalyzer())
 {
-    m_analyzer.push(o);
+    if (m_analyzer)
+        m_analyzer->push(o);
 }
 
 LayoutAnalyzer::Scope::~Scope()
 {
-    m_analyzer.pop(m_layoutObject);
+    if (m_analyzer)
+        m_analyzer->pop(m_layoutObject);
 }
 
 void LayoutAnalyzer::reset()
