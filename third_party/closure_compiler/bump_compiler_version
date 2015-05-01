@@ -9,12 +9,25 @@
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEMP_DIR=$(mktemp -d)
 
+readonly COMPILER_PATH="${SCRIPT_DIR}/compiler/compiler.jar"
+readonly EXTERNS_PATH="${SCRIPT_DIR}/externs/chrome_extensions.js"
+
 cleanup() {
-  echo "Cleaning up..."
   rm -rf "${TEMP_DIR}"
 }
 
+get_compiler_version() {
+  java -jar "${1}" --version | grep ^Version: | cut -d' ' -f2
+}
+
+get_externs_sha1() {
+  sha1sum "${EXTERNS_PATH}" | cut -d' ' -f1
+}
+
 trap cleanup SIGINT SIGHUP SIGTERM
+
+previous_compiler_version=$(get_compiler_version ${COMPILER_PATH})
+previous_externs_sha1=$(get_externs_sha1)
 
 cd "${TEMP_DIR}"
 echo "Cloning Closure Compiler repo"
@@ -30,9 +43,18 @@ if [[ "$?" -ne 0 ]]; then
   exit 1
 fi
 
-echo "Copying compiler.jar and chrome_extensions.js"
-cp build/compiler.jar "${SCRIPT_DIR}/compiler/"
-(cat <<EOT && cat contrib/externs/chrome_extensions.js) > "${SCRIPT_DIR}/externs/chrome_extensions.js"
+new_compiler_version=$(get_compiler_version "build/compiler.jar")
+
+if [[ "${new_compiler_version}" != "${previous_compiler_version}" ]]; then
+  cp build/compiler.jar "${COMPILER_PATH}"
+
+  echo "Compiler version changed; re-building runner.jar"
+  "${SCRIPT_DIR}/runner/build_runner_jar.py"
+
+  compiler_jar_range="compiler.jar: ${previous_compiler_version} -> ${new_compiler_version}"
+fi
+
+(cat <<EOT && cat contrib/externs/chrome_extensions.js) > "${EXTERNS_PATH}"
 //    SSSSSSSSSSSSSSS TTTTTTTTTTTTTTTTTTTTTTT     OOOOOOOOO     PPPPPPPPPPPPPPPPP
 //  SS:::::::::::::::ST:::::::::::::::::::::T   OO:::::::::OO   P::::::::::::::::P
 // S:::::SSSSSS::::::ST:::::::::::::::::::::T OO:::::::::::::OO P::::::PPPPPP:::::P
@@ -51,7 +73,39 @@ cp build/compiler.jar "${SCRIPT_DIR}/compiler/"
 //  SSSSSSSSSSSSSSS         TTTTTTTTTTT           OOOOOOOOO     PPPPPPPPPP
 EOT
 
-echo "Rebuilding runner.jar"
-"${SCRIPT_DIR}/runner/build_runner_jar.py"
+new_externs_sha1=$(get_externs_sha1)
+
+if [[ "${new_externs_sha1}" != "${previous_externs_sha1}" ]]; then
+  chrome_extensions_range="chrome_extensions.js: ${previous_externs_sha1} -> ${new_externs_sha1}"
+fi
+
+echo
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "@"
+echo "@  ROLL RESULTS:"
+echo "@"
+echo "@  Compiler version:"
+echo "@    Previous: ${previous_compiler_version}"
+echo "@    New: ${new_compiler_version}"
+echo "@"
+echo "@  Externs SHA1:"
+echo "@    Previous: ${previous_externs_sha1}"
+echo "@    New: ${new_externs_sha1}"
+echo "@"
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo
+
+if [[ -z "${compiler_jar_range}" ]] && [[ -z "${chrome_extensions_range}" ]]; then
+  echo "Nothing to update"
+else
+  echo "git commit -a -m 'Bumping closure compiler:"
+  echo
+  if [[ ! -z "${compiler_jar_range}" ]]; then echo "${compiler_jar_range}"; fi
+  if [[ ! -z "${chrome_extensions_range}" ]]; then echo "${chrome_extensions_range}"; fi
+  echo "TBR="
+  echo "BUG='"
+  echo
+  echo "git cl upload"
+fi
 
 cleanup
