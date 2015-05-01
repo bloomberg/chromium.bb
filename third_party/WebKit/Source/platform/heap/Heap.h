@@ -336,8 +336,12 @@ inline Address blinkPageAddress(Address address)
     return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
 }
 
-#if ENABLE(ASSERT)
+inline bool vTableInitialized(void* objectPointer)
+{
+    return !!(*reinterpret_cast<Address*>(objectPointer));
+}
 
+#if ENABLE(ASSERT)
 // Sanity check for a page header address: the address of the page
 // header should be OS page size away from being Blink page size
 // aligned.
@@ -1721,25 +1725,41 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     static bool trace(VisitorDispatcher visitor, void* self)
     {
         // HeapVectorBacking does not know the exact size of the vector
-        // and thus cannot avoid tracing all slots in the backing.
-        // This works correctly as long as unused slots are cleared out
-        // (this is done by VectorUnusedSlotClearer) and T can be initialized
-        // with memset (if T can be initialized with memset, it is safe to
-        // treat a zeroed object as a valid object).
-        static_assert(!ShouldBeTraced<Traits>::value || Traits::canInitializeWithMemset, "HeapVectorBacking doesn't support objects that cannot be initialized with memset.");
+        // and just knows the capacity of the vector. Due to the constraint,
+        // HeapVectorBacking can support only the following objects:
+        //
+        // - An object that has a vtable. In this case, HeapVectorBacking
+        //   traces only slots that are not zeroed out. This is because if
+        //   the object has a vtable, the zeroed slot means that it is
+        //   an unused slot (Remember that the unused slots are guaranteed
+        //   to be zeroed out by VectorUnusedSlotClearer).
+        //
+        // - An object that can be initialized with memset. In this case,
+        //   HeapVectorBacking traces all slots including unused slots.
+        //   This is fine because the fact that the object can be initialized
+        //   with memset indicates that it is safe to treat the zerod slot
+        //   as a valid object.
+        static_assert(!ShouldBeTraced<Traits>::value || Traits::canInitializeWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be initialized with memset.");
 
         T* array = reinterpret_cast<T*>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
         // Use the payload size as recorded by the heap to determine how many
         // elements to trace.
         size_t length = header->payloadSize() / sizeof(T);
+        if (WTF::IsPolymorphic<T>::value) {
+            for (size_t i = 0; i < length; ++i) {
+                if (blink::vTableInitialized(&array[i]))
+                    blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+            }
+        } else {
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-        // As commented above, HeapVectorBacking can trace unused slots
-        // (which are already zeroed out).
-        ANNOTATE_CHANGE_SIZE(array, length, 0, length);
+            // As commented above, HeapVectorBacking can trace unused slots
+            // (which are already zeroed out).
+            ANNOTATE_CHANGE_SIZE(array, length, 0, length);
 #endif
-        for (size_t i = 0; i < length; ++i)
-            blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+            for (size_t i = 0; i < length; ++i)
+                blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+        }
         return false;
     }
 };
@@ -2017,13 +2037,8 @@ template<typename T, typename Traits>
 void HeapVectorBacking<T, Traits>::finalize(void* pointer)
 {
     static_assert(Traits::needsDestruction, "Only vector buffers with items requiring destruction should be finalized");
-    // HeapVectorBacking does not know the exact size of the vector
-    // and thus cannot avoid calling finalizers for all slots in the backing.
-    // This works correctly as long as unused slots are cleared out
-    // (this is done by VectorUnusedSlotClearer) and T can be initialized
-    // with memset (if T can be initialized with memset, it is safe to
-    // treat a zeroed object as a valid object).
-    static_assert(Traits::canInitializeWithMemset, "HeapVectorBacking doesn't support objects that cannot be initialized with memset.");
+    // See the comment in HeapVectorBacking::trace.
+    static_assert(Traits::canInitializeWithMemset || WTF::IsPolymorphic<T>::value, "HeapVectorBacking doesn't support objects that cannot be initialized with memset or don't have a vtable");
 
     ASSERT(!WTF::IsTriviallyDestructible<T>::value);
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
@@ -2036,8 +2051,16 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
     // (which are already zeroed out).
     ANNOTATE_CHANGE_SIZE(buffer, length, 0, length);
 #endif
-    for (unsigned i = 0; i < length; ++i)
-        buffer[i].~T();
+    if (WTF::IsPolymorphic<T>::value) {
+        for (unsigned i = 0; i < length; ++i) {
+            if (blink::vTableInitialized(&buffer[i]))
+                buffer[i].~T();
+        }
+    } else {
+        for (unsigned i = 0; i < length; ++i) {
+            buffer[i].~T();
+        }
+    }
 }
 
 template<typename Table>

@@ -90,7 +90,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     struct VectorUnusedSlotClearer<true, T> {
         static void clear(T* begin, T* end)
         {
-            memset(begin, 0, sizeof(T) * (end - begin));
+            memset(reinterpret_cast<void*>(begin), 0, sizeof(T) * (end - begin));
         }
 
 #if ENABLE(ASSERT)

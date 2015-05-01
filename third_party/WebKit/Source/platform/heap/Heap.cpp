@@ -107,11 +107,6 @@ static String classOf(const void* object)
 }
 #endif
 
-static bool vTableInitialized(void* objectPointer)
-{
-    return !!(*reinterpret_cast<Address*>(objectPointer));
-}
-
 static size_t roundToOsPageSize(size_t size)
 {
     return (size + WTF::kSystemPageSize - 1) & ~(WTF::kSystemPageSize - 1);

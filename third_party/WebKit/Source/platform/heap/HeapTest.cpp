@@ -3943,6 +3943,26 @@ public:
 
 int InlinedVectorObject::s_destructorCalls = 0;
 
+class InlinedVectorObjectWithVtable {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    InlinedVectorObjectWithVtable()
+    {
+    }
+    ~InlinedVectorObjectWithVtable()
+    {
+        s_destructorCalls++;
+    }
+    virtual void virtualMethod() { }
+    DEFINE_INLINE_TRACE()
+    {
+    }
+
+    static int s_destructorCalls;
+};
+
+int InlinedVectorObjectWithVtable::s_destructorCalls = 0;
+
 } // namespace blink
 
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::InlinedVectorObject);
@@ -3973,6 +3993,32 @@ private:
     HeapVector<InlinedVectorObject> m_vector1;
     HeapVector<InlinedVectorObject, 1> m_vector2;
     HeapVector<InlinedVectorObject, 2> m_vector3;
+};
+
+class InlinedVectorObjectWithVtableWrapper final : public GarbageCollectedFinalized<InlinedVectorObjectWithVtableWrapper> {
+public:
+    InlinedVectorObjectWithVtableWrapper()
+    {
+        InlinedVectorObjectWithVtable i1, i2;
+        m_vector1.append(i1);
+        m_vector1.append(i2);
+        m_vector2.append(i1);
+        m_vector2.append(i2); // This allocates an out-of-line buffer.
+        m_vector3.append(i1);
+        m_vector3.append(i2);
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_vector1);
+        visitor->trace(m_vector2);
+        visitor->trace(m_vector3);
+    }
+
+private:
+    HeapVector<InlinedVectorObjectWithVtable> m_vector1;
+    HeapVector<InlinedVectorObjectWithVtable, 1> m_vector2;
+    HeapVector<InlinedVectorObjectWithVtable, 2> m_vector3;
 };
 
 TEST(HeapTest, VectorDestructors)
@@ -4020,6 +4066,49 @@ TEST(HeapTest, VectorDestructors)
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
     EXPECT_LE(8, InlinedVectorObject::s_destructorCalls);
+}
+
+TEST(HeapTest, VectorDestructorsWithVtable)
+{
+    clearOutOldGarbage();
+    InlinedVectorObjectWithVtable::s_destructorCalls = 0;
+    {
+        HeapVector<InlinedVectorObjectWithVtable> vector;
+        InlinedVectorObjectWithVtable i1, i2;
+        vector.append(i1);
+        vector.append(i2);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_EQ(4, InlinedVectorObjectWithVtable::s_destructorCalls);
+
+    InlinedVectorObjectWithVtable::s_destructorCalls = 0;
+    {
+        HeapVector<InlinedVectorObjectWithVtable, 1> vector;
+        InlinedVectorObjectWithVtable i1, i2;
+        vector.append(i1);
+        vector.append(i2); // This allocates an out-of-line buffer.
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_EQ(5, InlinedVectorObjectWithVtable::s_destructorCalls);
+
+    InlinedVectorObjectWithVtable::s_destructorCalls = 0;
+    {
+        HeapVector<InlinedVectorObjectWithVtable, 2> vector;
+        InlinedVectorObjectWithVtable i1, i2;
+        vector.append(i1);
+        vector.append(i2);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_EQ(4, InlinedVectorObjectWithVtable::s_destructorCalls);
+
+    InlinedVectorObjectWithVtable::s_destructorCalls = 0;
+    {
+        new InlinedVectorObjectWithVtableWrapper();
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+        EXPECT_EQ(3, InlinedVectorObjectWithVtable::s_destructorCalls);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    EXPECT_EQ(9, InlinedVectorObjectWithVtable::s_destructorCalls);
 }
 
 template<typename Set>
