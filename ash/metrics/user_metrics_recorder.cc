@@ -359,6 +359,9 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Brightness_Detailed"));
       break;
+    case ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW:
+      base::RecordAction(base::UserMetricsAction("StatusArea_Cast_Detailed"));
+      break;
     case ash::UMA_STATUS_AREA_DETAILED_DRIVE_VIEW:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Drive_Detailed"));

@@ -11204,6 +11204,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_Cast_Detailed">
+  <owner>jdufault@chromium.org</owner>
+  <description>
+    Counts the number of times the user has clicked on the &quot;Cast desktop
+    to&quot; status tray item and is now in the detail view to select a cast
+    receiver.
+  </description>
+</action>
+
 <action name="StatusArea_Drive_CancelOperation">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
