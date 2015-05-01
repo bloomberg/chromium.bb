@@ -48,6 +48,8 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
   registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
   registry->RegisterIntegerPref(::prefs::kAccountIdMigrationState,
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
+  registry->RegisterInt64Pref(
+      AccountTrackerService::kAccountTrackerServiceLastUpdate, 0);
 
   base::PrefServiceFactory factory;
   factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));

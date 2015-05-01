@@ -244,6 +244,8 @@ class AccountTrackerServiceTest : public testing::Test {
     pref_service_.registry()->RegisterIntegerPref(
         prefs::kAccountIdMigrationState,
         AccountTrackerService::MIGRATION_NOT_STARTED);
+    pref_service_.registry()->RegisterInt64Pref(
+        AccountTrackerService::kAccountTrackerServiceLastUpdate, 0);
     signin_client_.reset(new TestSigninClient(&pref_service_));
     signin_client_.get()->SetURLRequestContext(
         new net::TestURLRequestContextGetter(
@@ -670,6 +672,70 @@ TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
     // Check that no network fetches were made.
     ASSERT_TRUE(observer()->CheckEvents());
 
+    tracker.Shutdown();
+  }
+}
+
+TEST_F(AccountTrackerServiceTest, TimerRefresh) {
+  // Start by creating a tracker and adding a couple accounts to be persisted to
+  // prefs.
+  {
+    AccountTrackerService tracker;
+    tracker.Initialize(token_service(), signin_client());
+    tracker.EnableNetworkFetches();
+    SimulateTokenAvailable("alpha");
+    ReturnOAuthUrlFetchSuccess("alpha");
+    SimulateTokenAvailable("beta");
+    ReturnOAuthUrlFetchSuccess("beta");
+    tracker.Shutdown();
+  }
+
+  // Rewind the time by half a day, which shouldn't be enough to trigger a
+  // network refresh.
+  base::Time fake_update = base::Time::Now() - base::TimeDelta::FromHours(12);
+  signin_client()->GetPrefs()->SetInt64(
+      AccountTrackerService::kAccountTrackerServiceLastUpdate,
+      fake_update.ToInternalValue());
+
+  // Instantiate a new ATS, making sure the persisted accounts are still there
+  // and that no network fetches happen.
+  {
+    AccountTrackerService tracker;
+    tracker.Initialize(token_service(), signin_client());
+
+    ASSERT_TRUE(tracker.IsAllUserInfoFetched());
+    std::vector<AccountTrackerService::AccountInfo> infos =
+        tracker.GetAccounts();
+    ASSERT_EQ(2u, infos.size());
+    ASSERT_TRUE(infos[0].IsValid());
+    ASSERT_TRUE(infos[1].IsValid());
+
+    tracker.EnableNetworkFetches();
+    ASSERT_TRUE(tracker.IsAllUserInfoFetched());
+    tracker.Shutdown();
+  }
+
+  // Rewind the last updated time enough to trigger a network refresh.
+  fake_update = base::Time::Now() - base::TimeDelta::FromHours(25);
+  signin_client()->GetPrefs()->SetInt64(
+      AccountTrackerService::kAccountTrackerServiceLastUpdate,
+      fake_update.ToInternalValue());
+
+  // Instantiate a new tracker and validate that even though the AccountInfos
+  // are still valid, the network fetches are started.
+  {
+    AccountTrackerService tracker;
+    tracker.Initialize(token_service(), signin_client());
+
+    ASSERT_TRUE(tracker.IsAllUserInfoFetched());
+    std::vector<AccountTrackerService::AccountInfo> infos =
+        tracker.GetAccounts();
+    ASSERT_EQ(2u, infos.size());
+    ASSERT_TRUE(infos[0].IsValid());
+    ASSERT_TRUE(infos[1].IsValid());
+
+    tracker.EnableNetworkFetches();
+    ASSERT_FALSE(tracker.IsAllUserInfoFetched());
     tracker.Shutdown();
   }
 }

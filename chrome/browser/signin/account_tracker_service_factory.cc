@@ -42,6 +42,8 @@ void AccountTrackerServiceFactory::RegisterProfilePrefs(
   registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
   registry->RegisterIntegerPref(prefs::kAccountIdMigrationState,
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
+  registry->RegisterInt64Pref(
+      AccountTrackerService::kAccountTrackerServiceLastUpdate, 0);
 }
 
 KeyedService* AccountTrackerServiceFactory::BuildServiceInstanceFor(
