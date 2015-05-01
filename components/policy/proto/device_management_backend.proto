@@ -425,9 +425,6 @@ message RemoteCommand {
 
     // Reboot the device.
     DEVICE_REBOOT = 0;
-
-    // Take a screenshot.
-    DEVICE_SCREENSHOT = 1;
   }
 
   // The command type.
