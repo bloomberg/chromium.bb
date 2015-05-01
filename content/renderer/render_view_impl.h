@@ -457,7 +457,6 @@ class CONTENT_EXPORT RenderViewImpl
 
  protected:
   // RenderWidget overrides:
-  void OnClose() override;
   void Close() override;
   void OnResize(const ViewMsg_Resize_Params& params) override;
   void DidInitiatePaint() override;
@@ -606,6 +605,8 @@ class CONTENT_EXPORT RenderViewImpl
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedElement();
   void OnClosePage();
+  void OnClose();
+
   void OnShowContextMenu(ui::MenuSourceType source_type,
                          const gfx::Point& location);
   void OnCopyImageAt(int x, int y);

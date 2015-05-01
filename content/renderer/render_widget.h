@@ -412,7 +412,7 @@ class CONTENT_EXPORT RenderWidget
   void OnCursorVisibilityChange(bool is_visible);
   void OnMouseCaptureLost();
   virtual void OnSetFocus(bool enable);
-  virtual void OnClose();
+  void OnClose();
   void OnCreatingNewAck();
   virtual void OnResize(const ViewMsg_Resize_Params& params);
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);

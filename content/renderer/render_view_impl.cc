@@ -1358,6 +1358,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnGetRenderedText)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
                         OnPluginImeCompositionCompleted)
+    IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
@@ -2852,6 +2853,12 @@ void RenderViewImpl::OnClosePage() {
   Send(new ViewHostMsg_ClosePage_ACK(routing_id_));
 }
 
+void RenderViewImpl::OnClose() {
+  if (closing_)
+    RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(routing_id_));
+  RenderWidget::OnClose();
+}
+
 void RenderViewImpl::OnThemeChanged() {
 #if defined(USE_AURA)
   // Aura doesn't care if we switch themes.
@@ -3023,12 +3030,6 @@ void RenderViewImpl::OnPluginImeCompositionCompleted(const base::string16& text,
   }
 }
 #endif  // OS_MACOSX
-
-void RenderViewImpl::OnClose() {
-  if (closing_)
-    RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(routing_id_));
-  RenderWidget::OnClose();
-}
 
 void RenderViewImpl::Close() {
   // We need to grab a pointer to the doomed WebView before we destroy it.
