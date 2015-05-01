@@ -73,12 +73,6 @@ class CONTENT_EXPORT GestureEventQueue {
     // active scroll sequence, suppressing brief scroll interruptions.
     // Zero by default (disabled).
     base::TimeDelta debounce_interval;
-
-    // Whether to filter unnecessary GestureFlingCancel events. Filtering should
-    // be disabled if there may be content-targetting fling curves about which
-    // the renderer is unaware (e.g., with Android WebView).
-    // True by default.
-    bool enable_fling_cancel_filtering;
   };
 
   // Both |client| and |touchpad_client| must outlive the GestureEventQueue.
@@ -99,8 +93,9 @@ class CONTENT_EXPORT GestureEventQueue {
                          blink::WebInputEvent::Type type,
                          const ui::LatencyInfo& latency);
 
-  // Notify the queue that a gesture fling animation in the renderer has ended.
-  void DidStopFlinging();
+  // Sets the state of the |fling_in_progress_| field to indicate that a fling
+  // is definitely not in progress.
+  void FlingHasBeenHalted();
 
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
@@ -111,8 +106,6 @@ class CONTENT_EXPORT GestureEventQueue {
     return coalesced_gesture_events_.empty() &&
            debouncing_deferral_queue_.empty();
   }
-
-  int active_fling_count() const { return active_fling_count_; }
 
   void set_debounce_interval_time_ms_for_testing(int interval_ms) {
     debounce_interval_ = base::TimeDelta::FromMilliseconds(interval_ms);
@@ -165,13 +158,9 @@ class CONTENT_EXPORT GestureEventQueue {
   // The receiver of all forwarded gesture events.
   GestureEventQueueClient* client_;
 
-  // Whether to filter unnecessary GestureFlingCancel events.
-  bool enable_fling_cancel_filtering_;
-
-  // Whether there are any active flings in the renderer. As the fling
-  // end notification is asynchronous, we use a count rather than a boolean
-  // to avoid races in bookkeeping when starting a new fling.
-  int active_fling_count_;
+  // True if a GestureFlingStart is in progress on the renderer or
+  // queued without a subsequent queued GestureFlingCancel event.
+  bool fling_in_progress_;
 
   // True if a GestureScrollUpdate sequence is in progress.
   bool scrolling_in_progress_;

@@ -552,42 +552,27 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
   }
 }
 
-InputEventAckState ContentViewCoreImpl::FilterInputEvent(
-    const blink::WebInputEvent& event) {
+bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
   if (event.type != WebInputEvent::GestureTap &&
       event.type != WebInputEvent::GestureDoubleTap &&
       event.type != WebInputEvent::GestureLongTap &&
-      event.type != WebInputEvent::GestureLongPress &&
-      event.type != WebInputEvent::GestureFlingCancel) {
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-  }
+      event.type != WebInputEvent::GestureLongPress)
+    return false;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-
-  if (event.type == WebInputEvent::GestureFlingCancel) {
-    // If no fling is active, either in the compositor or externally-driven,
-    // there's no need to explicitly cancel the fling.
-    bool may_need_fling_cancel =
-        Java_ContentViewCore_isScrollInProgress(env, j_obj.obj());
-    return may_need_fling_cancel ? INPUT_EVENT_ACK_STATE_NOT_CONSUMED
-                                 : INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
-  }
+    return false;
 
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);
   int gesture_type = ToGestureEventType(event.type);
-  if (Java_ContentViewCore_filterTapOrPressEvent(env,
-                                                 j_obj.obj(),
-                                                 gesture_type,
-                                                 gesture.x * dpi_scale(),
-                                                 gesture.y * dpi_scale())) {
-    return INPUT_EVENT_ACK_STATE_CONSUMED;
-  }
+  return Java_ContentViewCore_filterTapOrPressEvent(env,
+                                                    j_obj.obj(),
+                                                    gesture_type,
+                                                    gesture.x * dpi_scale(),
+                                                    gesture.y * dpi_scale());
 
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   // TODO(jdduke): Also report double-tap UMA, crbug/347568.
 }
 

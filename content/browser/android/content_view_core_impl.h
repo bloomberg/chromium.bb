@@ -241,7 +241,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   bool HasFocus();
   void OnGestureEventAck(const blink::WebGestureEvent& event,
                          InputEventAckState ack_result);
-  InputEventAckState FilterInputEvent(const blink::WebInputEvent& event);
+  bool FilterInputEvent(const blink::WebInputEvent& event);
   void OnSelectionChanged(const std::string& text);
   void OnSelectionEvent(ui::SelectionEventType event,
                         const gfx::PointF& selection_anchor,

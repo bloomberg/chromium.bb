@@ -54,7 +54,7 @@ gfx::Transform GetTransformForEvent(
 
 }  // namespace
 
-GestureEventQueue::Config::Config() : enable_fling_cancel_filtering(true) {
+GestureEventQueue::Config::Config() {
 }
 
 GestureEventQueue::GestureEventQueue(
@@ -62,8 +62,7 @@ GestureEventQueue::GestureEventQueue(
     TouchpadTapSuppressionControllerClient* touchpad_client,
     const Config& config)
     : client_(client),
-      enable_fling_cancel_filtering_(config.enable_fling_cancel_filtering),
-      active_fling_count_(0),
+      fling_in_progress_(false),
       scrolling_in_progress_(false),
       ignore_next_ack_(false),
       touchpad_tap_suppression_controller_(
@@ -93,9 +92,8 @@ void GestureEventQueue::QueueEvent(
 
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
-  if (!enable_fling_cancel_filtering_)
+  if (coalesced_gesture_events_.empty() && fling_in_progress_)
     return false;
-
   GestureQueue::const_reverse_iterator it =
       coalesced_gesture_events_.rbegin();
   while (it != coalesced_gesture_events_.rend()) {
@@ -105,9 +103,7 @@ bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
       return true;
     it++;
   }
-  // If there are no fling-affecting events in the queue, and there's still an
-  // active fling in the renderer, the cancel event should not be dropped.
-  return !active_fling_count_;
+  return true;
 }
 
 bool GestureEventQueue::ShouldForwardForBounceReduction(
@@ -179,6 +175,12 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
 void GestureEventQueue::QueueAndForwardIfNecessary(
     const GestureEventWithLatencyInfo& gesture_event) {
   switch (gesture_event.event.type) {
+    case WebInputEvent::GestureFlingCancel:
+      fling_in_progress_ = false;
+      break;
+    case WebInputEvent::GestureFlingStart:
+      fling_in_progress_ = true;
+      break;
     case WebInputEvent::GesturePinchUpdate:
     case WebInputEvent::GestureScrollUpdate:
       QueueScrollOrPinchAndForwardIfNecessary(gesture_event);
@@ -200,11 +202,6 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   if (coalesced_gesture_events_.empty()) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
     return;
-  }
-
-  if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED &&
-      type == blink::WebInputEvent::GestureFlingStart) {
-    ++active_fling_count_;
   }
 
   // It's possible that the ack for the second event in an in-flight, coalesced
@@ -272,9 +269,8 @@ TouchpadTapSuppressionController*
   return &touchpad_tap_suppression_controller_;
 }
 
-void GestureEventQueue::DidStopFlinging() {
-  DCHECK_GE(active_fling_count_, 0);
-  --active_fling_count_;
+void GestureEventQueue::FlingHasBeenHalted() {
+  fling_in_progress_ = false;
 }
 
 void GestureEventQueue::ForwardGestureEvent(

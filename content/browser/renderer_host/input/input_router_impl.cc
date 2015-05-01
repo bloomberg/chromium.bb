@@ -158,6 +158,8 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
   key_queue_.push_back(key_event);
   LOCAL_HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
 
+  gesture_event_queue_.FlingHasBeenHalted();
+
   // Only forward the non-native portions of our event.
   FilterAndSendWebInputEvent(key_event, latency_info, is_keyboard_shortcut);
 }
@@ -245,7 +247,6 @@ void InputRouterImpl::RequestNotificationWhenFlushed() {
 bool InputRouterImpl::HasPendingEvents() const {
   return !touch_event_queue_.empty() ||
          !gesture_event_queue_.empty() ||
-         gesture_event_queue_.active_fling_count() ||
          !key_queue_.empty() ||
          mouse_move_pending_ ||
          mouse_wheel_pending_ ||
@@ -496,8 +497,8 @@ void InputRouterImpl::OnSetTouchAction(TouchAction touch_action) {
 }
 
 void InputRouterImpl::OnDidStopFlinging() {
-  gesture_event_queue_.DidStopFlinging();
-  SignalFlushedIfNecessary();
+  // TODO(jdduke): Track fling status to allow flush notifications after a fling
+  // has terminated, crbug.com/483037.
   client_->DidStopFlinging();
 }
 

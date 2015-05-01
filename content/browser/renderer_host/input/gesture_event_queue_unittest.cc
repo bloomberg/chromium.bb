@@ -73,12 +73,6 @@ class GestureEventQueueTest : public testing::Test,
     return GestureEventQueue::Config();
   }
 
-  void SetUpForGFCFilteringDisabled() {
-    GestureEventQueue::Config config;
-    config.enable_fling_cancel_filtering = false;
-    queue_.reset(new GestureEventQueue(this, this, config));
-  }
-
   void SetUpForDebounce(int interval_ms) {
     queue()->set_debounce_interval_time_ms_for_testing(interval_ms);
   }
@@ -179,7 +173,7 @@ class GestureEventQueueTest : public testing::Test,
     return queue()->scrolling_in_progress_;
   }
 
-  int ActiveFlingCount() { return queue()->active_fling_count_; }
+  bool FlingInProgress() { return queue()->fling_in_progress_; }
 
   bool WillIgnoreNextACK() {
     return queue()->ignore_next_ack_;
@@ -966,43 +960,15 @@ TEST_P(GestureEventQueueWithSourceTest, GestureFlingCancelsFiltered) {
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(0U, GestureEventQueueSize());
 
-  // GFC after unconsumed fling is dropped.
-  SimulateGestureEvent(WebInputEvent::GestureFlingStart, source_device);
-  SendInputEventACK(WebInputEvent::GestureFlingStart,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-
-  // GFC after fling has ended is dropped.
-  SimulateGestureEvent(WebInputEvent::GestureFlingStart, source_device);
-  SendInputEventACK(WebInputEvent::GestureFlingStart,
-                    INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-  EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
-
-  EXPECT_EQ(1, ActiveFlingCount());
-  queue()->DidStopFlinging();
-  EXPECT_EQ(0, ActiveFlingCount());
-
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-
   // GFC after previous GFS is dispatched and acked.
   SimulateGestureFlingStartEvent(0, -10, source_device);
+  EXPECT_TRUE(FlingInProgress());
   SendInputEventACK(WebInputEvent::GestureFlingStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1, ActiveFlingCount());
   RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
-  queue()->DidStopFlinging();
-  EXPECT_EQ(0, ActiveFlingCount());
+  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
   SendInputEventACK(WebInputEvent::GestureFlingCancel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1012,7 +978,9 @@ TEST_P(GestureEventQueueWithSourceTest, GestureFlingCancelsFiltered) {
 
   // GFC before previous GFS is acked.
   SimulateGestureFlingStartEvent(0, -10, source_device);
+  EXPECT_TRUE(FlingInProgress());
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
+  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
   EXPECT_EQ(2U, GestureEventQueueSize());
 
@@ -1035,34 +1003,40 @@ TEST_P(GestureEventQueueWithSourceTest, GestureFlingCancelsFiltered) {
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
   WebGestureEvent merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
+  EXPECT_TRUE(FlingInProgress());
   EXPECT_EQ(2U, GestureEventQueueSize());
 
   // GFS in queue means that a GFC is added to the queue
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event =GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
+  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(3U, GestureEventQueueSize());
 
   // Adding a second GFC is dropped.
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
+  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(3U, GestureEventQueueSize());
 
   // Adding another GFS will add it to the queue.
   SimulateGestureFlingStartEvent(0, -10, source_device);
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
+  EXPECT_TRUE(FlingInProgress());
   EXPECT_EQ(4U, GestureEventQueueSize());
 
   // GFS in queue means that a GFC is added to the queue
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
+  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(5U, GestureEventQueueSize());
 
   // Adding another GFC with a GFC already there is dropped.
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
+  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(5U, GestureEventQueueSize());
 }
 
@@ -1071,18 +1045,6 @@ INSTANTIATE_TEST_CASE_P(AllSources,
                         testing::Values(blink::WebGestureDeviceTouchscreen,
                                         blink::WebGestureDeviceTouchpad));
 #endif  // GTEST_HAS_PARAM_TEST
-
-TEST_F(GestureEventQueueTest, GestureFlingCancelFilteringDisabled) {
-  SetUpForGFCFilteringDisabled();
-
-  // If so configured, GFC events should never be filtered, even if there are
-  // no active flings.
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       blink::WebGestureDeviceTouchscreen);
-  EXPECT_EQ(0, ActiveFlingCount());
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(1U, GestureEventQueueSize());
-}
 
 // Test that a GestureScrollEnd | GestureFlingStart are deferred during the
 // debounce interval, that Scrolls are not and that the deferred events are
