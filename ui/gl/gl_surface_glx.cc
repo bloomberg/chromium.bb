@@ -33,8 +33,8 @@ namespace gfx {
 
 namespace {
 
-Display* g_display = NULL;
-const char* g_glx_extensions = NULL;
+Display* g_display = nullptr;
+const char* g_glx_extensions = nullptr;
 bool g_glx_context_create = false;
 bool g_glx_create_context_robustness_supported = false;
 bool g_glx_texture_from_pixmap_supported = false;
@@ -120,7 +120,7 @@ class SGIVideoSyncThread
 
   ~SGIVideoSyncThread() override {
     DCHECK(CalledOnValidThread());
-    g_video_sync_thread = NULL;
+    g_video_sync_thread = nullptr;
     Stop();
   }
 
@@ -133,7 +133,7 @@ class SGIVideoSyncProviderThreadShim {
  public:
   explicit SGIVideoSyncProviderThreadShim(XID window)
       : window_(window),
-        context_(NULL),
+        context_(nullptr),
         task_runner_(base::ThreadTaskRunnerHandle::Get()),
         cancel_vsync_flag_(),
         vsync_lock_() {
@@ -145,7 +145,7 @@ class SGIVideoSyncProviderThreadShim {
   virtual ~SGIVideoSyncProviderThreadShim() {
     if (context_) {
       glXDestroyContext(display_, context_);
-      context_ = NULL;
+      context_ = nullptr;
     }
   }
 
@@ -180,9 +180,10 @@ class SGIVideoSyncProviderThreadShim {
       return;
     }
 
-    context_ = glXCreateContext(display_, visual_info_list.get(), NULL, True);
+    context_ =
+        glXCreateContext(display_, visual_info_list.get(), nullptr, True);
 
-    DCHECK(NULL != context_);
+    DCHECK(nullptr != context_);
   }
 
   void GetVSyncParameters(const VSyncProvider::UpdateVSyncCallback& callback) {
@@ -308,12 +309,12 @@ class SGIVideoSyncVSyncProvider
   DISALLOW_COPY_AND_ASSIGN(SGIVideoSyncVSyncProvider);
 };
 
-SGIVideoSyncThread* SGIVideoSyncThread::g_video_sync_thread = NULL;
+SGIVideoSyncThread* SGIVideoSyncThread::g_video_sync_thread = nullptr;
 
 // In order to take advantage of GLX_SGI_video_sync, we need a display
 // for use on a separate thread. We must allocate this before the sandbox
 // goes up (rather than on-demand when we start the thread).
-Display* SGIVideoSyncProviderThreadShim::display_ = NULL;
+Display* SGIVideoSyncProviderThreadShim::display_ = nullptr;
 
 }  // namespace
 
@@ -404,10 +405,62 @@ void* GLSurfaceGLX::GetDisplay() {
 
 GLSurfaceGLX::~GLSurfaceGLX() {}
 
+void* GLSurfaceGLX::GetConfig(gfx::AcceleratedWidget window) {
+  DCHECK(window != 0);
+
+  // This code path is expensive, but we only take it when
+  // attempting to use GLX_ARB_create_context_robustness, in which
+  // case we need a GLXFBConfig for the window in order to create a
+  // context for it.
+  //
+  // TODO(kbr): this is not a reliable code path. On platforms which
+  // support it, we should use glXChooseFBConfig in the browser
+  // process to choose the FBConfig and from there the X Visual to
+  // use when creating the window in the first place. Then we can
+  // pass that FBConfig down rather than attempting to reconstitute
+  // it.
+
+  XWindowAttributes attributes;
+  if (!XGetWindowAttributes(g_display, window, &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << window << ".";
+    return nullptr;
+  }
+
+  int visual_id = XVisualIDFromVisual(attributes.visual);
+
+  int num_elements = 0;
+  gfx::XScopedPtr<GLXFBConfig> configs(
+      glXGetFBConfigs(g_display, DefaultScreen(g_display), &num_elements));
+  if (!configs.get()) {
+    LOG(ERROR) << "glXGetFBConfigs failed.";
+    return nullptr;
+  }
+  if (!num_elements) {
+    LOG(ERROR) << "glXGetFBConfigs returned 0 elements.";
+    return nullptr;
+  }
+  bool found = false;
+  int i;
+  for (i = 0; i < num_elements; ++i) {
+    int value;
+    if (glXGetFBConfigAttrib(g_display, configs.get()[i], GLX_VISUAL_ID,
+                             &value)) {
+      LOG(ERROR) << "glXGetFBConfigAttrib failed.";
+      return nullptr;
+    }
+    if (value == visual_id) {
+      found = true;
+      break;
+    }
+  }
+  if (found) {
+    return configs.get()[i];
+  }
+  return nullptr;
+}
+
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
-  : parent_window_(window),
-    window_(0),
-    config_(NULL) {
+    : parent_window_(window), window_(0), config_(nullptr) {
 }
 
 gfx::AcceleratedWidget NativeViewGLSurfaceGLX::GetDrawableHandle() const {
@@ -426,23 +479,14 @@ bool NativeViewGLSurfaceGLX::Initialize() {
   // extra blits in the driver), that we can resize exactly in Resize(),
   // correctly ordered with GL, so that we don't have invalid transient states.
   // See https://crbug.com/326995.
-  window_ = XCreateWindow(g_display,
-                          parent_window_,
-                          0,
-                          0,
-                          size_.width(),
-                          size_.height(),
-                          0,
-                          CopyFromParent,
-                          InputOutput,
-                          CopyFromParent,
-                          0,
-                          NULL);
+  window_ = XCreateWindow(g_display, parent_window_, 0, 0, size_.width(),
+                          size_.height(), 0, CopyFromParent, InputOutput,
+                          CopyFromParent, 0, nullptr);
   XMapWindow(g_display, window_);
 
   ui::PlatformEventSource* event_source =
       ui::PlatformEventSource::GetInstance();
-  // Can be NULL in tests, when we don't care about Exposes.
+  // Can be nullptr in tests, when we don't care about Exposes.
   if (event_source) {
     XSelectInput(g_display, window_, ExposureMask);
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
@@ -518,61 +562,8 @@ bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
 }
 
 void* NativeViewGLSurfaceGLX::GetConfig() {
-  if (!config_) {
-    // This code path is expensive, but we only take it when
-    // attempting to use GLX_ARB_create_context_robustness, in which
-    // case we need a GLXFBConfig for the window in order to create a
-    // context for it.
-    //
-    // TODO(kbr): this is not a reliable code path. On platforms which
-    // support it, we should use glXChooseFBConfig in the browser
-    // process to choose the FBConfig and from there the X Visual to
-    // use when creating the window in the first place. Then we can
-    // pass that FBConfig down rather than attempting to reconstitute
-    // it.
-
-    XWindowAttributes attributes;
-    if (!XGetWindowAttributes(
-        g_display,
-        window_,
-        &attributes)) {
-      LOG(ERROR) << "XGetWindowAttributes failed for window " <<
-          window_ << ".";
-      return NULL;
-    }
-
-    int visual_id = XVisualIDFromVisual(attributes.visual);
-
-    int num_elements = 0;
-    gfx::XScopedPtr<GLXFBConfig> configs(
-        glXGetFBConfigs(g_display, DefaultScreen(g_display), &num_elements));
-    if (!configs.get()) {
-      LOG(ERROR) << "glXGetFBConfigs failed.";
-      return NULL;
-    }
-    if (!num_elements) {
-      LOG(ERROR) << "glXGetFBConfigs returned 0 elements.";
-      return NULL;
-    }
-    bool found = false;
-    int i;
-    for (i = 0; i < num_elements; ++i) {
-      int value;
-      if (glXGetFBConfigAttrib(
-              g_display, configs.get()[i], GLX_VISUAL_ID, &value)) {
-        LOG(ERROR) << "glXGetFBConfigAttrib failed.";
-        return NULL;
-      }
-      if (value == visual_id) {
-        found = true;
-        break;
-      }
-    }
-    if (found) {
-      config_ = configs.get()[i];
-    }
-  }
-
+  if (!config_)
+    config_ = GLSurfaceGLX::GetConfig(window_);
   return config_;
 }
 
@@ -591,93 +582,61 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
   Destroy();
 }
 
-PbufferGLSurfaceGLX::PbufferGLSurfaceGLX(const gfx::Size& size)
-  : size_(size),
-    config_(NULL),
-    pbuffer_(0) {
-  // Some implementations of Pbuffer do not support having a 0 size. For such
-  // cases use a (1, 1) surface.
+UnmappedNativeViewGLSurfaceGLX::UnmappedNativeViewGLSurfaceGLX(
+    const gfx::Size& size)
+    : size_(size), config_(nullptr), window_(0) {
+  // Ensure that we don't create a window with zero size.
   if (size_.GetArea() == 0)
     size_.SetSize(1, 1);
 }
 
-bool PbufferGLSurfaceGLX::Initialize() {
-  DCHECK(!pbuffer_);
+bool UnmappedNativeViewGLSurfaceGLX::Initialize() {
+  DCHECK(!window_);
 
-  static const int config_attributes[] = {
-    GLX_BUFFER_SIZE, 32,
-    GLX_ALPHA_SIZE, 8,
-    GLX_BLUE_SIZE, 8,
-    GLX_GREEN_SIZE, 8,
-    GLX_RED_SIZE, 8,
-    GLX_RENDER_TYPE, GLX_RGBA_BIT,
-    GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT,
-    GLX_DOUBLEBUFFER, False,
-    0
-  };
+  gfx::AcceleratedWidget parent_window =
+      RootWindow(g_display, DefaultScreen(g_display));
 
-  int num_elements = 0;
-  gfx::XScopedPtr<GLXFBConfig> configs(glXChooseFBConfig(
-      g_display, DefaultScreen(g_display), config_attributes, &num_elements));
-  if (!configs.get()) {
-    LOG(ERROR) << "glXChooseFBConfig failed.";
-    return false;
+  // We create a window with CopyFromParent visual so that we have the same
+  // visual as NativeViewGLSurfaceGLX (i.e. same GLXFBConfig), to ensure
+  // contexts are compatible and can be made current with either.
+  window_ = XCreateWindow(g_display, parent_window, 0, 0, size_.width(),
+                          size_.height(), 0, CopyFromParent, InputOutput,
+                          CopyFromParent, 0, nullptr);
+  return window_ != 0;
+}
+
+void UnmappedNativeViewGLSurfaceGLX::Destroy() {
+  config_ = nullptr;
+  if (window_) {
+    XDestroyWindow(g_display, window_);
+    window_ = 0;
   }
-  if (!num_elements) {
-    LOG(ERROR) << "glXChooseFBConfig returned 0 elements.";
-    return false;
-  }
+}
 
-  config_ = configs.get()[0];
-
-  const int pbuffer_attributes[] = {
-    GLX_PBUFFER_WIDTH, size_.width(),
-    GLX_PBUFFER_HEIGHT, size_.height(),
-    0
-  };
-  pbuffer_ = glXCreatePbuffer(g_display,
-                              static_cast<GLXFBConfig>(config_),
-                              pbuffer_attributes);
-  if (!pbuffer_) {
-    Destroy();
-    LOG(ERROR) << "glXCreatePbuffer failed.";
-    return false;
-  }
-
+bool UnmappedNativeViewGLSurfaceGLX::IsOffscreen() {
   return true;
 }
 
-void PbufferGLSurfaceGLX::Destroy() {
-  if (pbuffer_) {
-    glXDestroyPbuffer(g_display, pbuffer_);
-    pbuffer_ = 0;
-  }
-
-  config_ = NULL;
-}
-
-bool PbufferGLSurfaceGLX::IsOffscreen() {
-  return true;
-}
-
-bool PbufferGLSurfaceGLX::SwapBuffers() {
-  NOTREACHED() << "Attempted to call SwapBuffers on a pbuffer.";
+bool UnmappedNativeViewGLSurfaceGLX::SwapBuffers() {
+  NOTREACHED() << "Attempted to call SwapBuffers on an unmapped window.";
   return false;
 }
 
-gfx::Size PbufferGLSurfaceGLX::GetSize() {
+gfx::Size UnmappedNativeViewGLSurfaceGLX::GetSize() {
   return size_;
 }
 
-void* PbufferGLSurfaceGLX::GetHandle() {
-  return reinterpret_cast<void*>(pbuffer_);
+void* UnmappedNativeViewGLSurfaceGLX::GetHandle() {
+  return reinterpret_cast<void*>(window_);
 }
 
-void* PbufferGLSurfaceGLX::GetConfig() {
+void* UnmappedNativeViewGLSurfaceGLX::GetConfig() {
+  if (!config_)
+    config_ = GLSurfaceGLX::GetConfig(window_);
   return config_;
 }
 
-PbufferGLSurfaceGLX::~PbufferGLSurfaceGLX() {
+UnmappedNativeViewGLSurfaceGLX::~UnmappedNativeViewGLSurfaceGLX() {
   Destroy();
 }
 

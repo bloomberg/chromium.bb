@@ -18,19 +18,12 @@ GLContextVirtual::GLContextVirtual(
     base::WeakPtr<gles2::GLES2Decoder> decoder)
   : GLContext(share_group),
     shared_context_(shared_context),
-    display_(NULL),
     decoder_(decoder) {
-}
-
-gfx::Display* GLContextVirtual::display() {
-  return display_;
 }
 
 bool GLContextVirtual::Initialize(
     gfx::GLSurface* compatible_surface, gfx::GpuPreference gpu_preference) {
   SetGLStateRestorer(new GLStateRestorerImpl(decoder_));
-
-  display_ = static_cast<gfx::Display*>(compatible_surface->GetDisplay());
 
   // Virtual contexts obviously can't make a context that is compatible
   // with the surface (the context already exists), but we do need to
@@ -52,7 +45,6 @@ bool GLContextVirtual::Initialize(
 void GLContextVirtual::Destroy() {
   shared_context_->OnReleaseVirtuallyCurrent(this);
   shared_context_ = NULL;
-  display_ = NULL;
 }
 
 bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {

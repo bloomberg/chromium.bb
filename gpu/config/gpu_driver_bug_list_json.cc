@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.25",
+  "version": "7.26",
   "entries": [
     {
       "id": 1,
@@ -1262,6 +1262,16 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Mali-400.*",
       "features": [
         "disable_gl_rgb_format"
+      ]
+    },
+    {
+      "id": 109,
+      "description": "MakeCurrent is slow on Linux",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
       ]
     }
   ]

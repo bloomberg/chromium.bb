@@ -319,7 +319,8 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
       return surface;
     }
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceGLX(size));
+      scoped_refptr<GLSurface> surface(
+          new UnmappedNativeViewGLSurfaceGLX(size));
       if (!surface->Initialize())
         return NULL;
 
