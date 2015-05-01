@@ -532,7 +532,6 @@ group("both_gn_and_gyp") {
       "//components:components_unittests",  # TODO(GYP)
       "//content/test:content_browsertests",  # TODO(GYP)
       "//content/test:content_perftests",  # TODO(GYP)
-      "//content/test:content_unittests",  # TODO(GYP)
       "//extensions:extensions_browsertests",  # TODO(GYP)
       "//extensions:extensions_unittests",  # TODO(GYP)
       "//net:net_unittests",  # TODO(GYP)
