@@ -37,7 +37,7 @@ private:
     class Message;
 
     WillBeHeapDeque<OwnPtrWillBeMember<Message>> m_queue;
-    WillBeHeapDeque<OwnPtrWillBeMember<Message>> m_reportedAsErrors;
+    WillBeHeapVector<OwnPtrWillBeMember<Message>> m_reportedAsErrors;
 };
 
 } // namespace blink

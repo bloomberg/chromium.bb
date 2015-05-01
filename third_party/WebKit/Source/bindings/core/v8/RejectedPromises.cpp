@@ -156,15 +156,12 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
     }
 
     // Then look it up in the reported errors.
-    for (auto it = m_reportedAsErrors.begin(); it != m_reportedAsErrors.end(); ++it) {
-        if ((*it)->isCollected()) {
-            m_reportedAsErrors.remove(it);
-            continue;
-        }
-        if ((*it)->hasPromise(data.GetPromise())) {
-            (*it)->revoke();
-            m_reportedAsErrors.remove(it);
-            break;
+    for (size_t i = 0; i < m_reportedAsErrors.size(); ++i) {
+        auto& message = m_reportedAsErrors.at(i);
+        if (!message->isCollected() && message->hasPromise(data.GetPromise())) {
+            message->revoke();
+            m_reportedAsErrors.remove(i);
+            return;
         }
     }
 }
@@ -177,9 +174,11 @@ void RejectedPromises::dispose()
 void RejectedPromises::processQueue()
 {
     // Remove collected handlers.
-    for (auto it = m_reportedAsErrors.begin(); it != m_reportedAsErrors.end(); ++it) {
-        if ((*it)->isCollected())
-            m_reportedAsErrors.remove(it);
+    for (size_t i = 0; i < m_reportedAsErrors.size();) {
+        if (m_reportedAsErrors.at(i)->isCollected())
+            m_reportedAsErrors.remove(i);
+        else
+            ++i;
     }
 
     while (!m_queue.isEmpty()) {
@@ -190,7 +189,7 @@ void RejectedPromises::processQueue()
         message->report();
         m_reportedAsErrors.append(message.release());
         if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
-            m_reportedAsErrors.removeFirst();
+            m_reportedAsErrors.remove(0, maxReportedHandlersPendingResolution / 10);
     }
 }
 
