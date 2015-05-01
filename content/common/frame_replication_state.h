@@ -45,7 +45,7 @@ inline SandboxFlags operator~(SandboxFlags flags) {
 // RenderFrame and any of its associated RenderFrameProxies.
 struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
-  FrameReplicationState(const std::string& name);
+  FrameReplicationState(const std::string& name, SandboxFlags sandbox_flags);
   ~FrameReplicationState();
 
   // Current serialized security origin of the frame.  Unique origins are

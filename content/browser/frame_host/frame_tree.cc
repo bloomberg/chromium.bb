@@ -108,7 +108,8 @@ FrameTree::FrameTree(Navigator* navigator,
                               render_view_delegate,
                               render_widget_delegate,
                               manager_delegate,
-                              std::string())),
+                              std::string(),
+                              SandboxFlags::NONE)),
       focused_frame_tree_node_id_(-1),
       load_progress_(0.0) {
 }
@@ -179,7 +180,8 @@ void FrameTree::ForEach(
 RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
                                          int process_id,
                                          int new_routing_id,
-                                         const std::string& frame_name) {
+                                         const std::string& frame_name,
+                                         SandboxFlags sandbox_flags) {
   // A child frame always starts with an initial empty document, which means
   // it is in the same SiteInstance as the parent frame. Ensure that the process
   // which requested a child frame to be added is the same as the process of the
@@ -191,7 +193,7 @@ RenderFrameHostImpl* FrameTree::AddFrame(FrameTreeNode* parent,
 
   scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
       this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
-      render_widget_delegate_, manager_delegate_, frame_name));
+      render_widget_delegate_, manager_delegate_, frame_name, sandbox_flags));
   FrameTreeNode* node_ptr = node.get();
   // AddChild is what creates the RenderFrameHost.
   parent->AddChild(node.Pass(), process_id, new_routing_id);

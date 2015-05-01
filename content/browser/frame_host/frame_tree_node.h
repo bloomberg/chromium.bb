@@ -41,7 +41,8 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderViewHostDelegate* render_view_delegate,
                 RenderWidgetHostDelegate* render_widget_delegate,
                 RenderFrameHostManager::Delegate* manager_delegate,
-                const std::string& name);
+                const std::string& name,
+                SandboxFlags sandbox_flags);
 
   ~FrameTreeNode();
 

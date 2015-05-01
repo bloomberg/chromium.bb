@@ -53,7 +53,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                              RenderViewHostDelegate* render_view_delegate,
                              RenderWidgetHostDelegate* render_widget_delegate,
                              RenderFrameHostManager::Delegate* manager_delegate,
-                             const std::string& name)
+                             const std::string& name,
+                             SandboxFlags sandbox_flags)
     : frame_tree_(frame_tree),
       navigator_(navigator),
       render_manager_(this,
@@ -63,8 +64,10 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                       manager_delegate),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(NULL),
-      replication_state_(name),
-      effective_sandbox_flags_(SandboxFlags::NONE),
+      replication_state_(name, sandbox_flags),
+      // Effective sandbox flags also need to be set, since initial sandbox
+      // flags should apply to the initial empty document in the frame.
+      effective_sandbox_flags_(sandbox_flags),
       loading_progress_(kLoadingProgressNotStarted) {
   std::pair<FrameTreeNodeIDMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(

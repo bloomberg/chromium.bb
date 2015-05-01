@@ -1825,6 +1825,100 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(1u, Shell::windows().size());
 }
 
+// Verify that when a new child frame is added, the proxies created for it in
+// other SiteInstances have correct sandbox flags and origin.
+//
+//     A         A           A
+//    /         / \         / \    .
+//   B    ->   B   A   ->  B   A
+//                              \  .
+//                               B
+//
+// The test checks sandbox flags and origin for the proxy added in step 2, by
+// checking whether the grandchild frame added in step 3 sees proper sandbox
+// flags and origin for its (remote) parent.  This wasn't addressed when
+// https://crbug.com/423587 was fixed.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ProxiesForNewChildFramesHaveCorrectReplicationState) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  TestNavigationObserver observer(shell()->web_contents());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  // In the root frame, add a new sandboxed local frame, which itself has a
+  // child frame on baz.com.  Wait for three RenderFrameHosts to be created:
+  // the new sandboxed local frame, its child (while it's still local), and a
+  // pending RFH when starting the cross-site navigation to baz.com.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 3);
+  EXPECT_TRUE(
+      ExecuteScript(root->current_frame_host(),
+                    "window.domAutomationController.send("
+                    "    addFrame('/frame_tree/page_with_one_frame.html',"
+                    "             'allow-scripts allow-same-origin'))"));
+  frame_observer.Wait();
+
+  // Wait for the cross-site navigation to baz.com in the grandchild to finish.
+  FrameTreeNode* bottom_child = root->child_at(1)->child_at(0);
+  TestFrameNavigationObserver navigation_observer(bottom_child);
+  navigation_observer.Wait();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "        +--Site B -- proxies for A\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  // Use location.ancestorOrigins to check that the grandchild on baz.com sees
+  // correct origin for its parent.
+  int ancestor_origins_length = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins.length);",
+      &ancestor_origins_length));
+  EXPECT_EQ(2, ancestor_origins_length);
+  std::string parent_origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[0]);",
+      &parent_origin));
+  EXPECT_EQ(main_url.GetOrigin().spec(), parent_origin + "/");
+
+  // Check that the sandbox flags in the browser process are correct.
+  // "allow-scripts" resets both SandboxFlags::Scripts and
+  // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy().
+  SandboxFlags expected_flags = SandboxFlags::ALL & ~SandboxFlags::SCRIPTS &
+                                ~SandboxFlags::AUTOMATIC_FEATURES &
+                                ~SandboxFlags::ORIGIN;
+  EXPECT_EQ(expected_flags,
+            root->child_at(1)->current_replication_state().sandbox_flags);
+
+  // The child of the sandboxed frame should've inherited sandbox flags, so it
+  // should not be able to create popups.
+  bool success = false;
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(bottom_child->current_frame_host(),
+                                  "window.domAutomationController.send("
+                                  "!window.open('data:text/html,dataurl'));",
+                                  &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(1u, Shell::windows().size());
+}
+
 // Verify that a child frame can retrieve the name property set by its parent.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/2-4.html"));

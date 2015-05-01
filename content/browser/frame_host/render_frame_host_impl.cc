@@ -691,15 +691,11 @@ void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,
   if (rfh_state_ != RenderFrameHostImpl::STATE_DEFAULT)
     return;
 
-  RenderFrameHostImpl* new_frame = frame_tree_->AddFrame(
-      frame_tree_node_, GetProcess()->GetID(), new_routing_id, frame_name);
+  RenderFrameHostImpl* new_frame =
+      frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(),
+                            new_routing_id, frame_name, sandbox_flags);
   if (!new_frame)
     return;
-
-  // Set sandbox flags for the new frame.  The flags are committed immediately,
-  // since they should apply to the initial empty document in the frame.
-  new_frame->frame_tree_node()->set_sandbox_flags(sandbox_flags);
-  new_frame->frame_tree_node()->CommitPendingSandboxFlags();
 
   // We know that the RenderFrame has been created in this case, immediately
   // after the CreateChildFrame IPC was sent.

@@ -80,7 +80,8 @@ class CONTENT_EXPORT FrameTree {
   RenderFrameHostImpl* AddFrame(FrameTreeNode* parent,
                                 int process_id,
                                 int new_routing_id,
-                                const std::string& frame_name);
+                                const std::string& frame_name,
+                                SandboxFlags sandbox_flags);
   void RemoveFrame(FrameTreeNode* child);
 
   // This method walks the entire frame tree and creates a RenderFrameProxyHost

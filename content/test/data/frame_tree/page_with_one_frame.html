@@ -2,9 +2,11 @@
 <html>
 <head>
 <script>
-  function addFrame(url) {
+  function addFrame(url, sandbox) {
     var frame = document.createElement('iframe');
     frame.src = url;
+    if (sandbox)
+      frame.sandbox = sandbox;
     document.body.appendChild(frame);
   }
 </script>

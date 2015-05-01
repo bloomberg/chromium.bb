@@ -46,8 +46,6 @@ class RenderFrameImplTest : public RenderViewTest {
 
     LoadHTML("Parent frame <iframe name='frame'></iframe>");
 
-    FrameReplicationState replicationState("frame");
-
     RenderFrameImpl::FromWebFrame(
         view_->GetMainRenderFrame()->GetWebFrame()->firstChild())
         ->OnSwapOut(kFrameProxyRouteId, false, FrameReplicationState());
