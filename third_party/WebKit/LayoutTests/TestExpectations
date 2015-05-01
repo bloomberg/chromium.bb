@@ -2038,7 +2038,8 @@ crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
 
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
-crbug.com/473722 [ XP ] http/tests/fetch/workers/stream-reader.html [ Slow ]
+crbug.com/473722 [ XP ] http/tests/fetch/workers/stream-reader.html [ Slow Timeout ]
+crbug.com/483379 [ Win7 ] http/tests/fetch/workers/stream-reader.html [ Pass Failure Timeout ]
 crbug.com/473725 [ Linux ] virtual/slimmingpaint/fast/forms/submit-change-fragment.html [ Pass Timeout ]
 
 crbug.com/453822 virtual/slimmingpaint/fast/forms/calendar-picker/datepicker-crash-after-keydown.html [ Crash Pass Timeout ]
