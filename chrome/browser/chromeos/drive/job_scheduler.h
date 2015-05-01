@@ -180,6 +180,7 @@ class JobScheduler
 
   // Adds an UploadNewFile operation to the queue.
   void UploadNewFile(const std::string& parent_resource_id,
+                     int64 expected_file_size,
                      const base::FilePath& drive_file_path,
                      const base::FilePath& local_file_path,
                      const std::string& title,
@@ -190,6 +191,7 @@ class JobScheduler
 
   // Adds an UploadExistingFile operation to the queue.
   void UploadExistingFile(const std::string& resource_id,
+                          int64 expected_file_size,
                           const base::FilePath& drive_file_path,
                           const base::FilePath& local_file_path,
                           const std::string& content_type,
@@ -343,11 +345,6 @@ class JobScheduler
   // net::NetworkChangeNotifier::ConnectionTypeObserver override.
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
-
-  // Updates total_bytes in JobInfo.
-  void OnGotFileSizeForJob(JobID job_id,
-                           const std::string& histogram_name,
-                           int64* size);
 
   // Get the type of queue the specified job should be put in.
   QueueType GetJobQueueType(JobType type);

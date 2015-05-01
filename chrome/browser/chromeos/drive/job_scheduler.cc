@@ -147,18 +147,6 @@ void CollectCopyHistogramSample(const std::string& histogram_name, int64 size) {
   counter->Add(size / 1024);
 }
 
-// Obtains file size to be uploaded for setting total bytes of JobInfo.
-void GetFileSizeForJob(base::SequencedTaskRunner* blocking_task_runner,
-                       const base::FilePath& local_file_path,
-                       const base::Callback<void(int64* size)>& callback) {
-  int64* const size = new int64;
-  *size = -1;
-  blocking_task_runner->PostTaskAndReply(
-      FROM_HERE, base::Bind(base::IgnoreResult(&base::GetFileSize),
-                            local_file_path, base::Unretained(size)),
-      base::Bind(callback, base::Owned(size)));
-}
-
 }  // namespace
 
 // Metadata jobs are cheap, so we run them concurrently. File jobs run serially.
@@ -624,6 +612,7 @@ JobID JobScheduler::DownloadFile(
 
 void JobScheduler::UploadNewFile(
     const std::string& parent_resource_id,
+    int64 expected_file_size,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& title,
@@ -635,13 +624,11 @@ void JobScheduler::UploadNewFile(
 
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_NEW_FILE);
   new_job->job_info.file_path = drive_file_path;
+  new_job->job_info.num_total_bytes = expected_file_size;
   new_job->context = context;
 
-  GetFileSizeForJob(
-      blocking_task_runner_, local_file_path,
-      base::Bind(&JobScheduler::OnGotFileSizeForJob,
-                 weak_ptr_factory_.GetWeakPtr(), new_job->job_info.job_id,
-                 "Drive.UploadToDriveFileSize"));
+  // Temporary histogram for crbug.com/229650.
+  CollectCopyHistogramSample("Drive.UploadToDriveFileSize", expected_file_size);
 
   UploadNewFileParams params;
   params.parent_resource_id = parent_resource_id;
@@ -669,6 +656,7 @@ void JobScheduler::UploadNewFile(
 
 void JobScheduler::UploadExistingFile(
     const std::string& resource_id,
+    int64 expected_file_size,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -679,13 +667,11 @@ void JobScheduler::UploadExistingFile(
 
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_EXISTING_FILE);
   new_job->job_info.file_path = drive_file_path;
+  new_job->job_info.num_total_bytes = expected_file_size;
   new_job->context = context;
 
-  GetFileSizeForJob(
-      blocking_task_runner_, local_file_path,
-      base::Bind(&JobScheduler::OnGotFileSizeForJob,
-                 weak_ptr_factory_.GetWeakPtr(), new_job->job_info.job_id,
-                 "Drive.UploadToDriveFileSize"));
+  // Temporary histogram for crbug.com/229650.
+  CollectCopyHistogramSample("Drive.UploadToDriveFileSize", expected_file_size);
 
   UploadExistingFileParams params;
   params.resource_id = resource_id;
@@ -1102,24 +1088,6 @@ void JobScheduler::OnConnectionTypeChanged(
   // be checked in GetCurrentAcceptedPriority().
   for (int i = METADATA_QUEUE; i < NUM_QUEUES; ++i)
     DoJobLoop(static_cast<QueueType>(i));
-}
-
-void JobScheduler::OnGotFileSizeForJob(JobID job_id,
-                                       const std::string& histogram_name,
-                                       int64* size) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (*size == -1)
-    return;
-
-  // Temporary histogram for crbug.com/229650.
-  CollectCopyHistogramSample(histogram_name, *size);
-
-  JobEntry* const job_entry = job_map_.Lookup(job_id);
-  if (!job_entry)
-    return;
-
-  job_entry->job_info.num_total_bytes = *size;
-  NotifyJobUpdated(job_entry->job_info);
 }
 
 JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {

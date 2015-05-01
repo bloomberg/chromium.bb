@@ -27,13 +27,13 @@ namespace drive {
 namespace internal {
 
 struct EntryUpdatePerformer::LocalState {
-  LocalState() : should_content_update(false) {
-  }
+  LocalState() : cache_file_size(0), should_content_update(false) {}
 
   ResourceEntry entry;
   ResourceEntry parent_entry;
   base::FilePath drive_file_path;
   base::FilePath cache_file_path;
+  int64 cache_file_size;
   bool should_content_update;
 };
 
@@ -110,7 +110,10 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
       error = cache->GetFile(local_id, &local_state->cache_file_path);
       if (error != FILE_ERROR_OK)
         return error;
-
+      const bool result = base::GetFileSize(local_state->cache_file_path,
+                                            &local_state->cache_file_size);
+      if (!result)
+        return FILE_ERROR_FAILED;
       local_state->should_content_update = true;
     }
   }
@@ -330,8 +333,8 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       LocalState* const local_state_ptr = local_state.get();
       scheduler_->UploadNewFile(
           local_state_ptr->parent_entry.resource_id(),
-          local_state_ptr->drive_file_path, local_state_ptr->cache_file_path,
-          local_state_ptr->entry.title(),
+          local_state_ptr->cache_file_size, local_state_ptr->drive_file_path,
+          local_state_ptr->cache_file_path, local_state_ptr->entry.title(),
           local_state_ptr->entry.file_specific_info().content_mime_type(),
           options, context,
           base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
@@ -348,7 +351,8 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       LocalState* const local_state_ptr = local_state.get();
       scheduler_->UploadExistingFile(
           local_state_ptr->entry.resource_id(),
-          local_state_ptr->drive_file_path, local_state_ptr->cache_file_path,
+          local_state_ptr->cache_file_size, local_state_ptr->drive_file_path,
+          local_state_ptr->cache_file_path,
           local_state_ptr->entry.file_specific_info().content_mime_type(),
           options, context,
           base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
