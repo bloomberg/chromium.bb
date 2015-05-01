@@ -106,6 +106,9 @@
       <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Delete
       </message>
+      <message name="IDS_TITLE" desc="Text indicating the title of a button or a textfield. Ued in multiple contexts. [CHAR-LIMIT=32]">
+        Title
+      </message>
       <message name="IDS_TEXT_ON" desc="Text indicating that an option is turned on. [CHAR-LIMIT=20]">
         On
       </message>
