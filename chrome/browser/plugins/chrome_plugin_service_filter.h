@@ -83,6 +83,10 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   bool CanLoadPlugin(int render_process_id,
                      const base::FilePath& path) override;
 
+  void NPAPIPluginLoaded(int render_process_id,
+                         int render_frame_id,
+                         const content::WebPluginInfo& info) override;
+
  private:
   friend struct DefaultSingletonTraits<ChromePluginServiceFilter>;
 
@@ -126,6 +130,9 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   ResourceContextMap resource_context_map_;
 
   std::map<int, ProcessDetails> plugin_details_;
+
+  // Keeps track if loading a plugin has already trigged an infobar.
+  std::set<base::FilePath> infobared_plugins_;
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_

@@ -33,6 +33,12 @@ class PluginServiceFilter {
   // Whether the renderer has permission to load available |plugin|.
   virtual bool CanLoadPlugin(int render_process_id,
                              const base::FilePath& path) = 0;
+
+  // Called when a renderer loads an NPAPI |plugin|.
+  // TODO(wfh): Remove when NPAPI is gone.
+  virtual void NPAPIPluginLoaded(int render_process_id,
+                                 int render_frame_id,
+                                 const WebPluginInfo& plugin) {}
 };
 
 }  // namespace content

@@ -479,6 +479,10 @@ void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
                  render_process_id,
                  plugin_path,
                  client));
+  if (filter_) {
+    DCHECK_EQ(WebPluginInfo::PLUGIN_TYPE_NPAPI, info.type);
+    filter_->NPAPIPluginLoaded(render_process_id, render_frame_id, info);
+  }
 }
 
 void PluginServiceImpl::FinishOpenChannelToPlugin(

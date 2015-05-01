@@ -8,11 +8,15 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -20,6 +24,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/components_strings.h"
+#include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 
 using content::BrowserThread;
 using content::PluginService;
@@ -31,7 +39,93 @@ void AuthorizeRenderer(content::RenderFrameHost* render_frame_host) {
       render_frame_host->GetProcess()->GetID(), base::FilePath());
 }
 
+class NPAPIRemovalInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  static void Create(InfoBarService* infobar_service,
+                     const base::string16& plugin_name);
+
+ private:
+  explicit NPAPIRemovalInfoBarDelegate(const base::string16& plugin_name);
+  ~NPAPIRemovalInfoBarDelegate() override;
+
+  // ConfirmInfobarDelegate:
+  int GetIconID() const override;
+  base::string16 GetMessageText() const override;
+  int GetButtons() const override;
+  base::string16 GetLinkText() const override;
+  bool LinkClicked(WindowOpenDisposition disposition) override;
+
+  base::string16 plugin_name_;
+};
+
+// static
+void NPAPIRemovalInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    const base::string16& plugin_name) {
+  infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
+          new NPAPIRemovalInfoBarDelegate(plugin_name))));
 }
+
+NPAPIRemovalInfoBarDelegate::NPAPIRemovalInfoBarDelegate(
+    const base::string16& plugin_name)
+    : plugin_name_(plugin_name) {
+}
+
+NPAPIRemovalInfoBarDelegate::~NPAPIRemovalInfoBarDelegate() {
+}
+
+int NPAPIRemovalInfoBarDelegate::GetIconID() const {
+  return IDR_INFOBAR_WARNING;
+}
+
+base::string16 NPAPIRemovalInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_PLUGINS_NPAPI_BEING_REMOVED_SOON,
+                                    plugin_name_);
+}
+
+int NPAPIRemovalInfoBarDelegate::GetButtons() const {
+  return BUTTON_NONE;
+}
+
+base::string16 NPAPIRemovalInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
+bool NPAPIRemovalInfoBarDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  InfoBarService::WebContentsFromInfoBar(infobar())
+      ->OpenURL(content::OpenURLParams(
+          GURL("https://g.co/npapi"), content::Referrer(),
+          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+          ui::PAGE_TRANSITION_LINK, false));
+  return true;
+}
+
+void ShowNPAPIInfoBar(int render_process_id,
+                      int render_frame_id,
+                      const base::string16& name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+
+  content::WebContents* tab =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  // WebContents could have been destroyed between posting and running the task
+  // on the UI thread, so explicit check here.
+  if (!tab)
+    return;
+
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(tab);
+
+  // NPAPI plugins can load inside extensions and if so there is nowhere to
+  // display the infobar.
+  if (infobar_service)
+    NPAPIRemovalInfoBarDelegate::Create(infobar_service, name);
+}
+
+}  // namespace
 
 // static
 ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
@@ -136,6 +230,24 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
   }
 
   return true;
+}
+
+void ChromePluginServiceFilter::NPAPIPluginLoaded(
+    int render_process_id,
+    int render_frame_id,
+    const content::WebPluginInfo& plugin) {
+  auto ret = infobared_plugins_.insert(plugin.path);
+
+  // Only display infobar once per plugin path, on the UI thread.
+  if (!ret.second)
+    return;
+
+  PluginFinder* finder = PluginFinder::GetInstance();
+  scoped_ptr<PluginMetadata> metadata(finder->GetPluginMetadata(plugin));
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ShowNPAPIInfoBar, render_process_id,
+                                     render_frame_id, metadata->name()));
 }
 
 bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
