@@ -37,6 +37,8 @@
 namespace keyboard {
 namespace {
 
+const int kDefaultVirtualKeyboardHeight = 100;
+
 // Verify if the |keyboard| window covers the |container| window completely.
 void VerifyKeyboardWindowSize(aura::Window* container, aura::Window* keyboard) {
   ASSERT_EQ(gfx::Rect(0, 0, container->bounds().width(),
@@ -167,9 +169,10 @@ class KeyboardContainerObserver : public aura::WindowObserver {
 
 }  // namespace
 
-class KeyboardControllerTest : public testing::Test {
+class KeyboardControllerTest : public testing::Test,
+                               public KeyboardControllerObserver {
  public:
-  KeyboardControllerTest() {}
+  KeyboardControllerTest() : number_of_calls_(0) {}
   ~KeyboardControllerTest() override {}
 
   void SetUp() override {
@@ -187,9 +190,11 @@ class KeyboardControllerTest : public testing::Test {
     focus_controller_.reset(new TestFocusController(root_window()));
     proxy_ = new TestKeyboardControllerProxy();
     controller_.reset(new KeyboardController(proxy_));
+    controller()->AddObserver(this);
   }
 
   void TearDown() override {
+    controller()->RemoveObserver(this);
     controller_.reset();
     focus_controller_.reset();
     if (::switches::IsTextInputFocusManagerEnabled())
@@ -218,6 +223,16 @@ class KeyboardControllerTest : public testing::Test {
   }
 
  protected:
+  // KeyboardControllerObserver overrides
+  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override {
+    notified_bounds_ = new_bounds;
+    number_of_calls_++;
+  }
+
+  int number_of_calls() const { return number_of_calls_; }
+
+  const gfx::Rect& notified_bounds() { return notified_bounds_; }
+
   void SetFocus(ui::TextInputClient* client) {
     ui::InputMethod* input_method = proxy()->GetInputMethod();
     if (::switches::IsTextInputFocusManagerEnabled()) {
@@ -231,8 +246,8 @@ class KeyboardControllerTest : public testing::Test {
       if (proxy_->GetKeyboardWindow()->bounds().height() == 0) {
         // Set initial bounds for test keyboard window.
         proxy_->GetKeyboardWindow()->SetBounds(
-            FullWidthKeyboardBoundsFromRootBounds(root_window()->bounds(),
-                                                  100));
+            FullWidthKeyboardBoundsFromRootBounds(
+                root_window()->bounds(), kDefaultVirtualKeyboardHeight));
       }
     }
   }
@@ -250,6 +265,8 @@ class KeyboardControllerTest : public testing::Test {
   scoped_ptr<TestFocusController> focus_controller_;
 
  private:
+  int number_of_calls_;
+  gfx::Rect notified_bounds_;
   KeyboardControllerProxy* proxy_;
   scoped_ptr<KeyboardController> controller_;
   scoped_ptr<ui::TextInputClient> test_text_input_client_;
@@ -411,6 +428,41 @@ TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   EXPECT_TRUE(ShouldEnableInsets(proxy()->GetKeyboardWindow()));
 }
 
+// Verify switch to FLOATING mode will reset the overscroll or resize and when
+// in FLOATING mode, overscroll or resize wont be triggered.
+TEST_F(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
+  ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
+
+  aura::Window* container(controller()->GetContainerWindow());
+  root_window()->AddChild(container);
+  scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
+      new KeyboardContainerObserver(container));
+  gfx::Rect screen_bounds = root_window()->bounds();
+  keyboard::SetTouchKeyboardEnabled(true);
+
+  SetFocus(&input_client);
+  gfx::Rect expected_bounds(
+      0, screen_bounds.height() - kDefaultVirtualKeyboardHeight,
+      screen_bounds.width(), kDefaultVirtualKeyboardHeight);
+  // Verify overscroll or resize is in effect.
+  EXPECT_EQ(expected_bounds, notified_bounds());
+  EXPECT_EQ(1, number_of_calls());
+
+  controller()->SetKeyboardMode(FLOATING);
+  // Switch to FLOATING should clear overscroll or resize.
+  EXPECT_EQ(gfx::Rect(), notified_bounds());
+  EXPECT_EQ(2, number_of_calls());
+  SetFocus(&no_input_client);
+  base::MessageLoop::current()->Run();
+  EXPECT_EQ(gfx::Rect(), notified_bounds());
+  EXPECT_EQ(3, number_of_calls());
+  SetFocus(&input_client);
+  // In FLOATING mode, no overscroll or resize should be triggered.
+  EXPECT_EQ(3, number_of_calls());
+  EXPECT_EQ(gfx::Rect(), controller()->current_keyboard_bounds());
+}
+
 TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
@@ -449,8 +501,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   EXPECT_FALSE(keyboard_container->IsVisible());
 }
 
-class KeyboardControllerAnimationTest : public KeyboardControllerTest,
-                                        public KeyboardControllerObserver {
+class KeyboardControllerAnimationTest : public KeyboardControllerTest {
  public:
   KeyboardControllerAnimationTest() {}
   ~KeyboardControllerAnimationTest() override {}
@@ -465,22 +516,13 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest,
     const gfx::Rect& root_bounds = root_window()->bounds();
     keyboard_container()->SetBounds(root_bounds);
     root_window()->AddChild(keyboard_container());
-    controller()->AddObserver(this);
   }
 
   void TearDown() override {
-    controller()->RemoveObserver(this);
     KeyboardControllerTest::TearDown();
   }
 
  protected:
-  // KeyboardControllerObserver overrides
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override {
-    notified_bounds_ = new_bounds;
-  }
-
-  const gfx::Rect& notified_bounds() { return notified_bounds_; }
-
   aura::Window* keyboard_container() {
     return controller()->GetContainerWindow();
   }
@@ -490,8 +532,6 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest,
   }
 
  private:
-  gfx::Rect notified_bounds_;
-
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerAnimationTest);
 };
 

@@ -113,8 +113,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   bool show_on_resize() { return show_on_resize_; }
 
-  // Returns the current keyboard bounds. When the keyboard is not shown,
-  // an empty rectangle will get returned.
+  // Returns the current keyboard bounds. An empty rectangle will get returned
+  // when the keyboard is not shown or in FLOATING mode.
   const gfx::Rect& current_keyboard_bounds() {
     return current_keyboard_bounds_;
   }

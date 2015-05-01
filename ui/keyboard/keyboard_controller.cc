@@ -334,7 +334,18 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
 }
 
 void KeyboardController::SetKeyboardMode(KeyboardMode mode) {
+  if (keyboard_mode_ == mode)
+    return;
+
   keyboard_mode_ = mode;
+  // When keyboard is floating, no overscroll or resize is necessary. Sets
+  // keyboard bounds to zero so overscroll or resize is disabled.
+  if (keyboard_mode_ == FLOATING) {
+    NotifyKeyboardBoundsChanging(gfx::Rect());
+  } else if (keyboard_mode_ == FULL_WIDTH) {
+    // TODO(bshe): handle switch to FULL_WIDTH from FLOATING mode. We need a way
+    // to know the height of virtual keyboard in FULL_WIDTH mode before here.
+  }
 }
 
 void KeyboardController::ShowKeyboard(bool lock) {
@@ -521,11 +532,15 @@ void KeyboardController::ShowKeyboardInternal() {
 
   container_animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animation_observer_.reset(new CallbackAnimationObserver(
-      container_animator,
-      base::Bind(&KeyboardController::ShowAnimationFinished,
-                 base::Unretained(this))));
-  container_animator->AddObserver(animation_observer_.get());
+  if (keyboard_mode_ == FLOATING) {
+    animation_observer_.reset();
+  } else {
+    animation_observer_.reset(new CallbackAnimationObserver(
+        container_animator,
+        base::Bind(&KeyboardController::ShowAnimationFinished,
+                   base::Unretained(this))));
+    container_animator->AddObserver(animation_observer_.get());
+  }
 
   proxy_->ShowKeyboardContainer(container_.get());
 
