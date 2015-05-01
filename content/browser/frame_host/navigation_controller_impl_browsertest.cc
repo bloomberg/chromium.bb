@@ -1025,41 +1025,42 @@ class StallDelegate : public ResourceDispatcherHostDelegate {
   }
 };
 
-}  // namespace
-
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       NavigationTypeClassification_InPageWhilePending) {
+// Loads |start_url|, then loads |stalled_url| which stalls. While the page is
+// stalled, an in-page navigation happens. Make sure that all the navigations
+// are properly classified.
+void DoReplaceStateWhilePending(Shell* shell,
+                                const GURL& start_url,
+                                const GURL& stalled_url,
+                                const std::string& replace_state_filename) {
   NavigationControllerImpl& controller =
       static_cast<NavigationControllerImpl&>(
-          shell()->web_contents()->GetController());
+          shell->web_contents()->GetController());
 
   FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
+      static_cast<WebContentsImpl*>(shell->web_contents())->
           GetFrameTree()->root();
 
-  // Start with a normal page.
-  GURL url1(embedded_test_server()->GetURL(
-      "/navigation_controller/simple_page_1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  // Start with one page.
+  EXPECT_TRUE(NavigateToURL(shell, start_url));
 
   // Have the user decide to go to a different page which is very slow.
   StallDelegate stall_delegate;
   ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
-  GURL url2(embedded_test_server()->GetURL(
-      "/navigation_controller/simple_page_2.html"));
-  controller.LoadURL(url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  controller.LoadURL(
+      stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
   // That should be the pending entry.
   NavigationEntryImpl* entry = controller.GetPendingEntry();
   ASSERT_NE(nullptr, entry);
-  EXPECT_EQ(url2, entry->GetURL());
+  EXPECT_EQ(stalled_url, entry->GetURL());
 
   {
     // Now the existing page uses history.replaceState().
     FrameNavigateParamsCapturer capturer(root);
     capturer.set_wait_for_load(false);
-    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(),
-                                       "history.replaceState({}, '', 'x')"));
+    std::string script =
+        "history.replaceState({}, '', '" + replace_state_filename + "')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
     capturer.Wait();
 
     // The fact that there was a pending entry shouldn't interfere with the
@@ -1068,6 +1069,42 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    NavigationTypeClassification_On1InPageToXWhile2Pending) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  GURL url2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  DoReplaceStateWhilePending(shell(), url1, url2, "x");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    NavigationTypeClassification_On1InPageTo2While2Pending) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  GURL url2(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  DoReplaceStateWhilePending(shell(), url1, url2, "simple_page_2.html");
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_On1InPageToXWhile1Pending) {
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  DoReplaceStateWhilePending(shell(), url, url, "x");
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_On1InPageTo1While1Pending) {
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  DoReplaceStateWhilePending(shell(), url, url, "simple_page_1.html");
 }
 
 // Ensure the renderer process does not get confused about the current entry

@@ -1032,22 +1032,19 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       !pending_entry_->is_renderer_initiated() &&
       existing_entry != pending_entry_ &&
       pending_entry_->GetPageID() == -1 &&
-      existing_entry == GetLastCommittedEntry()) {
-    const std::vector<GURL>& existing_redirect_chain =
-        existing_entry->GetRedirectChain();
-
-    if (existing_entry->GetURL() == pending_entry_->GetURL() ||
-        (existing_redirect_chain.size() &&
-         existing_redirect_chain[0] == pending_entry_->GetURL())) {
-      // In this case, we have a pending entry for a URL but WebCore didn't do a
-      // new navigation. This happens when you press enter in the URL bar to
-      // reload. We will create a pending entry, but WebKit will convert it to
-      // a reload since it's the same page and not create a new entry for it
-      // (the user doesn't want to have a new back/forward entry when they do
-      // this). If this matches the last committed entry, we want to just ignore
-      // the pending entry and go back to where we were (the "existing entry").
-      return NAVIGATION_TYPE_SAME_PAGE;
-    }
+      existing_entry == GetLastCommittedEntry() &&
+      !params.was_within_same_page &&
+      (params.url == existing_entry->GetURL() ||
+       (params.redirects.size() &&
+        params.redirects[0] == existing_entry->GetURL()))) {
+    // In this case, we have a pending entry for a URL but Blink didn't do a new
+    // navigation. This happens when you press enter in the URL bar to reload.
+    // We will create a pending entry, but Blink will convert it to a reload
+    // since it's the same page and not create a new entry for it (the user
+    // doesn't want to have a new back/forward entry when they do this). If this
+    // matches the last committed entry, we want to just ignore the pending
+    // entry and go back to where we were (the "existing entry").
+    return NAVIGATION_TYPE_SAME_PAGE;
   }
 
   // Any toplevel navigations with the same base (minus the reference fragment)
