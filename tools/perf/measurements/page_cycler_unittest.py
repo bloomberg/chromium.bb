@@ -6,9 +6,9 @@ import sys
 import unittest
 
 from telemetry.core import browser_options
+from telemetry.internal import story_runner
 from telemetry.results import page_test_results
 from telemetry.unittest_util import simple_mock
-from telemetry.user_story import user_story_runner
 
 from measurements import page_cycler
 from metrics import keychain_metric
@@ -114,11 +114,11 @@ class PageCyclerUnitTest(unittest.TestCase):
     options = browser_options.BrowserFinderOptions()
     options.browser_options.platform = FakePlatform()
     parser = options.CreateParser()
-    user_story_runner.AddCommandLineArgs(parser)
+    story_runner.AddCommandLineArgs(parser)
     args = ['--page-repeat=%i' % page_repeat,
             '--pageset-repeat=%i' % pageset_repeat]
     parser.parse_args(args)
-    user_story_runner.ProcessCommandLineArgs(parser, options)
+    story_runner.ProcessCommandLineArgs(parser, options)
     cycler.CustomizeBrowserOptions(options.browser_options)
 
     if setup_memory_module:

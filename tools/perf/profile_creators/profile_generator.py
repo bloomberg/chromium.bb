@@ -16,7 +16,7 @@ from profile_creators import profile_extender
 from telemetry.core import browser_options
 from telemetry.core import discover
 from telemetry.core import util
-from telemetry.user_story import user_story_runner
+from telemetry.internal import story_runner
 
 
 def _DiscoverProfileExtenderClasses():
@@ -94,7 +94,7 @@ def GenerateProfiles(profile_extender_class, profile_creator_name, options):
 
 
 def AddCommandLineArgs(parser):
-  user_story_runner.AddCommandLineArgs(parser)
+  story_runner.AddCommandLineArgs(parser)
 
   profile_extenders = _DiscoverProfileExtenderClasses().keys()
   legal_profile_creators = '|'.join(profile_extenders)
@@ -108,7 +108,7 @@ def AddCommandLineArgs(parser):
 
 
 def ProcessCommandLineArgs(parser, args):
-  user_story_runner.ProcessCommandLineArgs(parser, args)
+  story_runner.ProcessCommandLineArgs(parser, args)
 
   if not args.profile_type_to_generate:
     parser.error("Must specify --profile-type-to-generate option.")
