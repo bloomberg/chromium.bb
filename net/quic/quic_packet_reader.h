@@ -29,7 +29,7 @@ class NET_EXPORT_PRIVATE QuicPacketReader {
   QuicPacketReader(DatagramClientSocket* socket,
                    Visitor* visitor,
                    const BoundNetLog& net_log);
-  ~QuicPacketReader();
+  virtual ~QuicPacketReader();
 
   // Causes the QuicConnectionHelper to start reading from the socket
   // and passing the data along to the QuicConnection.

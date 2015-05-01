@@ -22,7 +22,7 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "net/tools/quic/spdy_balsa_utils.h"
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -252,8 +252,8 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
     return;
   }
   stream->SendRequest(
-      SpdyUtils::RequestHeadersToSpdyHeaders(headers, stream->version()), body,
-      fin);
+      SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers, stream->version()),
+      body, fin);
   stream->set_visitor(this);
 }
 
@@ -326,8 +326,8 @@ void QuicClient::OnClose(QuicDataStream* stream) {
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
   BalsaHeaders headers;
-  SpdyUtils::SpdyHeadersToResponseHeaders(client_stream->headers(), &headers,
-                                          stream->version());
+  SpdyBalsaUtils::SpdyHeadersToResponseHeaders(client_stream->headers(),
+                                               &headers, stream->version());
 
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(

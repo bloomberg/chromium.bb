@@ -161,11 +161,11 @@ class QuicTimeWaitListManagerTest : public ::testing::Test {
     scoped_ptr<QuicPacket> packet(
         BuildUnsizedDataPacket(&framer_, header, frames));
     EXPECT_TRUE(packet != nullptr);
-    QuicEncryptedPacket* encrypted = framer_.EncryptPacket(ENCRYPTION_NONE,
-                                                           sequence_number,
-                                                           *packet);
+    char buffer[kMaxPacketSize];
+    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+        ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
     EXPECT_TRUE(encrypted != nullptr);
-    return encrypted;
+    return encrypted->Clone();
   }
 
   NiceMock<MockFakeTimeEpollServer> epoll_server_;

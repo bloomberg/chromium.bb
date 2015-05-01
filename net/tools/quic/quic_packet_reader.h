@@ -34,17 +34,17 @@ class QuicPacketReader {
  public:
   QuicPacketReader();
 
-  ~QuicPacketReader();
+  virtual ~QuicPacketReader();
 
   // Reads a number of packets from the given fd, and then passes them off to
   // the PacketProcessInterface.  Returns true if at least 1 packet is read,
   // false otherwise.
   // Populates |packets_dropped| if it is non-null and the socket is configured
   // to track dropped packets and some packets are read.
-  bool ReadAndDispatchPackets(int fd,
-                              int port,
-                              ProcessPacketInterface* processor,
-                              QuicPacketCount* packets_dropped);
+  virtual bool ReadAndDispatchPackets(int fd,
+                                      int port,
+                                      ProcessPacketInterface* processor,
+                                      QuicPacketCount* packets_dropped);
 
   // Same as ReadAndDispatchPackets, only does one packet at a time.
   static bool ReadAndDispatchSinglePacket(int fd,

@@ -238,7 +238,6 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
 }
 
 void QuicSession::OnSuccessfulVersionNegotiation(const QuicVersion& version) {
-  headers_stream_->OnSuccessfulVersionNegotiation(version);
 }
 
 void QuicSession::OnWindowUpdateFrames(

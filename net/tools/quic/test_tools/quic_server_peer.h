@@ -13,6 +13,7 @@ namespace tools {
 
 class QuicDispatcher;
 class QuicServer;
+class QuicPacketReader;
 
 namespace test {
 
@@ -21,6 +22,7 @@ class QuicServerPeer {
   static bool SetSmallSocket(QuicServer* server);
   static void DisableRecvmmsg(QuicServer* server);
   static QuicDispatcher* GetDispatcher(QuicServer* server);
+  static void SetReader(QuicServer* server, QuicPacketReader* reader);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicServerPeer);

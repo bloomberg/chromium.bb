@@ -765,8 +765,8 @@
         'tools/balsa/split.cc',
         'tools/balsa/split.h',
         'tools/balsa/string_piece_utils.h',
-        'tools/quic/spdy_utils.cc',
-        'tools/quic/spdy_utils.h',
+        'tools/quic/spdy_balsa_utils.cc',
+        'tools/quic/spdy_balsa_utils.h',
       ],
     },
     {

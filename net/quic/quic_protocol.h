@@ -318,7 +318,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_23 = 23,  // Timestamp in the ack frame.
   QUIC_VERSION_24 = 24,  // SPDY/4 header compression.
   QUIC_VERSION_25 = 25,  // SPDY/4 header keys, and removal of error_details
                          // from QuicRstStreamFrame
@@ -332,8 +331,7 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_25,
-                                                     QUIC_VERSION_24,
-                                                     QUIC_VERSION_23};
+                                                     QUIC_VERSION_24};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -560,6 +558,8 @@ enum QuicErrorCode {
   QUIC_CRYPTO_INTERNAL_ERROR = 38,
   // A crypto handshake message specified an unsupported version.
   QUIC_CRYPTO_VERSION_NOT_SUPPORTED = 39,
+  // A crypto handshake message resulted in a stateless reject.
+  QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT = 72,
   // There was no intersection between the crypto primitives supported by the
   // peer and ourselves.
   QUIC_CRYPTO_NO_SUPPORT = 40,
@@ -586,7 +586,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 72,
+  QUIC_LAST_ERROR = 73,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
@@ -924,6 +924,7 @@ class NET_EXPORT_PRIVATE QuicData {
 
   const char* data() const { return buffer_; }
   size_t length() const { return length_; }
+  bool owns_buffer() const { return owns_buffer_; }
 
  private:
   const char* buffer_;

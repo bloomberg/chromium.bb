@@ -13,19 +13,17 @@
 
 namespace net {
 
-const SpdyMajorVersion kDefaultSpdyMajorVersion = SPDY3;
-
 class NET_EXPORT_PRIVATE SpdyUtils {
  public:
   static SpdyMajorVersion GetSpdyVersionForQuicVersion(
       QuicVersion quic_version);
 
+  static SpdyHeaderBlock ConvertSpdy3ResponseHeadersToSpdy4(
+      SpdyHeaderBlock response_headers);
+
   static std::string SerializeUncompressedHeaders(
       const SpdyHeaderBlock& headers,
       QuicVersion version);
-
-  static SpdyHeaderBlock ConvertSpdy3ResponseHeadersToSpdy4(
-      SpdyHeaderBlock response_headers);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyUtils);

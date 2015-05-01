@@ -121,8 +121,7 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
       time_to_origin_point_ =
           static_cast<uint32>(cbrt(kCubeFactor * (last_max_congestion_window_ -
                                                   current_congestion_window)));
-      origin_point_congestion_window_ =
-          last_max_congestion_window_;
+      origin_point_congestion_window_ = last_max_congestion_window_;
     }
   }
   // Change the time unit from microseconds to 2^10 fractions per second. Take

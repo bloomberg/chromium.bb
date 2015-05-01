@@ -4090,8 +4090,9 @@ TEST_P(QuicFramerTest, EncryptPacket) {
   scoped_ptr<QuicPacket> raw(new QuicPacket(
       AsChars(packet), arraysize(packet), false, PACKET_8BYTE_CONNECTION_ID,
       !kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER));
-  scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.EncryptPacket(ENCRYPTION_NONE, sequence_number, *raw));
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+      ENCRYPTION_NONE, sequence_number, *raw, buffer, kMaxPacketSize));
 
   ASSERT_TRUE(encrypted.get() != nullptr);
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
@@ -4125,8 +4126,9 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
   scoped_ptr<QuicPacket> raw(new QuicPacket(
       AsChars(packet), arraysize(packet), false, PACKET_8BYTE_CONNECTION_ID,
       kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER));
-  scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.EncryptPacket(ENCRYPTION_NONE, sequence_number, *raw));
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
+      ENCRYPTION_NONE, sequence_number, *raw, buffer, kMaxPacketSize));
 
   ASSERT_TRUE(encrypted.get() != nullptr);
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
@@ -4153,9 +4155,10 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   // Build an ack packet with truncation due to limit in number of nack ranges.
   scoped_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
+  char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
-                            *raw_ack_packet));
+                            *raw_ack_packet, buffer, kMaxPacketSize));
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -4192,9 +4195,10 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   // Build an ack packet with truncation due to limit in number of nack ranges.
   scoped_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames, 500));
   ASSERT_TRUE(raw_ack_packet != nullptr);
+  char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
-                            *raw_ack_packet));
+                            *raw_ack_packet, buffer, kMaxPacketSize));
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -4236,9 +4240,10 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   scoped_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
 
+  char buffer[kMaxPacketSize];
   scoped_ptr<QuicEncryptedPacket> ack_packet(
       framer_.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
-                            *raw_ack_packet));
+                            *raw_ack_packet, buffer, kMaxPacketSize));
 
   // Now make sure we can turn our ack packet back into an ack frame.
   ASSERT_TRUE(framer_.ProcessPacket(*ack_packet));

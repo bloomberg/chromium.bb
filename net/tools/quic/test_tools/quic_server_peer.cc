@@ -5,6 +5,7 @@
 #include "net/tools/quic/test_tools/quic_server_peer.h"
 
 #include "net/tools/quic/quic_dispatcher.h"
+#include "net/tools/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_server.h"
 
 namespace net {
@@ -26,6 +27,11 @@ void QuicServerPeer::DisableRecvmmsg(QuicServer* server) {
 // static
 QuicDispatcher* QuicServerPeer::GetDispatcher(QuicServer* server) {
   return server->dispatcher_.get();
+}
+
+// static
+void QuicServerPeer::SetReader(QuicServer* server, QuicPacketReader* reader) {
+  server->packet_reader_.reset(reader);
 }
 
 }  // namespace test

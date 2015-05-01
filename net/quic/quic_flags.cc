@@ -39,9 +39,9 @@ int64 FLAGS_quic_time_wait_list_seconds = 5;
 // no configured limit.
 int64 FLAGS_quic_time_wait_list_max_connections = 50000;
 
-// Do not retransmit data for streams that have been reset.
-bool FLAGS_quic_do_not_retransmit_for_reset_streams = true;
-
 // If true, use the peer's receive buffer size to set the max CWND used by the
 // send algorithms.
 bool FLAGS_quic_limit_max_cwnd_to_receive_buffer = true;
+
+// Enables server-side support for QUIC stateless rejects.
+bool FLAGS_enable_quic_stateless_reject_support = false;

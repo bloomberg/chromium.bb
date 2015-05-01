@@ -280,6 +280,18 @@ size_t QuicFramer::GetSerializedFrameLength(
     bool last_frame,
     InFecGroup is_in_fec_group,
     QuicSequenceNumberLength sequence_number_length) {
+  // Prevent a rare crash reported in b/19458523.
+  if (frame.stream_frame == nullptr) {
+    LOG(DFATAL) << "Cannot compute the length of a null frame. "
+                << "type:" << frame.type << "free_bytes:" << free_bytes
+                << " first_frame:" << first_frame
+                << " last_frame:" << last_frame
+                << " is_in_fec:" << is_in_fec_group
+                << " seq num length:" << sequence_number_length;
+    set_error(QUIC_INTERNAL_ERROR);
+    visitor_->OnError(this);
+    return false;
+  }
   if (frame.type == PADDING_FRAME) {
     // PADDING implies end of packet.
     return free_bytes;
@@ -585,7 +597,7 @@ bool QuicFramer::ProcessDataPacket(const QuicPacketPublicHeader& public_header,
                                    size_t buffer_length) {
   QuicPacketHeader header(public_header);
   if (!ProcessPacketHeader(&header, packet, decrypted_buffer, buffer_length)) {
-    DLOG(WARNING) << "Unable to process data packet header.";
+    DLOG(WARNING) << "Unable to process packet header.  Stopping parsing.";
     return false;
   }
 
@@ -1383,58 +1395,58 @@ bool QuicFramer::ProcessAckFrame(uint8 frame_type, QuicAckFrame* ack_frame) {
 }
 
 bool QuicFramer::ProcessTimestampsInAckFrame(QuicAckFrame* ack_frame) {
-  if (!ack_frame->is_truncated) {
-    uint8 num_received_packets;
-    if (!reader_->ReadBytes(&num_received_packets, 1)) {
-      set_detailed_error("Unable to read num received packets.");
+  if (ack_frame->is_truncated) {
+    return true;
+  }
+  uint8 num_received_packets;
+  if (!reader_->ReadBytes(&num_received_packets, 1)) {
+    set_detailed_error("Unable to read num received packets.");
+    return false;
+  }
+
+  if (num_received_packets > 0) {
+    uint8 delta_from_largest_observed;
+    if (!reader_->ReadBytes(&delta_from_largest_observed,
+                            PACKET_1BYTE_SEQUENCE_NUMBER)) {
+      set_detailed_error("Unable to read sequence delta in received packets.");
+      return false;
+    }
+    QuicPacketSequenceNumber seq_num =
+        ack_frame->largest_observed - delta_from_largest_observed;
+
+    // Time delta from the framer creation.
+    uint32 time_delta_us;
+    if (!reader_->ReadBytes(&time_delta_us, sizeof(time_delta_us))) {
+      set_detailed_error("Unable to read time delta in received packets.");
       return false;
     }
 
-    if (num_received_packets > 0) {
-      uint8 delta_from_largest_observed;
+    last_timestamp_ = CalculateTimestampFromWire(time_delta_us);
+
+    ack_frame->received_packet_times.push_back(
+        std::make_pair(seq_num, creation_time_.Add(last_timestamp_)));
+
+    for (uint8 i = 1; i < num_received_packets; ++i) {
       if (!reader_->ReadBytes(&delta_from_largest_observed,
                               PACKET_1BYTE_SEQUENCE_NUMBER)) {
         set_detailed_error(
             "Unable to read sequence delta in received packets.");
         return false;
       }
-      QuicPacketSequenceNumber seq_num = ack_frame->largest_observed -
-          delta_from_largest_observed;
+      seq_num = ack_frame->largest_observed - delta_from_largest_observed;
 
-      // Time delta from the framer creation.
-      uint32 time_delta_us;
-      if (!reader_->ReadBytes(&time_delta_us, sizeof(time_delta_us))) {
-        set_detailed_error("Unable to read time delta in received packets.");
+      // Time delta from the previous timestamp.
+      uint64 incremental_time_delta_us;
+      if (!reader_->ReadUFloat16(&incremental_time_delta_us)) {
+        set_detailed_error(
+            "Unable to read incremental time delta in received packets.");
         return false;
       }
 
-      last_timestamp_ = CalculateTimestampFromWire(time_delta_us);
-
+      last_timestamp_ = last_timestamp_.Add(
+          QuicTime::Delta::FromMicroseconds(incremental_time_delta_us));
       ack_frame->received_packet_times.push_back(
           std::make_pair(seq_num, creation_time_.Add(last_timestamp_)));
-
-      for (uint8 i = 1; i < num_received_packets; ++i) {
-        if (!reader_->ReadBytes(&delta_from_largest_observed,
-                                PACKET_1BYTE_SEQUENCE_NUMBER)) {
-          set_detailed_error(
-              "Unable to read sequence delta in received packets.");
-          return false;
-        }
-        seq_num = ack_frame->largest_observed - delta_from_largest_observed;
-
-        // Time delta from the previous timestamp.
-        uint64 incremental_time_delta_us;
-        if (!reader_->ReadUFloat16(&incremental_time_delta_us)) {
-          set_detailed_error(
-              "Unable to read incremental time delta in received packets.");
-          return false;
-        }
-
-        last_timestamp_ = last_timestamp_.Add(
-            QuicTime::Delta::FromMicroseconds(incremental_time_delta_us));
-        ack_frame->received_packet_times.push_back(
-            std::make_pair(seq_num, creation_time_.Add(last_timestamp_)));
-      }
     }
   }
   return true;
@@ -1618,30 +1630,42 @@ void QuicFramer::SetEncrypter(EncryptionLevel level,
 QuicEncryptedPacket* QuicFramer::EncryptPacket(
     EncryptionLevel level,
     QuicPacketSequenceNumber packet_sequence_number,
-    const QuicPacket& packet) {
+    const QuicPacket& packet,
+    char* buffer,
+    size_t buffer_len) {
   DCHECK(encrypter_[level].get() != nullptr);
 
-  // Allocate a large enough buffer for the header and the encrypted data.
   const size_t encrypted_len =
       encrypter_[level]->GetCiphertextSize(packet.Plaintext().length());
   StringPiece header_data = packet.BeforePlaintext();
-  const size_t len = header_data.length() + encrypted_len;
-  // TODO(ianswett): Consider allocating this on the stack in the typical case.
-  char* buffer = new char[len];
+  const size_t total_len = header_data.length() + encrypted_len;
+
+  char* encryption_buffer = buffer;
+  // Allocate a large enough buffer for the header and the encrypted data.
+  const bool is_new_buffer = total_len > buffer_len;
+  if (is_new_buffer) {
+    if (!FLAGS_quic_allow_oversized_packets_for_test) {
+      LOG(DFATAL) << "Buffer of length:" << buffer_len
+                  << " is not large enough to encrypt length " << total_len;
+      return nullptr;
+    }
+    encryption_buffer = new char[total_len];
+  }
   // Copy in the header, because the encrypter only populates the encrypted
   // plaintext content.
-  memcpy(buffer, header_data.data(), header_data.length());
+  memcpy(encryption_buffer, header_data.data(), header_data.length());
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
   if (!encrypter_[level]->EncryptPacket(
           packet_sequence_number, packet.AssociatedData(), packet.Plaintext(),
-          buffer + header_data.length(), &output_length, encrypted_len)) {
+          encryption_buffer + header_data.length(), &output_length,
+          encrypted_len)) {
     RaiseError(QUIC_ENCRYPTION_FAILURE);
     return nullptr;
   }
 
-  return new QuicEncryptedPacket(buffer, header_data.length() + output_length,
-                                 true);
+  return new QuicEncryptedPacket(
+      encryption_buffer, header_data.length() + output_length, is_new_buffer);
 }
 
 size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
@@ -2045,7 +2069,6 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
 
 bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
                                            QuicDataWriter* writer) {
-  DCHECK_GE(version(), QUIC_VERSION_23);
   DCHECK_GE(numeric_limits<uint8>::max(), frame.received_packet_times.size());
   // num_received_packets is only 1 byte.
   if (frame.received_packet_times.size() > numeric_limits<uint8>::max()) {

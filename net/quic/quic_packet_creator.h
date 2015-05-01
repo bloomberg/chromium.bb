@@ -88,7 +88,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // single packet. Also, sets the entropy hash of the serialized packet to a
   // random bool and returns that value as a member of SerializedPacket.
   // Never returns a RetransmittableFrames in SerializedPacket.
-  SerializedPacket SerializeAllFrames(const QuicFrames& frames);
+  SerializedPacket SerializeAllFrames(const QuicFrames& frames,
+                                      char* buffer,
+                                      size_t buffer_len);
 
   // Re-serializes frames with the original packet's sequence number length.
   // Used for retransmitting packets to ensure they aren't too long.
@@ -96,7 +98,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // method.
   SerializedPacket ReserializeAllFrames(
       const RetransmittableFrames& frames,
-      QuicSequenceNumberLength original_length);
+      QuicSequenceNumberLength original_length,
+      char* buffer,
+      size_t buffer_len);
 
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames() const;
@@ -148,12 +152,14 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // SerializedPacket. Also, sets |serialized_frames| in the SerializedPacket to
   // the corresponding RetransmittableFrames if any frames are to be
   // retransmitted.
-  SerializedPacket SerializePacket();
+  // Fails if |buffer_len| isn't long enough for the encrypted packet.
+  SerializedPacket SerializePacket(char* encrypted_buffer, size_t buffer_len);
 
   // Packetize FEC data. All frames must fit into a single packet. Also, sets
   // the entropy hash of the serialized packet to a random bool and returns
   // that value as a member of SerializedPacket.
-  SerializedPacket SerializeFec();
+  // Fails if |buffer_len| isn't long enough for the encrypted packet.
+  SerializedPacket SerializeFec(char* buffer, size_t buffer_len);
 
   // Creates a version negotiation packet which supports |supported_versions|.
   // Caller owns the created  packet. Also, sets the entropy hash of the

@@ -22,8 +22,8 @@ QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
     : version_(version),
       connection_id_(connection_id),
       clock_(clock),
-      spdy_request_framer_(version > QUIC_VERSION_23 ? SPDY4 : SPDY3),
-      spdy_response_framer_(version > QUIC_VERSION_23 ? SPDY4 : SPDY3) {
+      spdy_request_framer_(SPDY4),
+      spdy_response_framer_(SPDY4) {
 }
 
 QuicTestPacketMaker::~QuicTestPacketMaker() {
@@ -86,8 +86,12 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
                     Perspective::IS_CLIENT);
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
-  return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
-      ENCRYPTION_NONE, header.packet_sequence_number, *packet));
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      framer.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                           *packet, buffer, kMaxPacketSize));
+  EXPECT_TRUE(encrypted != nullptr);
+  return scoped_ptr<QuicEncryptedPacket>(encrypted->Clone());
 }
 
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeConnectionClosePacket(
@@ -140,8 +144,12 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
 
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
-  return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
-      ENCRYPTION_NONE, header.packet_sequence_number, *packet));
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      framer.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                           *packet, buffer, kMaxPacketSize));
+  EXPECT_TRUE(encrypted != nullptr);
+  return scoped_ptr<QuicEncryptedPacket>(encrypted->Clone());
 }
 
 // Returns a newly created packet to send kData on stream 1.
@@ -250,8 +258,12 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
-  return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
-      ENCRYPTION_NONE, header.packet_sequence_number, *packet));
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(
+      framer.EncryptPacket(ENCRYPTION_NONE, header.packet_sequence_number,
+                           *packet, buffer, kMaxPacketSize));
+  EXPECT_TRUE(encrypted != nullptr);
+  return scoped_ptr<QuicEncryptedPacket>(encrypted->Clone());
 }
 
 void QuicTestPacketMaker::InitializeHeader(

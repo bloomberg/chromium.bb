@@ -10,7 +10,7 @@
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/quic/quic_client_session.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "net/tools/quic/spdy_balsa_utils.h"
 
 using base::StringPiece;
 using std::string;

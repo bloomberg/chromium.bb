@@ -93,8 +93,6 @@ const QuicTag kNONC = TAG('N', 'O', 'N', 'C');   // The client's nonce
 const QuicTag kKEXS = TAG('K', 'E', 'X', 'S');   // Key exchange methods
 const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');   // Authenticated
                                                  // encryption algorithms
-const QuicTag kCGST = TAG('C', 'G', 'S', 'T');   // Congestion control
-                                                 // feedback types
 const QuicTag kCOPT = TAG('C', 'O', 'P', 'T');   // Connection options
 const QuicTag kICSL = TAG('I', 'C', 'S', 'L');   // Idle connection state
                                                  // lifetime

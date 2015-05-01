@@ -20,7 +20,7 @@ TEST(QuicProtocolTest, AdjustErrorForVersion) {
   // following.
   //  EXPECT_EQ(QUIC_RST_ACKNOWLEDGEMENT, AdjustErrorForVersion(
   //      QUIC_RST_ACKNOWLEDGEMENT,
-  //      QUIC_VERSION_23));
+  //      QUIC_VERSION_24));
 }
 
 TEST(QuicProtocolTest, MakeQuicTag) {
@@ -68,8 +68,8 @@ TEST(QuicProtocolTest, QuicVersionToQuicTag) {
 #endif
 
   // Explicitly test a specific version.
-  EXPECT_EQ(MakeQuicTag('Q', '0', '2', '3'),
-            QuicVersionToQuicTag(QUIC_VERSION_23));
+  EXPECT_EQ(MakeQuicTag('Q', '0', '2', '5'),
+            QuicVersionToQuicTag(QUIC_VERSION_25));
 
   // Loop over all supported versions and make sure that we never hit the
   // default case (i.e. all supported versions should be successfully converted
@@ -107,8 +107,8 @@ TEST(QuicProtocolTest, QuicTagToQuicVersion) {
 #endif
 
   // Explicitly test specific versions.
-  EXPECT_EQ(QUIC_VERSION_23,
-            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '2', '3')));
+  EXPECT_EQ(QUIC_VERSION_25,
+            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '2', '5')));
 
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
     QuicVersion version = kSupportedQuicVersions[i];
@@ -139,23 +139,23 @@ TEST(QuicProtocolTest, QuicTagToQuicVersionUnsupported) {
 }
 
 TEST(QuicProtocolTest, QuicVersionToString) {
-  EXPECT_EQ("QUIC_VERSION_23", QuicVersionToString(QUIC_VERSION_23));
+  EXPECT_EQ("QUIC_VERSION_25", QuicVersionToString(QUIC_VERSION_25));
   EXPECT_EQ("QUIC_VERSION_UNSUPPORTED",
             QuicVersionToString(QUIC_VERSION_UNSUPPORTED));
 
-  QuicVersion single_version[] = {QUIC_VERSION_23};
+  QuicVersion single_version[] = {QUIC_VERSION_25};
   QuicVersionVector versions_vector;
   for (size_t i = 0; i < arraysize(single_version); ++i) {
     versions_vector.push_back(single_version[i]);
   }
-  EXPECT_EQ("QUIC_VERSION_23", QuicVersionVectorToString(versions_vector));
+  EXPECT_EQ("QUIC_VERSION_25", QuicVersionVectorToString(versions_vector));
 
-  QuicVersion multiple_versions[] = {QUIC_VERSION_UNSUPPORTED, QUIC_VERSION_23};
+  QuicVersion multiple_versions[] = {QUIC_VERSION_UNSUPPORTED, QUIC_VERSION_25};
   versions_vector.clear();
   for (size_t i = 0; i < arraysize(multiple_versions); ++i) {
     versions_vector.push_back(multiple_versions[i]);
   }
-  EXPECT_EQ("QUIC_VERSION_UNSUPPORTED,QUIC_VERSION_23",
+  EXPECT_EQ("QUIC_VERSION_UNSUPPORTED,QUIC_VERSION_25",
             QuicVersionVectorToString(versions_vector));
 
   // Make sure that all supported versions are present in QuicVersionToString.

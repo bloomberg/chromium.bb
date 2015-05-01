@@ -530,6 +530,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const IPEndPoint& client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
+    bool use_stateless_rejects,
+    QuicConnectionId server_designated_connection_id,
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters* params,
@@ -604,8 +606,9 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       !info.unique ||
       !requested_config.get()) {
     BuildRejection(server_ip, *primary_config.get(), client_hello, info,
-                   validate_chlo_result.cached_network_params, rand, params,
-                   out);
+                   validate_chlo_result.cached_network_params,
+                   use_stateless_rejects, server_designated_connection_id, rand,
+                   params, out);
     return QUIC_NO_ERROR;
   }
 
@@ -1091,10 +1094,20 @@ void QuicCryptoServerConfig::BuildRejection(
     const CryptoHandshakeMessage& client_hello,
     const ClientHelloInfo& info,
     const CachedNetworkParameters& cached_network_params,
+    bool use_stateless_rejects,
+    QuicConnectionId server_designated_connection_id,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters* params,
     CryptoHandshakeMessage* out) const {
-  out->set_tag(kREJ);
+  if (FLAGS_enable_quic_stateless_reject_support && use_stateless_rejects) {
+    DVLOG(1) << "QUIC Crypto server config returning stateless reject "
+             << "with server-designated connection ID "
+             << server_designated_connection_id;
+    out->set_tag(kSREJ);
+    out->SetValue(kRCID, server_designated_connection_id);
+  } else {
+    out->set_tag(kREJ);
+  }
   out->SetStringPiece(kSCFG, config.serialized);
   out->SetStringPiece(
       kSourceAddressTokenTag,

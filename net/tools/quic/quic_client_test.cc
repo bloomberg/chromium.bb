@@ -57,7 +57,7 @@ TEST(QuicClientTest, DoNotLeakFDs) {
   // in additional FDs being opened.
   const int kNumClients = 5;
   for (int i = 0; i < kNumClients; ++i) {
-    std::unique_ptr<QuicClient> client(
+    scoped_ptr<QuicClient> client(
         CreateAndInitializeQuicClient(&eps, net::test::kTestPort + i));
 
     // Initializing the client will create a new FD.

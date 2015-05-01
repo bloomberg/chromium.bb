@@ -40,7 +40,7 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
   // congestion_window: the congestion window in packets.
   bool ShouldExitSlowStart(QuicTime::Delta rtt,
                            QuicTime::Delta min_rtt,
-                           int64 congestion_window);
+                           QuicPacketCount congestion_window);
 
   // Start a new slow start phase.
   void Restart();

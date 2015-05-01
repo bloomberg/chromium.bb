@@ -66,16 +66,10 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnProtocolVersionMismatch(QuicVersion /*received_version*/) override {
-    if (dispatcher_->time_wait_list_manager()->IsConnectionIdInTimeWait(
-            connection_id_)) {
-      // Keep processing after protocol mismatch - this will be dealt with by
-      // the TimeWaitListManager.
-      return true;
-    } else {
-      DLOG(DFATAL) << "Version mismatch, connection ID (" << connection_id_
-                   << ") not in time wait list.";
-      return false;
-    }
+    DVLOG(1) << "Version mismatch, connection ID " << connection_id_;
+    // Keep processing after protocol mismatch - this will be dealt with by the
+    // time wait list or connection that we will create.
+    return true;
   }
 
   // The following methods should never get called because we always return
@@ -212,74 +206,114 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
 bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     const QuicPacketPublicHeader& header) {
   // Port zero is only allowed for unidirectional UDP, so is disallowed by QUIC.
-  // Given that we can't even send a reply rejecting the packet, just black hole
-  // it.
+  // Given that we can't even send a reply rejecting the packet, just drop the
+  // packet.
   if (current_client_address_.port() == 0) {
     return false;
   }
 
-  // The session that we have identified as the one to which this packet
-  // belongs.
-  QuicServerSession* session = nullptr;
-  QuicConnectionId connection_id = header.connection_id;
-  SessionMap::iterator it = session_map_.find(connection_id);
-  if (it == session_map_.end()) {
-    if (time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id)) {
-      return HandlePacketForTimeWait(header);
-    }
-
-    // The packet has an unknown connection ID.
-    QuicPacketFate fate = ValidityChecks(header, connection_id);
-    switch (fate) {
-      case kFateProcess:
-        session = CreateQuicSession(connection_id, current_server_address_,
-                                    current_client_address_);
-        DVLOG(1) << "Created new session for " << connection_id;
-        session_map_.insert(make_pair(connection_id, session));
-        break;
-      case kFateTimeWait: {
-        // Add this connection_id to the time-wait state, to safely reject
-        // future packets.
-        DVLOG(1) << "Adding connection ID " << connection_id
-                 << "to time-wait list.";
-        // Assume the client understands our preferred version unless it
-        // provides a version.
-        QuicVersion version = supported_versions_.front();
-        if (header.version_flag) {
-          QuicVersion packet_version = header.versions.front();
-          if (framer_.IsSupportedVersion(packet_version)) {
-            version = packet_version;
-          } else {
-            // TODO(ianswett): Produce a no-version version negotiation packet.
-            // Assume the client understands the public reset format for our
-            // preferred version.
-          }
-        }
-        time_wait_list_manager_->AddConnectionIdToTimeWait(connection_id,
-                                                           version, nullptr);
-        DCHECK(
-            time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
-        return HandlePacketForTimeWait(header);
-      }
-      case kFateDrop:
-        // Do nothing with the packet.
-        return false;
-    }
-  } else {
-    session = it->second;
+  // Stopgap test: The code does not construct full-length connection IDs
+  // correctly from truncated connection ID fields.  Prevent this from causing
+  // the connection ID lookup to error by dropping any packet with a short
+  // connection ID.
+  if (header.connection_id_length != PACKET_8BYTE_CONNECTION_ID) {
+    return false;
   }
 
-  session->connection()->ProcessUdpPacket(
-      current_server_address_, current_client_address_, *current_packet_);
+  // Packets with connection IDs for active connections are processed
+  // immediately.
+  QuicConnectionId connection_id = header.connection_id;
+  SessionMap::iterator it = session_map_.find(connection_id);
+  if (it != session_map_.end()) {
+    it->second->connection()->ProcessUdpPacket(
+        current_server_address_, current_client_address_, *current_packet_);
+    return false;
+  }
 
-  // Do not parse the packet further.  The session methods called above have
-  // processed it completely.
-  return false;
+  // If the packet is a public reset for a connection ID that is not active,
+  // there is nothing we must do or can do.
+  if (header.reset_flag) {
+    return false;
+  }
+
+  if (time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id)) {
+    // Set the framer's version based on the recorded version for this
+    // connection and continue processing for non-public-reset packets.
+    return HandlePacketForTimeWait(header);
+  }
+
+  // The packet has an unknown connection ID.
+
+  // Unless the packet provides a version, assume that we can continue
+  // processing using our preferred version.
+  QuicVersion version = supported_versions_.front();
+  if (header.version_flag) {
+    QuicVersion packet_version = header.versions.front();
+    if (framer_.IsSupportedVersion(packet_version)) {
+      version = packet_version;
+    } else {
+      // Packets set to be processed but having an unsupported version will
+      // cause a connection to be created.  The connection will handle
+      // sending a version negotiation packet.
+      // TODO(ianswett): This will malfunction if the full header of the packet
+      // causes a parsing error when parsed using the server's preferred
+      // version.
+    }
+  }
+  // Set the framer's version and continue processing.
+  framer_.set_version(version);
+  return true;
+}
+
+void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
+  QuicConnectionId connection_id = header.public_header.connection_id;
+
+  if (time_wait_list_manager_->IsConnectionIdInTimeWait(
+          header.public_header.connection_id)) {
+    // This connection ID is already in time-wait state.
+    time_wait_list_manager_->ProcessPacket(
+        current_server_address_, current_client_address_,
+        header.public_header.connection_id, header.packet_sequence_number,
+        *current_packet_);
+    return;
+  }
+
+  // Packet's connection ID is unknown.
+  // Apply the validity checks.
+  QuicPacketFate fate = ValidityChecks(header);
+  switch (fate) {
+    case kFateProcess: {
+      // Create a session and process the packet.
+      QuicServerSession* session = CreateQuicSession(
+          connection_id, current_server_address_, current_client_address_);
+      DVLOG(1) << "Created new session for " << connection_id;
+      session_map_.insert(make_pair(connection_id, session));
+      session->connection()->ProcessUdpPacket(
+          current_server_address_, current_client_address_, *current_packet_);
+      break;
+    }
+    case kFateTimeWait:
+      // Add this connection_id to the time-wait state, to safely reject
+      // future packets.
+      DVLOG(1) << "Adding connection ID " << connection_id
+               << "to time-wait list.";
+      time_wait_list_manager_->AddConnectionIdToTimeWait(
+          connection_id, framer_.version(), nullptr);
+      DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(
+          header.public_header.connection_id));
+      time_wait_list_manager_->ProcessPacket(
+          current_server_address_, current_client_address_,
+          header.public_header.connection_id, header.packet_sequence_number,
+          *current_packet_);
+      break;
+    case kFateDrop:
+      // Do nothing with the packet.
+      break;
+  }
 }
 
 QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
-    const QuicPacketPublicHeader& header,
-    QuicConnectionId connection_id) {
+    const QuicPacketHeader& header) {
   // To have all the checks work properly without tears, insert any new check
   // into the framework of this method in the section for checks that return the
   // check's fate value.  The sections for checks must be ordered with the
@@ -287,34 +321,26 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
 
   // Checks that return kFateDrop.
 
-  // If the packet is a public reset, there is nothing we must do or can do.
-  if (header.reset_flag) {
-    return kFateDrop;
-  }
-
   // Checks that return kFateTimeWait.
 
   // All packets within a connection sent by a client before receiving a
   // response from the server are required to have the version negotiation flag
   // set.  Since this may be a client continuing a connection we lost track of
   // via server restart, send a rejection to fast-fail the connection.
-  if (!header.version_flag) {
+  if (!header.public_header.version_flag) {
     DVLOG(1) << "Packet without version arrived for unknown connection ID "
-             << connection_id;
+             << header.public_header.connection_id;
+    return kFateTimeWait;
+  }
+
+  // Check that the sequence numer is within the range that the client is
+  // expected to send before receiving a response from the server.
+  if (header.packet_sequence_number == kInvalidPacketSequenceNumber ||
+      header.packet_sequence_number > kMaxReasonableInitialSequenceNumber) {
     return kFateTimeWait;
   }
 
   return kFateProcess;
-}
-
-void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
-  DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(
-      header.public_header.connection_id));
-  time_wait_list_manager_->ProcessPacket(current_server_address_,
-                                         current_client_address_,
-                                         header.public_header.connection_id,
-                                         header.packet_sequence_number,
-                                         *current_packet_);
 }
 
 void QuicDispatcher::CleanUpSession(SessionMap::iterator it) {

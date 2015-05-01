@@ -317,27 +317,6 @@ TEST_P(QuicSessionTest, StreamIdTooLarge) {
   session_.GetIncomingDataStream(stream_id + kMaxStreamIdDelta + 2);
 }
 
-TEST_P(QuicSessionTest, DecompressionError) {
-  QuicHeadersStream* stream = QuicSessionPeer::GetHeadersStream(&session_);
-  if (version() > QUIC_VERSION_23) {
-    // This test does not apply to HPACK compression.
-    return;
-  }
-  const unsigned char data[] = {
-    0x80, 0x03, 0x00, 0x01,  // SPDY/3 SYN_STREAM frame
-    0x00, 0x00, 0x00, 0x25,  // flags/length
-    0x00, 0x00, 0x00, 0x05,  // stream id
-    0x00, 0x00, 0x00, 0x00,  // associated stream id
-    0x00, 0x00,
-    'a',  'b',  'c',  'd'    // invalid compressed data
-  };
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_HEADERS_STREAM_DATA,
-                                "SPDY framing error: DECOMPRESS_FAILURE"));
-  stream->ProcessRawData(reinterpret_cast<const char*>(data),
-                         arraysize(data));
-}
-
 TEST_P(QuicSessionTest, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   QuicStreamId kClosedStreamId = stream2->id();

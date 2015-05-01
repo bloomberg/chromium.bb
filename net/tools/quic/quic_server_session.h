@@ -100,6 +100,9 @@ class QuicServerSession : public QuicSession {
   scoped_ptr<QuicCryptoServerStream> crypto_stream_;
   QuicServerSessionVisitor* visitor_;
 
+  // Whether bandwidth resumption is enabled for this connection.
+  bool bandwidth_resumption_enabled_;
+
   // The most recent bandwidth estimate sent to the client.
   QuicBandwidth bandwidth_estimate_sent_to_client_;
 

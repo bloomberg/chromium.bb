@@ -383,8 +383,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   void OnPacketComplete() override;
 
   // QuicPacketGenerator::DelegateInterface
-  bool ShouldGeneratePacket(TransmissionType transmission_type,
-                            HasRetransmittableData retransmittable,
+  bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                             IsHandshake handshake) override;
   void PopulateAckFrame(QuicAckFrame* ack) override;
   void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;

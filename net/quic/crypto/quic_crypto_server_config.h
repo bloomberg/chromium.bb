@@ -246,6 +246,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const IPEndPoint& client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
+      bool use_stateless_rejects,
+      QuicConnectionId server_designated_connection_id,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCryptoNegotiatedParameters* params,
@@ -435,6 +437,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
                       const CryptoHandshakeMessage& client_hello,
                       const ClientHelloInfo& info,
                       const CachedNetworkParameters& cached_network_params,
+                      bool use_stateless_rejects,
+                      QuicConnectionId server_designated_connection_id,
                       QuicRandom* rand,
                       QuicCryptoNegotiatedParameters* params,
                       CryptoHandshakeMessage* out) const;

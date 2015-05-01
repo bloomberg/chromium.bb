@@ -324,6 +324,11 @@ PacketSavingConnection::~PacketSavingConnection() {
 }
 
 void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
+  if (!packet.serialized_packet.packet->owns_buffer()) {
+    scoped_ptr<QuicEncryptedPacket> encrypted_deleter(
+        packet.serialized_packet.packet);
+    packet.serialized_packet.packet = packet.serialized_packet.packet->Clone();
+  }
   encrypted_packets_.push_back(packet.serialized_packet.packet);
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
@@ -466,6 +471,12 @@ IPAddressNumber Loopback6() {
   return addr;
 }
 
+IPAddressNumber Any4() {
+  IPAddressNumber any4;
+  CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
+  return any4;
+}
+
 void GenerateBody(string* body, int length) {
   body->clear();
   body->reserve(length);
@@ -529,11 +540,11 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
-  QuicEncryptedPacket* encrypted = framer.EncryptPacket(ENCRYPTION_NONE,
-                                                        sequence_number,
-                                                        *packet);
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPacket(
+      ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
   EXPECT_TRUE(encrypted != nullptr);
-  return encrypted;
+  return encrypted->Clone();
 }
 
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
@@ -564,10 +575,11 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
-  QuicEncryptedPacket* encrypted =
-      framer.EncryptPacket(ENCRYPTION_NONE, sequence_number, *packet);
+  char buffer[kMaxPacketSize];
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer.EncryptPacket(
+      ENCRYPTION_NONE, sequence_number, *packet, buffer, kMaxPacketSize));
   EXPECT_TRUE(encrypted != nullptr);
-  return encrypted;
+  return encrypted->Clone();
 }
 
 void CompareCharArraysWithHexError(

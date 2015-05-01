@@ -65,7 +65,7 @@ bool HybridSlowStart::IsEndOfRound(QuicPacketSequenceNumber ack) const {
 
 bool HybridSlowStart::ShouldExitSlowStart(QuicTime::Delta latest_rtt,
                                           QuicTime::Delta min_rtt,
-                                          int64 congestion_window) {
+                                          QuicPacketCount congestion_window) {
   if (!started_) {
     // Time to start the hybrid slow start.
     StartReceiveRound(last_sent_sequence_number_);
@@ -87,7 +87,7 @@ bool HybridSlowStart::ShouldExitSlowStart(QuicTime::Delta latest_rtt,
   }
   // We only need to check this once per round.
   if (rtt_sample_count_ == kHybridStartMinSamples) {
-    // Divide min_rtt by 16 to get a rtt increase threshold for exiting.
+    // Divide min_rtt by 8 to get a rtt increase threshold for exiting.
     int64 min_rtt_increase_threshold_us = min_rtt.ToMicroseconds() >>
         kHybridStartDelayFactorExp;
     // Ensure the rtt threshold is never less than 2ms or more than 16ms.

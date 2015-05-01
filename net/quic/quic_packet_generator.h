@@ -71,8 +71,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   class NET_EXPORT_PRIVATE DelegateInterface {
    public:
     virtual ~DelegateInterface() {}
-    virtual bool ShouldGeneratePacket(TransmissionType transmission_type,
-                                      HasRetransmittableData retransmittable,
+    virtual bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                                       IsHandshake handshake) = 0;
     virtual void PopulateAckFrame(QuicAckFrame* ack) = 0;
     virtual void PopulateStopWaitingFrame(
@@ -156,7 +155,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // method.
   SerializedPacket ReserializeAllFrames(
       const RetransmittableFrames& frames,
-      QuicSequenceNumberLength original_length);
+      QuicSequenceNumberLength original_length,
+      char* buffer,
+      size_t buffer_len);
 
   // Update the sequence number length to use in future packets as soon as it
   // can be safely changed.

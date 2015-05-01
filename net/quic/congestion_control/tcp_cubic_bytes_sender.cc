@@ -22,7 +22,7 @@ namespace {
 // fast retransmission.
 const QuicByteCount kDefaultMinimumCongestionWindow = 2 * kDefaultTCPMSS;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
-const int kMaxBurstLength = 3;
+const QuicByteCount kMaxBurstBytes = 3 * kMaxSegmentSize;
 const float kRenoBeta = 0.7f;             // Reno backoff factor.
 const uint32 kDefaultNumConnections = 2;  // N-connection emulation.
 }  // namespace
@@ -48,7 +48,7 @@ TcpCubicBytesSender::TcpCubicBytesSender(
       min_congestion_window_(kDefaultMinimumCongestionWindow),
       min4_mode_(false),
       max_congestion_window_(max_congestion_window * kMaxSegmentSize),
-      slowstart_threshold_(std::numeric_limits<uint64>::max()),
+      slowstart_threshold_(max_congestion_window * kMaxSegmentSize),
       last_cutback_exited_slowstart_(false),
       clock_(clock) {
 }
@@ -298,11 +298,10 @@ bool TcpCubicBytesSender::IsCwndLimited(QuicByteCount bytes_in_flight) const {
   if (bytes_in_flight >= congestion_window_) {
     return true;
   }
-  const QuicByteCount max_burst = kMaxBurstLength * kMaxSegmentSize;
   const QuicByteCount available_bytes = congestion_window_ - bytes_in_flight;
   const bool slow_start_limited =
       InSlowStart() && bytes_in_flight > congestion_window_ / 2;
-  return slow_start_limited || available_bytes <= max_burst;
+  return slow_start_limited || available_bytes <= kMaxBurstBytes;
 }
 
 bool TcpCubicBytesSender::InRecovery() const {
@@ -348,8 +347,10 @@ void TcpCubicBytesSender::MaybeIncreaseCwnd(
              << " slowstart threshold: " << slowstart_threshold_
              << " congestion window count: " << num_acked_packets_;
   } else {
-    congestion_window_ = cubic_.CongestionWindowAfterAck(
-        acked_bytes, congestion_window_, rtt_stats_->min_rtt());
+    congestion_window_ =
+        min(max_congestion_window_,
+            cubic_.CongestionWindowAfterAck(acked_bytes, congestion_window_,
+                                            rtt_stats_->min_rtt()));
     DVLOG(1) << "Cubic; congestion window: " << congestion_window_
              << " slowstart threshold: " << slowstart_threshold_;
   }

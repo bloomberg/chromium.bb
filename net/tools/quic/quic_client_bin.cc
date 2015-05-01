@@ -58,7 +58,7 @@
 #include "net/quic/quic_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "net/tools/quic/spdy_balsa_utils.h"
 #include "net/tools/quic/synchronous_host_resolver.h"
 #include "url/gurl.h"
 
@@ -258,7 +258,7 @@ int main(int argc, char *argv[]) {
 
   // Send the request.
   map<string, string> header_block =
-      net::tools::SpdyUtils::RequestHeadersToSpdyHeaders(
+      net::tools::SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
           headers, client.session()->connection()->version());
   client.SendRequestAndWaitForResponse(headers, FLAGS_body, /*fin=*/true);
 

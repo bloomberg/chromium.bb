@@ -227,8 +227,10 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
   return crypto_config_->ProcessClientHello(
       result, connection->connection_id(), connection->self_address().address(),
       connection->peer_address(), version(), connection->supported_versions(),
-      connection->clock(), connection->random_generator(),
-      &crypto_negotiated_params_, reply, error_details);
+      /* use_stateless_rejects= */ false,
+      /* server_designated_connection_id= */ 0, connection->clock(),
+      connection->random_generator(), &crypto_negotiated_params_, reply,
+      error_details);
 }
 
 void QuicCryptoServerStream::OverrideQuicConfigDefaults(QuicConfig* config) {

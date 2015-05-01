@@ -58,12 +58,6 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
   error = msg.GetUint32(kSRBF, &value);
   EXPECT_EQ(QUIC_NO_ERROR, error);
   EXPECT_EQ(kDefaultSocketReceiveBuffer, value);
-
-  const QuicTag* out;
-  size_t out_len;
-  error = msg.GetTaglist(kCGST, &out, &out_len);
-  EXPECT_EQ(1u, out_len);
-  EXPECT_EQ(kQBIC, *out);
 }
 
 TEST_F(QuicConfigTest, ProcessClientHello) {
@@ -149,11 +143,9 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
 TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {
   CryptoHandshakeMessage msg;
   msg.SetValue(kICSL, 1);
-  msg.SetVector(kCGST, QuicTagVector(1, kQBIC));
 
   // Set all REQUIRED tags.
   msg.SetValue(kICSL, 1);
-  msg.SetVector(kCGST, QuicTagVector(1, kQBIC));
   msg.SetValue(kMSPC, 1);
 
   // No error, as rest are optional.
@@ -169,7 +161,6 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
 
   // Set all REQUIRED tags.
   msg.SetValue(kICSL, 1);
-  msg.SetVector(kCGST, QuicTagVector(1, kQBIC));
   msg.SetValue(kMSPC, 1);
 
   // No error, as rest are optional.
@@ -183,7 +174,6 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
 TEST_F(QuicConfigTest, MissingValueInCHLO) {
   CryptoHandshakeMessage msg;
   msg.SetValue(kICSL, 1);
-  msg.SetVector(kCGST, QuicTagVector(1, kQBIC));
   // Missing kMSPC. KATO is optional.
   string error_details;
   const QuicErrorCode error =

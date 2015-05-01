@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_QUIC_SPDY_UTILS_H_
-#define NET_TOOLS_QUIC_SPDY_UTILS_H_
+#ifndef NET_TOOLS_QUIC_SPDY_BALSA_UTILS_H_
+#define NET_TOOLS_QUIC_SPDY_BALSA_UTILS_H_
 
 #include <string>
+
 #include "net/quic/quic_protocol.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
@@ -15,7 +16,7 @@
 namespace net {
 namespace tools {
 
-class SpdyUtils {
+class SpdyBalsaUtils {
  public:
   static std::string SerializeResponseHeaders(
       const BalsaHeaders& response_headers,
@@ -34,10 +35,10 @@ class SpdyUtils {
                                            QuicVersion quic_version);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyUtils);
+  DISALLOW_COPY_AND_ASSIGN(SpdyBalsaUtils);
 };
 
 }  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_SPDY_UTILS_H_
+#endif  // NET_TOOLS_QUIC_SPDY_BALSA_UTILS_H_

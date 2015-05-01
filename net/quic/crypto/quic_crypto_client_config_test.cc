@@ -53,6 +53,47 @@ TEST(QuicCryptoClientConfigTest, CachedState_SetProofVerifyDetails) {
   EXPECT_EQ(details, state.proof_verify_details());
 }
 
+TEST(QuicCryptoClientConfigTest, CachedState_ServerDesignatedConnectionId) {
+  QuicCryptoClientConfig::CachedState state;
+  EXPECT_FALSE(state.has_server_designated_connection_id());
+
+  QuicConnectionId connection_id = 1234;
+  state.add_server_designated_connection_id(connection_id);
+  EXPECT_TRUE(state.has_server_designated_connection_id());
+  EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
+  EXPECT_FALSE(state.has_server_designated_connection_id());
+
+  // Allow the ID to be set multiple times.  It's unusual that this would
+  // happen, but not impossible.
+  ++connection_id;
+  state.add_server_designated_connection_id(connection_id);
+  EXPECT_TRUE(state.has_server_designated_connection_id());
+  EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
+  ++connection_id;
+  state.add_server_designated_connection_id(connection_id);
+  EXPECT_EQ(connection_id, state.GetNextServerDesignatedConnectionId());
+  EXPECT_FALSE(state.has_server_designated_connection_id());
+
+  // Test FIFO behavior.
+  const QuicConnectionId first_cid = 0xdeadbeef;
+  const QuicConnectionId second_cid = 0xfeedbead;
+  state.add_server_designated_connection_id(first_cid);
+  state.add_server_designated_connection_id(second_cid);
+  EXPECT_TRUE(state.has_server_designated_connection_id());
+  EXPECT_EQ(first_cid, state.GetNextServerDesignatedConnectionId());
+  EXPECT_EQ(second_cid, state.GetNextServerDesignatedConnectionId());
+}
+
+TEST(QuicCryptoClientConfigTest, CachedState_ServerIdConsumedBeforeSet) {
+  QuicCryptoClientConfig::CachedState state;
+  EXPECT_FALSE(state.has_server_designated_connection_id());
+#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
+  EXPECT_DEBUG_DEATH(state.GetNextServerDesignatedConnectionId(),
+                     "Attempting to consume a connection id "
+                     "that was never designated.");
+#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
+}
+
 TEST(QuicCryptoClientConfigTest, CachedState_InitializeFrom) {
   QuicCryptoClientConfig::CachedState state;
   QuicCryptoClientConfig::CachedState other;
@@ -63,6 +104,7 @@ TEST(QuicCryptoClientConfigTest, CachedState_InitializeFrom) {
   EXPECT_EQ(state.source_address_token(), other.source_address_token());
   EXPECT_EQ(state.certs(), other.certs());
   EXPECT_EQ(1u, other.generation_counter());
+  EXPECT_FALSE(state.has_server_designated_connection_id());
 }
 
 TEST(QuicCryptoClientConfigTest, InchoateChlo) {
@@ -264,6 +306,97 @@ TEST(QuicCryptoClientConfigTest, ClearCachedStates) {
   EXPECT_TRUE(cleared_cache->certs().empty());
   EXPECT_TRUE(cleared_cache->signature().empty());
   EXPECT_EQ(2u, cleared_cache->generation_counter());
+}
+
+// Creates a minimal dummy reject message that will pass the client-config
+// validation tests.
+void FillInDummyReject(CryptoHandshakeMessage* rej, bool reject_is_stateless) {
+  if (reject_is_stateless) {
+    rej->set_tag(kSREJ);
+  } else {
+    rej->set_tag(kREJ);
+  }
+
+  // Minimum SCFG that passes config validation checks.
+  // clang-format off
+  unsigned char scfg[] = {
+    // SCFG
+    0x53, 0x43, 0x46, 0x47,
+    // num entries
+    0x01, 0x00,
+    // padding
+    0x00, 0x00,
+    // EXPY
+    0x45, 0x58, 0x50, 0x59,
+    // EXPY end offset
+    0x08, 0x00, 0x00, 0x00,
+    // Value
+    '1',  '2',  '3',  '4',
+    '5',  '6',  '7',  '8'
+  };
+  // clang-format on
+  rej->SetValue(kSCFG, scfg);
+  rej->SetStringPiece(kServerNonceTag, "SERVER_NONCE");
+  vector<QuicTag> reject_reasons;
+  reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
+  rej->SetVector(kRREJ, reject_reasons);
+}
+
+TEST(QuicCryptoClientConfigTest, ProcessReject) {
+  CryptoHandshakeMessage rej;
+  FillInDummyReject(&rej, /* stateless */ false);
+
+  // Now process the rejection.
+  QuicCryptoClientConfig::CachedState cached;
+  QuicCryptoNegotiatedParameters out_params;
+  string error;
+  QuicCryptoClientConfig config;
+  EXPECT_EQ(QUIC_NO_ERROR, config.ProcessRejection(
+                               rej, QuicWallTime::FromUNIXSeconds(0), &cached,
+                               true,  // is_https
+                               &out_params, &error));
+  EXPECT_FALSE(cached.has_server_designated_connection_id());
+}
+
+TEST(QuicCryptoClientConfigTest, ProcessStatelessReject) {
+  // Create a dummy reject message and mark it as stateless.
+  CryptoHandshakeMessage rej;
+  FillInDummyReject(&rej, /* stateless */ true);
+  const QuicConnectionId kConnectionId = 0xdeadbeef;
+  rej.SetValue(kRCID, kConnectionId);
+
+  // Now process the rejection.
+  QuicCryptoClientConfig::CachedState cached;
+  QuicCryptoNegotiatedParameters out_params;
+  string error;
+  QuicCryptoClientConfig config;
+  EXPECT_EQ(
+      QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT,
+      config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0), &cached,
+                              true,  // is_https
+                              &out_params, &error));
+  EXPECT_TRUE(cached.has_server_designated_connection_id());
+  EXPECT_EQ(kConnectionId, cached.GetNextServerDesignatedConnectionId());
+}
+
+TEST(QuicCryptoClientConfigTest, BadlyFormattedStatelessReject) {
+  // Create a dummy reject message and mark it as stateless.  Do not
+  // add an server-designated connection-id.
+  CryptoHandshakeMessage rej;
+  FillInDummyReject(&rej, /* stateless */ true);
+
+  // Now process the rejection.
+  QuicCryptoClientConfig::CachedState cached;
+  QuicCryptoNegotiatedParameters out_params;
+  string error;
+  QuicCryptoClientConfig config;
+  EXPECT_EQ(
+      QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
+      config.ProcessRejection(rej, QuicWallTime::FromUNIXSeconds(0), &cached,
+                              true,  // is_https
+                              &out_params, &error));
+  EXPECT_FALSE(cached.has_server_designated_connection_id());
+  EXPECT_EQ("Missing kRCID", error);
 }
 
 }  // namespace test

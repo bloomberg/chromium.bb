@@ -278,7 +278,9 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
 
 SerializedPacket QuicPacketCreator::ReserializeAllFrames(
     const RetransmittableFrames& frames,
-    QuicSequenceNumberLength original_length) {
+    QuicSequenceNumberLength original_length,
+    char* buffer,
+    size_t buffer_len) {
   DCHECK(fec_group_.get() == nullptr);
   const QuicSequenceNumberLength saved_length = sequence_number_length_;
   const QuicSequenceNumberLength saved_next_length =
@@ -294,7 +296,8 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
   encryption_level_ = frames.encryption_level();
 
   // Serialize the packet and restore the FEC and sequence number length state.
-  SerializedPacket serialized_packet = SerializeAllFrames(frames.frames());
+  SerializedPacket serialized_packet =
+      SerializeAllFrames(frames.frames(), buffer, buffer_len);
   sequence_number_length_ = saved_length;
   next_sequence_number_length_ = saved_next_length;
   should_fec_protect_ = saved_should_fec_protect;
@@ -303,20 +306,17 @@ SerializedPacket QuicPacketCreator::ReserializeAllFrames(
   return serialized_packet;
 }
 
-// TODO(ianswett): Remove this method, because it's test only.
-SerializedPacket QuicPacketCreator::SerializeAllFrames(
-    const QuicFrames& frames) {
-  // TODO(satyamshekhar): Verify that this DCHECK won't fail. What about queued
-  // frames from SendStreamData()[send_stream_should_flush_ == false &&
-  // data.empty() == true] and retransmit due to RTO.
-  DCHECK_EQ(0u, queued_frames_.size());
+SerializedPacket QuicPacketCreator::SerializeAllFrames(const QuicFrames& frames,
+                                                       char* buffer,
+                                                       size_t buffer_len) {
+  LOG_IF(DFATAL, !queued_frames_.empty()) << "Frames already queued.";
   LOG_IF(DFATAL, frames.empty())
       << "Attempt to serialize empty packet";
   for (const QuicFrame& frame : frames) {
     bool success = AddFrame(frame, false);
     DCHECK(success);
   }
-  SerializedPacket packet = SerializePacket();
+  SerializedPacket packet = SerializePacket(buffer, buffer_len);
   DCHECK(packet.retransmittable_frames == nullptr);
   return packet;
 }
@@ -366,7 +366,10 @@ bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
   return AddFrame(frame, true);
 }
 
-SerializedPacket QuicPacketCreator::SerializePacket() {
+SerializedPacket QuicPacketCreator::SerializePacket(
+    char* encrypted_buffer,
+    size_t encrypted_buffer_len) {
+  DCHECK_LT(0u, encrypted_buffer_len);
   LOG_IF(DFATAL, queued_frames_.empty())
       << "Attempt to serialize empty packet";
   DCHECK_GE(sequence_number_ + 1, fec_group_number_);
@@ -408,7 +411,8 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // sequence number multiple times.
   QuicEncryptedPacket* encrypted =
-      framer_->EncryptPacket(encryption_level_, sequence_number_, *packet);
+      framer_->EncryptPacket(encryption_level_, sequence_number_, *packet,
+                             encrypted_buffer, encrypted_buffer_len);
   if (encrypted == nullptr) {
     LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
     return NoPacket();
@@ -422,7 +426,9 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
                           queued_retransmittable_frames_.release());
 }
 
-SerializedPacket QuicPacketCreator::SerializeFec() {
+SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
+                                                 size_t buffer_len) {
+  DCHECK_LT(0u, buffer_len);
   if (fec_group_.get() == nullptr || fec_group_->NumReceivedPackets() <= 0) {
     LOG(DFATAL) << "SerializeFEC called but no group or zero packets in group.";
     // TODO(jri): Make this a public method of framer?
@@ -442,8 +448,8 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   DCHECK_GE(max_packet_length_, packet->length());
   // Immediately encrypt the packet, to ensure we don't encrypt the same packet
   // sequence number multiple times.
-  QuicEncryptedPacket* encrypted =
-      framer_->EncryptPacket(encryption_level_, sequence_number_, *packet);
+  QuicEncryptedPacket* encrypted = framer_->EncryptPacket(
+      encryption_level_, sequence_number_, *packet, buffer, buffer_len);
   if (encrypted == nullptr) {
     LOG(DFATAL) << "Failed to encrypt packet number " << sequence_number_;
     return NoPacket();

@@ -152,9 +152,20 @@ class QuicDispatcherTest : public ::testing::Test {
                      const string& data,
                      QuicConnectionIdLength connection_id_length,
                      QuicSequenceNumberLength sequence_number_length) {
+    ProcessPacket(client_address, connection_id, has_version_flag, data,
+                  connection_id_length, sequence_number_length, 1);
+  }
+
+  void ProcessPacket(IPEndPoint client_address,
+                     QuicConnectionId connection_id,
+                     bool has_version_flag,
+                     const string& data,
+                     QuicConnectionIdLength connection_id_length,
+                     QuicSequenceNumberLength sequence_number_length,
+                     QuicPacketSequenceNumber sequence_number) {
     scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-        connection_id, has_version_flag, false, 1, data, connection_id_length,
-        sequence_number_length));
+        connection_id, has_version_flag, false, sequence_number, data,
+        connection_id_length, sequence_number_length));
     data_ = string(packet->data(), packet->length());
     dispatcher_.ProcessPacket(server_address_, client_address, *packet);
   }
@@ -186,9 +197,7 @@ class QuicDispatcherTest : public ::testing::Test {
 
 TEST_F(QuicDispatcherTest, ProcessPackets) {
   IPEndPoint client_address(net::test::Loopback4(), 1);
-  IPAddressNumber any4;
-  CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
-  server_address_ = IPEndPoint(any4, 5);
+  server_address_ = IPEndPoint(net::test::Any4(), 5);
 
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address))
       .WillOnce(testing::Return(
@@ -265,7 +274,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   ProcessPacket(client_address, connection_id, true, "foo");
 }
 
-TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
+TEST_F(QuicDispatcherTest, NoVersionPacketToTimeWaitListManager) {
   CreateTimeWaitListManager();
 
   IPEndPoint client_address(net::test::Loopback4(), 1);
@@ -280,13 +289,11 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   ProcessPacket(client_address, connection_id, false, "data");
 }
 
-TEST_F(QuicDispatcherTest, ProcessPacketWithBogusPort) {
+TEST_F(QuicDispatcherTest, ProcessPacketWithZeroPort) {
   CreateTimeWaitListManager();
 
   IPEndPoint client_address(net::test::Loopback4(), 0);
-  IPAddressNumber any4;
-  CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &any4));
-  server_address_ = IPEndPoint(any4, 5);
+  server_address_ = IPEndPoint(net::test::Any4(), 5);
 
   // dispatcher_ should drop this packet.
   EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address)).Times(0);
@@ -294,9 +301,74 @@ TEST_F(QuicDispatcherTest, ProcessPacketWithBogusPort) {
   EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
       .Times(0);
   ProcessPacket(client_address, 1, true, "foo");
+}
+
+TEST_F(QuicDispatcherTest, OKSeqNoPacketProcessed) {
+  IPEndPoint client_address(net::test::Loopback4(), 1);
+  QuicConnectionId connection_id = 1;
+  server_address_ = IPEndPoint(net::test::Any4(), 5);
+
+  EXPECT_CALL(dispatcher_, CreateQuicSession(1, _, client_address))
+      .WillOnce(testing::Return(
+          CreateSession(&dispatcher_, config_, 1, client_address, &session1_)));
+  // A packet whose sequence number is the largest that is allowed to start a
+  // connection.
+  ProcessPacket(client_address, connection_id, true, "data",
+                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER,
+                QuicDispatcher::kMaxReasonableInitialSequenceNumber);
   EXPECT_EQ(client_address, dispatcher_.current_client_address());
   EXPECT_EQ(server_address_, dispatcher_.current_server_address());
 }
+
+TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
+  CreateTimeWaitListManager();
+
+  IPEndPoint client_address(net::test::Loopback4(), 1);
+  QuicConnectionId connection_id = 1;
+  // Dispatcher forwards this packet for this connection_id to the time wait
+  // list manager.
+  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_,
+              ProcessPacket(_, _, connection_id, _, _)).Times(1);
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
+      .Times(1);
+  // A packet whose sequence number is one to large to be allowed to start a
+  // connection.
+  ProcessPacket(client_address, connection_id, true, "data",
+                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_SEQUENCE_NUMBER,
+                QuicDispatcher::kMaxReasonableInitialSequenceNumber + 1);
+}
+
+// Verify the stopgap test: Packets with truncated connection IDs should be
+// dropped.
+class QuicDispatcherTestStrayPacketConnectionId
+    : public QuicDispatcherTest,
+      public ::testing::WithParamInterface<QuicConnectionIdLength> {};
+
+// Packets with truncated connection IDs should be dropped.
+TEST_P(QuicDispatcherTestStrayPacketConnectionId,
+       StrayPacketTruncatedConnectionId) {
+  const QuicConnectionIdLength connection_id_length = GetParam();
+
+  CreateTimeWaitListManager();
+
+  IPEndPoint client_address(net::test::Loopback4(), 1);
+  QuicConnectionId connection_id = 1;
+  // Dispatcher drops this packet.
+  EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_,
+              ProcessPacket(_, _, connection_id, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_, AddConnectionIdToTimeWait(_, _, _))
+      .Times(0);
+  ProcessPacket(client_address, connection_id, true, "data",
+                connection_id_length, PACKET_6BYTE_SEQUENCE_NUMBER);
+}
+
+INSTANTIATE_TEST_CASE_P(ConnectionIdLength,
+                        QuicDispatcherTestStrayPacketConnectionId,
+                        ::testing::Values(PACKET_0BYTE_CONNECTION_ID,
+                                          PACKET_1BYTE_CONNECTION_ID,
+                                          PACKET_4BYTE_CONNECTION_ID));
 
 class BlockingWriter : public QuicPacketWriterWrapper {
  public:

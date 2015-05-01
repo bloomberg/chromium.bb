@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/spdy_utils.h"
+#include "net/tools/quic/spdy_balsa_utils.h"
 
 #include <string>
 
@@ -39,9 +39,8 @@ void PopulateSpdyHeaderBlock(const BalsaHeaders& headers,
                              SpdyHeaderBlock* block,
                              bool allow_empty_values) {
   for (BalsaHeaders::const_header_lines_iterator hi =
-       headers.header_lines_begin();
-       hi != headers.header_lines_end();
-       ++hi) {
+           headers.header_lines_begin();
+       hi != headers.header_lines_end(); ++hi) {
     if ((hi->second.length() == 0) && !allow_empty_values) {
       DVLOG(1) << "Dropping empty header " << hi->first.as_string()
                << " from headers";
@@ -178,7 +177,7 @@ bool ParseReasonAndStatus(StringPiece status_and_reason,
 }  // namespace
 
 // static
-SpdyHeaderBlock SpdyUtils::RequestHeadersToSpdyHeaders(
+SpdyHeaderBlock SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
     const BalsaHeaders& request_headers,
     QuicVersion quic_version) {
   string scheme;
@@ -221,7 +220,7 @@ SpdyHeaderBlock SpdyUtils::RequestHeadersToSpdyHeaders(
 }
 
 // static
-SpdyHeaderBlock SpdyUtils::ResponseHeadersToSpdyHeaders(
+SpdyHeaderBlock SpdyBalsaUtils::ResponseHeadersToSpdyHeaders(
     const BalsaHeaders& response_headers,
     QuicVersion quic_version) {
   SpdyHeaderBlock block;
@@ -232,8 +231,9 @@ SpdyHeaderBlock SpdyUtils::ResponseHeadersToSpdyHeaders(
 }
 
 // static
-string SpdyUtils::SerializeResponseHeaders(const BalsaHeaders& response_headers,
-                                           QuicVersion quic_version) {
+string SpdyBalsaUtils::SerializeResponseHeaders(
+    const BalsaHeaders& response_headers,
+    QuicVersion quic_version) {
   SpdyHeaderBlock block =
       ResponseHeadersToSpdyHeaders(response_headers, quic_version);
 
@@ -241,7 +241,7 @@ string SpdyUtils::SerializeResponseHeaders(const BalsaHeaders& response_headers,
 }
 
 // static
-void SpdyUtils::SpdyHeadersToResponseHeaders(
+void SpdyBalsaUtils::SpdyHeadersToResponseHeaders(
     const SpdyHeaderBlock& header_block,
     BalsaHeaders* request_headers,
     QuicVersion quic_version) {

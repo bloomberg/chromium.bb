@@ -4,6 +4,9 @@
 //
 // A toy server, which listens on a specified address for QUIC traffic and
 // handles incoming responses.
+//
+// Note that this server is intended to verify correctness of the client and is
+// in no way expected to be performant.
 
 #ifndef NET_TOOLS_QUIC_QUIC_SERVER_H_
 #define NET_TOOLS_QUIC_QUIC_SERVER_H_

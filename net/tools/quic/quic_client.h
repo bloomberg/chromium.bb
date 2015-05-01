@@ -201,6 +201,9 @@ class QuicClient : public EpollCallbackInterface,
 
   EpollServer* epoll_server() { return epoll_server_; }
 
+  // If the socket has been created, then unregister and close() the FD.
+  virtual void CleanUpUDPSocket();
+
  private:
   friend class net::tools::test::QuicClientPeer;
 
@@ -219,9 +222,6 @@ class QuicClient : public EpollCallbackInterface,
   // Used during initialization: creates the UDP socket FD, sets socket options,
   // and binds the socket to our address.
   bool CreateUDPSocket();
-
-  // If the socket has been created, then unregister and close() the FD.
-  void CleanUpUDPSocket();
 
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();

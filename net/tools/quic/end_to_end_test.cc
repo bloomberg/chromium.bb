@@ -118,19 +118,14 @@ vector<TestParams> GetTestParams() {
   // to do 0-RTT across incompatible versions. Chromium only supports
   // a single version at a time anyway. :)
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
-  QuicVersionVector spdy3_versions;
-  QuicVersionVector spdy4_versions;
-  QuicVersionVector client_version_buckets[3];
+  QuicVersionVector client_version_buckets[2];
   for (const QuicVersion version : all_supported_versions) {
-    if (version <= QUIC_VERSION_23) {
-      // SPDY/3
+    if (version <= QUIC_VERSION_24) {
+      // SPDY/4 compression but SPDY/3 headers
       client_version_buckets[0].push_back(version);
-    } else if (version > QUIC_VERSION_24) {
+    } else {
       // SPDY/4
       client_version_buckets[1].push_back(version);
-    } else {
-      // SPDY/4 compression but SPDY/3 headers
-      client_version_buckets[2].push_back(version);
     }
   }
 

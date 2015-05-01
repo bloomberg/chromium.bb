@@ -335,9 +335,13 @@ class NET_EXPORT_PRIVATE QuicFramer {
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
 
   // Returns a new encrypted packet, owned by the caller.
+  // Encrypts into |buffer| if |buffer_len| is long enough, and otherwise
+  // constructs a new buffer owned by the EncryptedPacket.
   QuicEncryptedPacket* EncryptPacket(EncryptionLevel level,
                                      QuicPacketSequenceNumber sequence_number,
-                                     const QuicPacket& packet);
+                                     const QuicPacket& packet,
+                                     char* buffer,
+                                     size_t buffer_len);
 
   // Returns the maximum length of plaintext that can be encrypted
   // to ciphertext no larger than |ciphertext_size|.

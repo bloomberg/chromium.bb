@@ -9,7 +9,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_client_session.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "net/tools/quic/spdy_balsa_utils.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,8 +41,8 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
     headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");
     headers_.ReplaceOrAppendHeader("content-length", "11");
 
-    headers_string_ =
-        net::tools::SpdyUtils::SerializeResponseHeaders(headers_, GetParam());
+    headers_string_ = net::tools::SpdyBalsaUtils::SerializeResponseHeaders(
+        headers_, GetParam());
 
     // New streams rely on having the peer's flow control receive window
     // negotiated in the config.
