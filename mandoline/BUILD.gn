@@ -2,14 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-group("mandoline_all") {
+group("mandoline") {
   # Meta-target, don't link into production code.
   testonly = true
+
+  # TODO(beng): should be able to remove this in favor of explicit dependencies
+  #             from subdirs.
   deps = [
-    "//mojo:mojo",
+    "//mojo",
   ]
 
-  if (!is_android && !is_component_build) {
-    deps += [ "//mandoline/app:mandoline" ]
+  if (!is_component_build) {
+    deps += [ "//mandoline/app" ]
   }
 }
