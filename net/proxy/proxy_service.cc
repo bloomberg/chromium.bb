@@ -236,22 +236,17 @@ class ProxyResolverFromPacString : public ProxyResolver {
 };
 
 // Creates ProxyResolvers using a platform-specific implementation.
-class ProxyResolverFactoryForSystem : public LegacyProxyResolverFactory {
+class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
  public:
   explicit ProxyResolverFactoryForSystem(size_t max_num_threads)
-      : LegacyProxyResolverFactory(false /*expects_pac_bytes*/),
-        max_num_threads_(max_num_threads) {}
+      : MultiThreadedProxyResolverFactory(max_num_threads,
+                                          false /*expects_pac_bytes*/) {}
 
-  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    DCHECK(IsSupported());
-    if (max_num_threads_ > 1) {
-      return make_scoped_ptr(new MultiThreadedProxyResolver(
-          new ProxyResolverFactoryForSystem(1), max_num_threads_));
-    }
+  scoped_ptr<ProxyResolverFactory> CreateProxyResolverFactory() override {
 #if defined(OS_WIN)
-    return make_scoped_ptr(new ProxyResolverWinHttp());
+    return make_scoped_ptr(new ProxyResolverFactoryWinHttp());
 #elif defined(OS_MACOSX)
-    return make_scoped_ptr(new ProxyResolverMac());
+    return make_scoped_ptr(new ProxyResolverFactoryMac());
 #else
     NOTREACHED();
     return NULL;
@@ -267,8 +262,6 @@ class ProxyResolverFactoryForSystem : public LegacyProxyResolverFactory {
   }
 
  private:
-  const size_t max_num_threads_;
-
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryForSystem);
 };
 

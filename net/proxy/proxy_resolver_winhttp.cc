@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_resolver.h"
 #include "url/gurl.h"
 
 #pragma comment(lib, "winhttp.lib")
@@ -20,6 +21,7 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 namespace net {
+namespace {
 
 static void FreeInfo(WINHTTP_PROXY_INFO* info) {
   if (info->lpszProxy)
@@ -28,8 +30,46 @@ static void FreeInfo(WINHTTP_PROXY_INFO* info) {
     GlobalFree(info->lpszProxyBypass);
 }
 
-ProxyResolverWinHttp::ProxyResolverWinHttp()
-    : ProxyResolver(false /*expects_pac_bytes*/), session_handle_(NULL) {
+class ProxyResolverWinHttp : public ProxyResolver {
+ public:
+  ProxyResolverWinHttp(
+      const scoped_refptr<ProxyResolverScriptData>& script_data);
+  ~ProxyResolverWinHttp() override;
+
+  // ProxyResolver implementation:
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     const CompletionCallback& /*callback*/,
+                     RequestHandle* /*request*/,
+                     const BoundNetLog& /*net_log*/) override;
+  void CancelRequest(RequestHandle request) override;
+
+  LoadState GetLoadState(RequestHandle request) const override;
+
+  void CancelSetPacScript() override;
+
+  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
+                   const CompletionCallback& /*callback*/) override;
+
+ private:
+  bool OpenWinHttpSession();
+  void CloseWinHttpSession();
+
+  // Proxy configuration is cached on the session handle.
+  HINTERNET session_handle_;
+
+  const GURL pac_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverWinHttp);
+};
+
+ProxyResolverWinHttp::ProxyResolverWinHttp(
+    const scoped_refptr<ProxyResolverScriptData>& script_data)
+    : ProxyResolver(false /*expects_pac_bytes*/),
+      session_handle_(NULL),
+      pac_url_(script_data->type() == ProxyResolverScriptData::TYPE_AUTO_DETECT
+                   ? GURL("http://wpad/wpad.dat")
+                   : script_data->url()) {
 }
 
 ProxyResolverWinHttp::~ProxyResolverWinHttp() {
@@ -136,12 +176,8 @@ void ProxyResolverWinHttp::CancelSetPacScript() {
 int ProxyResolverWinHttp::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& script_data,
     const CompletionCallback& /*callback*/) {
-  if (script_data->type() == ProxyResolverScriptData::TYPE_AUTO_DETECT) {
-    pac_url_ = GURL("http://wpad/wpad.dat");
-  } else {
-    pac_url_ = script_data->url();
-  }
-  return OK;
+  NOTREACHED();
+  return ERR_NOT_IMPLEMENTED;
 }
 
 bool ProxyResolverWinHttp::OpenWinHttpSession() {
@@ -169,6 +205,21 @@ void ProxyResolverWinHttp::CloseWinHttpSession() {
     WinHttpCloseHandle(session_handle_);
     session_handle_ = NULL;
   }
+}
+
+}  // namespace
+
+ProxyResolverFactoryWinHttp::ProxyResolverFactoryWinHttp()
+    : ProxyResolverFactory(false /*expects_pac_bytes*/) {
+}
+
+int ProxyResolverFactoryWinHttp::CreateProxyResolver(
+    const scoped_refptr<ProxyResolverScriptData>& pac_script,
+    scoped_ptr<ProxyResolver>* resolver,
+    const CompletionCallback& callback,
+    scoped_ptr<Request>* request) {
+  resolver->reset(new ProxyResolverWinHttp(pac_script));
+  return OK;
 }
 
 }  // namespace net

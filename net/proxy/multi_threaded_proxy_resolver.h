@@ -5,36 +5,32 @@
 #ifndef NET_PROXY_MULTI_THREADED_PROXY_RESOLVER_H_
 #define NET_PROXY_MULTI_THREADED_PROXY_RESOLVER_H_
 
-#include <deque>
-#include <vector>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
 #include "net/base/net_export.h"
-#include "net/proxy/proxy_resolver.h"
-
-namespace base {
-class Thread;
-}  // namespace base
+#include "net/proxy/proxy_resolver_factory.h"
 
 namespace net {
-class LegacyProxyResolverFactory;
+class ProxyResolver;
 
-// MultiThreadedProxyResolver is a ProxyResolver implementation that runs
-// synchronous ProxyResolver implementations on worker threads.
+// MultiThreadedProxyResolverFactory creates instances of a ProxyResolver
+// implementation that runs synchronous ProxyResolver implementations on worker
+// threads.
 //
 // Threads are created lazily on demand, up to a maximum total. The advantage
 // of having a pool of threads, is faster performance. In particular, being
 // able to keep servicing PAC requests even if one blocks its execution.
 //
-// During initialization (SetPacScript), a single thread is spun up to test
-// the script. If this succeeds, we cache the input script, and will re-use
+// During initialization (CreateProxyResolver), a single thread is spun up to
+// test the script. If this succeeds, we cache the input script, and will re-use
 // this to lazily provision any new threads as needed.
 //
-// For each new thread that we spawn, a corresponding new ProxyResolver is
-// created using ProxyResolverFactory.
+// For each new thread that we spawn in a particular MultiThreadedProxyResolver
+// instance, a corresponding new ProxyResolver is created using the
+// ProxyResolverFactory returned by CreateProxyResolverFactory().
 //
 // Because we are creating multiple ProxyResolver instances, this means we
 // are duplicating script contexts for what is ordinarily seen as being a
@@ -51,69 +47,31 @@ class LegacyProxyResolverFactory;
 //     a global counter and using that to make a decision. In the
 //     multi-threaded model, each thread may have a different value for this
 //     counter, so it won't globally be seen as monotonically increasing!
-class NET_EXPORT_PRIVATE MultiThreadedProxyResolver
-    : public ProxyResolver,
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+class NET_EXPORT_PRIVATE MultiThreadedProxyResolverFactory
+    : public ProxyResolverFactory {
  public:
-  // Creates an asynchronous ProxyResolver that runs requests on up to
-  // |max_num_threads|.
-  //
-  // For each thread that is created, an accompanying synchronous ProxyResolver
-  // will be provisioned using |resolver_factory|. All methods on these
-  // ProxyResolvers will be called on the one thread, with the exception of
-  // ProxyResolver::Shutdown() which will be called from the origin thread
-  // prior to destruction.
-  //
-  // The constructor takes ownership of |resolver_factory|.
-  MultiThreadedProxyResolver(LegacyProxyResolverFactory* resolver_factory,
-                             size_t max_num_threads);
+  MultiThreadedProxyResolverFactory(size_t max_num_threads,
+                                    bool factory_expects_bytes);
+  ~MultiThreadedProxyResolverFactory() override;
 
-  ~MultiThreadedProxyResolver() override;
-
-  // ProxyResolver implementation:
-  int GetProxyForURL(const GURL& url,
-                     ProxyInfo* results,
-                     const CompletionCallback& callback,
-                     RequestHandle* request,
-                     const BoundNetLog& net_log) override;
-  void CancelRequest(RequestHandle request) override;
-  LoadState GetLoadState(RequestHandle request) const override;
-  void CancelSetPacScript() override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override;
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const CompletionCallback& callback,
+      scoped_ptr<Request>* request) override;
 
  private:
-  class Executor;
   class Job;
-  class SetPacScriptJob;
-  class GetProxyForURLJob;
-  // FIFO queue of pending jobs waiting to be started.
-  // TODO(eroman): Make this priority queue.
-  typedef std::deque<scoped_refptr<Job> > PendingJobsQueue;
-  typedef std::vector<scoped_refptr<Executor> > ExecutorList;
 
-  // Asserts that there are no outstanding user-initiated jobs on any of the
-  // worker threads.
-  void CheckNoOutstandingUserRequests() const;
+  // Invoked to create a ProxyResolverFactory instance to pass to a
+  // MultiThreadedProxyResolver instance.
+  virtual scoped_ptr<ProxyResolverFactory> CreateProxyResolverFactory() = 0;
 
-  // Stops and deletes all of the worker threads.
-  void ReleaseAllExecutors();
+  void RemoveJob(Job* job);
 
-  // Returns an idle worker thread which is ready to receive GetProxyForURL()
-  // requests. If all threads are occupied, returns NULL.
-  Executor* FindIdleExecutor();
-
-  // Creates a new worker thread, and appends it to |executors_|.
-  Executor* AddNewExecutor();
-
-  // Starts the next job from |pending_jobs_| if possible.
-  void OnExecutorReady(Executor* executor);
-
-  const scoped_ptr<LegacyProxyResolverFactory> resolver_factory_;
   const size_t max_num_threads_;
-  PendingJobsQueue pending_jobs_;
-  ExecutorList executors_;
-  scoped_refptr<ProxyResolverScriptData> current_script_data_;
+
+  std::set<Job*> jobs_;
 };
 
 }  // namespace net
