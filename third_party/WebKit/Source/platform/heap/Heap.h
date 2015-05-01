@@ -880,18 +880,12 @@ public:
     static bool willObjectBeLazilySwept(const T* objectPointer)
     {
         static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
-#if ENABLE(OILPAN)
         BasePage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
             return false;
         ASSERT(page->heap()->threadState()->isSweepingInProgress());
 
         return !ObjectAliveTrait<T>::isHeapObjectAlive(s_markingVisitor, const_cast<T*>(objectPointer));
-#else
-        // FIXME: remove when lazy sweeping is always on
-        // (cf. ThreadState::preSweep()).
-        return false;
-#endif
     }
 
     // Push a trace callback on the marking stack.
