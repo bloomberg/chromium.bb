@@ -308,6 +308,8 @@
         'win/scoped_set_map_mode.h',
         'win/singleton_hwnd.cc',
         'win/singleton_hwnd.h',
+        'win/singleton_hwnd_observer.cc',
+        'win/singleton_hwnd_observer.h',
         'win/window_impl.cc',
         'win/window_impl.h',
       ],

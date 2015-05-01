@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {
 
@@ -14,23 +15,13 @@ SingletonHwnd* SingletonHwnd::GetInstance() {
   return Singleton<SingletonHwnd>::get();
 }
 
-void SingletonHwnd::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void SingletonHwnd::RemoveObserver(Observer* observer) {
-  if (!hwnd())
-    return;
-  observer_list_.RemoveObserver(observer);
-}
-
 BOOL SingletonHwnd::ProcessWindowMessage(HWND window,
                                          UINT message,
                                          WPARAM wparam,
                                          LPARAM lparam,
                                          LRESULT& result,
                                          DWORD msg_map_id) {
-  FOR_EACH_OBSERVER(Observer,
+  FOR_EACH_OBSERVER(SingletonHwndObserver,
                     observer_list_,
                     OnWndProc(window, message, wparam, lparam));
   return false;
@@ -47,6 +38,20 @@ SingletonHwnd::SingletonHwnd() {
 }
 
 SingletonHwnd::~SingletonHwnd() {
+  // WindowImpl will clean up the hwnd value on WM_NCDESTROY.
+  if (hwnd())
+    DestroyWindow(hwnd());
+
+  // Tell all of our current observers to clean themselves up.
+  FOR_EACH_OBSERVER(SingletonHwndObserver, observer_list_, ClearWndProc());
+}
+
+void SingletonHwnd::AddObserver(SingletonHwndObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void SingletonHwnd::RemoveObserver(SingletonHwndObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 }  // namespace gfx

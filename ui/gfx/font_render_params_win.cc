@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/win/registry.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/win/direct_write.h"
-#include "ui/gfx/win/singleton_hwnd.h"
+#include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {
 
@@ -42,7 +44,7 @@ FontRenderParams::SubpixelRendering GetSubpixelRenderingGeometry() {
 }
 
 // Caches font render params and updates them on system notifications.
-class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
+class CachedFontRenderParams {
  public:
   static CachedFontRenderParams* GetInstance() {
     return Singleton<CachedFontRenderParams>::get();
@@ -72,7 +74,9 @@ class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
         params_->subpixel_rendering = GetSubpixelRenderingGeometry();
       }
     }
-    gfx::SingletonHwnd::GetInstance()->AddObserver(this);
+    singleton_hwnd_observer_.reset(new SingletonHwndObserver(
+        base::Bind(&CachedFontRenderParams::OnWndProc,
+                   base::Unretained(this))));
     return *params_;
   }
 
@@ -80,22 +84,17 @@ class CachedFontRenderParams : public gfx::SingletonHwnd::Observer {
   friend struct DefaultSingletonTraits<CachedFontRenderParams>;
 
   CachedFontRenderParams() {}
-  virtual ~CachedFontRenderParams() {
-    // Can't remove the SingletonHwnd observer here since SingletonHwnd may have
-    // been destroyed already (both singletons).
-  }
+  ~CachedFontRenderParams() {}
 
-  void OnWndProc(HWND hwnd,
-                 UINT message,
-                 WPARAM wparam,
-                 LPARAM lparam) override {
+  void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     if (message == WM_SETTINGCHANGE) {
       params_.reset();
-      gfx::SingletonHwnd::GetInstance()->RemoveObserver(this);
+      singleton_hwnd_observer_.reset(nullptr);
     }
   }
 
   scoped_ptr<FontRenderParams> params_;
+  scoped_ptr<SingletonHwndObserver> singleton_hwnd_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedFontRenderParams);
 };

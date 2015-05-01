@@ -7,26 +7,25 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "ui/gfx/win/singleton_hwnd.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
+#include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace content {
 
-class TimeZoneMonitorWin : public TimeZoneMonitor,
-                           public gfx::SingletonHwnd::Observer {
+class TimeZoneMonitorWin : public TimeZoneMonitor {
  public:
-  TimeZoneMonitorWin() : TimeZoneMonitor() {
-    gfx::SingletonHwnd::GetInstance()->AddObserver(this);
-  }
+  TimeZoneMonitorWin()
+      : TimeZoneMonitor(),
+        singleton_hwnd_observer_(
+            new gfx::SingletonHwndObserver(base::Bind(
+                &TimeZoneMonitorWin::OnWndProc, base::Unretained(this)))) {}
 
-  ~TimeZoneMonitorWin() override {
-    gfx::SingletonHwnd::GetInstance()->RemoveObserver(this);
-  }
+  ~TimeZoneMonitorWin() override {}
 
-  // gfx::SingletonHwnd::Observer implementation.
-  void OnWndProc(HWND hwnd,
-                 UINT message,
-                 WPARAM wparam,
-                 LPARAM lparam) override {
+ private:
+  void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     if (message != WM_TIMECHANGE) {
       return;
     }
@@ -34,7 +33,8 @@ class TimeZoneMonitorWin : public TimeZoneMonitor,
     NotifyRenderers();
   }
 
- private:
+  scoped_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitorWin);
 };
 

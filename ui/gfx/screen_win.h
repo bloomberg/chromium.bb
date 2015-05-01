@@ -6,15 +6,15 @@
 #define UI_GFX_SCREEN_WIN_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/win/singleton_hwnd.h"
+#include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {
 
-class GFX_EXPORT ScreenWin : public Screen,
-                             public SingletonHwnd::Observer {
+class GFX_EXPORT ScreenWin : public Screen {
  public:
   ScreenWin();
   ~ScreenWin() override;
@@ -33,12 +33,6 @@ class GFX_EXPORT ScreenWin : public Screen,
   void AddObserver(DisplayObserver* observer) override;
   void RemoveObserver(DisplayObserver* observer) override;
 
-  // Overriden from gfx::SingletonHwnd::Observer.
-  void OnWndProc(HWND hwnd,
-                 UINT message,
-                 WPARAM wparam,
-                 LPARAM lparam) override;
-
   // Returns the HWND associated with the NativeView.
   virtual HWND GetHWNDFromNativeView(NativeView window) const;
 
@@ -46,8 +40,12 @@ class GFX_EXPORT ScreenWin : public Screen,
   virtual NativeWindow GetNativeWindowFromHWND(HWND hwnd) const;
 
  private:
+  void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+
   // Helper implementing the DisplayObserver handling.
   gfx::DisplayChangeNotifier change_notifier_;
+
+  scoped_ptr<SingletonHwndObserver> singleton_hwnd_observer_;
 
   // Current list of displays.
   std::vector<gfx::Display> displays_;

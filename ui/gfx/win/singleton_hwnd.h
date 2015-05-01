@@ -8,33 +8,21 @@
 #include <windows.h>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/observer_list.h"
+#include "ui/gfx/gfx_export.h"
 #include "ui/gfx/win/window_impl.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
 namespace gfx {
 
+class SingletonHwndObserver;
+
 // Singleton message-only HWND that allows interested clients to receive WM_*
 // notifications.
 class GFX_EXPORT SingletonHwnd : public WindowImpl {
  public:
   static SingletonHwnd* GetInstance();
-
-  // Observer interface for receiving Windows WM_* notifications.
-  class Observer {
-   public:
-    virtual void OnWndProc(HWND hwnd,
-                           UINT message,
-                           WPARAM wparam,
-                           LPARAM lparam) = 0;
-  };
-
-  // Add/remove observer to receive WM_* notifications.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // Windows callback for WM_* notifications.
   BOOL ProcessWindowMessage(HWND window,
@@ -45,13 +33,18 @@ class GFX_EXPORT SingletonHwnd : public WindowImpl {
                             DWORD msg_map_id) override;
 
  private:
+  friend class SingletonHwndObserver;
   friend struct DefaultSingletonTraits<SingletonHwnd>;
 
   SingletonHwnd();
   ~SingletonHwnd() override;
 
+  // Add/remove SingletonHwndObserver to forward WM_* notifications.
+  void AddObserver(SingletonHwndObserver* observer);
+  void RemoveObserver(SingletonHwndObserver* observer);
+
   // List of registered observers.
-  ObserverList<Observer> observer_list_;
+  ObserverList<SingletonHwndObserver, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SingletonHwnd);
 };

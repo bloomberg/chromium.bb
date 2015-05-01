@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,13 +87,11 @@ std::vector<gfx::Display> GetDisplays() {
 namespace gfx {
 
 ScreenWin::ScreenWin()
-    : displays_(GetDisplays()) {
-  SingletonHwnd::GetInstance()->AddObserver(this);
-}
+    : displays_(GetDisplays()),
+      singleton_hwnd_observer_(new SingletonHwndObserver(
+          base::Bind(&ScreenWin::OnWndProc, base::Unretained(this)))) {}
 
-ScreenWin::~ScreenWin() {
-  SingletonHwnd::GetInstance()->RemoveObserver(this);
-}
+ScreenWin::~ScreenWin() {}
 
 gfx::Point ScreenWin::GetCursorScreenPoint() {
   POINT pt;

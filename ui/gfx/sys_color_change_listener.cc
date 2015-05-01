@@ -9,12 +9,15 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "ui/gfx/color_utils.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/win/singleton_hwnd.h"
+#include "ui/gfx/win/singleton_hwnd_observer.h"
 #endif
 
 namespace gfx {
@@ -49,7 +52,7 @@ bool IsInvertedColorScheme() {
 }
 
 #if defined(OS_WIN)
-class SysColorChangeObserver : public gfx::SingletonHwnd::Observer {
+class SysColorChangeObserver {
  public:
   static SysColorChangeObserver* GetInstance();
 
@@ -62,12 +65,10 @@ class SysColorChangeObserver : public gfx::SingletonHwnd::Observer {
   SysColorChangeObserver();
   virtual ~SysColorChangeObserver();
 
-  void OnWndProc(HWND hwnd,
-                 UINT message,
-                 WPARAM wparam,
-                 LPARAM lparam) override;
+  void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
   ObserverList<SysColorChangeListener> listeners_;
+  scoped_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 };
 
 // static
@@ -75,13 +76,12 @@ SysColorChangeObserver* SysColorChangeObserver::GetInstance() {
   return Singleton<SysColorChangeObserver>::get();
 }
 
-SysColorChangeObserver::SysColorChangeObserver() {
-  gfx::SingletonHwnd::GetInstance()->AddObserver(this);
-}
+SysColorChangeObserver::SysColorChangeObserver()
+    : singleton_hwnd_observer_(new SingletonHwndObserver(
+          base::Bind(&SysColorChangeObserver::OnWndProc,
+                     base::Unretained(this)))) {}
 
-SysColorChangeObserver::~SysColorChangeObserver() {
-  gfx::SingletonHwnd::GetInstance()->RemoveObserver(this);
-}
+SysColorChangeObserver::~SysColorChangeObserver() {}
 
 void SysColorChangeObserver::AddListener(SysColorChangeListener* listener) {
   listeners_.AddObserver(listener);
