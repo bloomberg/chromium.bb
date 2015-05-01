@@ -453,6 +453,14 @@ BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
           extensions::pref_names::kBookmarkAppCreationLaunchType) ==
       extensions::LAUNCH_TYPE_WINDOW;
 
+  // The default app title is the page title, which can be quite long. Limit the
+  // default name used to something sensible.
+  const int kMaxDefaultTitle = 40;
+  if (web_app_info_.title.length() > kMaxDefaultTitle) {
+    web_app_info_.title = web_app_info_.title.substr(0, kMaxDefaultTitle - 3) +
+                          base::UTF8ToUTF16("...");
+  }
+
   registrar_.Add(this,
                  extensions::NOTIFICATION_CRX_INSTALLER_DONE,
                  content::Source<CrxInstaller>(crx_installer_.get()));
