@@ -556,6 +556,7 @@ crbug.com/471172 svg/text/columns-do-not-apply.html [ ImageOnlyFailure ]
 crbug.com/471172 virtual/slimmingpaint/svg/text/columns-do-not-apply.html [ ImageOnlyFailure ]
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
+crbug.com/483489 plugins/update-widgets-crash.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
