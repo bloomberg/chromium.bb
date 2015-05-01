@@ -217,7 +217,7 @@ class BuildRowController(object):
     # Hit the database.
     claction_entries = [c for c in claction_qs]
 
-    claction_history = clactions.CLActionStats(
+    claction_history = clactions.CLActionHistory(
         self._JoinBuildTableClActionTable(build_entries, claction_entries))
     # Convert times seconds -> minutes.
     return {k: v / 60.0

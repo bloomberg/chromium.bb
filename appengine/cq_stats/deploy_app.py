@@ -116,7 +116,7 @@ def main(argv):
     cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(chromite_dir))
 
     cmd = rsync_cmd + [
-        'chromite', tempdir,
+        'chromite', os.path.join(tempdir, 'cq_stats'),
         '--exclude=appengine',
         '--exclude=third_party',
         '--exclude=ssh_keys',
