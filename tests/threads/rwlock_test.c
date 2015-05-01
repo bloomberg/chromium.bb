@@ -11,7 +11,7 @@
 
 #include "native_client/src/include/nacl_assert.h"
 
-pthread_rwlock_t g_rwlock;
+pthread_rwlock_t g_rwlock = PTHREAD_RWLOCK_INITIALIZER;
 volatile int g_thread_has_lock = 0;
 volatile int g_thread_should_acquire_lock = 0;
 volatile int g_thread_should_release_lock = 0;
@@ -299,10 +299,8 @@ void test_unlocked_with_zero_timestamp(void) {
   ASSERT_EQ(rc, 0);
 }
 
-int main(int argc, char **argv) {
+void test_rwlock_init(void) {
   int rc;
-  fprintf(stderr, "Running...\n");
-
   pthread_rwlockattr_t attrs;
   rc = pthread_rwlockattr_init(&attrs);
   ASSERT_EQ(rc, 0);
@@ -326,12 +324,9 @@ int main(int argc, char **argv) {
   ASSERT_EQ(rc, 0);
   rc = pthread_rwlockattr_destroy(&attrs);
   ASSERT_EQ(rc, 0);
+}
 
-  pthread_t thread;
-  rc = pthread_create(&thread, NULL, locking_thread, NULL);
-  ASSERT_EQ(rc, 0);
-  fprintf(stderr, "Thread started.\n");
-
+void run_tests(void) {
   test_unlocked_with_zero_timestamp();
   test_multiple_readers();
   test_multiple_writers();
@@ -341,9 +336,28 @@ int main(int argc, char **argv) {
   test_writer_timedwait();
   test_recursive_reader();
   test_multiple_reader_wakeup();
+}
 
+int main(int argc, char **argv) {
+  int rc;
+  pthread_t thread;
+  fprintf(stderr, "Running...\n");
+
+  rc = pthread_create(&thread, NULL, locking_thread, NULL);
+  ASSERT_EQ(rc, 0);
+  fprintf(stderr, "Thread started.\n");
+
+  /*
+   * Call run_tests twice, first with the lock initialised via
+   * PTHREAD_RWLOCK_INITIALIZER and then via pthread_rwlockattr_init.
+   * The result should match since we don't set any non-default attributes
+   * when calling pthread_rwlockattr_init.
+   */
+  run_tests();
+  test_rwlock_init();
+  run_tests();
   rc = pthread_rwlock_destroy(&g_rwlock);
   ASSERT_EQ(rc, 0);
+
   fprintf(stderr, "Done.\n");
-  return 0;
 }

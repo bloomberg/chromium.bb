@@ -173,6 +173,10 @@ typedef struct {
     {0, 2, NACL_PTHREAD_ILLEGAL_THREAD_ID, 0, NC_INVALID_HANDLE}
 /** Statically initializes a condition variable (pthread_cond_t). */
 #define PTHREAD_COND_INITIALIZER {0, NC_INVALID_HANDLE}
+/** Statically initializes a rwlock (pthread_rwlock_t). */
+#define PTHREAD_RWLOCK_INITIALIZER \
+    {PTHREAD_MUTEX_INITIALIZER, 0, 0, NACL_PTHREAD_ILLEGAL_THREAD_ID, \
+     PTHREAD_COND_INITIALIZER, PTHREAD_COND_INITIALIZER}
 
 #define PTHREAD_PROCESS_PRIVATE  0
 #define PTHREAD_PROCESS_SHARED   1
@@ -193,7 +197,7 @@ typedef struct {
  * @return 0 upon success, 1 otherwise
  */
 int pthread_mutex_init(pthread_mutex_t *mutex,
-                              const pthread_mutexattr_t *mutex_attr);
+                       const pthread_mutexattr_t *mutex_attr);
 
 /**
  * @nqPosix
