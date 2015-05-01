@@ -49,7 +49,7 @@ const char kDataPromoNotificationId[] = "chrome://settings/internet/data_promo";
 const char kDataSaverNotificationId[] = "chrome://settings/internet/data_saver";
 const char kDataSaverExtensionUrl[] =
     "https://chrome.google.com/webstore/detail/"
-    "pfmgfdlgomnbgkofeojodiodmgpgmkac";
+    "pfmgfdlgomnbgkofeojodiodmgpgmkac?utm_source=chromeos-datasaver-prompt";
 
 const int kNotificationCountPrefDefault = -1;
 const int kTimesToShowDataSaverPrompt = 2;
