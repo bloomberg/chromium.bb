@@ -18,15 +18,14 @@ CrtcController::CrtcController(const scoped_refptr<DrmDevice>& drm,
     : drm_(drm),
       crtc_(crtc),
       connector_(connector),
-      saved_crtc_(drm->GetCrtc(crtc)),
       is_disabled_(true),
       time_of_last_flip_(0) {
 }
 
 CrtcController::~CrtcController() {
   if (!is_disabled_) {
-    drm_->SetCrtc(saved_crtc_.get(), std::vector<uint32_t>(1, connector_));
     SetCursor(nullptr);
+    drm_->DisableCrtc(crtc_);
     SignalPageFlipRequest();
   }
 }

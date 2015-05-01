@@ -36,17 +36,17 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
   auto crtcs = controller->crtc_controllers();
   DCHECK(!crtcs.empty());
 
-  if (!crtcs[0]->saved_crtc() || !crtcs[0]->saved_crtc()->buffer_id) {
+  ScopedDrmCrtcPtr saved_crtc(drm->GetCrtc(crtcs[0]->crtc()));
+  if (!saved_crtc || !saved_crtc->buffer_id) {
     VLOG(2) << "Crtc has no saved state or wasn't modeset";
     return;
   }
 
   // If the display controller is in mirror mode, the CRTCs should be sharing
   // the same framebuffer.
-  DrmConsoleBuffer saved_buffer(drm, crtcs[0]->saved_crtc()->buffer_id);
+  DrmConsoleBuffer saved_buffer(drm, saved_crtc->buffer_id);
   if (!saved_buffer.Initialize()) {
-    VLOG(2) << "Failed to grab saved framebuffer "
-            << crtcs[0]->saved_crtc()->buffer_id;
+    VLOG(2) << "Failed to grab saved framebuffer " << saved_crtc->buffer_id;
     return;
   }
 

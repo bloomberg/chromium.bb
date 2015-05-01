@@ -41,8 +41,6 @@ class OZONE_EXPORT CrtcController
   bool is_disabled() const { return is_disabled_; }
   uint64_t time_of_last_flip() const { return time_of_last_flip_; }
 
-  drmModeCrtc* saved_crtc() const { return saved_crtc_.get(); }
-
   // Perform the initial modesetting operation using |plane| as the buffer for
   // the primary plane. The CRTC configuration is specified by |mode|.
   bool Modeset(const OverlayPlane& plane, drmModeModeInfo mode);
@@ -93,10 +91,6 @@ class OZONE_EXPORT CrtcController
   uint32_t connector_;
 
   drmModeModeInfo mode_;
-
-  // Store the state of the CRTC before we took over. Used to restore the CRTC
-  // once we no longer need it.
-  ScopedDrmCrtcPtr saved_crtc_;
 
   // Keeps track of the CRTC state. If a surface has been bound, then the value
   // is set to false. Otherwise it is true.
