@@ -6,10 +6,10 @@ package org.chromium.android_webview.test;
 
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.util.Log;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwWebContentsDelegate;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 
@@ -45,12 +45,15 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
         });
     }
 
-    private static String getLogMessageJavaScriptData(String consoleLogMethod, String message) {
+    private static String getLogMessageJavaScriptData(
+            String consoleLogMethod, String message, boolean quoteMessage) {
         // The %0A sequence is an encoded newline and is needed to test the source line number.
+        String logMessage = message;
+        if (quoteMessage) logMessage = "'" + logMessage + "'";
         return "<html>%0A"
                 + "<body>%0A"
                 + "  <script>%0A"
-                + "  console." + consoleLogMethod + "('" + message + "');%0A"
+                + "  console." + consoleLogMethod + "(" + logMessage + ");%0A"
                 + "  </script>%0A"
                 + "  <div>%0A"
                 + "Logging the message [" + message + "] using console." + consoleLogMethod
@@ -68,7 +71,7 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
 
         int callCount = addMessageToConsoleHelper.getCallCount();
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                     getLogMessageJavaScriptData("error", "msg"),
+                getLogMessageJavaScriptData("error", "msg", true),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
         assertEquals(AwWebContentsDelegate.LOG_LEVEL_ERROR ,
@@ -76,7 +79,7 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
 
         callCount = addMessageToConsoleHelper.getCallCount();
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                     getLogMessageJavaScriptData("warn", "msg"),
+                getLogMessageJavaScriptData("warn", "msg", true),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
         assertEquals(AwWebContentsDelegate.LOG_LEVEL_WARNING ,
@@ -84,7 +87,7 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
 
         callCount = addMessageToConsoleHelper.getCallCount();
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                     getLogMessageJavaScriptData("log", "msg"),
+                getLogMessageJavaScriptData("log", "msg", true),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
         assertEquals(AwWebContentsDelegate.LOG_LEVEL_LOG ,
@@ -102,15 +105,14 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
 
         int callCount = addMessageToConsoleHelper.getCallCount();
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                     getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE),
+                getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE, true),
                      "text/html", false);
-        Log.w("test", getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE));
         addMessageToConsoleHelper.waitForCallback(callCount);
         assertEquals(TEST_MESSAGE_ONE, addMessageToConsoleHelper.getMessage());
 
         callCount = addMessageToConsoleHelper.getCallCount();
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                     getLogMessageJavaScriptData("log", TEST_MESSAGE_TWO),
+                getLogMessageJavaScriptData("log", TEST_MESSAGE_TWO, true),
                      "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
         assertEquals(TEST_MESSAGE_TWO, addMessageToConsoleHelper.getMessage());
@@ -123,7 +125,7 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
                 mContentsClient.getAddMessageToConsoleHelper();
 
         int callCount = addMessageToConsoleHelper.getCallCount();
-        String data = getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE);
+        String data = getLogMessageJavaScriptData("log", TEST_MESSAGE_ONE, true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                      data, "text/html", false);
         addMessageToConsoleHelper.waitForCallback(callCount);
@@ -131,5 +133,26 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
                    + data + "].", addMessageToConsoleHelper.getSourceId().endsWith(data));
         assertEquals(LOG_MESSAGE_JAVASCRIPT_DATA_LINE_NUMBER,
                      addMessageToConsoleHelper.getLineNumber());
+    }
+
+    /**
+     * http://crbug.com/481013
+     * Only the first argument makes it to onConsoleMessage:
+     *   junit.framework.ComparisonFailure: expected:<1[ 2 3]> but was:<1[]>
+     *
+     * @SmallTest
+     * @Feature({"AndroidWebView"})
+     */
+    @DisabledTest
+    public void testAddMessageToConsoleWithMultipleArgs() throws Throwable {
+        TestAwContentsClient.AddMessageToConsoleHelper addMessageToConsoleHelper =
+                mContentsClient.getAddMessageToConsoleHelper();
+
+        int callCount = addMessageToConsoleHelper.getCallCount();
+        String data = getLogMessageJavaScriptData("log", "1, 2, 3", false);
+        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                     data, "text/html", false);
+        addMessageToConsoleHelper.waitForCallback(callCount);
+        assertEquals("1 2 3", addMessageToConsoleHelper.getMessage());
     }
 }
