@@ -562,25 +562,25 @@ class RemoteDevice(object):
 
   DEFAULT_BASE_DIR = '/tmp/remote-access'
 
-  def __init__(self, hostname, port=None, username=None, connect=True,
+  def __init__(self, hostname, port=None, username=None,
                base_dir=DEFAULT_BASE_DIR, connect_settings=None,
-               private_key=None, debug_level=logging.DEBUG, ping=True):
+               private_key=None, debug_level=logging.DEBUG, ping=True,
+               connect=True):
     """Initializes a RemoteDevice object.
-
-    By default (connect=True), setup ssh connection and working directory on the
-    device. If connect=False, must call Connect() explicitly in order to have
-    ssh connections with the device.
 
     Args:
       hostname: The hostname of the device.
       port: The ssh port of the device.
       username: The ssh login username.
-      connect: Whether to set up the ssh connection on initialization.
-      base_dir: The base directory of the working directory on the device.
+      base_dir: The base work directory to create on the device, or
+        None. Required in order to use RunCommand(), but
+        BaseRunCommand() will be available in either case.
       connect_settings: Default SSH connection settings.
       private_key: The identify file to pass to `ssh -i`.
       debug_level: Setting debug level for logging.
       ping: Whether to ping the device before attempting to connect.
+      connect: True to set up the connection, otherwise set up will
+        be automatically deferred until device use.
     """
     self.hostname = hostname
     self.port = port
@@ -591,17 +591,18 @@ class RemoteDevice(object):
                              CompileSSHConnectSettings())
     self.private_key = private_key
     self.debug_level = debug_level
-    # The working directory on the device.
+    # The temporary work directories on the device.
     self.base_dir = base_dir
-    self.agent = None
     self.work_dir = None
+    # Use GetAgent() instead of accessing this directly for deferred connect.
+    self._agent = None
     self.cleanup_cmds = []
 
     if ping and not self.Pingable():
       raise DeviceNotPingableError('Device %s is not pingable.' % self.hostname)
 
     if connect:
-      self.Connect()
+      self._Connect()
 
   def Pingable(self, timeout=20):
     """Returns True if the device is pingable.
@@ -618,44 +619,35 @@ class RemoteDevice(object):
         capture_output=True)
     return result.returncode == 0
 
-  def Connect(self, setup_work_dir=True):
-    """The ssh connection and working directory setup for the device.
+  def GetAgent(self):
+    """Agent accessor; connects the agent if necessary."""
+    if not self._agent:
+      self._Connect()
+    return self._agent
 
-    This method must be called in order to have ssh connections with the remote
-    device. And BaseRunCommand() will only be available after this method is
-    called. If |setup_work_dir| is true, a working directory will be setup on
-    the remote device and RunCommand() will also be available after this method
-    is called.
-
-    By default, this method is called in __init__().
-
-    Args:
-      setup_work_dir: Whether to setup working directory on the remote device.
-    """
-    self.agent = self._SetupSSH()
-    if setup_work_dir:
-      self._SetupRemoteWorkDir()
-
-  def _SetupSSH(self):
-    """Setup the ssh connection with device."""
-    return RemoteAccess(self.hostname, self.tempdir.tempdir, port=self.port,
-                        username=self.username, private_key=self.private_key)
+  def _Connect(self):
+    """Sets up the SSH connection and device work directories."""
+    self._agent = RemoteAccess(self.hostname, self.tempdir.tempdir,
+                               port=self.port, username=self.username,
+                               private_key=self.private_key)
+    self._SetupRemoteWorkDir()
 
   def _SetupRemoteWorkDir(self):
     """Setup working directory on the remote device."""
-    self.BaseRunCommand(['mkdir', '-p', self.base_dir])
-    self.work_dir = self.BaseRunCommand(
-        ['mktemp', '-d', '--tmpdir=%s' % self.base_dir],
-        capture_output=True).output.strip()
-    logging.debug(
-        'The temporary working directory on the device is %s', self.work_dir)
+    if self.base_dir:
+      self.BaseRunCommand(['mkdir', '-p', self.base_dir])
+      self.work_dir = self.BaseRunCommand(
+          ['mktemp', '-d', '--tmpdir=%s' % self.base_dir],
+          capture_output=True).output.strip()
+      logging.debug(
+          'The temporary working directory on the device is %s', self.work_dir)
 
-    self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
+      self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
 
   def HasRsync(self):
     """Checks if rsync exists on the device."""
-    result = self.agent.RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
-                                  '--version'], error_code_ok=True)
+    result = self.GetAgent().RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
+                                       '--version'], error_code_ok=True)
     return result.returncode == 0
 
   def RegisterCleanupCmd(self, cmd, **kwargs):
@@ -687,9 +679,9 @@ class RemoteDevice(object):
     if mode == 'scp':
       # scp always follow symlinks
       kwargs.pop('follow_symlinks', None)
-      func = self.agent.Scp
+      func = self.GetAgent().Scp
     else:
-      func = self.agent.Rsync
+      func = self.GetAgent().Rsync
 
     return RunCommandFuncWrapper(func, msg, src, dest, **kwargs)
 
@@ -703,9 +695,9 @@ class RemoteDevice(object):
     if mode == 'scp':
       # scp always follow symlinks
       kwargs.pop('follow_symlinks', None)
-      func = self.agent.ScpToLocal
+      func = self.GetAgent().ScpToLocal
     else:
-      func = self.agent.RsyncToLocal
+      func = self.GetAgent().RsyncToLocal
 
     return RunCommandFuncWrapper(func, msg, src, dest, **kwargs)
 
@@ -724,13 +716,14 @@ class RemoteDevice(object):
       path: path on the device to check.
     """
     tmp_file = os.path.join(path, 'tmp.remote_access')
-    result = self.agent.RemoteSh(['touch', tmp_file], remote_sudo=True,
-                                 error_code_ok=True, capture_output=True)
+    result = self.GetAgent().RemoteSh(['touch', tmp_file], remote_sudo=True,
+                                      error_code_ok=True, capture_output=True)
 
     if result.returncode != 0:
       return False
 
-    self.agent.RemoteSh(['rm', tmp_file], error_code_ok=True, remote_sudo=True)
+    self.GetAgent().RemoteSh(['rm', tmp_file], error_code_ok=True,
+                             remote_sudo=True)
 
     return True
 
@@ -745,8 +738,8 @@ class RemoteDevice(object):
       not executable.
     """
     cmd = ['test', '-f', path, '-a', '-x', path,]
-    result = self.agent.RemoteSh(cmd, remote_sudo=True, error_code_ok=True,
-                                 capture_output=True)
+    result = self.GetAgent().RemoteSh(cmd, remote_sudo=True, error_code_ok=True,
+                                      capture_output=True)
     return result.returncode == 0
 
   def GetSize(self, path):
@@ -798,7 +791,7 @@ class RemoteDevice(object):
   def PipeOverSSH(self, filepath, cmd, **kwargs):
     """Cat a file and pipe over SSH."""
     producer_cmd = ['cat', filepath]
-    return self.agent.PipeToRemoteSh(producer_cmd, cmd, **kwargs)
+    return self.GetAgent().PipeToRemoteSh(producer_cmd, cmd, **kwargs)
 
   def GetRunningPids(self, exe, full_path=True):
     """Get all the running pids on the device with the executable path.
@@ -815,7 +808,8 @@ class RemoteDevice(object):
       cmd = ['pgrep', exe]
       if full_path:
         cmd.append('-f')
-      result = self.agent.RemoteSh(cmd, error_code_ok=True, capture_output=True)
+      result = self.GetAgent().RemoteSh(cmd, error_code_ok=True,
+                                        capture_output=True)
       try:
         return [int(pid) for pid in result.output.splitlines()]
       except ValueError:
@@ -827,7 +821,7 @@ class RemoteDevice(object):
 
   def Reboot(self):
     """Reboot the device."""
-    return self.agent.RemoteReboot()
+    return self.GetAgent().RemoteReboot()
 
   def BaseRunCommand(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.
@@ -840,7 +834,7 @@ class RemoteDevice(object):
     kwargs.setdefault('debug_level', self.debug_level)
     kwargs.setdefault('connect_settings', self.connect_settings)
     try:
-      return self.agent.RemoteSh(cmd, **kwargs)
+      return self.GetAgent().RemoteSh(cmd, **kwargs)
     except SSHConnectionError:
       logging.error('Error connecting to device %s', self.hostname)
       raise
@@ -871,7 +865,7 @@ class RemoteDevice(object):
         self.CopyToWorkDir(f.name)
         env_file = os.path.join(self.work_dir, os.path.basename(f.name))
         new_cmd = ['.', '%s;' % env_file]
-        if remote_sudo and self.agent.username != ROOT_ACCOUNT:
+        if remote_sudo and self.GetAgent().username != ROOT_ACCOUNT:
           new_cmd += ['sudo', '-E']
 
         new_cmd += cmd
@@ -1148,9 +1142,11 @@ def _GetDefaultService():
 
 def GetUSBConnectedDevices():
   """Returns a list of all USB-connected devices."""
+  # Use connect=False so that we don't try to set up the device connections
+  # until the device is used.
   return [ChromiumOSDevice(
       service.ip, alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
-      connect=False, ping=False) for service in _DiscoverServices()]
+      ping=False, connect=False) for service in _DiscoverServices()]
 
 
 def GetUSBDeviceIP(alias):

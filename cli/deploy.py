@@ -316,8 +316,8 @@ print(json.dumps(pkg_info))
     """Initializes a dictionary of packages installed on |device|."""
     get_vartree_script = self._GetVartreeSnippet(root)
     try:
-      result = device.agent.RemoteSh('python', remote_sudo=True,
-                                     input=get_vartree_script)
+      result = device.GetAgent().RemoteSh('python', remote_sudo=True,
+                                          input=get_vartree_script)
     except cros_build_lib.RunCommandError as e:
       logging.error('Cannot get target vartree:\n%s', e.result.error)
       raise

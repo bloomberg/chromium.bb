@@ -152,17 +152,16 @@ Quoting can be tricky; the rules are the same as with ssh:
     """
     # Create the ChromiumOSDevice the first time through this function.
     if not self.device:
+      # Set |base_dir| to None to avoid the SSH setup commands which
+      # could require the user to enter a password multiple times. We don't
+      # need any of the additional functionality that |base_dir| enables.
       self.device = remote_access.ChromiumOSDevice(
           self.ssh_hostname,
           port=self.ssh_port,
           username=self.ssh_username,
+          base_dir=None,
           private_key=self.ssh_private_key,
-          connect=False,
           ping=False)
-      # Set |setup_work_dir| to False to avoid the SSH setup commands which
-      # could require the user to enter a password multiple times. We don't
-      # need any of the additional functionality that |setup_work_dir| enables.
-      self.device.Connect(setup_work_dir=False)
     return self.device.BaseRunCommand(
         self.command,
         connect_settings=self._ConnectSettings(),

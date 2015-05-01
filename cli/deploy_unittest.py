@@ -35,7 +35,10 @@ class ChromiumOSDeviceHandlerFake(object):
       return cros_build_lib.CommandResult(output=self.remote_sh_output)
 
   def __init__(self):
-    self.agent = self.RemoteAccessFake()
+    self._agent = self.RemoteAccessFake()
+
+  def GetAgent(self):
+    return self._agent
 
 
 class DbApiFake(object):
@@ -80,7 +83,7 @@ class TestInstallPackageScanner(cros_test_lib.MockTestCase):
     self.scanner = deploy._InstallPackageScanner(self._BUILD_ROOT)
 
   def SetupVartree(self, vartree_pkgs):
-    self.device.agent.remote_sh_output = json.dumps(vartree_pkgs)
+    self.device.GetAgent().remote_sh_output = json.dumps(vartree_pkgs)
 
   def SetupBintree(self, bintree_pkgs):
     bintree = PortageTreeFake(DbApiFake(bintree_pkgs))

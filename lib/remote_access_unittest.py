@@ -233,6 +233,44 @@ class CheckIfRebootedTest(RemoteAccessTest):
     self.assertRaises(Exception, self.host._CheckIfRebooted)
 
 
+class RemoteDeviceTest(cros_test_lib.MockTestCase):
+  """Tests for RemoteDevice class."""
+
+  def setUp(self):
+    self.rsh_mock = self.StartPatcher(RemoteShMock())
+    self.pingable_mock = self.PatchObject(
+        remote_access.RemoteDevice, 'Pingable', return_value=True)
+
+  def _SetupRemoteTempDir(self):
+    """Mock out the calls needed for a remote tempdir."""
+    self.rsh_mock.AddCmdResult(partial_mock.In('mkdir'))
+    self.rsh_mock.AddCmdResult(partial_mock.In('mktemp'))
+    self.rsh_mock.AddCmdResult(partial_mock.In('rm'))
+
+  def testCommands(self):
+    """Tests simple RunCommand() and BaseRunCommand() usage."""
+    command = ['echo', 'foo']
+    expected_output = 'foo'
+    self.rsh_mock.AddCmdResult(command, output=expected_output)
+    self._SetupRemoteTempDir()
+
+    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+      self.assertEqual(expected_output,
+                       device.RunCommand(['echo', 'foo']).output)
+      self.assertEqual(expected_output,
+                       device.BaseRunCommand(['echo', 'foo']).output)
+
+  def testNoDeviceBaseDir(self):
+    """Tests base_dir=None."""
+    command = ['echo', 'foo']
+    expected_output = 'foo'
+    self.rsh_mock.AddCmdResult(command, output=expected_output)
+
+    with remote_access.RemoteDeviceHandler('1.1.1.1', base_dir=None) as device:
+      self.assertEqual(expected_output,
+                       device.BaseRunCommand(['echo', 'foo']).output)
+
+
 class USBDeviceTestCase(mdns_unittest.mDnsTestCase):
   """Base class for USB device related tests."""
 
