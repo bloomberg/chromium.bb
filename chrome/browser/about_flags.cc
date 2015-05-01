@@ -962,6 +962,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchpadThreeFingerClick)
   },
   {
+    "ash-enable-unified-desktop",
+    IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_NAME,
+    IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableUnifiedDesktop)
+  },
+  {
     "disable-easy-unlock",
     IDS_FLAGS_DISABLE_EASY_UNLOCK_NAME,
     IDS_FLAGS_DISABLE_EASY_UNLOCK_DESCRIPTION,

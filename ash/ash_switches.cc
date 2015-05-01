@@ -55,6 +55,9 @@ const char kAshEnableFullscreenAppList[] = "ash-enable-fullscreen-app-list";
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
 
+// Enables unified desktop mode.
+const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
+
 #endif
 
 // Enables mirrored screen.
@@ -131,9 +134,7 @@ bool ConstrainPointerToRoot() {
              kAshConstrainPointerToRoot);
 }
 
-// Enables unified desktop mode.
 bool UnifiedDesktopEnabled() {
-  const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kAshEnableUnifiedDesktop);
 }

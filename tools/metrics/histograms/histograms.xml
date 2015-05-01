@@ -55460,6 +55460,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-86788587" label="allow-autofill-sync-credential"/>
   <int value="-80353187" label="disable-display-color-calibration"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
+  <int value="-70595606" label="ash-enable-unified-desktop"/>
   <int value="-68225452" label="enable-translate-new-ux"/>
   <int value="-58242474" label="ash-disable-swipe-to-close-in-overview-mode"/>
   <int value="-55944747" label="disable-child-account-detection"/>

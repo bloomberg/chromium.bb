@@ -6292,6 +6292,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_DESCRIPTION" desc="Description for the flag to enable touchpad three finger click as middle button.">
           Enables touchpad three-finger-click as middle button.
         </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_NAME" desc="Name for the flag to enable unified desktop mode.">
+          Enable unified desktop mode.
+        </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_UNIFIED_DESKTOP_DESCRIPTION" desc="Description for the flag to enable unified desktop mode.">
+          Enable unified desktop mode which allows a window to span multiple displays.
+        </message>
         <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION" desc="Name for the flag to disable wallpaper boot animation (except for OOBE).">
           Disable boot animation.
         </message>
