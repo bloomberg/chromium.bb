@@ -485,6 +485,12 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
     m_grainOffset = grainOffset;
     m_grainDuration = grainDuration;
 
+    // The node is started. Add a reference to keep us alive so that audio
+    // will eventually get played even if Javascript should drop all references
+    // to this node. The reference will get dropped when the source has finished
+    // playing.
+    context()->notifySourceNodeStartedProcessing(node());
+
     // If |when| < currentTime, the source must start now according to the spec.
     // So just set startTime to currentTime in this case to start the source now.
     m_startTime = std::max(when, context()->currentTime());
