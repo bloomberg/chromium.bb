@@ -886,9 +886,8 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
-  // If things are being aborted, end the current BeginImplFrame ASAP so we can
-  // unblock creating the next output surface.
-  if (PendingDrawsShouldBeAborted())
+  // If we just forced activation, we should end the deadline right now.
+  if (PendingActivationsShouldBeForced() && !has_pending_tree_)
     return true;
 
   // SwapAck throttle the deadline since we wont draw and swap anyway.
