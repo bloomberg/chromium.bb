@@ -114,11 +114,17 @@ weston_launcher_open(struct weston_launcher *launcher,
 	struct weston_launcher_open *message;
 	struct stat s;
 
+	/* We really don't want to be leaking fds to child processes so
+	 * we force this flag here.  If someone comes up with a legitimate
+	 * reason to not CLOEXEC they'll need to unset the flag manually.
+	 */
+	flags |= O_CLOEXEC;
+
 	if (launcher->logind)
 		return weston_logind_open(launcher->logind, path, flags);
 
 	if (launcher->fd == -1) {
-		fd = open(path, flags | O_CLOEXEC);
+		fd = open(path, flags);
 		if (fd == -1)
 			return -1;
 

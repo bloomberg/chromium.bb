@@ -186,8 +186,8 @@ weston_logind_open(struct weston_logind *wl, const char *path,
 	 * directly. Instead, logind passes us an fd with sane default modes.
 	 * For DRM and evdev this means O_RDWR | O_CLOEXEC. If we want
 	 * something else, we need to change it afterwards. We currently
-	 * only support dropping FD_CLOEXEC and setting O_NONBLOCK. Changing
-	 * access-modes is not possible so accept whatever logind passes us. */
+	 * only support setting O_NONBLOCK. Changing access-modes is not
+	 * possible so accept whatever logind passes us. */
 
 	fl = fcntl(fd, F_GETFL);
 	if (fl < 0) {
@@ -203,22 +203,6 @@ weston_logind_open(struct weston_logind *wl, const char *path,
 		r = -errno;
 		goto err_close;
 	}
-
-	fl = fcntl(fd, F_GETFD);
-	if (fl < 0) {
-		r = -errno;
-		goto err_close;
-	}
-
-	if (!(flags & O_CLOEXEC))
-		fl &= ~FD_CLOEXEC;
-
-	r = fcntl(fd, F_SETFD, fl);
-	if (r < 0) {
-		r = -errno;
-		goto err_close;
-	}
-
 	return fd;
 
 err_close:
