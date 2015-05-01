@@ -585,9 +585,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // If > 0 indicates a menu is running (we're showing a native menu).
   int menu_depth_;
 
-  // A factory used to lookup appbar autohide edges.
-  base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
-
   // Generates touch-ids for touch-events.
   ui::SequentialIDGenerator id_generator_;
 
@@ -626,6 +623,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // glass. Defaults to false.
   bool dwm_transition_desired_;
 
+  // A factory used to lookup appbar autohide edges.
+  base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
+
+  // The factory used with BEGIN_SAFE_MSG_MAP_EX.
   base::WeakPtrFactory<HWNDMessageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);

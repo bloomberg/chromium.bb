@@ -353,7 +353,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       waiting_for_redraw_layered_window_contents_(false),
       is_first_nccalc_(true),
       menu_depth_(0),
-      autohide_factory_(this),
       id_generator_(0),
       needs_scroll_styles_(false),
       in_size_loop_(false),
@@ -361,6 +360,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       last_mouse_hwheel_time_(0),
       msg_handled_(FALSE),
       dwm_transition_desired_(false),
+      autohide_factory_(this),
       weak_factory_(this) {
 }
 
