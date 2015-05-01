@@ -14,13 +14,15 @@ namespace gfx {
 class GLSurfaceWGL : public GLSurface {
  public:
   GLSurfaceWGL();
-  ~GLSurfaceWGL() override;
 
   // Implement GLSurface.
   void* GetDisplay() override;
 
   static bool InitializeOneOff();
   static HDC GetDisplayDC();
+
+ protected:
+  ~GLSurfaceWGL() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceWGL);
@@ -30,7 +32,6 @@ class GLSurfaceWGL : public GLSurface {
 class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
  public:
   explicit NativeViewGLSurfaceWGL(gfx::AcceleratedWidget window);
-  ~NativeViewGLSurfaceWGL() override;
 
   // Implement GLSurface.
   bool Initialize() override;
@@ -41,6 +42,8 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
   void* GetHandle() override;
 
  private:
+  ~NativeViewGLSurfaceWGL() override;
+
   gfx::AcceleratedWidget window_;
   gfx::AcceleratedWidget child_window_;
   HDC device_context_;
@@ -53,7 +56,6 @@ class NativeViewGLSurfaceWGL : public GLSurfaceWGL {
 class PbufferGLSurfaceWGL : public GLSurfaceWGL {
  public:
   explicit PbufferGLSurfaceWGL(const gfx::Size& size);
-  ~PbufferGLSurfaceWGL() override;
 
   // Implement GLSurface.
   bool Initialize() override;
@@ -64,6 +66,8 @@ class PbufferGLSurfaceWGL : public GLSurfaceWGL {
   void* GetHandle() override;
 
  private:
+  ~PbufferGLSurfaceWGL() override;
+
   gfx::Size size_;
   HDC device_context_;
   void* pbuffer_;

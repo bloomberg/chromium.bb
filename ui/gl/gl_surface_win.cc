@@ -33,7 +33,6 @@ namespace gfx {
 class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
  public:
   explicit NativeViewGLSurfaceOSMesa(gfx::AcceleratedWidget window);
-  ~NativeViewGLSurfaceOSMesa() override;
 
   // Implement subset of GLSurface.
   bool Initialize() override;
@@ -44,6 +43,8 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   bool PostSubBuffer(int x, int y, int width, int height) override;
 
  private:
+  ~NativeViewGLSurfaceOSMesa() override;
+
   gfx::AcceleratedWidget window_;
   HDC device_context_;
 
