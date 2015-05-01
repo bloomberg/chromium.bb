@@ -41,6 +41,7 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightCha
     , m_next(0)
     , m_pageLogicalHeight(pageLogicalHeight)
     , m_layoutObject(view)
+    , m_formattingContext(0)
 {
     ASSERT(!view.layoutState());
     view.pushLayoutState(*this);
@@ -102,6 +103,7 @@ LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, Layo
     if (!m_columnInfo)
         m_columnInfo = m_next->m_columnInfo;
 
+    m_formattingContext = m_next->m_formattingContext;
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
@@ -114,6 +116,7 @@ LayoutState::LayoutState(LayoutObject& root)
     , m_next(root.view()->layoutState())
     , m_pageLogicalHeight(0)
     , m_layoutObject(root)
+    , m_formattingContext(0)
 {
     ASSERT(!m_next);
     // We'll end up pushing in LayoutView itself, so don't bother adding it.

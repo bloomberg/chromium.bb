@@ -34,6 +34,7 @@
 namespace blink {
 
 class ForceHorriblySlowRectMapping;
+class LayoutBlockFlow;
 class LayoutBox;
 class LayoutFlowThread;
 class LayoutObject;
@@ -82,6 +83,9 @@ public:
 
     LayoutObject& layoutObject() const { return m_layoutObject; }
 
+    void setFormattingContext(LayoutBlockFlow* block) { m_formattingContext = block; }
+    LayoutBlockFlow* formattingContext() { return m_formattingContext; }
+
 private:
     friend class ForceHorriblySlowRectMapping;
 
@@ -106,6 +110,7 @@ private:
     LayoutSize m_pageOffset;
 
     LayoutObject& m_layoutObject;
+    LayoutBlockFlow* m_formattingContext;
 };
 
 } // namespace blink

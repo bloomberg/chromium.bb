@@ -401,6 +401,12 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         relayoutChildren = true;
 
     LayoutState state(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo(), logicalWidthChanged);
+    bool createsFormattingContext = createsNewFormattingContext();
+    if (createsFormattingContext) {
+        state.setFormattingContext(this);
+        if (relayoutChildren)
+            clearFormattingContextLowestFloatLogicalBottom();
+    }
 
     // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg, to track
     // our current maximal positive and negative margins. These values are used when we
@@ -436,9 +442,15 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     else
         layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
 
+    // We will not have a formatting context set if we are an SVG foreign object about to layout a document we contain.
+    if (view()->layoutState()->formattingContext())
+        view()->layoutState()->formattingContext()->setFormattingContextLowestFloatLogicalBottom(lowestFloatLogicalBottom());
     // Expand our intrinsic height to encompass floats.
-    if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsNewFormattingContext())
-        setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
+    if (createsFormattingContext) {
+        LayoutUnit lowestFloat = formattingContextLowestFloatLogicalBottom();
+        if (lowestFloat > (logicalHeight() - afterEdge))
+            setLogicalHeight(lowestFloat + afterEdge);
+    }
 
     if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
         if (flowThread->recalculateColumnHeights()) {
@@ -2974,6 +2986,24 @@ void LayoutBlockFlow::getSelectionGapInfo(SelectionState state, bool& leftGap, b
     rightGap = (state == LayoutObject::SelectionInside)
         || (state == LayoutObject::SelectionStart && ltr)
         || (state == LayoutObject::SelectionEnd && !ltr);
+}
+
+void LayoutBlockFlow::clearFormattingContextLowestFloatLogicalBottom()
+{
+    ASSERT(createsNewFormattingContext());
+    if (!m_rareData)
+        return;
+    m_rareData->m_lowestFloatLogicalBottom = LayoutUnit();
+}
+
+void LayoutBlockFlow::setFormattingContextLowestFloatLogicalBottom(LayoutUnit logicalBottom)
+{
+    ASSERT(createsNewFormattingContext());
+    if (!logicalBottom)
+        return;
+    if (!m_rareData)
+        m_rareData = adoptPtr(new LayoutBlockFlowRareData(this));
+    m_rareData->m_lowestFloatLogicalBottom = logicalBottom;
 }
 
 void LayoutBlockFlow::setPaginationStrut(LayoutUnit strut)
