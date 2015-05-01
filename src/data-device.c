@@ -724,11 +724,40 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 	wl_signal_emit(&seat->selection_signal, seat);
 }
 
+/** \brief Send the selection to the specified client
+ *
+ * This function creates a new wl_data_offer if there is a wl_data_source
+ * currently set as the selection and sends it to the specified client,
+ * followed by the wl_data_device.selection() event.
+ * If there is no current selection the wl_data_device.selection() event
+ * will carry a NULL wl_data_offer.
+ *
+ * If the client does not have a wl_data_device for the specified seat
+ * nothing will be done.
+ *
+ * \param seat The seat owning the wl_data_device used to send the events.
+ * \param client The client to which to send the selection.
+ */
+WL_EXPORT void
+weston_seat_send_selection(struct weston_seat *seat, struct wl_client *client)
+{
+	struct wl_resource *data_device, *offer;
+
+	data_device = wl_resource_find_for_client(&seat->drag_resource_list,
+						  client);
+	if (data_device && seat->selection_data_source) {
+		offer = weston_data_source_send_offer(seat->selection_data_source,
+							data_device);
+		wl_data_device_send_selection(data_device, offer);
+	} else if (data_device) {
+		wl_data_device_send_selection(data_device, NULL);
+	}
+}
+
 WL_EXPORT void
 weston_seat_set_selection(struct weston_seat *seat,
 			  struct weston_data_source *source, uint32_t serial)
 {
-	struct wl_resource *data_device, *offer;
 	struct weston_surface *focus = NULL;
 
 	if (seat->selection_data_source &&
@@ -747,15 +776,7 @@ weston_seat_set_selection(struct weston_seat *seat,
 	if (seat->keyboard)
 		focus = seat->keyboard->focus;
 	if (focus && focus->resource) {
-		data_device = wl_resource_find_for_client(&seat->drag_resource_list,
-							  wl_resource_get_client(focus->resource));
-		if (data_device && source) {
-			offer = weston_data_source_send_offer(seat->selection_data_source,
-							      data_device);
-			wl_data_device_send_selection(data_device, offer);
-		} else if (data_device) {
-			wl_data_device_send_selection(data_device, NULL);
-		}
+		weston_seat_send_selection(seat, wl_resource_get_client(focus->resource));
 	}
 
 	wl_signal_emit(&seat->selection_signal, seat);
@@ -910,8 +931,6 @@ bind_manager(struct wl_client *client,
 WL_EXPORT void
 wl_data_device_set_keyboard_focus(struct weston_seat *seat)
 {
-	struct wl_resource *data_device, *offer;
-	struct weston_data_source *source;
 	struct weston_surface *focus;
 
 	if (!seat->keyboard)
@@ -921,16 +940,7 @@ wl_data_device_set_keyboard_focus(struct weston_seat *seat)
 	if (!focus || !focus->resource)
 		return;
 
-	data_device = wl_resource_find_for_client(&seat->drag_resource_list,
-						  wl_resource_get_client(focus->resource));
-	if (!data_device)
-		return;
-
-	source = seat->selection_data_source;
-	if (source) {
-		offer = weston_data_source_send_offer(source, data_device);
-		wl_data_device_send_selection(data_device, offer);
-	}
+	weston_seat_send_selection(seat, wl_resource_get_client(focus->resource));
 }
 
 WL_EXPORT int

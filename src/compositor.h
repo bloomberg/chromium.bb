@@ -436,6 +436,9 @@ wl_data_device_manager_init(struct wl_display *display);
 void
 weston_seat_set_selection(struct weston_seat *seat,
 			  struct weston_data_source *source, uint32_t serial);
+void
+weston_seat_send_selection(struct weston_seat *seat, struct wl_client *client);
+
 int
 weston_pointer_start_drag(struct weston_pointer *pointer,
 		       struct weston_data_source *source,
