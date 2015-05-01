@@ -314,6 +314,8 @@ interface BluetoothDevice
 interface BluetoothGATTRemoteServer
     getter connected
     method constructor
+interface BluetoothGATTService
+    method constructor
 interface Boolean
     method constructor
     method toString
