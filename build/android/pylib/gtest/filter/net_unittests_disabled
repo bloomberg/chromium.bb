@@ -1,8 +1,5 @@
 # List of suppressions.
 
-# Bug: 380340
-SSLServerSocketTest.Handshake
-
 PythonUtils.PythonRunTime
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/0
 VerifyEndEntity/CertVerifyProcWeakDigestTest.Verify/1
