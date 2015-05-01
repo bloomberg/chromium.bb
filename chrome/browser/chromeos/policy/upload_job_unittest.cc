@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -35,12 +36,12 @@ const char kCustomField1[] = "customfield1";
 const char kCustomField2[] = "customfield2";
 const char kTestPayload1[] = "**||--||PAYLOAD1||--||**";
 const char kTestPayload2[] = "**||--||PAYLOAD2||--||**";
-const char kTestScope[] = "TestScope";
 const char kTokenExpired[] = "EXPIRED_TOKEN";
 const char kTokenInvalid[] = "INVALID_TOKEN";
 const char kTokenValid[] = "VALID_TOKEN";
 
-class RepeatingMimeBoundaryGenerator : public UploadJob::MimeBoundaryGenerator {
+class RepeatingMimeBoundaryGenerator
+    : public UploadJobImpl::MimeBoundaryGenerator {
  public:
   explicit RepeatingMimeBoundaryGenerator(char character)
       : character_(character) {}
@@ -186,12 +187,10 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   }
 
  protected:
-  scoped_ptr<UploadJob> PrepareUploadJob(
-      scoped_ptr<UploadJob::MimeBoundaryGenerator> mime_boundary_generator) {
-    OAuth2TokenService::ScopeSet scopes;
-    scopes.insert(kTestScope);
-    scoped_ptr<UploadJob> upload_job(new UploadJob(
-        GetServerURL(), kRobotAccountId, scopes, &oauth2_service_,
+  scoped_ptr<UploadJob> PrepareUploadJob(scoped_ptr<
+      UploadJobImpl::MimeBoundaryGenerator> mime_boundary_generator) {
+    scoped_ptr<UploadJob> upload_job(new UploadJobImpl(
+        GetServerURL(), kRobotAccountId, &oauth2_service_,
         request_context_getter_.get(), this, mime_boundary_generator.Pass()));
 
     std::map<std::string, std::string> header_entries;
@@ -251,7 +250,7 @@ TEST_F(UploadFlowTest, SuccessfulUpload) {
   oauth2_service_.SetTokenValid(kTokenValid);
   oauth2_service_.AddTokenToQueue(kTokenValid);
   scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJob::RandomMimeBoundaryGenerator));
+      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
@@ -261,7 +260,7 @@ TEST_F(UploadFlowTest, TokenExpired) {
   oauth2_service_.AddTokenToQueue(kTokenExpired);
   oauth2_service_.AddTokenToQueue(kTokenValid);
   scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJob::RandomMimeBoundaryGenerator));
+      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
@@ -269,13 +268,11 @@ TEST_F(UploadFlowTest, TokenExpired) {
 TEST_F(UploadFlowTest, TokenInvalid) {
   oauth2_service_.AddTokenToQueue(kTokenInvalid);
   oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
-  oauth2_service_.AddTokenToQueue(kTokenInvalid);
   SetExpectedError(scoped_ptr<UploadJob::ErrorCode>(
       new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
 
   scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJob::RandomMimeBoundaryGenerator));
+      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
@@ -285,7 +282,7 @@ TEST_F(UploadFlowTest, TokenFetchFailure) {
       new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
 
   scoped_ptr<UploadJob> upload_job = PrepareUploadJob(
-      make_scoped_ptr(new UploadJob::RandomMimeBoundaryGenerator));
+      make_scoped_ptr(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
 }
