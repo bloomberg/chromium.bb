@@ -130,6 +130,10 @@ void FakeHostPairingController::OnEnrollmentStatusChanged(
     EnrollmentStatus enrollment_status) {
 }
 
+void FakeHostPairingController::SetPermanentId(
+    const std::string& permanent_id) {
+}
+
 void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
   switch (new_stage) {
     case STAGE_WAITING_FOR_CONTROLLER: {

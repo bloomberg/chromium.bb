@@ -38,6 +38,7 @@ message HostStatusParameters {
   optional UpdateStatus update_status = 3;
   optional EnrollmentStatus enrollment_status = 4;
   repeated string paired_controllers = 5;
+  optional string permanent_id = 6;
 }
 
 message HostStatus {

@@ -93,6 +93,9 @@ class HostPairingController {
   virtual void OnEnrollmentStatusChanged(
       EnrollmentStatus enrollment_status) = 0;
 
+  // Set the permanent id assigned during enrollment.
+  virtual void SetPermanentId(const std::string& permanent_id) = 0;
+
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

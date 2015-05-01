@@ -87,6 +87,8 @@ void BluetoothHostPairingController::SendHostStatus() {
   host_status.set_api_version(kPairingAPIVersion);
   if (!enrollment_domain_.empty())
     host_status.mutable_parameters()->set_domain(enrollment_domain_);
+  if (!permanent_id_.empty())
+    host_status.mutable_parameters()->set_permanent_id(permanent_id_);
 
   // TODO(zork): Get these values from the UI. (http://crbug.com/405744)
   host_status.mutable_parameters()->set_connectivity(
@@ -418,6 +420,11 @@ void BluetoothHostPairingController::OnEnrollmentStatusChanged(
                    kErrorEnrollmentFailed);
   }
   SendHostStatus();
+}
+
+void BluetoothHostPairingController::SetPermanentId(
+    const std::string& permanent_id) {
+  permanent_id_ = permanent_id;
 }
 
 void BluetoothHostPairingController::RequestPinCode(

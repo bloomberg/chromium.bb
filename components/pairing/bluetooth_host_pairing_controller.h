@@ -71,6 +71,7 @@ class BluetoothHostPairingController
   std::string GetEnrollmentDomain() override;
   void OnUpdateStatusChanged(UpdateStatus update_status) override;
   void OnEnrollmentStatusChanged(EnrollmentStatus enrollment_status) override;
+  void SetPermanentId(const std::string& permanent_id) override;
 
   // ProtoDecoder::Observer:
   void OnHostStatusMessage(const pairing_api::HostStatus& message) override;
@@ -102,6 +103,7 @@ class BluetoothHostPairingController
   std::string enrollment_domain_;
   UpdateStatus update_status_;
   EnrollmentStatus enrollment_status_;
+  std::string permanent_id_;
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_refptr<device::BluetoothSocket> service_socket_;
