@@ -1591,6 +1591,7 @@ def GetRepositoryForEbuild(ebuild_path, sysroot):
           for srcdir, project in zip(srcdirs, projects)]
 
 
-def CleanOutdatedBinaryPackages(board):
-  """Cleans outdated binary packages for |board|."""
-  return cros_build_lib.RunCommand(['eclean-%s' % board, '-d', 'packages'])
+def CleanOutdatedBinaryPackages(sysroot):
+  """Cleans outdated binary packages from |sysroot|."""
+  return cros_build_lib.RunCommand(
+      [cros_build_lib.GetSysrootToolPath(sysroot, 'eclean'), '-d', 'packages'])

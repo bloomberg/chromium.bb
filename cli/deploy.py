@@ -685,20 +685,19 @@ print(json.dumps(pkg_info))
     return sorted_installs, listed_installs, num_updates
 
 
-def _GetPackageByCPV(cpv, strip, board, sysroot):
+def _GetPackageByCPV(cpv, strip, sysroot):
   """Returns the path to a binary package corresponding to |cpv|.
 
   Args:
     cpv: CPV components given by portage_util.SplitCPV().
     strip: True to run strip_package.
-    board: Board to use.
-    sysroot: Board sysroot path.
+    sysroot: Sysroot path.
   """
   packages_dir = None
   if strip:
     try:
       cros_build_lib.RunCommand(
-          ['strip_package', '--board', board,
+          ['strip_package', '--sysroot', sysroot,
            os.path.join(cpv.category, '%s' % (cpv.pv))])
       packages_dir = _STRIPPED_PACKAGES_DIR
     except cros_build_lib.RunCommandError:
@@ -710,15 +709,14 @@ def _GetPackageByCPV(cpv, strip, board, sysroot):
       packages_dir=packages_dir)
 
 
-def _Emerge(device, pkg, strip, board, sysroot, root, extra_args=None):
+def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
   """Copies |pkg| to |device| and emerges it.
 
   Args:
     device: A ChromiumOSDevice object.
     pkg: A package CPV or a binary package file.
     strip: True to run strip_package.
-    board: Board to use.
-    sysroot: Board sysroot path.
+    sysroot: Sysroot path.
     root: Package installation root path.
     extra_args: Extra arguments to pass to emerge.
 
@@ -728,8 +726,7 @@ def _Emerge(device, pkg, strip, board, sysroot, root, extra_args=None):
   if os.path.isfile(pkg):
     latest_pkg = pkg
   else:
-    latest_pkg = _GetPackageByCPV(portage_util.SplitCPV(pkg), strip, board,
-                                  sysroot)
+    latest_pkg = _GetPackageByCPV(portage_util.SplitCPV(pkg), strip, sysroot)
 
   if not latest_pkg:
     raise DeployError('Missing package %s.' % pkg)
@@ -949,8 +946,8 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
         raise DeployError('No packages found, nothing to deploy.')
 
       if clean_binpkg:
-        logging.info('Cleaning outdated binary packages for %s', board)
-        portage_util.CleanOutdatedBinaryPackages(board)
+        logging.info('Cleaning outdated binary packages from %s', sysroot)
+        portage_util.CleanOutdatedBinaryPackages(sysroot)
 
       if not device_handler.IsPathWritable(root):
         # Only remounts rootfs if the given root is not writable.
@@ -980,7 +977,7 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
 
       for pkg in pkgs:
         if emerge:
-          _Emerge(device_handler, pkg, strip, board, sysroot, root,
+          _Emerge(device_handler, pkg, strip, sysroot, root,
                   extra_args=emerge_args)
         else:
           _Unmerge(device_handler, pkg, root)
