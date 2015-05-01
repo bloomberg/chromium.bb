@@ -743,14 +743,17 @@ weston_seat_send_selection(struct weston_seat *seat, struct wl_client *client)
 {
 	struct wl_resource *data_device, *offer;
 
-	data_device = wl_resource_find_for_client(&seat->drag_resource_list,
-						  client);
-	if (data_device && seat->selection_data_source) {
-		offer = weston_data_source_send_offer(seat->selection_data_source,
-							data_device);
-		wl_data_device_send_selection(data_device, offer);
-	} else if (data_device) {
-		wl_data_device_send_selection(data_device, NULL);
+	wl_resource_for_each(data_device, &seat->drag_resource_list) {
+		if (wl_resource_get_client(data_device) != client)
+		    continue;
+
+		if (seat->selection_data_source) {
+			offer = weston_data_source_send_offer(seat->selection_data_source,
+								data_device);
+			wl_data_device_send_selection(data_device, offer);
+		} else {
+			wl_data_device_send_selection(data_device, NULL);
+		}
 	}
 }
 
