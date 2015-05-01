@@ -1900,8 +1900,12 @@ crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-con
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-redirect-nocors.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-redirect-nocors-other-https.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-redirect-other-https.html [ Slow ]
-crbug.com/483373 [ XP ] http/tests/fetch/serviceworker/stream-reader-base-https-other-https.html [ Pass Failure Timeout ]
-crbug.com/483377 [ Win Win7 XP ] http/tests/fetch/window/stream-reader-base-https-other-https.html [ Pass Failure Timeout ]
+crbug.com/472970 [ Win Mac ] http/tests/fetch/window/stream-reader.html [ Pass Failure Timeout ]
+crbug.com/472970 [ Win Mac ] http/tests/fetch/workers/stream-reader.html [ Pass Failure Timeout ]
+crbug.com/472970 [ Win Mac ] http/tests/fetch/serviceworker/stream-reader.html [ Pass Failure Timeout ]
+crbug.com/472970 [ Win Mac ] http/tests/fetch/window/stream-reader-base-https-other-https.html [ Pass Failure Timeout ]
+crbug.com/472970 [ Win Mac ] http/tests/fetch/workers/stream-reader-base-https-other-https.html [ Pass Failure Timeout ]
+crbug.com/472970 [ Win Mac ] http/tests/fetch/serviceworker/stream-reader-base-https-other-https.html [ Pass Failure Timeout ]
 
 crbug.com/480769 [ Linux Release ] http/tests/inspector/service-workers/service-worker-manager.html [ Crash Pass ]
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow ]
@@ -2044,8 +2048,6 @@ crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
 
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
-crbug.com/473722 [ XP ] http/tests/fetch/workers/stream-reader.html [ Slow Timeout ]
-crbug.com/483379 [ Win7 ] http/tests/fetch/workers/stream-reader.html [ Pass Failure Timeout ]
 crbug.com/473725 [ Linux ] virtual/slimmingpaint/fast/forms/submit-change-fragment.html [ Pass Timeout ]
 
 crbug.com/453822 virtual/slimmingpaint/fast/forms/calendar-picker/datepicker-crash-after-keydown.html [ Crash Pass Timeout ]
@@ -2056,8 +2058,6 @@ crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 
 crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
 crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
-
-crbug.com/477252 [ Win ] http/tests/fetch/window/stream-reader.html [ Pass Timeout ]
 
 crbug.com/479164 inspector/geolocation-emulation-tests.html [ Pass Failure ]
 
