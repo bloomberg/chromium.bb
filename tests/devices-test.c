@@ -296,7 +296,7 @@ TEST(get_device_after_destroy)
 	assert(cl->input->caps == WL_SEAT_CAPABILITY_ALL);
 }
 
-TEST(get_device_afer_destroy_multiple)
+TEST(get_device_after_destroy_multiple)
 {
 	int i;
 
