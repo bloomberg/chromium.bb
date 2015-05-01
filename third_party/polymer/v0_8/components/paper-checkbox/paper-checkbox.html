@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-behaviors/paper-radio-button-behavior.html">
 
 <!--
 `paper-checkbox` is a button that can be either checked or unchecked.  User
@@ -43,7 +44,6 @@ Styling a checkbox:
 @class paper-checkbox
 -->
 
-/* TODO: This needs to use core-focusable when it's ready. */
 <dom-module id="paper-checkbox">
   <style is="x-style">
     * {
@@ -77,6 +77,10 @@ Styling a checkbox:
 
     // The custom properties shim is currently an opt-in feature.
     enableCustomStyleProperties: true,
+
+    behaviors: [
+      Polymer.PaperRadioButtonBehavior
+    ],
 
     hostAttributes: {
       role: 'checkbox',
@@ -123,17 +127,25 @@ Styling a checkbox:
       }
     },
 
-    listeners: {
-      keydown: '_onKeyDown',
-      mousedown: '_onMouseDown'
-    },
-
     ready: function() {
+      this.toggles = true;
+
       if (this.$.checkboxLabel.textContent == '') {
         this.$.checkboxLabel.hidden = true;
       } else {
         this.setAttribute('aria-label', this.$.checkboxLabel.textContent);
       }
+    },
+
+    // button-behavior hook
+    _buttonStateChanged: function() {
+      this.checked = this.active;
+    },
+
+    _checkedChanged: function(checked) {
+      this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
+      this.active = this.checked;
+      this.fire('iron-change');
     },
 
     _computeCheckboxClass: function(checked) {
@@ -146,32 +158,6 @@ Styling a checkbox:
       if (!checked) {
         return 'hidden';
       }
-    },
-
-    _onKeyDown: function(e) {
-      // Enter key.
-      if (e.keyCode === 13) {
-        this._onMouseDown();
-        e.preventDefault();
-      }
-    },
-
-    _onMouseDown: function() {
-      if (this.disabled) {
-        return;
-      }
-
-      var old = this.checked;
-      this.checked = !this.checked;
-
-      if (this.checked !== old) {
-        this.fire('iron-change');
-      }
-    },
-
-    _checkedChanged: function() {
-      this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-      this.fire('iron-change');
     }
   })
 </script>

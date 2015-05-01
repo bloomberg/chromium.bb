@@ -14,7 +14,7 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
     "web-component-tester": "*"
   },
-  "homepage": "https://github.com/polymerelements/iron-behaviors",
+  "homepage": "https://github.com/PolymerElements/iron-behaviors",
   "version": "0.8.0",
   "_release": "0.8.0",
   "_resolution": {
@@ -22,7 +22,7 @@
     "tag": "v0.8.0",
     "commit": "bde97715665a35c467efd869174eaadf6acea2ff"
   },
-  "_source": "git://github.com/polymerelements/iron-behaviors.git",
+  "_source": "git://github.com/PolymerElements/iron-behaviors.git",
   "_target": "^0.8.0",
-  "_originalSource": "polymerelements/iron-behaviors"
+  "_originalSource": "PolymerElements/iron-behaviors"
 }

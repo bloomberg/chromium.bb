@@ -5,6 +5,10 @@
     // The custom properties shim is currently an opt-in feature.
     enableCustomStyleProperties: true,
 
+    behaviors: [
+      Polymer.PaperRadioButtonBehavior
+    ],
+
     hostAttributes: {
       role: 'checkbox',
       'aria-checked': false,
@@ -50,17 +54,25 @@
       }
     },
 
-    listeners: {
-      keydown: '_onKeyDown',
-      mousedown: '_onMouseDown'
-    },
-
     ready: function() {
+      this.toggles = true;
+
       if (this.$.checkboxLabel.textContent == '') {
         this.$.checkboxLabel.hidden = true;
       } else {
         this.setAttribute('aria-label', this.$.checkboxLabel.textContent);
       }
+    },
+
+    // button-behavior hook
+    _buttonStateChanged: function() {
+      this.checked = this.active;
+    },
+
+    _checkedChanged: function(checked) {
+      this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
+      this.active = this.checked;
+      this.fire('iron-change');
     },
 
     _computeCheckboxClass: function(checked) {
@@ -73,31 +85,5 @@
       if (!checked) {
         return 'hidden';
       }
-    },
-
-    _onKeyDown: function(e) {
-      // Enter key.
-      if (e.keyCode === 13) {
-        this._onMouseDown();
-        e.preventDefault();
-      }
-    },
-
-    _onMouseDown: function() {
-      if (this.disabled) {
-        return;
-      }
-
-      var old = this.checked;
-      this.checked = !this.checked;
-
-      if (this.checked !== old) {
-        this.fire('iron-change');
-      }
-    },
-
-    _checkedChanged: function() {
-      this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-      this.fire('iron-change');
     }
   })

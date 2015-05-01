@@ -29,6 +29,7 @@
   "dependencies": {
     "polymer": "polymer/polymer#v0.8.0-rc.7",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
-    "paper-styles": "PolymerElements/paper-styles#^0.8.0"
+    "paper-styles": "PolymerElements/paper-styles#^0.8.0",
+    "paper-behaviors": "PolymerElements/paper-behaviors#^0.8.0"
   }
 }

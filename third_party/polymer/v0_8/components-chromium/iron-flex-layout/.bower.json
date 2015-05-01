@@ -1,0 +1,21 @@
+{
+  "name": "iron-flex-layout",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7"
+  },
+  "devDependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0"
+  },
+  "homepage": "https://github.com/PolymerElements/iron-flex-layout",
+  "version": "0.8.1",
+  "_release": "0.8.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.1",
+    "commit": "c7678c31bedb48fc141d33b1ce006e01d2958123"
+  },
+  "_source": "git://github.com/PolymerElements/iron-flex-layout.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerElements/iron-flex-layout"
+}

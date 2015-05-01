@@ -1,6 +1,6 @@
 {
   "name": "paper-checkbox",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "authors": [
     "The Polymer Authors"
   ],
@@ -28,13 +28,14 @@
   "dependencies": {
     "polymer": "polymer/polymer#v0.8.0-rc.7",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
-    "paper-styles": "PolymerElements/paper-styles#^0.8.0"
+    "paper-styles": "PolymerElements/paper-styles#^0.8.0",
+    "paper-behaviors": "PolymerElements/paper-behaviors#^0.8.0"
   },
-  "_release": "0.8.2",
+  "_release": "0.8.3",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.2",
-    "commit": "5e3c7d3b68bd13f711b1a6470ca1bda09f2dc9ae"
+    "tag": "v0.8.3",
+    "commit": "9de3c965029aba651dca6fd5f2b29e2441e134f3"
   },
   "_source": "git://github.com/PolymerElements/paper-checkbox.git",
   "_target": "^0.8.0",

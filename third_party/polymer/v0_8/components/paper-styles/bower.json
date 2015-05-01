@@ -19,6 +19,7 @@
     "/demo/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#v0.8.0-rc.7"
+    "polymer": "Polymer/polymer#v0.8.0-rc.7",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^0.8.0"
   }
 }
