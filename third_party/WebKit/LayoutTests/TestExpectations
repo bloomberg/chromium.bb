@@ -540,6 +540,8 @@ crbug.com/471172 virtual/slimmingpaint/svg/text/columns-do-not-apply.html [ Imag
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/483489 [ Win ] plugins/update-widgets-crash.html [ Pass Failure ]
+# This expectation is necessary because the normal Skip for plugins/ on Linux is overridden by the Windows expectation.
+crbug.com/483489 [ Linux ] plugins/update-widgets-crash.html [ Skip ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
