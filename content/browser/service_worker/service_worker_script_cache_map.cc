@@ -42,7 +42,8 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
     const GURL& url, int64 resource_id) {
   DCHECK_EQ(kInvalidServiceWorkerResponseId, LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
-         owner_->status() == ServiceWorkerVersion::INSTALLING);
+         owner_->status() == ServiceWorkerVersion::INSTALLING)
+      << owner_->status();
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
   resource_map_[url] =

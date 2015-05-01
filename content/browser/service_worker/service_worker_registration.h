@@ -60,6 +60,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void set_is_deleted(bool deleted) { is_deleted_ = deleted; }
 
   bool is_uninstalling() const { return is_uninstalling_; }
+
+  void set_is_uninstalled(bool uninstalled) { is_uninstalled_ = uninstalled; }
   bool is_uninstalled() const { return is_uninstalled_; }
 
   int64_t resources_total_size_bytes() const {

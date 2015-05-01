@@ -882,6 +882,42 @@ class UpdateJobTestHelper
   bool update_found_;
 };
 
+// Helper class for update tests that evicts the active version when the update
+// worker is about to be started.
+class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
+ public:
+  EvictIncumbentVersionHelper(int mock_render_process_id)
+      : UpdateJobTestHelper(mock_render_process_id) {}
+  ~EvictIncumbentVersionHelper() override {}
+
+  void OnStartWorker(int embedded_worker_id,
+                     int64 version_id,
+                     const GURL& scope,
+                     const GURL& script,
+                     bool pause_after_download) override {
+    if (pause_after_download) {
+      // Evict the incumbent worker.
+      ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+      ASSERT_TRUE(version);
+      ServiceWorkerRegistration* registration =
+          context()->GetLiveRegistration(version->registration_id());
+      ASSERT_TRUE(registration);
+      ASSERT_TRUE(registration->active_version());
+      ASSERT_FALSE(registration->waiting_version());
+      registration->DeleteVersion(
+          make_scoped_refptr(registration->active_version()));
+    }
+    UpdateJobTestHelper::OnStartWorker(embedded_worker_id, version_id, scope,
+                                       script, pause_after_download);
+  }
+
+  void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
+    registration_failed_ = true;
+  }
+
+  bool registration_failed_ = false;
+};
+
 }  // namespace
 
 TEST_F(ServiceWorkerJobTest, Update_NoChange) {
@@ -1038,6 +1074,38 @@ TEST_F(ServiceWorkerJobTest, Update_NewestVersionChanged) {
   EXPECT_EQ(active_version, registration->active_version());
   EXPECT_EQ(version.get(), registration->waiting_version());
   EXPECT_EQ(NULL, registration->installing_version());
+}
+
+// Test that update succeeds if the incumbent worker was evicted
+// during the update job (this can happen on disk cache failure).
+TEST_F(ServiceWorkerJobTest, Update_EvictedIncumbent) {
+  EvictIncumbentVersionHelper* update_helper =
+      new EvictIncumbentVersionHelper(render_process_id_);
+  helper_.reset(update_helper);
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      update_helper->SetupInitialRegistration(kNewVersionOrigin);
+  ASSERT_TRUE(registration.get());
+  update_helper->state_change_log_.clear();
+
+  // Run the update job.
+  registration->AddListener(update_helper);
+  scoped_refptr<ServiceWorkerVersion> first_version =
+      registration->active_version();
+  first_version->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify results.
+  ASSERT_TRUE(registration->active_version());
+  EXPECT_NE(first_version.get(), registration->active_version());
+  EXPECT_FALSE(registration->installing_version());
+  EXPECT_FALSE(registration->waiting_version());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, first_version->status());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
+            registration->active_version()->status());
+  ASSERT_EQ(4u, update_helper->attribute_change_log_.size());
+  EXPECT_TRUE(update_helper->update_found_);
+  EXPECT_TRUE(update_helper->registration_failed_);
+  EXPECT_FALSE(registration->is_uninstalled());
 }
 
 TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {

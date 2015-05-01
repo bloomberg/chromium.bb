@@ -334,6 +334,8 @@ void ServiceWorkerRegistration::DeleteVersion(
         id(), pattern().GetOrigin(),
         base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, this));
     // But not from memory if there is a version in the pipeline.
+    // TODO(falken): Fix this logic. There could be a running register job for
+    // this registration that hasn't set installing_version() yet.
     if (installing_version()) {
       is_deleted_ = false;
     } else {

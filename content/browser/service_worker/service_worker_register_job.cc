@@ -476,6 +476,8 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   if (registration()) {
     context_->storage()->NotifyDoneInstallingRegistration(
         registration(), new_version(), status);
+    if (registration()->waiting_version() || registration()->active_version())
+      registration()->set_is_uninstalled(false);
   }
   if (new_version())
     new_version()->embedded_worker()->RemoveListener(this);
@@ -505,7 +507,12 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
       registration()->waiting_version() ?
           registration()->waiting_version() :
           registration()->active_version();
-  DCHECK(most_recent_version.get());
+
+  if (!most_recent_version) {
+    OnCompareScriptResourcesComplete(SERVICE_WORKER_OK, false /* are_equal */);
+    return;
+  }
+
   int64 most_recent_script_id =
       most_recent_version->script_cache_map()->LookupResourceId(script_url_);
   int64 new_script_id =
