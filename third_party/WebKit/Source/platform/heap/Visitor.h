@@ -52,10 +52,9 @@ namespace blink {
 template<typename T> class GarbageCollected;
 class HeapObjectHeader;
 class InlinedGlobalMarkingVisitor;
-template<typename T> class Member;
-template<typename T> class CrossThreadPersistent;
+template<typename T> class TraceTrait;
+template<typename T> class TraceEagerlyTrait;
 class Visitor;
-template<typename T> class WeakMember;
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
 // This allows us to pass a type's trace method as a parameter to the PersistentNode
@@ -66,24 +65,6 @@ template<typename T, void (T::*method)(Visitor*)>
 struct TraceMethodDelegate {
     static void trampoline(Visitor* visitor, void* self) { (reinterpret_cast<T*>(self)->*method)(visitor); }
 };
-
-template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> class NeedsAdjustAndMark;
-
-template<typename T>
-class NeedsAdjustAndMark<T, true> {
-public:
-    static const bool value = false;
-};
-
-template <typename T> const bool NeedsAdjustAndMark<T, true>::value;
-
-template<typename T>
-class NeedsAdjustAndMark<T, false> {
-public:
-    static const bool value = IsGarbageCollectedMixin<typename WTF::RemoveConst<T>::Type>::value;
-};
-
-template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 
 // HasInlinedTraceMethod<T>::value is true for T supporting
 // T::trace(InlinedGlobalMarkingVisitor).
@@ -104,41 +85,6 @@ private:
 public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
 };
-
-template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
-
-// The TraceTrait is used to specify how to mark an object pointer and
-// how to trace all of the pointers in the object.
-//
-// By default, the 'trace' method implemented on an object itself is
-// used to trace the pointers to other heap objects inside the object.
-//
-// However, the TraceTrait can be specialized to use a different
-// implementation. A common case where a TraceTrait specialization is
-// needed is when multiple inheritance leads to pointers that are not
-// to the start of the object in the Blink garbage-collected heap. In
-// that case the pointer has to be adjusted before marking.
-template<typename T>
-class TraceTrait {
-public:
-    static void trace(Visitor*, void* self);
-    static void trace(InlinedGlobalMarkingVisitor, void* self);
-
-    template<typename VisitorDispatcher>
-    static void mark(VisitorDispatcher visitor, const T* t)
-    {
-        DefaultTraceTrait<T>::mark(visitor, t);
-    }
-
-#if ENABLE(ASSERT)
-    static void checkGCInfo(const T* t)
-    {
-        DefaultTraceTrait<T>::checkGCInfo(t);
-    }
-#endif
-};
-
-template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
 #define DECLARE_TRACE_IMPL(maybevirtual)                                     \
 public:                                                                      \
@@ -192,80 +138,21 @@ public:
 #define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL(EMPTY_MACRO_ARGUMENT)
 #define DEFINE_INLINE_VIRTUAL_TRACE() DEFINE_INLINE_TRACE_IMPL(virtual)
 
-// If MARKER_EAGER_TRACING is set to 1, a marker thread is allowed
-// to directly invoke the trace() method of not-as-yet marked objects upon
-// marking. If it is set to 0, the |trace()| callback for an object will
-// be pushed onto an explicit mark stack, which the marker proceeds to
-// iteratively pop and invoke. The eager scheme enables inlining of a trace()
-// method inside another, the latter keeps system call stack usage bounded
-// and under explicit control.
-//
-// If eager tracing leads to excessively deep |trace()| call chains (and
-// the system stack usage that this brings), the marker implementation will
-// switch to using an explicit mark stack. Recursive and deep object graphs
-// are uncommon for Blink objects.
-//
-// A class type can opt out of eager tracing by declaring a TraceEagerlyTrait<>
-// specialization, mapping the trait's |value| to |false| (see the
-// WILL_NOT_BE_EAGERLY_TRACED_CLASS() macros below.) For Blink, this is done for
-// the small set of GCed classes that are directly recursive.
-//
-// The TraceEagerlyTrait<T> trait controls whether or not a class
-// (and its subclasses) should be eagerly traced or not.
-//
-// If |TraceEagerlyTrait<T>::value| is |true|, then the marker thread
-// should invoke |trace()| on not-yet-marked objects deriving from class T
-// right away, and not queue their trace callbacks on its marker stack,
-// which it will do if |value| is |false|.
-//
-// The trait can be declared to enable/disable eager tracing for a class T
-// and any of its subclasses, or just to the class T, but none of its
-// subclasses.
-//
-template<typename T, typename Enabled = void>
-class TraceEagerlyTrait {
-public:
-    static const bool value = true;
-};
-
-// Disable eager tracing for TYPE, but not any of its subclasses.
-#define WILL_NOT_BE_EAGERLY_TRACED_CLASS(TYPE)   \
-template<>                                       \
-class TraceEagerlyTrait<TYPE> {                  \
-public:                                          \
-    static const bool value = false;             \
-}
+template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> class NeedsAdjustAndMark;
 
 template<typename T>
-class TraceEagerlyTrait<Member<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename T>
-class TraceEagerlyTrait<WeakMember<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename T>
-class TraceEagerlyTrait<Persistent<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename T>
-class TraceEagerlyTrait<CrossThreadPersistent<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
-template<typename T, size_t inlineCapacity>
-class TraceEagerlyTrait<WTF::ListHashSetNode<T, HeapListHashSetAllocator<T, inlineCapacity>>> {
+class NeedsAdjustAndMark<T, true> {
 public:
     static const bool value = false;
 };
+template <typename T> const bool NeedsAdjustAndMark<T, true>::value;
+
+template<typename T>
+class NeedsAdjustAndMark<T, false> {
+public:
+    static const bool value = IsGarbageCollectedMixin<typename WTF::RemoveConst<T>::Type>::value;
+};
+template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class ObjectAliveTrait;
 
@@ -596,78 +483,6 @@ void VisitorHelper<Derived>::handleWeakCell(Visitor* self, void* obj)
     if (*cell && !self->isHeapObjectAlive(*cell))
         *cell = nullptr;
 }
-
-template<typename T> struct GCInfoTrait;
-
-template<typename T>
-class DefaultTraceTrait<T, false> {
-public:
-    template<typename VisitorDispatcher>
-    static void mark(VisitorDispatcher visitor, const T* t)
-    {
-        // Default mark method of the trait just calls the two-argument mark
-        // method on the visitor. The second argument is the static trace method
-        // of the trait, which by default calls the instance method
-        // trace(Visitor*) on the object.
-        //
-        // If the trait allows it, invoke the trace callback right here on the
-        // not-yet-marked object.
-        if (TraceEagerlyTrait<T>::value) {
-            // Protect against too deep trace call chains, and the
-            // unbounded system stack usage they can bring about.
-            //
-            // Assert against deep stacks so as to flush them out,
-            // but test and appropriately handle them should they occur
-            // in release builds.
-            //
-            // ASan adds extra stack usage, so disable the assert when it is
-            // enabled so as to avoid testing against a much lower & too low,
-            // stack depth threshold.
-#if !defined(ADDRESS_SANITIZER)
-            ASSERT(StackFrameDepth::isSafeToRecurse());
-#endif
-            if (LIKELY(StackFrameDepth::isSafeToRecurse())) {
-                if (visitor->ensureMarked(t)) {
-                    TraceTrait<T>::trace(visitor, const_cast<T*>(t));
-                }
-                return;
-            }
-        }
-        visitor->mark(const_cast<T*>(t), &TraceTrait<T>::trace);
-    }
-
-#if ENABLE(ASSERT)
-    static void checkGCInfo(const T* t)
-    {
-        assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::index());
-    }
-#endif
-};
-
-template<typename T>
-class DefaultTraceTrait<T, true> {
-public:
-    template<typename VisitorDispatcher>
-    static void mark(VisitorDispatcher visitor, const T* self)
-    {
-        if (!self)
-            return;
-
-        // If you hit this ASSERT, it means that there is a dangling pointer
-        // from a live thread heap to a dead thread heap. We must eliminate
-        // the dangling pointer.
-        // Release builds don't have the ASSERT, but it is OK because
-        // release builds will crash at the following self->adjustAndMark
-        // because all the entries of the orphaned heaps are zeroed out and
-        // thus the item does not have a valid vtable.
-        ASSERT(!pageFromObject(self)->orphaned());
-        self->adjustAndMark(visitor);
-    }
-
-#if ENABLE(ASSERT)
-    static void checkGCInfo(const T*) { }
-#endif
-};
 
 #if ENABLE(GC_PROFILING)
 template<typename T>

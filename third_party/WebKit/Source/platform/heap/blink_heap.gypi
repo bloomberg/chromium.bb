@@ -50,6 +50,7 @@
       'ThreadState.cpp',
       'ThreadState.h',
       'ThreadingTraits.h',
+      'TraceTraits.h',
       'Visitor.h',
     ],
     'platform_heap_test_files': [

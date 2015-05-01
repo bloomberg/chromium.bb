@@ -27,6 +27,7 @@ source_set("heap") {
     "ThreadState.cpp",
     "ThreadState.h",
     "ThreadingTraits.h",
+    "TraceTraits.h",
     "Visitor.h",
   ]
 

@@ -34,6 +34,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/InlinedGlobalMarkingVisitor.h"
 #include "platform/heap/ThreadState.h"
+#include "platform/heap/TraceTraits.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
@@ -587,51 +588,6 @@ protected:
 
     template<bool x, WTF::WeakHandlingFlag y, WTF::ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
     friend class Visitor;
-};
-
-template<typename T, bool needsTracing>
-struct TraceIfEnabled;
-
-template<typename T>
-struct TraceIfEnabled<T, false>  {
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher, T*) { }
-};
-
-template<typename T>
-struct TraceIfEnabled<T, true> {
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, T* t)
-    {
-        visitor->trace(*t);
-    }
-};
-
-template <typename T> struct RemoveHeapPointerWrapperTypes {
-    using Type = typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<T, Member>::Type, WeakMember>::Type, RawPtr>::Type;
-};
-
-// FIXME: Oilpan: TraceIfNeeded should be implemented ala:
-// NeedsTracing<T>::value || IsWeakMember<T>::value. It should not need to test
-// raw pointer types. To remove these tests, we may need support for
-// instantiating a template with a RawPtrOrMember'ish template.
-template<typename T>
-struct TraceIfNeeded : public TraceIfEnabled<T, WTF::NeedsTracing<T>::value || IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename WTF::RemovePointer<T>::Type>::Type>::value> { };
-
-// This trace trait for std::pair will null weak members if their referent is
-// collected. If you have a collection that contain weakness it does not remove
-// entries from the collection that contain nulled weak members.
-template<typename T, typename U>
-class TraceTrait<std::pair<T, U>> {
-public:
-    static const bool firstNeedsTracing = WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value;
-    static const bool secondNeedsTracing = WTF::NeedsTracing<U>::value || WTF::IsWeak<U>::value;
-    template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher visitor, std::pair<T, U>* pair)
-    {
-        TraceIfEnabled<T, firstNeedsTracing>::trace(visitor, &pair->first);
-        TraceIfEnabled<U, secondNeedsTracing>::trace(visitor, &pair->second);
-    }
 };
 
 // WeakMember is similar to Member in that it is used to point to other oilpan

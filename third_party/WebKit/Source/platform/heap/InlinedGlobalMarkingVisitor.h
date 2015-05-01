@@ -79,23 +79,6 @@ private:
     Visitor* m_visitor;
 };
 
-template<typename T>
-void TraceTrait<T>::trace(Visitor* visitor, void* self)
-{
-    if (visitor->isGlobalMarkingVisitor()) {
-        // Switch to inlined global marking dispatch.
-        static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(visitor));
-    } else {
-        static_cast<T*>(self)->trace(visitor);
-    }
-}
-
-template<typename T>
-void TraceTrait<T>::trace(InlinedGlobalMarkingVisitor visitor, void* self)
-{
-    static_cast<T*>(self)->trace(visitor);
-}
-
 inline void GarbageCollectedMixin::trace(InlinedGlobalMarkingVisitor)
 {
 }
