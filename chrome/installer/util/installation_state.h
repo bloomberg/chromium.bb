@@ -32,6 +32,7 @@ class InstallationState;
 class ProductState {
  public:
   ProductState();
+  ~ProductState();
 
   // Returns true if the product is installed (i.e., the product's Clients key
   // exists and has a "pv" value); false otherwise.

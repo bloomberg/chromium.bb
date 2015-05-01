@@ -14,4 +14,12 @@ SourceProfile::SourceProfile()
 SourceProfile::~SourceProfile() {
 }
 
+#if defined(OS_WIN)
+ImporterIE7PasswordInfo::ImporterIE7PasswordInfo() {
+}
+
+ImporterIE7PasswordInfo::~ImporterIE7PasswordInfo() {
+}
+#endif
+
 }  // namespace importer

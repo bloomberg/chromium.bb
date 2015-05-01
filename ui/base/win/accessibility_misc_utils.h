@@ -28,6 +28,7 @@ class UI_BASE_EXPORT UIATextProvider
   END_COM_MAP()
 
   UIATextProvider();
+  ~UIATextProvider();
 
   // Creates an instance of the UIATextProvider class.
   // Returns true on success
@@ -47,37 +48,29 @@ class UI_BASE_EXPORT UIATextProvider
   STDMETHOD(get_IsReadOnly)(BOOL* read_only) override;
 
   //
-  // IValueProvider methods not implemented.
+  // IValueProvider methods.
   //
-  STDMETHOD(SetValue)(const wchar_t* val) override { return E_NOTIMPL; }
+  STDMETHOD(SetValue)(const wchar_t* val) override;
 
   STDMETHOD(get_Value)(BSTR* value) override;
 
   //
   // ITextProvider methods.
   //
-  STDMETHOD(GetSelection)(SAFEARRAY** ret) override { return E_NOTIMPL; }
+  STDMETHOD(GetSelection)(SAFEARRAY** ret) override;
 
-  STDMETHOD(GetVisibleRanges)(SAFEARRAY** ret) override { return E_NOTIMPL; }
+  STDMETHOD(GetVisibleRanges)(SAFEARRAY** ret) override;
 
   STDMETHOD(RangeFromChild)(IRawElementProviderSimple* child,
-                            ITextRangeProvider** ret) override {
-    return E_NOTIMPL;
-  }
+                            ITextRangeProvider** ret) override;
 
   STDMETHOD(RangeFromPoint)(struct UiaPoint point,
-                            ITextRangeProvider** ret) override {
-    return E_NOTIMPL;
-  }
+                            ITextRangeProvider** ret) override;
 
-  STDMETHOD(get_DocumentRange)(ITextRangeProvider** ret) override {
-    return E_NOTIMPL;
-  }
+  STDMETHOD(get_DocumentRange)(ITextRangeProvider** ret) override;
 
   STDMETHOD(get_SupportedTextSelection)(
-      enum SupportedTextSelection* ret) override {
-    return E_NOTIMPL;
-  }
+      enum SupportedTextSelection* ret) override;
 
  private:
   bool editable_;

@@ -37,7 +37,7 @@ class TestViewsDelegate : public ViewsDelegate {
 
   // ViewsDelegate:
 #if defined(OS_WIN)
-  HICON GetSmallWindowIcon() const override { return nullptr; }
+  HICON GetSmallWindowIcon() const override;
 #endif
   void OnBeforeWidgetInit(Widget::InitParams* params,
                           internal::NativeWidgetDelegate* delegate) override;

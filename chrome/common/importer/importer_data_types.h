@@ -59,6 +59,9 @@ struct SearchEngineInfo {
 #if defined(OS_WIN)
 // Contains the information read from the IE7/IE8 Storage2 key in the registry.
 struct ImporterIE7PasswordInfo {
+  ImporterIE7PasswordInfo();
+  ~ImporterIE7PasswordInfo();
+
   // Hash of the url.
   std::wstring url_hash;
 

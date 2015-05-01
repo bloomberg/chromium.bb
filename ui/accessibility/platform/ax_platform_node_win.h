@@ -137,58 +137,34 @@ AXPlatformNodeWin
   // IAccessible2 methods not implemented.
   //
 
-  STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_extendedRole(BSTR* extended_role) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_nRelations(LONG* n_relations) override { return E_NOTIMPL; }
+  STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) override;
+  STDMETHODIMP get_extendedRole(BSTR* extended_role) override;
+  STDMETHODIMP get_nRelations(LONG* n_relations) override;
   STDMETHODIMP get_relation(LONG relation_index,
-                            IAccessibleRelation** relation) override {
-    return E_NOTIMPL;
-  }
+                            IAccessibleRelation** relation) override;
   STDMETHODIMP get_relations(LONG max_relations,
                              IAccessibleRelation** relations,
-                             LONG* n_relations) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override {
-    return E_NOTIMPL;
-  }
+                             LONG* n_relations) override;
+  STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override;
   STDMETHODIMP scrollToPoint(enum IA2CoordinateType coordinate_type,
                              LONG x,
-                             LONG y) override {
-    return E_NOTIMPL;
-  }
+                             LONG y) override;
   STDMETHODIMP get_groupPosition(LONG* group_level,
                                  LONG* similar_items_in_group,
-                                 LONG* position_in_group) override {
-    return E_NOTIMPL;
-  }
+                                 LONG* position_in_group) override;
   STDMETHODIMP get_localizedExtendedRole(
-      BSTR* localized_extended_role) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_nExtendedStates(LONG* n_extended_states) override {
-    return E_NOTIMPL;
-  }
+      BSTR* localized_extended_role) override;
+  STDMETHODIMP get_nExtendedStates(LONG* n_extended_states) override;
   STDMETHODIMP get_extendedStates(LONG max_extended_states,
                                   BSTR** extended_states,
-                                  LONG* n_extended_states) override {
-    return E_NOTIMPL;
-  }
+                                  LONG* n_extended_states) override;
   STDMETHODIMP get_localizedExtendedStates(
       LONG max_localized_extended_states,
       BSTR** localized_extended_states,
-      LONG* n_localized_extended_states) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_locale(IA2Locale* locale) override { return E_NOTIMPL; }
+      LONG* n_localized_extended_states) override;
+  STDMETHODIMP get_locale(IA2Locale* locale) override;
   STDMETHODIMP get_accessibleWithCaret(IUnknown** accessible,
-                                       long* caret_offset) override {
-    return E_NOTIMPL;
-  }
+                                       long* caret_offset) override;
 
   //
   // IAccessibleText methods.
@@ -235,50 +211,32 @@ AXPlatformNodeWin
   // IAccessibleText methods not implemented.
   //
 
-  STDMETHODIMP get_newText(IA2TextSegment* new_text) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_oldText(IA2TextSegment* old_text) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) override {
-    return E_NOTIMPL;
-  }
+  STDMETHODIMP get_newText(IA2TextSegment* new_text) override;
+  STDMETHODIMP get_oldText(IA2TextSegment* old_text) override;
+  STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) override;
   STDMETHODIMP get_attributes(LONG offset,
                               LONG* start_offset,
                               LONG* end_offset,
-                              BSTR* text_attributes) override {
-    return E_NOTIMPL;
-  }
+                              BSTR* text_attributes) override;
   STDMETHODIMP get_characterExtents(LONG offset,
                                     enum IA2CoordinateType coord_type,
                                     LONG* x,
                                     LONG* y,
                                     LONG* width,
-                                    LONG* height) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP removeSelection(LONG selection_index) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP setCaretOffset(LONG offset) override { return E_NOTIMPL; }
+                                    LONG* height) override;
+  STDMETHODIMP removeSelection(LONG selection_index) override;
+  STDMETHODIMP setCaretOffset(LONG offset) override;
   STDMETHODIMP setSelection(LONG selection_index,
                             LONG start_offset,
-                            LONG end_offset) override {
-    return E_NOTIMPL;
-  }
+                            LONG end_offset) override;
   STDMETHODIMP scrollSubstringTo(LONG start_index,
                                  LONG end_index,
-                                 enum IA2ScrollType scroll_type) override {
-    return E_NOTIMPL;
-  }
+                                 enum IA2ScrollType scroll_type) override;
   STDMETHODIMP scrollSubstringToPoint(LONG start_index,
                                       LONG end_index,
                                       enum IA2CoordinateType coordinate_type,
                                       LONG x,
-                                      LONG y) override {
-    return E_NOTIMPL;
-  }
+                                      LONG y) override;
 
   //
   // IServiceProvider methods.

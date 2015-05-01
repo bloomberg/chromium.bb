@@ -25,6 +25,9 @@ ProductState::ProductState()
       has_usagestats_(false) {
 }
 
+ProductState::~ProductState() {
+}
+
 bool ProductState::Initialize(bool system_install,
                               BrowserDistribution::Type type) {
   return Initialize(system_install,

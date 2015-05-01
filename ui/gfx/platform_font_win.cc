@@ -637,6 +637,9 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
 }
 
+PlatformFontWin::~PlatformFontWin() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontWin::HFontRef:
 

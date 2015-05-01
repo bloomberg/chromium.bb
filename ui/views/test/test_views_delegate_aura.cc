@@ -30,6 +30,12 @@ TestViewsDelegate::~TestViewsDelegate() {
     ViewsDelegate::views_delegate = NULL;
 }
 
+#if defined(OS_WIN)
+HICON TestViewsDelegate::GetSmallWindowIcon() const {
+  return nullptr;
+}
+#endif
+
 void TestViewsDelegate::OnBeforeWidgetInit(
     Widget::InitParams* params,
     internal::NativeWidgetDelegate* delegate) {

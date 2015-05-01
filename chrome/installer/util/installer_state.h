@@ -74,6 +74,8 @@ class InstallerState {
   // Constructs an initialized but empty instance.
   explicit InstallerState(Level level);
 
+  ~InstallerState();
+
   // Initializes this object based on the current operation.
   void Initialize(const base::CommandLine& command_line,
                   const MasterPreferences& prefs,

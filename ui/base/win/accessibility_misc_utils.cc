@@ -13,6 +13,9 @@ namespace win {
 UIATextProvider::UIATextProvider()
     : editable_(false) {}
 
+UIATextProvider::~UIATextProvider() {
+}
+
 // static
 bool UIATextProvider::CreateTextProvider(const string16& value,
                                          bool editable,
@@ -38,9 +41,48 @@ STDMETHODIMP UIATextProvider::get_IsReadOnly(BOOL* read_only) {
   return S_OK;
 }
 
+//
+// IValueProvider methods.
+//
+
+STDMETHODIMP UIATextProvider::SetValue(const wchar_t* val) {
+  return E_NOTIMPL;
+}
+
 STDMETHODIMP UIATextProvider::get_Value(BSTR* value) {
   *value = SysAllocString(value_.c_str());
   return S_OK;
+}
+
+//
+// ITextProvider methods.
+//
+
+STDMETHODIMP UIATextProvider::GetSelection(SAFEARRAY** ret) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP UIATextProvider::GetVisibleRanges(SAFEARRAY** ret) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP UIATextProvider::RangeFromChild(IRawElementProviderSimple* child,
+                                             ITextRangeProvider** ret) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP UIATextProvider::RangeFromPoint(struct UiaPoint point,
+                                             ITextRangeProvider** ret) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP UIATextProvider::get_DocumentRange(ITextRangeProvider** ret) {
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP UIATextProvider::get_SupportedTextSelection(
+    enum SupportedTextSelection* ret) {
+  return E_NOTIMPL;
 }
 
 }  // namespace win

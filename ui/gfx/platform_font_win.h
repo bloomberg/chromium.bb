@@ -85,7 +85,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, Metrics_SkiaVersusGDI);
   FRIEND_TEST_ALL_PREFIXES(PlatformFontWinTest, DirectWriteFontSubstitution);
 
-  ~PlatformFontWin() override {}
+  ~PlatformFontWin() override;
 
   // Chrome text drawing bottoms out in the Windows GDI functions that take an
   // HFONT (an opaque handle into Windows). To avoid lots of GDI object

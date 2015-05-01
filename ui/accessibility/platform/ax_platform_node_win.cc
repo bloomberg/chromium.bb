@@ -582,6 +582,68 @@ STDMETHODIMP AXPlatformNodeWin::get_indexInParent(LONG* index_in_parent) {
 }
 
 //
+// IAccessible2 methods not implemented.
+//
+
+STDMETHODIMP AXPlatformNodeWin::get_attribute(BSTR name, VARIANT* attribute) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_extendedRole(BSTR* extended_role) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_nRelations(LONG* n_relations) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_relation(LONG relation_index,
+                                             IAccessibleRelation** relation) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_relations(LONG max_relations,
+                                              IAccessibleRelation** relations,
+                                              LONG* n_relations) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::scrollToPoint(
+    enum IA2CoordinateType coordinate_type,
+    LONG x,
+    LONG y) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_groupPosition(LONG* group_level,
+                                                  LONG* similar_items_in_group,
+                                                  LONG* position_in_group) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
+    BSTR* localized_extended_role) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_nExtendedStates(LONG* n_extended_states) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_extendedStates(LONG max_extended_states,
+                                                   BSTR** extended_states,
+                                                   LONG* n_extended_states) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_localizedExtendedStates(
+    LONG max_localized_extended_states,
+    BSTR** localized_extended_states,
+    LONG* n_localized_extended_states) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_locale(IA2Locale* locale) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_accessibleWithCaret(IUnknown** accessible,
+                                                        long* caret_offset) {
+  return E_NOTIMPL;
+}
+
+//
 // IAccessibleText
 //
 
@@ -748,6 +810,61 @@ STDMETHODIMP AXPlatformNodeWin::get_offsetAtPoint(
   // rather than E_NOTIMPL or screen readers will complain.
   *offset = 0;
   return S_OK;
+}
+
+//
+// IAccessibleText methods not implemented.
+//
+
+STDMETHODIMP AXPlatformNodeWin::get_newText(IA2TextSegment* new_text) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_oldText(IA2TextSegment* old_text) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::addSelection(LONG start_offset,
+                                             LONG end_offset) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_attributes(LONG offset,
+                                               LONG* start_offset,
+                                               LONG* end_offset,
+                                               BSTR* text_attributes) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::get_characterExtents(
+    LONG offset,
+    enum IA2CoordinateType coord_type,
+    LONG* x,
+    LONG* y,
+    LONG* width,
+    LONG* height) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::removeSelection(LONG selection_index) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::setCaretOffset(LONG offset) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::setSelection(LONG selection_index,
+                                             LONG start_offset,
+                                             LONG end_offset) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::scrollSubstringTo(
+    LONG start_index,
+    LONG end_index,
+    enum IA2ScrollType scroll_type) {
+  return E_NOTIMPL;
+}
+STDMETHODIMP AXPlatformNodeWin::scrollSubstringToPoint(
+    LONG start_index,
+    LONG end_index,
+    enum IA2CoordinateType coordinate_type,
+    LONG x,
+    LONG y) {
+  return E_NOTIMPL;
 }
 
 //
