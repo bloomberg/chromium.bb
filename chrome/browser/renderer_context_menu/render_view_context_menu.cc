@@ -310,6 +310,25 @@ const int kSpellcheckRadioGroup = 1;
 }  // namespace
 
 // static
+gfx::Vector2d RenderViewContextMenu::GetOffset(
+    RenderFrameHost* render_frame_host) {
+  gfx::Vector2d offset;
+#if defined(ENABLE_EXTENSIONS)
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  WebContents* top_level_web_contents =
+      extensions::GuestViewBase::GetTopLevelWebContents(web_contents);
+  if (web_contents && top_level_web_contents &&
+      web_contents != top_level_web_contents) {
+    gfx::Rect bounds = web_contents->GetContainerBounds();
+    gfx::Rect top_level_bounds = top_level_web_contents->GetContainerBounds();
+    offset = bounds.origin() - top_level_bounds.origin();
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
+  return offset;
+}
+
+// static
 bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
   return url.SchemeIs(content::kChromeDevToolsScheme);
 }

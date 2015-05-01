@@ -97,12 +97,16 @@ void RenderViewContextMenuMac::Show() {
       [[MenuController alloc] initWithModel:&menu_model_
                      useWithPopUpButtonCell:NO]);
 
+  gfx::Point params_position(params_.x, params_.y);
+  params_position += RenderViewContextMenu::GetOffset(GetRenderFrameHost());
+
   // Synthesize an event for the click, as there is no certainty that
   // [NSApp currentEvent] will return a valid event.
   NSEvent* currentEvent = [NSApp currentEvent];
   NSWindow* window = [parent_view_ window];
   NSPoint position =
-      NSMakePoint(params_.x, NSHeight([parent_view_ bounds]) - params_.y);
+      NSMakePoint(params_position.x(),
+                  NSHeight([parent_view_ bounds]) - params_position.y());
   position = [parent_view_ convertPoint:position toView:nil];
   NSTimeInterval eventTime = [currentEvent timestamp];
   NSEvent* clickEvent = [NSEvent mouseEventWithType:NSRightMouseDown

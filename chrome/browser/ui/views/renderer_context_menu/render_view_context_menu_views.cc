@@ -222,6 +222,7 @@ void RenderViewContextMenuViews::Show() {
     return;
 
   gfx::Point screen_point(params().x, params().y);
+  screen_point += RenderViewContextMenuViews::GetOffset(GetRenderFrameHost());
 
   // Convert from target window coordinates to root window coordinates.
   aura::Window* target_window = GetActiveNativeView();

@@ -3419,11 +3419,6 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
                                       const ContextMenuParams& params) {
   ContextMenuParams context_menu_params(params);
   // Allow WebContentsDelegates to handle the context menu operation first.
-  if (GetBrowserPluginGuest()) {
-    WebContentsViewGuest* view_guest =
-        static_cast<WebContentsViewGuest*>(GetView());
-    context_menu_params = view_guest->ConvertContextMenuParams(params);
-  }
   if (delegate_ && delegate_->HandleContextMenu(context_menu_params))
     return;
 

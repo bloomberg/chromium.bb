@@ -842,6 +842,23 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
   GetGuestViewManager()->WaitForAllGuestsDeleted();
 }
 
+// Tests whether <webview> context menu sees <webview> local coordinates
+// in its RenderViewContextMenu params.
+// Local coordinates are required for plugin actions to work properly.
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ContextMenuParamCoordinates) {
+  TestHelper("testCoordinates", "web_view/context_menus/coordinates",
+             NO_TEST_SERVER);
+  ASSERT_TRUE(guest_web_contents());
+
+  ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
+  SimulateRWHMouseClick(guest_web_contents()->GetRenderViewHost(),
+                        blink::WebMouseEvent::ButtonRight, 10, 20);
+  // Wait until the context menu is opened and closed.
+  menu_observer.WaitForMenuOpenAndClose();
+  ASSERT_EQ(10, menu_observer.params().x);
+  ASSERT_EQ(20, menu_observer.params().y);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "execute_code")) << message_;

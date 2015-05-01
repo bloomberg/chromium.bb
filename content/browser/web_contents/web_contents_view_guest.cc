@@ -78,23 +78,6 @@ void WebContentsViewGuest::OnGuestDetached(WebContentsView* old_parent_view) {
 #endif  // defined(USE_AURA)
 }
 
-ContextMenuParams WebContentsViewGuest::ConvertContextMenuParams(
-    const ContextMenuParams& params) const {
-  // We need to add |offset| of the guest from the embedder to position the
-  // menu properly.
-  gfx::Rect embedder_bounds;
-  guest_->embedder_web_contents()->GetView()->GetContainerBounds(
-      &embedder_bounds);
-  gfx::Rect guest_bounds;
-  GetContainerBounds(&guest_bounds);
-
-  gfx::Vector2d offset = guest_bounds.origin() - embedder_bounds.origin();
-  ContextMenuParams params_in_embedder = params;
-  params_in_embedder.x += offset.x();
-  params_in_embedder.y += offset.y();
-  return params_in_embedder;
-}
-
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
   if (guest_->embedder_web_contents()) {
     // We need embedder container's bounds to calculate our bounds.
@@ -229,8 +212,7 @@ void WebContentsViewGuest::TakeFocus(bool reverse) {
 
 void WebContentsViewGuest::ShowContextMenu(RenderFrameHost* render_frame_host,
                                            const ContextMenuParams& params) {
-  platform_view_delegate_view_->ShowContextMenu(
-      render_frame_host, ConvertContextMenuParams(params));
+  platform_view_delegate_view_->ShowContextMenu(render_frame_host, params);
 }
 
 void WebContentsViewGuest::StartDragging(
