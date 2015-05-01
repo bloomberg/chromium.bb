@@ -642,6 +642,18 @@ public:
     // Returns 0, if DOM code enum is not found.
     virtual int domEnumFromCodeString(const WebString& codeString) { return 0; }
 
+    // This method converts from the supplied DOM |key| enum to the
+    // corresponding DOM |key| string value for the key pressed. |domKey| values are
+    // based on the value defined in ui/events/keycodes/dom3/dom_key_data.h.
+    // Returns empty string, if DOM key value is not found.
+    virtual WebString domKeyStringFromEnum(int domKey) { return WebString(); }
+
+    // This method converts from the suppled DOM |key| value to the
+    // embedder's DOM |key| enum for the key pressed. |keyString| is defined in
+    // ui/events/keycodes/dom3/dom_key_data.h.
+    // Returns 0 if DOM key enum is not found.
+    virtual int domKeyEnumFromString(const WebString& keyString) { return 0; }
+
     // Quota -----------------------------------------------------------
 
     // Queries the storage partition's storage usage and quota information.

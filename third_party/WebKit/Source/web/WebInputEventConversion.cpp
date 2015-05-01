@@ -306,7 +306,9 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_nativeVirtualKeyCode = e.nativeKeyCode;
     m_isKeypad = (e.modifiers & WebInputEvent::IsKeyPad);
     m_isSystemKey = e.isSystemKey;
+    // TODO: BUG482880 Fix this initialization to lazy initialization.
     m_code = Platform::current()->domCodeStringFromEnum(e.domCode);
+    m_key = Platform::current()->domKeyStringFromEnum(e.domKey);
 
     m_modifiers = toPlatformEventModifiers(e.modifiers);
 
@@ -627,6 +629,7 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
         return;
     nativeKeyCode = event.keyEvent()->nativeVirtualKeyCode();
     domCode = Platform::current()->domEnumFromCodeString(event.keyEvent()->code());
+    domKey = Platform::current()->domKeyEnumFromString(event.keyEvent()->key());
     unsigned numberOfCharacters = std::min(event.keyEvent()->text().length(), static_cast<unsigned>(textLengthCap));
     for (unsigned i = 0; i < numberOfCharacters; ++i) {
         text[i] = event.keyEvent()->text()[i];

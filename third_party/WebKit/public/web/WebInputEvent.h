@@ -256,6 +256,10 @@ public:
     // code enum are defined in ui/events/keycodes/dom4/keycode_converter_data.h.
     int domCode;
 
+    // The DOM key enum of the key pressed as passed by the embedder. DOM
+    // key enum are defined in ui/events/keycodes/dom3/dom_key_data.h
+    int domKey;
+
     // This identifies whether this event was tagged by the system as being
     // a "system key" event (see
     // http://msdn.microsoft.com/en-us/library/ms646286(VS.85).aspx for

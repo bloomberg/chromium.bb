@@ -28,6 +28,7 @@
     const unsigned long DOM_KEY_LOCATION_NUMPAD   = 0x03;
 
     [RuntimeEnabled=KeyboardEventCode] readonly attribute DOMString     code;
+    [RuntimeEnabled=KeyboardEventKey]  readonly attribute DOMString     key;
     readonly attribute DOMString        keyIdentifier;
     readonly attribute unsigned long    location;
     [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation] readonly attribute unsigned long keyLocation; // Deprecated.

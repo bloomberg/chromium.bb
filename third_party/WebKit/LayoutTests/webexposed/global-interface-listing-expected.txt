@@ -3081,6 +3081,7 @@ interface KeyboardEvent
     getter charCode
     getter code
     getter ctrlKey
+    getter key
     getter keyCode
     getter keyIdentifier
     getter keyLocation
