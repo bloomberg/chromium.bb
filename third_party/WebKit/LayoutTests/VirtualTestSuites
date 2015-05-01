@@ -151,43 +151,7 @@
   },
   {
     "prefix": "slimmingpaint",
-    "base": "svg/text",
-    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
-    "reference_args": []
-  },
-  {
-    "prefix": "slimmingpaint",
-    "base": "svg/stroke",
-    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
-    "reference_args": []
-  },
-  {
-    "prefix": "slimmingpaint",
-    "base": "svg/foreignObject",
-    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
-    "reference_args": []
-  },
-  {
-    "prefix": "slimmingpaint",
-    "base": "svg/filters",
-    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
-    "reference_args": []
-  },
-  {
-    "prefix": "slimmingpaint",
-    "base": "svg/clip-path",
-    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
-    "reference_args": []
-  },
-  {
-    "prefix": "slimmingpaint",
-    "base": "svg/masking",
-    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
-    "reference_args": []
-  },
-  {
-    "prefix": "slimmingpaint",
-    "base": "svg/as-background-image",
+    "base": "svg",
     "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
