@@ -11,6 +11,7 @@
         [8, 16, 2000, 2072],
         [8, 16, 784, 20],
         [8, 16, 769, 20],
+        [0, 0, 2008, 2096],
         [0, 0, 800, 600],
         [0, 0, 785, 585],
         [0, 0, 785, 585]
@@ -27,6 +28,7 @@
         "InlineTextBox '.'",
         "LayoutView #document",
         "LayoutView #document",
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P"
