@@ -23,7 +23,6 @@ class PinBase
       public base::RefCounted<PinBase> {
  public:
   explicit PinBase(IBaseFilter* owner);
-  virtual ~PinBase();
 
   // Function used for changing the owner.
   // If the owner is deleted the owner should first call this function
@@ -95,6 +94,10 @@ class PinBase
   STDMETHOD_(ULONG, AddRef)() override;
 
   STDMETHOD_(ULONG, Release)() override;
+
+ protected:
+  friend class base::RefCounted<PinBase>;
+  virtual ~PinBase();
 
  private:
   AM_MEDIA_TYPE current_media_type_;

@@ -31,10 +31,6 @@ SinkFilter::SinkFilter(SinkFilterObserver* observer)
   input_pin_ = new SinkInputPin(this, observer);
 }
 
-SinkFilter::~SinkFilter() {
-  input_pin_->SetOwner(NULL);
-}
-
 void SinkFilter::SetRequestedMediaFormat(VideoPixelFormat pixel_format,
                                          float frame_rate,
                                          const BITMAPINFOHEADER& info_header) {
@@ -56,6 +52,10 @@ IPin* SinkFilter::GetPin(int index) {
 STDMETHODIMP SinkFilter::GetClassID(CLSID* clsid) {
   *clsid = __uuidof(SinkFilter);
   return S_OK;
+}
+
+SinkFilter::~SinkFilter() {
+  input_pin_->SetOwner(NULL);
 }
 
 }  // namespace media

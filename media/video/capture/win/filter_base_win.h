@@ -22,7 +22,6 @@ class FilterBase
       public base::RefCounted<FilterBase> {
  public:
   FilterBase();
-  virtual ~FilterBase();
 
   // Number of pins connected to this filter.
   virtual size_t NoOfPins() = 0;
@@ -60,6 +59,10 @@ class FilterBase
 
   // Inherited from IPersistent.
   STDMETHOD(GetClassID)(CLSID* class_id) override = 0;
+
+ protected:
+  friend class base::RefCounted<FilterBase>;
+  virtual ~FilterBase();
 
  private:
   FILTER_STATE state_;

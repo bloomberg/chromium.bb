@@ -22,7 +22,6 @@ extern const REFERENCE_TIME kSecondsToReferenceTime;
 class SinkInputPin : public PinBase {
  public:
   SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer);
-  ~SinkInputPin() override;
 
   void SetRequestedMediaFormat(VideoPixelFormat pixel_format,
                                float frame_rate,
@@ -38,6 +37,8 @@ class SinkInputPin : public PinBase {
   STDMETHOD(Receive)(IMediaSample* media_sample) override;
 
  private:
+  ~SinkInputPin() override;
+
   VideoPixelFormat requested_pixel_format_;
   float requested_frame_rate_;
   BITMAPINFOHEADER requested_info_header_;

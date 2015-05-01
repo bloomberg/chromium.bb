@@ -28,7 +28,74 @@ SinkInputPin::SinkInputPin(IBaseFilter* filter,
       PinBase(filter) {
 }
 
-SinkInputPin::~SinkInputPin() {}
+void SinkInputPin::SetRequestedMediaFormat(
+    VideoPixelFormat pixel_format,
+    float frame_rate,
+    const BITMAPINFOHEADER& info_header) {
+  requested_pixel_format_ = pixel_format;
+  requested_frame_rate_ = frame_rate;
+  requested_info_header_ = info_header;
+  resulting_format_.frame_size.SetSize(0, 0);
+  resulting_format_.frame_rate = 0;
+  resulting_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;
+}
+
+const VideoCaptureFormat& SinkInputPin::ResultingFormat() {
+  return resulting_format_;
+}
+
+bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
+  GUID type = media_type->majortype;
+  if (type != MEDIATYPE_Video)
+    return false;
+
+  GUID format_type = media_type->formattype;
+  if (format_type != FORMAT_VideoInfo)
+    return false;
+
+  // Check for the sub types we support.
+  GUID sub_type = media_type->subtype;
+  VIDEOINFOHEADER* pvi =
+      reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
+  if (pvi == NULL)
+    return false;
+
+  // Store the incoming width and height.
+  resulting_format_.frame_size.SetSize(pvi->bmiHeader.biWidth,
+                                       abs(pvi->bmiHeader.biHeight));
+  if (pvi->AvgTimePerFrame > 0) {
+    resulting_format_.frame_rate =
+        static_cast<int>(kSecondsToReferenceTime / pvi->AvgTimePerFrame);
+  } else {
+    resulting_format_.frame_rate = requested_frame_rate_;
+  }
+  if (sub_type == kMediaSubTypeI420 &&
+      pvi->bmiHeader.biCompression == MAKEFOURCC('I', '4', '2', '0')) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_I420;
+    return true;
+  }
+  if (sub_type == MEDIASUBTYPE_YUY2 &&
+      pvi->bmiHeader.biCompression == MAKEFOURCC('Y', 'U', 'Y', '2')) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_YUY2;
+    return true;
+  }
+  if (sub_type == MEDIASUBTYPE_MJPG &&
+      pvi->bmiHeader.biCompression == MAKEFOURCC('M', 'J', 'P', 'G')) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_MJPEG;
+    return true;
+  }
+  if (sub_type == MEDIASUBTYPE_RGB24 &&
+      pvi->bmiHeader.biCompression == BI_RGB) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_RGB24;
+    return true;
+  }
+  if (sub_type == MEDIASUBTYPE_RGB32 &&
+      pvi->bmiHeader.biCompression == BI_RGB) {
+    resulting_format_.pixel_format = PIXEL_FORMAT_RGB32;
+    return true;
+  }
+  return false;
+}
 
 bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   if (media_type->cbFormat < sizeof(VIDEOINFOHEADER))
@@ -108,59 +175,6 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
   return true;
 }
 
-bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
-  GUID type = media_type->majortype;
-  if (type != MEDIATYPE_Video)
-    return false;
-
-  GUID format_type = media_type->formattype;
-  if (format_type != FORMAT_VideoInfo)
-    return false;
-
-  // Check for the sub types we support.
-  GUID sub_type = media_type->subtype;
-  VIDEOINFOHEADER* pvi =
-      reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-  if (pvi == NULL)
-    return false;
-
-  // Store the incoming width and height.
-  resulting_format_.frame_size.SetSize(pvi->bmiHeader.biWidth,
-                                       abs(pvi->bmiHeader.biHeight));
-  if (pvi->AvgTimePerFrame > 0) {
-    resulting_format_.frame_rate =
-        static_cast<int>(kSecondsToReferenceTime / pvi->AvgTimePerFrame);
-  } else {
-    resulting_format_.frame_rate = requested_frame_rate_;
-  }
-  if (sub_type == kMediaSubTypeI420 &&
-      pvi->bmiHeader.biCompression == MAKEFOURCC('I', '4', '2', '0')) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_I420;
-    return true;
-  }
-  if (sub_type == MEDIASUBTYPE_YUY2 &&
-      pvi->bmiHeader.biCompression == MAKEFOURCC('Y', 'U', 'Y', '2')) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_YUY2;
-    return true;
-  }
-  if (sub_type == MEDIASUBTYPE_MJPG &&
-      pvi->bmiHeader.biCompression == MAKEFOURCC('M', 'J', 'P', 'G')) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_MJPEG;
-    return true;
-  }
-  if (sub_type == MEDIASUBTYPE_RGB24 &&
-      pvi->bmiHeader.biCompression == BI_RGB) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_RGB24;
-    return true;
-  }
-  if (sub_type == MEDIASUBTYPE_RGB32 &&
-      pvi->bmiHeader.biCompression == BI_RGB) {
-    resulting_format_.pixel_format = PIXEL_FORMAT_RGB32;
-    return true;
-  }
-  return false;
-}
-
 HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   const int length = sample->GetActualDataLength();
   uint8* buffer = NULL;
@@ -177,20 +191,6 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   return S_OK;
 }
 
-void SinkInputPin::SetRequestedMediaFormat(
-    VideoPixelFormat pixel_format,
-    float frame_rate,
-    const BITMAPINFOHEADER& info_header) {
-  requested_pixel_format_ = pixel_format;
-  requested_frame_rate_ = frame_rate;
-  requested_info_header_ = info_header;
-  resulting_format_.frame_size.SetSize(0, 0);
-  resulting_format_.frame_rate = 0;
-  resulting_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;
-}
-
-const VideoCaptureFormat& SinkInputPin::ResultingFormat() {
-  return resulting_format_;
-}
+SinkInputPin::~SinkInputPin() {}
 
 }  // namespace media

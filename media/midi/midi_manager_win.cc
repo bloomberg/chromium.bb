@@ -330,6 +330,10 @@ struct MidiInputDeviceState final : base::RefCounted<MidiInputDeviceState> {
   // True if |start_time| is initialized. This field is not used so far, but
   // kept for the debugging purpose.
   bool start_time_initialized;
+
+ private:
+  friend class base::RefCounted<MidiInputDeviceState>;
+  ~MidiInputDeviceState() {}
 };
 
 struct MidiOutputDeviceState final : base::RefCounted<MidiOutputDeviceState> {
@@ -355,6 +359,10 @@ struct MidiOutputDeviceState final : base::RefCounted<MidiOutputDeviceState> {
   // TODO(toyoshim): Use std::atomic<bool> when it is allowed in Chromium
   // project.
   volatile bool closed;
+
+ private:
+  friend class base::RefCounted<MidiOutputDeviceState>;
+  ~MidiOutputDeviceState() {}
 };
 
 // The core logic of MIDI device handling for Windows. Basically this class is

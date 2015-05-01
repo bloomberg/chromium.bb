@@ -18,9 +18,6 @@ class PinEnumerator final
       index_(0) {
   }
 
-  ~PinEnumerator() {
-  }
-
   // IUnknown implementation.
   STDMETHOD(QueryInterface)(REFIID iid, void** object_ptr) override {
     if (iid == IID_IEnumPins || iid == IID_IUnknown) {
@@ -79,14 +76,14 @@ class PinEnumerator final
   }
 
  private:
+  friend class base::RefCounted<PinEnumerator>;
+  ~PinEnumerator() {}
+
   scoped_refptr<FilterBase> filter_;
   size_t index_;
 };
 
 FilterBase::FilterBase() : state_(State_Stopped) {
-}
-
-FilterBase::~FilterBase() {
 }
 
 STDMETHODIMP FilterBase::EnumPins(IEnumPins** enum_pins) {
@@ -172,6 +169,9 @@ ULONG STDMETHODCALLTYPE FilterBase::AddRef() {
 ULONG STDMETHODCALLTYPE FilterBase::Release() {
   base::RefCounted<FilterBase>::Release();
   return 1;
+}
+
+FilterBase::~FilterBase() {
 }
 
 }  // namespace media

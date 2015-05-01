@@ -18,9 +18,6 @@ class TypeEnumerator final
         index_(0) {
   }
 
-  ~TypeEnumerator() {
-  }
-
   // Implement from IUnknown.
   STDMETHOD(QueryInterface)(REFIID iid, void** object_ptr) override {
     if (iid == IID_IEnumMediaTypes || iid == IID_IUnknown) {
@@ -100,6 +97,9 @@ class TypeEnumerator final
   }
 
  private:
+  friend class base::RefCounted<TypeEnumerator>;
+  ~TypeEnumerator() {}
+
   void FreeAllocatedMediaTypes(ULONG allocated, AM_MEDIA_TYPE** types) {
     for (ULONG i = 0; i < allocated; ++i) {
       CoTaskMemFree(types[i]->pbFormat);
@@ -114,9 +114,6 @@ class TypeEnumerator final
 PinBase::PinBase(IBaseFilter* owner)
     : owner_(owner) {
   memset(&current_media_type_, 0, sizeof(current_media_type_));
-}
-
-PinBase::~PinBase() {
 }
 
 void PinBase::SetOwner(IBaseFilter* owner) {
@@ -285,6 +282,9 @@ STDMETHODIMP_(ULONG) PinBase::AddRef() {
 STDMETHODIMP_(ULONG) PinBase::Release() {
   base::RefCounted<PinBase>::Release();
   return 1;
+}
+
+PinBase::~PinBase() {
 }
 
 }  // namespace media
