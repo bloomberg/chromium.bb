@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
+
 declare_args() {
   # Minimum supported version of the Mac SDK.
   mac_sdk_min = "10.6"

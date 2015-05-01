@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //chrome/browser/policy:path_parser
       'target_name': 'policy_path_parser',
       'type': 'static_library',
       'dependencies': [

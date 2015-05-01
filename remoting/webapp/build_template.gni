@@ -4,6 +4,7 @@
 
 # Keep in sync with 'remoting_webapp' target in remoting/remoting_client.gypi.
 
+import("//build/config/chrome_build.gni")
 import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_options.gni")
 import("//remoting/remoting_version.gni")

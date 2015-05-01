@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
+
 if (is_chrome_branded) {
   if (is_linux && current_cpu == "x86") {
     flapper_version_h_file = "symbols/ppapi/linux/flapper_version.h"
