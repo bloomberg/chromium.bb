@@ -2948,7 +2948,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
                   &caps.max_fragment_uniform_components);
     DoGetIntegerv(GL_MAX_PROGRAM_TEXEL_OFFSET,
                   &caps.max_program_texel_offset);
-    DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples);
     DoGetIntegerv(GL_MAX_SERVER_WAIT_TIMEOUT, &caps.max_server_wait_timeout);
     DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS,
                   &caps.max_transform_feedback_interleaved_components);
@@ -2975,6 +2974,11 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
     // TODO(zmo): once we switch to MANGLE, we should query version numbers.
     caps.major_version = 3;
     caps.minor_version = 0;
+  }
+  if (feature_info_->feature_flags().multisampled_render_to_texture ||
+      feature_info_->feature_flags().chromium_framebuffer_multisample ||
+      unsafe_es3_apis_enabled()) {
+    DoGetIntegerv(GL_MAX_SAMPLES, &caps.max_samples);
   }
 
   caps.egl_image_external =

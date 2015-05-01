@@ -20,6 +20,9 @@
 
 namespace gpu {
 
+// NOTE: When adding members to this struct, also add corresponding
+// entries in gpu/ipc/gpu_command_buffer_traits_multi.h.
+
 struct GPU_EXPORT Capabilities {
   struct ShaderPrecision {
     ShaderPrecision() : min_range(0), max_range(0), precision(0) {}
