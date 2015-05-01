@@ -143,7 +143,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/ec/ec_test.c',
+        'src/crypto/ec/ec_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -169,7 +169,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/ecdsa/ecdsa_test.c',
+        'src/crypto/ecdsa/ecdsa_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039

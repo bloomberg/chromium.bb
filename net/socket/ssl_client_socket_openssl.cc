@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
+#include <openssl/mem.h>
 #include <openssl/ssl.h>
 #include <string.h>
 

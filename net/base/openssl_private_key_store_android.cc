@@ -5,6 +5,7 @@
 #include "net/base/openssl_private_key_store.h"
 
 #include <openssl/evp.h>
+#include <openssl/mem.h>
 #include <openssl/x509.h>
 
 #include "base/logging.h"

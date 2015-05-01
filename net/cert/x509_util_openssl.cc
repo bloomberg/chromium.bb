@@ -4,8 +4,10 @@
 
 #include "net/cert/x509_util_openssl.h"
 
-#include <algorithm>
 #include <openssl/asn1.h>
+#include <openssl/mem.h>
+
+#include <algorithm>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"

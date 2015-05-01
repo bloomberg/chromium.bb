@@ -4,6 +4,7 @@
 
 #include "net/base/keygen_handler.h"
 
+#include <openssl/mem.h>
 #include <openssl/ssl.h>
 
 #include "base/logging.h"

@@ -1,4 +1,61 @@
-#include "arm_arch.h"
+
+@ ====================================================================
+@ Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
+@ project. The module is, however, dual licensed under OpenSSL and
+@ CRYPTOGAMS licenses depending on where you obtain it. For further
+@ details see http://www.openssl.org/~appro/cryptogams/.
+@
+@ Permission to use under GPL terms is granted.
+@ ====================================================================
+
+@ SHA512 block procedure for ARMv4. September 2007.
+
+@ This code is ~4.5 (four and a half) times faster than code generated
+@ by gcc 3.4 and it spends ~72 clock cycles per byte [on single-issue
+@ Xscale PXA250 core].
+@
+@ July 2010.
+@
+@ Rescheduling for dual-issue pipeline resulted in 6% improvement on
+@ Cortex A8 core and ~40 cycles per processed byte.
+
+@ February 2011.
+@
+@ Profiler-assisted and platform-specific optimization resulted in 7%
+@ improvement on Coxtex A8 core and ~38 cycles per byte.
+
+@ March 2011.
+@
+@ Add NEON implementation. On Cortex A8 it was measured to process
+@ one byte in 23.3 cycles or ~60% faster than integer-only code.
+
+@ August 2012.
+@
+@ Improve NEON performance by 12% on Snapdragon S4. In absolute
+@ terms it's 22.6 cycles per byte, which is disappointing result.
+@ Technical writers asserted that 3-way S4 pipeline can sustain
+@ multiple NEON instructions per cycle, but dual NEON issue could
+@ not be observed, see http://www.openssl.org/~appro/Snapdragon-S4.html
+@ for further details. On side note Cortex-A15 processes one byte in
+@ 16 cycles.
+
+@ Byte order [in]dependence. =========================================
+@
+@ Originally caller was expected to maintain specific *dword* order in
+@ h[0-7], namely with most significant dword at *lower* address, which
+@ was reflected in below two parameters as 0 and 4. Now caller is
+@ expected to maintain native byte order for whole 64-bit values.
+#ifndef __KERNEL__
+# include "arm_arch.h"
+# define VFP_ABI_PUSH	vstmdb	sp!,{d8-d15}
+# define VFP_ABI_POP	vldmia	sp!,{d8-d15}
+#else
+# define __ARM_ARCH__ __LINUX_ARM_ARCH__
+# define __ARM_MAX_ARCH__ 7
+# define VFP_ABI_PUSH
+# define VFP_ABI_POP
+#endif
+
 #ifdef __ARMEL__
 # define LO 0
 # define HI 4
@@ -10,7 +67,18 @@
 #endif
 
 .text
+#if __ARM_ARCH__<7
 .code	32
+#else
+.syntax unified
+# ifdef __thumb2__
+#  define adrl adr
+.thumb
+# else
+.code   32
+# endif
+#endif
+
 .type	K512,%object
 .align	5
 K512:
@@ -55,7 +123,7 @@ WORD64(0x3c9ebe0a,0x15c9bebc, 0x431d67c4,0x9c100d4c)
 WORD64(0x4cc5d4be,0xcb3e42b6, 0x597f299c,0xfc657e2a)
 WORD64(0x5fcb6fab,0x3ad6faec, 0x6c44198c,0x4a475817)
 .size	K512,.-K512
-#if __ARM_MAX_ARCH__>=7
+#if __ARM_MAX_ARCH__>=7 && !defined(__KERNEL__)
 .LOPENSSL_armcap:
 .word	OPENSSL_armcap_P-sha512_block_data_order
 .skip	32-4
@@ -66,14 +134,18 @@ WORD64(0x5fcb6fab,0x3ad6faec, 0x6c44198c,0x4a475817)
 .global	sha512_block_data_order
 .type	sha512_block_data_order,%function
 sha512_block_data_order:
+#if __ARM_ARCH__<7
 	sub	r3,pc,#8		@ sha512_block_data_order
-	add	r2,r1,r2,lsl#7	@ len to point at the end of inp
-#if __ARM_MAX_ARCH__>=7
+#else
+	adr	r3,sha512_block_data_order
+#endif
+#if __ARM_MAX_ARCH__>=7 && !defined(__KERNEL__)
 	ldr	r12,.LOPENSSL_armcap
 	ldr	r12,[r3,r12]		@ OPENSSL_armcap_P
 	tst	r12,#1
 	bne	.LNEON
 #endif
+	add	r2,r1,r2,lsl#7	@ len to point at the end of inp
 	stmdb	sp!,{r4-r12,lr}
 	sub	r14,r3,#672		@ K512
 	sub	sp,sp,#9*8
@@ -186,6 +258,9 @@ sha512_block_data_order:
 	teq	r9,#148
 
 	ldr	r12,[sp,#16+0]	@ c.lo
+#if __ARM_ARCH__>=7
+	it	eq			@ Thumb2 thing, sanity check in ARM
+#endif
 	orreq	r14,r14,#1
 	@ Sigma0(x)	(ROTR((x),28) ^ ROTR((x),34) ^ ROTR((x),39))
 	@ LO		lo>>28^hi<<4  ^ hi>>2^lo<<30 ^ hi>>7^lo<<25
@@ -323,6 +398,9 @@ sha512_block_data_order:
 	teq	r9,#23
 
 	ldr	r12,[sp,#16+0]	@ c.lo
+#if __ARM_ARCH__>=7
+	it	eq			@ Thumb2 thing, sanity check in ARM
+#endif
 	orreq	r14,r14,#1
 	@ Sigma0(x)	(ROTR((x),28) ^ ROTR((x),34) ^ ROTR((x),39))
 	@ LO		lo>>28^hi<<4  ^ hi>>2^lo<<30 ^ hi>>7^lo<<25
@@ -357,6 +435,9 @@ sha512_block_data_order:
 	adc	r6,r6,r4		@ h += T
 	tst	r14,#1
 	add	r14,r14,#8
+#if __ARM_ARCH__>=7
+	ittt	eq			@ Thumb2 thing, sanity check in ARM
+#endif
 	ldreq	r9,[sp,#184+0]
 	ldreq	r10,[sp,#184+4]
 	beq	.L16_79
@@ -441,15 +522,20 @@ sha512_block_data_order:
 	moveq	pc,lr			@ be binary compatible with V4, yet
 	.word	0xe12fff1e			@ interoperable with Thumb ISA:-)
 #endif
+.size	sha512_block_data_order,.-sha512_block_data_order
 #if __ARM_MAX_ARCH__>=7
 .arch	armv7-a
 .fpu	neon
 
+.global	sha512_block_data_order_neon
+.type	sha512_block_data_order_neon,%function
 .align	4
+sha512_block_data_order_neon:
 .LNEON:
 	dmb				@ errata #451034 on early Cortex A8
-	vstmdb	sp!,{d8-d15}		@ ABI specification says so
-	sub	r3,r3,#672		@ K512
+	add	r2,r1,r2,lsl#7	@ len to point at the end of inp
+	VFP_ABI_PUSH
+	adrl	r3,K512
 	vldmia	r0,{d16-d23}		@ load context
 .Loop_neon:
 	vshr.u64	d24,d20,#14	@ 0
@@ -1764,13 +1850,13 @@ sha512_block_data_order:
 	sub		r3,#640	@ rewind K512
 	bne		.Loop_neon
 
-	vldmia	sp!,{d8-d15}		@ epilogue
+	VFP_ABI_POP
 	bx	lr				@ .word	0xe12fff1e
+.size	sha512_block_data_order_neon,.-sha512_block_data_order_neon
 #endif
-.size	sha512_block_data_order,.-sha512_block_data_order
 .asciz	"SHA512 block transform for ARMv4/NEON, CRYPTOGAMS by <appro@openssl.org>"
 .align	2
-#if __ARM_MAX_ARCH__>=7
+#if __ARM_MAX_ARCH__>=7 && !defined(__KERNEL__)
 .comm	OPENSSL_armcap_P,4,4
 .hidden	OPENSSL_armcap_P
 #endif
