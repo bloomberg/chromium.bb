@@ -504,6 +504,7 @@ crbug.com/248938 [ Debug ] virtual/threaded/animations/animation-hit-test-transf
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure Timeout ]
 crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure Timeout ]
+crbug.com/483436 [ Linux Mac Debug ] virtual/threaded/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Pass Failure ]
 
 crbug.com/396220 [ Debug Mac ] fast/forms/select/listbox-in-multi-column.html [ Crash Pass ]
 
