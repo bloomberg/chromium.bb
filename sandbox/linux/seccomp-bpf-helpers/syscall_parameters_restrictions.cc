@@ -11,7 +11,6 @@
 #include <sched.h>
 #include <signal.h>
 #include <stdint.h>
-#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
@@ -31,6 +30,11 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_futex.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+
+// PNaCl toolchain does not provide sys/ioctl.h header.
+#if !defined(OS_NACL_NONSFI)
+#include <sys/ioctl.h>
+#endif
 
 #if defined(OS_ANDROID)
 
@@ -104,6 +108,7 @@ using sandbox::bpf_dsl::ResultExpr;
 
 namespace sandbox {
 
+#if !defined(OS_NACL_NONSFI)
 // Allow Glibc's and Android pthread creation flags, crash on any other
 // thread creation attempts and EPERM attempts to use neither
 // CLONE_VM, nor CLONE_THREAD, which includes all fork() implementations.
@@ -261,21 +266,6 @@ ResultExpr RestrictGetSetpriority(pid_t target_pid) {
       .Else(CrashSIGSYS());
 }
 
-ResultExpr RestrictClockID() {
-  static_assert(4 == sizeof(clockid_t), "clockid_t is not 32bit");
-  const Arg<clockid_t> clockid(0);
-  return If(
-#if defined(OS_CHROMEOS)
-             // Allow the special clock for Chrome OS used by Chrome tracing.
-             clockid == base::TimeTicks::kClockSystemTrace ||
-#endif
-                 clockid == CLOCK_MONOTONIC ||
-                 clockid == CLOCK_PROCESS_CPUTIME_ID ||
-                 clockid == CLOCK_REALTIME ||
-                 clockid == CLOCK_THREAD_CPUTIME_ID,
-             Allow()).Else(CrashSIGSYS());
-}
-
 ResultExpr RestrictSchedTarget(pid_t target_pid, int sysno) {
   switch (sysno) {
     case __NR_sched_getaffinity:
@@ -305,6 +295,22 @@ ResultExpr RestrictPrlimit64(pid_t target_pid) {
 ResultExpr RestrictGetrusage() {
   const Arg<int> who(0);
   return If(who == RUSAGE_SELF, Allow()).Else(CrashSIGSYS());
+}
+#endif  // !defined(OS_NACL_NONSFI)
+
+ResultExpr RestrictClockID() {
+  static_assert(4 == sizeof(clockid_t), "clockid_t is not 32bit");
+  const Arg<clockid_t> clockid(0);
+  return If(
+#if defined(OS_CHROMEOS)
+             // Allow the special clock for Chrome OS used by Chrome tracing.
+             clockid == base::TimeTicks::kClockSystemTrace ||
+#endif
+                 clockid == CLOCK_MONOTONIC ||
+                 clockid == CLOCK_PROCESS_CPUTIME_ID ||
+                 clockid == CLOCK_REALTIME ||
+                 clockid == CLOCK_THREAD_CPUTIME_ID,
+             Allow()).Else(CrashSIGSYS());
 }
 
 }  // namespace sandbox.

@@ -30,12 +30,9 @@
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
+#include "sandbox/linux/services/resource_limits.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
-
-#if !defined(OS_NACL_NONSFI)
-#include "sandbox/linux/services/resource_limits.h"
-#endif
 
 namespace nacl {
 
@@ -66,10 +63,6 @@ bool MaybeSetProcessNonDumpable() {
   return prctl(PR_GET_DUMPABLE) == 0;
 }
 
-#if !defined(OS_NACL_NONSFI)
-// Currently Layer-two sandbox is not yet supported on nacl_helper_nonsfi.
-// This function is used only in InitializeLayerTwoSandbox().
-// TODO(hidehiko): Enable the sandbox.
 void RestrictAddressSpaceUsage() {
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
     defined(THREAD_SANITIZER)
@@ -100,7 +93,6 @@ void RestrictAddressSpaceUsage() {
 #endif
   CHECK(sandbox::ResourceLimits::Lower(RLIMIT_AS, kNewAddressSpaceLimit));
 }
-#endif  // !OS_NACL_NONSFI
 
 }  // namespace
 
@@ -156,11 +148,6 @@ void NaClSandbox::InitializeLayerOneSandbox() {
   }
 }
 
-#if !defined(OS_NACL_NONSFI)
-// Currently Layer-two sandbox is not yet supported on nacl_helper_nonsfi.
-// TODO(hidehiko): Enable the sandbox.
-// Note that CheckForExpectedNumberOfOpenFds() is just referred from
-// InitializeLayerTwoSandbox(). Enable them together.
 void NaClSandbox::CheckForExpectedNumberOfOpenFds() {
   // We expect to have the following FDs open:
   //  1-3) stdin, stdout, stderr.
@@ -198,10 +185,13 @@ void NaClSandbox::InitializeLayerTwoSandbox(bool uses_nonsfi_mode) {
     layer_two_enabled_ = nacl::nonsfi::InitializeBPFSandbox(proc_fd_.Pass());
     layer_two_is_nonsfi_ = true;
   } else {
+#if defined(OS_NACL_NONSFI)
+    LOG(FATAL) << "nacl_helper_nonsfi can run only Non-SFI plugin.";
+#else
     layer_two_enabled_ = nacl::InitializeBPFSandbox(proc_fd_.Pass());
+#endif
   }
 }
-#endif  // OS_NACL_NONSFI
 
 void NaClSandbox::SealLayerOneSandbox() {
   if (proc_fd_.is_valid() && !layer_two_enabled_) {
@@ -219,8 +209,16 @@ void NaClSandbox::CheckSandboxingStateWithPolicy() {
       " this is not allowed in this configuration.";
 
   const bool no_sandbox_for_nonsfi_ok =
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
+      // Sanitizer tests run with --no-sandbox, but without
+      // --nacl-dangerous-no-sandbox-nonsfi. Allow that case.
+      true;
+#else
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaClDangerousNoSandboxNonSfi);
+#endif
+
   const bool can_be_no_sandbox =
       !layer_two_is_nonsfi_ || no_sandbox_for_nonsfi_ok;
 
@@ -233,9 +231,6 @@ void NaClSandbox::CheckSandboxingStateWithPolicy() {
       LOG(FATAL) << kNoSuidMsg << kItIsNotAllowedMsg;
   }
 
-#if !defined(OS_NACL_NONSFI)
-  // Currently Layer-two sandbox is not yet supported on nacl_helper_nonsfi.
-  // TODO(hidehiko): Enable the sandbox.
   if (!layer_two_enabled_) {
     static const char kNoBpfMsg[] =
         "The seccomp-bpf sandbox is not engaged for NaCl:";
@@ -244,7 +239,6 @@ void NaClSandbox::CheckSandboxingStateWithPolicy() {
     else
       LOG(FATAL) << kNoBpfMsg << kItIsNotAllowedMsg;
   }
-#endif
 }
 
 }  // namespace nacl

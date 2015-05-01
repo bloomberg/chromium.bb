@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
@@ -121,15 +122,26 @@ bpf_dsl::TrapRegistry* Trap::Registry() {
 }
 
 void Trap::SigSysAction(int nr, LinuxSigInfo* info, void* void_context) {
+  if (info) {
+    MSAN_UNPOISON(info, sizeof(*info));
+  }
+
+  // Obtain the signal context. This, most notably, gives us access to
+  // all CPU registers at the time of the signal.
+  ucontext_t* ctx = reinterpret_cast<ucontext_t*>(void_context);
+  if (ctx) {
+    MSAN_UNPOISON(ctx, sizeof(*ctx));
+  }
+
   if (!global_trap_) {
     RAW_SANDBOX_DIE(
         "This can't happen. Found no global singleton instance "
         "for Trap() handling.");
   }
-  global_trap_->SigSys(nr, info, void_context);
+  global_trap_->SigSys(nr, info, ctx);
 }
 
-void Trap::SigSys(int nr, LinuxSigInfo* info, void* void_context) {
+void Trap::SigSys(int nr, LinuxSigInfo* info, ucontext_t* ctx) {
   // Signal handlers should always preserve "errno". Otherwise, we could
   // trigger really subtle bugs.
   const int old_errno = errno;
@@ -137,7 +149,7 @@ void Trap::SigSys(int nr, LinuxSigInfo* info, void* void_context) {
   // Various sanity checks to make sure we actually received a signal
   // triggered by a BPF filter. If something else triggered SIGSYS
   // (e.g. kill()), there is really nothing we can do with this signal.
-  if (nr != LINUX_SIGSYS || info->si_code != SYS_SECCOMP || !void_context ||
+  if (nr != LINUX_SIGSYS || info->si_code != SYS_SECCOMP || !ctx ||
       info->si_errno <= 0 ||
       static_cast<size_t>(info->si_errno) > trap_array_size_) {
     // ATI drivers seem to send SIGSYS, so this cannot be FATAL.
@@ -148,9 +160,6 @@ void Trap::SigSys(int nr, LinuxSigInfo* info, void* void_context) {
     return;
   }
 
-  // Obtain the signal context. This, most notably, gives us access to
-  // all CPU registers at the time of the signal.
-  ucontext_t* ctx = reinterpret_cast<ucontext_t*>(void_context);
 
   // Obtain the siginfo information that is specific to SIGSYS. Unfortunately,
   // most versions of glibc don't include this information in siginfo_t. So,

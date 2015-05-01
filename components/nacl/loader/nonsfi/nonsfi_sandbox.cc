@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/futex.h>
 #include <linux/net.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
@@ -22,12 +21,21 @@
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
+#include "sandbox/linux/system_headers/linux_futex.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
-#if defined(__arm__) && !defined(MAP_STACK)
-// Chrome OS Daisy (ARM) build environment has old headers.
-#define MAP_STACK 0x20000
-#endif
+// Chrome OS Daisy (ARM) build environment and PNaCl toolchain do not define
+// MAP_STACK.
+#if !defined(MAP_STACK)
+# if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY)
+#  define MAP_STACK 0x20000
+# else
+// Note that, on other architecture, MAP_STACK has different value (e.g. mips'
+// MAP_STACK is 0x40000), though Non-SFI is not supported on such
+// architectures.
+#  error "Unknown platform."
+# endif
+#endif  // !defined(MAP_STACK)
 
 #define CASES SANDBOX_BPF_DSL_CASES
 
@@ -68,11 +76,14 @@ ResultExpr RestrictFcntlCommands() {
 
 ResultExpr RestrictClone() {
   // We allow clone only for new thread creation.
+  int clone_flags =
+      CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
+      CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS;
+#if !defined(OS_NACL_NONSFI)
+  clone_flags |= CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
+#endif
   const Arg<int> flags(0);
-  return If(flags == (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-                      CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-                      CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID),
-            Allow()).Else(CrashSIGSYSClone());
+  return If(flags == clone_flags, Allow()).Else(CrashSIGSYSClone());
 }
 
 ResultExpr RestrictFutexOperation() {
@@ -131,7 +142,10 @@ ResultExpr RestrictMmap() {
 #if defined(__x86_64__) || defined(__arm__)
 ResultExpr RestrictSocketpair() {
   // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
+  // Note: PNaCl toolchain does not define PF_UNIX.
+#if !defined(OS_NACL_NONSFI)
   static_assert(AF_UNIX == PF_UNIX, "AF_UNIX must equal PF_UNIX.");
+#endif
   const Arg<int> domain(0);
   return If(domain == AF_UNIX, Allow()).Else(CrashSIGSYS());
 }

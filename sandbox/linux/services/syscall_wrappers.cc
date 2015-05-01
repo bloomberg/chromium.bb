@@ -148,8 +148,9 @@ int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
                  sizeof(linux_value));
 }
 
-#if defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
-    (defined(ARCH_CPU_X86_64) && !defined(__clang__))
+#if (defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) ||  \
+     (defined(ARCH_CPU_X86_64) && !defined(__clang__))) && \
+    !defined(OS_NACL_NONSFI)
 // If MEMORY_SANITIZER or THREAD_SANITIZER is enabled, it is necessary to call
 // sigaction() here, rather than the direct syscall (sys_sigaction() defined
 // by ourselves).
@@ -173,6 +174,12 @@ int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
 // of function is actually very small (only two instructions), but we need to
 // define much debug information in addition, otherwise backtrace() used by
 // base::StackTrace would not work so that some tests would fail.
+//
+// When this is built with PNaCl toolchain, we should always use sys_sigaction
+// below, because sigaction() provided by the toolchain is incompatible with
+// Linux's ABI. So, otherwise, it would just fail. Note that it is not
+// necessary to think about sigaction() invocation in other places even with
+// MEMORY_SANITIZER or THREAD_SANITIZER, because it would just fail there.
 int sys_sigaction(int signum,
                   const struct sigaction* act,
                   struct sigaction* oldact) {

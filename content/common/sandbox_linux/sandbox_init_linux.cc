@@ -17,8 +17,10 @@ bool InitializeSandbox(scoped_ptr<sandbox::bpf_dsl::Policy> policy,
                                                            proc_fd.Pass());
 }
 
+#if !defined(OS_NACL_NONSFI)
 scoped_ptr<sandbox::bpf_dsl::Policy> GetBPFSandboxBaselinePolicy() {
   return SandboxSeccompBPF::GetBaselinePolicy().Pass();
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace content

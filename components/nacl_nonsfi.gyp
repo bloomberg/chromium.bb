@@ -56,6 +56,7 @@
               'nacl/loader/nacl_trusted_listener.cc',
               'nacl/loader/nonsfi/nonsfi_listener.cc',
               'nacl/loader/nonsfi/nonsfi_main.cc',
+              'nacl/loader/nonsfi/nonsfi_sandbox.cc',
               'nacl/loader/sandbox_linux/nacl_sandbox_linux.cc',
             ],
 

@@ -28,7 +28,6 @@
 #include "content/common/sandbox_linux/bpf_renderer_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_utility_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
-#include "content/common/sandbox_linux/sandbox_linux.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
@@ -38,7 +37,7 @@
 
 #if !defined(IN_NACL_HELPER)
 #include "ui/gl/gl_switches.h"
-#endif
+#endif  // !defined(IN_NACL_HELPER)
 
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
@@ -61,8 +60,21 @@ namespace content {
 #if defined(USE_SECCOMP_BPF)
 namespace {
 
+// This function takes ownership of |policy|.
 void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
-                            base::ScopedFD proc_fd);
+                            base::ScopedFD proc_fd) {
+  // Starting the sandbox is a one-way operation. The kernel doesn't allow
+  // us to unload a sandbox policy after it has been started. Nonetheless,
+  // in order to make the use of the "Sandbox" object easier, we allow for
+  // the object to be destroyed after the sandbox has been started. Note that
+  // doing so does not stop the sandbox.
+  SandboxBPF sandbox(policy);
+
+  sandbox.SetProcFd(proc_fd.Pass());
+  CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
+}
+
+#if !defined(OS_NACL_NONSFI)
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
@@ -145,21 +157,6 @@ void RunSandboxSanityChecks(const std::string& process_type) {
   }
 }
 
-
-// This function takes ownership of |policy|.
-void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
-                            base::ScopedFD proc_fd) {
-  // Starting the sandbox is a one-way operation. The kernel doesn't allow
-  // us to unload a sandbox policy after it has been started. Nonetheless,
-  // in order to make the use of the "Sandbox" object easier, we allow for
-  // the object to be destroyed after the sandbox has been started. Note that
-  // doing so does not stop the sandbox.
-  SandboxBPF sandbox(policy);
-
-  sandbox.SetProcFd(proc_fd.Pass());
-  CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
-}
-
 // nacl_helper needs to be tiny and includes only part of content/
 // in its dependencies. Make sure to not link things that are not needed.
 #if !defined(IN_NACL_HELPER)
@@ -220,6 +217,7 @@ bool StartBPFSandbox(const base::CommandLine& command_line,
   return false;
 }
 #endif  // !defined(IN_NACL_HELPER)
+#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace
 
@@ -237,6 +235,7 @@ bool SandboxSeccompBPF::IsSeccompBPFDesired() {
   }
 }
 
+#if !defined(OS_NACL_NONSFI)
 bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
     const std::string& process_type) {
 #if defined(USE_SECCOMP_BPF)
@@ -249,6 +248,7 @@ bool SandboxSeccompBPF::ShouldEnableSeccompBPF(
 #endif  // USE_SECCOMP_BPF
   return false;
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::SupportsSandbox() {
 #if defined(USE_SECCOMP_BPF)
@@ -258,6 +258,7 @@ bool SandboxSeccompBPF::SupportsSandbox() {
   return false;
 }
 
+#if !defined(OS_NACL_NONSFI)
 bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 #if defined(USE_SECCOMP_BPF)
   return SandboxBPF::SupportsSeccompSandbox(
@@ -285,6 +286,7 @@ bool SandboxSeccompBPF::StartSandbox(const std::string& process_type,
 #endif
   return false;
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
     scoped_ptr<sandbox::bpf_dsl::Policy> policy,
@@ -299,6 +301,7 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
   return false;
 }
 
+#if !defined(OS_NACL_NONSFI)
 scoped_ptr<sandbox::bpf_dsl::Policy> SandboxSeccompBPF::GetBaselinePolicy() {
 #if defined(USE_SECCOMP_BPF)
   return scoped_ptr<sandbox::bpf_dsl::Policy>(new BaselinePolicy);
@@ -306,5 +309,6 @@ scoped_ptr<sandbox::bpf_dsl::Policy> SandboxSeccompBPF::GetBaselinePolicy() {
   return scoped_ptr<sandbox::bpf_dsl::Policy>();
 #endif  // defined(USE_SECCOMP_BPF)
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace content

@@ -82,7 +82,7 @@ CONTENT_EXPORT base::Process StartSandboxedProcess(
 CONTENT_EXPORT bool InitializeSandbox(int sandbox_type,
                                       const base::FilePath& allowed_path);
 
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_NACL_NONSFI)
 
 class SandboxInitializerDelegate;
 
@@ -98,7 +98,7 @@ CONTENT_EXPORT bool InitializeSandbox(
 // implement a policy that is derived from the baseline.
 CONTENT_EXPORT scoped_ptr<sandbox::bpf_dsl::Policy>
 GetBPFSandboxBaselinePolicy();
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_NACL_NONSFI)
 
 }  // namespace content
 

@@ -25,11 +25,15 @@
             'build_nonsfi_helper': 1,
 
             'sources': [
+              'common/sandbox_linux/sandbox_init_linux.cc',
+              'common/sandbox_linux/sandbox_seccomp_bpf_linux.cc',
               'common/send_zygote_child_ping_linux.cc',
               'public/common/content_switches.cc',
-              # TODO(hidehiko): Add sandbox code.
             ],
           },
+          'defines': [
+            'USE_SECCOMP_BPF=1',
+          ],
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl_nonsfi',
           ],

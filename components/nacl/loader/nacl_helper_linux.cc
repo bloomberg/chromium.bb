@@ -108,11 +108,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
 
   // Finish layer-1 sandbox initialization and initialize the layer-2 sandbox.
   CHECK(!nacl_sandbox->HasOpenDirectory());
-#if !defined(OS_NACL_NONSFI)
-  // Currently Layer-two sandbox is not yet supported on nacl_helper_nonsfi.
-  // TODO(hidehiko): Enable the sandbox.
   nacl_sandbox->InitializeLayerTwoSandbox(uses_nonsfi_mode);
-#endif
   nacl_sandbox->SealLayerOneSandbox();
   nacl_sandbox->CheckSandboxingStateWithPolicy();
 

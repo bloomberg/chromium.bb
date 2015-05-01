@@ -61,7 +61,7 @@ class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
 
   // Make sure that SigSys is not inlined in order to get slightly better crash
   // dumps.
-  void SigSys(int nr, LinuxSigInfo* info, void* void_context)
+  void SigSys(int nr, LinuxSigInfo* info, ucontext_t* ctx)
       __attribute__((noinline));
   // We have a global singleton that handles all of our SIGSYS traps. This
   // variable must never be deallocated after it has been set up initially, as
