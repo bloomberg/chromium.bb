@@ -32,6 +32,8 @@ per-file cdm.gypi=xhwang@chromium.org
 per-file cloud_devices*=gene@chromium.org
 per-file cloud_devices*=vitalybuka@chromium.org
 
+per-file chrome_apps.gypi=tbarzic@chromium.org
+
 per-file constrained_window*=gbillock@chromium.org
 per-file constrained_window*=msw@chromium.org
 

@@ -27,6 +27,7 @@ group("all_components") {
     "//components/cdm/common",
     "//components/cdm/renderer",
     "//components/cloud_devices/common",
+    "//components/chrome_apps",
     "//components/component_updater",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
@@ -143,6 +144,11 @@ group("all_components") {
       "//components/wifi_sync",
     ]
   }
+
+  if (!is_chromeos || !enable_extensions) {
+    deps -= [ "//components/chrome_apps" ]
+  }
+
   if (is_ios) {
     deps -= [
       "//components/history/content/browser",

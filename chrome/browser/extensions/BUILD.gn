@@ -92,6 +92,7 @@ static_library("extensions") {
       "//third_party/libevent",
       "//third_party/protobuf:protobuf_lite",
       "//chromeos/ime:gencode",
+      "//components/chrome_apps",
       "//remoting/host/it2me:common",
     ]
   } else {

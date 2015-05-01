@@ -12,6 +12,7 @@
 #include "grit/theme_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "components/chrome_apps/chrome_apps_resource_util.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #endif
 
@@ -43,6 +44,13 @@ ChromeComponentExtensionResourceManager() {
       kExtraComponentExtensionResources,
       arraysize(kExtraComponentExtensionResources));
 #if defined(OS_CHROMEOS)
+  size_t chrome_apps_resource_size;
+  const GritResourceMap* chrome_apps_resources =
+      chrome_apps::GetChromeAppsResources(&chrome_apps_resource_size);
+  AddComponentResourceEntries(
+      chrome_apps_resources,
+      chrome_apps_resource_size);
+
   size_t file_manager_resource_size;
   const GritResourceMap* file_manager_resources =
       file_manager::GetFileManagerResources(&file_manager_resource_size);

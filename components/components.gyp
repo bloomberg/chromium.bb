@@ -152,5 +152,12 @@
         'pdf.gypi',
       ],
     }],
+    # TODO(tbarzic): Remove chromeos condition when there are non-chromeos apps
+    # in components/apps.
+    ['enable_extensions == 1 and chromeos == 1', {
+      'includes': [
+        'chrome_apps.gypi',
+      ],
+    }],
   ],
 }
