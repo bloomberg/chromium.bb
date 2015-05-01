@@ -53,7 +53,7 @@ class BluetoothAdvertisementServiceProviderImpl
 
     // Export Bluetooth Advertisement interface methods.
     exported_object_->ExportMethod(
-        bluetooth_advertisement::kBluetoothAdvertisementIntervace,
+        bluetooth_advertisement::kBluetoothAdvertisementInterface,
         bluetooth_advertisement::kRelease,
         base::Bind(&BluetoothAdvertisementServiceProviderImpl::Release,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -122,7 +122,7 @@ class BluetoothAdvertisementServiceProviderImpl
 
     // Only the advertisement interface is supported.
     if (interface_name !=
-        bluetooth_advertisement::kBluetoothAdvertisementIntervace) {
+        bluetooth_advertisement::kBluetoothAdvertisementInterface) {
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
@@ -196,7 +196,7 @@ class BluetoothAdvertisementServiceProviderImpl
 
     // Only the advertisement interface is supported.
     if (interface_name !=
-        bluetooth_advertisement::kBluetoothAdvertisementIntervace) {
+        bluetooth_advertisement::kBluetoothAdvertisementInterface) {
       scoped_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
