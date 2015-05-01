@@ -16,9 +16,6 @@
 #define NACL_SECURE_SERVICE_REVERSE_SETUP   "reverse_setup::h"
 /* -> reverse service address */
 
-#define NACL_SECURE_SERVICE_LOG             "log:is:"
-/* severity and message to log */
-
 #define NACL_SECURE_SERVICE_HARD_SHUTDOWN   "hard_shutdown::"
 /* shutdown module */
 

@@ -247,35 +247,6 @@ static void NaClSecureServiceStartModuleRpc(
   NaClLog(4, "NaClSecureChannelStartModuleRpc: done\n");
 }
 
-static void NaClSecureServiceLogRpc(
-    struct NaClSrpcRpc      *rpc,
-    struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done_cls) {
-  int   severity = in_args[0]->u.ival;
-  char  *msg = in_args[1]->arrays.str;
-  UNREFERENCED_PARAMETER(out_args);
-
-  NaClLog(5, "NaClSecureChannelLogRpc\n");
-  if (LOG_FATAL == severity) {
-    /*
-     * Do not actually abort due to LOG_FATAL. SRPC is deprecated and the
-     * only remaining user of this Log RPC corresponds to fairly benign
-     * errors. Also, at this point the backtraces will not be terribly
-     * interesting. Therefore, avoid spamming the crash report counter
-     * for such errors and exit cleanly. Run the abort hook as well,
-     * to flush the logs.
-     */
-    NaClLog(LOG_ERROR, "%s\n", msg);
-    NaClLogRunAbortBehavior();
-    NaClExit(1);
-  }
-  NaClLog(severity, "%s\n", msg);
-  NaClLog(5, "NaClSecureChannelLogRpc\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  (*done_cls->Run)(done_cls);
-}
-
 static void NaClSecureServiceShutdownRpc(
     struct NaClSrpcRpc      *rpc,
     struct NaClSrpcArg      **in_args,
@@ -294,7 +265,6 @@ static void NaClSecureServiceShutdownRpc(
 struct NaClSrpcHandlerDesc const kNaClSecureServiceHandlers[] = {
   { NACL_SECURE_SERVICE_LOAD_MODULE, NaClSecureServiceLoadModuleRpc, },
   { NACL_SECURE_SERVICE_START_MODULE, NaClSecureServiceStartModuleRpc, },
-  { NACL_SECURE_SERVICE_LOG, NaClSecureServiceLogRpc, },
   { NACL_SECURE_SERVICE_HARD_SHUTDOWN, NaClSecureServiceShutdownRpc, },
   { (char const *) NULL, (NaClSrpcMethod) NULL, },
 };
