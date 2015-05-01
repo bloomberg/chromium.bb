@@ -182,9 +182,11 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 }
 
 void ExtensionActionViewController::OnContextMenuClosed() {
-  if (toolbar_actions_bar_->popped_out_action() == this &&
-      !is_showing_popup())
+  if (toolbar_actions_bar_ &&
+      toolbar_actions_bar_->popped_out_action() == this &&
+      !is_showing_popup()) {
     toolbar_actions_bar_->UndoPopOut();
+  }
 }
 
 bool ExtensionActionViewController::CanDrag() const {
