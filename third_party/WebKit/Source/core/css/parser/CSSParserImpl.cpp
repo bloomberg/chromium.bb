@@ -465,16 +465,6 @@ PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSS
 
     consumeDeclarationList(block, StyleRule::FontFace);
 
-    // FIXME: This logic should be in CSSPropertyParser
-    // FIXME: Shouldn't we fail if font-family or src aren't specified?
-    for (unsigned i = 0; i < m_parsedProperties.size(); ++i) {
-        CSSProperty& property = m_parsedProperties[i];
-        if (property.id() == CSSPropertyFontFamily && (!property.value()->isValueList() || toCSSValueList(property.value())->length() != 1)) {
-            m_parsedProperties.clear();
-            return nullptr;
-        }
-    }
-
     RefPtrWillBeRawPtr<StyleRuleFontFace> rule = StyleRuleFontFace::create();
     rule->setProperties(createStylePropertySet(m_parsedProperties, m_context.mode()));
     m_parsedProperties.clear();

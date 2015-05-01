@@ -4599,8 +4599,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFamily()
             break;
     }
     familyBuilder.commit();
-
-    if (!list->length())
+    if (!list->length() || (m_ruleType == StyleRule::FontFace && list->length() > 1))
         list = nullptr;
     return list.release();
 }
