@@ -143,9 +143,11 @@
             ],
         },],
         [ 'use_openssl==1 and use_nss_certs==0', {
-            # NSS is used for neither the internal crypto library nor the
-            # platform certificate library.
+            # Some files are built when NSS is used at all, either for the
+            # internal crypto library or the platform certificate library.
             'sources!': [
+              'nss_key_util.cc',
+              'nss_key_util.h',
               'nss_util.cc',
               'nss_util.h',
               'nss_util_internal.h',
@@ -168,13 +170,13 @@
         'ghash_unittest.cc',
         'hkdf_unittest.cc',
         'hmac_unittest.cc',
+        'nss_key_util_unittest.cc',
         'nss_util_unittest.cc',
         'openssl_bio_string_unittest.cc',
         'p224_unittest.cc',
         'p224_spake_unittest.cc',
         'random_unittest.cc',
         'rsa_private_key_unittest.cc',
-        'rsa_private_key_nss_unittest.cc',
         'secure_hash_unittest.cc',
         'sha2_unittest.cc',
         'signature_creator_unittest.cc',
@@ -205,9 +207,10 @@
           ],
         }],
         [ 'use_openssl == 1 and use_nss_certs == 0', {
-          # nss_util is built if NSS is used for either the internal crypto
-          # library or the platform certificate library.
+          # Some files are built when NSS is used at all, either for the
+          # internal crypto library or the platform certificate library.
           'sources!': [
+            'nss_key_util_unittest.cc',
             'nss_util_unittest.cc',
           ],
         }],
@@ -223,9 +226,6 @@
         [ 'use_openssl==1', {
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
-          ],
-          'sources!': [
-            'rsa_private_key_nss_unittest.cc',
           ],
         }, {
           'sources!': [

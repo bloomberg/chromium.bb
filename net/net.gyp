@@ -506,6 +506,7 @@
         # TODO(mmenke):  This depends on icu, figure out a way to build tests
         #                without icu.
         '../base/base.gyp:test_support_base',
+        '../crypto/crypto.gyp:crypto',
         '../testing/gtest.gyp:gtest',
         '../testing/gmock.gyp:gmock',
       ],

@@ -7,7 +7,6 @@
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <pk11pub.h>
-#include <secmod.h>
 
 #include <list>
 
@@ -15,8 +14,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
+#include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"
-#include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 
 // TODO(rafaelw): Consider using NSS's ASN.1 encoder.
@@ -38,37 +37,6 @@ static bool ReadAttribute(SECKEYPrivateKey* key,
   return true;
 }
 
-#if defined(USE_NSS_CERTS)
-struct PublicKeyInfoDeleter {
-  inline void operator()(CERTSubjectPublicKeyInfo* spki) {
-    SECKEY_DestroySubjectPublicKeyInfo(spki);
-  }
-};
-
-typedef scoped_ptr<CERTSubjectPublicKeyInfo, PublicKeyInfoDeleter>
-    ScopedPublicKeyInfo;
-
-// The function decodes RSA public key from the |input|.
-crypto::ScopedSECKEYPublicKey GetRSAPublicKey(const std::vector<uint8>& input) {
-  // First, decode and save the public key.
-  SECItem key_der;
-  key_der.type = siBuffer;
-  key_der.data = const_cast<unsigned char*>(&input[0]);
-  key_der.len = input.size();
-
-  ScopedPublicKeyInfo spki(SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der));
-  if (!spki)
-    return crypto::ScopedSECKEYPublicKey();
-
-  crypto::ScopedSECKEYPublicKey result(SECKEY_ExtractPublicKey(spki.get()));
-
-  // Make sure the key is an RSA key.. If not, that's an error.
-  if (!result || result->keyType != rsaKey)
-    return crypto::ScopedSECKEYPublicKey();
-  return result.Pass();
-}
-#endif  // defined(USE_NSS_CERTS)
-
 }  // namespace
 
 namespace crypto {
@@ -85,10 +53,22 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
   EnsureNSSInit();
 
   ScopedPK11Slot slot(PK11_GetInternalSlot());
-  return CreateWithParams(slot.get(),
-                          num_bits,
-                          false /* not permanent */,
-                          false /* not sensitive */);
+  if (!slot) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  ScopedSECKEYPublicKey public_key;
+  ScopedSECKEYPrivateKey private_key;
+  if (!GenerateRSAKeyPairNSS(slot.get(), num_bits, false /* not permanent */,
+                             &public_key, &private_key)) {
+    return nullptr;
+  }
+
+  RSAPrivateKey* rsa_key = new RSAPrivateKey;
+  rsa_key->public_key_ = public_key.release();
+  rsa_key->key_ = private_key.release();
+  return rsa_key;
 }
 
 // static
@@ -97,11 +77,15 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   EnsureNSSInit();
 
   ScopedPK11Slot slot(PK11_GetInternalSlot());
-  return CreateFromPrivateKeyInfoWithParams(
-      slot.get(),
-      input,
-      false /* not permanent */,
-      false /* not sensitive */);
+  if (!slot) {
+    NOTREACHED();
+    return nullptr;
+  }
+  ScopedSECKEYPrivateKey key(ImportNSSKeyFromPrivateKeyInfo(
+      slot.get(), input, false /* not permanent */));
+  if (!key || SECKEY_GetPrivateKeyType(key.get()) != rsaKey)
+    return nullptr;
+  return RSAPrivateKey::CreateFromKey(key.get());
 }
 
 // static
@@ -119,83 +103,6 @@ RSAPrivateKey* RSAPrivateKey::CreateFromKey(SECKEYPrivateKey* key) {
   }
   return copy;
 }
-
-#if defined(USE_NSS_CERTS)
-// static
-RSAPrivateKey* RSAPrivateKey::CreateSensitive(PK11SlotInfo* slot,
-                                              uint16 num_bits) {
-  return CreateWithParams(slot,
-                          num_bits,
-                          true /* permanent */,
-                          true /* sensitive */);
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(
-    PK11SlotInfo* slot,
-    const std::vector<uint8>& input) {
-  return CreateFromPrivateKeyInfoWithParams(slot,
-                                            input,
-                                            true /* permanent */,
-                                            true /* sensitive */);
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
-    const std::vector<uint8>& input) {
-  scoped_ptr<RSAPrivateKey> result(InitPublicPart(input));
-  if (!result)
-    return NULL;
-
-  ScopedSECItem ck_id(
-      PK11_MakeIDFromPubKey(&(result->public_key_->u.rsa.modulus)));
-  if (!ck_id.get()) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  // Search all slots in all modules for the key with the given ID.
-  AutoSECMODListReadLock auto_lock;
-  SECMODModuleList* head = SECMOD_GetDefaultModuleList();
-  for (SECMODModuleList* item = head; item != NULL; item = item->next) {
-    int slot_count = item->module->loaded ? item->module->slotCount : 0;
-    for (int i = 0; i < slot_count; i++) {
-      // Finally...Look for the key!
-      result->key_ = PK11_FindKeyByKeyID(item->module->slots[i],
-                                         ck_id.get(), NULL);
-      if (result->key_)
-        return result.release();
-    }
-  }
-
-  // We didn't find the key.
-  return NULL;
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfoInSlot(
-    const std::vector<uint8>& input,
-    PK11SlotInfo* slot) {
-  if (!slot)
-    return NULL;
-
-  scoped_ptr<RSAPrivateKey> result(InitPublicPart(input));
-  if (!result)
-    return NULL;
-
-  ScopedSECItem ck_id(
-      PK11_MakeIDFromPubKey(&(result->public_key_->u.rsa.modulus)));
-  if (!ck_id.get()) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  result->key_ = PK11_FindKeyByKeyID(slot, ck_id.get(), NULL);
-  if (!result->key_)
-    return NULL;
-  return result.release();
-}
-#endif
 
 RSAPrivateKey* RSAPrivateKey::Copy() const {
   RSAPrivateKey* copy = new RSAPrivateKey();
@@ -240,93 +147,5 @@ bool RSAPrivateKey::ExportPublicKey(std::vector<uint8>* output) const {
 RSAPrivateKey::RSAPrivateKey() : key_(NULL), public_key_(NULL) {
   EnsureNSSInit();
 }
-
-// static
-RSAPrivateKey* RSAPrivateKey::CreateWithParams(PK11SlotInfo* slot,
-                                               uint16 num_bits,
-                                               bool permanent,
-                                               bool sensitive) {
-  if (!slot)
-    return NULL;
-
-  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
-
-  PK11RSAGenParams param;
-  param.keySizeInBits = num_bits;
-  param.pe = 65537L;
-  result->key_ = PK11_GenerateKeyPair(slot,
-                                      CKM_RSA_PKCS_KEY_PAIR_GEN,
-                                      &param,
-                                      &result->public_key_,
-                                      permanent,
-                                      sensitive,
-                                      NULL);
-  if (!result->key_)
-    return NULL;
-
-  return result.release();
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
-    PK11SlotInfo* slot,
-    const std::vector<uint8>& input,
-    bool permanent,
-    bool sensitive) {
-  if (!slot)
-    return NULL;
-
-  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
-
-  ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
-  if (!arena) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  // Excess data is illegal, but NSS silently accepts it, so first ensure that
-  // |input| consists of a single ASN.1 element.
-  SECItem input_item;
-  input_item.data = const_cast<unsigned char*>(&input.front());
-  input_item.len = input.size();
-  SECItem der_private_key_info;
-  SECStatus rv = SEC_QuickDERDecodeItem(arena.get(), &der_private_key_info,
-                                        SEC_ASN1_GET(SEC_AnyTemplate),
-                                        &input_item);
-  if (rv != SECSuccess)
-    return NULL;
-
-  // Allow the private key to be used for key unwrapping, data decryption,
-  // and signature generation.
-  const unsigned int key_usage = KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT |
-                                 KU_DIGITAL_SIGNATURE;
-  rv = PK11_ImportDERPrivateKeyInfoAndReturnKey(
-      slot, &der_private_key_info, NULL, NULL, permanent, sensitive,
-      key_usage, &result->key_, NULL);
-  if (rv != SECSuccess)
-    return NULL;
-
-  result->public_key_ = SECKEY_ConvertToPublicKey(result->key_);
-  if (!result->public_key_)
-    return NULL;
-
-  return result.release();
-}
-
-#if defined(USE_NSS_CERTS)
-// static
-RSAPrivateKey* RSAPrivateKey::InitPublicPart(const std::vector<uint8>& input) {
-  EnsureNSSInit();
-
-  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey());
-  result->public_key_ = GetRSAPublicKey(input).release();
-  if (!result->public_key_) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  return result.release();
-}
-#endif  // defined(USE_NSS_CERTS)
 
 }  // namespace crypto

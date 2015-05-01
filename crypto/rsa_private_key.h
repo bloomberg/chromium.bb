@@ -191,44 +191,6 @@ class CRYPTO_EXPORT RSAPrivateKey {
   static RSAPrivateKey* CreateFromKey(SECKEYPrivateKey* key);
 #endif
 
-  // TODO(davidben): These functions are used when NSS is the platform key
-  // store, but they also assume that the internal crypto library is NSS. Split
-  // out the convenience NSS platform key methods from the logic which expects
-  // an RSAPrivateKey. See https://crbug.com/478777.
-#if defined(USE_NSS_CERTS) && !defined(USE_OPENSSL)
-  // Create a new random instance in |slot|. Can return NULL if initialization
-  // fails.  The created key is permanent and is not exportable in plaintext
-  // form.
-  static RSAPrivateKey* CreateSensitive(PK11SlotInfo* slot, uint16 num_bits);
-
-  // Create a new instance in |slot| by importing an existing private key. The
-  // format is an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can
-  // return NULL if initialization fails.
-  // The created key is permanent and is not exportable in plaintext form.
-  static RSAPrivateKey* CreateSensitiveFromPrivateKeyInfo(
-      PK11SlotInfo* slot,
-      const std::vector<uint8>& input);
-
-  // Import an existing public key, and then search for the private
-  // half in the key database. The format of the public key blob is is
-  // an X509 SubjectPublicKeyInfo block. This can return NULL if
-  // initialization fails or the private key cannot be found.  The
-  // caller takes ownership of the returned object, but nothing new is
-  // created in the key database.
-  static RSAPrivateKey* FindFromPublicKeyInfo(
-      const std::vector<uint8>& input);
-
-  // Import an existing public key, and then search for the private
-  // half in the slot specified by |slot|. The format of the public
-  // key blob is is an X509 SubjectPublicKeyInfo block. This can return
-  // NULL if initialization fails or the private key cannot be found.
-  // The caller takes ownership of the returned object, but nothing new
-  // is created in the slot.
-  static RSAPrivateKey* FindFromPublicKeyInfoInSlot(
-      const std::vector<uint8>& input,
-      PK11SlotInfo* slot);
-#endif  // USE_NSS_CERTS && !USE_OPENSSL
-
 #if defined(USE_OPENSSL)
   EVP_PKEY* key() { return key_; }
 #else
@@ -251,37 +213,8 @@ class CRYPTO_EXPORT RSAPrivateKey {
   FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FailedFindFromPublicKey);
 #endif
 
-  // Constructor is private. Use one of the Create*() or Find*()
-  // methods above instead.
+  // Constructor is private. Use one of the Create*() methods above instead.
   RSAPrivateKey();
-
-#if !defined(USE_OPENSSL)
-  // Shared helper for Create() and CreateSensitive().
-  // TODO(cmasone): consider replacing |permanent| and |sensitive| with a
-  //                flags arg created by ORing together some enumerated values.
-  // Note: |permanent| is only supported when USE_NSS_CERTS is defined.
-  static RSAPrivateKey* CreateWithParams(PK11SlotInfo* slot,
-                                         uint16 num_bits,
-                                         bool permanent,
-                                         bool sensitive);
-
-  // Shared helper for CreateFromPrivateKeyInfo() and
-  // CreateSensitiveFromPrivateKeyInfo().
-  // Note: |permanent| is only supported when USE_NSS_CERTS is defined.
-  static RSAPrivateKey* CreateFromPrivateKeyInfoWithParams(
-      PK11SlotInfo* slot,
-      const std::vector<uint8>& input,
-      bool permanent,
-      bool sensitive);
-#endif
-
-#if defined(USE_NSS_CERTS)
-  // Import an existing public key. The format of the public key blob
-  // is an X509 SubjectPublicKeyInfo block. This can return NULL if
-  // initialization fails.  The caller takes ownership of the returned
-  // object. Note that this method doesn't initialize the |key_| member.
-  static RSAPrivateKey* InitPublicPart(const std::vector<uint8>& input);
-#endif
 
 #if defined(USE_OPENSSL)
   EVP_PKEY* key_;

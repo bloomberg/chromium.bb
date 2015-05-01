@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 
+#include <keyhi.h>
+
 #include <algorithm>
 #include <string>
 
@@ -29,9 +31,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
-#include "crypto/rsa_private_key.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/signature_creator.h"
 
@@ -124,10 +126,9 @@ bool DoesPrivateKeyExistAsyncHelper(
   std::vector<uint8> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key))
     return false;
-  scoped_ptr<crypto::RSAPrivateKey> key(
-      crypto::RSAPrivateKey::FindFromPublicKeyInfo(public_key));
-  bool is_owner = key.get() != NULL;
-  return is_owner;
+  crypto::ScopedSECKEYPrivateKey key =
+      crypto::FindNSSKeyFromPublicKeyInfo(public_key);
+  return key && SECKEY_GetPrivateKeyType(key.get()) == rsaKey;
 }
 
 // Checks whether NSS slots with private key are mounted or

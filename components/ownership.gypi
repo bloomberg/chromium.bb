@@ -35,6 +35,11 @@
           '<(DEPTH)/components/components.gyp:policy',
         ],
       }],
+      ['use_nss_certs==1', {
+        'dependencies': [
+          '../build/linux/system.gyp:ssl',
+        ],
+      }],
     ],
   }],
 }
