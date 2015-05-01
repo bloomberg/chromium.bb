@@ -11,6 +11,8 @@ PASS container.scrollTop >= minYOffset is true
 PASS container.scrollTop <= maxYOffset is true
 PASS container.scrollTop >= minYOffset is true
 PASS container.scrollTop <= maxYOffset is true
+PASS container.scrollTop >= minYOffset is true
+PASS container.scrollTop <= maxYOffset is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

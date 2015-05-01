@@ -1127,12 +1127,18 @@ void AXObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const
             break;
         scrollParent = scrollParent->parentObject();
     }
-    if (!scrollableArea)
+    if (!scrollParent || !scrollableArea)
         return;
 
     IntRect objectRect = pixelSnappedIntRect(elementRect());
     IntPoint scrollPosition = scrollableArea->scrollPosition();
     IntRect scrollVisibleRect = scrollableArea->visibleContentRect();
+
+    // Convert the object rect into local coordinates.
+    if (!scrollParent->isAXScrollView()) {
+        objectRect.moveBy(scrollPosition);
+        objectRect.moveBy(-pixelSnappedIntRect(scrollParent->elementRect()).location());
+    }
 
     int desiredX = computeBestScrollOffset(
         scrollPosition.x(),

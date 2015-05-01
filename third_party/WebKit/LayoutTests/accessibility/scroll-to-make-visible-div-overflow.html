@@ -42,6 +42,15 @@ function runTest() {
     shouldBe("container.scrollTop >= minYOffset", "true");
     shouldBe("container.scrollTop <= maxYOffset", "true");
 
+    // Do it again. It shouldn't scroll.
+    if (window.accessibilityController)
+        lowerTargetAccessibleObject.scrollToMakeVisible();
+    var top = lowerTarget.offsetTop - container.offsetTop;
+    window.minYOffset = top + lowerTarget.offsetHeight - container.offsetHeight;
+    window.maxYOffset = top;
+    shouldBe("container.scrollTop >= minYOffset", "true");
+    shouldBe("container.scrollTop <= maxYOffset", "true");
+
     // Scroll to make upper target visible and check.
     if (window.accessibilityController)
         upperTargetAccessibleObject.scrollToMakeVisible();
