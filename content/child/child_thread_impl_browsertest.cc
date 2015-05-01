@@ -18,10 +18,9 @@
 
 namespace content {
 
-class ChildDiscardableSharedMemoryManagerBrowserTest
-    : public ContentBrowserTest {
+class ChildThreadImplBrowserTest : public ContentBrowserTest {
  public:
-  ChildDiscardableSharedMemoryManagerBrowserTest()
+  ChildThreadImplBrowserTest()
       : child_discardable_shared_memory_manager_(nullptr) {}
 
   // Overridden from BrowserTestBase:
@@ -30,9 +29,8 @@ class ChildDiscardableSharedMemoryManagerBrowserTest
   }
   void SetUpOnMainThread() override {
     NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-    PostTaskToInProcessRendererAndWait(base::Bind(
-        &ChildDiscardableSharedMemoryManagerBrowserTest::SetUpOnChildThread,
-        this));
+    PostTaskToInProcessRendererAndWait(
+        base::Bind(&ChildThreadImplBrowserTest::SetUpOnChildThread, this));
   }
 
   ChildDiscardableSharedMemoryManager*
@@ -49,8 +47,8 @@ class ChildDiscardableSharedMemoryManagerBrowserTest
   ChildDiscardableSharedMemoryManager* child_discardable_shared_memory_manager_;
 };
 
-IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
-                       DISABLED_LockMemory) {
+IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
+                       DISABLED_LockDiscardableMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
   scoped_ptr<base::DiscardableMemory> memory =
@@ -70,8 +68,8 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
   EXPECT_FALSE(memory->Lock());
 }
 
-IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
-                       DISABLED_AddressSpace) {
+IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
+                       DISABLED_DiscardableMemoryAddressSpace) {
   const size_t kLargeSize = 4 * 1024 * 1024;   // 4MiB.
   const size_t kNumberOfInstances = 1024 + 1;  // >4GiB total.
 
@@ -88,8 +86,8 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
-                       DISABLED_ReleaseFreeMemory) {
+IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
+                       DISABLED_ReleaseFreeDiscardableMemory) {
   const size_t kSize = 1024 * 1024;  // 1MiB.
 
   scoped_ptr<base::DiscardableMemory> memory =
