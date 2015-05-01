@@ -6,9 +6,16 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/default_tick_clock.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
 
 namespace media {
+
+// The maximum time we'll allow to elapse between Render() callbacks if there is
+// an external caller requesting frames via GetCurrentFrame(); i.e. there is a
+// canvas which frames are being copied into.
+const int kStaleFrameThresholdMs = 250;
 
 static bool IsOpaque(const scoped_refptr<VideoFrame>& frame) {
   switch (frame->format()) {
@@ -38,11 +45,17 @@ VideoFrameCompositor::VideoFrameCompositor(
     const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
     const base::Callback<void(bool)>& opacity_changed_cb)
     : compositor_task_runner_(compositor_task_runner),
+      tick_clock_(new base::DefaultTickClock()),
       natural_size_changed_cb_(natural_size_changed_cb),
       opacity_changed_cb_(opacity_changed_cb),
+      stale_frame_threshold_(
+          base::TimeDelta::FromMilliseconds(kStaleFrameThresholdMs)),
       client_(nullptr),
       rendering_(false),
-      callback_(nullptr) {
+      rendered_last_frame_(false),
+      callback_(nullptr),
+      // Assume 60Hz before the first UpdateCurrentFrame() call.
+      last_interval_(base::TimeDelta::FromSecondsD(1.0 / 60)) {
 }
 
 VideoFrameCompositor::~VideoFrameCompositor() {
@@ -53,27 +66,30 @@ VideoFrameCompositor::~VideoFrameCompositor() {
     client_->StopUsingProvider();
 }
 
-void VideoFrameCompositor::OnRendererStateUpdate() {
+void VideoFrameCompositor::OnRendererStateUpdate(bool new_state) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(rendering_, new_state);
+  rendering_ = new_state;
+  last_frame_update_time_ = base::TimeTicks();
+
   if (!client_)
     return;
 
-  base::AutoLock lock(lock_);
-  if (callback_) {
-    if (rendering_)
-      client_->StartRendering();
-
-    // TODO(dalecurtis): This will need to request the first frame so we have
-    // something to show, even if playback hasn't started yet.
-  } else if (rendering_) {
+  if (rendering_)
+    client_->StartRendering();
+  else
     client_->StopRendering();
-  }
 }
 
 scoped_refptr<VideoFrame>
 VideoFrameCompositor::GetCurrentFrameAndUpdateIfStale() {
-  // TODO(dalecurtis): Implement frame refresh when stale.
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  if (rendering_) {
+    const base::TimeTicks now = tick_clock_->NowTicks();
+    if (now - last_frame_update_time_ > stale_frame_threshold_)
+      UpdateCurrentFrame(now, now + last_interval_);
+  }
+
   return GetCurrentFrame();
 }
 
@@ -83,7 +99,9 @@ void VideoFrameCompositor::SetVideoFrameProviderClient(
   if (client_)
     client_->StopUsingProvider();
   client_ = client;
-  OnRendererStateUpdate();
+
+  if (rendering_)
+    client_->StartRendering();
 }
 
 scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrame() {
@@ -93,41 +111,66 @@ scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrame() {
 
 void VideoFrameCompositor::PutCurrentFrame() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  // TODO(dalecurtis): Wire up a flag for RenderCallback::OnFrameDropped().
+  rendered_last_frame_ = true;
 }
 
 bool VideoFrameCompositor::UpdateCurrentFrame(base::TimeTicks deadline_min,
                                               base::TimeTicks deadline_max) {
-  // TODO(dalecurtis): Wire this up to RenderCallback::Render().
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
-  return false;
+  if (!callback_)
+    return false;
+
+  DCHECK(rendering_);
+
+  // If the previous frame was never rendered, let the client know.
+  if (!rendered_last_frame_ && current_frame_)
+    callback_->OnFrameDropped();
+
+  last_frame_update_time_ = tick_clock_->NowTicks();
+  last_interval_ = deadline_max - deadline_min;
+  return ProcessNewFrame(callback_->Render(deadline_min, deadline_max), false);
 }
 
 void VideoFrameCompositor::Start(RenderCallback* callback) {
-  NOTREACHED();
+  TRACE_EVENT0("media", __FUNCTION__);
 
   // Called from the media thread, so acquire the callback under lock before
   // returning in case a Stop() call comes in before the PostTask is processed.
   base::AutoLock lock(lock_);
+  DCHECK(!callback_);
   callback_ = callback;
-  rendering_ = true;
   compositor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoFrameCompositor::OnRendererStateUpdate,
-                            base::Unretained(this)));
+                            base::Unretained(this), true));
 }
 
 void VideoFrameCompositor::Stop() {
-  NOTREACHED();
+  TRACE_EVENT0("media", __FUNCTION__);
 
   // Called from the media thread, so release the callback under lock before
   // returning to avoid a pending UpdateCurrentFrame() call occurring before
   // the PostTask is processed.
   base::AutoLock lock(lock_);
+  DCHECK(callback_);
+
+  // Fire one more Render() callback if we're more than one render interval away
+  // to ensure that we have a good frame to display if Render() has never been
+  // called, or was called long enough ago that the frame is stale.  We must
+  // always have a |current_frame_| to recover from "damage" to the video layer.
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  if (now - last_frame_update_time_ > last_interval_) {
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&VideoFrameCompositor::ProcessNewFrame),
+                   base::Unretained(this),
+                   callback_->Render(now, now + last_interval_), true));
+  }
+
   callback_ = nullptr;
-  rendering_ = false;
   compositor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoFrameCompositor::OnRendererStateUpdate,
-                            base::Unretained(this)));
+                            base::Unretained(this), false));
 }
 
 void VideoFrameCompositor::PaintFrameUsingOldRenderingPath(
@@ -140,19 +183,34 @@ void VideoFrameCompositor::PaintFrameUsingOldRenderingPath(
     return;
   }
 
-  if (current_frame_.get() &&
+  ProcessNewFrame(frame, true);
+}
+
+bool VideoFrameCompositor::ProcessNewFrame(
+    const scoped_refptr<VideoFrame>& frame,
+    bool notify_client_of_new_frames) {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+
+  if (frame == current_frame_)
+    return false;
+
+  // Set the flag indicating that the current frame is unrendered, if we get a
+  // subsequent PutCurrentFrame() call it will mark it as rendered.
+  rendered_last_frame_ = false;
+
+  if (current_frame_ &&
       current_frame_->natural_size() != frame->natural_size()) {
     natural_size_changed_cb_.Run(frame->natural_size());
   }
 
-  if (!current_frame_.get() || IsOpaque(current_frame_) != IsOpaque(frame)) {
+  if (!current_frame_ || IsOpaque(current_frame_) != IsOpaque(frame))
     opacity_changed_cb_.Run(IsOpaque(frame));
-  }
 
   current_frame_ = frame;
-
-  if (client_)
+  if (notify_client_of_new_frames && client_)
     client_->DidReceiveFrame();
+
+  return true;
 }
 
 }  // namespace media

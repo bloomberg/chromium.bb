@@ -55279,6 +55279,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1972383451" label="disable-pinch"/>
+  <int value="-1943507605" label="enable-new-video-renderer"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>

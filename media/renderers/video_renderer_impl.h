@@ -14,6 +14,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/timer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
@@ -23,6 +24,7 @@
 #include "media/base/video_renderer.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/filters/decoder_stream.h"
+#include "media/filters/video_renderer_algorithm.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -79,6 +81,15 @@ class MEDIA_EXPORT VideoRendererImpl
                                    base::TimeTicks deadline_max) override;
   void OnFrameDropped() override;
 
+  void enable_new_video_renderer_for_testing() {
+    use_new_video_renderering_path_ = true;
+  }
+
+  // Enables or disables background rendering. If |enabled|, |timeout| is the
+  // amount of time to wait after the last Render() call before starting the
+  // background rendering mode.
+  void SetBackgroundRenderingForTesting(bool enabled, base::TimeDelta timeout);
+
  private:
   // Creates a dedicated |thread_| for video rendering.
   void CreateVideoThread();
@@ -123,9 +134,44 @@ class MEDIA_EXPORT VideoRendererImpl
   // |wait_duration|.
   void UpdateStatsAndWait_Locked(base::TimeDelta wait_duration);
 
+  // Called after we've painted the first frame.  If |time_progressing_| is
+  // false it Stop() on |sink_|.
+  void MaybeStopSinkAfterFirstPaint();
+
+  // Resets and primes the |background_rendering_timer_|, when the timer fires
+  // it calls the BackgroundRender() method below.
+  void StartBackgroundRenderTimer();
+
+  // Called by |background_rendering_timer_| when enough time elapses where we
+  // haven't seen a Render() call.
+  void BackgroundRender();
+  void BackgroundRender_Locked();
+
+  // Returns true if there is no more room for additional buffered frames.
+  bool HaveReachedBufferingCap();
+
+  // Starts or stops |sink_| respectively. Do not call while |lock_| is held.
+  void StartSink();
+  void StopSink();
+
+  // Fires |ended_cb_| if there are no remaining usable frames and
+  // |received_end_of_stream_| is true.  Sets |rendered_end_of_stream_| if it
+  // does so.  Returns algorithm_->EffectiveFramesQueued().
+  size_t MaybeFireEndedCallback();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  // Enables the use of VideoRendererAlgorithm and VideoRendererSink for frame
+  // rendering instead of using a thread in a sleep-loop.  Set via the command
+  // line flag kEnableNewVideoRenderer or via test methods.
+  bool use_new_video_renderering_path_;
+
+  // Sink which calls into VideoRendererImpl via Render() for video frames.  Do
+  // not call any methods on the sink while |lock_| is held or the two threads
+  // might deadlock. Do not call Start() or Stop() on the sink directly, use
+  // StartSink() and StopSink() to ensure background rendering is started.
   VideoRendererSink* const sink_;
+  bool sink_started_;
 
   // Used for accessing data members.
   base::Lock lock_;
@@ -218,6 +264,36 @@ class MEDIA_EXPORT VideoRendererImpl
   bool is_shutting_down_;
 
   scoped_ptr<base::TickClock> tick_clock_;
+
+  // Algorithm for selecting which frame to render; manages frames and all
+  // timing related information.
+  scoped_ptr<VideoRendererAlgorithm> algorithm_;
+
+  // Indicates that Render() callbacks from |sink_| have timed out, so we've
+  // entered a background rendering mode where dropped frames are not counted.
+  bool is_background_rendering_;
+
+  // Allows tests to disable the background rendering task.
+  bool should_use_background_renderering_;
+
+  // Manages expiration of stale video frames if Render() callbacks timeout.  Do
+  // not access from the thread Render() is called on.  Must only be used on
+  // |task_runner_|.
+  base::RepeatingTimer<VideoRendererImpl> background_rendering_timer_;
+
+  // Indicates whether or not media time is currently progressing or not.
+  bool time_progressing_;
+
+  // Indicates that Render() should only render the first frame and then request
+  // that the sink be stopped.
+  bool render_first_frame_and_stop_;
+
+  // The time to wait for Render() before firing BackgroundRender().
+  base::TimeDelta background_rendering_timeout_;
+
+  // Updated on every Render() call, checked by |background_rendering_timer_| to
+  // determine if background rendering should start.
+  base::TimeTicks last_render_time_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;

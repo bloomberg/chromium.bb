@@ -68,6 +68,7 @@ class CC_EXPORT VideoFrameProviderClientImpl
   VideoFrameControllerClient* client_;
   VideoLayerImpl* active_video_layer_;
   bool stopped_;
+  bool rendering_;
 
   // Since the provider lives on another thread, it can be destroyed while the
   // frame controller are accessing its frame. Before being destroyed the

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/time/tick_clock.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/media_export.h"
 #include "media/base/video_renderer_sink.h"
@@ -91,25 +92,51 @@ class MEDIA_EXPORT VideoFrameCompositor
   void PaintFrameUsingOldRenderingPath(
       const scoped_refptr<VideoFrame>& frame) override;
 
+  void set_tick_clock_for_testing(scoped_ptr<base::TickClock> tick_clock) {
+    tick_clock_ = tick_clock.Pass();
+  }
+
+  base::TimeDelta get_stale_frame_threshold_for_testing() const {
+    return stale_frame_threshold_;
+  }
+
+  void clear_current_frame_for_testing() { current_frame_ = nullptr; }
+
  private:
-  // Called on the compositor thread to start or stop rendering if rendering was
-  // previously started or stopped before we had a |callback_|.
-  void OnRendererStateUpdate();
+  // Called on the compositor thread in response to Start() or Stop() calls;
+  // must be used to change |rendering_| state.
+  void OnRendererStateUpdate(bool new_state);
+
+  // Handles setting of |current_frame_| and fires |natural_size_changed_cb_|
+  // and |opacity_changed_cb_| when the frame properties changes.  Will also
+  // call DidReceiveFrame() on |client_| if |notify_client_of_new_frames| is
+  // true and a new frame is encountered.
+  bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame,
+                       bool notify_client_of_new_frames);
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  scoped_ptr<base::TickClock> tick_clock_;
 
   // These callbacks are executed on the compositor thread.
-  base::Callback<void(gfx::Size)> natural_size_changed_cb_;
-  base::Callback<void(bool)> opacity_changed_cb_;
+  const base::Callback<void(gfx::Size)> natural_size_changed_cb_;
+  const base::Callback<void(bool)> opacity_changed_cb_;
+
+  base::TimeDelta stale_frame_threshold_;
 
   // These values are only set and read on the compositor thread.
   cc::VideoFrameProvider::Client* client_;
   scoped_refptr<VideoFrame> current_frame_;
+  bool rendering_;
+  bool rendered_last_frame_;
 
   // These values are updated and read from the media and compositor threads.
   base::Lock lock_;
-  bool rendering_;
   VideoRendererSink::RenderCallback* callback_;
+
+  // These values are set on the compositor thread under lock and may be read
+  // from the media thread under lock.
+  base::TimeTicks last_frame_update_time_;
+  base::TimeDelta last_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);
 };

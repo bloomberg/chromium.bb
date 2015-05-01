@@ -53,6 +53,8 @@ class WaitableMessageLoopEvent {
   // Fails the test if the timeout is reached.
   void RunAndWaitForStatus(PipelineStatus expected);
 
+  bool is_signaled() const { return signaled_; }
+
  private:
   void OnCallback(PipelineStatus status);
   void OnTimeout();

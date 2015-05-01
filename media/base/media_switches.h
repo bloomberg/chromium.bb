@@ -14,6 +14,8 @@ namespace switches {
 
 MEDIA_EXPORT extern const char kAudioBufferSize[];
 
+MEDIA_EXPORT extern const char kEnableNewVideoRenderer[];
+
 MEDIA_EXPORT extern const char kVideoThreads[];
 
 MEDIA_EXPORT extern const char

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -15,10 +16,15 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 
 namespace media {
+
+// Wait a quarter of a second for Render() callbacks before starting background
+// rendering to keep the decode pump moving.
+const int kBackgroundRenderingTimeoutMs = 250;
 
 VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -27,7 +33,11 @@ VideoRendererImpl::VideoRendererImpl(
     bool drop_frames,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
+      use_new_video_renderering_path_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableNewVideoRenderer)),
       sink_(sink),
+      sink_started_(false),
       video_frame_stream_(
           new VideoFrameStream(task_runner, decoders.Pass(), media_log)),
       low_delay_(false),
@@ -43,13 +53,19 @@ VideoRendererImpl::VideoRendererImpl(
       frames_dropped_(0),
       is_shutting_down_(false),
       tick_clock_(new base::DefaultTickClock()),
+      is_background_rendering_(false),
+      should_use_background_renderering_(true),
+      time_progressing_(false),
+      render_first_frame_and_stop_(false),
+      background_rendering_timeout_(
+          base::TimeDelta::FromMilliseconds(kBackgroundRenderingTimeoutMs)),
       weak_factory_(this) {
 }
 
 VideoRendererImpl::~VideoRendererImpl() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  {
+  if (!use_new_video_renderering_path_) {
     base::AutoLock auto_lock(lock_);
     is_shutting_down_ = true;
     frame_available_.Signal();
@@ -63,11 +79,18 @@ VideoRendererImpl::~VideoRendererImpl() {
 
   if (!flush_cb_.is_null())
     base::ResetAndReturn(&flush_cb_).Run();
+
+  if (use_new_video_renderering_path_ && sink_started_)
+    StopSink();
 }
 
 void VideoRendererImpl::Flush(const base::Closure& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (use_new_video_renderering_path_ && sink_started_)
+    StopSink();
+
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
   flush_cb_ = callback;
@@ -82,6 +105,9 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   }
   received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
+
+  if (use_new_video_renderering_path_)
+    algorithm_->Reset();
 
   video_frame_stream_->Reset(
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
@@ -122,6 +148,9 @@ void VideoRendererImpl::Initialize(
   DCHECK(!ended_cb.is_null());
   DCHECK(!wall_clock_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
+  DCHECK(!render_first_frame_and_stop_);
+  DCHECK(!is_background_rendering_);
+  DCHECK(!time_progressing_);
 
   low_delay_ = (stream->liveness() == DemuxerStream::LIVENESS_LIVE);
 
@@ -147,14 +176,67 @@ void VideoRendererImpl::Initialize(
 scoped_refptr<VideoFrame> VideoRendererImpl::Render(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max) {
-  // TODO(dalecurtis): Hook this up to the new VideoRendererAlgorithm.
-  NOTIMPLEMENTED();
-  return nullptr;
+  base::AutoLock auto_lock(lock_);
+  DCHECK(use_new_video_renderering_path_);
+  DCHECK_EQ(state_, kPlaying);
+  last_render_time_ = tick_clock_->NowTicks();
+
+  size_t frames_dropped = 0;
+  scoped_refptr<VideoFrame> result =
+      algorithm_->Render(deadline_min, deadline_max, &frames_dropped);
+
+  // Due to how the |algorithm_| holds frames, this should never be null if
+  // we've had a proper startup sequence.
+  DCHECK(result);
+
+  // See if it's time to fire the ended callback.
+  const size_t effective_frames = MaybeFireEndedCallback();
+
+  // Declare HAVE_NOTHING if we have no more effective frames.
+  if (!effective_frames && !rendered_end_of_stream_ &&
+      buffering_state_ == BUFFERING_HAVE_ENOUGH) {
+    buffering_state_ = BUFFERING_HAVE_NOTHING;
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(buffering_state_cb_, BUFFERING_HAVE_NOTHING));
+  }
+
+  // As we resume from background rendering, don't count the initial batch of
+  // dropped frames since they are likely just dropped due to being too old.
+  if (!is_background_rendering_) {
+    frames_dropped_ += frames_dropped;
+    UpdateStatsAndWait_Locked(base::TimeDelta());
+  }
+  is_background_rendering_ = false;
+
+  // After painting the first frame, if playback hasn't started, we request that
+  // the sink be stopped.  OnTimeStateChanged() will clear this flag if time
+  // starts before we get here and MaybeStopSinkAfterFirstPaint() will ignore
+  // this request if time starts before the call executes.
+  if (render_first_frame_and_stop_) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoRendererImpl::MaybeStopSinkAfterFirstPaint,
+                              weak_factory_.GetWeakPtr()));
+  }
+
+  // Always post this task, it will acquire new frames if necessary, reset the
+  // background rendering timer, and more.
+  task_runner_->PostTask(FROM_HERE, base::Bind(&VideoRendererImpl::AttemptRead,
+                                               weak_factory_.GetWeakPtr()));
+
+  return result;
 }
 
 void VideoRendererImpl::OnFrameDropped() {
-  // TODO(dalecurtis): Hook this up to the new VideoRendererAlgorithm.
-  NOTIMPLEMENTED();
+  base::AutoLock auto_lock(lock_);
+  DCHECK(use_new_video_renderering_path_);
+  algorithm_->OnLastFrameDropped();
+}
+
+void VideoRendererImpl::SetBackgroundRenderingForTesting(
+    bool enabled,
+    base::TimeDelta timeout) {
+  should_use_background_renderering_ = enabled;
+  background_rendering_timeout_ = timeout;
 }
 
 void VideoRendererImpl::CreateVideoThread() {
@@ -186,13 +268,20 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   // have not populated any buffers yet.
   state_ = kFlushed;
 
-  CreateVideoThread();
+  if (use_new_video_renderering_path_) {
+    algorithm_.reset(new VideoRendererAlgorithm(wall_clock_time_cb_));
+    if (!drop_frames_)
+      algorithm_->disable_frame_dropping();
+  } else {
+    CreateVideoThread();
+  }
 
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 
 // PlatformThread::Delegate implementation.
 void VideoRendererImpl::ThreadMain() {
+  DCHECK(!use_new_video_renderering_path_);
   base::PlatformThread::SetName("CrVideoRenderer");
 
   // The number of milliseconds to idle when we do not have anything to do.
@@ -290,15 +379,27 @@ void VideoRendererImpl::SetTickClockForTesting(
 }
 
 void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
-  // TODO(dalecurtis): Wire up to the VideoRendererSink once it's implemented.
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  time_progressing_ = time_progressing;
+
+  // WARNING: Do not attempt to use |lock_| here as this may be a reentrant call
+  // in response to callbacks firing above.
+
+  if (!use_new_video_renderering_path_ || sink_started_ == time_progressing_)
+    return;
+
+  if (time_progressing_)
+    StartSink();
+  else
+    StopSink();
 }
 
 void VideoRendererImpl::PaintNextReadyFrame_Locked() {
+  DCHECK(!use_new_video_renderering_path_);
   lock_.AssertAcquired();
 
   scoped_refptr<VideoFrame> next_frame = ready_frames_.front();
   ready_frames_.pop_front();
-  frames_decoded_++;
 
   last_media_time_ = wall_clock_time_cb_.Run(next_frame->timestamp());
 
@@ -310,6 +411,7 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
 }
 
 void VideoRendererImpl::DropNextReadyFrame_Locked() {
+  DCHECK(!use_new_video_renderering_path_);
   TRACE_EVENT0("media", "VideoRendererImpl:frameDropped");
 
   lock_.AssertAcquired();
@@ -318,7 +420,6 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
       wall_clock_time_cb_.Run(ready_frames_.front()->timestamp());
 
   ready_frames_.pop_front();
-  frames_decoded_++;
   frames_dropped_++;
 
   task_runner_->PostTask(
@@ -329,64 +430,109 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
 void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(lock_);
-  DCHECK_NE(state_, kUninitialized);
-  DCHECK_NE(state_, kFlushed);
+  bool start_sink = false;
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK_NE(state_, kUninitialized);
+    DCHECK_NE(state_, kFlushed);
 
-  CHECK(pending_read_);
-  pending_read_ = false;
+    CHECK(pending_read_);
+    pending_read_ = false;
 
-  if (status == VideoFrameStream::DECODE_ERROR ||
-      status == VideoFrameStream::DECRYPT_ERROR) {
-    DCHECK(!frame.get());
-    PipelineStatus error = PIPELINE_ERROR_DECODE;
-    if (status == VideoFrameStream::DECRYPT_ERROR)
-      error = PIPELINE_ERROR_DECRYPT;
-    task_runner_->PostTask(FROM_HERE, base::Bind(error_cb_, error));
-    return;
+    if (status == VideoFrameStream::DECODE_ERROR ||
+        status == VideoFrameStream::DECRYPT_ERROR) {
+      DCHECK(!frame.get());
+      PipelineStatus error = PIPELINE_ERROR_DECODE;
+      if (status == VideoFrameStream::DECRYPT_ERROR)
+        error = PIPELINE_ERROR_DECRYPT;
+      task_runner_->PostTask(FROM_HERE, base::Bind(error_cb_, error));
+      return;
+    }
+
+    // Already-queued VideoFrameStream ReadCB's can fire after various state
+    // transitions have happened; in that case just drop those frames
+    // immediately.
+    if (state_ == kFlushing)
+      return;
+
+    DCHECK_EQ(state_, kPlaying);
+
+    // Can happen when demuxers are preparing for a new Seek().
+    if (!frame.get()) {
+      DCHECK_EQ(status, VideoFrameStream::DEMUXER_READ_ABORTED);
+      return;
+    }
+
+    if (frame->end_of_stream()) {
+      DCHECK(!received_end_of_stream_);
+      received_end_of_stream_ = true;
+
+      // See if we can fire EOS immediately instead of waiting for Render() or
+      // BackgroundRender() to tick.  We also want to fire EOS if we have no
+      // frames and received EOS.
+      if (use_new_video_renderering_path_ &&
+          (time_progressing_ || !algorithm_->frames_queued())) {
+        MaybeFireEndedCallback();
+      }
+    } else {
+      // Maintain the latest frame decoded so the correct frame is displayed
+      // after prerolling has completed.
+      if (frame->timestamp() <= start_timestamp_) {
+        if (use_new_video_renderering_path_)
+          algorithm_->Reset();
+        ready_frames_.clear();
+      }
+      AddReadyFrame_Locked(frame);
+    }
+
+    // Signal buffering state if we've met our conditions for having enough
+    // data.
+    if (buffering_state_ != BUFFERING_HAVE_ENOUGH && HaveEnoughData_Locked()) {
+      TransitionToHaveEnough_Locked();
+      if (use_new_video_renderering_path_ && !sink_started_ &&
+          !rendered_end_of_stream_) {
+        start_sink = true;
+        render_first_frame_and_stop_ = true;
+      }
+    }
+
+    // BackgroundRender may not be ticking fast enough by itself to remove
+    // expired frames, so give it a boost here by ensuring we don't exit the
+    // decoding cycle too early.
+    if (is_background_rendering_) {
+      DCHECK(use_new_video_renderering_path_);
+      BackgroundRender_Locked();
+    }
+
+    // Always request more decoded video if we have capacity. This serves two
+    // purposes:
+    //   1) Prerolling while paused
+    //   2) Keeps decoding going if video rendering thread starts falling behind
+    AttemptRead_Locked();
   }
 
-  // Already-queued VideoFrameStream ReadCB's can fire after various state
-  // transitions have happened; in that case just drop those frames immediately.
-  if (state_ == kFlushing)
-    return;
-
-  DCHECK_EQ(state_, kPlaying);
-
-  // Can happen when demuxers are preparing for a new Seek().
-  if (!frame.get()) {
-    DCHECK_EQ(status, VideoFrameStream::DEMUXER_READ_ABORTED);
-    return;
+  // If time is progressing, the sink has already been started; this may be true
+  // if we have previously underflowed, yet weren't stopped because of audio.
+  if (use_new_video_renderering_path_ && start_sink) {
+    DCHECK(!sink_started_);
+    StartSink();
   }
-
-  if (frame->end_of_stream()) {
-    DCHECK(!received_end_of_stream_);
-    received_end_of_stream_ = true;
-  } else {
-    // Maintain the latest frame decoded so the correct frame is displayed after
-    // prerolling has completed.
-    if (frame->timestamp() <= start_timestamp_)
-      ready_frames_.clear();
-    AddReadyFrame_Locked(frame);
-  }
-
-  // Signal buffering state if we've met our conditions for having enough data.
-  if (buffering_state_ != BUFFERING_HAVE_ENOUGH && HaveEnoughData_Locked())
-    TransitionToHaveEnough_Locked();
-
-  // Always request more decoded video if we have capacity. This serves two
-  // purposes:
-  //   1) Prerolling while paused
-  //   2) Keeps decoding going if video rendering thread starts falling behind
-  AttemptRead_Locked();
 }
 
 bool VideoRendererImpl::HaveEnoughData_Locked() {
   DCHECK_EQ(state_, kPlaying);
-  return received_end_of_stream_ ||
-      !video_frame_stream_->CanReadWithoutStalling() ||
-      ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames) ||
-      (low_delay_ && ready_frames_.size() > 0);
+
+  if (received_end_of_stream_ || !video_frame_stream_->CanReadWithoutStalling())
+    return true;
+
+  if (HaveReachedBufferingCap())
+    return true;
+
+  if (!low_delay_)
+    return false;
+
+  return ready_frames_.size() > 0 ||
+         (use_new_video_renderering_path_ && algorithm_->frames_queued() > 0);
 }
 
 void VideoRendererImpl::TransitionToHaveEnough_Locked() {
@@ -394,6 +540,7 @@ void VideoRendererImpl::TransitionToHaveEnough_Locked() {
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   if (!ready_frames_.empty()) {
+    DCHECK(!use_new_video_renderering_path_);
     // Because the clock might remain paused in for an undetermined amount
     // of time (e.g., seeking while paused), paint the first frame.
     PaintNextReadyFrame_Locked();
@@ -408,6 +555,13 @@ void VideoRendererImpl::AddReadyFrame_Locked(
   DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
   DCHECK(!frame->end_of_stream());
+
+  frames_decoded_++;
+
+  if (use_new_video_renderering_path_) {
+    algorithm_->EnqueueFrame(frame);
+    return;
+  }
 
   ready_frames_.push_back(frame);
   DCHECK_LE(ready_frames_.size(),
@@ -427,10 +581,11 @@ void VideoRendererImpl::AttemptRead_Locked() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
-  if (pending_read_ || received_end_of_stream_ ||
-      ready_frames_.size() == static_cast<size_t>(limits::kMaxVideoFrames)) {
+  if (pending_read_ || received_end_of_stream_)
     return;
-  }
+
+  if (HaveReachedBufferingCap())
+    return;
 
   switch (state_) {
     case kPlaying:
@@ -465,9 +620,9 @@ void VideoRendererImpl::UpdateStatsAndWait_Locked(
     base::TimeDelta wait_duration) {
   lock_.AssertAcquired();
   DCHECK_GE(frames_decoded_, 0);
-  DCHECK_LE(frames_dropped_, frames_decoded_);
+  DCHECK_GE(frames_dropped_, 0);
 
-  if (frames_decoded_) {
+  if (frames_decoded_ || frames_dropped_) {
     PipelineStatistics statistics;
     statistics.video_frames_decoded = frames_decoded_;
     statistics.video_frames_dropped = frames_dropped_;
@@ -477,7 +632,130 @@ void VideoRendererImpl::UpdateStatsAndWait_Locked(
     frames_dropped_ = 0;
   }
 
-  frame_available_.TimedWait(wait_duration);
+  if (wait_duration > base::TimeDelta())
+    frame_available_.TimedWait(wait_duration);
+}
+
+void VideoRendererImpl::MaybeStopSinkAfterFirstPaint() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(use_new_video_renderering_path_);
+
+  {
+    base::AutoLock auto_lock(lock_);
+    render_first_frame_and_stop_ = false;
+  }
+
+  if (!time_progressing_ && sink_started_)
+    StopSink();
+}
+
+void VideoRendererImpl::StartBackgroundRenderTimer() {
+  DCHECK(use_new_video_renderering_path_);
+  if (!drop_frames_ || !should_use_background_renderering_)
+    return;
+
+  // |last_render_time_| and |background_rendering_timer_| work in conjunction
+  // to ensure we don't exceed |kBackgroundRenderingTimeoutMs| between calls to
+  // Render().  BackgroundRender() will tick repeatedly and verify that Render()
+  // has fired within the allotted time, by checking |last_render_time_|.
+  last_render_time_ = tick_clock_->NowTicks();
+  background_rendering_timer_.Start(
+      FROM_HERE, background_rendering_timeout_,
+      base::Bind(&VideoRendererImpl::BackgroundRender,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void VideoRendererImpl::BackgroundRender() {
+  base::AutoLock auto_lock(lock_);
+  BackgroundRender_Locked();
+}
+
+void VideoRendererImpl::BackgroundRender_Locked() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(state_, kPlaying);
+  lock_.AssertAcquired();
+
+  // If a Render() call never occurs after starting playback for the first frame
+  // we need to carry out the duties of Render() and stop the sink.  We don't
+  // call MaybeStopSinkAfterFirstPaint() since it may need to mutate |sink_|,
+  // which can't be done under lock.
+  if (render_first_frame_and_stop_) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoRendererImpl::MaybeStopSinkAfterFirstPaint,
+                              weak_factory_.GetWeakPtr()));
+
+    // MaybeStopSinkAfterFirstPaint isn't going to stop the sink if time is
+    // currently progressing, so only bail out if necessary.
+    if (!time_progressing_)
+      return;
+  }
+
+  // Do nothing if Render() calls are progressing normally.
+  if (tick_clock_->NowTicks() - last_render_time_ <
+      background_rendering_timeout_) {
+    return;
+  }
+
+  // First clear as many expired frames as we can.
+  algorithm_->RemoveExpiredFrames(tick_clock_->NowTicks());
+  is_background_rendering_ = true;
+
+  // See if we've run out of frames and need to fire the ended callback.
+  MaybeFireEndedCallback();
+  if (rendered_end_of_stream_)
+    return;
+
+  // Start queuing new frames and scheduled this process again otherwise.
+  AttemptRead_Locked();
+  UpdateStatsAndWait_Locked(base::TimeDelta());
+}
+
+bool VideoRendererImpl::HaveReachedBufferingCap() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (use_new_video_renderering_path_) {
+    // When the display rate is less than the frame rate, the effective frames
+    // queued may be much smaller than the actual number of frames queued.  Here
+    // we ensure that frames_queued() doesn't get excessive.
+    return algorithm_->EffectiveFramesQueued() >=
+               static_cast<size_t>(limits::kMaxVideoFrames) ||
+           algorithm_->frames_queued() >=
+               static_cast<size_t>(3 * limits::kMaxVideoFrames);
+  }
+
+  return ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames);
+}
+
+void VideoRendererImpl::StartSink() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  sink_->Start(this);
+  sink_started_ = true;
+  StartBackgroundRenderTimer();
+}
+
+void VideoRendererImpl::StopSink() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  sink_->Stop();
+  sink_started_ = false;
+  background_rendering_timer_.Stop();
+  is_background_rendering_ = false;
+}
+
+size_t VideoRendererImpl::MaybeFireEndedCallback() {
+  // If there's only one frame in the video or Render() was never called, the
+  // algorithm will have one frame linger indefinitely.  So in cases where the
+  // frame duration is unknown and we've received EOS, fire it once we get down
+  // to a single frame.
+  const size_t effective_frames = algorithm_->EffectiveFramesQueued();
+
+  if ((!effective_frames ||
+       (algorithm_->frames_queued() == 1u &&
+        algorithm_->average_frame_duration() == base::TimeDelta())) &&
+      received_end_of_stream_ && !rendered_end_of_stream_) {
+    rendered_end_of_stream_ = true;
+    task_runner_->PostTask(FROM_HERE, ended_cb_);
+  }
+
+  return effective_frames;
 }
 
 }  // namespace media

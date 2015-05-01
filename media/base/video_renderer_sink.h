@@ -56,6 +56,10 @@ class MEDIA_EXPORT VideoRendererSink {
   virtual void PaintFrameUsingOldRenderingPath(
       const scoped_refptr<VideoFrame>& frame) = 0;
 
+  // TODO(dalecurtis): We may need OnSizeChanged() and OnOpacityChanged()
+  // methods on this interface if background rendering is handled inside of
+  // the media layer instead of by VideoFrameCompositor.
+
   virtual ~VideoRendererSink() {}
 };
 

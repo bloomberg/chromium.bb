@@ -50,6 +50,8 @@ class MEDIA_EXPORT NullVideoSink : NON_EXPORTED_BASE(public VideoRendererSink) {
     stop_cb_ = stop_cb;
   }
 
+  bool is_started() const { return started_; }
+
  private:
   // Task that periodically calls Render() to consume video data.
   void CallRender();

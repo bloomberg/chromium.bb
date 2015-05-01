@@ -24,7 +24,8 @@ VideoFrameProviderClientImpl::VideoFrameProviderClientImpl(
     : provider_(provider),
       client_(client),
       active_video_layer_(nullptr),
-      stopped_(false) {
+      stopped_(false),
+      rendering_(false) {
   // This only happens during a commit on the compositor thread while the main
   // thread is blocked. That makes this a thread-safe call to set the video
   // frame provider client that does not require a lock. The same is true of
@@ -64,7 +65,8 @@ void VideoFrameProviderClientImpl::Stop() {
     provider_->SetVideoFrameProviderClient(nullptr);
     provider_ = nullptr;
   }
-  client_->RemoveVideoFrameController(this);
+  if (rendering_)
+    StopRendering();
   active_video_layer_ = nullptr;
   stopped_ = true;
 }
@@ -107,16 +109,26 @@ void VideoFrameProviderClientImpl::StopUsingProvider() {
   // using the frame.
   base::AutoLock locker(provider_lock_);
   provider_ = nullptr;
+  if (rendering_)
+    StopRendering();
 }
 
 void VideoFrameProviderClientImpl::StartRendering() {
-  // TODO(dalecurtis, sunnyps): Hook this method up to control when to start
-  // observing vsync intervals. http://crbug.com/336733
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("cc", "VideoFrameProviderClientImpl::StartRendering");
+  DCHECK(!rendering_);
+  DCHECK(!stopped_);
+  client_->AddVideoFrameController(this);
+  rendering_ = true;
 }
 
 void VideoFrameProviderClientImpl::StopRendering() {
-  // TODO(dalecurtis, sunnyps): Hook this method up to control when to stop
-  // observing vsync intervals. http://crbug.com/336733
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("cc", "VideoFrameProviderClientImpl::StopRendering");
+  DCHECK(rendering_);
+  DCHECK(!stopped_);
+  client_->RemoveVideoFrameController(this);
+  rendering_ = false;
 }
 
 void VideoFrameProviderClientImpl::DidReceiveFrame() {
@@ -142,7 +154,21 @@ void VideoFrameProviderClientImpl::DidUpdateMatrix(const float* matrix) {
 
 void VideoFrameProviderClientImpl::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
+  DCHECK(rendering_);
+  DCHECK(!stopped_);
+
+  TRACE_EVENT0("cc", "VideoFrameProviderClientImpl::OnBeginFrame");
+  base::AutoLock locker(provider_lock_);
+
+  // We use frame_time + interval here because that is the estimated time at
+  // which a frame returned during this phase will end up being displayed.
+  if (!provider_ ||
+      !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
+                                     args.frame_time + 2 * args.interval)) {
+    return;
+  }
+
+  DidReceiveFrame();
 }
 
 }  // namespace cc

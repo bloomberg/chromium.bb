@@ -2422,6 +2422,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(autofill::switches::kEnableAccessorySuggestionView)
   },
 #endif  // defined(OS_ANDROID)
+  {
+    "enable-new-video-renderer",
+    IDS_FLAGS_ENABLE_NEW_VIDEO_RENDERER_NAME,
+    IDS_FLAGS_ENABLE_NEW_VIDEO_RENDERER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableNewVideoRenderer)
+  },
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
