@@ -1156,6 +1156,7 @@ Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t
 
 void LargeObjectHeap::freeLargeObjectPage(LargeObjectPage* object)
 {
+    ASAN_UNPOISON_MEMORY_REGION(object->payload(), object->payloadSize());
     object->heapObjectHeader()->finalize(object->payload(), object->payloadSize());
     Heap::decreaseAllocatedSpace(object->size());
 
