@@ -402,6 +402,7 @@
           ],
         },
         {
+          # GN version: //chrome:chrome_version_resources
           'target_name': 'chrome_version_resources',
           'type': 'none',
           'variables': {

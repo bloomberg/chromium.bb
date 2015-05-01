@@ -2514,7 +2514,7 @@
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
             '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
           ],
           'link_settings': {

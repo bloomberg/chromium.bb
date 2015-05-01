@@ -20,7 +20,8 @@ TEST(LoggingInstallerTest, TestTruncate) {
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
-            base::WriteFile(temp_file, &test_data[0], test_data.size()));
+            base::WriteFile(temp_file, &test_data[0],
+                            static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
 
   int64 file_size = 0;
@@ -45,7 +46,8 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
-            base::WriteFile(temp_file, &test_data[0], test_data.size()));
+            base::WriteFile(temp_file, &test_data[0],
+                            static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
 
   int64 file_size = 0;
@@ -67,7 +69,8 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
-            base::WriteFile(temp_file, &test_data[0], test_data.size()));
+            base::WriteFile(temp_file, &test_data[0],
+                            static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
   int64 file_size = 0;
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
@@ -95,7 +98,8 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
 
   base::FilePath temp_file = temp_dir.path().Append(L"temp");
   EXPECT_EQ(test_data.size(),
-            base::WriteFile(temp_file, &test_data[0], test_data.size()));
+            base::WriteFile(temp_file, &test_data[0],
+                            static_cast<int>(test_data.size())));
   ASSERT_TRUE(base::PathExists(temp_file));
   int64 file_size = 0;
   EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));

@@ -8,7 +8,7 @@ assert(is_win)
 
 executable("app_installer") {
   sources = [
-    "/win/app_installer_main.cc"
+    "win/app_installer_main.cc",
   ]
 
   configs -= [ "//build/config/win:console" ]
