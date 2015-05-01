@@ -32,6 +32,7 @@
 #include "core/layout/LayoutMeter.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/MediaControlsPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -113,37 +114,32 @@ bool ThemePainter::paint(LayoutObject* o, const PaintInfo& paintInfo, const IntR
         return paintSliderThumb(o, paintInfo, r);
     case MediaEnterFullscreenButtonPart:
     case MediaExitFullscreenButtonPart:
-        return paintMediaFullscreenButton(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaFullscreenButton(o, paintInfo, r);
     case MediaPlayButtonPart:
-        return paintMediaPlayButton(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaPlayButton(o, paintInfo, r);
     case MediaOverlayPlayButtonPart:
-        return paintMediaOverlayPlayButton(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaOverlayPlayButton(o, paintInfo, r);
     case MediaMuteButtonPart:
-        return paintMediaMuteButton(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaMuteButton(o, paintInfo, r);
     case MediaToggleClosedCaptionsButtonPart:
-        return paintMediaToggleClosedCaptionsButton(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaToggleClosedCaptionsButton(o, paintInfo, r);
     case MediaSliderPart:
-        return paintMediaSliderTrack(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaSlider(o, paintInfo, r);
     case MediaSliderThumbPart:
-        return paintMediaSliderThumb(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaSliderThumb(o, paintInfo, r);
     case MediaVolumeSliderContainerPart:
-        return paintMediaVolumeSliderContainer(o, paintInfo, r);
+        return true;
     case MediaVolumeSliderPart:
-        return paintMediaVolumeSliderTrack(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaVolumeSlider(o, paintInfo, r);
     case MediaVolumeSliderThumbPart:
-        return paintMediaVolumeSliderThumb(o, paintInfo, r);
+        return MediaControlsPainter::paintMediaVolumeSliderThumb(o, paintInfo, r);
     case MediaFullScreenVolumeSliderPart:
-        return paintMediaFullScreenVolumeSliderTrack(o, paintInfo, r);
     case MediaFullScreenVolumeSliderThumbPart:
-        return paintMediaFullScreenVolumeSliderThumb(o, paintInfo, r);
     case MediaTimeRemainingPart:
-        return paintMediaTimeRemaining(o, paintInfo, r);
     case MediaCurrentTimePart:
-        return paintMediaCurrentTime(o, paintInfo, r);
     case MediaControlsBackgroundPart:
-        return paintMediaControlsBackground(o, paintInfo, r);
+        return true;
     case MediaCastOffButtonPart:
-        return paintMediaCastButton(o, paintInfo, r);
     case MediaOverlayCastOffButtonPart:
         return paintMediaCastButton(o, paintInfo, r);
     case MenulistButtonPart:

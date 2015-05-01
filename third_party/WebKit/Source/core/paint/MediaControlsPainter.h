@@ -28,8 +28,6 @@
 #ifndef MediaControlsPainter_h
 #define MediaControlsPainter_h
 
-#include "core/html/shadow/MediaControlElementTypes.h"
-
 namespace blink {
 
 struct PaintInfo;
@@ -40,7 +38,16 @@ class LayoutObject;
 
 class MediaControlsPainter {
 public:
-    static bool paintMediaControlsPart(MediaControlElementType, LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaMuteButton(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaPlayButton(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaToggleClosedCaptionsButton(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaSlider(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaVolumeSlider(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaFullscreenButton(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaOverlayPlayButton(LayoutObject*, const PaintInfo&, const IntRect&);
+    static bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&);
     static void adjustMediaSliderThumbSize(ComputedStyle&);
 };
 

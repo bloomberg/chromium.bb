@@ -64,23 +64,7 @@ protected:
     virtual bool paintSearchFieldCancelButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSearchFieldDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSearchFieldResultsDecoration(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-
-    virtual bool paintMediaFullscreenButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaOverlayPlayButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaMuteButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaVolumeSliderContainer(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaToggleClosedCaptionsButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; };
-    virtual bool paintMediaControlsBackground(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaCurrentTime(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaTimeRemaining(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaFullScreenVolumeSliderTrack(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintMediaFullScreenVolumeSliderThumb(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaCastButton(LayoutObject*, const PaintInfo&, const IntRect&) { return true; }
 
     bool paintUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);
     bool paintCheckboxUsingFallbackTheme(LayoutObject*, const PaintInfo&, const IntRect&);

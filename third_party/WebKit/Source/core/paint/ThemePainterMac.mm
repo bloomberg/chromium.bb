@@ -25,7 +25,6 @@
 #import "core/layout/LayoutProgress.h"
 #import "core/layout/LayoutThemeMac.h"
 #import "core/layout/LayoutView.h"
-#import "core/paint/MediaControlsPainter.h"
 #import "core/paint/PaintInfo.h"
 #import "platform/geometry/FloatRoundedRect.h"
 #import "platform/graphics/BitmapImage.h"
@@ -598,56 +597,6 @@ bool ThemePainterMac::paintSearchFieldResultsDecoration(LayoutObject* o, const P
     [[search searchButtonCell] drawWithFrame:unzoomedRect inView:m_layoutTheme.documentViewFor(o)];
     [[search searchButtonCell] setControlView:nil];
     return false;
-}
-
-bool ThemePainterMac::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaVolumeSliderContainer(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return true;
-}
-
-bool ThemePainterMac::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
-}
-
-bool ThemePainterMac::paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
 }
 
 } // namespace blink

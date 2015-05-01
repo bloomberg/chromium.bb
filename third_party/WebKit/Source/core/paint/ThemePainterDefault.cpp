@@ -428,54 +428,9 @@ bool ThemePainterDefault::paintSearchFieldResultsDecoration(LayoutObject* magnif
     return false;
 }
 
-bool ThemePainterDefault::paintMediaSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool ThemePainterDefault::paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-    return MediaControlsPainter::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
-}
-
-bool ThemePainterDefault::paintMediaVolumeSliderTrack(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
-}
-
-bool ThemePainterDefault::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
-}
-
-bool ThemePainterDefault::paintMediaToggleClosedCaptionsButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaShowClosedCaptionsButton, o, paintInfo, r);
-}
-
-bool ThemePainterDefault::paintMediaCastButton(LayoutObject* o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaCastOffButton, o, paintInfo, r);
-}
-
-bool ThemePainterDefault::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
-}
-
-bool ThemePainterDefault::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
-}
-
-bool ThemePainterDefault::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
-}
-
-bool ThemePainterDefault::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
-}
-
-bool ThemePainterDefault::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    return MediaControlsPainter::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
+    return MediaControlsPainter::paintMediaCastButton(object, paintInfo, rect);
 }
 
 } // namespace blink

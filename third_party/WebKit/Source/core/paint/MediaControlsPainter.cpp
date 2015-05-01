@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
+#include "core/html/shadow/MediaControlElementTypes.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/graphics/Gradient.h"
@@ -69,7 +70,7 @@ static bool paintMediaButton(GraphicsContext* context, const IntRect& rect, Imag
     return true;
 }
 
-static bool paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -96,7 +97,7 @@ static bool paintMediaMuteButton(LayoutObject* object, const PaintInfo& paintInf
     return paintMediaButton(paintInfo.context, rect, soundLevel3);
 }
 
-static bool paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -113,7 +114,7 @@ static bool paintMediaPlayButton(LayoutObject* object, const PaintInfo& paintInf
     return paintMediaButton(paintInfo.context, rect, image);
 }
 
-static bool paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaOverlayPlayButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -196,7 +197,7 @@ static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& 
 
 const int mediaSliderThumbWidth = 32;
 
-static bool paintMediaSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -256,7 +257,7 @@ static bool paintMediaSlider(LayoutObject* object, const PaintInfo& paintInfo, c
     return true;
 }
 
-static bool paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     if (!object->node())
         return false;
@@ -274,7 +275,7 @@ static bool paintMediaSliderThumb(LayoutObject* object, const PaintInfo& paintIn
 
 const int mediaVolumeSliderThumbWidth = 24;
 
-static bool paintMediaVolumeSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaVolumeSlider(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -311,7 +312,7 @@ static bool paintMediaVolumeSlider(LayoutObject* object, const PaintInfo& paintI
     return true;
 }
 
-static bool paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     if (!object->node())
         return false;
@@ -327,7 +328,7 @@ static bool paintMediaVolumeSliderThumb(LayoutObject* object, const PaintInfo& p
     return paintMediaButton(paintInfo.context, rect, mediaVolumeSliderThumb);
 }
 
-static bool paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -337,7 +338,7 @@ static bool paintMediaFullscreenButton(LayoutObject* object, const PaintInfo& pa
     return paintMediaButton(paintInfo.context, rect, mediaFullscreenButton);
 }
 
-static bool paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+bool MediaControlsPainter::paintMediaToggleClosedCaptionsButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -351,7 +352,8 @@ static bool paintMediaToggleClosedCaptionsButton(LayoutObject* object, const Pai
 
     return paintMediaButton(paintInfo.context, rect, mediaClosedCaptionButtonDisabled);
 }
-static bool paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
+
+bool MediaControlsPainter::paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     HTMLMediaElement* mediaElement = toParentMediaElement(object);
     if (!mediaElement)
@@ -375,49 +377,6 @@ static bool paintMediaCastButton(LayoutObject* object, const PaintInfo& paintInf
         ASSERT_NOT_REACHED();
         return false;
     }
-}
-
-bool MediaControlsPainter::paintMediaControlsPart(MediaControlElementType part, LayoutObject* object, const PaintInfo& paintInfo, const IntRect& rect)
-{
-    switch (part) {
-    case MediaMuteButton:
-    case MediaUnMuteButton:
-        return paintMediaMuteButton(object, paintInfo, rect);
-    case MediaPauseButton:
-    case MediaPlayButton:
-        return paintMediaPlayButton(object, paintInfo, rect);
-    case MediaShowClosedCaptionsButton:
-        return paintMediaToggleClosedCaptionsButton(object, paintInfo, rect);
-    case MediaSlider:
-        return paintMediaSlider(object, paintInfo, rect);
-    case MediaSliderThumb:
-        return paintMediaSliderThumb(object, paintInfo, rect);
-    case MediaVolumeSlider:
-        return paintMediaVolumeSlider(object, paintInfo, rect);
-    case MediaVolumeSliderThumb:
-        return paintMediaVolumeSliderThumb(object, paintInfo, rect);
-    case MediaEnterFullscreenButton:
-    case MediaExitFullscreenButton:
-        return paintMediaFullscreenButton(object, paintInfo, rect);
-    case MediaOverlayPlayButton:
-        return paintMediaOverlayPlayButton(object, paintInfo, rect);
-    case MediaCastOffButton:
-    case MediaCastOnButton:
-    case MediaOverlayCastOffButton:
-    case MediaOverlayCastOnButton:
-        return paintMediaCastButton(object, paintInfo, rect);
-    case MediaVolumeSliderContainer:
-    case MediaTimelineContainer:
-    case MediaCurrentTimeDisplay:
-    case MediaTimeRemainingDisplay:
-    case MediaControlsPanel:
-    case MediaHideClosedCaptionsButton:
-    case MediaFullScreenVolumeSlider:
-    case MediaFullScreenVolumeSliderThumb:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    return false;
 }
 
 const int mediaSliderThumbHeight = 24;
