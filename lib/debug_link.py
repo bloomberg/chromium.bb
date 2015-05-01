@@ -17,8 +17,8 @@ from chromite.lib import timeout_util
 _HOST_IP = '169.254.100.1'
 # TODO(thieule): Change debug link VID/PID to actual values once we have
 # working hardware (brbug.com/444).
-_VENDOR_ID = '0b95'
-_PRODUCT_ID = '7e2b'
+_VENDOR_ID = '13b1'
+_PRODUCT_ID = '0041'
 _PROPERTY_VENDOR_ID = 'ID_VENDOR_ID'
 _PROPERTY_PRODUCT_ID = 'ID_MODEL_ID'
 
