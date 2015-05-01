@@ -535,5 +535,9 @@ if (!is_android && !is_mac) {
   }
 } else {
   group("content_shell") {
+    testonly = true
+    deps = [
+      ":content_shell_lib",
+    ]
   }
 }
