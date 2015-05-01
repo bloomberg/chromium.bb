@@ -132,7 +132,12 @@ using namespace password_manager::mac::ui;
         [[PasswordItemListView alloc] initWithModel:model_]);
   }
   [view addSubview:contentView_];
-  DCHECK_GE(NSWidth([contentView_ frame]), NSWidth([titleLabel frame]));
+
+  // Wrap the title if necessary to match the width of the content view.
+  if (NSWidth([titleLabel frame]) > NSWidth([contentView_ frame])) {
+    [titleLabel setFrameSize:NSMakeSize(NSWidth([contentView_ frame]), 0)];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:titleLabel];
+  }
 
   // Done button.
   doneButton_.reset([[self addButton:l10n_util::GetNSString(IDS_DONE)
