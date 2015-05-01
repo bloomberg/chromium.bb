@@ -10,7 +10,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/V8Response.h"
-#include "core/dom/DOMException.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"

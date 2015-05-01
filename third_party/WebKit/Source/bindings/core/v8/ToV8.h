@@ -237,6 +237,16 @@ inline v8::Local<v8::Value> toV8(const Vector<std::pair<String, T>>& value, v8::
     return object;
 }
 
+// Only declare toV8(void*,...) for checking function overload mismatch.
+// This toV8(void*,...) should be never used. So we will find mismatch
+// because of "unresolved external symbol".
+// Without toV8(void*, ...), call to toV8 with T* will match with
+// toV8(bool, ...) if T is not a subclass of ScriptWrappable or if T is
+// declared but not defined (so it's not clear that T is a subclass of
+// ScriptWrappable).
+// This hack helps detect such unwanted implicit conversions from T* to bool.
+v8::Handle<v8::Value> toV8(void* value, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
 } // namespace blink
 
 #endif // ToV8_h

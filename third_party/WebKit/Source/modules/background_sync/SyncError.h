@@ -5,12 +5,12 @@
 #ifndef SyncError_h
 #define SyncError_h
 
+#include "core/dom/DOMException.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/background_sync/WebSyncError.h"
 
 namespace blink {
 
-class DOMException;
 class ScriptPromiseResolver;
 
 class SyncError {

@@ -5,12 +5,12 @@
 #ifndef PushError_h
 #define PushError_h
 
+#include "core/dom/DOMException.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/push_messaging/WebPushError.h"
 
 namespace blink {
 
-class DOMException;
 class ScriptPromiseResolver;
 
 class PushError {
