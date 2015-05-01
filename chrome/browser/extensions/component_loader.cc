@@ -503,6 +503,11 @@ void ComponentLoader::AddDefaultComponentExtensions(
   AddKeyboardApp();
 
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);
+
+#if defined(ENABLE_PLUGINS)
+  Add(pdf_extension_util::GetManifest(),
+      base::FilePath(FILE_PATH_LITERAL("pdf")));
+#endif
 }
 
 void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
@@ -639,13 +644,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
-
-#if defined(ENABLE_PLUGINS)
-  if (switches::OutOfProcessPdfEnabled()) {
-    Add(pdf_extension_util::GetManifest(),
-        base::FilePath(FILE_PATH_LITERAL("pdf")));
-  }
-#endif
 
   Add(IDR_CRYPTOTOKEN_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("cryptotoken")));
