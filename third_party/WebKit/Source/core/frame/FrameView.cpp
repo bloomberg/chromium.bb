@@ -811,24 +811,9 @@ static inline void layoutFromRootObject(LayoutObject& root)
     root.layout();
 }
 
-void FrameView::prepareLayoutAnalyzer()
-{
-    bool isTracing = false;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
-    if (!isTracing) {
-        m_analyzer.clear();
-        return;
-    }
-    if (!m_analyzer)
-        m_analyzer = adoptPtr(new LayoutAnalyzer());
-    m_analyzer->reset();
-}
-
 PassRefPtr<TracedValue> FrameView::analyzerCounters()
 {
-    if (!m_analyzer)
-        return TracedValue::create();
-    RefPtr<TracedValue> value = m_analyzer->toTracedValue();
+    RefPtr<TracedValue> value = layoutAnalyzer().toTracedValue();
     value->setString("host", layoutView()->document().location()->host());
     return value;
 }
@@ -840,7 +825,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
     ASSERT(inSubtreeLayout || m_layoutSubtreeRoots.isEmpty());
 
     TRACE_EVENT_BEGIN0(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout");
-    prepareLayoutAnalyzer();
+    layoutAnalyzer().reset();
 
     ScriptForbiddenScope forbidScript;
 
@@ -856,8 +841,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
     forceLayoutParentViewIfNeeded();
 
     if (inSubtreeLayout) {
-        if (m_analyzer)
-            m_analyzer->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
+        layoutAnalyzer().increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRoots.size());
         while (m_layoutSubtreeRoots.size()) {
             LayoutObject& root = *m_layoutSubtreeRoots.takeAny();
             if (!root.needsLayout())
@@ -878,8 +862,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
 
-    if (m_analyzer)
-        m_analyzer->recordCounters();
+    layoutAnalyzer().recordCounters();
     TRACE_EVENT_END1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
         "counters", analyzerCounters());
 }

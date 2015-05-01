@@ -381,8 +381,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
     if (isHTMLDialogElement(node()) && isOutOfFlowPositioned())
         positionDialog();
 
-    if (LayoutAnalyzer* analyzer = frameView()->layoutAnalyzer())
-        analyzer->increment((frameRect() == prevRect) ? LayoutAnalyzer::LayoutBlockRectangleDidNotChange : LayoutAnalyzer::LayoutBlockRectangleChanged);
+    frameView()->layoutAnalyzer().increment((frameRect() == prevRect) ? LayoutAnalyzer::LayoutBlockRectangleDidNotChange : LayoutAnalyzer::LayoutBlockRectangleChanged);
 
     clearNeedsLayout();
 }
