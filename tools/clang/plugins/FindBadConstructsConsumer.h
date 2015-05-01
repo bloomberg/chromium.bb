@@ -71,7 +71,6 @@ class FindBadConstructsConsumer
   static RefcountIssue CheckRecordForRefcountIssue(
       const clang::CXXRecordDecl* record,
       clang::SourceLocation& loc);
-  clang::DiagnosticsEngine::Level getErrorLevel();
   static bool IsRefCountedCallback(const clang::CXXBaseSpecifier* base,
                                    clang::CXXBasePath& path,
                                    void* user_data);
@@ -85,8 +84,6 @@ class FindBadConstructsConsumer
 
   void CheckWeakPtrFactoryMembers(clang::SourceLocation record_location,
                                   clang::CXXRecordDecl* record);
-
-  const Options options_;
 
   unsigned diag_method_requires_override_;
   unsigned diag_redundant_virtual_specifier_;

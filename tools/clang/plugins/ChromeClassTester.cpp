@@ -18,6 +18,7 @@
 #endif
 
 using namespace clang;
+using chrome_checker::Options;
 
 namespace {
 
@@ -30,8 +31,10 @@ bool ends_with(const std::string& one, const std::string& two) {
 
 }  // namespace
 
-ChromeClassTester::ChromeClassTester(CompilerInstance& instance)
-    : instance_(instance),
+ChromeClassTester::ChromeClassTester(CompilerInstance& instance,
+                                     const Options& options)
+    : options_(options),
+      instance_(instance),
       diagnostic_(instance.getDiagnostics()) {
   BuildBannedLists();
 }
@@ -95,16 +98,13 @@ void ChromeClassTester::emitWarning(SourceLocation loc,
   std::string err;
   err = "[chromium-style] ";
   err += raw_error;
-  // TODO(dcheng): Re-enable -Werror for these diagnostics on Windows once all
-  // the pre-existing warnings are cleaned up. https://crbug.com/467287
-  DiagnosticIDs::Level level =
-#if !defined(LLVM_ON_WIN32)
-      diagnostic().getWarningsAsErrors() ?
-      DiagnosticIDs::Error :
-#endif
-      DiagnosticIDs::Warning;
+
+  DiagnosticIDs::Level level = getErrorLevel() == DiagnosticsEngine::Error
+      ? DiagnosticIDs::Error : DiagnosticIDs::Warning;
+
   unsigned id = diagnostic().getDiagnosticIDs()->getCustomDiagID(level, err);
   DiagnosticBuilder builder = diagnostic().Report(full, id);
+
 }
 
 bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
@@ -310,4 +310,12 @@ bool ChromeClassTester::GetFilename(SourceLocation loc,
 
   *filename = ploc.getFilename();
   return true;
+}
+
+DiagnosticsEngine::Level ChromeClassTester::getErrorLevel() {
+  if (options_.warn_only)
+    return DiagnosticsEngine::Warning;
+
+  return diagnostic().getWarningsAsErrors() ? DiagnosticsEngine::Error
+                                            : DiagnosticsEngine::Warning;
 }

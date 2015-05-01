@@ -31,6 +31,16 @@ config("find_bad_constructs") {
       ]
     }
 
+    if (is_win) {
+      # Don't error on plugin warnings on Windows until pre-existing warnings
+      # are cleaned up.  https://crbug.com/467287
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-find-bad-constructs",
+        "-Xclang warn-only",
+      ]
+    }
+
     cflags += [
       "-Xclang",
       "-add-plugin",
