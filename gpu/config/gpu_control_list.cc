@@ -428,6 +428,20 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
+  const base::ListValue* disabled_extensions;
+  if (value->GetList("disabled_extensions", &disabled_extensions)) {
+    for (size_t i = 0; i < disabled_extensions->GetSize(); ++i) {
+      std::string disabled_extension;
+      if (disabled_extensions->GetString(i, &disabled_extension)) {
+        entry->disabled_extensions_.push_back(disabled_extension);
+      } else {
+        LOG(WARNING) << "Malformed disabled_extensions entry " << entry->id();
+        return NULL;
+      }
+    }
+    dictionary_entry_count++;
+  }
+
   const base::DictionaryValue* os_value = NULL;
   if (value->GetDictionary("os", &os_value)) {
     std::string os_type;
@@ -1418,6 +1432,21 @@ void GpuControlList::GetDecisionEntries(
     if (disabled == active_entries_[i]->disabled())
       entry_ids->push_back(active_entries_[i]->id());
   }
+}
+
+std::vector<std::string> GpuControlList::GetDisabledExtensions() {
+  std::set<std::string> disabled_extensions;
+  for (size_t i = 0; i < active_entries_.size(); ++i) {
+    GpuControlListEntry* entry = active_entries_[i].get();
+
+    if (entry->disabled())
+      continue;
+
+    disabled_extensions.insert(entry->disabled_extensions().begin(),
+                               entry->disabled_extensions().end());
+  }
+  return std::vector<std::string>(disabled_extensions.begin(),
+                                  disabled_extensions.end());
 }
 
 void GpuControlList::GetReasons(base::ListValue* problem_list,

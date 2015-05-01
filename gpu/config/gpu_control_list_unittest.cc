@@ -581,5 +581,49 @@ TEST_F(GpuControlListTest, AMDSwitchable) {
   }
 }
 
-}  // namespace gpu
+TEST_F(GpuControlListTest, DisabledExtensionTest) {
+  // exact setting.
+  const std::string exact_list_json = LONG_STRING_CONST(
+      {
+        "name": "gpu control list",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "os": {
+              "type": "win"
+            },
+            "disabled_extensions": [
+              "test_extension2",
+              "test_extension1"
+            ]
+          },
+          {
+            "id": 2,
+              "os": {
+                "type": "win"
+              },
+            "disabled_extensions": [
+              "test_extension3",
+              "test_extension2"
+            ]
+          }
+        ]
+      }
+  );
+  scoped_ptr<GpuControlList> control_list(Create());
 
+  EXPECT_TRUE(control_list->LoadList(exact_list_json, GpuControlList::kAllOs));
+  GPUInfo gpu_info;
+  control_list->MakeDecision(GpuControlList::kOsWin, kOsVersion, gpu_info);
+
+  std::vector<std::string> disabled_extensions =
+      control_list->GetDisabledExtensions();
+
+  ASSERT_EQ(3u, disabled_extensions.size());
+  ASSERT_STREQ("test_extension1", disabled_extensions[0].c_str());
+  ASSERT_STREQ("test_extension2", disabled_extensions[1].c_str());
+  ASSERT_STREQ("test_extension3", disabled_extensions[2].c_str());
+}
+
+}  // namespace gpu

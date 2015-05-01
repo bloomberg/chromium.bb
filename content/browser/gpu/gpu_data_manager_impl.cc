@@ -132,6 +132,12 @@ bool GpuDataManagerImpl::CanUseGpuBrowserCompositor() const {
   return private_->CanUseGpuBrowserCompositor();
 }
 
+void GpuDataManagerImpl::GetDisabledExtensions(
+    std::string* disabled_extensions) const {
+  base::AutoLock auto_lock(lock_);
+  private_->GetDisabledExtensions(disabled_extensions);
+}
+
 void GpuDataManagerImpl::Initialize() {
   base::AutoLock auto_lock(lock_);
   private_->Initialize();

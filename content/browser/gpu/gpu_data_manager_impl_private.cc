@@ -562,6 +562,9 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
   if (gpu_driver_bug_list_) {
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
         gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
+
+    disabled_extensions_ =
+        JoinString(gpu_driver_bug_list_->GetDisabledExtensions(), ' ');
   }
   gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
       &gpu_driver_bugs_, *base::CommandLine::ForCurrentProcess());
@@ -874,6 +877,13 @@ bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
     return false;
   return true;
+}
+
+void GpuDataManagerImplPrivate::GetDisabledExtensions(
+    std::string* disabled_extensions) const {
+  DCHECK(disabled_extensions);
+
+  *disabled_extensions = disabled_extensions_;
 }
 
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(

@@ -87,6 +87,10 @@ TEST_F(GpuControlListEntryTest, DetailedEntry) {
         },
         "features": [
           "test_feature_0"
+        ],
+        "disabled_extensions": [
+          "test_extension1",
+          "test_extension2"
         ]
       }
   );
@@ -107,6 +111,8 @@ TEST_F(GpuControlListEntryTest, DetailedEntry) {
   EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info()));
   EXPECT_TRUE(entry->Contains(
       GpuControlList::kOsMacosx, "10.6.4", gpu_info()));
+  EXPECT_STREQ("test_extension1", entry->disabled_extensions()[0].c_str());
+  EXPECT_STREQ("test_extension2", entry->disabled_extensions()[1].c_str());
 }
 
 TEST_F(GpuControlListEntryTest, VendorOnAllOsEntry) {

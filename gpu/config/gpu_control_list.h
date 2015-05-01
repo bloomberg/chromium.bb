@@ -61,6 +61,9 @@ class GPU_EXPORT GpuControlList {
   void GetDecisionEntries(std::vector<uint32>* entry_ids,
                           bool disabled) const;
 
+  // Collects all disabled extensions.
+  std::vector<std::string> GetDisabledExtensions();
+
   // Returns the description and bugs from active entries from the last
   // MakeDecision() call.
   //
@@ -283,6 +286,9 @@ class GPU_EXPORT GpuControlList {
     // Returns a list of Chromium and Webkit bugs applicable to this entry
     const std::vector<int>& cr_bugs() const { return cr_bugs_; }
     const std::vector<int>& webkit_bugs() const { return webkit_bugs_; }
+    const std::vector<std::string>& disabled_extensions() const {
+      return disabled_extensions_;
+    }
 
     // Returns the blacklisted features in this entry.
     const std::set<int>& features() const;
@@ -427,6 +433,7 @@ class GPU_EXPORT GpuControlList {
     std::string description_;
     std::vector<int> cr_bugs_;
     std::vector<int> webkit_bugs_;
+    std::vector<std::string> disabled_extensions_;
     scoped_ptr<OsInfo> os_info_;
     uint32 vendor_id_;
     std::vector<uint32> device_id_list_;

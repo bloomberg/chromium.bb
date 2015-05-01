@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.27",
+  "version": "8.00",
   "entries": [
     {
       "id": 1,
@@ -258,6 +258,9 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_vendor": "Qualcomm.*",
       "features": [
         "disable_depth_texture"
+      ],
+      "disabled_extensions": [
+        "GL_OES_depth_texture"
       ]
     },
     {
@@ -1228,6 +1231,9 @@ LONG_STRING_CONST(
       "gl_renderer": "PowerVR SGX 544",
       "features": [
         "disable_ext_occlusion_query"
+      ],
+      "disabled_extensions": [
+        "EXT_occlusion_query_boolean"
       ]
     },
     {

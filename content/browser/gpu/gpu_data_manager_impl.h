@@ -89,6 +89,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
                     std::string* gl_version) override;
   void DisableHardwareAcceleration() override;
   bool CanUseGpuBrowserCompositor() const override;
+  void GetDisabledExtensions(std::string* disabled_extensions) const override;
 
   // This collects preliminary GPU info, load GpuBlacklist, and compute the
   // preliminary blacklisted features; it should only be called at browser

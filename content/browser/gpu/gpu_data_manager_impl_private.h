@@ -90,6 +90,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool CanUseGpuBrowserCompositor() const;
 
+  void GetDisabledExtensions(std::string* disabled_extensions) const;
+
   void BlockDomainFrom3DAPIs(
       const GURL& url, GpuDataManagerImpl::DomainGuilt guilt);
   bool Are3DAPIsBlocked(const GURL& url,
@@ -269,6 +271,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   // True if all future Initialize calls should be ignored.
   bool finalized_;
+
+  std::string disabled_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

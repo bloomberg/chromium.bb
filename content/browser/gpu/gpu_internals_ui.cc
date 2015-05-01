@@ -144,6 +144,10 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   }
 #endif
 
+  std::string disabled_extensions;
+  GpuDataManagerImpl::GetInstance()->GetDisabledExtensions(
+      &disabled_extensions);
+
   basic_info->Append(
       NewDescriptionValuePair("Driver vendor", gpu_info.driver_vendor));
   basic_info->Append(NewDescriptionValuePair("Driver version",
@@ -168,6 +172,8 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.gl_version));
   basic_info->Append(NewDescriptionValuePair("GL_EXTENSIONS",
                                              gpu_info.gl_extensions));
+  basic_info->Append(NewDescriptionValuePair("Disabled Extensions",
+                                             disabled_extensions));
   basic_info->Append(NewDescriptionValuePair("Window system binding vendor",
                                              gpu_info.gl_ws_vendor));
   basic_info->Append(NewDescriptionValuePair("Window system binding version",

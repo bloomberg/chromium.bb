@@ -59,6 +59,8 @@
 //     This can not be used in exceptions.
 // 25. "direct_rendering" is a boolean. If present, this will filter on whether
 //     the GL contexts are direct or indirect based on the value.
+// 26. "disabled_extensions" is a list of strings which contain the GL_EXTENSION
+//     strings which are disabled by the workaround.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"

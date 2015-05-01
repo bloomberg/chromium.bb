@@ -110,6 +110,10 @@ class GpuDataManager {
   // Whether the browser compositor can be used.
   virtual bool CanUseGpuBrowserCompositor() const = 0;
 
+  // Extensions that are currently disabled.
+  virtual void GetDisabledExtensions(
+      std::string* disabled_extensions) const = 0;
+
  protected:
   virtual ~GpuDataManager() {}
 };
