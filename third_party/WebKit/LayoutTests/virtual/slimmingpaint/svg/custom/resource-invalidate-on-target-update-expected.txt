@@ -1,0 +1,28 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [120, 10, 110, 350],
+        [120, 10, 110, 350],
+        [10, 130, 200, 100],
+        [10, 130, 100, 100],
+        [10, 10, 200, 100],
+        [10, 10, 100, 100],
+        [0, 240, 230, 120],
+        [0, 240, 120, 120]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g id='box'",
+        "LayoutSVGRect rect id='rect1'",
+        "LayoutSVGRect rect id='rect2'",
+        "LayoutSVGRect rect id='rect3'"
+      ]
+    }
+  ]
+}
+

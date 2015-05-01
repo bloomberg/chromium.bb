@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 100, 800, 100],
+        [0, 100, 800, 100],
+        [0, 100, 800, 100],
+        [0, 100, 800, 100],
+        [0, 0, 800, 300]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg id='svg-root'",
+        "LayoutSVGContainer g id='content'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect",
+        "LayoutSVGResourceMasker mask id='dynMask'",
+        "LayoutSVGRect rect"
+      ]
+    }
+  ]
+}
+

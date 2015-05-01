@@ -1,0 +1,30 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [334, 42, 466, 170],
+        [334, 42, 466, 170],
+        [334, 42, 466, 170],
+        [16, 42, 784, 170],
+        [16, 42, 318, 170],
+        [0, 0, 334, 500]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Clipped. INVISIBLE.'",
+        "LayoutSVGRoot svg id='svg-root'",
+        "LayoutSVGContainer g id='content'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Clipped. INVISIBLE.'",
+        "LayoutSVGResourceClipper clipPath id='dynClip'",
+        "LayoutSVGPath path"
+      ]
+    }
+  ]
+}
+

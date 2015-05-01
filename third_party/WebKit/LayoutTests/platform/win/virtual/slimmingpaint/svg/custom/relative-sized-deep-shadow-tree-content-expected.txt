@@ -1,0 +1,40 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [209, 269, 200, 200],
+        [209, 269, 200, 200],
+        [209, 269, 200, 200],
+        [209, 269, 200, 200],
+        [109, 169, 200, 200],
+        [109, 169, 200, 200],
+        [59, 269, 50, 200],
+        [59, 269, 50, 200],
+        [59, 269, 50, 200],
+        [59, 269, 50, 200],
+        [59, 169, 150, 200],
+        [34, 169, 50, 200],
+        [34, 169, 50, 200],
+        [8, 68, 402, 404],
+        [8, 68, 102, 404]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "LayoutBlockFlow div id='contentBox'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGRect rect id='targetRect'",
+        "LayoutSVGContainer use id='targetUse'",
+        "LayoutSVGRect rect id='targetRect'",
+        "LayoutSVGContainer use",
+        "LayoutSVGContainer g id='targetUse'",
+        "LayoutSVGRect rect id='targetRect'"
+      ]
+    }
+  ]
+}
+

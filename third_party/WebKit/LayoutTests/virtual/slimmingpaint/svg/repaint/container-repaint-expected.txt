@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 100, 100, 50],
+        [0, 100, 100, 50],
+        [0, 50, 100, 50],
+        [0, 50, 100, 50]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGViewportContainer svg id='mover'",
+        "LayoutSVGRect rect"
+      ]
+    }
+  ]
+}
+
