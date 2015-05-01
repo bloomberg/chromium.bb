@@ -254,8 +254,7 @@ hookNames = ['click', 'dblclick', 'drag', 'dragend', 'dragenter',
 for (var i = 0; i < hookNames.length; i++) {
   domExpectedActivity.push('blinkAddEventListener BODY ' + hookNames[i]);
   domExpectedActivity.push('blinkAddEventListener #document ' + hookNames[i]);
-  domExpectedActivity.push('blinkAddEventListener LocalDOMWindow ' +
-                           hookNames[i]);
+  domExpectedActivity.push('blinkAddEventListener DOMWindow ' + hookNames[i]);
 }
 
 // Close the tab.
@@ -526,17 +525,4 @@ function setupTestCasesAndRun() {
   });
 }
 
-// Temporarily disable this unittest in order to rename
-// blink::EventTargetNames::LocalDOMWindow to
-// blink::EventTargetNames::DOMWindow.
-// see http://crrev.com/1086663003 and http://crrev.com/1088943008
-//
-// The plan is
-// 1) Disable the test temporarily.
-// 2) Rename LocalDOMWindow to DOMWindow in blink.
-// 3) Rename LocalDOMWindow to DOMWindow in this test and enable the test.
-//
-// TODO(yukishiino): Enable this test.
-//
-// setupTestCasesAndRun();
-chrome.test.runTests([]);
+setupTestCasesAndRun();
