@@ -7,6 +7,9 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
+#include "skia/ext/image_operations.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace favicon {
 
@@ -39,38 +42,66 @@ base::CancelableTaskTracker::TaskId
       tracker);
 }
 
+bool LargeIconService::ResizeLargeIconIfValid(
+    int desired_size_in_pixel,
+    const favicon_base::FaviconRawBitmapResult& bitmap_result,
+    favicon_base::FaviconRawBitmapResult* resized_bitmap_result) {
+  // Require bitmap to be valid and square.
+  if (!bitmap_result.is_valid() ||
+      bitmap_result.pixel_size.width() != bitmap_result.pixel_size.height())
+    return false;
+
+  // Require bitmap to be large enough. It's square, so just check width.
+  if (bitmap_result.pixel_size.width() < desired_size_in_pixel) {
+    // TODO(beaudoin): Potentially relax this, and allow icon to be scaled up.
+    return false;
+  }
+
+  *resized_bitmap_result = bitmap_result;
+
+  // Special case: Can use |resized_bitmap_result| as is.
+  if (bitmap_result.pixel_size.width() == desired_size_in_pixel)
+    return true;
+
+  // Resize bitmap: decode PNG, resize, and re-encode PNG.
+  SkBitmap decoded_bitmap;
+  if (!gfx::PNGCodec::Decode(bitmap_result.bitmap_data->front(),
+          bitmap_result.bitmap_data->size(), &decoded_bitmap))
+    return false;
+
+  SkBitmap resized_bitmap = skia::ImageOperations::Resize(
+      decoded_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+      desired_size_in_pixel, desired_size_in_pixel);
+
+  std::vector<unsigned char> bitmap_data;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(resized_bitmap, false, &bitmap_data))
+    return false;
+
+  resized_bitmap_result->pixel_size =
+      gfx::Size(desired_size_in_pixel, desired_size_in_pixel);
+  resized_bitmap_result->bitmap_data =
+      base::RefCountedBytes::TakeVector(&bitmap_data);
+  return true;
+}
+
 void LargeIconService::RunLargeIconCallback(
     const favicon_base::LargeIconCallback& callback,
     int desired_size_in_pixel,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  // If there are no bitmaps, return a result with an empty |bitmap| and a
-  // default |fallback_icon_style|.
-  if (!bitmap_result.is_valid()) {
-    callback.Run(
-        favicon_base::LargeIconResult(new favicon_base::FallbackIconStyle()));
+  favicon_base::FaviconRawBitmapResult resized_bitmap_result;
+  if (ResizeLargeIconIfValid(desired_size_in_pixel, bitmap_result,
+                             &resized_bitmap_result)) {
+    callback.Run(favicon_base::LargeIconResult(resized_bitmap_result));
     return;
   }
 
-  // If there is a bitmap but it's smaller than the requested size or
-  // non-square, compute its dominant color and use it as background in
-  // |fallback_icon_style|.
-  if (bitmap_result.pixel_size.width() < desired_size_in_pixel ||
-      bitmap_result.pixel_size.height() < desired_size_in_pixel ||
-      bitmap_result.pixel_size.width() != bitmap_result.pixel_size.height()) {
-    // TODO(beaudoin): Resize the icon if it's large enough. Alternatively,
-    // return it and let the HTML resize it.
-    favicon_base::LargeIconResult result(new favicon_base::FallbackIconStyle());
+  // Failed to resize |bitmap_result|, so compute fallback icon style.
+  favicon_base::LargeIconResult result(new favicon_base::FallbackIconStyle());
+  if (bitmap_result.is_valid()) {
     favicon_base::SetDominantColorAsBackground(
         bitmap_result.bitmap_data, result.fallback_icon_style.get());
-    callback.Run(result);
-    return;
   }
-
-  // The bitmap is square and at least as large as the requested one, return
-  // it.
-  // TODO(beaudoin): Resize the icon if it's too large. Alternatively, return
-  // it and let the HTML resize it.
-  callback.Run(favicon_base::LargeIconResult(bitmap_result));
+  callback.Run(result);
 }
 
 }  // namespace favicon

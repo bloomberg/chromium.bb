@@ -42,9 +42,17 @@ class LargeIconService : public KeyedService {
     base::CancelableTaskTracker* tracker);
 
  private:
-  // Intermediate callback for GetLargeIconOrFallbackStyle(). Ensures the large
-  // icon is at least the desired size, if not compute the icon fallback style
-  // and use it to invoke |callback|.
+  // Resizes |bitmap_result| to |desired_size_in_pixel|x|desired_size_in_pixel|.
+  // Stores the resized bitmap data in |resized_bitmap_result| and returns true
+  // if successful.
+  bool ResizeLargeIconIfValid(
+      int desired_size_in_pixel,
+      const favicon_base::FaviconRawBitmapResult& bitmap_result,
+      favicon_base::FaviconRawBitmapResult* resized_bitmap_result);
+
+  // Intermediate callback for GetLargeIconOrFallbackStyle(). Tries to resize
+  // |bitmap_result| and pass the output to |callback|. If that does not work,
+  // computes the icon fallback style and uses it to invoke |callback|.
   void RunLargeIconCallback(
       const favicon_base::LargeIconCallback& callback,
       int desired_size_in_pixel,
