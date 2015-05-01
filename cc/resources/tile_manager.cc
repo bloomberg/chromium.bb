@@ -102,11 +102,6 @@ class RasterTaskImpl : public RasterTask {
 
     raster_source->PerformSolidColorAnalysis(content_rect_, contents_scale_,
                                              &analysis_);
-
-    // Record the solid color prediction.
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
-                          analysis_.is_solid_color);
-
     // Clear the flag if we're not using the estimator.
     analysis_.is_solid_color &= kUseColorEstimator;
   }
