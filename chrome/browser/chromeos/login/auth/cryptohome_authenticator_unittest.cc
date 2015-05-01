@@ -45,7 +45,6 @@
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "crypto/nss_key_util.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
@@ -119,11 +118,11 @@ std::vector<uint8> GetOwnerPublicKey() {
                             kOwnerPublicKey + arraysize(kOwnerPublicKey));
 }
 
-bool CreateOwnerKeyInSlot(PK11SlotInfo* slot) {
+scoped_ptr<crypto::RSAPrivateKey> CreateOwnerKeyInSlot(PK11SlotInfo* slot) {
   const std::vector<uint8> key(kOwnerPrivateKey,
                                kOwnerPrivateKey + arraysize(kOwnerPrivateKey));
-  return crypto::ImportNSSKeyFromPrivateKeyInfo(slot, key,
-                                                true /* permanent */);
+  return make_scoped_ptr(
+      crypto::RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(slot, key));
 }
 
 }  // namespace
@@ -473,7 +472,7 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededSuccess) {
 
   crypto::ScopedPK11Slot user_slot(
       crypto::GetPublicSlotForChromeOSUser(user_context_.GetUserIDHash()));
-  ASSERT_TRUE(CreateOwnerKeyInSlot(user_slot.get()));
+  CreateOwnerKeyInSlot(user_slot.get());
 
   profile_manager_.reset(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));

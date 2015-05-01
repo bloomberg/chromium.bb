@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 
 #include <cryptohi.h>
-#include <keyhi.h>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -23,8 +22,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "crypto/nss_key_util.h"
 #include "crypto/nss_util_internal.h"
+#include "crypto/rsa_private_key.h"
 #include "crypto/scoped_nss_types.h"
 
 namespace {
@@ -58,7 +57,7 @@ void GetSystemSlotOnIOThread(
 // Checks if a private RSA key associated with |public_key| can be found in
 // |slot|.
 // Must be called on a worker thread.
-crypto::ScopedSECKEYPrivateKey GetPrivateKeyOnWorkerThread(
+scoped_ptr<crypto::RSAPrivateKey> GetPrivateKeyOnWorkerThread(
     PK11SlotInfo* slot,
     const std::string& public_key) {
   const uint8* public_key_uint8 =
@@ -66,10 +65,10 @@ crypto::ScopedSECKEYPrivateKey GetPrivateKeyOnWorkerThread(
   std::vector<uint8> public_key_vector(
       public_key_uint8, public_key_uint8 + public_key.size());
 
-  crypto::ScopedSECKEYPrivateKey rsa_key(
-      crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_vector, slot));
-  if (!rsa_key || SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey)
-    return nullptr;
+  scoped_ptr<crypto::RSAPrivateKey> rsa_key(
+      crypto::RSAPrivateKey::FindFromPublicKeyInfo(public_key_vector));
+  if (!rsa_key || rsa_key->key()->pkcs11Slot != slot)
+    return scoped_ptr<crypto::RSAPrivateKey>();
   return rsa_key.Pass();
 }
 
@@ -82,7 +81,7 @@ void SignDataOnWorkerThread(
     const std::string& data,
     const scoped_refptr<base::SingleThreadTaskRunner>& response_task_runner,
     const base::Callback<void(const std::string&)>& callback) {
-  crypto::ScopedSECKEYPrivateKey private_key(
+  scoped_ptr<crypto::RSAPrivateKey> private_key(
       GetPrivateKeyOnWorkerThread(slot.get(), public_key));
   if (!private_key) {
     LOG(ERROR) << "Private key for signing data not found";
@@ -94,7 +93,8 @@ void SignDataOnWorkerThread(
   crypto::ScopedSECItem sign_result(SECITEM_AllocItem(NULL, NULL, 0));
   if (SEC_SignData(sign_result.get(),
                    reinterpret_cast<const unsigned char*>(data.data()),
-                   data.size(), private_key.get(),
+                   data.size(),
+                   private_key->key(),
                    SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION) != SECSuccess) {
     LOG(ERROR) << "Failed to sign data";
     response_task_runner->PostTask(FROM_HERE,
@@ -123,20 +123,17 @@ void CreateTpmKeyPairOnWorkerThread(
     return;
   }
 
-  crypto::ScopedSECKEYPublicKey public_key_obj;
-  crypto::ScopedSECKEYPrivateKey private_key_obj;
-  if (!crypto::GenerateRSAKeyPairNSS(slot.get(), kKeyModulusLength,
-                                     true /* permanent */, &public_key_obj,
-                                     &private_key_obj)) {
+  scoped_ptr<crypto::RSAPrivateKey> rsa_key(
+      crypto::RSAPrivateKey::CreateSensitive(slot.get(), kKeyModulusLength));
+  if (!rsa_key) {
     LOG(ERROR) << "Failed to create an RSA key.";
     response_task_runner->PostTask(FROM_HERE,
                                    base::Bind(callback, std::string()));
     return;
   }
 
-  crypto::ScopedSECItem public_key_der(
-      SECKEY_EncodeDERSubjectPublicKeyInfo(public_key_obj.get()));
-  if (!public_key_der) {
+  std::vector<uint8> created_public_key;
+  if (!rsa_key->ExportPublicKey(&created_public_key)) {
     LOG(ERROR) << "Failed to export public key.";
     response_task_runner->PostTask(FROM_HERE,
                                    base::Bind(callback, std::string()));
@@ -144,9 +141,10 @@ void CreateTpmKeyPairOnWorkerThread(
   }
 
   response_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, std::string(reinterpret_cast<const char*>(
-                                                      public_key_der->data),
-                                                  public_key_der->len)));
+      FROM_HERE,
+      base::Bind(callback,
+                 std::string(created_public_key.begin(),
+                             created_public_key.end())));
 }
 
 }  // namespace
