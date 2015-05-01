@@ -30,18 +30,26 @@ uint64_t ReadUint64(const uint8_t* data) {
 // Note: ISO boxes use big-endian values.
 //
 // PSSH {
-//   uint32_t Size
-//   uint32_t Type
-//   uint64_t LargeSize  # Field is only present if value(Size) == 1.
-//   uint32_t VersionAndFlags
-//   uint8_t[16] SystemId
-//   uint32_t DataSize
-//   uint8_t[DataSize] Data
+//   uint32 Size
+//   uint32 Type
+//   uint64 LargeSize  # Field is only present if value(Size) == 1.
+//   uint8 Version
+//   uint24 Flags
+//   uint8[16] SystemId
+//   if (version > 0) {
+//     uint32 KID_count;
+//     uint8[16][KID_Count] KID;
+//   }
+//   uint32 DataSize
+//   uint8[DataSize] Data
 // }
 const int kBoxHeaderSize = 8;  // Box's header contains Size and Type.
 const int kBoxLargeSizeSize = 8;
 const int kPsshVersionFlagSize = 4;
+const uint32_t k24BitMask = 0x00ffffff;
 const int kPsshSystemIdSize = 16;
+const int kPsshKidCountSize = 4;
+const int kPsshKidSize = 16;
 const int kPsshDataSizeSize = 4;
 const uint32_t kTencType = 0x74656e63;
 const uint32_t kPsshType = 0x70737368;
@@ -103,10 +111,11 @@ bool GetPsshData(const std::vector<uint8_t>& data,
     if (box_end < cur + kPsshBoxMinimumSize)
       return false;
 
-    uint32_t version_and_flags = ReadUint32(cur);
+    uint8_t version = cur[0];
+    uint32_t flags = ReadUint32(cur) & k24BitMask;
     cur += kPsshVersionFlagSize;
     bytes_left -= kPsshVersionFlagSize;
-    if (version_and_flags != 0)
+    if (flags != 0)
       return false;
 
     DCHECK_GE(bytes_left, kPsshSystemIdSize);
@@ -120,6 +129,18 @@ bool GetPsshData(const std::vector<uint8_t>& data,
     cur += kPsshSystemIdSize;
     bytes_left -= kPsshSystemIdSize;
 
+    // If KeyIDs specified, skip them.
+    if (version > 0) {
+      DCHECK_GE(bytes_left, kPsshKidCountSize);
+      uint32_t kid_count = ReadUint32(cur);
+      cur += kPsshKidCountSize + kid_count * kPsshKidSize;
+      bytes_left -= kPsshKidCountSize + kid_count * kPsshKidSize;
+      // Must be bytes left in this box for data_size.
+      if (box_end < cur + kPsshDataSizeSize)
+        return false;
+    }
+
+    DCHECK_GE(bytes_left, kPsshDataSizeSize);
     uint32_t data_size = ReadUint32(cur);
     cur += kPsshDataSizeSize;
     bytes_left -= kPsshDataSizeSize;
