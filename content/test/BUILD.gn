@@ -571,6 +571,8 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
       # These flags are needed to run the test on Mac.
       # Search for comments about "xcode_settings" in chrome_tests.gypi.
       ldflags = [ "-Wl,-ObjC" ]
+
+      deps += [ "//third_party/ocmock" ]
     }
     if (is_chromeos) {
       sources -=
