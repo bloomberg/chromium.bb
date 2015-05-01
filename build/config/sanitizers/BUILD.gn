@@ -22,7 +22,10 @@ config("sanitizer_options_link_helper") {
 }
 
 source_set("options_sources") {
-  visibility = [ ":deps" ]
+  visibility = [
+    ":deps",
+    "//:gn_visibility",
+  ]
   sources = [
     "//build/sanitizers/sanitizer_options.cc",
   ]
