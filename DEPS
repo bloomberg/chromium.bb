@@ -82,7 +82,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
-  'google_toolbox_for_mac_revision': '17eee6933bb4a978bf045ef1b12fc68f15b08cd2', # from svn revision 703
+  'google_toolbox_for_mac_revision': 'ce47a231ea0b238fbe95538e86cc61d74c234be6', # from svn revision 705
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
