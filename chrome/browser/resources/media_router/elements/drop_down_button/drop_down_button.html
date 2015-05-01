@@ -2,7 +2,7 @@
 <polymer-element name="drop-down-button">
 <template>
   <link rel="stylesheet" href="drop_down_button.css">
-  <div id="drop-down" class="{{ {showing: iconShown} | tokenList}}"
+  <div id="drop-down" class="{{ {showing: useShownIcon_} | tokenList}}"
       on-click="{{onButtonClick}}">
   </div>
 </template>

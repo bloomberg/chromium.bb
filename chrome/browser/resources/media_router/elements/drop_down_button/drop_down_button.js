@@ -5,17 +5,19 @@
 // This Polymer element is used as a button to toggle a drop down, such as
 // the cast-mode-picker.
 Polymer('drop-down-button', {
-  created: function() {
-    /** @type {boolean} */
-    this.iconShown = false;
-  },
+  /**
+   * Whether or not to use the icon indicating that the drop down is shown.
+   * @private {boolean}
+   * @default false
+   */
+  useShownIcon_: false,
 
   /**
    * Fires a drop-down-button-click event. This is called when the element is
-   * clicked. Switches the value of |iconShown|.
+   * clicked. Switches the value of |useShownIcon_|.
    */
   onButtonClick: function() {
-    this.iconShown = !this.iconShown;
+    this.useShownIcon_ = !this.useShownIcon_;
     this.fire('drop-down-button-click');
   },
 });
