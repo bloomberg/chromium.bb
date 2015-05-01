@@ -18,10 +18,6 @@ button {
   background: linear-gradient(to top, rgb(254, 254, 254), rgb(222, 222, 222));
 }
 
-.device-name {
-  font-weight: bold;
-}
-
 hr {
   margin: 0;
 }

@@ -26,6 +26,17 @@ Polymer('route-details', {
     sink: null,
   },
 
+  observe: {
+    sink: 'updateActivityStatus',
+  },
+
+  /**
+   * The current casting activity status.
+   * @private {string}
+   * @default ''
+   */
+  activityStatus_: '',
+
   /**
    * Fires a back-click event. This is called when the back link is clicked.
    */
@@ -40,4 +51,12 @@ Polymer('route-details', {
   closeRoute: function() {
     this.fire('close-route-click', {route: this.route});
   },
+
+  /**
+   * Updates activityStatus_ with the name of the current sink.
+   */
+  updateActivityStatus: function() {
+    this.activityStatus_ = this.sink ?
+        loadTimeData.getStringF('castingActivityStatus', this.sink.name) : '';
+  }
 });
