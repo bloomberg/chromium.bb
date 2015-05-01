@@ -1545,6 +1545,114 @@ WebGLFramebuffer* WebGL2RenderingContextBase::getFramebufferBinding(GLenum targe
     return m_framebufferBinding.get();
 }
 
+bool WebGL2RenderingContextBase::validateGetFramebufferAttachmentParameterFunc(const char* functionName, GLenum target, GLenum attachment)
+{
+    if (!validateFramebufferTarget(target)) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+
+    WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
+    ASSERT(framebufferBinding || drawingBuffer());
+    if (!framebufferBinding) {
+    // for the default framebuffer
+        switch (attachment) {
+        case GL_BACK:
+        case GL_DEPTH:
+        case GL_STENCIL:
+            break;
+        default:
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid attachment");
+            return false;
+        }
+    } else {
+    // for the FBO
+        switch (attachment) {
+        case GL_COLOR_ATTACHMENT0:
+        case GL_DEPTH_ATTACHMENT:
+        case GL_STENCIL_ATTACHMENT:
+            break;
+        case GL_DEPTH_STENCIL_ATTACHMENT:
+            if (framebufferBinding->getAttachmentObject(GL_DEPTH_ATTACHMENT) != framebufferBinding->getAttachmentObject(GL_STENCIL_ATTACHMENT)) {
+                synthesizeGLError(GL_INVALID_OPERATION, functionName, "different objects are bound to the depth and stencil attachment points");
+                return false;
+            }
+            break;
+        default:
+            if (attachment > GL_COLOR_ATTACHMENT0
+                && attachment < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + maxColorAttachments()))
+                break;
+            synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid attachment");
+            return false;
+        }
+    }
+    return true;
+}
+
+ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(ScriptState* scriptState, GLenum target, GLenum attachment, GLenum pname)
+{
+    if (isContextLost() || !validateGetFramebufferAttachmentParameterFunc("getFramebufferAttachmentParameter", target, attachment))
+        return ScriptValue::createNull(scriptState);
+
+    WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
+    ASSERT(!framebufferBinding || framebufferBinding->object());
+
+    WebGLSharedObject* attachmentObject = framebufferBinding ? framebufferBinding->getAttachmentObject(attachment) : 0;
+    if (framebufferBinding && !attachmentObject) {
+        if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE)
+            return WebGLAny(scriptState, GL_NONE);
+        if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)
+            return WebGLAny(scriptState, 0);
+        synthesizeGLError(GL_INVALID_OPERATION, "getFramebufferAttachmentParameter", "invalid parameter name");
+        return ScriptValue::createNull(scriptState);
+    }
+
+    switch (pname) {
+    case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
+        if (!attachmentObject) {
+            ASSERT(!framebufferBinding);
+            return WebGLAny(scriptState, GL_FRAMEBUFFER_DEFAULT);
+        }
+        ASSERT(attachmentObject->isTexture() || attachmentObject->isRenderbuffer());
+        if (attachmentObject->isTexture())
+            return WebGLAny(scriptState, GL_TEXTURE);
+        if (attachmentObject->isRenderbuffer())
+            return WebGLAny(scriptState, GL_RENDERBUFFER);
+        break;
+    case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
+        if (!attachmentObject)
+            break;
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(attachmentObject));
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER:
+    case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
+        if (!attachmentObject || !attachmentObject->isTexture())
+            break;
+    case GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE:
+    case GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE:
+    case GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE:
+    case GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE:
+    case GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE:
+    case GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE:
+        {
+            GLint value = 0;
+            webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
+            return WebGLAny(scriptState, value);
+        }
+    case GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE:
+    case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING:
+        {
+            GLint value = 0;
+            webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
+            return WebGLAny(scriptState, static_cast<unsigned>(value));
+        }
+    default:
+        break;
+    }
+    synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name");
+    return ScriptValue::createNull(scriptState);
+}
+
 DEFINE_TRACE(WebGL2RenderingContextBase)
 {
     visitor->trace(m_readFramebufferBinding);

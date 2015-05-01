@@ -818,9 +818,9 @@ bool DrawingBuffer::multisample() const
     return m_multisampleMode != None;
 }
 
-void DrawingBuffer::bind()
+void DrawingBuffer::bind(GLenum target)
 {
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
+    m_context->bindFramebuffer(target, m_multisampleFBO ? m_multisampleFBO : m_fbo);
 }
 
 void DrawingBuffer::setPackAlignment(GLint param)

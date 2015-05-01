@@ -106,7 +106,7 @@ public:
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
     static IntSize adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize);
     bool reset(const IntSize&);
-    void bind();
+    void bind(GLenum target = GL_FRAMEBUFFER);
     IntSize size() const { return m_size; }
 
     // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound.

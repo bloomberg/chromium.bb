@@ -2305,8 +2305,8 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
         return ScriptValue::createNull(scriptState);
     }
 
-    WebGLSharedObject* object = m_framebufferBinding->getAttachmentObject(attachment);
-    if (!object) {
+    WebGLSharedObject* attachmentObject = m_framebufferBinding->getAttachmentObject(attachment);
+    if (!attachmentObject) {
         if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE)
             return WebGLAny(scriptState, GL_NONE);
         // OpenGL ES 2.0 specifies INVALID_ENUM in this case, while desktop GL
@@ -2315,13 +2315,13 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
         return ScriptValue::createNull(scriptState);
     }
 
-    ASSERT(object->isTexture() || object->isRenderbuffer());
-    if (object->isTexture()) {
+    ASSERT(attachmentObject->isTexture() || attachmentObject->isRenderbuffer());
+    if (attachmentObject->isTexture()) {
         switch (pname) {
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
             return WebGLAny(scriptState, GL_TEXTURE);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(object));
+            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(attachmentObject));
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
             {
@@ -2330,10 +2330,10 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
                 return WebGLAny(scriptState, value);
             }
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
-            if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher()) {
+            if (extensionEnabled(EXTsRGBName)) {
                 GLint value = 0;
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
-                return WebGLAny(scriptState, value);
+                return WebGLAny(scriptState, static_cast<unsigned>(value));
             }
             synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for renderbuffer attachment");
             return ScriptValue::createNull(scriptState);
@@ -2346,7 +2346,7 @@ ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptS
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
             return WebGLAny(scriptState, GL_RENDERBUFFER);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(object));
+            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(attachmentObject));
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
             if (extensionEnabled(EXTsRGBName) || isWebGL2OrHigher()) {
                 GLint value = 0;
@@ -6079,18 +6079,15 @@ void WebGLRenderingContextBase::setFramebuffer(GLenum target, WebGLFramebuffer* 
 
     if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER) {
         m_framebufferBinding = buffer;
-        drawingBuffer()->setFramebufferBinding(objectOrZero(m_framebufferBinding.get()));
-
-        if (!m_framebufferBinding) {
-            // Instead of binding fb 0, bind the drawing buffer.
-            drawingBuffer()->bind();
-        } else {
-            webContext()->bindFramebuffer(target, objectOrZero(buffer));
-        }
-
         applyStencilTest();
+    }
+    drawingBuffer()->setFramebufferBinding(objectOrZero(m_framebufferBinding.get()));
+
+    if (!buffer) {
+        // Instead of binding fb 0, bind the drawing buffer.
+        drawingBuffer()->bind(target);
     } else {
-        webContext()->bindFramebuffer(target, objectOrZero(buffer));
+        webContext()->bindFramebuffer(target, buffer->object());
     }
 }
 

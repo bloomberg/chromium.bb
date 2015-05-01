@@ -202,7 +202,7 @@ public:
     void getContextAttributes(Nullable<WebGLContextAttributes>&);
     GLenum getError();
     ScriptValue getExtension(ScriptState*, const String& name);
-    ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname);
+    virtual ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname);
     virtual ScriptValue getParameter(ScriptState*, GLenum pname);
     ScriptValue getProgramParameter(ScriptState*, WebGLProgram*, GLenum pname);
     String getProgramInfoLog(WebGLProgram*);

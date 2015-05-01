@@ -164,11 +164,16 @@ public:
     void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
     ScriptValue getParameter(ScriptState*, GLenum pname) override;
     ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;
+    ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
     WebGL2RenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);
+
+    // Helper function to validate target and the attachment combination for getFramebufferAttachmentParameters.
+    // Generate GL error and return false if parameters are illegal.
+    bool validateGetFramebufferAttachmentParameterFunc(const char* functionName, GLenum target, GLenum attachment);
 
     bool validateClearBuffer(const char* functionName, GLenum buffer, GLsizei length);
 
