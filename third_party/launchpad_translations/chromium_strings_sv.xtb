@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
+<translation id="2705212601509139398">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och ladda ned en kompatibel webbläsare.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
 <translation id="8586442755830160949">Upphovsrätt <ph name="YEAR"/> The Chromium Authors. Med ensamrätt.</translation>
 <translation id="6373523479360886564">Vill du avinstallera Chromium?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Den här datorn slutar snart att få uppdateringar för Chromium eftersom maskinvaran inte längre stöds.</translation>
 <translation id="5532301346661895910">Chromium sparar detta i dina |lösenord som Google sparat| och kommer ihåg det nästa gång du behöver det.</translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
+<translation id="421369550622382712">Upptäck fantastiska appar, spel, tillägg och teman för Chromium.</translation>
 <translation id="2732467638532545152">En gammal version av Microsoft Windows som inte kan behandla webbplatsens säkerhetscertifikat körs på datorn. På grund av detta kan inte Chromium avgöra om certifikatet kommer från <ph name="SITE"/> eller från någon i ditt nätverk som utger sig för att vara <ph name="SITE"/>. Uppdatera datorn till en nyare version av Windows.</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="6613594504749178791">Ändringarna tillämpas nästa gång du startar om Chromium.</translation>
@@ -119,6 +121,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Startprogrammet för appar i Chromium</translation>
 <translation id="5563479599352954471">Sök med en tryckning</translation>
+<translation id="3256316712990552818">Kopierat till Chromium</translation>
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Chromium OS.</translation>
@@ -128,6 +131,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2535480412977113886">Det gick inte att synkronisera data med Chromium eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="8697124171261953979">Det styr också vilken sida som visas när du startar Chromium eller söker i adressfältet.</translation>
 <translation id="894903460958736500">Programmet som körs på datorn är inte kompatibelt med Chromium.</translation>
+<translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
 <translation id="1774152462503052664">Låt Chromium köras i bakgrunden</translation>
 <translation id="9022552996538154597">Logga in i Chromium</translation>
 <translation id="4365115785552740256">Chromium finns tack vare projektet <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> med öppen källkod och <ph name="BEGIN_LINK_OSS"/>andra program med öppen källkod<ph name="END_LINK_OSS"/>.</translation>
@@ -161,6 +165,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
 <translation id="2648074677641340862">Ett operativsystemsfel inträffade under installationen. Ladda ned Chromium igen.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> har lagts till i Chromium.</translation>
+<translation id="7211828883345145708">Aktiverar ytterligare kortkommandon som är användbara vid felsökning av Chromium.</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Öppna
@@ -198,6 +203,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="130631256467250065">Dina ändringar börjar gälla nästa gång du startar om enheten.</translation>
 <translation id="3244477511402911926">Chromiums meddelandecenter</translation>
 <translation id="9197815481970649201">Du är nu inloggad i Chromium</translation>
+<translation id="7162152143154757523">Med Chromiums stavningskontroll skickas det du skriver i webbläsaren till Googles servrar så att du kan använda samma stavningsteknik som används i Googles webbsökning.</translation>
 <translation id="1929939181775079593">Chromium svarar inte. Vill du starta om?</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
 <translation id="2158734852934720349">Licenser för öppen källkod för Chromium OS</translation>
@@ -213,6 +219,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="811857857463334932">Den här datorn får inte längre uppdateringar för Chromium eftersom maskinvaran inte längre stöds.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="8453117565092476964">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Chromium igen.</translation>
+<translation id="2558641060352364164">På den här webbplatsen används pluginprogrammet Chromium Frame som snart slutar stödjas. Avinstallera det och uppgradera till en modern webbläsare.</translation>
 <translation id="3889543394854987837">Öppna Chromium genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="3130323860337406239">Chromium använder din mikrofon.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>

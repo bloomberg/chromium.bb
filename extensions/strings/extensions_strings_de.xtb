@@ -1,6 +1,7 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
 <translation id="4542520061254486227">Ihre Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen</translation>
 <translation id="3983586614702900908">Geräte von einem unbekannten Anbieter</translation>
+<translation id="730515362922783851">Daten mit einem beliebigen Gerät im lokalen Netzwerk oder Internet austauschen</translation>
 <translation id="3624204664103857160">Launcher-Seite &quot;<ph name="PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="8804398419035066391">Mit zusammenarbeitenden Websites kommunizieren</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (Erweiterungs-ID &quot;<ph name="EXTENSION_ID"/>&quot;) wurde vom Administrator blockiert.</translation>
@@ -12,22 +13,22 @@
 <translation id="1033780634303702874">Auf Ihre seriellen Geräte zugreifen</translation>
 <translation id="288042212351694283">Auf Ihre Universal 2nd Factor-Geräte zugreifen</translation>
 <translation id="4115165561519362854">Der Administrator dieses Geräts hat festgelegt, dass für <ph name="EXTENSION_NAME"/> mindestens Version <ph name="EXTENSION_VERSION"/> installiert sein muss. Die Erweiterung kann erst aktiviert werden, nachdem sie auf diese oder eine höhere Version aktualisiert wurde.</translation>
+<translation id="6075907793831890935">Daten mit dem Gerät mit dem Namen &quot;<ph name="HOSTNAME"/>&quot; austauschen</translation>
 <translation id="5971037678316050792">Bluetooth-Adapterstatus und -Pairing steuern</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Auf Informationen zu Bluetooth-Geräten mit Pairing mit Ihrem System zugreifen und Bluetooth-Geräte in der Nähe finden</translation>
 <translation id="8749863574775030885">Auf USB-Geräte von einem unbekannten Anbieter zugreifen</translation>
-<translation id="5911798608827489036">Daten mit einem beliebigen Computer im lokalen Netz oder Internet austauschen</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> von <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Hintergrundskript &quot;<ph name="BACKGROUND_SCRIPT"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Nachrichten an Bluetooth-Geräte senden und von diesen erhalten</translation>
 <translation id="5678955352098267522">Ihre Daten auf <ph name="WEBSITE_1"/> lesen</translation>
-<translation id="8597109877291678953">Daten mit dem Computer mit dem Namen <ph name="HOSTNAME"/> austauschen</translation>
 <translation id="5456409301717116725">Die Erweiterung enthält die Schlüsseldatei &quot;<ph name="KEY_PATH"/>&quot;. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
 <translation id="7257666756905341374">Daten lesen, die Sie kopieren und einfügen</translation>
 <translation id="2350172092385603347">Lokalisierung wurde verwendet, in der Manifest-Datei war jedoch kein Wert für &quot;default_locale&quot; angegeben.</translation>
 <translation id="3759933321830434300">Teile von Webseiten blockieren</translation>
 <translation id="6143635259298204954">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
+<translation id="8712265948125780616">Erweiterungsentpacker</translation>
 <translation id="149347756975725155">Erweiterungssymbol &quot;<ph name="ICON"/>&quot; kann nicht geladen werden.</translation>
 <translation id="8825366169884721447">Die Erweiterung konnte den Anfrage-Header &quot;<ph name="HEADER_NAME"/>&quot; einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME"/>) verursacht.</translation>
 <translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
@@ -39,16 +40,14 @@
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="7039326228527141150">Auf USB-Geräte von <ph name="VENDOR_NAME"/> zugreifen</translation>
 <translation id="2616366145935564096">Eigene Daten auf <ph name="WEBSITE_1"/> lesen und ändern</translation>
-<translation id="2518849872271000461">Daten mit den Computern mit folgenden Namen austauschen: <ph name="HOSTNAMES"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Auf Dokumentenscanner zugreifen, die per USB angeschlossen sind oder sich im lokalen Netzwerk befinden</translation>
 <translation id="6408118934673775994">Eigene Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/> lesen und ändern</translation>
-<translation id="961805664415579088">Daten mit einem beliebigen Computer in der Domain <ph name="DOMAIN"/> austauschen</translation>
 <translation id="8670869118777164560">Die Erweiterung konnte die Netzwerkanfrage nicht an <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> weiterleiten, da eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) sie an <ph name="ACTUAL_REDIRECT_DESTINATION"/> weitergeleitet hat.</translation>
 <translation id="6840444547062817500">Diese Erweiterung hat sich selbst zu häufig neu geladen.</translation>
+<translation id="2270450558902169558">Daten mit einem beliebigen Gerät in der Domain &quot;<ph name="DOMAIN"/>&quot; austauschen</translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) einen anderen Dateinamen &quot;<ph name="ACTUAL_FILENAME"/>&quot; festgelegt hat.</translation>
 <translation id="452039078290142656">unbekannte Geräte von <ph name="VENDOR_NAME"/></translation>
-<translation id="4968399700653439437">Daten mit einem beliebigen Computer in den Domains <ph name="DOMAINS"/> austauschen</translation>
 <translation id="5026754133087629784">Web-Ansicht: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="2753617847762399167">Unzulässiger Pfad (absolut oder relativ mit &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="8284279544186306258">alle <ph name="WEBSITE_1"/>-Websites</translation>
@@ -56,6 +55,8 @@
 <translation id="27822970480436970">Die Erweiterung konnte eine Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung verursacht.</translation>
 <translation id="2241053333139545397">Eigene Daten auf verschiedenen Websites lesen und ändern</translation>
 <translation id="8602184400052594090">Manifest-Datei fehlt oder ist nicht lesbar.</translation>
+<translation id="2270627217422354837">Daten mit einem beliebigen Gerät in diesen Domains austauschen: <ph name="DOMAINS"/></translation>
+<translation id="7093866338626856921">Daten mit den Geräten mit folgenden Namen austauschen: <ph name="HOSTNAMES"/></translation>
 <translation id="4883436287898674711">Alle <ph name="WEBSITE_1"/>-Websites</translation>
 <translation id="9111791539553342076">Die Erweiterung konnte den Antwort-Header &quot;<ph name="HEADER_NAME"/>&quot; einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME"/>) verursacht.</translation>
 <translation id="9150045010208374699">Ihre Kamera verwenden</translation>
@@ -77,6 +78,7 @@
 <translation id="2159915644201199628">Bild konnte nicht decodiert werden: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
 <translation id="5544884907028850012">Anbieter <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Auf Ihren Netzwerkverkehr zugreifen</translation>
+<translation id="1256619696651732561">Erweiterungsmanifest-Parser</translation>
 <translation id="5972529113578162692">Der Administrator dieses Computers hat die Installation von <ph name="EXTENSION_NAME"/> vorgegeben. Eine Deinstallation ist daher nicht möglich.</translation>
 <translation id="1135328998467923690">Paket ist ungültig: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Ihre Daten auf <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> und <ph name="WEBSITE_3"/> lesen</translation>

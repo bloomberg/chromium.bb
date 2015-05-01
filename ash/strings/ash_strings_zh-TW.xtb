@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">電池已充滿</translation>
 <translation id="6895424601869865703">新增<ph name="GIVEN_NAME"/>的帳戶</translation>
 <translation id="1270290102613614947">螢幕小鍵盤已停用</translation>
-<translation id="1057289296854808272">已開啟旋轉功能 (輕按此處即可變更)</translation>
+<translation id="5548285847212963613">「<ph name="EXTENSION_NAME"/>」擴充功能可協助連線至這個網路。</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
 <translation id="30155388420722288">溢位按鈕</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
@@ -39,7 +39,6 @@
 按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="6043994281159824495">立即登出</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
-<translation id="4625920103690741805">已鎖定旋轉功能 (輕按此處即可變更)</translation>
 <translation id="3799026279081545374">您的充電器可能有問題。如需相關協助或索取新的充電器，請致電 866-628-1371 (美國)、0800-026-0613 (英國)、1-800-832-664 (愛爾蘭)、866-628-1372 (加拿大) 或 1-800-067-460 (澳洲)。</translation>
 <translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="5871632337994001636">管理裝置...</translation>

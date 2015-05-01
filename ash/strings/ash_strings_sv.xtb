@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="6895424601869865703">Lägg till ett konto för <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Skärmen på tangentbordet har inaktiverats</translation>
-<translation id="1057289296854808272">Rotation har aktiverats (tryck här om du vill ändra inställningen)</translation>
+<translation id="5548285847212963613">Tillägget <ph name="EXTENSION_NAME"/> kan hjälpa till med att ansluta till nätverket.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> och <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Överflödsknapp</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
@@ -39,7 +39,6 @@
         Tryck på Skift + Alt om du vill byta.</translation>
 <translation id="6043994281159824495">Logga ut nu</translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
-<translation id="4625920103690741805">Rotation har låsts (tryck här om du vill ändra inställningen)</translation>
 <translation id="3799026279081545374">Du har kanske fått en dålig laddare. Ring 866-628-1371 för att få hjälp om du bor i USA. Ring 0800-026-0613 om du bor i Storbritannien. Ring 1-800-832-664 om du bor i Irland. Ring 866-628-1372 om du bor i Kanada. Ring 1-800-067-460 om du bor i Australien.</translation>
 <translation id="3891340733213178823">Tryck på Ctrl+Skift+Q två gånger om du vill logga ut.</translation>
 <translation id="5871632337994001636">Hantera enheter ...</translation>

@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
+<translation id="2705212601509139398">ही साइट Chromium फ्रेम प्लगिन वापरत आहे ते लवकरच असमर्थित केले जाईल. कृपया ते विस्थापित करा आणि एक सुसंगत ब्राउझर डाउनलोड करा.</translation>
 <translation id="6676384891291319759">इंटरनेटमध्ये प्रवेश करा</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium लेखक. सर्व हक्क राखीव.</translation>
 <translation id="6373523479360886564">आपल्‍याला खात्री आहे की आपण Chromium विस्‍थापित करू इच्‍छिता?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">या संगणकाचे हार्डवेअर यापुढे समर्थित नसल्यामुळे तो लवकरच Chromium अद्यतने प्राप्त करणे थांबवेल.</translation>
 <translation id="5532301346661895910">Chromium हे आपल्‍या |Google ने जतन केलेले संकेतशब्द| मध्‍ये संचयित करेल आणि पुढील वेळी आपल्‍याला याची आवश्‍यकता असेल तेव्‍हा लक्षात ठेवेल.</translation>
 <translation id="6893813176749746474">Chromium अद्यतनित केले गेले, परंतु आपण ते किमान 30 दिवसांपासून वापरलेले नाही.</translation>
+<translation id="421369550622382712">Chromium साठी उत्कृष्ट अॅप्स, गेम, विस्तार आणि थीम शोधा</translation>
 <translation id="2732467638532545152">आपले संगणक या वेबसाइटच्या सुरक्षितता प्रमाणपत्रावर प्रक्रिया करू शकत नसलेल्या Microsoft Windows ची जुनी आवृत्ती चालवत आहे. या समस्येमुळे, प्रमाणपत्र <ph name="SITE"/> कडून आले आहे किंवा <ph name="SITE"/> असल्याची बतावणी आपल्या नेटवर्कवर करणार्‍या एखाद्याकडून आले आहे किंवा नाही हे Chromium सांगू शकत नाही. कृपया Windows च्या एका अधिक अलीकडील आवृत्तीवर आपले संगणक अद्यतनित करा.</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
 <translation id="6613594504749178791">आपण पुढल्या वेळी Chromium रीलाँच कराल तोपर्यंत आपले बदल प्रभावी होतील.</translation>
@@ -117,6 +119,7 @@
 <translation id="5358375970380395591">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Chromium प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज <ph name="USER_NAME"/> वर कायमच्या बद्ध होतील. आपण Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium App लाँचर</translation>
 <translation id="5563479599352954471">एका स्पर्शाने शोधा</translation>
+<translation id="3256316712990552818">Chromium वर कॉपी केले</translation>
 <translation id="8493179195440786826">Chromium कालबाह्य आहे</translation>
 <translation id="911206726377975832">आपला ब्राउझिंग डेटा देखील हटवायचा?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> ला आपण हे डिव्हाइस वापरण्यापूर्वी खालील सेवा अटी वाचणे आणि स्वीकारणे आवश्यक आहे. या अटी Chromium OS अटींना विस्तृत, सुधारित किंवा मर्यादित करत नाहीत.</translation>
@@ -126,6 +129,7 @@
 <translation id="2535480412977113886">आपले खाते साइन इन तपशील कालबाह्य झाल्यामुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="8697124171261953979">आपण Chromium प्रारंभ करता किंवा विविधोपयोगी क्षेत्रातून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="894903460958736500">आपल्या संगणकावर चालत असलेले सॉफ्टवेअर Chromium सह विसंगत आहे.</translation>
+<translation id="6810143991807788455">वर्तमान सेटिंग्जचा अहवाल देऊन Chromium उत्कृष्ट बनविण्यास मदत करा</translation>
 <translation id="1774152462503052664">Chromium पार्श्वभूमीवर चालू द्या</translation>
 <translation id="9022552996538154597">Chromium वर साइन इन करा</translation>
 <translation id="4365115785552740256">Chromium हे <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> खुला स्रोत प्रकल्प आणि इतर <ph name="BEGIN_LINK_OSS"/>खुले स्रोत सॉफ्टवेअर<ph name="END_LINK_OSS"/> द्वारे बनवणे शक्य झाले.</translation>
@@ -160,6 +164,7 @@
 <translation id="5398878173008909840">Chromium ची नवीन आवृत्ती उपलब्ध आहे.</translation>
 <translation id="2648074677641340862">स्‍थापनेदरम्‍यान ऑपरेटिंग प्रणाली त्रुटी आली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> Chrome मध्‍ये जोडले गेले आहे.</translation>
+<translation id="7211828883345145708">Chromium डीबग करण्यासाठी उपयुक्त असलेले अतिरिक्त कीबोर्ड शॉर्टकट सक्षम करते.</translation>
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टीम अद्यतने स्थापित करेपर्यंत प्रतीक्षा करा.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Chromium मेनू &gt;
@@ -195,6 +200,7 @@
 <translation id="130631256467250065">आपण आपल्या डिव्हाइसचा पुढील वेळी पुनरारंभ कराल तेव्हा आपले बदल प्रभावी होतील.</translation>
 <translation id="3244477511402911926">Chromium सूचना केंद्र</translation>
 <translation id="9197815481970649201">आपण आता Chromium वर साइन इन केले आहे</translation>
+<translation id="7162152143154757523">आपण ब्राउझरमध्‍ये जे टाइप करता ते Google सर्व्हरला पाठवून, आपल्याला Google शोध द्वारे वापरलेल्या शब्दलेखन-तंत्रज्ञानासारखेच तंत्रज्ञान वापरण्याची अनुमती देऊन Chromium चाणाक्ष शब्दलेखन-तपासणी प्रदान करु शकते.</translation>
 <translation id="1929939181775079593">Chromium असंवादी आहे. आता पुन्‍हा लाँच करायचे?</translation>
 <translation id="1414495520565016063">आपण Chromium मध्ये साइन इन केले आहे!</translation>
 <translation id="2158734852934720349">Chromium OS खुला स्त्रोत परवाने</translation>
@@ -210,6 +216,7 @@
 <translation id="811857857463334932">या संगणकाचे हार्डवेअर यापुढे समर्थित नसल्यामुळे तो यापुढे Chromium अद्यतने प्राप्त करणार नाही.</translation>
 <translation id="2910007522516064972">&amp;Chromium बद्दल</translation>
 <translation id="8453117565092476964">इन्स्टॉलर संग्रहण दूषित किंवा वैध आहे. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
+<translation id="2558641060352364164">ही साइट Chromium फ्रेम प्लगिन वापरत आहे जे लवकरच असमर्थित केले जाईल. कृपया ते विस्थापित करा आणि एका आधुनिक ब्राउझरवर श्रेणीसुधारित करा.</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी आपले नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="3130323860337406239">Chromium आपला मायक्रोफोन वापरत आहे.</translation>
 <translation id="7196020411877309443">मी हे का पहात आहे?</translation>

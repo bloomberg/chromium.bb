@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="8208216423136871611">Nicht speichern</translation>
 <translation id="777702478322588152">Präfektur</translation>
+<translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> nie übersetzen</translation>
 <translation id="2262243747453050782">HTTP-Fehler</translation>
 <translation id="1339601241726513588">Anmeldedomain:</translation>
 <translation id="7298195798382681320">Empfohlen</translation>
 <translation id="4058922952496707368">Schlüssel &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript-Warnmeldung</translation>
-<translation id="4081383687659939437">Infos speichern</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/>-Suche</translation>
 <translation id="2498091847651709837">Neue Karte scannen</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">Verbindlich</translation>
 <translation id="2958431318199492670">Die Netzwerkkonfiguration stimmt nicht mit dem ONC-Standard überein. Die Konfiguration wird unter Umständen nicht vollständig importiert.</translation>
+<translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">Nein</translation>
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
+<translation id="1055184225775184556">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="8091372947890762290">Aktivierung auf dem Server steht noch aus.</translation>
+<translation id="6874604403660855544">&amp;Hinzufügen wiederholen</translation>
 <translation id="4607653538520819196">Datenkomprimierungs-Proxy kann für diese Seite nicht verwendet werden</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">Original ansehen</translation>
 <translation id="4079302484614802869">Die Proxy-Konfiguration ist auf die Verwendung einer PAC-Skript-URL und nicht die von festen Proxyservern eingestellt.</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
+<translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
+<translation id="5813119285467412249">&amp;Hinzufügen wiederholen</translation>
 <translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern</translation>
 <translation id="5523118979700054094">Richtlinienname</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">Vorübergehender Serverfehler</translation>
 <translation id="7087282848513945231">Landkreis</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
+<translation id="8194797478851900357">&amp;Verschieben rückgängig machen</translation>
 <translation id="6458467102616083041">Ignoriert, da Standardsuche durch Richtlinie deaktiviert</translation>
+<translation id="6259156558325130047">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="1227224963052638717">Unbekannte Richtlinie</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="9207861905230894330">Der Artikel konnte nicht hinzugefügt werden.</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="7977590112176369853">&lt;Suchanfrage eingeben&gt;</translation>
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
+<translation id="5317780077021120954">Speichern</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE"/>).</translation>
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
+<translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
 <translation id="8311778656528046050">Möchten Sie diese Seite wirklich aktualisieren?</translation>
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="2096368010154057602">Verwaltungsbezirk</translation>
+<translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="4258748452823770588">Fehlerhafte Signatur</translation>
 <translation id="3024663005179499861">Falscher Richtlinientyp</translation>
 <translation id="2030481566774242610">Meinten Sie <ph name="LINK"/>?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">Einträge werden abgerufen...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/>-Lesezeichen</translation>
 <translation id="498957508165411911">Übersetzen (<ph name="ORIGINAL_LANGUAGE"/> &gt; <ph name="TARGET_LANGUAGE"/>)?</translation>
+<translation id="8218327578424803826">Zugewiesener Standort:</translation>
 <translation id="3542684924769048008">Passwort verwenden für:</translation>
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE"/>in<ph name="LANGUAGE_LANGUAGE"/>übersetzt.</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="5145883236150621069">Fehlercode in der Richtlinienantwort</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE"/> immer auf <ph name="TARGET_LANGUAGE"/> übersetzen</translation>
 <translation id="6970216967273061347">Bezirk</translation>
+<translation id="3427342743765426898">&amp;Bearbeiten wiederholen</translation>
 <translation id="3010559122411665027">Listeneintrag &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="5031870354684148875">Über Google Übersetzer</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">Weder feste Proxyserver noch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="2113977810652731515">Karte</translation>
+<translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="536296301121032821">Fehler beim Speichern der Richtlinieneinstellungen</translation>
 <translation id="5439770059721715174">Schemavalidierungsfehler in &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">Mobile Lesezeichen</translation>
 <translation id="5089810972385038852">Bundesstaat</translation>
 <translation id="647261751007945333">Geräterichtlinien</translation>
+<translation id="2556876185419854533">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="213826338245044447">Mobile Lesezeichen</translation>
+<translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="8571890674111243710">Seite wird in folgende Sprache übersetzt: <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
 <translation id="2114841414352855701">Wird ignoriert, da sie von <ph name="POLICY_NAME"/> außer Kraft gesetzt wurde.</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE"/>. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
+<translation id="3105172416063519923">Geräte-ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">Directory API-ID:</translation>
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="3712624925041724820">Lizenzen aufgebraucht</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
 <translation id="5629630648637658800">Fehler beim Laden der Richtlinieneinstellungen</translation>
+<translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="2354001756790975382">Weitere Lesezeichen</translation>
 <translation id="3650584904733503804">Überprüfung erfolgreich</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
 <translation id="2270192940992995399">Der Artikel wurde nicht gefunden.</translation>
 <translation id="4726672564094551039">Richtlinien neu laden</translation>
+<translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="9154176715500758432">Auf dieser Seite bleiben</translation>
 <translation id="2392959068659972793">Richtlinien ohne Wert zeigen</translation>
+<translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>
+<translation id="5470861586879999274">&amp;Bearbeiten wiederholen</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="6965978654500191972">Gerät</translation>
 <translation id="5295309862264981122">Navigation bestätigen</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">Ungültige Bestätigungssignatur</translation>
 <translation id="106701514854093668">Desktop-Lesezeichen</translation>
 <translation id="6154808779448689242">Zurückgegebenes Token der Richtlinie entspricht nicht dem aktuellen Token.</translation>
+<translation id="7995512525968007366">Nicht angegeben</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="8804164990146287819">Datenschutzerklärung</translation>
 <translation id="5337776961545044340">Dieser Kartentyp wird von Google Wallet für diesen Händler nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
+<translation id="7334320624316649418">&amp;Neu anordnen wiederholen</translation>
 <translation id="7182878459783632708">Keine Richtlinien festgelegt</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
 <translation id="8364627913115013041">Nicht eingerichtet</translation>
 <translation id="8713130696108419660">Erste Signatur ungültig</translation>
+<translation id="3270847123878663523">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="2639739919103226564">Status:</translation>
 <translation id="4968547170521245791">Proxynutzung nicht möglich</translation>
 <translation id="385051799172605136">Zurück</translation>
+<translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="5095208057601539847">Provinz</translation>
 <translation id="2581221116934462656">Soll in <ph name="PRODUCT_NAME"/> ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website angeboten werden, die auf <ph name="LANGUAGE_NAME"/> sind?</translation>
+<translation id="2396249848217231973">&amp;Löschen rückgängig machen</translation>
 <translation id="3934680773876859118">Fehler beim Laden des PDF-Dokuments</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>

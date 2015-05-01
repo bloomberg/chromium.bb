@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="8208216423136871611">Nu salva</translation>
 <translation id="777702478322588152">Prefectură</translation>
+<translation id="2972581237482394796">&amp;Repetă</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Eroare HTTP</translation>
 <translation id="1339601241726513588">Domeniu de înregistrare:</translation>
 <translation id="7298195798382681320">Recomandate</translation>
 <translation id="4058922952496707368">Cheie „<ph name="SUBKEY"/>”: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Alertă JavaScript</translation>
-<translation id="4081383687659939437">Salvează informațiile</translation>
 <translation id="5299298092464848405">Eroare la analizarea politicii</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Scanează un card nou</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">Obligatorie</translation>
 <translation id="2958431318199492670">Configurația rețelei nu respectă standardul ONC. Este posibil ca anumite părți ale configurației să nu fie importate.</translation>
+<translation id="3583757800736429874">&amp;Repetați mutarea</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Lipsește o înregistrare pentru gadget</translation>
 <translation id="1491151370853475546">Reîncărcați această pagină</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">Adresă URL</translation>
 <translation id="7378627244592794276">Nu</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
+<translation id="1055184225775184556">&amp;Anulați adăugarea</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="8091372947890762290">Se așteaptă activarea pe server</translation>
+<translation id="6874604403660855544">&amp;Repetați adăugarea</translation>
 <translation id="4607653538520819196">Această pagină nu poate fi gestionată prin proxy de Economizorul de date.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Zonă</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">Vedeți pagina originală</translation>
 <translation id="4079302484614802869">Configurația pentru proxy este setată să utilizeze o adresă URL pentru scripturi .pac, și nu servere proxy fixe.</translation>
 <translation id="5540224163453853">Articolul solicitat nu poate fi găsit.</translation>
+<translation id="8437238597147034694">&amp;Anulați mutarea</translation>
+<translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
 <translation id="333371639341676808">Împiedică această pagină să creeze alte casete de dialog.</translation>
 <translation id="5523118979700054094">Numele politicii</translation>
 <translation id="7791543448312431591">Adaugă</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">Eroare temporară de server</translation>
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="1132774398110320017">Setări de completare automată în Chrome...</translation>
+<translation id="8194797478851900357">&amp;Anulați mutarea</translation>
 <translation id="6458467102616083041">Valoare ignorată, deoarece politica a dezactivat căutarea prestabilită.</translation>
+<translation id="6259156558325130047">&amp;Repetați reordonarea</translation>
 <translation id="1227224963052638717">Politică necunoscută.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="7977590112176369853">&lt;introdu interogarea&gt;</translation>
 <translation id="552553974213252141">Textul a fost extras corect?</translation>
+<translation id="5317780077021120954">Salvează</translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Linkul copiat de tine</translation>
+<translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
 <translation id="8311778656528046050">Sigur doriți să reîncărcați această pagină?</translation>
 <translation id="370665806235115550">Se încarcă…</translation>
 <translation id="2096368010154057602">Departament</translation>
+<translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
 <translation id="4258748452823770588">Semnătură greșită</translation>
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK"/>?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">Se preiau intrările...</translation>
 <translation id="6263376278284652872">Marcaje <ph name="DOMAIN"/></translation>
 <translation id="498957508165411911">Se traduce din <ph name="ORIGINAL_LANGUAGE"/> în <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8218327578424803826">Locație atribuită:</translation>
 <translation id="3542684924769048008">Folosește parola pentru:</translation>
 <translation id="7186367841673660872">Această pagină a fost tradusă din <ph name="ORIGINAL_LANGUAGE"/> în <ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="5145883236150621069">Răspunsul pentru politică include un cod de eroare</translation>
 <translation id="7983301409776629893">Tradu întotdeauna din <ph name="ORIGINAL_LANGUAGE"/> în <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Județ</translation>
+<translation id="3427342743765426898">&amp;Repetați editarea</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Țară</translation>
 <translation id="5031870354684148875">Despre Google Traducere</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="2113977810652731515">Card</translation>
+<translation id="1113869188872983271">&amp;Anulați reordonarea</translation>
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5439770059721715174">Eroare de validare a schemei la „<ph name="ERROR_PATH"/>”: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Bara de marcaje</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">Marcaje mobile</translation>
 <translation id="5089810972385038852">Stat</translation>
 <translation id="647261751007945333">Politici privind dispozitivele</translation>
+<translation id="2556876185419854533">&amp;Anulați editarea</translation>
 <translation id="213826338245044447">Marcaje mobile</translation>
+<translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
 <translation id="8571890674111243710">Se traduce pagina în <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">Domeniul politicii nu este acceptat.</translation>
 <translation id="2114841414352855701">Politica este ignorată, deoarece a fost înlocuită de <ph name="POLICY_NAME"/>.</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">Această pagină este în <ph name="SOURCE_LANGUAGE"/>. Doriți traducere în <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
+<translation id="3105172416063519923">ID articol:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">ID-ul API-ului Directory:</translation>
 <translation id="7752995774971033316">Negestionat</translation>
 <translation id="3712624925041724820">Licențe epuizate</translation>
 <translation id="4926049483395192435">Valoarea trebuie specificată.</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">Traducerea nu a reușit din cauza unei erori de server.</translation>
 <translation id="2597378329261239068">Acest document este protejat cu parolă. Introdu o parolă.</translation>
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
+<translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
 <translation id="2354001756790975382">Alte marcaje</translation>
 <translation id="3650584904733503804">Validarea a reușit</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">Eroare la analizarea politicii</translation>
 <translation id="2270192940992995399">Articolul nu a fost găsit.</translation>
 <translation id="4726672564094551039">Reîncărcați politicile</translation>
+<translation id="9170848237812810038">&amp;Anulează</translation>
 <translation id="9154176715500758432">Rămâi pe pagină</translation>
 <translation id="2392959068659972793">Afișați politicile care nu au valori setate</translation>
+<translation id="9148507642005240123">&amp;Anulați editarea</translation>
+<translation id="5470861586879999274">&amp;Repetați editarea</translation>
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="6965978654500191972">Dispozitiv</translation>
 <translation id="5295309862264981122">Confirmă navigarea</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
 <translation id="106701514854093668">Marcaje desktop</translation>
 <translation id="6154808779448689242">Indicativul returnat pentru politică nu corespunde cu indicativul actual</translation>
+<translation id="7995512525968007366">Nespecificată</translation>
 <translation id="7961015016161918242">Niciodată</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="8804164990146287819">Politica de confidențialitate</translation>
 <translation id="5337776961545044340">Acest tip de card nu este acceptat de Google Wallet pentru acest comerciant. Selectați alt card.</translation>
+<translation id="7334320624316649418">&amp;Repetați reordonarea</translation>
 <translation id="7182878459783632708">Nu au fost setate politici</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
 <translation id="8364627913115013041">Nesetată.</translation>
 <translation id="8713130696108419660">Semnătură inițială incorectă</translation>
+<translation id="3270847123878663523">&amp;Anulați reordonarea</translation>
 <translation id="20817612488360358">Setările proxy de sistem sunt setate pentru a fi utilizate, dar o configurație explicită pentru proxy este, de asemenea, specificată.</translation>
 <translation id="2639739919103226564">Stare:</translation>
 <translation id="4968547170521245791">Nu se poate folosi un proxy</translation>
 <translation id="385051799172605136">Înapoi</translation>
+<translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="2581221116934462656">Dorești ca produsul <ph name="PRODUCT_NAME"/> să ofere traducerea paginilor din <ph name="LANGUAGE_NAME"/> de pe acest site data următoare când îl accesezi?</translation>
+<translation id="2396249848217231973">&amp;Anulați ștergerea</translation>
 <translation id="3934680773876859118">Documentul PDF nu a fost încărcat</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>

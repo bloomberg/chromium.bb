@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
 <translation id="6895424601869865703">Pridėti paskyrą, skirtą <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Ekrano klaviatūra išjungta</translation>
-<translation id="1057289296854808272">Kaitaliojimas įjungtas (palieskite čia, kad pakeistumėte)</translation>
+<translation id="5548285847212963613">Galite prisijungti prie šio tinklo naudodami plėtinį „<ph name="EXTENSION_NAME"/>“.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Perpildymo mygtukas</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
@@ -39,7 +39,6 @@
         Jei norite perjungti, paspauskite „Shift“ + „Alt“.</translation>
 <translation id="6043994281159824495">Atsijungti dabar</translation>
 <translation id="2127372758936585790">Mažos galios įkroviklis</translation>
-<translation id="4625920103690741805">Kaitaliojimas užrakintas (palieskite čia, kad pakeistumėte)</translation>
 <translation id="3799026279081545374">Turbūt jūsų kroviklis yra netinkamas. Jei gyvenate JAV, skambinkite numeriu 866-628-1371, kad gautumėte pagalbos ir būtų pakeistas kroviklis. Jei gyvenate JK, skambinkite numeriu 0800-026-0613. Jei gyvenate Airijoje, skambinkite numeriu 1-800-832-664. Jei gyvenate Kanadoje, skambinkite numeriu 866-628-1372. Jei gyvenate Australijoje, skambinkite numeriu 1-800-067-460.</translation>
 <translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="5871632337994001636">Valdyti įrenginius...</translation>

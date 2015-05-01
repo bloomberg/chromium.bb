@@ -34,6 +34,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
 <translation id="2721687379934343312">On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
+<translation id="4700157086864140907">Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.</translation>
 <translation id="4953650215774548573">Set Google Chrome as your default browser</translation>
 <translation id="6014844626092547096">You're now signed in to Chrome! Sync is disabled by your administrator.</translation>
 <translation id="7419046106786626209">Chrome OS could not sync your data because Sync is not available for your domain.</translation>
@@ -96,6 +97,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN"/>; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="5618769508111928343"><ph name="SITE"/> normally uses encryption to protect your information. When Chrome tried to connect to <ph name="SITE"/> this time, the website sent back unusual and incorrect credentials. Either an attacker is trying to pretend to be <ph name="SITE"/>, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chrome stopped the connection before any data was exchanged.</translation>
+<translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
 <translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> and may have been added without your knowledge.</translation>
 <translation id="3656661827369545115">Launch Chromium automatically when your computer starts</translation>
@@ -189,6 +191,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2871893339301912279">You're signed in to Chrome!</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
+<translation id="597770749449734237">Enables additional keyboard shortcuts that are useful for debugging Google Chrome.</translation>
 <translation id="4147555960264124640">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">You must upgrade Chrome to use Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Go to
@@ -203,6 +206,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="2681064822612051220">A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.</translation>
+<translation id="2252923619938421629">Help make Google Chrome better by reporting the current settings</translation>
 <translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
 <translation id="7773845170078702898">Do you want Google Chrome to save your password for this site?</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
@@ -254,6 +258,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3047079729301751317">Disconnecting <ph name="USERNAME"/> will clear your history, bookmarks, settings and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
+<translation id="5132929315877954718">Discover great apps, games, extensions and themes for Google Chrome.</translation>
 <translation id="6626317981028933585">Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">It also controls what page is shown when you start Chrome or search from the Omnibox.</translation>
@@ -262,6 +267,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. All rights reserved.</translation>
 <translation id="1698376642261615901">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
 <translation id="853189717709780425">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME"/>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
+<translation id="699076943483372849">This site is using the retired Chrome Frame plug-in which no longer receives security and stability updates. Please uninstall it and upgrade to a modern browser.</translation>
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
 <translation id="1818142563254268765">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chrome.</translation>
 <translation id="7408085963519505752">Chrome OS terms</translation>

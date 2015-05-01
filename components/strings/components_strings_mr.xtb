@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">रीफ्रेश करा</translation>
 <translation id="8208216423136871611">जतन करू नका</translation>
 <translation id="777702478322588152">परफेक्चुअर</translation>
+<translation id="2972581237482394796">&amp;पुन्हा करा</translation>
 <translation id="7600965453749440009">कधीही <ph name="LANGUAGE"/> चा अनुवाद करु नका</translation>
 <translation id="2262243747453050782">HTTP त्रुटी</translation>
 <translation id="1339601241726513588">नावनोंदणी डोमेन:</translation>
 <translation id="7298195798382681320">शिफारस केलेले</translation>
 <translation id="4058922952496707368">की &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Javascript अ‍ॅलर्ट</translation>
-<translation id="4081383687659939437">माहिती जतन करा </translation>
 <translation id="5299298092464848405">धोरण विश्लेषित करताना त्रुटी</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> शोध</translation>
 <translation id="2498091847651709837">नवीन कार्ड स्कॅन करा</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">अनिवार्य</translation>
 <translation id="2958431318199492670">नेटवर्क कॉन्फिगरेशन ONC मानकाचे पालन करत नाही. कॉन्फिगरेशनचे भाग आयात केले जाऊ शकत नाहीत.</translation>
+<translation id="3583757800736429874">&amp;हलवा पुन्हा करा</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">डिव्हाइस रेकॉर्ड गहाळ</translation>
 <translation id="1491151370853475546">हे पृष्ठ रीलोड करा</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">नाही</translation>
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
+<translation id="1055184225775184556">&amp;जोडा पूर्ववत करा</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="8091372947890762290">सक्रियकरण सर्व्हरवर प्रलंबित आहे</translation>
+<translation id="6874604403660855544">&amp;जोडा पुन्हा करा</translation>
 <translation id="4607653538520819196">डेटा बचतकर्त्याद्वारे हे पृष्ठ प्रॉक्सी केले जाऊ शकत नाही.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">मूळ पहा</translation>
 <translation id="4079302484614802869">प्रॉक्सी कॉन्फिगरेशन .pac स्क्रिप्ट URL वापरण्‍यास सेट करण्‍यात आले आहे, निश्चित प्रॉक्सी सर्व्हर नव्हे.</translation>
 <translation id="5540224163453853">विनंती केलेला लेख शोधू शकलो नाही.</translation>
+<translation id="8437238597147034694">&amp;हलवा पूर्ववत करा</translation>
+<translation id="5813119285467412249">&amp;जोडा पुन्हा करा</translation>
 <translation id="333371639341676808">अतिरिक्त संवाद तयार करण्यापासून या पृष्ठाला प्रतिबंधित करा.</translation>
 <translation id="5523118979700054094">धोरणाचे नाव</translation>
 <translation id="7791543448312431591">जोडा</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">तात्पुरती सर्व्हर त्रुटी</translation>
 <translation id="7087282848513945231">परगणा</translation>
 <translation id="1132774398110320017">Chrome स्वयंभरण सेटिंग्ज...</translation>
+<translation id="8194797478851900357">&amp;हलवा पूर्ववत करा</translation>
 <translation id="6458467102616083041">धोरणानुसार डीफॉल्ट शोध अक्षम केल्याने दुर्लक्ष करण्‍यात आले.</translation>
+<translation id="6259156558325130047">&amp;पुनर्क्रमित करा पुन्हा करा</translation>
 <translation id="1227224963052638717">अज्ञात धोरण.</translation>
 <translation id="4250680216510889253">नाही</translation>
 <translation id="9207861905230894330">लेख जोडण्यात अयशस्वी.</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">दर्जा</translation>
 <translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करा&gt;</translation>
 <translation id="552553974213252141">मजकूर योग्यरितीने काढला होता?</translation>
+<translation id="5317780077021120954">जतन करा</translation>
 <translation id="7610193165460212391">मूल्य <ph name="VALUE"/> श्रेणीच्या बाहेर आहे.</translation>
 <translation id="3739623965217189342">आपण कॉपी केलेल्याचा दुवा जोडा</translation>
+<translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
 <translation id="8311778656528046050">आपल्याला खात्री आहे की हे पृष्ठ आपण रीलोड करू इच्छिता?</translation>
 <translation id="370665806235115550">लोड करीत आहे...</translation>
 <translation id="2096368010154057602">विभाग</translation>
+<translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
 <translation id="4258748452823770588">खराब स्वाक्षरी</translation>
 <translation id="3024663005179499861">चुकीचा धोरण प्रकार</translation>
 <translation id="2030481566774242610">आपल्याला असे म्हणायचे होते <ph name="LINK"/>?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">प्रविष्ट्या आणत आहे...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> बुकमार्क</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> मधून <ph name="TARGET_LANGUAGE"/> मध्ये भाषांतरित करायचे?</translation>
+<translation id="8218327578424803826">नियुक्त केलेले स्थान:</translation>
 <translation id="3542684924769048008">यासाठी संकेतशब्द वापरा:</translation>
 <translation id="7186367841673660872">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE"/>मधून<ph name="LANGUAGE_LANGUAGE"/>मध्ये अनुवादित केले गेले आहे</translation>
 <translation id="7139724024395191329">अमिरात</translation>
 <translation id="5145883236150621069">धोरण प्रतिसादामध्ये त्रुटी कोड अस्तित्वात आहे</translation>
 <translation id="7983301409776629893"> नेहमी <ph name="ORIGINAL_LANGUAGE"/> मधून <ph name="TARGET_LANGUAGE"/> मध्ये अनुवाद करा</translation>
 <translation id="6970216967273061347">‍जिल्‍हा</translation>
+<translation id="3427342743765426898">&amp;संपादित करा पुन्हा करा</translation>
 <translation id="3010559122411665027">सूची प्रविष्टी &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">देश</translation>
 <translation id="5031870354684148875">Google अनुवाद बद्दल</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">निश्चित प्रॉक्‍सी सर्व्हर किंवा .pac स्क्रिप्ट URL देखील निर्दिष्‍ट केलेली नाही.</translation>
 <translation id="7805768142964895445">स्थिती</translation>
 <translation id="2113977810652731515">कार्ड</translation>
+<translation id="1113869188872983271">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="536296301121032821">धोरण सेटिंग्ज संचयित करण्यात अयशस्वी</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; वर स्कीमा प्रमाणीकरण त्रुटी: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">Mobile बुकमार्क</translation>
 <translation id="5089810972385038852">राज्य</translation>
 <translation id="647261751007945333">डिव्हाइस धोरणे</translation>
+<translation id="2556876185419854533">&amp; संपादित करा पूर्ववत करा</translation>
 <translation id="213826338245044447">Mobile बुकमार्क</translation>
+<translation id="4594403342090139922">&amp;हटवा पूर्ववत करा</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE"/> मध्ये पृष्ठ अनुवादित करत आहे...</translation>
 <translation id="4117700440116928470">धोरण कक्षा समर्थित नाही.</translation>
 <translation id="2114841414352855701">दुर्लक्ष केले कारण ते <ph name="POLICY_NAME"/> कडून अधिलिखित झाले होते.</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">हे पृष्‍ठ <ph name="SOURCE_LANGUAGE"/> मध्ये आहे. त्यास <ph name="TARGET_LANGUAGE"/> मध्ये भाषांतरीत करायचे?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">अवैध प्रॉक्सी मोड.</translation>
+<translation id="3105172416063519923">मालमत्ता ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">शब्दकोश API ID:</translation>
 <translation id="7752995774971033316">व्यवस्थापित न केलेले</translation>
 <translation id="3712624925041724820">परवाने संपुष्टात</translation>
 <translation id="4926049483395192435">निर्दिष्‍ट केले जाणे आवश्‍यक आहे.</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">सर्व्हर त्रुटीमुळे अनुवाद अयशस्वी झाला.</translation>
 <translation id="2597378329261239068">हा दस्तऐवज संकेतशब्द संरक्षित आहे. कृपया संकेतशब्द प्रविष्ट करा.</translation>
 <translation id="5629630648637658800">धोरण सेटिंग्ज लोड करण्यात अयशस्वी</translation>
+<translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
 <translation id="2354001756790975382">इतर बुकमार्क</translation>
 <translation id="3650584904733503804">प्रमाणीकरण यशस्वी</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">धोरण विश्लेषण त्रुटी</translation>
 <translation id="2270192940992995399">लेख शोधण्यात अयशस्वी.</translation>
 <translation id="4726672564094551039">धोरणे रीलोड करा</translation>
+<translation id="9170848237812810038">&amp;पूर्ववत करा</translation>
 <translation id="9154176715500758432">या पृष्ठावर राहा</translation>
 <translation id="2392959068659972793">कोणतेही मूल्य सेट केल्याशिवाय धोरणे दर्शवा</translation>
+<translation id="9148507642005240123">&amp;संपादित करा पूर्ववत करा</translation>
+<translation id="5470861586879999274">&amp;संपादित करा पुन्हा करा</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="6965978654500191972">डिव्हाइस</translation>
 <translation id="5295309862264981122">नॅव्हिगेशनची पुष्टी करा</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">खराब सत्यापन स्वाक्षरी</translation>
 <translation id="106701514854093668">डेस्‍कटॉप बुकमार्क</translation>
 <translation id="6154808779448689242">परत केलेले धोरण टोकन वर्तमान टोकनशी जुळत नाही</translation>
+<translation id="7995512525968007366">निर्दिष्ट केलेले नाही</translation>
 <translation id="7961015016161918242">कधीही नाही</translation>
 <translation id="2835170189407361413">फॉर्म क्लिअर करा</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="8804164990146287819">गोपनीयता धोरण</translation>
 <translation id="5337776961545044340">कार्डचा हा प्रकार या व्यापार्‍यासाठी Google Wallet द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
+<translation id="7334320624316649418">&amp;पुनर्क्रमित करा पुन्हा करा</translation>
 <translation id="7182878459783632708">कोणतीही धोरणे सेट नाहीत</translation>
 <translation id="5019198164206649151">समर्थन संचयन खराब स्थितीत</translation>
 <translation id="8364627913115013041">सेट केलेले नाही.</translation>
 <translation id="8713130696108419660">खराब मूळ स्वाक्षरी</translation>
+<translation id="3270847123878663523">&amp;पुनर्क्रमित करा पूर्ववत करा</translation>
 <translation id="20817612488360358">सिस्टम प्रॉक्सी सेटिंग्ज वापरण्‍यास सेट करण्‍यात आल्या परंतु एक सुस्पष्‍ट प्रॉक्सी कॉन्फिगरेशन देखील निर्दिष्‍ट करण्‍यात आले.</translation>
 <translation id="2639739919103226564">स्थिती:</translation>
 <translation id="4968547170521245791">प्रॉक्सी करू शकत नाही</translation>
 <translation id="385051799172605136">मागील</translation>
+<translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
 <translation id="5095208057601539847">प्रांत</translation>
 <translation id="2581221116934462656">आपण पुढील वेळी या साइटवरून <ph name="PRODUCT_NAME"/> ने <ph name="LANGUAGE_NAME"/> पृष्‍ठे भाषांतरित करण्‍याची ऑफर द्यावी असे इच्छिता?</translation>
+<translation id="2396249848217231973">&amp;हटवा पूर्ववत करा</translation>
 <translation id="3934680773876859118">PDF दस्तऐवज लोड करणे अयशस्वी</translation>
 <translation id="6965382102122355670">ठिक आहे</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>

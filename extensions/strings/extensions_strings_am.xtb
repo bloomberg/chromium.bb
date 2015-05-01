@@ -1,6 +1,7 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="am">
 <translation id="4542520061254486227">የእርስዎን ውሂብ በ<ph name="WEBSITE_1"/> እና በ<ph name="WEBSITE_2"/> ላይ ያንብቡ</translation>
 <translation id="3983586614702900908">ያልታወቀ አቅራቢ መሣሪያዎች</translation>
+<translation id="730515362922783851">በአካባቢ አውታረመረብ ወይም በይነመረብ ላይ ከማናቸውም መሣሪያ ጋር ውሂብ ተለዋወጥ</translation>
 <translation id="3624204664103857160">የማስጀመሪያ ገጽ «<ph name="PAGE"/>»ን መጫን አልተቻለም።</translation>
 <translation id="8804398419035066391">ከተባባሪ ድር ጣቢያዎች ጋር በመገናኘት ላይ</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (የቅጥያ መታወቂያ «<ph name="EXTENSION_ID"/>») በአስተዳዳሪው ታግዷል።</translation>
@@ -12,22 +13,22 @@
 <translation id="1033780634303702874">ተከታታይ መሣሪያዎችዎን ይደርሳል</translation>
 <translation id="288042212351694283">ሁለገብ 2ኛ ደረጃ መሣሪያዎችዎን ይደርስባቸዋል</translation>
 <translation id="4115165561519362854">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME"/> ቢያንስ የ<ph name="EXTENSION_VERSION"/> ስሪት እንዲሆን ይፈልጋሉል። ወደዚያ ስሪት (ወይም ከዚያ በላይ) ካልተዘመነ በስተቀር ሊነቃ አይችልም።</translation>
+<translation id="6075907793831890935"><ph name="HOSTNAME"/> ከሚባል መሣሪያ ጋር ውሂብ ተለዋወጥ</translation>
 <translation id="5971037678316050792">የብሉቱዝ አስማሚ ሁኔታ እና ማጣመርን ይቆጣጠራል</translation>
 <translation id="677806580227005219">የሚሜ ተቆጣጣሪ፦ <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">ከስርዓትዎ ጋር ስለተጣመሩ የብሉቱዝ መሣሪያዎች ያለ መረጃ ይደርሳልና አቅራቢያ ያሉ የብሉቱዝ መሣሪያዎችን ያገኛል።</translation>
 <translation id="8749863574775030885">ካልታወቀ አቅራቢ የመጡ የዩኤስቢ መሣሪያዎችን ይደርሳል</translation>
-<translation id="5911798608827489036">በአካባቢያዊው አውታረ መረብ ወይም በይነመረቡ ላይ ካለ ማንኛውም ኮምፒውተር ጋር ውሂብ ይለዋወጡ</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> ከ<ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">የጀርባ ስክሪፕት «<ph name="BACKGROUND_SCRIPT"/>» መጫን አልተቻለም።</translation>
 <translation id="588705686677293479">SurfaceWorker፦ <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">መልዕክቶችን ወደ ብሉቱዝ መሣሪያዎች ይልካል እና ከእነሱ ይቀበላል።</translation>
 <translation id="5678955352098267522">የእርስዎን ውሂብ በ<ph name="WEBSITE_1"/> ላይ ያንብቡ</translation>
-<translation id="8597109877291678953"><ph name="HOSTNAME"/> ከሚባል ኮምፒውተር ጋር ውሂብ ይለዋወጡ</translation>
 <translation id="5456409301717116725">ይህ ቅጥያ የቁልፍ ፋይል «<ph name="KEY_PATH"/>»ን ያካትታል። ይህንን ማድረግ ላይፈልጉ ይችላሉ።</translation>
 <translation id="7257666756905341374">የሚቀዱትን እና የሚለጥፉትን ውሂብ ያነብባል</translation>
 <translation id="2350172092385603347">አካባቢያዊነት ተጠቅሟል ነገር ግን በማኒፌስት ወስጥ default_locale አልተገለጸም።</translation>
 <translation id="3759933321830434300">የድረ-ገጾች ክፍሎችን ያግዳል</translation>
 <translation id="6143635259298204954">ቅጥያ መበተን አልተቻለም።  አንድ ቅጥያ ደህንነቱ በተጠበቀ ሁኔታ ለመበተን ተምሳሌታዊ መጠሪያ ያልያዘ ወደ የመገለጫዎ አቃፊ የሚወስድ ዱካ መኖር አለበት።  ምንም እንደዚህ ያለ ወደ መገለጫዎ የሚወስድ ዱካ የለም።</translation>
+<translation id="8712265948125780616">ቅጥያ ማራገፊያ</translation>
 <translation id="149347756975725155">የቅጥያ አዶ «<ph name="ICON"/>»ን መጫን አልተቻለም።</translation>
 <translation id="8825366169884721447">ይህ ቅጥያ የጥያቄው ርዕስ «<ph name="HEADER_NAME"/>»ን መቀየር አልተሳካለትም ምክንያቱም ለውጡ ከሌላ ቅጥያ (<ph name="EXTENSION_NAME"/>) ጋር ስለተጋጨ።</translation>
 <translation id="7495493006406536234">ምርት <ph name="PRODUCT_ID"/></translation>
@@ -39,16 +40,14 @@
 <translation id="6344170822609224263">የአውታረ መረብ ግንኙነቶች ዝርዝር ይደርሳል</translation>
 <translation id="7039326228527141150">ከ<ph name="VENDOR_NAME"/> የመጡ የዩኤስቢ መሣሪያዎችን ይደርሳል</translation>
 <translation id="2616366145935564096">ውሂብዎን በ<ph name="WEBSITE_1"/> ላይ ያነብባል እና ይቀይራል</translation>
-<translation id="2518849872271000461">እንዲህ ከሚባል ኮምፒውተር ጋር ውሂብ ይለዋወጡ፦ <ph name="HOSTNAMES"/></translation>
 <translation id="5960890139610307736">ExtensionView፦ <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">በዩ.ኤስ.ቢ ወይም በአካባቢ አውታረ መረብ በኩል የተያያዙ የሰነድ ቃኚዎችን ይድረስባቸው</translation>
 <translation id="6408118934673775994">ውሂብዎን በ<ph name="WEBSITE_1"/>፣ <ph name="WEBSITE_2"/> እና <ph name="WEBSITE_3"/> ላይ ያነብባል እና ይቀይራል</translation>
-<translation id="961805664415579088">በ<ph name="DOMAIN"/> ጎራ ውስጥ ካለ ማንኛውም ኮምፒውተር ላይ ውሂብ ይለዋወጡ</translation>
 <translation id="8670869118777164560">ይህ ቅጥያ አንድ የአውታረ መረብ ጥያቄ ወደ <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> ማዞር አልተሳካለትም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME"/>) ወደ <ph name="ACTUAL_REDIRECT_DESTINATION"/> አዙሮታል።</translation>
 <translation id="6840444547062817500">ይህ ቅጥያ ብዙ ጊዜ እራሱን ዳግም ጭኗል።</translation>
+<translation id="2270450558902169558">በ<ph name="DOMAIN"/> ጎራ ውስጥ ካለ ማንኛውም መሣሪያ ጋር ውሂብ ተለዋወጥ</translation>
 <translation id="8047248493720652249">ይህ ቅጥያ የወረደውን «<ph name="ATTEMPTED_FILENAME"/>» ብሎ መሰየም አልተሳካለትም፣ ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME"/>) ሌላ የፋይል ስም «<ph name="ACTUAL_FILENAME"/>» ስለወሰነ ነው።</translation>
 <translation id="452039078290142656">ከ<ph name="VENDOR_NAME"/> የመጡ ያልታወቁ መሣሪያዎች</translation>
-<translation id="4968399700653439437">በእነዚህ ጎራዎች ውስጥ ካለ ማንኛውም ኮምፒውተር ላይ ውሂብ ይለዋወጡ፦ <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">የድር እይታ፦ <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="2753617847762399167">ህገወጥ ዱካ (በ«..» ፍጹማዊ ወይም አንጻራዊ)፦ «<ph name="IMAGE_PATH"/>»</translation>
 <translation id="8284279544186306258">ሁሉም የ<ph name="WEBSITE_1"/> ጣቢያዎች</translation>
@@ -56,6 +55,8 @@
 <translation id="27822970480436970">ለውጡ ከሌላ ቅጥያ ጋር ስለተጋጨ ይህ ቅጥያ የአውታረ መረብ ጥያቄ መቀየር አልተሳካለትም።</translation>
 <translation id="2241053333139545397">ውሂብዎን በተወሰኑ ድር ጣቢያዎች ላይ ያነብባል እና ይቀይራል</translation>
 <translation id="8602184400052594090">ገላጭ ፋይሉ ጠፍቷል ወይም ተነባቢ አይደለም።</translation>
+<translation id="2270627217422354837">በጎራዎች ውስጥ ካለ ከማናቸውም መሣሪያ ጋር ውሂብ ተለዋወጥ፦ <ph name="DOMAINS"/></translation>
+<translation id="7093866338626856921">ስማቸው እንደሚከተለው ከሆኑ መሣሪያዎች ጋር ውሂብ ተለዋወጥ፦ <ph name="HOSTNAMES"/></translation>
 <translation id="4883436287898674711">ሁሉም የ<ph name="WEBSITE_1"/> ጣቢያዎች</translation>
 <translation id="9111791539553342076">ይህ ቅጥያ የምላሽ ርዕሱን «<ph name="HEADER_NAME"/>» መቀየር አልተሳካለትም ምክንያቱም ለውጡ ከሌላ ቅጥያ <ph name="EXTENSION_NAME"/> ጋር ስለተጋጨ።</translation>
 <translation id="9150045010208374699">ካሜራዎን ይጠቀማል</translation>
@@ -77,6 +78,7 @@
 <translation id="2159915644201199628">የዚህ ምስል ስውሩን መግለጥ አልተቻለም፦ «<ph name="IMAGE_NAME"/>»</translation>
 <translation id="5544884907028850012">የተፈቀደለት ሻጭ <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">የእርስዎን የአውታረ መረብ ትራፊክ ይድረስበት</translation>
+<translation id="1256619696651732561">ቅጥያ ገልጦ ማሳያ ተንታኝ</translation>
 <translation id="5972529113578162692">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME"/> እንዲጫን ይፈልጋል። ከተጫነ በኋላ ሊራገፍ አይችልም።</translation>
 <translation id="1135328998467923690">ጥቅል ልክ የሆነ አይደለም፦ «<ph name="ERROR_CODE"/>»።</translation>
 <translation id="7131040479572660648">የእርስዎን ውሂብ በ<ph name="WEBSITE_1"/>፣ በ<ph name="WEBSITE_2"/>፣ እና በ<ph name="WEBSITE_3"/> ላይ ያንብቡ</translation>

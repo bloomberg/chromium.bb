@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Batteria carica</translation>
 <translation id="6895424601869865703">Aggiungi un account per <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
-<translation id="1057289296854808272">Rotazione attiva (tocca qui per cambiare l'impostazione)</translation>
+<translation id="5548285847212963613">L'estensione &quot;<ph name="EXTENSION_NAME"/>&quot; può essere utile per il collegamento a questa rete.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> e <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Pulsante Overflow</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
@@ -39,7 +39,6 @@
 Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6043994281159824495">Esci ora</translation>
 <translation id="2127372758936585790">Caricabatterie a basso consumo</translation>
-<translation id="4625920103690741805">Rotazione bloccata (tocca qui per cambiare l'impostazione)</translation>
 <translation id="3799026279081545374">Probabilmente il tuo caricabatterie non è valido. Se risiedi negli Stati Uniti, chiama il numero 866-628-1371, per ricevere assistenza e un caricabatterie sostitutivo. Se risiedi nel Regno Unito, chiama il numero 0800-026-0613. Se risiedi in Irlanda, chiama il numero 1-800-832-664. Se risiedi in Canada, chiama il numero 866-628-1372. Se risiedi in Australia, chiama il numero 1-800-067-460.</translation>
 <translation id="3891340733213178823">Premi due volte Ctrl+Maiusc+Q per uscire.</translation>
 <translation id="5871632337994001636">Gestisci dispositivi...</translation>

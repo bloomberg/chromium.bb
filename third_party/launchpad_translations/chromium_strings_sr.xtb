@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
+<translation id="2705212601509139398">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и преузмите компатибилан прегледач.</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="8586442755830160949">Ауторска права <ph name="YEAR"/>. Аутори Chromium-а. Сва права задржана.</translation>
 <translation id="6373523479360886564">Јесте ли сигурни да желите да деинсталирате Chromium?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Овај рачунар ће ускоро престати да прима ажурирања за Chromium јер његов хардвер више није подржан.</translation>
 <translation id="5532301346661895910">Chromium ће сачувати ове податке у вашим |лозинкама сачуваним на Google-у| и сетиће их се када вам буду затребали.</translation>
 <translation id="6893813176749746474">Chromium је ажуриран, али га нисте користили најмање 30 дана.</translation>
+<translation id="421369550622382712">Откријте одличне апликације, игре, додатке и теме за Chromium.</translation>
 <translation id="2732467638532545152">Рачунар користи стару верзију Microsoft Windows-а која не може да обради безбедносни сертификат овог веб-сајта. Због тог проблема, Chromium не може да одреди да ли сертификат потиче са <ph name="SITE"/> или од неког на мрежи ко се претвара да је <ph name="SITE"/>. Ажурирајте рачунар на новију верзију Windows-а.</translation>
 <translation id="2770231113462710648">Промени подразумевани прегледач у:</translation>
 <translation id="6613594504749178791">Промене ће ступити на снагу када следећи пут поново покренете Chromium.</translation>
@@ -119,6 +121,7 @@
 <translation id="5358375970380395591">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME"/>. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Покретач Chromium апликација</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
+<translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="8493179195440786826">Chromium је застарео</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> захтева да прочитате и прихватите следеће Услове коришћења услуге пре него што почнете да користите овај уређај. Ови услови не представљају проширење, измену или ограничење Услова за Chromium ОС.</translation>
@@ -128,6 +131,7 @@
 <translation id="2535480412977113886">Chromium ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="8697124171261953979">Контролише и страницу која се приказује када покренете Chromium или претражујете из омнибокса.</translation>
 <translation id="894903460958736500">Софтвер покренут на рачунару није компатибилан са Chromium-ом.</translation>
+<translation id="6810143991807788455">Помозите да побољшамо Chromium тако што ћете послати извештај о актуелним подешавањима</translation>
 <translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
 <translation id="9022552996538154597">Пријављивање на Chromium</translation>
 <translation id="4365115785552740256">Chromium омогућавају <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> пројекат отвореног кода и други <ph name="BEGIN_LINK_OSS"/>софтвер отвореног кода<ph name="END_LINK_OSS"/>.</translation>
@@ -162,6 +166,7 @@
 <translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
 <translation id="2648074677641340862">Током инсталације је дошло до грешке у оперативном систему. Преузмите Chromium поново.</translation>
 <translation id="5942520288919337908">Додатак <ph name="EXTENSION_NAME"/> је додат у Chromium.</translation>
+<translation id="7211828883345145708">Омогућава додатне тастерске пречице које су корисне за отклањање грешака Chromium-а.</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Идите у
@@ -197,6 +202,7 @@
 <translation id="130631256467250065">Промене ће ступити на снагу када следећи пут поново покренете уређај.</translation>
 <translation id="3244477511402911926">Chromium центар за обавештења</translation>
 <translation id="9197815481970649201">Сада сте пријављени на Chromium</translation>
+<translation id="7162152143154757523">Chromium може да пружи паметнију проверу правописа слањем текста који уносите у прегледач на Google сервере, што вам омогућава да користите исту технологију провере правописа коју користи Google претрага.</translation>
 <translation id="1929939181775079593">Chromium не реагује. Желите ли да га одмах поново покренете?</translation>
 <translation id="1414495520565016063">Пријављени сте на Chromium!</translation>
 <translation id="2158734852934720349">Лиценце отвореног кода за Chromium ОС</translation>
@@ -212,6 +218,7 @@
 <translation id="811857857463334932">Овај рачунар више неће примати ажурирања за Chromium јер његов хардвер више није подржан.</translation>
 <translation id="2910007522516064972">О &amp;Chromium-у</translation>
 <translation id="8453117565092476964">Архива програма за инсталацију је оштећена или неважећа. Преузмите Chromium поново.</translation>
+<translation id="2558641060352364164">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и надоградите на модеран прегледач.</translation>
 <translation id="3889543394854987837">Кликните на име да бисте отворили Chromium и почните да прегледате.</translation>
 <translation id="3130323860337406239">Chromium користи микрофон.</translation>
 <translation id="7196020411877309443">Зашто видим ово?</translation>

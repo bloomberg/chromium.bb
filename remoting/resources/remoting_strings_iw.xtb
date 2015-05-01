@@ -49,7 +49,9 @@ Chromoting</translation>
 <translation id="8355326866731426344">התוקף של קוד גישה זה יפוג ב-<ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">‏מחברי Chromium</translation>
 <translation id="2498359688066513246">עזרה ומשוב</translation>
+<translation id="3606997049964069799">‏אתה לא מחובר ל-Chromium. היכנס ונסה שוב.</translation>
 <translation id="6198252989419008588">‏שנה PIN</translation>
+<translation id="7970576581263377361">‏האימות נכשל. היכנס שוב ל-Chromium.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
 <translation id="4804818685124855865">נתק</translation>
@@ -70,12 +72,15 @@ Chromoting</translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="228809120910082333">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה, כדי לאפשר גישה באמצעות Chromoting.</translation>
 <translation id="7605995381616883502">חיבור חדש</translation>
+<translation id="2038229918502634450">מתבצע אתחול של המארח כדי להחיל שינוי במדיניות.</translation>
 <translation id="2851674870054673688">לאחר שהמשתמש יזין את הקוד, השיתוף יתחיל לפעול.</translation>
 <translation id="5593560073513909978">באופן זמני, השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="3908017899227008678">הקטן להתאמה</translation>
 <translation id="8073845705237259513">‏כדי להשתמש ב'שולחן עבודה מרוחק של Chrome', עליך להוסיף חשבון Google למכשיר שלך.</translation>
+<translation id="2894654864775534701">המחשב הזו משותף כרגע כחלק מחשבון אחר.</translation>
 <translation id="1199593201721843963">השבת חיבורים מרוחקים</translation>
 <translation id="5379087427956679853">‏'שולחן עבודה מרוחק של Chrome' מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום 'שולחן עבודה מרוחק של Chrome', שניתן למצוא בכתובת <ph name="URL"/>.</translation>
+<translation id="3150823315463303127">המארח לא הצליח לקרוא את המדיניות.</translation>
 <translation id="2220529011494928058">דווח על בעיה</translation>
 <translation id="174018511426417793">‏אין לך מחשבים רשומים. כדי להפעיל חיבורים מרוחקים למחשב, התקן את 'שולחן עבודה מרוחק של Chrome' במחשב היעד ולחץ על '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="9126115402994542723">‏אל תבקש שוב PIN בעת התחברות למארח הזה ממכשיר זה.</translation>
@@ -166,6 +171,7 @@ Chromoting</translation>
 <translation id="2939145106548231838">אמת מול המארח</translation>
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
 <translation id="3776024066357219166">‏הפעילות של 'שולחן עבודה מרוחק של Chrome' הסתיימה.</translation>
+<translation id="1450760146488584666">האובייקט המבוקש אינו קיים.</translation>
 <translation id="5625493749705183369">גש למחשבים אחרים או אפשר למשתמש אחר לגשת למחשב שלך דרך האינטרנט באופן מאובטח.</translation>
 <translation id="2512228156274966424">‏שים לב: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את שולחן העבודה המרוחק של Chrome ל'פתח כחלון'.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
@@ -195,12 +201,14 @@ Chromoting</translation>
 <translation id="6527303717912515753">שתף</translation>
 <translation id="2926340305933667314">הניסיון להשבית גישה מרחוק למחשב זה נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="6865175692670882333">הצג/ערוך</translation>
+<translation id="544077782045763683">המארח כבה.</translation>
 <translation id="5859141382851488196">חלון חדש…</translation>
 <translation id="2089514346391228378">הופעלו חיבורים מרוחקים למחשב זה.</translation>
 <translation id="7693372326588366043">רענן את רשימת המארחים</translation>
 <translation id="8445362773033888690">‏הצג בחנות Google Play</translation>
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
 <translation id="8187079423890319756">‏Copyright 2013 The Chromium Authors. כל הזכויות שמורות.</translation>
+<translation id="6221358653751391898">‏אתה לא מחובר ל-Chrome. היכנס ונסה שוב.</translation>
 <translation id="7038683108611689168">‏עזור לנו לשפר את Chromoting בכך שתאפשר לנו לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="6040143037577758943">סגור</translation>
 <translation id="4405930547258349619">ספריית ליבה</translation>
@@ -241,6 +249,7 @@ Chromoting</translation>
 <translation id="3596628256176442606">‏שירות זה מאפשר חיבורים נכנסים מלקוחות Chromoting.</translation>
 <translation id="1978866438647250517">• שיפורים בממשק המשתמש.
 • שימוש מופחת ברשת בזמן ריצה ברקע.</translation>
+<translation id="4741792197137897469">‏האימות נכשל. היכנס שוב ל-Chrome.</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="837021510621780684">ממחשב זה</translation>
 <translation id="518094545883702183">המידע הזה משמש רק לאבחון הבעיה שדיווחת עליה. הוא זמין רק למי שבוחן את הדוח, ונשמר למשך זמן של 30 ימים לכל היותר.</translation>

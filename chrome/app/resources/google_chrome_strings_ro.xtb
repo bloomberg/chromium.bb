@@ -30,6 +30,7 @@
 <translation id="5620765574781326016">Află despre subiectele de pe site-uri fără să părăsești pagina.</translation>
 <translation id="2721687379934343312">Pe Mac, parolele sunt salvate în aplicația dvs. Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care utilizează același cont de OS X.</translation>
 <translation id="683440813066116847">Regula de intrare pentru Google Chrome Canary pentru a permite traficul mDNS.</translation>
+<translation id="4700157086864140907">Google Chrome poate oferi o verificare a ortografiei mai inteligentă prin trimiterea textului introdus în browser la serverele Google, permițându-vă să utilizați aceeași tehnologie de verificare a ortografiei utilizată de Căutare Google.</translation>
 <translation id="4953650215774548573">Setați Google Chrome ca browser prestabilit</translation>
 <translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
 <translation id="7419046106786626209">Sistemul de operare Chrome nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
@@ -90,6 +91,7 @@
 <translation id="4424024547088906515">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; Chrome nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="5618769508111928343"><ph name="SITE"/> folosește în mod normal criptarea pentru a proteja informațiile tale. Când Chrome a încercat să se conecteze la <ph name="SITE"/> de această dată, site-ul a trimis înapoi date de conectare neobișnuite și incorecte. Fie un atacator pretinde că este <ph name="SITE"/>, fie un ecran de conectare Wi-Fi a întrerupt conectarea. Informațiile tale sunt încă în siguranță. Chrome a oprit conectarea înainte de transferul datelor.</translation>
+<translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="2576431527583832481">Chrome a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
 <translation id="4633000520311261472">Pentru ca browserul Chrome să fie mai sigur, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
 <translation id="3656661827369545115">Chromium se lansează automat la pornirea computerului</translation>
@@ -181,6 +183,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
+<translation id="597770749449734237">Activează comenzi rapide suplimentare de la tastatură care sunt utile pentru remedierea erorilor din Google Chrome.</translation>
 <translation id="4147555960264124640">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Pentru a utiliza Google Wallet, trebuie să faceți upgrade browserului Chrome [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Accesați
@@ -195,6 +198,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3444832043240812445">Această pagină afișează informații cu privire la recentele blocări numai dacă <ph name="BEGIN_LINK"/>activezi raportarea blocărilor<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome nu mai răspunde. Îl repornești acum?</translation>
 <translation id="2681064822612051220">A fost găsită o instalare conflictuală a Google Chrome în sistem. Dezinstaleaz-o și încearcă din nou.</translation>
+<translation id="2252923619938421629">Contribuie la îmbunătățirea browserului Google Chrome raportând setările actuale</translation>
 <translation id="6126631249883707068">Vrei ca Google Chrome să îți salveze parola?</translation>
 <translation id="7773845170078702898">Doriți ca Google Chrome să salveze parola pentru acest site?</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
@@ -246,6 +250,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3047079729301751317">Dacă deconectați utilizatorul <ph name="USERNAME"/>, vor fi șterse istoricul, marcajele, setările și alte date Chrome salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK"/>Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Arhiva programului de instalare este deteriorată sau nevalidă. Descarcă din nou Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome nu poate afișa previzualizarea înainte de printare când vizualizatorul PDF încorporat lipsește.</translation>
+<translation id="5132929315877954718">Descoperă aplicații, jocuri, extensii și teme extraordinare pentru Google Chrome.</translation>
 <translation id="6626317981028933585">Din păcate, setările tale pentru Mozilla Firefox nu sunt disponibile în timp ce acesta rulează. Pentru a importa aceste setări în Google Chrome, salvează și închide toate ferestrele Firefox. Apoi dă clic pe Continue (Continuă).</translation>
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Stabilește și ce pagină se afișează când porniți Chrome sau când căutați din caseta polivalentă.</translation>
@@ -254,6 +259,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="1698376642261615901">Google Chrome este un browser web care rulează pagini web și aplicații cu o viteză extraordinară. Este rapid, stabil și ușor de utilizat. Navigați pe web beneficiind de mai multă siguranță datorită protecției împotriva programelor malware și a phishingului, care este încorporată în Google Chrome.</translation>
 <translation id="853189717709780425">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele dvs. Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont.</translation>
+<translation id="699076943483372849">Acest site folosește pluginul Chrome Frame, care a fost retras și nu mai primește actualizări de securitate sau de stabilitate. Dezinstalează-l sau fă upgrade la un browser modern.</translation>
 <translation id="6049075767726609708">Un administrator a instalat Google Chrome pe acest sistem, iar acum acesta este disponibil pentru toți utilizatorii. Versiunea Google Chrome la nivel de sistem o va înlocui acum pe cea la nivel de utilizator.</translation>
 <translation id="1818142563254268765">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chrome.</translation>
 <translation id="7408085963519505752">Termeni și condiții pentru sistemul de operare Chrome</translation>

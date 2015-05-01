@@ -49,7 +49,9 @@ Chromoting</translation>
 <translation id="8355326866731426344">Acest cod de acces va expira în <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">Ajutor și feedback</translation>
+<translation id="3606997049964069799">Nu te-ai conectat la Chromium. Conectează-te și încearcă din nou.</translation>
 <translation id="6198252989419008588">Schimbă codul PIN</translation>
+<translation id="7970576581263377361">Autentificarea nu a reușit. Conectează-te din nou la Chromium.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
 <translation id="4804818685124855865">Deconectează-te</translation>
@@ -70,12 +72,15 @@ Chromoting</translation>
 <translation id="9188433529406846933">Autorizați</translation>
 <translation id="228809120910082333">Confirmați mai jos contul și codul PIN pentru a permite accesarea prin intermediul Chromoting.</translation>
 <translation id="7605995381616883502">Conexiune nouă</translation>
+<translation id="2038229918502634450">Gazda este în curs de repornire datorită unei schimbări de politică.</translation>
 <translation id="2851674870054673688">După ce persoana respectivă introduce codul, sesiunea de permitere a accesului va începe.</translation>
 <translation id="5593560073513909978">Serviciul este temporar indisponibil. Încercați din nou mai târziu.</translation>
 <translation id="3908017899227008678">Potriviți prin micșorare</translation>
 <translation id="8073845705237259513">Pentru a folosi Desktop la distanță Chrome, va trebui să adăugați un Cont Google pe dispozitiv.</translation>
+<translation id="2894654864775534701">Momentan, accesul la computer este permis de pe un alt cont.</translation>
 <translation id="1199593201721843963">Dezactivați conexiunile la distanță</translation>
 <translation id="5379087427956679853">Cu aplicația Desktop la distanță Chrome, puteți permite accesul în siguranță la computerul dvs. pe web. Ambii utilizatori trebuie să ruleze aplicația Desktop la distanță Chrome, care poate fi găsită la <ph name="URL"/>.</translation>
+<translation id="3150823315463303127">Gazda nu a putut citi politica.</translation>
 <translation id="2220529011494928058">Semnalați o problemă</translation>
 <translation id="174018511426417793">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="9126115402994542723">Nu mai solicita un cod PIN când mă conectez la această gazdă de pe acest dispozitiv.</translation>
@@ -166,6 +171,7 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="2939145106548231838">Autentificare la gazdă</translation>
 <translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat, probabil, de configurația rețelei pe care o utilizați.</translation>
 <translation id="3776024066357219166">Sesiunea Desktop la distanță Chrome s-a încheiat.</translation>
+<translation id="1450760146488584666">Obiectul solicitat nu există.</translation>
 <translation id="5625493749705183369">Accesați alte computere sau permiteți altui utilizator să vă acceseze computerul în siguranță pe internet.</translation>
 <translation id="2512228156274966424">NOTĂ: pentru a vă asigura că toate comenzile rapide de la tastatură sunt disponibile, puteți seta Desktop la distanță Chrome în modul „Deschideți ca fereastră”.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
@@ -195,12 +201,14 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="2926340305933667314">Dezactivarea accesului la distanță la acest computer nu a reușit. Încercați din nou mai târziu.</translation>
 <translation id="6865175692670882333">Afișați/Editați</translation>
+<translation id="544077782045763683">Gazda a fost închisă.</translation>
 <translation id="5859141382851488196">Fereastră nouă...</translation>
 <translation id="2089514346391228378">Conexiunile la distanță pentru acest computer au fost activate.</translation>
 <translation id="7693372326588366043">Actualizați lista gazdelor</translation>
 <translation id="8445362773033888690">Vedeți în Magazin Google Play</translation>
 <translation id="1654128982815600832">Se activează conexiunile la distanță pentru acest computer…</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Toate drepturile rezervate.</translation>
+<translation id="6221358653751391898">Nu te-ai conectat la Chrome. Conectează-te și încearcă din nou.</translation>
 <translation id="7038683108611689168">Ajutați-ne să îmbunătățim Chromoting, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="4405930547258349619">Biblioteca nucleu</translation>
@@ -241,6 +249,7 @@ la distanță Chrome</translation>
 <translation id="3596628256176442606">Acest serviciu permite conexiuni primite de la clienți Chromoting.</translation>
 <translation id="1978866438647250517">• Îmbunătățiri ale interfeței de utilizare.
 • Utilizare redusă a rețelei când rulează în fundal.</translation>
+<translation id="4741792197137897469">Autentificarea nu a reușit. Conectează-te din nou la Chrome.</translation>
 <translation id="4277463233460010382">Acest computer este configurat să permită conectarea unuia sau a mai multor clienți fără introducerea unui PIN.</translation>
 <translation id="837021510621780684">De la acest computer</translation>
 <translation id="518094545883702183">Această informație este folosită numai pentru diagnosticarea problemei pe care o raportezi, este disponibilă numai pentru persoana care îți examinează raportul și nu este păstrată pentru mai mult de 30 de zile.</translation>

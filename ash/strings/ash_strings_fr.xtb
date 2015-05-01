@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Batterie pleine</translation>
 <translation id="6895424601869865703">Ajouter un compte pour <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
-<translation id="1057289296854808272">Rotation activée (appuyer ici pour changer)</translation>
+<translation id="5548285847212963613">L'extension &quot;<ph name="EXTENSION_NAME"/>&quot; peut aider à se connecter à ce réseau.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> et <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Bouton de dépassement de capacité</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
@@ -39,7 +39,6 @@
 Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
-<translation id="4625920103690741805">Rotation verrouillée (appuyer ici pour changer)</translation>
 <translation id="3799026279081545374">Votre chargeur est peut-être défaillant. Si vous résidez aux États-Unis, veuillez appeler le 866 628 1371 pour obtenir de l'aide et recevoir un chargeur de substitution. Si vous résidez au Royaume-Uni, veuillez appeler le 0800 026 0613. Si vous résidez en Irlande, veuillez appeler le 1 800 832 664. Si vous résidez au Canada, veuillez appeler le 866 628 1372. Si vous résidez en Australie, veuillez appeler le 1 800 067 460.</translation>
 <translation id="3891340733213178823">Appuyez deux fois sur Ctrl + Maj + Q pour vous déconnecter.</translation>
 <translation id="5871632337994001636">Gérer les appareils…</translation>

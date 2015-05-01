@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> のアカウントを追加</translation>
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
-<translation id="1057289296854808272">自動回転（タップして変更）</translation>
+<translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME"/>」はこのネットワークへの接続をサポートします。</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">オーバーフロー ボタン</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
@@ -39,7 +39,6 @@
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="6043994281159824495">ログアウト</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
-<translation id="4625920103690741805">回転しない（タップして変更）</translation>
 <translation id="3799026279081545374">充電器に問題がある可能性があります。お住まいの国に応じて、それぞれのサポート/交換対応窓口までお問い合わせください。米国にお住まいの場合は 866-628-1371 までお電話ください。英国にお住まいの場合は 0800-026-0613 までお電話ください。アイルランドにお住まいの場合は 1-800-832-664 までお電話ください。カナダにお住まいの場合は 866-628-1372 までお電話ください。オーストラリアにお住まいの場合は 1-800-067-460 までお電話ください。</translation>
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>

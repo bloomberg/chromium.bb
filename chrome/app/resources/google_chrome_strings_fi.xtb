@@ -30,6 +30,7 @@
 <translation id="5620765574781326016">Tutustu verkkosivuston aiheisiin poistumatta sivulta.</translation>
 <translation id="2721687379934343312">Salasanat tallennetaan Macilla Avainnippuusi, ja muut Chrome-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="683440813066116847">Google Chrome Canaryn saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
+<translation id="4700157086864140907">Google Chrome voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksentarkistustekniikkaa.</translation>
 <translation id="4953650215774548573">Aseta Google Chrome oletusselaimeksi</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="7419046106786626209">Chrome-käyttöjärjestelmä ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
@@ -91,6 +92,7 @@
 <translation id="4424024547088906515">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN"/>; Chrome ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="473775607612524610">Päivitä</translation>
 <translation id="5618769508111928343"><ph name="SITE"/> suojaa tietosi normaalisti salauksen avulla. Kun Chrome yritti yhdistää sivustoon <ph name="SITE"/> tällä kertaa, sivusto palautti epätavalliset ja virheelliset tiedot. Joko hyökkääjä yrittää esiintyä sivustona <ph name="SITE"/> tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chrome katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
+<translation id="6600954340915313787">Kopioitiin Chromeen.</translation>
 <translation id="2576431527583832481">Chromesta tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
 <translation id="4633000520311261472">Paransimme Chromen turvallisuutta poistamalla käytöstä sovelluksia, joita ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> ja jotka on voitu lisätä ilman lupaasi.</translation>
 <translation id="3656661827369545115">Käynnistä Chromium automaattisesti tietokoneen käynnistyessä</translation>
@@ -182,6 +184,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="7890208801193284374">Jos käytät jaettua tietokonetta, kaverisi ja perheenjäsenesi voivat selata verkkoa omista profiileistaan käsin ja muokata Chromesta juuri itselleen sopivan.</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
+<translation id="597770749449734237">Ottaa käyttöön lisää pikanäppäimiä, joiden avulla voi suorittaa Google Chromen vianetsintää.</translation>
 <translation id="4147555960264124640">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Chrome on päivitettävä ennen kuin voit käyttää Google Walletia [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Avaa
@@ -196,6 +199,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="3444832043240812445">Tällä sivulla näkyy tietoja viimeaikaisista kaatumisista vain, jos <ph name="BEGIN_LINK"/>otat kaatumisraportit käyttöön<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="2681064822612051220">Järjestelmästä löytyi ristiriidan aiheuttava toinen Google Chromen asennus. Poista tuote ja yritä uudelleen.</translation>
+<translation id="2252923619938421629">Auta parantamaan Google Chromea ilmoittamalla nykyiset asetukset.</translation>
 <translation id="6126631249883707068">Haluatko, että Google Chrome tallentaa salasanasi?</translation>
 <translation id="7773845170078702898">Haluatko Google Chromen tallentavan tämän sivuston salasanan?</translation>
 <translation id="4251615635259297716">Linkitetäänkö Chrome-tiedot tähän tiliin?</translation>
@@ -246,6 +250,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="3047079729301751317">Jos irrotat tilin <ph name="USERNAME"/>, historiasi, kirjanmerkkisi ja muut laitteelle tallennetut Chrome-tiedot poistetaan. Google-tiliisi tallennetut tiedot säilyvät ennallaan ja voit hallinnoida niitä <ph name="GOOGLE_DASHBOARD_LINK"/>Google Hallintapaneelin kautta<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Asennusohjelman arkistotiedosto on vioittunut tai se ei kelpaa. Lataa Google Chrome uudelleen.</translation>
 <translation id="2246246234298806438">Google Chrome ei voi näyttää tulostusesikatselua, koska PDF-katseluohjelma puuttuu.</translation>
+<translation id="5132929315877954718">Löydät hienoja sovelluksia, pelejä ja teemoja Google Chromelle.</translation>
 <translation id="6626317981028933585">Valitettavasti Mozilla Firefox-asetuksesi eivät ole käytettävissä kun kyseinen selain on toiminnassa. Tuodaksesi asetukset Google Chromeen, tallenna mahdolliset keskeneräiset työt ja sulje kaikki Firefox-ikkunat. Klikkaa sitten Jatka.</translation>
 <translation id="7242029209006116544">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. Voit myös halutessasi luoda uuden profiilin, jos haluat pitää aiemmat Chrome-tietosi erillään. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Määrittää myös Chromen ja omnibox-hakujen aloitussivun.</translation>
@@ -254,6 +259,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="1698376642261615901">Google Chrome on verkkoselain, jolla voit avata verkkosivuja ja sovelluksia salamannopeasti. Se on nopea, vakaa ja helppokäyttöinen. Selaa verkkoa turvallisemmin Google Chromen haittaohjelma- ja tietojenkalastelusuojauksen avulla.</translation>
 <translation id="853189717709780425">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin.</translation>
+<translation id="699076943483372849">Tämä sivusto käyttää vanhaa Chrome-kehyslaajennusta, johon ei ole enää saatavilla tietoturva- ja vakauspäivityksiä. Poista se ja asenna uudempi selain.</translation>
 <translation id="6049075767726609708">Järjestelmänvalvoja on asentanut Google Chromen tähän järjestelmään ja selain on kaikkien käyttäjien käytettävissä. Järjestelmätason Google Chrome korvaa käyttäjätason asennuksen.</translation>
 <translation id="1818142563254268765">Chrome ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Päivitä Chrome.</translation>
 <translation id="7408085963519505752">Chrome-käyttöjärjestelmän käyttöehdot</translation>

@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="6895424601869865703">Konto für <ph name="GIVEN_NAME"/> hinzufügen</translation>
 <translation id="1270290102613614947">Bildschirmtastatur deaktiviert</translation>
-<translation id="1057289296854808272">Rotation aktiviert – zum Ändern hier tippen</translation>
+<translation id="5548285847212963613">Die Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; kann die Verbindung mit diesem Netzwerk unterstützen.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> und <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Überlaufschaltfläche</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
@@ -39,7 +39,6 @@
 Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6043994281159824495">Jetzt abmelden</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
-<translation id="4625920103690741805">Rotation gesperrt – zum Ändern hier tippen</translation>
 <translation id="3799026279081545374">Möglicherweise ist Ihr Ladegerät fehlerhaft. Wenn Sie in den USA leben, erhalten Sie unter der Telefonnummer 866-628-1371 Hilfe und ein Ersatzgerät. Wählen Sie im Vereinigten Königreich die Nummer 0800-026-0613, in Irland die Nummer 1-800-832-664, in Kanada die Nummer 866-628-1372 und in Australien die Nummer 1-800-067-460.</translation>
 <translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Shift + Q.</translation>
 <translation id="5871632337994001636">Geräte verwalten...</translation>

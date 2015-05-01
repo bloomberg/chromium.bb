@@ -49,7 +49,9 @@ Host</translation>
 <translation id="8355326866731426344">Dieser Zugriffscode läuft in <ph name="TIMEOUT"/> ab.</translation>
 <translation id="985602178874221306">Die Chromium-Autoren</translation>
 <translation id="2498359688066513246">Hilfe und Feedback</translation>
+<translation id="3606997049964069799">Sie sind nicht in Chromium angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="6198252989419008588">PIN ändern</translation>
+<translation id="7970576581263377361">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chromium an.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
@@ -70,12 +72,15 @@ Host</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="228809120910082333">Bestätigen Sie unten Ihr Konto und Ihre PIN, um den Zugriff durch Chromoting zu gestatten.</translation>
 <translation id="7605995381616883502">Neue Verbindung</translation>
+<translation id="2038229918502634450">Der Host wird neu gestartet, um eine Richtlinienänderung zu übernehmen.</translation>
 <translation id="2851674870054673688">Sobald der Nutzer den Code eingibt, beginnt die Freigabesitzung.</translation>
 <translation id="5593560073513909978">Der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="3908017899227008678">Größe anpassen</translation>
 <translation id="8073845705237259513">Wenn Sie Chrome Remote Desktop verwenden möchten, fügen Sie ein Google-Konto zu Ihrem Gerät hinzu.</translation>
+<translation id="2894654864775534701">Dieser Computer ist derzeit über ein anderes Konto freigegeben.</translation>
 <translation id="1199593201721843963">Remote-Verbindungen deaktivieren</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop ermöglicht die sichere Freigabe Ihres Computers über das Internet. Beide Nutzer müssen dazu die Chrome Remote Desktop App ausführen. Diese App finden Sie unter <ph name="URL"/>.</translation>
+<translation id="3150823315463303127">Die Richtlinie konnte vom Host nicht gelesen werden.</translation>
 <translation id="2220529011494928058">Problem melden</translation>
 <translation id="174018511426417793">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie Chrome Remote Desktop auf dem betreffenden Computer und klicken Sie auf &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="9126115402994542723">Beim Verbinden des Geräts mit diesem Host nicht mehr nach der PIN fragen</translation>
@@ -166,6 +171,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2939145106548231838">Authentifizierung gegenüber dem Host</translation>
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden. Das von Ihnen verwendete Netzwerk ist möglicherweise nicht korrekt konfiguriert.</translation>
 <translation id="3776024066357219166">Ihre Chrome Remote Desktop-Sitzung wurde beendet.</translation>
+<translation id="1450760146488584666">Das angeforderte Objekt ist nicht vorhanden.</translation>
 <translation id="5625493749705183369">Greifen Sie sicher über das Internet auf andere Computer zu oder gewähren Sie anderen Nutzern Zugriff auf Ihren Computer.</translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
@@ -195,12 +201,14 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="6527303717912515753">Teilen</translation>
 <translation id="2926340305933667314">Fehler beim Deaktivieren des Remote-Zugriffs auf diesen Computer. Bitte versuchen Sie es später erneut.</translation>
 <translation id="6865175692670882333">Ansehen/bearbeiten</translation>
+<translation id="544077782045763683">Der Host wurde heruntergefahren.</translation>
 <translation id="5859141382851488196">Neues Fenster...</translation>
 <translation id="2089514346391228378">Die Remote-Verbindungen für diesen Computer wurden aktiviert.</translation>
 <translation id="7693372326588366043">Liste der Hosts aktualisieren</translation>
 <translation id="8445362773033888690">Im Google Play Store ansehen</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="8187079423890319756">Copyright 2013 Die Chromium-Autoren. Alle Rechte vorbehalten</translation>
+<translation id="6221358653751391898">Sie sind nicht in Chrome angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="7038683108611689168">Helfen Sie uns bei der Verbesserung von Chromoting, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="4405930547258349619">Zentrale Bibliothek</translation>
@@ -241,6 +249,7 @@ Desktop Host</translation>
 <translation id="3596628256176442606">Dieser Dienst ermöglicht eingehende Verbindungen von Chromoting-Clients.</translation>
 <translation id="1978866438647250517">• Verbesserungen an der Benutzeroberfläche
 • Geringere Netzwerkauslastung beim Ausführen im Hintergrund</translation>
+<translation id="4741792197137897469">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chrome an.</translation>
 <translation id="4277463233460010382">Dieser Computer wird konfiguriert, um einem oder mehreren Clients das Herstellen einer Verbindung ohne Eingabe einer PIN zu ermöglichen.</translation>
 <translation id="837021510621780684">Von diesem Computer</translation>
 <translation id="518094545883702183">Diese Informationen werden nur zur Diagnose des gemeldeten Problems verwendet. Dabei kann nur die Person auf sie zugreifen, die Ihren Bericht untersucht. Die Informationen werden nach spätestens 30 Tagen gelöscht.</translation>

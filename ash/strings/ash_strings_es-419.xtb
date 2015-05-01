@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Batería completa</translation>
 <translation id="6895424601869865703">Agregar una cuenta para <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
-<translation id="1057289296854808272">Rotación activada (presiona aquí para modificar)</translation>
+<translation id="5548285847212963613">La extensión &quot;<ph name="EXTENSION_NAME"/>&quot; puede ayudarte a conectarte a la red.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> y <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Botón de desbordamiento</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
@@ -39,7 +39,6 @@
 Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6043994281159824495">Salir ahora</translation>
 <translation id="2127372758936585790">Cargador de baja potencia</translation>
-<translation id="4625920103690741805">Rotación bloqueada (presiona aquí para modificar)</translation>
 <translation id="3799026279081545374">Es posible que el cargador esté fallado. Si vives en Estados Unidos, comunícate al 866-628-1371 para recibir ayuda y un reemplazo. Si vives en el Reino Unido, comunícate al 0800-026-0613. Si vives en Irlanda, comunícate al 1-800-832-664. Si vives en Canadá, comunícate al 866-628-1372. Si vives en Australia, comunícate al 1-800-067-460.</translation>
 <translation id="3891340733213178823">Presiona Ctrl + Mayús + Q dos veces para salir.</translation>
 <translation id="5871632337994001636">Administrar dispositivos…</translation>

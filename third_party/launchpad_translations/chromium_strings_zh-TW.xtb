@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
+<translation id="2705212601509139398">我們即將停止支援這個網站使用的 Chromium 內嵌框架外掛程式。請解除安裝該外掛程式，並下載相容的瀏覽器。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. 版權所有。</translation>
 <translation id="6373523479360886564">您確定要解除安裝 Chromium 嗎？</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">這台電腦將不會再收到 Chromium 更新，因為我們不再支援其中的硬體。</translation>
 <translation id="5532301346661895910">Chromium 會將此密碼儲存在您的 |Google 儲存的密碼|中，讓您在下次需要使用時套用。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您至少超過 30 天沒有使用 Chromium 了。</translation>
+<translation id="421369550622382712">探索 Chromium 專用的優質應用程式、遊戲、擴充功能和主題。</translation>
 <translation id="2732467638532545152">您的電腦所執行的 Microsoft Windows 版本過舊，無法處理這個網站的安全性憑證。因此，Chromium 無法辨識這是 <ph name="SITE"/> 網站的憑證，還是某人在您的網路上偽裝成 <ph name="SITE"/> 網站所發送。請更新您電腦的 Windows 版本。</translation>
 <translation id="2770231113462710648">將預設瀏覽器變更為：</translation>
 <translation id="6613594504749178791">您的變更將於下次重新啟動 Chromium 時生效。</translation>
@@ -117,6 +119,7 @@
 <translation id="5358375970380395591">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chromium 設定檔。您的 Chromium 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME"/> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium 應用程式啟動器</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
+<translation id="3256316712990552818">已複製到 Chromium</translation>
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="95514773681268843">在使用這個裝置前，<ph name="DOMAIN"/> 要求您詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chromium 作業系統條款》。</translation>
@@ -126,6 +129,7 @@
 <translation id="2535480412977113886">您的帳戶登入詳細資料尚未更新，因此 Chromium 作業系統無法同步處理您的資料。</translation>
 <translation id="8697124171261953979">這個擴充功能也會控管 Chromium 啟動時或您使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="894903460958736500">您電腦上執行的軟體與 Chromium 不相容。</translation>
+<translation id="6810143991807788455">只要回報目前的設定，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
 <translation id="1774152462503052664">讓 Chromium 在背景執行</translation>
 <translation id="9022552996538154597">登入 Chromium</translation>
 <translation id="4365115785552740256">Chromium 的開發有賴 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 開放原始碼計劃和其他<ph name="BEGIN_LINK_OSS"/>開發原始碼軟體<ph name="END_LINK_OSS"/>。</translation>
@@ -159,6 +163,7 @@
 <translation id="5398878173008909840">新版 Chromium 現已推出。</translation>
 <translation id="2648074677641340862">安裝期間發生作業系統錯誤，請重新下載 Chromium。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME"/>」加到 Chromium。</translation>
+<translation id="7211828883345145708">啟用其他用來對 Chromium 偵錯的實用鍵盤快速鍵。</translation>
 <translation id="549669000822060376">請稍候，Chromium 正在安裝最新的系統更新。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">前往
@@ -196,6 +201,7 @@
 <translation id="130631256467250065">您的變更會在下次重新啟動裝置時生效。</translation>
 <translation id="3244477511402911926">Chromium 通知中心</translation>
 <translation id="9197815481970649201">您現在已登入 Chromium</translation>
+<translation id="7162152143154757523">Chromium 可將您在瀏覽器中輸入的字詞傳送給 Google 伺服器，並透過 Google 搜尋所使用的拼字檢查技術，為您提供更精確的拼字檢查功能。</translation>
 <translation id="1929939181775079593">Chromium 沒有回應，要立即重新啟動嗎？</translation>
 <translation id="1414495520565016063">您已登入 Chromium！</translation>
 <translation id="2158734852934720349">Chromium 作業系統開放原始碼授權</translation>
@@ -211,6 +217,7 @@
 <translation id="811857857463334932">這台電腦將不會再收到 Chromium 更新，因為我們不再支援其中的硬體。</translation>
 <translation id="2910007522516064972">關於 Chromium(&amp;C)</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
+<translation id="2558641060352364164">我們即將停止支援這個網站使用的 Chromium 內嵌框架外掛程式。請解除安裝該外掛程式，並升級至新型瀏覽器。</translation>
 <translation id="3889543394854987837">按一下您的名稱即可開啟 Chromium 並開始瀏覽。</translation>
 <translation id="3130323860337406239">Chromium 正在使用您的麥克風。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>

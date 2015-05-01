@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="gu">
+<translation id="2705212601509139398">આ સાઇટ જે Chromium ફ્રેમ પ્લગિનનો ઉપયોગ કરી રહી છે તે ટૂંક સમયમાં અસમર્થિત હશે. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને સંગત બ્રાઉઝર ડાઉનલોડ કરો.</translation>
 <translation id="6676384891291319759">ઇંટરનેટ ઍક્સેસ કરો</translation>
 <translation id="8586442755830160949">કોપિરાઇટ <ph name="YEAR"/> The Chromium Authors. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="6373523479360886564">શું તમે ખરેખર તમે Chromium ને અનઇન્સ્ટોલ કરવા માંગો છો?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">આ કમ્પ્યુટર ટૂંક સમયમાં Chromium અપડેટ્સ પ્રાપ્ત કરવાનું બંધ કરશે કારણ કે તેના હાર્ડવેરને હવે સમર્થન નથી.</translation>
 <translation id="5532301346661895910">Chromium આને તમારા |Google સાચવેલા પાસવર્ડ્સ| માં સાચવશે અને આગલી વખતે તમને તેની જરૂર પડે ત્યારે યાદ રાખશે.</translation>
 <translation id="6893813176749746474">Chromium અપડેટ કરવામાં આવ્યું હતું, પણ તમે તેનો 30 દિવસ સુધી ઉપયોગ કર્યો નથી.</translation>
+<translation id="421369550622382712">Chromium માટે શ્રેષ્ઠ એપ્લીકેશન્સ, રમતો, એક્સટેન્શન્સ અને થીમ્સ શોધો.</translation>
 <translation id="2732467638532545152">તમારું કમ્પ્યુટર Microsoft Windows ના એક જૂના સંસ્કરણ પર ચાલી રહ્યું છે જે આ વેબસાઇટના સુરક્ષા પ્રમાણપત્ર પર પ્રક્રિયા કરી શકતું નથી. આ સમસ્યાને કારણે, Chromium કહી શકતું નથી કે પ્રમાણપત્ર <ph name="SITE"/> માંથી છે કે તમારા નેટવર્ક પર <ph name="SITE"/> હોવાનો ડોળ કરનાર કોઈ વ્યક્તિ તરફથી છે. કૃપા કરીને તમારા કમ્પ્યુટરને Windows ના વધુ તાજેતરનાં સંસ્કરણ પર અપડેટ કરો.</translation>
 <translation id="2770231113462710648">ડિફૉલ્ટ બ્રાઉઝરને આના પર બદલો:</translation>
 <translation id="6613594504749178791">તમારા ફેરફારો તમે આગલી વખતે Chromium ફરીથી લોંચ કરશો ત્યારે પ્રભાવમાં આવશે.</translation>
@@ -117,6 +119,7 @@
 <translation id="5358375970380395591">તમે સંચાલિત કરેલ એકાઉન્ટ સાથે સાઇન ઇન કરી રહ્યાં છો અને તમારી Chromium પ્રોફાઇલ પર તેનું વ્યવસ્થાપક નિયંત્રણ આપી રહ્યાં છો. તમારો Chromium ડેટા, જેમ કે એપ્લિકેશન્સ, બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ, કાયમ માટે <ph name="USER_NAME"/> થી બંધાયેલ રહેશે. તમે Google એકાઉન્ટ્સ ડેશબોર્ડથી આ ડેટાને કાઢી શકશો, પરંતુ તમે આ ડેટાને અન્ય એકાઉન્ટ સાથે સાંકળી શકશો નહીં. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium એપ્લિકેશન લૉંચર</translation>
 <translation id="5563479599352954471">એક ટચ વડે શોધ કરો</translation>
+<translation id="3256316712990552818">Chromium પર કૉપી કરી</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ કાઢી નાખીએ?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> માટે જરૂરી છે કે તમે આ ઉપકરણનો ઉપયોગ કરતાં પહેલાં નીચેની સેવાની શરતોને વાંચો અને સ્વીકારો. આ શરતો Chromium OS શરતોને વિસ્તૃત, સંશોધિત અથવા મર્યાદિત કરતી નથી.</translation>
@@ -126,6 +129,7 @@
 <translation id="2535480412977113886">તમારી એકાઉન્ટ સાઇન ઇન વિગતો જૂની હોવાને કારણે Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="8697124171261953979">જ્યારે તમે Chromium શરૂ કરો અથવા ઑમ્નિબૉક્સ પરથી શોધ કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="894903460958736500">તમારા કમ્પ્યુટર પર ચાલતું સૉફ્ટવેર Chromium સાથે અસંગત છે.</translation>
+<translation id="6810143991807788455">વર્તમાન સેટિંગ્સની જાણ કરીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો</translation>
 <translation id="1774152462503052664">Chromium ને પૃષ્ઠભૂમિમાં ચાલવા દો</translation>
 <translation id="9022552996538154597">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="4365115785552740256">Chromium એ <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ઓપન સ્રોત પ્રોજેક્ટ અને અન્ય <ph name="BEGIN_LINK_OSS"/>ઓપન સ્રોત સૉફ્ટવેર<ph name="END_LINK_OSS"/> દ્વારા શક્ય બનાવ્યું છે.</translation>
@@ -160,6 +164,7 @@
 <translation id="5398878173008909840">Chromium નું નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="2648074677641340862">ઇન્સ્ટોલેશન દરમ્યાન ઓપરેટિંગ સિસ્ટમ ભૂલ આવી. કૃપા કરીને ફરીથી Chromium ડાઉનલોડ કરો.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> ને Chromium માં ઉમેરવામાં આવ્યું.</translation>
+<translation id="7211828883345145708">વધારાનાં કીબોર્ડ શોર્ટકટ્સને સક્ષમ કરે છે જેનો ઉપયોગ Chromium ને ડિબગ કરવા માટે થાય છે.</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Chromium મેનૂ &gt;
@@ -195,6 +200,7 @@
 <translation id="130631256467250065">તમારા ફેરફારો તમે આગલી વખતે તમારા ઉપકરણને ફરી પ્રારંભ કરશો ત્યારે પ્રભાવમાં આવશે.</translation>
 <translation id="3244477511402911926">Chromium સૂચના કેન્દ્ર</translation>
 <translation id="9197815481970649201">તમે હમણાં Chromium માં સાઇન ઇન કર્યું છે</translation>
+<translation id="7162152143154757523">તમે બ્રાઉઝરમાં જે કંઈ પણ લખો છો તે Google સર્વર્સ પર મોકલીને, Google શોધ દ્વારા ઉપયોગમાં લેવાતી સમાન જોડણી-પરીક્ષક તકનીકીનો ઉપયોગ કરવાની પરવાનગી આપતું, Chromium સ્માર્ટ જોડણી-પરીક્ષક પ્રદાન કરી શકે છે.</translation>
 <translation id="1929939181775079593">Chromium પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>
 <translation id="1414495520565016063">તમે Chromium માં સાઇન ઇન કર્યું છે!</translation>
 <translation id="2158734852934720349">Chromium OS ખુલ્લા સ્ત્રોત લાઇસેંસેસ</translation>
@@ -210,6 +216,7 @@
 <translation id="811857857463334932">આ કમ્પ્યુટર હવે Chromium અપડેટ્સ પ્રાપ્ત કરશે નહીં કારણ કે તેના હાર્ડવેરને હવે સમર્થન નથી.</translation>
 <translation id="2910007522516064972">&amp;Chromium વિશે</translation>
 <translation id="8453117565092476964">ઇન્સ્ટોલર આર્કાઇવ દૂષિત અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
+<translation id="2558641060352364164">આ સાઇટ Chromium ફ્રેમ પ્લગિનનો ઉપયોગ કરી રહી છે જે ટૂંક સમયમાં અસમર્થિત થશે. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને આધુનિક બ્રાઉઝરમાં અપગ્રેડ કરો.</translation>
 <translation id="3889543394854987837">Chromium ને ખોલવા માટે તમારા નામને ક્લિક કરો અને બ્રાઉઝ કરવાનું પ્રારંભ કરો.</translation>
 <translation id="3130323860337406239">Chromium તમારા માઇક્રોફોનનો ઉપયોગ કરી રહ્યું છે.</translation>
 <translation id="7196020411877309443">હું આ કેમ જોઇ રહ્યો(હી) છું?</translation>

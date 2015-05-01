@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
+<translation id="2705212601509139398">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd töltsön le egy kompatibilis böngészőt.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> – A Chromium szerzői. Minden jog fenntartva.</translation>
 <translation id="6373523479360886564">Biztos, hogy el szeretné távolítani a Chromiumot?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Mivel a hardver támogatása megszűnik, ez a számítógép hamarosan nem kap további Chromium-frissítéseket.</translation>
 <translation id="5532301346661895910">A Chromium ezt a |mentett Google-jelszavak| közt fogja eltárolni, és megjegyzi a következő alkalomra.</translation>
 <translation id="6893813176749746474">A Chromium frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
+<translation id="421369550622382712">Fedezzen fel nagyszerű alkalmazásokat, játékokat, bővítményeket és témákat a Chromiumhoz.</translation>
 <translation id="2732467638532545152">Számítógépe a Microsoft Windows régebbi változatát futtatja, amely nem tudja feldolgozni a webhely biztonsági tanúsítványát. A hiba miatt a Chromium nem tudja eldönteni, hogy a tanúsítvány a(z) <ph name="SITE"/> webhelytől származik, vagy valakitől az Ön hálózatán, aki a(z) <ph name="SITE"/> webhelynek adja ki magát. Frissítse számítógépén a Windows rendszert egy újabb verzióra.</translation>
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="6613594504749178791">Módosításai a Chromium újraindítása után lépnek érvénybe.</translation>
@@ -116,6 +118,7 @@
 <translation id="5358375970380395591">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME"/> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium Alkalmazásindító</translation>
 <translation id="5563479599352954471">Keresés egyetlen érintéssel</translation>
+<translation id="3256316712990552818">A Chromiumra másolva</translation>
 <translation id="8493179195440786826">A Chromium elavult</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="95514773681268843">A(z) <ph name="DOMAIN"/> megköveteli, hogy olvassa, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Chromium OS feltételeit.</translation>
@@ -125,6 +128,7 @@
 <translation id="2535480412977113886">A Chromium OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="8697124171261953979">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor vagy a cím- és keresősávban indított kereséskor.</translation>
 <translation id="894903460958736500">A számítógépén futó szoftver nem kompatibilis a Chromiummal.</translation>
+<translation id="6810143991807788455">Segítsen a Chromium fejlesztésében a jelenlegi beállítások elküldésével</translation>
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="9022552996538154597">Bejelentkezés a Chromiumba</translation>
 <translation id="4365115785552740256">A Chromium a <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> nyílt forráskódú projektnek és további <ph name="BEGIN_LINK_OSS"/>nyílt forráskódú szoftvereknek<ph name="END_LINK_OSS"/> köszönhetően jött létre.</translation>
@@ -158,6 +162,7 @@
 <translation id="5398878173008909840">Elérhető a Chromium új verziója.</translation>
 <translation id="2648074677641340862">Az operációs rendszer hibát jelzett a telepítés során. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="5942520288919337908">A(z) <ph name="EXTENSION_NAME"/> hozzá lett adva a Chromiumhoz.</translation>
+<translation id="7211828883345145708">További billentyűkódokat engedélyez, amelyek hasznosak a hibakeresés során a Chromiumban.</translation>
 <translation id="549669000822060376">Kérjük, várjon, amíg a Chromium telepíti a legutóbbi rendszerfrissítéseket.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Lépjen ide:
@@ -191,6 +196,7 @@
 <translation id="130631256467250065">A módosítások az eszköz következő újraindításakor lépnek életbe.</translation>
 <translation id="3244477511402911926">Chromium értesítési központ</translation>
 <translation id="9197815481970649201">Most már bejelentkezett a Chromiumba</translation>
+<translation id="7162152143154757523">A Chromium pontosabb helyesírás-ellenőrzést tud biztosítani azáltal, hogy a böngészőbe beírt szöveget elküldi a Google szervereinek, ami lehetővé teszi, hogy Ön ugyanazt a helyesírás-ellenőrző technológiát használja, amelyet a Google-keresés is.</translation>
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
 <translation id="1414495520565016063">Bejelentkezett a Chromiumba.</translation>
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
@@ -206,6 +212,7 @@
 <translation id="811857857463334932">Mivel a hardver támogatása megszűnik, ez a számítógép a továbbiakban nem kap Chromium-frissítéseket.</translation>
 <translation id="2910007522516064972">A &amp;Chromium névjegye</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
+<translation id="2558641060352364164">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
 <translation id="3889543394854987837">Kattintson a nevére a Chromium megnyitásához és a böngészés megkezdéséhez.</translation>
 <translation id="3130323860337406239">A Chromium használja a mikrofont.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>

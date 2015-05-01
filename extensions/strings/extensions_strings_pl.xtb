@@ -1,6 +1,7 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
 <translation id="4542520061254486227">Odczyt Twoich danych na stronie <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="3983586614702900908">urządzenia od nieznanego dostawcy</translation>
+<translation id="730515362922783851">Wymiana danych z dowolnym urządzeniem w sieci lokalnej lub internecie</translation>
 <translation id="3624204664103857160">Nie można wczytać strony programu uruchamiającego „<ph name="PAGE"/>”.</translation>
 <translation id="8804398419035066391">Komunikowanie się ze współpracującymi witrynami</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID rozszerzenia „<ph name="EXTENSION_ID"/>”) jest zablokowane przez administratora.</translation>
@@ -12,22 +13,22 @@
 <translation id="1033780634303702874">Dostęp do urządzeń szeregowych</translation>
 <translation id="288042212351694283">Dostęp do urządzeń Universal 2nd Factor</translation>
 <translation id="4115165561519362854">Administrator tego urządzenia wymaga, by rozszerzenie <ph name="EXTENSION_NAME"/> było w wersji co najmniej <ph name="EXTENSION_VERSION"/>. Jeśli rozszerzenie nie zostanie zaktualizowane do tej wersji (lub nowszej), nie zostanie włączone.</translation>
+<translation id="6075907793831890935">Wymiana danych z urządzeniem o nazwie <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Kontrolowanie stanu adaptera Bluetooth i parowania</translation>
 <translation id="677806580227005219">Moduł obsługi MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Uzyskiwać dostęp do informacji o urządzeniach Bluetooth sparowanych z systemem oraz wykrywać urządzenia Bluetooth w pobliżu.</translation>
 <translation id="8749863574775030885">Uzyskaj dostęp do urządzeń USB od nieznanego dostawcy</translation>
-<translation id="5911798608827489036">Wymiana danych z dowolnym komputerem w sieci lokalnej lub internecie</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> od <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Nie udało się wczytać skryptu działającego w tle „<ph name="BACKGROUND_SCRIPT"/>”.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Wysyłać wiadomości do urządzeń Bluetooth i odbierać je z nich.</translation>
 <translation id="5678955352098267522">Odczyt Twoich danych na stronie <ph name="WEBSITE_1"/></translation>
-<translation id="8597109877291678953">Wymiana danych z komputerem o nazwie <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">To rozszerzenie zawiera plik klucza „<ph name="KEY_PATH"/>”. Prawdopodobnie nie powinno tak być.</translation>
 <translation id="7257666756905341374">Odczyt danych, które kopiujesz i wklejasz</translation>
 <translation id="2350172092385603347">Lokalizacja została użyta, ale nie określono języka default_locale w pliku manifestu.</translation>
 <translation id="3759933321830434300">Blokowanie części stron internetowych</translation>
 <translation id="6143635259298204954">Nie można rozpakować rozszerzenia. Aby bezpiecznie rozpakować rozszerzenie, musi istnieć ścieżka do katalogu profilu, która nie zawiera dowiązania symbolicznego. W przypadku Twojego profilu taka ścieżka nie istnieje.</translation>
+<translation id="8712265948125780616">Program do rozpakowywania rozszerzeń</translation>
 <translation id="149347756975725155">Nie można wczytać ikony rozszerzenia „<ph name="ICON"/>”.</translation>
 <translation id="8825366169884721447">Rozszerzenie nie zmodyfikowało nagłówka żądania „<ph name="HEADER_NAME"/>” żądania sieciowego, bo zmiana powodowałaby konflikt z innym rozszerzeniem (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Usługa <ph name="PRODUCT_ID"/></translation>
@@ -39,16 +40,14 @@
 <translation id="6344170822609224263">Lista dostępu połączeń sieciowych</translation>
 <translation id="7039326228527141150">Uzyskaj dostęp do urządzeń USB od <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1"/></translation>
-<translation id="2518849872271000461">Wymiana danych z komputerami o nazwach: <ph name="HOSTNAMES"/></translation>
 <translation id="5960890139610307736">Tag ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Dostęp do skanerów podłączonych przez USB lub do sieci lokalnej</translation>
 <translation id="6408118934673775994">Odczytywanie i modyfikowanie Twoich danych na: <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
-<translation id="961805664415579088">Wymiana danych z dowolnym komputerem w domenie <ph name="DOMAIN"/></translation>
 <translation id="8670869118777164560">Rozszerzenie nie przekierowało żądania sieciowego do <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, bo inne rozszerzenie (<ph name="EXTENSION_NAME"/>) przekierowało je do <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">To rozszerzenie zbyt często ładowało się ponownie.</translation>
+<translation id="2270450558902169558">Wymiana danych z dowolnym urządzeniem w domenie <ph name="DOMAIN"/></translation>
 <translation id="8047248493720652249">Rozszerzenie nie może odczytać nazwy pobieranego pliku „<ph name="ATTEMPTED_FILENAME"/>”, ponieważ inne rozszerzenie (<ph name="EXTENSION_NAME"/>) odczytało odmienną jego nazwę „<ph name="ACTUAL_FILENAME"/>”.</translation>
 <translation id="452039078290142656">nieznane urządzenia od <ph name="VENDOR_NAME"/></translation>
-<translation id="4968399700653439437">Wymiana danych z dowolnym komputerem w domenach <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="2753617847762399167">Nieprawidłowa ścieżka (pełna lub względna z przedrostkiem „..”): „<ph name="IMAGE_PATH"/>”</translation>
 <translation id="8284279544186306258">wszystkie strony <ph name="WEBSITE_1"/></translation>
@@ -56,6 +55,8 @@
 <translation id="27822970480436970">To rozszerzenie nie mogło zmienić żądania sieciowego, ponieważ zmiana wchodziła w konflikt z innym rozszerzeniem.</translation>
 <translation id="2241053333139545397">Odczytywanie i modyfikowanie Twoich danych na wielu stronach</translation>
 <translation id="8602184400052594090">Brak pliku manifestu lub nie można go odczytać.</translation>
+<translation id="2270627217422354837">Wymiana danych z dowolnym urządzeniem w domenach: <ph name="DOMAINS"/></translation>
+<translation id="7093866338626856921">Wymiana danych z urządzeniami o nazwach: <ph name="HOSTNAMES"/></translation>
 <translation id="4883436287898674711">Wszystkie strony <ph name="WEBSITE_1"/></translation>
 <translation id="9111791539553342076">Rozszerzenie nie zmodyfikowało nagłówka odpowiedzi „<ph name="HEADER_NAME"/>” żądania sieciowego, bo zmiana powodowałaby konflikt z innym rozszerzeniem (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Korzystać z Twojej kamery</translation>
@@ -77,6 +78,7 @@
 <translation id="2159915644201199628">Nie można odkodować obrazu: „<ph name="IMAGE_NAME"/>”</translation>
 <translation id="5544884907028850012">Dostawca <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Dostęp do ruchu sieciowego</translation>
+<translation id="1256619696651732561">Parser pliku manifestu rozszerzenia</translation>
 <translation id="5972529113578162692">Administrator tego urządzenia wymaga, by było na nim zainstalowane rozszerzenie <ph name="EXTENSION_NAME"/>. Nie można go odinstalować.</translation>
 <translation id="1135328998467923690">Pakiet jest nieprawidłowy: „<ph name="ERROR_CODE"/>”.</translation>
 <translation id="7131040479572660648">Odczyt Twoich danych na stronie <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>

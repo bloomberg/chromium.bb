@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="8208216423136871611">No guardar</translation>
 <translation id="777702478322588152">Prefectura</translation>
+<translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
 <translation id="1339601241726513588">Inscripción de dominio:</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="4058922952496707368">Clave &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Alerta de Javascript</translation>
-<translation id="4081383687659939437">Guardar información</translation>
 <translation id="5299298092464848405">Error al analizar la política</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Búsqueda</translation>
 <translation id="2498091847651709837">Escanear tarjeta nueva</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">Obligatoria</translation>
 <translation id="2958431318199492670">La configuración de red no cumple con el estándar ONC. Es posible que no se importen algunas partes de la configuración.</translation>
+<translation id="3583757800736429874">&amp;Rehacer Mover</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Falta un registro de dispositivo.</translation>
 <translation id="1491151370853475546">Volver a cargar esta página</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="2704283930420550640">El valor no coincide con el formato.</translation>
+<translation id="1055184225775184556">&amp;Deshacer Agregar</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="8091372947890762290">La activación está pendiente en el servidor.</translation>
+<translation id="6874604403660855544">&amp;Rehacer Agregar</translation>
 <translation id="4607653538520819196">Reducir datos no puede transmitir esta página por proxy.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Área</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">Ver original</translation>
 <translation id="4079302484614802869">El proxy está configurado para usar una URL de script .pac, no servidores proxy fijos.</translation>
 <translation id="5540224163453853">No se pudo encontrar el artículo solicitado.</translation>
+<translation id="8437238597147034694">&amp;Deshacer Mover</translation>
+<translation id="5813119285467412249">&amp;Rehacer Agregar</translation>
 <translation id="333371639341676808">Evita que esta página cree cuadros de diálogo adicionales.</translation>
 <translation id="5523118979700054094">Nombre de la política</translation>
 <translation id="7791543448312431591">Agregar</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">Error temporal del servidor</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="1132774398110320017">Configuración de la función Autocompletar de Chrome…</translation>
+<translation id="8194797478851900357">&amp;Deshacer Mover</translation>
 <translation id="6458467102616083041">Se ignora porque la política inhabilita la búsqueda predeterminada.</translation>
+<translation id="6259156558325130047">&amp;Rehacer Reorganizar</translation>
 <translation id="1227224963052638717">Política desconocida</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="9207861905230894330">Error al agregar artículo</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="7977590112176369853">&lt;escribir consulta&gt;</translation>
 <translation id="552553974213252141">¿Se extrajo el texto correctamente?</translation>
+<translation id="5317780077021120954">Guardar</translation>
 <translation id="7610193165460212391">El valor <ph name="VALUE"/> está fuera del rango.</translation>
 <translation id="3739623965217189342">Vínculo copiado</translation>
+<translation id="8790007591277257123">&amp;Rehacer Eliminar</translation>
 <translation id="8311778656528046050">¿Estás seguro de que quieres volver a cargar esta página?</translation>
 <translation id="370665806235115550">Cargando...</translation>
 <translation id="2096368010154057602">Departamento</translation>
+<translation id="6529602333819889595">&amp;Rehacer Eliminar</translation>
 <translation id="4258748452823770588">Firma no válida</translation>
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
 <translation id="2030481566774242610">¿Quisiste decir: <ph name="LINK"/>?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">Recuperando entradas…</translation>
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN"/></translation>
 <translation id="498957508165411911">¿Quieres traducir del <ph name="ORIGINAL_LANGUAGE"/> al <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8218327578424803826">Ubicación asignada:</translation>
 <translation id="3542684924769048008">Utilizar la contraseña para:</translation>
 <translation id="7186367841673660872">Esta página se tradujo de<ph name="ORIGINAL_LANGUAGE"/>a<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="5145883236150621069">Código de error en la respuesta de la política</translation>
 <translation id="7983301409776629893">Siempre traducir del <ph name="ORIGINAL_LANGUAGE"/> al <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distrito</translation>
+<translation id="3427342743765426898">&amp;Rehacer Editar</translation>
 <translation id="3010559122411665027">Entrada de lista &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="5031870354684148875">Acerca de Google Traductor</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">No se especifican servidores proxy fijos ni URL de secuencias de comandos .pac.</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="2113977810652731515">Tarjeta</translation>
+<translation id="1113869188872983271">&amp;Deshacer Reorganizar</translation>
 <translation id="536296301121032821">Error al almacenar la configuración de la política</translation>
 <translation id="5439770059721715174">Error de validación de esquema en &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">Marcadores del celular</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="647261751007945333">Políticas de dispositivos</translation>
+<translation id="2556876185419854533">&amp;Deshacer Editar</translation>
 <translation id="213826338245044447">Marcadores del celular</translation>
+<translation id="4594403342090139922">&amp;Deshacer Eliminar</translation>
 <translation id="8571890674111243710">Traduciendo página a <ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">No se admite el alcance de la política.</translation>
 <translation id="2114841414352855701">Se ignoró porque fue anulada por <ph name="POLICY_NAME"/> .</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">Esta página está en <ph name="SOURCE_LANGUAGE"/>. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Modo proxy no válido</translation>
+<translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">ID de API de directorio:</translation>
 <translation id="7752995774971033316">Sin administrar</translation>
 <translation id="3712624925041724820">Licencias agotadas</translation>
 <translation id="4926049483395192435">Debe especificarse un valor.</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">Falló la traducción debido a un error de servidor.</translation>
 <translation id="2597378329261239068">Este documento está protegido por contraseña. Ingresa una contraseña.</translation>
 <translation id="5629630648637658800">Error al cargar la configuración de la política</translation>
+<translation id="4030383055268325496">&amp;Deshacer Agregar</translation>
 <translation id="2354001756790975382">Otros marcadores</translation>
 <translation id="3650584904733503804">Validación correcta</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">Error al analizar la política</translation>
 <translation id="2270192940992995399">Error al buscar el artículo</translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
+<translation id="9170848237812810038">&amp;Deshacer</translation>
 <translation id="9154176715500758432">Permanecer en esta página</translation>
 <translation id="2392959068659972793">Mostrar políticas sin valor establecido</translation>
+<translation id="9148507642005240123">&amp;Deshacer Editar</translation>
+<translation id="5470861586879999274">&amp;Rehacer Editar</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="5295309862264981122">Confirmar navegación</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">La firma de verificación no es válida.</translation>
 <translation id="106701514854093668">Marcadores de escritorio</translation>
 <translation id="6154808779448689242">El token de política devuelto no coincide con el token actual.</translation>
+<translation id="7995512525968007366">Sin especificar</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="8804164990146287819">Política de privacidad</translation>
 <translation id="5337776961545044340">Google Wallet no admite este tipo de tarjeta para este comerciante. Selecciona otra tarjeta.</translation>
+<translation id="7334320624316649418">&amp;Rehacer Reorganizar</translation>
 <translation id="7182878459783632708">No hay políticas establecidas.</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
 <translation id="8364627913115013041">Sin establecer</translation>
 <translation id="8713130696108419660">Firma inicial no válida</translation>
+<translation id="3270847123878663523">&amp;Deshacer Reorganizar</translation>
 <translation id="20817612488360358">Se ha establecido la configuración de proxy del sistema, pero también se ha especificado una configuración explícita de proxy.</translation>
 <translation id="2639739919103226564">Estado:</translation>
 <translation id="4968547170521245791">No se puede transmitir por proxy</translation>
 <translation id="385051799172605136">Atrás</translation>
+<translation id="4196861286325780578">&amp;Rehacer Mover</translation>
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="2581221116934462656">¿Quieres que <ph name="PRODUCT_NAME"/> ofrezca traducir <ph name="LANGUAGE_NAME"/> páginas de este sitio la próxima vez?</translation>
+<translation id="2396249848217231973">&amp;Deshacer Eliminar</translation>
 <translation id="3934680773876859118">No se pudo cargar el documento PDF</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="2721148159707890343">Solicitud correcta</translation>

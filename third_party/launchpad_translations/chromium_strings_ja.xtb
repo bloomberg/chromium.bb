@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
+<translation id="2705212601509139398">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、互換性のあるブラウザをダウンロードしてください。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. All rights reserved.</translation>
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">このパソコンは、ハードウェアのサポートが終了しているため、まもなく Chromium アップデートの受信を停止します。</translation>
 <translation id="5532301346661895910">Chromium では、このパスワードは |Google で保存したパスワード|の 1 つとして保存されます。次回から再入力は必要ありません。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
+<translation id="421369550622382712">Chromium の優れたアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="2732467638532545152">ご使用のパソコンは、このウェブサイトのセキュリティ証明書を処理できない旧バージョンの Microsoft Windows を実行しています。このため Chromium では、証明書が <ph name="SITE"/> から発行されたものか、それとも <ph name="SITE"/> になりすましたネットワーク上の別のユーザーによって発行されたものかを判別することができません。パソコンを新しいバージョンの Windows に更新してください。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="6613594504749178791">変更内容は次に Chromium を再起動したときに有効になります。</translation>
@@ -116,6 +118,7 @@
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium アプリ ランチャー</translation>
 <translation id="5563479599352954471">ワンタップで検索</translation>
+<translation id="3256316712990552818">Chromium にコピー済み</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Chromium OS 利用規約を拡張、変更、制限するものではありません。</translation>
@@ -125,6 +128,7 @@
 <translation id="2535480412977113886">アカウントのログイン情報が最新ではないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="8697124171261953979">この拡張機能では、Chromium の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="894903460958736500">お使いのパソコンで実行されているソフトウェアは Chromium に対応していません。</translation>
+<translation id="6810143991807788455">現在の設定を送信して Chromium の品質向上にご協力ください</translation>
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
 <translation id="9022552996538154597">Chromium にログイン</translation>
 <translation id="4365115785552740256">Chromium は <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> オープンソース プロジェクトやその他の<ph name="BEGIN_LINK_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_OSS"/>によって実現しました。</translation>
@@ -158,6 +162,7 @@
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
 <translation id="5942520288919337908">「<ph name="EXTENSION_NAME"/>」を Chromium に追加しました。</translation>
+<translation id="7211828883345145708">Chromium のデバッグに役立つ追加のキーボード ショートカットを有効にします。</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">このオプションを無効にするには:
@@ -195,6 +200,7 @@
 <translation id="130631256467250065">変更内容は、次回の端末の起動時に反映されます。</translation>
 <translation id="3244477511402911926">Chromium 通知センター</translation>
 <translation id="9197815481970649201">Chromium にログイン済み</translation>
+<translation id="7162152143154757523">Chromium ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されるスペルチェック テクノロジーを活用できます。</translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1414495520565016063">Chromium にログインしました</translation>
 <translation id="2158734852934720349">Chromium OS オープンソース ライセンス</translation>
@@ -210,6 +216,7 @@
 <translation id="811857857463334932">このパソコンは、ハードウェアのサポートが終了しているため、今後 Chromium アップデートを受信することはありません。</translation>
 <translation id="2910007522516064972">Chromium について(&amp;C)</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
+<translation id="2558641060352364164">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
 <translation id="3889543394854987837">Chromium を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="3130323860337406239">Chromium がマイクを使用しています。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>

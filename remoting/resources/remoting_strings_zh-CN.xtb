@@ -49,7 +49,9 @@
 <translation id="8355326866731426344">此访问代码将在 <ph name="TIMEOUT"/> 后失效。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
+<translation id="3606997049964069799">您尚未登录 Chromium。请登录，然后重试。</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
+<translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -70,12 +72,15 @@
 <translation id="9188433529406846933">授权</translation>
 <translation id="228809120910082333">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程访问进行访问。</translation>
 <translation id="7605995381616883502">新连接</translation>
+<translation id="2038229918502634450">由于发生了政策变更，主机正在重新启动。</translation>
 <translation id="2851674870054673688">他们输入访问代码后，您的共享会话就会立即开始。</translation>
 <translation id="5593560073513909978">此服务暂时无法使用。请稍后再试。</translation>
 <translation id="3908017899227008678">缩小以适合浏览器窗口大小</translation>
 <translation id="8073845705237259513">要使用Chrome远程桌面，您需要先为自己的设备添加一个Google帐户。</translation>
+<translation id="2894654864775534701">目前，此计算机只能通过另一帐户进行共享。</translation>
 <translation id="1199593201721843963">停用远程连接</translation>
 <translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程桌面应用（下载地址为 <ph name="URL"/>）。</translation>
+<translation id="3150823315463303127">主机无法读取政策。</translation>
 <translation id="2220529011494928058">报告问题</translation>
 <translation id="174018511426417793">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
 <translation id="9126115402994542723">从这台设备连接到此主机时不再要求输入PIN码。</translation>
@@ -166,6 +171,7 @@
 <translation id="2939145106548231838">向主机验证身份</translation>
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
 <translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
+<translation id="1450760146488584666">请求的对象不存在。</translation>
 <translation id="5625493749705183369">通过互联网安全访问其他计算机，或允许其他用户通过互联网安全访问您的计算机。</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2699970397166997657">Chrome 远程访问</translation>
@@ -195,12 +201,14 @@
 <translation id="6527303717912515753">分享</translation>
 <translation id="2926340305933667314">无法停用对此计算机的远程访问。请稍后重试。</translation>
 <translation id="6865175692670882333">查看/修改</translation>
+<translation id="544077782045763683">主机已关机。</translation>
 <translation id="5859141382851488196">打开新的窗口…</translation>
 <translation id="2089514346391228378">此计算机的远程连接已启用。</translation>
 <translation id="7693372326588366043">刷新主机列表</translation>
 <translation id="8445362773033888690">在Google Play商店中查看</translation>
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
 <translation id="8187079423890319756">版权所有2013 The Chromium Authors。保留所有权利。</translation>
+<translation id="6221358653751391898">您尚未登录 Chrome。请登录，然后重试。</translation>
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="4405930547258349619">核心数据库</translation>
@@ -241,6 +249,7 @@
 <translation id="3596628256176442606">此服务允许来自 Chrome 远程访问客户端的连接。</translation>
 <translation id="1978866438647250517">• 改进了用户界面。
 • 在后台运行时消耗的数据流量更少。</translation>
+<translation id="4741792197137897469">身份验证失败。请重新登录 Chrome。</translation>
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="837021510621780684">来自此计算机</translation>
 <translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>

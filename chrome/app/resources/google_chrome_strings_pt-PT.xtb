@@ -30,6 +30,7 @@
 <translation id="5620765574781326016">Saiba mais acerca de tópicos em Websites sem sair da página.</translation>
 <translation id="2721687379934343312">No Mac, as palavras-passe são guardadas no Keychain e podem ser sincronizadas ou acedidas por outros utilizadores do Chrome que partilhem esta conta OS X.</translation>
 <translation id="683440813066116847">Regra de importação para o Google Chrome Canary permitir o tráfego mDNS.</translation>
+<translation id="4700157086864140907">O Google Chrome pode disponibilizar uma verificação ortográfica mais inteligente, enviando o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da pesquisa do Google.</translation>
 <translation id="4953650215774548573">Definir o Google Chrome como o navegador predefinido</translation>
 <translation id="6014844626092547096">Tem agora sessão iniciada no Chrome! A sincronização foi desativada pelo seu administrador.</translation>
 <translation id="7419046106786626209">O SO Chrome não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
@@ -90,6 +91,7 @@
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN"/>; o Chrome não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="5618769508111928343">O <ph name="SITE"/> normalmente utiliza a encriptação para proteger as suas informações. Quando o Chrome tentou ligar-se a <ph name="SITE"/> desta vez, o Website devolveu credenciais invulgares e incorretas. É possível que um utilizador mal intencionado esteja a tentar simular ser <ph name="SITE"/> ou que um ecrã de início de sessão Wi-Fi tenha interrompido a ligação. As suas informações ainda estão seguras, porque o Chrome interrompeu a ligação antes de qualquer troca de dados.</translation>
+<translation id="6600954340915313787">Copiado para o Chrome</translation>
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
 <translation id="4633000520311261472">Para tornar o Chrome mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
 <translation id="3656661827369545115">Iniciar automaticamente o Chromium quando o computador arranca</translation>
@@ -181,6 +183,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2871893339301912279">Tem sessão iniciada no Chrome!</translation>
 <translation id="7890208801193284374">Se partilhar um computador, os amigos e os familiares podem navegar separadamente e configurar o Chrome da forma que quiserem.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
+<translation id="597770749449734237">Ativa atalhos de teclado adicionais, úteis para depurar o Google Chrome.</translation>
 <translation id="4147555960264124640">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Tem de atualizar o Chrome para poder utilizar o Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Aceda a Aplicações &gt; Preferências do Sistema &gt; Rede &gt; Avançadas &gt; Proxies e desmarque todos os proxies selecionados.</translation>
@@ -193,6 +196,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3444832043240812445">Esta página mostra informações sobre falhas recentes apenas se <ph name="BEGIN_LINK"/>ativar relatórios de falha<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">O Google Chrome não responde. Reiniciar agora?</translation>
 <translation id="2681064822612051220">Foi encontrada uma instalação do Google Chrome em conflito no sistema. Desinstale-a e tente novamente.</translation>
+<translation id="2252923619938421629">Ajude a melhorar o Google Chrome, comunicando as definições atuais</translation>
 <translation id="6126631249883707068">Pretende que o Google Chrome guarde a sua palavra-passe?</translation>
 <translation id="7773845170078702898">Pretende que o Google Chrome guarde a sua palavra-passe para este Website?</translation>
 <translation id="4251615635259297716">Associar os seus dados do Chrome a esta conta?</translation>
@@ -243,6 +247,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3047079729301751317">Desligar <ph name="USERNAME"/> irá limpar o seu histórico, os marcadores, as definições e outros dados do Chrome armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK"/>Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">O arquivo do programa de instalação está corrompido ou é inválido. Transfira de novo o Google Chrome.</translation>
 <translation id="2246246234298806438">O Google Chrome não pode mostrar a pré-visualização de impressão quando o visualizador de PDF incorporado está em falta.</translation>
+<translation id="5132929315877954718">Descubra fantásticas aplicações, jogos, extensões e temas para o Google Chrome.</translation>
 <translation id="6626317981028933585">Infelizmente, as suas definições do Mozilla Firefox não estão disponíveis enquanto esse browser estiver aberto. Para importar essas definições para o Google Chrome, guarde o seu trabalho e feche todas as janelas do Firefox. De seguida clique em Continuar.</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Também controla a página apresentada quando inicia o Chrome ou pesquisa a partir da Caixa geral.</translation>
@@ -251,6 +256,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Todos os direitos reservados.</translation>
 <translation id="1698376642261615901">O Google Chrome é um navegador de internet que executa páginas Web e aplicações de forma extremamente rápida. É rápido, estável e fácil de utilizar. Navegue na Web com mais segurança com proteção contra phishing e programas maliciosos incorporada no Google Chrome.</translation>
 <translation id="853189717709780425">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições ficarão permanentemente associados a <ph name="USER_NAME"/>. Poderá eliminar estes dados através do Painel de Controlo das Contas Google mas não poderá associar estes dados a outra conta.</translation>
+<translation id="699076943483372849">Este site utiliza o plug-in Google Chrome Frame descontinuado, que deixou de receber atualizações de segurança e estabilidade. Desinstale-o e atualize para um navegador moderno.</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome neste sistema, disponível para todos os utilizadores. O Google Chrome ao nível do sistema substituirá a instalação ao nível do utilizador.</translation>
 <translation id="1818142563254268765">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de atualizar o Chrome.</translation>
 <translation id="7408085963519505752">Termos do SO Chrome</translation>

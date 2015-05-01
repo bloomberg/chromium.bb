@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
+<translation id="2705212601509139398">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja lataa yhteensopiva selain.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="6373523479360886564">Haluatko varmasti poistaa Chromiumin asennuksen?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Tämän tietokoneen Chromium-päivitykset päättyvät pian, sillä sen laitteistoa ei enää tueta.</translation>
 <translation id="5532301346661895910">Chromium tallentaa salasanan |Googlen tallentamiin salasanoihin| ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
 <translation id="6893813176749746474">Chromium on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
+<translation id="421369550622382712">Löydät hienoja sovelluksia, pelejä, laajennuksia ja teemoja Chromiumille.</translation>
 <translation id="2732467638532545152">Tietokoneesi Microsoft Windowsin versio ei voi käsitellä verkkosivustosi suojausvarmennetta. Siksi Chromium ei voi päätellä, onko varmenne peräisin sivustolta <ph name="SITE"/> vai verkostosi sisäiseltä taholta, joka esittää olevansa <ph name="SITE"/>. Päivitä tietokoneesi Windows-versio uudempaan.</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="6613594504749178791">Muutokset tulevat voimaan, kun käynnistät Chromiumin seuraavan kerran.</translation>
@@ -117,6 +119,7 @@
 <translation id="5358375970380395591">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium-sovellusten käynnistysohjelma</translation>
 <translation id="5563479599352954471">Etsi yhdellä kosketuksella</translation>
+<translation id="3256316712990552818">Kopioitiin Chromiumiin.</translation>
 <translation id="8493179195440786826">Chromium on vanhentunut</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> edellyttää, että luet ja hyväksyt seuraavat käyttöehdot ennen tämän laitteen käyttöä. Nämä ehdot eivät laajenna, muokkaa tai rajoita Chromium-käyttöliittymän ehtoja.</translation>
@@ -126,6 +129,7 @@
 <translation id="2535480412977113886">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="8697124171261953979">Määrittää myös Chromiumin ja omnibox-hakujen aloitussivun.</translation>
 <translation id="894903460958736500">Tietokoneellasi käynnissä oleva ohjelmisto on yhteensopimaton Chromiumin kanssa.</translation>
+<translation id="6810143991807788455">Auta parantamaan Chromiumia ilmoittamalla nykyiset asetukset.</translation>
 <translation id="1774152462503052664">Jätä Chromium käyntiin taustalle</translation>
 <translation id="9022552996538154597">Kirjaudu sisään Chromiumiin</translation>
 <translation id="4365115785552740256">Chromiumin ovat tehneet mahdolliseksi <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>-projekti ja muut <ph name="BEGIN_LINK_OSS"/>avoimen lähdekoodin ohjelmistot<ph name="END_LINK_OSS"/>.</translation>
@@ -159,6 +163,7 @@
 <translation id="5398878173008909840">Chromiumista on saatavilla uusi versio.</translation>
 <translation id="2648074677641340862">Asennuksessa ilmeni käyttöjärjestelmävirhe. Lataa Chromium uudelleen.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> on lisätty Chromiumiin.</translation>
+<translation id="7211828883345145708">Ottaa käyttöön lisää pikanäppäimiä, joiden avulla voi suorittaa Chromiumin vianetsintää.</translation>
 <translation id="549669000822060376">Odota hetki, Chromium asentaa uusimpia järjestelmäpäivityksiä.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Avaa
@@ -196,6 +201,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="130631256467250065">Muutokset tulevat voimaan, kun käynnistät laitteen seuraavan kerran.</translation>
 <translation id="3244477511402911926">Chromiumin ilmoituskeskus</translation>
 <translation id="9197815481970649201">Olet nyt kirjautuneena Chromiumiin</translation>
+<translation id="7162152143154757523">Chromium voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksen tarkistustekniikkaa.</translation>
 <translation id="1929939181775079593">Chromium ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="1414495520565016063">Olet kirjautunut Chromiumiin!</translation>
 <translation id="2158734852934720349">Chromium-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
@@ -210,6 +216,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="811857857463334932">Tämän tietokoneen Chromium-päivitykset päättyvät, sillä sen laitteistoa ei enää tueta.</translation>
 <translation id="2910007522516064972">Tietoja &amp;Chromiumista</translation>
 <translation id="8453117565092476964">Asennusarkisto on virheellinen. Lataa Chromium uudelleen.</translation>
+<translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
 <translation id="3889543394854987837">Avaa Chromium klikkaamalla nimeäsi ja aloita selaaminen.</translation>
 <translation id="3130323860337406239">Chromium käyttää mikrofoniasi.</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>

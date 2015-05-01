@@ -30,6 +30,7 @@
 <translation id="5620765574781326016">Ketahui tentang topik di tapak web tanpa meninggalkan halaman.</translation>
 <translation id="2721687379934343312">Pada Mac, kata laluan disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chrome lain yang berkongsi akaun OS X ini.</translation>
 <translation id="683440813066116847">Peraturan masuk bagi Google Chrome Canary untuk membenarkan trafik mDNS.</translation>
+<translation id="4700157086864140907">Google Chrome dapat menyediakan semakan ejaan yang lebih pintar dengan menghantar apa yang anda taip dalam penyemak imbas kepada pelayan Google, membolehkan anda menggunakan teknologi semakan ejaan yang sama seperti yang digunakan oleh carian Google.</translation>
 <translation id="4953650215774548573">Tetapkan Google Chrome sebagai penyemak imbas lalai anda</translation>
 <translation id="6014844626092547096">Anda sedang dilog masuk ke Chrome! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="7419046106786626209">OS Chrome tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
@@ -91,6 +92,7 @@
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="5618769508111928343"><ph name="SITE"/> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chrome cuba menyambung ke <ph name="SITE"/> kali ini, tapak web menghantar balik
   bukti kelayakan yang luar biasa dan tidak betul. Sama ada penyerang cuba menyamar menjadi <ph name="SITE"/>, atau skrin log masuk Wi-Fi telah mengganggu sambungan. Maklumat anda masih selamat kerana Chrome menghentikan sambungan sebelum apa-apa data diubah.</translation>
+<translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="2576431527583832481">Chrome telah dipertingkatkan! Versi baharu kini boleh didapati.</translation>
 <translation id="4633000520311261472">Untuk menjadikan Chrome lebih selamat, kami melumpuhkan beberapa sambungan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="3656661827369545115">Lancarkan Chromium secara automatik apabila komputer anda bermula</translation>
@@ -182,6 +184,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2871893339301912279">Anda kini telah log masuk ke Chrome!</translation>
 <translation id="7890208801193284374">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chrome sebagaimana yang mereka mahukan.</translation>
 <translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>
+<translation id="597770749449734237">Mendayakan pintasan papan kekunci tambahan yang berguna untuk menyahpepijat Google Chrome.</translation>
 <translation id="4147555960264124640">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Anda mesti menaik taraf Chrome untuk menggunakan Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Pergi ke
@@ -196,6 +199,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="3444832043240812445">Halaman ini hanya menunjukkan maklumat mengenai nahas terkini anda jika anda <ph name="BEGIN_LINK"/>mendayakan laporan nahas<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome tidak responsif. Lancarkan semula sekarang?</translation>
 <translation id="2681064822612051220">Pemasangan bercanggah Google Chrome dijumpai pada sistem. Sila nyahpasangnya dan cuba semula.</translation>
+<translation id="2252923619938421629">Bantu menjadikan Google Chrome lebih baik dengan melaporkan tetapan semasa</translation>
 <translation id="6126631249883707068">Adakah anda mahu Google Chrome menyimpan kata laluan anda?</translation>
 <translation id="7773845170078702898">Adakah anda mahu Google Chrome menyimpan kata laluan anda untuk tapak ini?</translation>
 <translation id="4251615635259297716">Paut data Chrome anda ke akaun ini?</translation>
@@ -247,6 +251,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="3047079729301751317">Memutuskan sambungan <ph name="USERNAME"/> akan mengosongkan sejarah anda, penanda halaman, tetapan dan data Chrome lain yang tersimpan pada peranti ini. Data yang disimpan dalam Akaun Google anda tidak akan dikosongkan dan boleh diurus pada <ph name="GOOGLE_DASHBOARD_LINK"/>Papan Pemuka Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Arkib pemasang rosak atau tidak sah. Sila muat turun Google Chrome semula.</translation>
 <translation id="2246246234298806438">Google Chrome tidak dapat memaparkan pratonton cetakan apabila pemapar PDF terbina dalam tiada.</translation>
+<translation id="5132929315877954718">Temui apl, permainan, sambungan dan tema hebat untuk Google Chrome.</translation>
 <translation id="6626317981028933585">Malangnya, tetapan Mozilla Firefox anda tidak tersedia semasa penyemak imbas tersebut dijalankan. Untuk mengimport tetapan tersebut ke Google Chrome, simpan kerja anda dan tutup semua tetingkap Firefox. Kemudian klik Teruskan.</translation>
 <translation id="7242029209006116544">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih membuat profil baharu untuk mengasingkan data Chrome anda yang sedia ada. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau membuat carian dari Kotak Omni.</translation>
@@ -255,6 +260,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2334084861041072223">Hak Cipta <ph name="YEAR"/> Google Inc. Hak cipta terpelihara.</translation>
 <translation id="1698376642261615901">Google Chrome ialah penyemak imbas web yang menjalankan halaman web dan aplikasi dengan kelajuan kilat. Ia pantas, stabil dan mudah digunakan. Semak imbas web dengan lebih selamat dengan perlindungan daripada perisian berniat jahat dan pancingan data yang terbina dalam Google Chrome.</translation>
 <translation id="853189717709780425">Anda log masuk dengan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain.</translation>
+<translation id="699076943483372849">Tapak ini menggunakan pemalam Chrome Frame lama yang tidak lagi menerima kemas kini keselamatan dan kestabilan. Sila nyahpasang dan tingkatkan kepada penyemak imbas moden.</translation>
 <translation id="6049075767726609708">Pentadbir telah memasang Google Chrome pada sistem ini, dan ia adalah tersedia untuk semua pengguna. Google Chrome peringkat sistem akan menggantikan pemasangan peringkat pengguna anda sekarang.</translation>
 <translation id="1818142563254268765">Chrome tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu mengemas kini Chrome.</translation>
 <translation id="7408085963519505752">Syarat Chrome OS</translation>

@@ -34,6 +34,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5620765574781326016">페이지를 나가지 않고 웹사이트에서 주제에 대해 자세히 알아보기</translation>
 <translation id="2721687379934343312">Mac에서는 비밀번호가 키체인에 저장되며 이 OS X 계정을 공유하는 다른 Chrome 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
+<translation id="4700157086864140907">Chrome은 사용자가 브라우저에 입력한 내용을 Google 서버에 보내어 Google 검색에서 사용하는 기술과 동일한 맞춤법 검사 기술을 사용할 수 있게 함으로써 더욱 뛰어난 맞춤법 검사 기능을 제공할 수 있습니다.</translation>
 <translation id="4953650215774548573">Chrome을 기본 브라우저로 설정</translation>
 <translation id="6014844626092547096">Chrome에 로그인했습니다. 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="7419046106786626209">내 도메인에서 동기화를 사용할 수 없으므로 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
@@ -96,6 +97,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="4424024547088906515">이 서버가 <ph name="DOMAIN"/>임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="5618769508111928343"><ph name="SITE"/>은(는) 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. Chrome이 이번에 <ph name="SITE"/>에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 공격자가 <ph name="SITE"/>인 것처럼 가장하고 있거나 Wi-Fi 로그인 화면이 연결을 차단했기 때문일 수 있습니다. 데이터 교환이 이뤄지기 전에 Chrome에서 연결을 차단했기 때문에 사용자 정보는 안전합니다.</translation>
+<translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="2576431527583832481">한층 개선된 Chrome의 최신 버전이 출시되었습니다.</translation>
 <translation id="4633000520311261472">Google에서는 Chrome의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="3656661827369545115">컴퓨터를 시작하면 Chromium 자동 실행</translation>
@@ -188,6 +190,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
 <translation id="7890208801193284374">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
+<translation id="597770749449734237">Chrome 디버깅에 유용한 추가 키보드 단축키를 사용합니다.</translation>
 <translation id="4147555960264124640">관리 계정으로 로그인하여 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME"/> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Google 월렛을 사용하려면 Chrome을 업그레이드해야 합니다. [<ph name="ERROR_CODE"/>]</translation>
 <translation id="8187289872471304532">애플리케이션 &gt; 시스템 환경설정 &gt; 네트워크 &gt; 고급 &gt; 프록시로 이동한 다음
@@ -201,6 +204,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>충돌 보고를 사용<ph name="END_LINK"/>하면 최근 충돌에 대한 정보만 이 페이지에 표시됩니다.</translation>
 <translation id="8614913330719544658">Chrome이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="2681064822612051220">Chrome을 시스템에 설치하던 중 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 보세요.</translation>
+<translation id="2252923619938421629">현재 설정을 보고하여 더 나은 Chrome을 만드는 데 도움 주기</translation>
 <translation id="6126631249883707068">Chrome에서 비밀번호를 저장하도록 하시겠습니까?</translation>
 <translation id="7773845170078702898">Chrome이 이 사이트에서 비밀번호를 저장하도록 하시겠습니까?</translation>
 <translation id="4251615635259297716">Chrome 데이터를 이 계정에 연결하시겠습니까?</translation>
@@ -251,6 +255,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME"/>의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 기타 Chrome 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK"/>Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK"/>에서 관리될 수 있습니다.</translation>
 <translation id="1001534784610492198">설치 프로그램 보관 파일이 손상되었거나 올바르지 않습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="2246246234298806438">기본 제공되는 PDF 뷰어가 없는 경우 Chrome에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
+<translation id="5132929315877954718">Chrome에 사용할 유용한 애플리케이션, 게임, 확장 프로그램 및 테마를 찾아보세요.</translation>
 <translation id="6626317981028933585">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chrome으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
 <translation id="7242029209006116544">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME"/> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chrome 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">또한 Chrome을 시작하거나 검색주소창에서 검색할 때 표시되는 페이지를 설정합니다.</translation>
@@ -259,6 +264,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. All rights reserved.</translation>
 <translation id="1698376642261615901">Chrome은 웹페이지와 애플리케이션을 빠르게 실행하는 웹 브라우저입니다. 또한 빠르고 안정적이며 사용하기 쉽습니다. Chrome에 기본적으로 제공되는 악성코드 및 피싱 방지 기능으로 웹을 더 안전하게 탐색하세요.</translation>
 <translation id="853189717709780425">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 이렇게 하면 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME"/>에 영구적으로 연결됩니다. Google 계정 대시보드를 통해 이 데이터를 삭제할 수 있지만 다른 계정에 연결할 수는 없습니다.</translation>
+<translation id="699076943483372849">사이트에서 사용 중인 Chrome 프레임 플러그인의 보안 및 안정성 업데이트가 중단되었습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="6049075767726609708">시스템에 모든 사용자용 Chrome이 설치되었습니다. 기존의 사용자 수준 Chrome 대신 설치된 시스템 수준 Chrome이 사용됩니다.</translation>
 <translation id="1818142563254268765">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 업데이트해야 합니다.</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>

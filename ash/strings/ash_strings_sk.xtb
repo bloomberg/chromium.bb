@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Batéria je nabitá</translation>
 <translation id="6895424601869865703">Pridať účet pre používateľa <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Klávesnica na obrazovke je zakázaná</translation>
-<translation id="1057289296854808272">Otáčanie je zapnuté (klepnutím tu to zmeníte)</translation>
+<translation id="5548285847212963613">Rozšírenie <ph name="EXTENSION_NAME"/> vám môže pomôcť pripojiť sa k tejto sieti.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> a <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Tlačidlo pretečenia</translation>
 <translation id="7904094684485781019">Správca tohto účtu zakázal viacnásobné prihlásenie.</translation>
@@ -39,7 +39,6 @@
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="6043994281159824495">Odhlásiť sa</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
-<translation id="4625920103690741805">Otáčanie je uzamknuté (klepnutím tu to zmeníte)</translation>
 <translation id="3799026279081545374">Je možné, že máte chybnú nabíjačku. Ak žijete v USA, požiadajte o pomoc a výmenu na čísle 866-628-1371. Ak žijete v Spojenom kráľovstve, volajte na číslo 0800-026-0613. Ak žijete v Írsku, volajte na číslo 1-800-832-664. Ak žijete v Kanade, volajte na číslo 866-628-1372. Ak žijete v Austrálii, volajte na číslo 1-800-067-460.</translation>
 <translation id="3891340733213178823">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl+Shift+Q.</translation>
 <translation id="5871632337994001636">Spravovať zariadenia...</translation>

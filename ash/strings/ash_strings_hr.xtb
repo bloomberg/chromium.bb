@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Baterija je puna</translation>
 <translation id="6895424601869865703">Dodaj račun za korisnika <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Tipkovnica na zaslonu onemogućena je</translation>
-<translation id="1057289296854808272">Rotacija je uključena (dodirnite ovdje za promjenu)</translation>
+<translation id="5548285847212963613">Proširenje &quot;<ph name="EXTENSION_NAME"/>&quot; može pomoći pri povezivanju s tom mrežom.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Gumb padajućeg izbornika</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
@@ -39,7 +39,6 @@
 Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6043994281159824495">Odjavi se odmah</translation>
 <translation id="2127372758936585790">Punjač male snage</translation>
-<translation id="4625920103690741805">Rotacija je zaključana (dodirnite ovdje za promjenu)</translation>
 <translation id="3799026279081545374">Možda imate neispravan punjač. Ako živite u SAD-u, nazovite 866-628-1371 da biste dobili pomoć i zamjenski punjač. Ako živite u Velikoj Britaniji, nazovite 0800-026-0613. Ako živite u Irskoj, nazovite 1-800-832-664. Ako živite u Kanadi, nazovite 866-628-1372. Ako živite u Australiji, nazovite 1-800-067-460.</translation>
 <translation id="3891340733213178823">Pritisnite Ctrl + Shift + Q dvaput da biste se odjavili.</translation>
 <translation id="5871632337994001636">Upravljanje uređajima...</translation>

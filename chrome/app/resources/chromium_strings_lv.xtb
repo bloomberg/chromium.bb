@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lv">
+<translation id="2705212601509139398">Šajā vietnē tiek izmantots spraudnis Chromium Frame, kas drīzumā vairs netiks atbalstīts. Lūdzu, atinstalējiet to un lejupielādējiet saderīgu pārlūku.</translation>
 <translation id="6676384891291319759">Piekļūt internetam</translation>
 <translation id="8586442755830160949">Autortiesības <ph name="YEAR"/> Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="6373523479360886564">Vai tiešām vēlaties atinstalēt pārlūku Chromium?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Šis dators drīz vairs nesaņems Chromium atjauninājumus, jo tā aparatūra vairs netiek atbalstīta.</translation>
 <translation id="5532301346661895910">Chromium saglabās paroli jūsu |Google saglabāto paroļu| sarakstā un atcerēsies nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="6893813176749746474">Pārlūks Chromium ir atjaunināts, bet jūs neesat to izmantojis vismaz 30 dienas.</translation>
+<translation id="421369550622382712">Atklājiet lieliskas lietotnes, spēles, paplašinājumus un motīvus, ko varat izmantot pārlūkā Chromium.</translation>
 <translation id="2732467638532545152">Jūsu datorā tiek izmantota iepriekšējā Microsoft Windows versija, kurā nevar apstrādāt šīs vietnes drošības sertifikātu. Šīs problēmas dēļ Chromium nevar noteikt, vai sertifikāts tika sūtīts no vietnes <ph name="SITE"/> vai arī to nosūtījusi kāda persona, kas izmanto jūsu tīklu un uzdodas par vietni <ph name="SITE"/>. Lūdzu, atjauniniet datora operētājsistēmu uz jaunāku Windows versiju.</translation>
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="6613594504749178791">Izmaiņas stāsies spēkā, kad restartēsiet Chromium.</translation>
@@ -117,6 +119,7 @@
 <translation id="5358375970380395591">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME"/>. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium lietotņu palaišanas programma</translation>
 <translation id="5563479599352954471">Meklējiet ar vienu pieskārienu</translation>
+<translation id="3256316712990552818">Nokopēta pārlūkā Chromium</translation>
 <translation id="8493179195440786826">Chromium versija ir novecojusi</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
 <translation id="95514773681268843">Pirms šīs ierīces lietošanas jums ir jāizlasa un jāapstiprina tālāk sniegtie domēna <ph name="DOMAIN"/> pakalpojumu sniegšanas noteikumi. Šie noteikumi nepaplašina, nepārveido vai neierobežo operētājsistēmas Chromium OS noteikumus.</translation>
@@ -126,6 +129,7 @@
 <translation id="2535480412977113886">Chromium OS nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="8697124171261953979">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium vai meklēsiet, izmantojot universālo lodziņu.</translation>
 <translation id="894903460958736500">Programmatūra, kas darbojas jūsu datorā, nav saderīga ar operētājsistēmu Chromium.</translation>
+<translation id="6810143991807788455">Palīdziet uzlabot pārlūku Chromium, ziņojot par pašreizējiem iestatījumiem.</translation>
 <translation id="1774152462503052664">Ļaut Chromium darboties fonā</translation>
 <translation id="9022552996538154597">Pierakstieties pārlūkā Chromium</translation>
 <translation id="4365115785552740256">Chromium ir kļuvis iespējams, pateicoties <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> atklātā pirmkoda projektam un citai <ph name="BEGIN_LINK_OSS"/>atklātā pirmkoda programmatūrai<ph name="END_LINK_OSS"/>.</translation>
@@ -159,6 +163,7 @@
 <translation id="5398878173008909840">Pieejama jauna Chromium versija.</translation>
 <translation id="2648074677641340862">Instalācijas laikā radās operētājsistēmas kļūda. Lejupielādējiet Chromium vēlreiz.</translation>
 <translation id="5942520288919337908">Paplašinājums <ph name="EXTENSION_NAME"/> ir pievienots pārlūkam Chromium.</translation>
+<translation id="7211828883345145708">Iespējo papildu īsinājumtaustiņus, kas noder Chromium atkļūdošanai.</translation>
 <translation id="549669000822060376">Lūdzu, uzgaidiet, kamēr Chromium instalē jaunākos sistēmas atjauninājumus.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Atveriet
@@ -196,6 +201,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="130631256467250065">Izmaiņas stāsies spēkā nākamajā reizē, kad restartēsiet ierīci.</translation>
 <translation id="3244477511402911926">Chromium paziņojumu centrs</translation>
 <translation id="9197815481970649201">Jūs esat pierakstījies pārlūkā Chromium</translation>
+<translation id="7162152143154757523">Chromium var efektīvāk labot pareizrakstības kļūdas, nosūtot pārlūkā rakstīto uz Google serveriem un tādējādi ļaujot izmantot to pašu pareizrakstības pārbaudes tehnoloģiju, kas tiek izmantota pakalpojumā Google meklēšana.</translation>
 <translation id="1929939181775079593">Chromium nereaģē. Vai restartēt to tūlīt?</translation>
 <translation id="1414495520565016063">Esat pierakstījies operētājsistēmā Chromium!</translation>
 <translation id="2158734852934720349">Chromium OS atklātā pirmkoda licences</translation>
@@ -211,6 +217,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="811857857463334932">Šis dators vairs nesaņems Chromium atjauninājumus, jo tā aparatūra vairs netiek atbalstīta.</translation>
 <translation id="2910007522516064972">Par &amp;Chromium</translation>
 <translation id="8453117565092476964">Instalēšanas programmas arhīvs ir bojāts vai nav derīgs. Lejupielādējiet Chromium vēlreiz.</translation>
+<translation id="2558641060352364164">Šajā vietnē tiek izmantots spraudnis Chromium Frame, kas drīzumā vairs netiks atbalstīts. Lūdzu, atinstalējiet to un veiciet jaunināšanu uz modernu pārlūku.</translation>
 <translation id="3889543394854987837">Noklikšķiniet uz sava vārda, lai atvērtu Chromium un sāktu pārlūkošanu.</translation>
 <translation id="3130323860337406239">Pārlūkā Chromium tiek izmantots jūsu mikrofons.</translation>
 <translation id="7196020411877309443">Kāpēc es redzu šo dialoglodziņu?</translation>

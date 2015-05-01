@@ -30,6 +30,7 @@
 <translation id="5620765574781326016">Tìm hiểu về các chủ đề trên trang web mà không phải rời khỏi trang.</translation>
 <translation id="2721687379934343312">Trên máy Mac, mật khẩu được lưu vào Keychain và có thể được truy cập hoặc đồng bộ hóa bởi những người dùng Chrome khác dùng chung tài khoản OS X này.</translation>
 <translation id="683440813066116847">Quy tắc kết nối để Google Chrome Canary cho phép lưu lượng truy cập mDNS.</translation>
+<translation id="4700157086864140907">Google Chrome có thể cung cấp tính năng kiểm tra chính tả thông minh hơn bằng cách gửi những gì bạn nhập vào trình duyệt tới máy chủ Google, cho phép bạn sử dụng cùng một công nghệ kiểm tra chính tả mà tìm kiếm của Google sử dụng.</translation>
 <translation id="4953650215774548573">Đặt Google Chrome làm trình duyệt mặc định của bạn</translation>
 <translation id="6014844626092547096">Bạn hiện đã đăng nhập vào Chrome! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
 <translation id="7419046106786626209">Chrome OS không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng với miền của bạn.</translation>
@@ -93,6 +94,7 @@
 <translation id="4424024547088906515">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN"/>; chứng chỉ bảo mật của máy chủ này không được Chrome tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="5618769508111928343"><ph name="SITE"/> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chrome cố gắng kết nối với <ph name="SITE"/> vào lần này, trang web đã gửi lại thông tin đăng nhập bất thường và không đúng. Một kẻ tấn công đang tìm cách giả mạo là <ph name="SITE"/> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn vì Chrome đã dừng kết nối trước khi bất kỳ dữ liệu nào bị trao đổi.</translation>
+<translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="2576431527583832481">Chrome được cải tiến hơn! Đã có phiên bản mới.</translation>
 <translation id="4633000520311261472">Để làm cho Chrome an toàn hơn, chúng tôi đã vô hiệu hóa một số tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="3656661827369545115">Tự động khởi động Chromium khi máy tính của bạn khởi động</translation>
@@ -186,6 +188,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="2871893339301912279">Bạn đã đăng nhập vào Chrome!</translation>
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
+<translation id="597770749449734237">Bật các phím tắt bổ sung hữu ích để gỡ lỗi Google Chrome.</translation>
 <translation id="4147555960264124640">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME"/>. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Bạn phải nâng cấp Chrome để sử dụng Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Đi tới
@@ -200,6 +203,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome không hồi đáp. Chạy lại ngay bây giờ?</translation>
 <translation id="2681064822612051220">Đã phát hiện cài đặt Google Chrome xung đột trên hệ thống. Vui lòng gỡ cài đặt và thử lại.</translation>
+<translation id="2252923619938421629">Giúp cải thiện Google Chrome bằng cách báo cáo cài đặt hiện tại</translation>
 <translation id="6126631249883707068">Bạn có muốn Google Chrome lưu mật khẩu không?</translation>
 <translation id="7773845170078702898">Bạn có muốn Google Chrome lưu mật khẩu của bạn cho trang web này không?</translation>
 <translation id="4251615635259297716">Bạn muốn liên kết dữ liệu Chrome của bạn với tài khoản này?</translation>
@@ -251,6 +255,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="3047079729301751317">Ngắt kết nối <ph name="USERNAME"/> sẽ xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chrome khác của bạn trên thiết bị này. Dữ liệu được lưu trữ trong tài khoản Google của bạn sẽ không bị xóa và có thể được quản lý trên <ph name="GOOGLE_DASHBOARD_LINK"/>Trang tổng quan của Google<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="2246246234298806438">Google Chrome không thể hiển thị xem trước bản in khi thiếu trình xem PDF được cài sẵn.</translation>
+<translation id="5132929315877954718">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Google Chrome.</translation>
 <translation id="6626317981028933585">Thật đáng tiếc, cài đặt Mozilla Firefox của bạn không có sẵn khi trình duyệt đang chạy. Để nhập những cài đặt đó vào Google Chrome, hãy lưu công việc của bạn và đóng tất cả cửa sổ Firefox. Sau đó, nhấp Tiếp tục.</translation>
 <translation id="7242029209006116544">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình trên Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME"/>. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. Bạn có thể tùy chọn tạo một cấu hình mới để giữ cho dữ liệu Chrome hiện có của bạn riêng biệt. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc tìm kiếm từ Thanh địa chỉ.</translation>
@@ -259,6 +264,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="2334084861041072223">Bản quyền <ph name="YEAR"/> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="1698376642261615901">Google Chrome là một trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Trình duyệt này nhanh, ổn định và dễ sử dụng. Duyệt web an toàn hơn với tính năng ngăn chặn phần mềm độc hại và lừa đảo được tích hợp trong Google Chrome.</translation>
 <translation id="853189717709780425">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát hồ sơ Google Chrome của bạn. Dữ liệu Chrome của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn gắn với <ph name="USER_NAME"/>. Bạn có thể xóa dữ liệu này qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác.</translation>
+<translation id="699076943483372849">Trang web này đang sử dụng plugin Chrome Frame đã ngừng hoạt động. Plugin này không còn nhận được các bản cập nhật về bảo mật và độ ổn định nữa. Vui lòng gỡ cài đặt và nâng cấp lên trình duyệt hiện đại.</translation>
 <translation id="6049075767726609708">Quản trị viên đã cài đặt Google Chrome trên hệ thống này và Google Chrome khả dụng cho tất cả người dùng. Ngay bây giờ, Google Chrome cấp hệ thống sẽ thay thế cài đặt cấp người dùng của bạn.</translation>
 <translation id="1818142563254268765">Chrome không thể tự cập nhật lên phiên bản mới nhất nên bạn đã bỏ lỡ các tính năng mới tuyệt vời và các bản vá bảo mật. Bạn cần cập nhật Chrome.</translation>
 <translation id="7408085963519505752">Điều khoản của Chrome OS</translation>

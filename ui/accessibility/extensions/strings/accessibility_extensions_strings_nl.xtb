@@ -7,11 +7,13 @@
 <translation id="6050189528197190982">Grijstinten</translation>
 <translation id="5094574508723441140">Verhoogd contrast</translation>
 <translation id="8609925175482059018">Druk op &lt;span class='key'&gt;F7&lt;/span&gt; om Bladeren met navigatietoetsen in te schakelen. Druk nogmaals op de toets om de functie uit te schakelen.</translation>
+<translation id="7658239707568436148">Annuleren</translation>
 <translation id="3435896845095436175">Inschakelen</translation>
 <translation id="8480209185614411573">Hoog contrast</translation>
 <translation id="1588438908519853928">Normaal</translation>
 <translation id="4954450790315188152">Wanneer Bladeren met navigatietoetsen is ingeschakeld:</translation>
 <translation id="2965611304828530558">&lt;p&gt;Wanneer je een link of bedieningselement bereikt, wordt het betreffende item automatisch gemarkeerd. Druk op &lt;span class='key'&gt;Enter&lt;/span&gt; om op een link of knop te klikken. &lt;/p&gt; &lt;p&gt;   Wanneer een gemarkeerd bedieningselement (zoals een tekstvak of een lijstvak) invoer met pijltoetsen registreert, druk je op &lt;span class='key'&gt;Esc&lt;/span&gt; gevolgd door de pijl-links of -rechts om door te gaan met Bladeren met navigatietoetsen. &lt;/p&gt; &lt;p&gt;   Je kunt eventueel ook op &lt;span class='key'&gt;Tab&lt;/span&gt; drukken om naar het volgende markeerbare bedieningselement te springen. &lt;/p&gt;</translation>
+<translation id="5041932793799765940">Kleuraanpassing</translation>
 <translation id="2394933097471027016">Nu uitproberen - Bladeren met navigatietoetsen is altijd ingeschakeld op deze pagina!</translation>
 <translation id="3622586652998721735">Instellen als standaardschema</translation>
 <translation id="2179565792157161713">Lange beschrijving openen in nieuw tabblad</translation>
@@ -21,9 +23,11 @@
 <translation id="381767806621926835">Klik op een item met een kenmerk 'longdesc' of 'aria-describedat' om de lange beschrijving te openen.</translation>
 <translation id="786423340267544509">Een kader toevoegen aan elementen met een kenmerk 'aria-describedat' of 'longdesc'.</translation>
 <translation id="690628312087070417">Wanneer het caret-teken een grote afstand overbrugt:</translation>
+<translation id="1996252509865389616">Inschakelen?</translation>
 <translation id="5331422999063554397">Omgekeerde kleur</translation>
 <translation id="2648340354586434750">Houd de toets &lt;span class='key'&gt;Option&lt;/span&gt; ingedrukt om van woord naar woord te springen.</translation>
 <translation id="4769065380738716500">Afbeeldingen zijn vervangen door de alt-tekst.</translation>
+<translation id="6170146920149900756">Kleurverbetering</translation>
 <translation id="5287723860611749454">&lt;p&gt;Gebruik de pijltoetsen om door het document te navigeren. &lt;/p&gt;&lt;p&gt;Klik ergens om de muisaanwijzer naar de desbetreffende locatie te verplaatsten. &lt;/p&gt; &lt;p&gt;   Gebruik de toets &lt;span class='key'&gt;Shift&lt;/span&gt; in combinatie met de pijltoetsen om tekst te selecteren.&lt;/p&gt;</translation>
 <translation id="5558600050691192317">Toetsenbordopdrachten</translation>
 <translation id="633394792577263429">Houd de toets &lt;span class='key'&gt;Control&lt;/span&gt; ingedrukt om van woord naar woord te springen.</translation>
@@ -34,15 +38,19 @@
 <translation id="4896660567607030658">Geen feedback, alleen de muisaanwijzer weergeven</translation>
 <translation id="5631241868147802353">Standaardkleurenschema:</translation>
 <translation id="5173942593318174089">De positie van de muisaanwijzer markeren met een animatie.</translation>
+<translation id="7379645913608427028">Mate</translation>
 <translation id="894241283505723656">Lange beschrijvingen in contextmenu</translation>
 <translation id="5555153510860501336">Hoog contrast is uitgeschakeld</translation>
+<translation id="5939518447894949180">Terugzetten</translation>
 <translation id="1703735871906654364">Bladeren met navigatietoetsen</translation>
 <translation id="7384431257964758081">Hoog contrast is ingeschakeld</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="5650358096585648000">Visuele feedback</translation>
 <translation id="4388820049312272371">De positie van de muisaanwijzer markeren met een snelle knippering.</translation>
+<translation id="2223143012868735942">Een aanpasbaar kleurenfilter dat wordt toegepast op webpagina's om de kleurperceptie te verbeteren.</translation>
 <translation id="4023902424053835668">Door de tekst van webpagina's bladeren met de pijltoetsen.</translation>
 <translation id="2795227192542594043">Deze extensie biedt je een verplaatsbare muisaanwijzer in de webpagina, zodat je tekst kunt selecteren met het toetsenbord.</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="5710185147685935461">Het kleurenschema van de webpagina's wijzigen om omkeren zodat ze beter leesbaar zijn.</translation>
 </translationbundle>

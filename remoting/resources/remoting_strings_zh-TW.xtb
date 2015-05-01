@@ -49,7 +49,9 @@
 <translation id="8355326866731426344">這個存取碼將於 <ph name="TIMEOUT"/> 後失效</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">說明與意見回饋</translation>
+<translation id="3606997049964069799">您尚未登入 Chromium，請登入並再試一次。</translation>
 <translation id="6198252989419008588">變更 PIN</translation>
+<translation id="7970576581263377361">驗證失敗，請重新登入 Chromium。</translation>
 <translation id="6167788864044230298">Chrome 應用程式串流</translation>
 <translation id="170207782578677537">無法註冊這台電腦。</translation>
 <translation id="4804818685124855865">中斷連線</translation>
@@ -70,12 +72,15 @@
 <translation id="9188433529406846933">授權</translation>
 <translation id="228809120910082333">請在下方確認您的帳戶和 PIN，以便授予 Chromoting 存取權限。</translation>
 <translation id="7605995381616883502">新連線</translation>
+<translation id="2038229918502634450">主機正在重新啟動，以便套用政策變更。</translation>
 <translation id="2851674870054673688">對方輸入存取碼之後，共用工作階段即會開始。</translation>
 <translation id="5593560073513909978">服務暫時無法使用，請稍後再試。</translation>
 <translation id="3908017899227008678">縮小以符合視窗大小</translation>
 <translation id="8073845705237259513">您必須在裝置上新增 Google 帳戶，才能使用 Chrome 遠端桌面。</translation>
+<translation id="2894654864775534701">您目前登入的帳戶不是這台電腦的共用帳戶。</translation>
 <translation id="1199593201721843963">停用遠端連線</translation>
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL"/> 安裝。</translation>
+<translation id="3150823315463303127">主機無法讀取政策。</translation>
 <translation id="2220529011494928058">回報問題</translation>
 <translation id="174018511426417793">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
 <translation id="9126115402994542723">此裝置連線至這個主機時，不必再次詢問 PIN。</translation>
@@ -166,6 +171,7 @@
 <translation id="2939145106548231838">主機驗證</translation>
 <translation id="2366718077645204424">無法連線到主機，原因可能與您使用的網路設定有關。</translation>
 <translation id="3776024066357219166">您的 Chrome 遠端桌面工作階段已結束。</translation>
+<translation id="1450760146488584666">要求的物件不存在。</translation>
 <translation id="5625493749705183369">在安全的連線機制下，透過網際網路存取其他電腦，或是允許其他使用者存取您的電腦。</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
 <translation id="2699970397166997657">Chromoting</translation>
@@ -195,12 +201,14 @@
 <translation id="6527303717912515753">分享</translation>
 <translation id="2926340305933667314">無法停用這台電腦的遠端存取功能，請稍後再試。</translation>
 <translation id="6865175692670882333">檢視/編輯</translation>
+<translation id="544077782045763683">主機已關閉。</translation>
 <translation id="5859141382851488196">新增視窗…</translation>
 <translation id="2089514346391228378">這台電腦的遠端連線已啟用。</translation>
 <translation id="7693372326588366043">重新整理主機清單</translation>
 <translation id="8445362773033888690">前往 Google Play 商店查看</translation>
 <translation id="1654128982815600832">正在啟用這台電腦的遠端連線...</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. 保留所有權利。</translation>
+<translation id="6221358653751391898">您尚未登入 Chrome，請登入並再試一次。</translation>
 <translation id="7038683108611689168">允許我們收集使用統計資料和當機報告，協助我們改善 Chromoting。</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="4405930547258349619">核心資料庫</translation>
@@ -241,6 +249,7 @@
 <translation id="3596628256176442606">這項服務允許來自 Chromoting 用戶端的連線。</translation>
 <translation id="1978866438647250517">• 改善使用者介面。
 • 在背景執行時減少網路使用量。</translation>
+<translation id="4741792197137897469">驗證失敗，請重新登入 Chrome。</translation>
 <translation id="4277463233460010382">這台電腦已設為允許一或多個用戶端可不輸入 PIN 進行連線。</translation>
 <translation id="837021510621780684">從這台電腦</translation>
 <translation id="518094545883702183">這些資訊只會用於診斷您所回報的問題，並且僅供相關調查人員存取。此外，系統會在 30 天後刪除這些資訊。</translation>

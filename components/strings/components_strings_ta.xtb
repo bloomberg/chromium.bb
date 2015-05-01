@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">புதுப்பி</translation>
 <translation id="8208216423136871611">சேமிக்காதே</translation>
 <translation id="777702478322588152">ப்ரீஃபெக்சர்</translation>
+<translation id="2972581237482394796">&amp;மீண்டும் செய்</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="2262243747453050782">HTTP பிழை</translation>
 <translation id="1339601241726513588">பதிவுக் களம்:</translation>
 <translation id="7298195798382681320">பரிந்துரைத்தவை</translation>
 <translation id="4058922952496707368">விசை &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Javascript விழிப்பூட்டல்</translation>
-<translation id="4081383687659939437">தகவலைச் சேமி</translation>
 <translation id="5299298092464848405">கொள்கையை அலசுவதில் பிழை</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> தேடல்</translation>
 <translation id="2498091847651709837">புதிய கார்டை ஸ்கேன்செய்</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">சீனா UnionPay</translation>
 <translation id="7537536606612762813">கட்டாயம்</translation>
 <translation id="2958431318199492670">பிணைய உள்ளமைப்பானது ONC தரத்துடன் இணங்கவில்லை. உள்ளமைவின் பகுதிகள் இறக்குமதியாகாமல் போகக்கூடும்.</translation>
+<translation id="3583757800736429874">&amp;நகர்த்தலை மீண்டும் செய்</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">சாதனப் பதிவு இல்லை</translation>
 <translation id="1491151370853475546">இந்தப் பக்கத்தை மீண்டும் ஏற்று</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">இல்லை</translation>
 <translation id="2704283930420550640">மதிப்பானது வடிவமைப்பிற்குப் பொருந்தவில்லை.</translation>
+<translation id="1055184225775184556">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
 <translation id="4850886885716139402">காட்சி</translation>
 <translation id="8091372947890762290">சேவையகத்தில் செயலாக்கம் நிலுவையிலுள்ளது</translation>
+<translation id="6874604403660855544">&amp;சேர்த்தலை மீண்டும் செய்</translation>
 <translation id="4607653538520819196">இந்தப் பக்கத்தைத் தரவு சேமிப்பானால் ப்ராக்ஸி செய்ய முடியாது.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">பகுதி</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">அசலைக் காட்டு</translation>
 <translation id="4079302484614802869">ப்ராக்ஸி உள்ளமைவானது, .pac ஸ்கிரிப்ட் URL ஐப் பயன்படுத்தும்படி அமைக்கப்பட்டிருக்கிறது, நிலையான ப்ராக்ஸி சேவையகங்களுக்கு அல்ல.</translation>
 <translation id="5540224163453853">கோரப்பட்ட கட்டுரையைக் கண்டுபிடிக்க முடியவில்லை.</translation>
+<translation id="8437238597147034694">&amp;நகர்த்தலைச் செயல்தவிர்</translation>
+<translation id="5813119285467412249">&amp;சேர்த்தலை மீண்டும் செய்</translation>
 <translation id="333371639341676808">இந்த பக்கம் கூடுதல் உரையாடல்களை உருவாக்குவதைத் தடு.</translation>
 <translation id="5523118979700054094">கொள்கைப் பெயர்</translation>
 <translation id="7791543448312431591">சேர்</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">தற்காலிக சேவையகப் பிழை</translation>
 <translation id="7087282848513945231">மாகாணம்</translation>
 <translation id="1132774398110320017">Chrome தன்னிரப்பி அமைப்புகள்...</translation>
+<translation id="8194797478851900357">&amp;நகர்த்தலைச் செயல்தவிர்</translation>
 <translation id="6458467102616083041">கொள்கை மூலம் இயல்புநிலை தேடல் முடக்கப்பட்டுள்ளதால், பாலிசியின் மதிப்பு புறக்கணிக்கப்பட்டுள்ளது.</translation>
+<translation id="6259156558325130047">&amp;மறுவரிசைப்படுத்தலை மீண்டும் செய்</translation>
 <translation id="1227224963052638717">அறியாத கொள்கை.</translation>
 <translation id="4250680216510889253">இல்லை</translation>
 <translation id="9207861905230894330">கட்டுரையைச் சேர்ப்பதில் தோல்வி.</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">நிலை</translation>
 <translation id="7977590112176369853">&lt;வினவலை உள்ளிடுக&gt;</translation>
 <translation id="552553974213252141">உரையானது சரியான முறையில் பிரித்தெடுக்கப்பட்டதா?</translation>
+<translation id="5317780077021120954">சேமி</translation>
 <translation id="7610193165460212391"><ph name="VALUE"/> என்ற மதிப்பு வரம்பை மீறியுள்ளது.</translation>
 <translation id="3739623965217189342">நீங்கள் நகலெடுத்த இணைப்பு</translation>
+<translation id="8790007591277257123">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="8311778656528046050">இந்தப் பக்கத்தை நிச்சயமாக  மீண்டும் ஏற்றவா?</translation>
 <translation id="370665806235115550">நினைவேறுகிறது...</translation>
 <translation id="2096368010154057602">துறை</translation>
+<translation id="6529602333819889595">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="4258748452823770588">தவறான கையொப்பம்</translation>
 <translation id="3024663005179499861">தவறான கொள்கை வகை</translation>
 <translation id="2030481566774242610"><ph name="LINK"/> ஐக் குறிப்பிடுகிறீர்களா?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">உள்ளீடுகளைப் பெறுகிறது...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> புக்மார்க்குகள்</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> இலிருந்து <ph name="TARGET_LANGUAGE"/> க்கு மொழிபெயர்க்கவா?</translation>
+<translation id="8218327578424803826">ஒதுக்கிய இருப்பிடம்:</translation>
 <translation id="3542684924769048008">இதற்காக கடவுச்சொல்லைப் பயன்படுத்தவும்:</translation>
 <translation id="7186367841673660872">இந்தப் பக்கமானது<ph name="ORIGINAL_LANGUAGE"/>இலிருந்து<ph name="LANGUAGE_LANGUAGE"/>க்கு மொழிபெயர்க்கப்பட்டது</translation>
 <translation id="7139724024395191329">எமிரேட்</translation>
 <translation id="5145883236150621069">கொள்கைப் பதிலில் பிழைக் குறியீடு உள்ளது</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE"/> ஐ <ph name="TARGET_LANGUAGE"/> க்கு எப்போதும் மொழிபெயர்ப்பு செய்க</translation>
 <translation id="6970216967273061347">மாவட்டம்</translation>
+<translation id="3427342743765426898">&amp;திருத்தலை மீண்டும் செய்</translation>
 <translation id="3010559122411665027">பட்டியல் உள்ளீடு &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">நாடு</translation>
 <translation id="5031870354684148875">Google மொழியாக்கம் ஓர் அறிமுகம்</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">ப்ராக்ஸி சேவையகம் சரிசெய்யப்படவும் இல்லை .pac ஸ்கிரிப்ட் URL குறிப்பிடப்படவுமில்லை.</translation>
 <translation id="7805768142964895445">நிலை</translation>
 <translation id="2113977810652731515">கார்டு</translation>
+<translation id="1113869188872983271">&amp;மறுவரிசைப்படுத்தலைச் செயல்தவிர்</translation>
 <translation id="536296301121032821">கொள்கை அமைப்புகளைச் சேமிப்பதில் தோல்வி</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; திட்டமுறை சரிபார்ப்புப் பிழை: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">புக்மார்க் பட்டி</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">மொபைல் புக்மார்க்குகள்</translation>
 <translation id="5089810972385038852">மாநிலம்</translation>
 <translation id="647261751007945333">சாதனக் கொள்கைகள்</translation>
+<translation id="2556876185419854533">&amp;திருத்தலைச் செயல்தவிர்</translation>
 <translation id="213826338245044447">மொபைல் புக்மார்க்குகள்</translation>
+<translation id="4594403342090139922">&amp;நீக்குதலைச் செயல்தவிர்</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE"/> க்கு பக்கத்தை மொழிபெயர்க்கிறது...</translation>
 <translation id="4117700440116928470">கொள்கையின் நோக்கம் ஆதரிக்கப்படவில்லை.</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME"/> ஆல் கொள்கை மேலெழுதப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">இந்தப் பக்கம் <ph name="SOURCE_LANGUAGE"/> மொழியில் உள்ளது. இதை <ph name="TARGET_LANGUAGE"/> க்கு மொழிபெயர்க்கவா?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">தவறான ப்ராக்ஸி முறை.</translation>
+<translation id="3105172416063519923">பண்பு ஐடி:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">கோப்பக API ஐடி:</translation>
 <translation id="7752995774971033316">நிர்வகிக்கப்படாதது</translation>
 <translation id="3712624925041724820">உரிமம் முடிந்தது</translation>
 <translation id="4926049483395192435">கட்டாயம் குறிப்பிட வேண்டும்.</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">ஒரு சேவையகப் பிழையின் காரணமாக மொழிபெயர்ப்புத் தோல்வியடைந்தது.</translation>
 <translation id="2597378329261239068">இந்த ஆவணம் கடவுச்சொல் பாதுகாக்கப்பட்ட ஒன்று. தயவுசெய்து ஒரு கடவுச்சொல்லை உள்ளிடுக.</translation>
 <translation id="5629630648637658800">கொள்கை அமைப்புகளை ஏற்றுவதில் தோல்வி</translation>
+<translation id="4030383055268325496">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
 <translation id="2354001756790975382">பிற புக்மார்க்ஸ்</translation>
 <translation id="3650584904733503804">சரிபார்ப்பு வெற்றி</translation>
 <translation id="2359808026110333948">தொடர்க</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">கொள்கையை அலசுவதில் பிழை</translation>
 <translation id="2270192940992995399">கட்டுரையைக் கண்டறிவதில் தோல்வி.</translation>
 <translation id="4726672564094551039">கொள்கைகளை மீண்டும் ஏற்று</translation>
+<translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
 <translation id="9154176715500758432">இந்தப் பக்கத்திலேயே இருக்க</translation>
 <translation id="2392959068659972793">மதிப்பும் எதுவும் அமைக்கப்படாத கொள்கைகளைக் காட்டு</translation>
+<translation id="9148507642005240123">&amp;திருத்தலைச் செயல்தவிர்</translation>
+<translation id="5470861586879999274">&amp;திருத்தலை மீண்டும் செய்</translation>
 <translation id="5190835502935405962">புக்மார்க்குகள் பட்டி</translation>
 <translation id="6965978654500191972">சாதனம்</translation>
 <translation id="5295309862264981122">வழிசெலுத்துதலை உறுதிசெய்க</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">தவறான சரிபார்ப்பு கையொப்பம்</translation>
 <translation id="106701514854093668">டெஸ்க்டாப் புக்மார்க்குகள்</translation>
 <translation id="6154808779448689242">கிடைத்த கொள்கை டோக்கன், தற்போதுள்ள டோக்கனுடன் பொருந்தவில்லை</translation>
+<translation id="7995512525968007366">குறிப்பிடப்படவில்லை</translation>
 <translation id="7961015016161918242">எப்போதும் இல்லை</translation>
 <translation id="2835170189407361413">படிவத்தை அழி</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="8804164990146287819">தனியுரிமைக் கொள்கை</translation>
 <translation id="5337776961545044340">இந்த வர்த்தகருக்கான, இந்த வகை கார்டு Google Wallet ஆல் ஆதரிக்கப்படவில்லை. வேறொரு கார்டைத் தேர்ந்தெடுக்கவும்.</translation>
+<translation id="7334320624316649418">&amp;மறுவரிசைப்படுத்தலை மீண்டும் செய்</translation>
 <translation id="7182878459783632708">கொள்கைகள் அமைக்கப்படவில்லை</translation>
 <translation id="5019198164206649151">தவறான நிலையில் மீட்பு சேமிப்பு உள்ளது</translation>
 <translation id="8364627913115013041">அமைக்கப்படவில்லை.</translation>
 <translation id="8713130696108419660">தொடக்க விசையின் கையொப்பம் தவறானது</translation>
+<translation id="3270847123878663523">&amp;மறுவரிசைப்படுத்தலைச் செயல்தவிர்</translation>
 <translation id="20817612488360358">கணினி ப்ராக்ஸி அமைப்புகள் பயன்படுத்த அமைக்கப்பட்டுள்ளது. வெளிப்படையான ப்ராக்ஸி உள்ளமைவும் குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="2639739919103226564">நிலை:</translation>
 <translation id="4968547170521245791">ப்ராக்ஸி செய்ய முடியாது</translation>
 <translation id="385051799172605136">முந்தைய பக்கம்</translation>
+<translation id="4196861286325780578">&amp;நகர்த்தலை மீண்டும் செய்</translation>
 <translation id="5095208057601539847">பிராந்தியம்</translation>
 <translation id="2581221116934462656">அடுத்த முறை இந்தத் தளத்திலிருந்து <ph name="LANGUAGE_NAME"/> பக்கங்களுக்கான மொழிப்பெயர்ப்பை <ph name="PRODUCT_NAME"/> வழங்குவதை விரும்புகிறீர்களா?</translation>
+<translation id="2396249848217231973">&amp;நீக்குதலைச் செயல்தவிர்</translation>
 <translation id="3934680773876859118">PDF ஆவணத்தை ஏற்றுவது தோல்வியடைந்தது</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="2721148159707890343">கோரிக்கை வெற்றி</translation>

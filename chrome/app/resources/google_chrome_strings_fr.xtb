@@ -33,6 +33,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5620765574781326016">Pour en savoir plus sur des sujets évoqués sur des sites Web sans quitter la page.</translation>
 <translation id="2721687379934343312">Sur Mac, les mots de passe sont sauvegardés dans votre trousseau. D'autres utilisateurs de Google Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
+<translation id="4700157086864140907">Google Chrome peut fournir une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
 <translation id="4953650215774548573">Définir Google Chrome en tant que navigateur par défaut</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="7419046106786626209">Impossible de synchroniser vos données dans Chrome OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>
@@ -97,6 +98,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="5618769508111928343">Un chiffrement est normalement utilisé sur le site <ph name="SITE"/> pour protéger vos informations. Lors de la dernière tentative de connexion de Chrome
 au site <ph name="SITE"/>, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE"/> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
+<translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="2576431527583832481">Google Chrome s'est amélioré ! Une nouvelle version est désormais disponible.</translation>
 <translation id="4633000520311261472">Afin de rendre Chrome plus sûr, nous avons désactivé certaines extensions qui ne sont pas répertoriées sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> et qui ont pu être ajoutées à votre insu.</translation>
 <translation id="3656661827369545115">Lancer Chromium automatiquement au démarrage de l'ordinateur</translation>
@@ -190,6 +192,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2871893339301912279">Vous êtes connecté à Google Chrome.</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
+<translation id="597770749449734237">Activez d'autres raccourcis clavier utiles pour déboguer Google Chrome.</translation>
 <translation id="4147555960264124640">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME"/>. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Vous devez mettre à jour Chrome pour pouvoir utiliser Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Sélectionnez
@@ -204,6 +207,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3444832043240812445">Cette page affiche uniquement des informations sur les erreurs récentes si vous <ph name="BEGIN_LINK"/>activez l'envoi de rapports d'erreur<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ne répond pas. Voulez-vous le relancer maintenant ?</translation>
 <translation id="2681064822612051220">Une installation incompatible de Google Chrome a été détectée sur le système. Désinstallez-la et réessayez.</translation>
+<translation id="2252923619938421629">Aidez-nous à améliorer Google Chrome en nous signalant vos paramètres.</translation>
 <translation id="6126631249883707068">Souhaitez-vous que Google Chrome enregistre votre mot de passe ?</translation>
 <translation id="7773845170078702898">Voulez-vous que Google Chrome enregistre votre mot de passe pour ce site ?</translation>
 <translation id="4251615635259297716">Associer vos données Chrome à ce compte ?</translation>
@@ -255,6 +259,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3047079729301751317">La déconnexion de <ph name="USERNAME"/> a pour effet d'effacer votre historique, vos favoris, vos paramètres et les autres données Chrome stockées sur cet appareil. Les données stockées dans votre compte Google ne sont pas effacées ; vous pouvez les gérer dans <ph name="GOOGLE_DASHBOARD_LINK"/>Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">L'archive du programme d'installation est corrompue ou incorrecte. Veuillez télécharger de nouveau Google Chrome.</translation>
 <translation id="2246246234298806438">Impossible d'afficher l'aperçu d'impression dans Google Chrome, car la visionneuse de documents PDF intégrée est absente.</translation>
+<translation id="5132929315877954718">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Google Chrome.</translation>
 <translation id="6626317981028933585">Vos paramètres Mozilla Firefox ne sont pas disponibles pendant l'utilisation de ce navigateur. Pour importer ces paramètres vers Google Chrome, enregistrez votre travail et fermez toutes les fenêtres Firefox. Ensuite, cliquez pour continuer.</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME"/>. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Elle contrôle également la page qui s'affiche au démarrage de Chrome ou lorsque vous effectuez une recherche dans l'omnibox.</translation>
@@ -263,6 +268,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2334084861041072223">Copyright Google Inc. <ph name="YEAR"/>. Tous droits réservés.</translation>
 <translation id="1698376642261615901">Google Chrome est un navigateur Web qui exécute des applications et des pages Web en un temps record. Il est rapide, stable et simple à utiliser. Naviguez sur Internet en toute sécurité grâce à la protection intégrée de Google Chrome contre le phishing et les logiciels malveillants.</translation>
 <translation id="853189717709780425">Vous vous connectez à un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Google Chrome (applications, favoris, historique, mots de passe et d'autres paramètres) seront définitivement liées à <ph name="USER_NAME"/>. Vous pourrez supprimer ces données via le tableau de bord Comptes Google, mais vous ne pourrez pas les associer à un autre compte.</translation>
+<translation id="699076943483372849">Ce site utilise le plug-in Chrome Frame, qui ne bénéficie plus des mises à jour de sécurité et de stabilité. Veuillez le désinstaller et utiliser un navigateur récent.</translation>
 <translation id="6049075767726609708">Un administrateur a installé Google Chrome pour tous les utilisateurs de ce système. Votre version utilisateur de Google Chrome va être remplacée par la version système.</translation>
 <translation id="1818142563254268765">La mise à jour de Chrome a échoué. Vous n'utilisez pas la dernière version, qui vous permet de bénéficier de nouvelles fonctionnalités pratiques et de correctifs de sécurité. Vous devez mettre Chrome à jour.</translation>
 <translation id="7408085963519505752">Conditions d'utilisation de Chrome OS</translation>

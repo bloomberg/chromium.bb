@@ -49,7 +49,9 @@
 <translation id="8355326866731426344">このアクセス コードは <ph name="TIMEOUT"/> で期限切れとなります。</translation>
 <translation id="985602178874221306">Chromium 開発者</translation>
 <translation id="2498359688066513246">ヘルプとフィードバック</translation>
+<translation id="3606997049964069799">Chromium にログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
+<translation id="7970576581263377361">認証できませんでした。Chromium にもう一度ログインしてください。</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
 <translation id="4804818685124855865">切断</translation>
@@ -70,12 +72,15 @@
 <translation id="9188433529406846933">承認</translation>
 <translation id="228809120910082333">Chromoting によるアクセスを許可するには、下記でアカウントと PIN の確認を行ってください。</translation>
 <translation id="7605995381616883502">新しい接続</translation>
+<translation id="2038229918502634450">ポリシーの変更を有効にするため、ホストを再起動しています。</translation>
 <translation id="2851674870054673688">共有するユーザーがこのコードを入力すると、共有セッションが開始されます。</translation>
 <translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
 <translation id="3908017899227008678">ウィンドウに合わせて縮小</translation>
 <translation id="8073845705237259513">Chrome リモート デスクトップを使用するには、お使いのデバイスに Google アカウントを追加する必要があります。</translation>
+<translation id="2894654864775534701">このパソコンは現在、別のアカウントで共有されています。</translation>
 <translation id="1199593201721843963">リモート接続を無効にする</translation>
 <translation id="5379087427956679853">Chrome リモート デスクトップを使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chrome リモート デスクトップ アプリを実行している必要があります。このアプリは <ph name="URL"/> から入手できます。</translation>
+<translation id="3150823315463303127">ホストでポリシーを読み取れませんでした。</translation>
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
 <translation id="9126115402994542723">このデバイスからこのホストに接続するときに PIN の再入力を要求しない。</translation>
@@ -166,6 +171,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2939145106548231838">ホストへの認証</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
 <translation id="3776024066357219166">Chrome リモート デスクトップ セッションが終了しました。</translation>
+<translation id="1450760146488584666">リクエストしたオブジェクトは存在しません。</translation>
 <translation id="5625493749705183369">このパソコンから他のパソコンに、または他のパソコンからこのパソコンに、インターネットを経由して安全にアクセスできるようになります。</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
 <translation id="2699970397166997657">Chromoting</translation>
@@ -195,12 +201,14 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6527303717912515753">共有</translation>
 <translation id="2926340305933667314">このパソコンへのリモート アクセスを無効にできませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="6865175692670882333">表示/編集</translation>
+<translation id="544077782045763683">ホストはシャットダウンしました。</translation>
 <translation id="5859141382851488196">新しいウィンドウ...</translation>
 <translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
 <translation id="7693372326588366043">ホストのリストを更新します</translation>
 <translation id="8445362773033888690">Google Playストアで見る</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
+<translation id="6221358653751391898">Chrome にログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="7038683108611689168">Chromoting の改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="4405930547258349619">コア ライブラリ</translation>
@@ -241,6 +249,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3596628256176442606">このサービスにより、Chromoting クライアントからの着信接続が有効になります。</translation>
 <translation id="1978866438647250517">• ユーザー インターフェースが改善されました。
 • バックグラウンド実行時のネットワーク使用量が削減されました。</translation>
+<translation id="4741792197137897469">認証できませんでした。Chrome にもう一度ログインしてください。</translation>
 <translation id="4277463233460010382">このパソコンは、1 つ以上のクライアントが PIN の入力なしで接続できるように設定されています。</translation>
 <translation id="837021510621780684">このパソコンからの接続</translation>
 <translation id="518094545883702183">この情報は、報告していただいた問題を診断する目的にのみ使用され、調査担当者のみに利用可能となります。この情報が 30 日間を過ぎて保持されることはありません。</translation>

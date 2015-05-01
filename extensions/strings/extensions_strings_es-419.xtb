@@ -1,6 +1,7 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es-419">
 <translation id="4542520061254486227">Leer los datos en <ph name="WEBSITE_1"/> y <ph name="WEBSITE_2"/></translation>
 <translation id="3983586614702900908">dispositivos de un proveedor desconocido</translation>
+<translation id="730515362922783851">Intercambiar datos con cualquier dispositivo de la red local o Internet</translation>
 <translation id="3624204664103857160">No se pudo cargar la página &quot;<ph name="PAGE"/>&quot; del selector.</translation>
 <translation id="8804398419035066391">Comunicarse con sitios web cooperativos</translation>
 <translation id="7809034755304591547">El administrador bloqueó la extensión <ph name="EXTENSION_NAME"/> (con ID &quot;<ph name="EXTENSION_ID"/>&quot;).</translation>
@@ -12,22 +13,22 @@
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
 <translation id="288042212351694283">Accede a tus dispositivos U2F (Universal 2nd Factor).</translation>
 <translation id="4115165561519362854">El administrador de esta computadora requiere una versión de <ph name="EXTENSION_NAME"/> no anterior a <ph name="EXTENSION_VERSION"/>. No se puede habilitar hasta que se haya actualizado a dicha versión (o versiones posteriores).</translation>
+<translation id="6075907793831890935">Intercambiar datos con el dispositivo <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Controlar el estado y la sincronización del adaptador Bluetooth</translation>
 <translation id="677806580227005219">Controlador MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Acceder a la información sobre los dispositivos Bluetooth sincronizados con el sistema y detectar dispositivos Bluetooth cercanos.</translation>
 <translation id="8749863574775030885">Acceder a dispositivos USB de un proveedor desconocido</translation>
-<translation id="5911798608827489036">Intercambiar datos con cualquier computadora en la red local o en internet</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> en <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">No se pudo cargar la secuencia de comandos en segundo plano &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Enviar y recibir mensajes desde dispositivos Bluetooth</translation>
 <translation id="5678955352098267522">Leer los datos en <ph name="WEBSITE_1"/></translation>
-<translation id="8597109877291678953">Intercambiar datos con la computadora llamada <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Esta extensión incluye el archivo de clave &quot;<ph name="KEY_PATH"/>&quot;. Probablemente no desees incluir ese archivo.</translation>
 <translation id="7257666756905341374">Leer los datos que copias y pegas</translation>
 <translation id="2350172092385603347">Se utiliza localización, pero default_locale no se especificó en el manifiesto.</translation>
 <translation id="3759933321830434300">Bloquear partes de páginas web</translation>
 <translation id="6143635259298204954">No se puede desempaquetar la extensión. Para desempaquetar una extensión de manera segura, debe haber una ruta de acceso al directorio de tu perfil que no contenga un symlink. No existe esa ruta de acceso para tu perfil.</translation>
+<translation id="8712265948125780616">Desempaquetador de extensiones</translation>
 <translation id="149347756975725155">No se pudo cargar el ícono de extensión '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Esta extensión no pudo modificar el encabezado de solicitud &quot;<ph name="HEADER_NAME"/>&quot; de una solicitud de red porque la modificación entró en conflicto con otra extensión (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Producto <ph name="PRODUCT_ID"/></translation>
@@ -39,16 +40,14 @@
 <translation id="6344170822609224263">Acceder a la lista de conexiones de red</translation>
 <translation id="7039326228527141150">Acceder a dispositivos USB de <ph name="VENDOR_NAME"/></translation>
 <translation id="2616366145935564096">Leer y modificar tus datos en <ph name="WEBSITE_1"/></translation>
-<translation id="2518849872271000461">Intercambiar datos con las computadoras llamadas: <ph name="HOSTNAMES"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Acceder a los escáneres de documentos conectados vía USB o en la red local</translation>
 <translation id="6408118934673775994">Leer y modificar tus datos en <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> y <ph name="WEBSITE_3"/></translation>
-<translation id="961805664415579088">Intercambiar datos con cualquier computadora en el dominio <ph name="DOMAIN"/></translation>
 <translation id="8670869118777164560">Esta extensión no pudo redireccionar una solicitud de red a <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> porque otra extensión (<ph name="EXTENSION_NAME"/>) la redireccionó a <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">Esta extensión se recargó con demasiada frecuencia.</translation>
+<translation id="2270450558902169558">Intercambiar datos con cualquier dispositivo del dominio <ph name="DOMAIN"/></translation>
 <translation id="8047248493720652249">Esta extensión no pudo asignar el nombre &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; a la descarga porque otra extensión (<ph name="EXTENSION_NAME"/>) determinó un nombre de archivo diferente: &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
 <translation id="452039078290142656">dispositivos desconocidos de <ph name="VENDOR_NAME"/></translation>
-<translation id="4968399700653439437">Intercambiar datos con cualquier computadora en los dominios: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Vista web: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="2753617847762399167">Ruta no válida (absoluta o relativa con '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">todos los sitios de <ph name="WEBSITE_1"/></translation>
@@ -56,6 +55,8 @@
 <translation id="27822970480436970">Esta extensión no pudo modificar una solicitud de red porque la modificación provocaba un conflicto con otra extensión.</translation>
 <translation id="2241053333139545397">Leer y modificar tus datos en una serie de sitios web</translation>
 <translation id="8602184400052594090">El archivo de manifiesto falta o no se puede leer.</translation>
+<translation id="2270627217422354837">Intercambiar datos con cualquier dispositivo de los siguientes dominios: <ph name="DOMAINS"/></translation>
+<translation id="7093866338626856921">Intercambiar datos con los siguientes dispositivos: <ph name="HOSTNAMES"/></translation>
 <translation id="4883436287898674711">Todos los sitios de <ph name="WEBSITE_1"/></translation>
 <translation id="9111791539553342076">Esta extensión no pudo modificar el encabezado de respuesta &quot;<ph name="HEADER_NAME"/>&quot; de una solicitud de red porque la modificación entró en conflicto con otra extensión (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Usar tu cámara</translation>
@@ -77,6 +78,7 @@
 <translation id="2159915644201199628">No se pudo decodificar la imagen &quot;<ph name="IMAGE_NAME"/>&quot;.</translation>
 <translation id="5544884907028850012">Proveedor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Acceder al tráfico de la red</translation>
+<translation id="1256619696651732561">Analizador de manifiesto de extensiones</translation>
 <translation id="5972529113578162692">El administrador de esta computadora requiere que <ph name="EXTENSION_NAME"/> esté instalada. No se puede desinstalar.</translation>
 <translation id="1135328998467923690">El paquete no es válido: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="7131040479572660648">Leer los datos en <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> y <ph name="WEBSITE_3"/></translation>

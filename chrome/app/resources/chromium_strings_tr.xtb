@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
+<translation id="2705212601509139398">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Chromium Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve uyumlu bir tarayıcı indirin.</translation>
 <translation id="6676384891291319759">İnternet'e erişin</translation>
 <translation id="8586442755830160949">Telif Hakkı <ph name="YEAR"/> The Chromium Authors. Tüm hakları saklıdır.</translation>
 <translation id="6373523479360886564">Chromium'u kaldırmak istediğinizden emin misiniz?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Bu bilgisayarın donanımı artık desteklenmediğinden, Chromium güncellemelerini alması yakında duracak.</translation>
 <translation id="5532301346661895910">Chromium bunu |Google tarafından kaydedilen şifrelerinize| ekler ve bir dahaki sefere ihtiyacınız olduğunda hatırlar.</translation>
 <translation id="6893813176749746474">Chromium güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
+<translation id="421369550622382712">Chromium'a özgü harika uygulamaları, oyunları, uzantıları ve temaları keşfedin.</translation>
 <translation id="2732467638532545152">Bilgisayarınız, bu web sitesinin güvenlik sertifikasını işleyemeyen eski bir Microsoft Windows sürümünü çalıştırıyor. Bu sorundan dolayı Chromium, sertifikanın <ph name="SITE"/> sitesinden mi, yoksa ağınızdaki <ph name="SITE"/> gibi görünen başka bir kişiden mi gönderildiğini bildiremiyor. Lütfen bilgisayarınızı daha yeni bir Windows sürümüne güncelleyin.</translation>
 <translation id="2770231113462710648">Varsayılan tarayıcıyı şuna dönüştür:</translation>
 <translation id="6613594504749178791">Değişiklikleriniz, Chromium tekrar başlatıldığında geçerli olacak.</translation>
@@ -112,6 +114,7 @@
 <translation id="5358375970380395591">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME"/> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium Uygulama Başlatıcı</translation>
 <translation id="5563479599352954471">Tek dokunmayla ara</translation>
+<translation id="3256316712990552818">Chromium'a kopyalandı</translation>
 <translation id="8493179195440786826">Chromium Sürümü Eski</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/>, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
@@ -121,6 +124,7 @@
 <translation id="2535480412977113886">Hesap oturum açma ayrıntılarınız güncel olmadığından Chromium OS, verilerinizi senkronize edemedi.</translation>
 <translation id="8697124171261953979">Ayrıca Chromium'u başlattığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="894903460958736500">Bilgisayarınızda çalışan yazılım Chromium ile uyumsuz.</translation>
+<translation id="6810143991807788455">Mevcut ayarlarınızı bildirerek Chromium'u daha iyi hale getirmemize yardımcı olun</translation>
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
 <translation id="9022552996538154597">Chromium'da oturum aç</translation>
 <translation id="4365115785552740256">Chromium, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> açık kaynak projesi ve diğer <ph name="BEGIN_LINK_OSS"/>açık kaynak yazılımlar<ph name="END_LINK_OSS"/> ile hazırlanmıştır.</translation>
@@ -155,6 +159,7 @@ web sitesi alışılmışın dışında ve hatalı kimlik bilgileri gönderdi. Y
 <translation id="5398878173008909840">Chromium'un yeni bir sürümü çıktı.</translation>
 <translation id="2648074677641340862">Yükleme sırasında bir işletim sistemi hatası oluştu. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> Chromium'a eklendi.</translation>
+<translation id="7211828883345145708">Chromium hatalarını ayıklamada faydalı olan ek klavye kısayollarını etkinleştirir.</translation>
 <translation id="549669000822060376">Chromium en son sistem güncellemelerini yüklerken lütfen bekleyin.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Chromium menüsü &gt;
@@ -190,6 +195,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="130631256467250065">Yaptığınız değişiklikler cihazı yeniden başlattığınızda etkinleşecektir.</translation>
 <translation id="3244477511402911926">Chromium Bildirim Merkezi</translation>
 <translation id="9197815481970649201">Şu anda Chromium'da oturum açtınız</translation>
+<translation id="7162152143154757523">Chromium, tarayıcıda yazdıklarınızı Google sunucularına gönderip akıllı yazım denetimi olanağı sağlayabilir ve Google arama tarafından kullanılan yazım denetimi teknolojisini kullanmanıza olanak tanır.</translation>
 <translation id="1929939181775079593">Chromium yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
 <translation id="1414495520565016063">Chromium'da oturum açtınız!</translation>
 <translation id="2158734852934720349">Chromium OS açık kaynak lisansları</translation>
@@ -205,6 +211,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="811857857463334932">Bu bilgisayarın donanımı artık desteklenmediğinden, Chromium güncellemelerini artık almayacak.</translation>
 <translation id="2910007522516064972">&amp;Chromium hakkında</translation>
 <translation id="8453117565092476964">Yükleyici arşivi bozuk veya geçersiz. Lütfen Chromium'u yeniden indirin.</translation>
+<translation id="2558641060352364164">Bu site, kısa bir süre sonra artık destek verilmeyecek olan Chromium Frame eklentisini kullanıyor. Lütfen bu eklentinin yüklemesini kaldırın ve modern bir tarayıcı sürümüne geçin.</translation>
 <translation id="3889543394854987837">Chromium'u açmak ve göz atmaya başlamak için adınızı tıklayın.</translation>
 <translation id="3130323860337406239">Chromium mikrofonunuzu kullanıyor.</translation>
 <translation id="7196020411877309443">Neden bunu görüyorum?</translation>

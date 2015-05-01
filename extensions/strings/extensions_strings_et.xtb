@@ -1,6 +1,7 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
 <translation id="4542520061254486227">Lugege oma andmeid veebisaitidel <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="3983586614702900908">tundmatu müüja seadmed</translation>
+<translation id="730515362922783851">Vaheta andmeid mis tahes seadmega kohalikus võrgus või Internetis</translation>
 <translation id="3624204664103857160">Käivitusprogrammi lehte <ph name="PAGE"/> ei saanud laadida.</translation>
 <translation id="8804398419035066391">Side koostööd tegevate veebisaitidega</translation>
 <translation id="7809034755304591547">Administraator blokeeris laienduse <ph name="EXTENSION_NAME"/> (laienduse ID „<ph name="EXTENSION_ID"/>”).</translation>
@@ -12,22 +13,22 @@
 <translation id="1033780634303702874">Juurdepääs jadaseadmetele</translation>
 <translation id="288042212351694283">Juurdepääs teie Universal 2nd Factori seadmetele</translation>
 <translation id="4115165561519362854">Seadme administraator nõuab, et kasutaksite laienduse <ph name="EXTENSION_NAME"/> puhul vähemalt versiooni <ph name="EXTENSION_VERSION"/>. Laiendust ei saa lubada enne, kui see on värskendatud sellele versioonile (või uuemale versioonile).</translation>
+<translation id="6075907793831890935">Vaheta andmeid seadmega <ph name="HOSTNAME"/></translation>
 <translation id="5971037678316050792">Bluetoothi adapteri oleku ja sidumise juhtimine</translation>
 <translation id="677806580227005219">Mime-töötleja: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Juurdepääs teie süsteemiga seotud Bluetoothi seadmete teabele ja läheduses olevate Bluetoothi seadmete tuvastamine.</translation>
 <translation id="8749863574775030885">Juurdepääs tundmatu müüja USB-seadmetele</translation>
-<translation id="5911798608827489036">Vaheta andmeid mis tahes arvutiga kohalikus võrgus või Internetis</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> teenusepakkujalt <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Taustaskripti „<ph name="BACKGROUND_SCRIPT"/>” ei õnnestunud laadida.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="9131487537093447019">Bluetoothi seadmetele sõnumite saatmine ja nendelt sõnumite vastuvõtmine.</translation>
 <translation id="5678955352098267522">Lugege oma andmeid veebisaidil <ph name="WEBSITE_1"/></translation>
-<translation id="8597109877291678953">Vaheta andmeid arvutiga <ph name="HOSTNAME"/></translation>
 <translation id="5456409301717116725">Laiendus hõlmab võtmefaili „<ph name="KEY_PATH"/>”. See toiming ei ole soovitatav.</translation>
 <translation id="7257666756905341374">Kopeeritud ja kleebitud andmete lugemine</translation>
 <translation id="2350172092385603347">Lokaliseerimist kasutatakse, kuid parameetrit default_locale ei olnud manifestis määratud.</translation>
 <translation id="3759933321830434300">Veebilehtede osade blokeerimine</translation>
 <translation id="6143635259298204954">Laiendust ei saanud lahti pakkida. Laienduse turvaliseks lahtipakkimiseks peab olema tee teie profiili kataloogi, milles ei ole symlinki. Sellist teed teie profiilil ei ole.</translation>
+<translation id="8712265948125780616">Laienduse lahtipakkija</translation>
 <translation id="149347756975725155">Laienduse ikooni <ph name="ICON"/> ei õnnestunud laadida.</translation>
 <translation id="8825366169884721447">Laiendusel ei õnnestunud muuta võrgutaotluse päist „<ph name="HEADER_NAME"/>”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="7495493006406536234">Toode <ph name="PRODUCT_ID"/></translation>
@@ -39,16 +40,14 @@
 <translation id="6344170822609224263">Juurdepääs võrguühenduste loendile</translation>
 <translation id="7039326228527141150">Juurdepääs müüja <ph name="VENDOR_NAME"/> USB-seadmetele</translation>
 <translation id="2616366145935564096">Andmete lugemine ja muutmine veebisaidil <ph name="WEBSITE_1"/></translation>
-<translation id="2518849872271000461">Vaheta andmeid nende arvutitega: <ph name="HOSTNAMES"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="4444304522807523469">Juurdepääs dokumendiskänneritele USB või kohaliku võrgu kaudu</translation>
 <translation id="6408118934673775994">Andmete lugemine ja muutmine veebisaidil <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>
-<translation id="961805664415579088">Vaheta andmeid mis tahes arvutiga domeenis <ph name="DOMAIN"/></translation>
 <translation id="8670869118777164560">Laiendusel ei õnnestunud võrgutaotlust ümber suunata asukohta <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, kuna teine laiendus (<ph name="EXTENSION_NAME"/>) suunas selle asukohta <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="6840444547062817500">See laiendus laadis ennast liiga sageli uuesti.</translation>
+<translation id="2270450558902169558">Vaheta andmeid mis tahes seadmega domeenis <ph name="DOMAIN"/></translation>
 <translation id="8047248493720652249">Laiendus ei saanud määrata allalaaditavale failile nimeks „<ph name="ATTEMPTED_FILENAME"/>”, sest teine laiendus (<ph name="EXTENSION_NAME"/>) määras teise failinime „<ph name="ACTUAL_FILENAME"/>”.</translation>
 <translation id="452039078290142656">müüja <ph name="VENDOR_NAME"/> tundmatud seadmed</translation>
-<translation id="4968399700653439437">Vaheta andmeid mis tahes arvutiga nendes domeenides: <ph name="DOMAINS"/></translation>
 <translation id="5026754133087629784">Veebivaade: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="2753617847762399167">Keelatud tee (absoluutne või suhteline üksusega '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="8284279544186306258">kõik domeeni <ph name="WEBSITE_1"/> saidid</translation>
@@ -56,6 +55,8 @@
 <translation id="27822970480436970">Laiendusel ei õnnestunud võrgutaotlust muuta, kuna muutmisel tekkis vastuolu muu laiendusega.</translation>
 <translation id="2241053333139545397">Andmete lugemine ja muutmine mitmel veebisaidil</translation>
 <translation id="8602184400052594090">Manifestifail on kadunud või ei ole seda võimalik lugeda.</translation>
+<translation id="2270627217422354837">Vaheta andmeid mis tahes seadmega domeenides <ph name="DOMAINS"/></translation>
+<translation id="7093866338626856921">Vaheta andmeid seadmetega <ph name="HOSTNAMES"/></translation>
 <translation id="4883436287898674711">Kõik domeeni <ph name="WEBSITE_1"/> saidid</translation>
 <translation id="9111791539553342076">Laiendusel ei õnnestunud muuta võrgutaotluse vastuse päist „<ph name="HEADER_NAME"/>”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Kaamera kasutamine</translation>
@@ -77,6 +78,7 @@
 <translation id="2159915644201199628">Ei saanud pilti dekodeerida: „<ph name="IMAGE_NAME"/>”</translation>
 <translation id="5544884907028850012">Teenusepakkuja <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Juurdepääs võrguliiklusele</translation>
+<translation id="1256619696651732561">Laienduse manifesti parser</translation>
 <translation id="5972529113578162692">Selle seadme administraator nõuab laienduse <ph name="EXTENSION_NAME"/> installimist. Seda ei saa desinstallida.</translation>
 <translation id="1135328998467923690">Vale pakett: „<ph name="ERROR_CODE"/>”.</translation>
 <translation id="7131040479572660648">Lugege oma andmeid veebisaitidel <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ja <ph name="WEBSITE_3"/></translation>

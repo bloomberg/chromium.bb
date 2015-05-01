@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
+<translation id="2705212601509139398">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça o download de um navegador compatível.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="6373523479360886564">Tem certeza de que deseja desinstalar o Chromium?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Este computador em breve parará de receber atualizações do Chromium, porque seu hardware não é mais suportado.</translation>
 <translation id="5532301346661895910">O Chromium armazenará essa senha nas suas |senhas salvas do Google| e lembrará dela na próxima vez que você precisar.</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas não é utilizado há pelo menos 30 dias.</translation>
+<translation id="421369550622382712">Descubra ótimos aplicativos, jogos, extensões e temas para o Chromium.</translation>
 <translation id="2732467638532545152">Seu computador está executando uma versão antiga do Microsoft Windows que não consegue processar o certificado de segurança deste website. Devido a esse problema, o Chromium não consegue identificar se o certificado veio de <ph name="SITE"/> ou de alguém da sua rede fingindo ser <ph name="SITE"/>. Atualize seu computador para uma versão mais recente do Windows.</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="6613594504749178791">As alterações entrarão em vigor na próxima vez que você reiniciar o Chromium.</translation>
@@ -115,6 +117,7 @@
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME"/>. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Iniciador de aplicativos do Chromium</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
+<translation id="3256316712990552818">Copiado no Chromium</translation>
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requer que você leia e aceite os Termos de Serviço a seguir antes de utilizar o serviço. Esses termos não ampliam, modificam nem limitam os Termos do Chromium OS.</translation>
@@ -124,6 +127,7 @@
 <translation id="2535480412977113886">O Chromium OS não pôde sincronizar seus dados porque os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="8697124171261953979">Controla também qual página deve ser exibida quando você inicia o Chromium ou faz uma pesquisa na Omnibox.</translation>
 <translation id="894903460958736500">O software que está sendo executado em seu computador não é compatível com o Chromium.</translation>
+<translation id="6810143991807788455">Ajude a melhorar o Chromium informando as configurações atuais</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="9022552996538154597">Fazer login no Chromium</translation>
 <translation id="4365115785552740256">O Chromium tornou-se possível graças ao projeto de código aberto <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> e outros <ph name="BEGIN_LINK_OSS"/>softwares de código aberto<ph name="END_LINK_OSS"/>.</translation>
@@ -158,6 +162,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="5398878173008909840">Há uma nova versão do Chromium disponível.</translation>
 <translation id="2648074677641340862">Ocorreu um erro no sistema operacional durante a instalação. Faça o download do Chromium novamente.</translation>
 <translation id="5942520288919337908">A extensão <ph name="EXTENSION_NAME"/> foi adicionada ao Chromium.</translation>
+<translation id="7211828883345145708">Permite atalhos adicionais do teclado que são úteis para a depuração do Chromium.</translation>
 <translation id="549669000822060376">Aguarde enquanto o Chromium instala as últimas atualizações do sistema.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Vá para
@@ -193,6 +198,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="130631256467250065">As alterações entrarão em vigor na próxima vez que você reiniciar o dispositivo.</translation>
 <translation id="3244477511402911926">Central de notificações do Chromium</translation>
 <translation id="9197815481970649201">Você está conectado ao Chromium no momento</translation>
+<translation id="7162152143154757523">O Chromium pode oferecer uma verificação ortográfica mais inteligente, enviando as informações que você digita no navegador para os servidores do Google. Isso permite que você utilize a mesma tecnologia de verificação ortográfica utilizada pela Pesquisa Google.</translation>
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
 <translation id="2158734852934720349">Licenças de código aberto do Chromium OS</translation>
@@ -208,6 +214,7 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE"/>, o
 <translation id="811857857463334932">Este computador não receberá mais atualizações do Chromium, porque seu hardware não é mais suportado.</translation>
 <translation id="2910007522516064972">Sobre o &amp;Chromium</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
+<translation id="2558641060352364164">Este site está usando o plug-in Chromium Frame, que não será mais compatível em breve. Desinstale-o e faça upgrade para um navegador moderno.</translation>
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>
 <translation id="3130323860337406239">O Chromium está usando seu microfone.</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>

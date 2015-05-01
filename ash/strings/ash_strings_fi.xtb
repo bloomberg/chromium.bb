@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Akku täynnä</translation>
 <translation id="6895424601869865703">Lisää tili käyttäjälle <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Ruutunäppäimistö poistettiin käytöstä</translation>
-<translation id="1057289296854808272">Kiertäminen käytössä (muuta napauttamalla tätä)</translation>
+<translation id="5548285847212963613">Laajennus <ph name="EXTENSION_NAME"/> voi auttaa muodostamaan yhteyden tähän verkkoon.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Overflow-painike</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
@@ -39,7 +39,6 @@
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6043994281159824495">Kirjaudu ulos nyt</translation>
 <translation id="2127372758936585790">Pienitehoinen laturi</translation>
-<translation id="4625920103690741805">Kiertäminen lukittu (muuta napauttamalla tätä)</translation>
 <translation id="3799026279081545374">Laturisi voi olla virheellinen. Jos asut Yhdysvalloissa, saat ohjeita ja voit tilata uuden laturin soittamalla numeroon 866 628 1371. Jos asut Isossa-Britanniassa, soita numeroon 0800 026 0613. Jos asut Irlannissa, soita numeroon 1 800 832 664. Jos asut Kanadassa, soita numeroon 866 628 1372. Jos asut Australiassa, soita numeroon 1 800 067 460.</translation>
 <translation id="3891340733213178823">Kirjaudu ulos painamalla Ctrl+Shift+Q kahdesti.</translation>
 <translation id="5871632337994001636">Hallinnoi laitteita…</translation>

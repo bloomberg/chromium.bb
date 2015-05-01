@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">배터리 충전 완료</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/>님의 계정 추가</translation>
 <translation id="1270290102613614947">터치 키보드 사용 중지됨</translation>
-<translation id="1057289296854808272">회전 사용(변경하려면 여기를 탭)</translation>
+<translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME"/>')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/>시간 <ph name="MINUTE"/>분</translation>
 <translation id="30155388420722288">오버플로 버튼</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
@@ -39,7 +39,6 @@
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="6043994281159824495">지금 로그아웃</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
-<translation id="4625920103690741805">회전 잠금(변경하려면 여기를 탭)</translation>
 <translation id="3799026279081545374">충전기에 문제가 있을 수 있습니다. 미국에 거주하는 경우 866-628-1371에 전화하여 문의하고 교체받으세요. 영국에 거주하는 경우 0800-026-0613에 문의하세요. 아일랜드에 거주하는 경우 1-800-832-664에 문의하세요. 캐나다에 거주하는 경우 866-628-1372에 문의하세요. 오스트레일리아에 거주하는 경우 1-800-067-460에 문의하세요.</translation>
 <translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="5871632337994001636">기기 관리...</translation>

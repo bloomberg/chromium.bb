@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="8208216423136871611">Ne shrani</translation>
 <translation id="777702478322588152">Prefektura</translation>
+<translation id="2972581237482394796">&amp;Uveljavi</translation>
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Napaka HTTP</translation>
 <translation id="1339601241726513588">Domena za prijavo:</translation>
 <translation id="7298195798382681320">Priporočeni</translation>
 <translation id="4058922952496707368">Ključ »<ph name="SUBKEY"/>«: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Opozorilo JavaScript</translation>
-<translation id="4081383687659939437">Shrani podatke</translation>
 <translation id="5299298092464848405">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Iskanje</translation>
 <translation id="2498091847651709837">Optično branje nove kartice</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">Obvezen</translation>
 <translation id="2958431318199492670">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.</translation>
+<translation id="3583757800736429874">&amp;Uveljavi premik</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Manjka zapis o napravi</translation>
 <translation id="1491151370853475546">Znova naloži stran</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="2704283930420550640">Vrednost se ne ujema z obliko.</translation>
+<translation id="1055184225775184556">&amp;Razveljavi dodajanje</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="8091372947890762290">Čakanje na aktivacijo v strežniku</translation>
+<translation id="6874604403660855544">&amp;Uveljavi dodajanje</translation>
 <translation id="4607653538520819196">Te strani ni mogoče prenesti prek strežnika proxy za varčevanje s podatki.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Območje</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">Ogled izvirnika</translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
 <translation id="5540224163453853">Zahtevanega članka ni bilo mogoče najti.</translation>
+<translation id="8437238597147034694">&amp;Razveljavi premik</translation>
+<translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
 <translation id="333371639341676808">Tej strani preprečite, da bi ustvarila dodatna pogovorna okna.</translation>
 <translation id="5523118979700054094">Ime pravilnika</translation>
 <translation id="7791543448312431591">Dodaj</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">Začasna napaka strežnika</translation>
 <translation id="7087282848513945231">Okraj</translation>
 <translation id="1132774398110320017">Nastavitve samodejnega izpolnjevanja v Chromu …</translation>
+<translation id="8194797478851900357">&amp;Razveljavi premik</translation>
 <translation id="6458467102616083041">Prezrto, ker je pravilnik onemogočil privzeto iskanje.</translation>
+<translation id="6259156558325130047">&amp;Uveljavi razvrstitev</translation>
 <translation id="1227224963052638717">Neznan pravilnik</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="9207861905230894330">Članka ni bilo mogoče dodati.</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">Raven</translation>
 <translation id="7977590112176369853">&lt;vnesite poizvedbo&gt;</translation>
 <translation id="552553974213252141">Ali je bilo besedilo pravilno izvlečeno?</translation>
+<translation id="5317780077021120954">Shrani</translation>
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE"/>.</translation>
 <translation id="3739623965217189342">Povezava, ki ste jo kopirali</translation>
+<translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8311778656528046050">Ali res želite znova naložiti to stran?</translation>
 <translation id="370665806235115550">Nalagam ...</translation>
 <translation id="2096368010154057602">Departma</translation>
+<translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
 <translation id="4258748452823770588">Napačen podpis</translation>
 <translation id="3024663005179499861">Napačna vrsta pravilnika</translation>
 <translation id="2030481566774242610">Ali ste mislili <ph name="LINK"/>?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">Prenos vnosov ...</translation>
 <translation id="6263376278284652872">Zaznamki <ph name="DOMAIN"/></translation>
 <translation id="498957508165411911">Želite prevesti iz jezika <ph name="ORIGINAL_LANGUAGE"/> v jezik <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8218327578424803826">Dodeljena lokacija:</translation>
 <translation id="3542684924769048008">Uporaba gesla za:</translation>
 <translation id="7186367841673660872">Ta stran je bila prevedena iz jezika<ph name="ORIGINAL_LANGUAGE"/>v jezik<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="5145883236150621069">Koda napake v odzivu pravilnika</translation>
 <translation id="7983301409776629893">Vedno prevedi iz jezika <ph name="ORIGINAL_LANGUAGE"/> v jezik <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Okraj</translation>
+<translation id="3427342743765426898">&amp;Uveljavi urejanje</translation>
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX"/>«: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Država</translation>
 <translation id="5031870354684148875">Google Prevajalnik – vizitka</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">Določeni niso ne stalni strežniki proxy ne URL skripta .pac.</translation>
 <translation id="7805768142964895445">Stanje</translation>
 <translation id="2113977810652731515">Kartica</translation>
+<translation id="1113869188872983271">&amp;Razveljavi razvrstitev</translation>
 <translation id="536296301121032821">Nastavitev pravilnika ni bilo mogoče shraniti</translation>
 <translation id="5439770059721715174">Napaka preverjanja sheme pri »<ph name="ERROR_PATH"/>«: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Vrstica z zaznamki</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">Zaznamki mobilne naprave</translation>
 <translation id="5089810972385038852">Zvezna država</translation>
 <translation id="647261751007945333">Pravilniki za naprave</translation>
+<translation id="2556876185419854533">&amp;Razveljavi urejanje</translation>
 <translation id="213826338245044447">Zaznamki mobilne naprave</translation>
+<translation id="4594403342090139922">&amp;Razveljavi izbris</translation>
 <translation id="8571890674111243710">Prevajanje strani v jezik <ph name="LANGUAGE"/> ...</translation>
 <translation id="4117700440116928470">Obseg pravilnika ni podprt.</translation>
 <translation id="2114841414352855701">Prezrto, ker je to preglasil pravilnik <ph name="POLICY_NAME"/>.</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">Ta stran je v jeziku <ph name="SOURCE_LANGUAGE"/>. Jo želite prevesti v jezik <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
+<translation id="3105172416063519923">ID sredstva:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">ID API-ja imenika:</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="3712624925041724820">Ni dovolj licenc</translation>
 <translation id="4926049483395192435">Vrednost mora biti določena.</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">Prevajanje ni uspelo zaradi napake strežnika.</translation>
 <translation id="2597378329261239068">Dokument je zaščiten z geslom. Vnesite geslo.</translation>
 <translation id="5629630648637658800">Nastavitev pravilnika ni bilo mogoče naložiti</translation>
+<translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
 <translation id="2354001756790975382">Drugi zaznamki</translation>
 <translation id="3650584904733503804">Preverjanje veljavnosti uspešno</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="2270192940992995399">Članka ni bilo mogoče najti.</translation>
 <translation id="4726672564094551039">Znova naloži pravilnike</translation>
+<translation id="9170848237812810038">&amp;Razveljavi</translation>
 <translation id="9154176715500758432">Ostani na tej strani</translation>
 <translation id="2392959068659972793">Pokaži pravilnike brez nastavljene vrednosti</translation>
+<translation id="9148507642005240123">&amp;Razveljavi urejanje</translation>
+<translation id="5470861586879999274">&amp;Uveljavi urejanje</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>
 <translation id="6965978654500191972">Naprava</translation>
 <translation id="5295309862264981122">Potrditev krmarjenja</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">Neveljavni podpis za preverjanje</translation>
 <translation id="106701514854093668">Zaznamki namizja</translation>
 <translation id="6154808779448689242">Vrnjen žeton pravilnika se ne ujema s trenutnim žetonom</translation>
+<translation id="7995512525968007366">Ni navedeno</translation>
 <translation id="7961015016161918242">Nikoli</translation>
 <translation id="2835170189407361413">Počisti obrazec</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
 <translation id="5337776961545044340">Ta vrsta kartice ni podprta v Google Denarnici pri tem trgovcu. Izberite drugo kartico.</translation>
+<translation id="7334320624316649418">&amp;Uveljavi razvrstitev</translation>
 <translation id="7182878459783632708">Ni nastavljenih pravilnikov</translation>
 <translation id="5019198164206649151">Neprimerno stanje rezervne shrambe</translation>
 <translation id="8364627913115013041">Ni nastavljen.</translation>
 <translation id="8713130696108419660">Napačen začetni podpis</translation>
+<translation id="3270847123878663523">&amp;Razveljavi razvrstitev</translation>
 <translation id="20817612488360358">Za uporabo so nastavljene sistemske nastavitve strežnika proxy, vendar je navedena tudi izrecna konfiguracija proxyja.</translation>
 <translation id="2639739919103226564">Stanje:</translation>
 <translation id="4968547170521245791">Prenos prek strežnika proxy ni mogoč</translation>
 <translation id="385051799172605136">Nazaj</translation>
+<translation id="4196861286325780578">&amp;Uveljavi premik</translation>
 <translation id="5095208057601539847">Provinca</translation>
 <translation id="2581221116934462656">Želite, da <ph name="PRODUCT_NAME"/> naslednjič ponudi prevajanje strani v jeziku <ph name="LANGUAGE_NAME"/> na tem spletnem mestu?</translation>
+<translation id="2396249848217231973">&amp;Razveljavi izbris</translation>
 <translation id="3934680773876859118">Dokumenta PDF ni bilo mogoče naložiti</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>

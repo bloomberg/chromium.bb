@@ -49,7 +49,9 @@
 <translation id="8355326866731426344">액세스 코드가 <ph name="TIMEOUT"/>초 후에 만료됩니다.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">도움말 및 의견</translation>
+<translation id="3606997049964069799">Chromium에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
 <translation id="6198252989419008588">PIN 변경</translation>
+<translation id="7970576581263377361">인증에 실패했습니다. Chromium에 다시 로그인하세요.</translation>
 <translation id="6167788864044230298">Chrome 앱 스트리밍</translation>
 <translation id="170207782578677537">컴퓨터를 등록하는 데 실패했습니다.</translation>
 <translation id="4804818685124855865">연결 해제</translation>
@@ -70,12 +72,15 @@
 <translation id="9188433529406846933">승인</translation>
 <translation id="228809120910082333">Chromoting을 통해 액세스할 수 있도록 계정 및 PIN을 확인하세요.</translation>
 <translation id="7605995381616883502">새로운 연결</translation>
+<translation id="2038229918502634450">정책 변경 사항을 반영하기 위해 호스트를 다시 시작하는 중입니다.</translation>
 <translation id="2851674870054673688">액세스 코드를 입력하면 공유 세션이 시작됩니다.</translation>
 <translation id="5593560073513909978">서비스를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="3908017899227008678">크기에 맞게 축소</translation>
 <translation id="8073845705237259513">Chrome 원격 데스크톱을 사용하려면 기기에 Google 계정을 추가해야 합니다.</translation>
+<translation id="2894654864775534701">이 컴퓨터는 현재 다른 계정으로 공유되어 있습니다.</translation>
 <translation id="1199593201721843963">원격 연결 사용중지</translation>
 <translation id="5379087427956679853">Chrome 원격 데스크톱을 사용하면 웹에서 내 컴퓨터를 안전하게 공유할 수 있습니다. 양쪽 사용자 모두 <ph name="URL"/> 페이지에 있는 Chrome 원격 데스크톱 앱을 실행해야 합니다.</translation>
+<translation id="3150823315463303127">호스트에서 정책을 확인하지 못했습니다.</translation>
 <translation id="2220529011494928058">문제 신고</translation>
 <translation id="174018511426417793">등록된 컴퓨터가 없습니다. 컴퓨터에 원격 연결을 사용하려면 Chrome 원격 데스크톱을 설치하고 '<ph name="BUTTON_NAME"/>' 버튼을 클릭하세요.</translation>
 <translation id="9126115402994542723">이 기기에서 이 호스트로 연결할 때 PIN을 다시 요청하지 않습니다.</translation>
@@ -166,6 +171,7 @@
 <translation id="2939145106548231838">호스트에 대한 인증</translation>
 <translation id="2366718077645204424">호스트에 연결할 수 없습니다. 사용 중인 네트워크의 구성 때문일 수 있습니다.</translation>
 <translation id="3776024066357219166">Chrome 원격 데스크톱 세션이 종료되었습니다.</translation>
+<translation id="1450760146488584666">요청한 개체가 없습니다.</translation>
 <translation id="5625493749705183369">다른 컴퓨터에 액세스하거나 다른 사용자가 인터넷을 통해 안전하게 내 컴퓨터에 액세스할 수 있습니다.</translation>
 <translation id="2512228156274966424">참고: 모든 단축키를 사용하려면 Chrome 원격 데스크톱을 '창으로 열기'로 설정합니다.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
@@ -195,12 +201,14 @@
 <translation id="6527303717912515753">공유</translation>
 <translation id="2926340305933667314">컴퓨터에 대한 원격 액세스를 사용중지하지 못했습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="6865175692670882333">보기/수정</translation>
+<translation id="544077782045763683">호스트가 꺼져 있습니다.</translation>
 <translation id="5859141382851488196">새 창…</translation>
 <translation id="2089514346391228378">컴퓨터의 원격 연결을 사용하도록 설정했습니다.</translation>
 <translation id="7693372326588366043">호스트 목록 새로고침</translation>
 <translation id="8445362773033888690">Google Play 스토어에서 보기</translation>
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
+<translation id="6221358653751391898">Chrome에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
 <translation id="7038683108611689168">사용 통계 및 오류 보고서 수집을 허용하여 Chromoting 개선에 참여하겠습니다.</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="4405930547258349619">핵심 라이브러리</translation>
@@ -241,6 +249,7 @@
 <translation id="3596628256176442606">이 서비스를 이용하면 Chromoting 클라이언트로부터의 연결을 수신할 수 있습니다.</translation>
 <translation id="1978866438647250517">• 사용자 인터페이스 개선
 • 백그라운드에서 실행 중일 때 네트워크 사용량 축소</translation>
+<translation id="4741792197137897469">인증에 실패했습니다. Chrome에 다시 로그인하세요.</translation>
 <translation id="4277463233460010382">이 컴퓨터는 한 개 이상의 클라이언트가 PIN을 입력하지 않고도 연결할 수 있도록 구성되었습니다.</translation>
 <translation id="837021510621780684">이 컴퓨터에서 시작한 연결</translation>
 <translation id="518094545883702183">이 정보는 보고된 문제를 진단하는 데만 사용되고 보고서 조사 담당자만 볼 수 있으며, 30일 이내에 폐기됩니다.</translation>

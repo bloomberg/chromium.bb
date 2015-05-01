@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
+<translation id="2705212601509139398">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja laadige alla ühilduv brauser.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR"/> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="6373523479360886564">Kas soovite kindlasti Chromiumi desinstallida?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">See arvuti ei saa peagi enam Chromiumi värskendusi, kuna selle riistvara ei toetata enam.</translation>
 <translation id="5532301346661895910">Chromium salvestab selle teie |Google'i salvestatud paroolide| hulka ja peab seda meeles, kui seda järgmine kord vajate.</translation>
 <translation id="6893813176749746474">Chromiumi on värskendatud, kuid te ei ole seda kasutanud vähemalt 30 päeva.</translation>
+<translation id="421369550622382712">Avastage Chromiumi jaoks suurepäraseid rakendusi, mänge, laiendusi ja teemasid.</translation>
 <translation id="2732467638532545152">Teie arvuti käitab Microsoft Windowsi vana versiooni, mis ei suuda töödelda selle veebisaidi turvasertifikaati. Seetõttu ei saa Chromium tuvastada, kas sertifikaat pärineb saidilt <ph name="SITE"/> või kelleltki võrgus, kes teeskleb saiti <ph name="SITE"/>. Viige arvuti üle uuemale Windowsi versioonile.</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
 <translation id="6613594504749178791">Teie muudatused jõustuvad järgmine kord, kui Chromiumi taaskäivitate.</translation>
@@ -117,6 +119,7 @@
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromiumi rakenduste käiviti</translation>
 <translation id="5563479599352954471">Otsing ühe puudutusega</translation>
+<translation id="3256316712990552818">Kopeeritud Chromiumi</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="95514773681268843">Domeen <ph name="DOMAIN"/> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Chromium OS-i tingimusi.</translation>
@@ -126,6 +129,7 @@
 <translation id="2535480412977113886">Chromium OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="8697124171261953979">Lisaks juhib see seda, mis leht kuvatakse Chromiumi käivitamisel või omnikastikeses otsingu tegemisel.</translation>
 <translation id="894903460958736500">Teie arvutis töötav tarkvara ei ühildu Chromiumiga.</translation>
+<translation id="6810143991807788455">Aidake muuta Chromiumi paremaks, teavitades meid praegustest seadetest</translation>
 <translation id="1774152462503052664">Luba Chromiumil taustal töötada</translation>
 <translation id="9022552996538154597">Logige Chromiumi sisse</translation>
 <translation id="4365115785552740256">Chromiumi aluseks on avatud lähtekoodiga projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ja muu <ph name="BEGIN_LINK_OSS"/>avatud lähtekoodiga tarkvara<ph name="END_LINK_OSS"/>.</translation>
@@ -160,6 +164,7 @@ ja valed mandaadid. Kas proovib ründaja teeselda, et on <ph name="SITE"/>, või
 <translation id="5398878173008909840">Chromiumi uus versioon on saadaval.</translation>
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> on Chromiumi lisatud.</translation>
+<translation id="7211828883345145708">Võimaldab täiendavaid klaviatuuri otseteid, mis on kasulikud Chromiumi silumiseks.</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Valige
@@ -197,6 +202,7 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="130631256467250065">Muudatused jõustuvad järgmine kord, kui seadme taaskäivitate.</translation>
 <translation id="3244477511402911926">Chromiumi märguandekeskus</translation>
 <translation id="9197815481970649201">Olete nüüd Chromiumi sisse logitud</translation>
+<translation id="7162152143154757523">Chromium võib õigekirjakontrolli täiustada, saates brauserisse sisestatud teksti Google'i serveritesse ja võimaldades kasutada sama õigekirjakontrolli tehnoloogiat, mida kasutatakse Google'i otsingus.</translation>
 <translation id="1929939181775079593">Chromium ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="1414495520565016063">Olete Chromiumi sisse logitud.</translation>
 <translation id="2158734852934720349">Chromium OS-i avatud lähtekoodi litsentsid</translation>
@@ -212,6 +218,7 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="811857857463334932">See arvuti ei saa enam Chromiumi värskendusi, kuna selle riistvara ei toetata enam.</translation>
 <translation id="2910007522516064972">Teave &amp;Chromiumi kohta</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
+<translation id="2558641060352364164">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="3889543394854987837">Chromiumi avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
 <translation id="3130323860337406239">Chromium kasutab teie mikrofoni.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>

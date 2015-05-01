@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Aku on täis</translation>
 <translation id="6895424601869865703">Lisage kasutajale <ph name="GIVEN_NAME"/> konto</translation>
 <translation id="1270290102613614947">Ekraanil kuvatav klaviatuur on keelatud</translation>
-<translation id="1057289296854808272">Pööramine on sisse lülitatud (muutmiseks puudutage siin)</translation>
+<translation id="5548285847212963613">Laiendus „<ph name="EXTENSION_NAME"/>” aitab selle võrguga ühenduse loomisel.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> ja <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Ülevoolunupp</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
@@ -39,7 +39,6 @@
 Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6043994281159824495">Logi nüüd välja</translation>
 <translation id="2127372758936585790">Väikese energiakuluga laadija</translation>
-<translation id="4625920103690741805">Pööramine on lukustatud (muutmiseks puudutage siin)</translation>
 <translation id="3799026279081545374">Teil võib olla halb laadija. Kui elate Ameerika Ühendriikides, helistage abi saamiseks ja laadija asendamiseks numbril 866-628-1371. Kui elate Ühendkuningriigis, helistage numbril 0800-026-0613. Kui elate Iirimaal, helistage numbril 1-800-832-664. Kui elate Kanadas, helistage numbril 866-628-1372. Kui elate Austraalias, helistage numbril 1-800-067-460.täis</translation>
 <translation id="3891340733213178823">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="5871632337994001636">Seadmete haldamine ...</translation>

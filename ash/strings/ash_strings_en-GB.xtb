@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Battery full</translation>
 <translation id="6895424601869865703">Add an account for <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">On-screen keyboard disabled</translation>
-<translation id="1057289296854808272">Rotation on (Tap here to change)</translation>
+<translation id="5548285847212963613">The extension &quot;<ph name="EXTENSION_NAME"/>&quot; can help connect to this network.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> and <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Overflow Button</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
@@ -39,7 +39,6 @@
 Press Shift + Alt to switch.</translation>
 <translation id="6043994281159824495">Sign out now</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
-<translation id="4625920103690741805">Rotation locked (Tap here to change)</translation>
 <translation id="3799026279081545374">You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.</translation>
 <translation id="3891340733213178823">Press Ctrl+Shift+Q twice to sign out.</translation>
 <translation id="5871632337994001636">Manage devices...</translation>

@@ -49,7 +49,9 @@ Chromoting</translation>
 <translation id="8355326866731426344">Questo codice di accesso scadrà tra <ph name="TIMEOUT"/></translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="2498359688066513246">Guida e feedback</translation>
+<translation id="3606997049964069799">Non hai eseguito l'accesso a Chromium. Accedi e riprova.</translation>
 <translation id="6198252989419008588">Modifica PIN</translation>
+<translation id="7970576581263377361">Autenticazione non riuscita. Accedi di nuovo a Chromium.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Impossibile registrare il computer.</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
@@ -70,12 +72,15 @@ Chromoting</translation>
 <translation id="9188433529406846933">Autorizza</translation>
 <translation id="228809120910082333">Conferma il tuo account e il PIN per consentire l'accesso tramite Chromoting.</translation>
 <translation id="7605995381616883502">Nuova connessione</translation>
+<translation id="2038229918502634450">L'host si sta riavviando per applicare una modifica alle norme.</translation>
 <translation id="2851674870054673688">Una volta inserito il codice, la sessione di condivisione avrà inizio.</translation>
 <translation id="5593560073513909978">Il servizio non è al momento disponibile. Riprova più tardi.</translation>
 <translation id="3908017899227008678">Riduci e adatta</translation>
 <translation id="8073845705237259513">Per poter utilizzare Chrome Remote Desktop devi aggiungere un account Google sul dispositivo.</translation>
+<translation id="2894654864775534701">Questo computer è attualmente condiviso con un altro account.</translation>
 <translation id="1199593201721843963">Disattiva connessioni remote</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop ti consente di condividere in modo sicuro il computer sul Web. Entrambi gli utenti devono eseguire l'app Chrome Remote Desktop, reperibile all'indirizzo <ph name="URL"/>.</translation>
+<translation id="3150823315463303127">L'host non è riuscito a leggere la norma.</translation>
 <translation id="2220529011494928058">Segnala un problema</translation>
 <translation id="174018511426417793">Non sono presenti computer registrati. Per attivare le connessioni remote su un computer, installa Chrome Remote Desktop sul computer e fai clic su &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="9126115402994542723">Non chiedere di nuovo il PIN per il collegamento a questo host da questo dispositivo.</translation>
@@ -166,6 +171,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2939145106548231838">Esegui autenticazione host</translation>
 <translation id="2366718077645204424">Impossibile raggiungere l'host. Il problema potrebbe essere dovuto alla configurazione della rete in uso.</translation>
 <translation id="3776024066357219166">La sessione Chrome Remote Desktop è terminata.</translation>
+<translation id="1450760146488584666">L'oggetto richiesto non esiste.</translation>
 <translation id="5625493749705183369">Accedi ad altri computer o consenti a un altro utente di accedere al tuo computer in modo sicuro su Internet.</translation>
 <translation id="2512228156274966424">NOTA. Per assicurarti che siano disponibili tutte le scorciatoie da tastiera, puoi configurare l'opzione &quot;Apri in una finestra&quot; per Chrome Remote Desktop.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
@@ -195,12 +201,14 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="2926340305933667314">Impossibile disattivare l'accesso remoto a questo computer. Riprova più tardi.</translation>
 <translation id="6865175692670882333">Visualizza/modifica</translation>
+<translation id="544077782045763683">L'host è stato chiuso.</translation>
 <translation id="5859141382851488196">Nuova finestra…</translation>
 <translation id="2089514346391228378">Le connessioni remote per questo computer sono state attivate.</translation>
 <translation id="7693372326588366043">Aggiorna l'elenco degli host</translation>
 <translation id="8445362773033888690">Visualizza nel Google Play Store</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="8187079423890319756">Copyright 2013 The Chromium Authors. Tutti i diritti riservati.</translation>
+<translation id="6221358653751391898">Non hai eseguito l'accesso a Chrome. Accedi e riprova.</translation>
 <translation id="7038683108611689168">Aiutaci a migliorare Chromoting consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="4405930547258349619">Core Library</translation>
@@ -241,6 +249,7 @@ Remote Desktop</translation>
 <translation id="3596628256176442606">Questo servizio consente connessioni in entrata da client Chromoting.</translation>
 <translation id="1978866438647250517">• Miglioramenti all'interfaccia utente.
 • Utilizzo ridotto della rete se in esecuzione in background.</translation>
+<translation id="4741792197137897469">Autenticazione non riuscita. Accedi di nuovo a Chrome.</translation>
 <translation id="4277463233460010382">Questo computer è configurato per consentire la connessione di uno o più client senza l'inserimento di un codice PIN.</translation>
 <translation id="837021510621780684">Da questo computer</translation>
 <translation id="518094545883702183">Queste informazioni vengono utilizzate soltanto per identificare il problema segnalato, sono disponibili soltanto a chi effettua accertamenti in merito alla tua segnalazione e vengono conservate per massimo 30 giorni.</translation>

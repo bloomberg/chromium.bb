@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Batteri helt opladet</translation>
 <translation id="6895424601869865703">Føj en konto til <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
-<translation id="1057289296854808272">Rotation er slået til (tryk her for at ændre indstillingen)</translation>
+<translation id="5548285847212963613">Udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Knappen Overflow</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
@@ -39,7 +39,6 @@
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6043994281159824495">Log ud nu</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
-<translation id="4625920103690741805">Rotation er låst (tryk her for at ændre indstillingen)</translation>
 <translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
 <translation id="5871632337994001636">Administrer enheder...</translation>

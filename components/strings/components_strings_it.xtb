@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="8208216423136871611">Non salvare</translation>
 <translation id="777702478322588152">Prefettura</translation>
+<translation id="2972581237482394796">&amp;Ripeti</translation>
 <translation id="7600965453749440009">Non tradurre mai <ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">Errore HTTP</translation>
 <translation id="1339601241726513588">Dominio registrazione:</translation>
 <translation id="7298195798382681320">Consigliate</translation>
 <translation id="4058922952496707368">Chiave &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Avviso JavaScript</translation>
-<translation id="4081383687659939437">Salva informazioni</translation>
 <translation id="5299298092464848405">Errore durante l'analisi del criterio</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Esegui scansione nuova carta</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">Obbligatoria</translation>
 <translation id="2958431318199492670">La configurazione di rete non è conforme allo standard ONC. Parti della configurazione potrebbero non essere importate.</translation>
+<translation id="3583757800736429874">&amp;Ripeti spostamento</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">Record del dispositivo mancante</translation>
 <translation id="1491151370853475546">Ricarica questa pagina</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
+<translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="8091372947890762290">Attivazione in attesa sul server</translation>
+<translation id="6874604403660855544">&amp;Ripeti aggiunta</translation>
 <translation id="4607653538520819196">Impossibile eseguire il proxy della pagina tramite Risparmio dati.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">Area</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">Visualizza originale</translation>
 <translation id="4079302484614802869">L'impostazione della configurazione proxy prevede l'utilizzo di un URL script .pac, non di server proxy fissi.</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
+<translation id="8437238597147034694">&amp;Annulla spostamento</translation>
+<translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
 <translation id="333371639341676808">Impedisci alla pagina di creare altre finestre di dialogo.</translation>
 <translation id="5523118979700054094">Nome norma</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">Errore temporaneo del server</translation>
 <translation id="7087282848513945231">Contea</translation>
 <translation id="1132774398110320017">Impostazioni di Compilazione automatica Chrome...</translation>
+<translation id="8194797478851900357">&amp;Annulla spostamento</translation>
 <translation id="6458467102616083041">Ignorato perché la ricerca predefinita è stata disattivata secondo la norma.</translation>
+<translation id="6259156558325130047">&amp;Ripeti ridisposizione</translation>
 <translation id="1227224963052638717">Norma sconosciuta.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="9207861905230894330">Impossibile aggiungere l'articolo.</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">Livello</translation>
 <translation id="7977590112176369853">&lt;inserisci query&gt;</translation>
 <translation id="552553974213252141">Il testo è stato estratto correttamente?</translation>
+<translation id="5317780077021120954">Salva</translation>
 <translation id="7610193165460212391">Il valore non è compreso nell'intervallo (<ph name="VALUE"/>).</translation>
 <translation id="3739623965217189342">Link che hai copiato</translation>
+<translation id="8790007591277257123">&amp;Ripeti eliminazione</translation>
 <translation id="8311778656528046050">Vuoi ricaricare questa pagina?</translation>
 <translation id="370665806235115550">Caricamento in corso...</translation>
 <translation id="2096368010154057602">Dipartimento</translation>
+<translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="4258748452823770588">Firma errata</translation>
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
 <translation id="2030481566774242610">Forse cercavi <ph name="LINK"/>?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">Recupero voci...</translation>
 <translation id="6263376278284652872">Segnalibri di <ph name="DOMAIN"/></translation>
 <translation id="498957508165411911">Tradurre da <ph name="ORIGINAL_LANGUAGE"/> in <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8218327578424803826">Posizione assegnata:</translation>
 <translation id="3542684924769048008">Utilizza password per:</translation>
 <translation id="7186367841673660872">Questa pagina è stata tradotta da<ph name="ORIGINAL_LANGUAGE"/>a<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="5145883236150621069">Codice di errore presente nella risposta del criterio</translation>
 <translation id="7983301409776629893">Traduci sempre <ph name="ORIGINAL_LANGUAGE"/> in <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">Distretto</translation>
+<translation id="3427342743765426898">&amp;Ripeti modifica</translation>
 <translation id="3010559122411665027">Voce &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">Paese</translation>
 <translation id="5031870354684148875">Informazioni su Google Traduttore</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">Non sono stati specificati né server proxy fissi né un URL script .pac.</translation>
 <translation id="7805768142964895445">Stato</translation>
 <translation id="2113977810652731515">Carta</translation>
+<translation id="1113869188872983271">&amp;Annulla ridisposizione</translation>
 <translation id="536296301121032821">Archiviazione delle impostazioni criterio non riuscita</translation>
 <translation id="5439770059721715174">Errore di convalida dello schema in &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">Barra dei Preferiti</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">Preferiti su disp. mobili</translation>
 <translation id="5089810972385038852">Provincia</translation>
 <translation id="647261751007945333">Norme dispositivo</translation>
+<translation id="2556876185419854533">&amp;Annulla modifica</translation>
 <translation id="213826338245044447">Preferiti su disp. mobili</translation>
+<translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
 <translation id="8571890674111243710">Traduzione della pagina in <ph name="LANGUAGE"/> in corso...</translation>
 <translation id="4117700440116928470">L'ambito della norma non è supportato.</translation>
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME"/>.</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">Questa pagina è in <ph name="SOURCE_LANGUAGE"/>. Tradurla in <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
+<translation id="3105172416063519923">ID asset:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">ID API directory:</translation>
 <translation id="7752995774971033316">Non gestito</translation>
 <translation id="3712624925041724820">Licenze esaurite</translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">La traduzione non è riuscita a causa di un errore del server.</translation>
 <translation id="2597378329261239068">Questo documento è protetto da password. Inserisci una password.</translation>
 <translation id="5629630648637658800">Caricamento delle impostazioni criterio non riuscito</translation>
+<translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
 <translation id="2354001756790975382">Altri Preferiti</translation>
 <translation id="3650584904733503804">Convalida riuscita</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">Errore di analisi del criterio</translation>
 <translation id="2270192940992995399">Impossibile trovare l'articolo.</translation>
 <translation id="4726672564094551039">Ricarica norme</translation>
+<translation id="9170848237812810038">&amp;Annulla</translation>
 <translation id="9154176715500758432">Rimani su questa pagina</translation>
 <translation id="2392959068659972793">Mostra norme senza valori</translation>
+<translation id="9148507642005240123">&amp;Annulla modifica</translation>
+<translation id="5470861586879999274">&amp;Ripeti modifica</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="5295309862264981122">Conferma navigazione</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">Firma di verifica non valida</translation>
 <translation id="106701514854093668">Preferiti desktop</translation>
 <translation id="6154808779448689242">Il token del criterio restituito non corrisponde al token corrente</translation>
+<translation id="7995512525968007366">Non specificato</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="2835170189407361413">Cancella modulo</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="8804164990146287819">Norme sulla privacy</translation>
 <translation id="5337776961545044340">Questo tipo di carta non è supportato da Google Wallet per questo commerciante. Seleziona un'altra carta.</translation>
+<translation id="7334320624316649418">&amp;Ripeti ridisposizione</translation>
 <translation id="7182878459783632708">Nessuna norma impostata</translation>
 <translation id="5019198164206649151">Archivio di backup in stato non valido</translation>
 <translation id="8364627913115013041">Non impostata.</translation>
 <translation id="8713130696108419660">Firma iniziale non valida</translation>
+<translation id="3270847123878663523">&amp;Annulla ridisposizione</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
 <translation id="2639739919103226564">Stato:</translation>
 <translation id="4968547170521245791">Impossibile eseguire il proxy</translation>
 <translation id="385051799172605136">Indietro</translation>
+<translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="2581221116934462656">Vuoi che <ph name="PRODUCT_NAME"/> ti proponga di tradurre le pagine in <ph name="LANGUAGE_NAME"/> di questo sito la prossima volta?</translation>
+<translation id="2396249848217231973">&amp;Annulla eliminazione</translation>
 <translation id="3934680773876859118">Caricamento del documento PDF non riuscito</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>

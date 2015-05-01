@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
+<translation id="2705212601509139398">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后下载一款兼容的浏览器。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR"/> The Chromium Authors。保留所有权利。</translation>
 <translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">此计算机很快将停止接收Chromium更新，因为其硬件不再受支持。</translation>
 <translation id="5532301346661895910">Chromium 会将此密码存储在 |Google 保存的密码|中，并会在您下次需要时自动填充此密码。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
+<translation id="421369550622382712">在这里，您可以找到适用于 Chromium 的精彩应用、游戏、扩展程序和主题背景。</translation>
 <translation id="2732467638532545152">您的计算机运行的是旧版Microsoft Windows，无法处理此网站的安全证书。因此，Chromium无法确定该证书是来自<ph name="SITE"/>，还是来自您所在的网络中假冒<ph name="SITE"/>的用户。请将您的计算机更新到更高版本的Windows。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
 <translation id="6613594504749178791">您所做的更改会在下次重新启动 Chromium 时生效。</translation>
@@ -103,6 +105,7 @@
 <translation id="5358375970380395591">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME"/> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。<ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Chromium 应用启动器</translation>
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
+<translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> 要求您必须先阅读并接受以下服务条款，才能使用此设备。这些条款不会扩大、修改或限制 Chromium 操作系统条款。</translation>
@@ -112,6 +115,7 @@
 <translation id="2535480412977113886">您的帐户登录详细信息已过期，Chromium操作系统无法同步您的数据。</translation>
 <translation id="8697124171261953979">它还能够控制您启动Chromium后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="894903460958736500">您计算机上运行的软件与 Chromium 不兼容。</translation>
+<translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
 <translation id="9022552996538154597">登录 Chromium</translation>
 <translation id="4365115785552740256">Chromium 的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 开放源代码项目以及其他<ph name="BEGIN_LINK_OSS"/>开放源代码软件<ph name="END_LINK_OSS"/>。</translation>
@@ -145,6 +149,7 @@
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME"/>”已添加到 Chromium。</translation>
+<translation id="7211828883345145708">启用其他有助于调试 Chromium 的键盘快捷键。</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”复选框。</translation>
@@ -169,6 +174,7 @@
 <translation id="130631256467250065">您所做的更改会在下次重新启动设备时生效。</translation>
 <translation id="3244477511402911926">Chromium 通知中心</translation>
 <translation id="9197815481970649201">现在您已登录到Chromium</translation>
+<translation id="7162152143154757523">Chromium 会将您在浏览器中输入的内容发送到 Google 服务器，并让您使用 Google 搜索所用的拼写检查技术，从而为您提供更智能的拼写检查功能。</translation>
 <translation id="1929939181775079593">Chromium 未响应。要立即重新启动吗？</translation>
 <translation id="1414495520565016063">您已登录 Chromium！</translation>
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
@@ -183,6 +189,7 @@
 <translation id="811857857463334932">此计算机将不再接收Chromium更新，因为其硬件不再受支持。</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
+<translation id="2558641060352364164">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>
 <translation id="3130323860337406239">Chromium 正在使用您的麦克风。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>

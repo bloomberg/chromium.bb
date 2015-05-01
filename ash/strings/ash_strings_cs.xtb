@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Baterie je nabitá</translation>
 <translation id="6895424601869865703">Přidat účet pro uživatele <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
-<translation id="1057289296854808272">Otáčení je zapnuto (klepnutím sem toto nastavení změníte)</translation>
+<translation id="5548285847212963613">S připojení k této síti může pomoci rozšíření <ph name="EXTENSION_NAME"/>.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> a <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Tlačítko přetečení</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
@@ -38,7 +38,6 @@
 <translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>* <ph name="BEGIN_LINK"/>třetí strany<ph name="END_LINK"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="6043994281159824495">Odhlásit se</translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
-<translation id="4625920103690741805">Otáčení je uzamčeno (klepnutím sem toto nastavení změníte)</translation>
 <translation id="3799026279081545374">Je možné, že máte vadnou nabíječku. Pokud žijete v USA, požádejte o pomoc a výměnu na čísle 866-628-1371. Pokud žijete ve Spojeném království, volejte na číslo 0800-026-0613. Pokud žijete v Irsku, volejte na číslo 1-800-832-664. Pokud žijete v Kanadě, volejte na číslo 866-628-1372. Pokud žijete v Austrálii, volejte na číslo 1-800-067-460.</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="5871632337994001636">Spravovat zařízení...</translation>

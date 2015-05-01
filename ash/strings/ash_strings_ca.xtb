@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Bateria carregada.</translation>
 <translation id="6895424601869865703">Afegeix un compte per a <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Teclat en pantalla desactivat</translation>
-<translation id="1057289296854808272">Rotació activada (toqueu aquí per canviar)</translation>
+<translation id="5548285847212963613">L'extensió &quot;<ph name="EXTENSION_NAME"/>&quot; pot ajudar a connectar-se a aquesta xarxa.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> i <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Botó de desbordament</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
@@ -39,7 +39,6 @@
 Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6043994281159824495">Tanca la sessió ara</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
-<translation id="4625920103690741805">Rotació bloquejada (toqueu aquí per canviar)</translation>
 <translation id="3799026279081545374">Pot ser que el carregador s'hagi espatllat. Si residiu als EUA, truqueu al 866-628-1371 per rebre ajuda i un carregador de recanvi. Si residiu al Regne Unit, truqueu al 0800-026-0613. Si residiu a Irlanda, truqueu al 1-800-832-664. Si residiu al Canadà, truqueu al 866-628-1372. Si residiu a Austràlia, truqueu al 1-800-067-460.</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="5871632337994001636">Gestiona els dispositius...</translation>

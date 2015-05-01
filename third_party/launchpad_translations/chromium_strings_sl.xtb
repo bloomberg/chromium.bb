@@ -1,4 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sl">
+<translation id="2705212601509139398">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in prenesite sodoben brskalnik.</translation>
 <translation id="6676384891291319759">Dostop do interneta</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR"/> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="6373523479360886564">Ali ste prepričani, da želite odstraniti Chromiuma?</translation>
@@ -6,6 +7,7 @@
 <translation id="2615699638672665509">Ta računalnik bo kmalu prenehal prejemati posodobitve za Chromium, ker njegova strojna oprema ni več podprta.</translation>
 <translation id="5532301346661895910">Chromium bo shranil to tukaj: |gesla, ki jih shranil Google| in priklical, ko to naslednjič potrebujete.</translation>
 <translation id="6893813176749746474">Chromium je posodobljen, vendar ga niste uporabljali najmanj 30 dni.</translation>
+<translation id="421369550622382712">Odkrijte zanimive aplikacije, igre, razširitve in teme za Chromium.</translation>
 <translation id="2732467638532545152">Vaš računalnik uporablja staro različico sistema Microsoft Windows, ki ne more obdelati varnostnega potrdila tega spletnega mesta. Zaradi te težave Chromium ne more ugotoviti, ali je prišlo potrdilo s spletnega mesta <ph name="SITE"/> ali od nekoga v vašem omrežju, ki se izdaja za spletno mesto <ph name="SITE"/>. Posodobite sistem Microsoft Windows v računalniku na novejšo različico.</translation>
 <translation id="2770231113462710648">Spremeni privzeti brskalnik na:</translation>
 <translation id="6613594504749178791">Spremembe bodo začele veljati ob naslednjem zagonu Chromiuma.</translation>
@@ -119,6 +121,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5358375970380395591">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Chromiumu. Vaši podatki v Chromiumu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME"/>. Te podatke boste lahko izbrisali na nadzorni plošči za Google Račune, vendar jih ne boste mogli povezati z drugim računom. <ph name="LEARN_MORE"/></translation>
 <translation id="9036189287518468038">Zaganjalnik aplikacij v Chromiumu</translation>
 <translation id="5563479599352954471">Iskanje z enim dotikom</translation>
+<translation id="3256316712990552818">Kopirano v Chromium</translation>
 <translation id="8493179195440786826">Chromium je zastarel</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Chromium OS.</translation>
@@ -128,6 +131,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2535480412977113886">Chromium OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="8697124171261953979">Določa tudi, katera stran je prikazana, ko zaženete Chromium ali iščete v naslovni vrstici.</translation>
 <translation id="894903460958736500">Programska oprema, ki se izvaja v računalniku, ni združljiva s Chromiumom.</translation>
+<translation id="6810143991807788455">Pomagajte izboljšati Chromium s poročanjem o trenutnih nastavitvah</translation>
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
 <translation id="9022552996538154597">Prijava v Chromium</translation>
 <translation id="4365115785552740256">Chromium omogočata odprtokodni projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> in druga <ph name="BEGIN_LINK_OSS"/>odprtokodna programska oprema<ph name="END_LINK_OSS"/>.</translation>
@@ -161,6 +165,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="5398878173008909840">Na voljo je nova različica Chromiuma.</translation>
 <translation id="2648074677641340862">Napaka v operacijskem sistemu med namestitvijo. Znova prenesite Chromium.</translation>
 <translation id="5942520288919337908">Razširitev <ph name="EXTENSION_NAME"/> je dodana v Chromium.</translation>
+<translation id="7211828883345145708">Omogoča dodatne bližnjične tipke, ki so koristne za odpravljanje napak v Chromiumu.</translation>
 <translation id="549669000822060376">Počakajte, da Chromium namesti najnovejše sistemske posodobitve.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4559775032954821361">Odprite
@@ -198,6 +203,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="130631256467250065">Spremembe bodo uveljavljene pri naslednjem vnovičnem zagonu naprave.</translation>
 <translation id="3244477511402911926">Chromiumovo središče za obvestila</translation>
 <translation id="9197815481970649201">Prijavljeni ste v Chromium</translation>
+<translation id="7162152143154757523">Chromium omogoča pametnejše črkovanje, tako da vaše vnose v brskalnik pošilja v Googlove strežnike in s tem omogoči, da uporabljate isto tehnologijo preverjanja črkovanja, kot jo uporablja Googlovo iskanje.</translation>
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="1414495520565016063">Prijavljeni ste v Chromium.</translation>
 <translation id="2158734852934720349">Odprtokodne licence za Chromium OS</translation>
@@ -213,6 +219,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="811857857463334932">Ta računalnik ne bo več prejemal posodobitev za Chromium, ker njegova strojna oprema ni več podprta.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
 <translation id="8453117565092476964">Arhiv namestitvenega programa je poškodovan ali neveljaven. Znova prenesite Chromium.</translation>
+<translation id="2558641060352364164">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
 <translation id="3889543394854987837">Kliknite ime, da odprete Chromium in začnete brskati.</translation>
 <translation id="3130323860337406239">Chromium uporablja vaš mikrofon.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>

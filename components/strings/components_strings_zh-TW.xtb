@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="8208216423136871611">不要儲存</translation>
 <translation id="777702478322588152">縣</translation>
+<translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE"/></translation>
 <translation id="2262243747453050782">HTTP 錯誤</translation>
 <translation id="1339601241726513588">註冊網域：</translation>
 <translation id="7298195798382681320">建議採用</translation>
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY"/>」：<ph name="ERROR"/></translation>
 <translation id="6980028882292583085">JavaScript 通知</translation>
-<translation id="4081383687659939437">儲存資訊</translation>
 <translation id="5299298092464848405">解析政策時發生錯誤</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜尋</translation>
 <translation id="2498091847651709837">掃描新信用卡</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7537536606612762813">強制</translation>
 <translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
+<translation id="3583757800736429874">重做移動(&amp;R)</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">沒有裝置紀錄</translation>
 <translation id="1491151370853475546">重新載入這個網頁</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">網址</translation>
 <translation id="7378627244592794276">不需要</translation>
 <translation id="2704283930420550640">政策值格式不符。</translation>
+<translation id="1055184225775184556">復原新增(&amp;U)</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="8091372947890762290">尚未在伺服器上啟動</translation>
+<translation id="6874604403660855544">重做新增(&amp;R)</translation>
 <translation id="4607653538520819196">Data Saver 無法對這個網頁執行 Proxy 處理。</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">區</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">查看原始網頁</translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
 <translation id="5540224163453853">找不到要求的文章。</translation>
+<translation id="8437238597147034694">復原移動(&amp;U)</translation>
+<translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
 <translation id="5523118979700054094">政策名稱</translation>
 <translation id="7791543448312431591">新增</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">伺服器暫時發生錯誤</translation>
 <translation id="7087282848513945231">郡</translation>
 <translation id="1132774398110320017">Chrome 自動填入設定...</translation>
+<translation id="8194797478851900357">復原移動(&amp;U)</translation>
 <translation id="6458467102616083041">由於政策停用了預設搜尋，因此遭到略過。</translation>
+<translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
 <translation id="1227224963052638717">不明政策。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="9207861905230894330">無法新增文章。</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">等級</translation>
 <translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
 <translation id="552553974213252141">擷取的文字是否正確？</translation>
+<translation id="5317780077021120954">儲存</translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE"/> 的範圍。</translation>
 <translation id="3739623965217189342">您複製的連結</translation>
+<translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8311778656528046050">您確定要重新載入這個網頁？</translation>
 <translation id="370665806235115550">載入中…</translation>
 <translation id="2096368010154057602">省</translation>
+<translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
 <translation id="3024663005179499861">政策類型有誤</translation>
 <translation id="2030481566774242610">您要找的是 <ph name="LINK"/> 嗎？</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">正在擷取項目...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> 書籤</translation>
 <translation id="498957508165411911">將網頁內容由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="TARGET_LANGUAGE"/>？</translation>
+<translation id="8218327578424803826">指派的位置：</translation>
 <translation id="3542684924769048008">選擇密碼：</translation>
 <translation id="7186367841673660872">此網頁內容已由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="7139724024395191329">大公國</translation>
 <translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
 <translation id="7983301409776629893">一律將網頁內容由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6970216967273061347">區</translation>
+<translation id="3427342743765426898">重做編輯(&amp;R)</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX"/>」：<ph name="ERROR"/></translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="2113977810652731515">信用卡</translation>
+<translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
 <translation id="536296301121032821">無法儲存政策設定</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH"/>」發生架構驗證錯誤：<ph name="ERROR"/></translation>
 <translation id="8349305172487531364">書籤列</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">行動版書籤</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="647261751007945333">裝置政策</translation>
+<translation id="2556876185419854533">復原編輯(&amp;U)</translation>
 <translation id="213826338245044447">行動版書籤</translation>
+<translation id="4594403342090139922">復原刪除(&amp;U)</translation>
 <translation id="8571890674111243710">正在將網頁翻譯成<ph name="LANGUAGE"/>...</translation>
 <translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
 <translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME"/>」覆寫了，因此遭到略過。</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
+<translation id="3105172416063519923">資產 ID：</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">Directory API ID：</translation>
 <translation id="7752995774971033316">未管理</translation>
 <translation id="3712624925041724820">授權已用盡</translation>
 <translation id="4926049483395192435">必須指定。</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">伺服器錯誤，翻譯作業失敗。</translation>
 <translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
 <translation id="5629630648637658800">無法載入政策設定</translation>
+<translation id="4030383055268325496">復原新增(&amp;U)</translation>
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="3650584904733503804">驗證成功</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="2270192940992995399">找不到文章。</translation>
 <translation id="4726672564094551039">重新載入政策</translation>
+<translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="9154176715500758432">停留在此頁</translation>
 <translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
+<translation id="9148507642005240123">復原編輯(&amp;U)</translation>
+<translation id="5470861586879999274">重做編輯(&amp;R)</translation>
 <translation id="5190835502935405962">書籤列</translation>
 <translation id="6965978654500191972">裝置</translation>
 <translation id="5295309862264981122">確認瀏覽</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">驗證簽名無效</translation>
 <translation id="106701514854093668">電腦版書籤</translation>
 <translation id="6154808779448689242">傳回的政策符記與目前符記不相符</translation>
+<translation id="7995512525968007366">未指定</translation>
 <translation id="7961015016161918242">永不</translation>
 <translation id="2835170189407361413">清除表單</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
 <translation id="5337776961545044340">這個商家的 Google 電子錢包不支援這種類型的信用卡，請選取其他信用卡。</translation>
+<translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
 <translation id="7182878459783632708">沒有設定任何政策</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>
 <translation id="8364627913115013041">未設定。</translation>
 <translation id="8713130696108419660">初始簽名錯誤</translation>
+<translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
 <translation id="2639739919103226564">狀態：</translation>
 <translation id="4968547170521245791">無法執行 Proxy 處理</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="5095208057601539847">省</translation>
 <translation id="2581221116934462656">您下次要讓 <ph name="PRODUCT_NAME"/> 翻譯這個網站的<ph name="LANGUAGE_NAME"/>網頁嗎？</translation>
+<translation id="2396249848217231973">復原刪除(&amp;U)</translation>
 <translation id="3934680773876859118">無法載入 PDF 文件</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="2721148159707890343">要求成功</translation>

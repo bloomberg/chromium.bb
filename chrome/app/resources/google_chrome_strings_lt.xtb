@@ -34,6 +34,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="5620765574781326016">Sužinokite apie temas svetainėse neišėję iš puslapio.</translation>
 <translation id="2721687379934343312">„Mac“ kompiuteriuose slaptažodžiai saugomi programoje „Keychain“ ir gali būti pasiekiami arba sinchronizuojami kitų „Chrome“ naudotojų, bendrai naudojančių šią „OS X“ paskyrą.</translation>
 <translation id="683440813066116847">„Canary“ versijos „Google Chrome“ skirta taisyklė, pagal kurią leidžiamas gaunamas mDNS srautas.</translation>
+<translation id="4700157086864140907">„Google Chrome“ gali teikti išmanesnę rašybos tikrinimo funkciją, siųsdama tai, ką įvedate naršyklėje, „Google“ serveriams ir leisdama naudoti tą pačią rašybos tikrinimo technologiją, kuri naudojama „Google“ paieškoje.</translation>
 <translation id="4953650215774548573">Nustatyti „Google Chrome“ kaip numatytąją naršyklę</translation>
 <translation id="6014844626092547096">Dabar esate prisijungę prie „Chrome“. Administratorius neleidžia sinchronizuoti.</translation>
 <translation id="7419046106786626209">„Chrome“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
@@ -98,6 +99,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="473775607612524610">Atnaujinti</translation>
 <translation id="5618769508111928343">Svetainė <ph name="SITE"/> paprastai naudoja šifruotę informacijai apsaugoti. Kai „Chrome“ šį kartą bandė prisijungti prie svetainės <ph name="SITE"/>, ji pateikė mums neįprastus
 ir netinkamus prisijungimo duomenis. Užpuolėjas bando apsimesti svetaine <ph name="SITE"/> arba „Wi-Fi“ prisijungimo ekranas nutraukė ryšį. Informacija vis tiek yra apsaugota, nes „Chrome“ sustabdė ryšį, kol nebuvo pakeisti jokie duomenys.</translation>
+<translation id="6600954340915313787">Nukopijuota į „Chrome“</translation>
 <translation id="2576431527583832481">„Chrome“ patobulėjo! Galima nauja versija.</translation>
 <translation id="4633000520311261472">Kad „Chrome“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
 <translation id="3656661827369545115">Automatiškai paleisti „Chromium“, kai įjungiamas kompiuteris</translation>
@@ -192,6 +194,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2871893339301912279">Esate prisijungę prie „Chrome“.</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="7161904924553537242">Sveiki! Tai - „Google Chrome“</translation>
+<translation id="597770749449734237">Įgalinami papildomi spartieji klavišai, naudingi derinant „Google Chrome“.</translation>
 <translation id="4147555960264124640">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME"/>. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. <ph name="LEARN_MORE"/></translation>
 <translation id="1348153800635493797">Turite naujovinti „Chrome“, kad galėtumėte naudoti „Google“ piniginę [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Eikite į
@@ -206,6 +209,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="3444832043240812445">Šiame puslapyje rodoma informacija apie paskutines strigtis, jei <ph name="BEGIN_LINK"/>įgalinote strigčių ataskaitų teikimą<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">„Google Chrome“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="2681064822612051220">Sistemoje nustatyta prieštaringa „Google Chrome“ įdiegtis. Pašalinkite ir bandykite dar kartą.</translation>
+<translation id="2252923619938421629">Padėkite pagerinti „Google Chrome“ pateikę ataskaitą apie dabartinius nustatymus</translation>
 <translation id="6126631249883707068">Ar norite, kad „Google Chrome“ išsaugotų slaptažodį?</translation>
 <translation id="7773845170078702898">Ar norite, kad „Google Chrome“ išsaugotų šios svetainės slaptažodį?</translation>
 <translation id="4251615635259297716">Susisieti „Chrome“ duomenis su šia paskyra?</translation>
@@ -257,6 +261,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="3047079729301751317">Atjungus <ph name="USERNAME"/>, bus išvalyta jūsų istorija, žymės, nustatymai ir kiti „Chrome“ duomenys, saugomi šiame įrenginyje. „Google“ paskyroje saugomi duomenys nebus išvalyti. Juos galite tvarkyti <ph name="GOOGLE_DASHBOARD_LINK"/>„Google“ informacijos suvestinėje<ph name="END_GOOGLE_DASHBOARD_LINK"/>.</translation>
 <translation id="1001534784610492198">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="2246246234298806438">„Google Chrome“ negali rodyti spaudinio peržiūros, kai nėra integruotos PDF žiūryklės.</translation>
+<translation id="5132929315877954718">Suraskite puikių „Google Chrome“ programų, žaidimų, plėtinių ir temų.</translation>
 <translation id="6626317981028933585">Deja, „Mozilla Firefox“ nustatymai negalimi tol, kol ši naršyklė nebus paleista. Norėdami importuoti šiuos nustatymus į „Google Chrome“, išsaugokite savo darbą ir uždarykite visus „Firefox“ langus. Spustelėkite Tęsti.</translation>
 <translation id="7242029209006116544">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME"/>. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. Galite pasirinktinai sukurti naują profilį, kad esami „Chrome“ duomenys būtų saugomi atskirai. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chrome“ ar ieškote „omnibox“.</translation>
@@ -265,6 +270,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2334084861041072223">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR"/> m. Visos teisės saugomos.</translation>
 <translation id="1698376642261615901">„Google Chrome“ yra žiniatinklio naršyklė, kuri akimirksniu paleidžia tinklalapius ir programas. Ji greita, stabili ir lengvai naudojama. Naršykite žiniatinklį saugiau – „Google Chrome“ įdiegta apsauga nuo kenkėjiškų programų ir sukčiavimo.</translation>
 <translation id="853189717709780425">Prisijungiate su tvarkoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME"/>. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra.</translation>
+<translation id="699076943483372849">Šioje svetainėje naudojamas nebepalaikomas „Google Chrome Frame“ papildinys, kuriam nebeteikiami saugos ir stabilumo naujiniai. Pašalinkite jį ir atsisiųskite modernią naršyklę.</translation>
 <translation id="6049075767726609708">Administratorius šioje sistemoje jau įdiegė „Google Chrome“ ir ji prieinama visiems naudotojams. Sistemos lygio „Google Chrome“ pakeis naudotojo lygio diegimą.</translation>
 <translation id="1818142563254268765">„Chrome“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikia atnaujinti „Chrome“.</translation>
 <translation id="7408085963519505752">„Chrome“ OS sąlygos</translation>

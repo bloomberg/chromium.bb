@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Akkumulátor feltöltve</translation>
 <translation id="6895424601869865703">Fiók hozzáadása <ph name="GIVEN_NAME"/> számára</translation>
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
-<translation id="1057289296854808272">Forgatás bekapcsolva (Koppintson ide a módosításhoz)</translation>
+<translation id="5548285847212963613">A(z) „<ph name="EXTENSION_NAME"/>” bővítmény segíthet a hálózathoz való csatlakozásban.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> és <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Túlcsordulás gomb</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
@@ -39,7 +39,6 @@
 A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="6043994281159824495">Kijelentkezés most</translation>
 <translation id="2127372758936585790">Kis teljesítményű töltő</translation>
-<translation id="4625920103690741805">Forgatás zárolva (Koppintson ide a módosításhoz)</translation>
 <translation id="3799026279081545374">Lehet, hogy rossz a töltője. Ha az Amerikai Egyesült Államokban él, segítség és csere ügyében hívja a következő telefonszámot: 866-628-1371. Ha az Egyesült Királyságban él, hívja a következő telefonszámot: 0800-026-0613. Ha Írországban él, hívja a következő telefonszámot: 1-800-832-664. Ha Kanadában él, hívja a következő telefonszámot: 866-628-1372. Ha Ausztráliában él, hívja a következő telefonszámot: 1-800-067-460.</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="5871632337994001636">Eszközök kezelése...</translation>

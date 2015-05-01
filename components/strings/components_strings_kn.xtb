@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">ರೀಫ್ರೆಶ್ ಮಾಡಿ</translation>
 <translation id="8208216423136871611">ಉಳಿಸಬೇಡಿ</translation>
 <translation id="777702478322588152">Prefecture</translation>
+<translation id="2972581237482394796">&amp;ಮತ್ತೆಮಾಡು</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> ಅನ್ನು ಎಂದಿಗೂ ಅನುವಾದಿಸಬೇಡ</translation>
 <translation id="2262243747453050782">HTTP ದೋಷ</translation>
 <translation id="1339601241726513588">ಡೊಮೇನ್ ದಾಖಲಾತಿ:</translation>
 <translation id="7298195798382681320">ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="4058922952496707368">ಕೀ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">Javascript ಎಚ್ಚರಿಕೆ</translation>
-<translation id="4081383687659939437">ಮಾಹಿತಿಯನ್ನು ಉಳಿಸಿ</translation>
 <translation id="5299298092464848405">ನೀತಿಯ ಪಾರ್ಸಿಂಗ್‌ನಲ್ಲಿ ದೋಷ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> ಹುಡುಕಾಟ</translation>
 <translation id="2498091847651709837">ಹೊಸ ಕಾರ್ಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">ಕಡ್ಡಾಯ</translation>
 <translation id="2958431318199492670">ONC ಪ್ರಮಾಣಿತಕ್ಕೆ ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್ ಅನುಸರಣೆಯಾಗುವುದಿಲ್ಲ. ಕಾನ್ಫಿಗರೇಶನ್‌ನ ಭಾಗಗಳನ್ನು ಆಮದು ಮಾಡಲಾಗದಿರಬಹುದು.</translation>
+<translation id="3583757800736429874">&amp;ಸರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">ಸಾಧನದ ರೆಕಾರ್ಡ್ ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="1491151370853475546">ಪುಟ ಮರುಲೋಡ್ ಮಾಡು</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">ಬೇಡ</translation>
 <translation id="2704283930420550640">ಮೌಲ್ಯವು ಸ್ವರೂಪಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="1055184225775184556">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4850886885716139402">ವೀಕ್ಷಣೆ</translation>
 <translation id="8091372947890762290">ಸರ್ವರ್‌ನಲ್ಲಿ ಸಕ್ರಿಯತೆ ಬಾಕಿ ಉಳಿದಿದೆ</translation>
+<translation id="6874604403660855544">&amp;ಸೇರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="4607653538520819196">ಈ ಪುಟವನ್ನು ಡೇಟಾ ಉಳಿಸುವಿಕೆಯಿಂದ ಪ್ರಾಕ್ಸಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="719464814642662924">ವೀಸಾ</translation>
 <translation id="6839929833149231406">ಪ್ರದೇಶ</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">ಮೂಲಪುಟವನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="4079302484614802869">ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಬಳಸುವಂತೆ ಹೊಂದಿಸಲಾಗಿದೆ, ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳಲ್ಲ.</translation>
 <translation id="5540224163453853">ವಿನಂತಿಸಿದ ಲೇಖನವನ್ನು ಹುಡುಕಲು ಸಾಧವಾಗಲಿಲ್ಲ.</translation>
+<translation id="8437238597147034694">&amp;ಸರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
+<translation id="5813119285467412249">&amp;ಸೇರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="333371639341676808">ಈ ಪುಟ ಹೆಚ್ಚುವರಿ ಸಂವಾದಗಳನ್ನು ರಚಿಸುವುದನ್ನು ತಡೆಯಿರಿ.</translation>
 <translation id="5523118979700054094">ನೀತಿ ಹೆಸರು</translation>
 <translation id="7791543448312431591">ಸೇರಿಸು</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">ತಾತ್ಕಾಲಿಕ ಸರ್ವರ್  ದೋಷ</translation>
 <translation id="7087282848513945231">ರಾಷ್ಟ್ರ</translation>
 <translation id="1132774398110320017">Chrome ಸ್ವಯಂತುಂಬುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
+<translation id="8194797478851900357">&amp;ಸರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸು</translation>
 <translation id="6458467102616083041">ಡೀಫಾಲ್ಟ್ ಹುಡುಕಾಟವನ್ನು ನೀತಿಯಿಂದ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿರುವುದರಿಂದ ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
+<translation id="6259156558325130047">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="1227224963052638717">ಅಜ್ಞಾತ ನೀತಿ.</translation>
 <translation id="4250680216510889253">ಇಲ್ಲ</translation>
 <translation id="9207861905230894330">ಲೇಖನವನ್ನು ಸೇರಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">ಹಂತ</translation>
 <translation id="7977590112176369853">&lt;ಪ್ರಶ್ನೆ ನಮೂದಿಸಿ&gt;</translation>
 <translation id="552553974213252141">ಪಠ್ಯವನ್ನು ಸರಿಯಾಗಿ ಪ್ರತ್ಯೇಕಿಸಲಾಗಿದೆಯೇ?</translation>
+<translation id="5317780077021120954">ಉಳಿಸು</translation>
 <translation id="7610193165460212391">ಮೌಲ್ಯವು ವ್ಯಾಪ್ತಿಯಿಂದ <ph name="VALUE"/> ಹೊರಗಿದೆ.</translation>
 <translation id="3739623965217189342">ನೀವು ನಕಲಿಸಿದ ಲಿಂಕ್</translation>
+<translation id="8790007591277257123">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="8311778656528046050">ಈ ಪುಟವನ್ನು ಮರುಲೋಡ್ ಮಾಡುವುದು ಖಚಿತವೇ?</translation>
 <translation id="370665806235115550">ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2096368010154057602">ವಿಭಾಗ</translation>
+<translation id="6529602333819889595">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="4258748452823770588">ತಪ್ಪಾದ ಸಹಿ</translation>
 <translation id="3024663005179499861">ತಪ್ಪಾದ ನೀತಿಯ ಪ್ರಕಾರ</translation>
 <translation id="2030481566774242610">ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥ <ph name="LINK"/>?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">ನಮೂದುಗಳನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/> ರಿಂದ <ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದಿಸಬೇಕೇ?</translation>
+<translation id="8218327578424803826">ನಿಯೋಜಿಸಲಾದ ಸ್ಥಳ:</translation>
 <translation id="3542684924769048008">ಇದಕ್ಕೆ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ:</translation>
 <translation id="7186367841673660872">ಈ ಪುಟವನ್ನು<ph name="ORIGINAL_LANGUAGE"/>ನಿಂದ<ph name="LANGUAGE_LANGUAGE"/>ಗೆ ಭಾಷಾಂತರಿಸಲಾಗಿದೆ</translation>
 <translation id="7139724024395191329">ಎಮಿರೇಟ್</translation>
 <translation id="5145883236150621069">ನೀತಿ ಪ್ರತಿಕ್ರಿಯೆಯಲ್ಲಿ ದೋಷದ ಕೋಡ್ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ</translation>
 <translation id="7983301409776629893">ಯಾವಾಗಲೂ <ph name="ORIGINAL_LANGUAGE"/> ಅನ್ನು <ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದಿಸಿ</translation>
 <translation id="6970216967273061347">ಜಿಲ್ಲೆ</translation>
+<translation id="3427342743765426898">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="3010559122411665027">ಪಟ್ಟಿ ನಮೂದು &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">ರಾಷ್ಟ್ರ</translation>
 <translation id="5031870354684148875">Google ಅನುವಾದದ ಕುರಿತು</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">ಹೊಂದಿಸಿದ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳು ಆಗಲಿ ಅಥವಾ .pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿಲ್ಲ.</translation>
 <translation id="7805768142964895445">ಸ್ಥಿತಿ</translation>
 <translation id="2113977810652731515">ಕಾರ್ಡ್</translation>
+<translation id="1113869188872983271">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="536296301121032821">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಂಗ್ರಹಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5439770059721715174">&quot;<ph name="ERROR_PATH"/>&quot; ನಲ್ಲಿ ಸ್ಕೀಮಾ ಮೌಲ್ವೀಕರಣ ದೋಷ: <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಬಾರ್</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">ಮೊಬೈಲ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="5089810972385038852">ರಾಜ್ಯ</translation>
 <translation id="647261751007945333">ಸಾಧನ ನೀತಿಗಳು</translation>
+<translation id="2556876185419854533">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="213826338245044447">ಮೊಬೈಲ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
+<translation id="4594403342090139922">&amp;ಅಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE"/> ಗೆ ಪುಟವನ್ನು ಭಾಷಾಂತರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4117700440116928470">ನೀತಿಯ ವ್ಯಾಪ್ತಿಯು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ.</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME"/> ರಿಂದ ಅತಿಕ್ರಮಿಸಲಾಗಿರುವ ಕಾರಣ ಇದನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">ಈ ಪುಟವು <ph name="SOURCE_LANGUAGE"/> ನಲ್ಲಿ ಇದೆ. ಇದನ್ನು <ph name="TARGET_LANGUAGE"/> ಗೆ ಅನುವಾದಿಸುವುದೇ?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">ಅಮಾನ್ಯವಾದ ಪ್ರಾಕ್ಸಿ ಮೋಡ್.</translation>
+<translation id="3105172416063519923">ಸ್ವತ್ತು ID:</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">ಡೈರೆಕ್ಟರಿ API ID:</translation>
 <translation id="7752995774971033316">ನಿರ್ವಹಣೆಯಲ್ಲಿಲ್ಲ</translation>
 <translation id="3712624925041724820">ಪರವಾನಗಿಗಳು ಬರಿದಾಗಿವೆ</translation>
 <translation id="4926049483395192435">ನಿರ್ದಿಷ್ಟಪಡಿಸಬೇಕಾಗಿದೆ.</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">ಸರ್ವರ್ ದೋಷದ ಕಾರಣ ಅನುವಾದವು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="2597378329261239068">ಈ ಡಾಕ್ಯುಮೆಂಟ್‌ ಅನ್ನು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ರಕ್ಷಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="5629630648637658800">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
+<translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="2354001756790975382">ಇತರ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="3650584904733503804">ಊರ್ಜಿತಗೊಳಿಸುವಿಕೆಯು ಯಶಸ್ವಿಯಾಗಿದೆ</translation>
 <translation id="2359808026110333948">ಮುಂದುವರಿಸು</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">ನೀತಿಯ ಪಾರ್ಸ್ ದೋಷ</translation>
 <translation id="2270192940992995399">ಲೇಖನವನ್ನು ಹುಡುಕಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="4726672564094551039">ನೀತಿಗಳನ್ನು ಮರುಲೋಡ್ ಮಾಡಿ</translation>
+<translation id="9170848237812810038">&amp;ರದ್ದುಮಾಡು</translation>
 <translation id="9154176715500758432">ಈ ಪುಟದಲ್ಲಿ ನಿಲ್ಲಿ</translation>
 <translation id="2392959068659972793">ಯಾವುದೇ ಮೌಲ್ಯ ಹೊಂದಿಸಿಲ್ಲದ ನೀತಿಗಳನ್ನು ತೋರಿಸಿ</translation>
+<translation id="9148507642005240123">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
+<translation id="5470861586879999274">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="5190835502935405962">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಬಾರ್</translation>
 <translation id="6965978654500191972">ಸಾಧನ</translation>
 <translation id="5295309862264981122">ನ್ಯಾವಿಗೇಶನ್ ಅನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">ತಪ್ಪು ಪರಿಶೀಲನೆ ಸಹಿ</translation>
 <translation id="106701514854093668">ಡೆಸ್ಕ್‌ಟಾಪ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="6154808779448689242">ಹಿಂತಿರುಗಿಸಲಾದ ನೀತಿಯ ಟೋಕನ್‌ಗೆ ಪ್ರಸ್ತುತ ಟೋಕನ್ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ</translation>
+<translation id="7995512525968007366">ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="7961015016161918242">ಎಂದಿಗೂ ಇಲ್ಲ</translation>
 <translation id="2835170189407361413">ಫಾರ್ಮ್ ತೆರವುಗೊಳಿಸು</translation>
 <translation id="6550675742724504774">ಆಯ್ಕೆಗಳು</translation>
 <translation id="8804164990146287819">ಗೌಪ್ಯತಾ ನೀತಿ</translation>
 <translation id="5337776961545044340">ಈ ವರ್ತಕರಿಗೆ Google Wallet ನಿಂದ ಈ ಪ್ರಕಾರದ ಕಾರ್ಡ್ ಬೆಂಬಲಿತವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆಯ ಕಾರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.</translation>
+<translation id="7334320624316649418">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="7182878459783632708">ಯಾವುದೇ ನೀತಿಗಳನ್ನು ಹೊಂದಿಸಿಲ್ಲ</translation>
 <translation id="5019198164206649151">ಕಳಪೆ ಸ್ಥಿತಿಯಲ್ಲಿ ಸಂಗ್ರಹಣೆಯನ್ನು ಹಿಂತಿರುಗಿಸಲಾಗಿದೆ</translation>
 <translation id="8364627913115013041">ಹೊಂದಿಸಿಲ್ಲ.</translation>
 <translation id="8713130696108419660">ತಪ್ಪಾದ ಇನಿಷಿಯಲ್ ಸಹಿ</translation>
+<translation id="3270847123878663523">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸು</translation>
 <translation id="20817612488360358">ಸಿಸ್ಟಂ ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಲು ಹೊಂದಿಸಲಾಗಿದೆ ಆದರೆ ಬಹಿರಂಗವಾದ ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ಸಹ ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿದೆ.</translation>
 <translation id="2639739919103226564">ಸ್ಥಿತಿ: </translation>
 <translation id="4968547170521245791">ಪ್ರಾಕ್ಸಿ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
+<translation id="4196861286325780578">&amp;ಸರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="5095208057601539847">ಪ್ರಾಂತ್ಯ</translation>
 <translation id="2581221116934462656">ನೀವು ಮುಂದಿನ ಬಾರಿ ಈ ಸೈಟ್‌ನಿಂದ <ph name="LANGUAGE_NAME"/> ಪುಟಗಳನ್ನು ಅನುವಾದಿಸಬೇಕೆ ಎಂದು <ph name="PRODUCT_NAME"/> ಅನ್ನು ಕೇಳಬೇಕೆಂದು ನೀವು ಬಯಸುವಿರಾ?</translation>
+<translation id="2396249848217231973">&amp;ಅಳಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸು</translation>
 <translation id="3934680773876859118">PDF ಡಾಕ್ಯುಮೆಂಟ್ ಅನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="2721148159707890343">ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಗೊಳಿಸಲಾಗಿದೆ</translation>

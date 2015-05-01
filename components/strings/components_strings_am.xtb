@@ -7,13 +7,13 @@
 <translation id="7180611975245234373">አድስ</translation>
 <translation id="8208216423136871611">አታስቀምጥ</translation>
 <translation id="777702478322588152">የፕሪፌክት ስልጣን</translation>
+<translation id="2972581237482394796">&amp;ድገም</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>ን በጭራሽ አትተርጉም</translation>
 <translation id="2262243747453050782">የኤች ቲ ቲ ፒ ስህተት</translation>
 <translation id="1339601241726513588">የምዝገባ ጎራ፦</translation>
 <translation id="7298195798382681320">የተመከሩ</translation>
 <translation id="4058922952496707368">ቁልፍ «<ph name="SUBKEY"/>»፦ <ph name="ERROR"/></translation>
 <translation id="6980028882292583085">የJavaScript ማንቂያ</translation>
-<translation id="4081383687659939437">መረጃ አስቀምጥ</translation>
 <translation id="5299298092464848405">መምሪያን መተንተን ላይ ስህተት</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> ፍለጋ</translation>
 <translation id="2498091847651709837">አዲስ ካርድ ቃኝ</translation>
@@ -25,6 +25,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7537536606612762813">ግዴታ</translation>
 <translation id="2958431318199492670">የአውታረ መረብ ውቅሩ በኦ ኤን ሲ መስፈርቱ አይገዛም። አንዳንድ የውቅሩ ክፍሎች ላይመጡ ይችላሉ።</translation>
+<translation id="3583757800736429874">&amp;ውሰድን ድገም</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="277499241957683684">የሚጎድል የመሣሪያ መዝገብ</translation>
 <translation id="1491151370853475546">ይህን ገጽ ዳግም ይጫኑ</translation>
@@ -38,8 +39,10 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7378627244592794276">አይ</translation>
 <translation id="2704283930420550640">ዋጋ ከቅርጸት ጋር አይዛመድም።</translation>
+<translation id="1055184225775184556">&amp;አክልን ቀልብስ</translation>
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="8091372947890762290">ማግበር በአገልጋዩ ላይ በመጠባበቅ ላይ ነው</translation>
+<translation id="6874604403660855544">&amp;አክልን ድገም</translation>
 <translation id="4607653538520819196">ይህ ገጽ በውሂብ አስቀማጭ በኩል ሊተካ አይችልም።</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="6839929833149231406">አካባቢ</translation>
@@ -59,6 +62,8 @@
 <translation id="3667681724235208644">የመጀመሪያውን ይመልከቱ</translation>
 <translation id="4079302484614802869">የተኪ ውቅር ቋሚ አገልጋዮችን ሳይሆን የ.pac ስክሪፕት ዩአርኤል ለመጠቀም ነው የተዋቀረው።</translation>
 <translation id="5540224163453853">የተጠየቀውን ጽሑፍ ማግኘት አልተቻለም።</translation>
+<translation id="8437238597147034694">&amp;ውሰድን ቀልብስ</translation>
+<translation id="5813119285467412249">&amp;አክልን ድገም</translation>
 <translation id="333371639341676808">ይህ ገጽ ተጨማሪ ማገናኛዎችን እንዳይፈጥር አግድ።</translation>
 <translation id="5523118979700054094">የመምሪያ ስም</translation>
 <translation id="7791543448312431591">አክል</translation>
@@ -69,7 +74,9 @@
 <translation id="3150653042067488994">ጊዜያዊ የአገልጋይ ስህተት</translation>
 <translation id="7087282848513945231">አውራጃ</translation>
 <translation id="1132774398110320017">የChrome ራስ-ሙላ ቅንብሮች...</translation>
+<translation id="8194797478851900357">&amp;ውሰድን ቀልብስ</translation>
 <translation id="6458467102616083041">ነባሪው ፍለጋ በመምሪያ ስለተሰናከለ ችላ ተብሏል።</translation>
+<translation id="6259156558325130047">&amp;ዳግም ደርድርን ድገም</translation>
 <translation id="1227224963052638717">ያልታወቀ መመሪያ።</translation>
 <translation id="4250680216510889253">አይ</translation>
 <translation id="9207861905230894330">ጽሑፍ ማከል አልተቻለም።</translation>
@@ -78,11 +85,14 @@
 <translation id="2367567093518048410">ደረጃ</translation>
 <translation id="7977590112176369853">‹ጥያቄ ያስገቡ›</translation>
 <translation id="552553974213252141">ጽሑፉ በትክክል ነው የወጣው?</translation>
+<translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="7610193165460212391">እሴት ከክልል <ph name="VALUE"/> ውጪ ነው።</translation>
 <translation id="3739623965217189342">እርስዎ የቀዱት አገናኝ</translation>
+<translation id="8790007591277257123">&amp;ሰርዝን ድገም</translation>
 <translation id="8311778656528046050">እርግጠኛ ነዎት ይህን ገጽ ዳግም መጫን ይፈልጋሉ?</translation>
 <translation id="370665806235115550">በመጫን ላይ...</translation>
 <translation id="2096368010154057602">ክፍል</translation>
+<translation id="6529602333819889595">&amp;ሰርዝን ድገም</translation>
 <translation id="4258748452823770588">መጥፎ ፊርማ</translation>
 <translation id="3024663005179499861">የተሳሳተ የመምሪያ አይነት</translation>
 <translation id="2030481566774242610"><ph name="LINK"/>ን ማለትዎ ነው?</translation>
@@ -98,12 +108,14 @@
 <translation id="2213606439339815911">ግቤቶችን በማምጣት ላይ...</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN"/> እልባቶች</translation>
 <translation id="498957508165411911">ከ<ph name="ORIGINAL_LANGUAGE"/> ወደ <ph name="TARGET_LANGUAGE"/> ይተርጎም?</translation>
+<translation id="8218327578424803826">የተመደበ መገኛ አካባቢ፦</translation>
 <translation id="3542684924769048008">የይለፍ ቃል ይጠቀሙ ለ፦</translation>
 <translation id="7186367841673660872">ይህ ገጽ ከ<ph name="ORIGINAL_LANGUAGE"/>ወደ<ph name="LANGUAGE_LANGUAGE"/>ተተርጉሟል</translation>
 <translation id="7139724024395191329">ኤሚሬት</translation>
 <translation id="5145883236150621069">የስህተት ኮድ በመምሪያው ምላሽ ውስጥ አለ</translation>
 <translation id="7983301409776629893">ሁልጊዜ <ph name="ORIGINAL_LANGUAGE"/>ን ወደ<ph name="TARGET_LANGUAGE"/> መተርጎም</translation>
 <translation id="6970216967273061347">ወረዳ</translation>
+<translation id="3427342743765426898">&amp;አርትዕን ድገም</translation>
 <translation id="3010559122411665027">የዝርዝር ግቤት «<ph name="ENTRY_INDEX"/>»፦ <ph name="ERROR"/></translation>
 <translation id="6445051938772793705">አገር</translation>
 <translation id="5031870354684148875">ስለ Google ትርጉም</translation>
@@ -121,6 +133,7 @@
 <translation id="5989320800837274978">ቋሚ ተኪ አገልጋዮችም ሆኑ የ.pac ስክሪፕት ዩአርኤል አልተገለጹም።</translation>
 <translation id="7805768142964895445">ሁኔታ</translation>
 <translation id="2113977810652731515">ካርታ</translation>
+<translation id="1113869188872983271">&amp;እንደገና ደርድርን ቀልብስ</translation>
 <translation id="536296301121032821">የመምሪያ ቅንብሮችን ማከማቸት አልተሳካም</translation>
 <translation id="5439770059721715174">«<ph name="ERROR_PATH"/>» ላይ የብያኔ ማረጋገጥ ስህተት፦ <ph name="ERROR"/></translation>
 <translation id="8349305172487531364">የዕልባቶች አሞሌ</translation>
@@ -128,7 +141,9 @@
 <translation id="7956713633345437162">የተንቀሳቃሽ ስልክ ዕልባቶች</translation>
 <translation id="5089810972385038852">ግዛት</translation>
 <translation id="647261751007945333">የመሣሪያ መምሪያዎች</translation>
+<translation id="2556876185419854533">&amp;አርትዕን ቀልብስ</translation>
 <translation id="213826338245044447">የተንቀሳቃሽ ስልክ ዕልባቶች</translation>
+<translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
 <translation id="8571890674111243710">ገጽ ወደ <ph name="LANGUAGE"/> በመተርጎም ላይ...</translation>
 <translation id="4117700440116928470">የመመሪያ ወሰን አይደገፍም።</translation>
 <translation id="2114841414352855701">በ<ph name="POLICY_NAME"/> ስለተሻረ ችላ ተብሏል።</translation>
@@ -137,7 +152,9 @@
 <translation id="8034522405403831421">ይህ ገጽ በ<ph name="SOURCE_LANGUAGE"/> ነው። ወደ <ph name="TARGET_LANGUAGE"/> ይተርጎም?</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="8891727572606052622">ልክ ያልሆነ የተኪ ሁነታ።</translation>
+<translation id="3105172416063519923">የእሴት መታወቂያ፦</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="2587841377698384444">የማውጫ የኤፒአይ መታወቂያ፦</translation>
 <translation id="7752995774971033316">አይቀናበርም</translation>
 <translation id="3712624925041724820">ሁሉም ፍቃዶች ተሞክረዋል</translation>
 <translation id="4926049483395192435">መገለጽ አለበት።</translation>
@@ -150,6 +167,7 @@
 <translation id="375403751935624634">በአገልጋይ ስህተት ምክንያት የትርጉም ስራው ተሰናክሏል።</translation>
 <translation id="2597378329261239068">ይህ ሰነድ በይለፍ ቃል የተጠበቀ ነው። እባክዎ የይለፍ ቃል ያስገቡ።</translation>
 <translation id="5629630648637658800">የመምሪያ ቅንብሮችን መጫን አልተሳካም</translation>
+<translation id="4030383055268325496">&amp;አክልን ቀልብስ</translation>
 <translation id="2354001756790975382">ሌላ እልባቶች</translation>
 <translation id="3650584904733503804">ማረጋገጥ ተሳክቷል</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
@@ -157,8 +175,11 @@
 <translation id="3377188786107721145">የመምሪያ ትንተና ስህተት</translation>
 <translation id="2270192940992995399">ጽሑፉን ማግኘት አልተቻለም።</translation>
 <translation id="4726672564094551039">መምሪያዎችን ዳግም ጫን</translation>
+<translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="9154176715500758432">በዚሁ ገጽ ላይ ቆይ</translation>
 <translation id="2392959068659972793">ምንም እሴት ያልተዋቀረላቸው መምሪያዎችን አሳይ</translation>
+<translation id="9148507642005240123">&amp;አርትዕን ቀልብስ</translation>
+<translation id="5470861586879999274">&amp;አርትዕን ድገም</translation>
 <translation id="5190835502935405962">የዕልባቶች አሞሌ</translation>
 <translation id="6965978654500191972">መሣሪያ</translation>
 <translation id="5295309862264981122">ዳሰሳን አረጋግጥ</translation>
@@ -198,21 +219,26 @@
 <translation id="4171400957073367226">መጥፎ የማረጋገጫ ፊርማ</translation>
 <translation id="106701514854093668">የዴስክቶፕ ዕልባቶች</translation>
 <translation id="6154808779448689242">የተመለሰው የመምሪያ ማስመሰያ ከአሁኑ ማስመሰያ ጋር አይዛመድም</translation>
+<translation id="7995512525968007366">አልተጠቀሰም</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
 <translation id="2835170189407361413">ቅጽ አጽዳ</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
 <translation id="8804164990146287819">የግላዊነት መመሪያ</translation>
 <translation id="5337776961545044340">ይህ የካርድ አይነት ለዚህ ነጋዴ በGoogle Wallet አይደገፍም። እባክዎ የተለየ ካርድ ይምረጡ።</translation>
+<translation id="7334320624316649418">&amp;ማስተካከልን ድገም</translation>
 <translation id="7182878459783632708">ምንም መምሪያዎች አልተዋቀሩም</translation>
 <translation id="5019198164206649151">የመጠባበቂያ ማከማቻ በመጥፎ ሁኔታ ላይ</translation>
 <translation id="8364627913115013041">አልተዋቀረም።</translation>
 <translation id="8713130696108419660">መጥፎ የአስጀማሪ ፊርማ</translation>
+<translation id="3270847123878663523">&amp;ዳግም ደርድርን ቀልብስ</translation>
 <translation id="20817612488360358">የስርዓት ተኪ ቅንብሮች ስራ ላይ እንዲውሉ ተቀናብረዋል ግን ግልጽ የሆነ የተኪ ውቅርም ተገልጿል።</translation>
 <translation id="2639739919103226564">ሁኔታ፦</translation>
 <translation id="4968547170521245791">ተኪ ማድረግ አይቻልም</translation>
 <translation id="385051799172605136">ተመለስ</translation>
+<translation id="4196861286325780578">&amp;ውሰድን ድገም</translation>
 <translation id="5095208057601539847">ጠቅላይ ግዛት</translation>
 <translation id="2581221116934462656">ቀጣዩ ጊዜ ላይ <ph name="PRODUCT_NAME"/> በዚህ ጣቢያ ያሉ የ<ph name="LANGUAGE_NAME"/> ገጾችን እንዲተረጉምልዎ ይፈልጋሉ?</translation>
+<translation id="2396249848217231973">&amp;ስረዛን ቀልብስ</translation>
 <translation id="3934680773876859118">የፒ ዲ ኤፍ ሰነድ መጫን አልተሳካም</translation>
 <translation id="6965382102122355670">ይሁን</translation>
 <translation id="2721148159707890343">ጥያቄ ተሳክቷል</translation>

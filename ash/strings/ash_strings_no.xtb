@@ -2,7 +2,7 @@
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="6895424601869865703">Legg til en konto for <ph name="GIVEN_NAME"/></translation>
 <translation id="1270290102613614947">Skjermtastaturet er deaktivert</translation>
-<translation id="1057289296854808272">Rotasjon på (trykk her for å endre)</translation>
+<translation id="5548285847212963613">Utvidelsen «<ph name="EXTENSION_NAME"/>» kan hjelpe deg med å koble deg til dette nettverket.</translation>
 <translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
 <translation id="30155388420722288">Overflyt-knappen</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
@@ -39,7 +39,6 @@
 Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6043994281159824495">Logg av nå</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
-<translation id="4625920103690741805">Rotasjon låst (trykk her for å endre)</translation>
 <translation id="3799026279081545374">Det kan hende laderen din fungerer dårlig. Hvis du bor i USA, kan du ringe 866-628-1371 for å få hjelp og erstatning. Hvis du bor i Storbritannia, kan du ringe 0800-026-0613. Hvis du bor i Irland, kan du ringe 1-800-832-664. Hvis du bor i Canada, kan du ringe
 866-628-1372. Hvis du bor i Australia, kan du ringe 1-800-067-460.</translation>
 <translation id="3891340733213178823">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
