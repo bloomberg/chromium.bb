@@ -35,7 +35,7 @@ def GetBoardKey(config, board=None):
   """Get the BoardKey associated with a given config.
 
   Args:
-    config: A cbuildbot_config._config object.
+    config: A cbuildbot_config.BuildConfig object.
     board: Board to use. Defaults to the first board in the config.
       Optional if len(config.boards) == 1.
   """

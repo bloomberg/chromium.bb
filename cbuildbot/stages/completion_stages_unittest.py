@@ -356,7 +356,7 @@ class BaseCommitQueueCompletionStageTest(
 
     # Setup the stage to look at the specified configs.
     all_slaves = list(all_slaves or set(failing + inflight))
-    configs = [cbuildbot_config._config(name=x) for x in all_slaves]
+    configs = [cbuildbot_config.BuildConfig(name=x) for x in all_slaves]
     self.PatchObject(stage, '_GetSlaveConfigs', return_value=configs)
 
     # Setup builder statuses.

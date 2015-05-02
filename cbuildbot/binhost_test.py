@@ -121,7 +121,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     """Get the CompatId for a config.
 
     Args:
-      config: A cbuildbot_config._config object.
+      config: A cbuildbot_config.BuildConfig object.
       board: Board to use. Defaults to the first board in the config.
           Optional if len(config.boards) == 1.
     """

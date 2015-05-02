@@ -1019,8 +1019,7 @@ def append_useflags(useflags):
   return handler
 
 
-# TODO(mtennant): Rename this BuildConfig?
-class _config(dict):
+class BuildConfig(dict):
   """Dictionary of explicit configuration settings for a cbuildbot config
 
   Each dictionary entry is in turn a dictionary of config_param->value.
@@ -1034,7 +1033,7 @@ class _config(dict):
       return self[name]
 
     # Super class (dict) has no __getattr__ method, so use __getattribute__.
-    return super(_config, self).__getattribute__(name)
+    return super(BuildConfig, self).__getattribute__(name)
 
   def GetBotId(self, remote_trybot=False):
     """Get the 'bot id' of a particular bot.
@@ -1051,14 +1050,14 @@ class _config(dict):
   def deepcopy(self):
     """Create a deep copy of this object.
 
-    This is a specialized version of copy.deepcopy() for _config objects. It
+    This is a specialized version of copy.deepcopy() for BuildConfig objects. It
     speeds up deep copies by 10x because we know in advance what is stored
-    inside a _config object and don't have to do as much introspection.
-    This function is called a lot during setup of the config objects so
-    optimizing it makes a big difference. (It saves seconds off the load time
-    of the cbuildbot_config module!)
+    inside a BuildConfig object and don't have to do as much introspection. This
+    function is called a lot during setup of the config objects so optimizing it
+    makes a big difference. (It saves seconds off the load time of the
+    cbuildbot_config module!)
     """
-    new_config = _config(self)
+    new_config = BuildConfig(self)
     for k, v in self.iteritems():
       # type(v) is faster than isinstance.
       if type(v) is list:
@@ -1124,8 +1123,8 @@ class _config(dict):
     new_config = self.derive(*inherits, **overrides)
     config[name] = default.derive(self, new_config)
 
-    # Return a _config object without the defaults, so that other objects can
-    # derive from us without inheriting the defaults.
+    # Return a BuildConfig object without the defaults, so that other objects
+    # can derive from us without inheriting the defaults.
     return new_config
 
   @classmethod
@@ -1144,19 +1143,19 @@ class _config(dict):
             for syncing and creating the chroot.
 
     Returns:
-      A new _config instance.
+      A new BuildConfig instance.
     """
     child_configs = [default.derive(x, grouped=True) for x in args]
     return args[0].add_config(name, child_configs=child_configs, **kwargs)
 
-default = _config(**_settings)
+default = BuildConfig(**_settings)
 
 
 # Arch-specific mixins.
 
 # Config parameters for builders that do not run tests on the builder. Anything
 # non-x86 tests will fall under this category.
-non_testable_builder = _config(
+non_testable_builder = BuildConfig(
   tests_supported=False,
   unittests=False,
   vm_tests=[],
@@ -1165,7 +1164,7 @@ non_testable_builder = _config(
 
 # Builder-specific mixins
 
-binary = _config(
+binary = BuildConfig(
   # Full builds that build fully from binaries.
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
   archive_build_debug=True,
@@ -1173,7 +1172,7 @@ binary = _config(
   git_sync=True,
 )
 
-full = _config(
+full = BuildConfig(
   # Full builds are test builds to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
 
@@ -1197,7 +1196,7 @@ full_prebuilts = full.derive(
   prebuilts=constants.PUBLIC,
 )
 
-pfq = _config(
+pfq = BuildConfig(
   build_type=constants.PFQ_TYPE,
   important=True,
   uprev=True,
@@ -1208,7 +1207,7 @@ pfq = _config(
       'TOC-Chrome-PFQ',
 )
 
-paladin = _config(
+paladin = BuildConfig(
   important=True,
   build_type=constants.PALADIN_TYPE,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -1225,7 +1224,7 @@ paladin = _config(
 
 # Incremental builders are intended to test the developer workflow.
 # For that reason, they don't uprev.
-incremental = _config(
+incremental = BuildConfig(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -1235,13 +1234,13 @@ incremental = _config(
 )
 
 # This builds with more source available.
-internal = _config(
+internal = BuildConfig(
   internal=True,
   overlays=constants.BOTH_OVERLAYS,
   manifest_repo_url=constants.MANIFEST_INT_URL,
 )
 
-brillo = _config(
+brillo = BuildConfig(
   sync_chrome=False,
   chrome_sdk=False,
   afdo_use=False,
@@ -1251,12 +1250,12 @@ brillo = _config(
   hw_tests=[],
 )
 
-moblab = _config(
+moblab = BuildConfig(
   vm_tests=[],
 )
 
 # Builds for the Project SDK.
-project_sdk = _config(
+project_sdk = BuildConfig(
   build_type=constants.PROJECT_SDK_TYPE,
   description='Produce Project SDK build artifacts.',
 
@@ -1293,7 +1292,7 @@ _project_sdk_boards = frozenset([
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
 
 # This adds Chrome branding.
-official_chrome = _config(
+official_chrome = BuildConfig(
   useflags=[constants.USE_CHROME_INTERNAL],
 )
 
@@ -1315,7 +1314,7 @@ _cros_sdk = full_prebuilts.add_config('chromiumos-sdk',
       'TOC-Continuous',
 )
 
-asan = _config(
+asan = BuildConfig(
   chroot_replace=True,
   profile='asan',
   disk_layout='2gb-rootfs',
@@ -1327,7 +1326,7 @@ asan = _config(
       'TOC-ChromiumOS-SDK',
 )
 
-telemetry = _config(
+telemetry = BuildConfig(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
@@ -1335,7 +1334,7 @@ telemetry = _config(
   description='Telemetry Builds',
 )
 
-chromium_pfq = _config(
+chromium_pfq = BuildConfig(
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
   uprev=False,
@@ -1373,7 +1372,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   prebuilts=constants.PRIVATE,
 )
 
-chrome_try = _config(
+chrome_try = BuildConfig(
   build_type=constants.CHROME_PFQ_TYPE,
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
@@ -1664,7 +1663,7 @@ _base_configs = dict()
 
 def _CreateBaseConfigs():
   for board in _all_boards:
-    base = _config()
+    base = BuildConfig()
     if board in _internal_boards:
       base.update(internal)
       base.update(official_chrome)
@@ -1719,7 +1718,7 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
   Note: Existing configs will not be overwritten.
 
   Args:
-    config_base: A _config instance to inherit from.
+    config_base: A BuildConfig instance to inherit from.
     boards: A set of boards to create configs for.
     name_suffix: A naming suffix. Configs will have names of the form
                  board-name_suffix.
@@ -1728,7 +1727,7 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
   for board in boards:
     config_name = '%s-%s' % (board, name_suffix)
     if config_name not in config:
-      base = _config()
+      base = BuildConfig()
       config_base.add_config(config_name, base, _base_configs[board], **kwargs)
 
 _chromium_pfq_important_boards = frozenset([
@@ -1873,7 +1872,7 @@ incremental_beaglebone.add_config('beaglebone-incremental',
   description='Incremental Beaglebone Builder',
 )
 
-_config.add_raw_config('refresh-packages',
+BuildConfig.add_raw_config('refresh-packages',
   boards=['x86-generic', 'arm-generic'],
   builder_class_name='misc_builders.RefreshPackagesBuilder',
   description='Check upstream Gentoo for package updates',
@@ -2114,7 +2113,7 @@ _test_ap = internal.derive(
   vm_tests=[],
 )
 
-_config.add_group('test-ap-group',
+BuildConfig.add_group('test-ap-group',
   _test_ap.add_config('stumpy-test-ap', boards=['stumpy']),
   _test_ap.add_config('panther-test-ap', boards=['panther']),
 )
@@ -2261,7 +2260,7 @@ def _CreatePaladinConfigs():
   for board in _paladin_boards:
     assert board in _base_configs, '%s not in _base_configs' % board
     config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
-    customizations = _config()
+    customizations = BuildConfig()
     base_config = _base_configs[board]
     if board in _paladin_hwtest_boards:
       customizations.update(hw_tests=HWTestConfig.DefaultListCQ())
@@ -2383,40 +2382,40 @@ no_vmtest_pre_cq.add_config(constants.BINHOST_PRE_CQ,
 
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 # TODO(davidjames): Update daisy_spring to build images again.
-_config.add_group('mixed-a-pre-cq',
+BuildConfig.add_group('mixed-a-pre-cq',
   # daisy_spring w/kernel 3.8.
   config['daisy_spring-compile-only-pre-cq'],
   # lumpy w/kernel 3.8.
   config['lumpy-compile-only-pre-cq'],
 )
 
-_config.add_group('mixed-b-pre-cq',
+BuildConfig.add_group('mixed-b-pre-cq',
   # arm64 w/kernel 3.14.
   config['rush_ryu-compile-only-pre-cq'],
   # samus w/kernel 3.14.
   config['samus-compile-only-pre-cq'],
 )
 
-_config.add_group('mixed-c-pre-cq',
+BuildConfig.add_group('mixed-c-pre-cq',
   # brillo
   config['storm-compile-only-pre-cq'],
 )
 
-_config.add_group('external-mixed-pre-cq',
+BuildConfig.add_group('external-mixed-pre-cq',
   config['x86-generic-no-vmtest-pre-cq'],
   config['amd64-generic-no-vmtest-pre-cq'],
 )
 
-_config.add_group('kernel-3_14-a-pre-cq',
+BuildConfig.add_group('kernel-3_14-a-pre-cq',
   config['x86-generic-no-vmtest-pre-cq'],
   config['arm-generic-no-vmtest-pre-cq']
 )
 
-_config.add_group('kernel-3_14-b-pre-cq',
+BuildConfig.add_group('kernel-3_14-b-pre-cq',
   config['storm-no-vmtest-pre-cq'],
 )
 
-_config.add_group('kernel-3_14-c-pre-cq',
+BuildConfig.add_group('kernel-3_14-c-pre-cq',
   config['veyron_pinky-no-vmtest-pre-cq'],
   config['rush_ryu-no-vmtest-pre-cq']
 )
@@ -2424,7 +2423,7 @@ _config.add_group('kernel-3_14-c-pre-cq',
 # TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
 # configs. Remove this config when no active CL has been screened
 # with this config.
-_config.add_group(constants.PRE_CQ_GROUP_CONFIG,
+BuildConfig.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
   config['rambi-pre-cq'],
@@ -2512,7 +2511,7 @@ _release = full.derive(official, internal,
   doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries',
 )
 
-_grouped_config = _config(
+_grouped_config = BuildConfig(
   build_packages_in_background=True,
   chrome_sdk_build_chrome=False,
   unittests=None,
@@ -2539,7 +2538,7 @@ _release.add_config('master-release',
 
 ### Release config groups.
 
-_config.add_group('x86-alex-release-group',
+BuildConfig.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
   ),
@@ -2551,7 +2550,7 @@ _config.add_group('x86-alex-release-group',
   ),
 )
 
-_config.add_group('x86-zgb-release-group',
+BuildConfig.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
   ),
@@ -2585,14 +2584,14 @@ def _AddAFDOConfigs():
       base = {}
     else:
       base = non_testable_builder
-    generate_config = _config(
+    generate_config = BuildConfig(
         base,
         boards=(board,),
         afdo_generate_min=True,
         afdo_use=False,
         afdo_update_ebuild=True,
     )
-    use_config = _config(
+    use_config = BuildConfig(
         base,
         boards=(board,),
         afdo_use=True,
@@ -2603,7 +2602,7 @@ def _AddAFDOConfigs():
       generate_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO,
                                            'generate')
       use_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO, 'use')
-      _config.add_group(config_name,
+      BuildConfig.add_group(config_name,
                         release_afdo.add_config(generate_config_name,
                                                 generate_config),
                         release_afdo.add_config(use_config_name, use_config))
@@ -2712,7 +2711,7 @@ _beaglebone_release = _release.derive(beaglebone, paygen=False,
                                       signer_tests=False,
                                       images=['base', 'test'])
 
-_config.add_group('beaglebone-release-group',
+BuildConfig.add_group('beaglebone-release-group',
   _beaglebone_release.add_config('beaglebone-release',
     boards=['beaglebone'],
   ),
@@ -2829,7 +2828,7 @@ def _AddGroupConfig(name, base_board, group_boards=(),
 
       config_name = '%s-%s-group' % (name, group)
       important = group == 'release' and kwargs.get('important', True)
-    _config.add_group(config_name, *configs, description=desc,
+    BuildConfig.add_group(config_name, *configs, description=desc,
                       important=important)
 
 # pineview chipset boards
@@ -3029,7 +3028,7 @@ _factory_release = _release.derive(
   afdo_use=False,
 )
 
-_firmware = _config(
+_firmware = BuildConfig(
   images=[],
   factory_toolkit=False,
   packages=('virtual/chromeos-firmware',),

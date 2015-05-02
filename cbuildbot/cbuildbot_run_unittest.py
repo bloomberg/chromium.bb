@@ -39,16 +39,17 @@ DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
     debug=False,
     postsync_patch=True,
 )
-DEFAULT_CONFIG = cbuildbot_config._config(
+DEFAULT_CONFIG = cbuildbot_config.BuildConfig(
     name=DEFAULT_BOT_NAME,
     master=True,
     boards=[DEFAULT_BOARD],
     postsync_patch=True,
-    child_configs=[cbuildbot_config._config(name='foo', postsync_patch=False,
-                                            boards=[]),
-                   cbuildbot_config._config(name='bar', postsync_patch=False,
-                                            boards=[]),
-                  ],
+    child_configs=[
+        cbuildbot_config.BuildConfig(
+            name='foo', postsync_patch=False, boards=[]),
+        cbuildbot_config.BuildConfig(
+            name='bar', postsync_patch=False, boards=[]),
+    ],
 )
 
 DEFAULT_VERSION = '6543.2.1'
@@ -65,7 +66,7 @@ def _ExtendDefaultConfig(**kwargs):
   """Extend DEFAULT_CONFIG with keys/values in kwargs."""
   config_kwargs = DEFAULT_CONFIG.copy()
   config_kwargs.update(kwargs)
-  return cbuildbot_config._config(**config_kwargs)
+  return cbuildbot_config.BuildConfig(**config_kwargs)
 
 
 class ExceptionsTest(cros_test_lib.TestCase):

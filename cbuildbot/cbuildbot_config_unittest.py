@@ -91,14 +91,13 @@ class ConfigClassTest(cros_test_lib.TestCase):
 
   # pylint: disable=protected-access
   def testDeleteKey(self):
-    base_config = cbuildbot_config._config(foo='bar')
+    base_config = cbuildbot_config.BuildConfig(foo='bar')
     inherited_config = base_config.derive(foo=cbuildbot_config.delete_key())
     self.assertTrue('foo' in base_config)
     self.assertFalse('foo' in inherited_config)
 
   def testDeleteKeys(self):
-    base_config = cbuildbot_config._config(foo='bar',
-                                           baz='bak')
+    base_config = cbuildbot_config.BuildConfig(foo='bar', baz='bak')
     inherited_config_1 = base_config.derive(qzr='flp')
     inherited_config_2 = inherited_config_1.derive(
         cbuildbot_config.delete_keys(base_config))
@@ -106,14 +105,14 @@ class ConfigClassTest(cros_test_lib.TestCase):
 
   def testCallableOverrides(self):
     append_foo = lambda x: x + 'foo' if x else 'foo'
-    base_config = cbuildbot_config._config()
+    base_config = cbuildbot_config.BuildConfig()
     inherited_config_1 = base_config.derive(foo=append_foo)
     inherited_config_2 = inherited_config_1.derive(foo=append_foo)
     self.assertEqual(inherited_config_1, {'foo': 'foo'})
     self.assertEqual(inherited_config_2, {'foo': 'foofoo'})
 
   def testAppendUseflags(self):
-    base_config = cbuildbot_config._config()
+    base_config = cbuildbot_config.BuildConfig()
     inherited_config_1 = base_config.derive(
         useflags=cbuildbot_config.append_useflags(['foo', 'bar', '-baz']))
     inherited_config_2 = inherited_config_1.derive(

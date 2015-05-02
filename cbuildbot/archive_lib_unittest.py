@@ -37,12 +37,12 @@ DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
     remote_trybot=False,
     debug=False,
 )
-DEFAULT_CONFIG = cbuildbot_config._config(
+DEFAULT_CONFIG = cbuildbot_config.BuildConfig(
     name=DEFAULT_BOT_NAME,
     master=True,
     boards=[DEFAULT_BOARD],
-    child_configs=[cbuildbot_config._config(name='foo'),
-                   cbuildbot_config._config(name='bar'),
+    child_configs=[cbuildbot_config.BuildConfig(name='foo'),
+                   cbuildbot_config.BuildConfig(name='bar'),
                   ],
 )
 
@@ -58,7 +58,7 @@ def _ExtendDefaultConfig(**kwargs):
   """Extend DEFAULT_CONFIG with keys/values in kwargs."""
   config_kwargs = DEFAULT_CONFIG.copy()
   config_kwargs.update(kwargs)
-  return cbuildbot_config._config(**config_kwargs)
+  return cbuildbot_config.BuildConfig(**config_kwargs)
 
 
 def _NewBuilderRun(options=None, config=None):
