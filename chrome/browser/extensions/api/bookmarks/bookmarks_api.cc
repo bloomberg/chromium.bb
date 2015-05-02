@@ -180,16 +180,15 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
   }
 
   const BookmarkNode* node;
-  if (url_string.length())
+  if (url_string.length()) {
     node = model->AddURLWithCreationTimeAndMetaInfo(
         parent, index, title, url, base::Time::Now(), meta_info);
-  else
+  } else {
     node = model->AddFolderWithMetaInfo(parent, index, title, meta_info);
-  DCHECK(node);
-  if (!node) {
-    error_ = keys::kNoNodeError;
-    return NULL;
+    model->SetDateFolderModified(parent, base::Time::Now());
   }
+
+  DCHECK(node);
 
   return node;
 }
