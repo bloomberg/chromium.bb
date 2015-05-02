@@ -23,6 +23,7 @@ group("services") {
       "//components/html_viewer",
       "//components/kiosk_wm:window_manager",
       "//components/native_viewport",
+      "//components/resource_provider",
       "//components/surfaces",
       "//components/view_manager",
       "//components/window_manager:lib",
@@ -51,6 +52,7 @@ group("tests") {
   if (!is_component_build) {
     deps += [
       "//components/html_viewer:html_viewer_unittests",
+      "//components/resource_provider:tests",
       "//components/view_manager:view_manager_service_unittests",
     ]
 
@@ -73,6 +75,7 @@ group("apptests") {
     deps += [
       "//components/clipboard:apptests",
       "//components/html_viewer:apptests",
+      "//components/resource_provider:apptests",
       "//components/view_manager:apptests",
       "//components/window_manager:apptests",
       "//mojo/services/network:apptests",

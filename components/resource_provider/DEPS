@@ -1,0 +1,7 @@
+include_rules = [
+  "+mojo/application",
+  "+mojo/common",
+  "+mojo/converters",
+  "+mojo/platform_handle",
+  "+third_party/mojo/src/mojo/public",
+]

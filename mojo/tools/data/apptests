@@ -51,4 +51,7 @@ tests = [
     "test": "mojo:window_manager_apptests",
     "shell-args": ["--use-headless-config"]
   },
+  {
+    "test": "mojo:resource_provider_apptests",
+  },
 ]
