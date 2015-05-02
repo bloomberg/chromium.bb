@@ -397,7 +397,7 @@ void RawInputDataFetcher::UpdateGamepad(
           input->data.hid.dwSizeHid);
       if (status == HIDP_STATUS_SUCCESS) {
         axis->value = NormalizeAxis(scaled_axis_value,
-            axis->caps.LogicalMin, axis->caps.LogicalMax);
+            axis->caps.PhysicalMin, axis->caps.PhysicalMax);
       }
     } else {
       status = hidp_get_usage_value_(HidP_Input, axis->caps.UsagePage, 0,
