@@ -15,12 +15,12 @@ class WebLocalFrame;
 
 namespace content {
 
-class WebKitTestRunner;
+class BlinkTestRunner;
 
 // LeakDetector counts DOM objects and compare them between two pages.
 class LeakDetector : public blink::WebLeakDetectorClient {
  public:
-  explicit LeakDetector(WebKitTestRunner* test_runner);
+  explicit LeakDetector(BlinkTestRunner* test_runner);
   virtual ~LeakDetector();
 
   // Counts DOM objects, compare the previous status and returns the result of
@@ -34,7 +34,7 @@ class LeakDetector : public blink::WebLeakDetectorClient {
   virtual void onLeakDetectionComplete(const Result& result) override;
 
  private:
-  WebKitTestRunner* test_runner_;
+  BlinkTestRunner* test_runner_;
   scoped_ptr<blink::WebLeakDetector> web_leak_detector_;
   blink::WebLeakDetectorClient::Result previous_result_;
 

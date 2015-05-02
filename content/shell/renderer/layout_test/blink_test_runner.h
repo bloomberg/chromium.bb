@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_WEBKIT_TEST_RUNNER_H_
-#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_WEBKIT_TEST_RUNNER_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_
 
 #include <vector>
 
@@ -35,12 +35,12 @@ class WebTestProxyBase;
 struct LeakDetectionResult;
 
 // This is the renderer side of the webkit test runner.
-class WebKitTestRunner : public RenderViewObserver,
-                         public RenderViewObserverTracker<WebKitTestRunner>,
-                         public WebTestDelegate {
+class BlinkTestRunner : public RenderViewObserver,
+                        public RenderViewObserverTracker<BlinkTestRunner>,
+                        public WebTestDelegate {
  public:
-  explicit WebKitTestRunner(RenderView* render_view);
-  ~WebKitTestRunner() override;
+  explicit BlinkTestRunner(RenderView* render_view);
+  ~BlinkTestRunner() override;
 
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -158,9 +158,9 @@ class WebKitTestRunner : public RenderViewObserver,
   scoped_ptr<LeakDetector> leak_detector_;
   bool needs_leak_detector_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
+  DISALLOW_COPY_AND_ASSIGN(BlinkTestRunner);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_WEBKIT_TEST_RUNNER_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_RUNNER_H_

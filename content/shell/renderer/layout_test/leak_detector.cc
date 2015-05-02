@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "content/shell/renderer/layout_test/webkit_test_runner.h"
+#include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
 using blink::WebLeakDetector;
@@ -27,7 +27,7 @@ const int kInitialNumberOfLiveNodes = 4;
 const int kInitialNumberOfLiveRenderObjects = 3;
 const int kInitialNumberOfLiveResources = 0;
 
-LeakDetector::LeakDetector(WebKitTestRunner* test_runner)
+LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
     : test_runner_(test_runner),
       web_leak_detector_(blink::WebLeakDetector::create(this)) {
   previous_result_.numberOfLiveAudioNodes = kInitialNumberOfLiveAudioNodes;

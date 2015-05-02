@@ -11,7 +11,7 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/layout_test/webkit_test_runner.h"
+#include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -53,7 +53,7 @@ void LayoutTestRenderProcessObserver::SetTestDelegate(
 }
 
 void LayoutTestRenderProcessObserver::SetMainWindow(RenderView* view) {
-  WebKitTestRunner* test_runner = WebKitTestRunner::Get(view);
+  BlinkTestRunner* test_runner = BlinkTestRunner::Get(view);
   test_interfaces_->SetWebView(view->GetWebView(), test_runner->proxy());
   main_test_runner_ = test_runner;
 }

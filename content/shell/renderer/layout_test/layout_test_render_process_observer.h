@@ -19,7 +19,7 @@ class WebFrame;
 namespace content {
 
 class RenderView;
-class WebKitTestRunner;
+class BlinkTestRunner;
 class WebTestDelegate;
 class WebTestInterfaces;
 
@@ -44,14 +44,14 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
   WebTestInterfaces* test_interfaces() const {
     return test_interfaces_.get();
   }
-  WebKitTestRunner* main_test_runner() const { return main_test_runner_; }
+  BlinkTestRunner* main_test_runner() const { return main_test_runner_; }
   const base::FilePath& webkit_source_dir() const { return webkit_source_dir_; }
 
  private:
   // Message handlers.
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
 
-  WebKitTestRunner* main_test_runner_;
+  BlinkTestRunner* main_test_runner_;
   WebTestDelegate* test_delegate_;
   scoped_ptr<WebTestInterfaces> test_interfaces_;
 
