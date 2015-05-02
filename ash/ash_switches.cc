@@ -27,10 +27,6 @@ const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
-// Disables LockLayoutManager used for LockScreenContainer, return back to
-// WorkspaceLayoutManager.
-const char kAshDisableLockLayoutManager[] = "ash-disable-lock-layout-manager";
-
 // Disables the window backdrops normally used in maximize mode (TouchView).
 const char kAshDisableMaximizeModeWindowBackdrop[] =
     "ash-disable-maximize-mode-window-backdrop";

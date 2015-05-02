@@ -335,8 +335,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
   ASSERT_EQ(lock_background->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockBackgroundWindowId));
-  EXPECT_EQ("0,0 1000x500",
-            lock_screen->GetNativeWindow()->bounds().ToString());
+  EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to mirror.
   display_manager->SetMirrorMode(true);
@@ -359,8 +358,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
             controller->GetRootWindow()->GetChildById(kLockScreenWindowId));
   ASSERT_EQ(lock_background->GetNativeWindow(),
             controller->GetRootWindow()->GetChildById(kLockBackgroundWindowId));
-  EXPECT_EQ("0,0 1000x500",
-            lock_screen->GetNativeWindow()->bounds().ToString());
+  EXPECT_EQ("0,0 500x500", lock_screen->GetNativeWindow()->bounds().ToString());
 
   // Switch to single display.
   UpdateDisplay("600x500");

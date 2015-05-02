@@ -4,11 +4,13 @@
 
 #include "ash/screen_util.h"
 
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -110,6 +112,38 @@ TEST_F(ScreenUtilTest, ConvertRect) {
       "650,50 100x100",
       ScreenUtil::ConvertRectToScreen(
           secondary->GetNativeView(), gfx::Rect(40, 40, 100, 100)).ToString());
+}
+
+TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
+  if (!SupportsMultipleDisplays())
+    return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DisplayManagerTestApi test_api(display_manager);
+  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
+
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      NULL, CurrentContext(), gfx::Rect(10, 10, 100, 100));
+
+  UpdateDisplay("500x400");
+  EXPECT_EQ("0,0 500x400", ScreenUtil::GetShelfDisplayBoundsInScreen(
+                               widget->GetNativeWindow()).ToString());
+
+  UpdateDisplay("500x400,600x400");
+  EXPECT_EQ("0,0 500x400", ScreenUtil::GetShelfDisplayBoundsInScreen(
+                               widget->GetNativeWindow()).ToString());
+
+  // Move to the 2nd physical display. Shelf's display still should be
+  // the first.
+  widget->SetBounds(gfx::Rect(800, 0, 100, 100));
+  ASSERT_EQ("800,0 100x100", widget->GetWindowBoundsInScreen().ToString());
+
+  EXPECT_EQ("0,0 500x400", ScreenUtil::GetShelfDisplayBoundsInScreen(
+                               widget->GetNativeWindow()).ToString());
+
+  UpdateDisplay("600x500");
+  EXPECT_EQ("0,0 600x500", ScreenUtil::GetShelfDisplayBoundsInScreen(
+                               widget->GetNativeWindow()).ToString());
 }
 
 }  // namespace test

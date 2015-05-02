@@ -960,13 +960,7 @@ void RootWindowController::CreateContainersInRootWindow(
       "LockScreenContainer",
       lock_screen_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(lock_container);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshDisableLockLayoutManager)) {
-    lock_container->SetLayoutManager(
-            new WorkspaceLayoutManager(lock_container));
-  } else {
-    lock_container->SetLayoutManager(new LockLayoutManager(lock_container));
-  }
+  lock_container->SetLayoutManager(new LockLayoutManager(lock_container));
   SetUsesScreenCoordinates(lock_container);
   // TODO(beng): stopsevents
 

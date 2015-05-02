@@ -738,7 +738,11 @@ void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     TargetBounds* target_bounds) {
-  const gfx::Rect available_bounds(root_window_->bounds());
+  gfx::Rect available_bounds =
+      ScreenUtil::GetShelfDisplayBoundsInScreen(root_window_);
+  available_bounds =
+      ScreenUtil::ConvertRectFromScreen(root_window_, available_bounds);
+
   gfx::Rect status_size(
       shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
   int shelf_width = 0, shelf_height = 0;

@@ -22,6 +22,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -643,6 +644,19 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     if (primary_tree_host_for_replace_) {
       AshWindowTreeHost* to_delete = primary_tree_host_for_replace_;
       primary_tree_host_for_replace_ = nullptr;
+
+      // Show the shelf if the original WTH had a visible system
+      // tray. It may or may not be visible depending on OOBE state.
+      ash::SystemTray* old_tray =
+          GetRootWindowController(to_delete->AsWindowTreeHost()->window())
+              ->GetSystemTray();
+      ash::SystemTray* new_tray =
+          ash::Shell::GetInstance()->GetPrimarySystemTray();
+      if (old_tray->GetWidget()->IsVisible()) {
+        new_tray->SetVisible(true);
+        new_tray->GetWidget()->Show();
+      }
+
       DeleteHost(to_delete);
 #ifndef NDEBUG
       auto iter = std::find_if(

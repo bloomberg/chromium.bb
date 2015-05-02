@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_style.h"
 
@@ -24,9 +25,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    alignment_delegate_.reset(new AshPopupAlignmentDelegate());
-    alignment_delegate_->StartObserving(
-        Shell::GetScreen(), Shell::GetScreen()->GetPrimaryDisplay());
+    SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate()));
   }
 
   void TearDown() override {
@@ -45,6 +44,18 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
 
   AshPopupAlignmentDelegate* alignment_delegate() {
     return alignment_delegate_.get();
+  }
+
+  void SetAlignmentDelegate(scoped_ptr<AshPopupAlignmentDelegate> delegate) {
+    if (!delegate.get()) {
+      alignment_delegate_.reset();
+      return;
+    }
+    alignment_delegate_ = delegate.Pass();
+    alignment_delegate_->StartObserving(
+        Shell::GetScreen(), Shell::GetScreen()->GetPrimaryDisplay());
+    // Update the layout
+    alignment_delegate_->OnDisplayWorkAreaInsetsChanged();
   }
 
   Position GetPositionInDisplay(const gfx::Point& point) {
@@ -216,6 +227,25 @@ TEST_F(AshPopupAlignmentDelegateTest, TrayHeight) {
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_EQ(baseline - kTrayHeight - message_center::kMarginBetweenItems,
             alignment_delegate()->GetBaseLine());
+}
+
+TEST_F(AshPopupAlignmentDelegateTest, Unified) {
+  if (!SupportsMultipleDisplays())
+    return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  test::DisplayManagerTestApi test_api(display_manager);
+  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
+
+  // Reset the delegate as the primary display's shelf will be destroyed during
+  // transition.
+  SetAlignmentDelegate(scoped_ptr<AshPopupAlignmentDelegate>());
+
+  UpdateDisplay("600x600,800x800");
+  SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate()));
+
+  EXPECT_GT(600,
+            alignment_delegate()->GetToastOriginX(gfx::Rect(0, 0, 10, 10)));
 }
 
 }  // namespace ash

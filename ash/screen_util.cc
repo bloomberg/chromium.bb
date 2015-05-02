@@ -52,6 +52,20 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
       Shell::GetScreen()->GetDisplayNearestWindow(window).work_area());
 }
 
+gfx::Rect ScreenUtil::GetShelfDisplayBoundsInScreen(aura::Window* root_window) {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  if (display_manager->IsInUnifiedMode()) {
+    // In unified desktop mode, there is only one shelf in the 1st display.
+    const gfx::Display& first =
+        display_manager->software_mirroring_display_list()[0];
+    return first.bounds();
+  } else {
+    return gfx::Screen::GetScreenFor(root_window)
+        ->GetDisplayNearestWindow(root_window)
+        .bounds();
+  }
+}
+
 // static
 gfx::Rect ScreenUtil::ConvertRectToScreen(aura::Window* window,
                                          const gfx::Rect& rect) {
@@ -77,11 +91,6 @@ const gfx::Display& ScreenUtil::GetSecondaryDisplay() {
   return display_manager->GetDisplayAt(0).id() ==
       Shell::GetScreen()->GetPrimaryDisplay().id() ?
       display_manager->GetDisplayAt(1) : display_manager->GetDisplayAt(0);
-}
-
-// static
-const gfx::Display& ScreenUtil::GetDisplayForId(int64 display_id) {
-  return GetDisplayManager()->GetDisplayForId(display_id);
 }
 
 }  // namespace ash

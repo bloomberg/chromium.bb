@@ -374,6 +374,9 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
 }
 
 TEST_F(ShellTest, ManagedWindowModeBasics) {
+  if (!SupportsHostWindowResize())
+    return;
+
   // We start with the usual window containers.
   ExpectAllContainers();
   // Shelf is visible.

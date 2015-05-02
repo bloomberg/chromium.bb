@@ -5,6 +5,7 @@
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/screen_util.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
@@ -136,6 +137,12 @@ gfx::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
 void AshPopupAlignmentDelegate::UpdateWorkArea(const gfx::Display& display,
                                                ShelfAutoHideState new_state) {
   work_area_ = display.work_area();
+  if (Shell::GetInstance()->display_manager()->IsInUnifiedMode()) {
+    gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInScreen(
+        shelf_->shelf_widget()->GetNativeView());
+    work_area_.Intersect(bounds);
+  }
+
   int width = 0;
   if (shelf_ && (shelf_->visibility_state() == SHELF_AUTO_HIDE) &&
       new_state == SHELF_AUTO_HIDE_SHOWN) {

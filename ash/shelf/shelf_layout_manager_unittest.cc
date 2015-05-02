@@ -22,6 +22,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -1032,6 +1033,9 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
 
 // Assertions around the lock screen showing.
 TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
+  if (!SupportsHostWindowResize())
+    return;
+
   // Since ShelfLayoutManager queries for mouse location, move the mouse so
   // it isn't over the shelf.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -2267,6 +2271,24 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
   // would normally cause the ShelfLayoutManager to update its state. However
   // during shutdown we want to handle this without crashing.
   delete window1;
+}
+
+TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  test::DisplayManagerTestApi test_api(display_manager);
+  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
+  UpdateDisplay("500x500, 500x500");
+
+  StatusAreaWidget* status_area_widget =
+      Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
+  EXPECT_TRUE(status_area_widget->IsVisible());
+  // Shelf should be in the first display's area.
+  EXPECT_EQ("348,453 152x47",
+            status_area_widget->GetWindowBoundsInScreen().ToString());
 }
 
 }  // namespace ash

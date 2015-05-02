@@ -7,7 +7,7 @@
 #include <string>
 
 #include "ash/display/display_controller.h"
-#include "ash/screen_util.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -115,7 +115,8 @@ void DisplayOverscanHandler::HandleStart(const base::ListValue* args) {
     return;
   }
 
-  const gfx::Display& display = ash::ScreenUtil::GetDisplayForId(display_id);
+  const gfx::Display& display =
+      ash::Shell::GetInstance()->display_manager()->GetDisplayForId(display_id);
   DCHECK(display.is_valid());
   if (!display.is_valid())
     return;
