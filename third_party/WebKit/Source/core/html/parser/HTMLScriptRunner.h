@@ -87,7 +87,8 @@ private:
     RawPtrWillBeMember<Document> m_document;
     RawPtrWillBeMember<HTMLScriptRunnerHost> m_host;
     PendingScript m_parserBlockingScript;
-    HeapDeque<PendingScript> m_scriptsToExecuteAfterParsing; // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
+    // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
+    WillBeHeapDeque<PendingScript> m_scriptsToExecuteAfterParsing;
     unsigned m_scriptNestingLevel;
 
     // We only want stylesheet loads to trigger script execution if script
