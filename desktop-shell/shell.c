@@ -491,6 +491,9 @@ send_configure_for_surface(struct shell_surface *shsurf)
 
 		width = area.width;
 		height = area.height;
+	} else if (shsurf->resize_edges) {
+		width = shsurf->geometry.width;
+		height = shsurf->geometry.height;
 	} else {
 		width = 0;
 		height = 0;
