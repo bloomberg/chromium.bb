@@ -45,7 +45,7 @@ class Media(benchmark.Benchmark):
     return 'media.tough_video_cases'
 
 
-@benchmark.Disabled
+@benchmark.Disabled('android', 'mac')
 class MediaNetworkSimulation(benchmark.Benchmark):
   """Obtains media metrics under different network simulations."""
   test = media.Media
@@ -122,3 +122,4 @@ class MediaSourceExtensions(benchmark.Benchmark):
     options.AppendExtraBrowserArgs(
         ['--enable-experimental-web-platform-features',
          '--disable-gesture-requirement-for-media-playback'])
+
