@@ -43,7 +43,7 @@ compiler_rt=61a748a59c2ff3a8349bd895f01f35eac0fc5217
 #
 # Three lines avoid merge conflicts.
 #
-subzero=b36ad9b4021b409dfb925ce51196a1abb4dfcb62
+subzero=0e7e412eed5f508be05dc28c360797bd817e193e
 #
 # Three lines avoid merge conflicts.
 #
