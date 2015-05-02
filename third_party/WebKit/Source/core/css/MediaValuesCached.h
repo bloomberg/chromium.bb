@@ -78,6 +78,10 @@ public:
     virtual const String mediaType() const override;
     virtual WebDisplayMode displayMode() const override;
 
+    void setViewportWidth(int);
+    void setViewportHeight(int);
+
+    virtual bool isCached() const override { return true; }
 protected:
     MediaValuesCached();
     MediaValuesCached(LocalFrame*);

@@ -32,6 +32,7 @@
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/BackgroundHTMLParser.h"
@@ -599,14 +600,6 @@ Document* HTMLDocumentParser::contextForParsingSession()
     return document();
 }
 
-static PassRefPtr<MediaValues> createMediaValues(Document* document)
-{
-    ASSERT(document);
-    RefPtr<MediaValues> mediaValues = MediaValuesCached::create(*document);
-    ASSERT(mediaValues->isSafeToSendToAnotherThread());
-    return mediaValues;
-}
-
 void HTMLDocumentParser::pumpTokenizer()
 {
     ASSERT(!isStopped());
@@ -670,7 +663,9 @@ void HTMLDocumentParser::pumpTokenizer()
         // adding paranoia if for speculative crash fix for crbug.com/465478
         if (m_preloader) {
             if (!m_preloadScanner) {
-                m_preloadScanner = adoptPtr(new HTMLPreloadScanner(m_options, document()->url(), createMediaValues(document())));
+                m_preloadScanner = adoptPtr(new HTMLPreloadScanner(m_options,
+                    document()->url(),
+                    CachedDocumentParameters::create(document())));
                 m_preloadScanner->appendToEnd(m_input.current());
             }
             m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
@@ -751,8 +746,11 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
     if (isWaitingForScripts()) {
         // Check the document.write() output with a separate preload scanner as
         // the main scanner can't deal with insertions.
-        if (!m_insertionPreloadScanner)
-            m_insertionPreloadScanner = adoptPtr(new HTMLPreloadScanner(m_options, document()->url(), createMediaValues(document())));
+        if (!m_insertionPreloadScanner) {
+            m_insertionPreloadScanner = adoptPtr(new HTMLPreloadScanner(m_options,
+                document()->url(),
+                CachedDocumentParameters::create(document())));
+        }
 
         m_insertionPreloadScanner->appendToEnd(source);
         m_insertionPreloadScanner->scan(m_preloader.get(), document()->baseElementURL());
@@ -766,6 +764,7 @@ void HTMLDocumentParser::startBackgroundParser()
     ASSERT(!isStopped());
     ASSERT(shouldUseThreading());
     ASSERT(!m_haveBackgroundParser);
+    ASSERT(document());
     m_haveBackgroundParser = true;
 
     RefPtr<WeakReference<BackgroundHTMLParser>> reference = WeakReference<BackgroundHTMLParser>::createUnbound();
@@ -782,7 +781,7 @@ void HTMLDocumentParser::startBackgroundParser()
     config->parser = m_weakFactory.createWeakPtr();
     config->xssAuditor = adoptPtr(new XSSAuditor);
     config->xssAuditor->init(document(), &m_xssAuditorDelegate);
-    config->preloadScanner = adoptPtr(new TokenPreloadScanner(document()->url().copy(), createMediaValues(document())));
+    config->preloadScanner = adoptPtr(new TokenPreloadScanner(document()->url().copy(), CachedDocumentParameters::create(document())));
     config->decoder = takeDecoder();
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());

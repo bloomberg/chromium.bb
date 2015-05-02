@@ -397,7 +397,7 @@ void HTMLMetaElement::reportViewportWarning(Document* document, ViewportErrorCod
     document->addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, viewportErrorMessageLevel(errorCode), message));
 }
 
-void HTMLMetaElement::getViewportDescriptionFromContentAttribute(const String& content, ViewportDescription::Type origin, ViewportDescription& description, Document* document, bool viewportMetaZeroValuesQuirk)
+void HTMLMetaElement::getViewportDescriptionFromContentAttribute(const String& content, ViewportDescription& description, Document* document, bool viewportMetaZeroValuesQuirk)
 {
     parseContentAttribute(content, (void*)&description, document, viewportMetaZeroValuesQuirk);
 
@@ -420,7 +420,7 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
     if (document().shouldMergeWithLegacyDescription(origin))
         descriptionFromLegacyTag = document().viewportDescription();
 
-    getViewportDescriptionFromContentAttribute(content, origin, descriptionFromLegacyTag, &document(), document().settings() && document().settings()->viewportMetaZeroValuesQuirk());
+    getViewportDescriptionFromContentAttribute(content, descriptionFromLegacyTag, &document(), document().settings() && document().settings()->viewportMetaZeroValuesQuirk());
 
     document().setViewportDescription(descriptionFromLegacyTag);
 }

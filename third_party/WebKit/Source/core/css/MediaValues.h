@@ -21,11 +21,6 @@ class LocalFrame;
 class CORE_EXPORT MediaValues : public RefCounted<MediaValues> {
 public:
 
-    enum MediaValuesMode {
-        CachingMode,
-        DynamicMode
-    };
-
     virtual ~MediaValues() { }
 
     static PassRefPtr<MediaValues> createDynamicIfFrameExists(LocalFrame*);
@@ -62,6 +57,8 @@ public:
     virtual bool strictMode() const = 0;
     virtual Document* document() const = 0;
     virtual bool hasValues() const = 0;
+
+    virtual bool isCached() const { return false; }
 
 protected:
     int calculateViewportWidth(LocalFrame*) const;

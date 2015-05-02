@@ -32,7 +32,11 @@
 #include "core/InputTypeNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
+#include "core/css/MediaValuesCached.h"
 #include "core/css/parser/SizesAttributeParser.h"
+#include "core/dom/Document.h"
+#include "core/frame/Settings.h"
+#include "core/html/HTMLMetaElement.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
@@ -116,6 +120,7 @@ public:
         , m_allowCredentials(DoNotAllowStoredCredentials)
         , m_mediaValues(mediaValues)
     {
+        ASSERT(m_mediaValues->isCached());
         if (match(m_tagImpl, imgTag)
             || match(m_tagImpl, sourceTag)) {
             m_sourceSize = SizesAttributeParser(m_mediaValues, String()).length();
@@ -383,15 +388,18 @@ private:
     RefPtr<MediaValues> m_mediaValues;
 };
 
-TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassRefPtr<MediaValues> mediaValues)
+TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)
     : m_documentURL(documentURL)
     , m_inStyle(false)
     , m_inPicture(false)
     , m_isAppCacheEnabled(false)
     , m_isCSPEnabled(false)
     , m_templateCount(0)
-    , m_mediaValues(mediaValues)
+    , m_documentParameters(documentParameters)
 {
+    ASSERT(m_documentParameters.get());
+    ASSERT(m_documentParameters->mediaValues.get());
+    ASSERT(m_documentParameters->mediaValues->isCached());
 }
 
 TokenPreloadScanner::~TokenPreloadScanner()
@@ -492,6 +500,20 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
                 m_isCSPEnabled = true;
                 return;
             }
+            const typename Token::Attribute* nameAttribute = token.getAttributeItem(nameAttr);
+            if (nameAttribute && equalIgnoringCase(String(nameAttribute->value), "viewport")) {
+                const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
+
+                if (contentAttribute) {
+                    ViewportDescription description(ViewportDescription::ViewportMeta);
+                    HTMLMetaElement::getViewportDescriptionFromContentAttribute(String(contentAttribute->value), description, nullptr, m_documentParameters->viewportMetaZeroValuesQuirk);
+                    FloatSize initialViewport(m_documentParameters->mediaValues->viewportHeight(), m_documentParameters->mediaValues->viewportWidth());
+                    PageScaleConstraints constraints = description.resolve(initialViewport, m_documentParameters->defaultViewportMinWidth);
+                    MediaValuesCached* cachedMediaValues = static_cast<MediaValuesCached*>(m_documentParameters->mediaValues.get());
+                    cachedMediaValues->setViewportHeight(constraints.layoutSize.height());
+                    cachedMediaValues->setViewportWidth(constraints.layoutSize.width());
+                }
+            }
         }
 
         if (RuntimeEnabledFeatures::pictureEnabled() && (match(tagImpl, pictureTag))) {
@@ -500,7 +522,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             return;
         }
 
-        StartTagScanner scanner(tagImpl, m_mediaValues);
+        StartTagScanner scanner(tagImpl, m_documentParameters->mediaValues);
         scanner.processAttributes(token.attributes());
         if (m_inPicture)
             scanner.handlePictureSourceURL(m_pictureSourceURL);
@@ -525,8 +547,8 @@ void TokenPreloadScanner::updatePredictedBaseURL(const Token& token)
     }
 }
 
-HTMLPreloadScanner::HTMLPreloadScanner(const HTMLParserOptions& options, const KURL& documentURL, PassRefPtr<MediaValues> mediaValues)
-    : m_scanner(documentURL, mediaValues)
+HTMLPreloadScanner::HTMLPreloadScanner(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)
+    : m_scanner(documentURL, documentParameters)
     , m_tokenizer(HTMLTokenizer::create(options))
 {
 }
@@ -560,6 +582,19 @@ void HTMLPreloadScanner::scan(ResourcePreloader* preloader, const KURL& starting
     }
 
     preloader->takeAndPreload(requests);
+}
+
+CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPtr<MediaValues> givenMediaValues)
+{
+    ASSERT(isMainThread());
+    ASSERT(document);
+    if (givenMediaValues)
+        mediaValues = givenMediaValues;
+    else
+        mediaValues = MediaValuesCached::create(*document);
+    ASSERT(mediaValues->isSafeToSendToAnotherThread());
+    defaultViewportMinWidth = document->viewportDefaultMinWidth();
+    viewportMetaZeroValuesQuirk = document->settings() && document->settings()->viewportMetaZeroValuesQuirk();
 }
 
 }

@@ -74,7 +74,7 @@ protected:
     {
         HTMLParserOptions options(&m_dummyPageHolder->document());
         KURL documentURL(ParsedURLString, "http://whatever.test/");
-        m_scanner = HTMLPreloadScanner::create(options, documentURL, createMediaValues());
+        m_scanner = HTMLPreloadScanner::create(options, documentURL, CachedDocumentParameters::create(&m_dummyPageHolder->document(), createMediaValues()));
 
     }
 
@@ -97,6 +97,8 @@ TEST_F(HTMLPreloadScannerTest, testImages)
 {
     TestCase testCases[] = {
         {"http://example.test", "<img src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<meta name=viewport content='width=160'><img srcset='bla.gif 320w, blabla.gif 640w'>", "bla.gif", "http://example.test/", Resource::Image, 0},
         {0, 0, 0, 0, Resource::Raw, 0} // Do not remove the terminator line.
     };
 

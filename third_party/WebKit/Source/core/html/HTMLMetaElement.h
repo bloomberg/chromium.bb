@@ -42,7 +42,7 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLMetaElement);
 
-    void getViewportDescriptionFromContentAttribute(const String& content, ViewportDescription::Type origin, ViewportDescription&, Document*, bool viewportMetaZeroValuesQuirk);
+    static void getViewportDescriptionFromContentAttribute(const String& content, ViewportDescription&, Document*, bool viewportMetaZeroValuesQuirk);
 
     const AtomicString& content() const;
     const AtomicString& httpEquiv() const;

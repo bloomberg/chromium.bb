@@ -177,4 +177,14 @@ bool MediaValuesCached::hasValues() const
     return true;
 }
 
+void MediaValuesCached::setViewportWidth(int width)
+{
+    m_data.viewportWidth = width;
+}
+
+void MediaValuesCached::setViewportHeight(int height)
+{
+    m_data.viewportHeight = height;
+}
+
 } // namespace

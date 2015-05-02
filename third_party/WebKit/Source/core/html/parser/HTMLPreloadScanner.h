@@ -29,10 +29,12 @@
 
 #include "core/CoreExport.h"
 #include "core/css/MediaValues.h"
+#include "core/dom/ViewportDescription.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
+#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -43,10 +45,24 @@ class HTMLParserOptions;
 class HTMLTokenizer;
 class SegmentedString;
 
+struct CachedDocumentParameters {
+    static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtr<MediaValues> mediaValues = nullptr)
+    {
+        return adoptPtr(new CachedDocumentParameters(document, mediaValues));
+    }
+
+    RefPtr<MediaValues> mediaValues;
+    Length defaultViewportMinWidth;
+    bool viewportMetaZeroValuesQuirk;
+
+private:
+    CachedDocumentParameters(Document*, PassRefPtr<MediaValues>);
+};
+
 class TokenPreloadScanner {
     WTF_MAKE_NONCOPYABLE(TokenPreloadScanner); WTF_MAKE_FAST_ALLOCATED(TokenPreloadScanner);
 public:
-    TokenPreloadScanner(const KURL& documentURL, PassRefPtr<MediaValues>);
+    TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>);
     ~TokenPreloadScanner();
 
     void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests);
@@ -100,7 +116,7 @@ private:
     bool m_isCSPEnabled;
     String m_pictureSourceURL;
     size_t m_templateCount;
-    RefPtr<MediaValues> m_mediaValues;
+    OwnPtr<CachedDocumentParameters> m_documentParameters;
 
     Vector<Checkpoint> m_checkpoints;
 };
@@ -108,13 +124,13 @@ private:
 class CORE_EXPORT HTMLPreloadScanner {
     WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner); WTF_MAKE_FAST_ALLOCATED(HTMLPreloadScanner);
 public:
-    static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassRefPtr<MediaValues> mediaValues)
+    static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)
     {
-        return adoptPtr(new HTMLPreloadScanner(options, documentURL, mediaValues));
+        return adoptPtr(new HTMLPreloadScanner(options, documentURL, documentParameters));
     }
 
 
-    HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassRefPtr<MediaValues>);
+    HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>);
     ~HTMLPreloadScanner();
 
     void appendToEnd(const SegmentedString&);
