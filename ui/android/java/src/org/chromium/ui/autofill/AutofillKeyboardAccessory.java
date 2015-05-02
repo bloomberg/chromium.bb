@@ -13,12 +13,8 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.ui.DropdownAdapter;
 import org.chromium.ui.R;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.HashSet;
 
 /**
  * The Autofill suggestion view that lists relevant suggestions. It sits above the keyboard and
@@ -51,7 +47,6 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
      * @param autofillCallback A object that handles the calls to the native
      * AutofillKeyboardAccessoryView.
      */
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public AutofillKeyboardAccessory(
             WindowAndroid windowAndroid, AutofillKeyboardAccessoryDelegate autofillCallback) {
         super(windowAndroid.getActivity().get());
@@ -61,10 +56,11 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
         mAutofillCallback = autofillCallback;
 
         mWindowAndroid.addKeyboardVisibilityListener(this);
-        setBackgroundResource(R.drawable.autofill_accessory_view_border);
         setOnItemClickListener(this);
-        setContentDescription(windowAndroid.getActivity().get().getString(
+        setContentDescription(getContext().getString(
                 R.string.autofill_popup_content_description));
+        setBackgroundColor(getResources().getColor(
+                R.color.keyboard_accessory_suggestion_background_color));
     }
 
     /**
@@ -74,8 +70,7 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
      */
     @SuppressLint("InlinedApi")
     public void showWithSuggestions(AutofillSuggestion[] suggestions, boolean isRtl) {
-        setAdapter(new DropdownAdapter(
-                mWindowAndroid.getActivity().get(), suggestions, new HashSet<Integer>()));
+        setAdapter(new SuggestionAdapter(getContext(), suggestions));
         ApiCompatibilityUtils.setLayoutDirection(
                 this, isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
 
@@ -87,9 +82,7 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
             height = 0;
             for (int i = 0; i < suggestionLimit; i++) {
                 View listItem = listAdapter.getView(i, null, this);
-                listItem.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
-                        MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-                height += listItem.getMeasuredHeight();
+                height += listItem.getLayoutParams().height;
             }
         }
 
