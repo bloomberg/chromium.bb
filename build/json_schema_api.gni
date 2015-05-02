@@ -46,7 +46,10 @@
 #   If any deps are specified they will be inherited by the static library
 #   target.
 #
-# The static library target also inherits the visibility and output_name
+# generate_static_library [optional, defaults to false]
+#   Produces a static library instead of a source_set.
+#
+# The generated library target also inherits the visibility and output_name
 # of its invoker.
 
 template("json_schema_api") {
@@ -75,7 +78,6 @@ template("json_schema_api") {
     visibility = target_visibility
   }
 
-  sources = invoker.sources
   root_namespace = invoker.root_namespace
 
   compiler_root = "//tools/json_schema_compiler"
@@ -97,6 +99,7 @@ template("json_schema_api") {
     schema_generator_name = target_name + "_schema_generator"
     action_foreach(schema_generator_name) {
       script = compiler_script
+      sources = invoker.sources
       inputs = compiler_sources
       outputs = [
         "$target_gen_dir/{{source_name_part}}.cc",
@@ -127,7 +130,7 @@ template("json_schema_api") {
     bundle_generator_schema_name = target_name + "_bundle_generator_schema"
     action(bundle_generator_schema_name) {
       script = compiler_script
-      inputs = compiler_sources + sources + uncompiled_sources
+      inputs = compiler_sources + invoker.sources + uncompiled_sources
       outputs = [
         "$target_gen_dir/generated_schemas.cc",
         "$target_gen_dir/generated_schemas.h",
@@ -138,7 +141,7 @@ template("json_schema_api") {
                "--namespace=$root_namespace",
                "--generator=cpp-bundle-schema",
                "--include-rules=$schema_include_rules",
-             ] + rebase_path(sources, root_build_dir) +
+             ] + rebase_path(invoker.sources, root_build_dir) +
              rebase_path(uncompiled_sources, root_build_dir)
     }
   }
@@ -157,7 +160,7 @@ template("json_schema_api") {
         target_name + "_bundle_generator_registration"
     action(bundle_generator_registration_name) {
       script = compiler_script
-      inputs = compiler_sources + sources + uncompiled_sources
+      inputs = compiler_sources + invoker.sources + uncompiled_sources
       outputs = [
         "$root_gen_dir/$impl_dir/generated_api_registration.cc",
         "$root_gen_dir/$impl_dir/generated_api_registration.h",
@@ -169,43 +172,69 @@ template("json_schema_api") {
                "--generator=cpp-bundle-registration",
                "--impl-dir=" + rebase_path(impl_dir, "//"),
                "--include-rules=$schema_include_rules",
-             ] + rebase_path(sources, root_build_dir) +
+             ] + rebase_path(invoker.sources, root_build_dir) +
              rebase_path(uncompiled_sources, root_build_dir)
     }
   }
 
-  source_set(target_name) {
-    sources = []
-    deps = []
-    public_deps = []
+  # Compute the contents of the library/source set.
+  lib_sources = invoker.sources
+  lib_deps = []
+  lib_public_deps = []
+  lib_extra_configs = []
 
-    if (schemas) {
-      sources += get_target_outputs(":$schema_generator_name")
-      public_deps += [ ":$schema_generator_name" ]
-      deps += [ "//tools/json_schema_compiler:generated_api_util" ]
-      configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-    }
+  if (schemas) {
+    lib_sources += get_target_outputs(":$schema_generator_name")
+    lib_public_deps += [ ":$schema_generator_name" ]
+    lib_deps += [ "//tools/json_schema_compiler:generated_api_util" ]
+    lib_extra_configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  }
 
-    if (bundle) {
-      sources += get_target_outputs(":$bundle_generator_schema_name")
-      deps += [ ":$bundle_generator_schema_name" ]
-    }
+  if (bundle) {
+    lib_sources += get_target_outputs(":$bundle_generator_schema_name")
+    lib_deps += [ ":$bundle_generator_schema_name" ]
+  }
 
-    if (bundle_registration) {
-      sources += get_target_outputs(":$bundle_generator_registration_name")
-      deps += [ ":$bundle_generator_registration_name" ]
-    }
+  if (bundle_registration) {
+    lib_sources += get_target_outputs(":$bundle_generator_registration_name")
+    lib_deps += [ ":$bundle_generator_registration_name" ]
+  }
 
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
-    public_configs = [ ":$generated_config_name" ]
+  if (defined(invoker.deps)) {
+    lib_deps += invoker.deps
+  }
 
-    if (defined(invoker.visibility)) {
-      visibility = invoker.visibility
+  # Generate either a static library or a source set.
+  if (defined(invoker.generate_static_library) &&
+      invoker.generate_static_library) {
+    static_library(target_name) {
+      sources = lib_sources
+      deps = lib_deps
+      public_deps = lib_public_deps
+      configs += lib_extra_configs
+      public_configs = [ ":$generated_config_name" ]
+
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
+      if (defined(invoker.output_name)) {
+        output_name = invoker.output_name
+      }
     }
-    if (defined(invoker.output_name)) {
-      output_name = invoker.output_name
+  } else {
+    source_set(target_name) {
+      sources = lib_sources
+      deps = lib_deps
+      public_deps = lib_public_deps
+      configs += lib_extra_configs
+      public_configs = [ ":$generated_config_name" ]
+
+      if (defined(invoker.visibility)) {
+        visibility = invoker.visibility
+      }
+      if (defined(invoker.output_name)) {
+        output_name = invoker.output_name
+      }
     }
   }
 }

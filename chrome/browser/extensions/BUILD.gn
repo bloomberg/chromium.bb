@@ -15,7 +15,7 @@ gypi_values =
                 [ "../../chrome_browser_extensions.gypi" ])
 
 # GYP version: chrome/chrome_browser_extensions.gypi:browser_extensions
-static_library("extensions") {
+source_set("extensions") {
   sources = []
   sources += rebase_path(gypi_values.chrome_browser_extensions_enabled_sources,
                          ".",
@@ -181,7 +181,7 @@ static_library("extensions") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
-  } else if (!is_chromeos) {
+  } else if (use_aura && !is_chromeos) {
     sources += [
       "display_info_provider_aura.cc",
       "display_info_provider_aura.h",

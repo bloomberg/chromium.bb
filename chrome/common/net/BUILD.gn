@@ -22,6 +22,7 @@ static_library("net") {
     "//chrome:resources",
     "//chrome:strings",
     "//components/error_page/common",
+    "//components/network_hints/common",
     "//crypto",
     "//net",
     "//net:net_resources",

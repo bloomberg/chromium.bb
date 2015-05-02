@@ -55,6 +55,7 @@ static_library("common") {
     "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util",
     "//components/cloud_devices/common",
+    "//components/component_updater",
     "//components/content_settings/core/common",
     "//components/favicon_base",
     "//components/json_schema",
@@ -191,7 +192,10 @@ static_library("common") {
   }
 
   if (is_win) {
-    deps += [ "//third_party/wtl" ]
+    deps += [
+      "//components/dom_distiller/core",  # Needed by chrome_content_client.cc.
+      "//third_party/wtl",
+    ]
   }
 
   if (enable_mdns) {

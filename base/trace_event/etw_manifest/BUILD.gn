@@ -5,11 +5,8 @@
 assert(is_win, "This only runs on Windows.")
 
 # Makes the .h/.rc files from the .man file.
-action("chrome_events_win") {
-  visibility = [
-    "//base/trace_event/*",
-    "//chrome:main_dll",
-  ]
+action("chrome_events_win_generate") {
+  visibility = [ ":*" ]
   script = "build/message_compiler.py"
 
   sources = [
@@ -33,5 +30,19 @@ action("chrome_events_win") {
     # Generate the user-mode code.
     "-um",
     rebase_path("chrome_events_win.man", root_build_dir),
+  ]
+}
+
+# Compile the generated files.
+source_set("chrome_events_win") {
+  visibility = [
+    "//base/trace_event/*",
+    "//chrome:main_dll",
+  ]
+
+  sources = get_target_outputs(":chrome_events_win_generate")
+
+  deps = [
+    ":chrome_events_win_generate",
   ]
 }
