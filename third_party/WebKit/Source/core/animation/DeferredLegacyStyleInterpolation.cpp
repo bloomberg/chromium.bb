@@ -7,6 +7,7 @@
 
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
+#include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSVGDocumentValue.h"

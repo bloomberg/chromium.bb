@@ -35,6 +35,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLExtensionName.h"
+#include "core/html/canvas/WebGLTexture.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/page/Page.h"
@@ -97,7 +98,6 @@ class WebGLShader;
 class WebGLShaderPrecisionFormat;
 class WebGLSharedObject;
 class WebGLSharedWebGraphicsContext3D;
-class WebGLTexture;
 class WebGLUniformLocation;
 class WebGLVertexArrayObjectOES;
 

@@ -30,6 +30,7 @@
 #include "core/css/TreeBoundaryCrossingRules.h"
 
 #include "core/css/ElementRuleCollector.h"
+#include "core/css/StylePropertySet.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 
 namespace blink {
