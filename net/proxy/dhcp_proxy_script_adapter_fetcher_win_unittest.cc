@@ -82,7 +82,7 @@ class MockDhcpProxyScriptAdapterFetcher
     std::string configured_url_;
 
    private:
-    ~DelayingDhcpQuery() {}
+    ~DelayingDhcpQuery() override {}
   };
 
   DhcpQuery* ImplCreateDhcpQuery() override {
