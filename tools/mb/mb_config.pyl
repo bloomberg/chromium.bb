@@ -73,7 +73,7 @@
     },
 
     'debug': {
-      'gn_args': 'is_debug=true', 
+      'gn_args': 'is_debug=true',
       'gyp_config': 'Debug',
     },
 
@@ -96,7 +96,7 @@
     },
 
     'gyp': {'type': 'gyp'},
-    
+
     'minimal_symbols': {
       'gn_args': 'symbol_level=1',
       'gyp_defines': 'fastbuild=1',
@@ -114,7 +114,7 @@
     'release_trybot': {
       'mixins': ['release_bot', 'dcheck_always_on']
     },
-    
+
     'shared': {
       'gn_args': 'is_component_build=true',
       'gyp_defines': 'component=shared_library',
@@ -179,10 +179,11 @@
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'linux_chromium_gn_chromeos_rel': 'chromeos_gn_release_trybot',
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
-      'linux_chromium_gn_dbg': 'gn_debug_bot', 
-      'linux_chromium_gn_rel': 'gn_release_trybot', 
-      'linux_chromium_gn_upload_x64': 'gn_release_bot',
-      'linux_chromium_gn_upload_x86': 'gn_release_bot_x86',
+      'linux_chromium_gn_dbg': 'gn_debug_bot',
+      'linux_chromium_gn_rel': 'gn_release_trybot',
+      'linux_chromium_gn_upload': 'gn_release_bot',
+      'linux_chromium_gn_upload_x64': 'gn_release_bot', # TODO(dpranke): Remove me.
+      'linux_chromium_gn_upload_x86': 'gn_release_bot_x86', # TODO(dpranke): Remove me.
     },
     'tryserver.chromium.mac': {
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
