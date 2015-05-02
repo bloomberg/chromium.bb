@@ -1,0 +1,9 @@
+{
+    "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "tough_path_rendering_cases_000.wpr": [
+            "http://www.craftymind.com/factory/guimark2/HTML5ChartingTest.html", 
+            "http://ie.microsoft.com/testdrive/Performance/Chalkboard/"
+        ]
+    }
+}
