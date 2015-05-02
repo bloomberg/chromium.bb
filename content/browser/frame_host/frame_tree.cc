@@ -294,7 +294,6 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
 RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
-  // TODO(creis): Mirror the frame tree so this check can't fail.
   if (iter == render_view_host_map_.end())
     return nullptr;
   return iter->second;
