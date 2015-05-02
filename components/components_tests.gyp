@@ -421,7 +421,6 @@
       'proximity_auth/cryptauth/cryptauth_client_impl_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_enroller_impl_unittest.cc',
       'proximity_auth/cryptauth/fake_secure_message_delegate_unittest.cc',
-      'proximity_auth/logging/logging_unittest.cc',
       'proximity_auth/proximity_auth_system_unittest.cc',
       'proximity_auth/remote_status_update_unittest.cc',
       'proximity_auth/throttled_bluetooth_connection_finder_unittest.cc',
