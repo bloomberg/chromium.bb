@@ -244,6 +244,8 @@ UScriptCode getScriptBasedOnUnicodeBlock(int ucs4)
         return USCRIPT_GEORGIAN;
     case UBLOCK_KANNADA:
         return USCRIPT_KANNADA;
+    case UBLOCK_GOTHIC:
+        return USCRIPT_GOTHIC;
     default:
         return USCRIPT_COMMON;
     }
