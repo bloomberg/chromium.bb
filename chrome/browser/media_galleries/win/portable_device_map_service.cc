@@ -71,6 +71,9 @@ PortableDeviceMapService::PortableDeviceInfo::PortableDeviceInfo(
       scheduled_to_delete(false) {
 }
 
+PortableDeviceMapService::PortableDeviceInfo::~PortableDeviceInfo() {
+}
+
 PortableDeviceMapService::PortableDeviceMapService() {
 }
 

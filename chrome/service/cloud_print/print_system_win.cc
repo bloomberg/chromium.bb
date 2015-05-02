@@ -569,7 +569,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
   }
 
  private:
-  ~PrinterCapsHandler() {}
+  ~PrinterCapsHandler() override {}
 
   void GetPrinterCapsAndDefaultsImpl(
       const scoped_refptr<base::MessageLoopProxy>&
@@ -636,7 +636,7 @@ class PrintSystemWin : public PrintSystem {
   std::string GetSupportedMimeTypes() override;
 
  private:
-  ~PrintSystemWin() {}
+  ~PrintSystemWin() override {}
 
   std::string PrintSystemWin::GetPrinterDriverInfo(
       const std::string& printer_name) const;

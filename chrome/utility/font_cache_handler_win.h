@@ -23,8 +23,8 @@ class Thread;
 // continue to run as is.
 class FontCacheHandler : public UtilityMessageHandler {
  public:
-  FontCacheHandler() {}
-  ~FontCacheHandler() override {}
+  FontCacheHandler();
+  ~FontCacheHandler() override;
 
   // IPC::Listener implementation
   bool OnMessageReceived(const IPC::Message& message) override;

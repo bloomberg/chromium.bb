@@ -360,6 +360,9 @@ MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
       reply(reply) {
 }
 
+MTPDeviceDelegateImplWin::PendingTaskInfo::~PendingTaskInfo() {
+}
+
 MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
     const base::string16& registered_device_path,
     const base::string16& pnp_device_id,

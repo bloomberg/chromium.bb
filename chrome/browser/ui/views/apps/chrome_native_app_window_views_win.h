@@ -18,6 +18,7 @@ class GlassAppWindowFrameViewWin;
 class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViewsAura {
  public:
   ChromeNativeAppWindowViewsWin();
+  ~ChromeNativeAppWindowViewsWin() override;
 
   GlassAppWindowFrameViewWin* glass_frame_view() {
     return glass_frame_view_;

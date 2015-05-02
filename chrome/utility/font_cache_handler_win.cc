@@ -10,6 +10,12 @@
 #include "content/public/common/dwrite_font_platform_win.h"
 #include "content/public/utility/utility_thread.h"
 
+FontCacheHandler::FontCacheHandler() {
+}
+
+FontCacheHandler::~FontCacheHandler() {
+}
+
 bool FontCacheHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(FontCacheHandler, message)

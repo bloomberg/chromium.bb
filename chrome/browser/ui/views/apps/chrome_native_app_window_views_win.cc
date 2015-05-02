@@ -40,6 +40,9 @@ ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
     : glass_frame_view_(NULL), is_translucent_(false), weak_ptr_factory_(this) {
 }
 
+ChromeNativeAppWindowViewsWin::~ChromeNativeAppWindowViewsWin() {
+}
+
 void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
   // Only switching into Ash from Native is supported. Tearing the user out of
   // Metro mode can only be done by launching a process from Metro mode itself.

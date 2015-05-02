@@ -52,6 +52,7 @@ class PortableDeviceMapService {
   struct PortableDeviceInfo {
     PortableDeviceInfo();  // Necessary for STL.
     explicit PortableDeviceInfo(IPortableDevice* device);
+    ~PortableDeviceInfo();
 
     // The portable device interface.
     base::win::ScopedComPtr<IPortableDevice> portable_device;

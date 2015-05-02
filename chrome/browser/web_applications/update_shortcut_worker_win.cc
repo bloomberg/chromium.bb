@@ -49,6 +49,9 @@ UpdateShortcutWorker::UpdateShortcutWorker(WebContents* web_contents)
       content::Source<NavigationController>(&web_contents->GetController()));
 }
 
+UpdateShortcutWorker::~UpdateShortcutWorker() {
+}
+
 void UpdateShortcutWorker::Run() {
   // Starting by downloading app icon.
   DownloadIcon();

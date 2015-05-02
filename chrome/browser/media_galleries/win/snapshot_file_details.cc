@@ -22,6 +22,9 @@ SnapshotRequestInfo::SnapshotRequestInfo(
       error_callback(error_callback) {
 }
 
+SnapshotRequestInfo::~SnapshotRequestInfo() {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                       SnapshotFileDetails                                 //
 ///////////////////////////////////////////////////////////////////////////////

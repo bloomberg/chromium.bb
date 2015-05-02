@@ -7,8 +7,10 @@
 
 #include <vector>
 
+#include "base/strings/string16.h"
+
 struct WinsockNamespaceProvider {
-  std::wstring name;
+  base::string16 name;
   int version;
   bool active;
   int type;
@@ -16,8 +18,11 @@ struct WinsockNamespaceProvider {
 typedef std::vector<WinsockNamespaceProvider> WinsockNamespaceProviderList;
 
 struct WinsockLayeredServiceProvider {
-  std::wstring name;
-  std::wstring path;
+  WinsockLayeredServiceProvider();
+  ~WinsockLayeredServiceProvider();
+
+  base::string16 name;
+  base::string16 path;
   int version;
   int chain_length;
   int socket_type;
@@ -27,8 +32,7 @@ typedef std::vector<WinsockLayeredServiceProvider>
     WinsockLayeredServiceProviderList;
 
 // Returns all the Winsock namespace providers.
-void GetWinsockNamespaceProviders(
-    WinsockNamespaceProviderList* namespace_list);
+void GetWinsockNamespaceProviders(WinsockNamespaceProviderList* namespace_list);
 
 // Returns all the Winsock layered service providers and their paths.
 void GetWinsockLayeredServiceProviders(

@@ -18,6 +18,7 @@ struct SnapshotRequestInfo {
       const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
           success_callback,
       const MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
+  ~SnapshotRequestInfo();
 
   // Device file path.
   base::FilePath device_file_path;

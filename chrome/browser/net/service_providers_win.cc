@@ -11,6 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
+WinsockLayeredServiceProvider::WinsockLayeredServiceProvider() {
+}
+
+WinsockLayeredServiceProvider::~WinsockLayeredServiceProvider() {
+}
+
 void GetWinsockNamespaceProviders(
     WinsockNamespaceProviderList* namespace_list) {
 

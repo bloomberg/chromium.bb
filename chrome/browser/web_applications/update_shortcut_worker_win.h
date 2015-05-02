@@ -26,6 +26,7 @@ namespace web_app {
 class UpdateShortcutWorker : public content::NotificationObserver {
  public:
   explicit UpdateShortcutWorker(content::WebContents* web_contents);
+  ~UpdateShortcutWorker() override;
 
   void Run();
 
