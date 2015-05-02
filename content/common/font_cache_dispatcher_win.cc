@@ -143,6 +143,14 @@ FontCacheDispatcher::FontCacheDispatcher()
     : sender_(NULL) {
 }
 
+bool FontCacheDispatcher::Send(IPC::Message* message) {
+  if (sender_)
+    return sender_->Send(message);
+
+  delete message;
+  return false;
+}
+
 FontCacheDispatcher::~FontCacheDispatcher() {
 }
 
@@ -163,14 +171,6 @@ bool FontCacheDispatcher::OnMessageReceived(const IPC::Message& message) {
 
 void FontCacheDispatcher::OnChannelClosing() {
   sender_ = NULL;
-}
-
-bool FontCacheDispatcher::Send(IPC::Message* message) {
-  if (sender_)
-    return sender_->Send(message);
-
-  delete message;
-  return false;
 }
 
 void FontCacheDispatcher::OnPreCacheFont(const LOGFONT& font) {

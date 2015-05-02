@@ -350,9 +350,6 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
 DhcpProxyScriptFetcherWin::AdapterQuery::AdapterQuery() {
 }
 
-DhcpProxyScriptFetcherWin::AdapterQuery::~AdapterQuery() {
-}
-
 void DhcpProxyScriptFetcherWin::AdapterQuery::GetCandidateAdapterNames() {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/476182 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -371,6 +368,9 @@ const std::set<std::string>&
 bool DhcpProxyScriptFetcherWin::AdapterQuery::ImplGetCandidateAdapterNames(
     std::set<std::string>* adapter_names) {
   return DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(adapter_names);
+}
+
+DhcpProxyScriptFetcherWin::AdapterQuery::~AdapterQuery() {
 }
 
 }  // namespace net

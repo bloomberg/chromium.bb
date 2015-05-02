@@ -120,7 +120,6 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
       : public base::RefCountedThreadSafe<DhcpQuery> {
    public:
     DhcpQuery();
-    virtual ~DhcpQuery();
 
     // This method should run on a worker pool thread, via PostTaskAndReply.
     // After it has run, the |url()| method on this object will return the
@@ -133,6 +132,9 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
    protected:
     // Virtual method introduced to allow unit testing.
     virtual std::string ImplGetPacURLFromDhcp(const std::string& adapter_name);
+
+    friend class base::RefCountedThreadSafe<DhcpQuery>;
+    virtual ~DhcpQuery();
 
    private:
     // The URL retrieved for the given adapter.

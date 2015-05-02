@@ -191,6 +191,8 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
     void OnChannelConnected(int32 peer_pid) override;
 
    private:
+    ~InternalMessageFilter();
+
     MetroViewerProcessHost* owner_;
     DISALLOW_COPY_AND_ASSIGN(InternalMessageFilter);
   };

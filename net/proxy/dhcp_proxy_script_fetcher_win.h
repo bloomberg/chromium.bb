@@ -63,7 +63,6 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
       : public base::RefCountedThreadSafe<AdapterQuery> {
    public:
     AdapterQuery();
-    virtual ~AdapterQuery();
 
     // This is the method that runs on the worker pool thread.
     void GetCandidateAdapterNames();
@@ -76,6 +75,9 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
     // Virtual method introduced to allow unit testing.
     virtual bool ImplGetCandidateAdapterNames(
         std::set<std::string>* adapter_names);
+
+    friend class base::RefCountedThreadSafe<AdapterQuery>;
+    virtual ~AdapterQuery();
 
    private:
     // This is constructed on the originating thread, then used on the

@@ -157,15 +157,16 @@ class DelayingDhcpProxyScriptAdapterFetcher
 
   class DelayingDhcpQuery : public DhcpQuery {
    public:
-    explicit DelayingDhcpQuery()
-        : DhcpQuery() {
-    }
+    explicit DelayingDhcpQuery() : DhcpQuery() {}
 
     std::string ImplGetPacURLFromDhcp(
         const std::string& adapter_name) override {
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
       return DhcpQuery::ImplGetPacURLFromDhcp(adapter_name);
     }
+
+   private:
+    ~DelayingDhcpQuery() override {}
   };
 
   DhcpQuery* ImplCreateDhcpQuery() override {
@@ -269,8 +270,6 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
     MockAdapterQuery() {
     }
 
-    ~MockAdapterQuery() override {}
-
     bool ImplGetCandidateAdapterNames(
         std::set<std::string>* adapter_names) override {
       adapter_names->insert(
@@ -279,6 +278,9 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
     }
 
     std::vector<std::string> mock_adapter_names_;
+
+   private:
+    ~MockAdapterQuery() override {}
   };
 
   MockDhcpProxyScriptFetcherWin(URLRequestContext* context)

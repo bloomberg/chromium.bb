@@ -15,25 +15,7 @@
 namespace gfx {
 
 GLContextWGL::GLContextWGL(GLShareGroup* share_group)
-    : GLContextReal(share_group),
-      context_(NULL) {
-}
-
-GLContextWGL::~GLContextWGL() {
-  Destroy();
-}
-
-std::string GLContextWGL::GetExtensions() {
-  const char* extensions = NULL;
-  if (g_driver_wgl.fn.wglGetExtensionsStringARBFn)
-    extensions = wglGetExtensionsStringARB(GLSurfaceWGL::GetDisplayDC());
-  else if (g_driver_wgl.fn.wglGetExtensionsStringEXTFn)
-    extensions = wglGetExtensionsStringEXT();
-
-  if (extensions)
-    return GLContext::GetExtensions() + " " + extensions;
-
-  return GLContext::GetExtensions();
+    : GLContextReal(share_group), context_(NULL) {
 }
 
 bool GLContextWGL::Initialize(
@@ -140,6 +122,23 @@ void GLContextWGL::OnSetSwapInterval(int interval) {
           "Could not disable vsync: driver does not "
           "support WGL_EXT_swap_control";
   }
+}
+
+std::string GLContextWGL::GetExtensions() {
+  const char* extensions = NULL;
+  if (g_driver_wgl.fn.wglGetExtensionsStringARBFn)
+    extensions = wglGetExtensionsStringARB(GLSurfaceWGL::GetDisplayDC());
+  else if (g_driver_wgl.fn.wglGetExtensionsStringEXTFn)
+    extensions = wglGetExtensionsStringEXT();
+
+  if (extensions)
+    return GLContext::GetExtensions() + " " + extensions;
+
+  return GLContext::GetExtensions();
+}
+
+GLContextWGL::~GLContextWGL() {
+  Destroy();
 }
 
 }  // namespace gfx

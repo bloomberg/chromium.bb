@@ -80,6 +80,9 @@ class MockDhcpProxyScriptAdapterFetcher
     base::WaitableEvent test_finished_event_;
     base::TimeDelta dhcp_delay_;
     std::string configured_url_;
+
+   private:
+    ~DelayingDhcpQuery() {}
   };
 
   DhcpQuery* ImplCreateDhcpQuery() override {

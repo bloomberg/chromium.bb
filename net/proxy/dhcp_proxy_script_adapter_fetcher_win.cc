@@ -117,9 +117,6 @@ GURL DhcpProxyScriptAdapterFetcher::GetPacURL() const {
 DhcpProxyScriptAdapterFetcher::DhcpQuery::DhcpQuery() {
 }
 
-DhcpProxyScriptAdapterFetcher::DhcpQuery::~DhcpQuery() {
-}
-
 void DhcpProxyScriptAdapterFetcher::DhcpQuery::GetPacURLForAdapter(
     const std::string& adapter_name) {
   url_ = ImplGetPacURLFromDhcp(adapter_name);
@@ -133,6 +130,9 @@ std::string
     DhcpProxyScriptAdapterFetcher::DhcpQuery::ImplGetPacURLFromDhcp(
         const std::string& adapter_name) {
   return DhcpProxyScriptAdapterFetcher::GetPacURLFromDhcp(adapter_name);
+}
+
+DhcpProxyScriptAdapterFetcher::DhcpQuery::~DhcpQuery() {
 }
 
 void DhcpProxyScriptAdapterFetcher::OnDhcpQueryDone(

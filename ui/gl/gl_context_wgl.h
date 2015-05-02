@@ -18,7 +18,6 @@ class GLSurface;
 class GLContextWGL : public GLContextReal {
  public:
   explicit GLContextWGL(GLShareGroup* share_group);
-  ~GLContextWGL() override;
 
   // Implement GLContext.
   bool Initialize(GLSurface* compatible_surface,
@@ -32,6 +31,8 @@ class GLContextWGL : public GLContextReal {
   std::string GetExtensions() override;
 
  private:
+  ~GLContextWGL() override;
+
   HGLRC context_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextWGL);
