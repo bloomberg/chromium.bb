@@ -41,11 +41,21 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(USE_OPENSSL)
+#include <pk11pub.h>
+
+#if !defined(CKM_AES_GCM)
+#define CKM_AES_GCM 0x00001087
+#endif
+#endif
 
 namespace net {
 
@@ -375,8 +385,25 @@ TEST_F(SSLServerSocketTest, Handshake) {
 
   // Make sure the cert status is expected.
   SSLInfo ssl_info;
-  client_socket_->GetSSLInfo(&ssl_info);
+  ASSERT_TRUE(client_socket_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, ssl_info.cert_status);
+
+  // The default cipher suite should be ECDHE and, unless on NSS and the
+  // platform doesn't support it, an AEAD.
+  uint16_t cipher_suite =
+      SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
+  const char* key_exchange;
+  const char* cipher;
+  const char* mac;
+  bool is_aead;
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, cipher_suite);
+  EXPECT_STREQ("ECDHE_RSA", key_exchange);
+#if defined(USE_OPENSSL)
+  bool supports_aead = true;
+#else
+  bool supports_aead = PK11_TokenExists(CKM_AES_GCM);
+#endif
+  EXPECT_TRUE(!supports_aead || is_aead);
 }
 
 TEST_F(SSLServerSocketTest, DataTransfer) {
