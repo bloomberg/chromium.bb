@@ -108,7 +108,11 @@ Polymer('cr-input', {
      * @type string
      * @default ''
      */
-    committedValue: ''
+    committedValue: '',
+  },
+
+  computed: {
+    isInvalid: '$.decorator.isInvalid'
   },
 
   /**

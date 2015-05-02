@@ -3,20 +3,21 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview
- * 'cr-settings-search-page' is the settings page containing search settings.
+ * @fileoverview 'cr-settings-search-engines-page' is the settings page
+ * containing search engines settings.
  *
  * Example:
  *
  *    <core-animated-pages>
- *      <cr-settings-search-page prefs="{{prefs}}"></cr-settings-search-page>
+ *      <cr-settings-search-engines-page prefs="{{prefs}}">
+ *      </cr-settings-search-engines-page>
  *      ... other pages ...
  *    </core-animated-pages>
  *
  * @group Chrome Settings Elements
- * @element cr-settings-search-page
+ * @element cr-settings-search-engines-page
  */
-Polymer('cr-settings-search-page', {
+Polymer('cr-settings-search-engines-page', {
   publish: {
     /**
      * Preferences state.
@@ -41,9 +42,9 @@ Polymer('cr-settings-search-page', {
      *
      * @attribute subpage
      * @type {boolean}
-     * @default false
+     * @default true
      */
-    subpage: false,
+    subpage: true,
 
     /**
      * ID of the page.
@@ -52,7 +53,7 @@ Polymer('cr-settings-search-page', {
      * @const {string}
      * @default 'search'
      */
-    PAGE_ID: 'search',
+    PAGE_ID: 'search_engines',
 
     /**
      * Title for the page header and navigation menu.
@@ -60,7 +61,7 @@ Polymer('cr-settings-search-page', {
      * @attribute pageTitle
      * @type {string}
      */
-    pageTitle: loadTimeData.getString('searchPageTitle'),
+    pageTitle: loadTimeData.getString('searchEnginesPageTitle'),
 
     /**
      * Name of the 'core-icon' to be shown in the settings-page-header.
@@ -74,11 +75,20 @@ Polymer('cr-settings-search-page', {
     /**
      * List of default search engines available.
      *
-     * @attribute searchEngines
+     * @attribute defaultSearchEngines
      * @type {Array<!SearchEngine>}
      * @default null
      */
-    searchEngines: null,
+    defaultSearchEngines: null,
+
+    /**
+     * List of other search engines available.
+     *
+     * @attribute otherSearchEngines
+     * @type {Array<!SearchEngine>}
+     * @default null
+     */
+    otherSearchEngines: null,
 
     /**
      * GUID of the currently selected default search engine.
@@ -113,12 +123,13 @@ Polymer('cr-settings-search-page', {
 
 
   /**
-   * Updates the list of default search engines based on the given |engines|.
+   * Updates the lists of search engines based on the given |engines|.
    * @param {!Array<!SearchEngine>} engines All the search engines.
    * @private
    */
   updateSearchEngines_: function(engines) {
     var defaultEngines = [];
+    var otherEngines = [];
 
     engines.forEach(function(engine) {
       if (engine.type ==
@@ -127,14 +138,13 @@ Polymer('cr-settings-search-page', {
         if (engine.isSelected) {
           this.defaultEngineGuid = engine.guid;
         }
+      } else if (engine.type ==
+                 chrome.searchEnginesPrivate.SearchEngineType.OTHER) {
+        otherEngines.push(engine);
       }
     }, this);
 
-    this.searchEngines = defaultEngines;
-  },
-
-  /** @private */
-  manageSearchEngines_: function() {
-    MoreRouting.navigateTo('search-engines');
-  },
+    this.defaultSearchEngines = defaultEngines;
+    this.otherSearchEngines = otherEngines;
+  }
 });

@@ -1,0 +1,20 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/polymer/core-style/core-style.html">
+<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
+<link rel="import" href="search_engine_adder.html">
+<link rel="import" href="search_engines_page_style.html">
+
+<polymer-element name="cr-settings-search-engines-page">
+  <template>
+    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
+    <core-style ref="searchEnginesPageStyle"></core-style>
+
+    <paper-shadow layout vertical cross-fade>
+      <div class="content">
+        <cr-search-engine-adder></cr-search-engine-adder>
+      </div>
+    </paper-shadow>
+  </template>
+  <script src="search_engines_page.js"></script>
+</polymer-element>

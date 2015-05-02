@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
+<link rel="import" href="chrome://resources/polymer/core-style/core-style.html">
 <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
@@ -24,7 +25,8 @@
         </cr-dropdown-menu>
 
         <cr-button class="manage-search-engines"
-            i18n-content="searchManageButtonLabel" raised>
+            i18n-content="searchManageButtonLabel"
+            on-click="{{manageSearchEngines_}}" raised>
         </cr-button>
       </div>
     </paper-shadow>

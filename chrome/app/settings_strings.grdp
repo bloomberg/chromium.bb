@@ -110,4 +110,30 @@
     Say "Ok Google" in a new tab and google.com
   </message>
 
+  <!-- Search Engines Page -->
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_PAGE_TITLE" desc="Name of the settings page which manages search engines.">
+    Search Engines
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE_LABEL" desc="Label for section for adding a new search engine.">
+    Add a search engine
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_LABEL" desc="Label for regular Search Engines section">
+    Search engines
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES_LABEL" desc="Label for 'other' Search Engines section">
+    Other search engines
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_DOMAIN_LABEL" desc="Label for Domain column header for a search engine">
+    Domain
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_KEYWORD_LABEL" desc="Label for Keyword column header for a search engine">
+    Keyword
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL_LABEL" desc="Label for Query URL column header for a search engine">
+    Query URL
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL" desc="Label for Add button for adding a new search engine">
+    Add
+  </message>
+
 </grit-part>
