@@ -431,14 +431,6 @@ v8.log
 /ui/surface/surface.xml
 /ui/surface/surface_gpu_tests.xml
 /v8
-/webkit/data/bmp_decoder
-/webkit/data/ico_decoder
-/webkit/data/layout_tests/LayoutTests
-/webkit/data/test_shell/plugins
-/webkit/data/xbm_decoder
-/webkit/Debug
-/webkit/Release
-/webkit/renderer/media/crypto/ppapi/cdm
 /webpagereplay_logs/
 /win8/delegate_execute/delegate_execute_version_resources.xml
 /win8/metro_driver/metro_driver_version_resources.xml
