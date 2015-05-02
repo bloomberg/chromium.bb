@@ -2799,6 +2799,10 @@ bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, 
     // not possibly have changed.
     m_compositedDeprecatedPaintLayerMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateLocal);
     compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
+
+    if (m_scrollableArea)
+        m_scrollableArea->updateAfterStyleChange(oldStyle);
+
     return true;
 }
 

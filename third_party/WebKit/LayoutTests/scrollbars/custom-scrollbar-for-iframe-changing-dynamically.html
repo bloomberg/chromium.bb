@@ -1,4 +1,5 @@
 <!DOCTYPE HTML>
+<script src="../resources/run-after-display.js"></script>
 <style>
 /* Let's get this party started */
 ::-webkit-scrollbar {
@@ -40,5 +41,5 @@ addRule("::-webkit-scrollbar", {width: "20px",height: "25px"});
 if (window.testRunner)
     testRunner.notifyDone();
 }
-setTimeout(function(){ addStyle(); }, 100);
+runAfterDisplay(addStyle);
 </script>
