@@ -18,6 +18,5 @@ declare_args() {
   # Break chrome.dll into multple pieces based on process type. Only available
   # on Windows.
   # TODO(brettw) make this work. When it does, the declaration should be:
-  #is_multi_dll_chrome = is_win && !is_component_build
-  is_multi_dll_chrome = false
+  is_multi_dll_chrome = is_win && !is_component_build
 }
