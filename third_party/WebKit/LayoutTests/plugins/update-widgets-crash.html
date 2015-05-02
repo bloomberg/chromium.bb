@@ -23,12 +23,14 @@
             return;
 
         var victim = document.getElementById('victim');
+        // Mark test as done now because we may re-enter when the
+        // child is removed or we force layout.
+        doingTest = false;
         victim.parentNode.removeChild(victim);
         document.body.offsetTop;
 
         if (window.testRunner)
             testRunner.notifyDone();
-        doingTest = false;
     }
     
     function doTest()
