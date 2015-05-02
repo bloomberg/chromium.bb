@@ -87,7 +87,9 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
 
  protected:
   bool RunSettingsSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("settings_private", "main.html?" + subtest);
+    return RunExtensionSubtest("settings_private",
+                               "main.html?" + subtest,
+                               kFlagLoadAsComponent);
   }
 
   // Static pointer to the TestDelegate so that it can be accessed in

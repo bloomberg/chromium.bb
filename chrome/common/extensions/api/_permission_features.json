@@ -890,8 +890,7 @@
   "settingsPrivate": {
     "channel": "trunk",
     "extension_types": ["extension", "platform_app"],
-    "platforms": ["chromeos", "mac", "win", "linux"],
-    "whitelist": []
+    "location": "component"
   },
   "signedInDevices": {
     "channel": "dev",
