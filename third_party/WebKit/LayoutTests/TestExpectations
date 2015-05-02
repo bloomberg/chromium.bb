@@ -102,8 +102,6 @@ crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip 
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 
-crbug.com/482174 virtual/slimmingpaint/fast/repaint/video-unmute-repaint.html [ Crash ]
-
 crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/339118 virtual/pointerevent/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
@@ -306,6 +304,12 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-inset-003.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
+
+crbug.com/482174 fast/repaint/video-unmute-repaint.html [ NeedsRebaseline ]
+crbug.com/482174 fast/repaint/video-mute-repaint.html [ NeedsRebaseline ]
+crbug.com/482174 media/video-paint-invalidation.html [ NeedsRebaseline ]
+crbug.com/482174 virtual/slimmingpaint/fast/repaint/video-mute-repaint.html [ NeedsRebaseline ]
+crbug.com/482174 virtual/slimmingpaint/fast/repaint/video-unmute-repaint.html [ NeedsRebaseline ]
 
 crbug.com/382491 virtual/slimmingpaint/fast/replaced/border-radius-clip.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/clip/nested-rounded-rect.html [ Skip ]
@@ -586,8 +590,6 @@ crbug.com/282091 fast/forms/time-multiple-fields/time-multiple-fields-speech-cra
 crbug.com/282091 virtual/slimmingpaint/fast/forms/time-multiple-fields/time-multiple-fields-speech-crash.html [ Pass Timeout ]
 crbug.com/282092 [ Mac ] svg/dom/SVGLength-px-with-context.html [ Failure Pass ]
 crbug.com/282093 [ Mac ] svg/hixie/text/001.xml [ Crash Failure Pass ImageOnlyFailure ]
-crbug.com/282094 fast/repaint/video-mute-repaint.html [ Pass Failure Timeout ]
-crbug.com/282094 virtual/slimmingpaint/fast/repaint/video-mute-repaint.html [ Pass Failure Timeout ]
 crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Failure Pass ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]

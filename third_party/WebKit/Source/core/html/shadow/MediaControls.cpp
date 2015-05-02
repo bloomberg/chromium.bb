@@ -332,13 +332,17 @@ void MediaControls::updateCurrentTimeDisplay()
 void MediaControls::updateVolume()
 {
     m_muteButton->updateDisplayType();
-    if (m_muteButton->layoutObject())
-        m_muteButton->layoutObject()->setShouldDoFullPaintInvalidation();
+    // Invalidate the mute button because it paints differently according to volume.
+    if (LayoutObject* layoutObject = m_muteButton->layoutObject())
+        layoutObject->setShouldDoFullPaintInvalidation();
 
     if (mediaElement().muted())
         m_volumeSlider->setVolume(0);
     else
         m_volumeSlider->setVolume(mediaElement().volume());
+    // Invalidate the volume slider because it paints differently according to volume.
+    if (LayoutObject* layoutObject = m_volumeSlider->layoutObject())
+        layoutObject->setShouldDoFullPaintInvalidation();
 }
 
 void MediaControls::changedClosedCaptionsVisibility()

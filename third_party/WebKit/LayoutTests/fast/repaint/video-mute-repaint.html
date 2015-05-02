@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <title>Test for crbug.com/190880</title>
-<script src="resources/text-based-text-based-repaint.js"></script>
+<script src="resources/text-based-repaint.js"></script>
 <style>
     video { width: 700px; }
 </style>
@@ -9,19 +9,13 @@
 </video>
 
 <script>
+    window.testIsAsync = true;
+
     var video = document.getElementById("v");
-    video.addEventListener("canplaythrough", runTest, true);
-    if (window.testRunner)
-        window.testRunner.waitUntilDone();
+    video.addEventListener("canplaythrough", runRepaintTest, true);
 
     function repaintTest() {
         video.volume = 0;
-    }
-
-    function runTest() {
-        runRepaintTest();
-
-        if (window.testRunner)
-            window.testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>

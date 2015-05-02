@@ -11,10 +11,13 @@
 <p>This tests that we repaint the mute button when we change the volume</p>
 
 <script>
+    window.testIsAsync = true;
+
     var video = document.getElementById("v");
     video.addEventListener("canplaythrough", runTest, true);
     function repaintTest() {
         video.volume = 0.5;
+        finishRepaintTest();
     }
 
     function runTest() {
