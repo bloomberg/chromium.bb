@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -94,6 +95,10 @@ SafeBrowsingProtocolManager* SafeBrowsingProtocolManager::Create(
     SafeBrowsingProtocolManagerDelegate* delegate,
     net::URLRequestContextGetter* request_context_getter,
     const SafeBrowsingProtocolConfig& config) {
+  // TODO(cbentzel): Remove ScopedTracker below once crbug.com/483689 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "483689 SafeBrowsingProtocolManager::Create"));
   if (!factory_)
     factory_ = new SBProtocolManagerFactoryImpl();
   return factory_->CreateProtocolManager(
@@ -463,6 +468,10 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(
 
 void SafeBrowsingProtocolManager::Initialize() {
   DCHECK(CalledOnValidThread());
+  // TODO(cbentzel): Remove ScopedTracker below once crbug.com/483689 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "483689 SafeBrowsingProtocolManager::Initialize"));
   // Don't want to hit the safe browsing servers on build/chrome bots.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasVar(env_vars::kHeadless))

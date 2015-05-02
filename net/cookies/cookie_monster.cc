@@ -1502,15 +1502,9 @@ void CookieMonster::InitStore() {
 
 void CookieMonster::OnLoaded(TimeTicks beginning_time,
                              const std::vector<CanonicalCookie*>& cookies) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457528 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("457528 CookieMonster::OnLoaded 1"));
   StoreLoadedCookies(cookies);
   histogram_time_blocked_on_load_->AddTime(TimeTicks::Now() - beginning_time);
 
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457528 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("457528 CookieMonster::OnLoaded 2"));
   // Invoke the task queue of cookie request.
   InvokeQueue();
 }
@@ -1552,6 +1546,12 @@ void CookieMonster::OnKeyLoaded(const std::string& key,
 
 void CookieMonster::StoreLoadedCookies(
     const std::vector<CanonicalCookie*>& cookies) {
+  // TODO(erikwright): Remove ScopedTracker below once crbug.com/457528 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "457528 CookieMonster::StoreLoadedCookies"));
+
   // Initialize the store and sync in any saved persistent cookies.  We don't
   // care if it's expired, insert it so it can be garbage collected, removed,
   // and sync'd.

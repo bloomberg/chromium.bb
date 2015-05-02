@@ -580,11 +580,6 @@ void SQLitePersistentCookieStore::Backend::ReportMetrics() {
 
 void SQLitePersistentCookieStore::Backend::CompleteLoadInForeground(
     const LoadedCallback& loaded_callback, bool load_success) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457528 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "457528 "
-          "SQLitePersistentCookieStore::Backend::CompleteLoadInForeground"));
   Notify(loaded_callback, load_success);
 
   if (load_success)
@@ -1414,6 +1409,10 @@ CookieStoreConfig::~CookieStoreConfig() {
 }
 
 net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
+  // TODO(bcwhite): Remove ScopedTracker below once crbug.com/483686 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("483686 content::CreateCookieStore"));
+
   net::CookieMonster* cookie_monster = NULL;
 
   if (config.path.empty()) {
