@@ -100,7 +100,7 @@ public:
     PassRefPtrWillBeRawPtr<RadioNodeList> radioNodeList(const AtomicString&, bool onlyMatchImgElements = false);
 
     // These methods are only used during parsing.
-    // They don't send DOM mutation events or handle reparenting.
+    // They don't send DOM mutation events or accept DocumentFragments.
     void parserAppendChild(PassRefPtrWillBeRawPtr<Node>);
     void parserRemoveChild(Node&);
     void parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node& refChild);

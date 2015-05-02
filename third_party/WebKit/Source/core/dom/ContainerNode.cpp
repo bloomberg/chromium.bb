@@ -85,11 +85,8 @@ void ContainerNode::removeDetachedChildren()
 
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 {
-    while (RefPtrWillBeRawPtr<Node> child = oldParent.firstChild()) {
-        oldParent.parserRemoveChild(*child);
-        treeScope().adoptIfNeeded(*child);
+    while (RefPtrWillBeRawPtr<Node> child = oldParent.firstChild())
         parserAppendChild(child.get());
-    }
 }
 
 ContainerNode::~ContainerNode()
@@ -303,6 +300,12 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
         return;
 
     RefPtrWillBeRawPtr<Node> protect(this);
+
+    // FIXME: parserRemoveChild can run script which could then insert the
+    // newChild back into the page. Loop until the child is actually removed.
+    // See: fast/parser/execute-script-during-adoption-agency-removal.html
+    while (RefPtrWillBeRawPtr<ContainerNode> parent = newChild->parentNode())
+        parent->parserRemoveChild(*newChild);
 
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
@@ -752,11 +755,16 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<N
 void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
 {
     ASSERT(newChild);
-    ASSERT(!newChild->parentNode()); // Use appendChild if you need to handle reparenting (and want DOM mutation events).
     ASSERT(!newChild->isDocumentFragment());
     ASSERT(!isHTMLTemplateElement(this));
 
     RefPtrWillBeRawPtr<Node> protect(this);
+
+    // FIXME: parserRemoveChild can run script which could then insert the
+    // newChild back into the page. Loop until the child is actually removed.
+    // See: fast/parser/execute-script-during-adoption-agency-removal.html
+    while (RefPtrWillBeRawPtr<ContainerNode> parent = newChild->parentNode())
+        parent->parserRemoveChild(*newChild);
 
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
