@@ -59,6 +59,8 @@ public class WindowAndroid {
 
     private ViewGroup mKeyboardAccessoryView;
 
+    private boolean mIsKeyboardShowing = false;
+
     /**
      * An interface to notify listeners of changes in the soft keyboard's visibility.
      */
@@ -352,10 +354,14 @@ public class WindowAndroid {
     }
 
     /**
-     * To be called when the keyboard visibility state has changed. Informs listeners of the state
-     * change.
+     * To be called when the keyboard visibility state might have changed. Informs listeners of the
+     * state change IFF there actually was a change.
+     * @param isShowing The current (guesstimated) state of the keyboard.
      */
-    public void keyboardVisibilityChanged(boolean isShowing) {
+    protected void keyboardVisibilityPossiblyChanged(boolean isShowing) {
+        if (mIsKeyboardShowing == isShowing) return;
+        mIsKeyboardShowing = isShowing;
+
         // Clone the list in case a listener tries to remove itself during the callback.
         LinkedList<KeyboardVisibilityListener> listeners =
                 new LinkedList<KeyboardVisibilityListener>(mKeyboardVisibilityListeners);

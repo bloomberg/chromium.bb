@@ -104,6 +104,7 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
         container.removeView(this);
         container.setVisibility(View.GONE);
         mWindowAndroid.removeKeyboardVisibilityListener(this);
+        ((View) container.getParent()).requestLayout();
     }
 
     @Override

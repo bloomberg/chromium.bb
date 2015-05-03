@@ -9,6 +9,9 @@ import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
+import android.view.View;
+
+import org.chromium.ui.UiUtils;
 
 import java.lang.ref.WeakReference;
 
@@ -17,7 +20,7 @@ import java.lang.ref.WeakReference;
  * Activity Instance.
  * Only instantiate this class when you need the implemented features.
  */
-public class ActivityWindowAndroid extends WindowAndroid {
+public class ActivityWindowAndroid extends WindowAndroid implements View.OnLayoutChangeListener {
     // Constants used for intent request code bounding.
     private static final int REQUEST_CODE_PREFIX = 1000;
     private static final int REQUEST_CODE_RANGE_SIZE = 100;
@@ -29,6 +32,7 @@ public class ActivityWindowAndroid extends WindowAndroid {
     public ActivityWindowAndroid(Activity activity) {
         super(activity.getApplicationContext());
         mActivityRef = new WeakReference<Activity>(activity);
+        activity.findViewById(android.R.id.content).addOnLayoutChangeListener(this);
     }
 
     @Override
@@ -97,6 +101,12 @@ public class ActivityWindowAndroid extends WindowAndroid {
     public WeakReference<Activity> getActivity() {
         // Return a new WeakReference to prevent clients from releasing our internal WeakReference.
         return new WeakReference<Activity>(mActivityRef.get());
+    }
+
+    @Override
+    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
+        keyboardVisibilityPossiblyChanged(UiUtils.isKeyboardShowing(mActivityRef.get(), v));
     }
 
     private int generateNextRequestCode() {
