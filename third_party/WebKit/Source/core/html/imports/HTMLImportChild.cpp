@@ -58,9 +58,6 @@ HTMLImportChild::~HTMLImportChild()
 #if !ENABLE(OILPAN)
     // dispose() should be called before the destruction.
     ASSERT(!m_loader);
-
-    if (m_client)
-        m_client->importChildWasDestroyed(this);
 #endif
 }
 
@@ -108,6 +105,11 @@ void HTMLImportChild::dispose()
     ASSERT(m_loader);
     m_loader->removeImport(this);
     m_loader = nullptr;
+
+    if (m_client) {
+        m_client->importChildWasDisposed(this);
+        m_client = nullptr;
+    }
 }
 
 Document* HTMLImportChild::document() const

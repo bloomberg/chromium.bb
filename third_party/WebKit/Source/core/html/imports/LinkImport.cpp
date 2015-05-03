@@ -107,14 +107,12 @@ void LinkImport::didFinish()
     m_owner->scheduleEvent();
 }
 
-#if !ENABLE(OILPAN)
-void LinkImport::importChildWasDestroyed(HTMLImportChild* child)
+void LinkImport::importChildWasDisposed(HTMLImportChild* child)
 {
     ASSERT(m_child == child);
     m_child = nullptr;
     m_owner = nullptr;
 }
-#endif
 
 bool LinkImport::isSync() const
 {

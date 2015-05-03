@@ -40,9 +40,7 @@ class HTMLImportChildClient : public WillBeGarbageCollectedMixin {
 public:
     virtual ~HTMLImportChildClient() { }
     virtual void didFinish() = 0;
-#if !ENABLE(OILPAN)
-    virtual void importChildWasDestroyed(HTMLImportChild*) = 0;
-#endif
+    virtual void importChildWasDisposed(HTMLImportChild*) = 0;
     virtual bool isSync() const = 0;
     virtual HTMLLinkElement* link() = 0;
     DEFINE_INLINE_VIRTUAL_TRACE() { }

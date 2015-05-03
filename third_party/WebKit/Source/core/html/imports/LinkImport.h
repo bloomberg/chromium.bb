@@ -64,9 +64,7 @@ public:
 
     // HTMLImportChildClient
     virtual void didFinish() override;
-#if !ENABLE(OILPAN)
-    virtual void importChildWasDestroyed(HTMLImportChild*) override;
-#endif
+    virtual void importChildWasDisposed(HTMLImportChild*) override;
     virtual bool isSync() const override;
     virtual HTMLLinkElement* link() override;
 
