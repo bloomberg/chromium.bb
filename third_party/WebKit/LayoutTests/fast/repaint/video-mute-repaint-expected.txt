@@ -1,8 +1,39 @@
- (repaint rects
-  (rect 543 498 35 30)
-  (rect 636 501 24 24)
-  (rect 636 501 24 24)
-  (rect 578 501 24 24)
-  (rect 578 501 89 24)
-)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [700, 525]
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [700, 525],
+              "drawsContent": true
+            },
+            {
+              "position": [8, 8],
+              "bounds": [700, 520],
+              "drawsContent": true,
+              "repaintRects": [
+                [628, 493, 24, 24],
+                [570, 493, 89, 24],
+                [570, 493, 89, 24],
+                [570, 493, 24, 24],
+                [535, 490, 35, 30]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
