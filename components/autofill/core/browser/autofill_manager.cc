@@ -821,20 +821,19 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   if (!personal_data_->ImportFormData(submitted_form, &imported_credit_card))
     return;
 
-  // Don't offer to save any cards that were recently unmasked.
-  if (recently_unmasked_cards_.end() !=
-      std::find_if(recently_unmasked_cards_.begin(),
-                   recently_unmasked_cards_.end(),
-                   [&imported_credit_card](const CreditCard& unmasked) -> bool {
-                     return unmasked.TypeAndLastFourDigits() ==
-                            imported_credit_card->TypeAndLastFourDigits();
-                   })) {
-    return;
-  }
-
   // If credit card information was submitted, we need to confirm whether to
   // save it.
   if (imported_credit_card) {
+    // Don't offer to save any cards that were recently unmasked.
+    if (recently_unmasked_cards_.end() !=
+        std::find_if(
+            recently_unmasked_cards_.begin(), recently_unmasked_cards_.end(),
+            [&imported_credit_card](const CreditCard& unmasked) -> bool {
+              return unmasked.TypeAndLastFourDigits() ==
+                     imported_credit_card->TypeAndLastFourDigits();
+            })) {
+      return;
+    }
     client_->ConfirmSaveCreditCard(
         base::Bind(
             base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),

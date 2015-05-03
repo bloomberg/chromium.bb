@@ -3216,6 +3216,41 @@ TEST_F(AutofillManagerTest, DontOfferToSaveWalletCard) {
   autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
                                      "4012888888881881");
   autofill_manager_->OnFormSubmitted(form);
+
+  // The rest of this test is a regression test for http://crbug.com/483602.
+  // The goal is not to crash.
+  EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _));
+  for (size_t i = 0; i < form.fields.size(); ++i) {
+    form.fields[i].value.clear();
+  }
+  autofill_manager_->FillOrPreviewCreditCardForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, form,
+      form.fields[0], card, 0);
+  autofill_manager_->OnUnmaskResponse(response);
+  autofill_manager_->OnDidGetRealPan(AutofillClient::SUCCESS,
+                                     "4012888888881881");
+
+  form = FormData();
+  test::CreateTestAddressFormData(&form);
+  forms[0] = form;
+  FormsSeen(forms);
+  for (size_t i = 0; i < form.fields.size(); ++i) {
+    if (form.fields[i].name == ASCIIToUTF16("firstname"))
+      form.fields[i].value = ASCIIToUTF16("Flo");
+    else if (form.fields[i].name == ASCIIToUTF16("lastname"))
+      form.fields[i].value = ASCIIToUTF16("Master");
+    else if (form.fields[i].name == ASCIIToUTF16("addr1"))
+      form.fields[i].value = ASCIIToUTF16("123 Maple");
+    else if (form.fields[i].name == ASCIIToUTF16("city"))
+      form.fields[i].value = ASCIIToUTF16("Dallas");
+    else if (form.fields[i].name == ASCIIToUTF16("state"))
+      form.fields[i].value = ASCIIToUTF16("Texas");
+    else if (form.fields[i].name == ASCIIToUTF16("zipcode"))
+      form.fields[i].value = ASCIIToUTF16("77401");
+    else if (form.fields[i].name == ASCIIToUTF16("country"))
+      form.fields[i].value = ASCIIToUTF16("US");
+  }
+  autofill_manager_->OnFormSubmitted(form);
 }
 
 }  // namespace autofill
