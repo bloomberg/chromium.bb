@@ -38,6 +38,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_throbber.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -1332,15 +1333,16 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     // Paint network activity (aka throbber) animation frame.
     ui::ThemeProvider* tp = GetThemeProvider();
-    gfx::ImageSkia frames(*tp->GetImageSkiaNamed(
-        (data().network_state == TabRendererData::NETWORK_STATE_WAITING) ?
-        IDR_THROBBER_WAITING : IDR_THROBBER));
-
-    int icon_size = frames.height();
-    int image_offset = loading_animation_frame_ * icon_size;
-    DrawIconCenter(canvas, frames, image_offset,
-                   icon_size, icon_size,
-                   bounds, false, SkPaint());
+    if (data().network_state == TabRendererData::NETWORK_STATE_WAITING) {
+      gfx::PaintThrobberWaitingForFrame(
+          canvas, bounds, tp->GetColor(ThemeProperties::COLOR_THROBBER_WAITING),
+          loading_animation_frame_);
+    } else {
+      gfx::PaintThrobberSpinningForFrame(
+          canvas, bounds,
+          tp->GetColor(ThemeProperties::COLOR_THROBBER_SPINNING),
+          loading_animation_frame_);
+    }
   } else if (should_display_crashed_favicon_) {
     // Paint crash favicon.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -1364,55 +1366,15 @@ void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
   // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("461137 Tab::AdvanceLoadingAnimation1"));
-  static bool initialized = false;
-  static int loading_animation_frame_count = 0;
-  static int waiting_animation_frame_count = 0;
-  static int waiting_to_loading_frame_count_ratio = 0;
-  if (!initialized) {
-    // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461137 Tab::AdvanceLoadingAnimation2"));
-    initialized = true;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia loading_animation(*rb.GetImageSkiaNamed(IDR_THROBBER));
-    loading_animation_frame_count =
-        loading_animation.width() / loading_animation.height();
-    gfx::ImageSkia waiting_animation(*rb.GetImageSkiaNamed(
-        IDR_THROBBER_WAITING));
-    waiting_animation_frame_count =
-        waiting_animation.width() / waiting_animation.height();
-    waiting_to_loading_frame_count_ratio =
-        waiting_animation_frame_count / loading_animation_frame_count;
-
-    base::debug::Alias(&loading_animation_frame_count);
-    base::debug::Alias(&waiting_animation_frame_count);
-    CHECK_NE(0, waiting_to_loading_frame_count_ratio) <<
-        "Number of frames in IDR_THROBBER must be equal to or greater " <<
-        "than the number of frames in IDR_THROBBER_WAITING. Please " <<
-        "investigate how this happened and update http://crbug.com/132590, " <<
-        "this is causing crashes in the wild.";
-  }
-
-  // The waiting animation is the reverse of the loading animation, but at a
-  // different rate - the following reverses and scales the animation_frame_
-  // so that the frame is at an equivalent position when going from one
-  // animation to the other.
-  if (state != old_state) {
-    loading_animation_frame_ = loading_animation_frame_count -
-        (loading_animation_frame_ / waiting_to_loading_frame_count_ratio);
-  }
 
   if (state == TabRendererData::NETWORK_STATE_WAITING) {
-    loading_animation_frame_ = (loading_animation_frame_ + 1) %
-        waiting_animation_frame_count;
+    ++loading_animation_frame_;
     // Waiting steps backwards.
     immersive_loading_step_ =
         (immersive_loading_step_ - 1 + kImmersiveLoadingStepCount) %
             kImmersiveLoadingStepCount;
   } else if (state == TabRendererData::NETWORK_STATE_LOADING) {
-    loading_animation_frame_ = (loading_animation_frame_ + 1) %
-        loading_animation_frame_count;
+    ++loading_animation_frame_;
     immersive_loading_step_ = (immersive_loading_step_ + 1) %
         kImmersiveLoadingStepCount;
   } else {

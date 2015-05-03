@@ -14,7 +14,7 @@ namespace ash {
 // A SmoothedThrobber with tooltip.
 class SystemTrayThrobber : public views::SmoothedThrobber {
  public:
-  SystemTrayThrobber(int frame_delay_ms);
+  SystemTrayThrobber();
   ~SystemTrayThrobber() override;
 
   void SetTooltipText(const base::string16& tooltip_text);

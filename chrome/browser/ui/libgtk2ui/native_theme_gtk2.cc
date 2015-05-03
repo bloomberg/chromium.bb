@@ -405,6 +405,8 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       return GetReadableColor(kNegativeTextColor,
                               GetEntryStyle()->base[GTK_STATE_SELECTED]);
     }
+    case kColorId_ThrobberSpinningColor:
+    case kColorId_ThrobberWaitingColor:
     case kColorId_NumColors:
       NOTREACHED();
       break;

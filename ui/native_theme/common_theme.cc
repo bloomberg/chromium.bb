@@ -40,6 +40,9 @@ const SkColor kBlueButtonDisabledColor = SK_ColorWHITE;
 const SkColor kBlueButtonPressedColor = SK_ColorWHITE;
 const SkColor kBlueButtonHoverColor = SK_ColorWHITE;
 const SkColor kBlueButtonShadowColor = SkColorSetRGB(0x53, 0x8C, 0xEA);
+// Material spinner/throbber:
+const SkColor kThrobberSpinningColor = SkColorSetRGB(0x42, 0x81, 0xF4);
+const SkColor kThrobberWaitingColor = SkColorSetRGB(0xA6, 0xA6, 0xA6);
 
 }  // namespace
 
@@ -105,6 +108,13 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       break;
     case NativeTheme::kColorId_BlueButtonShadowColor:
       *color = kBlueButtonShadowColor;
+      break;
+    // Material spinner/throbber
+    case NativeTheme::kColorId_ThrobberSpinningColor:
+      *color = kThrobberSpinningColor;
+      break;
+    case NativeTheme::kColorId_ThrobberWaitingColor:
+      *color = kThrobberWaitingColor;
       break;
     default:
       return false;

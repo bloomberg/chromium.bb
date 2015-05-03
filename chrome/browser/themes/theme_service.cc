@@ -34,6 +34,8 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
@@ -227,6 +229,18 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
+    case Properties::COLOR_THROBBER_SPINNING:
+    case Properties::COLOR_THROBBER_WAITING: {
+      SkColor base_color;
+      bool found_color = ui::CommonThemeGetSystemColor(
+          id == Properties::COLOR_THROBBER_SPINNING
+              ? ui::NativeTheme::kColorId_ThrobberSpinningColor
+              : ui::NativeTheme::kColorId_ThrobberWaitingColor,
+          &base_color);
+      DCHECK(found_color);
+      color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS);
+      return color_utils::HSLShift(base_color, hsl);
+    }
 #if defined(ENABLE_SUPERVISED_USERS)
     case Properties::COLOR_SUPERVISED_USER_LABEL:
       return color_utils::GetReadableColor(

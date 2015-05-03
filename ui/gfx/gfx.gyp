@@ -224,6 +224,8 @@
         'nine_image_painter.cc',
         'nine_image_painter.h',
         'overlay_transform.h',
+        'paint_throbber.cc',
+        'paint_throbber.h',
         'path.cc',
         'path.h',
         'path_aura.cc',

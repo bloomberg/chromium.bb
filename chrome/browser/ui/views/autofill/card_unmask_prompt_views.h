@@ -14,10 +14,10 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
+class Checkbox;
 class ImageView;
 class Label;
-class Checkbox;
-class MaterialThrobber;
+class Throbber;
 }
 
 namespace autofill {
@@ -135,7 +135,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   views::Checkbox* storage_checkbox_;
 
   FadeOutView* progress_overlay_;
-  views::MaterialThrobber* progress_throbber_;
+  views::Throbber* progress_throbber_;
   views::Label* progress_label_;
 
   gfx::SlideAnimation overlay_animation_;
