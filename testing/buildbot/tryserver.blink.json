@@ -13,7 +13,6 @@
       "browser_tests",
       "cacheinvalidation_unittests",
       "chromedriver_unittests",
-      "chromeos_unittests",
       "components_browsertests",
       "components_unittests",
       "content_browsertests",
