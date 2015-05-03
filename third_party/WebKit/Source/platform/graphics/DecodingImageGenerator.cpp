@@ -38,8 +38,8 @@
 namespace blink {
 
 DecodingImageGenerator::DecodingImageGenerator(PassRefPtr<ImageFrameGenerator> frameGenerator, const SkImageInfo& info, size_t index)
-    : m_frameGenerator(frameGenerator)
-    , m_imageInfo(info)
+    : SkImageGenerator(info)
+    , m_frameGenerator(frameGenerator)
     , m_frameIndex(index)
     , m_generationId(0)
 {
@@ -62,29 +62,23 @@ SkData* DecodingImageGenerator::onRefEncodedData()
     return 0;
 }
 
-bool DecodingImageGenerator::onGetInfo(SkImageInfo* info)
-{
-    *info = m_imageInfo;
-    return true;
-}
-
 SkImageGenerator::Result DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
     void* pixels, size_t rowBytes, SkPMColor ctable[], int* ctableCount)
 {
     TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "index", static_cast<int>(m_frameIndex));
 
     // Implementation doesn't support scaling yet so make sure we're not given a different size.
-    if (info.width() != m_imageInfo.width() || info.height() != m_imageInfo.height()) {
+    if (info.width() != getInfo().width() || info.height() != getInfo().height()) {
         return kInvalidScale;
     }
-    if (info.colorType() != m_imageInfo.colorType()) {
+    if (info.colorType() != getInfo().colorType()) {
         // ImageFrame may have changed the owning SkBitmap to kOpaque_SkAlphaType after sniffing the encoded data, so if we see a request
         // for opaque, that is ok even if our initial alphatype was not opaque.
         return kInvalidConversion;
     }
 
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
-    bool decoded = m_frameGenerator->decodeAndScale(m_imageInfo, m_frameIndex, pixels, rowBytes);
+    bool decoded = m_frameGenerator->decodeAndScale(getInfo(), m_frameIndex, pixels, rowBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
     return decoded ? kSuccess : kInvalidInput;
 }
