@@ -53,7 +53,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool Shutdown(int exit_code, bool wait) override;
   bool FastShutdownIfPossible() override;
   bool FastShutdownStarted() const override;
-  void DumpHandles() override;
   base::ProcessHandle GetHandle() const override;
   int GetID() const override;
   bool HasConnection() const override;

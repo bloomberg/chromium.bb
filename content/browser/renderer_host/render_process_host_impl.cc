@@ -1039,19 +1039,6 @@ void RenderProcessHostImpl::RemoveRoute(int32 routing_id) {
   DCHECK(listeners_.Lookup(routing_id) != NULL);
   listeners_.Remove(routing_id);
 
-#if defined(OS_WIN)
-  // Dump the handle table if handle auditing is enabled.
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kAuditHandles) ||
-      browser_command_line.HasSwitch(switches::kAuditAllHandles)) {
-    DumpHandles();
-
-    // We wait to close the channels until the child process has finished
-    // dumping handles and sends us ChildProcessHostMsg_DumpHandlesDone.
-    return;
-  }
-#endif
   // Keep the one renderer thread around forever in single process mode.
   if (!run_renderer_in_process())
     Cleanup();
@@ -1214,8 +1201,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   static const char* const kSwitchNames[] = {
     switches::kAllowLoopbackInPeerConnection,
     switches::kAudioBufferSize,
-    switches::kAuditAllHandles,
-    switches::kAuditHandles,
     switches::kBlinkPlatformLogChannels,
     switches::kBlinkSettings,
     switches::kBlockCrossSiteDocuments,
@@ -1491,14 +1476,6 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   return true;
 }
 
-void RenderProcessHostImpl::DumpHandles() {
-#if defined(OS_WIN)
-  Send(new ChildProcessMsg_DumpHandles());
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::Send");
   if (!channel_) {
@@ -1532,8 +1509,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
-      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DumpHandlesDone,
-                          OnDumpHandlesDone)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SuddenTerminationChanged,
                           SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
@@ -2222,10 +2197,6 @@ void RenderProcessHostImpl::OnShutdownRequest() {
 
 void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
   SetSuddenTerminationAllowed(enabled);
-}
-
-void RenderProcessHostImpl::OnDumpHandlesDone() {
-  Cleanup();
 }
 
 void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {

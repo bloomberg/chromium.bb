@@ -29,13 +29,6 @@ const char kAllowNoSandboxJob[]             = "allow-no-sandbox-job";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
-// The same as kAuditHandles except all handles are enumerated.
-const char kAuditAllHandles[]               = "enable-handle-auditing-all";
-
-// Enumerates and prints a child process' most dangerous handles when it
-// is terminated.
-const char kAuditHandles[]                  = "enable-handle-auditing";
-
 // Choose which logging channels in blink platform to activate.  See
 // Logging.cpp in blink's Source/platform for a list of available channels.
 const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";

@@ -344,8 +344,6 @@
       'common/gpu/null_transport_surface.h',
       'common/gpu/stream_texture_android.cc',
       'common/gpu/stream_texture_android.h',
-      'common/handle_enumerator_win.cc',
-      'common/handle_enumerator_win.h',
       'common/host_discardable_shared_memory_manager.cc',
       'common/host_discardable_shared_memory_manager.h',
       'common/host_shared_bitmap_manager.cc',

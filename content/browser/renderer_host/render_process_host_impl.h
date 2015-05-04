@@ -111,7 +111,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   StoragePartition* GetStoragePartition() const override;
   bool Shutdown(int exit_code, bool wait) override;
   bool FastShutdownIfPossible() override;
-  void DumpHandles() override;
   base::ProcessHandle GetHandle() const override;
   BrowserContext* GetBrowserContext() const override;
   bool InSameStoragePartition(StoragePartition* partition) const override;
@@ -315,7 +314,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Control message handlers.
   void OnShutdownRequest();
-  void OnDumpHandlesDone();
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);

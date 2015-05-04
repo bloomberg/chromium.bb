@@ -59,10 +59,6 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 
-#if defined(OS_WIN)
-#include "content/common/handle_enumerator_win.h"
-#endif
-
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
@@ -569,7 +565,6 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetChildProfilerData)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_ProfilingPhaseCompleted,
                         OnProfilingPhaseCompleted)
-    IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
                         OnProcessBackgrounded)
 #if defined(USE_TCMALLOC)
@@ -619,19 +614,6 @@ void ChildThreadImpl::OnGetChildProfilerData(int sequence_number,
 
 void ChildThreadImpl::OnProfilingPhaseCompleted(int profiling_phase) {
   ThreadData::OnProfilingPhaseCompleted(profiling_phase);
-}
-
-void ChildThreadImpl::OnDumpHandles() {
-#if defined(OS_WIN)
-  scoped_refptr<HandleEnumerator> handle_enum(
-      new HandleEnumerator(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAuditAllHandles)));
-  handle_enum->EnumerateHandles();
-  Send(new ChildProcessHostMsg_DumpHandlesDone);
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 #if defined(USE_TCMALLOC)

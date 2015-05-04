@@ -110,9 +110,6 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_ProfilingPhaseCompleted,
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildHistogramData,
                      int /* sequence_number */)
 
-// Sent to child processes to dump their handle table.
-IPC_MESSAGE_CONTROL0(ChildProcessMsg_DumpHandles)
-
 // Sent to child processes to tell them to enter or leave background mode.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
                      bool /* background */)
@@ -144,9 +141,6 @@ IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildHistogramData,
 IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_GetBrowserHistogram,
                             std::string, /* histogram_name */
                             std::string /* histogram_json */)
-
-// Reply to ChildProcessMsg_DumpHandles when handle table dump is complete.
-IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_DumpHandlesDone)
 
 #if defined(OS_WIN)
 // Request that the given font be loaded by the host so it's cached by the
