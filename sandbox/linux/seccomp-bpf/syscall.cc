@@ -145,10 +145,9 @@ asm(// We need to be able to tell the kernel exactly where we made a
 #if defined(__thumb__)
     ".cfi_startproc\n"
     "push {r7, lr}\n"
+    ".save {r7, lr}\n"
     ".cfi_offset 14, -4\n"
     ".cfi_offset  7, -8\n"
-    "mov r7, sp\n"
-    ".cfi_def_cfa_register 7\n"
     ".cfi_def_cfa_offset 8\n"
 #else
     "stmfd sp!, {fp, lr}\n"
