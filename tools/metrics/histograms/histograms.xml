@@ -13635,6 +13635,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="LibraryLoader.PrefetchStatus" enum="BooleanSuccess">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Indicates whether the forking of a child process to prefetch the native
+    library succeeded. This metric is Android-specific, and is logged when the
+    browser starts.
+  </summary>
+</histogram>
+
 <histogram name="Linux.GlibcVersion" enum="LinuxGlibcVersion">
   <owner>thestig@chromium.org</owner>
   <summary>

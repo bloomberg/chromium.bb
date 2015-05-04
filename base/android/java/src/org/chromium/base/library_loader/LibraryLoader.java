@@ -14,6 +14,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.Locale;
 
@@ -208,10 +209,11 @@ public class LibraryLoader {
             @Override
             protected Void doInBackground(Void... params) {
                 TraceEvent.begin("LibraryLoader.asyncPrefetchLibrariesToMemory");
-                if (!nativeForkAndPrefetchNativeLibrary()) {
-                    // TODO(lizeb): Add a UMA metric to estimate how often this happens.
+                boolean success = nativeForkAndPrefetchNativeLibrary();
+                if (!success) {
                     Log.w(TAG, "Forking a process to prefetch the native library failed.");
                 }
+                RecordHistogram.recordBooleanHistogram("LibraryLoader.PrefetchStatus", success);
                 TraceEvent.end("LibraryLoader.asyncPrefetchLibrariesToMemory");
                 return null;
             }
