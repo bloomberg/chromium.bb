@@ -130,7 +130,6 @@ void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
   }
 
   renderer_ = NULL;
-  playing_ = false;
 }
 
 int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(
