@@ -15,34 +15,9 @@
 #include "net/proxy/proxy_service.h"
 
 namespace net {
-namespace {
-
-class ProxyResolverFactoryForMojoResolver : public LegacyProxyResolverFactory {
- public:
-  ProxyResolverFactoryForMojoResolver(
-      MojoProxyResolverFactory* mojo_proxy_factory,
-      HostResolver* host_resolver)
-      : LegacyProxyResolverFactory(true),
-        mojo_proxy_factory_(mojo_proxy_factory),
-        host_resolver_(host_resolver) {}
-
-  // LegacyProxyResolverFactory override.
-  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    return make_scoped_ptr(
-        new ProxyResolverMojo(mojo_proxy_factory_, host_resolver_));
-  }
-
- private:
-  MojoProxyResolverFactory* const mojo_proxy_factory_;
-  HostResolver* const host_resolver_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryForMojoResolver);
-};
-
-}  // namespace
 
 ProxyService* CreateProxyServiceUsingMojoFactory(
-    MojoProxyResolverFactory* mojo_proxy_factory,
+    interfaces::ProxyResolverFactory* mojo_proxy_factory,
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
@@ -54,11 +29,10 @@ ProxyService* CreateProxyServiceUsingMojoFactory(
   DCHECK(dhcp_proxy_script_fetcher);
   DCHECK(host_resolver);
 
-  ProxyService* proxy_service =
-      new ProxyService(proxy_config_service,
-                       make_scoped_ptr(new ProxyResolverFactoryForMojoResolver(
-                           mojo_proxy_factory, host_resolver)),
-                       net_log);
+  ProxyService* proxy_service = new ProxyService(
+      proxy_config_service, make_scoped_ptr(new ProxyResolverFactoryMojo(
+                                mojo_proxy_factory, host_resolver)),
+      net_log);
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
   proxy_service->SetProxyScriptFetchers(proxy_script_fetcher,

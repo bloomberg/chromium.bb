@@ -30,8 +30,6 @@ struct ProxyServer {
 };
 
 interface ProxyResolver {
-  SetPacScript(string data) => (int32 result);
-
   // Use a ProxyResolverRequestClient instead of returning a result so we can
   // receive load state updates and cancel in-flight requests by destroying the
   // client.
@@ -46,6 +44,12 @@ interface ProxyResolverRequestClient {
 
 interface ProxyResolverFactory {
   // TODO(amistry): Add NetLog and ProxyResolverErrorObserver.
-  CreateResolver(ProxyResolver& resolver,
-                 HostResolver host_resolver);
+  CreateResolver(string pac_script,
+                 ProxyResolver& resolver,
+                 HostResolver host_resolver,
+                 ProxyResolverFactoryRequestClient client);
+};
+
+interface ProxyResolverFactoryRequestClient {
+  ReportResult(int32 error);
 };

@@ -11,7 +11,6 @@
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mojo_host_resolver_impl.h"
-#include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -111,94 +110,39 @@ void ProxyResolverMojo::Job::LoadStateChanged(int32_t load_state) {
 }
 
 ProxyResolverMojo::ProxyResolverMojo(
-    MojoProxyResolverFactory* mojo_proxy_resolver_factory,
-    HostResolver* host_resolver)
-    : ProxyResolver(true /* |expects_pac_bytes| */),
-      mojo_proxy_resolver_factory_(mojo_proxy_resolver_factory),
-      host_resolver_(host_resolver) {
+    interfaces::ProxyResolverPtr resolver_ptr,
+    scoped_ptr<interfaces::HostResolver> host_resolver,
+    scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding)
+    : ProxyResolver(true),
+      mojo_proxy_resolver_ptr_(resolver_ptr.Pass()),
+      mojo_host_resolver_(host_resolver.Pass()),
+      mojo_host_resolver_binding_(host_resolver_binding.Pass()) {
+  mojo_proxy_resolver_ptr_.set_error_handler(this);
 }
 
 ProxyResolverMojo::~ProxyResolverMojo() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // All pending requests should have been cancelled.
   DCHECK(pending_jobs_.empty());
-  DCHECK(set_pac_script_callback_.IsCancelled());
 }
 
 void ProxyResolverMojo::CancelSetPacScript() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  set_pac_script_callback_.Cancel();
+  NOTREACHED();
 }
 
 int ProxyResolverMojo::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
     const CompletionCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(set_pac_script_callback_.IsCancelled());
-  DCHECK(!callback.is_null());
-  if (pac_script->type() != ProxyResolverScriptData::TYPE_SCRIPT_CONTENTS ||
-      pac_script->utf16().empty()) {
-    return ERR_PAC_SCRIPT_FAILED;
-  }
-
-  DVLOG(1) << "ProxyResolverMojo::SetPacScript: " << pac_script->utf16();
-  set_pac_script_callback_.Reset(
-      base::Bind(&ProxyResolverMojo::OnSetPacScriptDone, base::Unretained(this),
-                 pac_script, callback));
-
-  if (!mojo_proxy_resolver_ptr_)
-    SetUpServices();
-
-  mojo_proxy_resolver_ptr_->SetPacScript(
-      mojo::String::From(pac_script->utf16()),
-      set_pac_script_callback_.callback());
-
-  return ERR_IO_PENDING;
-}
-
-void ProxyResolverMojo::OnSetPacScriptDone(
-    const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    const CompletionCallback& callback,
-    int32_t result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!set_pac_script_callback_.IsCancelled());
-  DVLOG(1) << "ProxyResolverMojo::OnSetPacScriptDone: " << result;
-
-  // |callback| is owned by |set_pac_script_callback_|, so make a copy before
-  // cancelling.
-  auto callback_copy = callback;
-  set_pac_script_callback_.Cancel();
-  callback_copy.Run(result);
-}
-
-void ProxyResolverMojo::SetUpServices() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // A Mojo service implementation must outlive its binding.
-  mojo_host_resolver_binding_.reset();
-
-  interfaces::HostResolverPtr mojo_host_resolver_ptr;
-  mojo_host_resolver_.reset(new MojoHostResolverImpl(host_resolver_));
-  mojo_host_resolver_binding_.reset(new mojo::Binding<interfaces::HostResolver>(
-      mojo_host_resolver_.get(), mojo::GetProxy(&mojo_host_resolver_ptr)));
-  mojo_proxy_resolver_ptr_.reset();
-  mojo_proxy_resolver_factory_->Create(
-      mojo::GetProxy(&mojo_proxy_resolver_ptr_), mojo_host_resolver_ptr.Pass());
-  mojo_proxy_resolver_ptr_.set_error_handler(this);
+  NOTREACHED();
+  return ERR_NOT_IMPLEMENTED;
 }
 
 void ProxyResolverMojo::OnConnectionError() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "ProxyResolverMojo::OnConnectionError";
 
-  // Disconnect from the Mojo proxy resolver service. An attempt to reconnect
-  // will happen on the next |SetPacScript()| request.
+  // Disconnect from the Mojo proxy resolver service.
   mojo_proxy_resolver_ptr_.reset();
-
-  // This callback may call |SetPacScript()| and re-create the connection. So
-  // disconnect from the Mojo service (above) before aborting the pending
-  // request.
-  if (!set_pac_script_callback_.IsCancelled())
-    set_pac_script_callback_.callback().Run(ERR_PAC_SCRIPT_TERMINATED);
 }
 
 void ProxyResolverMojo::RemoveJob(Job* job) {
@@ -244,6 +188,81 @@ LoadState ProxyResolverMojo::GetLoadState(RequestHandle request) const {
   Job* job = static_cast<Job*>(request);
   CHECK_EQ(1u, pending_jobs_.count(job));
   return job->load_state();
+}
+
+class ProxyResolverFactoryMojo::Job
+    : public interfaces::ProxyResolverFactoryRequestClient,
+      public mojo::ErrorHandler,
+      public ProxyResolverFactory::Request {
+ public:
+  Job(ProxyResolverFactoryMojo* factory,
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const CompletionCallback& callback)
+      : factory_(factory),
+        resolver_(resolver),
+        callback_(callback),
+        binding_(this),
+        host_resolver_(new MojoHostResolverImpl(factory_->host_resolver_)),
+        host_resolver_binding_(
+            new mojo::Binding<interfaces::HostResolver>(host_resolver_.get())) {
+    interfaces::HostResolverPtr host_resolver_ptr;
+    interfaces::ProxyResolverFactoryRequestClientPtr client_ptr;
+    binding_.Bind(mojo::GetProxy(&client_ptr));
+    host_resolver_binding_->Bind(mojo::GetProxy(&host_resolver_ptr));
+    factory_->mojo_proxy_factory_->CreateResolver(
+        mojo::String::From(pac_script->utf16()), mojo::GetProxy(&resolver_ptr_),
+        host_resolver_ptr.Pass(), client_ptr.Pass());
+    resolver_ptr_.set_error_handler(this);
+    binding_.set_error_handler(this);
+  }
+
+  void OnConnectionError() override {
+    callback_.Run(ERR_PAC_SCRIPT_TERMINATED);
+  }
+
+ private:
+  void ReportResult(int32_t error) override {
+    resolver_ptr_.set_error_handler(nullptr);
+    binding_.set_error_handler(nullptr);
+    if (error == OK) {
+      resolver_->reset(new ProxyResolverMojo(resolver_ptr_.Pass(),
+                                             host_resolver_.Pass(),
+                                             host_resolver_binding_.Pass()));
+    }
+    callback_.Run(error);
+  }
+
+  ProxyResolverFactoryMojo* const factory_;
+  scoped_ptr<ProxyResolver>* resolver_;
+  const CompletionCallback callback_;
+  interfaces::ProxyResolverPtr resolver_ptr_;
+  mojo::Binding<interfaces::ProxyResolverFactoryRequestClient> binding_;
+  scoped_ptr<interfaces::HostResolver> host_resolver_;
+  scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding_;
+};
+
+ProxyResolverFactoryMojo::ProxyResolverFactoryMojo(
+    interfaces::ProxyResolverFactory* mojo_proxy_factory,
+    HostResolver* host_resolver)
+    : ProxyResolverFactory(true),
+      mojo_proxy_factory_(mojo_proxy_factory),
+      host_resolver_(host_resolver) {
+}
+
+int ProxyResolverFactoryMojo::CreateProxyResolver(
+    const scoped_refptr<ProxyResolverScriptData>& pac_script,
+    scoped_ptr<ProxyResolver>* resolver,
+    const CompletionCallback& callback,
+    scoped_ptr<ProxyResolverFactory::Request>* request) {
+  DCHECK(resolver);
+  DCHECK(request);
+  if (pac_script->type() != ProxyResolverScriptData::TYPE_SCRIPT_CONTENTS ||
+      pac_script->utf16().empty()) {
+    return ERR_PAC_SCRIPT_FAILED;
+  }
+  request->reset(new Job(this, pac_script, resolver, callback));
+  return ERR_IO_PENDING;
 }
 
 }  // namespace net

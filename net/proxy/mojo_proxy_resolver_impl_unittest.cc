@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
@@ -93,25 +92,6 @@ void TestRequestClient::OnConnectionError() {
   event_waiter_.NotifyEvent(CONNECTION_ERROR);
 }
 
-class SetPacScriptClient {
- public:
-  base::Callback<void(int32_t)> CreateCallback();
-  Error error() { return error_; }
-
- private:
-  void ReportResult(int32_t error);
-
-  Error error_ = ERR_FAILED;
-};
-
-base::Callback<void(int32_t)> SetPacScriptClient::CreateCallback() {
-  return base::Bind(&SetPacScriptClient::ReportResult, base::Unretained(this));
-}
-
-void SetPacScriptClient::ReportResult(int32_t error) {
-  error_ = static_cast<Error>(error);
-}
-
 class CallbackMockProxyResolver : public MockAsyncProxyResolverExpectsBytes {
  public:
   CallbackMockProxyResolver() {}
@@ -124,8 +104,6 @@ class CallbackMockProxyResolver : public MockAsyncProxyResolverExpectsBytes {
                      RequestHandle* request_handle,
                      const BoundNetLog& net_log) override;
   void CancelRequest(RequestHandle request_handle) override;
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override;
 
   // Wait until the mock resolver has received a CancelRequest call.
   void WaitForCancel();
@@ -133,13 +111,9 @@ class CallbackMockProxyResolver : public MockAsyncProxyResolverExpectsBytes {
   // Queues a proxy result to be returned synchronously.
   void ReturnProxySynchronously(const ProxyInfo& result);
 
-  // Queues a SetPacScript to be completed synchronously.
-  void CompleteSetPacScriptSynchronously();
-
  private:
   base::Closure cancel_callback_;
   scoped_ptr<ProxyInfo> sync_result_;
-  bool set_pac_script_sync_ = false;
 };
 
 CallbackMockProxyResolver::~CallbackMockProxyResolver() {
@@ -169,17 +143,6 @@ void CallbackMockProxyResolver::CancelRequest(RequestHandle request_handle) {
   }
 }
 
-int CallbackMockProxyResolver::SetPacScript(
-    const scoped_refptr<ProxyResolverScriptData>& script_data,
-    const CompletionCallback& callback) {
-  if (set_pac_script_sync_) {
-    set_pac_script_sync_ = false;
-    return OK;
-  }
-  return MockAsyncProxyResolverExpectsBytes::SetPacScript(script_data,
-                                                          callback);
-}
-
 void CallbackMockProxyResolver::WaitForCancel() {
   while (cancelled_requests().empty()) {
     base::RunLoop run_loop;
@@ -193,14 +156,6 @@ void CallbackMockProxyResolver::ReturnProxySynchronously(
   sync_result_.reset(new ProxyInfo(result));
 }
 
-void CallbackMockProxyResolver::CompleteSetPacScriptSynchronously() {
-  set_pac_script_sync_ = true;
-}
-
-void Fail(int32_t error) {
-  FAIL() << "Unexpected callback with error: " << error;
-}
-
 }  // namespace
 
 class MojoProxyResolverImplTest : public testing::Test {
@@ -209,14 +164,25 @@ class MojoProxyResolverImplTest : public testing::Test {
     scoped_ptr<CallbackMockProxyResolver> mock_resolver(
         new CallbackMockProxyResolver);
     mock_proxy_resolver_ = mock_resolver.get();
-    resolver_impl_.reset(new MojoProxyResolverImpl(mock_resolver.Pass()));
+    resolver_impl_.reset(new MojoProxyResolverImpl(
+        mock_resolver.Pass(),
+        base::Bind(&MojoProxyResolverImplTest::set_load_state_changed_callback,
+                   base::Unretained(this))));
     resolver_ = resolver_impl_.get();
+  }
+
+  void set_load_state_changed_callback(
+      const ProxyResolver::LoadStateChangedCallback& callback) {
+    EXPECT_TRUE(load_state_changed_callback_.is_null());
+    EXPECT_FALSE(callback.is_null());
+    load_state_changed_callback_ = callback;
   }
 
   CallbackMockProxyResolver* mock_proxy_resolver_;
 
   scoped_ptr<MojoProxyResolverImpl> resolver_impl_;
   interfaces::ProxyResolver* resolver_;
+  ProxyResolver::LoadStateChangedCallback load_state_changed_callback_;
 };
 
 TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
@@ -229,7 +195,8 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
       mock_proxy_resolver_->pending_requests()[0];
   EXPECT_EQ(GURL("http://example.com"), request->url());
 
-  resolver_impl_->LoadStateChanged(request.get(),
+  ASSERT_FALSE(load_state_changed_callback_.is_null());
+  load_state_changed_callback_.Run(request.get(),
                                    LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT);
   client.event_waiter().WaitForEvent(TestRequestClient::LOAD_STATE_CHANGED);
   EXPECT_EQ(LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT, client.load_state());
@@ -349,48 +316,6 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
   EXPECT_EQ(6789, server2.host_port_pair().port());
 }
 
-TEST_F(MojoProxyResolverImplTest, SetPacScript) {
-  SetPacScriptClient client;
-
-  resolver_->SetPacScript("pac script", client.CreateCallback());
-  MockAsyncProxyResolverBase::SetPacScriptRequest* request =
-      mock_proxy_resolver_->pending_set_pac_script_request();
-  ASSERT_TRUE(request);
-  EXPECT_EQ("pac script", base::UTF16ToUTF8(request->script_data()->utf16()));
-  request->CompleteNow(OK);
-  EXPECT_EQ(OK, client.error());
-}
-
-TEST_F(MojoProxyResolverImplTest, SetPacScriptSynchronous) {
-  SetPacScriptClient client;
-
-  mock_proxy_resolver_->CompleteSetPacScriptSynchronously();
-  resolver_->SetPacScript("pac script", client.CreateCallback());
-  EXPECT_FALSE(mock_proxy_resolver_->pending_set_pac_script_request());
-  EXPECT_EQ(OK, client.error());
-}
-
-TEST_F(MojoProxyResolverImplTest, SetPacScriptMultiple) {
-  SetPacScriptClient client1;
-  SetPacScriptClient client2;
-
-  resolver_->SetPacScript("pac script", client1.CreateCallback());
-  resolver_->SetPacScript("a different pac script", client2.CreateCallback());
-  MockAsyncProxyResolverBase::SetPacScriptRequest* request =
-      mock_proxy_resolver_->pending_set_pac_script_request();
-  ASSERT_TRUE(request);
-  EXPECT_EQ("pac script", base::UTF16ToUTF8(request->script_data()->utf16()));
-  request->CompleteNow(OK);
-  EXPECT_EQ(OK, client1.error());
-
-  request = mock_proxy_resolver_->pending_set_pac_script_request();
-  ASSERT_TRUE(request);
-  EXPECT_EQ("a different pac script",
-            base::UTF16ToUTF8(request->script_data()->utf16()));
-  request->CompleteNow(ERR_PAC_SCRIPT_FAILED);
-  EXPECT_EQ(ERR_PAC_SCRIPT_FAILED, client2.error());
-}
-
 TEST_F(MojoProxyResolverImplTest, DestroyClient) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
   scoped_ptr<TestRequestClient> client(
@@ -411,7 +336,6 @@ TEST_F(MojoProxyResolverImplTest, DestroyService) {
   TestRequestClient client(mojo::GetProxy(&client_ptr));
 
   resolver_->GetProxyForUrl("http://example.com", client_ptr.Pass());
-  resolver_->SetPacScript("pac script", base::Bind(&Fail));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_requests().size());
   scoped_refptr<MockAsyncProxyResolverBase::Request> request =
       mock_proxy_resolver_->pending_requests()[0];

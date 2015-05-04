@@ -8,6 +8,9 @@
 #include "base/basictypes.h"
 
 namespace net {
+namespace interfaces {
+class ProxyResolverFactory;
+}
 
 class DhcpProxyScriptFetcher;
 class HostResolver;
@@ -34,7 +37,7 @@ class ProxyService;
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ProxyService.
 ProxyService* CreateProxyServiceUsingMojoFactory(
-    MojoProxyResolverFactory* mojo_proxy_factory,
+    interfaces::ProxyResolverFactory* mojo_proxy_factory,
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,

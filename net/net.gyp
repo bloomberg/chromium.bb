@@ -886,7 +886,6 @@
             'dns/mojo_host_resolver_impl.h',
             'proxy/in_process_mojo_proxy_resolver_factory.cc',
             'proxy/in_process_mojo_proxy_resolver_factory.h',
-            'proxy/mojo_proxy_resolver_factory.h',
             'proxy/proxy_resolver_mojo.cc',
             'proxy/proxy_resolver_mojo.h',
             'proxy/proxy_service_mojo.cc',

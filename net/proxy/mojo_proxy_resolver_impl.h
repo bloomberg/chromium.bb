@@ -18,47 +18,31 @@ namespace net {
 
 class MojoProxyResolverImpl : public interfaces::ProxyResolver {
  public:
-  explicit MojoProxyResolverImpl(scoped_ptr<net::ProxyResolver> resolver);
+  MojoProxyResolverImpl(
+      scoped_ptr<net::ProxyResolver> resolver,
+      const base::Callback<
+          void(const net::ProxyResolver::LoadStateChangedCallback&)>&
+          load_state_change_callback_setter);
 
   ~MojoProxyResolverImpl() override;
-
-  // Invoked when the LoadState of a request changes.
-  void LoadStateChanged(net::ProxyResolver::RequestHandle handle,
-                        LoadState load_state);
 
  private:
   class Job;
 
-  struct SetPacScriptRequest {
-    SetPacScriptRequest(
-        const scoped_refptr<ProxyResolverScriptData>& script_data,
-        const mojo::Callback<void(int32_t)>& callback);
-    ~SetPacScriptRequest();
-
-    // The script data for this request.
-    scoped_refptr<ProxyResolverScriptData> script_data;
-
-    // The callback to run to report the result of this request.
-    const mojo::Callback<void(int32_t)> callback;
-  };
-
   // interfaces::ProxyResolver overrides.
-  void SetPacScript(const mojo::String& data,
-                    const mojo::Callback<void(int32_t)>& callback) override;
   void GetProxyForUrl(
       const mojo::String& url,
       interfaces::ProxyResolverRequestClientPtr client) override;
 
   void DeleteJob(Job* job);
 
-  void StartSetPacScript();
-  void SetPacScriptDone(int result);
+  // Invoked when the LoadState of a request changes.
+  void LoadStateChanged(net::ProxyResolver::RequestHandle handle,
+                        LoadState load_state);
 
   scoped_ptr<net::ProxyResolver> resolver_;
   std::set<Job*> resolve_jobs_;
   std::map<net::ProxyResolver::RequestHandle, Job*> request_handle_to_job_;
-
-  std::queue<SetPacScriptRequest> set_pac_script_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoProxyResolverImpl);
 };

@@ -11,7 +11,6 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/service_registry.h"
-#include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
@@ -52,9 +51,11 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
   }
 }
 
-void UtilityProcessMojoProxyResolverFactory::Create(
+void UtilityProcessMojoProxyResolverFactory::CreateResolver(
+    const mojo::String& pac_script,
     mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
-    net::interfaces::HostResolverPtr host_resolver) {
+    net::interfaces::HostResolverPtr host_resolver,
+    net::interfaces::ProxyResolverFactoryRequestClientPtr client) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!resolver_factory_)
     CreateProcessAndConnect();
@@ -65,7 +66,8 @@ void UtilityProcessMojoProxyResolverFactory::Create(
     req = nullptr;
     return;
   }
-  resolver_factory_->CreateResolver(req.Pass(), host_resolver.Pass());
+  resolver_factory_->CreateResolver(pac_script, req.Pass(),
+                                    host_resolver.Pass(), client.Pass());
 }
 
 void UtilityProcessMojoProxyResolverFactory::OnConnectionError() {

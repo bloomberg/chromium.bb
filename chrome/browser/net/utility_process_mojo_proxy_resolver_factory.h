@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NET_UTILITY_PROCESS_MOJO_PROXY_RESOLVER_FACTORY_H_
 
 #include "base/macros.h"
-#include "net/proxy/mojo_proxy_resolver_factory.h"
+#include "net/interfaces/proxy_resolver_service.mojom.h"
 
 template <typename Type>
 struct DefaultSingletonTraits;
@@ -16,14 +16,17 @@ struct DefaultSingletonTraits;
 // utility process. Utility process crashes are detected and the utility
 // process is automatically restarted.
 class UtilityProcessMojoProxyResolverFactory
-    : public net::MojoProxyResolverFactory,
+    : public net::interfaces::ProxyResolverFactory,
       public mojo::ErrorHandler {
  public:
   static UtilityProcessMojoProxyResolverFactory* GetInstance();
 
-  // Overridden from net::MojoProxyResolverFactory:
-  void Create(mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
-              net::interfaces::HostResolverPtr host_resolver) override;
+  // Overridden from net::interfaces::ProxyResolverFactory:
+  void CreateResolver(
+      const mojo::String& pac_script,
+      mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
+      net::interfaces::HostResolverPtr host_resolver,
+      net::interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
  private:
   friend struct DefaultSingletonTraits<UtilityProcessMojoProxyResolverFactory>;

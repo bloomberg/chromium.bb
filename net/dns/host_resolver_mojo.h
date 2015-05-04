@@ -38,6 +38,10 @@ class HostResolverMojo : public HostResolver, public mojo::ErrorHandler {
   void CancelRequest(RequestHandle req) override;
   HostCache* GetHostCache() override;
 
+  void set_disconnect_callback(const base::Closure& disconnect_callback) {
+    disconnect_callback_ = disconnect_callback;
+  }
+
  private:
   class Job;
 
@@ -50,7 +54,7 @@ class HostResolverMojo : public HostResolver, public mojo::ErrorHandler {
 
   interfaces::HostResolverPtr resolver_;
 
-  const base::Closure disconnect_callback_;
+  base::Closure disconnect_callback_;
 
   scoped_ptr<HostCache> host_cache_;
   base::WeakPtrFactory<HostCache> host_cache_weak_factory_;

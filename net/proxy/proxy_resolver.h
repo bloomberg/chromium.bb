@@ -30,7 +30,7 @@ class NET_EXPORT_PRIVATE ProxyResolver {
   typedef void* RequestHandle;
 
   using LoadStateChangedCallback =
-      const base::Callback<void(RequestHandle, LoadState)>;
+      base::Callback<void(RequestHandle, LoadState)>;
 
   // See |expects_pac_bytes()| for the meaning of |expects_pac_bytes|.
   explicit ProxyResolver(bool expects_pac_bytes)

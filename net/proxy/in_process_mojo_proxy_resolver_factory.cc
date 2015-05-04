@@ -25,10 +25,13 @@ InProcessMojoProxyResolverFactory::InProcessMojoProxyResolverFactory() {
 InProcessMojoProxyResolverFactory::~InProcessMojoProxyResolverFactory() =
     default;
 
-void InProcessMojoProxyResolverFactory::Create(
+void InProcessMojoProxyResolverFactory::CreateResolver(
+    const mojo::String& pac_script,
     mojo::InterfaceRequest<interfaces::ProxyResolver> req,
-    interfaces::HostResolverPtr host_resolver) {
-  factory_->CreateResolver(req.Pass(), host_resolver.Pass());
+    interfaces::HostResolverPtr host_resolver,
+    interfaces::ProxyResolverFactoryRequestClientPtr client) {
+  factory_->CreateResolver(pac_script, req.Pass(), host_resolver.Pass(),
+                           client.Pass());
 }
 
 }  // namespace net

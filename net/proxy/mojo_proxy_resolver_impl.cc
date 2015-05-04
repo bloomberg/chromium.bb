@@ -55,14 +55,16 @@ class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
 };
 
 MojoProxyResolverImpl::MojoProxyResolverImpl(
-    scoped_ptr<net::ProxyResolver> resolver)
+    scoped_ptr<net::ProxyResolver> resolver,
+    const base::Callback<
+        void(const net::ProxyResolver::LoadStateChangedCallback&)>&
+        load_state_change_callback_setter)
     : resolver_(resolver.Pass()) {
-  DCHECK(resolver_->expects_pac_bytes());
+  load_state_change_callback_setter.Run(base::Bind(
+      &MojoProxyResolverImpl::LoadStateChanged, base::Unretained(this)));
 }
 
 MojoProxyResolverImpl::~MojoProxyResolverImpl() {
-  if (!set_pac_script_requests_.empty())
-    resolver_->CancelSetPacScript();
   STLDeleteElements(&resolve_jobs_);
 }
 
@@ -72,16 +74,6 @@ void MojoProxyResolverImpl::LoadStateChanged(
   auto it = request_handle_to_job_.find(handle);
   DCHECK(it != request_handle_to_job_.end());
   it->second->LoadStateChanged(load_state);
-}
-
-void MojoProxyResolverImpl::SetPacScript(
-    const mojo::String& data,
-    const mojo::Callback<void(int32_t)>& callback) {
-  DVLOG(1) << "SetPacScript(" << data << ")";
-  set_pac_script_requests_.push(
-      SetPacScriptRequest(ProxyResolverScriptData::FromUTF8(data), callback));
-  if (set_pac_script_requests_.size() == 1)
-    StartSetPacScript();
 }
 
 void MojoProxyResolverImpl::GetProxyForUrl(
@@ -101,25 +93,6 @@ void MojoProxyResolverImpl::DeleteJob(Job* job) {
   size_t num_erased = resolve_jobs_.erase(job);
   DCHECK(num_erased);
   delete job;
-}
-
-void MojoProxyResolverImpl::StartSetPacScript() {
-  DCHECK(!set_pac_script_requests_.empty());
-  int result = resolver_->SetPacScript(
-      set_pac_script_requests_.front().script_data,
-      base::Bind(&MojoProxyResolverImpl::SetPacScriptDone,
-                 base::Unretained(this)));
-  if (result != ERR_IO_PENDING)
-    SetPacScriptDone(result);
-}
-
-void MojoProxyResolverImpl::SetPacScriptDone(int result) {
-  DVLOG(1) << "SetPacScript finished with error " << result;
-  DCHECK(!set_pac_script_requests_.empty());
-  set_pac_script_requests_.front().callback.Run(result);
-  set_pac_script_requests_.pop();
-  if (!set_pac_script_requests_.empty())
-    StartSetPacScript();
 }
 
 MojoProxyResolverImpl::Job::Job(
@@ -184,13 +157,5 @@ void MojoProxyResolverImpl::Job::OnConnectionError() {
 void MojoProxyResolverImpl::Job::SendLoadStateChanged(LoadState load_state) {
   client_->LoadStateChanged(load_state);
 }
-
-MojoProxyResolverImpl::SetPacScriptRequest::SetPacScriptRequest(
-    const scoped_refptr<ProxyResolverScriptData>& script_data,
-    const mojo::Callback<void(int32_t)>& callback)
-    : script_data(script_data), callback(callback) {
-}
-
-MojoProxyResolverImpl::SetPacScriptRequest::~SetPacScriptRequest() = default;
 
 }  // namespace net

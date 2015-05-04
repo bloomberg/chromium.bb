@@ -6,7 +6,7 @@
 #define NET_PROXY_IN_PROCESS_MOJO_PROXY_RESOLVER_FACTORY_H_
 
 #include "base/macros.h"
-#include "net/proxy/mojo_proxy_resolver_factory.h"
+#include "net/interfaces/proxy_resolver_service.mojom.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
@@ -16,13 +16,17 @@ namespace net {
 // Factory to connect to an in-process Mojo proxy resolver service.
 // NOTE: This is intended to be temporary for debugging purposes and will be
 // removed when we're confident with the out-of-process implementation.
-class InProcessMojoProxyResolverFactory : public MojoProxyResolverFactory {
+class InProcessMojoProxyResolverFactory
+    : public interfaces::ProxyResolverFactory {
  public:
   static InProcessMojoProxyResolverFactory* GetInstance();
 
-  // Overridden from MojoProxyResolverFactory:
-  void Create(mojo::InterfaceRequest<interfaces::ProxyResolver> req,
-              interfaces::HostResolverPtr host_resolver) override;
+  // Overridden from interfaces::ProxyResolverFactory:
+  void CreateResolver(
+      const mojo::String& pac_script,
+      mojo::InterfaceRequest<interfaces::ProxyResolver> req,
+      interfaces::HostResolverPtr host_resolver,
+      interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
  private:
   InProcessMojoProxyResolverFactory();
