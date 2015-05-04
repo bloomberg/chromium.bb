@@ -72,10 +72,9 @@ AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) 
         return 0;
 
     AXObject* object = axObjectCache()->getOrCreate(element);
-    if (!object)
+    if (!object || !object->isMenuListOption())
         return 0;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(object->isMenuListOption());
     return toAXMenuListOption(object);
 }
 

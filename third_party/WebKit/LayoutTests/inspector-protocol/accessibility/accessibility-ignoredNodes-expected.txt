@@ -317,6 +317,10 @@ Content within label refers to label container
     "accessibilityNode": {
       "nodeId": "<string>",
       "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
       "ignoredReasons": [
         {
           "name": "notRendered",

@@ -209,12 +209,10 @@ static bool isMenuListOption(Node* node)
 {
     if (!isHTMLOptionElement(node))
         return false;
-    Element* parent = node->parentElement();
-    if (isHTMLOptGroupElement(parent))
-        parent = parent->parentElement();
-    if (!isHTMLSelectElement(parent))
+    HTMLSelectElement* select = toHTMLOptionElement(node)->ownerSelectElement();
+    if (!select)
         return false;
-    LayoutObject* layoutObject = toHTMLSelectElement(parent)->layoutObject();
+    LayoutObject* layoutObject = select->layoutObject();
     return layoutObject && layoutObject->isMenuList();
 }
 
@@ -382,11 +380,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     if (!node->parentElement())
         return 0;
 
-    // It's only allowed to create an AXObject from a Node if it's in a canvas subtree.
-    // Or if it's a hidden element, but we still want to expose it because of other ARIA attributes.
-    bool inCanvasSubtree = node->parentElement()->isInCanvasSubtree();
-    bool isHidden = !node->layoutObject() && isNodeAriaVisible(node);
-    if (!inCanvasSubtree && !isHidden && !isMenuListOption(node))
+    if (isHTMLHeadElement(node))
         return 0;
 
     RefPtr<AXObject> newObj = createFromNode(node);

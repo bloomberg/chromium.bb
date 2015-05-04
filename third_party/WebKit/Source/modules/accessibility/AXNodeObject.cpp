@@ -188,6 +188,15 @@ bool AXNodeObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons)
         return true;
     }
 
+    Element* element = node()->isElementNode() ? toElement(node()) : node()->parentElement();
+    if (!layoutObject()
+        && (!element || !element->isInCanvasSubtree())
+        && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
+        if (ignoredReasons)
+            ignoredReasons->append(IgnoredReason(AXNotRendered));
+        return true;
+    }
+
     if (m_role == UnknownRole) {
         if (ignoredReasons)
             ignoredReasons->append(IgnoredReason(AXUninteresting));
@@ -488,8 +497,11 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
     AccessibilityRole role = determineAccessibilityRoleUtil();
     if (role != UnknownRole)
         return role;
-    if (node()->isElementNode() && toElement(node())->isFocusable())
-        return GroupRole;
+    if (node()->isElementNode()) {
+        Element* element = toElement(node());
+        if (element->isInCanvasSubtree() && element->isFocusable())
+            return GroupRole;
+    }
     return UnknownRole;
 }
 
@@ -1813,28 +1825,37 @@ LayoutRect AXNodeObject::elementRect() const
     return boundingBox;
 }
 
+static Node* getParentNodeForComputeParent(Node* node)
+{
+    if (!node)
+        return nullptr;
+
+    Node* parentNode = nullptr;
+
+    // Skip over <optgroup> and consider the <select> the immediate parent of an <option>.
+    if (isHTMLOptionElement(node))
+        parentNode = toHTMLOptionElement(node)->ownerSelectElement();
+
+    if (!parentNode)
+        parentNode = node->parentNode();
+
+    return parentNode;
+}
+
 AXObject* AXNodeObject::computeParent() const
 {
-    if (!node())
-        return 0;
+    if (Node* parentNode = getParentNodeForComputeParent(node()))
+        return axObjectCache()->getOrCreate(parentNode);
 
-    Node* parentObj = node()->parentNode();
-    if (parentObj)
-        return axObjectCache()->getOrCreate(parentObj);
-
-    return 0;
+    return nullptr;
 }
 
 AXObject* AXNodeObject::computeParentIfExists() const
 {
-    if (!node())
-        return 0;
+    if (Node* parentNode = getParentNodeForComputeParent(node()))
+        return axObjectCache()->get(parentNode);
 
-    Node* parentObj = node()->parentNode();
-    if (parentObj)
-        return axObjectCache()->get(parentObj);
-
-    return 0;
+    return nullptr;
 }
 
 AXObject* AXNodeObject::firstChild() const
