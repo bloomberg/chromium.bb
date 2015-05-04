@@ -8,10 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
+#include "base/thread_task_runner_handle.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/browser_process.h"
@@ -29,6 +31,30 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
+
+namespace {
+
+// Writes an undocumented sentinel file that prevents Spotlight from indexing
+// below a particular path in order to reap some power savings.
+void EnsureMetadataNeverIndexFileOnFileThread(
+    const base::FilePath& user_data_dir) {
+  const char kMetadataNeverIndexFilename[] = ".metadata_never_index";
+  base::FilePath metadata_file_path =
+      user_data_dir.Append(kMetadataNeverIndexFilename);
+  if (base::PathExists(metadata_file_path))
+    return;
+
+  if (base::WriteFile(metadata_file_path, nullptr, 0) == -1)
+    DLOG(FATAL) << "Could not write .metadata_never_index file.";
+}
+
+void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
+}
+
+}  // namespace
 
 // ChromeBrowserMainPartsMac ---------------------------------------------------
 
@@ -165,6 +191,11 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
 
   g_browser_process->metrics_service()->RecordBreakpadRegistration(
       crash_reporter::GetUploadsEnabled());
+
+  // TODO(calamity): Make this gated on first_run::IsChromeFirstRun() in M45.
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&EnsureMetadataNeverIndexFile, user_data_dir()));
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
