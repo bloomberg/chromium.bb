@@ -17,7 +17,7 @@
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/isolated_world_ids.h"
+#include "chrome/renderer/chrome_isolated_world_ids.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/web_apps.h"
@@ -29,7 +29,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
-#include "extensions/renderer/extension_groups.h"
 #include "net/base/data_url.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -163,7 +162,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       translate_helper_(new translate::TranslateHelper(
           render_view,
           chrome::ISOLATED_WORLD_ID_TRANSLATE,
-          extensions::EXTENSION_GROUP_INTERNAL_TRANSLATE_SCRIPTS,
+          0,
           extensions::kExtensionScheme)),
       phishing_classifier_(NULL),
       capture_timer_(false, false) {

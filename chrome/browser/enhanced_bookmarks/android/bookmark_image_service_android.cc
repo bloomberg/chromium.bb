@@ -9,6 +9,7 @@
 #include "chrome/browser/enhanced_bookmarks/android/bookmark_image_service_android.h"
 #include "chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/renderer/chrome_isolated_world_ids.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/enhanced_bookmarks/enhanced_bookmark_model.h"
 #include "content/public/browser/browser_context.h"
@@ -115,11 +116,12 @@ void BookmarkImageServiceAndroid::RetrieveSalientImageFromContext(
                               .as_string());
   }
 
-  render_frame_host->ExecuteJavaScript(
+  render_frame_host->ExecuteJavaScriptInIsolatedWorld(
       script_,
       base::Bind(
           &BookmarkImageServiceAndroid::RetrieveSalientImageFromContextCallback,
-          base::Unretained(this), page_url, update_bookmark));
+          base::Unretained(this), page_url, update_bookmark),
+      chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
 }
 
 void BookmarkImageServiceAndroid::FinishSuccessfulPageLoadForTab(

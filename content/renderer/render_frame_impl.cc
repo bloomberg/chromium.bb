@@ -54,6 +54,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/document_state.h"
+#include "content/public/renderer/isolated_world_ids.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -1031,6 +1032,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnJavaScriptExecuteRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequestForTests,
                         OnJavaScriptExecuteRequestForTests)
+    IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
+                        OnJavaScriptExecuteRequestInIsolatedWorld)
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetEditableSelectionOffsets,
@@ -1398,6 +1401,80 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
       frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
 
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
+}
+
+void RenderFrameImpl::OnJavaScriptExecuteRequestInIsolatedWorld(
+    const base::string16& jscript,
+    int id,
+    bool notify_result,
+    int world_id) {
+  TRACE_EVENT_INSTANT0("test_tracing",
+                       "OnJavaScriptExecuteRequestInIsolatedWorld",
+                       TRACE_EVENT_SCOPE_THREAD);
+
+  if (world_id <= ISOLATED_WORLD_ID_GLOBAL ||
+      world_id > ISOLATED_WORLD_ID_MAX) {
+    // Return if the world_id is not valid. world_id is passed as a plain int
+    // over IPC and needs to be verified here, in the IPC endpoint.
+    NOTREACHED();
+    return;
+  }
+
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  WebScriptSource script = WebScriptSource(jscript);
+  JavaScriptIsolatedWorldRequest* request = new JavaScriptIsolatedWorldRequest(
+      id, notify_result, routing_id_, weak_factory_.GetWeakPtr());
+  frame_->requestExecuteScriptInIsolatedWorld(world_id, &script, 1, 0, false,
+                                              request);
+}
+
+RenderFrameImpl::JavaScriptIsolatedWorldRequest::JavaScriptIsolatedWorldRequest(
+    int id,
+    bool notify_result,
+    int routing_id,
+    base::WeakPtr<RenderFrameImpl> render_frame_impl)
+    : id_(id),
+      notify_result_(notify_result),
+      routing_id_(routing_id),
+      render_frame_impl_(render_frame_impl) {
+}
+
+RenderFrameImpl::JavaScriptIsolatedWorldRequest::
+    ~JavaScriptIsolatedWorldRequest() {
+}
+
+void RenderFrameImpl::JavaScriptIsolatedWorldRequest::completed(
+    const blink::WebVector<v8::Local<v8::Value>>& result) {
+  if (!render_frame_impl_.get()) {
+    return;
+  }
+
+  if (notify_result_) {
+    base::ListValue list;
+    if (!result.isEmpty()) {
+      // It's safe to always use the main world context when converting
+      // here. V8ValueConverterImpl shouldn't actually care about the
+      // context scope, and it switches to v8::Object's creation context
+      // when encountered. (from extensions/renderer/script_injection.cc)
+      v8::Local<v8::Context> context =
+          render_frame_impl_.get()->frame_->mainWorldScriptContext();
+      v8::Context::Scope context_scope(context);
+      V8ValueConverterImpl converter;
+      converter.SetDateAllowed(true);
+      converter.SetRegExpAllowed(true);
+      for (const auto& value : result) {
+        base::Value* result_value = converter.FromV8Value(value, context);
+        list.Append(result_value ? result_value
+                                 : base::Value::CreateNullValue());
+      }
+    } else {
+      list.Set(0, base::Value::CreateNullValue());
+    }
+    render_frame_impl_.get()->Send(
+        new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id_, list));
+  }
+
+  delete this;
 }
 
 void RenderFrameImpl::HandleJavascriptExecutionResult(

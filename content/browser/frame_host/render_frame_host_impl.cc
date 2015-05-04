@@ -63,6 +63,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/renderer/isolated_world_ids.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "url/gurl.h"
@@ -88,6 +89,9 @@ namespace {
 
 // The next value to use for the accessibility reset token.
 int g_next_accessibility_reset_token = 1;
+
+// The next value to use for the javascript callback id.
+int g_next_javascript_callback_id = 1;
 
 // The (process id, routing id) pair that identifies one RenderFrame.
 typedef std::pair<int32, int32> RenderFrameHostID;
@@ -272,8 +276,7 @@ void RenderFrameHostImpl::ExecuteJavaScript(
 void RenderFrameHostImpl::ExecuteJavaScript(
      const base::string16& javascript,
      const JavaScriptResultCallback& callback) {
-  static int next_id = 1;
-  int key = next_id++;
+  int key = g_next_javascript_callback_id++;
   Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
                                              javascript,
                                              key, true));
@@ -285,6 +288,23 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
   Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_,
                                                      javascript,
                                                      0, false, true));
+}
+
+void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
+    const base::string16& javascript,
+    const JavaScriptResultCallback& callback,
+    int world_id) {
+  if (world_id <= ISOLATED_WORLD_ID_GLOBAL ||
+      world_id > ISOLATED_WORLD_ID_MAX) {
+    // Return if the world_id is not valid.
+    NOTREACHED();
+    return;
+  }
+
+  int key = g_next_javascript_callback_id++;
+  Send(new FrameMsg_JavaScriptExecuteRequestInIsolatedWorld(
+      routing_id_, javascript, key, true, world_id));
+  javascript_callbacks_.insert(std::make_pair(key, callback));
 }
 
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {

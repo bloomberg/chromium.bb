@@ -29,6 +29,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
+#include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "third_party/WebKit/public/web/WebTransitionElementData.h"
 #include "ui/gfx/range/range.h"
 
@@ -575,6 +576,30 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
 
+  // A wrapper class used as the callback for JavaScript executed
+  // in an isolated world.
+  class JavaScriptIsolatedWorldRequest
+      : public blink::WebScriptExecutionCallback {
+   public:
+    JavaScriptIsolatedWorldRequest(
+        int id,
+        bool notify_result,
+        int routing_id,
+        base::WeakPtr<RenderFrameImpl> render_frame_impl);
+    void completed(
+        const blink::WebVector<v8::Local<v8::Value>>& result) override;
+
+   private:
+    ~JavaScriptIsolatedWorldRequest();
+
+    int id_;
+    bool notify_result_;
+    int routing_id_;
+    base::WeakPtr<RenderFrameImpl> render_frame_impl_;
+
+    DISALLOW_COPY_AND_ASSIGN(JavaScriptIsolatedWorldRequest);
+  };
+
   typedef std::map<GURL, double> HostZoomLevels;
 
   // Functions to add and remove observers for this object.
@@ -619,6 +644,10 @@ class CONTENT_EXPORT RenderFrameImpl
                                           int id,
                                           bool notify_result,
                                           bool has_user_gesture);
+  void OnJavaScriptExecuteRequestInIsolatedWorld(const base::string16& jscript,
+                                                 int id,
+                                                 bool notify_result,
+                                                 int world_id);
   void OnVisualStateRequest(uint64 key);
   void OnSetEditableSelectionOffsets(int start, int end);
   void OnSetCompositionFromExistingText(

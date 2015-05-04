@@ -481,6 +481,14 @@ IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestForTests,
                     bool, /* if true, a reply is requested */
                     bool  /* if true, a user gesture indicator is created */)
 
+// Same as FrameMsg_JavaScriptExecuteRequest above except the script is
+// run in the isolated world specified by the fourth parameter.
+IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
+                    base::string16, /* javascript */
+                    int, /* ID */
+                    bool, /* if true, a reply is requested */
+                    int /* world_id */)
+
 // Selects between the given start and end offsets in the currently focused
 // editable field.
 IPC_MESSAGE_ROUTED2(FrameMsg_SetEditableSelectionOffsets,

@@ -73,6 +73,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
   virtual void ExecuteJavaScript(const base::string16& javascript,
                                  const JavaScriptResultCallback& callback) = 0;
+  virtual void ExecuteJavaScriptInIsolatedWorld(
+      const base::string16& javascript,
+      const JavaScriptResultCallback& callback,
+      int world_id) = 0;
 
   // ONLY FOR TESTS: Same as above but adds a fake UserGestureIndicator around
   // execution. (crbug.com/408426)

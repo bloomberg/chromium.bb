@@ -1,0 +1,27 @@
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_RENDERER_CHROME_ISOLATED_WORLD_IDS_H_
+#define CHROME_RENDERER_CHROME_ISOLATED_WORLD_IDS_H_
+
+#include "content/public/renderer/isolated_world_ids.h"
+
+namespace chrome {
+
+enum ChromeIsolatedWorldIDs {
+  // Isolated world ID for Chrome Translate.
+  ISOLATED_WORLD_ID_TRANSLATE = content::ISOLATED_WORLD_ID_CONTENT_END + 1,
+
+  // Isolated world ID for internal Chrome features.
+  ISOLATED_WORLD_ID_CHROME_INTERNAL,
+
+  // Numbers for isolated worlds for extensions are set in
+  // extensions/renderer/script_injection.cc, and are are greater than or equal
+  // to this number.
+  ISOLATED_WORLD_ID_EXTENSIONS
+};
+
+}  // namespace chrome
+
+#endif  // CHROME_RENDERER_CHROME_ISOLATED_WORLD_IDS_H_

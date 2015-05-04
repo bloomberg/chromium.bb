@@ -137,6 +137,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          const JavaScriptResultCallback& callback) override;
   void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript) override;
+  void ExecuteJavaScriptInIsolatedWorld(
+      const base::string16& javascript,
+      const JavaScriptResultCallback& callback,
+      int world_id) override;
   void ActivateFindInPageResultForAccessibility(int request_id) override;
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;
