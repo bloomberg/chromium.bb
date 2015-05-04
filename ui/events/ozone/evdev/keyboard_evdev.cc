@@ -176,6 +176,18 @@ void KeyboardEvdev::OnRepeatTimeout(unsigned int sequence) {
   if (repeat_sequence_ != sequence)
     return;
 
+  // Post a task behind any pending key releases in the message loop
+  // FIFO. This ensures there's no spurious repeats during periods of UI
+  // thread jank.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&KeyboardEvdev::OnRepeatCommit,
+                            weak_ptr_factory_.GetWeakPtr(), repeat_sequence_));
+}
+
+void KeyboardEvdev::OnRepeatCommit(unsigned int sequence) {
+  if (repeat_sequence_ != sequence)
+    return;
+
   DispatchKey(repeat_key_, true /* down */, true /* repeat */,
               EventTimeForNow(), repeat_device_id_);
 
