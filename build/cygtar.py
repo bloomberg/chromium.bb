@@ -89,8 +89,10 @@ def CreateCygwinSymlink(filepath, target):
   # Now set the system attribute bit so that Cygwin knows it's a link.
   for cnt in range(1,4):
     try:
-      return subprocess.call(['cmd', '/C', 'C:\\Windows\\System32\\attrib.exe',
-                              '+S', ToNativePath(filepath)])
+      attrib_path = os.path.join(os.environ['SYSTEMROOT'], 'System32',
+                                 'attrib.exe')
+      return subprocess.call(['cmd', '/C', attrib_path, '+S',
+                              ToNativePath(filepath)])
     except EnvironmentError:
       print 'Try %d: Failed attrib %s -> %s\n' % (cnt, filepath, target)
   print 'Giving up.'
