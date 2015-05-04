@@ -711,10 +711,10 @@ message DeviceStatusReportRequest {
 // Provides status information for an installed app/extension.
 message AppStatus {
   // ID of the installed app/extension
-  required string app_id = 1;
+  optional string app_id = 1;
 
   // Currently installed version of the app.
-  required string extension_version = 2;
+  optional string extension_version = 2;
 
   // Self-reported status summary (via chrome.reporting APIs)
   optional string status = 3;
