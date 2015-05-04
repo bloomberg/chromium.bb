@@ -7,25 +7,47 @@
 
 #include <string>
 
+#if defined(__OBJC__)
+@class UIColor;
+@class UIView;
+#else
+class UIColor;
+class UIView;
+#endif  // __OBJC__
+
 namespace web {
 
-// Controls and provides the html for an interstitial page. The delegate is
-// owned by the WebInterstitial.
+// Superclass for delegates that provide data to a WebInterstitial.  After the
+// WebInterstitial is shown, it takes ownership of its delegate.
 class WebInterstitialDelegate {
  public:
   virtual ~WebInterstitialDelegate() {}
-
-  // Returns the HTML that should be displayed in the page.
-  virtual std::string GetHtmlContents() const = 0;
 
   // Called when the interstitial is proceeded or cancelled. Note that this may
   // be called directly even if the embedder didn't call Proceed or DontProceed
   // on WebInterstitial, since navigations etc may cancel them.
   virtual void OnProceed() {}
   virtual void OnDontProceed() {}
+};
+
+// Provides HTML to an HTMLWebInterstitialImpl.
+class HtmlWebInterstitialDelegate : public WebInterstitialDelegate {
+ public:
+  // Returns the HTML that should be displayed in the page.
+  virtual std::string GetHtmlContents() const = 0;
 
   // Invoked when a WebInterstitial receives a command via JavaScript.
   virtual void CommandReceived(const std::string& command) {}
+};
+
+// Provides a native content view to NativeWebInterstitialImpls.
+class NativeWebInterstitialDelegate : public WebInterstitialDelegate {
+ public:
+  // Returns the content view for native interstitials.
+  virtual UIView* GetContentView() = 0;
+
+  // The desired background color for the interstitial's scroll view.
+  virtual UIColor* GetScrollViewBackgroundColor() const = 0;
 };
 
 }  // namespace web

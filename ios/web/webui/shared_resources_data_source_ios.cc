@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "grit/webui_resources_map.h"
 #include "ios/web/public/web_client.h"
 #include "net/base/mime_util.h"

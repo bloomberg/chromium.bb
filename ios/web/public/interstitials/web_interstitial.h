@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_INTERSTITIALS_WEB_INTERSTITIAL_H_
 #define IOS_WEB_PUBLIC_INTERSTITIALS_WEB_INTERSTITIAL_H_
 
+#include "base/memory/scoped_ptr.h"
+
 class GURL;
 
 namespace gfx {
@@ -13,7 +15,8 @@ class Size;
 
 namespace web {
 
-class WebInterstitialDelegate;
+class HtmlWebInterstitialDelegate;
+class NativeWebInterstitialDelegate;
 class WebState;
 
 // This class is used for showing interstitial pages, pages that show some
@@ -27,10 +30,16 @@ class WebInterstitial {
  public:
   // Creates an interstitial page to show in |web_state|. Takes ownership of
   // |delegate|. Reloading the interstitial page will result in a new navigation
-  // to |url|.
-  static WebInterstitial* Create(WebState* web_state,
-                                 const GURL& url,
-                                 scoped_ptr<WebInterstitialDelegate> delegate);
+  // to |url|.  The pointers returned by these functions are self-owning; they
+  // manage their own deletion after calling |Show()|.
+  static WebInterstitial* CreateHtmlInterstitial(
+      WebState* web_state,
+      const GURL& url,
+      scoped_ptr<HtmlWebInterstitialDelegate> delegate);
+  static WebInterstitial* CreateNativeInterstitial(
+      WebState* web_state,
+      const GURL& url,
+      scoped_ptr<NativeWebInterstitialDelegate> delegate);
 
   // Retrieves the WebInterstitial if any associated with the specified
   // |web_state|.

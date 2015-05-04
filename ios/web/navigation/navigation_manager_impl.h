@@ -113,6 +113,17 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationItem* GetVisibleItem() const override;
   NavigationItem* GetLastCommittedItem() const override;
   NavigationItem* GetPendingItem() const override;
+  void AddTransientURLRewriter(
+      BrowserURLRewriter::URLRewriter rewriter) override;
+
+  // Returns the current list of transient url rewriters, passing ownership to
+  // the caller.
+  // TODO(kkhorimoto): remove once NavigationItem creation occurs in this class.
+  scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
+  GetTransientURLRewriters();
+
+  // Called to reset the transient url rewriter list.
+  void RemoveTransientURLRewriters();
 
   // Copy state from |navigation_manager|, including a copy of that object's
   // CRWSessionController.
@@ -132,6 +143,10 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Weak pointer to the facade delegate.
   NavigationManagerFacadeDelegate* facade_delegate_;
+
+  // List of transient url rewriters added by |AddTransientURLRewriter()|.
+  scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
+      transient_url_rewriters_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationManagerImpl);
 };

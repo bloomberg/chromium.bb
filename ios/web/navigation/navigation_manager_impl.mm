@@ -192,6 +192,25 @@ int NavigationManagerImpl::GetPendingEntryIndex() const {
   return -1;
 }
 
+void NavigationManagerImpl::AddTransientURLRewriter(
+    BrowserURLRewriter::URLRewriter rewriter) {
+  DCHECK(rewriter);
+  if (!transient_url_rewriters_) {
+    transient_url_rewriters_.reset(
+        new std::vector<BrowserURLRewriter::URLRewriter>());
+  }
+  transient_url_rewriters_->push_back(rewriter);
+}
+
+scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
+NavigationManagerImpl::GetTransientURLRewriters() {
+  return transient_url_rewriters_.Pass();
+}
+
+void NavigationManagerImpl::RemoveTransientURLRewriters() {
+  transient_url_rewriters_.reset();
+}
+
 void NavigationManagerImpl::LoadURL(const GURL& url,
                                     const web::Referrer& referrer,
                                     ui::PageTransition type) {

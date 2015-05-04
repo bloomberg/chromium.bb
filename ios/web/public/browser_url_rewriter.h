@@ -25,9 +25,17 @@ class BrowserURLRewriter {
   // Returns the singleton instance.
   static BrowserURLRewriter* GetInstance();
 
-  // RewriteURLIfNecessary gives all registered URLRewriters a shot at
-  // processing the given URL, and modifies it in place.
-  virtual void RewriteURLIfNecessary(GURL* url,
+  // Gives every URLRewriter in |rewriters| a chance to process |url|, modifying
+  // it in place.  Returns whether or not a URLRewriter returned |true|.
+  static bool RewriteURLWithWriters(
+      GURL* url,
+      BrowserState* browser_state,
+      const std::vector<BrowserURLRewriter::URLRewriter>& rewriters);
+
+  // Gives every URLRewriter added via |AddURLRewriter()| a chance to process
+  // |url|, modifying it in place.  Returns whether or not a URLRewriter
+  // returned |true|.
+  virtual bool RewriteURLIfNecessary(GURL* url,
                                      BrowserState* browser_state) = 0;
 
   // Adds |rewriter| to the list of URL rewriters.  |rewriter| must not be null.

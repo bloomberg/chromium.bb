@@ -68,6 +68,10 @@ void TestWebState::SetContentIsHTML(bool content_is_html) {
   content_is_html_ = content_is_html;
 }
 
+bool TestWebState::IsLoading() const {
+  return false;
+}
+
 void TestWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }

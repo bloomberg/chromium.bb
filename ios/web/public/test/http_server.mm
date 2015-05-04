@@ -13,8 +13,9 @@
 #include "base/strings/sys_string_conversions.h"
 #import "net/base/mac/url_conversions.h"
 #import "ios/third_party/gcdwebserver/src/GCDWebServer/Core/GCDWebServer.h"
-#import "ios/third_party/gcdwebserver/src/GCDWebServer/Core/GCDWebServerRequest.h"
 #import "ios/third_party/gcdwebserver/src/GCDWebServer/Core/GCDWebServerResponse.h"
+#import "ios/third_party/gcdwebserver/src/GCDWebServer/Requests/GCDWebServerDataRequest.h"
+
 #include "url/gurl.h"
 
 namespace {
@@ -22,15 +23,15 @@ namespace {
 // The default port on which the GCDWebServer is brought up on.
 const NSUInteger kDefaultPort = 8080;
 
-// Converts a GCDWebServerRequest (received from the GCDWebServer servlet) to
-// a request object that the ResponseProvider expects.
+// Converts a GCDWebServerDataRequest (received from the GCDWebServer servlet)
+// to a request object that the ResponseProvider expects.
 web::ResponseProvider::Request ResponseProviderRequestFromGCDWebServerRequest(
-    GCDWebServerRequest* request) {
+    GCDWebServerDataRequest* request) {
   GURL url(net::GURLWithNSURL(request.URL));
   std::string method(base::SysNSStringToUTF8(request.method));
-  // TODO(shreyasv): It is not trivial to extract the body from a
-  // |GCDWebServerRequest|, add logic to do so. crbug.com/435340.
-  std::string body;
+  base::scoped_nsobject<NSString> body(
+      [[NSString alloc] initWithData:request.data
+                            encoding:NSUTF8StringEncoding]);
   __block net::HttpRequestHeaders headers;
   [[request headers] enumerateKeysAndObjectsUsingBlock:^(NSString* header_key,
                                                          NSString* header_value,
@@ -38,7 +39,8 @@ web::ResponseProvider::Request ResponseProviderRequestFromGCDWebServerRequest(
       headers.SetHeader(base::SysNSStringToUTF8(header_key),
                         base::SysNSStringToUTF8(header_value));
   }];
-  return web::ResponseProvider::Request(url, method, body, headers);
+  return web::ResponseProvider::Request(url, method,
+                                        base::SysNSStringToUTF8(body), headers);
 }
 
 }  // namespace
@@ -78,7 +80,8 @@ HttpServer& HttpServer::GetSharedInstanceWithResponseProviders(
 void HttpServer::InitHttpServer() {
   DCHECK(gcd_web_server_);
   // Note: This block is called from an arbitrary GCD thread.
-  id process_request = ^GCDWebServerResponse*(GCDWebServerRequest* request) {
+  id process_request =
+      ^GCDWebServerResponse*(GCDWebServerDataRequest* request) {
       ResponseProvider::Request provider_request =
           ResponseProviderRequestFromGCDWebServerRequest(request);
       scoped_refptr<RefCountedResponseProviderWrapper>
@@ -99,10 +102,10 @@ void HttpServer::InitHttpServer() {
   [gcd_web_server_ removeAllHandlers];
   // Register a servlet for all HTTP GET, POST methods.
   [gcd_web_server_ addDefaultHandlerForMethod:@"GET"
-                                 requestClass:[GCDWebServerRequest class]
+                                 requestClass:[GCDWebServerDataRequest class]
                                  processBlock:process_request];
   [gcd_web_server_ addDefaultHandlerForMethod:@"POST"
-                                 requestClass:[GCDWebServerRequest class]
+                                 requestClass:[GCDWebServerDataRequest class]
                                  processBlock:process_request];
 }
 

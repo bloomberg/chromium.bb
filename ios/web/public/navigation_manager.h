@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_NAVIGATION_MANAGER_H_
 #define IOS_WEB_PUBLIC_NAVIGATION_MANAGER_H_
 
+#include "ios/web/public/browser_url_rewriter.h"
+
 namespace web {
 
 class BrowserState;
@@ -39,6 +41,13 @@ class NavigationManager {
   // Returns the pending entry corresponding to the navigation that is
   // currently in progress, or null if there is none.
   virtual NavigationItem* GetPendingItem() const = 0;
+
+  // Adds |rewriter| to a transient list of URL rewriters.  Transient URL
+  // rewriters will be executed before the rewriters already added to the
+  // BrowserURLRewriter singleton, and the list will be cleared after the next
+  // attempted page load.  |rewriter| must not be null.
+  virtual void AddTransientURLRewriter(
+      BrowserURLRewriter::URLRewriter rewriter) = 0;
 };
 
 }  // namespace web

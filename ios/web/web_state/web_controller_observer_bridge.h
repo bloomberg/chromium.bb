@@ -1,0 +1,64 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_WEB_WEB_STATE_WEB_CONTROLLER_OBSERVER_BRIDGE_H_
+#define IOS_WEB_WEB_STATE_WEB_CONTROLLER_OBSERVER_BRIDGE_H_
+
+#include <string>
+
+#include "ios/web/public/web_state/web_state_observer.h"
+
+@class CRWWebController;
+@protocol CRWWebControllerObserver;
+class GURL;
+
+namespace base {
+class DictionaryValue;
+}
+
+namespace web {
+
+class WebState;
+
+// This class allows to register a CRWWebControllerObserver instance as
+// a WebStateObserver.
+// It listens to WebStateObserver calls and forwards them to the underlying
+// CRWWebControllerObserver.
+// TODO(droger): Remove this class once all CRWWebControllerObserver have been
+// converted to WebStateObserver and WebState::ScriptCommandCallback.
+class WebControllerObserverBridge : public WebStateObserver {
+ public:
+  // |web_controller_observer| and |web_controller| must not be nil, and must
+  // outlive this WebControllerObserverBridge.
+  WebControllerObserverBridge(
+      id<CRWWebControllerObserver> web_controller_observer,
+      WebState* web_state,
+      CRWWebController* web_controller);
+
+  ~WebControllerObserverBridge() override;
+
+  // Gets the underlying CRWWebControllerObserver.
+  id<CRWWebControllerObserver> web_controller_observer() const {
+    return web_controller_observer_;
+  }
+
+ private:
+  // WebStateObserver implementation.
+  void PageLoaded(PageLoadCompletionStatus load_completion_status) override;
+
+  // Callback for script commands.
+  bool ScriptCommandReceived(const base::DictionaryValue& value,
+                             const GURL& url,
+                             bool user_is_interacting);
+
+  id<CRWWebControllerObserver> web_controller_observer_;  // Weak.
+  CRWWebController* web_controller_;                      // Weak.
+  std::string script_command_callback_prefix_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebControllerObserverBridge);
+};
+
+}  // namespace web
+
+#endif  // IOS_WEB_WEB_STATE_WEB_CONTROLLER_OBSERVER_BRIDGE_H_

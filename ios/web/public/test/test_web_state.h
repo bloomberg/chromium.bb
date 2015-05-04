@@ -29,6 +29,7 @@ class TestWebState : public WebState {
   const std::string& GetContentsMimeType() const override;
   const std::string& GetContentLanguageHeader() const override;
   bool ContentIsHTML() const override;
+  bool IsLoading() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;

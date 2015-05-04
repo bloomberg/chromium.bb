@@ -103,6 +103,9 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   base::mac::ObjCPropertyReleaser _propertyReleaser_CRWSessionController;
 }
 
+// Redefine as readwrite.
+@property(nonatomic, readwrite, assign) NSInteger currentNavigationIndex;
+
 // TODO(rohitrao): These properties must be redefined readwrite to work around a
 // clang bug. crbug.com/228650
 @property(nonatomic, readwrite, retain) NSString* tabId;
@@ -187,12 +190,12 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
           [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()]);
       [_entries addObject:entry];
     }
-    _currentNavigationIndex = currentIndex;
+    self.currentNavigationIndex = currentIndex;
     // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
     if (![_entries count])
-      _currentNavigationIndex = -1;
+      self.currentNavigationIndex = -1;
     if (_currentNavigationIndex >= static_cast<NSInteger>(items.size())) {
-      _currentNavigationIndex = static_cast<NSInteger>(items.size()) - 1;
+      self.currentNavigationIndex = static_cast<NSInteger>(items.size()) - 1;
     }
     _previousNavigationIndex = -1;
     _lastVisitedTimestamp = [[NSDate date] timeIntervalSince1970];
@@ -277,6 +280,14 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
       [_sessionCertificatePolicyManager copy];
   copy->_xCallbackParameters = [_xCallbackParameters copy];
   return copy;
+}
+
+- (void)setCurrentNavigationIndex:(NSInteger)currentNavigationIndex {
+  if (_currentNavigationIndex != currentNavigationIndex) {
+    _currentNavigationIndex = currentNavigationIndex;
+    if (_navigationManager)
+      _navigationManager->RemoveTransientURLRewriters();
+  }
 }
 
 - (void)setNavigationManager:(web::NavigationManagerImpl*)navigationManager {
@@ -468,7 +479,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     // Add the new entry at the end.
     [_entries addObject:_pendingEntry];
     _previousNavigationIndex = _currentNavigationIndex;
-    _currentNavigationIndex = [_entries count] - 1;
+    self.currentNavigationIndex = [_entries count] - 1;
     // Once an entry is committed it's not renderer-initiated any more. (Matches
     // the implementation in NavigationController.)
     [_pendingEntry navigationItemImpl]->ResetForCommit();
@@ -541,7 +552,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   // Add the new entry at the end.
   [_entries addObject:pushedEntry];
   _previousNavigationIndex = _currentNavigationIndex;
-  _currentNavigationIndex = [_entries count] - 1;
+  self.currentNavigationIndex = [_entries count] - 1;
 
   if (_navigationManager)
     _navigationManager->OnNavigationItemCommitted();
@@ -584,7 +595,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   DCHECK(otherSession);
   if (replaceState) {
     [_entries removeAllObjects];
-    _currentNavigationIndex = -1;
+    self.currentNavigationIndex = -1;
     _previousNavigationIndex = -1;
   }
   self.xCallbackParameters =
@@ -618,10 +629,10 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   // |currentNavigationIndex_| to be in bounds.
   if (!numInitialEntries) {
     if (replaceState) {
-      _currentNavigationIndex = [otherSession currentNavigationIndex];
+      self.currentNavigationIndex = [otherSession currentNavigationIndex];
       _previousNavigationIndex = [otherSession previousNavigationIndex];
     } else {
-      _currentNavigationIndex = maxCopyIndex;
+      self.currentNavigationIndex = maxCopyIndex;
     }
   }
   DCHECK_LT((NSUInteger)_currentNavigationIndex, [_entries count]);
@@ -719,7 +730,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   // Check that |entries_| still contains |entry|. |entry| could have been
   // removed by -clearForwardEntries.
   if ([_entries containsObject:entry])
-    _currentNavigationIndex = [_entries indexOfObject:entry];
+    self.currentNavigationIndex = [_entries indexOfObject:entry];
 }
 
 - (void)removeEntryAtIndex:(NSInteger)index {
@@ -863,8 +874,19 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
                     useDesktopUserAgent:(BOOL)useDesktopUserAgent
                       rendererInitiated:(BOOL)rendererInitiated {
   GURL loaded_url(url);
-  web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(&loaded_url,
-                                                                _browserState);
+  BOOL urlWasRewritten = NO;
+  if (_navigationManager) {
+    scoped_ptr<std::vector<web::BrowserURLRewriter::URLRewriter>>
+        transientRewriters = _navigationManager->GetTransientURLRewriters();
+    if (transientRewriters) {
+      urlWasRewritten = web::BrowserURLRewriter::RewriteURLWithWriters(
+          &loaded_url, _browserState, *transientRewriters.get());
+    }
+  }
+  if (!urlWasRewritten) {
+    web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
+        &loaded_url, _browserState);
+  }
   scoped_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
   item->SetURL(loaded_url);
   item->SetReferrer(referrer);

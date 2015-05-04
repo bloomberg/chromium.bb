@@ -112,8 +112,11 @@ class WebState : public base::SupportsUserData {
   // Gets the value of the "Content-Language" HTTP header.
   virtual const std::string& GetContentLanguageHeader() const = 0;
 
-  // Returns true if the current view is a web view with HTML.
+  // Returns true if the current page is a web view with HTML.
   virtual bool ContentIsHTML() const = 0;
+
+  // Returns true if the current page is loading.
+  virtual bool IsLoading() const = 0;
 
   // Gets the URL currently being displayed in the URL bar, if there is one.
   // This URL might be a pending navigation that hasn't committed yet, so it is

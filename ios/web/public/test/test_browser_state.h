@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_TEST_TEST_BROWSER_STATE_H_
 #define IOS_WEB_PUBLIC_TEST_TEST_BROWSER_STATE_H_
 
+#include "base/memory/ref_counted.h"
 #include "ios/web/public/browser_state.h"
 
 namespace web {
@@ -17,6 +18,9 @@ class TestBrowserState : public BrowserState {
   bool IsOffTheRecord() const override;
   base::FilePath GetStatePath() const override;
   net::URLRequestContextGetter* GetRequestContext() override;
+
+ private:
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
 }  // namespace web
 

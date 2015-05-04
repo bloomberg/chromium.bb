@@ -1,0 +1,150 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/web/web_state/crw_web_view_proxy_impl.h"
+
+#include "base/ios/weak_nsobject.h"
+#include "base/mac/scoped_nsobject.h"
+#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
+
+namespace {
+
+// Returns the first responder in the subviews of |view|, or nil if no view in
+// the subtree is the first responder.
+UIView* GetFirstResponderSubview(UIView* view) {
+  if ([view isFirstResponder])
+    return view;
+
+  for (UIView* subview in [view subviews]) {
+    UIView* firstResponder = GetFirstResponderSubview(subview);
+    if (firstResponder)
+      return firstResponder;
+  }
+
+  return nil;
+}
+
+}  // namespace
+
+@interface CRWWebViewScrollViewProxy (ContentInsetsAlgebra)
+// Adds the given insets to the current content insets and scroll indicator
+// insets of the receiver.
+- (void)cr_addInsets:(UIEdgeInsets)insets;
+// Removes the given insets to the current content insets and scroll indicator
+// insets of the receiver.
+- (void)cr_removeInsets:(UIEdgeInsets)insets;
+@end
+
+@implementation CRWWebViewScrollViewProxy (ContentInsetsAlgebra)
+
+- (void)cr_addInsets:(UIEdgeInsets)insets {
+  if (UIEdgeInsetsEqualToEdgeInsets(insets, UIEdgeInsetsZero))
+    return;
+
+  UIEdgeInsets currentInsets = [self contentInset];
+  currentInsets.top += insets.top;
+  currentInsets.left += insets.left;
+  currentInsets.bottom += insets.bottom;
+  currentInsets.right += insets.right;
+  [self setContentInset:currentInsets];
+  [self setScrollIndicatorInsets:currentInsets];
+}
+
+- (void)cr_removeInsets:(UIEdgeInsets)insets {
+  UIEdgeInsets negativeInsets = UIEdgeInsetsZero;
+  negativeInsets.top = -insets.top;
+  negativeInsets.left = -insets.left;
+  negativeInsets.bottom = -insets.bottom;
+  negativeInsets.right = -insets.right;
+  [self cr_addInsets:negativeInsets];
+}
+
+@end
+
+@implementation CRWWebViewProxyImpl {
+  base::WeakNSObject<UIView> _webView;
+  base::WeakNSObject<CRWWebController> _webController;
+  base::scoped_nsobject<NSMutableDictionary> _registeredInsets;
+  // The WebViewScrollViewProxy is a wrapper around the UIWebView's
+  // UIScrollView to give components access in a limited and controlled manner.
+  base::scoped_nsobject<CRWWebViewScrollViewProxy> _webViewScrollViewProxy;
+}
+
+- (instancetype)initWithWebController:(CRWWebController*)webController {
+  self = [super init];
+  if (self) {
+    DCHECK(webController);
+    _registeredInsets.reset([[NSMutableDictionary alloc] init]);
+    _webController.reset(webController);
+    _webViewScrollViewProxy.reset([[CRWWebViewScrollViewProxy alloc] init]);
+  }
+  return self;
+}
+
+- (CRWWebViewScrollViewProxy*)scrollViewProxy {
+  return _webViewScrollViewProxy.get();
+}
+
+- (CGRect)bounds {
+  return [_webView bounds];
+}
+
+- (NSArray*)gestureRecognizers {
+  return [_webView gestureRecognizers];
+}
+
+- (web::WebViewType)webViewType {
+  return [_webController webViewType];
+}
+
+- (void)registerInsets:(UIEdgeInsets)insets forCaller:(id)caller {
+  NSValue* callerValue = [NSValue valueWithNonretainedObject:caller];
+  if ([_registeredInsets objectForKey:callerValue])
+    [self unregisterInsetsForCaller:caller];
+  [self.scrollViewProxy cr_addInsets:insets];
+  [_registeredInsets setObject:[NSValue valueWithUIEdgeInsets:insets]
+                        forKey:callerValue];
+}
+
+- (void)unregisterInsetsForCaller:(id)caller {
+  NSValue* callerValue = [NSValue valueWithNonretainedObject:caller];
+  NSValue* insetsValue = [_registeredInsets objectForKey:callerValue];
+  [self.scrollViewProxy cr_removeInsets:[insetsValue UIEdgeInsetsValue]];
+  [_registeredInsets removeObjectForKey:callerValue];
+}
+
+- (void)setWebView:(UIView*)webView scrollView:(UIScrollView*)scrollView {
+  _webView.reset(webView);
+  if (webView)
+    DCHECK(scrollView);
+  [_webViewScrollViewProxy setScrollView:scrollView];
+}
+
+- (void)addSubview:(UIView*)view {
+  return [_webView addSubview:view];
+}
+
+- (BOOL)hasSearchableTextContent {
+  return _webView != nil && [_webController contentIsHTML];
+}
+
+- (UIView*)getKeyboardAccessory {
+  if (!_webView)
+    return nil;
+  UIView* firstResponder = GetFirstResponderSubview(_webView);
+  return firstResponder.inputAccessoryView;
+}
+
+- (BOOL)keyboardDisplayRequiresUserAction {
+  return [_webController keyboardDisplayRequiresUserAction];
+}
+
+- (void)setKeyboardDisplayRequiresUserAction:
+        (BOOL)keyboardDisplayRequiresUserAction {
+  [_webController
+      setKeyboardDisplayRequiresUserAction:keyboardDisplayRequiresUserAction];
+}
+
+@end

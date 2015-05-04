@@ -5,6 +5,33 @@
 #include "ios/web/public/test/test_browser_state.h"
 
 #include "base/files/file_path.h"
+#include "base/test/null_task_runner.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
+
+namespace {
+
+class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
+ public:
+  TestContextURLRequestContextGetter()
+      : null_task_runner_(new base::NullTaskRunner) {}
+
+  net::URLRequestContext* GetURLRequestContext() override { return &context_; }
+
+  scoped_refptr<base::SingleThreadTaskRunner>
+  GetNetworkTaskRunner() const override {
+    return null_task_runner_;
+  }
+
+ private:
+  ~TestContextURLRequestContextGetter() override {}
+
+  net::TestURLRequestContext context_;
+  scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
+};
+
+}  // namespace
 
 namespace web {
 TestBrowserState::TestBrowserState() {
@@ -22,6 +49,9 @@ base::FilePath TestBrowserState::GetStatePath() const {
 }
 
 net::URLRequestContextGetter* TestBrowserState::GetRequestContext() {
-  return nullptr;
+  if (!request_context_)
+    request_context_ = new TestContextURLRequestContextGetter();
+  return request_context_.get();
 }
+
 }  // namespace web
