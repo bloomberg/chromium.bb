@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon_base/favicon_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -278,6 +279,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
     if (item.session_tag.empty()) {  // Restore tab of local session.
       if (service && delegate) {
+        content::RecordAction(
+            base::UserMetricsAction("WrenchMenu_OpenRecentTabFromLocal"));
         UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu",
                                   LOCAL_SESSION_TAB, LIMIT_RECENT_TAB_ACTION);
         service->RestoreEntryById(delegate, item.tab_id,
@@ -292,6 +295,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
         return;
       if (tab->navigations.empty())
         return;
+      content::RecordAction(
+          base::UserMetricsAction("WrenchMenu_OpenRecentTabFromDevice"));
       UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu",
                                 OTHER_DEVICE_TAB, LIMIT_RECENT_TAB_ACTION);
       SessionRestore::RestoreForeignSessionTab(
@@ -304,6 +309,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       int window_items_idx = CommandIdToWindowVectorIndex(command_id);
       DCHECK(window_items_idx >= 0 &&
              window_items_idx < static_cast<int>(local_window_items_.size()));
+      content::RecordAction(
+          base::UserMetricsAction("WrenchMenu_OpenRecentWindow"));
       UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu", RESTORE_WINDOW,
                                 LIMIT_RECENT_TAB_ACTION);
       service->RestoreEntryById(delegate, local_window_items_[window_items_idx],

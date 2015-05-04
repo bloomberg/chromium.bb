@@ -12192,6 +12192,27 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="WrenchMenu_OpenRecentTabFromDevice">
+  <owner>jwd@chromium.org</owner>
+  <description>
+    Hot Dog Menu: Recent Tabs: Open a recent tab from a device.
+  </description>
+</action>
+
+<action name="WrenchMenu_OpenRecentTabFromLocal">
+  <owner>jwd@chromium.org</owner>
+  <description>
+    Hot Dog Menu: Recent Tabs: Open a recent tab link from local.
+  </description>
+</action>
+
+<action name="WrenchMenu_OpenRecentWindow">
+  <owner>jwd@chromium.org</owner>
+  <description>
+    Hot Dog Menu: Recent Tabs: Open a recent tab in a new window.
+  </description>
+</action>
+
 <action name="ZoomMinus">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
