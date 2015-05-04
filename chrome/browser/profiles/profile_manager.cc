@@ -359,7 +359,6 @@ Profile* ProfileManager::GetActiveUserProfile() {
     return chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
 
 #endif
-#if !defined(OS_WIN)
   Profile* profile =
       profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
           profile_manager->user_data_dir());
@@ -370,10 +369,6 @@ Profile* ProfileManager::GetActiveUserProfile() {
   // figure out how common this is. http://crbug.com/383019
   CHECK(profile) << profile_manager->user_data_dir().AsUTF8Unsafe();
   return profile;
-#else
-  return profile_manager->GetProfile(
-      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir()));
-#endif
 }
 
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
