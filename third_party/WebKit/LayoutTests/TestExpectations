@@ -1358,14 +1358,6 @@ crbug.com/419101 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-
 
 crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-prop.html [ Pass ImageOnlyFailure ]
 
-crbug.com/371651 svg/custom/deep-dynamic-updates.svg [ Pass Failure ]
-crbug.com/371651 svg/custom/js-update-gradient.svg [ Pass Failure ]
-crbug.com/371651 svg/custom/js-update-pattern.svg [ Pass Failure ]
-crbug.com/371651 svg/custom/js-update-pattern-child.svg [ Pass Failure ]
-crbug.com/371651 svg/custom/js-update-stop.svg [ Pass Failure ]
-crbug.com/371651 svg/custom/js-update-stop-linked-gradient.svg [ Pass Failure ]
-crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure ]
-
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
 crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFailure ]
