@@ -151,7 +151,7 @@ class COMPOSITOR_EXPORT Layer
 
   // The offset from our parent (stored in bounds.origin()) is an integer but we
   // may need to be at a fractional pixel offset to align properly on screen.
-  void SetSubpixelPositionOffset(const gfx::Vector2dF offset);
+  void SetSubpixelPositionOffset(const gfx::Vector2dF& offset);
   const gfx::Vector2dF& subpixel_position_offset() const {
     return subpixel_position_offset_;
   }

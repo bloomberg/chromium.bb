@@ -81,8 +81,8 @@ struct EVENTS_OZONE_EVDEV_EXPORT ScrollEventParams {
   ScrollEventParams(int device_id,
                     EventType type,
                     const gfx::PointF location,
-                    const gfx::Vector2dF delta,
-                    const gfx::Vector2dF ordinal_delta,
+                    const gfx::Vector2dF& delta,
+                    const gfx::Vector2dF& ordinal_delta,
                     int finger_count,
                     const base::TimeDelta timestamp);
   ScrollEventParams(const ScrollEventParams& other);

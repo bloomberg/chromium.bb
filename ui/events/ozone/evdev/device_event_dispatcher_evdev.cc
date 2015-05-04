@@ -69,8 +69,8 @@ MouseWheelEventParams::~MouseWheelEventParams() {
 ScrollEventParams::ScrollEventParams(int device_id,
                                      EventType type,
                                      const gfx::PointF location,
-                                     const gfx::Vector2dF delta,
-                                     const gfx::Vector2dF ordinal_delta,
+                                     const gfx::Vector2dF& delta,
+                                     const gfx::Vector2dF& ordinal_delta,
                                      int finger_count,
                                      const base::TimeDelta timestamp)
     : device_id(device_id),

@@ -248,7 +248,7 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
   GetAnimator()->SetBounds(bounds);
 }
 
-void Layer::SetSubpixelPositionOffset(const gfx::Vector2dF offset) {
+void Layer::SetSubpixelPositionOffset(const gfx::Vector2dF& offset) {
   subpixel_position_offset_ = offset;
   RecomputePosition();
 }

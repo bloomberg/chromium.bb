@@ -57,7 +57,7 @@ gfx::Size GetExpandedWindowSize(DWORD window_style, gfx::Size size) {
   return expanded;
 }
 
-void InsetBottomRight(gfx::Rect* rect, gfx::Vector2d vector) {
+void InsetBottomRight(gfx::Rect* rect, const gfx::Vector2d& vector) {
   rect->Inset(0, 0, vector.x(), vector.y());
 }
 

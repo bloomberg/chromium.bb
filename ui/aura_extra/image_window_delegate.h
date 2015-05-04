@@ -28,7 +28,7 @@ class AURA_EXTRA_EXPORT ImageWindowDelegate : public aura::WindowDelegate {
   void SetImage(const gfx::Image& image);
 
   void set_background_color(SkColor color) { background_color_ = color; }
-  void set_image_offset(gfx::Vector2d offset) { offset_ = offset; }
+  void set_image_offset(const gfx::Vector2d& offset) { offset_ = offset; }
 
   bool has_image() const { return !image_.IsEmpty(); }
 
