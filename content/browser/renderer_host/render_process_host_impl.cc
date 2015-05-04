@@ -933,9 +933,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       message_port_message_filter_.get()));
   if (browser_command_line.HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
-    scoped_refptr<BluetoothDispatcherHost> bluetooth_dispatcher_host(
-        BluetoothDispatcherHost::Create());
-    AddFilter(bluetooth_dispatcher_host.get());
+    AddFilter(new BluetoothDispatcherHost());
   }
 }
 

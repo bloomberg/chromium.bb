@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_DISPATCHER_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/bluetooth/bluetooth_error.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -26,9 +27,7 @@ class BluetoothDispatcherHost final
     : public BrowserMessageFilter,
       public device::BluetoothAdapter::Observer {
  public:
-  // Creates a BluetoothDispatcherHost.
-  static scoped_refptr<BluetoothDispatcherHost> Create();
-
+  BluetoothDispatcherHost();
   // BrowserMessageFilter:
   void OnDestruct() const override;
   void OverrideThreadForMessage(const IPC::Message& message,
@@ -36,7 +35,6 @@ class BluetoothDispatcherHost final
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  BluetoothDispatcherHost();
   ~BluetoothDispatcherHost() override;
 
  private:
@@ -59,6 +57,9 @@ class BluetoothDispatcherHost final
   enum class MockData { NOT_MOCKING, REJECT, RESOLVE };
   MockData bluetooth_mock_data_set_;
   BluetoothError bluetooth_request_device_reject_type_;
+
+  // Must be last member, see base/memory/weak_ptr.h documentation
+  base::WeakPtrFactory<BluetoothDispatcherHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcherHost);
 };

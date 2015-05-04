@@ -18,17 +18,16 @@ namespace content {
 const uint32 kUnspecifiedDeviceClass =
     0x1F00;  // bluetooth.org/en-us/specification/assigned-numbers/baseband
 
-scoped_refptr<BluetoothDispatcherHost> BluetoothDispatcherHost::Create() {
+BluetoothDispatcherHost::BluetoothDispatcherHost()
+    : BrowserMessageFilter(BluetoothMsgStart),
+      bluetooth_mock_data_set_(MockData::NOT_MOCKING),
+      bluetooth_request_device_reject_type_(BluetoothError::NOT_FOUND),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Hold a reference to the BluetoothDispatcherHost because the callback below
-  // may run and would otherwise release the BluetoothDispatcherHost
-  // prematurely.
-  scoped_refptr<BluetoothDispatcherHost> host(new BluetoothDispatcherHost());
   if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable())
     BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothDispatcherHost::set_adapter, host));
-  return host;
+        base::Bind(&BluetoothDispatcherHost::set_adapter,
+                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothDispatcherHost::OnDestruct() const {
@@ -54,13 +53,6 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-BluetoothDispatcherHost::BluetoothDispatcherHost()
-    : BrowserMessageFilter(BluetoothMsgStart),
-      bluetooth_mock_data_set_(MockData::NOT_MOCKING),
-      bluetooth_request_device_reject_type_(BluetoothError::NOT_FOUND) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 BluetoothDispatcherHost::~BluetoothDispatcherHost() {
