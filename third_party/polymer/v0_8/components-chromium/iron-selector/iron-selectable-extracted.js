@@ -244,7 +244,7 @@
     _observeContent: function(node) {
       var content = node.querySelector('content');
       if (content && content.parentElement === node) {
-        return this._observeItems(node.host);
+        return this._observeItems(node.domHost);
       }
     },
 

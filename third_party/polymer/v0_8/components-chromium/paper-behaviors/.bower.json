@@ -1,6 +1,6 @@
 {
   "name": "paper-behaviors",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "authors": [
     "The Polymer Authors"
   ],
@@ -22,17 +22,18 @@
     "iron-behaviors": "PolymerElements/iron-behaviors#^0.8.0"
   },
   "devDependencies": {
-    "paper-card": "PolymerElements/paper-card#^0.8.0",
+    "paper-material": "PolymerElements/paper-material#^0.8.0",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
     "iron-test-helpers": "polymerelements/iron-test-helpers#^0.8.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
-    "web-component-tester": "Polymer/web-component-tester#^2.2.3"
+    "web-component-tester": "Polymer/web-component-tester#^2.2.3",
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0"
   },
-  "_release": "0.8.2",
+  "_release": "0.8.3",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.2",
-    "commit": "c01e54e4b0d7dacc941a2c7a65246e027076eb63"
+    "tag": "v0.8.3",
+    "commit": "d111ed7a3991f3fb6b87b362efbecd7167be25e1"
   },
   "_source": "git://github.com/polymerelements/paper-behaviors.git",
   "_target": "^0.8.0",

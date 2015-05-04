@@ -20,7 +20,7 @@
   "dependencies": {
     "iron-selector": "PolymerElements/iron-selector#^0.8.0",
     "iron-media-query": "PolymerElements/iron-media-query#^0.8.0",
-    "polymer": "Polymer/polymer#v0.8.0-rc.6"
+    "polymer": "Polymer/polymer#v0.8.0-rc.7"
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",

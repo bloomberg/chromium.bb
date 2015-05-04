@@ -53,7 +53,7 @@ The opacity of the ripple is not customizable via CSS.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 
 <link rel="import" href="../paper-behaviors/paper-button-behavior.html">
@@ -93,7 +93,7 @@ The opacity of the ripple is not customizable via CSS.
       display: none;
     }
 
-    paper-card {
+    paper-material {
       border-radius: inherit;
     }
 
@@ -110,9 +110,9 @@ The opacity of the ripple is not customizable via CSS.
 
     <paper-ripple></paper-ripple>
 
-    <paper-card class="content" elevation="[[_elevation]]" animated>
+    <paper-material class="content" elevation="[[_elevation]]" animated>
       <content></content>
-    </paper-card>
+    </paper-material>
 
   </template>
 
@@ -157,4 +157,3 @@ The opacity of the ripple is not customizable via CSS.
   </script>
 
 </dom-module>
-

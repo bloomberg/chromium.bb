@@ -23,10 +23,11 @@
     "iron-behaviors": "PolymerElements/iron-behaviors#^0.8.0"
   },
   "devDependencies": {
-    "paper-card": "PolymerElements/paper-card#^0.8.0",
+    "paper-material": "PolymerElements/paper-material#^0.8.0",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
     "iron-test-helpers": "polymerelements/iron-test-helpers#^0.8.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
-    "web-component-tester": "Polymer/web-component-tester#^2.2.3"
+    "web-component-tester": "Polymer/web-component-tester#^2.2.3",
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0"
   }
 }

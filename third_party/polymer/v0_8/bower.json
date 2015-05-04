@@ -8,14 +8,15 @@
     "iron-icon": "PolymerElements/iron-icon#^0.8.0",
     "iron-icons": "PolymerElements/iron-icons#^0.8.0",
     "iron-iconset": "PolymerElements/iron-iconset#^0.8.0",
+    "iron-pages": "PolymerElements/iron-pages#^0.8.0",
 
     "paper-button": "PolymerElements/paper-button#^0.8.0",
-    "paper-card": "PolymerElements/paper-card#^0.8.0",
     "paper-checkbox": "PolymerElements/paper-checkbox#^0.8.0",
     "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^0.8.0",
     "paper-input": "PolymerElements/paper-input#^0.8.0",
     "paper-menu": "PolymerElements/paper-menu#^0.8.0",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
-    "paper-styles": "PolymerElements/paper-styles#^0.8.0"
+    "paper-styles": "PolymerElements/paper-styles#^0.8.0",
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^0.8.0"
   }
 }

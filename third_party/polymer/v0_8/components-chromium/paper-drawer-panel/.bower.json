@@ -1,6 +1,6 @@
 {
   "name": "paper-drawer-panel",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "authors": [
     "The Polymer Authors"
   ],
@@ -20,18 +20,18 @@
   "dependencies": {
     "iron-selector": "PolymerElements/iron-selector#^0.8.0",
     "iron-media-query": "PolymerElements/iron-media-query#^0.8.0",
-    "polymer": "Polymer/polymer#v0.8.0-rc.6"
+    "polymer": "Polymer/polymer#v0.8.0-rc.7"
   },
   "devDependencies": {
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
     "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
     "paper-styles": "PolymerElements/paper-styles#^0.8.0"
   },
-  "_release": "0.8.1",
+  "_release": "0.8.2",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.1",
-    "commit": "e7a396050ffee2fdbc2997133e50f2c60f64f154"
+    "tag": "v0.8.2",
+    "commit": "4e4b30fe8aab07b5edd0d206728c57509d47b1f6"
   },
   "_source": "git://github.com/PolymerElements/paper-drawer-panel.git",
   "_target": "^0.8.0",

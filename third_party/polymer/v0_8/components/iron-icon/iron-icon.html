@@ -57,23 +57,29 @@ See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html)
 @homepage polymer.github.io
 -->
 
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-meta/iron-meta.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<style is="x-style">
+  * {
+    --iron-icon-size: 24px;
+  }
+</style>
 
 <dom-module id="iron-icon">
 
   <style>
     :host {
-      display: inline-flex;
+      mixin(--layout-inline --layout-center-center);
       position: relative;
 
       vertical-align: middle;
-      align-items: center;
-      justify-content: center;
 
       fill: currentcolor;
 
-      width: 24px;
-      height: 24px;
+      width: var(--iron-icon-size);
+      height: var(--iron-icon-size);
     }
   </style>
 
@@ -89,23 +95,22 @@ See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html)
 
     is: 'iron-icon',
 
+    enableCustomStyleProperties: true,
+
     properties: {
 
       icon: {
         type: String,
-        //value: '',
         observer: '_iconChanged'
       },
 
       theme: {
         type: String,
-        //value: '',
         observer: '_updateIcon'
       },
 
       src: {
         type: String,
-        //value: '',
         observer: '_srcChanged'
       }
 
@@ -138,11 +143,10 @@ See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html)
             + this._iconsetName + '`, did you import the iconset?');
         }
       } else {
-        //if (this._iconset) {
-        //  this._iconset.removeIcon(this.root);
-        //}
         if (!this._img) {
           this._img = document.createElement('img');
+          this._img.style.width = '100%';
+          this._img.style.height = '100%';
         }
         this._img.src = this.src;
         Polymer.dom(this.root).appendChild(this._img);

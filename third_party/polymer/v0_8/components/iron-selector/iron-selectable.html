@@ -256,7 +256,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     _observeContent: function(node) {
       var content = node.querySelector('content');
       if (content && content.parentElement === node) {
-        return this._observeItems(node.host);
+        return this._observeItems(node.domHost);
       }
     },
 

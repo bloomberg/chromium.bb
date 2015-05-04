@@ -54,23 +54,29 @@ See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html)
 @group Polymer Core Elements
 @element iron-icon
 @homepage polymer.github.io
---><html><head><link rel="import" href="../iron-meta/iron-meta.html">
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-meta/iron-meta.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<style is="x-style">
+  * {
+    --iron-icon-size: 24px;
+  }
+</style>
 
 </head><body><dom-module id="iron-icon">
 
   <style>
     :host {
-      display: inline-flex;
+      mixin(--layout-inline --layout-center-center);
       position: relative;
 
       vertical-align: middle;
-      align-items: center;
-      justify-content: center;
 
       fill: currentcolor;
 
-      width: 24px;
-      height: 24px;
+      width: var(--iron-icon-size);
+      height: var(--iron-icon-size);
     }
   </style>
 

@@ -1,10 +1,28 @@
 {
   "name": "paper-button",
+  "version": "0.8.0",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "main": "paper-button.html",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-button"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/PolymerElements/paper-button",
+  "ignore": [
+  ],
   "dependencies": {
     "polymer": "polymer/polymer#v0.8.0-rc.7",
     "paper-ripple": "polymerelements/paper-ripple#^0.8.0",
-    "paper-card": "polymerelements/paper-card#^0.8.0",
+    "paper-material": "polymerelements/paper-material#^0.8.0",
     "paper-behaviors": "polymerelements/paper-behaviors#^0.8.0"
   },
   "devDependencies": {
