@@ -128,13 +128,14 @@ gfx::OverlayTransform OverlayCandidate::ModifyTransform(
 }
 
 // static
-gfx::Rect OverlayCandidate::GetOverlayRect(const gfx::Transform& quad_transform,
-                                           const gfx::Rect& rect) {
+gfx::RectF OverlayCandidate::GetOverlayRect(
+    const gfx::Transform& quad_transform,
+    const gfx::Rect& rect) {
   DCHECK(quad_transform.IsPositiveScaleOrTranslation());
 
   gfx::RectF float_rect(rect);
   quad_transform.TransformRect(&float_rect);
-  return gfx::ToNearestRect(float_rect);
+  return float_rect;
 }
 
 }  // namespace cc

@@ -3433,9 +3433,7 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
 
   ResourceProvider::ResourceIdArray resources;
   OverlayCandidateList& overlays = frame->overlay_list;
-  OverlayCandidateList::iterator it;
-  for (it = overlays.begin(); it != overlays.end(); ++it) {
-    const OverlayCandidate& overlay = *it;
+  for (const OverlayCandidate& overlay : overlays) {
     // Skip primary plane.
     if (overlay.plane_z_order == 0)
       continue;
@@ -3448,7 +3446,7 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
         overlay.plane_z_order,
         overlay.transform,
         pending_overlay_resources_.back()->texture_id(),
-        overlay.display_rect,
+        ToNearestRect(overlay.display_rect),
         overlay.uv_rect);
   }
 }

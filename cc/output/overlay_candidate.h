@@ -24,8 +24,8 @@ class CC_EXPORT OverlayCandidate {
   // or OVERLAY_TRANSFORM_INVALID.
   static gfx::OverlayTransform ModifyTransform(gfx::OverlayTransform in,
                                                gfx::OverlayTransform delta);
-  static gfx::Rect GetOverlayRect(const gfx::Transform& quad_transform,
-                                  const gfx::Rect& rect);
+  static gfx::RectF GetOverlayRect(const gfx::Transform& quad_transform,
+                                   const gfx::Rect& rect);
 
   OverlayCandidate();
   ~OverlayCandidate();
@@ -34,8 +34,9 @@ class CC_EXPORT OverlayCandidate {
   gfx::OverlayTransform transform;
   // Format of the buffer to composite.
   ResourceFormat format;
-  // Rect on the display to position the overlay to.
-  gfx::Rect display_rect;
+  // Rect on the display to position the overlay to. Implementer must convert
+  // to integer coordinates if setting |overlay_handled| to true.
+  gfx::RectF display_rect;
   // Crop within the buffer to be placed inside |display_rect|.
   gfx::RectF uv_rect;
   // Texture resource to present in an overlay.

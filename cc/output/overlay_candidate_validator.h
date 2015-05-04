@@ -19,7 +19,9 @@ class CC_EXPORT OverlayCandidateValidator {
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
   // plane are marked with |overlay_handled| set to true, otherwise they are
-  // to be traditionally composited.
+  // to be traditionally composited. Candidates with |overlay_handled| set to
+  // true must also have their |display_rect| converted to integer
+  // coordinates if necessary.
   virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) = 0;
 
   virtual ~OverlayCandidateValidator() {}

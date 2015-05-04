@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
@@ -47,8 +48,11 @@ class SingleOverlay : public OverlayCandidatesOzone {
         NOTREACHED();
         return;
       }
+      // 0.01 constant chosen to match DCHECKs in gfx::ToNearestRect and avoid
+      // that code asserting on quads that we accept.
       if (overlay->plane_z_order > 0 &&
-          IsTransformSupported(overlay->transform)) {
+          IsTransformSupported(overlay->transform) &&
+          gfx::IsNearestRectWithinDistance(overlay->display_rect, 0.01f)) {
         overlay->overlay_handled = true;
       }
     }
