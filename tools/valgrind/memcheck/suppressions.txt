@@ -2632,7 +2632,7 @@
    bug_364724b
    Memcheck:Uninitialized
    fun:_ZN4base17MD5DigestToBase16ERKNS_9MD5DigestE
-   fun:_ZN7content16WebKitTestRunner17CaptureDumpPixelsERK8SkBitmap
+   fun:_ZN7content15BlinkTestRunner17CaptureDumpPixelsERK8SkBitmap
 }
 {
    bug_364724c
@@ -2649,7 +2649,7 @@
    fun:malloc
    fun:_ZN3WTF10fastMallocEm
    fun:_ZN3WTF10RefCountedIN5blink11ScriptStateEEnwEm
-   fun:_ZN5blink11ScriptState6createEN2v86HandleINS1_7ContextEEEN3WTF10PassRefPtrINS_15DOMWrapperWorldEEE
+   fun:_ZN5blink11ScriptState6createEN2v85LocalINS1_7ContextEEEN3WTF10PassRefPtrINS_15DOMWrapperWorldEEE
    ...
    fun:_ZN3WTF15FunctionWrapperIMN5blink12WorkerThreadEFvvEEclEPS2_
 }
@@ -3090,7 +3090,7 @@
    fun:_ZN2v86Object3SetENS_6HandleINS_5ValueEEES3_
    fun:_ZN18WebCoreTestSupport21injectInternalsObjectEN2v85LocalINS0_7ContextEEE
    fun:_ZN5blink17WebTestingSupport21injectInternalsObjectEPNS_13WebLocalFrameE
-   fun:_ZN7content16WebKitTestRunner20DidClearWindowObjectEPN5blink13WebLocalFrameE
+   fun:_ZN7content15BlinkTestRunner20DidClearWindowObjectEPN5blink13WebLocalFrameE
    fun:_ZN7content14RenderViewImpl20didClearWindowObjectEPN5blink13WebLocalFrameE
    fun:_ZN7content15RenderFrameImpl20didClearWindowObjectEPN5blink13WebLocalFrameE
    fun:_ZThn16_N7content15RenderFrameImpl20didClearWindowObjectEPN5blink13WebLocalFrameE
@@ -3100,7 +3100,7 @@
    fun:_ZN5blink11toV8ContextEPNS_10LocalFrameERNS_15DOMWrapperWorldE
    fun:_ZNK5blink17WebLocalFrameImpl22mainWorldScriptContextEv
    fun:_ZN5blink17WebTestingSupport20resetInternalsObjectEPNS_13WebLocalFrameE
-   fun:_ZN7content16WebKitTestRunner5ResetEv
+   fun:_ZN7content15BlinkTestRunner5ResetEv
    fun:_ZN7content26ShellContentRendererClient17RenderViewCreatedEPNS_10RenderViewE
    fun:_ZN7content14RenderViewImpl10InitializeEPNS_20RenderViewImplParamsE
    fun:_ZN7content14RenderViewImpl6CreateEibRKNS_19RendererPreferencesERKNS_14WebPreferencesEiiilRKSbItN4base20string16_char_traitsESaItEEbbibbiRKN5blink13WebScreenInfoE17AccessibilityMode

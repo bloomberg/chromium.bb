@@ -29,7 +29,7 @@
    fun:_ZN7content14RenderViewImpl22OnUpdateWebPreferencesERKNS_14WebPreferencesE
    fun:_ZN7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
    fun:_ZThn*_N7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
-   fun:_ZN7content16WebKitTestRunner5ResetEv
+   fun:_ZN7content15BlinkTestRunner5ResetEv
 }
 {
    bug_436292
