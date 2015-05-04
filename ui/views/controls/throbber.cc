@@ -71,10 +71,8 @@ void Throbber::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
-  SkColor color;
-  bool found_color = ui::CommonThemeGetSystemColor(
-      ui::NativeTheme::kColorId_ThrobberSpinningColor, &color);
-  DCHECK(found_color);
+  SkColor color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_ThrobberSpinningColor);
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
   gfx::PaintThrobberSpinning(canvas, GetContentsBounds(), color, elapsed_time);
 }
