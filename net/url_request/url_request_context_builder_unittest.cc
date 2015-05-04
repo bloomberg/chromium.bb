@@ -24,21 +24,6 @@ namespace net {
 
 namespace {
 
-// A subclass of SpawnedTestServer that uses a statically-configured hostname.
-// This is to work around mysterious failures in chrome_frame_net_tests. See:
-// http://crbug.com/114369
-class LocalHttpTestServer : public SpawnedTestServer {
- public:
-  explicit LocalHttpTestServer(const base::FilePath& document_root)
-      : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
-                          ScopedCustomUrlRequestTestHttpHost::value(),
-                          document_root) {}
-  LocalHttpTestServer()
-      : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
-                          ScopedCustomUrlRequestTestHttpHost::value(),
-                          base::FilePath()) {}
-};
-
 class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
  public:
   explicit MockHttpAuthHandlerFactory(int return_code) :
@@ -63,15 +48,17 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
 class URLRequestContextBuilderTest : public PlatformTest {
  protected:
   URLRequestContextBuilderTest()
-      : test_server_(
-          base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))) {
+      : test_server_(SpawnedTestServer::TYPE_HTTP,
+                     SpawnedTestServer::kLocalhost,
+                     base::FilePath(
+                         FILE_PATH_LITERAL("net/data/url_request_unittest"))) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
     builder_.set_proxy_config_service(
         new ProxyConfigServiceFixed(ProxyConfig::CreateDirect()));
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   }
 
-  LocalHttpTestServer test_server_;
+  SpawnedTestServer test_server_;
   URLRequestContextBuilder builder_;
 };
 

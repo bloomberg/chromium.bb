@@ -615,26 +615,6 @@ bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
   return cancel_request_with_policy_violating_referrer_;
 }
 
-// static
-std::string ScopedCustomUrlRequestTestHttpHost::value_("127.0.0.1");
-
-ScopedCustomUrlRequestTestHttpHost::ScopedCustomUrlRequestTestHttpHost(
-  const std::string& new_value)
-    : old_value_(value_),
-      new_value_(new_value) {
-  value_ = new_value_;
-}
-
-ScopedCustomUrlRequestTestHttpHost::~ScopedCustomUrlRequestTestHttpHost() {
-  DCHECK_EQ(value_, new_value_);
-  value_ = old_value_;
-}
-
-// static
-const std::string& ScopedCustomUrlRequestTestHttpHost::value() {
-  return value_;
-}
-
 TestJobInterceptor::TestJobInterceptor() : main_intercept_job_(NULL) {
 }
 

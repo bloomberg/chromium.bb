@@ -2134,21 +2134,22 @@ TEST_F(URLRequestTest, PriorityIgnoreLimits) {
 
 // TODO(droger): Support SpawnedTestServer on iOS (see http://crbug.com/148666).
 #if !defined(OS_IOS)
-// A subclass of SpawnedTestServer that uses a statically-configured hostname.
-// This is to work around mysterious failures in chrome_frame_net_tests. See:
-// http://crbug.com/114369
-// TODO(erikwright): remove or update as needed; see http://crbug.com/334634.
+namespace {
+
+// Less verbose way of running a simple testserver for the tests below.
 class LocalHttpTestServer : public SpawnedTestServer {
  public:
   explicit LocalHttpTestServer(const base::FilePath& document_root)
       : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
-                          ScopedCustomUrlRequestTestHttpHost::value(),
+                          SpawnedTestServer::kLocalhost,
                           document_root) {}
   LocalHttpTestServer()
       : SpawnedTestServer(SpawnedTestServer::TYPE_HTTP,
-                          ScopedCustomUrlRequestTestHttpHost::value(),
+                          SpawnedTestServer::kLocalhost,
                           base::FilePath()) {}
 };
+
+}  // namespace
 
 TEST_F(URLRequestTest, DelayedCookieCallback) {
   LocalHttpTestServer test_server;
