@@ -553,6 +553,7 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
   gyp_env['GYP_GENERATORS'] = 'ninja'
   gyp_defines = gyp_defines or []
   gyp_defines.append('nacl_allow_thin_archives=0')
+  gyp_defines.append('use_sysroot=1')
   if options.mac_sdk:
     gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
 
@@ -1012,6 +1013,8 @@ def main(args):
   global options
   options = parser.parse_args(args)
 
+  buildbot_common.BuildStep('build_sdk')
+
   if options.nacl_tree_path:
     options.bionic = True
     toolchain_build = os.path.join(options.nacl_tree_path, 'toolchain_build')
@@ -1081,6 +1084,16 @@ def main(args):
     # We don't want the currently configured NACL_SDK_ROOT to have any effect
     # of the build.
     del os.environ['NACL_SDK_ROOT']
+
+  if platform == 'linux':
+    # Linux-only: make sure the debian/stable sysroot image is installed
+    install_script = os.path.join(SRC_DIR, 'chrome', 'installer', 'linux',
+                                  'sysroot_scripts',
+                                  'install-debian.wheezy.sysroot.py')
+
+    buildbot_common.Run([sys.executable, install_script, '--arch=arm'])
+    buildbot_common.Run([sys.executable, install_script, '--arch=i386'])
+    buildbot_common.Run([sys.executable, install_script, '--arch=amd64'])
 
   if not options.skip_toolchain:
     BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
