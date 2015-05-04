@@ -664,7 +664,7 @@ class TestWriterFactory : public tools::QuicDispatcher::PacketWriterFactory {
 class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
  public:
   MockQuicConnectionDebugVisitor();
-  ~MockQuicConnectionDebugVisitor();
+  ~MockQuicConnectionDebugVisitor() override;
 
   MOCK_METHOD1(OnFrameAddedToPacket, void(const QuicFrame&));
 

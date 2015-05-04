@@ -447,7 +447,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
       if (i < kQuicFrameTypeSize + stream_id_size) {
         expected_error = "Unable to read stream_id.";
       } else if (i < kQuicFrameTypeSize + stream_id_size +
-                 kQuicMaxStreamOffsetSize) {
+                         kQuicMaxStreamOffsetSize) {
         expected_error = "Unable to read offset.";
       } else {
         expected_error = "Unable to read frame data.";
@@ -2336,10 +2336,10 @@ TEST_P(QuicFramerTest, RstStreamFrameQuicVersion24) {
     if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
       expected_error = "Unable to read stream_id.";
     } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-                       + kQuicMaxStreamOffsetSize) {
+                       kQuicMaxStreamOffsetSize) {
       expected_error = "Unable to read rst stream sent byte offset.";
     } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-                       + kQuicMaxStreamOffsetSize + kQuicErrorCodeSize) {
+                       kQuicMaxStreamOffsetSize + kQuicErrorCodeSize) {
       expected_error = "Unable to read rst stream error code.";
     } else {
       expected_error = "Unable to read rst stream error details.";
@@ -2358,27 +2358,32 @@ TEST_P(QuicFramerTest, RstStreamFrameQuic) {
     return;
   }
 
+  // clang-format off
   unsigned char packet[] = {
-      // public flags (8 byte connection_id)
-      0x3C,
-      // connection_id
-      0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
-      // packet sequence number
-      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-      // private flags
-      0x00,
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
 
-      // frame type (rst stream frame)
-      0x01,
-      // stream id
-      0x04, 0x03, 0x02, 0x01,
+    // frame type (rst stream frame)
+    0x01,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
 
-      // sent byte offset
-      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    // sent byte offset
+    0x01, 0x02, 0x03, 0x04,
+    0x05, 0x06, 0x07, 0x08,
 
-      // error code
-      0x01, 0x00, 0x00, 0x00,
+    // error code
+    0x01, 0x00, 0x00, 0x00,
   };
+  // clang-format on
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
@@ -2399,10 +2404,10 @@ TEST_P(QuicFramerTest, RstStreamFrameQuic) {
     if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
       expected_error = "Unable to read stream_id.";
     } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-                       +kQuicMaxStreamOffsetSize) {
+                       kQuicMaxStreamOffsetSize) {
       expected_error = "Unable to read rst stream sent byte offset.";
     } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-                       +kQuicMaxStreamOffsetSize + kQuicErrorCodeSize) {
+                       kQuicMaxStreamOffsetSize + kQuicErrorCodeSize) {
       expected_error = "Unable to read rst stream error code.";
     }
     CheckProcessingFails(
@@ -3664,25 +3669,30 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
   rst_frame.error_code = static_cast<QuicRstStreamErrorCode>(0x05060708);
   rst_frame.byte_offset = 0x0807060504030201;
 
+  // clang-format off
   unsigned char packet[] = {
-      // public flags (8 byte connection_id)
-      0x3C,
-      // connection_id
-      0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
-      // packet sequence number
-      0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12,
-      // private flags
-      0x00,
+    // public flags (8 byte connection_id)
+    0x3C,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
 
-      // frame type (rst stream frame)
-      0x01,
-      // stream id
-      0x04, 0x03, 0x02, 0x01,
-      // sent byte offset
-      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-      // error code
-      0x08, 0x07, 0x06, 0x05,
+    // frame type (rst stream frame)
+    0x01,
+    // stream id
+    0x04, 0x03, 0x02, 0x01,
+    // sent byte offset
+    0x01, 0x02, 0x03, 0x04,
+    0x05, 0x06, 0x07, 0x08,
+    // error code
+    0x08, 0x07, 0x06, 0x05,
   };
+  // clang-format on
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&rst_frame));
