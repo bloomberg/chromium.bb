@@ -43,7 +43,6 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
-#include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
@@ -56,7 +55,7 @@ namespace blink {
 WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, PassRefPtr<ThreadableLoaderClientWrapper> clientWrapper, PassOwnPtr<ThreadableLoaderClient> clientBridge, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     : m_workerGlobalScope(&workerGlobalScope)
     , m_workerClientWrapper(clientWrapper)
-    , m_bridge(*(new MainThreadBridge(m_workerClientWrapper, clientBridge, workerGlobalScope.thread()->workerLoaderProxy(), request, options, resourceLoaderOptions, workerGlobalScope.url().strippedForUseAsReferrer())))
+    , m_bridge(*(new MainThreadBridge(m_workerClientWrapper, clientBridge, workerGlobalScope.thread()->workerLoaderProxy(), request, options, resourceLoaderOptions, workerGlobalScope.referrerPolicy(), workerGlobalScope.url().strippedForUseAsReferrer())))
 {
 }
 
@@ -114,6 +113,7 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
     const ResourceRequest& request,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resourceLoaderOptions,
+    const ReferrerPolicy referrerPolicy,
     const String& outgoingReferrer)
     : m_clientBridge(clientBridge)
     , m_workerClientWrapper(workerClientWrapper)
@@ -122,20 +122,20 @@ WorkerThreadableLoader::MainThreadBridge::MainThreadBridge(
     ASSERT(m_workerClientWrapper.get());
     ASSERT(m_clientBridge.get());
     m_loaderProxy->postTaskToLoader(
-        createCrossThreadTask(&MainThreadBridge::mainThreadCreateLoader, this, request, options, resourceLoaderOptions, outgoingReferrer));
+        createCrossThreadTask(&MainThreadBridge::mainThreadCreateLoader, this, request, options, resourceLoaderOptions, referrerPolicy, outgoingReferrer));
 }
 
 WorkerThreadableLoader::MainThreadBridge::~MainThreadBridge()
 {
 }
 
-void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(PassOwnPtr<CrossThreadResourceRequestData> requestData, ThreadableLoaderOptions options, ResourceLoaderOptions resourceLoaderOptions, const String& outgoingReferrer, ExecutionContext* context)
+void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(PassOwnPtr<CrossThreadResourceRequestData> requestData, ThreadableLoaderOptions options, ResourceLoaderOptions resourceLoaderOptions, const ReferrerPolicy referrerPolicy, const String& outgoingReferrer, ExecutionContext* context)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
 
     OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
-    request->setHTTPReferrer(SecurityPolicy::generateReferrer(ReferrerPolicyDefault, request->url(), outgoingReferrer));
+    request->setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, request->url(), outgoingReferrer));
     resourceLoaderOptions.requestInitiatorContext = WorkerContext;
     m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, *request, options, resourceLoaderOptions);
     if (!m_mainThreadLoader) {

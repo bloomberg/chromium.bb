@@ -465,7 +465,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
     , m_pluginLoadingTimer(this, &Document::pluginLoadingTimerFired)
-    , m_referrerPolicy(ReferrerPolicyDefault)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_taskRunner(MainThreadTaskRunner::create(this))
@@ -3063,16 +3062,6 @@ void Document::processReferrerPolicy(const String& policy)
         setReferrerPolicy(ReferrerPolicyNoReferrerWhenDowngrade);
     else
         addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policy + "' is not one of 'always', 'default', 'never', 'no-referrer', 'no-referrer-when-downgrade', 'origin', 'origin-when-crossorigin', or 'unsafe-url'. This document's referrer policy has been left unchanged."));
-}
-
-void Document::setReferrerPolicy(ReferrerPolicy referrerPolicy)
-{
-    // FIXME: Can we adopt the CSP referrer policy merge algorithm? Or does the web rely on being able to modify the referrer policy in-flight?
-    UseCounter::count(this, UseCounter::SetReferrerPolicy);
-    if (m_referrerPolicy != ReferrerPolicyDefault)
-        UseCounter::count(this, UseCounter::ResetReferrerPolicy);
-
-    m_referrerPolicy = referrerPolicy;
 }
 
 String Document::outgoingReferrer()

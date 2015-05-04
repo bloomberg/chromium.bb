@@ -81,5 +81,16 @@ postMessage(id === 0 ? "setTimeout blocked" : "setTimeout allowed");
 alert('PASS');
 
 <?php
+} else if ($_GET["type"] == "report-referrer") {
+?>
+
+var xhr = new XMLHttpRequest;
+xhr.open("GET", "http://127.0.0.1:8000/security/resources/echo-referrer-header.php", true);
+xhr.onload = function () {
+    postMessage(this.responseText);
+};
+xhr.send();
+
+<?php
 }
 ?>

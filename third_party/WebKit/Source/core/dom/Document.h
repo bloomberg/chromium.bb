@@ -282,9 +282,6 @@ public:
 
     bool hasLegacyViewportTag() const { return m_legacyViewportDescription.isLegacyViewportType(); }
 
-    void setReferrerPolicy(ReferrerPolicy);
-    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
-
     String outgoingReferrer();
     String outgoingOrigin() const;
 

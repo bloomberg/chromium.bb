@@ -168,7 +168,10 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
     m_selfProtocol = securityOrigin()->protocol();
     m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, securityOrigin()->host(), securityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 
-    // If we're in a Document, set the referrer policy, mixed content checking, and sandbox
+    if (didSetReferrerPolicy())
+        m_executionContext->setReferrerPolicy(m_referrerPolicy);
+
+    // If we're in a Document, set mixed content checking and sandbox
     // flags, then dump all the parsing error messages, then poke at histograms.
     if (Document* document = this->document()) {
         if (m_sandboxMask != SandboxNone) {
@@ -177,8 +180,6 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         }
         if (m_enforceStrictMixedContentChecking)
             document->enforceStrictMixedContentChecking();
-        if (didSetReferrerPolicy())
-            document->setReferrerPolicy(m_referrerPolicy);
         if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);

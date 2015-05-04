@@ -37,6 +37,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -153,6 +154,9 @@ public:
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged.
     virtual bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) = 0;
 
+    virtual void setReferrerPolicy(ReferrerPolicy);
+    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
+
 protected:
     ExecutionContext();
     virtual ~ExecutionContext();
@@ -191,6 +195,8 @@ private:
 
     Deque<OwnPtr<SuspendableTask>> m_suspendedTasks;
     bool m_isRunSuspendableTasksScheduled;
+
+    ReferrerPolicy m_referrerPolicy;
 };
 
 } // namespace blink
