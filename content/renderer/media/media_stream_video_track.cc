@@ -15,6 +15,12 @@ namespace {
 void ResetCallback(scoped_ptr<VideoCaptureDeliverFrameCB> callback) {
   // |callback| will be deleted when this exits.
 }
+
+// Empty method used for keeping a reference to the original media::VideoFrame.
+// The reference to |frame| is kept in the closure that calls this method.
+void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
+}
+
 }  // namespace
 
 // MediaStreamVideoTrack::FrameDeliverer is a helper class used for registering
@@ -59,9 +65,9 @@ class MediaStreamVideoTrack::FrameDeliverer
       const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
   void SetEnabledOnIO(bool enabled);
-  // Returns |black_frame_| where the size and time stamp is set to the same as
+  // Returns a black frame where the size and time stamp is set to the same as
   // as in |reference_frame|.
-  const scoped_refptr<media::VideoFrame>& GetBlackFrame(
+  scoped_refptr<media::VideoFrame> GetBlackFrame(
       const scoped_refptr<media::VideoFrame>& reference_frame);
 
   // Used to DCHECK that AddCallback and RemoveCallback are called on the main
@@ -158,7 +164,7 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
     entry.second.Run(video_frame, estimated_capture_time);
 }
 
-const scoped_refptr<media::VideoFrame>&
+scoped_refptr<media::VideoFrame>
 MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
     const scoped_refptr<media::VideoFrame>& reference_frame) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
@@ -167,8 +173,16 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
     black_frame_ =
         media::VideoFrame::CreateBlackFrame(reference_frame->natural_size());
 
-  black_frame_->set_timestamp(reference_frame->timestamp());
-  return black_frame_;
+  // Wrap |black_frame_| so we get a fresh timestamp we can modify. Frames
+  // returned from this function may still be in use.
+  scoped_refptr<media::VideoFrame> wrapped_black_frame =
+      media::VideoFrame::WrapVideoFrame(
+          black_frame_, black_frame_->visible_rect(),
+          black_frame_->natural_size(),
+          base::Bind(&ReleaseOriginalFrame, black_frame_));
+
+  wrapped_black_frame->set_timestamp(reference_frame->timestamp());
+  return wrapped_black_frame;
 }
 
 // static
