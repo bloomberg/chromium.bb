@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -183,7 +184,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
                     resources.getColor(R.color.pref_accent_color));
             if (LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
                 String message = mContext.getString(
-                        locationEnabled(position)
+                        locationEnabled(position, true)
                         ? R.string.search_engine_location_allowed
                         : R.string.search_engine_location_blocked);
                 SpannableString messageWithLink = new SpannableString(message);
@@ -226,7 +227,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(mContext);
         if (sharedPreferences.getBoolean(PrefServiceBridge.LOCATION_AUTO_ALLOWED, false)) {
-            if (locationEnabled(mSelectedSearchEnginePosition)) {
+            if (locationEnabled(mSelectedSearchEnginePosition, false)) {
                 String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
                         toIndex(mSelectedSearchEnginePosition));
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
@@ -248,12 +249,6 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     }
 
     private void onLocationLinkClicked() {
-        // This catches the case where the user has reset permissions for a site that's set as the
-        // default search engine. If the user notices that Location is blocked for the current
-        // search engine and clicks the link to enable then the Location record must exist
-        // (otherwise it is seemingly impossible to enable after resetting a site).
-        PrefServiceBridge.maybeCreatePermissionForDefaultSearchEngine(false, mContext);
-
         if (!LocationSettings.getInstance().isSystemLocationSettingEnabled()) {
             mContext.startActivity(
                     LocationSettings.getInstance().getSystemLocationSettingsIntent());
@@ -262,20 +257,26 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
                     mContext, SingleWebsitePreferences.class.getName());
             String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
                     toIndex(mSelectedSearchEnginePosition));
-            settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS,
-                    SingleWebsitePreferences.createFragmentArgsForSite(url));
+            Bundle fragmentArgs = SingleWebsitePreferences.createFragmentArgsForSite(url);
+            fragmentArgs.putBoolean(SingleWebsitePreferences.EXTRA_LOCATION,
+                    locationEnabled(mSelectedSearchEnginePosition, true));
+            settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
             mContext.startActivity(settingsIntent);
         }
         mCallback.onDismissDialog();
     }
 
-    private boolean locationEnabled(int position) {
+    private boolean locationEnabled(int position, boolean checkGeoHeader) {
         if (position == -1) return false;
 
         String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
                 toIndex(position));
         GeolocationInfo locationSettings = new GeolocationInfo(url, null);
         ContentSetting locationPermission = locationSettings.getContentSetting();
+        // Handle the case where the geoHeader being sent when no permission has been specified.
+        if (locationPermission == ContentSetting.ASK && checkGeoHeader) {
+            return PrefServiceBridge.isGeoHeaderEnabledForUrl(mContext, url, false);
+        }
         return locationPermission == ContentSetting.ALLOW;
     }
 }

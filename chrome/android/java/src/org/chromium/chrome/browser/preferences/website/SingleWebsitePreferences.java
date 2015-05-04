@@ -35,12 +35,15 @@ public class SingleWebsitePreferences extends PreferenceFragment
         implements DialogInterface.OnClickListener, OnPreferenceChangeListener,
                 OnPreferenceClickListener {
     // SingleWebsitePreferences expects either EXTRA_SITE (a Website) or
-    // EXTRA_ADDRESS (a WebsiteAddress) to be present (but not both). If
+    // EXTRA_ORIGIN (a WebsiteAddress) to be present (but not both). If
     // EXTRA_SITE is present, the fragment will display the permissions in that
-    // Website object. If EXTRA_ADDRESS is present, the fragment will find all
-    // permissions for that website address and display those.
+    // Website object. If EXTRA_ORIGIN is present, the fragment will find all
+    // permissions for that website address and display those. If EXTRA_LOCATION
+    // is present, the fragment will add a Location toggle, even if the site
+    // specifies no Location permission.
     public static final String EXTRA_SITE = "org.chromium.chrome.preferences.site";
     public static final String EXTRA_ORIGIN = "org.chromium.chrome.preferences.origin";
+    public static final String EXTRA_LOCATION = "org.chromium.chrome.preferences.location";
 
     // Preference keys, see single_website_preferences.xml
     // Headings:
@@ -276,7 +279,15 @@ public class SingleWebsitePreferences extends PreferenceFragment
             } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getJavaScriptPermission());
             } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getGeolocationPermission());
+                Object locationAllowed = getArguments().getSerializable(EXTRA_LOCATION);
+                if (mSite.getGeolocationPermission() == null && locationAllowed != null) {
+                    String origin = mSite.getAddress().getOrigin();
+                    mSite.setGeolocationInfo(new GeolocationInfo(origin, origin));
+                    setUpListPreference(preference, (boolean) locationAllowed
+                            ? ContentSetting.ALLOW : ContentSetting.BLOCK);
+                } else {
+                    setUpListPreference(preference, mSite.getGeolocationPermission());
+                }
             } else if (PREF_MIC_CAPTURE_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getMicrophonePermission());
             } else if (PREF_MIDI_SYSEX_PERMISSION.equals(preference.getKey())) {
