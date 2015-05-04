@@ -94,6 +94,10 @@ struct motif_wm_hints {
 #define MWM_DECOR_MINIMIZE      (1L << 5)
 #define MWM_DECOR_MAXIMIZE      (1L << 6)
 
+#define MWM_DECOR_EVERYTHING \
+	(MWM_DECOR_BORDER | MWM_DECOR_RESIZEH | MWM_DECOR_TITLE | \
+	 MWM_DECOR_MENU | MWM_DECOR_MINIMIZE | MWM_DECOR_MAXIMIZE)
+
 #define MWM_INPUT_MODELESS 0
 #define MWM_INPUT_PRIMARY_APPLICATION_MODAL 1
 #define MWM_INPUT_SYSTEM_MODAL 2
@@ -425,7 +429,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 					     props[i].atom,
 					     XCB_ATOM_ANY, 0, 2048);
 
-	window->decorate = !window->override_redirect;
+	window->decorate = window->override_redirect ? 0 : MWM_DECOR_EVERYTHING;
 	window->size_hints.flags = 0;
 	window->motif_hints.flags = 0;
 	window->delete_window = 0;
@@ -495,9 +499,15 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			memcpy(&window->motif_hints,
 			       xcb_get_property_value(reply),
 			       sizeof window->motif_hints);
-			if (window->motif_hints.flags & MWM_HINTS_DECORATIONS)
-				window->decorate =
-					window->motif_hints.decorations;
+			if (window->motif_hints.flags & MWM_HINTS_DECORATIONS) {
+				if (window->motif_hints.decorations & MWM_DECOR_ALL)
+					/* MWM_DECOR_ALL means all except the other values listed. */
+					window->decorate =
+						MWM_DECOR_EVERYTHING & (~window->motif_hints.decorations);
+				else
+					window->decorate =
+						window->motif_hints.decorations;
+			}
 			break;
 		default:
 			break;
