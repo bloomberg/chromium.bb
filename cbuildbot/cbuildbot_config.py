@@ -3274,6 +3274,7 @@ _waterfall_config_map = {
       'arm-generic-full',
       'daisy-full',
       'mipsel-o32-generic-full',
+      'oak-full',
       'x86-generic-full',
 
       # ASAN
@@ -3289,6 +3290,7 @@ _waterfall_config_map = {
       # Experimental Paladins
       'daisy_freon-paladin',
       'nyan_freon-paladin',
+      'oak-paladin',
       'tricky-paladin',
       'whirlwind-paladin',
       'x86-alex_freon-paladin',
@@ -3310,6 +3312,7 @@ _waterfall_config_map = {
       'daisy_winter-release',
       'kayle-release',
       'nyan_freon-release',
+      'oak-release',
       'panther_moblab-release',
       'rush_ryu-release',
       'lakitu-release',
