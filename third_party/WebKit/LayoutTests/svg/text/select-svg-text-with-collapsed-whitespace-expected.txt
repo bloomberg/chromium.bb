@@ -1,0 +1,33 @@
+PASS range.startOffset is 5
+PASS range.endOffset is 9
+PASS range.startOffset is 5
+PASS range.endOffset is 24
+PASS range.startOffset is 9
+PASS range.endOffset is 25
+PASS range.startOffset is 0
+PASS range.endOffset is 4
+PASS range.startOffset is 0
+PASS range.endOffset is 14
+PASS range.startOffset is 3
+PASS range.endOffset is 15
+PASS range.startOffset is 0
+PASS range.endOffset is 4
+PASS range.startOffset is 0
+PASS range.endOffset is 15
+PASS range.startOffset is 2
+PASS range.endOffset is 19
+PASS range.startOffset is 5
+PASS range.endOffset is 9
+PASS range.startOffset is 5
+PASS range.endOffset is 24
+PASS range.startOffset is 21
+PASS range.endOffset is 27
+PASS successfullyParsed is true
+
+TEST COMPLETE
+This test checks that characters can be selected correctly with collapsed whitespace. 
+happy debugging !!
+happy debugging !!
+happy debugging !!
+happy debugging !!
+

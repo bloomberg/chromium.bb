@@ -59,6 +59,14 @@ static PassRefPtr<StringImpl> applySVGWhitespaceRules(PassRefPtr<StringImpl> str
     return newString.release();
 }
 
+static float squaredDistanceToClosestPoint(const FloatRect& rect, const FloatPoint& point)
+{
+    FloatPoint closestPoint;
+    closestPoint.setX(std::max(std::min(point.x(), rect.maxX()), rect.x()));
+    closestPoint.setY(std::max(std::min(point.y(), rect.maxY()), rect.y()));
+    return (point - closestPoint).diagonalLengthSquared();
+}
+
 LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
     : LayoutText(n, applySVGWhitespaceRules(string, false))
     , m_scalingFactor(1)
@@ -155,7 +163,8 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
     if (!firstTextBox() || !textLength())
         return createPositionWithAffinity(0, DOWNSTREAM);
 
-    float baseline = m_scaledFont.fontMetrics().floatAscent();
+    ASSERT(m_scalingFactor);
+    float baseline = m_scaledFont.fontMetrics().floatAscent() / m_scalingFactor;
 
     LayoutBlock* containingBlock = this->containingBlock();
     ASSERT(containingBlock);
@@ -182,12 +191,14 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
             const SVGTextFragment& fragment = fragments.at(i);
             FloatRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
             fragment.buildFragmentTransform(fragmentTransform);
-            fragmentRect = fragmentTransform.mapRect(fragmentRect);
+            if (!fragmentTransform.isIdentity())
+                fragmentRect = fragmentTransform.mapRect(fragmentRect);
 
-            float distance = powf(fragmentRect.x() - absolutePoint.x(), 2) +
-                powf(fragmentRect.y() + fragmentRect.height() / 2 - absolutePoint.y(), 2);
+            float distance = 0;
+            if (!fragmentRect.contains(absolutePoint))
+                distance = squaredDistanceToClosestPoint(fragmentRect, absolutePoint);
 
-            if (distance < closestDistance) {
+            if (distance <= closestDistance) {
                 closestDistance = distance;
                 closestDistanceBox = textBox;
                 closestDistanceFragment = &fragment;
