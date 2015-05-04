@@ -15,7 +15,7 @@
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/common/webkit_test_helpers.h"
+#include "content/shell/renderer/layout_test/blink_test_helpers.h"
 
 namespace content {
 namespace {

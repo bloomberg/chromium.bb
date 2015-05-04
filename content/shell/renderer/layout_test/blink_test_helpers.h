@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_COMMON_WEBKIT_TEST_HELPERS_H_
-#define CONTENT_SHELL_COMMON_WEBKIT_TEST_HELPERS_H_
+#ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
+#define CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_
 
 #include <string>
 #include <vector>
@@ -34,4 +34,4 @@ std::vector<std::string> GetSideloadFontFiles();
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_COMMON_WEBKIT_TEST_HELPERS_H_
+#endif  // CONTENT_SHELL_RENDERER_LAYOUT_TEST_BLINK_TEST_HELPERS_H_

@@ -113,7 +113,6 @@ include_rules = [
 
   "+storage/browser",
   "+storage/common",
-  "+webkit",
 
   # For generated JNI includes.
   "+jni",
