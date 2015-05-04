@@ -35,8 +35,6 @@ void RenderingTest::SetUp()
     m_pageClients.chromeClient = chromeClient;
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &m_pageClients);
 
-    document().settings()->setRegionBasedColumnsEnabled(true);
-
     // This ensures that the minimal DOM tree gets attached
     // correctly for tests that don't call setBodyInnerHTML.
     document().view()->updateLayoutAndStyleIfNeededRecursive();

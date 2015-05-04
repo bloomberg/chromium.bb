@@ -12,6 +12,7 @@
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -26,7 +27,7 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
 
     // This avoids painting garbage between columns if there is a column gap.
     // This is legacy WebKit behavior and doesn't work with slimmingpaint. We can remove it once region-based columns are launched.
-    if (!m_layoutView.document().regionBasedColumnsEnabled() && m_layoutView.frameView() && m_layoutView.style()->isOverflowPaged()) {
+    if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled() && m_layoutView.frameView() && m_layoutView.style()->isOverflowPaged()) {
         ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
         LayoutRect paintRect(paintInfo.rect);
         paintInfo.context->fillRect(paintRect, m_layoutView.frameView()->baseBackgroundColor());
