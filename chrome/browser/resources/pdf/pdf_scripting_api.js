@@ -35,13 +35,23 @@ function SerializeKeyEvent(event) {
 }
 
 /**
+ * An enum containing a value specifying whether the PDF is currently loading,
+ * has finished loading or failed to load.
+ */
+var LoadState = {
+  LOADING: 'loading',
+  SUCCESS: 'success',
+  FAILED: 'failed'
+};
+
+/**
  * Create a new PDFScriptingAPI. This provides a scripting interface to
  * the PDF viewer so that it can be customized by things like print preview.
  * @param {Window} window the window of the page containing the pdf viewer.
  * @param {Object} plugin the plugin element containing the pdf viewer.
  */
 function PDFScriptingAPI(window, plugin) {
-  this.loaded_ = false;
+  this.loadState_ = LoadState.LOADING;
   this.pendingScriptingMessages_ = [];
   this.setPlugin(plugin);
 
@@ -61,9 +71,9 @@ function PDFScriptingAPI(window, plugin) {
                                         event.data.viewportHeight);
         break;
       case 'documentLoaded':
-        this.loaded_ = true;
+        this.loadState_ = event.data.load_state;
         if (this.loadCallback_)
-          this.loadCallback_();
+          this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
         break;
       case 'getAccessibilityJSONReply':
         if (this.accessibilityCallback_) {
@@ -135,8 +145,8 @@ PDFScriptingAPI.prototype = {
    */
   setLoadCallback: function(callback) {
     this.loadCallback_ = callback;
-    if (this.loaded_ && this.loadCallback_)
-      this.loadCallback_();
+    if (this.loadState_ != LoadState.LOADING && this.loadCallback_)
+      this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
   },
 
   /**
@@ -155,7 +165,7 @@ PDFScriptingAPI.prototype = {
    * @param {boolean} modifiable whether or not the document is modifiable.
    */
   resetPrintPreviewMode: function(url, grayscale, pageNumbers, modifiable) {
-    this.loaded_ = false;
+    this.loadState_ = LoadState.LOADING;
     this.sendMessage_({
       type: 'resetPrintPreviewMode',
       url: url,

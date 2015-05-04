@@ -65,7 +65,7 @@ PDFViewer.MIN_TOOLBAR_OFFSET = 15;
  */
 function PDFViewer(browserApi) {
   this.browserApi_ = browserApi;
-  this.loaded_ = false;
+  this.loadState_ = LoadState.LOADING;
   this.parentWindow_ = null;
 
   this.delayedScriptingMessages_ = [];
@@ -374,6 +374,20 @@ PDFViewer.prototype = {
 
   /**
    * @private
+   * Sends a 'documentLoaded' message to the PDFScriptingAPI if the document has
+   * finished loading.
+   */
+  sendDocumentLoadedMessage_: function() {
+    if (this.loadState_ == LoadState.LOADING)
+      return;
+    this.sendScriptingMessage_({
+      type: 'documentLoaded',
+      load_state: this.loadState_
+    });
+  },
+
+  /**
+   * @private
    * Handle open pdf parameters. This function updates the viewport as per
    * the parameters mentioned in the url while opening pdf. The order is
    * important as later actions can override the effects of previous actions.
@@ -416,6 +430,8 @@ PDFViewer.prototype = {
         this.passwordScreen_.deny();
         this.passwordScreen_.active = false;
       }
+      this.loadState_ = LoadState.FAILED;
+      this.sendDocumentLoadedMessage_();
     } else if (progress == 100) {
       // Document load complete.
       if (this.lastViewportPosition_)
@@ -423,10 +439,8 @@ PDFViewer.prototype = {
       this.paramsParser_.getViewportFromUrlParams(
           this.browserApi_.getStreamInfo().originalUrl,
           this.handleURLParams_.bind(this));
-      this.loaded_ = true;
-      this.sendScriptingMessage_({
-        type: 'documentLoaded'
-      });
+      this.loadState_ = LoadState.SUCCESS;
+      this.sendDocumentLoadedMessage_();
       while (this.delayedScriptingMessages_.length > 0)
         this.handleScriptingMessage(this.delayedScriptingMessages_.shift());
 
@@ -647,11 +661,8 @@ PDFViewer.prototype = {
     if (this.parentWindow_ != message.source) {
       this.parentWindow_ = message.source;
       // Ensure that we notify the embedder if the document is loaded.
-      if (this.loaded_) {
-        this.sendScriptingMessage_({
-          type: 'documentLoaded'
-        });
-      }
+      if (this.loadState_ != LoadState.LOADING)
+        this.sendDocumentLoadedMessage_();
     }
 
     if (this.handlePrintPreviewScriptingMessage_(message))
@@ -659,7 +670,7 @@ PDFViewer.prototype = {
 
     // Delay scripting messages from users of the scripting API until the
     // document is loaded. This simplifies use of the APIs.
-    if (!this.loaded_) {
+    if (this.loadState_ != LoadState.SUCCESS) {
       this.delayedScriptingMessages_.push(message);
       return;
     }
@@ -689,7 +700,7 @@ PDFViewer.prototype = {
         this.plugin_.postMessage(message.data);
         return true;
       case 'resetPrintPreviewMode':
-        this.loaded_ = false;
+        this.loadState_ = LoadState.LOADING;
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
           this.viewport_.fitToPage();
