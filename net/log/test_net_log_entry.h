@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_LOG_CAPTURED_NET_LOG_ENTRY_H_
-#define NET_LOG_CAPTURED_NET_LOG_ENTRY_H_
+#ifndef NET_LOG_TEST_NET_LOG_ENTRY_H_
+#define NET_LOG_TEST_NET_LOG_ENTRY_H_
 
 #include <string>
 #include <vector>
@@ -19,28 +19,28 @@ class ListValue;
 
 namespace net {
 
-// CapturedNetLogEntry is much like NetLog::Entry, except it has its own copy of
-// all log data, so a list of entries can be gathered over the course of a test,
-// and then inspected at the end.  It is intended for testing only, and is part
-// of the net_test_support project.
-struct CapturedNetLogEntry {
+// TestNetLogEntry is much like NetLog::Entry, except it has its own copy of all
+// log data, so a list of entries can be gathered over the course of a test, and
+// then inspected at the end.  It is intended for testing only, and is part of
+// the net_test_support project.
+struct TestNetLogEntry {
   // Ordered set of logged entries.
-  typedef std::vector<CapturedNetLogEntry> List;
+  typedef std::vector<TestNetLogEntry> List;
 
-  CapturedNetLogEntry(NetLog::EventType type,
-                      const base::TimeTicks& time,
-                      NetLog::Source source,
-                      NetLog::EventPhase phase,
-                      scoped_ptr<base::DictionaryValue> params);
+  TestNetLogEntry(NetLog::EventType type,
+                  const base::TimeTicks& time,
+                  NetLog::Source source,
+                  NetLog::EventPhase phase,
+                  scoped_ptr<base::DictionaryValue> params);
   // Copy constructor needed to store in a std::vector because of the
   // scoped_ptr.
-  CapturedNetLogEntry(const CapturedNetLogEntry& entry);
+  TestNetLogEntry(const TestNetLogEntry& entry);
 
-  ~CapturedNetLogEntry();
+  ~TestNetLogEntry();
 
   // Equality operator needed to store in a std::vector because of the
   // scoped_ptr.
-  CapturedNetLogEntry& operator=(const CapturedNetLogEntry& entry);
+  TestNetLogEntry& operator=(const TestNetLogEntry& entry);
 
   // Attempt to retrieve an value of the specified type with the given name
   // from |params|.  Returns true on success, false on failure.  Does not
@@ -66,4 +66,4 @@ struct CapturedNetLogEntry {
 
 }  // namespace net
 
-#endif  // NET_LOG_CAPTURED_NET_LOG_ENTRY_H_
+#endif  // NET_LOG_TEST_NET_LOG_ENTRY_H_

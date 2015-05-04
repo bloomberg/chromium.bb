@@ -34,9 +34,9 @@
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/http_util.h"
 #include "net/http/mock_http_cache.h"
-#include "net/log/captured_net_log_entry.h"
-#include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
@@ -534,7 +534,7 @@ class FakeWebSocketHandshakeStreamCreateHelper
 // Returns true if |entry| is not one of the log types paid attention to in this
 // test. Note that TYPE_HTTP_CACHE_WRITE_INFO and TYPE_HTTP_CACHE_*_DATA are
 // ignored.
-bool ShouldIgnoreLogEntry(const CapturedNetLogEntry& entry) {
+bool ShouldIgnoreLogEntry(const TestNetLogEntry& entry) {
   switch (entry.type) {
     case NetLog::TYPE_HTTP_CACHE_GET_BACKEND:
     case NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY:
@@ -550,7 +550,7 @@ bool ShouldIgnoreLogEntry(const CapturedNetLogEntry& entry) {
 
 // Modifies |entries| to only include log entries created by the cache layer and
 // asserted on in these tests.
-void FilterLogEntries(CapturedNetLogEntry::List* entries) {
+void FilterLogEntries(TestNetLogEntry::List* entries) {
   entries->erase(std::remove_if(entries->begin(), entries->end(),
                                 &ShouldIgnoreLogEntry),
                  entries->end());
@@ -558,7 +558,7 @@ void FilterLogEntries(CapturedNetLogEntry::List* entries) {
 
 bool LogContainsEventType(const BoundTestNetLog& log,
                           NetLog::EventType expected) {
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   for (size_t i = 0; i < entries.size(); i++) {
     if (entries[i].type == expected)
@@ -620,7 +620,7 @@ TEST(HttpCache, SimpleGETNoDiskCache) {
 
   // Check that the NetLog was filled as expected.
   // (We attempted to both Open and Create entries, but both failed).
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 
@@ -785,7 +785,7 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
                                  log.bound(), &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 
@@ -1043,7 +1043,7 @@ TEST(HttpCache, SimpleGET_LoadBypassCache) {
                                  &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   FilterLogEntries(&entries);
 

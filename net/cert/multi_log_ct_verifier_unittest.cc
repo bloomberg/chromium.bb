@@ -21,9 +21,9 @@
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
-#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,19 +73,19 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   }
 
   bool CheckForEmbeddedSCTInNetLog(TestNetLog& net_log) {
-    CapturedNetLogEntry::List entries;
+    TestNetLogEntry::List entries;
     net_log.GetEntries(&entries);
     if (entries.size() != 2)
       return false;
 
-    const CapturedNetLogEntry& received = entries[0];
+    const TestNetLogEntry& received = entries[0];
     std::string embedded_scts;
     if (!received.GetStringValue("embedded_scts", &embedded_scts))
       return false;
     if (embedded_scts.empty())
       return false;
 
-    const CapturedNetLogEntry& parsed = entries[1];
+    const TestNetLogEntry& parsed = entries[1];
     base::ListValue* verified_scts;
     if (!parsed.GetListValue("verified_scts", &verified_scts) ||
         verified_scts->GetSize() != 1) {

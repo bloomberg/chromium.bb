@@ -19,9 +19,9 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
-#include "net/log/captured_net_log_entry.h"
-#include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/test/net_test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -215,7 +215,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   client.reset();
 
   // Check the server's log.
-  CapturedNetLogEntry::List server_entries;
+  TestNetLogEntry::List server_entries;
   server_log.GetEntries(&server_entries);
   EXPECT_EQ(5u, server_entries.size());
   EXPECT_TRUE(
@@ -230,7 +230,7 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
       LogContainsEndEvent(server_entries, 4, NetLog::TYPE_SOCKET_ALIVE));
 
   // Check the client's log.
-  CapturedNetLogEntry::List client_entries;
+  TestNetLogEntry::List client_entries;
   client_log.GetEntries(&client_entries);
   EXPECT_EQ(7u, client_entries.size());
   EXPECT_TRUE(

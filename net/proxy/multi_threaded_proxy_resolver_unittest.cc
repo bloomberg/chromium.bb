@@ -17,10 +17,10 @@
 #include "base/threading/platform_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_factory.h"
@@ -261,7 +261,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   // on completion, this should have been copied into |log0|.
   // We also have 1 log entry that was emitted by the
   // MultiThreadedProxyResolver.
-  CapturedNetLogEntry::List entries0;
+  TestNetLogEntry::List entries0;
   log0.GetEntries(&entries0);
 
   ASSERT_EQ(2u, entries0.size());
@@ -351,7 +351,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   EXPECT_EQ(0, callback0.WaitForResult());
   EXPECT_EQ("PROXY request0:80", results0.ToPacString());
 
-  CapturedNetLogEntry::List entries0;
+  TestNetLogEntry::List entries0;
   log0.GetEntries(&entries0);
 
   ASSERT_EQ(2u, entries0.size());
@@ -362,7 +362,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   EXPECT_EQ(1, callback1.WaitForResult());
   EXPECT_EQ("PROXY request1:80", results1.ToPacString());
 
-  CapturedNetLogEntry::List entries1;
+  TestNetLogEntry::List entries1;
   log1.GetEntries(&entries1);
 
   ASSERT_EQ(4u, entries1.size());
@@ -377,7 +377,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   EXPECT_EQ(2, callback2.WaitForResult());
   EXPECT_EQ("PROXY request2:80", results2.ToPacString());
 
-  CapturedNetLogEntry::List entries2;
+  TestNetLogEntry::List entries2;
   log2.GetEntries(&entries2);
 
   ASSERT_EQ(4u, entries2.size());

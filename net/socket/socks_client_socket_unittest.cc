@@ -10,10 +10,10 @@
 #include "net/base/winsock_init.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
@@ -161,7 +161,7 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
   int rv = user_sock_->Connect(callback_.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(
       LogContainsBeginEvent(entries, 0, NetLog::TYPE_SOCKS_CONNECT));
@@ -233,7 +233,7 @@ TEST_F(SOCKSClientSocketTest, HandshakeFailures) {
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_EQ(ERR_IO_PENDING, rv);
 
-    CapturedNetLogEntry::List entries;
+    TestNetLogEntry::List entries;
     log.GetEntries(&entries);
     EXPECT_TRUE(LogContainsBeginEvent(
         entries, 0, NetLog::TYPE_SOCKS_CONNECT));
@@ -269,7 +269,7 @@ TEST_F(SOCKSClientSocketTest, PartialServerReads) {
 
   int rv = user_sock_->Connect(callback_.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));
@@ -307,7 +307,7 @@ TEST_F(SOCKSClientSocketTest, PartialClientWrites) {
 
   int rv = user_sock_->Connect(callback_.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));
@@ -339,7 +339,7 @@ TEST_F(SOCKSClientSocketTest, FailedSocketRead) {
 
   int rv = user_sock_->Connect(callback_.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));
@@ -369,7 +369,7 @@ TEST_F(SOCKSClientSocketTest, FailedDNS) {
 
   int rv = user_sock_->Connect(callback_.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(
       entries, 0, NetLog::TYPE_SOCKS_CONNECT));

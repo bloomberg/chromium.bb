@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/log/captured_net_log_entry.h"
+#include "net/log/test_net_log_entry.h"
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -10,12 +10,11 @@
 
 namespace net {
 
-CapturedNetLogEntry::CapturedNetLogEntry(
-    NetLog::EventType type,
-    const base::TimeTicks& time,
-    NetLog::Source source,
-    NetLog::EventPhase phase,
-    scoped_ptr<base::DictionaryValue> params)
+TestNetLogEntry::TestNetLogEntry(NetLog::EventType type,
+                                 const base::TimeTicks& time,
+                                 NetLog::Source source,
+                                 NetLog::EventPhase phase,
+                                 scoped_ptr<base::DictionaryValue> params)
     : type(type),
       time(time),
       source(source),
@@ -25,15 +24,14 @@ CapturedNetLogEntry::CapturedNetLogEntry(
   CHECK(source.IsValid());
 }
 
-CapturedNetLogEntry::CapturedNetLogEntry(const CapturedNetLogEntry& entry) {
+TestNetLogEntry::TestNetLogEntry(const TestNetLogEntry& entry) {
   *this = entry;
 }
 
-CapturedNetLogEntry::~CapturedNetLogEntry() {
+TestNetLogEntry::~TestNetLogEntry() {
 }
 
-CapturedNetLogEntry& CapturedNetLogEntry::operator=(
-    const CapturedNetLogEntry& entry) {
+TestNetLogEntry& TestNetLogEntry::operator=(const TestNetLogEntry& entry) {
   type = entry.type;
   time = entry.time;
   source = entry.source;
@@ -42,32 +40,32 @@ CapturedNetLogEntry& CapturedNetLogEntry::operator=(
   return *this;
 }
 
-bool CapturedNetLogEntry::GetStringValue(const std::string& name,
-                                         std::string* value) const {
+bool TestNetLogEntry::GetStringValue(const std::string& name,
+                                     std::string* value) const {
   if (!params)
     return false;
   return params->GetString(name, value);
 }
 
-bool CapturedNetLogEntry::GetIntegerValue(const std::string& name,
-                                          int* value) const {
+bool TestNetLogEntry::GetIntegerValue(const std::string& name,
+                                      int* value) const {
   if (!params)
     return false;
   return params->GetInteger(name, value);
 }
 
-bool CapturedNetLogEntry::GetListValue(const std::string& name,
-                                       base::ListValue** value) const {
+bool TestNetLogEntry::GetListValue(const std::string& name,
+                                   base::ListValue** value) const {
   if (!params)
     return false;
   return params->GetList(name, value);
 }
 
-bool CapturedNetLogEntry::GetNetErrorCode(int* value) const {
+bool TestNetLogEntry::GetNetErrorCode(int* value) const {
   return GetIntegerValue("net_error", value);
 }
 
-std::string CapturedNetLogEntry::GetParamsJson() const {
+std::string TestNetLogEntry::GetParamsJson() const {
   if (!params)
     return std::string();
   std::string json;

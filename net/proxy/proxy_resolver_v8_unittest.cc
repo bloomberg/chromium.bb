@@ -9,9 +9,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
-#include "net/log/captured_net_log_entry.h"
-#include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -157,7 +157,7 @@ TEST(ProxyResolverV8Test, Direct) {
   EXPECT_EQ(0U, resolver.mock_js_bindings()->alerts.size());
   EXPECT_EQ(0U, resolver.mock_js_bindings()->errors.size());
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   // No bindings were called, so no log entries.
   EXPECT_EQ(0u, entries.size());

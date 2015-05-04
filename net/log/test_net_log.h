@@ -10,14 +10,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "net/log/captured_net_log_entry.h"
-#include "net/log/capturing_net_log_observer.h"
 #include "net/log/net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_observer.h"
 
 namespace net {
 
 // TestNetLog is convenience class which combines a NetLog and a
-// CapturingNetLogObserver.  It is intended for testing only, and is part of the
+// TestNetLogObserver.  It is intended for testing only, and is part of the
 // net_test_support project.
 class TestNetLog : public NetLog {
  public:
@@ -26,15 +26,15 @@ class TestNetLog : public NetLog {
 
   void SetCaptureMode(NetLogCaptureMode capture_mode);
 
-  // Below methods are forwarded to capturing_net_log_observer_.
-  void GetEntries(CapturedNetLogEntry::List* entry_list) const;
+  // Below methods are forwarded to test_net_log_observer_.
+  void GetEntries(TestNetLogEntry::List* entry_list) const;
   void GetEntriesForSource(Source source,
-                           CapturedNetLogEntry::List* entry_list) const;
+                           TestNetLogEntry::List* entry_list) const;
   size_t GetSize() const;
   void Clear();
 
  private:
-  CapturingNetLogObserver capturing_net_log_observer_;
+  TestNetLogObserver test_net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetLog);
 };
@@ -53,11 +53,11 @@ class BoundTestNetLog {
   BoundNetLog bound() const { return net_log_; }
 
   // Fills |entry_list| with all entries in the log.
-  void GetEntries(CapturedNetLogEntry::List* entry_list) const;
+  void GetEntries(TestNetLogEntry::List* entry_list) const;
 
   // Fills |entry_list| with all entries in the log from the specified Source.
   void GetEntriesForSource(NetLog::Source source,
-                           CapturedNetLogEntry::List* entry_list) const;
+                           TestNetLogEntry::List* entry_list) const;
 
   // Returns number of entries in the log.
   size_t GetSize() const;
@@ -68,7 +68,7 @@ class BoundTestNetLog {
   void SetCaptureMode(NetLogCaptureMode capture_mode);
 
  private:
-  TestNetLog capturing_net_log_;
+  TestNetLog test_net_log_;
   const BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundTestNetLog);

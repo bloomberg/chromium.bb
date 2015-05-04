@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/log/net_log_unittest.h"
+#include "net/log/net_log.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
@@ -10,6 +10,9 @@
 #include "base/threading/simple_thread.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 
 namespace net {
 
@@ -30,7 +33,7 @@ base::Value* NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
 
 TEST(NetLogTest, Basic) {
   TestNetLog net_log;
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   net_log.GetEntries(&entries);
   EXPECT_EQ(0u, entries.size());
 
@@ -63,7 +66,7 @@ TEST(NetLogTest, CaptureModes) {
     net_log.AddGlobalEntry(NetLog::TYPE_SOCKET_ALIVE,
                            base::Bind(NetCaptureModeCallback));
 
-    CapturedNetLogEntry::List entries;
+    TestNetLogEntry::List entries;
     net_log.GetEntries(&entries);
 
     ASSERT_EQ(1u, entries.size());

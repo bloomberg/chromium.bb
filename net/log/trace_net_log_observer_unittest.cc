@@ -17,9 +17,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
-#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::trace_event::TraceLog;
@@ -157,7 +157,7 @@ TEST_F(TraceNetLogObserverTest, TracingNotEnabled) {
 }
 
 TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   net_log()->GetEntries(&entries);
   EXPECT_TRUE(entries.empty());
 
@@ -224,7 +224,7 @@ TEST_F(TraceNetLogObserverTest, EnableAndDisableTracing) {
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(2u, trace_events()->GetSize());
@@ -264,7 +264,7 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileTracing) {
 
   EndTraceAndFlush();
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(2u, entries.size());
   EXPECT_EQ(1u, trace_events()->GetSize());
@@ -293,7 +293,7 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileNotTracing) {
 
   EndTraceAndFlush();
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(0u, trace_events()->GetSize());
@@ -311,7 +311,7 @@ TEST_F(TraceNetLogObserverTest, CreateObserverAfterTracingStarts) {
 
   EndTraceAndFlush();
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(0u, trace_events()->GetSize());
@@ -330,7 +330,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   net_log()->GetEntries(&entries);
   EXPECT_EQ(2u, entries.size());
   EXPECT_EQ(2u, trace_events()->GetSize());

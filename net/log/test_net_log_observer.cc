@@ -2,48 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/log/capturing_net_log_observer.h"
+#include "net/log/test_net_log_observer.h"
 
 #include "base/values.h"
 
 namespace net {
 
-CapturingNetLogObserver::CapturingNetLogObserver() {
+TestNetLogObserver::TestNetLogObserver() {
 }
 
-CapturingNetLogObserver::~CapturingNetLogObserver() {
+TestNetLogObserver::~TestNetLogObserver() {
 }
 
-void CapturingNetLogObserver::GetEntries(
-    CapturedNetLogEntry::List* entry_list) const {
+void TestNetLogObserver::GetEntries(TestNetLogEntry::List* entry_list) const {
   base::AutoLock lock(lock_);
-  *entry_list = captured_entries_;
+  *entry_list = entry_list_;
 }
 
-void CapturingNetLogObserver::GetEntriesForSource(
+void TestNetLogObserver::GetEntriesForSource(
     NetLog::Source source,
-    CapturedNetLogEntry::List* entry_list) const {
+    TestNetLogEntry::List* entry_list) const {
   base::AutoLock lock(lock_);
   entry_list->clear();
-  for (CapturedNetLogEntry::List::const_iterator entry =
-           captured_entries_.begin();
-       entry != captured_entries_.end(); ++entry) {
+  for (TestNetLogEntry::List::const_iterator entry = entry_list_.begin();
+       entry != entry_list_.end(); ++entry) {
     if (entry->source.id == source.id)
       entry_list->push_back(*entry);
   }
 }
 
-size_t CapturingNetLogObserver::GetSize() const {
+size_t TestNetLogObserver::GetSize() const {
   base::AutoLock lock(lock_);
-  return captured_entries_.size();
+  return entry_list_.size();
 }
 
-void CapturingNetLogObserver::Clear() {
+void TestNetLogObserver::Clear() {
   base::AutoLock lock(lock_);
-  captured_entries_.clear();
+  entry_list_.clear();
 }
 
-void CapturingNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
+void TestNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
   // Using Dictionaries instead of Values makes checking values a little
   // simpler.
   base::DictionaryValue* param_dict = nullptr;
@@ -53,7 +51,7 @@ void CapturingNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
 
   // Only need to acquire the lock when accessing class variables.
   base::AutoLock lock(lock_);
-  captured_entries_.push_back(CapturedNetLogEntry(
+  entry_list_.push_back(TestNetLogEntry(
       entry.type(), base::TimeTicks::Now(), entry.source(), entry.phase(),
       scoped_ptr<base::DictionaryValue>(param_dict)));
 }

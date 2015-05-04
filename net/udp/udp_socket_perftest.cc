@@ -13,7 +13,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
-#include "net/log/net_log_unittest.h"
 #include "net/test/net_test_suite.h"
 #include "net/udp/udp_client_socket.h"
 #include "net/udp/udp_server_socket.h"
@@ -90,9 +89,8 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
   // Setup the server to listen.
   IPEndPoint bind_address;
   CreateUDPAddress("127.0.0.1", kPort, &bind_address);
-  TestNetLog server_log;
   scoped_ptr<UDPServerSocket> server(
-      new UDPServerSocket(&server_log, NetLog::Source()));
+      new UDPServerSocket(nullptr, NetLog::Source()));
 #if defined(OS_WIN)
   if (use_nonblocking_io)
     server->UseNonBlockingIO();
@@ -103,10 +101,9 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
   // Setup the client.
   IPEndPoint server_address;
   CreateUDPAddress("127.0.0.1", kPort, &server_address);
-  TestNetLog client_log;
   scoped_ptr<UDPClientSocket> client(
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
-                          &client_log, NetLog::Source()));
+                          nullptr, NetLog::Source()));
 #if defined(OS_WIN)
   if (use_nonblocking_io)
     client->UseNonBlockingIO();

@@ -15,9 +15,9 @@
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/test_data_stream.h"
-#include "net/log/captured_net_log_entry.h"
-#include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
@@ -1634,7 +1634,7 @@ TEST_P(SpdySessionTest, Initialize) {
   // Flush the read completion task.
   base::MessageLoop::current()->RunUntilIdle();
 
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
@@ -1643,7 +1643,7 @@ TEST_P(SpdySessionTest, Initialize) {
       entries, 0, NetLog::TYPE_HTTP2_SESSION_INITIALIZED, NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
-  CapturedNetLogEntry entry = entries[pos];
+  TestNetLogEntry entry = entries[pos];
   NetLog::Source socket_source;
   EXPECT_TRUE(NetLog::Source::FromEventParameters(entry.params.get(),
                                                   &socket_source));
@@ -1679,7 +1679,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
   EXPECT_TRUE(session == NULL);
 
   // Check that the NetLog was filled reasonably.
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
@@ -1688,7 +1688,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
       entries, 0, NetLog::TYPE_HTTP2_SESSION_CLOSE, NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
-    CapturedNetLogEntry entry = entries[pos];
+    TestNetLogEntry entry = entries[pos];
     int error_code = 0;
     ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
     EXPECT_EQ(OK, error_code);
@@ -1723,7 +1723,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
   EXPECT_TRUE(session == NULL);
 
   // Check that the NetLog was filled reasonably.
-  CapturedNetLogEntry::List entries;
+  TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
@@ -1732,7 +1732,7 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
       entries, 0, NetLog::TYPE_HTTP2_SESSION_CLOSE, NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
-    CapturedNetLogEntry entry = entries[pos];
+    TestNetLogEntry entry = entries[pos];
     int error_code = 0;
     ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
     EXPECT_EQ(ERR_CONNECTION_CLOSED, error_code);
