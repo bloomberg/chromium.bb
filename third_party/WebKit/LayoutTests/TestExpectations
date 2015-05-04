@@ -1994,6 +1994,7 @@ crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html 
 crbug.com/482229 virtual/slimmingpaint/compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
+crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 
 crbug.com/469660 inspector/elements/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
