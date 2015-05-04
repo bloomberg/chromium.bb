@@ -33,7 +33,6 @@ class UI_BASE_IME_EXPORT InputMethodBase
 
   // Overriden from InputMethod.
   void SetDelegate(internal::InputMethodDelegate* delegate) override;
-  void Init(bool focused) override;
   // If a derived class overrides OnFocus()/OnBlur(), it should call parent's
   // implementation first, to make sure |system_toplevel_window_focused_| flag
   // can be updated correctly.

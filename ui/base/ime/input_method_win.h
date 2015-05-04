@@ -23,7 +23,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
                  HWND toplevel_window_handle);
 
   // Overridden from InputMethod:
-  void Init(bool focused) override;
   void OnFocus() override;
   void OnBlur() override;
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
@@ -89,10 +88,6 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodBase {
   LRESULT OnDocumentFeed(RECONVERTSTRING* reconv);
   LRESULT OnReconvertString(RECONVERTSTRING* reconv);
   LRESULT OnQueryCharPosition(IMECHARPOSITION* char_positon);
-
-  // Returns the window handle to which |text_input_client| is bound.
-  // On Aura environment, |toplevel_window_handle_| is always returned.
-  HWND GetAttachedWindowHandle(const TextInputClient* text_input_client) const;
 
   // Returns true if the Win32 native window bound to |client| is considered
   // to be ready for receiving keyboard input.

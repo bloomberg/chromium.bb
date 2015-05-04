@@ -19,9 +19,9 @@ namespace wm {
 
 InputMethodEventFilter::InputMethodEventFilter(gfx::AcceleratedWidget widget)
     : input_method_(ui::CreateInputMethod(this, widget)) {
-  // TODO(yusukes): Check if the root window is currently focused and pass the
-  // result to Init().
-  input_method_->Init(true);
+  // TODO(shuchen): Check if the root window is currently focused and determine
+  // whether to call OnFocus.
+  input_method_->OnFocus();
 }
 
 InputMethodEventFilter::~InputMethodEventFilter() {

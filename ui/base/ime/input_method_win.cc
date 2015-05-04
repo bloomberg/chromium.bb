@@ -35,28 +35,22 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       composing_window_handle_(NULL),
       default_input_language_initialized_(false) {
   SetDelegate(delegate);
-  // In non-Aura environment, appropriate callbacks to OnFocus() and OnBlur()
-  // are not implemented yet. To work around this limitation, here we use
-  // "always focused" model.
-  // TODO(ime): Fix the caller of OnFocus() and OnBlur() so that appropriate
-  // focus event will be passed.
-  InputMethodBase::OnFocus();
-}
-
-void InputMethodWin::Init(bool focused) {
-  InputMethodBase::Init(focused);
 }
 
 void InputMethodWin::OnFocus() {
-  // Ignore OnFocus event for "always focused" model. See the comment in the
-  // constructor.
-  // TODO(ime): Implement OnFocus once the callers are fixed.
+  InputMethodBase::OnFocus();
+  if (GetTextInputClient())
+    UpdateIMEState();
 }
 
 void InputMethodWin::OnBlur() {
-  // Ignore OnBlur event for "always focused" model. See the comment in the
-  // constructor.
-  // TODO(ime): Implement OnFocus once the callers are fixed.
+  ConfirmCompositionText();
+  // Gets the focused text input client before calling parent's OnBlur() because
+  // it will cause GetTextInputClient() returns NULL.
+  ui::TextInputClient* client = GetTextInputClient();
+  InputMethodBase::OnBlur();
+  if (client)
+    UpdateIMEState();
 }
 
 bool InputMethodWin::OnUntranslatedIMEMessage(
@@ -149,7 +143,7 @@ bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
 void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
     return;
-  imm32_manager_.CancelIME(GetAttachedWindowHandle(client));
+  imm32_manager_.CancelIME(toplevel_window_handle_);
   UpdateIMEState();
 }
 
@@ -165,7 +159,7 @@ void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
   const gfx::Rect dip_screen_bounds(GetTextInputClient()->GetCaretBounds());
   const gfx::Rect screen_bounds = gfx::win::DIPToScreenRect(dip_screen_bounds);
 
-  HWND attached_window = GetAttachedWindowHandle(client);
+  HWND attached_window = toplevel_window_handle_;
   // TODO(ime): see comment in TextInputClient::GetCaretBounds(), this
   // conversion shouldn't be necessary.
   RECT r = {};
@@ -179,7 +173,7 @@ void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
 
 void InputMethodWin::CancelComposition(const TextInputClient* client) {
   if (enabled_ && IsTextInputClientFocused(client))
-    imm32_manager_.CancelIME(GetAttachedWindowHandle(client));
+    imm32_manager_.CancelIME(toplevel_window_handle_);
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
@@ -215,8 +209,6 @@ void InputMethodWin::OnDidChangeFocusedClient(
     // function might not be called if text input types before the client loses
     // focus and after it acquires focus again are the same.
     OnTextInputTypeChanged(focused);
-
-    UpdateIMEState();
 
     // Force to update caret bounds, in case the client thinks that the caret
     // bounds has not changed.
@@ -583,25 +575,16 @@ LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION* char_positon) {
   return 1;  // returns non-zero value when succeeded.
 }
 
-HWND InputMethodWin::GetAttachedWindowHandle(
-  const TextInputClient* text_input_client) const {
-  // On Aura environment, we can assume that |toplevel_window_handle_| always
-  // represents the valid top-level window handle because each top-level window
-  // is responsible for lifecycle management of corresponding InputMethod
-  // instance.
-  return toplevel_window_handle_;
-}
-
 bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
   if (!client)
     return false;
-  HWND attached_window_handle = GetAttachedWindowHandle(client);
   // When Aura is enabled, |attached_window_handle| should always be a top-level
   // window. So we can safely assume that |attached_window_handle| is ready for
   // receiving keyboard input as long as it is an active window. This works well
   // even when the |attached_window_handle| becomes active but has not received
   // WM_FOCUS yet.
-  return attached_window_handle && GetActiveWindow() == attached_window_handle;
+  return toplevel_window_handle_ &&
+      GetActiveWindow() == toplevel_window_handle_;
 }
 
 bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
@@ -632,7 +615,7 @@ void InputMethodWin::ConfirmCompositionText() {
 void InputMethodWin::UpdateIMEState() {
   // Use switch here in case we are going to add more text input types.
   // We disable input method in password field.
-  const HWND window_handle = GetAttachedWindowHandle(GetTextInputClient());
+  const HWND window_handle = toplevel_window_handle_;
   const TextInputType text_input_type = GetTextInputType();
   const TextInputMode text_input_mode = GetTextInputMode();
   switch (text_input_type) {

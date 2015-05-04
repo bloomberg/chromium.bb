@@ -18,7 +18,6 @@ class DummyInputMethod : public InputMethod {
 
   // InputMethod overrides:
   void SetDelegate(internal::InputMethodDelegate* delegate) override;
-  void Init(bool focused) override;
   void OnFocus() override;
   void OnBlur() override;
   bool OnUntranslatedIMEMessage(const base::NativeEvent& event,

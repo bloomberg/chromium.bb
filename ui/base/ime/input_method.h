@@ -59,10 +59,6 @@ class InputMethod {
   // called by an object which manages the whole UI.
   virtual void SetDelegate(internal::InputMethodDelegate* delegate) = 0;
 
-  // Initializes the InputMethod object. Pass true if the system toplevel window
-  // already has keyboard focus.
-  virtual void Init(bool focused) = 0;
-
   // Called when the top-level system window gets keyboard focus.
   virtual void OnFocus() = 0;
 

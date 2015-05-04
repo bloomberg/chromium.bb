@@ -36,12 +36,6 @@ LinuxInputMethodContext* InputMethodAuraLinux::GetContextForTesting(
 
 // Overriden from InputMethod.
 
-void InputMethodAuraLinux::Init(bool focused) {
-  InputMethodBase::Init(focused);
-
-  UpdateContextFocusState();
-}
-
 bool InputMethodAuraLinux::OnUntranslatedIMEMessage(
     const base::NativeEvent& event,
     NativeEventResult* result) {

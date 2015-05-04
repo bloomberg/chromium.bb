@@ -15,9 +15,6 @@ DummyInputMethod::~DummyInputMethod() {
 void DummyInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {
 }
 
-void DummyInputMethod::Init(bool focused) {
-}
-
 void DummyInputMethod::OnFocus() {
 }
 

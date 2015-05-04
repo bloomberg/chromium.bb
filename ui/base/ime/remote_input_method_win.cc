@@ -134,8 +134,6 @@ class RemoteInputMethodWin : public InputMethod,
     delegate_ = delegate;
   }
 
-  void Init(bool focused) override {}
-
   void OnFocus() override {}
 
   void OnBlur() override {}

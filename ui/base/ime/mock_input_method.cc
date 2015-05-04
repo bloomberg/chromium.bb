@@ -47,9 +47,6 @@ bool MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& event) {
   return false;
 }
 
-void MockInputMethod::Init(bool focused) {
-}
-
 void MockInputMethod::OnFocus() {
   FOR_EACH_OBSERVER(InputMethodObserver, observer_list_, OnFocus());
 }
