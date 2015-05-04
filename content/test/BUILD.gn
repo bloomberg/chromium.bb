@@ -20,7 +20,7 @@ content_tests_gypi_values =
                 [ "../content_tests.gypi" ])
 
 # GYP version //content/content_tests.gypi:test_support_content
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   public_deps = []
   deps = [
@@ -127,8 +127,10 @@ static_library("test_support") {
     }
 
     if (is_win) {
-      deps += [ "//third_party/iaccessible2" ]
-      sources += [ "../app/startup_helper_win.cc" ]
+      deps += [
+        "//content:startup_helper_win",
+        "//third_party/iaccessible2",
+      ]
     }
 
     if (!is_android && !is_ios) {

@@ -18,7 +18,6 @@ content_app_sources = [
   "content_main_runner.cc",
   "mojo/mojo_init.cc",
   "mojo/mojo_init.h",
-  "startup_helper_win.cc",
 ]
 
 content_app_deps = [
@@ -30,6 +29,7 @@ content_app_deps = [
   # picking the allocator.
   "//base/allocator",
   "//content:export",
+  "//content:startup_helper_win",
   "//content/public/common:common_sources",
   "//content/public/common:mojo_bindings",
   "//crypto",

@@ -106,6 +106,7 @@ static_library("libusb") {
       "src/libusb/os/poll_posix.c",
       "src/libusb/os/threads_posix.c",
     ]
+    libs = [ "setupapi.lib" ]
   } else {
     include_dirs += [ "src" ]
     sources -= [
