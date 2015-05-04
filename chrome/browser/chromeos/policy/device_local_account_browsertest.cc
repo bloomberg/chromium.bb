@@ -24,7 +24,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
@@ -35,6 +34,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -1267,10 +1267,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   scoped_ptr<base::RunLoop> run_loop(new base::RunLoop);
   scoped_ptr<net::FakeURLFetcherFactory> fetcher_factory(
       new net::FakeURLFetcherFactory(
-          NULL,
-          base::Bind(&RunCallbackAndReturnFakeURLFetcher,
-                     base::MessageLoopProxy::current(),
-                     run_loop->QuitClosure())));
+          NULL, base::Bind(&RunCallbackAndReturnFakeURLFetcher,
+                           base::ThreadTaskRunnerHandle::Get(),
+                           run_loop->QuitClosure())));
   fetcher_factory->SetFakeResponse(GURL(kExternalDataURL),
                                    kExternalData,
                                    net::HTTP_OK,

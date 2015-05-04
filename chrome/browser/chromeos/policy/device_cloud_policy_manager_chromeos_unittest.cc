@@ -11,10 +11,10 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
@@ -92,7 +92,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   DeviceCloudPolicyManagerChromeOSTest()
       : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         state_keys_broker_(&fake_session_manager_client_,
-                           base::MessageLoopProxy::current()),
+                           base::ThreadTaskRunnerHandle::Get()),
         store_(NULL) {
     fake_statistics_provider_.SetMachineStatistic("serial_numer", "test_sn");
     std::vector<std::string> state_keys;
@@ -114,13 +114,11 @@ class DeviceCloudPolicyManagerChromeOSTest
 
     install_attributes_.reset(
         new EnterpriseInstallAttributes(fake_cryptohome_client_));
-    store_ =
-        new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
-                                           install_attributes_.get(),
-                                           base::MessageLoopProxy::current());
+    store_ = new DeviceCloudPolicyStoreChromeOS(
+        &device_settings_service_, install_attributes_.get(),
+        base::ThreadTaskRunnerHandle::Get());
     manager_.reset(new TestingDeviceCloudPolicyManagerChromeOS(
-        make_scoped_ptr(store_),
-        base::MessageLoopProxy::current(),
+        make_scoped_ptr(store_), base::ThreadTaskRunnerHandle::Get(),
         &state_keys_broker_));
 
     chrome::RegisterLocalState(local_state_.registry());
@@ -130,7 +128,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     // OAuth tokens, then writes the token to local state, encrypting it
     // first with methods in CryptohomeTokenEncryptor.
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        base::MessageLoopProxy::current());
+        base::ThreadTaskRunnerHandle::Get());
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
@@ -173,14 +171,10 @@ class DeviceCloudPolicyManagerChromeOSTest
     manager_->Initialize(&local_state_);
     manager_->AddDeviceCloudPolicyManagerObserver(this);
     initializer_.reset(new DeviceCloudPolicyInitializer(
-        &local_state_,
-        &device_management_service_,
+        &local_state_, &device_management_service_,
         &consumer_device_management_service_,
-        base::MessageLoopProxy::current(),
-        install_attributes_.get(),
-        &state_keys_broker_,
-        store_,
-        manager_.get()));
+        base::ThreadTaskRunnerHandle::Get(), install_attributes_.get(),
+        &state_keys_broker_, store_, manager_.get()));
     initializer_->Init();
   }
 

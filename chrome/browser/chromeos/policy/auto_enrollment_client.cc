@@ -8,12 +8,12 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -212,7 +212,7 @@ bool AutoEnrollmentClient::RetryStep() {
 void AutoEnrollmentClient::ReportProgress(AutoEnrollmentState state) {
   state_ = state;
   if (progress_callback_.is_null()) {
-    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   } else {
     progress_callback_.Run(state_);
   }
@@ -289,7 +289,7 @@ void AutoEnrollmentClient::HandleRequestCompletion(
 
     // Abort if CancelAndDeleteSoon has been called meanwhile.
     if (progress_callback_.is_null()) {
-      base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     } else {
       ReportProgress(status == DM_STATUS_REQUEST_FAILED
                          ? AUTO_ENROLLMENT_STATE_CONNECTION_ERROR

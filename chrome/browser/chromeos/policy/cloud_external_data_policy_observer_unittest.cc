@@ -11,10 +11,9 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
@@ -185,15 +184,12 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
 
   device_local_account_policy_service_.reset(
       new DeviceLocalAccountPolicyService(
-          &device_settings_test_helper_,
-          &device_settings_service_,
-          &cros_settings_,
-          &affiliated_invalidation_service_provider_,
-          base::MessageLoopProxy::current(),
-          base::MessageLoopProxy::current(),
-          base::MessageLoopProxy::current(),
-          base::MessageLoopProxy::current(),
-          nullptr));
+          &device_settings_test_helper_, &device_settings_service_,
+          &cros_settings_, &affiliated_invalidation_service_provider_,
+          base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get(), nullptr));
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
 
   EXPECT_CALL(user_policy_provider_, IsInitializationComplete(_))

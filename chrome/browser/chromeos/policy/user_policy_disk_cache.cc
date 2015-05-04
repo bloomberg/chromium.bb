@@ -8,9 +8,10 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "policy/proto/device_management_local.pb.h"
 
@@ -26,8 +27,9 @@ UserPolicyDiskCache::UserPolicyDiskCache(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : delegate_(delegate),
       backing_file_path_(backing_file_path),
-      origin_task_runner_(base::MessageLoopProxy::current()),
-      background_task_runner_(background_task_runner) {}
+      origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      background_task_runner_(background_task_runner) {
+}
 
 void UserPolicyDiskCache::Load() {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());

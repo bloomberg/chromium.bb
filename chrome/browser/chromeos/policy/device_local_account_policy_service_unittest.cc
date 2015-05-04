@@ -12,14 +12,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h"
@@ -162,15 +161,12 @@ void DeviceLocalAccountPolicyServiceTestBase::TearDown() {
 
 void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
   service_.reset(new DeviceLocalAccountPolicyService(
-      &device_settings_test_helper_,
-      &device_settings_service_,
-      &cros_settings_,
+      &device_settings_test_helper_, &device_settings_service_, &cros_settings_,
       &affiliated_invalidation_service_provider_,
-      base::MessageLoopProxy::current(),
-      extension_cache_task_runner_,
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
-      new net::TestURLRequestContextGetter(base::MessageLoopProxy::current())));
+      base::ThreadTaskRunnerHandle::Get(), extension_cache_task_runner_,
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get())));
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::

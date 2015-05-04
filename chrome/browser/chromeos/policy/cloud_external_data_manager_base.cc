@@ -13,9 +13,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -343,7 +344,7 @@ CloudExternalDataManagerBase::CloudExternalDataManagerBase(
       io_task_runner_(io_task_runner),
       backend_(new Backend(get_policy_details,
                            backend_task_runner_,
-                           base::MessageLoopProxy::current())) {
+                           base::ThreadTaskRunnerHandle::Get())) {
 }
 
 CloudExternalDataManagerBase::~CloudExternalDataManagerBase() {

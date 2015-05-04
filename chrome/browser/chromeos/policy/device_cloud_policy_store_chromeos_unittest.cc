@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -52,8 +52,7 @@ class DeviceCloudPolicyStoreChromeOSTest
         store_(new DeviceCloudPolicyStoreChromeOS(
             &device_settings_service_,
             install_attributes_.get(),
-            base::MessageLoopProxy::current())) {
-  }
+            base::ThreadTaskRunnerHandle::Get())) {}
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
@@ -135,10 +134,9 @@ class DeviceCloudPolicyStoreChromeOSTest
                                                     std::string());
     install_attributes_.reset(
         new EnterpriseInstallAttributes(fake_cryptohome_client_));
-    store_.reset(
-        new DeviceCloudPolicyStoreChromeOS(&device_settings_service_,
-                                           install_attributes_.get(),
-                                           base::MessageLoopProxy::current()));
+    store_.reset(new DeviceCloudPolicyStoreChromeOS(
+        &device_settings_service_, install_attributes_.get(),
+        base::ThreadTaskRunnerHandle::Get()));
   }
 
   ScopedTestingLocalState local_state_;

@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -204,7 +205,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
       new UserCloudPolicyManagerChromeOS(
           store.Pass(), external_data_manager.Pass(),
           component_policy_cache_dir, wait_for_initial_policy,
-          initial_policy_fetch_timeout, base::MessageLoopProxy::current(),
+          initial_policy_fetch_timeout, base::ThreadTaskRunnerHandle::Get(),
           file_task_runner, io_task_runner));
 
   bool wildcard_match = false;

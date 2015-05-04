@@ -11,11 +11,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
@@ -106,7 +106,7 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
       chromeos::DBusThreadManager::IsInitialized()) {
     state_keys_broker_.reset(new ServerBackedStateKeysBroker(
         chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-        base::MessageLoopProxy::current()));
+        base::ThreadTaskRunnerHandle::Get()));
 
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
@@ -134,10 +134,9 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
             chromeos::DeviceSettingsService::Get(),
             install_attributes_.get(),
             GetBackgroundTaskRunner()));
-    device_cloud_policy_manager_ =
-        new DeviceCloudPolicyManagerChromeOS(device_cloud_policy_store.Pass(),
-                                             base::MessageLoopProxy::current(),
-                                             state_keys_broker_.get());
+    device_cloud_policy_manager_ = new DeviceCloudPolicyManagerChromeOS(
+        device_cloud_policy_store.Pass(), base::ThreadTaskRunnerHandle::Get(),
+        state_keys_broker_.get());
     AddPolicyProvider(
         scoped_ptr<ConfigurationPolicyProvider>(device_cloud_policy_manager_));
   }
