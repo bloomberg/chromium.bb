@@ -74,6 +74,12 @@ class TracingController {
       const base::FilePath& file_path,
       const base::Closure& callback);
 
+  // Create an endpoint that may be supplied to any TraceDataSink to
+  // dump the trace data to a file.
+  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
+      const base::FilePath& file_path,
+      const base::Closure& callback);
+
   // Get a set of category groups. The category groups can change as
   // new code paths are reached.
   //

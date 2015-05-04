@@ -216,6 +216,39 @@ class TracingControllerTest : public ContentBrowserTest {
     }
   }
 
+  void TestEnableAndDisableRecordingCompressedFile(
+      const base::FilePath& result_file_path) {
+    Navigate(shell());
+
+    TracingController* controller = TracingController::GetInstance();
+
+    {
+      base::RunLoop run_loop;
+      TracingController::EnableRecordingDoneCallback callback =
+          base::Bind(&TracingControllerTest::EnableRecordingDoneCallbackTest,
+                     base::Unretained(this), run_loop.QuitClosure());
+      bool result = controller->EnableRecording(CategoryFilter(),
+                                                TraceOptions(), callback);
+      ASSERT_TRUE(result);
+      run_loop.Run();
+      EXPECT_EQ(enable_recording_done_callback_count(), 1);
+    }
+
+    {
+      base::RunLoop run_loop;
+      base::Closure callback = base::Bind(
+          &TracingControllerTest::DisableRecordingFileDoneCallbackTest,
+          base::Unretained(this), run_loop.QuitClosure(), result_file_path);
+      bool result = controller->DisableRecording(
+          TracingController::CreateCompressedStringSink(
+              TracingController::CreateFileEndpoint(result_file_path,
+                                                    callback)));
+      ASSERT_TRUE(result);
+      run_loop.Run();
+      EXPECT_EQ(disable_recording_done_callback_count(), 1);
+    }
+  }
+
   void TestEnableAndDisableRecordingFile(
       const base::FilePath& result_file_path) {
     Navigate(shell());
@@ -382,6 +415,14 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
                        EnableAndDisableRecordingWithCompression) {
   TestEnableAndDisableRecordingCompressed();
+}
+
+IN_PROC_BROWSER_TEST_F(TracingControllerTest,
+                       EnableAndDisableRecordingToFileWithCompression) {
+  base::FilePath file_path;
+  base::CreateTemporaryFile(&file_path);
+  TestEnableAndDisableRecordingCompressedFile(file_path);
+  EXPECT_EQ(file_path.value(), last_actual_recording_file_path().value());
 }
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,

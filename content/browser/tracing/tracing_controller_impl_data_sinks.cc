@@ -12,45 +12,63 @@ namespace content {
 
 namespace {
 
-class FileTraceDataSink : public TracingController::TraceDataSink {
+class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
  public:
-  explicit FileTraceDataSink(const base::FilePath& trace_file_path,
-                             const base::Closure& callback)
+  typedef base::Callback<void(base::RefCountedString*)> CompletionCallback;
+
+  explicit StringTraceDataEndpoint(CompletionCallback callback)
+      : completion_callback_(callback) {}
+
+  void ReceiveTraceFinalContents(const std::string& contents) override {
+    std::string tmp = contents;
+    scoped_refptr<base::RefCountedString> str =
+        base::RefCountedString::TakeString(&tmp);
+
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(completion_callback_, str));
+  }
+
+ private:
+  ~StringTraceDataEndpoint() override {}
+
+  CompletionCallback completion_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(StringTraceDataEndpoint);
+};
+
+class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
+ public:
+  explicit FileTraceDataEndpoint(const base::FilePath& trace_file_path,
+                                 const base::Closure& callback)
       : file_path_(trace_file_path),
         completion_callback_(callback),
         file_(NULL) {}
 
-  void AddTraceChunk(const std::string& chunk) override {
+  void ReceiveTraceChunk(const std::string& chunk) override {
     std::string tmp = chunk;
     scoped_refptr<base::RefCountedString> chunk_ptr =
         base::RefCountedString::TakeString(&tmp);
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(
-            &FileTraceDataSink::AddTraceChunkOnFileThread, this, chunk_ptr));
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&FileTraceDataEndpoint::ReceiveTraceChunkOnFileThread, this,
+                   chunk_ptr));
   }
-  void SetSystemTrace(const std::string& data) override {
-    system_trace_ = data;
-  }
-  void Close() override {
+
+  void ReceiveTraceFinalContents(const std::string& contents) override {
     BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&FileTraceDataSink::CloseOnFileThread, this));
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&FileTraceDataEndpoint::CloseOnFileThread, this));
   }
 
  private:
-  ~FileTraceDataSink() override { DCHECK(file_ == NULL); }
+  ~FileTraceDataEndpoint() override { DCHECK(file_ == NULL); }
 
-  void AddTraceChunkOnFileThread(
+  void ReceiveTraceChunkOnFileThread(
       const scoped_refptr<base::RefCountedString> chunk) {
-    if (file_ != NULL)
-      fputc(',', file_);
-    else if (!OpenFileIfNeededOnFileThread())
+    if (!OpenFileIfNeededOnFileThread())
       return;
-    ignore_result(fwrite(chunk->data().c_str(), strlen(chunk->data().c_str()),
-        1, file_));
+    ignore_result(
+        fwrite(chunk->data().c_str(), chunk->data().size(), 1, file_));
   }
 
   bool OpenFileIfNeededOnFileThread() {
@@ -61,29 +79,17 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
       LOG(ERROR) << "Failed to open " << file_path_.value();
       return false;
     }
-    const char preamble[] = "{\"traceEvents\": [";
-    ignore_result(fwrite(preamble, strlen(preamble), 1, file_));
     return true;
   }
 
   void CloseOnFileThread() {
     if (OpenFileIfNeededOnFileThread()) {
-      fputc(']', file_);
-      if (!system_trace_.empty()) {
-        const char systemTraceEvents[] = ",\"systemTraceEvents\": ";
-        ignore_result(fwrite(systemTraceEvents, strlen(systemTraceEvents),
-            1, file_));
-        ignore_result(fwrite(system_trace_.c_str(),
-            strlen(system_trace_.c_str()), 1, file_));
-      }
-      fputc('}', file_);
       base::CloseFile(file_);
       file_ = NULL;
     }
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&FileTraceDataSink::FinalizeOnUIThread, this));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FileTraceDataEndpoint::FinalizeOnUIThread, this));
   }
 
   void FinalizeOnUIThread() { completion_callback_.Run(); }
@@ -91,44 +97,53 @@ class FileTraceDataSink : public TracingController::TraceDataSink {
   base::FilePath file_path_;
   base::Closure completion_callback_;
   FILE* file_;
-  std::string system_trace_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileTraceDataSink);
+  DISALLOW_COPY_AND_ASSIGN(FileTraceDataEndpoint);
 };
 
 class StringTraceDataSink : public TracingController::TraceDataSink {
  public:
-  typedef base::Callback<void(base::RefCountedString*)> CompletionCallback;
+  explicit StringTraceDataSink(
+      scoped_refptr<TracingController::TraceDataEndpoint> endpoint)
+      : endpoint_(endpoint) {}
 
-  explicit StringTraceDataSink(CompletionCallback callback)
-      : completion_callback_(callback) {}
-
-  // TracingController::TraceDataSink implementation
   void AddTraceChunk(const std::string& chunk) override {
-    if (!trace_.empty())
-      trace_ += ",";
-    trace_ += chunk;
+    std::string trace_string;
+    if (trace_.empty())
+      trace_string = "{\"traceEvents\":[";
+    else
+      trace_string = ",";
+    trace_string += chunk;
+
+    AddTraceChunkAndPassToEndpoint(trace_string);
   }
+
+  void AddTraceChunkAndPassToEndpoint(const std::string& chunk) {
+    trace_ += chunk;
+
+    endpoint_->ReceiveTraceChunk(chunk);
+  }
+
   void SetSystemTrace(const std::string& data) override {
     system_trace_ = data;
   }
-  void Close() override {
-    std::string result = "{\"traceEvents\":[" + trace_ + "]";
-    if (!system_trace_.empty())
-      result += ",\"systemTraceEvents\": " + system_trace_;
-    result += "}";
 
-    scoped_refptr<base::RefCountedString> str =
-        base::RefCountedString::TakeString(&result);
-    completion_callback_.Run(str.get());
+  void Close() override {
+    AddTraceChunkAndPassToEndpoint("]");
+    if (!system_trace_.empty())
+      AddTraceChunkAndPassToEndpoint(",\"systemTraceEvents\": " +
+                                     system_trace_);
+    AddTraceChunkAndPassToEndpoint("}");
+
+    endpoint_->ReceiveTraceFinalContents(trace_);
   }
 
  private:
   ~StringTraceDataSink() override {}
 
+  scoped_refptr<TracingController::TraceDataEndpoint> endpoint_;
   std::string trace_;
   std::string system_trace_;
-  CompletionCallback completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StringTraceDataSink);
 };
@@ -262,7 +277,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
 scoped_refptr<TracingController::TraceDataSink>
 TracingController::CreateStringSink(
     const base::Callback<void(base::RefCountedString*)>& callback) {
-  return new StringTraceDataSink(callback);
+  return new StringTraceDataSink(new StringTraceDataEndpoint(callback));
 }
 
 scoped_refptr<TracingController::TraceDataSink>
@@ -274,7 +289,14 @@ TracingController::CreateCompressedStringSink(
 scoped_refptr<TracingController::TraceDataSink>
 TracingController::CreateFileSink(const base::FilePath& file_path,
                                   const base::Closure& callback) {
-  return new FileTraceDataSink(file_path, callback);
+  return new StringTraceDataSink(
+      CreateFileEndpoint(file_path, callback));
+}
+
+scoped_refptr<TracingController::TraceDataEndpoint>
+TracingController::CreateFileEndpoint(const base::FilePath& file_path,
+                                      const base::Closure& callback) {
+  return new FileTraceDataEndpoint(file_path, callback);
 }
 
 }  // namespace content
