@@ -736,6 +736,8 @@
             'layout/TextAutosizer.h',
             'layout/TextRunConstructor.cpp',
             'layout/TextRunConstructor.h',
+            'layout/TracedLayoutObject.cpp',
+            'layout/TracedLayoutObject.h',
             'layout/VerticalPositionCache.h',
             'layout/compositing/CompositedDeprecatedPaintLayerMapping.cpp',
             'layout/compositing/CompositedDeprecatedPaintLayerMapping.h',

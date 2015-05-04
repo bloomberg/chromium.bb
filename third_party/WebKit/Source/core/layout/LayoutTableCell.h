@@ -68,9 +68,11 @@ public:
         m_column = column;
     }
 
+    bool hasCol() const { return m_column != unsetColumnIndex; }
+
     unsigned col() const
     {
-        ASSERT(m_column != unsetColumnIndex);
+        ASSERT(hasCol());
         return m_column;
     }
 
