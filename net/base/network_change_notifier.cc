@@ -519,7 +519,7 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
 #endif
   return NULL;
 #elif defined(OS_LINUX)
-  return NetworkChangeNotifierLinux::Create();
+  return new NetworkChangeNotifierLinux(base::hash_set<std::string>());
 #elif defined(OS_MACOSX)
   return new NetworkChangeNotifierMac();
 #else
