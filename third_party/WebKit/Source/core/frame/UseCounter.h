@@ -700,6 +700,7 @@ public:
         AutocapitalizeAttribute = 764,
         FullscreenSecureOrigin = 765,
         FullscreenInsecureOrigin = 766,
+        DialogInSandboxedContext = 767,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

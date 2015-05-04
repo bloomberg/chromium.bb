@@ -825,6 +825,9 @@ void LocalDOMWindow::print()
     }
     m_shouldPrintWhenFinishedLoading = false;
     host->chrome().print(frame());
+
+    if (frame()->document()->sandboxFlags())
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
 }
 
 void LocalDOMWindow::stop()
@@ -845,6 +848,9 @@ void LocalDOMWindow::alert(const String& message)
     if (!host)
         return;
 
+    if (frame()->document()->sandboxFlags())
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+
     host->chrome().runJavaScriptAlert(frame(), message);
 }
 
@@ -859,6 +865,9 @@ bool LocalDOMWindow::confirm(const String& message)
     if (!host)
         return false;
 
+    if (frame()->document()->sandboxFlags())
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
+
     return host->chrome().runJavaScriptConfirm(frame(), message);
 }
 
@@ -872,6 +881,9 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
     FrameHost* host = frame()->host();
     if (!host)
         return String();
+
+    if (frame()->document()->sandboxFlags())
+        UseCounter::count(frame()->document(), UseCounter::DialogInSandboxedContext);
 
     String returnValue;
     if (host->chrome().runJavaScriptPrompt(frame(), message, defaultValue, returnValue))
