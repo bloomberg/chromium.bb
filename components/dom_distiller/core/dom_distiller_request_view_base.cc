@@ -51,8 +51,14 @@ bool DomDistillerRequestViewBase::IsErrorPage() {
 void DomDistillerRequestViewBase::OnArticleReady(
     const DistilledArticleProto* article_proto) {
   if (page_count_ == 0) {
+    const DistilledPageProto* cur_page;
+    if (article_proto->pages().size() < 1) {
+      cur_page = new DistilledPageProto();
+    } else {
+      cur_page = &article_proto->pages(0);
+    }
     std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
-        &article_proto->pages(0), distilled_page_prefs_->GetTheme(),
+        cur_page, distilled_page_prefs_->GetTheme(),
         distilled_page_prefs_->GetFontFamily());
     callback_->RunCallback(unsafe_page_html);
     // Send first page to client.

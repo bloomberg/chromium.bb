@@ -169,10 +169,10 @@ const std::string GetShowFeedbackFormJs() {
 const std::string GetUnsafeIncrementalDistilledPageJs(
     const DistilledPageProto* page_proto,
     const bool is_last_page) {
-  std::string output;
-  base::StringValue value(page_proto->html());
-  base::JSONWriter::Write(&value, &output);
+  std::string output(page_proto->html());
   EnsureNonEmptyContent(&output);
+  base::StringValue value(output);
+  base::JSONWriter::Write(&value, &output);
   std::string page_update("addToPage(");
   page_update += output + ");";
   return page_update + GetToggleLoadingIndicatorJs(
@@ -217,19 +217,17 @@ const std::string GetUnsafeArticleTemplateHtml(
 const std::string GetUnsafeArticleContentJs(
     const DistilledArticleProto* article_proto) {
   DCHECK(article_proto);
-  if (article_proto->pages_size() == 0 || !article_proto->pages(0).has_html()) {
-    return "";
-  }
-
   std::ostringstream unsafe_output_stream;
-  for (int page_num = 0; page_num < article_proto->pages_size(); ++page_num) {
-    unsafe_output_stream << article_proto->pages(page_num).html();
+  if (article_proto->pages_size() > 0 && article_proto->pages(0).has_html()) {
+    for (int page_num = 0; page_num < article_proto->pages_size(); ++page_num) {
+      unsafe_output_stream << article_proto->pages(page_num).html();
+    }
   }
 
-  std::string output;
-  base::StringValue value(unsafe_output_stream.str());
-  base::JSONWriter::Write(&value, &output);
+  std::string output(unsafe_output_stream.str());
   EnsureNonEmptyContent(&output);
+  base::StringValue value(output);
+  base::JSONWriter::Write(&value, &output);
   std::string page_update("addToPage(");
   page_update += output + ");";
   return page_update + GetToggleLoadingIndicatorJs(true);

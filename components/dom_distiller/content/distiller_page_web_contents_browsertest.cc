@@ -468,6 +468,27 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, TestTitleNeverEmpty) {
 }
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
+                       TestNoContentDoesNotCrash) {
+  const std::string no_content =
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
+
+  {  // Test zero pages.
+    scoped_ptr<DistilledArticleProto> article_proto(
+        new DistilledArticleProto());
+    std::string js = viewer::GetUnsafeArticleContentJs(article_proto.get());
+    EXPECT_THAT(js, HasSubstr(no_content));
+  }
+
+  {  // Test empty content.
+    scoped_ptr<DistilledArticleProto> article_proto(
+        new DistilledArticleProto());
+    (*(article_proto->add_pages())).set_html("");
+    std::string js = viewer::GetUnsafeArticleContentJs(article_proto.get());
+    EXPECT_THAT(js, HasSubstr(no_content));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
                        TestPinch) {
   // Load the test file in content shell and wait until it has fully loaded.
   content::WebContents* web_contents = shell()->web_contents();
