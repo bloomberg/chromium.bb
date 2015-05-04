@@ -255,6 +255,7 @@ crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custo
 crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
 
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
+crbug.com/377950 virtual/slimmingpaint/svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
 
 crbug.com/377960 fast/css/font-load-while-styleresolver-missing.html  [ Pass ImageOnlyFailure ]
 crbug.com/377960 virtual/slimmingpaint/fast/css/font-load-while-styleresolver-missing.html [ Pass ImageOnlyFailure ]
