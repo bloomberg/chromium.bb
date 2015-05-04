@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Handle paths."""
+"""Handle path inference and translation."""
 
 from __future__ import print_function
 
@@ -12,6 +12,7 @@ import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.lib import bootstrap_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import workspace_lib
@@ -28,6 +29,221 @@ CHECKOUT_TYPE_SDK_BOOTSTRAP = 'bootstrap'
 
 CheckoutInfo = collections.namedtuple(
     'CheckoutInfo', ['type', 'root', 'chrome_src_dir'])
+
+
+class ChrootPathResolver(object):
+  """Perform path resolution to/from the chroot.
+
+  Args:
+    workspace_path: Host path to the workspace, if any.
+    source_path: Value to override default source root inference.
+    source_from_path_repo: Whether to infer the source root from the converted
+      path's repo parent during inbound translation; overrides |source_path|.
+  """
+
+  # TODO(garnold) We currently infer the source root based on the path's own
+  # encapsulating repository. This is a heuristic catering to paths are being
+  # translated to be used in a chroot that's not associated with the currently
+  # executing code (for example, cbuildbot run on a build root or a foreign
+  # tree checkout). This approach might result in arbitrary repo-contained
+  # paths being translated to invalid chroot paths where they actually should
+  # not, and other valid source paths failing to translate because they are not
+  # repo-contained. Eventually we'll want to make this behavior explicit, by
+  # either passing a source_root value, or requesting to infer it from the path
+  # (source_from_path_repo=True), but otherwise defaulting to the executing
+  # code's source root in the normal case. When that happens, we'll be
+  # switching source_from_path_repo to False by default. See chromium:485746.
+
+  def __init__(self, workspace_path=None, source_path=None,
+               source_from_path_repo=True):
+    self._workspace_path = workspace_path
+    self._inside_chroot = cros_build_lib.IsInsideChroot()
+    self._source_path = (constants.SOURCE_ROOT if source_path is None
+                         else source_path)
+    self._source_from_path_repo = source_from_path_repo
+
+    # The following are only needed if outside the chroot.
+    if self._inside_chroot:
+      self._chroot_path = None
+      self._cache_path = None
+      self._chroot_to_host_roots = None
+    else:
+      if self._workspace_path is None:
+        self._chroot_path = self._GetSourcePathChroot(self._source_path)
+      else:
+        self._chroot_path = os.path.realpath(
+            workspace_lib.ChrootPath(self._workspace_path))
+
+      self._cache_path = os.path.realpath(GetCacheDir())
+
+      # Initialize mapping of known root bind mounts.
+      self._chroot_to_host_roots = (
+          (constants.CHROOT_SOURCE_ROOT, self._source_path),
+          (constants.CHROOT_WORKSPACE_ROOT, self._workspace_path),
+          (constants.CHROOT_CACHE_ROOT, self._cache_path),
+      )
+
+  def _GetSourcePathChroot(self, source_path):
+    """Returns path to the chroot directory of a given source root."""
+    if source_path is None:
+      return None
+    return os.path.join(source_path, constants.DEFAULT_CHROOT_DIR)
+
+  def _TranslatePath(self, path, src_root, dst_root):
+    """If |path| starts with |src_root|, replace it with |dst_root|.
+
+    Args:
+      path: An absolute path we want to convert to a destination equivalent.
+      src_root: The root that path needs to be contained in.
+      dst_root: The root we want to relocate the relative path into.
+
+    Returns:
+      A translated path, or None if |src_root| is not a prefix of |path|.
+
+    Raises:
+      ValueError: If |src_root| is a prefix but |dst_root| is None, which means
+        we don't have sufficient information to do the translation.
+    """
+    if not path.startswith(os.path.join(src_root, '')) and path != src_root:
+      return None
+    if dst_root is None:
+      raise ValueError('No target root to translate path to')
+    return os.path.join(dst_root, path[len(src_root):].lstrip(os.path.sep))
+
+  def _GetChrootPath(self, path):
+    """Translates a fully-expanded host |path| into a chroot equivalent.
+
+    This checks path prefixes in order from the most to least "contained": the
+    chroot itself, then the workspace, the cache directory, and finally the
+    source tree. The idea is to return the shortest possible chroot equivalent.
+
+    Args:
+      path: A host path to translate.
+
+    Returns:
+      An equivalent chroot path.
+
+    Raises:
+      ValueError: If |path| is not reachable from the chroot.
+    """
+    new_path = None
+
+    # Preliminary: compute the actual source and chroot paths to use. These are
+    # generally the precomputed values, unless we're inferring the source root
+    # from the path itself and not using a workspace (chroot location).
+    source_path = self._source_path
+    chroot_path = self._chroot_path
+    if self._source_from_path_repo:
+      path_repo_dir = git.FindRepoDir(path)
+      if path_repo_dir is not None:
+        source_path = os.path.abspath(os.path.join(path_repo_dir, '..'))
+      if self._workspace_path is None:
+        chroot_path = self._GetSourcePathChroot(source_path)
+
+    # First, check if the path happens to be in the chroot already.
+    if chroot_path is not None:
+      new_path = self._TranslatePath(path, chroot_path, '/')
+
+    # Second, check the workspace, if given.
+    if new_path is None and self._workspace_path is not None:
+      new_path = self._TranslatePath(
+          path, os.path.realpath(self._workspace_path),
+          constants.CHROOT_WORKSPACE_ROOT)
+
+    # Third, check the cache directory.
+    if new_path is None:
+      new_path = self._TranslatePath(path, self._cache_path,
+                                     constants.CHROOT_CACHE_ROOT)
+
+    # Finally, check the current SDK checkout tree.
+    if new_path is None and source_path is not None:
+      new_path = self._TranslatePath(path, source_path,
+                                     constants.CHROOT_SOURCE_ROOT)
+
+    if new_path is None:
+      raise ValueError('Path is not reachable from the chroot')
+
+    return new_path
+
+  def _GetHostPath(self, path):
+    """Translates a fully-expanded chroot |path| into a host equivalent.
+
+    We first attempt translation of known roots (source, workspace). If any is
+    successful, we check whether the result happens to point back to the
+    chroot, in which case we trim the chroot path prefix and recurse. If
+    neither was successful, just prepend the chroot path.
+
+    Args:
+      path: A chroot path to translate.
+
+    Returns:
+      An equivalent host path.
+
+    Raises:
+      ValueError: If |path| could not be mapped to a proper host destination.
+    """
+    new_path = None
+
+    # Attempt resolution of known roots.
+    for src_root, dst_root in self._chroot_to_host_roots:
+      new_path = self._TranslatePath(path, src_root, dst_root)
+      if new_path is not None:
+        break
+
+    if new_path is None:
+      # If no known root was identified, just prepend the chroot path.
+      new_path = self._TranslatePath(path, '', self._chroot_path)
+    else:
+      # Check whether the resolved path happens to point back at the chroot, in
+      # which case trim the chroot path prefix and continue recursively.
+      path = self._TranslatePath(new_path, self._chroot_path, '/')
+      if path is not None:
+        new_path = self._GetHostPath(path)
+
+    return new_path
+
+  def _ConvertPath(self, path, get_converted_path):
+    """Expands |path|; if outside the chroot, applies |get_converted_path|.
+
+    Args:
+      path: A path to be converted.
+      get_converted_path: A conversion function.
+
+    Returns:
+      An expanded and (if needed) converted path.
+
+    Raises:
+      ValueError: If path conversion failed.
+    """
+    # NOTE: We do not want to expand wrapper script symlinks because this
+    # prevents them from working. Therefore, if the path points to a file we
+    # only resolve its dirname but leave the basename intact. This means our
+    # path resolution might return unusable results for file symlinks that
+    # point outside the reachable space. These are edge cases in which the user
+    # is expected to resolve the realpath themselves in advance.
+    expanded_path = os.path.expanduser(path)
+    if os.path.isfile(expanded_path):
+      expanded_path = os.path.join(
+          os.path.realpath(os.path.dirname(expanded_path)),
+          os.path.basename(expanded_path))
+    else:
+      expanded_path = os.path.realpath(expanded_path)
+
+    if self._inside_chroot:
+      return expanded_path
+
+    try:
+      return get_converted_path(expanded_path)
+    except ValueError as e:
+      raise ValueError('%s: %s' % (e, path))
+
+  def ToChroot(self, path):
+    """Resolves current environment |path| for use in the chroot."""
+    return self._ConvertPath(path, self._GetChrootPath)
+
+  def FromChroot(self, path):
+    """Resolves chroot |path| for use in the current environment."""
+    return self._ConvertPath(path, self._GetHostPath)
 
 
 def _IsChromiumGobSubmodule(path):
@@ -146,3 +362,13 @@ def FindCacheDir():
 def GetCacheDir():
   """Returns the current cache dir."""
   return os.environ.get(constants.SHARED_CACHE_ENVVAR, FindCacheDir())
+
+
+def ToChrootPath(path, workspace_path=None):
+  """Resolves current environment |path| for use in the chroot."""
+  return ChrootPathResolver(workspace_path=workspace_path).ToChroot(path)
+
+
+def FromChrootPath(path, workspace_path=None):
+  """Resolves chroot |path| for use in the current environment."""
+  return ChrootPathResolver(workspace_path=workspace_path).FromChroot(path)

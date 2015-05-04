@@ -6,15 +6,27 @@
 
 from __future__ import print_function
 
+import itertools
+import mock
 import os
 import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.lib import bootstrap_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import partial_mock
 from chromite.lib import path_util
+from chromite.lib import workspace_lib
+
+
+FAKE_SOURCE_PATH = '/path/to/source/tree'
+FAKE_REPO_PATH = '/path/to/repo'
+FAKE_WORKSPACE_NESTED_CHROOT_DIR = '.fake_chroot'
+FAKE_WORKSPACE_STANDALONE_CHROOT_PATH = '/path/to/chroot'
+CUSTOM_SOURCE_PATH = '/custom/source/path'
 
 
 class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
@@ -210,3 +222,352 @@ class FindCacheDirTest(cros_test_lib.WorkspaceTestCase):
     self.assertStartsWith(
         path_util.FindCacheDir(),
         os.path.join(tempfile.gettempdir(), ''))
+
+
+class TestPathResolver(cros_test_lib.MockTestCase):
+  """Tests of ChrootPathResolver class."""
+
+  def setUp(self):
+    self.PatchObject(constants, 'SOURCE_ROOT', new=FAKE_SOURCE_PATH)
+    self.PatchObject(path_util, 'GetCacheDir', return_value='/path/to/cache')
+    self.PatchObject(git, 'FindRepoDir',
+                     return_value=os.path.join(FAKE_REPO_PATH, '.fake_repo'))
+    self.chroot_path = None
+
+  def FakeCwd(self, base_path):
+    return os.path.join(base_path, 'somewhere/in/there')
+
+  def SetChrootPath(self, workspace_path, source_path, standalone_chroot):
+    """Set and fake the chroot path."""
+    if workspace_path is None:
+      self.chroot_path = os.path.join(source_path,
+                                      constants.DEFAULT_CHROOT_DIR)
+    else:
+      if standalone_chroot:
+        self.chroot_path = FAKE_WORKSPACE_STANDALONE_CHROOT_PATH
+      else:
+        self.chroot_path = os.path.join(workspace_path,
+                                        FAKE_WORKSPACE_NESTED_CHROOT_DIR)
+
+      self.PatchObject(workspace_lib, 'ChrootPath',
+                       return_value=self.chroot_path)
+
+  def RunInsideChrootTests(self, workspace_path, standalone_chroot=False):
+    """Tests {To,From}Chroot() calls from inside the chroot."""
+    self.SetChrootPath(workspace_path, constants.SOURCE_ROOT,
+                       standalone_chroot)
+    resolver = path_util.ChrootPathResolver(workspace_path=workspace_path)
+
+    # Paths remain the same, only expanded/canonicalized (both directions).
+    self.assertEqual(os.path.realpath('some/path'),
+                     resolver.ToChroot('some/path'))
+    self.assertEqual(os.path.realpath('/some/path'),
+                     resolver.ToChroot('/some/path'))
+    self.assertEqual(os.path.realpath('some/path'),
+                     resolver.FromChroot('some/path'))
+    self.assertEqual(os.path.realpath('/some/path'),
+                     resolver.FromChroot('/some/path'))
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
+  def testInsideChrootNoWorkspace(self, _):
+    """Test conversion to chroot: inside, no workspace."""
+    self.RunInsideChrootTests(None)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
+  def testInsideChrootWithWorkspaceNestedChroot(self, _):
+    """Test conversion to chroot: inside, workspace, nested chroot."""
+    self.RunInsideChrootTests('path/to/workspace')
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
+  def testInsideChrootWithWorkspaceStandaloneChroot(self, _):
+    """Test convertion to chroot: inside, workspace, standalone chroot."""
+    self.RunInsideChrootTests('path/to/workspace', True)
+
+  def RunOutsideToChrootTests(self, workspace_path, standalone_chroot):
+    """Tests ToChroot() calls from outside the chroot."""
+    for source_path, source_from_path_repo in itertools.product(
+        (None, CUSTOM_SOURCE_PATH), (False, True)):
+      if source_from_path_repo:
+        actual_source_path = FAKE_REPO_PATH
+      else:
+        actual_source_path = source_path or constants.SOURCE_ROOT
+
+      fake_cwd = self.FakeCwd(actual_source_path)
+      self.PatchObject(os, 'getcwd', return_value=fake_cwd)
+      self.SetChrootPath(workspace_path, actual_source_path, standalone_chroot)
+      resolver = path_util.ChrootPathResolver(
+          workspace_path=workspace_path,
+          source_path=source_path,
+          source_from_path_repo=source_from_path_repo)
+      source_rel_cwd = os.path.relpath(fake_cwd, actual_source_path)
+
+      # Case: path inside the chroot space.
+      self.assertEqual(
+          '/some/path',
+          resolver.ToChroot(os.path.join(self.chroot_path, 'some/path')))
+
+      # Case: path inside the workspace.
+      if workspace_path is not None:
+        self.assertEqual(
+            os.path.join(constants.CHROOT_WORKSPACE_ROOT, 'some/path'),
+            resolver.ToChroot(os.path.join(workspace_path, 'some/path')))
+
+      # Case: path inside the cache directory.
+      self.assertEqual(
+          os.path.join(constants.CHROOT_CACHE_ROOT, 'some/path'),
+          resolver.ToChroot(os.path.join(path_util.GetCacheDir(),
+                                         'some/path')))
+
+      # Case: absolute path inside the source tree.
+      if source_from_path_repo:
+        self.assertEqual(
+            os.path.join(constants.CHROOT_SOURCE_ROOT, 'some/path'),
+            resolver.ToChroot(os.path.join(FAKE_REPO_PATH, 'some/path')))
+      else:
+        self.assertEqual(
+            os.path.join(constants.CHROOT_SOURCE_ROOT, 'some/path'),
+            resolver.ToChroot(os.path.join(actual_source_path, 'some/path')))
+
+      # Case: relative path inside the source tree.
+      if source_from_path_repo:
+        self.assertEqual(
+            os.path.join(constants.CHROOT_SOURCE_ROOT, source_rel_cwd,
+                         'some/path'),
+            resolver.ToChroot('some/path'))
+      else:
+        self.assertEqual(
+            os.path.join(constants.CHROOT_SOURCE_ROOT, source_rel_cwd,
+                         'some/path'),
+            resolver.ToChroot('some/path'))
+
+      # Case: unreachable, path with improper source root prefix.
+      with self.assertRaises(ValueError):
+        resolver.ToChroot(os.path.join(actual_source_path + '-foo',
+                                       'some/path'))
+
+      # Case: unreachable (random).
+      with self.assertRaises(ValueError):
+        resolver.ToChroot('/some/path')
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootNoWorkspace(self, _):
+    """Test inbound translation w/o workspace."""
+    self.RunOutsideToChrootTests(None, False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootStandaloneWorkspaceNestedChroot(self, _):
+    """Test inbound translation w/ standalone workspace + nested chroot."""
+    self.RunOutsideToChrootTests('/path/to/workspace', False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootStandaloneWorkspaceStandaloneChroot(self, _):
+    """Test inbound translation w/ standalone workspace + standalone chroot."""
+    self.RunOutsideToChrootTests('/path/to/workspace', True)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootStandaloneRelativeWorkspaceNestedChroot(self, _):
+    """Test inbound w/ standalone realtive workspace + nested chroot."""
+    self.RunOutsideToChrootTests(
+        os.path.join(constants.SOURCE_ROOT, '../path/to/workspace'),
+        False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootStandaloneRelativeWorkspaceStandaloneChroot(self, _):
+    """Test inbound w/ standalone realtive workspace + standalone chroot."""
+    self.RunOutsideToChrootTests(
+        os.path.join(constants.SOURCE_ROOT, '../path/to/workspace'),
+        True)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootNestedWorkspaceNestedChroot(self, _):
+    """Test inbound translation w/ nested workspace + nested chroot."""
+    self.RunOutsideToChrootTests(
+        os.path.join(constants.SOURCE_ROOT, 'path/to/workspace'),
+        False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootNestedWorkspaceStandaloneChroot(self, _):
+    """Test inbound translation w/ nested workspace + standalone chroot."""
+    self.RunOutsideToChrootTests(
+        os.path.join(constants.SOURCE_ROOT, 'path/to/workspace'),
+        True)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootNestedRelativeWorkspaceNestedChroot(self, _):
+    """Test inbound translation w/ nested realtive workspace + nested chroot."""
+    self.RunOutsideToChrootTests('path/to/workspace', False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChrootNestedRelativeWorkspaceStandaloneChroot(self, _):
+    """Test inbound w/ nested realtive workspace + standalone chroot."""
+    self.RunOutsideToChrootTests('path/to/workspace', True)
+
+  def RunOutsideFromChrootTests(self, workspace_path, standalone_chroot):
+    """Tests FromChroot() calls from outside the chroot."""
+    self.PatchObject(os, 'getcwd', return_value=self.FakeCwd(FAKE_SOURCE_PATH))
+    self.SetChrootPath(workspace_path, constants.SOURCE_ROOT, standalone_chroot)
+    resolver = path_util.ChrootPathResolver(workspace_path=workspace_path)
+
+    # Case: source root path.
+    self.assertEqual(
+        os.path.join(constants.SOURCE_ROOT, 'some/path'),
+        resolver.FromChroot(os.path.join(constants.CHROOT_SOURCE_ROOT,
+                                         'some/path')))
+
+    if workspace_path is None:
+      # Case: no workspace path, workspace root resolution fails.
+      with self.assertRaises(ValueError):
+        resolver.FromChroot(os.path.join(constants.CHROOT_WORKSPACE_ROOT,
+                                         'some/path'))
+
+      # Case: cyclic source/chroot sub-path elimination.
+      self.assertEqual(
+          os.path.join(constants.SOURCE_ROOT, 'some/path'),
+          resolver.FromChroot(os.path.join(
+              constants.CHROOT_SOURCE_ROOT,
+              constants.DEFAULT_CHROOT_DIR,
+              constants.CHROOT_SOURCE_ROOT.lstrip(os.path.sep),
+              constants.DEFAULT_CHROOT_DIR,
+              constants.CHROOT_SOURCE_ROOT.lstrip(os.path.sep),
+              'some/path')))
+    else:
+      # Case: workspace root path.
+      self.assertEqual(
+          os.path.join(workspace_path, 'some/path'),
+          resolver.FromChroot(os.path.join(constants.CHROOT_WORKSPACE_ROOT,
+                                           'some/path')))
+
+      if not standalone_chroot:
+        # Case: cyclic workspace/chroot sub-path elimination.
+        self.assertEqual(
+            os.path.join(workspace_path, 'some/path'),
+            resolver.FromChroot(os.path.join(
+                constants.CHROOT_WORKSPACE_ROOT,
+                FAKE_WORKSPACE_NESTED_CHROOT_DIR,
+                constants.CHROOT_WORKSPACE_ROOT.lstrip(os.path.sep),
+                FAKE_WORKSPACE_NESTED_CHROOT_DIR,
+                constants.CHROOT_WORKSPACE_ROOT.lstrip(os.path.sep),
+                'some/path')))
+
+    # Case: path inside the cache directory.
+    self.assertEqual(
+        os.path.join(path_util.GetCacheDir(), 'some/path'),
+        resolver.FromChroot(os.path.join(constants.CHROOT_CACHE_ROOT,
+                                         'some/path')))
+
+    # Case: non-rooted chroot paths.
+    self.assertEqual(
+        os.path.join(self.chroot_path, 'some/path'),
+        resolver.FromChroot('/some/path'))
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideFromChrootNoWorkspace(self, _):
+    """Test inbound translation w/o workspace."""
+    self.RunOutsideFromChrootTests(None, False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideFromChrootStandaloneWorkspaceNestedChroot(self, _):
+    """Test inbound translation w/ standalone workspace + nested chroot."""
+    self.RunOutsideFromChrootTests('/path/to/workspace', False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideFromChrootStandaloneWorkspaceStandaloneChroot(self, _):
+    """Test inbound translation w/ standalone workspace + standalone chroot."""
+    self.RunOutsideFromChrootTests('/path/to/workspace', True)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideFromChrootNestedWorkspaceNestedChroot(self, _):
+    """Test inbound translation w/ nested workspace + nested chroot."""
+    self.RunOutsideFromChrootTests(
+        os.path.join(constants.SOURCE_ROOT, 'path/to/workspace'),
+        False)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideFromChrootNestedWorkspaceStandaloneChroot(self, _):
+    """Test inbound translation w/ nested workspace + standalone chroot."""
+    self.RunOutsideFromChrootTests(
+        os.path.join(constants.SOURCE_ROOT, 'path/to/workspace'),
+        True)
+
+
+# TODO(garnold) These tests reinforce backward compatibility with legacy
+# lib.cros_build_lib and lib.git equivalents and should be removed once
+# deprecated.
+class TestChrootPathWrapper(cros_test_lib.MockTestCase):
+  """Tests convenience wrappers for ChrootPathResolver methods."""
+
+  def setUp(self):
+    self.PatchObject(constants, 'SOURCE_ROOT', new=FAKE_SOURCE_PATH)
+    fake_cwd = os.path.join(FAKE_SOURCE_PATH, 'somewhere/in/there')
+    self.PatchObject(os, 'getcwd', return_value=fake_cwd)
+    self.PatchObject(path_util, 'GetCacheDir', return_value='/path/to/cache')
+    self.PatchObject(git, 'FindRepoDir',
+                     return_value=os.path.join(FAKE_SOURCE_PATH, '.fake_repo'))
+
+  def CompareFunc(self, ref_func, new_func, path):
+    """Compares output of |new_func| to |ref_func| with adjustments."""
+    user_source_root = '/home/%s/trunk' % os.getenv('USER')
+    try:
+      expected = ref_func(path).replace(
+          user_source_root, constants.CHROOT_SOURCE_ROOT)
+      self.assertEqual(expected, new_func(path))
+    except ValueError:
+      with self.assertRaises(ValueError):
+        new_func(path)
+
+  def CompareToChrootPath(self, path):
+    """Tests path_util.ToChrootPath()."""
+    self.CompareFunc(cros_build_lib.ToChrootPath,
+                     path_util.ToChrootPath,
+                     path)
+
+  def CompareFromChrootPath(self, path):
+    """Tests path_util.FromChrootPath()."""
+    self.CompareFunc(cros_build_lib.FromChrootPath,
+                     path_util.FromChrootPath,
+                     path)
+
+  def CompareReinterpretPathForChroot(self, path):
+    """Tests path_util.NoExpandHostToChrootPath()."""
+    self.CompareFunc(git.ReinterpretPathForChroot,
+                     path_util.ToChrootPath,
+                     path)
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
+  def testInsideToChroot(self, _):
+    """Compare conversion to chroot paths from inside the chroot."""
+    self.CompareToChrootPath('/some/path')
+    self.CompareToChrootPath('some/path')
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideToChroot(self, _):
+    """Compare conversion to chroot paths from outside the chroot."""
+    self.CompareToChrootPath('some/path')
+    self.CompareToChrootPath('/some/path')
+    self.CompareToChrootPath(
+        os.path.join(constants.CHROOT_SOURCE_ROOT, 'some/path'))
+    self.CompareToChrootPath(
+        os.path.join(constants.CHROOT_WORKSPACE_ROOT, 'some/path'))
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
+  def testInsideFromChroot(self, _):
+    """Compare conversion from chroot paths from inside the chroot."""
+    self.CompareFromChrootPath('/some/path')
+    self.CompareFromChrootPath('some/path')
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testOutsideFromChroot(self, _):
+    """Compare conversion from chroot paths from outside the chroot."""
+    # Disabled, there's a bug in cros_build_lib.FromChrootPath().
+    #self.CompareFromChrootPath('some/path')
+    self.CompareFromChrootPath('/some/path')
+    self.CompareFromChrootPath(
+        os.path.join(constants.CHROOT_SOURCE_ROOT, 'some/path'))
+    self.CompareFromChrootPath(
+        os.path.join(constants.CHROOT_WORKSPACE_ROOT, 'some/path'))
+
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testReinterpretPathForChroot(self, _):
+    """Compare conversion with git.ReinterpretPathForChroot."""
+    self.CompareReinterpretPathForChroot('some/path')
+    self.CompareReinterpretPathForChroot('/some/path')
