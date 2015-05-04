@@ -2083,8 +2083,6 @@ crbug.com/477743 virtual/slimmingpaint/svg/as-image/zero-size-buffered-image-nop
 crbug.com/477743 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
-crbug.com/477743 virtual/slimmingpaint/svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsRebaseline ]
-crbug.com/477743 virtual/slimmingpaint/svg/custom/js-late-gradient-and-object-creation.svg [ NeedsRebaseline ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/marker-zero-length-linecaps.svg [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/massive-coordinates.svg [ ImageOnlyFailure Pass ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/use-disappears-after-style-update.svg [ Failure ]
