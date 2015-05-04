@@ -5,11 +5,9 @@
 package org.chromium.content.browser.input;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
-import android.os.Build;
 import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.KeyEvent;
@@ -18,6 +16,7 @@ import android.view.MotionEvent;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.ContentView;
 
 /**
  * Class to manage connected gamepad devices list.
@@ -37,7 +36,6 @@ public class GamepadList {
     private boolean mIsGamepadAccessed;
     private InputDeviceListener mInputDeviceListener;
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private GamepadList() {
         mInputDeviceListener = new InputDeviceListener() {
             // Override InputDeviceListener methods
@@ -58,7 +56,6 @@ public class GamepadList {
         };
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void initializeDevices() {
         // Get list of all the attached input devices.
         int[] deviceIds = mInputManager.getInputDeviceIds();
@@ -79,11 +76,9 @@ public class GamepadList {
      */
     public static void onAttachedToWindow(Context context) {
         assert ThreadUtils.runningOnUiThread();
-        if (!isGamepadSupported()) return;
         getInstance().attachedToWindow(context);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void attachedToWindow(Context context) {
         if (mAttachedToWindowCounter++ == 0) {
             mInputManager = (InputManager) context.getSystemService(Context.INPUT_SERVICE);
@@ -101,11 +96,9 @@ public class GamepadList {
     @SuppressLint("MissingSuperCall")
     public static void onDetachedFromWindow() {
         assert ThreadUtils.runningOnUiThread();
-        if (!isGamepadSupported()) return;
         getInstance().detachedFromWindow();
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void detachedFromWindow() {
         if (--mAttachedToWindowCounter == 0) {
             synchronized (mLock) {
@@ -139,7 +132,6 @@ public class GamepadList {
     // ------------------------------------------------------------
 
     private static GamepadList getInstance() {
-        assert isGamepadSupported();
         return LazyHolder.INSTANCE;
     }
 
@@ -181,7 +173,6 @@ public class GamepadList {
      * @return True if the event has been consumed.
      */
     public static boolean dispatchKeyEvent(KeyEvent event) {
-        if (!isGamepadSupported()) return false;
         if (!isGamepadEvent(event)) return false;
         return getInstance().handleKeyEvent(event);
     }
@@ -200,7 +191,6 @@ public class GamepadList {
      * @return True if the event has been consumed.
      */
     public static boolean onGenericMotionEvent(MotionEvent event) {
-        if (!isGamepadSupported()) return false;
         if (!isGamepadEvent(event)) return false;
         return getInstance().handleMotionEvent(event);
     }
@@ -281,13 +271,8 @@ public class GamepadList {
         }
     }
 
-    private static boolean isGamepadSupported() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
-    }
-
     @CalledByNative
     static void updateGamepadData(long webGamepadsPtr) {
-        if (!isGamepadSupported()) return;
         getInstance().grabGamepadData(webGamepadsPtr);
     }
 
@@ -309,7 +294,6 @@ public class GamepadList {
 
     @CalledByNative
     static void notifyForGamepadsAccess(boolean isAccessPaused) {
-        if (!isGamepadSupported()) return;
         getInstance().setIsGamepadAccessed(!isAccessPaused);
     }
 
