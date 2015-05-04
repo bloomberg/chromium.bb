@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
