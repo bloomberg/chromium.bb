@@ -262,6 +262,11 @@ class BaseTestServer {
     ws_basic_auth_ = ws_basic_auth;
   }
 
+  // Disable creation of anonymous FTP user.
+  void set_no_anonymous_ftp_user(bool no_anonymous_ftp_user) {
+    no_anonymous_ftp_user_ = no_anonymous_ftp_user;
+  }
+
   // Marks the root certificate of an HTTPS test server as trusted for
   // the duration of tests.
   bool LoadTestRootCert() const WARN_UNUSED_RESULT;
@@ -330,6 +335,9 @@ class BaseTestServer {
 
   // Is WebSocket basic HTTP authentication enabled?
   bool ws_basic_auth_;
+
+  // Disable creation of anonymous FTP user?
+  bool no_anonymous_ftp_user_;
 
   scoped_ptr<ScopedPortException> allowed_port_;
 

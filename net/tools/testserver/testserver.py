@@ -2124,11 +2124,12 @@ class ServerRunner(testserver_base.TestServerRunner):
       # Instantiate a dummy authorizer for managing 'virtual' users
       authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
 
-      # Define a new user having full r/w permissions and a read-only
-      # anonymous user
+      # Define a new user having full r/w permissions
       authorizer.add_user('chrome', 'chrome', my_data_dir, perm='elradfmw')
 
-      authorizer.add_anonymous(my_data_dir)
+      # Define a read-only anonymous user unless disabled
+      if not self.options.no_anonymous_ftp_user:
+        authorizer.add_anonymous(my_data_dir)
 
       # Instantiate FTP handler class
       ftp_handler = pyftpdlib.ftpserver.FTPHandler
@@ -2297,6 +2298,11 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   default=False, action='store_true',
                                   help='If set, the server will send a fatal '
                                   'alert immediately after the handshake.')
+    self.option_parser.add_option('--no-anonymous-ftp-user',
+                                  dest='no_anonymous_ftp_user',
+                                  default=False, action='store_true',
+                                  help='If set, the FTP server will not create '
+                                  'an anonymous user.')
 
 
 if __name__ == '__main__':

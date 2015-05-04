@@ -11,7 +11,7 @@ function addRow(name, url, isdir, size, date_modified) {
   if (name == ".")
     return;
 
-  var root = "" + document.location;
+  var root = document.location.pathname;
   if (root.substr(-1) !== "/")
     root += "/";
 
