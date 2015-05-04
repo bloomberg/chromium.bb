@@ -373,6 +373,8 @@ if ragel_involved:
      '20150210.vmovq_bugfix', '20150223.crc32w'),
     ('jecxz_proof.py', ('32', '64'),
      '20150223.crc32w', '20150226.jecxz'),
+    ('vmovd_proof.py', ('32', '64'),
+     '20150226.jecxz', '20150430.vmovd_bugfix'),
   ]
   # Run the 3 latest proofs by default.
   for proof_file, bitnesses, old, new in trie_proofs[-3:]:

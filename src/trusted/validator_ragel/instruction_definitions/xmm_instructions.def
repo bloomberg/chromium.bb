@@ -530,7 +530,7 @@ vmovaps Vpsx Wpsx, 0xc4 RXB.00001 x.1111.L.00 0x29, CPUFeature_AVX
 #  movd Ey Vy, 0x66 0x0f 0x6e, CPUFeature_SSE2
 #  movd Vy Ey, 0x66 0x0f 0x7e, CPUFeature_SSE2
 #  vmovd Ey Vo, 0xc4 RXB.00001 W.1111.0.01 0x6e, CPUFeature_AVX
-#  vmovd Vo Ey, 0xc4 RXB.00001 W.1111.1.01 0x7e, CPUFeature_AVX
+#  vmovd Vo Ey, 0xc4 RXB.00001 W.1111.0.01 0x7e, CPUFeature_AVX
 # Objdump names 64bit version not "movd" but "movq".  We describe 32bit version
 # and 64bit version separately.
 movd Ed Vq, 0x66 0x0f 0x6e, norexw CPUFeature_SSE2
@@ -538,10 +538,10 @@ movd Vq Ed, 0x66 0x0f 0x7e, norexw CPUFeature_SSE2 nacl-amd64-zero-extends
 movq Eq Vq, 0x66 rexw 0x0f 0x6e, amd64 CPUFeature_SSE2
 movq Vq Eq, 0x66 rexw 0x0f 0x7e, amd64 CPUFeature_SSE2
 vmovd Ed Vo, 0xc4 RXB.00001 0.1111.0.01 0x6e, CPUFeature_AVX
-vmovd Vo Ed, 0xc4 RXB.00001 0.1111.1.01 0x7e,
+vmovd Vo Ed, 0xc4 RXB.00001 0.1111.0.01 0x7e,
     CPUFeature_AVX nacl-amd64-zero-extends
 vmovq Eq Vo, 0xc4 RXB.00001 1.1111.0.01 0x6e, amd64 CPUFeature_AVX
-vmovq Vo Eq, 0xc4 RXB.00001 1.1111.1.01 0x7e, amd64 CPUFeature_AVX
+vmovq Vo Eq, 0xc4 RXB.00001 1.1111.0.01 0x7e, amd64 CPUFeature_AVX
 ######## MOVDDUP/VMOVDDUP ######################################################
 movddup Wsd Vsd, 0xf2 0x0f 0x12, CPUFeature_SSE3
 vmovddup Wsd Vo, 0xc4 RXB.00001 x.1111.0.11 0x12, CPUFeature_AVX
