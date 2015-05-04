@@ -133,29 +133,6 @@ def OverrideConfigForTrybot(build_config, options):
   return copy_config
 
 
-def GetManifestVersionsRepoUrl(internal_build, read_only=False, test=False):
-  """Returns the url to the manifest versions repository.
-
-  Args:
-    internal_build: Whether to use the internal repo.
-    read_only: Whether the URL may be read only.  If read_only is True,
-      pushing changes (even with dryrun option) may not work.
-    test: Whether we should use the corresponding test repositories. These
-      should be used when staging experimental features.
-  """
-  # pylint: disable=W0613
-  if internal_build:
-    if test:
-      return constants.MANIFEST_VERSIONS_INT_GOB_URL_TEST
-    else:
-      return constants.MANIFEST_VERSIONS_INT_GOB_URL
-  else:
-    if test:
-      return constants.MANIFEST_VERSIONS_GOB_URL_TEST
-    else:
-      return constants.MANIFEST_VERSIONS_GOB_URL
-
-
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
   return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,

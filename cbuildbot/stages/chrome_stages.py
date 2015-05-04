@@ -250,7 +250,7 @@ class ChromeLKGMSyncStage(sync_stages.SyncStage):
     # subclasses) is used later in the flow.
     manifest_manager = manifest_version.BuildSpecsManager(
         source_repo=self.repo,
-        manifest_repo=self._GetManifestVersionsRepoUrl(read_only=False),
+        manifest_repo=self._GetManifestVersionsRepoUrl(),
         build_names=self._run.GetBuilderIds(),
         incr_type='build',
         force=False,

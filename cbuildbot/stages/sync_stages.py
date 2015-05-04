@@ -321,10 +321,20 @@ class SyncStage(generic_stages.BuilderStage):
     # at self.internal when it can always be retrieved from config?
     self.internal = self._run.config.internal
 
-  def _GetManifestVersionsRepoUrl(self, read_only=False):
-    return cbuildbot_config.GetManifestVersionsRepoUrl(
-        self.internal,
-        read_only=read_only)
+  def _GetManifestVersionsRepoUrl(self, internal=None, test=False):
+    if internal is None:
+      internal = self._run.config.internal
+
+    if internal:
+      if test:
+        return constants.MANIFEST_VERSIONS_INT_GOB_URL_TEST
+      else:
+        return constants.MANIFEST_VERSIONS_INT_GOB_URL
+    else:
+      if test:
+        return constants.MANIFEST_VERSIONS_GOB_URL_TEST
+      else:
+        return constants.MANIFEST_VERSIONS_GOB_URL
 
   def Initialize(self):
     self._InitializeRepo()
@@ -421,7 +431,7 @@ class LKGMSyncStage(SyncStage):
       mv_dir = constants.EXTERNAL_MANIFEST_VERSIONS_PATH
 
     manifest_path = os.path.join(self._build_root, mv_dir)
-    manifest_repo = self._GetManifestVersionsRepoUrl(read_only=True)
+    manifest_repo = self._GetManifestVersionsRepoUrl()
     manifest_version.RefreshManifestCheckout(manifest_path, manifest_repo)
     return os.path.join(manifest_path, self._run.config.lkgm_manifest)
 
@@ -440,7 +450,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
     # If a builder pushes changes (even with dryrun mode), we need a writable
     # repository. Otherwise, the push will be rejected by the server.
-    self.manifest_repo = self._GetManifestVersionsRepoUrl(read_only=False)
+    self.manifest_repo = self._GetManifestVersionsRepoUrl()
 
     # 1. If we're uprevving Chrome, Chrome might have changed even if the
     #    manifest has not, so we should force a build to double check. This
@@ -581,10 +591,8 @@ class ManifestVersionedSyncStage(SyncStage):
     # Use a static dir, but don't overlap with other users, we might conflict.
     git_repo = os.path.join(
         self._build_root, constants.PROJECT_SDK_MANIFEST_VERSIONS_PATH)
-    external_manifest_url = cbuildbot_config.GetManifestVersionsRepoUrl(
-        internal_build=False,
-        read_only=False,
-        test=debug)
+    external_manifest_url = self._GetManifestVersionsRepoUrl(
+        internal=False, test=debug)
 
     logging.info('Using manifest URL: %s', external_manifest_url)
     manifest_version.RefreshManifestCheckout(
@@ -784,8 +792,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     increment = self.VersionIncrementType()
     return lkgm_manager.LKGMManager(
         source_repo=self.repo,
-        manifest_repo=cbuildbot_config.GetManifestVersionsRepoUrl(
-            internal, read_only=False),
+        manifest_repo=self._GetManifestVersionsRepoUrl(internal=internal),
         manifest=self._run.config.manifest,
         build_names=self._run.GetBuilderIds(),
         build_type=self._run.config.build_type,
