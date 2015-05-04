@@ -196,9 +196,9 @@ class RemoteDeviceTestRun(test_run.TestRun):
           return r.read()
     else:
       logging.warning(
-          'If the results are too long they could be cut off due to an '
-          'appurify bug. Use the --results-path option when running the '
-          'collect step to ensure you download the full results.')
+          'If the test output is too long, some test results may get cut off.')
+      logging.warning(
+          'Use the --results-path option to ensure you get the full results.')
       return self._results['results']['output']
 
   def _GetTestStatus(self, test_run_id):
