@@ -63,7 +63,7 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
     private static final int PASSPHRASE_DIALOG_ERROR = 1;
     private static final int PASSPHRASE_DIALOG_CANCEL = 2;
     private static final int PASSPHRASE_DIALOG_RESET_LINK = 3;
-    private static final int PASSPHRASE_DIALOG_LIMIT = 3;
+    private static final int PASSPHRASE_DIALOG_LIMIT = 4;
 
     /**
      * Create a new instanceof of {@link PassphraseDialogFragment} and set its arguments.
