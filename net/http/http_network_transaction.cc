@@ -771,6 +771,8 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
     CopyConnectionAttemptsFromStreamRequest();
 
   if (result == OK) {
+    if (request_->url.SchemeIsCryptographic())
+      RecordSSLFallbackMetrics();
     next_state_ = STATE_INIT_STREAM;
     DCHECK(stream_.get());
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
@@ -1428,6 +1430,49 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   request_headers_.Clear();
   response_ = HttpResponseInfo();
   establishing_tunnel_ = false;
+}
+
+void HttpNetworkTransaction::RecordSSLFallbackMetrics() {
+  // Note: these values are used in histograms, so new values must be appended.
+  enum FallbackVersion {
+    FALLBACK_NONE = 0,    // SSL version fallback did not occur.
+    FALLBACK_SSL3 = 1,    // Fell back to SSL 3.0.
+    FALLBACK_TLS1 = 2,    // Fell back to TLS 1.0.
+    FALLBACK_TLS1_1 = 3,  // Fell back to TLS 1.1.
+    FALLBACK_MAX,
+  };
+
+  FallbackVersion fallback = FALLBACK_NONE;
+  if (server_ssl_config_.version_fallback) {
+    switch (server_ssl_config_.version_max) {
+      case SSL_PROTOCOL_VERSION_SSL3:
+        fallback = FALLBACK_SSL3;
+        break;
+      case SSL_PROTOCOL_VERSION_TLS1:
+        fallback = FALLBACK_TLS1;
+        break;
+      case SSL_PROTOCOL_VERSION_TLS1_1:
+        fallback = FALLBACK_TLS1_1;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.ConnectionUsedSSLVersionFallback2", fallback,
+                            FALLBACK_MAX);
+
+  // Google servers are known to implement TLS 1.2 and FALLBACK_SCSV, so it
+  // should be impossible to successfully connect to them with the fallback.
+  // This helps estimate intolerant locally-configured SSL MITMs.
+  const std::string& host = request_->url.host();
+  if (EndsWith(host, "google.com", true) &&
+      (host.size() == 10 || host[host.size() - 11] == '.')) {
+    UMA_HISTOGRAM_ENUMERATION("Net.GoogleConnectionUsedSSLVersionFallback2",
+                              fallback, FALLBACK_MAX);
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("Net.ConnectionUsedSSLDeprecatedCipherFallback2",
+                        server_ssl_config_.enable_deprecated_cipher_suites);
 }
 
 HttpResponseHeaders* HttpNetworkTransaction::GetResponseHeaders() const {

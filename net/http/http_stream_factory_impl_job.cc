@@ -1269,47 +1269,6 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
     ssl_config->false_start_enabled = false;
   }
 
-  enum {
-    FALLBACK_NONE = 0,    // SSL version fallback did not occur.
-    FALLBACK_SSL3 = 1,    // Fell back to SSL 3.0.
-    FALLBACK_TLS1 = 2,    // Fell back to TLS 1.0.
-    FALLBACK_TLS1_1 = 3,  // Fell back to TLS 1.1.
-    FALLBACK_MAX
-  };
-
-  int fallback = FALLBACK_NONE;
-  if (ssl_config->version_fallback) {
-    switch (ssl_config->version_max) {
-      case SSL_PROTOCOL_VERSION_SSL3:
-        fallback = FALLBACK_SSL3;
-        break;
-      case SSL_PROTOCOL_VERSION_TLS1:
-        fallback = FALLBACK_TLS1;
-        break;
-      case SSL_PROTOCOL_VERSION_TLS1_1:
-        fallback = FALLBACK_TLS1_1;
-        break;
-    }
-  }
-  UMA_HISTOGRAM_ENUMERATION("Net.ConnectionUsedSSLVersionFallback",
-                            fallback, FALLBACK_MAX);
-
-  UMA_HISTOGRAM_BOOLEAN("Net.ConnectionUsedSSLDeprecatedCipherFallback",
-                        ssl_config->enable_deprecated_cipher_suites);
-
-  // We also wish to measure the amount of fallback connections for a host that
-  // we know implements TLS up to 1.2. Ideally there would be no fallback here
-  // but high numbers of SSLv3 would suggest that SSLv3 fallback is being
-  // caused by network middleware rather than buggy HTTPS servers.
-  const std::string& host = server.host();
-  if (!is_proxy &&
-      host.size() >= 10 &&
-      host.compare(host.size() - 10, 10, "google.com") == 0 &&
-      (host.size() == 10 || host[host.size()-11] == '.')) {
-    UMA_HISTOGRAM_ENUMERATION("Net.GoogleConnectionUsedSSLVersionFallback",
-                              fallback, FALLBACK_MAX);
-  }
-
   if (request_info_.load_flags & LOAD_VERIFY_EV_CERT)
     ssl_config->verify_ev_cert = true;
 
