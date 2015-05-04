@@ -99,15 +99,14 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
      * @param array AutofillSuggestion array that should get a new suggestion added.
      * @param index Index in the array where to place a new suggestion.
      * @param label First line of the suggestion.
-     * @param sublabel Second line of the suggestion.
      * @param iconId The resource ID for the icon associated with the suggestion, or 0 for no icon.
      * @param suggestionId Identifier for the suggestion type.
      */
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
-            String label, String sublabel, int iconId, int suggestionId) {
+            String label, int iconId, int suggestionId) {
         int drawableId = iconId == 0 ? DropdownItem.NO_ICON : ResourceId.mapToDrawableId(iconId);
-        array[index] = new AutofillSuggestion(label, sublabel, drawableId, suggestionId);
+        array[index] = new AutofillSuggestion(label, null, drawableId, suggestionId);
     }
 
     private native void nativeViewDismissed(long nativeAutofillKeyboardAccessoryView);

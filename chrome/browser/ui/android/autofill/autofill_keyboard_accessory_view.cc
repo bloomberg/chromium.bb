@@ -10,9 +10,11 @@
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "grit/components_strings.h"
 #include "jni/AutofillKeyboardAccessoryBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -57,21 +59,24 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
                                                                          count);
 
   for (size_t i = 0; i < count; ++i) {
-    ScopedJavaLocalRef<jstring> value = base::android::ConvertUTF16ToJavaString(
-        env, controller_->GetElidedValueAt(i));
-    ScopedJavaLocalRef<jstring> label = base::android::ConvertUTF16ToJavaString(
-        env, controller_->GetElidedLabelAt(i));
-    int android_icon_id = 0;
-
     const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(i);
+    base::string16 value = suggestion.value;
+    if (!suggestion.label.empty()) {
+      value.append(
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR));
+      value.append(suggestion.label);
+    }
+
+    int android_icon_id = 0;
     if (!suggestion.icon.empty()) {
       android_icon_id = ResourceMapper::MapFromChromiumId(
           controller_->GetIconResourceID(suggestion.icon));
     }
 
     Java_AutofillKeyboardAccessoryBridge_addToAutofillSuggestionArray(
-        env, data_array.obj(), i, value.obj(), label.obj(), android_icon_id,
-        suggestion.frontend_id);
+        env, data_array.obj(), i,
+        base::android::ConvertUTF16ToJavaString(env, value).obj(),
+        android_icon_id, suggestion.frontend_id);
   }
 
   Java_AutofillKeyboardAccessoryBridge_show(
