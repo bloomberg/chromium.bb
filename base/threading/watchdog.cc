@@ -169,7 +169,7 @@ void Watchdog::ThreadDelegate::ThreadMain() {
 
 void Watchdog::ThreadDelegate::SetThreadName() const {
   std::string name = watchdog_->thread_watched_name_ + " Watchdog";
-  PlatformThread::SetName(name.c_str());
+  PlatformThread::SetName(name);
   DVLOG(1) << "Watchdog active: " << name;
 }
 

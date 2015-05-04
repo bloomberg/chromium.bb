@@ -183,7 +183,7 @@ void AutoThread::ThreadMain() {
   base::MessageLoop message_loop(startup_data_->loop_type);
 
   // Complete the initialization of our AutoThread object.
-  base::PlatformThread::SetName(name_.c_str());
+  base::PlatformThread::SetName(name_);
   ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
   message_loop.set_thread_name(name_);
 

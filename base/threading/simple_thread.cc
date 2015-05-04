@@ -52,7 +52,7 @@ void SimpleThread::ThreadMain() {
   // Construct our full name of the form "name_prefix_/TID".
   name_.push_back('/');
   name_.append(IntToString(tid_));
-  PlatformThread::SetName(name_.c_str());
+  PlatformThread::SetName(name_);
 
   // We've initialized our new thread, signal that we're done to Start().
   event_.Signal();

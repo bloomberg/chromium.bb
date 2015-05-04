@@ -154,7 +154,7 @@ void PlatformThread::Sleep(TimeDelta duration) {
 }
 
 // static
-void PlatformThread::SetName(const char* name) {
+void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
 
   // On Windows only, we don't need to tell the profiler about the "BrokerEvent"
@@ -163,7 +163,7 @@ void PlatformThread::SetName(const char* name) {
   // which would also (as a side effect) initialize the profiler in this unused
   // context, including setting up thread local storage, etc.  The performance
   // impact is not terrible, but there is no reason to do initialize it.
-  if (0 != strcmp(name, "BrokerEvent"))
+  if (name != "BrokerEvent")
     tracked_objects::ThreadData::InitializeThreadContext(name);
 
   // The debugger needs to be around to catch the name in the exception.  If
@@ -173,7 +173,7 @@ void PlatformThread::SetName(const char* name) {
   if (!::IsDebuggerPresent() && !base::debug::IsBinaryInstrumented())
     return;
 
-  SetNameInternal(CurrentId(), name);
+  SetNameInternal(CurrentId(), name.c_str());
 }
 
 // static

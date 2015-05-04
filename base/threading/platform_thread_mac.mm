@@ -42,14 +42,14 @@ void InitThreading() {
 }
 
 // static
-void PlatformThread::SetName(const char* name) {
+void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
   // Mac OS X does not expose the length limit of the name, so
   // hardcode it.
   const int kMaxNameLength = 63;
-  std::string shortened_name = std::string(name).substr(0, kMaxNameLength);
+  std::string shortened_name = name.substr(0, kMaxNameLength);
   // pthread_setname() fails (harmlessly) in the sandbox, ignore when it does.
   // See http://crbug.com/47058
   pthread_setname_np(shortened_name.c_str());
