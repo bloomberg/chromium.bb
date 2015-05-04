@@ -752,85 +752,54 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value, int argume
 
 // Converts a JavaScript value to an array as per the Web IDL specification:
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
-template <typename T>
-Vector<T> toImplArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
+template <typename VectorType>
+VectorType toImplArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
+    typedef typename VectorType::ValueType ValueType;
+    typedef NativeValueTraits<ValueType> TraitsType;
+
     uint32_t length = 0;
     if (value->IsArray()) {
         length = v8::Local<v8::Array>::Cast(value)->Length();
     } else if (!toV8Sequence(value, length, isolate, exceptionState)) {
         if (!exceptionState.hadException())
             exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex));
-        return Vector<T>();
+        return VectorType();
     }
 
-    if (length > WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(T)) {
+    if (length > WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(ValueType)) {
         exceptionState.throwTypeError("Array length exceeds supported limit.");
-        return Vector<T>();
+        return VectorType();
     }
 
-    Vector<T> result;
+    VectorType result;
     result.reserveInitialCapacity(length);
-    typedef NativeValueTraits<T> TraitsType;
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
     v8::TryCatch block;
     for (uint32_t i = 0; i < length; ++i) {
         v8::Local<v8::Value> element;
         if (!v8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
             exceptionState.rethrowV8Exception(block.Exception());
-            return Vector<T>();
+            return VectorType();
         }
         result.uncheckedAppend(TraitsType::nativeValue(isolate, element, exceptionState));
         if (exceptionState.hadException())
-            return Vector<T>();
+            return VectorType();
     }
     return result;
 }
 
-template <typename T>
-HeapVector<T> toImplHeapArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
+template <typename VectorType>
+VectorType toImplArray(const Vector<ScriptValue>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
-    uint32_t length = 0;
-    if (value->IsArray()) {
-        length = v8::Local<v8::Array>::Cast(value)->Length();
-    } else if (!toV8Sequence(value, length, isolate, exceptionState)) {
-        if (!exceptionState.hadException())
-            exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex));
-        return HeapVector<T>();
-    }
-
-    if (length > WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(T)) {
-        exceptionState.throwTypeError("Array length exceeds supported limit.");
-        return HeapVector<T>();
-    }
-
-    HeapVector<T> result;
-    result.reserveInitialCapacity(length);
-    typedef NativeValueTraits<T> TraitsType;
-    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-    v8::TryCatch block;
-    for (uint32_t i = 0; i < length; ++i) {
-        v8::Local<v8::Value> element;
-        if (!v8Call(object->Get(isolate->GetCurrentContext(), i), element, block)) {
-            exceptionState.rethrowV8Exception(block.Exception());
-            return HeapVector<T>();
-        }
-        result.uncheckedAppend(TraitsType::nativeValue(isolate, element, exceptionState));
-        if (exceptionState.hadException())
-            return HeapVector<T>();
-    }
-    return result;
-}
-
-template <typename T>
-Vector<T> toImplArray(const Vector<ScriptValue>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
-{
-    Vector<T> result;
+    VectorType result;
+    typedef typename VectorType::ValueType ValueType;
+    typedef NativeValueTraits<ValueType> TraitsType;
     result.reserveInitialCapacity(value.size());
     for (unsigned i = 0; i < value.size(); ++i) {
-        result.uncheckedAppend(NativeValueTraits<T>::nativeValue(isolate, value[i].v8Value(), exceptionState));
+        result.uncheckedAppend(TraitsType::nativeValue(isolate, value[i].v8Value(), exceptionState));
         if (exceptionState.hadException())
-            return Vector<T>();
+            return VectorType();
     }
     return result;
 }
@@ -958,7 +927,7 @@ template <typename T>
 struct NativeValueTraits<Vector<T>> {
     static inline Vector<T> nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
     {
-        return toImplArray<T>(value, 0, isolate, exceptionState);
+        return toImplArray<Vector<T>>(value, 0, isolate, exceptionState);
     }
 };
 

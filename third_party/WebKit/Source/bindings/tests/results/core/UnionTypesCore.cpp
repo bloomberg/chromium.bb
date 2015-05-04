@@ -857,7 +857,7 @@ void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
         return;
 
     if (v8Value->IsArray()) {
-        Vector<String> cppValue = toImplArray<String>(v8Value, 0, isolate, exceptionState);
+        Vector<String> cppValue = toImplArray<Vector<String>>(v8Value, 0, isolate, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setStringSequence(cppValue);

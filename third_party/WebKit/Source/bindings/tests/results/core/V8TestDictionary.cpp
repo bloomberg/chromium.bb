@@ -174,7 +174,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         if (enumSequenceMemberValue.IsEmpty() || enumSequenceMemberValue->IsUndefined()) {
             // Do nothing.
         } else {
-            Vector<String> enumSequenceMember = toImplArray<String>(enumSequenceMemberValue, 0, isolate, exceptionState);
+            Vector<String> enumSequenceMember = toImplArray<Vector<String>>(enumSequenceMemberValue, 0, isolate, exceptionState);
             if (exceptionState.hadException())
                 return;
             static const char* validValues[] = {
@@ -216,7 +216,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         if (internalDictionarySequenceMemberValue.IsEmpty() || internalDictionarySequenceMemberValue->IsUndefined()) {
             // Do nothing.
         } else {
-            HeapVector<InternalDictionary> internalDictionarySequenceMember = toImplHeapArray<InternalDictionary>(internalDictionarySequenceMemberValue, 0, isolate, exceptionState);
+            HeapVector<InternalDictionary> internalDictionarySequenceMember = toImplArray<HeapVector<InternalDictionary>>(internalDictionarySequenceMemberValue, 0, isolate, exceptionState);
             if (exceptionState.hadException())
                 return;
             impl.setInternalDictionarySequenceMember(internalDictionarySequenceMember);
@@ -319,7 +319,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         if (stringArrayMemberValue.IsEmpty() || stringArrayMemberValue->IsUndefined()) {
             // Do nothing.
         } else {
-            Vector<String> stringArrayMember = toImplArray<String>(stringArrayMemberValue, 0, isolate, exceptionState);
+            Vector<String> stringArrayMember = toImplArray<Vector<String>>(stringArrayMemberValue, 0, isolate, exceptionState);
             if (exceptionState.hadException())
                 return;
             impl.setStringArrayMember(stringArrayMember);
@@ -369,7 +369,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         if (stringSequenceMemberValue.IsEmpty() || stringSequenceMemberValue->IsUndefined()) {
             // Do nothing.
         } else {
-            Vector<String> stringSequenceMember = toImplArray<String>(stringSequenceMemberValue, 0, isolate, exceptionState);
+            Vector<String> stringSequenceMember = toImplArray<Vector<String>>(stringSequenceMemberValue, 0, isolate, exceptionState);
             if (exceptionState.hadException())
                 return;
             impl.setStringSequenceMember(stringSequenceMember);

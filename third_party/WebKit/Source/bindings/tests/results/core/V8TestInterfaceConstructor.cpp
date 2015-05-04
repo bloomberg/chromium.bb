@@ -78,13 +78,13 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         dictionaryArg = Dictionary(info[3], info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        sequenceStringArg = toImplArray<String>(info[4], 5, info.GetIsolate(), exceptionState);
+        sequenceStringArg = toImplArray<Vector<String>>(info[4], 5, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        sequenceDictionaryArg = toImplArray<Dictionary>(info[5], 6, info.GetIsolate(), exceptionState);
+        sequenceDictionaryArg = toImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        sequenceLongOrTestDictionaryArg = toImplArray<LongOrTestDictionary>(info[6], 7, info.GetIsolate(), exceptionState);
+        sequenceLongOrTestDictionaryArg = toImplArray<Vector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
         if (!isUndefinedOrNull(info[7]) && !info[7]->IsObject()) {

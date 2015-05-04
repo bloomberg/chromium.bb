@@ -113,7 +113,7 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
             impl->voidMethodArrayOfLongsArg();
             return;
         }
-        arrayOfLongsArg = toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState);
+        arrayOfLongsArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -247,7 +247,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallba
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> arrayOfStringsArg;
     {
-        arrayOfStringsArg = toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState);
+        arrayOfStringsArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -272,7 +272,7 @@ static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo
     TestTypedefs* impl = V8TestTypedefs::toImpl(info.Holder());
     Vector<String> stringArrayArg;
     {
-        stringArrayArg = toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState);
+        stringArrayArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

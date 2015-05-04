@@ -70,7 +70,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
     Vector<Vector<String>> stringSequenceSequenceArg;
     {
-        stringSequenceSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+        stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

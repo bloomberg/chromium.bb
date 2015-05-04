@@ -334,7 +334,7 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
         v8::Local<v8::Value> v8IndexedValue;
         if (!v8Array->Get(dictionary.v8Context(), v8::Uint32::New(dictionary.isolate(), i)).ToLocal(&v8IndexedValue))
             return false;
-        Vector<String> indexedValue = toImplArray<String>(v8IndexedValue, i, dictionary.isolate(), exceptionState);
+        Vector<String> indexedValue = toImplArray<Vector<String>>(v8IndexedValue, i, dictionary.isolate(), exceptionState);
         if (exceptionState.hadException())
             return false;
         value.append(indexedValue);

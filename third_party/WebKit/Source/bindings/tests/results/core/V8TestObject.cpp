@@ -1571,7 +1571,7 @@ static void stringArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "stringArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    Vector<String> cppValue = toImplArray<String>(v8Value, 0, info.GetIsolate(), exceptionState);
+    Vector<String> cppValue = toImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setStringArrayAttribute(cppValue);
@@ -1637,7 +1637,7 @@ static void floatArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, con
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "floatArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    Vector<float> cppValue = toImplArray<float>(v8Value, 0, info.GetIsolate(), exceptionState);
+    Vector<float> cppValue = toImplArray<Vector<float>>(v8Value, 0, info.GetIsolate(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setFloatArrayAttribute(cppValue);
@@ -2330,7 +2330,7 @@ static void cachedArrayAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "cachedArrayAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    Vector<String> cppValue = toImplArray<String>(v8Value, 0, info.GetIsolate(), exceptionState);
+    Vector<String> cppValue = toImplArray<Vector<String>>(v8Value, 0, info.GetIsolate(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setCachedArrayAttribute(cppValue);
@@ -6976,7 +6976,7 @@ static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Valu
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> arrayLongArg;
     {
-        arrayLongArg = toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState);
+        arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7001,7 +7001,7 @@ static void voidMethodArrayStringArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<String> arrayStringArg;
     {
-        arrayStringArg = toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState);
+        arrayStringArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7052,7 +7052,7 @@ static void voidMethodNullableArrayLongArgMethod(const v8::FunctionCallbackInfo<
     Nullable<Vector<int>> arrayLongArg;
     {
         if (!isUndefinedOrNull(info[0])) {
-            arrayLongArg = toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState);
+            arrayLongArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
         }
@@ -7117,7 +7117,7 @@ static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> longSequenceArg;
     {
-        longSequenceArg = toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState);
+        longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7142,7 +7142,7 @@ static void voidMethodSequenceStringArgMethod(const v8::FunctionCallbackInfo<v8:
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<String> stringSequenceArg;
     {
-        stringSequenceArg = toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState);
+        stringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7192,7 +7192,7 @@ static void voidMethodSequenceSequenceDOMStringArgMethod(const v8::FunctionCallb
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<Vector<String>> stringSequenceSequenceArg;
     {
-        stringSequenceSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
+        stringSequenceSequenceArg = toImplArray<Vector<Vector<String>>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -7218,7 +7218,7 @@ static void voidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
     Nullable<Vector<int>> longSequenceArg;
     {
         if (!isUndefinedOrNull(info[0])) {
-            longSequenceArg = toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState);
+            longSequenceArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
         }
@@ -7942,7 +7942,7 @@ static void voidMethodDictionarySequenceArgMethod(const v8::FunctionCallbackInfo
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<Dictionary> dictionarySequenceArg;
     {
-        dictionarySequenceArg = toImplArray<Dictionary>(info[0], 1, info.GetIsolate(), exceptionState);
+        dictionarySequenceArg = toImplArray<Vector<Dictionary>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -8560,7 +8560,7 @@ static void voidMethodDefaultStringSequenceArgMethod(const v8::FunctionCallbackI
     Vector<String> defaultStringSequenceArg;
     {
         if (!info[0]->IsUndefined()) {
-            defaultStringSequenceArg = toImplArray<String>(info[0], 1, info.GetIsolate(), exceptionState);
+            defaultStringSequenceArg = toImplArray<Vector<String>>(info[0], 1, info.GetIsolate(), exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
         } else {
@@ -8953,7 +8953,7 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> longArrayArg;
     {
-        longArrayArg = toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState);
+        longArrayArg = toImplArray<Vector<int>>(info[0], 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

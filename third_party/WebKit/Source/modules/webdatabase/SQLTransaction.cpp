@@ -300,7 +300,7 @@ void SQLTransaction::executeSql(ScriptState* scriptState, const String& sqlState
 {
     Vector<SQLValue> sqlValues;
     if (!arguments.isNull())
-        sqlValues = toImplArray<SQLValue>(arguments.get(), scriptState->isolate(), exceptionState);
+        sqlValues = toImplArray<Vector<SQLValue>>(arguments.get(), scriptState->isolate(), exceptionState);
     executeSQL(sqlStatement, sqlValues, callback, callbackError, exceptionState);
 }
 
