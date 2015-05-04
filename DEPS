@@ -34,7 +34,7 @@ vars = {
   'llvm_url': 'http://src.chromium.org/llvm-project',
   'llvm_git': 'https://llvm.googlesource.com',
   'webkit_trunk': 'http://src.chromium.org/blink/trunk',
-  'webkit_revision': '44bf01091874592828070dc26cbb5189da9b959b', # from svn revision 194864
+  'webkit_revision': '14231faf71c1d15f06b09e93001c52f2990233c5', # from svn revision 194882
   'chromium_git': 'https://chromium.googlesource.com',
   'chromiumos_git': 'https://chromium.googlesource.com/chromiumos',
   'pdfium_git': 'https://pdfium.googlesource.com',
@@ -42,7 +42,7 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   'libvpx_revision': 'e9830e14ed6d3422c803bf45e0f6ffec341d8666',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
-  'skia_revision': 'edae3096afe674efce917825f8d44726037405eb',
+  'skia_revision': '973d1f1f60f2710a268a3165aa4f3460502d4be5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
@@ -94,7 +94,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '660eb1e1c91349b53f0d60bbf9a92e31f4cf4e1d',
+  'nacl_revision': '204c16e32f507f0d68d60397a2c16839e242b4c7',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
