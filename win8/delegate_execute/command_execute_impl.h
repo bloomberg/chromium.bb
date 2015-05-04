@@ -37,6 +37,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
       public IForegroundTransfer {
  public:
   CommandExecuteImpl();
+  ~CommandExecuteImpl() override;
 
   DECLARE_REGISTRY_RESOURCEID(IDR_COMMANDEXECUTEIMPL)
 
@@ -66,7 +67,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
   STDMETHOD(SetShowWindow)(int show) override;
   STDMETHOD(SetNoShowUI)(BOOL no_show_ui) override;
   STDMETHOD(SetDirectory)(LPCWSTR directory) override;
-  STDMETHOD(Execute)(void)override;
+  STDMETHOD(Execute)() override;
 
   // IInitializeCommand
   STDMETHOD(Initialize)(LPCWSTR name, IPropertyBag * bag) override;
@@ -84,13 +85,12 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
   static bool FindChromeExe(base::FilePath* chrome_exe);
 
  private:
-
-  static bool path_provider_initialized_;
-
   bool GetLaunchScheme(base::string16* display_name, INTERNET_SCHEME* scheme);
   HRESULT LaunchDesktopChrome();
   // Returns the launch mode, i.e. desktop launch/metro launch, etc.
   EC_HOST_UI_MODE GetLaunchMode();
+
+  static bool path_provider_initialized_;
 
   CComPtr<IShellItemArray> item_array_;
   base::CommandLine parameters_;

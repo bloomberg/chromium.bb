@@ -181,6 +181,9 @@ CommandExecuteImpl::CommandExecuteImpl()
   }
 }
 
+CommandExecuteImpl::~CommandExecuteImpl() {
+}
+
 // CommandExecuteImpl
 STDMETHODIMP CommandExecuteImpl::SetKeyState(DWORD key_state) {
   return S_OK;

@@ -71,6 +71,15 @@ class StringVectorImpl : public mswr::RuntimeClass<StringVectorItf> {
 
 }  // namespace
 
+FilePickerSessionBase::~FilePickerSessionBase() {
+}
+
+bool FilePickerSessionBase::Run() {
+  if (!DoFilePicker())
+    return false;
+  return success_;
+}
+
 FilePickerSessionBase::FilePickerSessionBase(ChromeAppViewAsh* app_view,
                                              const base::string16& title,
                                              const base::string16& filter,
@@ -80,12 +89,6 @@ FilePickerSessionBase::FilePickerSessionBase(ChromeAppViewAsh* app_view,
       filter_(filter),
       default_path_(default_path),
       success_(false) {
-}
-
-bool FilePickerSessionBase::Run() {
-  if (!DoFilePicker())
-    return false;
-  return success_;
 }
 
 bool FilePickerSessionBase::DoFilePicker() {
@@ -113,6 +116,9 @@ OpenFilePickerSession::OpenFilePickerSession(
     bool allow_multi_select)
     : FilePickerSessionBase(app_view, title, filter, default_path),
       allow_multi_select_(allow_multi_select) {
+}
+
+OpenFilePickerSession::~OpenFilePickerSession() {
 }
 
 HRESULT OpenFilePickerSession::SinglePickerDone(SingleFileAsyncOp* async,
@@ -542,7 +548,8 @@ HRESULT SaveFilePickerSession::FilePickerDone(SaveFileAsyncOp* async,
 
 FolderPickerSession::FolderPickerSession(ChromeAppViewAsh* app_view,
                                          const base::string16& title)
-    : FilePickerSessionBase(app_view, title, L"", base::FilePath()) {}
+    : FilePickerSessionBase(app_view, title, L"", base::FilePath()) {
+}
 
 HRESULT FolderPickerSession::StartFilePicker() {
   mswrw::HStringReference class_name(

@@ -21,27 +21,22 @@ class FilePath;
 // Base class for the file pickers.
 class FilePickerSessionBase {
  public:
-  // Creates a file picker for open_file_name.
-  explicit FilePickerSessionBase(ChromeAppViewAsh* app_view,
-                                 const base::string16& title,
-                                 const base::string16& filter,
-                                 const base::FilePath& default_path);
-
-  virtual ~FilePickerSessionBase() {
-  }
+  virtual ~FilePickerSessionBase();
 
   // Runs the picker, returns true on success.
   bool Run();
 
-  const base::string16& result() const {
-    return result_;
-  }
+  const base::string16& result() const { return result_; }
 
-  bool success() const {
-    return success_;
-  }
+  bool success() const { return success_; }
 
  protected:
+  // Creates a file picker for open_file_name.
+  FilePickerSessionBase(ChromeAppViewAsh* app_view,
+                        const base::string16& title,
+                        const base::string16& filter,
+                        const base::FilePath& default_path);
+
   // Creates, configures and starts a file picker.
   // If the HRESULT returned is a failure code the file picker has not started,
   // so no callbacks should be expected.
@@ -77,11 +72,12 @@ class FilePickerSessionBase {
 // metro dialog.
 class OpenFilePickerSession : public FilePickerSessionBase {
  public:
-  explicit OpenFilePickerSession(ChromeAppViewAsh* app_view,
-                                 const base::string16& title,
-                                 const base::string16& filter,
-                                 const base::FilePath& default_path,
-                                 bool allow_multi_select);
+  OpenFilePickerSession(ChromeAppViewAsh* app_view,
+                        const base::string16& title,
+                        const base::string16& filter,
+                        const base::FilePath& default_path,
+                        bool allow_multi_select);
+  ~OpenFilePickerSession() override;
 
   const std::vector<base::FilePath>& filenames() const {
     return filenames_;
@@ -112,7 +108,6 @@ class OpenFilePickerSession : public FilePickerSessionBase {
   static HRESULT ComposeMultiFileResult(StorageFileVectorCollection* files,
                                         base::string16* result);
 
- private:
   // True if the multi file picker is to be displayed.
   bool allow_multi_select_;
   // If multi select is true then this member contains the list of filenames
@@ -125,9 +120,8 @@ class OpenFilePickerSession : public FilePickerSessionBase {
 // Provides functionality to display the save file picker.
 class SaveFilePickerSession : public FilePickerSessionBase {
  public:
-  explicit SaveFilePickerSession(
-      ChromeAppViewAsh* app_view,
-      const MetroViewerHostMsg_SaveAsDialogParams& params);
+  SaveFilePickerSession(ChromeAppViewAsh* app_view,
+                        const MetroViewerHostMsg_SaveAsDialogParams& params);
 
   int SaveFilePickerSession::filter_index() const;
 
@@ -148,8 +142,7 @@ class SaveFilePickerSession : public FilePickerSessionBase {
 // Provides functionality to display the folder picker.
 class FolderPickerSession : public FilePickerSessionBase {
  public:
-  explicit FolderPickerSession(ChromeAppViewAsh* app_view,
-                               const base::string16& title);
+  FolderPickerSession(ChromeAppViewAsh* app_view, const base::string16& title);
 
  private:
   HRESULT StartFilePicker() override;
