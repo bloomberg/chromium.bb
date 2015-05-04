@@ -1978,7 +1978,6 @@ crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-h
 crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
-crbug.com/463358 svg/custom/massive-coordinates.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 
@@ -2083,7 +2082,6 @@ crbug.com/477743 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ ImageOnlyF
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/marker-zero-length-linecaps.svg [ Failure ImageOnlyFailure ]
-crbug.com/477743 virtual/slimmingpaint/svg/custom/massive-coordinates.svg [ ImageOnlyFailure Pass ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/use-disappears-after-style-update.svg [ Failure ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/viewport-resource-inval.svg [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/dom/filter-reference-in-shadow-tree.html [ Failure ImageOnlyFailure ]
