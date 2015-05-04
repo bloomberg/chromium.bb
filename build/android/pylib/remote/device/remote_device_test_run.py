@@ -188,14 +188,17 @@ class RemoteDeviceTestRun(test_run.TestRun):
 
   def _GetRawTestOutput(self):
     """Returns the test output."""
+    # TODO(mikecase): Remove getting results from zip when b/18981674 is fixed.
     results_zipfile = self._env.results_path
     if results_zipfile and os.path.exists(results_zipfile):
       with zipfile.ZipFile(results_zipfile) as z:
         with z.open(self._RESULTS_FILE, 'r') as r:
           return r.read()
     else:
-      # The results from here are sometimes cut off. Therefore, we prefer
-      # getting results from the results zipfile if it is availible.
+      logging.warning(
+          'If the results are too long they could be cut off due to an '
+          'appurify bug. Use the --results-path option when running the '
+          'collect step to ensure you download the full results.')
       return self._results['results']['output']
 
   def _GetTestStatus(self, test_run_id):

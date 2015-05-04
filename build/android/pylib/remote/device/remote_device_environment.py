@@ -78,7 +78,8 @@ class RemoteDeviceEnvironment(environment.Environment):
     self._remote_device_minimum_os = device_json.get(
         'remote_device_minimum_os', None)
     self._remote_device_os = device_json.get('remote_device_os', None)
-    self._remote_device_timeout = device_json.get('remote_device_timeout', None)
+    self._remote_device_timeout = device_json.get(
+        'remote_device_timeout', None)
     self._results_path = device_json.get('results_path', None)
     self._runner_package = device_json.get('runner_package', None)
     self._runner_type = device_json.get('runner_type', None)
@@ -328,12 +329,6 @@ class RemoteDeviceEnvironment(environment.Environment):
   @property
   def network_config(self):
     return self._network_config
-
-  @property
-  def only_output_failures(self):
-    # TODO(jbudorick): Remove this once b/18981674 is fixed.
-    # If the results zipfile is downloaded we can get the full results.
-    return not self._results_path
 
   @property
   def results_path(self):
