@@ -127,6 +127,18 @@ namespace blink {
         PassRefPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
         ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
+
+        struct InitialScrollState {
+            InitialScrollState()
+                : didRestoreFromHistory(false)
+            {
+            }
+
+            // TODO(skobes): Move FrameView::m_wasScrolledByUser into here.
+            bool didRestoreFromHistory;
+        };
+        InitialScrollState& initialScrollState() { return m_initialScrollState; }
+
     protected:
         DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
@@ -208,6 +220,7 @@ namespace blink {
 
         RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
         ClientHintsPreferences m_clientHintsPreferences;
+        InitialScrollState m_initialScrollState;
     };
 }
 

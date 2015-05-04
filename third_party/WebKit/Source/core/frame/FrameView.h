@@ -769,7 +769,9 @@ private:
     bool m_horizontalOverflow;
     bool m_verticalOverflow;
 
+    // TODO(skobes): Move this to DocumentLoader::InitialScrollState.
     bool m_wasScrolledByUser;
+
     bool m_safeToPropagateScrollToParent;
 
     double m_lastPaintTime;

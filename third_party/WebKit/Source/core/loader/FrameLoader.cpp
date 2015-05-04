@@ -413,7 +413,8 @@ void FrameLoader::finishedParsing()
     // Check if the scrollbars are really needed for the content.
     // If not, remove them, relayout, and repaint.
     m_frame->view()->restoreScrollbar();
-    scrollToFragmentWithParentBoundary(m_frame->document()->url());
+    if (!documentLoader()->initialScrollState().didRestoreFromHistory)
+        scrollToFragmentWithParentBoundary(m_frame->document()->url());
 }
 
 void FrameLoader::loadDone()
@@ -1059,6 +1060,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
         if (ScrollingCoordinator* scrollingCoordinator = m_frame->page()->scrollingCoordinator())
             scrollingCoordinator->frameViewRootLayerDidChange(view);
     }
+    documentLoader()->initialScrollState().didRestoreFromHistory = true;
 }
 
 String FrameLoader::userAgent(const KURL& url) const
