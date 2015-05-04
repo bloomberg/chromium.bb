@@ -1982,6 +1982,7 @@ crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/481769 css2.1/20110323/abspos-containing-block-initial-004b.htm [ ImageOnlyFailure ]
