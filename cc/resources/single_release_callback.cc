@@ -10,20 +10,19 @@
 namespace cc {
 
 SingleReleaseCallback::SingleReleaseCallback(const ReleaseCallback& callback)
-    : has_been_run_(false), callback_(callback) {
+    : callback_(callback) {
   DCHECK(!callback_.is_null())
       << "Use a NULL SingleReleaseCallback for an empty callback.";
 }
 
 SingleReleaseCallback::~SingleReleaseCallback() {
-  DCHECK(callback_.is_null() || has_been_run_)
-      << "SingleReleaseCallback was never run.";
+  DCHECK(callback_.is_null()) << "SingleReleaseCallback was never run.";
 }
 
 void SingleReleaseCallback::Run(uint32 sync_point, bool is_lost) {
-  DCHECK(!has_been_run_) << "SingleReleaseCallback was run more than once.";
-  has_been_run_ = true;
-  callback_.Run(sync_point, is_lost);
+  DCHECK(!callback_.is_null())
+      << "SingleReleaseCallback was run more than once.";
+  base::ResetAndReturn(&callback_).Run(sync_point, is_lost);
 }
 
 }  // namespace cc

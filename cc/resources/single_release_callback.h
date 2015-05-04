@@ -24,7 +24,6 @@ class CC_EXPORT SingleReleaseCallback {
  private:
   explicit SingleReleaseCallback(const ReleaseCallback& callback);
 
-  bool has_been_run_;
   ReleaseCallback callback_;
 };
 

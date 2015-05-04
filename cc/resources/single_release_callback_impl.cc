@@ -12,23 +12,23 @@ namespace cc {
 
 SingleReleaseCallbackImpl::SingleReleaseCallbackImpl(
     const ReleaseCallbackImpl& callback)
-    : has_been_run_(false), callback_(callback) {
+    : callback_(callback) {
   DCHECK(!callback_.is_null())
       << "Use a NULL SingleReleaseCallbackImpl for an empty callback.";
 }
 
 SingleReleaseCallbackImpl::~SingleReleaseCallbackImpl() {
-  DCHECK(callback_.is_null() || has_been_run_)
-      << "SingleReleaseCallbackImpl was never run.";
+  DCHECK(callback_.is_null()) << "SingleReleaseCallbackImpl was never run.";
 }
 
 void SingleReleaseCallbackImpl::Run(
     uint32 sync_point,
     bool is_lost,
     BlockingTaskRunner* main_thread_task_runner) {
-  DCHECK(!has_been_run_) << "SingleReleaseCallbackImpl was run more than once.";
-  has_been_run_ = true;
-  callback_.Run(sync_point, is_lost, main_thread_task_runner);
+  DCHECK(!callback_.is_null())
+      << "SingleReleaseCallbackImpl was run more than once.";
+  base::ResetAndReturn(&callback_)
+      .Run(sync_point, is_lost, main_thread_task_runner);
 }
 
 }  // namespace cc
