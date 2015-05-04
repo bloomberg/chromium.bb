@@ -20,6 +20,12 @@
 #endif
 
 #if defined(OS_MACOSX)
+#if defined(OS_IOS)
+#include <CoreGraphics/CoreGraphics.h>
+#else
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+
 #include "base/mac/scoped_cftyperef.h"
 #endif
 

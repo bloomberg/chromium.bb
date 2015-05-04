@@ -8,6 +8,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/threading/thread_checker.h"
 
+@class NSNotification;
+
 namespace web {
 
 // CookieNotificationBridge listens to

@@ -5,16 +5,13 @@
 #ifndef BASE_FILE_VERSION_INFO_MAC_H_
 #define BASE_FILE_VERSION_INFO_MAC_H_
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <string>
 
 #include "base/file_version_info.h"
 #include "base/mac/scoped_nsobject.h"
 
-#ifdef __OBJC__
 @class NSBundle;
-#else
-class NSBundle;
-#endif
 
 class FileVersionInfoMac : public FileVersionInfo {
  public:

@@ -15,10 +15,8 @@
 #if defined(OS_WIN)
 typedef unsigned long DWORD;
 typedef struct tagPOINT POINT;
-#elif defined(OS_IOS)
-#include <CoreGraphics/CoreGraphics.h>
 #elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
+typedef struct CGPoint CGPoint;
 #endif
 
 namespace gfx {
@@ -36,7 +34,7 @@ class GFX_EXPORT Point {
   explicit Point(const POINT& point);
   Point& operator=(const POINT& point);
 #elif defined(OS_MACOSX)
-  explicit Point(const CGPoint& point) : x_(point.x), y_(point.y) {}
+  explicit Point(const CGPoint& point);
 #endif
 
   ~Point() {}
@@ -44,7 +42,7 @@ class GFX_EXPORT Point {
 #if defined(OS_WIN)
   POINT ToPOINT() const;
 #elif defined(OS_MACOSX)
-  CGPoint ToCGPoint() const { return CGPointMake(x(), y()); }
+  CGPoint ToCGPoint() const;
 #endif
 
   int x() const { return x_; }

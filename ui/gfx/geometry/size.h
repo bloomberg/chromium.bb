@@ -14,10 +14,8 @@
 
 #if defined(OS_WIN)
 typedef struct tagSIZE SIZE;
-#elif defined(OS_IOS)
-#include <CoreGraphics/CoreGraphics.h>
 #elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
+typedef struct CGSize CGSize;
 #endif
 
 namespace gfx {
@@ -29,9 +27,7 @@ class GFX_EXPORT Size {
   Size(int width, int height)
       : width_(width < 0 ? 0 : width), height_(height < 0 ? 0 : height) {}
 #if defined(OS_MACOSX)
-  explicit Size(const CGSize& s)
-      : width_(s.width < 0 ? 0 : s.width),
-        height_(s.height < 0 ? 0 : s.height) {}
+  explicit Size(const CGSize& s);
 #endif
 
   ~Size() {}
@@ -43,7 +39,7 @@ class GFX_EXPORT Size {
 #if defined(OS_WIN)
   SIZE ToSIZE() const;
 #elif defined(OS_MACOSX)
-  CGSize ToCGSize() const { return CGSizeMake(width(), height()); }
+  CGSize ToCGSize() const;
 #endif
 
   int width() const { return width_; }

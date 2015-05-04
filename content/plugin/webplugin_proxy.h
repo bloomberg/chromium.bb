@@ -9,9 +9,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_cftyperef.h"
-#endif
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +20,12 @@
 #include "url/gurl.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
+
+#if defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
+
+#include "base/mac/scoped_cftyperef.h"
+#endif
 
 struct PluginMsg_FetchURL_Params;
 

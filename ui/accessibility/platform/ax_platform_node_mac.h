@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_AX_PLATFORM_NODE_MAC_H_
 #define UI_ACCESSIBILITY_AX_PLATFORM_NODE_MAC_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/mac/scoped_nsobject.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"

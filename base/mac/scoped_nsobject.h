@@ -5,9 +5,15 @@
 #ifndef BASE_MAC_SCOPED_NSOBJECT_H_
 #define BASE_MAC_SCOPED_NSOBJECT_H_
 
-#import <Foundation/Foundation.h>
+// Include NSObject.h directly because Foundation.h pulls in many dependencies.
+// (Approx 100k lines of code versus 1.5k for NSObject.h). scoped_nsobject gets
+// singled out because it is most typically included from other header files.
+#import <Foundation/NSObject.h>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+
+@class NSAutoreleasePool;
 
 namespace base {
 

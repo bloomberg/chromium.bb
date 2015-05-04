@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_COCOA_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/gtest_prod_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -13,11 +15,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "content/public/browser/web_contents.h"
 
-#ifdef __OBJC__
 @class PermissionBubbleController;
-#else
-class PermissionBubbleController;
-#endif
 
 class PermissionBubbleCocoa : public PermissionBubbleView {
  public:

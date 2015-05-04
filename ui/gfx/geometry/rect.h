@@ -24,10 +24,8 @@
 
 #if defined(OS_WIN)
 typedef struct tagRECT RECT;
-#elif defined(OS_IOS)
-#include <CoreGraphics/CoreGraphics.h>
 #elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
+typedef struct CGRect CGRect;
 #endif
 
 namespace gfx {

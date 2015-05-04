@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_
 #define COMPONENTS_WEBP_TRANSCODE_WEBP_DECODER_H_
 
+#import <Foundation/Foundation.h>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"

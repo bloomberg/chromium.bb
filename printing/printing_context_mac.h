@@ -5,17 +5,14 @@
 #ifndef PRINTING_PRINTING_CONTEXT_MAC_H_
 #define PRINTING_PRINTING_CONTEXT_MAC_H_
 
+#include <ApplicationServices/ApplicationServices.h>
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 
-#ifdef __OBJC__
 @class NSPrintInfo;
-#else
-class NSPrintInfo;
-#endif  // __OBJC__
 
 namespace printing {
 

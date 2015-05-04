@@ -5,7 +5,7 @@
 #ifndef BASE_MAC_LAUNCH_SERVICES_UTIL_H_
 #define BASE_MAC_LAUNCH_SERVICES_UTIL_H_
 
-#include <ApplicationServices/ApplicationServices.h>
+#include <CoreServices/CoreServices.h>
 
 #include "base/base_export.h"
 #include "base/command_line.h"

@@ -4,7 +4,6 @@
 
 #include "printing/printing_context_mac.h"
 
-#import <ApplicationServices/ApplicationServices.h>
 #import <AppKit/AppKit.h>
 
 #import <iomanip>

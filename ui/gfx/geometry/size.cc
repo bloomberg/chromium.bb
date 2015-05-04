@@ -6,11 +6,28 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_IOS)
+#include <CoreGraphics/CoreGraphics.h>
+#elif defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
 #endif
 
 #include "base/strings/stringprintf.h"
 
 namespace gfx {
+
+#if defined(OS_MACOSX)
+Size::Size(const CGSize& s)
+    : width_(s.width < 0 ? 0 : s.width),
+      height_(s.height < 0 ? 0 : s.height) {
+}
+
+Size& Size::operator=(const CGSize& s) {
+  set_width(s.width);
+  set_height(s.height);
+  return *this;
+}
+#endif
 
 #if defined(OS_WIN)
 SIZE Size::ToSIZE() const {
@@ -19,13 +36,9 @@ SIZE Size::ToSIZE() const {
   s.cy = height();
   return s;
 }
-#endif
-
-#if defined(OS_MACOSX)
-Size& Size::operator=(const CGSize& s) {
-  set_width(s.width);
-  set_height(s.height);
-  return *this;
+#elif defined(OS_MACOSX)
+CGSize Size::ToCGSize() const {
+  return CGSizeMake(width(), height());
 }
 #endif
 

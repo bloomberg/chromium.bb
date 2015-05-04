@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_EXTENSION_ACTION_PLATFORM_DELEGATE_COCOA_H_
 
-#include "base/mac/scoped_nsobject.h"
+#import <Foundation/Foundation.h>
+
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

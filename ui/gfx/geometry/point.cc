@@ -6,6 +6,10 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_IOS)
+#include <CoreGraphics/CoreGraphics.h>
+#elif defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
 #endif
 
 #include "base/strings/stringprintf.h"
@@ -27,12 +31,21 @@ Point& Point::operator=(const POINT& point) {
   y_ = point.y;
   return *this;
 }
+#elif defined(OS_MACOSX)
+Point::Point(const CGPoint& point) : x_(point.x), y_(point.y) {
+}
+#endif
 
+#if defined(OS_WIN)
 POINT Point::ToPOINT() const {
   POINT p;
   p.x = x();
   p.y = y();
   return p;
+}
+#elif defined(OS_MACOSX)
+CGPoint Point::ToCGPoint() const {
+  return CGPointMake(x(), y());
 }
 #endif
 

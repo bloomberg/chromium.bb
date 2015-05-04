@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_MAC_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_MAC_H_
 
+#import <Foundation/Foundation.h>
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"

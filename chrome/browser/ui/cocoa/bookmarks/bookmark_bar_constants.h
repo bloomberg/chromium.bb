@@ -9,6 +9,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONSTANTS_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONSTANTS_H_
 
+#include <ApplicationServices/ApplicationServices.h>
+
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 
 namespace bookmarks {
