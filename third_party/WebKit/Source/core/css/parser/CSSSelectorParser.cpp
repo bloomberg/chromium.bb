@@ -296,12 +296,12 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
             || token.valueEqualsIgnoringCase("-webkit-any")))
         || (colons == 2 && token.valueEqualsIgnoringCase("cue"))) {
 
-        CSSSelectorList* selectorList = new CSSSelectorList();
+        OwnPtr<CSSSelectorList> selectorList = adoptPtr(new CSSSelectorList());
         consumeCompoundSelectorList(block, *selectorList);
         if (!selectorList->isValid() || !block.atEnd())
             return nullptr;
 
-        selector->setSelectorList(adoptPtr(selectorList));
+        selector->setSelectorList(selectorList.release());
         selector->pseudoType(); // FIXME: Do we need to force the pseudo type to be cached?
         ASSERT(selector->pseudoType() != CSSSelector::PseudoUnknown);
         return selector.release();
