@@ -97,6 +97,13 @@
         ],
       },
     }],
+    ['OS=="win" and kasko==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/kasko.dll',
+        ],
+      },
+    }],
     ['chromeos==1', {
       'variables': {
         'files': [

@@ -36,6 +36,7 @@ def DefaultConfigVariables():
     'enable_plugins': '0',
     'fastbuild': '0',
     'icu_use_data_file_flag': '1',
+    'kasko': '0',
     'lsan': '0',
     'msan': '0',
     # TODO(maruel): This may not always be true.
