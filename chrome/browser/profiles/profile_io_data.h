@@ -39,7 +39,6 @@ class DevToolsNetworkController;
 class HostContentSettingsMap;
 class MediaDeviceIDSalt;
 class ProtocolHandlerRegistry;
-class SigninNamesOnIOThread;
 class SupervisedUserURLFilter;
 
 namespace chrome_browser_net {
@@ -138,10 +137,6 @@ class ProfileIOData {
 
   IntegerPrefMember* session_startup_pref() const {
     return &session_startup_pref_;
-  }
-
-  SigninNamesOnIOThread* signin_names() const {
-    return signin_names_.get();
   }
 
   StringPrefMember* google_services_account_id() const {
@@ -386,8 +381,6 @@ class ProfileIOData {
 
   void SetCookieSettingsForTesting(CookieSettings* cookie_settings);
 
-  void set_signin_names_for_testing(SigninNamesOnIOThread* signin_names);
-
  private:
   class ResourceContext : public content::ResourceContext {
    public:
@@ -489,9 +482,6 @@ class ProfileIOData {
   // Data from the UI thread from the Profile, used to initialize ProfileIOData.
   // Deleted after lazy initialization.
   mutable scoped_ptr<ProfileParams> profile_params_;
-
-  // Provides access to the email addresses of all signed in profiles.
-  mutable scoped_ptr<SigninNamesOnIOThread> signin_names_;
 
   // Used for testing.
   mutable base::Callback<scoped_ptr<net::ClientCertStore>()>

@@ -46,7 +46,6 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -462,11 +461,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   chrome_http_user_agent_settings_.reset(
       new ChromeHttpUserAgentSettings(pref_service));
 
-  // These members are used only for one click sign in, which is not enabled
+  // These members are used only for sign in, which is not enabled
   // in incognito mode.  So no need to initialize them.
   if (!IsOffTheRecord()) {
-    signin_names_.reset(new SigninNamesOnIOThread());
-
     google_services_user_account_id_.Init(
         prefs::kGoogleServicesUserAccountId, pref_service);
     google_services_user_account_id_.MoveToThread(io_message_loop_proxy);
@@ -1202,9 +1199,6 @@ void ProfileIOData::ShutdownOnUIThread(
     scoped_ptr<ChromeURLRequestContextGetterVector> context_getters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (signin_names_)
-    signin_names_->ReleaseResourcesOnUIThread();
-
   google_services_user_account_id_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
@@ -1298,9 +1292,4 @@ void ProfileIOData::SetCookieSettingsForTesting(
     CookieSettings* cookie_settings) {
   DCHECK(!cookie_settings_.get());
   cookie_settings_ = cookie_settings;
-}
-
-void ProfileIOData::set_signin_names_for_testing(
-    SigninNamesOnIOThread* signin_names) {
-  signin_names_.reset(signin_names);
 }

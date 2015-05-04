@@ -2616,8 +2616,6 @@
       'browser/signin/signin_header_helper.h',
       'browser/signin/signin_manager_factory.cc',
       'browser/signin/signin_manager_factory.h',
-      'browser/signin/signin_names_io_thread.cc',
-      'browser/signin/signin_names_io_thread.h',
       'browser/signin/signin_tracker_factory.cc',
       'browser/signin/signin_tracker_factory.h',
     ],
