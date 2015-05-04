@@ -35,6 +35,7 @@ MAIN_CHROOT_DIR_IN_VM = '/chroots'
 WORKSPACE_CONFIG = 'workspace-config.json'
 WORKSPACE_LOCAL_CONFIG = '.local.json'
 WORKSPACE_CHROOT_DIR = '.chroot'
+WORKSPACE_IMAGES_DIR = 'build/images'
 
 # Prefixes used by locators.
 _BOARD_LOCATOR_PREFIX = 'board:'

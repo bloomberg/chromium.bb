@@ -13,6 +13,7 @@ import tempfile
 import time
 
 from chromite.cbuildbot import constants
+from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -21,10 +22,45 @@ from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils
 from chromite.lib import project_sdk
 from chromite.lib import remote_access
+from chromite.lib import workspace_lib
 
 
 _DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
+
+
+def _IsFilePathGPTDiskImage(file_path):
+  """Determines if a file is a valid GPT disk.
+
+  Args:
+    file_path: Path to the file to test.
+  """
+  if os.path.isfile(file_path):
+    with cros_build_lib.Open(file_path) as image_file:
+      image_file.seek(0x1fe)
+      if image_file.read(10) == '\x55\xaaEFI PART':
+        return True
+  return False
+
+
+def _ChooseImageFromDirectory(dir_path):
+  """Lists all image files in |dir_path| and ask user to select one.
+
+  Args:
+    dir_path: Path to the directory.
+  """
+  images = sorted([x for x in os.listdir(dir_path) if
+                   _IsFilePathGPTDiskImage(os.path.join(dir_path, x))])
+  idx = 0
+  if len(images) == 0:
+    raise ValueError('No image found in %s.' % dir_path)
+  elif len(images) > 1:
+    idx = cros_build_lib.GetChoice(
+        'Multiple images found in %s. Please select one to continue:' % (
+            (dir_path,)),
+        images)
+
+  return os.path.join(dir_path, images[idx])
 
 
 class FlashError(Exception):
@@ -133,35 +169,12 @@ class USBImager(object):
     cros_build_lib.SudoRunCommand(cmd, shell=True)
     cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
 
-  def IsFilePathGPTDiskImage(self, file_path):
-    """Determines if the file is a valid GPT disk."""
-    if os.path.isfile(file_path):
-      with cros_build_lib.Open(file_path) as image_file:
-        image_file.seek(0x1fe)
-        if image_file.read(10) == '\x55\xaaEFI PART':
-          return True
-    return False
-
-  def ChooseImageFromDirectory(self, dir_path):
-    """Lists all image files in |dir_path| and ask user to select one."""
-    images = [x for x in os.listdir(dir_path) if
-              self.IsFilePathGPTDiskImage(os.path.join(dir_path, x))]
-    idx = 0
-    if len(images) == 0:
-      raise ValueError('No image found in %s.' % dir_path)
-    elif len(images) > 1:
-      idx = cros_build_lib.GetChoice(
-          'Multiple images found in %s. Please select one to continue:' % (
-              (dir_path,)),
-          images)
-
-    return os.path.join(dir_path, images[idx])
 
   def _GetImagePath(self):
     """Returns the image path to use."""
     image_path = translated_path = None
     if os.path.isfile(self.image):
-      if not self.yes and not self.IsFilePathGPTDiskImage(self.image):
+      if not self.yes and not _IsFilePathGPTDiskImage(self.image):
         # TODO(wnwen): Open the tarball and if there is just one file in it,
         #     use that instead. Existing code in upload_symbols.py.
         if cros_build_lib.BooleanPrompt(
@@ -172,7 +185,7 @@ class USBImager(object):
       image_path = self.image
     elif os.path.isdir(self.image):
       # Ask user which image (*.bin) in the folder to use.
-      image_path = self.ChooseImageFromDirectory(self.image)
+      image_path = _ChooseImageFromDirectory(self.image)
     else:
       # Translate the xbuddy path to get the exact image to use.
       translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
@@ -254,9 +267,9 @@ class RemoteDeviceUpdater(object):
 
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
-               board=None, brick=None, src_image_to_delta=None, wipe=True,
-               debug=False, yes=False, force=False, ping=True,
-               disable_verification=False, sdk_version=None):
+               board=None, src_image_to_delta=None, wipe=True, debug=False,
+               yes=False, force=False, ping=True, disable_verification=False,
+               sdk_version=None):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       raise ValueError('No update operation to perform; either stateful or'
@@ -266,7 +279,6 @@ class RemoteDeviceUpdater(object):
     self.ssh_port = ssh_port
     self.image = image
     self.board = board
-    self.brick = brick
     self.src_image_to_delta = src_image_to_delta
     self.do_stateful_update = stateful_update
     self.do_rootfs_update = rootfs_update
@@ -521,39 +533,6 @@ class RemoteDeviceUpdater(object):
           base_dir=self.DEVICE_BASE_DIR, ping=self.ping) as device:
         device_connected = True
 
-        if self.sdk_version:
-          # We should ignore the given/inferred board value and stick to the
-          # device's basic designation. We do emit a warning for good measure.
-          # TODO(garnold) In fact we should find the board/overlay that the
-          # device inherits from and which defines the SDK "baseline" image
-          # (brillo:339).
-          if self.board and not self.force:
-            logging.warning(
-                'Ignoring board value (%s) and deferring to device; use '
-                '--force to override',
-                self.board)
-            self.board = None
-
-          self.brick = None
-
-        self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                             override_board=self.board,
-                                             force=self.yes)
-        if not self.board:
-          raise FlashError('No board identified')
-        logging.info('Board is %s', self.board)
-
-        if not self.force:
-          # If a brick was specified, it must be compatible with the device.
-          if self.brick:
-            if not self.brick.Inherits(device.board):
-              raise FlashError('Device (%s) is incompatible with brick %s',
-                               device.board, self.brick.brick_locator)
-          elif self.board != device.board:
-            # If a board was specified, it must be compatible with the device..
-            raise FlashError('Device (%s) is incompatible with board %s',
-                             device.board, self.board)
-
         payload_dir = self.tempdir
         if os.path.isdir(self.image):
           # If the given path is a directory, we use the provided
@@ -570,6 +549,32 @@ class RemoteDeviceUpdater(object):
                 src_image_to_delta=self.src_image_to_delta,
                 static_dir=_DEVSERVER_STATIC_DIR)
           else:
+              # We should ignore the given/inferred board value and stick to the
+              # device's basic designation. We do emit a warning for good
+              # measure.
+              # TODO(garnold) In fact we should find the board/overlay that the
+              # device inherits from and which defines the SDK "baseline" image
+              # (brillo:339).
+            if self.sdk_version and self.board and not self.force:
+              logging.warning(
+                  'Ignoring board value (%s) and deferring to device; use '
+                  '--force to override',
+                  self.board)
+              self.board = None
+
+            self.board = cros_build_lib.GetBoard(device_board=device.board,
+                                                 override_board=self.board,
+                                                 force=self.yes)
+            if not self.board:
+              raise FlashError('No board identified')
+
+            if not self.force and self.board != device.board:
+              # If a board was specified, it must be compatible with the device.
+              raise FlashError('Device (%s) is incompatible with board %s',
+                               device.board, self.board)
+
+            logging.info('Board is %s', self.board)
+
             # Translate the xbuddy path to get the exact image to use.
             translated_path, resolved_path = ds_wrapper.GetImagePathWithXbuddy(
                 self.image, self.board, version=self.sdk_version,
@@ -659,10 +664,11 @@ class RemoteDeviceUpdater(object):
 
 # TODO(dpursell): replace |brick| argument with blueprints when they're ready.
 def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
-          brick_name=None, install=False, src_image_to_delta=None,
-          rootfs_update=True, stateful_update=True, clobber_stateful=False,
-          reboot=True, wipe=True, ping=True, disable_rootfs_verification=False,
-          clear_cache=False, yes=False, force=False, debug=False):
+          brick_name=None, blueprint_name=None, install=False,
+          src_image_to_delta=None, rootfs_update=True, stateful_update=True,
+          clobber_stateful=False, reboot=True, wipe=True, ping=True,
+          disable_rootfs_verification=False, clear_cache=False, yes=False,
+          force=False, debug=False):
   """Flashes a device, USB drive, or file with an image.
 
   This provides functionality common to `cros flash` and `brillo flash`
@@ -677,6 +683,8 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
     sdk_version: Which version of SDK image to flash; autodetected if None.
     board: Board to use; None to automatically detect.
     brick_name: Brick locator to use. Overrides |board| if not None.
+    blueprint_name: Blueprint locator to use. Overrides |board| and
+        |brick_name|.
     install: Install to USB using base disk layout; USB |device| scheme only.
     src_image_to_delta: Local path to an image to be used as the base to
         generate delta payloads; SSH |device| scheme only.
@@ -724,9 +732,22 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
       if not sdk_version:
         raise FlashError('Could not find SDK version')
 
-  brick = brick_lib.Brick(brick_name) if brick_name else None
-  if brick:
-    board = brick.FriendlyName()
+  # We don't have enough information on the device to make a good guess on
+  # whether this device is compatible with the blueprint.
+  # TODO(bsimonnet): Add proper compatibility checks. (brbug.com/969)
+  if blueprint_name:
+    board = None
+    if image == 'latest':
+      blueprint = blueprint_lib.Blueprint(blueprint_name)
+      image_dir = os.path.join(
+          workspace_lib.WorkspacePath(), workspace_lib.WORKSPACE_IMAGES_DIR,
+          blueprint.FriendlyName(), 'latest')
+      image = _ChooseImageFromDirectory(image_dir)
+    elif not os.path.exists(image):
+      raise ValueError('Cannot find blueprint image "%s". Only "latest" and '
+                       'full image path are supported.' % image)
+  elif brick_name:
+    board = brick_lib.Brick(brick_name).FriendlyName()
 
   if not device or device.scheme == commandline.DEVICE_SCHEME_SSH:
     if device:
@@ -739,7 +760,6 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
         port,
         image,
         board=board,
-        brick=brick,
         src_image_to_delta=src_image_to_delta,
         rootfs_update=rootfs_update,
         stateful_update=stateful_update,

@@ -15,6 +15,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 
@@ -104,7 +105,7 @@ class USBImagerMock(partial_mock.PartialCmdMock):
   TARGET = 'chromite.cli.flash.USBImager'
   ATTRS = ('CopyImageToDevice', 'InstallImageToDevice',
            'ChooseRemovableDevice', 'ListAllRemovableDevices',
-           'GetRemovableDeviceDescription', 'IsFilePathGPTDiskImage')
+           'GetRemovableDeviceDescription')
   VALID_IMAGE = True
 
   def __init__(self):
@@ -125,10 +126,6 @@ class USBImagerMock(partial_mock.PartialCmdMock):
 
   def GetRemovableDeviceDescription(self, _inst, *_args, **_kwargs):
     """Mock out GetRemovableDeviceDescription."""
-
-  def IsFilePathGPTDiskImage(self, _inst, *_args, **_kwargs):
-    """Mock out IsFilePathGPTDiskImage."""
-    return self.VALID_IMAGE
 
 
 class USBImagerTest(cros_test_lib.MockTempDirTestCase):
@@ -152,6 +149,8 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
                                    'remote/taco-paladin/R36/test'))
     self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(brick_lib, 'FindBrickInPath', return_value=None)
+    self.isgpt_mock = self.PatchObject(flash, '_IsFilePathGPTDiskImage',
+                                       return_value=True)
 
   def testLocalImagePathCopy(self):
     """Tests that imaging methods are called correctly."""
@@ -168,7 +167,7 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
 
   def testLocalBadImagePath(self):
     """Tests that using an image not having the magic bytes has prompt."""
-    self.usb_mock.VALID_IMAGE = False
+    self.isgpt_mock.return_value = False
     with mock.patch('os.path.isfile', return_value=True):
       with mock.patch.object(cros_build_lib, 'BooleanPrompt') as mock_prompt:
         mock_prompt.return_value = False
@@ -203,3 +202,31 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests that we ask user to choose a device if none is given."""
     flash.Flash(self.Device(''), self.IMAGE)
     self.assertTrue(self.imager_mock.patched['ChooseRemovableDevice'].called)
+
+
+class FlashUtilTest(cros_test_lib.MockTempDirTestCase):
+  """Tests the helpers from cli.flash."""
+
+  def testChooseImage(self):
+    """Tests that we can detect a GPT image."""
+    # pylint: disable=protected-access
+
+    with self.PatchObject(flash, '_IsFilePathGPTDiskImage', return_value=True):
+      # No images defined. Choosing the image should raise an error.
+      with self.assertRaises(ValueError):
+        flash._ChooseImageFromDirectory(self.tempdir)
+
+      file_a = os.path.join(self.tempdir, 'a')
+      osutils.Touch(file_a)
+      # Only one image available, it should be selected automatically.
+      self.assertEqual(file_a, flash._ChooseImageFromDirectory(self.tempdir))
+
+      osutils.Touch(os.path.join(self.tempdir, 'b'))
+      file_c = os.path.join(self.tempdir, 'c')
+      osutils.Touch(file_c)
+      osutils.Touch(os.path.join(self.tempdir, 'd'))
+
+      # Multiple images available, we should ask the user to select the right
+      # image.
+      with self.PatchObject(cros_build_lib, 'GetChoice', return_value=2):
+        self.assertEqual(file_c, flash._ChooseImageFromDirectory(self.tempdir))
