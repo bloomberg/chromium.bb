@@ -730,6 +730,8 @@ crbug.com/242735 virtual/slimmingpaint/fast/css/ex-unit-with-no-x-height.html [ 
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Linux Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
+crbug.com/484190 http/tests/security/suborigins/suborigin-invalid-names.html [ Pass Failure ]
+
 # Flaky on several platforms.
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/320139 virtual/slimmingpaint/fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
