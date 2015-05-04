@@ -128,6 +128,10 @@ class FtpSocketDataProvider : public DynamicSocketDataProvider {
     Init();
   }
 
+  bool AllReadDataConsumed() const override { return state_ == QUIT; }
+
+  bool AllWriteDataConsumed() const override { return state_ == QUIT; }
+
   void set_multiline_welcome(bool multiline) { multiline_welcome_ = multiline; }
 
   bool use_epsv() const { return use_epsv_; }

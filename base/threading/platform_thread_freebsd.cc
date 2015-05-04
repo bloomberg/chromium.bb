@@ -69,7 +69,7 @@ bool GetThreadPriorityForPlatform(PlatformThreadHandle handle,
 }  // namespace internal
 
 // static
-void PlatformThread::SetName(const char* name) {
+void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
@@ -80,7 +80,7 @@ void PlatformThread::SetName(const char* name) {
   // killall to stop working.
   if (PlatformThread::CurrentId() == getpid())
     return;
-  setproctitle("%s", name);
+  setproctitle("%s", name.c_str());
 #endif  //  !defined(OS_NACL)
 }
 

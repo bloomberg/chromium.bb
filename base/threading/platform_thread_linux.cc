@@ -70,7 +70,7 @@ bool GetThreadPriorityForPlatform(PlatformThreadHandle handle,
 }  // namespace internal
 
 // static
-void PlatformThread::SetName(const char* name) {
+void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
@@ -87,7 +87,7 @@ void PlatformThread::SetName(const char* name) {
   // Note that glibc also has a 'pthread_setname_np' api, but it may not be
   // available everywhere and it's only benefit over using prctl directly is
   // that it can set the name of threads other than the current thread.
-  int err = prctl(PR_SET_NAME, name);
+  int err = prctl(PR_SET_NAME, name.c_str());
   // We expect EPERM failures in sandboxed processes, just ignore those.
   if (err < 0 && errno != EPERM)
     DPLOG(ERROR) << "prctl(PR_SET_NAME)";

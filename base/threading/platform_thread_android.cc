@@ -64,7 +64,7 @@ bool GetThreadPriorityForPlatform(PlatformThreadHandle handle,
 
 }  // namespace internal
 
-void PlatformThread::SetName(const char* name) {
+void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);
   tracked_objects::ThreadData::InitializeThreadContext(name);
 
@@ -76,7 +76,7 @@ void PlatformThread::SetName(const char* name) {
     return;
 
   // Set the name for the LWP (which gets truncated to 15 characters).
-  int err = prctl(PR_SET_NAME, name);
+  int err = prctl(PR_SET_NAME, name.c_str());
   if (err < 0 && errno != EPERM)
     DPLOG(ERROR) << "prctl(PR_SET_NAME)";
 }

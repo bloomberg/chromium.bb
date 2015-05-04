@@ -93,6 +93,14 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
     writes_.push_back(mock_write);
   }
 
+  bool AllReadDataConsumed() const override {
+    return reads_.empty();
+  }
+
+  bool AllWriteDataConsumed() const override {
+    return writes_.empty();
+  }
+
  private:
   std::deque<net::MockRead> reads_;
   bool has_pending_read_;
