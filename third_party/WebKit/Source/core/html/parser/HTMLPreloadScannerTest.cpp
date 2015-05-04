@@ -75,7 +75,6 @@ protected:
         HTMLParserOptions options(&m_dummyPageHolder->document());
         KURL documentURL(ParsedURLString, "http://whatever.test/");
         m_scanner = HTMLPreloadScanner::create(options, documentURL, CachedDocumentParameters::create(&m_dummyPageHolder->document(), createMediaValues()));
-
     }
 
     void test(TestCase testCase)
@@ -98,14 +97,42 @@ TEST_F(HTMLPreloadScannerTest, testImages)
     TestCase testCases[] = {
         {"http://example.test", "<img src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
-        {"http://example.test", "<meta name=viewport content='width=160'><img srcset='bla.gif 320w, blabla.gif 640w'>", "bla.gif", "http://example.test/", Resource::Image, 0},
-        {0, 0, 0, 0, Resource::Raw, 0} // Do not remove the terminator line.
+        {"http://example.test", "<img sizes='50vw' src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 1x'>", "bla2.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 0.5x'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 100w'>", "bla2.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 100w, bla3.gif 250w'>", "bla3.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<img src='bla.gif' srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w' sizes='50vw'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<img src='bla.gif' sizes='50vw' srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<img sizes='50vw' srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w' src='bla.gif'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<img srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w' src='bla.gif' sizes='50vw'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<img srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
     };
 
-    for (unsigned i = 0; testCases[i].inputHTML; ++i) {
-        TestCase testCase = testCases[i];
+    for (auto testCase: testCases)
         test(testCase);
-    }
+}
+TEST_F(HTMLPreloadScannerTest, testImagesWithViewport)
+{
+    TestCase testCases[] = {
+        {"http://example.test", "<meta name=viewport content='width=160'><img srcset='bla.gif 320w, blabla.gif 640w'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 1x'>", "bla2.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 0.5x'>", "bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 160w'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 160w, bla3.gif 250w'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+        {"http://example.test", "<img sizes='50vw' src='bla.gif' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+        {"http://example.test", "<img src='bla.gif' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' sizes='50vw'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+        {"http://example.test", "<img src='bla.gif' sizes='50vw' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+        {"http://example.test", "<img sizes='50vw' srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' src='bla.gif'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+        {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' src='bla.gif' sizes='50vw'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+        {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
+    };
+
+    for (auto testCase: testCases)
+        test(testCase);
 }
 
 }
