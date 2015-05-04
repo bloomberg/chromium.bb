@@ -14,6 +14,7 @@
     # Files for which bindings (.cpp and .h files) will be generated
     'modules_idl_files': [
       '<@(extra_blink_module_idl_files)',
+      'app_banner/AppBannerPromptResult.idl',
       'app_banner/BeforeInstallPromptEvent.idl',
       'background_sync/PeriodicSyncEvent.idl',
       'background_sync/PeriodicSyncManager.idl',
@@ -560,6 +561,8 @@
       'accessibility/InspectorTypeBuilderHelper.h',
       'app_banner/AppBannerController.cpp',
       'app_banner/AppBannerController.h',
+      'app_banner/AppBannerPromptResult.cpp',
+      'app_banner/AppBannerPromptResult.h',
       'app_banner/BeforeInstallPromptEvent.cpp',
       'app_banner/BeforeInstallPromptEvent.h',
       'background_sync/PeriodicSyncEvent.cpp',

@@ -54,6 +54,10 @@ interface AnimationTimeline
     method play
     setter currentTime
     setter playbackRate
+interface AppBannerPromptResult
+    getter outcome
+    getter platform
+    method constructor
 interface ApplicationCache
     attribute CHECKING
     attribute DOWNLOADING

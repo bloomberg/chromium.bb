@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    Constructor(DOMString platform, optional BeforeInstallPromptEventInit eventInitDict),
+    Constructor(DOMString type, optional BeforeInstallPromptEventInit eventInitDict),
     RuntimeEnabled=AppBanner,
 ] interface BeforeInstallPromptEvent : Event {
     readonly attribute sequence<DOMString> platforms;

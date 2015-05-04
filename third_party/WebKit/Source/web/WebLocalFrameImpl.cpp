@@ -2027,12 +2027,17 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
         frame()->localDOMWindow()->sendOrientationChangeEvent();
 }
 
-void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebVector<WebString>& platforms, WebAppBannerPromptReply* reply)
+void WebLocalFrameImpl::willShowInstallBannerPrompt(int requestId, const WebVector<WebString>& platforms, WebAppBannerPromptReply* reply)
 {
     if (!RuntimeEnabledFeatures::appBannerEnabled() || !frame())
         return;
 
-    AppBannerController::willShowInstallBannerPrompt(frame(), platforms, reply);
+    AppBannerController::willShowInstallBannerPrompt(requestId, client()->appBannerClient(), frame(), platforms, reply);
+}
+
+void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebVector<WebString>& platforms, WebAppBannerPromptReply* reply)
+{
+    willShowInstallBannerPrompt(-1, platforms, reply);
 }
 
 void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const

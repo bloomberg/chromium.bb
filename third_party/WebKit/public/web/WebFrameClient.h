@@ -57,6 +57,7 @@ namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebAppBannerClient;
 class WebCachedURLRequest;
 class WebColorChooser;
 class WebColorChooserClient;
@@ -647,6 +648,9 @@ public:
 
     // Access the embedder API for virtual reality client.
     virtual WebVRClient* webVRClient() { return 0; }
+
+    // App Banners ---------------------------------------------------------
+    virtual WebAppBannerClient* appBannerClient() { return 0; }
 
 protected:
     virtual ~WebFrameClient() { }

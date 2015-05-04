@@ -239,6 +239,7 @@ public:
     virtual void addStyleSheetByURL(const WebString& url) override;
     virtual void navigateToSandboxedMarkup(const WebData& markup) override;
     virtual void sendOrientationChangeEvent() override;
+    virtual void willShowInstallBannerPrompt(int requestId, const WebVector<WebString>& platforms, WebAppBannerPromptReply*) override;
     virtual void willShowInstallBannerPrompt(const WebVector<WebString>& platforms, WebAppBannerPromptReply*) override;
     void requestRunTask(WebSuspendableTask*) const override;
 

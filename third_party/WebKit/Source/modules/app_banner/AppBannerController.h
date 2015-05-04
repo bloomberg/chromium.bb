@@ -6,19 +6,22 @@
 #define AppBannerController_h
 
 #include "modules/ModulesExport.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 enum class WebAppBannerPromptReply;
 class LocalFrame;
+class WebAppBannerClient;
 class WebString;
 template <typename T> class WebVector;
 
 // FIXME: unless userChoice ends up implemented, this class should not exist and
 // a regular static method could be used instead.
 class MODULES_EXPORT AppBannerController final {
+    WTF_MAKE_NONCOPYABLE(AppBannerController);
 public:
-    static void willShowInstallBannerPrompt(LocalFrame*, const WebVector<WebString>& platforms, WebAppBannerPromptReply*);
+    static void willShowInstallBannerPrompt(int requestId, WebAppBannerClient*, LocalFrame*, const WebVector<WebString>& platforms, WebAppBannerPromptReply*);
 
 private:
     AppBannerController() = delete;

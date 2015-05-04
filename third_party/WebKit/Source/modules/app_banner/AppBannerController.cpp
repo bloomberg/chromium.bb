@@ -16,16 +16,17 @@
 namespace blink {
 
 // static
-void AppBannerController::willShowInstallBannerPrompt(LocalFrame* frame, const WebVector<WebString>& platforms, WebAppBannerPromptReply* reply)
+void AppBannerController::willShowInstallBannerPrompt(int requestId, WebAppBannerClient* client, LocalFrame* frame, const WebVector<WebString>& platforms, WebAppBannerPromptReply* reply)
 {
     ASSERT(RuntimeEnabledFeatures::appBannerEnabled());
 
     Vector<String> wtfPlatforms;
     for (const WebString& platform : platforms)
         wtfPlatforms.append(platform);
+
     // dispatchEvent() returns whether the default behavior can happen. In other
     // words, it returns false if preventDefault() was called.
-    *reply = frame->domWindow()->dispatchEvent(BeforeInstallPromptEvent::create(EventTypeNames::beforeinstallprompt, wtfPlatforms))
+    *reply = frame->domWindow()->dispatchEvent(BeforeInstallPromptEvent::create(EventTypeNames::beforeinstallprompt, wtfPlatforms, requestId, client))
         ? WebAppBannerPromptReply::None : WebAppBannerPromptReply::Cancel;
 }
 
