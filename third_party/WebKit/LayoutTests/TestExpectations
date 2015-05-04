@@ -736,12 +736,6 @@ crbug.com/484190 http/tests/security/suborigins/suborigin-invalid-names.html [ P
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/320139 virtual/slimmingpaint/fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 
-# This test is flaky on all platforms, and has image failures most of the time on
-# WebKit Win7 (dbg)
-# Re-evaluate/re-enable after rebaselining.
-#crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure Pass ]
-#crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
-
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 crbug.com/231910 virtual/slimmingpaint/fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
@@ -2223,8 +2217,8 @@ crbug.com/477743 virtual/slimmingpaint/svg/as-image/zero-size-buffered-image-nop
 crbug.com/477743 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
-crbug.com/477743 virtual/slimmingpaint/svg/custom/js-late-clipPath-and-object-creation.svg [ Failure ]
-crbug.com/477743 virtual/slimmingpaint/svg/custom/js-late-gradient-and-object-creation.svg [ Failure ]
+crbug.com/477743 virtual/slimmingpaint/svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsRebaseline ]
+crbug.com/477743 virtual/slimmingpaint/svg/custom/js-late-gradient-and-object-creation.svg [ NeedsRebaseline ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/marker-zero-length-linecaps.svg [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/massive-coordinates.svg [ ImageOnlyFailure Pass ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/use-disappears-after-style-update.svg [ Failure ]
