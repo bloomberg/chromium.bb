@@ -10662,6 +10662,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="FaultTolerantHeap" enum="FaultTolerantHeap">
+  <owner>brucedawson@chromium.org</owner>
+  <summary>
+    Records several bits of information about whether the Windows
+    FaultTolerantHeap might be enabled. This is logged (from a delayed task)
+    when the browser process starts up.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.CloudImport.UserAction"
     enum="CloudImportUserAction">
   <owner>smckay@google.com</owner>
@@ -51871,6 +51880,45 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="FALLBACK_SSL3">Fell back on SSL 3.0.</int>
   <int value="2" label="FALLBACK_TLS1">Fell back on TLS 1.0.</int>
   <int value="3" label="FALLBACK_TLS1_1">Fell back on TLS 1.1.</int>
+</enum>
+
+<enum name="FaultTolerantHeap" type="int">
+  <int value="0" label="FTH_OFF">FTH is completely off.</int>
+  <int value="1" label="FTH_HKLM">FTH is enabled in HKLM.</int>
+  <int value="2" label="FTH_HKCU">FTH is enabled in HKCU.</int>
+  <int value="3" label="FTH_HKCU_HKLM">FTH is enabled in HKCU and HKLM.</int>
+  <int value="4" label="FTH_ACLAYERS">AcLayers.dll is loaded.</int>
+  <int value="5" label="FTH_ACLAYERS_HKLM">
+    AcLayers.dll is loaded and FTH is enabled in HKLM.
+  </int>
+  <int value="6" label="FTH_ACLAYERS_HKCU">
+    AcLayers.dll is loaded and FTH is enabled in HKCU.
+  </int>
+  <int value="7" label="FTH_ACLAYERS_HKCU_HKLM">
+    AcLayers.dll is loaded and FTH is enabled in HKCU and HKLM.
+  </int>
+  <int value="8" label="FTH_ACXTRNAL">AcXtrnal is loaded.</int>
+  <int value="9" label="FTH_ACXTRNAL_HKLM">
+    AcXtrnal is loaded and FTH is enabled in HKLM.
+  </int>
+  <int value="10" label="FTH_ACXTRNAL_HKCU">
+    AcXtrnal is loaded and FTH is enabled in HKCU.
+  </int>
+  <int value="11" label="FTH_ACXTRNAL_HKCU_HKLM">
+    AcXtrnal is loaded and FTH is enabled in HKCU and HKLM.
+  </int>
+  <int value="12" label="FTH_ACXTRNAL_ACLAYERS">
+    AcXtrmal and AcLayers.dll are loaded.
+  </int>
+  <int value="13" label="FTH_ACXTRNAL_ACLAYERS_HKLM">
+    AcXtrmal and AcLayers.dll are loaded and FTH is enabled in HKLM.
+  </int>
+  <int value="14" label="FTH_ACXTRNAL_ACLAYERS_HKCU">
+    AcXtrmal and AcLayers.dll are loaded and FTH is enabled in HKCU.
+  </int>
+  <int value="15" label="FTH_ACXTRNAL_ACLAYERS_HKCU_HKLM">
+    AcXtrmal and AcLayers.dll are loaded and FTH is enabled in HKCU and HKLM.
+  </int>
 </enum>
 
 <enum name="FeatureObserver" type="int">
