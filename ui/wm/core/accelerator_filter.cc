@@ -71,6 +71,19 @@ void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
 }
 
+void AcceleratorFilter::OnMouseEvent(ui::MouseEvent* event) {
+  // When a mouse event is interleaved between two key accelerators, we must
+  // store this event as an empty default accelerator in the accelerator
+  // history, so that the |AcceleratorController| can notice that something
+  // actually happened between those two key accelerators.
+  // Non-real synthesized mouse events should be ignored because we don't want
+  // them to interfere with tracking the key accelerator.
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+
+  accelerator_history_->StoreCurrentAccelerator(ui::Accelerator());
+}
+
 ui::Accelerator CreateAcceleratorFromKeyEvent(const ui::KeyEvent& key_event) {
   const int kModifierFlagMask =
       (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);

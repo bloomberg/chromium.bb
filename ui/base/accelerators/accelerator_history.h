@@ -25,8 +25,9 @@ class UI_BASE_EXPORT AcceleratorHistory {
     return current_accelerator_;
   }
 
-  // Returns the most recent previously recorded accelerator that is different
-  // than the current.
+  // Returns the most recent previously recorded key accelerator that is
+  // different than the current. Non-synthesized mouse events will be stored
+  // in the histroy as an empty accelerator.
   const Accelerator& previous_accelerator() const {
     return previous_accelerator_;
   }
