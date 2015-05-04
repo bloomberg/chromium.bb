@@ -90,6 +90,11 @@ TestSigninClient::AddCookieChangedCallback(
       new SigninClient::CookieChangedSubscription);
 }
 
+bool TestSigninClient::UpdateAccountInfo(
+    AccountTrackerService::AccountInfo* out_account_info) {
+  return false;
+}
+
 #if defined(OS_IOS)
 ios::ProfileOAuth2TokenServiceIOSProvider* TestSigninClient::GetIOSProvider() {
   return GetIOSProviderAsFake();

@@ -35,6 +35,8 @@ class FakeProfileOAuth2TokenServiceIOSProvider
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
       NSError* error) const override;
 
+  ios::AccountInfo GetAccountInfo(const std::string& account_id) const override;
+
   // Methods to configure this fake provider.
   void AddAccount(const std::string& account_id);
   void SetAccounts(const std::vector<std::string>& accounts);

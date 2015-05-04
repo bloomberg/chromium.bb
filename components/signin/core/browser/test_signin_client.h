@@ -79,6 +79,9 @@ class TestSigninClient : public SigninClient {
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) override;
 
+  bool UpdateAccountInfo(
+      AccountTrackerService::AccountInfo* out_account_info) override;
+
 #if defined(OS_IOS)
   ios::FakeProfileOAuth2TokenServiceIOSProvider* GetIOSProviderAsFake();
 #endif

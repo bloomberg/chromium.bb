@@ -206,6 +206,11 @@ void ChromeSigninClient::PostSignedIn(const std::string& account_id,
 #endif
 }
 
+bool ChromeSigninClient::UpdateAccountInfo(
+    AccountTrackerService::AccountInfo* out_account_info) {
+  return false;
+}
+
 void ChromeSigninClient::OnErrorChanged() {
   // Some tests don't have a ProfileManager.
   if (g_browser_process->profile_manager() == nullptr)

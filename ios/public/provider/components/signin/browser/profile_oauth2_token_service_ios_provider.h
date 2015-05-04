@@ -23,6 +23,14 @@ class NSString;
 
 namespace ios {
 
+// Account information.
+struct AccountInfo {
+  AccountInfo() {}
+  ~AccountInfo() {}
+  std::string gaia;
+  std::string email;
+};
+
 enum AuthenticationErrorCategory {
   // Unknown errors.
   kAuthenticationErrorCategoryUnknownErrors,
@@ -68,6 +76,10 @@ class ProfileOAuth2TokenServiceIOSProvider {
   // Returns the authentication error category of |error|.
   virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
       NSError* error) const = 0;
+
+  // Returns the account info composed of a GAIA id and email corresponding to
+  // |account_id|.
+  virtual AccountInfo GetAccountInfo(const std::string& account_id) const = 0;
 };
 
 }  // namespace ios

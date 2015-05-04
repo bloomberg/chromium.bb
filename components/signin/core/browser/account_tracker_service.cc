@@ -333,6 +333,9 @@ void AccountTrackerService::RefreshAccountInfo(const std::string& account_id,
   if (account_id == "managed_user@localhost")
     return;
 
+  if (signin_client_->UpdateAccountInfo(&state.info))
+    SaveToPrefs(state);
+
   // Only fetch the user info if it's currently invalid or if
   // |force_remote_fetch| is true (meaning the service is due for a timed
   // update).

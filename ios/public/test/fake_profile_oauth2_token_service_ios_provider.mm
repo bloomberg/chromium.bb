@@ -81,4 +81,9 @@ FakeProfileOAuth2TokenServiceIOSProvider::GetAuthenticationErrorCategory(
   return ios::kAuthenticationErrorCategoryAuthorizationErrors;
 }
 
+ios::AccountInfo FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfo(
+    const std::string& account_id) const {
+  return ios::AccountInfo();
+}
+
 }  // namespace ios

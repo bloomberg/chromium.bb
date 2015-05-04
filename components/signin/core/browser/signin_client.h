@@ -9,6 +9,7 @@
 #include "base/callback_list.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
@@ -106,6 +107,16 @@ class SigninClient : public KeyedService {
       content_settings::Observer* observer) = 0;
   virtual void RemoveContentSettingsObserver(
       content_settings::Observer* observer) = 0;
+
+  // Allows this sign-in client to update the account info before attempting
+  // to fetch it from GAIA. This avoids fetching the account info from
+  // GAIA when the data it already available on the client.
+  // |out_account_info->account_id| is not-empty and corresponds to an existing
+  // account.
+  //
+  // Returns true if |out_account_info| was updated.
+  virtual bool UpdateAccountInfo(
+      AccountTrackerService::AccountInfo* out_account_info) = 0;
 
 #if defined(OS_IOS)
   // TODO(msarda): http://crbug.com/358544 Remove this iOS specific code from
