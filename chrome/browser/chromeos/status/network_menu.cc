@@ -248,8 +248,8 @@ bool NetworkMenuModel::IsItemDynamicAt(int index) const {
 const gfx::FontList* NetworkMenuModel::GetLabelFontListAt(int index) const {
   const gfx::FontList* font_list = NULL;
   if (menu_items_[index].flags & FLAG_ASSOCIATED) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    font_list = &rb.GetFontList(browser_defaults::kAssociatedNetworkFontStyle);
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+    font_list = &rb->GetFontList(browser_defaults::kAssociatedNetworkFontStyle);
   }
 
   return font_list;

@@ -375,9 +375,9 @@ bool KioskExternalUpdater::ShouldDoExternalUpdate(
   DCHECK(cached);
 
   // Compare app version.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   if (!ShouldUpdateForHigherVersion(existing_version_str, version, false)) {
-    external_updates_[app_id].error = rb.GetLocalizedString(
+    external_updates_[app_id].error = rb->GetLocalizedString(
         IDS_KIOSK_EXTERNAL_UPDATE_SAME_OR_LOWER_APP_VERSION);
     return false;
   }

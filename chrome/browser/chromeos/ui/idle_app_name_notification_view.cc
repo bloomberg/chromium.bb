@@ -115,10 +115,9 @@ class IdleAppNameNotificationDelegateView
                                       int message_visibility_time_in_ms)
       : owner_(owner),
         widget_closed_(false) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
     // Add the application name label to the message.
-    AddLabel(app_name,
-             rb.GetFontList(ui::ResourceBundle::BoldFont),
+    AddLabel(app_name, rb->GetFontList(ui::ResourceBundle::BoldFont),
              error ? kErrorTextColor : kTextColor);
     spoken_text_ = app_name;
     SetLayoutManager(new views::FillLayout);
