@@ -4,7 +4,7 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.widget.CheckBox;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
@@ -13,7 +13,7 @@ import org.chromium.chrome.R;
 /**
  * A check box used to determine if a page should always be translated.
  */
-public class TranslateCheckBox extends CheckBox implements OnCheckedChangeListener {
+public class TranslateCheckBox extends AppCompatCheckBox implements OnCheckedChangeListener {
     private static final int TEXT_SIZE_SP = 13;
 
     private final SubPanelListener mListener;

@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.support.v7.widget.AppCompatTextView;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -85,7 +86,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * A TextView which truncates and displays a URL such that the origin is always visible.
      * The URL can be expanded by clicking on the it.
      */
-    public static class ElidedUrlTextView extends TextView {
+    public static class ElidedUrlTextView extends AppCompatTextView {
         // The number of lines to display when the URL is truncated. This number
         // should still allow the origin to be displayed. NULL before
         // setUrlAfterLayout() is called.
@@ -266,6 +267,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 R.layout.website_settings, null);
         mContainer.setVisibility(View.INVISIBLE);
         mContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
             public void onLayoutChange(
                     View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
                 // Trigger the entrance animations once the main container has been laid out and has
