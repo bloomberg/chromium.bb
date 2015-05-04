@@ -55,6 +55,9 @@
 #if !defined(CKM_AES_GCM)
 #define CKM_AES_GCM 0x00001087
 #endif
+#if !defined(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256)
+#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
+#endif
 #endif
 
 namespace net {
@@ -401,7 +404,9 @@ TEST_F(SSLServerSocketTest, Handshake) {
 #if defined(USE_OPENSSL)
   bool supports_aead = true;
 #else
-  bool supports_aead = PK11_TokenExists(CKM_AES_GCM);
+  bool supports_aead =
+      PK11_TokenExists(CKM_AES_GCM) &&
+      PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256);
 #endif
   EXPECT_TRUE(!supports_aead || is_aead);
 }
