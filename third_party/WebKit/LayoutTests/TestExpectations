@@ -1011,6 +1011,7 @@ crbug.com/350829 [ Win Debug ] virtual/threaded/animations/duplicated-keyframes-
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/keyframes-unprefixed-03.html [ Timeout Pass ]
 
 crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
+crbug.com/352377 virtual/slimmingpaint/svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
@@ -2112,11 +2113,14 @@ crbug.com/463358 [ Debug ] fast/transforms/transformed-caret.html [ Pass ImageOn
 crbug.com/463358 [ Debug ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] virtual/slimmingpaint/fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 svg/custom/massive-coordinates.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 
 # TODO(fmalita): re-enable after https://codereview.chromium.org/1123673003/
 # crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
