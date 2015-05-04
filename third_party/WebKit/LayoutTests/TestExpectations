@@ -42,12 +42,6 @@ crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
-crbug.com/334335 fast/borders/border-antialiasing.html [ NeedsRebaseline ]
-crbug.com/334335 fast/repaint/multicol-as-paint-container.html [ NeedsRebaseline ]
-crbug.com/334335 fast/repaint/multicol-repaint.html [ NeedsRebaseline ]
-crbug.com/334335 virtual/slimmingpaint/fast/repaint/multicol-as-paint-container.html [ NeedsRebaseline ]
-crbug.com/334335 virtual/slimmingpaint/fast/repaint/multicol-repaint.html [ NeedsRebaseline ]
-
 crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure NeedsManualRebaseline ]
 
 crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Failure ]
