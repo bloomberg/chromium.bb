@@ -41,6 +41,7 @@ source_set("proximity_auth") {
   ]
 
   deps = [
+    "logging",
     "//base",
     "//device/bluetooth",
     "//net",
@@ -66,6 +67,7 @@ source_set("unit_tests") {
   deps = [
     ":proximity_auth",
     "cryptauth:unit_tests",
+    "logging:unit_tests",
     "//base/test:test_support",
     "//device/bluetooth:mocks",
     "//testing/gmock",

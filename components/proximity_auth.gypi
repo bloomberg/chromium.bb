@@ -13,6 +13,7 @@
         '..',
       ],
       'dependencies': [
+        ':proximity_auth_logging',
         '../base/base.gyp:base',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../net/net.gyp:net',
@@ -57,7 +58,24 @@
       ],
     },
     {
-      # GN version: //components/cryptauth/proto
+      # GN version: //components/proximity_auth/logging
+      'target_name': 'proximity_auth_logging',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        "proximity_auth/logging/log_buffer.cc",
+        "proximity_auth/logging/log_buffer.h",
+        "proximity_auth/logging/logging.h",
+        "proximity_auth/logging/logging.cc",
+      ]
+    },
+    {
+      # GN version: //components/proximity_auth/cryptauth/proto
       'target_name': 'cryptauth_proto',
       'type': 'static_library',
       'sources': [
