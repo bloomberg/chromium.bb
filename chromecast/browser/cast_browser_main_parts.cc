@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/cast_paths.h"
+#include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -32,7 +33,9 @@
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/net/connectivity_checker.h"
+#include "chromecast/public/cast_sys_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_factory.h"
@@ -266,6 +269,14 @@ int CastBrowserMainParts::PreCreateThreads() {
 }
 
 void CastBrowserMainParts::PreMainMessageLoopRun() {
+  // Set GL strings so GPU config code can make correct feature blacklisting/
+  // whitelisting decisions.
+  // Note: SetGLStrings MUST be called after GpuDataManager::Initialize.
+  scoped_ptr<CastSysInfo> sys_info = CreateSysInfo();
+  content::GpuDataManager::GetInstance()->SetGLStrings(
+      sys_info->GetGlVendor(), sys_info->GetGlRenderer(),
+      sys_info->GetGlVersion());
+
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   metrics::RegisterPrefs(pref_registry.get());
   cast_browser_process_->SetPrefService(

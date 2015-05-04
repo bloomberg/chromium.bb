@@ -64,4 +64,16 @@ std::string CastSysInfoDummy::GetApInterface() {
   return "";
 }
 
+std::string CastSysInfoDummy::GetGlVendor() {
+  return "";
+}
+
+std::string CastSysInfoDummy::GetGlRenderer() {
+  return "";
+}
+
+std::string CastSysInfoDummy::GetGlVersion() {
+  return "";
+}
+
 }  // namespace chromecast

@@ -55,6 +55,19 @@ class CastSysInfo {
   virtual std::string GetWifiInterface() = 0;
   // Returns the name of the software AP interface.
   virtual std::string GetApInterface() = 0;
+
+  // Returns the GL_VENDOR string of GPU driver. Must match the value that would
+  // be obtained from a GL context, but implementations must *not* create a GL
+  // context.
+  virtual std::string GetGlVendor() = 0;
+  // Returns the GL_RENDERER string of GPU driver. Must match the value that
+  // would be obtained from a GL context, but implementations must *not* create
+  // a GL context.
+  virtual std::string GetGlRenderer() = 0;
+  // Returns the GL_VERSION string of GPU driver. Must match the value that
+  // would be obtained from a GL context, but implementations must *not* create
+  // a GL context.
+  virtual std::string GetGlVersion() = 0;
 };
 
 }  // namespace chromecast

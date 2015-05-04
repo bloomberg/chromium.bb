@@ -29,6 +29,9 @@ class CastSysInfoDummy : public CastSysInfo {
   std::string GetFactoryLocale(std::string* second_locale) override;
   std::string GetWifiInterface() override;
   std::string GetApInterface() override;
+  std::string GetGlVendor() override;
+  std::string GetGlRenderer() override;
+  std::string GetGlVersion() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastSysInfoDummy);
