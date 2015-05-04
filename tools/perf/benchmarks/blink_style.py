@@ -7,7 +7,7 @@ from telemetry import benchmark
 from measurements import blink_style
 import page_sets
 
-@benchmark.Disabled('reference')
+@benchmark.Disabled('reference', 'win8')
 class BlinkStyleTop25(benchmark.Benchmark):
   """Measures performance of Blink's style engine (CSS Parsing, Style Recalc,
   etc.) on the top 25 pages.
