@@ -191,9 +191,11 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        // The "about:" schemes are internal to the browser; don't want these to
-        // be dispatched to other apps.
-        if (params.getUrl().startsWith("about:")) {
+        // The "about:", "chrome:", and "chrome-native:" schemes are internal to the browser;
+        // don't want these to be dispatched to other apps.
+        if (params.getUrl().startsWith("about:")
+                || params.getUrl().startsWith("chrome:")
+                || params.getUrl().startsWith("chrome-native:")) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
