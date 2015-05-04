@@ -600,6 +600,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
     }
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    size_t insertionIndex;
     if (isLayoutGrid) {
         const Vector<LayoutUnit>& trackPositions = direction == ForColumns ? toLayoutGrid(layoutObject)->columnPositions() : toLayoutGrid(layoutObject)->rowPositions();
         // There are at least #tracks + 1 grid lines (trackPositions). Apart from that, the grid container can generate implicit grid tracks,
@@ -610,14 +611,16 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
             addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, i, *list);
             list->append(zoomAdjustedPixelValue(trackPositions[i + 1] - trackPositions[i], style));
         }
+        insertionIndex = trackPositions.size() - 1;
     } else {
         for (size_t i = 0; i < trackSizes.size(); ++i) {
             addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, i, *list);
             list->append(specifiedValueForGridTrackSize(trackSizes[i], style));
         }
+        insertionIndex = trackSizes.size();
     }
     // Those are the trailing <string>* allowed in the syntax.
-    addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, trackSizes.size(), *list);
+    addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, insertionIndex, *list);
     return list.release();
 }
 
