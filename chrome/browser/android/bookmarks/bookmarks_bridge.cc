@@ -614,12 +614,10 @@ void BookmarksBridge::DeleteBookmark(JNIEnv* env,
     return;
   }
 
-  if (partner_bookmarks_shim_->IsPartnerBookmark(node)) {
+  if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     partner_bookmarks_shim_->RemoveBookmark(node);
-  } else {
-    const BookmarkNode* parent_node = GetParentNode(node);
-    bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
-  }
+  else
+    bookmark_model_->Remove(node);
 }
 
 void BookmarksBridge::MoveBookmark(JNIEnv* env,

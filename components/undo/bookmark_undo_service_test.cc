@@ -90,7 +90,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkRemove) {
 
   const BookmarkNode* parent = model->other_node();
   model->AddURL(parent, 0, ASCIIToUTF16("foo"), GURL("http://www.bar.com"));
-  model->Remove(parent, 0);
+  model->Remove(parent->GetChild(0));
 
   EXPECT_EQ(2U, undo_service->undo_manager()->undo_count());
   EXPECT_EQ(0U, undo_service->undo_manager()->redo_count());
@@ -232,7 +232,7 @@ TEST_F(BookmarkUndoServiceTest, UndoBookmarkRenameDelete) {
                                            ASCIIToUTF16("folder"));
   model->AddURL(f1, 0, ASCIIToUTF16("foo"), GURL("http://www.foo.com"));
   model->SetTitle(f1, ASCIIToUTF16("Renamed"));
-  model->Remove(model->other_node(), 0);
+  model->Remove(model->other_node()->GetChild(0));
 
   // Undo the folder removal and ensure the folder and bookmark were restored.
   undo_service->undo_manager()->Undo();
@@ -366,7 +366,7 @@ TEST_F(BookmarkUndoServiceTest, UndoRemoveFolderWithBookmarks) {
   new_folder = model->AddFolder(parent, 0, ASCIIToUTF16("folder"));
   model->AddURL(new_folder, 0, ASCIIToUTF16("bar"), GURL("http://www.bar.com"));
 
-  model->Remove(parent, 0);
+  model->Remove(parent->GetChild(0));
 
   // Test that the undo restores the bookmark and folder.
   undo_service->undo_manager()->Undo();

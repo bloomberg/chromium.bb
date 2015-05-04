@@ -631,9 +631,9 @@ void Remove(int profile, const BookmarkNode* parent, int index) {
     const BookmarkNode* v_parent = NULL;
     FindNodeInVerifier(model, parent, &v_parent);
     ASSERT_TRUE(NodesMatch(parent->GetChild(index), v_parent->GetChild(index)));
-    GetVerifierBookmarkModel()->Remove(v_parent, index);
+    GetVerifierBookmarkModel()->Remove(v_parent->GetChild(index));
   }
-  model->Remove(parent, index);
+  model->Remove(parent->GetChild(index));
 }
 
 void RemoveAll(int profile) {
@@ -642,7 +642,7 @@ void RemoveAll(int profile) {
     for (int i = 0; i < root_node->child_count(); ++i) {
       const BookmarkNode* permanent_node = root_node->GetChild(i);
       for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
-        GetVerifierBookmarkModel()->Remove(permanent_node, j);
+        GetVerifierBookmarkModel()->Remove(permanent_node->GetChild(j));
       }
     }
   }

@@ -474,7 +474,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   model_->AddURL(root, 0, title, url);
   ClearCounts();
 
-  model_->Remove(root, 0);
+  model_->Remove(root->GetChild(0));
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
@@ -497,7 +497,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
   ClearCounts();
 
   // Now remove the folder.
-  model_->Remove(root, 0);
+  model_->Remove(root->GetChild(0));
   ASSERT_EQ(0, root->child_count());
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
@@ -612,7 +612,7 @@ TEST_F(BookmarkModelTest, Move) {
 
   // And remove the folder.
   ClearCounts();
-  model_->Remove(root, 0);
+  model_->Remove(root->GetChild(0));
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
   EXPECT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == NULL);
@@ -728,7 +728,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
 
   // Nuke the folder and do another fetch, making sure folder isn't in the
   // returned list.
-  model_->Remove(folder->parent(), 0);
+  model_->Remove(folder->parent()->GetChild(0));
   most_recent_folders = GetMostRecentlyModifiedUserFolders(model_.get(), 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_TRUE(most_recent_folders[0] != folder);

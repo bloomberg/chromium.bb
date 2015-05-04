@@ -452,7 +452,7 @@ TEST_F(BookmarkIndexTest, Remove) {
   AddBookmarks(titles, urls, arraysize(titles));
 
   // Remove the node and make sure we don't get back any results.
-  model_->Remove(model_->other_node(), 0);
+  model_->Remove(model_->other_node()->GetChild(0));
   ExpectMatches("A", NULL, 0U);
 }
 

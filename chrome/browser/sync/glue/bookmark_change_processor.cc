@@ -607,7 +607,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const BookmarkNode* parent = dst->parent();
     int index = parent->GetIndexOf(dst);
     if (index > -1)
-      model->Remove(parent, index);
+      model->Remove(parent->GetChild(index));
   }
 
   // A map to keep track of some reordering work we defer until later.
@@ -709,8 +709,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   if (foster_parent) {
     // There should be no nodes left under the foster parent.
     DCHECK_EQ(foster_parent->child_count(), 0);
-    model->Remove(foster_parent->parent(),
-                  foster_parent->parent()->GetIndexOf(foster_parent));
+    model->Remove(foster_parent);
     foster_parent = NULL;
   }
 

@@ -110,7 +110,7 @@ TEST_F(BookmarkMenuBridgeTest, TestBookmarkMenuAutoSeparator) {
   EXPECT_EQ(6, [menu numberOfItems]);
   // Remove the new bookmark and reload and we should have 2 items again
   // because the separator should have been removed as well.
-  model->Remove(parent, 0);
+  model->Remove(parent->GetChild(0));
   bridge_->UpdateMenu(menu);
   EXPECT_EQ(0, [menu numberOfItems]);
 }
@@ -329,7 +329,7 @@ TEST_F(BookmarkMenuBridgeTest, TestGetMenuItemForNode) {
 
   const BookmarkNode* removed_node = root->GetChild(0);
   EXPECT_EQ(2, root->child_count());
-  model->Remove(root, 0);
+  model->Remove(root->GetChild(0));
   EXPECT_EQ(1, root->child_count());
   bridge_->UpdateMenu(menu);
   EXPECT_FALSE(MenuItemForNode(bridge_.get(), removed_node));

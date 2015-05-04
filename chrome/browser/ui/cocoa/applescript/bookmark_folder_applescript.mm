@@ -86,7 +86,7 @@ using bookmarks::BookmarkNode;
   if (!model)
     return;
 
-  model->Remove(bookmarkNode_, position);
+  model->Remove(bookmarkNode_->GetChild(position));
 }
 
 - (NSArray*)bookmarkItems {
@@ -173,7 +173,7 @@ using bookmarks::BookmarkNode;
   if (!model)
     return;
 
-  model->Remove(bookmarkNode_, position);
+  model->Remove(bookmarkNode_->GetChild(position));
 }
 
 - (int)calculatePositionOfBookmarkFolderAt:(int)index {

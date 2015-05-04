@@ -200,7 +200,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
       for (size_t i = 0; i < selection_.size(); ++i) {
         int index = selection_[i]->parent()->GetIndexOf(selection_[i]);
         if (index > -1)
-          model_->Remove(selection_[i]->parent(), index);
+          model_->Remove(selection_[i]);
       }
       selection_.clear();
       break;

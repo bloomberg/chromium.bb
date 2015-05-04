@@ -247,7 +247,7 @@ void CopyToClipboard(BookmarkModel* model,
     for (size_t i = 0; i < filtered_nodes.size(); ++i) {
       int index = filtered_nodes[i]->parent()->GetIndexOf(filtered_nodes[i]);
       if (index > -1)
-        model->Remove(filtered_nodes[i]->parent(), index);
+        model->Remove(filtered_nodes[i]);
     }
   }
 }
@@ -472,8 +472,7 @@ void DeleteBookmarkFolders(BookmarkModel* model,
     const BookmarkNode* node = GetBookmarkNodeByID(model, *iter);
     if (!node)
       continue;
-    const BookmarkNode* parent = node->parent();
-    model->Remove(parent, parent->GetIndexOf(node));
+    model->Remove(node);
   }
 }
 
@@ -496,7 +495,7 @@ void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
     const BookmarkNode* node = bookmarks[i];
     int index = node->parent()->GetIndexOf(node);
     if (index > -1 && model->client()->CanBeEditedByUser(node))
-      model->Remove(node->parent(), index);
+      model->Remove(node);
   }
 }
 

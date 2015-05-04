@@ -2483,11 +2483,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)didDragBookmarkToTrash:(BookmarkButton*)button {
   if ([self canDragBookmarkButtonToTrash:button]) {
     const BookmarkNode* node = [button bookmarkNode];
-    if (node) {
-      const BookmarkNode* parent = node->parent();
-      bookmarkModel_->Remove(parent,
-                             parent->GetIndexOf(node));
-    }
+    if (node)
+      bookmarkModel_->Remove(node);
   }
 }
 

@@ -56,7 +56,7 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
   EXPECT_EQ(3U, pings);
   EXPECT_EQ(0U, deletions);
 
-  model->Remove(node->parent(), 0);
+  model->Remove(node->parent()->GetChild(0));
   EXPECT_EQ(4U, pings);
   EXPECT_EQ(1U, deletions);
 }

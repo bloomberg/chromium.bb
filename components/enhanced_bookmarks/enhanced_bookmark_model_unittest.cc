@@ -595,12 +595,11 @@ TEST_F(EnhancedBookmarkModelTest, ObserverNodeRemovedEvent) {
   const BookmarkNode* folder = AddFolder();
 
   EXPECT_EQ(0, removed_calls_);
-  bookmark_model_->Remove(node->parent(), node->parent()->GetIndexOf(node));
+  bookmark_model_->Remove(node);
   EXPECT_EQ(1, removed_calls_);
   EXPECT_EQ(node, last_removed_);
 
-  bookmark_model_->Remove(folder->parent(),
-                          folder->parent()->GetIndexOf(folder));
+  bookmark_model_->Remove(folder);
   EXPECT_EQ(2, removed_calls_);
   EXPECT_EQ(folder, last_removed_);
 }
@@ -675,7 +674,7 @@ TEST_F(EnhancedBookmarkModelTest, NodeRemovedWhileResetDuplicationScheduled) {
   const BookmarkNode* node2 = AddBookmark();
   bookmark_model_->SetNodeMetaInfo(node1, "stars.id", "c_1");
   bookmark_model_->SetNodeMetaInfo(node2, "stars.id", "c_1");
-  bookmark_model_->Remove(node1->parent(), node1->parent()->GetIndexOf(node1));
+  bookmark_model_->Remove(node1);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -686,8 +685,7 @@ TEST_F(EnhancedBookmarkModelTest,
   std::string remote_id = GetId(node);
   EXPECT_EQ(node, model_->BookmarkForRemoteId(remote_id));
 
-  const BookmarkNode* gp = parent->parent();
-  bookmark_model_->Remove(gp, gp->GetIndexOf(parent));
+  bookmark_model_->Remove(parent);
   EXPECT_FALSE(model_->BookmarkForRemoteId(remote_id));
 }
 

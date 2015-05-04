@@ -37,7 +37,7 @@ void DeleteBookmark(BookmarkButton* button, Profile* profile) {
   const BookmarkNode* node = [button bookmarkNode];
   if (node) {
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
-    model->Remove(node->parent(), node->parent()->GetIndexOf(node));
+    model->Remove(node);
   }
 }
 
@@ -192,8 +192,7 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
   // Remove the bookmark with the long title.
   void RemoveLongTitleNode() {
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-    model->Remove(longTitleNode_->parent(),
-                  longTitleNode_->parent()->GetIndexOf(longTitleNode_));
+    model->Remove(longTitleNode_);
   }
 
   // Add LOTS of nodes to our model if needed (e.g. scrolling).
@@ -1322,7 +1321,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   // We'll remove the really long node so we can see if the buttons get resized.
   scrollerWidth = NSWidth([folderView frame]);
   buttonWidth = NSWidth([button frame]);
-  model->Remove(folder, reallyWideButtonNumber);
+  model->Remove(folder->GetChild(reallyWideButtonNumber));
   EXPECT_FALSE([folderController canScrollUp]);
   EXPECT_FALSE([folderController canScrollDown]);
 
@@ -1361,7 +1360,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
   EXPECT_EQ(button, buttonThatMouseIsIn);
 
   // Delete the bookmark and verify that it is now not known.
-  model->Remove(folder, 3);
+  model->Remove(folder->GetChild(3));
   buttonThatMouseIsIn = [bbfc buttonThatMouseIsIn];
   EXPECT_FALSE(buttonThatMouseIsIn);
 }

@@ -1046,13 +1046,12 @@ TEST_F(ProfileSyncServiceBookmarkTest, BookmarkModelOperations) {
 
   // Test deletion.
   // Delete a single item.
-  model_->Remove(url2->parent(), url2->parent()->GetIndexOf(url2));
+  model_->Remove(url2);
   ExpectModelMatch();
   // Delete an item with several children.
-  model_->Remove(folder2->parent(),
-                 folder2->parent()->GetIndexOf(folder2));
+  model_->Remove(folder2);
   ExpectModelMatch();
-  model_->Remove(model_->mobile_node(), 0);
+  model_->Remove(model_->mobile_node()->GetChild(0));
   ExpectModelMatch();
 }
 
@@ -1923,12 +1922,12 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, MergeModelsWithSomeExtras) {
   const BookmarkNode* child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_url());
-  model_->Remove(bookmark_bar_node, remove_index);
+  model_->Remove(bookmark_bar_node->GetChild(remove_index));
   ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
   child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_folder());
-  model_->Remove(bookmark_bar_node, remove_index);
+  model_->Remove(bookmark_bar_node->GetChild(remove_index));
 
   const BookmarkNode* other_node = model_->other_node();
   ASSERT_GE(other_node->child_count(), 1);
@@ -1937,9 +1936,9 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, MergeModelsWithSomeExtras) {
   ASSERT_TRUE(f3_node->is_folder());
   remove_index = 2;
   ASSERT_GT(f3_node->child_count(), remove_index);
-  model_->Remove(f3_node, remove_index);
+  model_->Remove(f3_node->GetChild(remove_index));
   ASSERT_GT(f3_node->child_count(), remove_index);
-  model_->Remove(f3_node, remove_index);
+  model_->Remove(f3_node->GetChild(remove_index));
 
   StartSync();
   ExpectModelMatch();
@@ -1956,12 +1955,12 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, MergeModelsWithSomeExtras) {
   child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_url());
-  model_->Remove(bookmark_bar_node, remove_index);
+  model_->Remove(bookmark_bar_node->GetChild(remove_index));
   ASSERT_GT(bookmark_bar_node->child_count(), remove_index);
   child_node = bookmark_bar_node->GetChild(remove_index);
   ASSERT_TRUE(child_node);
   ASSERT_TRUE(child_node->is_folder());
-  model_->Remove(bookmark_bar_node, remove_index);
+  model_->Remove(bookmark_bar_node->GetChild(remove_index));
 
   ASSERT_GE(bookmark_bar_node->child_count(), 2);
   model_->Move(bookmark_bar_node->GetChild(0), bookmark_bar_node, 1);
@@ -1973,9 +1972,9 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, MergeModelsWithSomeExtras) {
   ASSERT_TRUE(f3_node->is_folder());
   remove_index = 0;
   ASSERT_GT(f3_node->child_count(), remove_index);
-  model_->Remove(f3_node, remove_index);
+  model_->Remove(f3_node->GetChild(remove_index));
   ASSERT_GT(f3_node->child_count(), remove_index);
-  model_->Remove(f3_node, remove_index);
+  model_->Remove(f3_node->GetChild(remove_index));
 
   ASSERT_GE(other_node->child_count(), 4);
   model_->Move(other_node->GetChild(0), other_node, 1);
@@ -2339,7 +2338,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateTransactionVersion) {
   // Verify model version is incremented and bookmark node versions remain
   // the same.
   const BookmarkNode* bookmark_bar = model_->bookmark_bar_node();
-  model_->Remove(bookmark_bar, 0);
+  model_->Remove(bookmark_bar->GetChild(0));
   base::MessageLoop::current()->RunUntilIdle();
   BookmarkNodeVersionMap new_versions;
   GetTransactionVersions(model_->root_node(), &new_versions);

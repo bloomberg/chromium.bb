@@ -84,7 +84,7 @@ void BookmarkAddOperation::Undo() {
       bookmarks::GetBookmarkNodeByID(model, parent_id_);
   DCHECK(parent);
 
-  model->Remove(parent, index_);
+  model->Remove(parent->GetChild(index_));
 }
 
 int BookmarkAddOperation::GetUndoLabelId() const {

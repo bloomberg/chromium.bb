@@ -205,7 +205,7 @@ TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
   EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
   // Delete the selected node, and verify it's no longer selected:
-  model->Remove(folder_b_, 3);
+  model->Remove(folder_b_->GetChild(3));
   EXPECT_NE(folder_b_3_, [controller_ selectedNode]);
 
   [controller_ cancel:nil];
@@ -218,7 +218,7 @@ TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
   EXPECT_EQ(folder_b_3_, [controller_ selectedNode]);
 
   // Delete the selected node's parent, and verify it's no longer selected:
-  model->Remove(root, 1);
+  model->Remove(root->GetChild(1));
   EXPECT_NE(folder_b_3_, [controller_ selectedNode]);
 
   [controller_ cancel:nil];

@@ -98,7 +98,7 @@ BookmarkBubbleView::~BookmarkBubbleView() {
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
     const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(url_);
     if (node)
-      model->Remove(node->parent(), node->parent()->GetIndexOf(node));
+      model->Remove(node);
   }
   // |parent_combobox_| needs to be destroyed before |parent_model_| as it
   // uses |parent_model_| in its destructor.

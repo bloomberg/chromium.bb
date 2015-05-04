@@ -61,8 +61,7 @@ void BookmarkModelSQLHandler::Task::RemoveBookmark(const GURL& url) {
   bookmark_model->GetNodesByURL(url, &nodes);
   for (std::vector<const BookmarkNode*>::iterator i = nodes.begin();
        i != nodes.end(); ++i) {
-    const BookmarkNode* parent_node = (*i)->parent();
-    bookmark_model->Remove(parent_node, parent_node->GetIndexOf(*i));
+    bookmark_model->Remove(*i);
   }
 }
 

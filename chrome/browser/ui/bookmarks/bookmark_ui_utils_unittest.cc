@@ -55,7 +55,7 @@ TEST_F(BookmarkUIUtilsTest, HasBookmarkURLs) {
   // folder to create a two level hierarchy.
 
   // But first we have to remove the URL from |folder1|.
-  model->Remove(folder1, 0);
+  model->Remove(folder1->GetChild(0));
 
   const BookmarkNode* subfolder1 =
       model->AddFolder(folder1, 0, ASCIIToUTF16("Subfolder1"));
@@ -114,7 +114,7 @@ TEST_F(BookmarkUIUtilsTest, HasBookmarkURLsAllowedInIncognitoMode) {
   // folder to create a two level hierarchy.
 
   // But first we have to remove the URL from |folder1|.
-  model->Remove(folder1, 0);
+  model->Remove(folder1->GetChild(0));
 
   const BookmarkNode* subfolder1 =
       model->AddFolder(folder1, 0, ASCIIToUTF16("Subfolder1"));

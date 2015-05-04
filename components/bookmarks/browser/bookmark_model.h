@@ -127,9 +127,9 @@ class BookmarkModel : public KeyedService {
   // state during their own initializer, such as the NTP.
   bool IsDoingExtensiveChanges() const { return extensive_changes_ > 0; }
 
-  // Removes the node at the given |index| from |parent|. Removing a folder node
+  // Removes |node| from the model and deletes it. Removing a folder node
   // recursively removes all nodes. Observers are notified immediately.
-  void Remove(const BookmarkNode* parent, int index);
+  void Remove(const BookmarkNode* node);
 
   // Removes all the non-permanent bookmark nodes that are editable by the user.
   // Observers are only notified when all nodes have been removed. There is no

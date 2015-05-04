@@ -735,7 +735,7 @@ void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
             folders_matched.push_back(
                 FolderInfo(child, parent, delete_entry.id));
           } else {
-            bookmark_model_->Remove(parent, child_index);
+            bookmark_model_->Remove(child);
             context->IncrementLocalItemsDeleted();
           }
           // Move unmatched journal here and decrement counter.
@@ -755,7 +755,7 @@ void BookmarkModelAssociator::ApplyDeletesFromSyncJournal(
   for (FolderInfoList::reverse_iterator it = folders_matched.rbegin();
       it != folders_matched.rend(); ++it) {
     if (it->folder->child_count() == 0) {
-      bookmark_model_->Remove(it->parent, it->parent->GetIndexOf(it->folder));
+      bookmark_model_->Remove(it->folder);
       context->IncrementLocalItemsDeleted();
     } else {
       // Keep non-empty folder and remove its journal so that it won't match

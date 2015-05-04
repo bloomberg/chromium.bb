@@ -245,11 +245,13 @@ TEST_F(BookmarkBarViewTest, RemoveNode) {
   EXPECT_EQ(2, test_helper_->GetBookmarkButtonCount());
 
   // Remove the 2nd node, should still only have 1 visible.
-  BookmarkModelFactory::GetForProfile(profile())->Remove(bookmark_bar_node, 1);
+  BookmarkModelFactory::GetForProfile(profile())
+      ->Remove(bookmark_bar_node->GetChild(1));
   EXPECT_EQ("a", GetStringForVisibleButtons());
 
   // Remove the first node, should force a new button (for the 'c' node).
-  BookmarkModelFactory::GetForProfile(profile())->Remove(bookmark_bar_node, 0);
+  BookmarkModelFactory::GetForProfile(profile())
+      ->Remove(bookmark_bar_node->GetChild(0));
   ASSERT_EQ("c", GetStringForVisibleButtons());
 }
 

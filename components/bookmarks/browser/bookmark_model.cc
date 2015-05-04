@@ -188,12 +188,13 @@ void BookmarkModel::EndGroupedChanges() {
                     GroupedBookmarkChangesEnded(this));
 }
 
-void BookmarkModel::Remove(const BookmarkNode* parent, int index) {
-  if (!loaded_ || !IsValidIndex(parent, index, false) || is_root_node(parent)) {
+void BookmarkModel::Remove(const BookmarkNode* node) {
+  DCHECK(node);
+  if (!loaded_ || is_root_node(node)) {
     NOTREACHED();
     return;
   }
-  RemoveAndDeleteNode(AsMutable(parent->GetChild(index)));
+  RemoveAndDeleteNode(AsMutable(node));
 }
 
 void BookmarkModel::RemoveAllUserBookmarks() {
@@ -847,6 +848,7 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   const BookmarkNode* parent = node->parent();
   DCHECK(parent);
   int index = parent->GetIndexOf(node.get());
+  DCHECK_NE(-1, index);
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     OnWillRemoveBookmarks(this, parent, index, node.get()));

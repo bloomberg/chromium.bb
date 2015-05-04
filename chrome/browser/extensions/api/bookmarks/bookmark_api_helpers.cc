@@ -136,8 +136,7 @@ bool RemoveNode(BookmarkModel* model,
     return false;
   }
 
-  const BookmarkNode* parent = node->parent();
-  model->Remove(parent, parent->GetIndexOf(node));
+  model->Remove(node);
   return true;
 }
 

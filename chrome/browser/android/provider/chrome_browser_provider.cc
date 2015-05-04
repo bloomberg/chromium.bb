@@ -260,10 +260,8 @@ class RemoveBookmarkTask : public BookmarkModelObserverTask {
   static void RunOnUIThread(BookmarkModel* model, const int64 id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
-    if (node && node->parent()) {
-      const BookmarkNode* parent_node = node->parent();
-      model->Remove(parent_node, parent_node->GetIndexOf(node));
-    }
+    if (node && node->parent())
+      model->Remove(node);
   }
 
   // Verify that the bookmark was actually removed. Called synchronously.
