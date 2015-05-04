@@ -27,8 +27,6 @@ class BluetoothAdvertisementManagerClientImpl
       : object_manager_(NULL), weak_ptr_factory_(this) {}
 
   ~BluetoothAdvertisementManagerClientImpl() override {
-    // TODO(rkc): object_manager_ should not be NULL, just a hot fix till
-    // http://crbug.com/479430 is properly fixed.
     if (object_manager_) {
       object_manager_->UnregisterInterface(
           bluetooth_advertising_manager::kBluetoothAdvertisingManagerInterface);
@@ -77,6 +75,7 @@ class BluetoothAdvertisementManagerClientImpl
 
     writer.AppendObjectPath(advertisement_object_path);
 
+    DCHECK(object_manager_);
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(manager_object_path);
     object_proxy->CallMethodWithErrorCallback(
@@ -100,6 +99,7 @@ class BluetoothAdvertisementManagerClientImpl
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(advertisement_object_path);
 
+    DCHECK(object_manager_);
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(manager_object_path);
     object_proxy->CallMethodWithErrorCallback(

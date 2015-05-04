@@ -329,6 +329,7 @@ void DBusThreadManager::InitializeClients() {
   GetBluetoothGattManagerClient()->Init(GetSystemBus());
   GetBluetoothGattServiceClient()->Init(GetSystemBus());
   GetBluetoothInputClient()->Init(GetSystemBus());
+  GetBluetoothLEAdvertisingManagerClient()->Init(GetSystemBus());
   GetBluetoothMediaClient()->Init(GetSystemBus());
   GetBluetoothMediaTransportClient()->Init(GetSystemBus());
   GetBluetoothProfileManagerClient()->Init(GetSystemBus());
