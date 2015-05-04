@@ -961,25 +961,6 @@ bool LayoutObject::mustInvalidateBackgroundOrBorderPaintOnWidthChange() const
     return false;
 }
 
-bool LayoutObject::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
-{
-    if (hasMask() && mustInvalidateFillLayersPaintOnHeightChange(style()->maskLayers()))
-        return true;
-
-    // If we don't have a background/border/mask, then nothing to do.
-    if (!hasBoxDecorationBackground())
-        return false;
-
-    if (mustInvalidateFillLayersPaintOnHeightChange(style()->backgroundLayers()))
-        return true;
-
-    // Our fill layers are ok.  Let's check border.
-    if (style()->hasBorder() && canRenderBorderImage())
-        return true;
-
-    return false;
-}
-
 FloatRect LayoutObject::absoluteBoundingBoxFloatRect() const
 {
     Vector<FloatQuad> quads;

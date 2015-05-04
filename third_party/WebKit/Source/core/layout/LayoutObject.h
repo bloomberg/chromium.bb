@@ -550,7 +550,6 @@ public:
     bool boxDecorationBackgroundIsKnownToBeObscured();
     bool canRenderBorderImage() const;
     bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
-    bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
     bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
     bool hasEntirelyFixedBackground() const;

@@ -763,6 +763,8 @@ protected:
     virtual bool hasNonCompositedScrollbars() const override final;
 
 private:
+    bool mustInvalidateBackgroundOrBorderPaintOnHeightChange() const;
+
     void invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
     void updateShapeOutsideInfoAfterStyleChange(const ComputedStyle&, const ComputedStyle* oldStyle);
