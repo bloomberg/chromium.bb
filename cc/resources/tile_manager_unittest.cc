@@ -1175,12 +1175,11 @@ TEST_F(TileManagerTilePriorityQueueTest,
   soon_rect.Inset(-inset, -inset);
 
   client.SetTileSize(gfx::Size(30, 30));
-  client.set_tree(ACTIVE_TREE);
   LayerTreeSettings settings;
   settings.max_tiles_for_interest_area = 10000;
 
   scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
-      &client, settings.max_tiles_for_interest_area,
+      ACTIVE_TREE, &client, settings.max_tiles_for_interest_area,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 
@@ -1286,12 +1285,11 @@ TEST_F(TileManagerTilePriorityQueueTest,
   gfx::Size layer_bounds(1000, 1000);
 
   client.SetTileSize(gfx::Size(30, 30));
-  client.set_tree(ACTIVE_TREE);
   LayerTreeSettings settings;
   settings.max_tiles_for_interest_area = 10000;
 
   scoped_ptr<PictureLayerTilingSet> tiling_set = PictureLayerTilingSet::Create(
-      &client, settings.max_tiles_for_interest_area,
+      ACTIVE_TREE, &client, settings.max_tiles_for_interest_area,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 

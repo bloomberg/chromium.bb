@@ -29,6 +29,7 @@ const float kMaxSoonBorderDistanceInScreenPixels = 312.f;
 }  // namespace
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
+    WhichTree tree,
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
@@ -36,12 +37,13 @@ scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels) {
   return make_scoped_ptr(new PictureLayerTiling(
-      contents_scale, raster_source, client, max_tiles_for_interest_area,
+      tree, contents_scale, raster_source, client, max_tiles_for_interest_area,
       skewport_target_time_in_seconds,
       skewport_extrapolation_limit_in_content_pixels));
 }
 
 PictureLayerTiling::PictureLayerTiling(
+    WhichTree tree,
     float contents_scale,
     scoped_refptr<RasterSource> raster_source,
     PictureLayerTilingClient* client,
@@ -54,6 +56,7 @@ PictureLayerTiling::PictureLayerTiling(
           skewport_extrapolation_limit_in_content_pixels),
       contents_scale_(contents_scale),
       client_(client),
+      tree_(tree),
       raster_source_(raster_source),
       resolution_(NON_IDEAL_RESOLUTION),
       tiling_data_(gfx::Size(), gfx::Size(), kBorderTexels),
@@ -246,7 +249,7 @@ void PictureLayerTiling::SetRasterSourceAndResize(
 }
 
 void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
-  DCHECK_IMPLIES(client_->GetTree() == ACTIVE_TREE,
+  DCHECK_IMPLIES(tree_ == ACTIVE_TREE,
                  !client_->GetPendingOrActiveTwinTiling(this));
   RemoveTilesInRegion(layer_invalidation, true /* recreate tiles */);
 }
@@ -293,7 +296,7 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
 }
 
 void PictureLayerTiling::SetRasterSourceOnTiles() {
-  if (client_->GetTree() == PENDING_TREE)
+  if (tree_ == PENDING_TREE)
     return;
 
   for (TileMap::value_type& tile_pair : tiles_)
@@ -308,7 +311,7 @@ bool PictureLayerTiling::ShouldCreateTileAt(int i, int j) const {
   // the tile for instance). Pending tree, on the other hand, should only be
   // creating tiles that are different from the current active tree, which is
   // represented by the logic in the rest of the function.
-  if (client_->GetTree() == ACTIVE_TREE)
+  if (tree_ == ACTIVE_TREE)
     return true;
 
   // If the pending tree has no active twin, then it needs to create all tiles.
@@ -702,7 +705,7 @@ bool PictureLayerTiling::IsTileOccluded(const Tile* tile) const {
 
   // Otherwise, if this is the pending tree, we're done and the tile is
   // occluded.
-  if (client_->GetTree() == PENDING_TREE)
+  if (tree_ == PENDING_TREE)
     return true;
 
   // On the active tree however, we need to check if this tile will be
@@ -741,7 +744,7 @@ bool PictureLayerTiling::IsTileOccludedOnCurrentTree(const Tile* tile) const {
 }
 
 bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
-  if (client_->GetTree() == PENDING_TREE) {
+  if (tree_ == PENDING_TREE) {
     if (!can_require_tiles_for_activation_)
       return false;
 
@@ -777,7 +780,7 @@ bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
     return true;
   }
 
-  DCHECK(client_->GetTree() == ACTIVE_TREE);
+  DCHECK_EQ(tree_, ACTIVE_TREE);
   const PictureLayerTiling* pending_twin =
       client_->GetPendingOrActiveTwinTiling(this);
   // If we don't have a pending tree, or the pending tree will overwrite the
@@ -791,7 +794,7 @@ bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
 }
 
 bool PictureLayerTiling::IsTileRequiredForDraw(const Tile* tile) const {
-  if (client_->GetTree() == PENDING_TREE)
+  if (tree_ == PENDING_TREE)
     return false;
 
   if (resolution_ != HIGH_RESOLUTION)

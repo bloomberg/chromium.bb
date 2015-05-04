@@ -38,6 +38,7 @@ class CC_EXPORT PictureLayerTilingSet {
   };
 
   static scoped_ptr<PictureLayerTilingSet> Create(
+      WhichTree tree,
       PictureLayerTilingClient* client,
       size_t max_tiles_for_interest_area,
       float skewport_target_time_in_seconds,
@@ -83,6 +84,7 @@ class CC_EXPORT PictureLayerTilingSet {
   const PictureLayerTiling* tiling_at(size_t idx) const {
     return tilings_[idx];
   }
+  WhichTree tree() const { return tree_; }
 
   PictureLayerTiling* FindTilingWithScale(float scale) const;
   PictureLayerTiling* FindTilingWithResolution(TileResolution resolution) const;
@@ -172,6 +174,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
  private:
   explicit PictureLayerTilingSet(
+      WhichTree tree,
       PictureLayerTilingClient* client,
       size_t max_tiles_for_interest_area,
       float skewport_target_time_in_seconds,
@@ -191,6 +194,7 @@ class CC_EXPORT PictureLayerTilingSet {
   const size_t max_tiles_for_interest_area_;
   const float skewport_target_time_in_seconds_;
   const int skewport_extrapolation_limit_in_content_pixels_;
+  WhichTree tree_;
   PictureLayerTilingClient* client_;
 
   friend class Iterator;

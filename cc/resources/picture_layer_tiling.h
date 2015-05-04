@@ -44,10 +44,7 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual const Region* GetPendingInvalidation() = 0;
   virtual const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const = 0;
-  virtual PictureLayerTiling* GetRecycledTwinTiling(
-      const PictureLayerTiling* tiling) = 0;
   virtual TilePriority::PriorityBin GetMaxTilePriorityBin() const = 0;
-  virtual WhichTree GetTree() const = 0;
   virtual bool RequiresHighResToDraw() const = 0;
 
  protected:
@@ -67,6 +64,7 @@ class CC_EXPORT PictureLayerTiling {
 
   // Create a tiling with no tiles. CreateTile() must be called to add some.
   static scoped_ptr<PictureLayerTiling> Create(
+      WhichTree tree,
       float contents_scale,
       scoped_refptr<RasterSource> raster_source,
       PictureLayerTilingClient* client,
@@ -225,7 +223,8 @@ class CC_EXPORT PictureLayerTiling {
     double frame_time_in_seconds = 0.0;
   };
 
-  PictureLayerTiling(float contents_scale,
+  PictureLayerTiling(WhichTree tree,
+                     float contents_scale,
                      scoped_refptr<RasterSource> raster_source,
                      PictureLayerTilingClient* client,
                      size_t max_tiles_for_interest_area,
@@ -289,9 +288,8 @@ class CC_EXPORT PictureLayerTiling {
   }
   gfx::Rect pending_visible_rect() const {
     const PictureLayerTiling* pending_tiling =
-        client_->GetTree() == ACTIVE_TREE
-            ? client_->GetPendingOrActiveTwinTiling(this)
-            : this;
+        tree_ == ACTIVE_TREE ? client_->GetPendingOrActiveTwinTiling(this)
+                             : this;
     if (pending_tiling)
       return pending_tiling->current_visible_rect();
     return gfx::Rect();
@@ -317,6 +315,7 @@ class CC_EXPORT PictureLayerTiling {
   // Given properties.
   const float contents_scale_;
   PictureLayerTilingClient* const client_;
+  const WhichTree tree_;
   scoped_refptr<RasterSource> raster_source_;
   TileResolution resolution_;
 

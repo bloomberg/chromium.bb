@@ -29,16 +29,19 @@ inline float LargerRatio(float float1, float float2) {
 
 // static
 scoped_ptr<PictureLayerTilingSet> PictureLayerTilingSet::Create(
+    WhichTree tree,
     PictureLayerTilingClient* client,
     size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
     int skewport_extrapolation_limit_in_content_pixels) {
   return make_scoped_ptr(new PictureLayerTilingSet(
-      client, max_tiles_for_interest_area, skewport_target_time_in_seconds,
+      tree, client, max_tiles_for_interest_area,
+      skewport_target_time_in_seconds,
       skewport_extrapolation_limit_in_content_pixels));
 }
 
 PictureLayerTilingSet::PictureLayerTilingSet(
+    WhichTree tree,
     PictureLayerTilingClient* client,
     size_t max_tiles_for_interest_area,
     float skewport_target_time_in_seconds,
@@ -47,6 +50,7 @@ PictureLayerTilingSet::PictureLayerTilingSet(
       skewport_target_time_in_seconds_(skewport_target_time_in_seconds),
       skewport_extrapolation_limit_in_content_pixels_(
           skewport_extrapolation_limit_in_content_pixels),
+      tree_(tree),
       client_(client) {
 }
 
@@ -71,8 +75,8 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
     if (!this_tiling) {
       scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(
-          contents_scale, raster_source, client_, max_tiles_for_interest_area_,
-          skewport_target_time_in_seconds_,
+          tree_, contents_scale, raster_source, client_,
+          max_tiles_for_interest_area_, skewport_target_time_in_seconds_,
           skewport_extrapolation_limit_in_content_pixels_);
       tilings_.push_back(new_tiling.Pass());
       this_tiling = tilings_.back();
@@ -178,7 +182,7 @@ void PictureLayerTilingSet::VerifyTilings(
           << " num tilings on pending: " << pending_twin_set->tilings_.size()
           << " num high res on pending: "
           << pending_twin_set->NumHighResTilings()
-          << " are on active tree: " << (client_->GetTree() == ACTIVE_TREE);
+          << " are on active tree: " << (tree_ == ACTIVE_TREE);
     }
   }
 #endif
@@ -259,8 +263,8 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
   }
 
   tilings_.push_back(PictureLayerTiling::Create(
-      contents_scale, raster_source, client_, max_tiles_for_interest_area_,
-      skewport_target_time_in_seconds_,
+      tree_, contents_scale, raster_source, client_,
+      max_tiles_for_interest_area_, skewport_target_time_in_seconds_,
       skewport_extrapolation_limit_in_content_pixels_));
   PictureLayerTiling* appended = tilings_.back();
 

@@ -11,7 +11,7 @@ namespace cc {
 TilingSetEvictionQueue::TilingSetEvictionQueue(
     PictureLayerTilingSet* tiling_set,
     bool skip_shared_out_of_order_tiles)
-    : tree_(tiling_set->client()->GetTree()),
+    : tree_(tiling_set->tree()),
       skip_shared_out_of_order_tiles_(skip_shared_out_of_order_tiles),
       phase_(EVENTUALLY_RECT),
       current_tile_(nullptr) {

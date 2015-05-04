@@ -663,14 +663,6 @@ const PictureLayerTiling* PictureLayerImpl::GetPendingOrActiveTwinTiling(
   return twin_layer->tilings_->FindTilingWithScale(tiling->contents_scale());
 }
 
-PictureLayerTiling* PictureLayerImpl::GetRecycledTwinTiling(
-    const PictureLayerTiling* tiling) {
-  PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
-  if (!recycled_twin || !recycled_twin->tilings_)
-    return nullptr;
-  return recycled_twin->tilings_->FindTilingWithScale(tiling->contents_scale());
-}
-
 TilePriority::PriorityBin PictureLayerImpl::GetMaxTilePriorityBin() const {
   if (!HasValidTilePriorities())
     return TilePriority::EVENTUALLY;
@@ -1048,6 +1040,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   }
 
   PictureLayerTilingSet* twin_set = twin ? twin->tilings_.get() : nullptr;
+  // TODO(vmpstr): See if this step is required without tile sharing.
   PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
   PictureLayerTilingSet* recycled_twin_set =
       recycled_twin ? recycled_twin->tilings_.get() : nullptr;
@@ -1156,7 +1149,7 @@ scoped_ptr<PictureLayerTilingSet>
 PictureLayerImpl::CreatePictureLayerTilingSet() {
   const LayerTreeSettings& settings = layer_tree_impl()->settings();
   return PictureLayerTilingSet::Create(
-      this, settings.max_tiles_for_interest_area,
+      GetTree(), this, settings.max_tiles_for_interest_area,
       layer_tree_impl()->use_gpu_rasterization()
           ? settings.gpu_rasterization_skewport_target_time_in_seconds
           : settings.skewport_target_time_in_seconds,

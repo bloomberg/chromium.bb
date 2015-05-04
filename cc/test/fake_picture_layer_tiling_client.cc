@@ -16,9 +16,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
-      recycled_twin_tiling_(nullptr),
-      max_tile_priority_bin_(TilePriority::NOW),
-      tree_(ACTIVE_TREE) {
+      max_tile_priority_bin_(TilePriority::NOW) {
 }
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
@@ -29,9 +27,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
-      recycled_twin_tiling_(nullptr),
-      max_tile_priority_bin_(TilePriority::NOW),
-      tree_(ACTIVE_TREE) {
+      max_tile_priority_bin_(TilePriority::NOW) {
 }
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
@@ -71,15 +67,6 @@ FakePictureLayerTilingClient::GetPendingOrActiveTwinTiling(
       return twin_set_->tiling_at(i);
   }
   return nullptr;
-}
-
-PictureLayerTiling* FakePictureLayerTilingClient::GetRecycledTwinTiling(
-    const PictureLayerTiling* tiling) {
-  return recycled_twin_tiling_;
-}
-
-WhichTree FakePictureLayerTilingClient::GetTree() const {
-  return tree_;
 }
 
 bool FakePictureLayerTilingClient::RequiresHighResToDraw() const {

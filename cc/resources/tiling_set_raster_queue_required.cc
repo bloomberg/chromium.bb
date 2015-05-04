@@ -24,7 +24,7 @@ TilingSetRasterQueueRequired::TilingSetRasterQueueRequired(
   // from tilings whose pending twin is high resolution.
   PictureLayerTiling* tiling = nullptr;
   if (type == RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION &&
-      tiling_set->client()->GetTree() == ACTIVE_TREE) {
+      tiling_set->tree() == ACTIVE_TREE) {
     for (size_t i = 0; i < tiling_set->num_tilings(); ++i) {
       PictureLayerTiling* active_tiling = tiling_set->tiling_at(i);
       const PictureLayerTiling* pending_twin =

@@ -70,10 +70,7 @@ class CC_EXPORT PictureLayerImpl
   const Region* GetPendingInvalidation() override;
   const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const override;
-  PictureLayerTiling* GetRecycledTwinTiling(
-      const PictureLayerTiling* tiling) override;
   TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
-  WhichTree GetTree() const override;
   bool RequiresHighResToDraw() const override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
@@ -86,6 +83,7 @@ class CC_EXPORT PictureLayerImpl
   bool UpdateTiles(bool resourceless_software_draw);
   void UpdateCanUseLCDTextAfterCommit();
   bool RasterSourceUsesLCDText() const;
+  WhichTree GetTree() const;
 
   // Mask-related functions.
   void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,

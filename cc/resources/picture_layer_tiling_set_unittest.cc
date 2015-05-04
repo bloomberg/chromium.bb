@@ -23,7 +23,7 @@ scoped_ptr<PictureLayerTilingSet> CreateTilingSet(
     PictureLayerTilingClient* client) {
   LayerTreeSettings defaults;
   return PictureLayerTilingSet::Create(
-      client, defaults.max_tiles_for_interest_area,
+      ACTIVE_TREE, client, defaults.max_tiles_for_interest_area,
       defaults.skewport_target_time_in_seconds,
       defaults.skewport_extrapolation_limit_in_content_pixels);
 }
@@ -224,7 +224,6 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
 
     FakePictureLayerTilingClient client(resource_provider.get());
     client.SetTileSize(gfx::Size(256, 256));
-    client.set_tree(PENDING_TREE);
     gfx::Size layer_bounds(1000, 800);
     scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
     scoped_refptr<FakePicturePileImpl> pile =
@@ -300,10 +299,10 @@ TEST_F(PictureLayerTilingSetTestWithResources, ManyTilings_NotEqual) {
 TEST(PictureLayerTilingSetTest, TileSizeChange) {
   FakePictureLayerTilingClient pending_client;
   FakePictureLayerTilingClient active_client;
-  scoped_ptr<PictureLayerTilingSet> pending_set =
-      PictureLayerTilingSet::Create(&pending_client, 1000, 1.f, 1000);
-  scoped_ptr<PictureLayerTilingSet> active_set =
-      PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
+  scoped_ptr<PictureLayerTilingSet> pending_set = PictureLayerTilingSet::Create(
+      PENDING_TREE, &pending_client, 1000, 1.f, 1000);
+  scoped_ptr<PictureLayerTilingSet> active_set = PictureLayerTilingSet::Create(
+      ACTIVE_TREE, &active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 100);
   scoped_refptr<FakePicturePileImpl> pile =
@@ -401,10 +400,10 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
 TEST(PictureLayerTilingSetTest, MaxContentScale) {
   FakePictureLayerTilingClient pending_client;
   FakePictureLayerTilingClient active_client;
-  scoped_ptr<PictureLayerTilingSet> pending_set =
-      PictureLayerTilingSet::Create(&pending_client, 1000, 1.f, 1000);
-  scoped_ptr<PictureLayerTilingSet> active_set =
-      PictureLayerTilingSet::Create(&active_client, 1000, 1.f, 1000);
+  scoped_ptr<PictureLayerTilingSet> pending_set = PictureLayerTilingSet::Create(
+      PENDING_TREE, &pending_client, 1000, 1.f, 1000);
+  scoped_ptr<PictureLayerTilingSet> active_set = PictureLayerTilingSet::Create(
+      ACTIVE_TREE, &active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 105);
   scoped_refptr<FakePicturePileImpl> pile =

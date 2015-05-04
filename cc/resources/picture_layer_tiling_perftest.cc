@@ -47,12 +47,11 @@ class PictureLayerTilingPerfTest : public testing::Test {
   void SetUp() override {
     LayerTreeSettings defaults;
     picture_layer_tiling_client_.SetTileSize(gfx::Size(256, 256));
-    picture_layer_tiling_client_.set_tree(PENDING_TREE);
     scoped_refptr<FakePicturePileImpl> pile =
         FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
             gfx::Size(256 * 50, 256 * 50));
     picture_layer_tiling_ = PictureLayerTiling::Create(
-        1, pile, &picture_layer_tiling_client_,
+        PENDING_TREE, 1.f, pile, &picture_layer_tiling_client_,
         defaults.max_tiles_for_interest_area,
         defaults.skewport_target_time_in_seconds,
         defaults.skewport_extrapolation_limit_in_content_pixels);

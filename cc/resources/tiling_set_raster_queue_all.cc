@@ -29,7 +29,7 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
     return;
 
   const PictureLayerTilingClient* client = tiling_set->client();
-  WhichTree tree = client->GetTree();
+  WhichTree tree = tiling_set->tree();
   // Find high and low res tilings and initialize the iterators.
   PictureLayerTiling* high_res_tiling = nullptr;
   PictureLayerTiling* low_res_tiling = nullptr;
