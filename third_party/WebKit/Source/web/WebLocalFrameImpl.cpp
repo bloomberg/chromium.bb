@@ -1078,7 +1078,8 @@ bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned l
         length = 0;
 
     Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
-    ASSERT(editable);
+    if (!editable)
+        return false;
     RefPtrWillBeRawPtr<Range> range = PlainTextRange(location, location + length).createRange(*editable);
     if (!range)
         return false;
