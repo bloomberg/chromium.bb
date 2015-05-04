@@ -58,10 +58,6 @@ def main(argv, stdout, stderr):
     else:
         host = Host()
 
-    if options.lint_test_files:
-        from webkitpy.layout_tests.lint_test_expectations import run_checks
-        return run_checks(host, options, stderr)
-
     try:
         port = host.port_factory.get(options.platform, options)
     except NotImplementedError, e:
@@ -261,12 +257,6 @@ def parse_args(args):
         optparse.make_option("-n", "--dry-run", action="store_true",
             default=False,
             help="Do everything but actually run the tests or upload results."),
-    ]))
-
-    option_group_definitions.append(("Miscellaneous Options", [
-        optparse.make_option("--lint-test-files", action="store_true",
-        default=False, help=("Makes sure the test files parse for all "
-                            "configurations. Does not run any tests.")),
     ]))
 
     # FIXME: Move these into json_results_generator.py
