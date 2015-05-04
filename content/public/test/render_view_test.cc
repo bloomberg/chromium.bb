@@ -541,6 +541,7 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
   RequestNavigationParams request_params;
   request_params.page_state = state;
   request_params.page_id = impl->page_id_ + offset;
+  request_params.nav_entry_id = pending_offset + 1;
   request_params.pending_history_list_offset = pending_offset;
   request_params.current_history_list_offset = impl->history_list_offset_;
   request_params.current_history_list_length = history_list_length;
