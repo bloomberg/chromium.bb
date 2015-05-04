@@ -5,8 +5,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -456,7 +456,7 @@ class FakeExtensionSystem : public extensions::TestExtensionSystem {
   explicit FakeExtensionSystem(Profile* profile)
       : TestExtensionSystem(profile),
         prefs_(new extensions::TestExtensionPrefs(
-            base::MessageLoopProxy::current())) {
+            base::ThreadTaskRunnerHandle::Get())) {
     fake_event_router_.reset(new FakeEventRouter(profile, prefs_->prefs()));
   }
 

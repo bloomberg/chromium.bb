@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -88,7 +89,7 @@ void BlacklistStateFetcher::Request(const std::string& id,
       SetSafeBrowsingConfig(
           g_browser_process->safe_browsing_service()->GetProtocolConfig());
     } else {
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, BLACKLISTED_UNKNOWN));
       return;
     }

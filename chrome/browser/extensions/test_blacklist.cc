@@ -7,9 +7,9 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
@@ -36,7 +36,7 @@ void BlacklistStateFetcherMock::Request(const std::string& id,
   if (ContainsKey(states_, id))
     result = states_[id];
 
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                               base::Bind(callback, result));
 }
 

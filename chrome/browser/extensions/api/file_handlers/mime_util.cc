@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
@@ -191,7 +192,7 @@ void MimeTypeCollector::CollectForLocalPaths(
 
   if (!left_) {
     // Nothing to process.
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback_, base::Passed(&result_)));
     callback_ = CompletionCallback();
     return;
@@ -210,7 +211,7 @@ void MimeTypeCollector::OnMimeTypeCollected(size_t index,
                                             const std::string& mime_type) {
   (*result_)[index] = mime_type;
   if (!--left_) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback_, base::Passed(&result_)));
     // Release the callback to avoid a circullar reference in case an instance
     // of this class is a member of a ref counted class, which instance is bound

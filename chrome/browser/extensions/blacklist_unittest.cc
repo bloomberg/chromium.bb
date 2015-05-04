@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
@@ -48,7 +48,7 @@ std::set<std::string> Set(const std::string& a,
 class BlacklistTest : public testing::Test {
  public:
   BlacklistTest()
-      : test_prefs_(base::MessageLoopProxy::current()) {}
+      : test_prefs_(base::ThreadTaskRunnerHandle::Get()) {}
 
  protected:
   ExtensionPrefs* prefs() {

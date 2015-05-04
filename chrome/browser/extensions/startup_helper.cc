@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -174,7 +175,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
 
   void StartOnFileThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    scoped_refptr<base::MessageLoopProxy> file_thread_proxy =
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
 
     scoped_refptr<SandboxedUnpacker> unpacker(
@@ -182,7 +183,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
                               Manifest::INTERNAL,
                               0, /* no special creation flags */
                               temp_dir_,
-                              file_thread_proxy.get(),
+                              file_task_runner.get(),
                               this));
     unpacker->Start();
   }

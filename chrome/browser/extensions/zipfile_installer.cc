@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -74,7 +75,8 @@ scoped_refptr<ZipFileInstaller> ZipFileInstaller::Create(
 void ZipFileInstaller::StartWorkOnIOThread(const base::FilePath& temp_dir) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UtilityProcessHost* host =
-      UtilityProcessHost::Create(this, base::MessageLoopProxy::current().get());
+      UtilityProcessHost::Create(this,
+                                 base::ThreadTaskRunnerHandle::Get().get());
   host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME));
   host->SetExposedDir(temp_dir);

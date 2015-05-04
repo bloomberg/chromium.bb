@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -96,7 +97,7 @@ class ZipFileInstallerTest : public testing::Test {
 
     zipfile_installer_ = ZipFileInstaller::Create(extension_service_);
 
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ZipFileInstaller::LoadFromZipFile,
                    zipfile_installer_.get(),

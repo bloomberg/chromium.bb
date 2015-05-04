@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -72,7 +73,7 @@ void WebstoreInstallHelper::Start() {
 void WebstoreInstallHelper::StartWorkOnIOThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   utility_host_ = UtilityProcessHost::Create(
-      this, base::MessageLoopProxy::current().get())->AsWeakPtr();
+      this, base::ThreadTaskRunnerHandle::Get().get())->AsWeakPtr();
   utility_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_JSON_PARSER_NAME));
   utility_host_->StartBatchMode();

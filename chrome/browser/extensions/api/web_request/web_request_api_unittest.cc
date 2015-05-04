@@ -19,6 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
@@ -511,7 +512,9 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
   element_readers.push_back(new net::UploadBytesElementReader(
       &(bytes_1[0]), bytes_1.size()));
   element_readers.push_back(
-      new net::UploadFileElementReader(base::MessageLoopProxy::current().get(),
+      new net::UploadFileElementReader(
+                                       base::ThreadTaskRunnerHandle::Get()
+                                       .get(),
                                        base::FilePath(),
                                        0,
                                        0,

@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -47,7 +47,7 @@ scoped_ptr<TestingProfile> BuildTestingProfile(
   // TestingPrefServiceSyncable instance.
   if (!params.pref_file.empty()) {
     factory.SetUserPrefsFile(params.pref_file,
-                             base::MessageLoopProxy::current().get());
+                             base::ThreadTaskRunnerHandle::Get().get());
     scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
         new user_prefs::PrefRegistrySyncable);
     scoped_ptr<PrefServiceSyncable> prefs(
@@ -221,7 +221,7 @@ void ExtensionServiceTestBase::CreateExtensionService(
                                      params.autoupdate_enabled);
 
   service_->SetFileTaskRunnerForTesting(
-      base::MessageLoopProxy::current().get());
+      base::ThreadTaskRunnerHandle::Get().get());
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
   service_->set_install_updates_when_idle_for_test(false);

@@ -11,7 +11,9 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/blacklist_factory.h"
@@ -72,7 +74,7 @@ class SafeBrowsingClientImpl
   SafeBrowsingClientImpl(
       const std::set<std::string>& extension_ids,
       const OnResultCallback& callback)
-      : callback_message_loop_(base::MessageLoopProxy::current()),
+      : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         callback_(callback) {
     BrowserThread::PostTask(
         BrowserThread::IO,
@@ -93,7 +95,7 @@ class SafeBrowsingClientImpl
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (database_manager->CheckExtensionIDs(extension_ids, this)) {
       // Definitely not blacklisted. Callback immediately.
-      callback_message_loop_->PostTask(
+      callback_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(callback_, std::set<std::string>()));
       return;
@@ -105,11 +107,11 @@ class SafeBrowsingClientImpl
 
   void OnCheckExtensionsResult(const std::set<std::string>& hits) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    callback_message_loop_->PostTask(FROM_HERE, base::Bind(callback_, hits));
+    callback_task_runner_->PostTask(FROM_HERE, base::Bind(callback_, hits));
     Release();  // Balanced in StartCheck.
   }
 
-  scoped_refptr<base::MessageLoopProxy> callback_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
   OnResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingClientImpl);
@@ -191,7 +193,7 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (ids.empty() || !g_database_manager.Get().get().get()) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, BlacklistStateMap()));
     return;
   }

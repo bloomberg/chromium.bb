@@ -6,8 +6,8 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_piece.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,7 +36,7 @@ void MessagePropertyProvider::GetChannelID(Profile* profile,
       profile->GetRequestContext());
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
       base::Bind(&MessagePropertyProvider::GetChannelIDOnIOThread,
-                 base::MessageLoopProxy::current(),
+                 base::ThreadTaskRunnerHandle::Get(),
                  request_context_getter,
                  source_url.host(),
                  reply));

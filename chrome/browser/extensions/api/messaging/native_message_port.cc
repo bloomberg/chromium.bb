@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -91,7 +92,7 @@ NativeMessagePort::NativeMessagePort(
       weak_factory_(this) {
   core_.reset(new Core(native_message_host.Pass(),
                        weak_factory_.GetWeakPtr(),
-                       base::MessageLoopProxy::current()));
+                       base::ThreadTaskRunnerHandle::Get()));
 }
 
 NativeMessagePort::~NativeMessagePort() {

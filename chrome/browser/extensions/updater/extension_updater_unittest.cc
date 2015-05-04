@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -647,7 +648,7 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   void SetUp() override {
-    prefs_.reset(new TestExtensionPrefs(base::MessageLoopProxy::current()));
+    prefs_.reset(new TestExtensionPrefs(base::ThreadTaskRunnerHandle::Get()));
   }
 
   void TearDown() override {
@@ -1618,7 +1619,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Set up 2 mock extensions, one with a google.com update url and one
     // without.
-    prefs_.reset(new TestExtensionPrefs(base::MessageLoopProxy::current()));
+    prefs_.reset(new TestExtensionPrefs(base::ThreadTaskRunnerHandle::Get()));
     ServiceForManifestTests service(prefs_.get());
     ExtensionList tmp;
     GURL url1("http://clients2.google.com/service/update2/crx");

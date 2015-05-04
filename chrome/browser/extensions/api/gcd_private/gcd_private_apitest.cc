@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/gcd_private/gcd_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddBefore) {
 }
 
 IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddAfter) {
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&local_discovery::TestServiceDiscoveryClient::SimulateReceive,
                  test_service_discovery_client_,
@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, AddRemove) {
   test_service_discovery_client_->SimulateReceive(kAnnouncePacket,
                                                   sizeof(kAnnouncePacket));
 
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&local_discovery::TestServiceDiscoveryClient::SimulateReceive,
                  test_service_discovery_client_,

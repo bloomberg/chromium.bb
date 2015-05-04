@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
@@ -84,7 +85,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 ACTION_P(NotifyOkStateAndCallback, mock_remote_service) {
   mock_remote_service->NotifyRemoteServiceStateUpdated(
       sync_file_system::REMOTE_SERVICE_OK, "Test event description.");
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg1, sync_file_system::SYNC_STATUS_OK));
 }
 
@@ -104,7 +105,7 @@ ACTION_P6(ReturnWithFakeFileAddedStatus,
       *origin,
       base::FilePath(FILE_PATH_LITERAL("foo.txt")));
   mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg0,
                             sync_file_system::SYNC_STATUS_OK,
                             mock_url));

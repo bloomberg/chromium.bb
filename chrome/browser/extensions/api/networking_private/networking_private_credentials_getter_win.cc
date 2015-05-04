@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
@@ -100,7 +100,7 @@ void CredentialsGetterHostClient::StartProcessOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback_ = callback;
   UtilityProcessHost* host =
-      UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
+      UtilityProcessHost::Create(this, base::ThreadTaskRunnerHandle::Get());
   host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME));
   host->ElevatePrivileges();
