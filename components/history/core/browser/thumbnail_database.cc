@@ -660,7 +660,7 @@ void ThumbnailDatabase::ComputeDatabaseMetrics() {
             SQL_FROM_HERE,
             "SELECT COUNT(*) FROM favicons WHERE icon_type IN (?, ?)"));
     touch_icon_count.BindInt64(0, favicon_base::TOUCH_ICON);
-    touch_icon_count.BindInt64(0, favicon_base::TOUCH_PRECOMPOSED_ICON);
+    touch_icon_count.BindInt64(1, favicon_base::TOUCH_PRECOMPOSED_ICON);
     UMA_HISTOGRAM_COUNTS_10000(
         "History.NumTouchIconsInDB",
         touch_icon_count.Step() ? touch_icon_count.ColumnInt(0) : 0);
