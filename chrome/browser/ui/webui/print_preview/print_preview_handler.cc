@@ -23,6 +23,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -496,6 +497,18 @@ printing::StickySettings* GetStickySettings() {
   return g_sticky_settings.Pointer();
 }
 
+// Returns a unique path for |path|, just like with downloads.
+base::FilePath GetUniquePath(const base::FilePath& path) {
+  base::FilePath unique_path = path;
+  int uniquifier =
+      base::GetUniquePathNumber(path, base::FilePath::StringType());
+  if (uniquifier > 0) {
+    unique_path = unique_path.InsertBeforeExtensionASCII(
+        base::StringPrintf(" (%d)", uniquifier));
+  }
+  return unique_path;
+}
+
 }  // namespace
 
 class PrintPreviewHandler::AccessTokenService
@@ -672,6 +685,10 @@ WebContents* PrintPreviewHandler::preview_web_contents() const {
   return web_ui()->GetWebContents();
 }
 
+PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
+  return static_cast<PrintPreviewUI*>(web_ui()->GetController());
+}
+
 void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
   base::ListValue* results = new base::ListValue;
   BrowserThread::PostTaskAndReply(
@@ -749,14 +766,12 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   if (!settings->GetInteger(printing::kPreviewRequestID, &request_id))
     return;
 
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-  print_preview_ui->OnPrintPreviewRequest(request_id);
+  print_preview_ui()->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::GetCurrentPrintPreviewStatus() on the IO
   // thread.
   settings->SetInteger(printing::kPreviewUIID,
-                       print_preview_ui->GetIDForPrintPreviewUI());
+                       print_preview_ui()->GetIDForPrintPreviewUI());
 
   // Increment request count.
   ++regenerate_preview_request_count_;
@@ -764,7 +779,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   WebContents* initiator = GetInitiator();
   if (!initiator) {
     ReportUserActionHistogram(INITIATOR_CLOSED);
-    print_preview_ui->OnClosePrintPreviewDialog();
+    print_preview_ui()->OnClosePrintPreviewDialog();
     return;
   }
 
@@ -802,7 +817,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
     DCHECK(success);
 
     if (draft_page_count != -1 && preview_modifiable &&
-        print_preview_ui->GetAvailableDraftPageCount() != draft_page_count) {
+        print_preview_ui()->GetAvailableDraftPageCount() != draft_page_count) {
       settings->SetBoolean(printing::kSettingGenerateDraftData, true);
     }
   }
@@ -948,9 +963,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
     // This tries to activate the initiator as well, so do not clear the
     // association with the initiator yet.
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        web_ui()->GetController());
-    print_preview_ui->OnHidePreviewDialog();
+    print_preview_ui()->OnHidePreviewDialog();
 
     // Do this so the initiator can open a new print preview dialog, while the
     // current print preview dialog is still handling its print job.
@@ -974,7 +987,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
     // Set ID to know whether printing is for preview.
     settings->SetInteger(printing::kPreviewUIID,
-                         print_preview_ui->GetIDForPrintPreviewUI());
+                         print_preview_ui()->GetIDForPrintPreviewUI());
     RenderViewHost* rvh = preview_web_contents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->GetRoutingID(),
                                                 *settings));
@@ -998,10 +1011,9 @@ void PrintPreviewHandler::PrintToPdf() {
   } else if (!select_file_dialog_.get() ||
              !select_file_dialog_->IsRunning(platform_util::GetTopLevel(
                  preview_web_contents()->GetNativeView()))) {
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        web_ui()->GetController());
     // Pre-populating select file dialog with print job title.
-    base::string16 print_job_title_utf16 = print_preview_ui->initiator_title();
+    base::string16 print_job_title_utf16 =
+        print_preview_ui()->initiator_title();
 
 #if defined(OS_WIN)
     base::FilePath::StringType print_job_title(print_job_title_utf16);
@@ -1015,14 +1027,14 @@ void PrintPreviewHandler::PrintToPdf() {
     default_filename =
         default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
 
-    SelectFile(default_filename);
+    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+    bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
+    SelectFile(default_filename, prompt_user);
   }
 }
 
 void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-  print_preview_ui->OnHidePreviewDialog();
+  print_preview_ui()->OnHidePreviewDialog();
 }
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(
@@ -1063,10 +1075,8 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
 }
 
 void PrintPreviewHandler::OnSigninComplete() {
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(web_ui()->GetController());
-  if (print_preview_ui)
-    print_preview_ui->OnReloadPrintersList();
+  if (print_preview_ui())
+    print_preview_ui()->OnReloadPrintersList();
 }
 
 void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
@@ -1127,9 +1137,7 @@ void PrintPreviewHandler::HandleShowSystemDialog(
   print_view_manager->PrintForSystemDialogNow();
 
   // Cancel the pending preview request if exists.
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(web_ui()->GetController());
-  print_preview_ui->OnCancelPendingPreviewRequest();
+  print_preview_ui()->OnCancelPendingPreviewRequest();
 }
 #endif  // ENABLE_BASIC_PRINTING
 
@@ -1198,19 +1206,16 @@ void PrintPreviewHandler::HandleForceOpenNewTab(const base::ListValue* args) {
 
 void PrintPreviewHandler::SendInitialSettings(
     const std::string& default_printer) {
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(web_ui()->GetController());
-
   base::DictionaryValue initial_settings;
   initial_settings.SetString(kInitiatorTitle,
-                             print_preview_ui->initiator_title());
+                             print_preview_ui()->initiator_title());
   initial_settings.SetBoolean(printing::kSettingPreviewModifiable,
-                              print_preview_ui->source_is_modifiable());
+                              print_preview_ui()->source_is_modifiable());
   initial_settings.SetString(printing::kSettingPrinterName, default_printer);
   initial_settings.SetBoolean(kDocumentHasSelection,
-                              print_preview_ui->source_has_selection());
+                              print_preview_ui()->source_has_selection());
   initial_settings.SetBoolean(printing::kSettingShouldPrintSelectionOnly,
-                              print_preview_ui->print_selection_only());
+                              print_preview_ui()->print_selection_only());
   printing::StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
@@ -1232,15 +1237,13 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetBoolean(kHidePrintWithSystemDialogLink, is_ash);
 #endif
 
-  if (print_preview_ui->source_is_modifiable())
+  if (print_preview_ui()->source_is_modifiable())
     GetNumberFormatAndMeasurementSystem(&initial_settings);
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
 }
 
 void PrintPreviewHandler::ClosePreviewDialog() {
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(web_ui()->GetController());
-  print_preview_ui->OnClosePrintPreviewDialog();
+  print_preview_ui()->OnClosePrintPreviewDialog();
 }
 
 void PrintPreviewHandler::SendAccessToken(const std::string& type,
@@ -1317,16 +1320,15 @@ void PrintPreviewHandler::OnAddAccountToCookieCompleted(
   OnSigninComplete();
 }
 
-void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
-  ChromeSelectFilePolicy policy(GetInitiator());
-  if (!policy.CanOpenSelectFileDialog()) {
-    policy.SelectFileDenied();
-    return ClosePreviewDialog();
+void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
+                                     bool prompt_user) {
+  if (prompt_user) {
+    ChromeSelectFilePolicy policy(GetInitiator());
+    if (!policy.CanOpenSelectFileDialog()) {
+      policy.SelectFileDenied();
+      return ClosePreviewDialog();
+    }
   }
-
-  ui::SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions.resize(1);
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
 
   // Initializing |save_path_| if it is not already initialized.
   printing::StickySettings* sticky_settings = GetStickySettings();
@@ -1342,6 +1344,24 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
         preview_web_contents()->GetBrowserContext())->GetPrefs());
   }
 
+  // Handle the no prompting case. Like the dialog prompt, this function
+  // returns and eventually FileSelected() gets called.
+  if (!prompt_user) {
+    base::PostTaskAndReplyWithResult(
+        BrowserThread::GetBlockingPool(),
+        FROM_HERE,
+        base::Bind(&GetUniquePath,
+                   sticky_settings->save_path()->Append(default_filename)),
+        base::Bind(&PrintPreviewHandler::OnGotUniqueFileName,
+                   weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // Otherwise prompt the user.
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions.resize(1);
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
+
   select_file_dialog_ =
       ui::SelectFileDialog::Create(this, nullptr /*policy already checked*/);
   select_file_dialog_->SelectFile(
@@ -1353,6 +1373,10 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
       base::FilePath::StringType(),
       platform_util::GetTopLevel(preview_web_contents()->GetNativeView()),
       NULL);
+}
+
+void PrintPreviewHandler::OnGotUniqueFileName(const base::FilePath& path) {
+  FileSelected(path, 0, nullptr);
 }
 
 void PrintPreviewHandler::OnPrintPreviewDialogDestroyed() {
@@ -1379,7 +1403,8 @@ void PrintPreviewHandler::ShowSystemDialog() {
 #endif  // ENABLE_BASIC_PRINTING
 
 void PrintPreviewHandler::FileSelected(const base::FilePath& path,
-                                       int index, void* params) {
+                                       int /* index */,
+                                       void* /* params */) {
   // Updating |save_path_| to the newly selected folder.
   printing::StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->StoreSavePath(path.DirName());
@@ -1408,9 +1433,7 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
 }
 
 void PrintPreviewHandler::FileSelectionCanceled(void* params) {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
-  print_preview_ui->OnFileSelectionCancelled();
+  print_preview_ui()->OnFileSelectionCancelled();
 }
 
 void PrintPreviewHandler::ClearInitiatorDetails() {
@@ -1430,10 +1453,8 @@ void PrintPreviewHandler::ClearInitiatorDetails() {
 bool PrintPreviewHandler::GetPreviewDataAndTitle(
     scoped_refptr<base::RefCountedBytes>* data,
     base::string16* title) const {
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
   scoped_refptr<base::RefCountedBytes> tmp_data;
-  print_preview_ui->GetPrintPreviewDataForIndex(
+  print_preview_ui()->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &tmp_data);
 
   if (!tmp_data.get()) {
@@ -1443,7 +1464,7 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
   DCHECK(tmp_data->size() && tmp_data->front());
 
   *data = tmp_data;
-  *title = print_preview_ui->initiator_title();
+  *title = print_preview_ui()->initiator_title();
   return true;
 }
 

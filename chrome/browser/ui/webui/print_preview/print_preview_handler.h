@@ -22,6 +22,7 @@
 #endif  // ENABLE_SERVICE_DISCOVERY
 
 class PrinterHandler;
+class PrintPreviewUI;
 class PrintSystemTaskProxy;
 
 namespace base {
@@ -67,9 +68,6 @@ class PrintPreviewHandler
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
-
-  // Displays a modal dialog, prompting the user to select a file.
-  void SelectFile(const base::FilePath& default_path);
 
   // Called when the print preview dialog is destroyed. This is the last time
   // this object has access to the PrintViewManager in order to disconnect the
@@ -118,6 +116,8 @@ class PrintPreviewHandler
   static bool PrivetPrintingEnabled();
 
   content::WebContents* preview_web_contents() const;
+
+  PrintPreviewUI* print_preview_ui() const;
 
   // Gets the list of printers. |args| is unused.
   void HandleGetPrinters(const base::ListValue* args);
@@ -250,6 +250,14 @@ class PrintPreviewHandler
 
   bool GetPreviewDataAndTitle(scoped_refptr<base::RefCountedBytes>* data,
                               base::string16* title) const;
+
+  // If |prompt_user| is true, displays a modal dialog, prompting the user to
+  // select a file. Otherwise, just accept |default_path| and uniquify it.
+  void SelectFile(const base::FilePath& default_path, bool prompt_user);
+
+  // Helper for getting a unique file name for SelectFile() without prompting
+  // the user. Just an adaptor for FileSelected().
+  void OnGotUniqueFileName(const base::FilePath& path);
 
 #if defined(USE_CUPS)
   void SaveCUPSColorSetting(const base::DictionaryValue* settings);
