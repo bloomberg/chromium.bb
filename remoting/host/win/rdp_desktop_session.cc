@@ -14,6 +14,9 @@ namespace remoting {
 RdpDesktopSession::RdpDesktopSession() {
 }
 
+RdpDesktopSession::~RdpDesktopSession() {
+}
+
 STDMETHODIMP RdpDesktopSession::Connect(
     long width,
     long height,
