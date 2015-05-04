@@ -9,10 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 
-namespace ui {
-class CompositorVSyncManager;
-}
-
 namespace content {
 class CommandBufferProxyImpl;
 
@@ -21,7 +17,6 @@ class OffscreenBrowserCompositorOutputSurface
  public:
   OffscreenBrowserCompositorOutputSurface(
       const scoped_refptr<ContextProviderCommandBuffer>& context,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       scoped_ptr<BrowserCompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

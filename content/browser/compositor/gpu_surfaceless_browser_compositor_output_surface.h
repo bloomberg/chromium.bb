@@ -19,7 +19,6 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   GpuSurfacelessBrowserCompositorOutputSurface(
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       int surface_id,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
       scoped_ptr<BrowserCompositorOverlayCandidateValidator>
           overlay_candidate_validator,
       unsigned internalformat,

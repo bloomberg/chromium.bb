@@ -18,11 +18,9 @@ namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     const scoped_refptr<ContextProviderCommandBuffer>& context,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
     scoped_ptr<BrowserCompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : BrowserCompositorOutputSurface(context,
-                                     vsync_manager,
                                      overlay_candidate_validator.Pass()),
 #if defined(OS_MACOSX)
       should_show_frames_state_(SHOULD_SHOW_FRAMES),

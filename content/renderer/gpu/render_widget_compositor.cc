@@ -233,12 +233,13 @@ void RenderWidgetCompositor::Initialize() {
     settings.use_compositor_animation_timelines = true;
     blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
   }
-  if (cmd->HasSwitch(switches::kEnableBeginFrameScheduling) &&
-      !widget_->for_oopif()) {
+#if !defined(OS_MACOSX)
+  if (!widget_->for_oopif()) {
     // TODO(simonhong): Apply BeginFrame scheduling for OOPIF.
     // See crbug.com/471411.
     settings.use_external_begin_frame_source = true;
   }
+#endif
 
   settings.default_tile_size = CalculateDefaultTileSize(widget_);
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {

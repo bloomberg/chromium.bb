@@ -888,13 +888,10 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK(!compositor_);
 }
 
-void DelegatedFrameHost::OnUpdateVSyncParameters(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
+void DelegatedFrameHost::SetVSyncParameters(base::TimeTicks timebase,
+                                            base::TimeDelta interval) {
   vsync_timebase_ = timebase;
   vsync_interval_ = interval;
-  if (client_->DelegatedFrameHostIsVisible())
-    client_->DelegatedFrameHostUpdateVSyncParameters(timebase, interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -920,8 +917,6 @@ DelegatedFrameHost::~DelegatedFrameHost() {
     surface_factory_->Destroy(surface_id_);
   if (resource_collection_.get())
     resource_collection_->SetClient(NULL);
-
-  DCHECK(!vsync_manager_.get());
 }
 
 void DelegatedFrameHost::RunOnCommitCallbacks() {
@@ -948,9 +943,6 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
     return;
   compositor_ = compositor;
   compositor_->AddObserver(this);
-  DCHECK(!vsync_manager_.get());
-  vsync_manager_ = compositor_->vsync_manager();
-  vsync_manager_->AddObserver(this);
 }
 
 void DelegatedFrameHost::ResetCompositor() {
@@ -963,10 +955,6 @@ void DelegatedFrameHost::ResetCompositor() {
   }
   if (compositor_->HasObserver(this))
     compositor_->RemoveObserver(this);
-  if (vsync_manager_.get()) {
-    vsync_manager_->RemoveObserver(this);
-    vsync_manager_ = NULL;
-  }
   compositor_ = nullptr;
 }
 
