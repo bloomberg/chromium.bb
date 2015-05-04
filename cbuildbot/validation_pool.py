@@ -741,16 +741,25 @@ class PatchSeries(object):
     # 'change' object, so make sure we grab all of that information.
     with parallel.Manager() as manager:
       fetched_changes = manager.dict()
-      def FetchChangesForRepo(repo):
-        for change in by_repo[repo]:
-          original_id = change.id
-          change.Fetch(repo)
-          fetched_changes[original_id] = change
-      parallel.RunTasksInProcessPool(FetchChangesForRepo,
-                                     [[repo] for repo in by_repo])
+      fetch_repo = functools.partial(
+          self._FetchChangesForRepo, fetched_changes, by_repo)
+      parallel.RunTasksInProcessPool(fetch_repo, [[repo] for repo in by_repo])
 
-      # Return the list of fetched changes in the order they were requested.
       return [fetched_changes[c.id] for c in changes_to_fetch]
+
+  def _FetchChangesForRepo(self, fetched_changes, by_repo, repo):
+    """Fetch the changes for a given `repo`.
+
+    Args:
+      fetched_changes: A dict from change ids to changes which is updated by
+        this method.
+      by_repo: A mapping from repositories to changes.
+      repo: The repository we should fetch the changes for.
+    """
+    for change in by_repo[repo]:
+      original_id = change.id
+      change.Fetch(repo)
+      fetched_changes[original_id] = change
 
   @_ManifestDecorator
   def Apply(self, changes, frozen=True, honor_ordering=False,
@@ -898,8 +907,6 @@ class PatchSeries(object):
 
     try:
       yield
-      # Reaching here means it was applied cleanly, thus return.
-      return
     except Exception:
       logging.info("Rewinding transaction: failed changes: %s .",
                    ', '.join(map(str, commits)), exc_info=True)

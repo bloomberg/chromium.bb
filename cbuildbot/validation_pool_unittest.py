@@ -137,6 +137,57 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
     return validation_pool.HelperPool(cros_internal=cros_internal,
                                       cros=cros)
 
+
+class FakePatch(partial_mock.PartialMock):
+  """Mocks out dependency and fetch methods of GitRepoPatch.
+
+  Usage: set FakePatch.parents, .cq and .build_roots per patch, and set
+  FakePatch.assertEqual to your TestCase's assertEqual method.  The behavior of
+  `GerritDependencies`, `PaladinDependencies` and `Fetch` depends on the patch
+  id.
+
+  """
+  TARGET = 'chromite.lib.patch.GitRepoPatch'
+  ATTRS = ('GerritDependencies', 'PaladinDependencies', 'Fetch')
+
+  parents = {}
+  cq = {}
+  build_root = None
+  assertEqual = None
+
+  def PreStart(self):
+    FakePatch.parents = {}
+    FakePatch.cq = {}
+
+  def PreStop(self):
+    FakePatch.build_root = None
+    FakePatch.assertEqual = None
+
+  def GerritDependencies(self, patch):
+    return map(cros_patch.ParsePatchDep, self.parents[patch.id])
+
+  def PaladinDependencies(self, patch, path):
+    self._assertPath(patch, path)
+    return map(cros_patch.ParsePatchDep, self.cq[patch.id])
+
+  def Fetch(self, patch, path):
+    self._assertPath(patch, path)
+    return patch.sha1
+
+  def _assertPath(self, patch, path):
+    self.assertEqual(path,
+                     os.path.join(self.build_root, patch.project))
+
+
+class FakeGerritPatch(FakePatch):
+  """Mocks out the "GerritDependencies" method of GerritPatch.
+
+  This is necessary because GerritPatch overrides the GerritDependencies method.
+  """
+  TARGET = 'chromite.lib.patch.GerritPatch'
+  ATTRS = ('GerritDependencies',)
+
+
 class PatchSeriesTestCase(MoxBase):
   """Base class for tests that need to test PatchSeries."""
 
@@ -158,27 +209,6 @@ class PatchSeriesTestCase(MoxBase):
         lambda change, **kwargs: os.path.join(self.build_root, change.project)
 
     return series
-
-  def assertPath(self, _patch, return_value, path):
-    self.assertEqual(path, os.path.join(self.build_root, _patch.project))
-    if isinstance(return_value, Exception):
-      raise return_value
-    return return_value
-
-  def SetPatchDeps(self, patch, parents=(), cq=()):
-    """Set the dependencies of |patch|.
-
-    Args:
-      patch: The patch to process.
-      parents: A set of strings to set as parents of |patch|.
-      cq: A set of strings to set as paladin dependencies of |patch|.
-    """
-    patch.GerritDependencies = (
-        lambda: [cros_patch.ParsePatchDep(x) for x in parents])
-    patch.PaladinDependencies = functools.partial(
-        self.assertPath, patch, [cros_patch.ParsePatchDep(x) for x in cq])
-    patch.Fetch = functools.partial(
-        self.assertPath, patch, patch.sha1)
 
   def _ValidatePatchApplyManifest(self, value):
     self.assertTrue(isinstance(value, MockManifest))
@@ -238,6 +268,23 @@ class TestUploadedLocalPatch(patch_unittest.UploadedLocalPatchTestCase,
 class TestPatchSeries(PatchSeriesTestCase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
+  def setUp(self):
+    self.StartPatcher(FakePatch())
+    self.PatchObject(FakePatch, 'assertEqual', new=self.assertEqual)
+    self.PatchObject(FakePatch, 'build_root', new=self.build_root)
+    self.StartPatcher(FakeGerritPatch())
+
+  def SetPatchDeps(self, patch, parents=(), cq=()):
+    """Set the dependencies of |patch|.
+
+    Args:
+      patch: The patch to process.
+      parents: A set of strings to set as parents of |patch|.
+      cq: A set of strings to set as paladin dependencies of |patch|.
+    """
+    FakePatch.parents[patch.id] = parents
+    FakePatch.cq[patch.id] = cq
+
   def testApplyWithDeps(self):
     """Test that we can apply changes correctly and respect deps.
 
@@ -269,8 +316,6 @@ class TestPatchSeries(PatchSeriesTestCase):
     series = self.GetPatchSeries()
 
     patch1, patch2, patch3 = patches = self.GetPatches(3)
-    patch2.change_id = patch2.id = patch2.sha1
-    patch3.change_id = patch3.id = '*' + patch3.sha1
     patch3.remote = constants.INTERNAL_REMOTE
 
     self.SetPatchDeps(patch1, [patch2.sha1])

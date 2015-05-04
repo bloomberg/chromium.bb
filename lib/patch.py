@@ -807,6 +807,61 @@ class GitRepoPatch(PatchQuery):
       return None, None, None, None, None, None
     return [unicode(x.strip(), 'ascii', 'ignore') for x in output]
 
+  def UpdateMetadataFromRepo(self, git_repo, sha1):
+    """Update this this object's metadata given a sha1.
+
+    This updates various internal fields such as the committer name and email,
+    the commit message, tree hash, etc.
+
+    Raises a PatchException if the found sha1 differs from self.sha1.
+
+    Args:
+      git_repo: The path to the git repository that this commit exists in.
+      sha1: The sha1 of the commit.  If None, assumes it was just fetched and
+        uses "FETCH_HEAD".
+
+    Returns:
+      The sha1 of the commit.
+    """
+    sha1 = sha1 or 'FETCH_HEAD'
+    sha1, tree_hash, subject, msg, email, name = self._PullData(sha1, git_repo)
+    sha1 = ParseSHA1(sha1, error_ok=False)
+
+    if self.sha1 is not None and sha1 != self.sha1:
+      # Even if we know the sha1, still do a sanity check to ensure we
+      # actually just fetched it.
+      raise PatchException(self,
+                           'Patch %s specifies sha1 %s, yet in fetching from '
+                           '%s we could not find that sha1.  Internal error '
+                           'most likely.' % (self, self.sha1, self.ref))
+
+    self._committer_email = email
+    self._committer_name = name
+    self.sha1 = sha1
+    self.tree_hash = tree_hash
+    self.commit_message = msg
+    self._EnsureId(self.commit_message)
+    self._subject_line = subject
+    self._is_fetched.add(git_repo)
+    return self.sha1
+
+  def HasBeenFetched(self, git_repo):
+    """Whether this patch has already exists locally in `git_repo`
+
+    Args:
+      git_repo: The git repository to fetch this patch into.
+
+    Returns:
+      If it exists, the sha1 of this patch in `git_repo`.
+    """
+    git_repo = os.path.normpath(git_repo)
+    if git_repo in self._is_fetched:
+      return self.sha1
+
+    # See if we've already got the object.
+    if self.sha1 is not None:
+      return self._PullData(self.sha1, git_repo)[0]
+
   def Fetch(self, git_repo):
     """Fetch this patch into the given git repository.
 
@@ -827,41 +882,13 @@ class GitRepoPatch(PatchQuery):
     Returns:
       The sha1 of the patch.
     """
-    git_repo = os.path.normpath(git_repo)
-    if git_repo in self._is_fetched:
-      return self.sha1
-
-    sha1 = None
-    if self.sha1 is not None:
-      # See if we've already got the object.
-      sha1, tree_hash, subject, msg, email, name = (
-          self._PullData(self.sha1, git_repo))
+    sha1 = self.HasBeenFetched(git_repo)
 
     if sha1 is None:
       git.RunGit(git_repo, ['fetch', '-f', self.project_url, self.ref],
                  print_cmd=True)
-      items = self._PullData(self.sha1 or 'FETCH_HEAD', git_repo)
-      sha1, tree_hash, subject, msg, email, name = items
 
-    sha1 = ParseSHA1(sha1, error_ok=False)
-
-    if self.sha1 is not None and sha1 != self.sha1:
-      # Even if we know the sha1, still do a sanity check to ensure we
-      # actually just fetched it.
-      raise PatchException(self,
-                           'Patch %s specifies sha1 %s, yet in fetching from '
-                           '%s we could not find that sha1.  Internal error '
-                           'most likely.' % (self, self.sha1, self.ref))
-
-    self._committer_email = email
-    self._committer_name = name
-    self.sha1 = sha1
-    self.tree_hash = tree_hash
-    self.commit_message = msg
-    self._EnsureId(self.commit_message)
-    self._subject_line = subject
-    self._is_fetched.add(git_repo)
-    return self.sha1
+    return self.UpdateMetadataFromRepo(git_repo, sha1=sha1 or self.sha1)
 
   def GetDiffStatus(self, git_repo):
     """Isolate the paths and modifications this patch induces.
