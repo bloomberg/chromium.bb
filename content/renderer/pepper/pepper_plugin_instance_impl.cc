@@ -3135,9 +3135,6 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
 }
 
 bool PepperPluginInstanceImpl::IsRectTopmost(const gfx::Rect& rect) {
-  if (is_deleted_)
-    return false;
-
   if (flash_fullscreen_)
     return true;
 
