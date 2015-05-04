@@ -75,7 +75,6 @@ remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
   this.desktopActivity_.getConnectingDialog().show();
-  remoting.app.setConnectionMode(remoting.Application.Mode.ME2ME);
   this.desktopActivity_.start(this.host_, this.createCredentialsProvider_(),
                               suppressHostOfflineError);
 };

@@ -74,8 +74,11 @@ remoting.OptionsMenu.prototype.setDesktopConnectedView = function(
 
 remoting.OptionsMenu.prototype.onShow = function() {
   if (this.desktopConnectedView_) {
-    this.resizeToClient_.hidden =
-        remoting.app.getConnectionMode() === remoting.Application.Mode.IT2ME;
+    base.debug.assert(remoting.app instanceof remoting.DesktopRemoting);
+    var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+    var mode = drApp.getConnectionMode();
+
+    this.resizeToClient_.hidden = mode === remoting.DesktopRemoting.Mode.IT2ME;
     remoting.MenuButton.select(
         this.resizeToClient_, this.desktopConnectedView_.getResizeToClient());
     remoting.MenuButton.select(

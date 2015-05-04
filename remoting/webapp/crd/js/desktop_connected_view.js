@@ -132,15 +132,17 @@ remoting.DesktopConnectedView.prototype.getViewportForTesting = function() {
 
 /** @private */
 remoting.DesktopConnectedView.prototype.initPlugin_ = function() {
-  var mode = remoting.app.getConnectionMode();
+  base.debug.assert(remoting.app instanceof remoting.DesktopRemoting);
+  var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+  var mode = drApp.getConnectionMode();
+
   // Show the Send Keys menu only if the plugin has the injectKeyEvent feature,
   // and the Ctrl-Alt-Del button only in Me2Me mode.
   if (!this.plugin_.hasFeature(
           remoting.ClientPlugin.Feature.INJECT_KEY_EVENT)) {
     var sendKeysElement = document.getElementById('send-keys-menu');
     sendKeysElement.hidden = true;
-  } else if (mode != remoting.Application.Mode.ME2ME &&
-             mode != remoting.Application.Mode.APP_REMOTING) {
+  } else if (mode == remoting.DesktopRemoting.Mode.IT2ME) {
     var sendCadElement = document.getElementById('send-ctrl-alt-del');
     sendCadElement.hidden = true;
   }

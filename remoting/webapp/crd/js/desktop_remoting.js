@@ -21,8 +21,30 @@ var remoting = remoting || {};
 remoting.DesktopRemoting = function() {
   base.inherits(this, remoting.Application);
 
+  /** @protected {remoting.DesktopRemoting.Mode} */
+  this.connectionMode_ = remoting.DesktopRemoting.Mode.ME2ME;
+
   /** @private {remoting.Activity} */
   this.activity_ = null;
+};
+
+/**
+ * The current desktop remoting mode (IT2Me or Me2Me).
+ *
+ * @enum {number}
+ */
+remoting.DesktopRemoting.Mode = {
+  IT2ME: 0,
+  ME2ME: 1
+};
+
+/**
+ * Get the connection mode (Me2Me or IT2Me).
+ *
+ * @return {remoting.DesktopRemoting.Mode}
+ */
+remoting.DesktopRemoting.prototype.getConnectionMode = function() {
+  return this.connectionMode_;
 };
 
 /**
@@ -169,7 +191,7 @@ remoting.DesktopRemoting.prototype.isWindowed_ = function(callback) {
  * @private
  */
 remoting.DesktopRemoting.prototype.promptClose_ = function() {
-  if (this.getConnectionMode() === remoting.Application.Mode.IT2ME) {
+  if (this.getConnectionMode() === remoting.DesktopRemoting.Mode.IT2ME) {
     switch (remoting.currentMode) {
       case remoting.AppMode.CLIENT_CONNECTING:
       case remoting.AppMode.HOST_WAITING_FOR_CODE:
@@ -211,6 +233,7 @@ remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
   base.dispose(this.activity_);
   this.activity_ = new remoting.Me2MeActivity(host, remoting.hostList);
   this.activity_.start();
+  this.connectionMode_ = remoting.DesktopRemoting.Mode.ME2ME;
 };
 
 /**
@@ -222,4 +245,5 @@ remoting.DesktopRemoting.prototype.connectIt2Me_ = function() {
   base.dispose(this.activity_);
   this.activity_ = new remoting.It2MeActivity();
   this.activity_.start();
+  this.connectionMode_ = remoting.DesktopRemoting.Mode.IT2ME;
 };

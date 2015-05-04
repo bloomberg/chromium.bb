@@ -214,10 +214,14 @@ browserTest.connectMe2Me = function() {
  * @return {Promise}
  */
 browserTest.disconnect = function() {
+  base.debug.assert(remoting.app instanceof remoting.DesktopRemoting);
+  var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+  var mode = drApp.getConnectionMode();
+
   var AppMode = remoting.AppMode;
   var finishedMode = AppMode.CLIENT_SESSION_FINISHED_ME2ME;
   var finishedButton = 'client-finished-me2me-button';
-  if (remoting.app.getConnectionMode() === remoting.Application.Mode.IT2ME) {
+  if (mode === remoting.DesktopRemoting.Mode.IT2ME) {
     finishedMode = AppMode.CLIENT_SESSION_FINISHED_IT2ME;
     finishedButton = 'client-finished-it2me-button';
   }
@@ -252,7 +256,7 @@ browserTest.enterPIN = function(pin, opt_expectError) {
   }).then(function() {
     if (opt_expectError) {
       return browserTest.expectConnectionError(
-          remoting.Application.Mode.ME2ME,
+          remoting.DesktopRemoting.Mode.ME2ME,
           [remoting.Error.Tag.INVALID_ACCESS_CODE]);
     } else {
       return browserTest.expectConnected();
@@ -261,7 +265,7 @@ browserTest.enterPIN = function(pin, opt_expectError) {
 };
 
 /**
- * @param {remoting.Application.Mode} connectionMode
+ * @param {remoting.DesktopRemoting.Mode} connectionMode
  * @param {Array<remoting.Error.Tag>} errorTags
  * @return {Promise}
  */
@@ -271,7 +275,7 @@ browserTest.expectConnectionError = function(connectionMode, errorTags) {
 
   var finishButton = 'client-finished-me2me-button';
 
-  if (connectionMode == remoting.Application.Mode.IT2ME) {
+  if (connectionMode == remoting.DesktopRemoting.Mode.IT2ME) {
     finishButton = 'client-finished-it2me-button';
   }
 

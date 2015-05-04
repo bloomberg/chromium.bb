@@ -24,10 +24,12 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
   this.parentActivity_ = parentActivity;
   /** @private {remoting.DesktopConnectedView} */
   this.connectedView_ = null;
+
   /** @private */
   this.sessionFactory_ = new remoting.ClientSessionFactory(
       document.querySelector('#client-container .client-plugin-container'),
       remoting.app_capabilities());
+
   /** @private {remoting.ClientSession} */
   this.session_ = null;
   /** @private {remoting.ConnectingDialog} */
@@ -51,6 +53,15 @@ remoting.DesktopRemotingActivity.prototype.start =
       that.session_ = session;
       session.logHostOfflineErrors(!opt_suppressOfflineError);
       session.getLogger().setHostVersion(host.hostVersion);
+
+      var mode = remoting.ServerLogEntry.VALUE_MODE_UNKNOWN;
+      if (that.parentActivity_ instanceof remoting.It2MeActivity) {
+          mode = remoting.ServerLogEntry.VALUE_MODE_IT2ME;
+      } else if (that.parentActivity_ instanceof remoting.Me2MeActivity) {
+          mode = remoting.ServerLogEntry.VALUE_MODE_ME2ME;
+      }
+      session.getLogger().setLogEntryMode(mode);
+
       session.connect(host, credentialsProvider);
   }).catch(remoting.Error.handler(
     function(/** !remoting.Error */ error) {

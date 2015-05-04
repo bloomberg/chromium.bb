@@ -65,7 +65,7 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
   this.signalStrategy_.setIncomingStanzaCallback(
       this.onIncomingMessage_.bind(this));
 
- /** @private {remoting.FormatIq} */
+  /** @private {remoting.FormatIq} */
   this.iqFormatter_ = null;
 
   /**

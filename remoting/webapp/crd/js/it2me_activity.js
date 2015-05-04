@@ -45,7 +45,6 @@ remoting.It2MeActivity.prototype.start = function() {
   var that = this;
 
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
-  remoting.app.setConnectionMode(remoting.Application.Mode.IT2ME);
 
   this.accessCodeDialog_.show().then(function(/** string */ accessCode) {
     that.desktopActivity_.getConnectingDialog().show();

@@ -128,7 +128,6 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
                                  host['sharedSecret']);
       };
 
-      remoting.app.setConnectionMode(remoting.Application.Mode.APP_REMOTING);
       var credentialsProvider = new remoting.CredentialsProvider(
               {fetchThirdPartyToken: fetchThirdPartyToken});
       var that = this;
@@ -137,6 +136,8 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
         function(/** remoting.ClientSession */ session) {
           that.session_ = session;
           session.logHostOfflineErrors(true);
+          session.getLogger().setLogEntryMode(
+              remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING);
           session.connect(host, credentialsProvider);
       });
     } else if (response && response.status == 'pending') {

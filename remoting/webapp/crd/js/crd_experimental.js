@@ -22,10 +22,8 @@ remoting.experimental = {};
  * @param {number} desktopScale Scale factor to apply.
  */
 remoting.experimental.setDesktopScale = function(desktopScale) {
-  var mode = remoting.app.getConnectionMode();
-  if (mode == remoting.Application.Mode.IT2ME ||
-      mode == remoting.Application.Mode.ME2ME) {
-    var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+  var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+  if (drApp instanceof remoting.DesktopRemoting) {
     var connectedView = drApp.getConnectedViewForTesting();
     var viewport = connectedView.getViewportForTesting();
     viewport.setDesktopScale(desktopScale);

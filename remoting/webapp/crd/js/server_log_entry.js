@@ -169,14 +169,11 @@ remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_ = 'session-id-new';
 
 /** @private */
 remoting.ServerLogEntry.KEY_MODE_ = 'mode';
-/** @private */
-remoting.ServerLogEntry.VALUE_MODE_IT2ME_ = 'it2me';
-/** @private */
-remoting.ServerLogEntry.VALUE_MODE_ME2ME_ = 'me2me';
-/** @private */
-remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING_ = 'lgapp';
-/** @private */
-remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_ = 'unknown';
+// These values are passed in by the Activity to identify the current mode.
+remoting.ServerLogEntry.VALUE_MODE_IT2ME = 'it2me';
+remoting.ServerLogEntry.VALUE_MODE_ME2ME = 'me2me';
+remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING = 'lgapp';
+remoting.ServerLogEntry.VALUE_MODE_UNKNOWN = 'unknown';
 
 /** @private */
 remoting.ServerLogEntry.KEY_APP_ID_ = 'application-id';
@@ -224,10 +221,11 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
  *
  * @param {remoting.ClientSession.State} state
  * @param {!remoting.Error} connectionError
+ * @param {string} mode The current app mode (It2Me, Me2Me, AppRemoting).
  * @return {remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
-    connectionError) {
+    connectionError, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
              remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
@@ -239,7 +237,7 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
     entry.set_(remoting.ServerLogEntry.KEY_CONNECTION_ERROR_,
                remoting.ServerLogEntry.getValueForError_(connectionError));
   }
-  entry.addModeField();
+  entry.addModeField(mode);
   return entry;
 };
 
@@ -249,10 +247,11 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
  *
  * @param {remoting.StatsAccumulator} statsAccumulator
  * @param {string} connectionType
+ * @param {string} mode The current app mode (It2Me, Me2Me, AppRemoting).
  * @return {?remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeStats = function(statsAccumulator,
-                                             connectionType) {
+                                             connectionType, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
              remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
@@ -262,7 +261,7 @@ remoting.ServerLogEntry.makeStats = function(statsAccumulator,
     entry.set_(remoting.ServerLogEntry.KEY_CONNECTION_TYPE_,
                connectionType);
   }
-  entry.addModeField();
+  entry.addModeField(mode);
   var nonZero = false;
   nonZero |= entry.addStatsField_(
       remoting.ServerLogEntry.KEY_VIDEO_BANDWIDTH_,
@@ -308,16 +307,17 @@ remoting.ServerLogEntry.prototype.addStatsField_ = function(
  * Makes a log entry for a "this session ID is old" event.
  *
  * @param {string} sessionId
+ * @param {string} mode The current app mode (It2Me, Me2Me, AppRemoting).
  * @return {remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.makeSessionIdOld = function(sessionId) {
+remoting.ServerLogEntry.makeSessionIdOld = function(sessionId, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
              remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
   entry.set_(remoting.ServerLogEntry.KEY_EVENT_NAME_,
              remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_);
   entry.addSessionIdField(sessionId);
-  entry.addModeField();
+  entry.addModeField(mode);
   return entry;
 };
 
@@ -325,16 +325,17 @@ remoting.ServerLogEntry.makeSessionIdOld = function(sessionId) {
  * Makes a log entry for a "this session ID is new" event.
  *
  * @param {string} sessionId
+ * @param {string} mode The current app mode (It2Me, Me2Me, AppRemoting).
  * @return {remoting.ServerLogEntry}
  */
-remoting.ServerLogEntry.makeSessionIdNew = function(sessionId) {
+remoting.ServerLogEntry.makeSessionIdNew = function(sessionId, mode) {
   var entry = new remoting.ServerLogEntry();
   entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
              remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
   entry.set_(remoting.ServerLogEntry.KEY_EVENT_NAME_,
              remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_NEW_);
   entry.addSessionIdField(sessionId);
-  entry.addModeField();
+  entry.addModeField(mode);
   return entry;
 };
 
@@ -493,10 +494,10 @@ remoting.ServerLogEntry.prototype.addHostVersion = function(hostVersion) {
 
 /**
  * Adds a field specifying the mode to this log entry.
+ * @param {string} mode The current app mode (It2Me, Me2Me, AppRemoting).
  */
-remoting.ServerLogEntry.prototype.addModeField = function() {
-  this.set_(remoting.ServerLogEntry.KEY_MODE_,
-            remoting.ServerLogEntry.getModeField_());
+remoting.ServerLogEntry.prototype.addModeField = function(mode) {
+  this.set_(remoting.ServerLogEntry.KEY_MODE_, mode);
 };
 
 /**
@@ -507,22 +508,3 @@ remoting.ServerLogEntry.prototype.addApplicationId = function() {
   this.set_(remoting.ServerLogEntry.KEY_APP_ID_, chrome.runtime.id);
 };
 
-
-/**
- * Gets the value of the mode field to be put in a log entry.
- *
- * @private
- * @return {string}
- */
-remoting.ServerLogEntry.getModeField_ = function() {
-  switch(remoting.app.getConnectionMode()) {
-    case remoting.Application.Mode.IT2ME:
-      return remoting.ServerLogEntry.VALUE_MODE_IT2ME_;
-    case remoting.Application.Mode.ME2ME:
-      return remoting.ServerLogEntry.VALUE_MODE_ME2ME_;
-    case remoting.Application.Mode.APP_REMOTING:
-      return remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING_;
-    default:
-      return remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_;
-  }
-};
