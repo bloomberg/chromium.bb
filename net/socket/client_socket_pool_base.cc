@@ -145,7 +145,13 @@ ClientSocketPoolBaseHelper::Request::Request(
     DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
 }
 
-ClientSocketPoolBaseHelper::Request::~Request() {}
+ClientSocketPoolBaseHelper::Request::~Request() {
+  liveness_ = DEAD;
+}
+
+void ClientSocketPoolBaseHelper::Request::CrashIfInvalid() const {
+  CHECK_EQ(liveness_, ALIVE);
+}
 
 ClientSocketPoolBaseHelper::ClientSocketPoolBaseHelper(
     HigherLayeredPool* pool,
@@ -1318,11 +1324,14 @@ ClientSocketPoolBaseHelper::Group::FindAndRemovePendingRequest(
 scoped_ptr<const ClientSocketPoolBaseHelper::Request>
 ClientSocketPoolBaseHelper::Group::RemovePendingRequest(
     const RequestQueue::Pointer& pointer) {
+  // TODO(eroman): Temporary for debugging http://crbug.com/467797.
+  CHECK(!pointer.is_null());
   scoped_ptr<const Request> request(pointer.value());
   pending_requests_.Erase(pointer);
   // If there are no more requests, kill the backup timer.
   if (pending_requests_.empty())
     backup_job_timer_.Stop();
+  request->CrashIfInvalid();
   return request.Pass();
 }
 

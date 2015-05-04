@@ -183,7 +183,16 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     Flags flags() const { return flags_; }
     const BoundNetLog& net_log() const { return net_log_; }
 
+    // TODO(eroman): Temporary until crbug.com/467797 is solved.
+    void CrashIfInvalid() const;
+
    private:
+    // TODO(eroman): Temporary until crbug.com/467797 is solved.
+    enum Liveness {
+      ALIVE = 0xCA11AB13,
+      DEAD = 0xDEADBEEF,
+    };
+
     ClientSocketHandle* const handle_;
     const CompletionCallback callback_;
     // TODO(akalin): Support reprioritization.
@@ -191,6 +200,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     const bool ignore_limits_;
     const Flags flags_;
     const BoundNetLog net_log_;
+
+    // TODO(eroman): Temporary until crbug.com/467797 is solved.
+    Liveness liveness_ = ALIVE;
 
     DISALLOW_COPY_AND_ASSIGN(Request);
   };
