@@ -587,6 +587,7 @@ void SingleThreadProxy::OnDrawForOutputSurface() {
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc,benchmark", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());
+  DCHECK(!inside_impl_frame_);
   base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
 
   if (layer_tree_host_->output_surface_lost()) {
@@ -597,10 +598,19 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
       return;
   }
 
+  BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, frame_begin_time, base::TimeTicks(),
+      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL));
+
+  // Start the impl frame.
   {
-    BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
-        BEGINFRAME_FROM_HERE, frame_begin_time, base::TimeTicks(),
-        BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL));
+    DebugScopedSetImplThread impl(this);
+    WillBeginImplFrame(begin_frame_args);
+  }
+
+  // Run the "main thread" and get it to commit.
+  {
+    DCHECK(inside_impl_frame_);
     DoBeginMainFrame(begin_frame_args);
     DoCommit();
 
@@ -608,8 +618,9 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
         << "Commit should always succeed and transfer promises.";
   }
 
+  // Finish the impl frame.
   {
-    DebugScopedSetImplThread impl(const_cast<SingleThreadProxy*>(this));
+    DebugScopedSetImplThread impl(this);
     if (layer_tree_host_impl_->settings().impl_side_painting) {
       layer_tree_host_impl_->ActivateSyncTree();
       DCHECK(!layer_tree_host_impl_->active_tree()
@@ -627,6 +638,8 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     // another draw will never be scheduled, so break remaining promises.
     layer_tree_host_impl_->active_tree()->BreakSwapPromises(
         SwapPromise::SWAP_FAILS);
+
+    DidBeginImplFrameDeadline();
   }
 }
 
@@ -717,12 +730,6 @@ DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "461509 SingleThreadProxy::DoComposite5"));
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile6(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461509 SingleThreadProxy::DoComposite6"));
-    layer_tree_host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
