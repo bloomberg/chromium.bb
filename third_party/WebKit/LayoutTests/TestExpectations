@@ -239,6 +239,7 @@ crbug.com/360889 virtual/slimmingpaint/fast/sub-pixel/cssom-subpixel-precision.h
 crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
 crbug.com/360889 virtual/slimmingpaint/fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
 crbug.com/360889 crbug.com/399417 media/video-scales-in-media-document.html [ Failure Crash ]
+crbug.com/360889 crbug.com/399417 virtual/slimmingpaint/media/video-scales-in-media-document.html [ Failure Crash ]
 crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Pass Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Pass Failure ]
 crbug.com/360889 [ Win ] fast/text/whitespace/nowrap-line-break-after-white-space.html [ Pass Failure ]
@@ -803,6 +804,7 @@ crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Tim
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
 crbug.com/390125 media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
+crbug.com/390125 virtual/slimmingpaint/media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
@@ -841,6 +843,7 @@ crbug.com/356834 fast/repaint/shift-relative-positioned-container-with-image-add
 crbug.com/356834 virtual/slimmingpaint/fast/repaint/shift-relative-positioned-container-with-image-addition.html [ Failure Pass ]
 
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure ]
+crbug.com/306249 virtual/slimmingpaint/media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure ]
 
 crbug.com/345649 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
 crbug.com/345648 fast/repaint/selection-gap-overflow-scroll.html [ Pass Failure ]
@@ -1360,6 +1363,7 @@ crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFail
 # crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
 crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
+crbug.com/394216 virtual/slimmingpaint/media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
 
 # Failures that need further investigation.
@@ -1394,6 +1398,8 @@ crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
 crbug.com/400829 media/video-object-fit.html [ ImageOnlyFailure ]
+crbug.com/400841 virtual/slimmingpaint/media/video-canvas-draw.html [ ImageOnlyFailure ]
+crbug.com/400829 virtual/slimmingpaint/media/video-object-fit.html [ ImageOnlyFailure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ ImageOnlyFailure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
@@ -1512,6 +1518,7 @@ crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass ]
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 # Will be converted to requestMediaKeySystemAccess() tests.
 crbug.com/425186 media/encrypted-media/encrypted-media-istypesupported.html [ Skip ]
+crbug.com/425186 virtual/slimmingpaint/media/encrypted-media/encrypted-media-istypesupported.html [ Skip ]
 
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 
@@ -1544,6 +1551,7 @@ crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
+crbug.com/415620 virtual/slimmingpaint/media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
 
 crbug.com/417174 compositing/scaling/tiled-layer-recursion.html [ Pass ImageOnlyFailure ]
 
@@ -1676,6 +1684,10 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/prepend-in-anonymous-t
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
 crbug.com/438281 [ Debug Snowleopard ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html [ Crash ]
 crbug.com/438281 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Failure Crash ]
+
+crbug.com/483864 media/video-paint-invalidation.html [ NeedsRebaseline ]
+crbug.com/483864 virtual/slimmingpaint/media/audio-repaint.html [ NeedsRebaseline ]
+crbug.com/483864 virtual/slimmingpaint/media/video-paint-invalidation.html [ NeedsRebaseline ]
 
 crbug.com/471975 [ Debug ] virtual/antialiasedtext/fast/text/descent-clip-in-scaled-page.html [ Crash ]
 crbug.com/471975 [ Debug ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
@@ -2000,6 +2012,7 @@ crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute
 crbug.com/469660 inspector/elements/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
 
 crbug.com/481779 media/encrypted-media/encrypted-media-syntax.html [ Slow ]
+crbug.com/481779 virtual/slimmingpaint/media/encrypted-media/encrypted-media-syntax.html [ Slow ]
 
 crbug.com/469683 animations/responsive-neutral-keyframes.html [ Slow ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure Timeout ]
@@ -2046,6 +2059,7 @@ crbug.com/453822 virtual/slimmingpaint/fast/forms/calendar-picker/datepicker-cra
 # Temporarily disabled due to a change in HTMLMediaElement behavior, I'll
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
+crbug.com/475244 virtual/slimmingpaint/media/video-durationchange-on-ended.html [ Pass Failure ]
 
 crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
 crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]

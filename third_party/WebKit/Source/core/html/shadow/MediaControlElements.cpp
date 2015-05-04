@@ -418,11 +418,17 @@ bool MediaControlTimelineElement::willRespondToMouseClickEvents()
 void MediaControlTimelineElement::setPosition(double currentTime)
 {
     setValue(String::number(currentTime));
+
+    if (LayoutObject* layoutObject = this->layoutObject())
+        layoutObject->setShouldDoFullPaintInvalidation();
 }
 
 void MediaControlTimelineElement::setDuration(double duration)
 {
     setFloatingPointAttribute(maxAttr, std::isfinite(duration) ? duration : 0);
+
+    if (LayoutObject* layoutObject = this->layoutObject())
+        layoutObject->setShouldDoFullPaintInvalidation();
 }
 
 bool MediaControlTimelineElement::keepEventInNode(Event* event)

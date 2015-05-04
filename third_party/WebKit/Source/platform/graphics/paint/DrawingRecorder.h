@@ -31,6 +31,10 @@ public:
         return m_canUseCachedDrawing;
     }
 
+#if ENABLE(ASSERT)
+    void setSkipUnderInvalidationChecking() { m_skipUnderInvalidationChecking = true; }
+#endif
+
 private:
     GraphicsContext& m_context;
     DisplayItemClientWrapper m_displayItemClient;
@@ -39,6 +43,7 @@ private:
 #if ENABLE(ASSERT)
     mutable bool m_checkedCachedDrawing;
     size_t m_displayItemPosition;
+    bool m_skipUnderInvalidationChecking;
 #endif
 };
 

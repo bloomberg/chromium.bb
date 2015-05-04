@@ -95,6 +95,13 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     const ComputedStyle& style = m_layoutBox.styleRef();
     BoxDecorationData boxDecorationData(m_layoutBox);
 
+#if ENABLE(ASSERT)
+    // For now we don't have notification on media buffered range change from media player
+    // and miss paint invalidation on buffered range chagne. crbug.com/484288.
+    if (style.appearance() == MediaSliderPart)
+        recorder.setSkipUnderInvalidationChecking();
+#endif
+
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.
     if (!m_layoutBox.boxShadowShouldBeAppliedToBackground(boxDecorationData.bleedAvoidance))

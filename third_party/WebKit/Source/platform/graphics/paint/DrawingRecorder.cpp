@@ -23,6 +23,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
 #if ENABLE(ASSERT)
     , m_checkedCachedDrawing(false)
     , m_displayItemPosition(RuntimeEnabledFeatures::slimmingPaintEnabled() ? m_context.displayItemList()->newDisplayItemsSize() : 0)
+    , m_skipUnderInvalidationChecking(false)
 #endif
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -74,7 +75,12 @@ DrawingRecorder::~DrawingRecorder()
 #endif
         m_context.displayItemList()->add(CachedDisplayItem::create(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType)));
     } else {
-        m_context.displayItemList()->add(DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, m_context.endRecording()));
+        OwnPtr<DrawingDisplayItem> drawingDisplayItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, m_context.endRecording());
+#if ENABLE(ASSERT)
+        if (m_skipUnderInvalidationChecking)
+            drawingDisplayItem->setSkipUnderInvalidationChecking();
+#endif
+        m_context.displayItemList()->add(drawingDisplayItem.release());
     }
 }
 

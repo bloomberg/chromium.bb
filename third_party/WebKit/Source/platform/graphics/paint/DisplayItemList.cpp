@@ -303,6 +303,9 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     if (!displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
         return;
 
+    if (static_cast<const DrawingDisplayItem&>(displayItem).skipUnderInvalidationChecking())
+        return;
+
     // If checking under-invalidation, we always generate new display item even if the client is not invalidated.
     // Checks if the new picture is the same as the cached old picture. If the new picture is different but
     // the client is not invalidated, issue error about under-invalidation.
