@@ -97,3 +97,8 @@ crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
 crbug.com/427628 inspector/sources/debugger/debugger-save-to-temp-var.html [ Leak ]
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 crbug.com/459576 webaudio/dom-exceptions.html [ Crash ]
+
+crbug.com/482050 fast/repaint/fixed-move-after-keyboard-scroll.html [ Leak ]
+crbug.com/482050 fast/repaint/repaint-tile-clipped.html [ Leak ]
+crbug.com/482050 virtual/slimmingpaint/fast/repaint/fixed-move-after-keyboard-scroll.html [ Leak ]
+crbug.com/482050 virtual/slimmingpaint/fast/repaint/repaint-tile-clipped.html [ Leak ]
