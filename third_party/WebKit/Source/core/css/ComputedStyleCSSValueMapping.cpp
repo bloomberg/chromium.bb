@@ -55,6 +55,12 @@
 
 namespace blink {
 
+inline static bool isFlexOrGrid(Node* element)
+{
+    return element && element->ensureComputedStyle()
+        && element->ensureComputedStyle()->isDisplayFlexibleOrGridBox();
+}
+
 inline static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> zoomAdjustedPixelValue(double value, const ComputedStyle& style)
 {
     return cssValuePool().createValue(adjustFloatForAbsoluteZoom(value, style), CSSPrimitiveValue::CSS_PX);
@@ -378,10 +384,7 @@ static ItemPosition resolveAlignmentAuto(ItemPosition position, Node* element)
     if (position != ItemPositionAuto)
         return position;
 
-    bool isFlexOrGrid = element && element->ensureComputedStyle()
-        && element->ensureComputedStyle()->isDisplayFlexibleOrGridBox();
-
-    return isFlexOrGrid ? ItemPositionStretch : ItemPositionStart;
+    return isFlexOrGrid(element) ? ItemPositionStretch : ItemPositionStart;
 }
 
 static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlignment(ItemPosition itemPosition, OverflowAlignment overflowAlignment, ItemPositionType positionType)
@@ -1768,14 +1771,18 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return zoomAdjustedPixelValueForLength(maxWidth, style);
     }
     case CSSPropertyMinHeight:
-        // FIXME: For flex-items, min-height:auto should compute to min-content.
-        if (style.minHeight().isAuto())
+        if (style.minHeight().isAuto()) {
+            if (isFlexOrGrid(styledNode->parentNode()))
+                return cssValuePool().createIdentifierValue(CSSValueAuto);
             return zoomAdjustedPixelValue(0, style);
+        }
         return zoomAdjustedPixelValueForLength(style.minHeight(), style);
     case CSSPropertyMinWidth:
-        // FIXME: For flex-items, min-width:auto should compute to min-content.
-        if (style.minWidth().isAuto())
+        if (style.minWidth().isAuto()) {
+            if (isFlexOrGrid(styledNode->parentNode()))
+                return cssValuePool().createIdentifierValue(CSSValueAuto);
             return zoomAdjustedPixelValue(0, style);
+        }
         return zoomAdjustedPixelValueForLength(style.minWidth(), style);
     case CSSPropertyObjectFit:
         return cssValuePool().createValue(style.objectFit());
