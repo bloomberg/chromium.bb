@@ -1384,14 +1384,16 @@ void RenderFrameImpl::OnJavaScriptExecuteRequest(
 void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
     const base::string16& jscript,
     int id,
-    bool notify_result) {
+    bool notify_result,
+    bool has_user_gesture) {
   TRACE_EVENT_INSTANT0("test_tracing", "OnJavaScriptExecuteRequestForTests",
                        TRACE_EVENT_SCOPE_THREAD);
 
   // A bunch of tests expect to run code in the context of a user gesture, which
   // can grant additional privileges (e.g. the ability to create popups).
-  blink::WebScopedUserGesture gesture;
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  scoped_ptr<blink::WebScopedUserGesture> gesture(
+      has_user_gesture ? new blink::WebScopedUserGesture : nullptr);
+  v8::HandleScope handle_scope(blink::mainThreadIsolate());
   v8::Local<v8::Value> result =
       frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
 

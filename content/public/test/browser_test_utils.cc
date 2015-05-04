@@ -136,7 +136,8 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
   std::string script =
       "window.domAutomationController.setAutomationId(0);" + original_script;
   DOMOperationObserver dom_op_observer(render_frame_host->GetRenderViewHost());
-  render_frame_host->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script));
+  render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
+      base::UTF8ToUTF16(script));
   std::string json;
   if (!dom_op_observer.WaitAndGetResponse(&json)) {
     DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";

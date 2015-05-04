@@ -463,10 +463,11 @@ IPC_MESSAGE_ROUTED3(FrameMsg_JavaScriptExecuteRequest,
 
 // ONLY FOR TESTS: Same as above but adds a fake UserGestureindicator around
 // execution. (crbug.com/408426)
-IPC_MESSAGE_ROUTED3(FrameMsg_JavaScriptExecuteRequestForTests,
+IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestForTests,
                     base::string16,  /* javascript */
                     int,  /* ID */
-                    bool  /* if true, a reply is requested */)
+                    bool, /* if true, a reply is requested */
+                    bool  /* if true, a user gesture indicator is created */)
 
 // Selects between the given start and end offsets in the currently focused
 // editable field.

@@ -134,7 +134,7 @@ void WebstoreInstallerTest::RunTestAsync(
   std::string script = base::StringPrintf(
       "%s('%s')", test_function_name.c_str(), test_gallery_url_.c_str());
   browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
-      ExecuteJavaScriptForTests(base::UTF8ToUTF16(script));
+      ExecuteJavaScriptWithUserGestureForTests(base::UTF8ToUTF16(script));
 }
 
 void WebstoreInstallerTest::AutoAcceptInstall() {

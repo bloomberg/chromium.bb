@@ -135,7 +135,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
                          const JavaScriptResultCallback& callback) override;
-  void ExecuteJavaScriptForTests(const base::string16& javascript) override;
+  void ExecuteJavaScriptWithUserGestureForTests(
+      const base::string16& javascript) override;
   void ActivateFindInPageResultForAccessibility(int request_id) override;
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;

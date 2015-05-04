@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // Initiate a navigation that will create a new WebContents in the same
   // SiteInstace...
   content::WebContentsAddedObserver web_contents_added_observer;
-  tab1->GetMainFrame()->ExecuteJavaScriptForTests(
+  tab1->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
       base::ASCIIToUTF16("window.open('title3.html', '_blank');"));
   // ... then immediately hang the renderer so that title3.html can't load.
   tab1->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16("while(1);"));

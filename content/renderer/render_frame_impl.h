@@ -617,7 +617,8 @@ class CONTENT_EXPORT RenderFrameImpl
                                   bool notify_result);
   void OnJavaScriptExecuteRequestForTests(const base::string16& javascript,
                                           int id,
-                                          bool notify_result);
+                                          bool notify_result,
+                                          bool has_user_gesture);
   void OnVisualStateRequest(uint64 key);
   void OnSetEditableSelectionOffsets(int start, int end);
   void OnSetCompositionFromExistingText(

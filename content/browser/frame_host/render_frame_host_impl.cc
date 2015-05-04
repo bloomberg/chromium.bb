@@ -280,11 +280,11 @@ void RenderFrameHostImpl::ExecuteJavaScript(
   javascript_callbacks_.insert(std::make_pair(key, callback));
 }
 
-void RenderFrameHostImpl::ExecuteJavaScriptForTests(
+void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
     const base::string16& javascript) {
   Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_,
                                                      javascript,
-                                                     0, false));
+                                                     0, false, true));
 }
 
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {

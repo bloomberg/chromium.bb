@@ -76,7 +76,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // ONLY FOR TESTS: Same as above but adds a fake UserGestureIndicator around
   // execution. (crbug.com/408426)
-  virtual void ExecuteJavaScriptForTests(const base::string16& javascript) = 0;
+  virtual void ExecuteJavaScriptWithUserGestureForTests(
+      const base::string16& javascript) = 0;
 
   // Accessibility actions - these send a message to the RenderFrame
   // to trigger an action on an accessibility object.

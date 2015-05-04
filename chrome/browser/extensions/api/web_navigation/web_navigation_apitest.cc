@@ -210,7 +210,7 @@ class DelayLoadStartAndExecuteJavascript
       return;
 
     if (has_user_gesture_) {
-      rvh_->GetMainFrame()->ExecuteJavaScriptForTests(
+      rvh_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
           base::UTF8ToUTF16(script_));
     } else {
       rvh_->GetMainFrame()->ExecuteJavaScript(base::UTF8ToUTF16(script_));

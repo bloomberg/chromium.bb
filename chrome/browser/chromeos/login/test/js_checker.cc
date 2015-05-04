@@ -36,7 +36,7 @@ void JSChecker::Evaluate(const std::string& expression) {
 void JSChecker::Execute(const std::string& expression) {
   CHECK(web_contents_);
   std::string new_script = expression + ";";
-  web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
+  web_contents_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
       base::UTF8ToUTF16(new_script));
 }
 
