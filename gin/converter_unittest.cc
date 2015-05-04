@@ -16,9 +16,9 @@
 
 using v8::Array;
 using v8::Boolean;
-using v8::Handle;
 using v8::HandleScope;
 using v8::Integer;
+using v8::Local;
 using v8::Null;
 using v8::Number;
 using v8::Object;
@@ -39,7 +39,7 @@ TEST_F(ConverterTest, Bool) {
       Boolean::New(instance_->isolate(), false)));
 
   struct {
-    Handle<Value> input;
+    Local<Value> input;
     bool expected;
   } test_data[] = {
     { Boolean::New(instance_->isolate(), false).As<Value>(), false },
@@ -116,8 +116,8 @@ TEST_F(ConverterTest, Vector) {
   expected.push_back(0);
   expected.push_back(1);
 
-  Handle<Array> js_array = Handle<Array>::Cast(
-      Converter<std::vector<int> >::ToV8(instance_->isolate(), expected));
+  Local<Array> js_array = Local<Array>::Cast(
+      Converter<std::vector<int>>::ToV8(instance_->isolate(), expected));
   ASSERT_FALSE(js_array.IsEmpty());
   EXPECT_EQ(3u, js_array->Length());
   for (size_t i = 0; i < expected.size(); ++i) {
