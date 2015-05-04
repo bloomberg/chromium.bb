@@ -725,15 +725,9 @@
   "ClangToTMacASan tester": {
     "gtest_tests": [
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "accessibility_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "app_list_unittests"
       },
       {
@@ -752,24 +746,15 @@
         "test": "cacheinvalidation_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "cast_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "cc_unittests"
       },
       {
         "test": "chromedriver_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "components_unittests"
       },
       {
@@ -779,9 +764,6 @@
         "test": "content_browsertests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "content_unittests"
       },
       {
@@ -797,18 +779,12 @@
         "test": "gcm_unit_tests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gfx_unittests"
       },
       {
         "test": "google_apis_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "gpu_unittests"
       },
       {
@@ -824,21 +800,12 @@
         "test": "jingle_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "media_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "message_center_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "midi_unittests"
       },
       {
@@ -884,9 +851,6 @@
         "test": "sql_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "sync_integration_tests"
       },
       {
