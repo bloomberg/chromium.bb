@@ -2006,7 +2006,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     LayoutUnit containerLogicalWidth = std::max(LayoutUnit(), containingBlockLogicalWidthForContent());
     bool hasPerpendicularContainingBlock = cb->isHorizontalWritingMode() != isHorizontalWritingMode();
 
-    if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->minWidth().isAuto()) {
+    if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->minWidth().isAuto() && style()->overflowX() == OVISIBLE) {
         LayoutUnit minLogicalWidth = minPreferredLogicalWidth();
         if (containerLogicalWidth < minLogicalWidth) {
             computedValues.m_extent = constrainLogicalWidthByMinMax(minLogicalWidth, containerLogicalWidth, cb);
@@ -2340,7 +2340,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         // https://bugs.webkit.org/show_bug.cgi?id=46418
         if (hasOverrideLogicalContentHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isLayoutGrid())) {
             LayoutUnit contentHeight = overrideLogicalContentHeight();
-            if (parent()->isLayoutGrid() && style()->minHeight().isAuto()) {
+            if (parent()->isLayoutGrid() && style()->minHeight().isAuto() && style()->overflowY() == OVISIBLE) {
                 ASSERT(style()->logicalHeight().isAuto());
                 LayoutUnit minContentHeight = computeContentLogicalHeight(MinSize, Length(MinContent), computedValues.m_extent - borderAndPaddingLogicalHeight());
                 contentHeight = std::max(contentHeight, constrainLogicalHeightByMinMax(minContentHeight, computedValues.m_extent - borderAndPaddingLogicalHeight()));
