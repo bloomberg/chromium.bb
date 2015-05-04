@@ -774,3 +774,16 @@ name=http://crbug.com/476586b
 *!cc::LayerTreeHost::BeginMainFrame
 *!cc::ThreadProxy::BeginMainFrame
 *!base::internal::InvokeHelper<>::MakeItSo
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/483305
+blink_web.dll!blink::WebFrameWidgetImpl::suppressInvalidations
+blink_web.dll!blink::WebFrameWidgetImpl::setRootGraphicsLayer
+blink_web.dll!blink::ChromeClientImpl::attachRootGraphicsLayer
+blink_web.dll!blink::DeprecatedPaintLayerCompositor::detachRootLayer
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/484352
+blink_web.dll!blink::WebFrameWidgetImpl::setIsAcceleratedCompositingActive
+blink_web.dll!blink::WebFrameWidgetImpl::willCloseLayerTreeView
+scheduler.dll!scheduler::TaskQueueManager::ProcessTaskFromWorkQueue
