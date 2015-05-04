@@ -1590,7 +1590,7 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
       CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
 
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_P(SpdySessionTest, ClearSettingsStorageOnIPAddressChanged) {
@@ -2767,8 +2767,8 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   // Verify task observer's executed_count is zero, which indicates DoRead read
   // all the available data.
   EXPECT_EQ(0u, observer.executed_count());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
 }
 
 // Test that SpdySession::DoReadLoop yields while reading the
@@ -2859,8 +2859,8 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   // posted only one task and thus yielded though there is data available for it
   // to read.
   EXPECT_EQ(1u, observer.executed_count());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
 }
 
 // Test that SpdySession::DoReadLoop() tests interactions of yielding
@@ -2970,8 +2970,8 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   // posted only one task and thus yielded though there is data available for
   // it to read.
   EXPECT_EQ(1u, observer.executed_count());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
 }
 
 // Send a GoAway frame when SpdySession is in DoReadLoop. Make sure
@@ -3030,8 +3030,8 @@ TEST_P(SpdySessionTest, GoAwayWhileInDoReadLoop) {
   // Run until GoAway.
   data.RunFor(3);
   EXPECT_EQ(NULL, spdy_stream1.get());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
   EXPECT_TRUE(session == NULL);
 }
 
@@ -3938,8 +3938,8 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 
   data.RunFor(4);
 
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
 
   EXPECT_EQ(initial_window_size, session->session_recv_window_size_);
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
@@ -4018,8 +4018,8 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 
   data.RunFor(1);
 
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
 
   EXPECT_EQ(initial_window_size - msg_data_size,
             session->session_send_window_size_);
@@ -4140,8 +4140,8 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
             session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data.at_read_eof());
 
   EXPECT_EQ(msg_data, delegate.TakeReceivedData());
 
@@ -4239,7 +4239,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
   EXPECT_TRUE(delegate.send_headers_completed());
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(":status"));
   EXPECT_EQ(std::string(), delegate.TakeReceivedData());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Run the resume-after-unstall test with all possible stall and
@@ -4440,7 +4440,7 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
   EXPECT_EQ("200", delegate2.GetResponseHeaderValue(":status"));
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
 
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Delegate that closes a given stream after sending its body.
@@ -4626,7 +4626,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
   EXPECT_TRUE(delegate3.send_headers_completed());
   EXPECT_EQ(std::string(), delegate3.TakeReceivedData());
 
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // Cause a stall by reducing the flow control send window to
@@ -4740,7 +4740,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
   EXPECT_TRUE(delegate2.send_headers_completed());
   EXPECT_EQ(std::string(), delegate2.TakeReceivedData());
 
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_P(SpdySessionTest, GoAwayOnSessionFlowControlError) {
