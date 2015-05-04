@@ -1382,6 +1382,22 @@ void WebAXObject::loadInlineTextBoxes() const
     m_private->loadInlineTextBoxes();
 }
 
+WebAXObject WebAXObject::nextOnLine() const
+{
+    if (isDetached())
+        return WebAXObject();
+
+    return WebAXObject(m_private.get()->nextOnLine());
+}
+
+WebAXObject WebAXObject::previousOnLine() const
+{
+    if (isDetached())
+        return WebAXObject();
+
+    return WebAXObject(m_private.get()->previousOnLine());
+}
+
 WebAXTextDirection WebAXObject::textDirection() const
 {
     if (isDetached())

@@ -157,4 +157,28 @@ AccessibilityTextDirection AXInlineTextBox::textDirection() const
     return AccessibilityTextDirectionLeftToRight;
 }
 
+AXObject* AXInlineTextBox::nextOnLine() const
+{
+    RefPtr<AbstractInlineTextBox> nextOnLine = m_inlineTextBox->nextOnLine();
+    if (nextOnLine)
+        return m_axObjectCache->getOrCreate(nextOnLine.get());
+
+    if (!m_inlineTextBox->isLast())
+        return 0;
+
+    return parentObject()->nextOnLine();
+}
+
+AXObject* AXInlineTextBox::previousOnLine() const
+{
+    RefPtr<AbstractInlineTextBox> previousOnLine = m_inlineTextBox->previousOnLine();
+    if (previousOnLine)
+        return m_axObjectCache->getOrCreate(previousOnLine.get());
+
+    if (!m_inlineTextBox->isFirst())
+        return 0;
+
+    return parentObject()->previousOnLine();
+}
+
 } // namespace blink

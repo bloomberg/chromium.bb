@@ -106,8 +106,10 @@ protected:
     virtual int textLength() const override;
     virtual KURL url() const override;
 
-    // Load inline text boxes if they're not already loaded.
+    // Inline text boxes.
     virtual void loadInlineTextBoxes() override;
+    virtual AXObject* nextOnLine() const override;
+    virtual AXObject* previousOnLine() const override;
 
     // Properties of interactive elements.
     virtual String actionVerb() const override;

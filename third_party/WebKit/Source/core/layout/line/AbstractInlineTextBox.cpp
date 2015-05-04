@@ -75,6 +75,7 @@ void AbstractInlineTextBox::detach()
 
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextInlineTextBox() const
 {
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->layoutObject().needsLayout());
     if (!m_inlineTextBox)
         return nullptr;
 
@@ -156,6 +157,44 @@ String AbstractInlineTextBox::text() const
     if (m_inlineTextBox->nextTextBox() && m_inlineTextBox->nextTextBox()->start() > m_inlineTextBox->end() && result.length() && !result.right(1).containsOnlyWhitespace())
         return result + " ";
     return result;
+}
+
+bool AbstractInlineTextBox::isFirst() const
+{
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->layoutObject().needsLayout());
+    return !m_inlineTextBox || !m_inlineTextBox->prevTextBox();
+}
+
+bool AbstractInlineTextBox::isLast() const
+{
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->layoutObject().needsLayout());
+    return !m_inlineTextBox || !m_inlineTextBox->nextTextBox();
+}
+
+PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextOnLine() const
+{
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->layoutObject().needsLayout());
+    if (!m_inlineTextBox)
+        return nullptr;
+
+    InlineBox* next = m_inlineTextBox->nextOnLine();
+    if (next && next->isInlineTextBox())
+        return getOrCreate(&toInlineTextBox(next)->layoutObject(), toInlineTextBox(next));
+
+    return nullptr;
+}
+
+PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::previousOnLine() const
+{
+    ASSERT(!m_inlineTextBox || !m_inlineTextBox->layoutObject().needsLayout());
+    if (!m_inlineTextBox)
+        return nullptr;
+
+    InlineBox* previous = m_inlineTextBox->prevOnLine();
+    if (previous && previous->isInlineTextBox())
+        return getOrCreate(&toInlineTextBox(previous)->layoutObject(), toInlineTextBox(previous));
+
+    return nullptr;
 }
 
 } // namespace blink

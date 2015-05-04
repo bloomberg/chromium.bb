@@ -82,6 +82,10 @@ public:
     void characterWidths(Vector<FloatWillBeLayoutUnit>&) const;
     void wordBoundaries(Vector<WordBoundaries>&) const;
     String text() const;
+    bool isFirst() const;
+    bool isLast() const;
+    PassRefPtr<AbstractInlineTextBox> nextOnLine() const;
+    PassRefPtr<AbstractInlineTextBox> previousOnLine() const;
 
 private:
     void detach();

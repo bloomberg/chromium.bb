@@ -266,6 +266,11 @@ public:
     // settings->inlineTextBoxAccessibilityEnabled() is false.
     BLINK_EXPORT void loadInlineTextBoxes() const;
 
+    // Walk the WebAXObjects on the same line. This is supported on any
+    // object type but primarily intended to be used for inline text boxes.
+    BLINK_EXPORT WebAXObject nextOnLine() const;
+    BLINK_EXPORT WebAXObject previousOnLine() const;
+
     // For an inline text box.
     BLINK_EXPORT WebAXTextDirection textDirection() const;
     BLINK_EXPORT void characterOffsets(WebVector<int>&) const;

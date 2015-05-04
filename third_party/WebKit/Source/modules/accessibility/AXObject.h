@@ -552,6 +552,11 @@ public:
     // settings->inlineTextBoxAccessibilityEnabled() is false.
     virtual void loadInlineTextBoxes() { }
 
+    // Walk the AXObjects on the same line. This is supported on any
+    // object type but primarily intended to be used for inline text boxes.
+    virtual AXObject* nextOnLine() const { return nullptr; }
+    virtual AXObject* previousOnLine() const { return nullptr; }
+
     // For an inline text box.
     virtual AccessibilityTextDirection textDirection() const { return AccessibilityTextDirectionLeftToRight; }
     // The integer horizontal pixel offset of each character in the string; negative values for RTL.

@@ -57,6 +57,8 @@ public:
     virtual LayoutRect elementRect() const override;
     virtual AXObject* computeParent() const override;
     virtual AccessibilityTextDirection textDirection() const override;
+    virtual AXObject* nextOnLine() const override;
+    virtual AXObject* previousOnLine() const override;
 
 private:
     RefPtr<AbstractInlineTextBox> m_inlineTextBox;

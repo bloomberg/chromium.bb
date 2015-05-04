@@ -876,7 +876,7 @@ KURL AXLayoutObject::url() const
 }
 
 //
-// Load inline text boxes.
+// Inline text boxes.
 //
 
 void AXLayoutObject::loadInlineTextBoxes()
@@ -886,6 +886,64 @@ void AXLayoutObject::loadInlineTextBoxes()
 
     clearChildren();
     addInlineTextBoxChildren(true);
+}
+
+AXObject* AXLayoutObject::nextOnLine() const
+{
+    if (!m_layoutObject)
+        return 0;
+
+    InlineBox* inlineBox;
+    if (m_layoutObject->isLayoutInline())
+        inlineBox = toLayoutInline(m_layoutObject)->lastLineBox();
+    else if (m_layoutObject->isText())
+        inlineBox = toLayoutText(m_layoutObject)->lastTextBox();
+    else
+        return 0;
+
+    AXObject* result = 0;
+    for (InlineBox* next = inlineBox->nextOnLine(); next; next = next->nextOnLine()) {
+        LayoutObject* layoutObject = &next->layoutObject();
+        result = axObjectCache()->getOrCreate(layoutObject);
+        if (result)
+            break;
+    }
+
+    // A static text node might span multiple lines. Try to return the first inline
+    // text box within that static text if possible.
+    if (result && result->roleValue() == StaticTextRole && result->children().size())
+        result = result->children()[0].get();
+
+    return result;
+}
+
+AXObject* AXLayoutObject::previousOnLine() const
+{
+    if (!m_layoutObject)
+        return 0;
+
+    InlineBox* inlineBox;
+    if (m_layoutObject->isLayoutInline())
+        inlineBox = toLayoutInline(m_layoutObject)->firstLineBox();
+    else if (m_layoutObject->isText())
+        inlineBox = toLayoutText(m_layoutObject)->firstTextBox();
+    else
+        return 0;
+
+    AXObject* result = 0;
+    for (InlineBox* prev = inlineBox->prevOnLine(); prev; prev = prev->prevOnLine()) {
+        LayoutObject* layoutObject = &prev->layoutObject();
+        result = axObjectCache()->getOrCreate(layoutObject);
+        if (result)
+            break;
+    }
+
+    // A static text node might span multiple lines. Try to return the last inline
+    // text box within that static text if possible.
+    if (result && result->roleValue() == StaticTextRole && result->children().size())
+        result = result->children()[result->children().size() - 1].get();
+
+    return result;
 }
 
 //
