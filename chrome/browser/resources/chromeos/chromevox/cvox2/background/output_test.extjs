@@ -85,15 +85,16 @@ TEST_F('OutputE2ETest', 'InLineTextBoxValueGetsIgnored', function() {
 });
 
 TEST_F('OutputE2ETest', 'Headings', function() {
-  this.runWithLoadedTree(
-      '<h1>a</h1><h2>b</h2><h3>c</h3><h4>d</h4><h5>e</h5><h6>f</h6>',
+  this.runWithLoadedTree(function() {/*!
+      <h1>a</h1><h2>b</h2><h3>c</h3><h4>d</h4><h5>e</h5><h6>f</h6>
+      <h1><a href="a.com">b</a></h1> */},
     function(root) {
       var el = root.firstChild;
       var range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 1a', 'spans_': [
         // Attributes.
-        {value: 'name', start: 9, end: 10}
+        {value: 'nameOrDescendants', start: 9, end: 10}
       ]}, o.toSpannable());
 
       el = el.nextSibling;
@@ -101,7 +102,7 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 2b', 'spans_': [
         // Attributes.
-        {value: 'name', start: 9, end: 10}
+        {value: 'nameOrDescendants', start: 9, end: 10}
       ]}, o.toSpannable());
 
       el = el.nextSibling;
@@ -109,7 +110,7 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 3c', 'spans_': [
         // Attributes.
-        {value: 'name', start: 9, end: 10}
+        {value: 'nameOrDescendants', start: 9, end: 10}
       ]}, o.toSpannable());
 
       el = el.nextSibling;
@@ -117,7 +118,7 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 4d', 'spans_': [
         // Attributes.
-        {value: 'name', start: 9, end: 10}
+        {value: 'nameOrDescendants', start: 9, end: 10}
       ]}, o.toSpannable());
 
       el = el.nextSibling;
@@ -125,7 +126,7 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 5e', 'spans_': [
         // Attributes.
-        {value: 'name', start: 9, end: 10}
+        {value: 'nameOrDescendants', start: 9, end: 10}
       ]}, o.toSpannable());
 
       el = el.nextSibling;
@@ -133,8 +134,20 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 6f', 'spans_': [
         // Attributes.
-        {value: 'name', start: 9, end: 10}
+        {value: 'nameOrDescendants', start: 9, end: 10}
       ]}, o.toSpannable());
+
+      el = el.nextSibling;
+      range = cursors.Range.fromNode(el);
+      o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Heading 1|b|Link', 'spans_': [
+        // Heading attributes.
+        {value: 'name', start: 10, end: 11},
+
+        // Link.
+        {value: 'role', start: 12, end: 16},
+        {value: {}, start: 12, end: 16}
+      ]}, o.toSpannableForTest());
   });
 });
 

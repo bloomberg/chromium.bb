@@ -371,7 +371,7 @@ Output.RULES = {
     },
     heading: {
       enter: '@tag_h+$hierarchicalLevel',
-      speak: '@tag_h+$hierarchicalLevel $name='
+      speak: '@tag_h+$hierarchicalLevel $nameOrDescendants='
     },
     inlineTextBox: {
       speak: '$value='
@@ -774,6 +774,12 @@ Output.prototype = {
             token = 'name';
           options.annotation.push(token);
           this.append_(buff, text, options);
+        } else if (token == 'nameOrDescendants') {
+          options.annotation.push(token);
+          if (node.name)
+            this.append_(buff, node.name, options);
+          else
+            this.format_(node, '$descendants', buff);
         } else if (token == 'indexInParent') {
           options.annotation.push(token);
           this.append_(buff, String(node.indexInParent + 1));
@@ -811,7 +817,10 @@ Output.prototype = {
           var subrange = new cursors.Range(
               new cursors.Cursor(leftmost, 0),
               new cursors.Cursor(rightmost, 0));
-          this.range_(subrange, null, 'navigate', buff);
+          var prev = null;
+          if (node)
+            prev = cursors.Range.fromNode(node);
+          this.range_(subrange, prev, 'navigate', buff);
         } else if (token == 'role') {
           options.annotation.push(token);
           var msg = node.role;

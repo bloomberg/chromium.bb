@@ -3,15 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * @param {string} url
- * @constructor
- */
-function Audio(url) {}
-Audio.prototype.play;
-Audio.prototype.pause;
-Audio.prototype.autoplay;
-
-/**
  * @type {Object}
  */
 chrome.brailleDisplayPrivate = {};
