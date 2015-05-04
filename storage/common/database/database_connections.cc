@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace storage {
 
@@ -123,7 +123,7 @@ bool DatabaseConnections::RemoveConnectionsHelper(
 
 DatabaseConnectionsWrapper::DatabaseConnectionsWrapper()
     : waiting_for_dbs_to_close_(false),
-      main_thread_(base::MessageLoopProxy::current()) {
+      main_thread_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
 DatabaseConnectionsWrapper::~DatabaseConnectionsWrapper() {

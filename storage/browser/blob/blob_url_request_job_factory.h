@@ -13,7 +13,7 @@
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace storage {
@@ -48,7 +48,7 @@ class STORAGE_EXPORT BlobProtocolHandler
   BlobProtocolHandler(
       BlobStorageContext* context,
       storage::FileSystemContext* file_system_context,
-      const scoped_refptr<base::MessageLoopProxy>& file_loop_proxy);
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
   ~BlobProtocolHandler() override;
 
   net::URLRequestJob* MaybeCreateJob(
@@ -60,7 +60,7 @@ class STORAGE_EXPORT BlobProtocolHandler
 
   base::WeakPtr<BlobStorageContext> context_;
   const scoped_refptr<storage::FileSystemContext> file_system_context_;
-  const scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
 };

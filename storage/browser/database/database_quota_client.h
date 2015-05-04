@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/quota/quota_types.h"
@@ -25,7 +25,7 @@ class STORAGE_EXPORT_PRIVATE DatabaseQuotaClient
     : public storage::QuotaClient {
  public:
   DatabaseQuotaClient(
-      base::MessageLoopProxy* tracker_thread,
+      base::SingleThreadTaskRunner* tracker_thread,
       DatabaseTracker* tracker);
   ~DatabaseQuotaClient() override;
 
@@ -46,7 +46,7 @@ class STORAGE_EXPORT_PRIVATE DatabaseQuotaClient
   bool DoesSupport(storage::StorageType type) const override;
 
  private:
-  scoped_refptr<base::MessageLoopProxy> db_tracker_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> db_tracker_thread_;
   scoped_refptr<DatabaseTracker> db_tracker_;  // only used on its thread
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseQuotaClient);

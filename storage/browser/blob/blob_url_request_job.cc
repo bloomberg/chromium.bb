@@ -15,7 +15,6 @@
 #include "base/files/file_util_proxy.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -57,11 +56,11 @@ BlobURLRequestJob::BlobURLRequestJob(
     net::NetworkDelegate* network_delegate,
     scoped_ptr<BlobDataSnapshot> blob_data,
     storage::FileSystemContext* file_system_context,
-    base::MessageLoopProxy* file_thread_proxy)
+    base::SingleThreadTaskRunner* file_task_runner)
     : net::URLRequestJob(request, network_delegate),
       blob_data_(blob_data.Pass()),
       file_system_context_(file_system_context),
-      file_thread_proxy_(file_thread_proxy),
+      file_task_runner_(file_task_runner),
       total_size_(0),
       remaining_bytes_(0),
       pending_get_file_info_count_(0),
@@ -72,7 +71,7 @@ BlobURLRequestJob::BlobURLRequestJob(
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest", this, "uuid",
                            blob_data_ ? blob_data_->uuid() : "NotFound");
-  DCHECK(file_thread_proxy_.get());
+  DCHECK(file_task_runner_.get());
 }
 
 void BlobURLRequestJob::Start() {
@@ -596,7 +595,7 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
   switch (item.type()) {
     case DataElement::TYPE_FILE:
       reader = FileStreamReader::CreateForLocalFile(
-          file_thread_proxy_.get(),
+          file_task_runner_.get(),
           item.path(),
           item.offset() + additional_offset,
           item.expected_modification_time());

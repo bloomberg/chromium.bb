@@ -23,7 +23,7 @@
 #include "storage/common/database/database_connections.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -105,7 +105,7 @@ class STORAGE_EXPORT DatabaseTracker
                   bool is_incognito,
                   storage::SpecialStoragePolicy* special_storage_policy,
                   storage::QuotaManagerProxy* quota_manager_proxy,
-                  base::MessageLoopProxy* db_tracker_thread);
+                  base::SingleThreadTaskRunner* db_tracker_thread);
 
   void DatabaseOpened(const std::string& origin_identifier,
                       const base::string16& database_name,
@@ -295,7 +295,7 @@ class STORAGE_EXPORT DatabaseTracker
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   // The database tracker thread we're supposed to run file IO on.
-  scoped_refptr<base::MessageLoopProxy> db_tracker_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> db_tracker_thread_;
 
   // When in incognito mode, store a DELETE_ON_CLOSE handle to each
   // main DB and journal file that was accessed. When the incognito profile

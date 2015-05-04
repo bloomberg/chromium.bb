@@ -11,10 +11,6 @@
 
 #include "storage/browser/storage_browser_export.h"
 
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
 namespace storage {
 
 class FileSystemContext;

@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "storage/browser/database/database_tracker.h"
@@ -95,7 +95,7 @@ void DidDeleteOriginData(
 }  // namespace
 
 DatabaseQuotaClient::DatabaseQuotaClient(
-    base::MessageLoopProxy* db_tracker_thread,
+    base::SingleThreadTaskRunner* db_tracker_thread,
     DatabaseTracker* db_tracker)
     : db_tracker_thread_(db_tracker_thread), db_tracker_(db_tracker) {
 }
@@ -200,7 +200,7 @@ void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
 
   base::Callback<void(int)> delete_callback =
       base::Bind(&DidDeleteOriginData,
-                 base::MessageLoopProxy::current(),
+                 base::ThreadTaskRunnerHandle::Get(),
                  callback);
 
   PostTaskAndReplyWithResult(

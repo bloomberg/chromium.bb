@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_context.h"
@@ -50,8 +49,9 @@ void BlobProtocolHandler::SetRequestedBlobDataHandle(
 BlobProtocolHandler::BlobProtocolHandler(
     BlobStorageContext* context,
     storage::FileSystemContext* file_system_context,
-    const scoped_refptr<base::MessageLoopProxy>& loop_proxy)
-    : file_system_context_(file_system_context), file_loop_proxy_(loop_proxy) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : file_system_context_(file_system_context),
+      file_task_runner_(task_runner) {
   if (context)
     context_ = context->AsWeakPtr();
 }
@@ -65,7 +65,7 @@ net::URLRequestJob* BlobProtocolHandler::MaybeCreateJob(
                                         network_delegate,
                                         LookupBlobData(request),
                                         file_system_context_.get(),
-                                        file_loop_proxy_.get());
+                                        file_task_runner_.get());
 }
 
 scoped_ptr<BlobDataSnapshot> BlobProtocolHandler::LookupBlobData(

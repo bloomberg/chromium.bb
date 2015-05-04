@@ -10,8 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 using base::TaskRunner;
 
@@ -30,7 +29,7 @@ void QuotaTask::Start() {
 
 QuotaTask::QuotaTask(QuotaTaskObserver* observer)
     : observer_(observer),
-      original_task_runner_(base::MessageLoopProxy::current()),
+      original_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       delete_scheduled_(false) {
 }
 

@@ -16,7 +16,7 @@
 #include "storage/browser/storage_browser_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace storage {
@@ -40,7 +40,7 @@ class STORAGE_EXPORT BlobURLRequestJob
                     net::NetworkDelegate* network_delegate,
                     scoped_ptr<BlobDataSnapshot> blob_data,
                     storage::FileSystemContext* file_system_context,
-                    base::MessageLoopProxy* resolving_message_loop_proxy);
+                    base::SingleThreadTaskRunner* resolving_thread_task_runner);
 
   // net::URLRequestJob methods.
   void Start() override;
@@ -96,7 +96,7 @@ class STORAGE_EXPORT BlobURLRequestJob
 
   // Variables for controlling read from |blob_data_|.
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   std::vector<int64> item_length_list_;
   int64 total_size_;
   int64 remaining_bytes_;

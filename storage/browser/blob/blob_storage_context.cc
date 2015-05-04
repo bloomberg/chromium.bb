@@ -11,9 +11,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -78,7 +78,8 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
     return result.Pass();
   DCHECK(!entry->IsBeingBuilt());
   result.reset(
-      new BlobDataHandle(uuid, this, base::MessageLoopProxy::current().get()));
+      new BlobDataHandle(uuid, this,
+                         base::ThreadTaskRunnerHandle::Get().get()));
   return result.Pass();
 }
 

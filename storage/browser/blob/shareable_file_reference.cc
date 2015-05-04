@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
 #include "base/threading/non_thread_safe.h"
 

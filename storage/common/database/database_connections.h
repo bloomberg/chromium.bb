@@ -15,7 +15,7 @@
 #include "storage/common/storage_common_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace storage {
@@ -91,7 +91,7 @@ class STORAGE_COMMON_EXPORT DatabaseConnectionsWrapper
   bool waiting_for_dbs_to_close_;
   base::Lock open_connections_lock_;
   DatabaseConnections open_connections_;
-  scoped_refptr<base::MessageLoopProxy> main_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 };
 
 }  // namespace storage
