@@ -8,8 +8,8 @@ from measurements import smoothness_controller
 
 
 class Smoothness(page_test.PageTest):
-  def __init__(self):
-    super(Smoothness, self).__init__()
+  def __init__(self, **kwargs):
+    super(Smoothness, self).__init__(**kwargs)
     self._smoothness_controller = None
 
   @classmethod
@@ -31,3 +31,8 @@ class Smoothness(page_test.PageTest):
   def CleanUpAfterPage(self, page, tab):
     if self._smoothness_controller:
       self._smoothness_controller.CleanUp(tab)
+
+class SmoothnessWithRestart(Smoothness):
+  def __init__(self):
+    super(SmoothnessWithRestart, self).__init__(
+        needs_browser_restart_after_each_page=True)

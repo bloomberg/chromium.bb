@@ -132,7 +132,7 @@ class SmoothnessKeyMobileSitesWithSlimmingPaint(benchmark.Benchmark):
 
 
 class SmoothnessToughAnimationCases(benchmark.Benchmark):
-  test = smoothness.Smoothness
+  test = smoothness.SmoothnessWithRestart
   page_set = page_sets.ToughAnimationCasesPageSet
 
   @classmethod
