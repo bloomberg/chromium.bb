@@ -53,8 +53,18 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
 }
 
 void WarmupDirectWrite() {
-  ::LoadLibrary(L"dwrite.dll");
-  DoPreSandboxWarmupForFontLoader();
+  // The objects used here are intentionally not freed as we want the Skia
+  // code to use these objects after warmup.
+  SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
+
+  // We need to warm up *some* font for DirectWrite. We also need to pass one
+  // down for the CC HUD code, so use the same one here. Note that we don't use
+  // a monospace as would be nice in an attempt to avoid a small startup time
+  // regression, see http://crbug.com/463613.
+  skia::RefPtr<SkTypeface> hud_typeface = skia::AdoptRef(
+      GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0));
+  DoPreSandboxWarmupForTypeface(hud_typeface.get());
+  gfx::SetHudTypeface(hud_typeface);
 }
 
 }  // namespace

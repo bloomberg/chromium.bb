@@ -40,12 +40,6 @@
 #include "content/public/browser/child_process_data.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/path_service.h"
-#include "sandbox/win/src/sandbox_policy.h"
-#include "ui/gfx/win/direct_write.h"
-#endif
-
 using base::CommandLine;
 using content::BrowserContext;
 using content::BrowserThread;
@@ -279,36 +273,6 @@ content::DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new content::ShellDevToolsManagerDelegate(GetBrowserContext());
 }
-
-#if defined(OS_WIN)
-// TODO(ananta)
-// Consolidate the policy code below with similar code in
-// content/shell/browser/shell_content_browser_client.h.
-void ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                                 bool* success) {
-  // If DirectWrite is enabled then we need to grant access to the
-  // Windows National Language support directory :-
-  // c:\windows\globalization\sorting. Not having access to this folder
-  // causes DirectWrite font cache setup to fail.
-  if (gfx::win::ShouldUseDirectWrite()) {
-    base::FilePath windows_root;
-    PathService::Get(base::DIR_WINDOWS, &windows_root);
-    base::string16 globalization_path = windows_root.value();
-    globalization_path += L"\\Globalization\\Sorting";
-
-    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-        sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-        globalization_path.c_str());
-
-    // We need to grant access to subdirectories and files within the
-    // globalization directory.
-    globalization_path += L"\\*";
-    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-        sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-        globalization_path.c_str());
-  }
-}
-#endif
 
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(
     const content::MainFunctionParams& parameters,

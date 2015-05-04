@@ -993,14 +993,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
 IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
                     cc::BeginFrameArgs /* args */)
 
-#if defined(OS_WIN)
-// If DirectWrite is enabled for font rendering then this message contains the
-// font cache section handle valid in the renderer's address space.
-IPC_MESSAGE_CONTROL1(ViewMsg_DirectWriteFontCacheSectionHandle,
-                     base::SharedMemoryHandle /* The font section shared
-                                                 memory handle */)
-#endif
-
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

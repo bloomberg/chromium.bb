@@ -11,7 +11,6 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/public/common/dwrite_font_platform_win.h"
-#include "skia/ext/fontmgr_default_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
@@ -132,9 +131,7 @@ void PatchServiceManagerCalls() {
 // before sandbox lock down to allow Skia access to the Font Manager service.
 void CreateDirectWriteFactory(IDWriteFactory** factory) {
   typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
-  HMODULE dwrite_dll = ::GetModuleHandle(L"dwrite.dll");
-  if (!dwrite_dll)
-    dwrite_dll = ::LoadLibrary(L"dwrite.dll");
+  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
   // TODO(scottmg): Temporary code to track crash in http://crbug.com/387867.
   if (!dwrite_dll) {
     DWORD load_library_get_last_error = GetLastError();
@@ -182,10 +179,19 @@ void PatchDWriteFactory(IDWriteFactory* factory) {
 
 }  // namespace
 
-SkFontMgr* GetDirectWriteFontManager() {
+void DoPreSandboxWarmupForTypeface(SkTypeface* typeface) {
+  SkPaint paint_warmup;
+  paint_warmup.setTypeface(typeface);
+  wchar_t glyph = L'S';
+  paint_warmup.measureText(&glyph, 2);
+}
+
+SkFontMgr* GetPreSandboxWarmupFontMgr() {
   if (!g_warmup_fontmgr) {
     IDWriteFactory* factory;
     CreateDirectWriteFactory(&factory);
+
+    GetCustomFontCollection(factory);
 
     PatchDWriteFactory(factory);
 
@@ -193,17 +199,6 @@ SkFontMgr* GetDirectWriteFontManager() {
     g_warmup_fontmgr = SkFontMgr_New_DirectWrite(factory);
   }
   return g_warmup_fontmgr;
-}
-
-void DoPreSandboxWarmupForFontLoader() {
-  InitializeFontLoader();
-}
-
-void SetDirectWriteFontCacheSectionHandle(HANDLE font_cache_section) {
-  SetDirectWriteFontCache(font_cache_section);
-  // The objects used here are intentionally not freed as we want the Skia
-  // code to use these objects after warmup.
-  SetDefaultSkiaFactory(GetDirectWriteFontManager());
 }
 
 }  // namespace content

@@ -13,8 +13,6 @@ include_rules = [
   "+grit/extensions_renderer_resources.h",
   "+grit/extensions_resources.h",
   "+testing",
-  "+sandbox/win/src/sandbox.h",
-  "+sandbox/win/src/sandbox_policy.h",
   "+third_party/mojo/src/mojo/public",
   "+third_party/skia/include",
 

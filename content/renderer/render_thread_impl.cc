@@ -161,7 +161,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objbase.h>
-#include "content/public/renderer/render_font_warmup_win.h"
 #else
 // TODO(port)
 #include "content/child/npapi/np_channel_base.h"
@@ -1380,11 +1379,6 @@ void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
   Send(new ViewHostMsg_PreCacheFontCharacters(log_font, str));
 }
 
-void RenderThreadImpl::OnSetDirectWriteFontCacheHandle(
-    HANDLE font_cache_handle) {
-  content::SetDirectWriteFontCacheSectionHandle(font_cache_handle);
-}
-
 #endif  // OS_WIN
 
 ServiceRegistry* RenderThreadImpl::GetServiceRegistry() {
@@ -1563,10 +1557,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 #endif
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
-#endif
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ViewMsg_DirectWriteFontCacheSectionHandle,
-                        OnSetDirectWriteFontCacheHandle)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

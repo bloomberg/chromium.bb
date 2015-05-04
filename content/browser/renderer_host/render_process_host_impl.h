@@ -353,9 +353,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SendDisableAecDumpToRenderer();
 #endif
 
-  // Platform specific handling for renderer process launches goes here.
-  void PlatformProcessLaunched();
-
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
 
   // The registered IPC listener objects. When this list is empty, we should
