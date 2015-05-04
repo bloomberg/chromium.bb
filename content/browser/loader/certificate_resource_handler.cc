@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/certificate_resource_handler.h"
 
+#include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "components/mime_util/mime_util.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -76,12 +78,23 @@ bool CertificateResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 }
 
 bool CertificateResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
+  static const size_t kMaxCertificateSize = 1024 * 1024;
+
+  DCHECK_LE(0, bytes_read);
   if (!bytes_read)
     return true;
 
   // We have more data to read.
   DCHECK(read_buffer_.get());
-  content_length_ += bytes_read;
+
+  base::CheckedNumeric<size_t> content_length(content_length_);
+  content_length += bytes_read;
+  if (!content_length.IsValid())
+    return false;
+  content_length_ = content_length.ValueOrDie();
+
+  if (content_length_ > kMaxCertificateSize)
+    return false;
 
   // Release the ownership of the buffer, and store a reference
   // to it. A new one will be allocated in OnWillRead().
@@ -100,7 +113,8 @@ void CertificateResourceHandler::OnResponseCompleted(
   if (urs.status() != net::URLRequestStatus::SUCCESS)
     return;
 
-  AssembleResource();
+  if (!AssembleResource())
+    return;
 
   const void* content_bytes = NULL;
   if (resource_buffer_.get())
@@ -114,15 +128,18 @@ void CertificateResourceHandler::OnResponseCompleted(
       info->GetChildID(), info->GetRenderFrameID());
 }
 
-void CertificateResourceHandler::AssembleResource() {
+bool CertificateResourceHandler::AssembleResource() {
   // 0-length IOBuffers are not allowed.
   if (content_length_ == 0) {
     resource_buffer_ = NULL;
-    return;
+    return true;
   }
 
   // Create the new buffer.
-  resource_buffer_ = new net::IOBuffer(content_length_);
+  if (!base::IsValueInRangeForNumericType<int>(content_length_))
+    return false;
+  resource_buffer_ =
+      new net::IOBuffer(base::checked_cast<int>(content_length_));
 
   // Copy the data into it.
   size_t bytes_copied = 0;
@@ -135,6 +152,7 @@ void CertificateResourceHandler::AssembleResource() {
     bytes_copied += data_len;
   }
   DCHECK_EQ(content_length_, bytes_copied);
+  return true;
 }
 
 void CertificateResourceHandler::OnDataDownloaded(int bytes_downloaded) {

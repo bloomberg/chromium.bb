@@ -69,7 +69,7 @@ class CertificateResourceHandler : public ResourceHandler {
   typedef std::vector<std::pair<scoped_refptr<net::IOBuffer>,
                                 size_t> > ContentVector;
 
-  void AssembleResource();
+  bool AssembleResource();
 
   size_t content_length_;
   ContentVector buffer_;
