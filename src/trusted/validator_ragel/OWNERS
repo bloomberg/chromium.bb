@@ -4,7 +4,6 @@ gdeepti@chromium.org
 khim@chromium.org
 mseaborn@chromium.org
 phosek@chromium.org
-ncbray@chromium.org
 
 # For build file review
 per-file *.gn=bradnelson@chromium.org
