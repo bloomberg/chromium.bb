@@ -132,7 +132,7 @@ build-sbtc-prerequisites() {
   local arch=$1
   # Sandboxed translators currently only require irt_core since they do not
   # use PPAPI.
-  RunScons ${arch} sel_ldr sel_universal irt_core
+  RunScons ${arch} sel_ldr sel_universal irt_core elf_loader
 }
 
 #+ Run scons test under a certain configuration

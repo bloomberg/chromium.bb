@@ -319,6 +319,8 @@ def BuildIRT(flavor):
 
 def FindOrBuildElfLoader(allow_build=True):
   if env.force_elf_loader:
+    if env.force_elf_loader == 'none':
+      return None
     if not os.path.exists(env.force_elf_loader):
       Fatal('elf_loader.nexe not found: %s' % env.force_elf_loader)
     return env.force_elf_loader

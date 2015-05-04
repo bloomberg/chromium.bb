@@ -963,8 +963,8 @@ BuildPrerequisites() {
   # Sel universal is only used for the pnacl sandboxed translator,
   # but prepare it just in case.
   # IRT is used both to run the tests and to run the pnacl sandboxed translator.
-  build-runtime "${platforms}" "sel_ldr sel_universal irt_core ${extrabuild}" \
-${extra_flags}
+  build-runtime "${platforms}" "sel_ldr sel_universal irt_core elf_loader" \
+    ${extrabuild} ${extra_flags}
   if [ ${bitcode} == "bitcode" ] ; then
      build-libs-pnacl
   else

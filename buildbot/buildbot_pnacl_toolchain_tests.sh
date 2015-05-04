@@ -66,7 +66,7 @@ readonly SCONS_COMMON_SLOW="./scons --verbose bitcode=1 -j2"
 build-run-prerequisites() {
   local platform=$1
   ${SCONS_COMMON} platform=${platform} \
-    sel_ldr sel_universal irt_core
+    sel_ldr sel_universal irt_core elf_loader
 }
 
 

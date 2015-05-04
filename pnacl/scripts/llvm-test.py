@@ -363,6 +363,7 @@ def TestsuitePrereq(env, options):
                           'platform=' + arch,
                           'irt_core',
                           'sel_ldr',
+                          'elf_loader',
                           '-j{PNACL_CONCURRENCY}'.format(**env)])
 
 
