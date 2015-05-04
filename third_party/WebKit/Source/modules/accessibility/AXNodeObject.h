@@ -166,6 +166,9 @@ protected:
     virtual String deprecatedHelpText() const override;
     virtual String computedName() const override;
 
+    // New AX name calculation.
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, HashSet<AXObject*>& visited, AXNameFrom*, Vector<AXObject*>* nameObjects) override;
+
     // Location and click point in frame-relative coordinates.
     virtual LayoutRect elementRect() const override;
 

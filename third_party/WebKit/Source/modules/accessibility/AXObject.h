@@ -517,7 +517,7 @@ public:
 
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of objects that were used to derive the name, if any.
-    virtual String name(AXNameFrom&, Vector<AXObject*>& nameObjects) { return String(); }
+    virtual String name(AXNameFrom&, Vector<AXObject*>& nameObjects);
 
     // Takes the result of nameFrom from calling |name|, above, and retrieves the
     // accessible description of the object, which is secondary to |name|, an enum indicating
@@ -529,6 +529,9 @@ public:
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
     // exposed by one of the two functions above.
     virtual String placeholder(AXNameFrom, AXDescriptionFrom) { return String(); }
+
+    // Internal function used by name and description, above.
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, HashSet<AXObject*>& visited, AXNameFrom*, Vector<AXObject*>* nameObjects) { return String(); }
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.
@@ -737,6 +740,8 @@ protected:
     // If this object itself scrolls, return its ScrollableArea.
     virtual ScrollableArea* getScrollableAreaIfScrollable() const { return 0; }
     virtual void scrollTo(const IntPoint&) const { }
+
+    bool nameFromContents() const;
 
     AccessibilityRole buttonRoleType() const;
 

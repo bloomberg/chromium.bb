@@ -1779,7 +1779,82 @@ String AXNodeObject::computedName() const
     return String();
 }
 
+//
+// New AX name calculation.
+//
 
+String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, HashSet<AXObject*>& visited, AXNameFrom* nameFrom, Vector<AXObject*>* nameObjects)
+{
+    bool alreadyVisited = visited.contains(this);
+    visited.add(this);
+
+    if (!node() && !layoutObject())
+        return String();
+
+    // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
+    if (!recursive && layoutObject()
+        && layoutObject()->style()->visibility() != VISIBLE
+        && !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
+        return String();
+    }
+
+    // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
+    if (!inAriaLabelledByTraversal && hasAttribute(aria_labelledbyAttr) && !alreadyVisited) {
+        if (nameFrom)
+            *nameFrom = AXNameFromRelatedElement;
+        WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+        ariaLabeledByElements(elements);
+        StringBuilder accumulatedText;
+        for (const auto& element : elements) {
+            RefPtr<AXObject> axElement = axObjectCache()->getOrCreate(element);
+            if (axElement) {
+                if (nameObjects)
+                    nameObjects->append(axElement.get());
+                String result = axElement->textAlternative(true, true, visited, nullptr, nullptr);
+                if (!result.isEmpty()) {
+                    if (!accumulatedText.isEmpty())
+                        accumulatedText.append(" ");
+                    accumulatedText.append(result);
+                }
+            }
+        }
+        return accumulatedText.toString();
+    }
+
+    // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
+    if (recursive || nameFromContents()) {
+        if (nameFrom)
+            *nameFrom = AXNameFromContents;
+
+        Node* node = this->node();
+        if (node && node->isTextNode())
+            return toText(node)->wholeText();
+
+        StringBuilder accumulatedText;
+        AXObject* previous = nullptr;
+        for (AXObject* child = firstChild(); child; child = child->nextSibling()) {
+            // If we're going between two layoutObjects that are in separate LayoutBoxes, add
+            // whitespace if it wasn't there already. Intuitively if you have
+            // <span>Hello</span><span>World</span>, those are part of the same LayoutBox
+            // so we should return "HelloWorld", but given <div>Hello</div><div>World</div> the
+            // strings are in separate boxes so we should return "Hello World".
+            if (previous && accumulatedText.length() && !isHTMLSpace(accumulatedText[accumulatedText.length() - 1])) {
+                if (!isSameLayoutBox(child->layoutObject(), previous->layoutObject()))
+                    accumulatedText.append(' ');
+            }
+
+            String result = child->textAlternative(true, false, visited, nullptr, nullptr);
+            accumulatedText.append(result);
+            previous = child;
+        }
+
+        return accumulatedText.toString();
+    }
+
+    if (nameFrom)
+        *nameFrom = AXNameFromAttribute;
+    return String();
+}
 
 LayoutRect AXNodeObject::elementRect() const
 {

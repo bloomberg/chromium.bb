@@ -665,6 +665,12 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
+String AXObject::name(AXNameFrom& nameFrom, Vector<AXObject*>& nameObjects)
+{
+    HashSet<AXObject*> visited;
+    return textAlternative(false, false, visited, &nameFrom, &nameObjects);
+}
+
 // In ARIA 1.1, the default value for aria-orientation changed from horizontal to undefined.
 AccessibilityOrientation AXObject::orientation() const
 {
@@ -1363,6 +1369,32 @@ bool AXObject::includesARIAWidgetRole(const String& role)
             return true;
     }
     return false;
+}
+
+bool AXObject::nameFromContents() const
+{
+    switch (roleValue()) {
+    case ButtonRole:
+    case CheckBoxRole:
+    case CellRole:
+    case ColumnHeaderRole:
+    case DirectoryRole:
+    case LinkRole:
+    case ListItemRole:
+    case MenuItemRole:
+    case MenuItemCheckBoxRole:
+    case MenuItemRadioRole:
+    case MenuListOptionRole:
+    case RadioButtonRole:
+    case RowHeaderRole:
+    case StaticTextRole:
+    case StatusRole:
+    case SwitchRole:
+    case TreeItemRole:
+        return true;
+    default:
+        return false;
+    }
 }
 
 AccessibilityRole AXObject::buttonRoleType() const
