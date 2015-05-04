@@ -35,7 +35,7 @@
                             WPARAM wParam,                        \
                             LPARAM lParam,                        \
                             LRESULT& lResult,                     \
-                            DWORD dwMsgMapID = 0) {               \
+                            DWORD dwMsgMapID = 0) override {      \
     BOOL bOldMsgHandled = m_bMsgHandled;                          \
     BOOL bRet = _ProcessWindowMessage(                            \
         hWnd, uMsg, wParam, lParam, lResult, dwMsgMapID);         \
