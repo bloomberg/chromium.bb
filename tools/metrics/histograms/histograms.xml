@@ -48864,6 +48864,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1148809156" label="chrmxtn.dll"/>
   <int value="1270622879" label="hk.dll"/>
   <int value="1409376135" label="windowsapihookdll32.dll"/>
+  <int value="1617407227" label="spappsv32.dll"/>
   <int value="1671476533" label="crdli64.dll"/>
   <int value="1680432366" label="virtualCamera.ax"/>
   <int value="1736709911" label="bitguard.dll"/>
