@@ -1153,8 +1153,9 @@ INSTANTIATE_TEST_CASE_P(
                                     "tabindexFocusDownloads"),
                       TestParameter(IN_GUEST_MODE, "tabindexFocusDownloads")));
 
+// http://crbug.com/469061
 INSTANTIATE_TEST_CASE_P(
-    TabindexFocusDirectorySelected,
+    DISABLED_TabindexFocusDirectorySelected,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
