@@ -2225,4 +2225,6 @@ crbug.com/477743 virtual/slimmingpaint/svg/repaint/buffered-rendering-static-ima
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/filter-child-repaint.svg [ Failure ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/inner-svg-change-viewBox.svg [ Failure Crash ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/paintorder-filtered.svg [ Failure ]
+crbug.com/477743 virtual/slimmingpaint/svg/dom/viewspec-zoomandpanparams.html [ ImageOnlyFailure ]
+crbug.com/477743 virtual/slimmingpaint/compositing/repaint/fixed-pos-with-abs-pos-child-scroll.html [ Failure ImageOnlyFailure ]
 #------------------------------------------
