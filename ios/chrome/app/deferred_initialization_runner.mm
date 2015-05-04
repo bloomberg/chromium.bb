@@ -113,4 +113,8 @@
   [_runBlocks removeObjectForKey:name];
 }
 
+- (NSUInteger)numberOfBlocksRemaining {
+  return [_runBlocks count];
+}
+
 @end

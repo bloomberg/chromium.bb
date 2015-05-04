@@ -36,6 +36,10 @@
 // block has already been executed.
 - (void)cancelBlockNamed:(NSString*)name;
 
+// Number of blocks that have been registered but not executed yet.
+// Exposed for testing.
+@property(nonatomic, readonly) NSUInteger numberOfBlocksRemaining;
+
 @end
 
 #endif  // IOS_CHROME_APP_DEFERRED_INITIALIZATION_RUNNER_H_
