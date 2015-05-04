@@ -53,7 +53,8 @@ class RenderViewTest : public testing::Test {
    public:
     RendererBlinkPlatformImplNoSandbox();
     ~RendererBlinkPlatformImplNoSandbox();
-    blink::Platform* Get();
+    blink::Platform* Get() const;
+    scheduler::RendererScheduler* Scheduler() const;
 
    private:
     scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;

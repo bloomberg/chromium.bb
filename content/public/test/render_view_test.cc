@@ -115,8 +115,14 @@ RenderViewTest::RendererBlinkPlatformImplNoSandbox::
     ~RendererBlinkPlatformImplNoSandbox() {
 }
 
-blink::Platform* RenderViewTest::RendererBlinkPlatformImplNoSandbox::Get() {
+blink::Platform*
+    RenderViewTest::RendererBlinkPlatformImplNoSandbox::Get() const {
   return blink_platform_impl_.get();
+}
+
+scheduler::RendererScheduler*
+    RenderViewTest::RendererBlinkPlatformImplNoSandbox::Scheduler() const {
+  return renderer_scheduler_.get();
 }
 
 RenderViewTest::RenderViewTest()
@@ -280,6 +286,7 @@ void RenderViewTest::TearDown() {
   autorelease_pool_.reset(NULL);
 #endif
 
+  blink_platform_impl_.Scheduler()->Shutdown();
   blink::shutdown();
 
   platform_->PlatformUninitialize();
