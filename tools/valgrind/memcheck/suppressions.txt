@@ -946,27 +946,6 @@
    fun:*DownloadFileTest5SetUpEv
 }
 {
-   bug_72544
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN3WTF10RefCountedIN7blink14StyleSheetListEEnwEj
-   fun:_ZN5blink14StyleSheetList6createEPNS_8DocumentE
-   fun:_ZN5blink8DocumentC2EPNS_5FrameERKNS_4KURLEbbS5_
-   fun:_ZN5blink12HTMLDocumentC1EPNS_5FrameERKNS_4KURLES5_
-   fun:_ZN5blink12HTMLDocument6createEPNS_5FrameERKNS_4KURLES5_
-   fun:_ZN5blink17DOMImplementation14createDocumentERKN3WTF6StringEPNS_5FrameERKNS_4KURLEb
-   fun:_ZN5blink14DocumentWriter14createDocumentERKNS_4KURLE
-   fun:_ZN5blink14DocumentWriter5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN5blink11FrameLoader4initEv
-   fun:_ZN5blink5Frame4initEv
-   fun:_ZN5blink12WebFrameImpl21initializeAsMainFrameEPNS_11WebViewImplE
-   fun:_ZN5blink11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
-   fun:_ZN10RenderViewC1EP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEixRKSbItNS8_20string16_char_traitsESaItEE
-   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEixRKSbItNS8_20string16_char_traitsESaItEE
-   fun:_ZN12RenderThread15OnCreateNewViewERK18ViewMsg_New_Params
-}
-{
    bug_72698_a
    Memcheck:Leak
    fun:_Znw*
