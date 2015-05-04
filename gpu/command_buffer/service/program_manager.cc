@@ -383,19 +383,16 @@ void Program::Update() {
         service_id_, ii, max_len, &length, &size, &type, name_buffer.get());
     DCHECK(max_len == 0 || length < max_len);
     DCHECK(length == 0 || name_buffer[length] == '\0');
-    if (!ProgramManager::IsInvalidPrefix(name_buffer.get(), length)) {
-      std::string original_name;
-      GetVertexAttribData(name_buffer.get(), &original_name, &type);
-      // TODO(gman): Should we check for error?
-      GLint location = glGetAttribLocation(service_id_, name_buffer.get());
-      if (location > max_location) {
-        max_location = location;
-      }
-      attrib_infos_.push_back(
-          VertexAttrib(1, type, original_name, location));
-      max_attrib_name_length_ = std::max(
-          max_attrib_name_length_, static_cast<GLsizei>(original_name.size()));
+    std::string original_name;
+    GetVertexAttribData(name_buffer.get(), &original_name, &type);
+    // TODO(gman): Should we check for error?
+    GLint location = glGetAttribLocation(service_id_, name_buffer.get());
+    if (location > max_location) {
+      max_location = location;
     }
+    attrib_infos_.push_back(VertexAttrib(1, type, original_name, location));
+    max_attrib_name_length_ = std::max(
+        max_attrib_name_length_, static_cast<GLsizei>(original_name.size()));
   }
 
   // Create attrib location to index map.
@@ -438,13 +435,10 @@ void Program::Update() {
         &data.size, &data.type, name_buffer.get());
     DCHECK(max_len == 0 || length < max_len);
     DCHECK(length == 0 || name_buffer[length] == '\0');
-    if (!ProgramManager::IsInvalidPrefix(name_buffer.get(), length)) {
-      data.queried_name = std::string(name_buffer.get());
-      GetCorrectedUniformData(
-          data.queried_name,
-          &data.corrected_name, &data.original_name, &data.size, &data.type);
-      uniform_data.push_back(data);
-    }
+    data.queried_name = std::string(name_buffer.get());
+    GetCorrectedUniformData(data.queried_name, &data.corrected_name,
+                            &data.original_name, &data.size, &data.type);
+    uniform_data.push_back(data);
   }
 
   // NOTE: We don't care if 2 uniforms are bound to the same location.
@@ -459,8 +453,14 @@ void Program::Update() {
   size_t next_available_index = 0;
   for (size_t ii = 0; ii < uniform_data.size(); ++ii) {
     UniformData& data = uniform_data[ii];
-    data.location = glGetUniformLocation(
-        service_id_, data.queried_name.c_str());
+    // Force builtin uniforms (gl_DepthRange) to have invalid location.
+    if (ProgramManager::IsInvalidPrefix(data.queried_name.c_str(),
+                                        data.queried_name.size())) {
+      data.location = -1;
+    } else {
+      data.location =
+          glGetUniformLocation(service_id_, data.queried_name.c_str());
+    }
     // remove "[0]"
     std::string short_name;
     int element_index = 0;

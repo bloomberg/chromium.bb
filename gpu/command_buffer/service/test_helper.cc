@@ -678,10 +678,7 @@ void TestHelper::SetupProgramSuccessExpectations(
   for (int pass = 0; pass < 2; ++pass) {
     for (size_t ii = 0; ii < num_uniforms; ++ii) {
       const UniformInfo& info = uniforms[ii];
-      if (ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
-        continue;
-      }
-      if (pass == 0) {
+      if (pass == 0 && info.real_location != -1) {
         EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(info.name)))
             .WillOnce(Return(info.real_location))
             .RetiresOnSaturation();

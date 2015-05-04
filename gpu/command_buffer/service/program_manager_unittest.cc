@@ -662,36 +662,38 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformInfoByFakeLocation) {
   EXPECT_EQ(2, array_index);
 }
 
-// Some GL drivers incorrectly return gl_DepthRange and possibly other uniforms
-// that start with "gl_". Our implementation catches these and does not allow
-// them back to client.
+// Ensure that when GL drivers correctly return gl_DepthRange, or other
+// builtin uniforms, our implementation passes them back to the client.
 TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   static const char* kUniform2Name = "gl_longNameWeCanCheckFor";
   static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
-    { kUniform1Name,
-      kUniform1Size,
-      kUniform1Type,
-      kUniform1FakeLocation,
-      kUniform1RealLocation,
-      kUniform1DesiredLocation,
-      kUniform1Name,
-    },
-    { kUniform2Name,
-      kUniform2Size,
-      kUniform2Type,
-      kUniform2FakeLocation,
-      kUniform2RealLocation,
-      kUniform2DesiredLocation,
-      kUniform2NameWithArrayIndex,
-    },
-    { kUniform3Name,
-      kUniform3Size,
-      kUniform3Type,
-      kUniform3FakeLocation,
-      kUniform3RealLocation,
-      kUniform3DesiredLocation,
-      kUniform3NameWithArrayIndex,
-    },
+      {
+       kUniform1Name,
+       kUniform1Size,
+       kUniform1Type,
+       kUniform1FakeLocation,
+       kUniform1RealLocation,
+       kUniform1DesiredLocation,
+       kUniform1Name,
+      },
+      {
+       kUniform2Name,
+       kUniform2Size,
+       kUniform2Type,
+       kUniform2FakeLocation,
+       -1,
+       kUniform2DesiredLocation,
+       kUniform2NameWithArrayIndex,
+      },
+      {
+       kUniform3Name,
+       kUniform3Size,
+       kUniform3Type,
+       kUniform3FakeLocation,
+       kUniform3RealLocation,
+       kUniform3DesiredLocation,
+       kUniform3NameWithArrayIndex,
+      },
   };
   const size_t kNumUniforms = arraysize(kUniforms);
   static const GLuint kClientProgramId = 1234;
@@ -720,14 +722,16 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   GLint value = 0;
   program->GetProgramiv(GL_ACTIVE_ATTRIBUTES, &value);
   EXPECT_EQ(3, value);
-  // Check that we skipped the "gl_" uniform.
+  // Check that we didn't skip the "gl_" uniform.
   program->GetProgramiv(GL_ACTIVE_UNIFORMS, &value);
-  EXPECT_EQ(2, value);
-  // Check that our max length adds room for the array spec and is not as long
-  // as the "gl_" uniform we skipped.
-  // +4u is to account for "gl_" and NULL terminator.
+  EXPECT_EQ(3, value);
+  // Check that our max length adds room for the array spec and is as long
+  // as the "gl_" uniform we did not skip.
   program->GetProgramiv(GL_ACTIVE_UNIFORM_MAX_LENGTH, &value);
-  EXPECT_EQ(strlen(kUniform3Name) + 4u, static_cast<size_t>(value));
+  EXPECT_EQ(strlen(kUniform2Name) + 4, static_cast<size_t>(value));
+  // Verify the uniform has a "real" location of -1
+  const auto* info = program->GetUniformInfo(kUniform2FakeLocation);
+  EXPECT_EQ(-1, info->element_locations[0]);
 }
 
 // Test the bug comparing similar array names is fixed.
