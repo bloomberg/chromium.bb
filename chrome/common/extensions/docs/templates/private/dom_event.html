@@ -6,9 +6,12 @@
       {{{description}}}
     </p>{{/description}}
     {{?properties}}
-      {{+partials.type_item items:properties
-                            item_partial:partials.parameter_full
-                            parentName:name /}}
+      <table class="innerTable">
+        <tr><th colspan="3">Event object properties</th></tr>
+        {{+partials.type_item items:properties
+                              item_partial:partials.parameter_full
+                              parentName:name /}}
+      </table>
     {{/properties}}
   </div>
 </div>
