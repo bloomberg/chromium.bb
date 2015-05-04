@@ -303,6 +303,11 @@ void ShelfLayoutManager::LayoutShelf() {
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
   switch(auto_hide_behavior_) {
     case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+#if defined(OS_WIN)
+      // Disable shelf auto-hide behavior on screen sides in Metro mode.
+      if (GetAlignment() != SHELF_ALIGNMENT_BOTTOM)
+        return SHELF_VISIBLE;
+#endif
       return SHELF_AUTO_HIDE;
     case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
       return SHELF_VISIBLE;

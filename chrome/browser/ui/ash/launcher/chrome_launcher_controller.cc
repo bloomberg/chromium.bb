@@ -982,6 +982,13 @@ ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
 
 bool ChromeLauncherController::CanUserModifyShelfAutoHideBehavior(
     aura::Window* root_window) const {
+#if defined(OS_WIN)
+  // Disable shelf auto-hide behavior on screen sides in Metro mode.
+  if (ash::Shell::GetInstance()->GetShelfAlignment(root_window) !=
+      ash::SHELF_ALIGNMENT_BOTTOM) {
+    return false;
+  }
+#endif
   return profile_->GetPrefs()->
       FindPreference(prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
 }
