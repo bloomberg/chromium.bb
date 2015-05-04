@@ -377,13 +377,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetRecentlyClosedIncognito) {
   EXPECT_EQ(0u, sessions->GetSize());
 }
 
-// Flaky on ChromeOS, times out on OSX Debug http://crbug.com/251199
-#if defined(OS_CHROMEOS) || (defined(OS_MACOSX) && !defined(NDEBUG))
-#define MAYBE_SessionsApis DISABLED_SessionsApis
-#else
-#define MAYBE_SessionsApis SessionsApis
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_SessionsApis) {
+// http://crbug.com/251199
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_SessionsApis) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
