@@ -174,7 +174,7 @@ public:
 
     Resource* resourceForURL(const KURL&);
     Resource* resourceForURL(const KURL&, const String& cacheIdentifier);
-    WillBeHeapVector<Member<Resource>> resourcesForURL(const KURL&);
+    WillBeHeapVector<RawPtrWillBeMember<Resource>> resourcesForURL(const KURL&);
 
     void add(Resource*);
     void replace(Resource* newResource, Resource* oldResource);

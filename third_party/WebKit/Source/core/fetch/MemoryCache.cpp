@@ -226,11 +226,11 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL, const String& cac
     return resource;
 }
 
-WillBeHeapVector<Member<Resource>> MemoryCache::resourcesForURL(const KURL& resourceURL)
+WillBeHeapVector<RawPtrWillBeMember<Resource>> MemoryCache::resourcesForURL(const KURL& resourceURL)
 {
     ASSERT(WTF::isMainThread());
     KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
-    WillBeHeapVector<Member<Resource>> results;
+    WillBeHeapVector<RawPtrWillBeMember<Resource>> results;
     for (const auto& resourceMapIter : m_resourceMaps) {
         if (MemoryCacheEntry* entry = resourceMapIter.value->get(url))
             results.append(entry->m_resource.get());
@@ -631,7 +631,7 @@ MemoryCacheLiveResourcePriority MemoryCache::priority(Resource* resource) const
 
 void MemoryCache::removeURLFromCache(const KURL& url)
 {
-    WillBeHeapVector<Member<Resource>> resources = resourcesForURL(url);
+    WillBeHeapVector<RawPtrWillBeMember<Resource>> resources = resourcesForURL(url);
     for (Resource* resource : resources)
         memoryCache()->remove(resource);
 }

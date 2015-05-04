@@ -570,7 +570,7 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation)
     EXPECT_FALSE(memoryCache()->contains(resource3.get()));
     EXPECT_TRUE(memoryCache()->contains(resource4.get()));
 
-    WillBeHeapVector<Member<Resource>> resources = memoryCache()->resourcesForURL(url);
+    WillBeHeapVector<RawPtrWillBeMember<Resource>> resources = memoryCache()->resourcesForURL(url);
     EXPECT_EQ(2u, resources.size());
 
     memoryCache()->evictResources();
