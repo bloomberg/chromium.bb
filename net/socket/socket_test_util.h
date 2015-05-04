@@ -198,8 +198,6 @@ class SocketDataProvider {
   virtual MockRead OnRead() = 0;
   virtual MockWriteResult OnWrite(const std::string& data) = 0;
   virtual void Reset() = 0;
-  virtual bool AllReadDataConsumed() const = 0;
-  virtual bool AllWriteDataConsumed() const = 0;
 
   // Accessor for the socket which is using the SocketDataProvider.
   AsyncSocket* socket() { return socket_; }
@@ -260,16 +258,13 @@ class StaticSocketDataHelper {
   // in which case this method will still return true.
   bool VerifyWriteData(const std::string& data);
 
-  // Return true if all read data has been consumed.
-  bool AllReadDataConsumed() const;
-
-  // Return true if all write data has been consumed.
-  bool AllWriteDataConsumed() const;
-
   size_t read_index() const { return read_index_; }
   size_t write_index() const { return write_index_; }
   size_t read_count() const { return read_count_; }
   size_t write_count() const { return write_count_; }
+
+  bool at_read_eof() const { return read_index_ >= read_count_; }
+  bool at_write_eof() const { return write_index_ >= write_count_; }
 
  private:
   MockRead* reads_;
@@ -299,13 +294,14 @@ class StaticSocketDataProvider : public SocketDataProvider {
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
-  bool AllReadDataConsumed() const override;
-  bool AllWriteDataConsumed() const override;
 
   size_t read_index() const { return helper_.read_index(); }
   size_t write_index() const { return helper_.write_index(); }
   size_t read_count() const { return helper_.read_count(); }
   size_t write_count() const { return helper_.write_count(); }
+
+  bool at_read_eof() const { return helper_.at_read_eof(); }
+  bool at_write_eof() const { return helper_.at_write_eof(); }
 
  protected:
   StaticSocketDataHelper* helper() { return &helper_; }
@@ -503,8 +499,12 @@ class SequencedSocketData : public SocketDataProvider {
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
-  bool AllReadDataConsumed() const override;
-  bool AllWriteDataConsumed() const override;
+
+  // Returns true if all data has been read.
+  bool at_read_eof() const;
+
+  // Returns true if all data has been written.
+  bool at_write_eof() const;
 
  private:
   // Defines the state for the read or write path.

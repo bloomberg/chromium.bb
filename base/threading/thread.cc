@@ -208,7 +208,7 @@ void Thread::ThreadMain() {
 
     // Complete the initialization of our Thread object.
     thread_id_ = PlatformThread::CurrentId();
-    PlatformThread::SetName(name_);
+    PlatformThread::SetName(name_.c_str());
     ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
     message_loop->set_thread_name(name_);
     message_loop->SetTimerSlack(startup_data_->options.timer_slack);

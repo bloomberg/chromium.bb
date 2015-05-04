@@ -268,9 +268,16 @@ class SpdyNetworkTransactionTest
     // should end with an empty read, and that read needs to be processed to
     // ensure proper deletion of the spdy_session_pool.
     void VerifyDataConsumed() {
-      for (const SocketDataProvider* provider : data_vector_) {
-        EXPECT_TRUE(provider->AllReadDataConsumed());
-        EXPECT_TRUE(provider->AllWriteDataConsumed());
+      for (DataVector::iterator it = data_vector_.begin();
+          it != data_vector_.end(); ++it) {
+        EXPECT_TRUE((*it)->at_read_eof()) << "Read count: "
+                                          << (*it)->read_count()
+                                          << " Read index: "
+                                          << (*it)->read_index();
+        EXPECT_TRUE((*it)->at_write_eof()) << "Write count: "
+                                           << (*it)->write_count()
+                                           << " Write index: "
+                                           << (*it)->write_index();
       }
     }
 
@@ -278,9 +285,16 @@ class SpdyNetworkTransactionTest
     // processed. In that case we want to explicitly ensure that the reads were
     // not processed.
     void VerifyDataNotConsumed() {
-      for (const SocketDataProvider* provider : data_vector_) {
-        EXPECT_FALSE(provider->AllReadDataConsumed());
-        EXPECT_FALSE(provider->AllWriteDataConsumed());
+      for (DataVector::iterator it = data_vector_.begin();
+          it != data_vector_.end(); ++it) {
+        EXPECT_TRUE(!(*it)->at_read_eof()) << "Read count: "
+                                           << (*it)->read_count()
+                                           << " Read index: "
+                                           << (*it)->read_index();
+        EXPECT_TRUE(!(*it)->at_write_eof()) << "Write count: "
+                                            << (*it)->write_count()
+                                            << " Write index: "
+                                            << (*it)->write_index();
       }
     }
 
@@ -627,8 +641,8 @@ class SpdyNetworkTransactionTest
     ReadResult(trans, data, &result);
 
     // Verify that we consumed all test data.
-    EXPECT_TRUE(data->AllReadDataConsumed());
-    EXPECT_TRUE(data->AllWriteDataConsumed());
+    EXPECT_TRUE(data->at_read_eof());
+    EXPECT_TRUE(data->at_write_eof());
 
     // Verify that the received push data is same as the expected push data.
     EXPECT_EQ(result2.compare(expected), 0) << "Received data: "
@@ -2441,10 +2455,10 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
     std::string contents("hello!");
     EXPECT_EQ(contents, d.data_received());
   }
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data2.AllReadDataConsumed());
-  EXPECT_TRUE(data2.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data2.at_read_eof());
+  EXPECT_TRUE(data2.at_write_eof());
 }
 
 // Send a spdy request to www.example.org. Get a pushed stream that redirects to
@@ -2533,10 +2547,12 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
     std::string contents2("hello!");
     EXPECT_EQ(contents2, d2.data_received());
   }
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(data2.AllReadDataConsumed());
-  EXPECT_TRUE(data2.AllWriteDataConsumed());
+  data.CompleteRead();
+  data2.CompleteRead();
+  EXPECT_TRUE(data.at_read_eof());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(data2.at_read_eof());
+  EXPECT_TRUE(data2.at_write_eof());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
@@ -2709,8 +2725,14 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushServerAborted) {
   EXPECT_EQ(OK, rv);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof()) << "Read count: "
+                                   << data.read_count()
+                                   << " Read index: "
+                                   << data.read_index();
+  EXPECT_TRUE(data.at_write_eof()) << "Write count: "
+                                    << data.write_count()
+                                    << " Write index: "
+                                    << data.write_index();
 
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
@@ -2921,8 +2943,14 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
   EXPECT_EQ(OK, rv);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof()) << "Read count: "
+                                   << data.read_count()
+                                   << " Read index: "
+                                   << data.read_index();
+  EXPECT_TRUE(data.at_write_eof()) << "Write count: "
+                                    << data.write_count()
+                                    << " Write index: "
+                                    << data.write_index();
 
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
@@ -2970,8 +2998,14 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
   EXPECT_EQ(OK, rv);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof()) << "Read count: "
+                                   << data.read_count()
+                                   << " Read index: "
+                                   << data.read_index();
+  EXPECT_TRUE(data.at_write_eof()) << "Write count: "
+                                    << data.write_count()
+                                    << " Write index: "
+                                    << data.write_index();
 
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
@@ -3023,8 +3057,14 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
   EXPECT_EQ(OK, rv);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof()) << "Read count: "
+                                   << data.read_count()
+                                   << " Read index: "
+                                   << data.read_index();
+  EXPECT_TRUE(data.at_write_eof()) << "Write count: "
+                                    << data.write_count()
+                                    << " Write index: "
+                                    << data.write_index();
 
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();
@@ -3489,8 +3529,8 @@ TEST_P(SpdyNetworkTransactionTest, WriteError) {
   EXPECT_TRUE(helper.StartDefaultTest());
   data.RunFor(2);
   helper.FinishDefaultTest();
-  EXPECT_TRUE(data.AllWriteDataConsumed());
-  EXPECT_TRUE(!data.AllReadDataConsumed());
+  EXPECT_TRUE(data.at_write_eof());
+  EXPECT_TRUE(!data.at_read_eof());
   TransactionHelperResult out = helper.output();
   EXPECT_EQ(ERR_FAILED, out.rv);
 }
@@ -5187,8 +5227,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   data.RunFor(1);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 // TODO(baranovich): HTTP 2 does not allow multiple HEADERS frames
@@ -5327,8 +5367,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   data.RunFor(1);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
@@ -5434,8 +5474,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   data.RunFor(1);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof());
+  EXPECT_TRUE(data.at_write_eof());
 }
 
 TEST_P(SpdyNetworkTransactionTest, SynReplyWithHeaders) {
@@ -5620,8 +5660,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     ReadResult(trans, &data, &result);
 
     // Verify that we consumed all test data.
-    EXPECT_TRUE(data.AllReadDataConsumed());
-    EXPECT_TRUE(data.AllWriteDataConsumed());
+    EXPECT_TRUE(data.at_read_eof());
+    EXPECT_TRUE(data.at_write_eof());
 
     // Verify the SYN_REPLY.
     // Copy the response info, because trans goes away.
@@ -5674,8 +5714,14 @@ TEST_P(SpdyNetworkTransactionTest, RetryAfterRefused) {
   EXPECT_EQ(OK, rv);
 
   // Verify that we consumed all test data.
-  EXPECT_TRUE(data.AllReadDataConsumed());
-  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.at_read_eof()) << "Read count: "
+                                   << data.read_count()
+                                   << " Read index: "
+                                   << data.read_index();
+  EXPECT_TRUE(data.at_write_eof()) << "Write count: "
+                                    << data.write_count()
+                                    << " Write index: "
+                                    << data.write_index();
 
   // Verify the SYN_REPLY.
   HttpResponseInfo response = *trans->GetResponseInfo();

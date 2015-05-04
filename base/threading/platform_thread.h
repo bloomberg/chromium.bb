@@ -156,8 +156,9 @@ class BASE_EXPORT PlatformThread {
   static void Sleep(base::TimeDelta duration);
 
   // Sets the thread name visible to debuggers/tools. This has no effect
-  // otherwise.
-  static void SetName(const std::string& name);
+  // otherwise. This name pointer is not copied internally. Thus, it must stay
+  // valid until the thread ends.
+  static void SetName(const char* name);
 
   // Gets the thread name, if previously set by SetName.
   static const char* GetName();
