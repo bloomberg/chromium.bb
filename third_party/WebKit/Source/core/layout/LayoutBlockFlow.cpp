@@ -2007,11 +2007,8 @@ void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* 
 
 void LayoutBlockFlow::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox& child)
 {
-    if (child.isLayoutMultiColumnSpannerPlaceholder() && toLayoutMultiColumnSpannerPlaceholder(child).layoutObjectInFlowThread()->needsLayout()) {
-        // The containing block of a spanner is the multicol container (|this| block), but the spanner
-        // is laid out via its spanner set (|child|), so we need to make sure that we enter it.
-        child.setChildNeedsLayout(MarkOnlyThis);
-    }
+    if (child.isLayoutMultiColumnSpannerPlaceholder())
+        toLayoutMultiColumnSpannerPlaceholder(child).markForLayoutIfObjectInFlowThreadNeedsLayout();
     LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, child);
 }
 

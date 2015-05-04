@@ -46,6 +46,7 @@
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutInline.h"
+#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRegion.h"
 #include "core/layout/LayoutTableCell.h"
@@ -1568,8 +1569,11 @@ void LayoutBlock::simplifiedNormalFlowLayout()
         }
     } else {
         for (LayoutBox* box = firstChildBox(); box; box = box->nextSiblingBox()) {
-            if (!box->isOutOfFlowPositioned())
+            if (!box->isOutOfFlowPositioned()) {
+                if (box->isLayoutMultiColumnSpannerPlaceholder())
+                    toLayoutMultiColumnSpannerPlaceholder(box)->markForLayoutIfObjectInFlowThreadNeedsLayout();
                 box->layoutIfNeeded();
+            }
         }
     }
 }

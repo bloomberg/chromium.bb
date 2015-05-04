@@ -22,6 +22,14 @@ public:
     LayoutFlowThread* flowThread() const { return toLayoutBlockFlow(parent())->multiColumnFlowThread(); }
 
     LayoutBox* layoutObjectInFlowThread() const { return m_layoutObjectInFlowThread; }
+    void markForLayoutIfObjectInFlowThreadNeedsLayout()
+    {
+        if (!m_layoutObjectInFlowThread->needsLayout())
+            return;
+        // The containing block of a spanner is the multicol container (our parent here), but the
+        // spanner is laid out via its spanner set (us), so we need to make sure that we enter it.
+        setChildNeedsLayout(MarkOnlyThis);
+    }
     void updateMarginProperties();
 
     virtual const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }
