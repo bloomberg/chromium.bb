@@ -64,6 +64,10 @@ base::TimeDelta PowerDataProviderIA::GetSamplingRate() {
   return base::TimeDelta::FromMilliseconds(kDefaultSamplePeriodMs);
 }
 
+PowerDataProvider::AccuracyLevel PowerDataProviderIA::GetAccuracyLevel() {
+  return High;
+}
+
 bool PowerDataProviderIA::Initialize() {
   if (is_open_)
     return true;

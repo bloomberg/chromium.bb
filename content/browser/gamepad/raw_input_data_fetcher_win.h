@@ -34,6 +34,9 @@ struct RawGamepadAxis {
 };
 
 struct RawGamepadInfo {
+  RawGamepadInfo();
+  ~RawGamepadInfo();
+
   HANDLE handle;
   scoped_ptr<uint8[]> ppd_buffer;
   PHIDP_PREPARSED_DATA preparsed_data;

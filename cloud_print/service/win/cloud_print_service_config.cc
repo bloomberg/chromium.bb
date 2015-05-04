@@ -63,7 +63,11 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
   END_MSG_MAP()
 
   SetupDialog();
+
  private:
+  friend class base::RefCounted<SetupDialog>;
+  ~SetupDialog() {}
+
   // Window Message Handlers
   LRESULT OnInitDialog(UINT message, WPARAM wparam, LPARAM lparam,
                        BOOL& handled);

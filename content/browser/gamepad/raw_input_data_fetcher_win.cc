@@ -28,13 +28,20 @@ USHORT DeviceUsages[] = {
 const uint32_t kAxisMinimumUsageNumber = 0x30;
 const uint32_t kGameControlsUsagePage = 0x05;
 
-}   // namespace
+}  // namespace
+
+RawGamepadInfo::RawGamepadInfo() {
+}
+
+RawGamepadInfo::~RawGamepadInfo() {
+}
 
 RawInputDataFetcher::RawInputDataFetcher()
-    : hid_dll_(base::FilePath(FILE_PATH_LITERAL("hid.dll")))
-    , rawinput_available_(GetHidDllFunctions())
-    , filter_xinput_(true)
-    , events_monitored_(false) {}
+    : hid_dll_(base::FilePath(FILE_PATH_LITERAL("hid.dll"))),
+      rawinput_available_(GetHidDllFunctions()),
+      filter_xinput_(true),
+      events_monitored_(false) {
+}
 
 RawInputDataFetcher::~RawInputDataFetcher() {
   ClearControllers();
@@ -446,9 +453,9 @@ LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {
 }
 
 bool RawInputDataFetcher::HandleMessage(UINT message,
-                                            WPARAM wparam,
-                                            LPARAM lparam,
-                                            LRESULT* result) {
+                                        WPARAM wparam,
+                                        LPARAM lparam,
+                                        LRESULT* result) {
   switch (message) {
     case WM_INPUT:
       *result = OnInput(reinterpret_cast<HRAWINPUT>(lparam));

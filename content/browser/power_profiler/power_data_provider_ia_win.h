@@ -22,7 +22,7 @@ class PowerDataProviderIA : public PowerDataProvider {
   // PowerDataProvider:
   PowerEventVector GetData() override;
   base::TimeDelta GetSamplingRate() override;
-  AccuracyLevel GetAccuracyLevel() override { return High; }
+  AccuracyLevel GetAccuracyLevel() override;
 
  private:
   CIntelPowerGadgetLib energy_lib_;
