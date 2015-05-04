@@ -217,18 +217,42 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
       # It is only done if files were written in the directory.
       if os.path.isdir(out_dir) and os.listdir(out_dir):
         with tools.Profiler('ArchiveOutput'):
-          results = isolateserver.archive_files_to_storage(
-              storage, [out_dir], None)
-        # TODO(maruel): Implement side-channel to publish this information.
-        output_data = {
-          'hash': results[0][0],
-          'namespace': storage.namespace,
-          'storage': storage.location,
-        }
-        sys.stdout.flush()
-        print(
-            '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
-            tools.format_json(output_data, dense=True))
+          try:
+            results = isolateserver.archive_files_to_storage(
+                storage, [out_dir], None)
+          except isolateserver.Aborted:
+            # This happens when a signal SIGTERM was received while uploading
+            # data. There is 2 causes:
+            # - The task was too slow and was about to be killed anyway due to
+            #   exceeding the hard timeout.
+            # - The amount of data uploaded back is very large and took too much
+            #   time to archive.
+            #
+            # There's 3 options to handle this:
+            # - Ignore the upload failure as a silent failure. This can be
+            #   detected client side by the fact no result file exists.
+            # - Return as if the task failed. This is not factually correct.
+            # - Return an internal failure. Sadly, it's impossible at this level
+            #   at the moment.
+            #
+            # For now, silently drop the upload.
+            #
+            # In any case, the process only has a very short grace period so it
+            # needs to exit right away.
+            sys.stderr.write('Received SIGTERM while uploading')
+            results = None
+
+        if results:
+          # TODO(maruel): Implement side-channel to publish this information.
+          output_data = {
+            'hash': results[0][0],
+            'namespace': storage.namespace,
+            'storage': storage.location,
+          }
+          sys.stdout.flush()
+          print(
+              '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
+              tools.format_json(output_data, dense=True))
 
     finally:
       try:
