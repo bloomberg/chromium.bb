@@ -1702,9 +1702,10 @@ def GerritUpload(options, args, cl, change):
   # We assume the remote called "origin" is the one we want.
   # It is probably not worthwhile to support different workflows.
   gerrit_remote = 'origin'
-  branch = 'master'
-  if options.target_branch:
-    branch = options.target_branch
+
+  remote, remote_branch = cl.GetRemoteBranch()
+  branch = GetTargetRef(remote, remote_branch, options.target_branch,
+                        pending_prefix='')
 
   change_desc = ChangeDescription(
       options.message or CreateDescriptionFromLog(args))

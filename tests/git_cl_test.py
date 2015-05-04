@@ -581,7 +581,8 @@ class TestGitCl(TestCase):
         ]
 
   @staticmethod
-  def _gerrit_upload_calls(description, reviewers, squash):
+  def _gerrit_upload_calls(description, reviewers, squash,
+                           expected_upstream_ref='origin/refs/heads/master'):
     calls = [
         ((['git', 'log', '--pretty=format:%s\n\n%b',
            'fake_ancestor_sha..HEAD'],),
@@ -620,7 +621,8 @@ class TestGitCl(TestCase):
       ref_to_push = 'HEAD'
 
     calls += [
-        ((['git', 'rev-list', 'origin/master..' + ref_to_push],), ''),
+        ((['git', 'rev-list',
+            expected_upstream_ref + '..' + ref_to_push],), ''),
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
     receive_pack = '--receive-pack=git receive-pack '
@@ -632,7 +634,8 @@ class TestGitCl(TestCase):
     receive_pack += ''
     calls += [
         ((['git',
-           'push', receive_pack, 'origin', ref_to_push + ':refs/for/master'],),
+           'push', receive_pack, 'origin',
+           ref_to_push + ':refs/for/refs/heads/master'],),
          '')
         ]
     if squash:
@@ -650,10 +653,13 @@ class TestGitCl(TestCase):
       upload_args,
       description,
       reviewers,
-      squash=False):
+      squash=False,
+      expected_upstream_ref='origin/refs/heads/master'):
     """Generic gerrit upload test framework."""
     self.calls = self._gerrit_base_calls()
-    self.calls += self._gerrit_upload_calls(description, reviewers, squash)
+    self.calls += self._gerrit_upload_calls(
+        description, reviewers, squash,
+        expected_upstream_ref=expected_upstream_ref)
     git_cl.main(['upload'] + upload_args)
 
   def test_gerrit_upload_without_change_id(self):
@@ -686,7 +692,8 @@ class TestGitCl(TestCase):
         ['--squash'],
         'desc\n\nBUG=\nChange-Id:123456789\n',
         [],
-        squash=True)
+        squash=True,
+        expected_upstream_ref='origin/master')
 
   def test_config_gerrit_download_hook(self):
     self.mock(git_cl, 'FindCodereviewSettingsFile', CodereviewSettingsFileMock)
