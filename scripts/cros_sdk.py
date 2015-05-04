@@ -141,7 +141,8 @@ def FetchRemoteTarballs(storage_dir, urls):
   return tarball_dest
 
 
-def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
+def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False,
+                 workspace=None):
   """Creates a new chroot from a given SDK"""
 
   cmd = MAKE_CHROOT + ['--stage3_path', sdk_tarball,
@@ -149,6 +150,9 @@ def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
                        '--cache_dir', cache_dir]
   if nousepkg:
     cmd.append('--nousepkg')
+
+  if workspace:
+    cmd.extend(['--workspace_root', workspace])
 
   logging.notice('Creating chroot. This may take a few minutes...')
   try:
@@ -630,7 +634,8 @@ def main(argv):
       if options.create:
         lock.write_lock()
         CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
-                     nousepkg=(options.bootstrap or options.nousepkg))
+                     nousepkg=(options.bootstrap or options.nousepkg),
+                     workspace=options.workspace)
 
       if options.enter:
         lock.read_lock()
