@@ -205,7 +205,7 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
   std::vector<NaClResourcePrefetchResult> prefetched_resource_files;
   const std::vector<NaClResourcePrefetchRequest>& request_list =
       launch_params.resource_prefetch_request_list;
-  for (size_t i = 0; request_list.size(); ++i) {
+  for (size_t i = 0; i < request_list.size(); ++i) {
     GURL gurl(request_list[i].resource_url);
     base::FilePath file_path_metadata;
     if (!nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
