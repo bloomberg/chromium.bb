@@ -982,6 +982,22 @@ static PassRefPtrWillBeRawPtr<CSSValue> createLineBoxContainValue(unsigned lineB
     return CSSLineBoxContainValue::create(lineBoxContain);
 }
 
+CSSValueID valueForQuoteType(const QuoteType quoteType)
+{
+    switch (quoteType) {
+    case NO_OPEN_QUOTE:
+        return CSSValueNoOpenQuote;
+    case NO_CLOSE_QUOTE:
+        return CSSValueNoCloseQuote;
+    case CLOSE_QUOTE:
+        return CSSValueCloseQuote;
+    case OPEN_QUOTE:
+        return CSSValueOpenQuote;
+    }
+    ASSERT_NOT_REACHED();
+    return CSSValueInvalid;
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const ComputedStyle& style)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
@@ -996,6 +1012,11 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForContentData(const ComputedStyle&
             list->append(image->cssValue());
         } else if (contentData->isText()) {
             list->append(cssValuePool().createValue(toTextContentData(contentData)->text(), CSSPrimitiveValue::CSS_STRING));
+        } else if (contentData->isQuote()) {
+            const QuoteType quoteType = toQuoteContentData(contentData)->quote();
+            list->append(cssValuePool().createIdentifierValue(valueForQuoteType(quoteType)));
+        } else {
+            ASSERT_NOT_REACHED();
         }
     }
     return list.release();
