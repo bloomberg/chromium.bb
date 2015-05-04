@@ -179,6 +179,8 @@ class FormStructure {
     return fields_.end();
   }
 
+  const base::string16& form_name() const { return form_name_; }
+
   const GURL& source_url() const { return source_url_; }
 
   bool has_password_field() const { return has_password_field_; }
