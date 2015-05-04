@@ -707,8 +707,10 @@ void ProfileManager::ScheduleProfileForDeletion(
   // On the Mac, the browser process is not killed when all browser windows are
   // closed, so just in case we are deleting the active profile, and no other
   // profile has been loaded, we must pre-load a next one.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
   const std::string last_used_profile =
-      g_browser_process->local_state()->GetString(prefs::kProfileLastUsed);
+      local_state->GetString(prefs::kProfileLastUsed);
   if (last_used_profile == profile_dir.BaseName().MaybeAsASCII() ||
       last_used_profile == GetGuestProfilePath().BaseName().MaybeAsASCII()) {
     CreateProfileAsync(last_non_supervised_profile_path,
@@ -742,6 +744,7 @@ void ProfileManager::AutoloadProfiles() {
   // If running in the background is disabled for the browser, do not autoload
   // any profiles.
   PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
   if (!local_state->HasPrefPath(prefs::kBackgroundModeEnabled) ||
       !local_state->GetBoolean(prefs::kBackgroundModeEnabled)) {
     return;
@@ -1174,9 +1177,10 @@ void ProfileManager::FinishDeletingProfile(
     const base::FilePath& new_active_profile_dir) {
   // Update the last used profile pref before closing browser windows. This
   // way the correct last used profile is set for any notification observers.
-  g_browser_process->local_state()->SetString(
-      prefs::kProfileLastUsed,
-      new_active_profile_dir.BaseName().MaybeAsASCII());
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  local_state->SetString(prefs::kProfileLastUsed,
+                         new_active_profile_dir.BaseName().MaybeAsASCII());
 
   ProfileInfoCache& cache = GetProfileInfoCache();
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
