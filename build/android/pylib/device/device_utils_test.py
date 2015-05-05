@@ -661,7 +661,8 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
         (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
             temp_file),
         (self.call.adb.Shell(cmd_redirect)),
-        (self.call.device.ReadFile(temp_file.name), 'something')):
+        (self.call.device.ReadFile(temp_file.name, force_pull=True),
+         'something')):
       self.assertEquals(
           ['something'],
           self.device.RunShellCommand(
@@ -682,7 +683,8 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
         (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
             temp_file),
         (self.call.adb.Shell(cmd_redirect)),
-        (self.call.device.ReadFile(mock.ANY), 'something')):
+        (self.call.device.ReadFile(mock.ANY, force_pull=True),
+         'something')):
       self.assertEquals(['something'],
                         self.device.RunShellCommand(cmd, check_return=True))
 
@@ -1289,6 +1291,15 @@ class DeviceUtilsReadFileTest(DeviceUtilsTest):
           contents,
           self.device.ReadFile('/this/big/file/can.be.read.with.su',
                                as_root=True))
+
+  def testReadFile_forcePull(self):
+    contents = 'a' * 123456
+    with self.assertCall(
+        self.call.device._ReadFileWithPull('/read/this/big/test/file'),
+        contents):
+      self.assertEqual(
+          contents,
+          self.device.ReadFile('/read/this/big/test/file', force_pull=True))
 
 
 class DeviceUtilsWriteFileTest(DeviceUtilsTest):

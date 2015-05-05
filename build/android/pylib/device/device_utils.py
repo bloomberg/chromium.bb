@@ -560,7 +560,7 @@ class DeviceUtils(object):
           logging.info('Large output mode enabled. Will write output to device '
                        'and read results from file.')
           handle_large_command(cmd)
-          return self.ReadFile(large_output_file.name)
+          return self.ReadFile(large_output_file.name, force_pull=True)
       else:
         try:
           return handle_large_command(cmd)
@@ -1043,7 +1043,7 @@ class DeviceUtils(object):
       + r'(?P<date>\S+) +(?P<time>\S+) +(?P<name>.+)$')
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def ReadFile(self, device_path, as_root=False,
+  def ReadFile(self, device_path, as_root=False, force_pull=False,
                timeout=None, retries=None):
     """Reads the contents of a file from the device.
 
@@ -1052,6 +1052,9 @@ class DeviceUtils(object):
                    from the device.
       as_root: A boolean indicating whether the read should be executed with
                root privileges.
+      force_pull: A boolean indicating whether to force the operation to be
+          performed by pulling a file from the device. The default is, when the
+          contents are short, to retrieve the contents using cat instead.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -1065,20 +1068,20 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    # TODO(jbudorick): Implement a generic version of Stat() that handles
-    # as_root=True, then switch this implementation to use that.
-    size = None
-    ls_out = self.RunShellCommand(['ls', '-l', device_path], as_root=as_root,
-                                  check_return=True)
-    for line in ls_out:
-      m = self._LS_RE.match(line)
-      if m and m.group('name') == posixpath.basename(device_path):
-        size = int(m.group('size'))
-        break
-    else:
+    def get_size(path):
+      # TODO(jbudorick): Implement a generic version of Stat() that handles
+      # as_root=True, then switch this implementation to use that.
+      ls_out = self.RunShellCommand(['ls', '-l', device_path], as_root=as_root,
+                                    check_return=True)
+      for line in ls_out:
+        m = self._LS_RE.match(line)
+        if m and m.group('name') == posixpath.basename(device_path):
+          return int(m.group('size'))
       logging.warning('Could not determine size of %s.', device_path)
+      return None
 
-    if 0 < size <= self._MAX_ADB_OUTPUT_LENGTH:
+    if (not force_pull
+        and 0 < get_size(device_path) <= self._MAX_ADB_OUTPUT_LENGTH):
       return _JoinLines(self.RunShellCommand(
           ['cat', device_path], as_root=as_root, check_return=True))
     elif as_root and self.NeedsSU():
