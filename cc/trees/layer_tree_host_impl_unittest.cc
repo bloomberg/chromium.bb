@@ -110,6 +110,7 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.report_overscroll_only_for_scrollable_axes = true;
     settings.use_pinch_virtual_viewport = true;
+    settings.gpu_rasterization_enabled = true;
     return settings;
   }
 
@@ -5931,7 +5932,9 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   settings.gpu_rasterization_enabled = true;
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &proxy_, &stats_instrumentation_, NULL, NULL, NULL, 0);
-  host_impl_->SetUseGpuRasterization(true);
+  host_impl_->set_content_is_suitable_for_gpu_rasterization(true);
+  host_impl_->set_has_gpu_rasterization_trigger(true);
+  host_impl_->UpdateGpuRasterizationStatus();
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);
   EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
@@ -5973,17 +5976,22 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
 
   host_impl_->ResetRequiresHighResToDraw();
 
-  host_impl_->SetUseGpuRasterization(false);
+  host_impl_->set_content_is_suitable_for_gpu_rasterization(true);
+  host_impl_->set_has_gpu_rasterization_trigger(false);
+  host_impl_->UpdateGpuRasterizationStatus();
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
-  host_impl_->SetUseGpuRasterization(true);
+  host_impl_->set_has_gpu_rasterization_trigger(true);
+  host_impl_->UpdateGpuRasterizationStatus();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
-  host_impl_->SetUseGpuRasterization(false);
+  host_impl_->set_has_gpu_rasterization_trigger(false);
+  host_impl_->UpdateGpuRasterizationStatus();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 
   host_impl_->ResetRequiresHighResToDraw();
 
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
-  host_impl_->SetUseGpuRasterization(true);
+  host_impl_->set_has_gpu_rasterization_trigger(true);
+  host_impl_->UpdateGpuRasterizationStatus();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
 }
 

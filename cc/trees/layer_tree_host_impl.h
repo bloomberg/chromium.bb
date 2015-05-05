@@ -319,15 +319,18 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
   TileManager* tile_manager() { return tile_manager_.get(); }
-  void SetUseGpuRasterization(bool use_gpu);
+
+  void set_has_gpu_rasterization_trigger(bool flag) {
+    has_gpu_rasterization_trigger_ = flag;
+  }
+  void set_content_is_suitable_for_gpu_rasterization(bool flag) {
+    content_is_suitable_for_gpu_rasterization_ = flag;
+  }
+  void UpdateGpuRasterizationStatus();
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
 
   GpuRasterizationStatus gpu_rasterization_status() const {
     return gpu_rasterization_status_;
-  }
-  void set_gpu_rasterization_status(
-      GpuRasterizationStatus gpu_rasterization_status) {
-    gpu_rasterization_status_ = gpu_rasterization_status;
   }
 
   bool create_low_res_tiling() const {
@@ -640,6 +643,8 @@ class CC_EXPORT LayerTreeHostImpl
   // |tile_manager_| can also be NULL when raster_enabled is false.
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<TileManager> tile_manager_;
+  bool content_is_suitable_for_gpu_rasterization_;
+  bool has_gpu_rasterization_trigger_;
   bool use_gpu_rasterization_;
   GpuRasterizationStatus gpu_rasterization_status_;
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;

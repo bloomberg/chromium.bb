@@ -68,7 +68,6 @@ class UIResourceRequest;
 struct PendingPageScaleAnimation;
 struct RenderingStats;
 struct ScrollAndScaleSet;
-enum class GpuRasterizationStatus;
 
 class CC_EXPORT LayerTreeHost {
  public:
@@ -193,8 +192,6 @@ class CC_EXPORT LayerTreeHost {
     return has_gpu_rasterization_trigger_;
   }
   void SetHasGpuRasterizationTrigger(bool has_trigger);
-  bool UseGpuRasterization() const;
-  GpuRasterizationStatus GetGpuRasterizationStatus() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
   void SetTopControlsHeight(float height, bool shrink);

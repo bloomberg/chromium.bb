@@ -190,6 +190,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     int id)
     : client_(client),
       proxy_(proxy),
+      content_is_suitable_for_gpu_rasterization_(true),
+      has_gpu_rasterization_trigger_(false),
       use_gpu_rasterization_(false),
       gpu_rasterization_status_(GpuRasterizationStatus::OFF_DEVICE),
       input_handler_client_(NULL),
@@ -305,6 +307,7 @@ void LayerTreeHostImpl::BeginCommit() {
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
+  UpdateGpuRasterizationStatus();
   sync_tree()->set_needs_update_draw_properties();
 
   if (settings_.impl_side_painting) {
@@ -1593,7 +1596,22 @@ void LayerTreeHostImpl::FinishAllRendering() {
     renderer_->Finish();
 }
 
-void LayerTreeHostImpl::SetUseGpuRasterization(bool use_gpu) {
+void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
+  bool use_gpu = false;
+  if (settings_.gpu_rasterization_forced) {
+    use_gpu = true;
+    gpu_rasterization_status_ = GpuRasterizationStatus::ON_FORCED;
+  } else if (!settings_.gpu_rasterization_enabled) {
+    gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
+  } else if (!has_gpu_rasterization_trigger_) {
+    gpu_rasterization_status_ = GpuRasterizationStatus::OFF_VIEWPORT;
+  } else if (content_is_suitable_for_gpu_rasterization_) {
+    use_gpu = true;
+    gpu_rasterization_status_ = GpuRasterizationStatus::ON;
+  } else {
+    gpu_rasterization_status_ = GpuRasterizationStatus::OFF_CONTENT;
+  }
+
   if (use_gpu == use_gpu_rasterization_)
     return;
 
@@ -1959,6 +1977,7 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   }
   DCHECK(renderer_);
 
+  UpdateGpuRasterizationStatus();
   renderer_->SetVisible(visible_);
   SetFullRootLayerDamage();
 
