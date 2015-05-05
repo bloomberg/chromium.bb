@@ -4,36 +4,103 @@
 
 #include "net/log/test_net_log.h"
 
+#include "base/synchronization/lock.h"
+#include "base/values.h"
+
 namespace net {
 
-TestNetLog::TestNetLog() {
-  DeprecatedAddObserver(&test_net_log_observer_,
+// TestNetLog::Observer is an implementation of NetLog::ThreadSafeObserver
+// that saves messages to a buffer.
+class TestNetLog::Observer : public NetLog::ThreadSafeObserver {
+ public:
+  Observer() {}
+  ~Observer() override {}
+
+  // Returns the list of all entries in the log.
+  void GetEntries(TestNetLogEntry::List* entry_list) const {
+    base::AutoLock lock(lock_);
+    *entry_list = entry_list_;
+  }
+
+  // Fills |entry_list| with all entries in the log from the specified Source.
+  void GetEntriesForSource(NetLog::Source source,
+                           TestNetLogEntry::List* entry_list) const {
+    base::AutoLock lock(lock_);
+    entry_list->clear();
+    for (const auto& entry : entry_list_) {
+      if (entry.source.id == source.id)
+        entry_list->push_back(entry);
+    }
+  }
+
+  // Returns the number of entries in the log.
+  size_t GetSize() const {
+    base::AutoLock lock(lock_);
+    return entry_list_.size();
+  }
+
+  void Clear() {
+    base::AutoLock lock(lock_);
+    entry_list_.clear();
+  }
+
+ private:
+  // ThreadSafeObserver implementation:
+  void OnAddEntry(const NetLog::Entry& entry) override {
+    // Using Dictionaries instead of Values makes checking values a little
+    // simpler.
+    base::DictionaryValue* param_dict = nullptr;
+    base::Value* param_value = entry.ParametersToValue();
+    if (param_value && !param_value->GetAsDictionary(&param_dict))
+      delete param_value;
+
+    // Only need to acquire the lock when accessing class variables.
+    base::AutoLock lock(lock_);
+    entry_list_.push_back(TestNetLogEntry(
+        entry.type(), base::TimeTicks::Now(), entry.source(), entry.phase(),
+        scoped_ptr<base::DictionaryValue>(param_dict)));
+  }
+
+  // Needs to be "mutable" to use it in GetEntries().
+  mutable base::Lock lock_;
+
+  TestNetLogEntry::List entry_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(Observer);
+};
+
+TestNetLog::TestNetLog() : observer_(new Observer()) {
+  DeprecatedAddObserver(observer_.get(),
                         NetLogCaptureMode::IncludeCookiesAndCredentials());
 }
 
 TestNetLog::~TestNetLog() {
-  DeprecatedRemoveObserver(&test_net_log_observer_);
+  DeprecatedRemoveObserver(observer_.get());
 }
 
 void TestNetLog::SetCaptureMode(NetLogCaptureMode capture_mode) {
-  SetObserverCaptureMode(&test_net_log_observer_, capture_mode);
+  SetObserverCaptureMode(observer_.get(), capture_mode);
 }
 
 void TestNetLog::GetEntries(TestNetLogEntry::List* entry_list) const {
-  test_net_log_observer_.GetEntries(entry_list);
+  observer_->GetEntries(entry_list);
 }
 
 void TestNetLog::GetEntriesForSource(NetLog::Source source,
                                      TestNetLogEntry::List* entry_list) const {
-  test_net_log_observer_.GetEntriesForSource(source, entry_list);
+  observer_->GetEntriesForSource(source, entry_list);
 }
 
 size_t TestNetLog::GetSize() const {
-  return test_net_log_observer_.GetSize();
+  return observer_->GetSize();
 }
 
 void TestNetLog::Clear() {
-  test_net_log_observer_.Clear();
+  observer_->Clear();
+}
+
+NetLog::ThreadSafeObserver* TestNetLog::GetObserver() const {
+  return observer_.get();
 }
 
 BoundTestNetLog::BoundTestNetLog()

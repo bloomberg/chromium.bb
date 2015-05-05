@@ -12,12 +12,11 @@
 #include "base/compiler_specific.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log_entry.h"
-#include "net/log/test_net_log_observer.h"
 
 namespace net {
 
-// TestNetLog is convenience class which combines a NetLog and a
-// TestNetLogObserver.  It is intended for testing only, and is part of the
+// TestNetLog is NetLog subclass which records all NetLog events that occur and
+// their parameters.  It is intended for testing only, and is part of the
 // net_test_support project.
 class TestNetLog : public NetLog {
  public:
@@ -33,8 +32,16 @@ class TestNetLog : public NetLog {
   size_t GetSize() const;
   void Clear();
 
+  // Returns a NetLog observer that will write entries to the TestNetLog's event
+  // store. For testing code that bypasses NetLogs and adds events directly to
+  // an observer.
+  NetLog::ThreadSafeObserver* GetObserver() const;
+
  private:
-  TestNetLogObserver test_net_log_observer_;
+  // The underlying observer class that does all the work.
+  class Observer;
+
+  scoped_ptr<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetLog);
 };

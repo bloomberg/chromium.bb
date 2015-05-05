@@ -500,9 +500,6 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 NET_EXPORT void CreateNetLogEntriesForActiveObjects(
     const std::set<URLRequestContext*>& contexts,
     NetLog::ThreadSafeObserver* observer) {
-  // Not safe to call this when the observer is watching a NetLog.
-  DCHECK(!observer->net_log());
-
   // Put together the list of all requests.
   std::vector<const URLRequest*> requests;
   for (const auto& context : contexts) {
