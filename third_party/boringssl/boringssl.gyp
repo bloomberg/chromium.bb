@@ -46,7 +46,7 @@
         }],
         ['target_arch == "ia32"', {
           'conditions': [
-            ['OS == "mac"', {
+            ['OS == "mac" or OS == "ios"', {
               'sources': [ '<@(boringssl_mac_x86_sources)' ],
             }],
             ['OS == "linux" or OS == "android"', {
@@ -63,14 +63,14 @@
                 '../yasm/yasm_compile.gypi',
               ],
             }],
-            ['OS != "mac" and OS != "linux" and OS != "win" and OS != "android"', {
+            ['OS != "mac" and OS != "ios" and OS != "linux" and OS != "win" and OS != "android"', {
               'defines': [ 'OPENSSL_NO_ASM' ],
             }],
           ]
         }],
         ['target_arch == "x64"', {
           'conditions': [
-            ['OS == "mac"', {
+            ['OS == "mac" or OS == "ios"', {
               'sources': [ '<@(boringssl_mac_x86_64_sources)' ],
             }],
             ['OS == "linux" or OS == "android"', {
@@ -87,7 +87,7 @@
                 '../yasm/yasm_compile.gypi',
               ],
             }],
-            ['OS != "mac" and OS != "linux" and OS != "win" and OS != "android"', {
+            ['OS != "mac" and OS != "ios" and OS != "linux" and OS != "win" and OS != "android"', {
               'defines': [ 'OPENSSL_NO_ASM' ],
             }],
           ]

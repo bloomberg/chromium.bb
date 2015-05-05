@@ -71,7 +71,7 @@ component("boringssl") {
   ]
 
   if (current_cpu == "x64") {
-    if (is_mac) {
+    if (is_mac || is_ios) {
       sources += gypi_values.boringssl_mac_x86_64_sources
     } else if (is_linux || is_android) {
       sources += gypi_values.boringssl_linux_x86_64_sources
@@ -81,7 +81,7 @@ component("boringssl") {
       defines += [ "OPENSSL_NO_ASM" ]
     }
   } else if (current_cpu == "x86") {
-    if (is_mac) {
+    if (is_mac || is_ios) {
       sources += gypi_values.boringssl_mac_x86_sources
     } else if (is_linux || is_android) {
       sources += gypi_values.boringssl_linux_x86_sources
