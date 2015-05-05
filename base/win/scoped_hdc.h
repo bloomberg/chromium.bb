@@ -68,7 +68,7 @@ class CreateDCTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(CreateDCTraits);
 };
 
-typedef GenericScopedHandle<CreateDCTraits, VerifierTraits> ScopedCreateDC;
+typedef GenericScopedHandle<CreateDCTraits, DummyVerifierTraits> ScopedCreateDC;
 
 }  // namespace win
 }  // namespace base

@@ -44,7 +44,7 @@ class PrinterHandleTraits {
 
 class ScopedPrinterHandle
     : public base::win::GenericScopedHandle<PrinterHandleTraits,
-                                            base::win::VerifierTraits> {
+                                            base::win::DummyVerifierTraits> {
  public:
   bool OpenPrinter(const wchar_t* printer) {
     HANDLE temp_handle;
@@ -57,7 +57,7 @@ class ScopedPrinterHandle
 
  private:
   typedef base::win::GenericScopedHandle<PrinterHandleTraits,
-                                         base::win::VerifierTraits> Base;
+                                         base::win::DummyVerifierTraits> Base;
 };
 
 class PrinterChangeHandleTraits {

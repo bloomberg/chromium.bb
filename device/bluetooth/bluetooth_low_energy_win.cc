@@ -49,7 +49,7 @@ class DeviceInfoSetTraits {
 };
 
 typedef base::win::GenericScopedHandle<DeviceInfoSetTraits,
-                                       base::win::VerifierTraits>
+                                       base::win::DummyVerifierTraits>
     ScopedDeviceInfoSetHandle;
 
 bool StringToBluetoothAddress(const std::string& value,
