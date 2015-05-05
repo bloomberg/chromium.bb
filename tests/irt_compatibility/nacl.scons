@@ -12,6 +12,10 @@ Import('env')
 if env.Bit('pnacl_generate_pexe'):
   Return()
 
+# The new glibc requires some newer IRT interfaces.
+if env.Bit('nacl_glibc') and not env.Bit('build_x86'):
+  Return()
+
 blob_env = env['NACL_IRT_ENV'].Clone()
 blob_env.Append(LINKFLAGS=['-Wl,-Trodata-segment=${IRT_BLOB_DATA_START}',
                            '-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}'])
