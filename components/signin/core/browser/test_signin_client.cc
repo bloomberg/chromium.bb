@@ -128,7 +128,3 @@ void TestSigninClient::AddContentSettingsObserver(
 void TestSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
 }
-
-void TestSigninClient::DelayNetworkCall(const base::Closure& callback) {
-  callback.Run();
-}
