@@ -417,8 +417,48 @@
       <arg name="height" type="int"/>
     </request>
 
-    <request name="set_maximized" />
-    <request name="unset_maximized" />
+    <request name="set_maximized">
+      <description summary="maximize the window">
+        Maximize the surface.
+
+        After requesting that the surface should be maximized, the compositor
+        will respond by emitting a configure event with the "maximized" state
+        and the required window geometry. The client should then update its
+        content, drawing it in a maximized state, i.e. without shadow or other
+        decoration outside of the window geometry. The client must also
+        acknowledge the configure when committing the new content (see
+        ack_configure).
+
+        It is up to the compositor to decide how and where to maximize the
+        surface, for example which output and what region of the screen should
+        be used.
+
+        If the surface was already maximized, the compositor will still emit
+        a configure event with the "maximized" state.
+      </description>
+    </request>
+
+    <request name="unset_maximized">
+      <description summary="unmaximize the window">
+        Unmaximize the surface.
+
+        After requesting that the surface should be unmaximized, the compositor
+        will respond by emitting a configure event without the "maximized"
+        state. If available, the compositor will include the window geometry
+        dimensions the window had prior to being maximized in the configure
+        request. The client must then update its content, drawing it in a
+        regular state, i.e. potentially with shadow, etc. The client must also
+        acknowledge the configure when committing the new content (see
+        ack_configure).
+
+        It is up to the compositor to position the surface after it was
+        unmaximized; usually the position the surface had before maximizing, if
+        applicable.
+
+        If the surface was already not maximized, the compositor will still
+        emit a configure event without the "maximized" state.
+      </description>
+    </request>
 
     <request name="set_fullscreen">
       <description summary="set the window as fullscreen on a monitor">
