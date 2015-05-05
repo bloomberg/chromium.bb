@@ -653,12 +653,12 @@ const LogSeverity LOG_DCHECK = LOG_INFO;
 
 #else  // _PREFAST_
 
-#define DCHECK(condition)                                         \
-  LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON() && !(condition)) \
+#define DCHECK(condition)                                                \
+  LAZY_STREAM(LOG_STREAM(DCHECK), DCHECK_IS_ON() ? !(condition) : false) \
       << "Check failed: " #condition ". "
 
-#define DPCHECK(condition)                                         \
-  LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON() && !(condition)) \
+#define DPCHECK(condition)                                                \
+  LAZY_STREAM(PLOG_STREAM(DCHECK), DCHECK_IS_ON() ? !(condition) : false) \
       << "Check failed: " #condition ". "
 
 #endif  // _PREFAST_
