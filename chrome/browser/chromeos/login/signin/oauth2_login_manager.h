@@ -155,7 +155,8 @@ class OAuth2LoginManager : public KeyedService,
   // OAuth2LoginVerifier::Delegate overrides.
   void OnSessionMergeSuccess() override;
   void OnSessionMergeFailure(bool connection_error) override;
-  void OnListAccountsSuccess(const std::string& data) override;
+  void OnListAccountsSuccess(
+      const std::vector<std::pair<std::string, bool>>& accounts) override;
   void OnListAccountsFailure(bool connection_error) override;
 
   // OAuth2TokenFetcher::Delegate overrides.
