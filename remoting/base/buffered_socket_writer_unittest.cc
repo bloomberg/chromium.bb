@@ -45,14 +45,6 @@ class SocketDataProvider: public net::SocketDataProvider {
                                 size);
   }
 
-  bool AllReadDataConsumed() const override {
-    return true;
-  }
-
-  bool AllWriteDataConsumed() const override {
-    return true;
-  }
-
   void Reset() override {}
 
   std::string written_data() { return written_data_; }
