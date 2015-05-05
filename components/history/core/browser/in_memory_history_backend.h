@@ -35,8 +35,10 @@ class FilePath;
 
 namespace history {
 
+class HistoryBackendTestBase;
 class HistoryService;
 class InMemoryDatabase;
+class InMemoryHistoryBackendTest;
 class URLDatabase;
 class URLRow;
 

@@ -6,15 +6,18 @@
 
 #include "base/files/file_path.h"
 
-#define FPL FILE_PATH_LITERAL
-
 namespace history {
 
 // filenames
 const base::FilePath::CharType kArchivedHistoryFilename[] =
-    FPL("Archived History");
-const base::FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
-const base::FilePath::CharType kHistoryFilename[] = FPL("History");
-const base::FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
+    FILE_PATH_LITERAL("Archived History");
+const base::FilePath::CharType kFaviconsFilename[] =
+    FILE_PATH_LITERAL("Favicons");
+const base::FilePath::CharType kHistoryFilename[] =
+    FILE_PATH_LITERAL("History");
+const base::FilePath::CharType kThumbnailsFilename[] =
+    FILE_PATH_LITERAL("Thumbnails");
+const base::FilePath::CharType kTopSitesFilename[] =
+    FILE_PATH_LITERAL("Top Sites");
 
 }  // namespace history

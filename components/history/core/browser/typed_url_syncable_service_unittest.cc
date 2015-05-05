@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/browser/notification_types.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error.h"
@@ -68,9 +67,7 @@ class TestHistoryBackend : public HistoryBackend {
                                 visits->end());
   }
 
-  void DeleteVisitsForUrl(const URLID& id) {
-    local_db_visits_.erase(id);
-  }
+  void DeleteVisitsForUrl(const URLID& id) { local_db_visits_.erase(id); }
 
  private:
   ~TestHistoryBackend() override {}
@@ -110,8 +107,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
                              ui::PageTransition transition,
                              int64 visit_time);
 
-  static bool URLsEqual(URLRow& row,
-                        sync_pb::TypedUrlSpecifics& specifics) {
+  static bool URLsEqual(URLRow& row, sync_pb::TypedUrlSpecifics& specifics) {
     return ((row.url().spec().compare(specifics.url()) == 0) &&
             (base::UTF16ToUTF8(row.title()).compare(specifics.title()) == 0) &&
             (row.hidden() == specifics.hidden()));
@@ -140,13 +136,12 @@ class TypedUrlSyncableServiceTest : public testing::Test {
   scoped_ptr<syncer::FakeSyncChangeProcessor> fake_change_processor_;
 };
 
-URLRow TypedUrlSyncableServiceTest::MakeTypedUrlRow(
-    const char* url,
-    const char* title,
-    int typed_count,
-    int64 last_visit,
-    bool hidden,
-    VisitVector* visits) {
+URLRow TypedUrlSyncableServiceTest::MakeTypedUrlRow(const char* url,
+                                                    const char* title,
+                                                    int typed_count,
+                                                    int64 last_visit,
+                                                    bool hidden,
+                                                    VisitVector* visits) {
   DCHECK(visits->empty());
 
   // Give each URL a unique ID, to mimic the behavior of the real database.
@@ -177,11 +172,10 @@ URLRow TypedUrlSyncableServiceTest::MakeTypedUrlRow(
   return history_url;
 }
 
-void TypedUrlSyncableServiceTest::AddNewestVisit(
-    URLRow* url,
-    VisitVector* visits,
-    ui::PageTransition transition,
-    int64 visit_time) {
+void TypedUrlSyncableServiceTest::AddNewestVisit(URLRow* url,
+                                                 VisitVector* visits,
+                                                 ui::PageTransition transition,
+                                                 int64 visit_time) {
   base::Time time = base::Time::FromInternalValue(visit_time);
   visits->insert(visits->begin(),
                  VisitRow(url->id(), time, 0, transition, 0));
@@ -194,11 +188,10 @@ void TypedUrlSyncableServiceTest::AddNewestVisit(
   url->set_visit_count(visits->size());
 }
 
-void TypedUrlSyncableServiceTest::AddOldestVisit(
-    URLRow* url,
-    VisitVector* visits,
-    ui::PageTransition transition,
-    int64 visit_time) {
+void TypedUrlSyncableServiceTest::AddOldestVisit(URLRow* url,
+                                                 VisitVector* visits,
+                                                 ui::PageTransition transition,
+                                                 int64 visit_time) {
   base::Time time = base::Time::FromInternalValue(visit_time);
   visits->push_back(VisitRow(url->id(), time, 0, transition, 0));
 

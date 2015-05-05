@@ -2,45 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/history/core/browser/top_sites_impl.h"
+
 #include "base/bind.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/top_sites_factory.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_profile.h"
+#include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_cache.h"
-#include "components/history/core/browser/top_sites_impl.h"
 #include "components/history/core/browser/top_sites_observer.h"
+#include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/test/history_unittest_base.h"
-#include "content/public/test/test_browser_thread.h"
+#include "components/history/core/test/test_history_database.h"
+#include "components/history/core/test/wait_top_sites_loaded_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace history {
 
 namespace {
 
-static const char kPrepopulatedPageURL[] =
+// Key for URL blacklist.
+const char kBlacklistURLKey[] = "test.blacklist.url";
+const char kAcceptLanguages[] = "en-US,en";
+
+const char kApplicationScheme[] = "application";
+const char kPrepopulatedPageURL[] =
     "http://www.google.com/int/chrome/welcome.html";
 
-// Create a TopSites implementation for testing.
-scoped_refptr<RefcountedKeyedService> BuildTopSitesImpl(
-    content::BrowserContext* context) {
-  PrepopulatedPageList prepopulated_pages;
-  prepopulated_pages.push_back(PrepopulatedPage(GURL(kPrepopulatedPageURL),
-                                                base::string16(), -1, -1, 0));
-  return TopSitesFactory::BuildTopSites(context, prepopulated_pages);
+// Returns whether |url| can be added to history.
+bool MockCanAddURLToHistory(const GURL& url) {
+  return url.is_valid() && !url.SchemeIs(kApplicationScheme);
 }
 
 // Used by WaitForHistory, see it for details.
@@ -66,9 +67,7 @@ class WaitForHistoryTask : public HistoryDBTask {
 class TopSitesQuerier {
  public:
   TopSitesQuerier()
-      : number_of_callbacks_(0),
-        waiting_(false),
-        weak_ptr_factory_(this) {}
+      : number_of_callbacks_(0), waiting_(false), weak_ptr_factory_(this) {}
 
   // Queries top sites. If |wait| is true a nested message loop is run until the
   // callback is notified.
@@ -92,9 +91,7 @@ class TopSitesQuerier {
     }
   }
 
-  void CancelRequest() {
-    weak_ptr_factory_.InvalidateWeakPtrs();
-  }
+  void CancelRequest() { weak_ptr_factory_.InvalidateWeakPtrs(); }
 
   void set_urls(const MostVisitedURLList& urls) { urls_ = urls; }
   const MostVisitedURLList& urls() const { return urls_; }
@@ -120,14 +117,6 @@ class TopSitesQuerier {
   DISALLOW_COPY_AND_ASSIGN(TopSitesQuerier);
 };
 
-// Extracts the data from |t1| into a SkBitmap. This is intended for usage of
-// thumbnail data, which is stored as jpgs.
-SkBitmap ExtractThumbnail(const base::RefCountedMemory& t1) {
-  scoped_ptr<SkBitmap> image(gfx::JPEGCodec::Decode(t1.front(),
-                                                    t1.size()));
-  return image.get() ? *image : SkBitmap();
-}
-
 // Returns true if t1 and t2 contain the same data.
 bool ThumbnailsAreEqual(base::RefCountedMemory* t1,
                         base::RefCountedMemory* t2) {
@@ -142,34 +131,26 @@ bool ThumbnailsAreEqual(base::RefCountedMemory* t1,
 
 class TopSitesImplTest : public HistoryUnitTestBase {
  public:
-  TopSitesImplTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_) {
-  }
+  TopSitesImplTest() {}
 
   void SetUp() override {
-    profile_.reset(new TestingProfile);
-    if (CreateHistoryAndTopSites()) {
-      ASSERT_TRUE(profile_->CreateHistoryService(false, false));
-      ResetTopSites();
-      profile_->BlockUntilTopSitesLoaded();
-    }
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+    pref_service_.reset(new TestingPrefServiceSimple);
+    pref_service_->registry()->RegisterDictionaryPref(kBlacklistURLKey);
+    history_service_.reset(
+        new HistoryService(nullptr, scoped_ptr<VisitDelegate>()));
+    ASSERT_TRUE(history_service_->Init(
+        kAcceptLanguages,
+        TestHistoryDatabaseParamsForPath(scoped_temp_dir_.path())));
+    ResetTopSites();
+    WaitTopSitesLoaded();
   }
 
   void TearDown() override {
-    profile_.reset();
-  }
-
-  // Returns true if history and top sites should be created in SetUp.
-  virtual bool CreateHistoryAndTopSites() {
-    return true;
-  }
-
-  // Gets the thumbnail for |url| from TopSites.
-  SkBitmap GetThumbnail(const GURL& url) {
-    scoped_refptr<base::RefCountedMemory> data;
-    return top_sites()->GetPageThumbnail(url, false, &data) ?
-        ExtractThumbnail(*data.get()) : SkBitmap();
+    DestroyTopSites();
+    history_service_->Shutdown();
+    history_service_.reset();
+    pref_service_.reset();
   }
 
   // Creates a bitmap of the specified color. Caller takes ownership.
@@ -207,15 +188,9 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     base::MessageLoop::current()->Run();
   }
 
-  TopSitesImpl* top_sites() {
-    return static_cast<TopSitesImpl*>(
-        TopSitesFactory::GetForProfile(profile_.get()).get());
-  }
-  TestingProfile* profile() {return profile_.get();}
-  HistoryService* history_service() {
-    return HistoryServiceFactory::GetForProfile(
-        profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
-  }
+  TopSitesImpl* top_sites() { return top_sites_impl_.get(); }
+
+  HistoryService* history_service() { return history_service_.get(); }
 
   PrepopulatedPageList GetPrepopulatedPages() {
     return top_sites()->GetPrepopulatedPages();
@@ -236,9 +211,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   // Quit the current message loop when invoked. Useful when running a nested
   // message loop.
-  void QuitCallback() {
-    base::MessageLoop::current()->Quit();
-  }
+  void QuitCallback() { base::MessageLoop::current()->Quit(); }
 
   // Adds a page to history.
   void AddPageToHistory(const GURL& url) {
@@ -246,8 +219,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     redirects.push_back(url);
     history_service()->AddPage(
         url, base::Time::Now(), reinterpret_cast<ContextID>(1), 0, GURL(),
-        redirects, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-        false);
+        redirects, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
   }
 
   // Adds a page to history.
@@ -256,8 +228,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     redirects.push_back(url);
     history_service()->AddPage(
         url, base::Time::Now(), reinterpret_cast<ContextID>(1), 0, GURL(),
-        redirects, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-        false);
+        redirects, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
     history_service()->SetPageTitle(url, title);
   }
 
@@ -274,9 +245,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   }
 
   // Delets a url.
-  void DeleteURL(const GURL& url) {
-    history_service()->DeleteURL(url);
-  }
+  void DeleteURL(const GURL& url) { history_service()->DeleteURL(url); }
 
   // Returns true if the thumbnail equals the specified bytes.
   bool ThumbnailEqualsBytes(const gfx::Image& image,
@@ -290,8 +259,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   void RecreateTopSitesAndBlock() {
     // Recreate TopSites and wait for it to load.
     ResetTopSites();
-    // As history already loaded we have to fake this call.
-    profile()->BlockUntilTopSitesLoaded();
+    WaitTopSitesLoaded();
   }
 
   // Wrappers that allow private TopSites functions to be called from the
@@ -309,9 +277,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     return top_sites()->AddForcedURL(url, time);
   }
 
-  void StartQueryForMostVisited() {
-    top_sites()->StartQueryForMostVisited();
-  }
+  void StartQueryForMostVisited() { top_sites()->StartQueryForMostVisited(); }
 
   void SetLastNumUrlsChanged(size_t value) {
     top_sites()->last_num_urls_changed_ = value;
@@ -319,9 +285,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   size_t last_num_urls_changed() { return top_sites()->last_num_urls_changed_; }
 
-  base::TimeDelta GetUpdateDelay() {
-    return top_sites()->GetUpdateDelay();
-  }
+  base::TimeDelta GetUpdateDelay() { return top_sites()->GetUpdateDelay(); }
 
   bool IsTopSitesLoaded() { return top_sites()->loaded_; }
 
@@ -337,19 +301,45 @@ class TopSitesImplTest : public HistoryUnitTestBase {
 
   void ResetTopSites() {
     // TopSites shutdown takes some time as it happens on the DB thread and does
-    // not support the existence of two TopSitesImpl for a single profile (due
-    // to database locking). TestingProfile::DestroyTopSites() waits for the
-    // TopSites cleanup to complete before returning.
-    profile_->DestroyTopSites();
-    TopSitesFactory::GetInstance()->SetTestingFactory(profile_.get(),
-                                                      BuildTopSitesImpl);
+    // not support the existence of two TopSitesImpl for a location (due to
+    // database locking). DestroyTopSites() waits for the TopSites cleanup to
+    // complete before returning.
+    DestroyTopSites();
+    DCHECK(!top_sites_impl_);
+    PrepopulatedPageList prepopulated_pages;
+    prepopulated_pages.push_back(PrepopulatedPage(GURL(kPrepopulatedPageURL),
+                                                  base::string16(), -1, -1, 0));
+    top_sites_impl_ = new TopSitesImpl(
+        pref_service_.get(), history_service_.get(), kBlacklistURLKey,
+        prepopulated_pages, base::Bind(MockCanAddURLToHistory));
+    top_sites_impl_->Init(scoped_temp_dir_.path().Append(kTopSitesFilename),
+                          message_loop_.task_runner());
+  }
+
+  void DestroyTopSites() {
+    if (top_sites_impl_) {
+      top_sites_impl_->ShutdownOnUIThread();
+      top_sites_impl_ = nullptr;
+
+      if (base::MessageLoop::current())
+        base::MessageLoop::current()->RunUntilIdle();
+    }
+  }
+
+  void WaitTopSitesLoaded() {
+    DCHECK(top_sites_impl_);
+    WaitTopSitesLoadedObserver wait_top_sites_loaded_observer(top_sites_impl_);
+    wait_top_sites_loaded_observer.Run();
   }
 
  private:
+  base::ScopedTempDir scoped_temp_dir_;
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  scoped_ptr<TestingProfile> profile_;
+
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
+  scoped_ptr<HistoryService> history_service_;
+  scoped_refptr<TopSitesImpl> top_sites_impl_;
+
   // To cancel HistoryService tasks.
   base::CancelableTaskTracker history_tracker_;
 
@@ -383,9 +373,9 @@ static void AppendForcedMostVisitedURL(std::vector<MostVisitedURL>* list,
 
 // Same as AppendMostVisitedURL except that it adds a redirect from the first
 // URL to the second.
-static void AppendMostVisitedURLWithRedirect(
-    std::vector<MostVisitedURL>* list,
-    const GURL& redirect_source, const GURL& redirect_dest) {
+static void AppendMostVisitedURLWithRedirect(std::vector<MostVisitedURL>* list,
+                                             const GURL& redirect_source,
+                                             const GURL& redirect_dest) {
   MostVisitedURL mv;
   mv.url = redirect_dest;
   mv.redirects.push_back(redirect_source);
@@ -528,7 +518,7 @@ TEST_F(TopSitesImplTest, SetPageThumbnail) {
   GURL url1a("http://google.com/");
   GURL url1b("http://www.google.com/");
   GURL url2("http://images.google.com/");
-  GURL invalid_url("chrome://favicon/http://google.com/");
+  GURL invalid_url("application://favicon/http://google.com/");
 
   std::vector<MostVisitedURL> list;
   AppendMostVisitedURL(&list, url2);
@@ -551,8 +541,8 @@ TEST_F(TopSitesImplTest, SetPageThumbnail) {
   ThumbnailScore high_score(0.0, true, true, now);
 
   // Setting the thumbnail for invalid pages should fail.
-  EXPECT_FALSE(top_sites()->SetPageThumbnail(invalid_url,
-                                             thumbnail, medium_score));
+  EXPECT_FALSE(
+      top_sites()->SetPageThumbnail(invalid_url, thumbnail, medium_score));
 
   // Setting the thumbnail for url2 should succeed, lower scores shouldn't
   // replace it, higher scores should.
@@ -753,7 +743,9 @@ TEST_F(TopSitesImplTest, SaveForcedToDB) {
 
   // Get the original thumbnail for later comparison. Some compression can
   // happen in |top_sites| and we don't want to depend on that.
-  SkBitmap orig_thumbnail = GetThumbnail(GURL("http://forced1"));
+  scoped_refptr<base::RefCountedMemory> orig_thumbnail_data;
+  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced1"), false,
+                                            &orig_thumbnail_data));
 
   // Force-flush the cache to ensure we don't reread from it inadvertently.
   EmptyThreadSafeCache();
@@ -768,14 +760,11 @@ TEST_F(TopSitesImplTest, SaveForcedToDB) {
   ASSERT_EQ(4u + GetPrepopulatedPages().size(), querier.urls().size());
   EXPECT_EQ(GURL("http://forced1"), querier.urls()[0].url);
   EXPECT_EQ(base::ASCIIToUTF16("forced1"), querier.urls()[0].title);
-  SkBitmap thumbnail = GetThumbnail(GURL("http://forced1"));
-  ASSERT_EQ(orig_thumbnail.getSize(), thumbnail.getSize());
-  orig_thumbnail.lockPixels();
-  thumbnail.lockPixels();
-  EXPECT_EQ(0, memcmp(orig_thumbnail.getPixels(), thumbnail.getPixels(),
-                      orig_thumbnail.getSize()));
-  thumbnail.unlockPixels();
-  orig_thumbnail.unlockPixels();
+  scoped_refptr<base::RefCountedMemory> thumbnail_data;
+  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced1"), false,
+                                            &thumbnail_data));
+  ASSERT_TRUE(
+      ThumbnailsAreEqual(orig_thumbnail_data.get(), thumbnail_data.get()));
   EXPECT_EQ(base::Time::FromJsTime(1000), querier.urls()[0].last_forced_time);
   EXPECT_EQ(GURL("http://forced2"), querier.urls()[1].url);
   EXPECT_EQ(base::Time::FromJsTime(2000), querier.urls()[1].last_forced_time);
@@ -1019,7 +1008,7 @@ TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
   EXPECT_EQ(0, querier3.number_of_callbacks());
 
   // Wait for loading to complete.
-  profile()->BlockUntilTopSitesLoaded();
+  WaitTopSitesLoaded();
 
   // Now we should have gotten the callbacks.
   EXPECT_EQ(1, querier1.number_of_callbacks());
@@ -1054,7 +1043,7 @@ TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
   EXPECT_EQ(0, querier4.number_of_callbacks());
 
   // Wait for loading to complete.
-  profile()->BlockUntilTopSitesLoaded();
+  WaitTopSitesLoaded();
 
   // Now we should have gotten the callbacks.
   EXPECT_EQ(1, querier4.number_of_callbacks());
@@ -1104,7 +1093,7 @@ TEST_F(TopSitesImplTest, CancelingRequestsForTopSites) {
   querier2.CancelRequest();
 
   // Wait for loading to complete.
-  profile()->BlockUntilTopSitesLoaded();
+  WaitTopSitesLoaded();
 
   // The first callback should succeed.
   EXPECT_EQ(1, querier1.number_of_callbacks());
@@ -1117,7 +1106,7 @@ TEST_F(TopSitesImplTest, CancelingRequestsForTopSites) {
 // Makes sure temporary thumbnails are copied over correctly.
 TEST_F(TopSitesImplTest, AddTemporaryThumbnail) {
   GURL unknown_url("http://news.google.com/");
-  GURL invalid_url("chrome://thumb/http://google.com/");
+  GURL invalid_url("application://thumb/http://google.com/");
   GURL url1a("http://google.com/");
   GURL url1b("http://www.google.com/");
 
@@ -1457,7 +1446,6 @@ TEST_F(TopSitesImplTest, SetForcedTopSites) {
 }
 
 TEST_F(TopSitesImplTest, SetForcedTopSitesWithCollisions) {
-
   // Setup an old URL list in order to generate some collisions.
   MostVisitedURLList old_url_list;
   AppendForcedMostVisitedURL(&old_url_list, GURL("http://url/0"), 1000);
@@ -1638,7 +1626,9 @@ TEST_F(TopSitesImplTest, AddForcedURL) {
 
   // Get the original thumbnail for later comparison. Some compression can
   // happen in |top_sites| and we don't want to depend on that.
-  SkBitmap orig_thumbnail = GetThumbnail(GURL("http://forced/5"));
+  scoped_refptr<base::RefCountedMemory> orig_thumbnail_data;
+  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced/5"), false,
+                                            &orig_thumbnail_data));
 
   EXPECT_TRUE(AddForcedURL(GURL("http://forced/5"),
                            base::Time::FromJsTime(6000)));
@@ -1647,14 +1637,11 @@ TEST_F(TopSitesImplTest, AddForcedURL) {
   querier.QueryAllTopSites(top_sites(), false, true);
   EXPECT_EQ("http://forced/5", querier.urls()[5].url.spec());
   EXPECT_EQ(6000u, querier.urls()[5].last_forced_time.ToJsTime());
-  SkBitmap thumbnail = GetThumbnail(GURL("http://forced/5"));
-  ASSERT_EQ(orig_thumbnail.getSize(), thumbnail.getSize());
-  orig_thumbnail.lockPixels();
-  thumbnail.lockPixels();
-  EXPECT_EQ(0, memcmp(orig_thumbnail.getPixels(), thumbnail.getPixels(),
-                      orig_thumbnail.getSize()));
-  thumbnail.unlockPixels();
-  orig_thumbnail.unlockPixels();
+  scoped_refptr<base::RefCountedMemory> thumbnail_data;
+  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced/5"), false,
+                                            &thumbnail_data));
+  ASSERT_TRUE(
+      ThumbnailsAreEqual(orig_thumbnail_data.get(), thumbnail_data.get()));
 }
 
 }  // namespace history

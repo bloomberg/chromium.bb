@@ -22,6 +22,7 @@
 #include "base/task_runner.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_backend.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/top_sites_cache.h"

@@ -19,14 +19,14 @@
 
 #include "components/history/core/browser/history_backend.h"
 
-#include "components/history/core/test/history_backend_base_test.h"
+#include "components/history/core/test/history_backend_db_base_test.h"
 
 namespace history {
 namespace {
 
 // This must be outside the anonymous namespace for the friend statement in
 // HistoryBackend to work.
-class ContentHistoryBackendDBTest : public HistoryBackendBaseTest {
+class ContentHistoryBackendDBTest : public HistoryBackendDBBaseTest {
  public:
   ContentHistoryBackendDBTest() {}
   ~ContentHistoryBackendDBTest() override {}

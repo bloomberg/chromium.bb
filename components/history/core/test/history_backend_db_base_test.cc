@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/history/core/test/history_backend_base_test.h"
+#include "components/history/core/test/history_backend_db_base_test.h"
 
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
@@ -21,7 +21,7 @@ namespace history {
 // Delegate class for when we create a backend without a HistoryService.
 class BackendDelegate : public HistoryBackend::Delegate {
  public:
-  explicit BackendDelegate(HistoryBackendBaseTest* history_test)
+  explicit BackendDelegate(HistoryBackendDBBaseTest* history_test)
       : history_test_(history_test) {}
 
   // HistoryBackend::Delegate implementation.
@@ -48,22 +48,22 @@ class BackendDelegate : public HistoryBackend::Delegate {
   void DBLoaded() override {}
 
  private:
-  HistoryBackendBaseTest* history_test_;
+  HistoryBackendDBBaseTest* history_test_;
 };
 
-HistoryBackendBaseTest::HistoryBackendBaseTest() : db_(nullptr) {
+HistoryBackendDBBaseTest::HistoryBackendDBBaseTest() : db_(nullptr) {
 }
 
-HistoryBackendBaseTest::~HistoryBackendBaseTest() {
+HistoryBackendDBBaseTest::~HistoryBackendDBBaseTest() {
 }
 
-void HistoryBackendBaseTest::SetUp() {
+void HistoryBackendDBBaseTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  history_dir_ = temp_dir_.path().AppendASCII("HistoryBackendBaseTest");
+  history_dir_ = temp_dir_.path().AppendASCII("HistoryBackendDBBaseTest");
   ASSERT_TRUE(base::CreateDirectory(history_dir_));
 }
 
-void HistoryBackendBaseTest::TearDown() {
+void HistoryBackendDBBaseTest::TearDown() {
   DeleteBackend();
 
   // Make sure we don't have any event pending that could disrupt the next
@@ -73,7 +73,7 @@ void HistoryBackendBaseTest::TearDown() {
   base::MessageLoop::current()->Run();
 }
 
-void HistoryBackendBaseTest::CreateBackendAndDatabase() {
+void HistoryBackendDBBaseTest::CreateBackendAndDatabase() {
   backend_ = new HistoryBackend(new BackendDelegate(this), nullptr);
   backend_->Init(std::string(), false,
                  TestHistoryDatabaseParamsForPath(history_dir_));
@@ -82,7 +82,7 @@ void HistoryBackendBaseTest::CreateBackendAndDatabase() {
                              "HistoryBackend::Init";
 }
 
-void HistoryBackendBaseTest::CreateDBVersion(int version) {
+void HistoryBackendDBBaseTest::CreateDBVersion(int version) {
   base::FilePath data_path;
   ASSERT_TRUE(GetTestDataHistoryDir(&data_path));
   data_path =
@@ -91,7 +91,7 @@ void HistoryBackendBaseTest::CreateDBVersion(int version) {
       ExecuteSQLScript(data_path, history_dir_.Append(kHistoryFilename)));
 }
 
-void HistoryBackendBaseTest::CreateArchivedDB() {
+void HistoryBackendDBBaseTest::CreateArchivedDB() {
   base::FilePath data_path;
   ASSERT_TRUE(GetTestDataHistoryDir(&data_path));
   data_path = data_path.AppendASCII("archived_history.4.sql");
@@ -99,14 +99,14 @@ void HistoryBackendBaseTest::CreateArchivedDB() {
       data_path, history_dir_.Append(kArchivedHistoryFilename)));
 }
 
-void HistoryBackendBaseTest::DeleteBackend() {
+void HistoryBackendDBBaseTest::DeleteBackend() {
   if (backend_.get()) {
     backend_->Closing();
     backend_ = nullptr;
   }
 }
 
-bool HistoryBackendBaseTest::AddDownload(uint32 id,
+bool HistoryBackendDBBaseTest::AddDownload(uint32 id,
                                            DownloadState state,
                                            base::Time time) {
   std::vector<GURL> url_chain;

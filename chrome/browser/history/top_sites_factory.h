@@ -29,11 +29,6 @@ class TopSitesFactory : public RefcountedBrowserContextKeyedServiceFactory {
   // Get the TopSites service for |profile|, creating one if needed.
   static scoped_refptr<history::TopSites> GetForProfile(Profile* profile);
 
-  // Get the TopSites service for |profile|, but do not create it if it doesn't
-  // exist.
-  static scoped_refptr<history::TopSites> GetForProfileIfExists(
-      Profile* profile);
-
   // Get the singleton instance of the factory.
   static TopSitesFactory* GetInstance();
 

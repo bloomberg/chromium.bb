@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
+#include "components/history/core/test/database_test_utils.h"
 #include "components/history/core/test/test_history_database.h"
 #include "sql/init_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,10 +25,9 @@ TEST(HistoryDatabaseTest, DropBookmarks) {
 
   // Copy db file over that contains starred URLs.
   base::FilePath old_history_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &old_history_path);
-  old_history_path = old_history_path.AppendASCII("bookmarks");
-  old_history_path = old_history_path.Append(
-      FILE_PATH_LITERAL("History_with_starred"));
+  EXPECT_TRUE(GetTestDataHistoryDir(&old_history_path));
+  old_history_path =
+      old_history_path.Append(FILE_PATH_LITERAL("History_with_starred"));
   base::CopyFile(old_history_path, db_file);
 
   // Load the DB twice. The first time it should migrate. Make sure that the

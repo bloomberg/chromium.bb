@@ -22,10 +22,6 @@ class SSLHostStateDelegate;
 class ZoomLevelDelegate;
 }
 
-namespace history {
-class TopSites;
-}
-
 namespace net {
 class CookieMonster;
 class URLRequestContextGetter;
@@ -180,13 +176,6 @@ class TestingProfile : public Profile {
   // Shuts down and nulls out the reference to HistoryService.
   void DestroyHistoryService();
 
-  // Creates TopSites. This returns immediately, and top sites may not be
-  // loaded. Use BlockUntilTopSitesLoaded to ensure TopSites has finished
-  // loading.
-  void CreateTopSites();
-
-  void DestroyTopSites();
-
   // Creates the BookmarkBarModel. If not invoked the bookmark bar model is
   // NULL. If |delete_file| is true, the bookmarks file is deleted first, then
   // the model is created. As TestingProfile deletes the directory containing
@@ -203,9 +192,6 @@ class TestingProfile : public Profile {
   // Blocks until the HistoryService finishes restoring its in-memory cache.
   // This is NOT invoked from CreateHistoryService.
   void BlockUntilHistoryIndexIsRefreshed();
-
-  // Blocks until TopSites finishes loading.
-  void BlockUntilTopSitesLoaded();
 
   // Allow setting a profile as Guest after-the-fact to simplify some tests.
   void SetGuestSession(bool guest);

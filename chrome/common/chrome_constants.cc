@@ -183,7 +183,6 @@ const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
 const base::FilePath::CharType kSyncCredentialsFilename[] =
     FPL("Sync Credentials");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
-const base::FilePath::CharType kTopSitesFilename[] = FPL("Top Sites");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 
 // File name of the Pepper Flash plugin on different platforms.

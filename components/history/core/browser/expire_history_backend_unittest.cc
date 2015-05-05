@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/history/core/browser/expire_history_backend.h"
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -11,54 +13,53 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/history/top_sites_factory.h"
-#include "chrome/test/base/testing_profile.h"
-#include "components/history/core/browser/expire_history_backend.h"
 #include "components/history/core/browser/history_backend_notifier.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/browser/top_sites.h"
+#include "components/history/core/browser/top_sites_impl.h"
+#include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
 #include "components/history/core/test/test_history_database.h"
-#include "components/history/core/test/thumbnail-inl.h"
-#include "content/public/test/test_browser_thread.h"
+#include "components/history/core/test/thumbnail.h"
+#include "components/history/core/test/wait_top_sites_loaded_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/jpeg_codec.h"
-
-using base::Time;
-using base::TimeDelta;
-using base::TimeTicks;
-using content::BrowserThread;
-
-// Filename constants.
-static const base::FilePath::CharType kHistoryFile[] =
-    FILE_PATH_LITERAL("History");
-static const base::FilePath::CharType kThumbnailFile[] =
-    FILE_PATH_LITERAL("Thumbnails");
 
 // The test must be in the history namespace for the gtest forward declarations
 // to work. It also eliminates a bunch of ugly "history::".
 namespace history {
 
+namespace {
+// Key for URL blacklist.
+const char kBlacklistURLKey[] = "test.blacklist.url";
+
+// Returns whether |url| can be added to history.
+bool MockCanAddURLToHistory(const GURL& url) {
+  return url.is_valid();
+}
+
+}  // namespace
+
 // ExpireHistoryTest -----------------------------------------------------------
 
-class ExpireHistoryTest : public testing::Test,
-                          public HistoryBackendNotifier {
+class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
  public:
   ExpireHistoryTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_),
-        expirer_(this, &history_client_),
-        now_(Time::Now()) {}
+      : expirer_(this, &history_client_), now_(base::Time::Now()) {}
 
  protected:
   // Called by individual tests when they want data populated.
-  void AddExampleData(URLID url_ids[3], Time visit_times[4]);
+  void AddExampleData(URLID url_ids[3], base::Time visit_times[4]);
   // Add visits with source information.
   void AddExampleSourceData(const GURL& url, URLID* id);
 
@@ -97,17 +98,16 @@ class ExpireHistoryTest : public testing::Test,
   HistoryClientFakeBookmarks history_client_;
 
   base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
 
   ExpireHistoryBackend expirer_;
 
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<HistoryDatabase> main_db_;
   scoped_ptr<ThumbnailDatabase> thumb_db_;
-  TestingProfile profile_;
+  scoped_refptr<TopSitesImpl> top_sites_;
 
-  // Time at the beginning of the test, so everybody agrees what "now" is.
-  const Time now_;
+  // base::Time at the beginning of the test, so everybody agrees what "now" is.
+  const base::Time now_;
 
   typedef std::vector<URLRows> URLsModifiedNotificationList;
   URLsModifiedNotificationList urls_modified_notifications_;
@@ -119,29 +119,45 @@ class ExpireHistoryTest : public testing::Test,
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
 
-    base::FilePath history_name = path().Append(kHistoryFile);
+    base::FilePath history_name = path().Append(kHistoryFilename);
     main_db_.reset(new TestHistoryDatabase);
     if (main_db_->Init(history_name) != sql::INIT_OK)
       main_db_.reset();
 
-    base::FilePath thumb_name = path().Append(kThumbnailFile);
-    thumb_db_.reset(new ThumbnailDatabase(NULL));
+    base::FilePath thumb_name = path().Append(kThumbnailsFilename);
+    thumb_db_.reset(new ThumbnailDatabase(nullptr));
     if (thumb_db_->Init(thumb_name) != sql::INIT_OK)
       thumb_db_.reset();
 
+    pref_service_.reset(new TestingPrefServiceSimple);
+    pref_service_->registry()->RegisterDictionaryPref(kBlacklistURLKey);
+
     expirer_.SetDatabases(main_db_.get(), thumb_db_.get());
-    profile_.CreateTopSites();
-    profile_.BlockUntilTopSitesLoaded();
+
+    top_sites_ = new TopSitesImpl(pref_service_.get(), nullptr,
+                                  kBlacklistURLKey, PrepopulatedPageList(),
+                                  base::Bind(MockCanAddURLToHistory));
+    WaitTopSitesLoadedObserver wait_top_sites_observer(top_sites_);
+    top_sites_->Init(path().Append(kTopSitesFilename),
+                     message_loop_.task_runner());
+    wait_top_sites_observer.Run();
   }
 
   void TearDown() override {
-
     ClearLastNotifications();
 
-    expirer_.SetDatabases(NULL, NULL);
+    expirer_.SetDatabases(nullptr, nullptr);
 
     main_db_.reset();
     thumb_db_.reset();
+
+    top_sites_->ShutdownOnUIThread();
+    top_sites_ = nullptr;
+
+    if (base::MessageLoop::current())
+      base::MessageLoop::current()->RunUntilIdle();
+
+    pref_service_.reset();
   }
 
   // HistoryBackendNotifier:
@@ -168,20 +184,21 @@ class ExpireHistoryTest : public testing::Test,
 // (with the one in the middle) when it picks the proper threshold time.
 //
 // Each visit has indexed data, each URL has thumbnail. The first two URLs will
-// share the same avicon, while the last one will have a unique favicon. The
+// share the same favicon, while the last one will have a unique favicon. The
 // second visit for the middle URL is typed.
 //
 // The IDs of the added URLs, and the times of the four added visits will be
 // added to the given arrays.
-void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
+void ExpireHistoryTest::AddExampleData(URLID url_ids[3],
+                                       base::Time visit_times[4]) {
   if (!main_db_.get())
     return;
 
   // Four times for each visit.
-  visit_times[3] = Time::Now();
-  visit_times[2] = visit_times[3] - TimeDelta::FromDays(1);
-  visit_times[1] = visit_times[3] - TimeDelta::FromDays(2);
-  visit_times[0] = visit_times[3] - TimeDelta::FromDays(3);
+  visit_times[3] = base::Time::Now();
+  visit_times[2] = visit_times[3] - base::TimeDelta::FromDays(1);
+  visit_times[1] = visit_times[3] - base::TimeDelta::FromDays(2);
+  visit_times[0] = visit_times[3] - base::TimeDelta::FromDays(3);
 
   // Two favicons. The first two URLs will share the same one, while the last
   // one will have a unique favicon.
@@ -210,19 +227,15 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   url_ids[2] = main_db_->AddURL(url_row3);
   thumb_db_->AddIconMapping(url_row3.url(), favicon2);
 
-  // Thumbnails for each URL. |thumbnail| takes ownership of decoded SkBitmap.
-  scoped_ptr<SkBitmap> thumbnail_bitmap(
-      gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
-  gfx::Image thumbnail = gfx::Image::CreateFrom1xBitmap(*thumbnail_bitmap);
-  ThumbnailScore score(0.25, true, true, Time::Now());
+  // Thumbnails for each URL.
+  gfx::Image thumbnail = CreateGoogleThumbnailForTest();
+  ThumbnailScore score(0.25, true, true, base::Time::Now());
 
-  Time time;
+  base::Time time;
   GURL gurl;
-  scoped_refptr<history::TopSites> top_sites =
-      TopSitesFactory::GetForProfile(&profile_);
-  top_sites->SetPageThumbnail(url_row1.url(), thumbnail, score);
-  top_sites->SetPageThumbnail(url_row2.url(), thumbnail, score);
-  top_sites->SetPageThumbnail(url_row3.url(), thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row1.url(), thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row2.url(), thumbnail, score);
+  top_sites_->SetPageThumbnail(url_row3.url(), thumbnail, score);
 
   // Four visits.
   VisitRow visit_row1;
@@ -251,7 +264,7 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
   if (!main_db_)
     return;
 
-  Time last_visit_time = Time::Now();
+  base::Time last_visit_time = base::Time::Now();
   // Add one URL.
   URLRow url_row1(url);
   url_row1.set_last_visit(last_visit_time);
@@ -260,27 +273,26 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
   *id = url_id;
 
   // Four times for each visit.
-  VisitRow visit_row1(url_id, last_visit_time - TimeDelta::FromDays(4), 0,
+  VisitRow visit_row1(url_id, last_visit_time - base::TimeDelta::FromDays(4), 0,
                       ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row1, SOURCE_SYNCED);
 
-  VisitRow visit_row2(url_id, last_visit_time - TimeDelta::FromDays(3), 0,
+  VisitRow visit_row2(url_id, last_visit_time - base::TimeDelta::FromDays(3), 0,
                       ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
 
-  VisitRow visit_row3(url_id, last_visit_time - TimeDelta::FromDays(2), 0,
+  VisitRow visit_row3(url_id, last_visit_time - base::TimeDelta::FromDays(2), 0,
                       ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row3, SOURCE_EXTENSION);
 
-  VisitRow visit_row4(
-      url_id, last_visit_time, 0, ui::PAGE_TRANSITION_TYPED, 0);
+  VisitRow visit_row4(url_id, last_visit_time, 0, ui::PAGE_TRANSITION_TYPED, 0);
   main_db_->AddVisit(&visit_row4, SOURCE_FIREFOX_IMPORTED);
 }
 
 bool ExpireHistoryTest::HasFavicon(favicon_base::FaviconID favicon_id) {
   if (!thumb_db_.get() || favicon_id == 0)
     return false;
-  return thumb_db_->GetFaviconHeader(favicon_id, NULL, NULL);
+  return thumb_db_->GetFaviconHeader(favicon_id, nullptr, nullptr);
 }
 
 favicon_base::FaviconID ExpireHistoryTest::GetFavicon(
@@ -302,9 +314,7 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
     return false;
   GURL url = info.url();
   scoped_refptr<base::RefCountedMemory> data;
-  scoped_refptr<history::TopSites> top_sites =
-      TopSitesFactory::GetForProfile(&profile_);
-  return top_sites->GetPageThumbnail(url, false, &data);
+  return top_sites_->GetPageThumbnail(url, false, &data);
 }
 
 void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {
@@ -340,8 +350,7 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {
     }
   }
   for (const auto& rows : urls_modified_notifications_) {
-    EXPECT_TRUE(std::find_if(rows.begin(),
-                             rows.end(),
+    EXPECT_TRUE(std::find_if(rows.begin(), rows.end(),
                              history::URLRow::URLRowHasURL(row.url())) ==
                 rows.end());
   }
@@ -350,8 +359,7 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {
 
 bool ExpireHistoryTest::ModifiedNotificationSent(const GURL& url) {
   for (const auto& rows : urls_modified_notifications_) {
-    if (std::find_if(rows.begin(),
-                     rows.end(),
+    if (std::find_if(rows.begin(), rows.end(),
                      history::URLRow::URLRowHasURL(url)) != rows.end())
       return true;
   }
@@ -410,7 +418,7 @@ bool ExpireHistoryTest::IsStringInFile(const base::FilePath& filename,
 // Fails near end of month. http://crbug.com/43586
 TEST_F(ExpireHistoryTest, DISABLED_DeleteURLAndFavicon) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   // Verify things are the way we expect with a URL row, favicon, thumbnail.
@@ -439,7 +447,7 @@ TEST_F(ExpireHistoryTest, DISABLED_DeleteURLAndFavicon) {
 // should not get deleted. This also tests deleting more than one visit.
 TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   // Verify things are the way we expect with a URL row, favicon, thumbnail.
@@ -467,7 +475,7 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
 // remain starred and its favicon should remain too.
 TEST_F(ExpireHistoryTest, DeleteStarredVisitedURL) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   URLRow url_row;
@@ -485,8 +493,7 @@ TEST_F(ExpireHistoryTest, DeleteStarredVisitedURL) {
   EnsureURLInfoGone(url_row, false);
 
   // Yet the favicon should exist.
-  favicon_base::FaviconID favicon_id =
-      GetFavicon(url, favicon_base::FAVICON);
+  favicon_base::FaviconID favicon_id = GetFavicon(url, favicon_base::FAVICON);
   EXPECT_TRUE(HasFavicon(favicon_id));
 
   // Should still have the thumbnail.
@@ -523,7 +530,7 @@ TEST_F(ExpireHistoryTest, DeleteStarredUnvisitedURL) {
 // not the first two should be deleted.
 TEST_F(ExpireHistoryTest, DeleteURLs) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   // Verify things are the way we expect with URL rows, favicons,
@@ -560,7 +567,7 @@ TEST_F(ExpireHistoryTest, DeleteURLs) {
 // the two visits) and one is deleted.
 TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   URLRow url_row1, url_row2;
@@ -573,7 +580,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
 
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
-  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
 
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
@@ -608,7 +615,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
 // Expires all URLs with times in a given set.
 TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   URLRow url_row1, url_row2;
@@ -660,7 +667,7 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
 // one of the two visits).
 TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   URLRow url_row1, url_row2;
@@ -674,7 +681,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
   restrict_urls.insert(url_row1.url());
-  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
 
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
@@ -709,7 +716,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
 // Expire a starred URL, it shouldn't get deleted
 TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   URLRow url_row1, url_row2;
@@ -722,7 +729,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
 
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
-  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
+  expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], base::Time());
 
   // The URL rows should still exist.
   URLRow new_url_row1, new_url_row2;
@@ -758,7 +765,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
 
 TEST_F(ExpireHistoryTest, ExpireHistoryBeforeUnstarred) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   URLRow url_row0, url_row1, url_row2;
@@ -794,7 +801,7 @@ TEST_F(ExpireHistoryTest, ExpireHistoryBeforeUnstarred) {
 
 TEST_F(ExpireHistoryTest, ExpireHistoryBeforeStarred) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   URLRow url_row0, url_row1;
@@ -834,13 +841,13 @@ TEST_F(ExpireHistoryTest, ExpireHistoryBeforeStarred) {
 // tests which use this function internally.
 TEST_F(ExpireHistoryTest, ExpireSomeOldHistory) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
   const ExpiringVisitsReader* reader = expirer_.GetAllVisitsReader();
 
   // Deleting a time range with no URLs should return false (nothing found).
   EXPECT_FALSE(expirer_.ExpireSomeOldHistory(
-      visit_times[0] - TimeDelta::FromDays(100), reader, 1));
+      visit_times[0] - base::TimeDelta::FromDays(100), reader, 1));
 
   // Deleting a time range with not up the the max results should also return
   // false (there will only be one visit deleted in this range).
@@ -853,7 +860,7 @@ TEST_F(ExpireHistoryTest, ExpireSomeOldHistory) {
 
 TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
   URLID url_ids[3];
-  Time visit_times[4];
+  base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
 
   const ExpiringVisitsReader* all = expirer_.GetAllVisitsReader();
@@ -861,12 +868,12 @@ TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
       expirer_.GetAutoSubframeVisitsReader();
 
   VisitVector visits;
-  Time now = Time::Now();
+  base::Time now = base::Time::Now();
 
   // Verify that the early expiration threshold, stored in the meta table is
   // initialized.
   EXPECT_TRUE(main_db_->GetEarlyExpirationThreshold() ==
-      Time::FromInternalValue(1L));
+              base::Time::FromInternalValue(1L));
 
   // First, attempt reading AUTO_SUBFRAME visits. We should get none.
   EXPECT_FALSE(auto_subframes->Read(now, main_db_.get(), &visits, 1));

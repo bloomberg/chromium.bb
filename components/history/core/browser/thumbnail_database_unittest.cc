@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/history/core/browser/thumbnail_database.h"
+#include "components/history/core/test/database_test_utils.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
 #include "sql/test/scoped_error_ignorer.h"
@@ -47,17 +47,6 @@ const GURL kIconUrl5 = GURL("http://www.bing.com/favicon.ico");
 
 const gfx::Size kSmallSize = gfx::Size(16, 16);
 const gfx::Size kLargeSize = gfx::Size(32, 32);
-
-// Create the test database at |db_path| from the golden file at
-// |ascii_path| in the "History/" subdir of the test data dir.
-WARN_UNUSED_RESULT bool CreateDatabaseFromSQL(const base::FilePath &db_path,
-                                              const char* ascii_path) {
-  base::FilePath sql_path;
-  if (!PathService::Get(chrome::DIR_TEST_DATA, &sql_path))
-    return false;
-  sql_path = sql_path.AppendASCII("History").AppendASCII(ascii_path);
-  return sql::test::CreateDatabaseFromSQL(db_path, sql_path);
-}
 
 // Verify that the up-to-date database has the expected tables and
 // columns.  Functional tests only check whether the things which
@@ -161,8 +150,7 @@ WARN_UNUSED_RESULT bool CheckPageHasIcon(
 
 class ThumbnailDatabaseTest : public testing::Test {
  public:
-  ThumbnailDatabaseTest() {
-  }
+  ThumbnailDatabaseTest() {}
   ~ThumbnailDatabaseTest() override {}
 
   // Initialize a thumbnail database instance from the SQL file at
@@ -245,7 +233,7 @@ TEST_F(ThumbnailDatabaseTest, LastRequestedTime) {
   EXPECT_TRUE(db.SetFaviconBitmapLastRequestedTime(id, now));
   EXPECT_TRUE(db.GetFaviconBitmap(id, NULL, &last_requested, NULL, NULL));
   EXPECT_EQ(last_requested, now);
- }
+}
 
 TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   ThumbnailDatabase db(NULL);
@@ -1098,8 +1086,8 @@ TEST_F(ThumbnailDatabaseTest, Recovery5) {
 // successfully, and result in the correct schema.
 TEST_F(ThumbnailDatabaseTest, WildSchema) {
   base::FilePath sql_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
-  sql_path = sql_path.AppendASCII("History").AppendASCII("thumbnail_wild");
+  EXPECT_TRUE(GetTestDataHistoryDir(&sql_path));
+  sql_path = sql_path.AppendASCII("thumbnail_wild");
 
   base::FileEnumerator fe(
       sql_path, false, base::FileEnumerator::FILES, FILE_PATH_LITERAL("*.sql"));

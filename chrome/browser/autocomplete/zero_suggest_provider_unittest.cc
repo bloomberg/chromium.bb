@@ -181,9 +181,8 @@ void ZeroSuggestProviderTest::SetUp() {
   turl_model->Add(default_t_url_);
   turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
 
-  profile_.DestroyTopSites();
-  TopSitesFactory::GetInstance()->SetTestingFactory(&profile_,
-                                                    BuildFakeEmptyTopSites);
+  TopSitesFactory* top_sites_factory = TopSitesFactory::GetInstance();
+  top_sites_factory->SetTestingFactory(&profile_, BuildFakeEmptyTopSites);
   provider_ = ZeroSuggestProvider::Create(this, turl_model, &profile_);
 }
 

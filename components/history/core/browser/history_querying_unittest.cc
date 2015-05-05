@@ -16,9 +16,6 @@
 #include "components/history/core/test/test_history_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Time;
-using base::TimeDelta;
-
 // Tests the history service for querying functionality.
 
 namespace history {
@@ -29,7 +26,7 @@ struct TestEntry {
   const char* url;
   const char* title;
   const int days_ago;
-  Time time;  // Filled by SetUp.
+  base::Time time;  // Filled by SetUp.
 } test_entries[] = {
   // This one is visited super long ago so it will be in a different database
   // from the next appearance of it at the end.
@@ -74,8 +71,7 @@ bool NthResultIs(const QueryResults& results,
 
 class HistoryQueryTest : public testing::Test {
  public:
-  HistoryQueryTest() : nav_entry_id_(0) {
-  }
+  HistoryQueryTest() : nav_entry_id_(0) {}
 
   // Acts like a synchronous call to history's QueryHistory.
   void QueryHistory(const std::string& text_query,
@@ -174,10 +170,10 @@ class HistoryQueryTest : public testing::Test {
     }
 
     // Fill the test data.
-    Time now = Time::Now().LocalMidnight();
+    base::Time now = base::Time::Now().LocalMidnight();
     for (size_t i = 0; i < arraysize(test_entries); i++) {
       test_entries[i].time =
-          now - (test_entries[i].days_ago * TimeDelta::FromDays(1));
+          now - (test_entries[i].days_ago * base::TimeDelta::FromDays(1));
       AddEntryToHistory(test_entries[i]);
     }
   }
@@ -273,7 +269,8 @@ TEST_F(HistoryQueryTest, ReachedBeginning) {
   EXPECT_FALSE(results.reached_beginning());
 
   // Try |begin_time| just later than the oldest visit.
-  options.begin_time = test_entries[0].time + TimeDelta::FromMicroseconds(1);
+  options.begin_time =
+      test_entries[0].time + base::TimeDelta::FromMicroseconds(1);
   QueryHistory(std::string(), options, &results);
   EXPECT_FALSE(results.reached_beginning());
   QueryHistory("some", options, &results);
@@ -287,7 +284,8 @@ TEST_F(HistoryQueryTest, ReachedBeginning) {
   EXPECT_TRUE(results.reached_beginning());
 
   // Try |begin_time| just earlier than the oldest visit.
-  options.begin_time = test_entries[0].time - TimeDelta::FromMicroseconds(1);
+  options.begin_time =
+      test_entries[0].time - base::TimeDelta::FromMicroseconds(1);
   QueryHistory(std::string(), options, &results);
   EXPECT_TRUE(results.reached_beginning());
   QueryHistory("some", options, &results);

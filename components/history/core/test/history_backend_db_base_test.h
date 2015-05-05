@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_HISTORY_CORE_TEST_HISTORY_BACKEND_BASE_TEST_H_
-#define COMPONENTS_HISTORY_CORE_TEST_HISTORY_BACKEND_BASE_TEST_H_
+#ifndef COMPONENTS_HISTORY_CORE_TEST_HISTORY_BACKEND_DB_BASE_TEST_H_
+#define COMPONENTS_HISTORY_CORE_TEST_HISTORY_BACKEND_DB_BASE_TEST_H_
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -27,10 +27,10 @@ enum class DownloadState;
 
 // This must be outside the anonymous namespace for the friend statement in
 // HistoryBackend to work.
-class HistoryBackendBaseTest : public HistoryUnitTestBase {
+class HistoryBackendDBBaseTest : public HistoryUnitTestBase {
  public:
-  HistoryBackendBaseTest();
-  ~HistoryBackendBaseTest() override;
+  HistoryBackendDBBaseTest();
+  ~HistoryBackendDBBaseTest() override;
 
  protected:
   friend class BackendDelegate;
@@ -66,4 +66,4 @@ class HistoryBackendBaseTest : public HistoryUnitTestBase {
 
 }  // namespace history
 
-#endif  // COMPONENTS_HISTORY_CORE_TEST_HISTORY_BACKEND_BASE_TEST_H_
+#endif  // COMPONENTS_HISTORY_CORE_TEST_HISTORY_BACKEND_DB_BASE_TEST_H_

@@ -7,14 +7,20 @@ static_library("test") {
   sources = [
     "database_test_utils.cc",
     "database_test_utils.h",
-    "history_backend_base_test.cc",
-    "history_backend_base_test.h",
+    "history_backend_db_base_test.cc",
+    "history_backend_db_base_test.h",
     "history_client_fake_bookmarks.cc",
     "history_client_fake_bookmarks.h",
     "history_unittest_base.cc",
     "history_unittest_base.h",
     "test_history_database.cc",
     "test_history_database.h",
+    "thumbnail-inl.h",
+    "thumbnail.cc",
+    "thumbnail.h",
+    "thumbnail_ios.mm",
+    "wait_top_sites_loaded_observer.cc",
+    "wait_top_sites_loaded_observer.h",
   ]
 
   deps = [
@@ -23,6 +29,11 @@ static_library("test") {
     "//sql",
     "//sql:test_support",
     "//testing/gtest",
+    "//ui/gfx",
     "//url",
   ]
+
+  if (is_ios) {
+    sources -= [ "thumbnail.cc" ]
+  }
 }

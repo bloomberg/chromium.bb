@@ -94,8 +94,6 @@ extern const base::FilePath::CharType kSingletonSocketFilename[];
 extern const base::FilePath::CharType kSupervisedUserSettingsFilename[];
 extern const base::FilePath::CharType kSyncCredentialsFilename[];
 extern const base::FilePath::CharType kThemePackFilename[];
-extern const base::FilePath::CharType kThumbnailsFilename[];
-extern const base::FilePath::CharType kTopSitesFilename[];
 extern const base::FilePath::CharType kWebAppDirname[];
 
 // File name of the Pepper Flash plugin on different platforms.
