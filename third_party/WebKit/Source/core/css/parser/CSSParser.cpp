@@ -176,4 +176,18 @@ bool CSSParser::parseSystemColor(RGBA32& color, const String& colorString)
     return true;
 }
 
+PassRefPtrWillBeRawPtr<CSSValue> CSSParser::parseFontFaceDescriptor(CSSPropertyID propertyID, const String& propertyValue, const CSSParserContext& context)
+{
+    StringBuilder builder;
+    builder.appendLiteral("@font-face { ");
+    builder.append(getPropertyNameString(propertyID));
+    builder.appendLiteral(" : ");
+    builder.append(propertyValue);
+    builder.appendLiteral("; }");
+    RefPtrWillBeRawPtr<StyleRuleBase> rule = parseRule(context, 0, builder.toString());
+    if (!rule || !rule->isFontFaceRule())
+        return nullptr;
+    return toStyleRuleFontFace(rule.get())->properties().getPropertyCSSValue(propertyID);
+}
+
 } // namespace blink

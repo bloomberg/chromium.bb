@@ -426,6 +426,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
         return parseViewportProperty(propId, important);
     }
+    if (m_ruleType == StyleRule::FontFace) {
+        if (important)
+            return false;
+        return parseFontFaceDescriptor(propId);
+    }
 
     // Note: m_parsedCalculation is used to pass the calc value to validUnit and then cleared at the end of this function.
     // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
@@ -926,12 +931,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             m_context.useCounter()->count(UseCounter::CSSZoomNotEqualToOne);
         break;
 
-    case CSSPropertySrc: // Only used within @font-face so cannot use inherit | initial or be !important. This is a list of urls or local references.
-        parsedValue = parseFontFaceSrc();
-        break;
-
+    case CSSPropertySrc:
     case CSSPropertyUnicodeRange:
-        parsedValue = parseFontFaceUnicodeRange();
+        /* @font-face only descriptors */
         break;
 
     /* CSS3 properties */
@@ -7637,6 +7639,56 @@ bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range
     if (!m_parsedCalculation)
         return false;
 
+    return true;
+}
+
+bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
+{
+    CSSParserValue* value = m_valueList->current();
+    ASSERT(value);
+    CSSValueID id = value->id;
+    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+
+    switch (propId) {
+    case CSSPropertyFontFamily:
+        // <family-name>
+        // TODO(rwlbuis): check there is only one family-name
+        parsedValue = parseFontFamily();
+        break;
+    case CSSPropertySrc: // This is a list of urls or local references.
+        parsedValue = parseFontFaceSrc();
+        break;
+    case CSSPropertyUnicodeRange:
+        parsedValue = parseFontFaceUnicodeRange();
+        break;
+    case CSSPropertyFontWeight: // normal | bold | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
+        if (m_valueList->size() != 1)
+            return false;
+        return parseFontWeight(false);
+    case CSSPropertyFontStretch:
+    case CSSPropertyFontStyle:
+        if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
+            return false;
+        addProperty(propId, cssValuePool().createIdentifierValue(id), false);
+        return true;
+    case CSSPropertyFontVariant: // normal | small-caps | inherit
+        return parseFontVariant(false);
+    case CSSPropertyWebkitFontFeatureSettings:
+        if (id == CSSValueNormal) {
+            parsedValue = cssValuePool().createIdentifierValue(CSSValueNormal);
+            m_valueList->next();
+        } else {
+            parsedValue = parseFontFeatureSettings();
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (!parsedValue || m_valueList->current())
+        return false;
+
+    addProperty(propId, parsedValue.release(), false);
     return true;
 }
 

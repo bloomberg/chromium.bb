@@ -92,6 +92,7 @@ private:
     bool inViewport() const { return m_inViewport; }
     bool parseViewportProperty(CSSPropertyID propId, bool important);
     bool parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first, CSSPropertyID second, bool important);
+    bool parseFontFaceDescriptor(CSSPropertyID);
 
     KURL completeURL(const String& url) const;
 

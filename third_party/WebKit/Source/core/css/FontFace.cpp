@@ -62,10 +62,10 @@
 
 namespace blink {
 
-static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, const String& s, CSSPropertyID propertyID)
+static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, const String& value, CSSPropertyID propertyID)
 {
     CSSParserContext context(*document, UseCounter::getFrom(document));
-    return CSSParser::parseSingleValue(propertyID, s, context);
+    return CSSParser::parseFontFaceDescriptor(propertyID, value, context);
 }
 
 PassRefPtrWillBeRawPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, StringOrArrayBufferOrArrayBufferView& source, const FontFaceDescriptors& descriptors)

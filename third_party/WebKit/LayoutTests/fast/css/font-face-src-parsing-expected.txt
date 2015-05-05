@@ -38,7 +38,10 @@ Invalid rules form the stylesheet:
 @font-face { }
 @font-face { }
 @font-face { }
-@font-face { src: url(foo.ttf) !important; }
+@font-face { }
+@font-face { }
+@font-face { }
+@font-face { }
 Expected result for invalid rules:
 
 @font-face { }
