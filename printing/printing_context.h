@@ -77,7 +77,8 @@ class PRINTING_EXPORT PrintingContext {
   // |external_preview| is true if pdf is going to be opened in external
   // preview. Used by MacOS only now to open Preview.app.
   virtual Result UpdatePrinterSettings(bool external_preview,
-                                       bool show_system_dialog) = 0;
+                                       bool show_system_dialog,
+                                       int page_count) = 0;
 
   // Updates Print Settings. |job_settings| contains all print job
   // settings information. |ranges| has the new page range settings.

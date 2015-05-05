@@ -77,7 +77,8 @@ gfx::Size PrintingContextNoSystemDialog::GetPdfPaperSizeDeviceUnits() {
 
 PrintingContext::Result PrintingContextNoSystemDialog::UpdatePrinterSettings(
     bool external_preview,
-    bool show_system_dialog) {
+    bool show_system_dialog,
+    int page_count) {
   DCHECK(!show_system_dialog);
 
   if (settings_.dpi() == 0)

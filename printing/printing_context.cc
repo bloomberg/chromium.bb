@@ -118,10 +118,13 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
   }
 
   bool show_system_dialog = false;
-  job_settings.GetBoolean(printing::kSettingShowSystemDialog,
-                          &show_system_dialog);
+  job_settings.GetBoolean(kSettingShowSystemDialog, &show_system_dialog);
 
-  return UpdatePrinterSettings(open_in_external_preview, show_system_dialog);
+  int page_count = 0;
+  job_settings.GetInteger(kSettingPreviewPageCount, &page_count);
+
+  return UpdatePrinterSettings(open_in_external_preview, show_system_dialog,
+                               page_count);
 }
 
 }  // namespace printing

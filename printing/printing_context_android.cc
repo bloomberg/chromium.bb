@@ -182,7 +182,8 @@ gfx::Size PrintingContextAndroid::GetPdfPaperSizeDeviceUnits() {
 
 PrintingContext::Result PrintingContextAndroid::UpdatePrinterSettings(
     bool external_preview,
-    bool show_system_dialog) {
+    bool show_system_dialog,
+    int page_count) {
   DCHECK(!show_system_dialog);
   DCHECK(!in_print_job_);
 

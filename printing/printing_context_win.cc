@@ -140,7 +140,8 @@ gfx::Size PrintingContextWin::GetPdfPaperSizeDeviceUnits() {
 
 PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     bool external_preview,
-    bool show_system_dialog) {
+    bool show_system_dialog,
+    int page_count) {
   DCHECK(!in_print_job_);
   DCHECK(!external_preview) << "Not implemented";
 
@@ -206,7 +207,8 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   // Update data using DocumentProperties.
   if (show_system_dialog) {
     PrintingContext::Result result = PrintingContext::FAILED;
-    AskUserForSettings(0, false, false, base::Bind(&AssingResult, &result));
+    AskUserForSettings(page_count, false, false,
+                       base::Bind(&AssingResult, &result));
     return result;
   } else {
     scoped_dev_mode = CreateDevMode(printer.Get(), scoped_dev_mode.get());
