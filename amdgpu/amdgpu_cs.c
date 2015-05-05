@@ -659,7 +659,8 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	memset(&cs, 0, sizeof(cs));
 	cs.in.chunks = (uint64_t)(uintptr_t)chunk_array;
 	cs.in.ctx_id = context->id;
-	cs.in.bo_list_handle = ibs_request->resources->handle;
+	if (ibs_request->resources)
+		cs.in.bo_list_handle = ibs_request->resources->handle;
 	cs.in.num_chunks = ibs_request->number_of_ibs;
 	/* IB chunks */
 	for (i = 0; i < ibs_request->number_of_ibs; i++) {
