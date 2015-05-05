@@ -123,6 +123,9 @@
         alive. It's unspecified what will happen if the client doesn't
         respond to the ping request, or in what timeframe. Clients should
         try to respond in a reasonable amount of time.
+
+        A compositor is free to ping in any way it wants, but a client must
+        always respond to any xdg_shell object it created.
       </description>
       <arg name="serial" type="uint" summary="pass this to the pong request"/>
     </event>
