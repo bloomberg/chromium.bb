@@ -66,6 +66,7 @@ char kLSanDefaultSuppressions[] =
 "leak:gin/object_template_builder.h\n"
 "leak:gin::internal::Dispatcher\n"
 "leak:blink::LocalDOMWindow::getComputedStyle\n"
+"leak:blink::RemoteDOMWindow::create\n"
 
 // http://crbug.com/356785
 "leak:content::RenderViewImplTest_DecideNavigationPolicyForWebUI_Test::TestBody\n"
