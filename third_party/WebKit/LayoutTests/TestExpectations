@@ -806,7 +806,6 @@ crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass 
 
 crbug.com/390125 media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
 crbug.com/390125 virtual/slimmingpaint/media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
-crbug.com/483864 media/video-paint-invalidation.html [ NeedsRebaseline ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
