@@ -31,6 +31,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
@@ -93,6 +94,7 @@ MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const W
     , m_keySystem(keySystem)
     , m_supportedSessionTypes(supportedSessionTypes)
     , m_cdm(cdm)
+    , m_mediaElement(nullptr)
     , m_timer(this, &MediaKeys::timerFired)
 {
     WTF_LOG(Media, "MediaKeys(%p)::MediaKeys", this);
@@ -168,6 +170,22 @@ ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, const DO
     return promise;
 }
 
+bool MediaKeys::setMediaElement(HTMLMediaElement* mediaElement)
+{
+    // If some other HtmlMediaElement already has a reference to us, fail.
+    if (m_mediaElement)
+        return false;
+
+    m_mediaElement = mediaElement;
+    return true;
+}
+
+void MediaKeys::clearMediaElement()
+{
+    ASSERT(m_mediaElement);
+    m_mediaElement.clear();
+}
+
 bool MediaKeys::sessionTypeSupported(WebEncryptedMediaSessionType sessionType)
 {
     for (size_t i = 0; i < m_supportedSessionTypes.size(); i++) {
@@ -211,6 +229,7 @@ WebContentDecryptionModule* MediaKeys::contentDecryptionModule()
 DEFINE_TRACE(MediaKeys)
 {
     visitor->trace(m_pendingActions);
+    visitor->trace(m_mediaElement);
     ActiveDOMObject::trace(visitor);
 }
 

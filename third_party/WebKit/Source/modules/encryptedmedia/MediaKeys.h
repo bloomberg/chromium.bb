@@ -42,6 +42,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
+class HTMLMediaElement;
 class MediaKeySession;
 class ScriptState;
 class WebContentDecryptionModule;
@@ -62,6 +63,13 @@ public:
     MediaKeySession* createSession(ScriptState*, const String& sessionTypeString, ExceptionState&);
 
     ScriptPromise setServerCertificate(ScriptState*, const DOMArrayPiece& serverCertificate);
+
+    // Indicates that the provided HTMLMediaElement wants to use this object.
+    // Returns true if no other HTMLMediaElement currently references this
+    // object, false otherwise. Will take a weak reference to HTMLMediaElement.
+    bool setMediaElement(HTMLMediaElement*);
+    // Indicates that no HTMLMediaElement is currently using this object.
+    void clearMediaElement();
 
     WebContentDecryptionModule* contentDecryptionModule();
 
@@ -85,6 +93,11 @@ private:
     const String m_keySystem;
     const WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
     OwnPtr<WebContentDecryptionModule> m_cdm;
+
+    // Keep track of the HTMLMediaElement that references this object. Keeping
+    // a WeakMember so that HTMLMediaElement's lifetime isn't dependent on
+    // this object.
+    RawPtrWillBeWeakMember<HTMLMediaElement> m_mediaElement;
 
     HeapDeque<Member<PendingAction>> m_pendingActions;
     Timer<MediaKeys> m_timer;
