@@ -58,9 +58,6 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   results->SetString("layout", keyboard::GetKeyboardLayout());
   results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
-  // TODO(rsadam): Deprecate this, and rely on features.
-  results->SetBoolean("experimental",
-                      keyboard::IsExperimentalInputViewEnabled());
   scoped_ptr<base::ListValue> features(new base::ListValue());
   features->AppendString(GenerateFeatureFlag(
       "floatingvirtualkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));

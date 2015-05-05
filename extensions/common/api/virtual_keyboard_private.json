@@ -158,10 +158,6 @@
                     "type": "boolean",
                     "description": "True if accessibility virtual keyboard is enabled."
                   },
-                  "experimental": {
-                    "type": "boolean",
-                    "description": "True if experimental features are enabled."
-                  },
                   "features": {
                     "type": "array",
                     "items": { "type": "string" },
