@@ -3,14 +3,28 @@
 # found in the LICENSE file.
 
 from telemetry.page import page_test
+from telemetry.web_perf import timeline_based_measurement
 
-from measurements import smoothness_controller
+
+class _CustomResultsWrapper(timeline_based_measurement.ResultsWrapperInterface):
+
+  def _AssertNewValueHasSameInteractionLabel(self, new_value):
+    for value in self._results.current_page_run.values:
+      if value.name == new_value.name:
+        assert value.tir_label == new_value.tir_label, (
+          'Smoothness measurement do not support multiple interaction record '
+          'labels per page yet. See crbug.com/453109 for more information.')
+
+  def AddValue(self, value):
+    value.tir_label = self._result_prefix
+    self._AssertNewValueHasSameInteractionLabel(value)
+    self._results.AddValue(value)
 
 
 class Smoothness(page_test.PageTest):
-  def __init__(self, **kwargs):
-    super(Smoothness, self).__init__(**kwargs)
-    self._smoothness_controller = None
+  def __init__(self, needs_browser_restart_after_each_page=False):
+    super(Smoothness, self).__init__(needs_browser_restart_after_each_page)
+    self._tbm = None
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
@@ -19,18 +33,21 @@ class Smoothness(page_test.PageTest):
     options.AppendExtraBrowserArgs('--running-performance-benchmark')
 
   def WillNavigateToPage(self, page, tab):
-    self._smoothness_controller = smoothness_controller.SmoothnessController()
-    self._smoothness_controller.Start(page, tab)
+    tracing_controller = tab.browser.platform.tracing_controller
+    self._tbm = timeline_based_measurement.TimelineBasedMeasurement(
+        timeline_based_measurement.Options(),
+        _CustomResultsWrapper)
+    self._tbm.WillRunUserStory(
+        tracing_controller, page.GetSyntheticDelayCategories())
 
-  def DidRunActions(self, page, tab):
-    self._smoothness_controller.Stop(tab)
+  def ValidateAndMeasurePage(self, _, tab, results):
+    tracing_controller = tab.browser.platform.tracing_controller
+    self._tbm.Measure(tracing_controller, results)
 
-  def ValidateAndMeasurePage(self, page, tab, results):
-    self._smoothness_controller.AddResults(tab, results)
+  def CleanUpAfterPage(self, _, tab):
+    tracing_controller = tab.browser.platform.tracing_controller
+    self._tbm.DidRunUserStory(tracing_controller)
 
-  def CleanUpAfterPage(self, page, tab):
-    if self._smoothness_controller:
-      self._smoothness_controller.CleanUp(tab)
 
 class SmoothnessWithRestart(Smoothness):
   def __init__(self):
