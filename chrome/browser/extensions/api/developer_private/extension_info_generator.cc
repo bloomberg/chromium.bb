@@ -482,11 +482,12 @@ std::string ExtensionInfoGenerator::GetIconUrlFromImage(
   scoped_refptr<base::RefCountedMemory> data;
   if (should_greyscale) {
     color_utils::HSL shift = {-1, 0, 0.6};
-    SkBitmap bitmap =
-        SkBitmapOperations::CreateHSLShiftedBitmap(*image.ToSkBitmap(), shift);
+    const SkBitmap* bitmap = image.ToSkBitmap();
+    DCHECK(bitmap);
+    SkBitmap grey = SkBitmapOperations::CreateHSLShiftedBitmap(*bitmap, shift);
     scoped_refptr<base::RefCountedBytes> image_bytes(
         new base::RefCountedBytes());
-    gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &image_bytes->data());
+    gfx::PNGCodec::EncodeBGRASkBitmap(grey, false, &image_bytes->data());
     data = image_bytes;
   } else {
     data = image.As1xPNGBytes();
@@ -502,8 +503,18 @@ std::string ExtensionInfoGenerator::GetIconUrlFromImage(
 void ExtensionInfoGenerator::OnImageLoaded(
     scoped_ptr<developer::ExtensionInfo> info,
     const gfx::Image& icon) {
-  info->icon_url = GetIconUrlFromImage(
-      icon, info->state != developer::EXTENSION_STATE_ENABLED);
+  if (!icon.IsEmpty()) {
+    info->icon_url = GetIconUrlFromImage(
+        icon, info->state != developer::EXTENSION_STATE_ENABLED);
+  } else {
+    bool is_app =
+        info->type == developer::EXTENSION_TYPE_HOSTED_APP ||
+        info->type == developer::EXTENSION_TYPE_LEGACY_PACKAGED_APP ||
+        info->type == developer::EXTENSION_TYPE_PLATFORM_APP;
+    info->icon_url = GetDefaultIconUrl(
+        is_app, info->state != developer::EXTENSION_STATE_ENABLED);
+  }
+
   list_.push_back(make_linked_ptr(info.release()));
 
   --pending_image_loads_;
