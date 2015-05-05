@@ -17,6 +17,7 @@
 
 namespace base {
 class MessageLoop;
+class RunLoop;
 class TimeDelta;
 }
 
@@ -62,6 +63,7 @@ class WaitableMessageLoopEvent {
   base::MessageLoop* message_loop_;
   bool signaled_;
   PipelineStatus status_;
+  scoped_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitableMessageLoopEvent);
 };

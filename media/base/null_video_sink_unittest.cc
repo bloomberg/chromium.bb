@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/test_helpers.h"
@@ -123,10 +122,8 @@ TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
   const base::TimeTicks now = base::TimeTicks::Now();
   const base::TimeTicks current_time = tick_clock_.NowTicks();
 
-  // Use a RunLoop instead of WaitableMessageLoopEvent() since it will only quit
-  // the loop when it's idle, instead of quitting immediately which is required
-  // when clockless playback is enabled (otherwise the loop is never idle).
-  base::RunLoop run_loop;
+  SCOPED_TRACE("Waiting for multiple render callbacks");
+  WaitableMessageLoopEvent event;
   for (int i = 0; i < kTestRuns; ++i) {
     if (i < kTestRuns - 1) {
       EXPECT_CALL(*this, Render(current_time + i * interval,
@@ -135,11 +132,10 @@ TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
     } else {
       EXPECT_CALL(*this, Render(current_time + i * interval,
                                 current_time + (i + 1) * interval))
-          .WillOnce(DoAll(RunClosure(run_loop.QuitClosure()), Return(nullptr)));
+          .WillOnce(DoAll(RunClosure(event.GetClosure()), Return(nullptr)));
     }
   }
-
-  run_loop.Run();
+  event.RunAndWait();
   ASSERT_LT(base::TimeTicks::Now() - now, kTestRuns * interval);
   sink->Stop();
 }

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -84,26 +85,31 @@ void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
     return;
   }
 
+  run_loop_.reset(new base::RunLoop());
   base::Timer timer(false, false);
   timer.Start(FROM_HERE, TestTimeouts::action_timeout(), base::Bind(
       &WaitableMessageLoopEvent::OnTimeout, base::Unretained(this)));
 
-  message_loop_->Run();
+  run_loop_->Run();
   EXPECT_TRUE(signaled_);
   EXPECT_EQ(expected, status_);
+  run_loop_.reset();
 }
 
 void WaitableMessageLoopEvent::OnCallback(PipelineStatus status) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
   signaled_ = true;
   status_ = status;
-  message_loop_->QuitWhenIdle();
+
+  // |run_loop_| may be null if the callback fires before RunAndWaitForStatus().
+  if (run_loop_)
+    run_loop_->Quit();
 }
 
 void WaitableMessageLoopEvent::OnTimeout() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
   ADD_FAILURE() << "Timed out waiting for message loop to quit";
-  message_loop_->QuitWhenIdle();
+  run_loop_->Quit();
 }
 
 static VideoDecoderConfig GetTestConfig(VideoCodec codec,

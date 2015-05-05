@@ -10,6 +10,3 @@ PipelineIntegrationTest.MediaSource_Opus_Seeking_WebM
 AudioInputTest.Record
 MacAudioInputTest.AUAudioInputStreamVerifyStereoRecording
 AUHALStreamTest.CreateOpenStartStopClose
-
-# http://crbug.com/483620
-NullVideoSinkTest.BasicFunctionality
