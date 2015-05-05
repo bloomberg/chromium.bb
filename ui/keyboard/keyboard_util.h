@@ -105,6 +105,12 @@ KEYBOARD_EXPORT bool IsGestureDeletionEnabled();
 // Returns true if gesture selection is enabled for virtual keyboard.
 KEYBOARD_EXPORT bool IsGestureSelectionEnabled();
 
+// Returns true if material design is enabled for the keyboard.
+KEYBOARD_EXPORT bool IsMaterialDesignEnabled();
+
+// Returns true if voice input is enabled for the keyboard.
+KEYBOARD_EXPORT bool IsVoiceInputEnabled();
+
 // Insert |text| into the active TextInputClient if there is one. Returns true
 // if |text| was successfully inserted.
 KEYBOARD_EXPORT bool InsertText(const base::string16& text);

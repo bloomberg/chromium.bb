@@ -17,6 +17,12 @@ KEYBOARD_EXPORT extern const char kEnableSwipeSelection[];
 // contents of the virtual keyboard container.
 KEYBOARD_EXPORT extern const char kDisableInputView[];
 
+// Disables material design styling of the keyboard.
+KEYBOARD_EXPORT extern const char kDisableNewMDInputView[];
+
+// Disables voice input.
+KEYBOARD_EXPORT extern const char kDisableVoiceInput[];
+
 // Enables an IME extension API to set a URL for specifying the contents
 // of the virtual keyboard container.
 KEYBOARD_EXPORT extern const char kEnableInputView[];

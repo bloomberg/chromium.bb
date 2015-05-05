@@ -115,9 +115,6 @@ const char kDisableDeviceDisabling[] = "disable-device-disabling";
 // chrome://settings/languages.
 const char kEnableNewKoreanIme[] = "enable-new-korean-ime";
 
-// If this switch is set, the input view keyboard will disable materia design.
-const char kDisableNewMDInputView[] = "disable-new-md-input-view";
-
 // If this switch is set, the options for suggestions as typing on physical
 // keyboard will be enabled.
 const char kEnablePhysicalKeyboardAutocorrect[] =
@@ -127,9 +124,6 @@ const char kEnablePhysicalKeyboardAutocorrect[] =
 // keyboard will be disabled.
 const char kDisablePhysicalKeyboardAutocorrect[] =
     "disable-physical-keyboard-autocorrect";
-
-// If this switch is set, the voice input will be disabled.
-const char kDisableVoiceInput[] = "disable-voice-input";
 
 // Enabled sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";

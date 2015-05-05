@@ -19,6 +19,7 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace {
 
@@ -38,12 +39,10 @@ ExtensionFunction::ResponseAction GetInputMethodConfigFunction::Run() {
       "isPhysicalKeyboardAutocorrectEnabled",
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
-  output->SetBoolean("isVoiceInputEnabled",
-                     !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         chromeos::switches::kDisableVoiceInput));
+  // TODO(rsadam): Delete these two flags once callers have been updated.
+  output->SetBoolean("isVoiceInputEnabled", keyboard::IsVoiceInputEnabled());
   output->SetBoolean("isNewMDInputViewEnabled",
-                     !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                         chromeos::switches::kDisableNewMDInputView));
+                     keyboard::IsMaterialDesignEnabled());
   return RespondNow(OneArgument(output));
 #endif
 }

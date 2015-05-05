@@ -178,6 +178,16 @@ bool IsGestureDeletionEnabled() {
       switches::kEnableGestureDeletion);
 }
 
+bool IsMaterialDesignEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNewMDInputView);
+}
+
+bool IsVoiceInputEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableVoiceInput);
+}
+
 bool InsertText(const base::string16& text) {
   keyboard::KeyboardController* controller = KeyboardController::GetInstance();
   if (!controller)

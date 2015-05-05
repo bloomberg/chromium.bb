@@ -67,9 +67,12 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
       "gestureselection", keyboard::IsGestureSelectionEnabled()));
   features->AppendString(GenerateFeatureFlag(
       "gesturedeletion", keyboard::IsGestureDeletionEnabled()));
+  features->AppendString(GenerateFeatureFlag(
+      "materialdesign", keyboard::IsMaterialDesignEnabled()));
+  features->AppendString(
+      GenerateFeatureFlag("voiceinput", keyboard::IsVoiceInputEnabled()));
   features->AppendString(GenerateFeatureFlag("experimental",
       keyboard::IsExperimentalInputViewEnabled()));
-  // TODO(rsadam): Populate features with more inputview features.
   results->Set("features", features.Pass());
   return true;
 }

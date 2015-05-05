@@ -1418,7 +1418,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_NEW_MD_INPUT_VIEW_NAME,
     IDS_FLAGS_DISABLE_NEW_MD_INPUT_VIEW_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableNewMDInputView)
+    SINGLE_VALUE_TYPE(keyboard::switches::kDisableNewMDInputView)
   },
   {
     "enable-physical-keyboard-autocorrect",
@@ -1434,7 +1434,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_VOICE_INPUT_NAME,
     IDS_FLAGS_DISABLE_VOICE_INPUT_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableVoiceInput)
+    SINGLE_VALUE_TYPE(keyboard::switches::kDisableVoiceInput)
   },
   {
     "enable-experimental-input-view-features",
