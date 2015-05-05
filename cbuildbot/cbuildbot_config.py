@@ -3306,6 +3306,7 @@ _waterfall_config_map = {
       'oak-release',
       'panther_moblab-release',
       'rush_ryu-release',
+      'smaug-release',
       'lakitu-release',
 
       # Experimental PFQs.
