@@ -25,10 +25,12 @@
 #include "core/frame/Navigator.h"
 #include "core/page/PageVisibilityState.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebVibration.h"
 
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
+
+// Maximum duration of a vibration is 10 seconds.
+const unsigned kVibrationDurationMsMax = 10000;
 
 blink::NavigatorVibration::VibrationPattern sanitizeVibrationPatternInternal(const blink::NavigatorVibration::VibrationPattern& pattern)
 {
@@ -43,8 +45,8 @@ blink::NavigatorVibration::VibrationPattern sanitizeVibrationPatternInternal(con
 
     // If any pattern entry is too long then truncate it.
     for (size_t i = 0; i < length; ++i) {
-        if (sanitized[i] > blink::kVibrationDurationMax)
-            sanitized[i] = blink::kVibrationDurationMax;
+        if (sanitized[i] > kVibrationDurationMsMax)
+            sanitized[i] = kVibrationDurationMsMax;
     }
 
     // If the last item in the pattern is a pause then discard it.
