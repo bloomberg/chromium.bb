@@ -1483,9 +1483,10 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   return metadata;
 }
 
-void LayerTreeHostImpl::DrawLayers(FrameData* frame,
-                                   base::TimeTicks frame_begin_time) {
+void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
+
+  base::TimeTicks frame_begin_time = CurrentBeginFrameArgs().frame_time;
   DCHECK(CanDraw());
 
   if (!frame->composite_events.empty()) {

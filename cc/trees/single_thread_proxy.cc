@@ -632,7 +632,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     DoAnimate();
 
     LayerTreeHostImpl::FrameData frame;
-    DoComposite(frame_begin_time, &frame);
+    DoComposite(&frame);
 
     // DoComposite could abort, but because this is a synchronous composite
     // another draw will never be scheduled, so break remaining promises.
@@ -674,8 +674,7 @@ void SingleThreadProxy::ScheduleRequestNewOutputSurface() {
   }
 }
 
-DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
-                                          LayerTreeHostImpl::FrameData* frame) {
+DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoComposite");
   DCHECK(!layer_tree_host_->output_surface_lost());
 
@@ -714,7 +713,7 @@ DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
       tracked_objects::ScopedTracker tracking_profile3(
           FROM_HERE_WITH_EXPLICIT_FUNCTION(
               "461509 SingleThreadProxy::DoComposite3"));
-      layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
+      layer_tree_host_impl_->DrawLayers(frame);
     }
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509
     // is fixed.
@@ -915,8 +914,7 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
 DrawResult SingleThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
   DebugScopedSetImplThread impl(this);
   LayerTreeHostImpl::FrameData frame;
-  return DoComposite(layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time,
-                     &frame);
+  return DoComposite(&frame);
 }
 
 DrawResult SingleThreadProxy::ScheduledActionDrawAndSwapForced() {

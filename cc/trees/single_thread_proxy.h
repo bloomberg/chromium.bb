@@ -134,8 +134,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DoAnimate();
   void DoBeginMainFrame(const BeginFrameArgs& begin_frame_args);
   void DoCommit();
-  DrawResult DoComposite(base::TimeTicks frame_begin_time,
-                         LayerTreeHostImpl::FrameData* frame);
+  DrawResult DoComposite(LayerTreeHostImpl::FrameData* frame);
   void DoSwap();
   void DidCommitAndDrawFrame();
   void CommitComplete();
