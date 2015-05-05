@@ -118,4 +118,16 @@ TEST_F(AnimationAnimationStackTest, CancelledAnimationPlayers)
     EXPECT_TRUE(interpolationValue(result, CSSPropertyZIndex)->equals(AnimatableDouble::create(2).get()));
 }
 
+TEST_F(AnimationAnimationStackTest, ClearedEffectsRemoved)
+{
+    RefPtrWillBeRawPtr<AnimationPlayer> player = play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 10);
+    ActiveInterpolationMap result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
+    EXPECT_EQ(1u, result.size());
+    EXPECT_TRUE(interpolationValue(result, CSSPropertyFontSize)->equals(AnimatableDouble::create(1).get()));
+
+    player->setSource(0);
+    result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), 0, 0, Animation::DefaultPriority, 0);
+    EXPECT_EQ(0u, result.size());
+}
+
 }

@@ -61,6 +61,8 @@ public:
     DECLARE_TRACE();
 
 private:
+    void removeClearedEffects();
+
     // Effects sorted by priority. Lower priority at the start of the list.
     WillBeHeapVector<OwnPtrWillBeMember<SampledEffect>> m_effects;
 

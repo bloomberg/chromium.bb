@@ -90,6 +90,7 @@ ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* anim
         WillBeHeapVector<OwnPtrWillBeMember<SampledEffect>>& effects = animationStack->m_effects;
         // std::sort doesn't work with OwnPtrs
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
+        animationStack->removeClearedEffects();
         for (const auto& effect : effects) {
             if (effect->priority() != priority || (suppressedAnimationPlayers && effect->animation() && suppressedAnimationPlayers->contains(effect->animation()->player())))
                 continue;
@@ -101,6 +102,16 @@ ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* anim
         copyNewAnimationsToActiveInterpolationMap(*newAnimations, result);
 
     return result;
+}
+
+void AnimationStack::removeClearedEffects()
+{
+    size_t dest = 0;
+    for (auto& effect : m_effects) {
+        if (effect->animation())
+            m_effects[dest++].swap(effect);
+    }
+    m_effects.shrink(dest);
 }
 
 DEFINE_TRACE(AnimationStack)
