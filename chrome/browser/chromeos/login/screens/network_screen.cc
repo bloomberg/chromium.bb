@@ -118,8 +118,10 @@ void NetworkScreen::Initialize(::login::ScreenContext* context) {
 }
 
 void NetworkScreen::OnViewDestroyed(NetworkView* view) {
-  if (view_ == view)
+  if (view_ == view) {
     view_ = nullptr;
+    timezone_subscription_.reset();
+  }
 }
 
 void NetworkScreen::OnUserAction(const std::string& action_id) {
