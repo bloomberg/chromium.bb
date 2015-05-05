@@ -31,6 +31,17 @@
                 [47, 208, 110, 24],
                 [47, 208, 32, 24],
                 [14, 205, 30, 30]
+              ],
+              "paintInvalidationClients": [
+                "InlineTextBox ''",
+                "RootInlineBox",
+                "LayoutButton INPUT",
+                "LayoutSlider INPUT",
+                "LayoutFlexibleBox DIV",
+                "LayoutBlockFlow DIV id='thumb'",
+                "LayoutBlockFlow (anonymous)",
+                "LayoutButton INPUT",
+                "LayoutSlider INPUT"
               ]
             }
           ]
