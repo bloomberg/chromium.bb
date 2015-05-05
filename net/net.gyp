@@ -542,6 +542,7 @@
         'log/test_net_log.h',
         'log/test_net_log_entry.cc',
         'log/test_net_log_entry.h',
+        'log/test_net_log_util.cc',
         'log/test_net_log_util.h',
         'proxy/mock_proxy_resolver.cc',
         'proxy/mock_proxy_resolver.h',

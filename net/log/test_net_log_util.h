@@ -5,153 +5,64 @@
 #ifndef NET_LOG_TEST_NET_LOG_UTIL_H_
 #define NET_LOG_TEST_NET_LOG_UTIL_H_
 
-#include <cstddef>
-
-#include "net/log/test_net_log.h"
+#include "net/log/net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
-inline ::testing::AssertionResult LogContainsEventHelper(
+// Checks that the element of |entries| at |offset| has the provided values.
+// A negative |offset| indicates a position relative to the end of |entries|.
+// Checks to make sure |offset| is within bounds, and fails gracefully if it
+// isn't.
+::testing::AssertionResult LogContainsEvent(
     const TestNetLogEntry::List& entries,
-    int i,  // Negative indices are reverse indices.
-    const base::TimeTicks& expected_time,
-    bool check_time,
+    int offset,
     NetLog::EventType expected_event,
-    NetLog::EventPhase expected_phase) {
-  // Negative indices are reverse indices.
-  size_t j = (i < 0) ? static_cast<size_t>(static_cast<int>(entries.size()) + i)
-                     : static_cast<size_t>(i);
-  if (j >= entries.size())
-    return ::testing::AssertionFailure() << j << " is out of bounds.";
-  const TestNetLogEntry& entry = entries[j];
-  if (expected_event != entry.type) {
-    return ::testing::AssertionFailure()
-           << "Actual event: " << NetLog::EventTypeToString(entry.type)
-           << ". Expected event: " << NetLog::EventTypeToString(expected_event)
-           << ".";
-  }
-  if (expected_phase != entry.phase) {
-    return ::testing::AssertionFailure()
-           << "Actual phase: " << entry.phase
-           << ". Expected phase: " << expected_phase << ".";
-  }
-  if (check_time) {
-    if (expected_time != entry.time) {
-      return ::testing::AssertionFailure()
-             << "Actual time: " << entry.time.ToInternalValue()
-             << ". Expected time: " << expected_time.ToInternalValue() << ".";
-    }
-  }
-  return ::testing::AssertionSuccess();
-}
+    NetLog::EventPhase expected_phase);
 
-inline ::testing::AssertionResult LogContainsEventAtTime(
-    const TestNetLogEntry::List& log,
-    int i,  // Negative indices are reverse indices.
-    const base::TimeTicks& expected_time,
-    NetLog::EventType expected_event,
-    NetLog::EventPhase expected_phase) {
-  return LogContainsEventHelper(log, i, expected_time, true, expected_event,
-                                expected_phase);
-}
-
-// Version without timestamp.
-inline ::testing::AssertionResult LogContainsEvent(
-    const TestNetLogEntry::List& log,
-    int i,  // Negative indices are reverse indices.
-    NetLog::EventType expected_event,
-    NetLog::EventPhase expected_phase) {
-  return LogContainsEventHelper(log, i, base::TimeTicks(), false,
-                                expected_event, expected_phase);
-}
-
-// Version for PHASE_BEGIN (and no timestamp).
-inline ::testing::AssertionResult LogContainsBeginEvent(
-    const TestNetLogEntry::List& log,
-    int i,  // Negative indices are reverse indices.
-    NetLog::EventType expected_event) {
-  return LogContainsEvent(log, i, expected_event, NetLog::PHASE_BEGIN);
-}
-
-// Version for PHASE_END (and no timestamp).
-inline ::testing::AssertionResult LogContainsEndEvent(
-    const TestNetLogEntry::List& log,
-    int i,  // Negative indices are reverse indices.
-    NetLog::EventType expected_event) {
-  return LogContainsEvent(log, i, expected_event, NetLog::PHASE_END);
-}
-
-inline ::testing::AssertionResult LogContainsEntryWithType(
+// Just like LogContainsEvent, but always checks for an EventPhase of
+// PHASE_BEGIN.
+::testing::AssertionResult LogContainsBeginEvent(
     const TestNetLogEntry::List& entries,
-    int i,  // Negative indices are reverse indices.
-    NetLog::EventType type) {
-  // Negative indices are reverse indices.
-  size_t j = (i < 0) ? static_cast<size_t>(static_cast<int>(entries.size()) + i)
-                     : static_cast<size_t>(i);
-  if (j >= entries.size())
-    return ::testing::AssertionFailure() << j << " is out of bounds.";
-  const TestNetLogEntry& entry = entries[j];
-  if (entry.type != type)
-    return ::testing::AssertionFailure() << "Type does not match.";
-  return ::testing::AssertionSuccess();
-}
+    int offset,
+    NetLog::EventType expected_event);
 
-// Check if the log contains any entry of the given type at |min_index| or
-// after.
-inline ::testing::AssertionResult LogContainsEntryWithTypeAfter(
+// Just like LogContainsEvent, but always checks for an EventPhase of PHASE_END.
+::testing::AssertionResult LogContainsEndEvent(
     const TestNetLogEntry::List& entries,
-    int min_index,  // Negative indices are reverse indices.
-    NetLog::EventType type) {
-  // Negative indices are reverse indices.
-  size_t real_index =
-      (min_index < 0)
-          ? static_cast<size_t>(static_cast<int>(entries.size()) + min_index)
-          : static_cast<size_t>(min_index);
-  for (size_t i = real_index; i < entries.size(); ++i) {
-    const TestNetLogEntry& entry = entries[i];
-    if (entry.type == type)
-      return ::testing::AssertionSuccess();
-  }
-  return ::testing::AssertionFailure();
-}
+    int offset,
+    NetLog::EventType expected_event);
 
-// Expect that the log contains an event, but don't care about where
-// as long as the first index where it is found is at least |min_index|.
-// Returns the position where the event was found.
-inline size_t ExpectLogContainsSomewhere(const TestNetLogEntry::List& entries,
-                                         size_t min_index,
-                                         NetLog::EventType expected_event,
-                                         NetLog::EventPhase expected_phase) {
-  size_t i = 0;
-  for (; i < entries.size(); ++i) {
-    const TestNetLogEntry& entry = entries[i];
-    if (entry.type == expected_event && entry.phase == expected_phase)
-      break;
-  }
-  EXPECT_LT(i, entries.size());
-  EXPECT_GE(i, min_index);
-  return i;
-}
-
-// Expect that the log contains an event, but don't care about where
-// as long as one index where it is found is at least |min_index|.
-// Returns the first such position where the event was found.
-inline size_t ExpectLogContainsSomewhereAfter(
+// Just like LogContainsEvent, but does not check phase.
+::testing::AssertionResult LogContainsEntryWithType(
     const TestNetLogEntry::List& entries,
-    size_t min_index,
-    NetLog::EventType expected_event,
-    NetLog::EventPhase expected_phase) {
-  size_t i = min_index;
-  for (; i < entries.size(); ++i) {
-    const TestNetLogEntry& entry = entries[i];
-    if (entry.type == expected_event && entry.phase == expected_phase)
-      break;
-  }
-  EXPECT_LT(i, entries.size());
-  return i;
-}
+    int offset,
+    NetLog::EventType type);
+
+// Check if the log contains an entry of the given type at |start_offset| or
+// after.  It is not a failure if there's an earlier matching entry.  Negative
+// offsets are relative to the end of the array.
+::testing::AssertionResult LogContainsEntryWithTypeAfter(
+    const TestNetLogEntry::List& entries,
+    int start_offset,
+    NetLog::EventType type);
+
+// Check if the first entry with the specified values is at |start_offset| or
+// after. It is a failure if there's an earlier matching entry.  Negative
+// offsets are relative to the end of the array.
+size_t ExpectLogContainsSomewhere(const TestNetLogEntry::List& entries,
+                                  size_t min_offset,
+                                  NetLog::EventType expected_event,
+                                  NetLog::EventPhase expected_phase);
+
+// Check if the log contains an entry with  the given values at |start_offset|
+// or after.  It is not a failure if there's an earlier matching entry.
+// Negative offsets are relative to the end of the array.
+size_t ExpectLogContainsSomewhereAfter(const TestNetLogEntry::List& entries,
+                                       size_t start_offset,
+                                       NetLog::EventType expected_event,
+                                       NetLog::EventPhase expected_phase);
 
 }  // namespace net
 
