@@ -43,6 +43,10 @@ template("nacl_toolchain") {
   ar = invoker.ar
   ld = invoker.ld
 
+  # NaCl toolchains do not support shared libraries and so they don't support
+  # component_mode builds.
+  is_component_build = false
+
   gcc_toolchain(target_name) {
     rebuild_define = "NACL_TC_REV=" + invoker.toolchain_revision
     if (defined(invoker.deps)) {

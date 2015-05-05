@@ -222,6 +222,9 @@ template("gcc_toolchain") {
       if (defined(invoker.is_clang)) {
         is_clang = invoker.is_clang
       }
+      if (defined(invoker.is_component_build)) {
+        is_component_build = invoker.is_component_build
+      }
     }
 
     if (defined(invoker.deps)) {
