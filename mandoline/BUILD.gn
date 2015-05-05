@@ -9,6 +9,7 @@ group("mandoline") {
   # TODO(beng): should be able to remove this in favor of explicit dependencies
   #             from subdirs.
   deps = [
+    "//mandoline/ui",
     "//mojo",
   ]
 

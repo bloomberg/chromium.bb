@@ -1,0 +1,56 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: mojo/mojo.gyp:mojo_aura_support
+source_set("aura") {
+  sources = [
+    "aura_init.cc",
+    "aura_init.h",
+    "native_widget_view_manager.cc",
+    "native_widget_view_manager.h",
+    "screen_mojo.cc",
+    "screen_mojo.h",
+    "surface_binding.cc",
+    "surface_binding.h",
+    "surface_context_factory.cc",
+    "surface_context_factory.h",
+    "window_tree_host_mojo.cc",
+    "window_tree_host_mojo.h",
+  ]
+
+  if (is_linux) {
+    sources += [
+      "input_method_mojo_linux.cc",
+      "input_method_mojo_linux.h",
+    ]
+  }
+
+  public_deps = [
+    "//components/view_manager/public/cpp",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base/third_party/dynamic_annotations",
+    "//cc",
+    "//cc/surfaces",
+    "//components/gpu/public/interfaces",
+    "//components/native_viewport/public/interfaces",
+    "//components/surfaces/public/interfaces",
+    "//components/view_manager/public/cpp",
+    "//skia",
+    "//mojo/cc",
+    "//mojo/converters/geometry",
+    "//mojo/converters/surfaces",
+    "//third_party/mojo/src/mojo/public/c/gles2",
+    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//third_party/mojo/src/mojo/public/interfaces/application:application",
+    "//third_party/icu",
+    "//ui/aura",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/gl",
+  ]
+}
