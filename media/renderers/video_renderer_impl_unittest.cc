@@ -658,8 +658,8 @@ TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
   last_pipeline_statistics_.video_frames_dropped = 1;
   {
     WaitableMessageLoopEvent event;
-    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
-    EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
+    EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
+    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)))
         .WillOnce(RunClosure(event.GetClosure()));
     StartPlayingFrom(0);
     event.RunAndWait();
