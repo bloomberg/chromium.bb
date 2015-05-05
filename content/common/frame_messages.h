@@ -298,6 +298,35 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_WidgetParams)
   IPC_STRUCT_MEMBER(bool, hidden)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(FrameMsg_NewFrame_Params)
+  // Specifies the routing ID of the new RenderFrame object.
+  IPC_STRUCT_MEMBER(int, routing_id)
+
+  // The new frame should be created as a child of the object
+  // identified by |parent_routing_id| or as top level if that is
+  // MSG_ROUTING_NONE.
+  IPC_STRUCT_MEMBER(int, parent_routing_id)
+
+  // Identifies the previous sibling of the new frame, so that the new frame is
+  // inserted into the correct place in the frame tree.  If this is
+  // MSG_ROUTING_NONE, the frame will be created as the leftmost child of its
+  // parent frame, in front of any other children.
+  IPC_STRUCT_MEMBER(int, previous_sibling_routing_id)
+
+  // If a valid |proxy_routing_id| is provided, the new frame will be
+  // configured to replace the proxy on commit.
+  IPC_STRUCT_MEMBER(int, proxy_routing_id)
+
+  // When the new frame has a parent, |replication_state| holds the new frame's
+  // properties replicated from the process rendering the parent frame, such as
+  // the new frame's sandbox flags.
+  IPC_STRUCT_MEMBER(content::FrameReplicationState, replication_state)
+
+  // Specifies properties for a new RenderWidget that will be attached to the
+  // new RenderFrame (if one is needed).
+  IPC_STRUCT_MEMBER(FrameMsg_NewFrame_WidgetParams, widget_params)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(content::Referrer, referrer)
@@ -389,19 +418,8 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DisownOpener)
 // commit, activation and frame swap of the current DOM tree in blink.
 IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64 /* id */)
 
-// Instructs the renderer to create a new RenderFrame object with |routing_id|.
-// The new frame should be created as a child of the object identified by
-// |parent_routing_id| or as top level if that is MSG_ROUTING_NONE.
-// If a valid |proxy_routing_id| is provided, the new frame will be configured
-// to replace the proxy on commit.  When the new frame has a parent,
-// |replication_state| holds properties replicated from the process rendering
-// the parent frame, such as the new frame's sandbox flags.
-IPC_MESSAGE_CONTROL5(FrameMsg_NewFrame,
-                     int /* routing_id */,
-                     int /* parent_routing_id */,
-                     int /* proxy_routing_id */,
-                     content::FrameReplicationState /* replication_state */,
-                     FrameMsg_NewFrame_WidgetParams /* widget_params */)
+// Instructs the renderer to create a new RenderFrame object.
+IPC_MESSAGE_CONTROL1(FrameMsg_NewFrame, FrameMsg_NewFrame_Params /* params */);
 
 // Instructs the renderer to create a new RenderFrameProxy object with
 // |routing_id|. The new proxy should be created as a child of the object

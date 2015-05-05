@@ -1651,12 +1651,28 @@ bool RenderFrameHostManager::InitRenderFrame(
     return true;
 
   int parent_routing_id = MSG_ROUTING_NONE;
+  int previous_sibling_routing_id = MSG_ROUTING_NONE;
   int proxy_routing_id = MSG_ROUTING_NONE;
+
   if (frame_tree_node_->parent()) {
     parent_routing_id = frame_tree_node_->parent()->render_manager()->
         GetRoutingIdForSiteInstance(render_frame_host->GetSiteInstance());
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
   }
+
+  // At this point, all RenderFrameProxies for sibling frames have already been
+  // created, including any proxies that come after this frame.  To preserve
+  // correct order for indexed window access (e.g., window.frames[1]), pass the
+  // previous sibling frame so that this frame is correctly inserted into the
+  // frame tree on the renderer side.
+  FrameTreeNode* previous_sibling = frame_tree_node_->PreviousSibling();
+  if (previous_sibling) {
+    previous_sibling_routing_id =
+        previous_sibling->render_manager()->GetRoutingIdForSiteInstance(
+            render_frame_host->GetSiteInstance());
+    CHECK_NE(previous_sibling_routing_id, MSG_ROUTING_NONE);
+  }
+
   // Check whether there is an existing proxy for this frame in this
   // SiteInstance. If there is, the new RenderFrame needs to be able to find
   // the proxy it is replacing, so that it can fully initialize itself.
@@ -1672,9 +1688,9 @@ bool RenderFrameHostManager::InitRenderFrame(
     if (!existing_proxy->is_render_frame_proxy_live())
       existing_proxy->InitRenderFrameProxy();
   }
-  return delegate_->CreateRenderFrameForRenderManager(render_frame_host,
-                                                      parent_routing_id,
-                                                      proxy_routing_id);
+  return delegate_->CreateRenderFrameForRenderManager(
+      render_frame_host, parent_routing_id, previous_sibling_routing_id,
+      proxy_routing_id);
 }
 
 int RenderFrameHostManager::GetRoutingIdForSiteInstance(

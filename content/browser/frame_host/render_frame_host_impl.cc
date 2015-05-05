@@ -585,6 +585,7 @@ BrowserAccessibility* RenderFrameHostImpl::AccessibilityGetParentFrame() {
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
+                                            int previous_sibling_routing_id,
                                             int proxy_routing_id) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::CreateRenderFrame");
   DCHECK(!IsRenderFrameLive()) << "Creating frame twice";
@@ -598,22 +599,26 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
 
   DCHECK(GetProcess()->HasConnection());
 
-  FrameMsg_NewFrame_WidgetParams widget_params;
+  FrameMsg_NewFrame_Params params;
+  params.routing_id = routing_id_;
+  params.parent_routing_id = parent_routing_id;
+  params.proxy_routing_id = proxy_routing_id;
+  params.previous_sibling_routing_id = previous_sibling_routing_id;
+  params.replication_state = frame_tree_node()->current_replication_state();
+
   if (render_widget_host_) {
-    widget_params.routing_id = render_widget_host_->GetRoutingID();
-    widget_params.surface_id = render_widget_host_->surface_id();
-    widget_params.hidden = render_widget_host_->is_hidden();
+    params.widget_params.routing_id = render_widget_host_->GetRoutingID();
+    params.widget_params.surface_id = render_widget_host_->surface_id();
+    params.widget_params.hidden = render_widget_host_->is_hidden();
   } else {
     // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
     // the renderer process.
-    widget_params.routing_id = MSG_ROUTING_NONE;
-    widget_params.surface_id = 0;
-    widget_params.hidden = true;
+    params.widget_params.routing_id = MSG_ROUTING_NONE;
+    params.widget_params.surface_id = 0;
+    params.widget_params.hidden = true;
   }
 
-  Send(new FrameMsg_NewFrame(routing_id_, parent_routing_id, proxy_routing_id,
-                             frame_tree_node()->current_replication_state(),
-                             widget_params));
+  Send(new FrameMsg_NewFrame(params));
 
   // The RenderWidgetHost takes ownership of its view. It is tied to the
   // lifetime of the current RenderProcessHost for this RenderFrameHost.

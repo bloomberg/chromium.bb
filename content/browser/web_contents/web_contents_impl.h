@@ -577,6 +577,7 @@ class CONTENT_EXPORT WebContentsImpl
       bool for_main_frame_navigation) override;
   bool CreateRenderFrameForRenderManager(RenderFrameHost* render_frame_host,
                                          int parent_routing_id,
+                                         int previous_sibling_routing_id,
                                          int proxy_routing_id) override;
   void BeforeUnloadFiredFromRenderManager(
       bool proceed,

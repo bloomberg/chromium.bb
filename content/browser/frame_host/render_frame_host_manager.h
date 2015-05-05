@@ -125,6 +125,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     virtual bool CreateRenderFrameForRenderManager(
         RenderFrameHost* render_frame_host,
         int parent_routing_id,
+        int previous_sibling_routing_id,
         int proxy_routing_id) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, const base::TimeTicks& proceed_time,
