@@ -77,7 +77,7 @@ void SVGDocumentExtensions::removeResource(const AtomicString& id)
 LayoutSVGResourceContainer* SVGDocumentExtensions::resourceById(const AtomicString& id) const
 {
     if (id.isEmpty())
-        return 0;
+        return nullptr;
 
     return m_resources.get(id);
 }
@@ -276,11 +276,11 @@ void SVGDocumentExtensions::markPendingResourcesForRemoval(const AtomicString& i
 Element* SVGDocumentExtensions::removeElementFromPendingResourcesForRemoval(const AtomicString& id)
 {
     if (id.isEmpty())
-        return 0;
+        return nullptr;
 
     SVGPendingElements* resourceSet = m_pendingResourcesForRemoval.get(id);
     if (!resourceSet || resourceSet->isEmpty())
-        return 0;
+        return nullptr;
 
     SVGPendingElements::iterator firstElement = resourceSet->begin();
     Element* element = *firstElement;

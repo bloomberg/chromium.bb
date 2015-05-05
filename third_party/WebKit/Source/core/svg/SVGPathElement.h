@@ -87,8 +87,8 @@ public:
     SVGPathSegListTearOff* animatedPathSegList() { return m_pathSegList->animVal(); }
 
     // FIXME: https://bugs.webkit.org/show_bug.cgi?id=15412 - Implement normalized path segment lists!
-    SVGPathSegListTearOff* normalizedPathSegList() { return 0; }
-    SVGPathSegListTearOff* animatedNormalizedPathSegList() { return 0; }
+    SVGPathSegListTearOff* normalizedPathSegList() { return nullptr; }
+    SVGPathSegListTearOff* animatedNormalizedPathSegList() { return nullptr; }
 
     const SVGPathByteStream* pathByteStream() const { return m_pathSegList->currentValue()->byteStream(); }
 

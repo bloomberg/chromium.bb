@@ -131,11 +131,11 @@ Document* SVGUseElement::externalDocument() const
     if (m_resource && m_resource->isLoaded()) {
         // Gracefully handle error condition.
         if (m_resource->errorOccurred())
-            return 0;
+            return nullptr;
         ASSERT(m_resource->document());
         return m_resource->document();
     }
-    return 0;
+    return nullptr;
 }
 
 void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement* shadowElement, const SVGElement& originalElement)
@@ -465,7 +465,7 @@ LayoutObject* SVGUseElement::layoutObjectClipChild() const
             return n->layoutObject();
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool SVGUseElement::buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse)

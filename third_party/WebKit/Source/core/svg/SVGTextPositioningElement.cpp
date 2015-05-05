@@ -83,7 +83,7 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
 SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(LayoutObject& layoutObject)
 {
     if (!layoutObject.isSVGText() && !layoutObject.isSVGInline())
-        return 0;
+        return nullptr;
 
     Node* node = layoutObject.node();
     ASSERT(node);

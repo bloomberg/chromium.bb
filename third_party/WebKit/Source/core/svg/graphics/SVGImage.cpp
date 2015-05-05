@@ -128,7 +128,7 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
 static SVGSVGElement* svgRootElement(Page* page)
 {
     if (!page)
-        return 0;
+        return nullptr;
     LocalFrame* frame = toLocalFrame(page->mainFrame());
     return frame->document()->accessSVGExtensions().rootElement();
 }
@@ -329,14 +329,14 @@ LayoutBox* SVGImage::embeddedContentBox() const
 {
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
     if (!rootElement)
-        return 0;
+        return nullptr;
     return toLayoutBox(rootElement->layoutObject());
 }
 
 FrameView* SVGImage::frameView() const
 {
     if (!m_page)
-        return 0;
+        return nullptr;
 
     return toLocalFrame(m_page->mainFrame())->view();
 }

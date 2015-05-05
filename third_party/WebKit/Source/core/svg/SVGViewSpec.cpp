@@ -90,10 +90,10 @@ void SVGViewSpec::detachContextElement()
 SVGElement* SVGViewSpec::viewTarget() const
 {
     if (!m_contextElement)
-        return 0;
+        return nullptr;
     Element* element = m_contextElement->treeScope().getElementById(AtomicString(m_viewTargetString));
     if (!element || !element->isSVGElement())
-        return 0;
+        return nullptr;
     return toSVGElement(element);
 }
 

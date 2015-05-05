@@ -56,7 +56,7 @@ static float convertValueFromPercentageToUserUnits(const SVGLength& value, const
 static const ComputedStyle* computedStyleForLengthResolving(const SVGElement* context)
 {
     if (!context)
-        return 0;
+        return nullptr;
 
     const ContainerNode* currentContext = context;
     do {
@@ -67,13 +67,13 @@ static const ComputedStyle* computedStyleForLengthResolving(const SVGElement* co
 
     // There must be at least a LayoutSVGRoot layoutObject, carrying a style.
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static const ComputedStyle* rootElementStyle(const Node* context)
 {
     if (!context)
-        return 0;
+        return nullptr;
 
     const Document& document = context->document();
     Node* documentElement = document.documentElement();

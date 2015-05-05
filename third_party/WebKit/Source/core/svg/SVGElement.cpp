@@ -442,7 +442,7 @@ SVGSVGElement* SVGElement::ownerSVGElement() const
         n = n->parentOrShadowHostNode();
     }
 
-    return 0;
+    return nullptr;
 }
 
 SVGElement* SVGElement::viewportElement() const
@@ -457,7 +457,7 @@ SVGElement* SVGElement::viewportElement() const
         n = n->parentOrShadowHostNode();
     }
 
-    return 0;
+    return nullptr;
 }
 
 SVGDocumentExtensions& SVGElement::accessDocumentSVGExtensions()
@@ -563,7 +563,7 @@ SVGUseElement* SVGElement::correspondingUseElement() const
         if (isSVGUseElement(root->host()) && (root->type() == ShadowRoot::UserAgentShadowRoot))
             return toSVGUseElement(root->host());
     }
-    return 0;
+    return nullptr;
 }
 
 void SVGElement::setCorrespondingElement(SVGElement* correspondingElement)
@@ -843,7 +843,7 @@ void SVGElement::svgLoadEventTimerFired(Timer<SVGElement>*)
 Timer<SVGElement>* SVGElement::svgLoadEventTimer()
 {
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason)
@@ -924,7 +924,7 @@ MutableStylePropertySet* SVGElement::animatedSMILStyleProperties() const
 {
     if (hasSVGRareData())
         return svgRareData()->animatedSMILStyleProperties();
-    return 0;
+    return nullptr;
 }
 
 MutableStylePropertySet* SVGElement::ensureAnimatedSMILStyleProperties()
@@ -1116,7 +1116,7 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 SVGElementSet* SVGElement::setOfIncomingReferences() const
 {
     if (!hasSVGRareData())
-        return 0;
+        return nullptr;
     return &svgRareData()->incomingReferences();
 }
 

@@ -254,10 +254,10 @@ bool SVGTextContentElement::selfHasRelativeLengths() const
 SVGTextContentElement* SVGTextContentElement::elementFromRenderer(LayoutObject* layoutObject)
 {
     if (!layoutObject)
-        return 0;
+        return nullptr;
 
     if (!layoutObject->isSVGText() && !layoutObject->isSVGInline())
-        return 0;
+        return nullptr;
 
     SVGElement* element = toSVGElement(layoutObject->node());
     ASSERT(element);

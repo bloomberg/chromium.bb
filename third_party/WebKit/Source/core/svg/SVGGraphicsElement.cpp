@@ -217,7 +217,7 @@ SVGElement* SVGGraphicsElement::nearestViewportElement() const
             return toSVGElement(current);
     }
 
-    return 0;
+    return nullptr;
 }
 
 SVGElement* SVGGraphicsElement::farthestViewportElement() const

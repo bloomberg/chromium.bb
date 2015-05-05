@@ -132,10 +132,10 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
 LayoutObject* FEImage::referencedLayoutObject() const
 {
     if (!m_treeScope)
-        return 0;
+        return nullptr;
     Element* hrefElement = SVGURIReference::targetElementFromIRIString(m_href, *m_treeScope);
     if (!hrefElement || !hrefElement->isSVGElement())
-        return 0;
+        return nullptr;
     return hrefElement->layoutObject();
 }
 
