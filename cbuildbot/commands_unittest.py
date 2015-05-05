@@ -15,12 +15,12 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import path_util
 from chromite.scripts import pushimage
 
 
@@ -795,8 +795,8 @@ class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
             os.path.join(self._build, 'chromite', 'bin', 'test_image'),
             '--board', self._board,
             '--test_results_root',
-            cros_build_lib.ToChrootPath(self._result_dir),
-            cros_build_lib.ToChrootPath(self._image_dir),
+            path_util.ToChrootPath(self._result_dir),
+            path_util.ToChrootPath(self._image_dir),
         ],
         enter_chroot=True,
     )

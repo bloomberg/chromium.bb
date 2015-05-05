@@ -29,6 +29,7 @@ from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
@@ -578,8 +579,8 @@ def RunTestImage(buildroot, board, image_dir, results_dir):
   cmd = [
       'test_image',
       '--board', board,
-      '--test_results_root', cros_build_lib.ToChrootPath(results_dir),
-      cros_build_lib.ToChrootPath(image_dir),
+      '--test_results_root', path_util.ToChrootPath(results_dir),
+      path_util.ToChrootPath(image_dir),
   ]
   RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
                  sudo=True)
@@ -1271,7 +1272,7 @@ def ExtractDependencies(buildroot, packages, board=None, useflags=None,
   # the deps into a file.
   with tempfile.NamedTemporaryFile(
       dir=os.path.join(buildroot, 'chroot', 'tmp')) as f:
-    cmd += ['--output-path', cros_build_lib.ToChrootPath(f.name)]
+    cmd += ['--output-path', path_util.ToChrootPath(f.name)]
     RunBuildScript(buildroot, cmd, enter_chroot=True,
                    chromite_cmd=True, capture_output=True, extra_env=env)
     return json.loads(f.read())

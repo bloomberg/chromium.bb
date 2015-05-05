@@ -11,10 +11,10 @@ import unittest
 
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import image_test
 from chromite.lib import osutils
+from chromite.lib import path_util
 
 
 def ParseArgs(args):
@@ -81,7 +81,7 @@ def main(args):
   runner.SetBoard(opts.board)
   runner.SetResultDir(opts.test_results_root)
   image_file = FindImage(opts.image_dir)
-  tmp_in_chroot = cros_build_lib.FromChrootPath('/tmp')
+  tmp_in_chroot = path_util.FromChrootPath('/tmp')
   with osutils.TempDir(base_dir=tmp_in_chroot) as temp_dir:
     with osutils.MountImageContext(image_file, temp_dir):
       with osutils.ChdirContext(temp_dir):

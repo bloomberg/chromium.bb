@@ -19,6 +19,7 @@ from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_as_stable
 
@@ -57,7 +58,7 @@ def UpdateManifest(ebuild):
   Args:
     ebuild: Path to the ebuild to update the manifest for.
   """
-  ebuild = cros_build_lib.ToChrootPath(os.path.realpath(ebuild))
+  ebuild = path_util.ToChrootPath(os.path.realpath(ebuild))
   cros_build_lib.RunCommand(['ebuild', ebuild, 'manifest'], quiet=True,
                             enter_chroot=True)
 

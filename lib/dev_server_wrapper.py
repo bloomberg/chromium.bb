@@ -22,14 +22,15 @@ from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
-from chromite.lib import timeout_util
+from chromite.lib import path_util
 from chromite.lib import remote_access
+from chromite.lib import timeout_util
 
 
 DEFAULT_PORT = 8080
 
 DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
-DEFAULT_STATIC_DIR = cros_build_lib.FromChrootPath(
+DEFAULT_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.SOURCE_ROOT, 'src', 'platform', 'dev', 'static'))
 
 IMAGE_NAME_TO_TYPE = {
@@ -205,7 +206,7 @@ def TranslatedPathToLocalPath(translated_path, static_dir):
   if os.path.exists(real_path):
     return real_path
   else:
-    return cros_build_lib.FromChrootPath(real_path)
+    return path_util.FromChrootPath(real_path)
 
 
 def GetUpdatePayloadsFromLocalPath(path, payload_dir,
@@ -227,7 +228,7 @@ def GetUpdatePayloadsFromLocalPath(path, payload_dir,
 
   with cros_build_lib.ContextManagerStack() as stack:
     image_tempdir = stack.Add(
-        osutils.TempDir, base_dir=cros_build_lib.FromChrootPath('/tmp'),
+        osutils.TempDir, base_dir=path_util.FromChrootPath('/tmp'),
         prefix='dev_server_wrapper_local_image', sudo_rm=True)
     static_tempdir = stack.Add(osutils.TempDir,
                                base_dir=static_dir,
@@ -268,7 +269,7 @@ def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
   TEMP_IMAGE_TYPE = 'test'
   shutil.copy(path,
               os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
-  chroot_path = cros_build_lib.ToChrootPath(tempdir_path)
+  chroot_path = path_util.ToChrootPath(tempdir_path)
   # Create and link static_dir/local_imagexxxx/link to the image
   # folder, so that xbuddy/devserver can understand the path.
   relative_dir = os.path.join(os.path.basename(static_tempdir.tempdir), 'link')
@@ -388,7 +389,7 @@ class DevServerWrapper(multiprocessing.Process):
     self.log_dir = log_dir
     if not self.log_dir:
       self.tempdir = osutils.TempDir(
-          base_dir=cros_build_lib.FromChrootPath('/tmp'),
+          base_dir=path_util.FromChrootPath('/tmp'),
           prefix='devserver_wrapper',
           sudo_rm=True)
       self.log_dir = self.tempdir.tempdir
@@ -470,7 +471,7 @@ class DevServerWrapper(multiprocessing.Process):
     logging.info('Cleaning up previously generated payloads.')
     cmd = [devserver_bin, '--clear_cache', '--exit']
     if static_dir:
-      cmd.append('--static_dir=%s' % cros_build_lib.ToChrootPath(static_dir))
+      cmd.append('--static_dir=%s' % path_util.ToChrootPath(static_dir))
 
     cros_build_lib.SudoRunCommand(
         cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
@@ -536,19 +537,19 @@ class DevServerWrapper(multiprocessing.Process):
 
     port = self.port if self.port else 0
     cmd = [self.devserver_bin,
-           '--pidfile', cros_build_lib.ToChrootPath(self._pid_file),
-           '--logfile', cros_build_lib.ToChrootPath(self.log_file),
+           '--pidfile', path_util.ToChrootPath(self._pid_file),
+           '--logfile', path_util.ToChrootPath(self.log_file),
            '--port=%d' % port]
 
     if not self.port:
-      cmd.append('--portfile=%s' % cros_build_lib.ToChrootPath(self.port_file))
+      cmd.append('--portfile=%s' % path_util.ToChrootPath(self.port_file))
 
     if self.static_dir:
       cmd.append(
-          '--static_dir=%s' % cros_build_lib.ToChrootPath(self.static_dir))
+          '--static_dir=%s' % path_util.ToChrootPath(self.static_dir))
 
     if self.src_image:
-      cmd.append('--src_image=%s' % cros_build_lib.ToChrootPath(self.src_image))
+      cmd.append('--src_image=%s' % path_util.ToChrootPath(self.src_image))
 
     if self.board:
       cmd.append('--board=%s' % self.board)

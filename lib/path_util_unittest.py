@@ -13,7 +13,6 @@ import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.lib import bootstrap_lib
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -515,56 +514,11 @@ class TestChrootPathWrapper(cros_test_lib.MockTestCase):
       with self.assertRaises(ValueError):
         new_func(path)
 
-  def CompareToChrootPath(self, path):
-    """Tests path_util.ToChrootPath()."""
-    self.CompareFunc(cros_build_lib.ToChrootPath,
-                     path_util.ToChrootPath,
-                     path)
-
-  def CompareFromChrootPath(self, path):
-    """Tests path_util.FromChrootPath()."""
-    self.CompareFunc(cros_build_lib.FromChrootPath,
-                     path_util.FromChrootPath,
-                     path)
-
   def CompareReinterpretPathForChroot(self, path):
     """Tests path_util.NoExpandHostToChrootPath()."""
     self.CompareFunc(git.ReinterpretPathForChroot,
                      path_util.ToChrootPath,
                      path)
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
-  def testInsideToChroot(self, _):
-    """Compare conversion to chroot paths from inside the chroot."""
-    self.CompareToChrootPath('/some/path')
-    self.CompareToChrootPath('some/path')
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
-  def testOutsideToChroot(self, _):
-    """Compare conversion to chroot paths from outside the chroot."""
-    self.CompareToChrootPath('some/path')
-    self.CompareToChrootPath('/some/path')
-    self.CompareToChrootPath(
-        os.path.join(constants.CHROOT_SOURCE_ROOT, 'some/path'))
-    self.CompareToChrootPath(
-        os.path.join(constants.CHROOT_WORKSPACE_ROOT, 'some/path'))
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
-  def testInsideFromChroot(self, _):
-    """Compare conversion from chroot paths from inside the chroot."""
-    self.CompareFromChrootPath('/some/path')
-    self.CompareFromChrootPath('some/path')
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
-  def testOutsideFromChroot(self, _):
-    """Compare conversion from chroot paths from outside the chroot."""
-    # Disabled, there's a bug in cros_build_lib.FromChrootPath().
-    #self.CompareFromChrootPath('some/path')
-    self.CompareFromChrootPath('/some/path')
-    self.CompareFromChrootPath(
-        os.path.join(constants.CHROOT_SOURCE_ROOT, 'some/path'))
-    self.CompareFromChrootPath(
-        os.path.join(constants.CHROOT_WORKSPACE_ROOT, 'some/path'))
 
   @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
   def testReinterpretPathForChroot(self, _):

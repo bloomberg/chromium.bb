@@ -1576,46 +1576,6 @@ class TestGetChrootVersion(cros_test_lib.MockTestCase):
     self.assertEqual(ret, None)
 
 
-class TestChrootPathHelpers(cros_test_lib.TestCase):
-  """Verify we correctly reinterpret paths to be used inside/outside chroot."""
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
-  def testToChrootPathInChroot(self, _inchroot_mock):
-    """Test we return the original path to be used in chroot while in chroot."""
-    path = '/foo/woo/bar'
-    self.assertEqual(cros_build_lib.ToChrootPath(path), path)
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
-  def testToChrootPathOutChroot(self, _inchroot_mock):
-    """Test we convert the path to be used in chroot while outside chroot."""
-    subpath = 'bar/haa/ooo'
-    path = os.path.join(constants.SOURCE_ROOT, subpath)
-    chroot_path = git.ReinterpretPathForChroot(path)
-    self.assertEqual(cros_build_lib.ToChrootPath(path), chroot_path)
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
-  def testFromChrootInChroot(self, _inchroot_mock):
-    """Test we return the original chroot path while in chroot."""
-    path = '/foo/woo/bar'
-    self.assertEqual(cros_build_lib.FromChrootPath(path), path)
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
-  def testFromChrootOutChroot(self, _inchroot_mock):
-    """Test we convert the chroot path to be used outside chroot."""
-    # Test that chroot source root has been replaced in the path.
-    subpath = 'foo/woo/bar'
-    chroot_path = os.path.join(constants.CHROOT_SOURCE_ROOT, subpath)
-    path = os.path.join(constants.SOURCE_ROOT, subpath)
-    self.assertEqual(cros_build_lib.FromChrootPath(chroot_path), path)
-
-    # Test that a chroot path has been converted.
-    chroot_path = '/foo/woo/bar'
-    path = os.path.join(constants.SOURCE_ROOT,
-                        constants.DEFAULT_CHROOT_DIR,
-                        chroot_path.strip(os.path.sep))
-    self.assertEqual(cros_build_lib.FromChrootPath(chroot_path), path)
-
-
 class CollectionTest(cros_test_lib.TestCase):
   """Tests for Collection helper."""
 

@@ -22,12 +22,13 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import operation
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import project_sdk
 from chromite.lib import remote_access
 from chromite.lib import workspace_lib
 
 
-_DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
+_DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 
 
@@ -347,7 +348,7 @@ class RemoteDeviceUpdater(object):
       clobber: Clobber stateful partition (defaults to False).
     """
     # Copy latest stateful_update to device.
-    stateful_update_bin = cros_build_lib.FromChrootPath(
+    stateful_update_bin = path_util.FromChrootPath(
         self.STATEFUL_UPDATE_BIN)
     device.CopyToWorkDir(stateful_update_bin)
     msg = 'Updating stateful partition'

@@ -20,6 +20,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import timeout_util
 
 
@@ -203,7 +204,7 @@ def PatchChromeEbuildAFDOFile(ebuild_file, arch_profiles):
     ebuild_file: path of the ebuild file within the chroot.
     arch_profiles: {arch: afdo_file} pairs to put into the ebuild.
   """
-  original_ebuild = cros_build_lib.FromChrootPath(ebuild_file)
+  original_ebuild = path_util.FromChrootPath(ebuild_file)
   modified_ebuild = '%s.new' % original_ebuild
 
   arch_patterns = {}
@@ -280,7 +281,7 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
   cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True,
                             extra_env=ebuild_gs_dir, print_cmd=True)
 
-  ebuild_dir = cros_build_lib.FromChrootPath(os.path.dirname(ebuild_file))
+  ebuild_dir = path_util.FromChrootPath(os.path.dirname(ebuild_file))
   git.RunGit(ebuild_dir, ['add', 'Manifest'])
 
   # Check if anything changed compared to the previous version.

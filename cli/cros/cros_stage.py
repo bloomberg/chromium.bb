@@ -18,11 +18,12 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper
 from chromite.lib import gs
-from chromite.lib import remote_access
 from chromite.lib import osutils
+from chromite.lib import path_util
+from chromite.lib import remote_access
 
 
-DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
+DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 MOBLAB_STATIC_DIR = '/mnt/moblab/static'
 MOBLAB_TMP_DIR = os.path.join(MOBLAB_STATIC_DIR, 'tmp')
