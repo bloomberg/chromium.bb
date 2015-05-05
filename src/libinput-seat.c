@@ -100,6 +100,14 @@ device_added(struct udev_input *input, struct libinput_device *libinput_device)
 }
 
 static void
+device_removed(struct udev_input *input, struct libinput_device *libinput_device)
+{
+	struct evdev_device *device;
+	device = libinput_device_get_user_data(libinput_device);
+	evdev_device_destroy(device);
+}
+
+static void
 udev_seat_remove_devices(struct udev_seat *seat)
 {
 	struct evdev_device *device, *next;
@@ -127,7 +135,6 @@ udev_input_process_event(struct libinput_event *event)
 	struct libinput_device *libinput_device =
 		libinput_event_get_device(event);
 	struct udev_input *input = libinput_get_user_data(libinput);
-	struct evdev_device *device;
 	int handled = 1;
 
 	switch (libinput_event_get_type(event)) {
@@ -135,8 +142,7 @@ udev_input_process_event(struct libinput_event *event)
 		device_added(input, libinput_device);
 		break;
 	case LIBINPUT_EVENT_DEVICE_REMOVED:
-		device = libinput_device_get_user_data(libinput_device);
-		evdev_device_destroy(device);
+		device_removed(input, libinput_device);
 		break;
 	default:
 		handled = 0;
