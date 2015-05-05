@@ -683,10 +683,10 @@ ClientRect* Internals::boundingBox(Element* element)
     ASSERT(element);
 
     element->document().updateLayoutIgnorePendingStylesheets();
-    LayoutObject* renderer = element->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = element->layoutObject();
+    if (!layoutObject)
         return ClientRect::create();
-    return ClientRect::create(renderer->absoluteBoundingBoxRectIgnoringTransforms());
+    return ClientRect::create(layoutObject->absoluteBoundingBoxRectIgnoringTransforms());
 }
 
 unsigned Internals::markerCountForNode(Node* node, const String& markerType, ExceptionState& exceptionState)
@@ -1271,8 +1271,8 @@ static void accumulateLayerRectList(DeprecatedPaintLayerCompositor* compositor, 
         mergeRects(layerRects);
         String layerType;
         IntSize layerOffset;
-        DeprecatedPaintLayer* renderLayer = findLayerForGraphicsLayer(compositor->rootLayer(), graphicsLayer, &layerOffset, &layerType);
-        Node* node = renderLayer ? renderLayer->layoutObject()->node() : 0;
+        DeprecatedPaintLayer* paintLayer = findLayerForGraphicsLayer(compositor->rootLayer(), graphicsLayer, &layerOffset, &layerType);
+        Node* node = paintLayer ? paintLayer->layoutObject()->node() : 0;
         for (size_t i = 0; i < layerRects.size(); ++i) {
             if (!layerRects[i].isEmpty()) {
                 rects->append(node, layerType, layerOffset.width(), layerOffset.height(), ClientRect::create(layerRects[i]));
@@ -1506,19 +1506,19 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
     ASSERT(element1 && element2);
     element1->document().view()->updateLayoutAndStyleForPainting();
 
-    LayoutObject* renderer1 = element1->layoutObject();
-    LayoutObject* renderer2 = element2->layoutObject();
-    if (!renderer1 || !renderer1->isBox()) {
-        exceptionState.throwDOMException(InvalidAccessError, renderer1 ? "The first provided element's renderer is not a box." : "The first provided element has no renderer.");
+    LayoutObject* layoutObject1 = element1->layoutObject();
+    LayoutObject* layoutObject2 = element2->layoutObject();
+    if (!layoutObject1 || !layoutObject1->isBox()) {
+        exceptionState.throwDOMException(InvalidAccessError, layoutObject1 ? "The first provided element's layoutObject is not a box." : "The first provided element has no layoutObject.");
         return false;
     }
-    if (!renderer2 || !renderer2->isBox()) {
-        exceptionState.throwDOMException(InvalidAccessError, renderer2 ? "The second provided element's renderer is not a box." : "The second provided element has no renderer.");
+    if (!layoutObject2 || !layoutObject2->isBox()) {
+        exceptionState.throwDOMException(InvalidAccessError, layoutObject2 ? "The second provided element's layoutObject is not a box." : "The second provided element has no layoutObject.");
         return false;
     }
 
-    DeprecatedPaintLayer* layer1 = toLayoutBox(renderer1)->layer();
-    DeprecatedPaintLayer* layer2 = toLayoutBox(renderer2)->layer();
+    DeprecatedPaintLayer* layer1 = toLayoutBox(layoutObject1)->layer();
+    DeprecatedPaintLayer* layer2 = toLayoutBox(layoutObject2)->layer();
     if (!layer1 || !layer2) {
         exceptionState.throwDOMException(InvalidAccessError, String::format("No DeprecatedPaintLayer can be obtained from the %s provided element.", layer1 ? "second" : "first"));
         return false;
@@ -1545,13 +1545,13 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
     ASSERT(element);
     element->document().updateLayout();
 
-    LayoutObject* renderer = element->layoutObject();
-    if (!renderer || !renderer->isBox()) {
-        exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
+    LayoutObject* layoutObject = element->layoutObject();
+    if (!layoutObject || !layoutObject->isBox()) {
+        exceptionState.throwDOMException(InvalidAccessError, layoutObject ? "The provided element's layoutObject is not a box." : "The provided element has no layoutObject.");
         return String();
     }
 
-    DeprecatedPaintLayer* layer = toLayoutBox(renderer)->layer();
+    DeprecatedPaintLayer* layer = toLayoutBox(layoutObject)->layer();
     if (!layer
         || !layer->hasCompositedDeprecatedPaintLayerMapping()
         || !layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()) {
@@ -1989,11 +1989,11 @@ String Internals::getImageSourceURL(Element* element)
 String Internals::selectMenuListText(HTMLSelectElement* select)
 {
     ASSERT(select);
-    LayoutObject* renderer = select->layoutObject();
-    if (!renderer || !renderer->isMenuList())
+    LayoutObject* layoutObject = select->layoutObject();
+    if (!layoutObject || !layoutObject->isMenuList())
         return String();
 
-    LayoutMenuList* menuList = toLayoutMenuList(renderer);
+    LayoutMenuList* menuList = toLayoutMenuList(layoutObject);
     return menuList->text();
 }
 
@@ -2005,11 +2005,11 @@ bool Internals::isSelectPopupVisible(Node* node)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    LayoutObject* renderer = select.layoutObject();
-    if (!renderer || !renderer->isMenuList())
+    LayoutObject* layoutObject = select.layoutObject();
+    if (!layoutObject || !layoutObject->isMenuList())
         return false;
 
-    LayoutMenuList* menuList = toLayoutMenuList(renderer);
+    LayoutMenuList* menuList = toLayoutMenuList(layoutObject);
     return menuList->popupIsVisible();
 }
 
@@ -2020,11 +2020,11 @@ bool Internals::selectPopupItemStyleIsRtl(Node* node, int itemIndex)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    LayoutObject* renderer = select.layoutObject();
-    if (!renderer || !renderer->isMenuList())
+    LayoutObject* layoutObject = select.layoutObject();
+    if (!layoutObject || !layoutObject->isMenuList())
         return false;
 
-    LayoutMenuList& menuList = toLayoutMenuList(*renderer);
+    LayoutMenuList& menuList = toLayoutMenuList(*layoutObject);
     PopupMenuStyle itemStyle = menuList.itemStyle(itemIndex);
     return itemStyle.textDirection() == RTL;
 }
@@ -2036,11 +2036,11 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
 
     HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    LayoutObject* renderer = select.layoutObject();
-    if (!renderer || !renderer->isMenuList())
+    LayoutObject* layoutObject = select.layoutObject();
+    if (!layoutObject || !layoutObject->isMenuList())
         return false;
 
-    LayoutMenuList& menuList = toLayoutMenuList(*renderer);
+    LayoutMenuList& menuList = toLayoutMenuList(*layoutObject);
     PopupMenuStyle itemStyle = menuList.itemStyle(itemIndex);
     return itemStyle.font().fontMetrics().height();
 }

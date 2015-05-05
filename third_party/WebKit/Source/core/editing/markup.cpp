@@ -151,7 +151,7 @@ static inline HTMLElement* ancestorToRetainStructureAndAppearance(Node* commonAn
     return ancestorToRetainStructureAndAppearanceForBlock(enclosingBlock(commonAncestor));
 }
 
-static inline HTMLElement* ancestorToRetainStructureAndAppearanceWithNoRenderer(Node* commonAncestor)
+static inline HTMLElement* ancestorToRetainStructureAndAppearanceWithNoLayoutObject(Node* commonAncestor)
 {
     HTMLElement* commonAncestorBlock = toHTMLElement(enclosingNodeOfType(firstPositionInOrBeforeNode(commonAncestor), isHTMLBlockElement));
     return ancestorToRetainStructureAndAppearanceForBlock(commonAncestorBlock);
@@ -354,7 +354,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
         positionBeforeNode(nodeAfterContext.get()).parentAnchoredEquivalent());
 
     Node* commonAncestor = range->commonAncestorContainer();
-    HTMLElement* specialCommonAncestor = ancestorToRetainStructureAndAppearanceWithNoRenderer(commonAncestor);
+    HTMLElement* specialCommonAncestor = ancestorToRetainStructureAndAppearanceWithNoLayoutObject(commonAncestor);
 
     // When there's a special common ancestor outside of the fragment, we must include it as well to
     // preserve the structure and appearance of the fragment. For example, if the fragment contains

@@ -129,9 +129,9 @@ void LinkHighlight::attachLinkHighlightToCompositingLayer(const LayoutBoxModelOb
     }
 }
 
-static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, LayoutObject* targetRenderer, const LayoutBoxModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
+static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, LayoutObject* targetLayoutObject, const LayoutBoxModelObject* paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
 {
-    ASSERT(targetRenderer);
+    ASSERT(targetLayoutObject);
     ASSERT(paintInvalidationContainer);
     for (unsigned i = 0; i < 4; ++i) {
         IntPoint point;
@@ -143,7 +143,7 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         }
 
         // FIXME: this does not need to be absolute, just in the paint invalidation container's space.
-        point = targetRenderer->frame()->view()->contentsToRootFrame(point);
+        point = targetLayoutObject->frame()->view()->contentsToRootFrame(point);
         point = paintInvalidationContainer->frame()->view()->rootFrameToContents(point);
         FloatPoint floatPoint = paintInvalidationContainer->absoluteToLocal(point, UseTransforms);
         DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
@@ -172,19 +172,19 @@ void LinkHighlight::computeQuads(const Node& node, Vector<FloatQuad>& outQuads) 
     if (!node.layoutObject())
         return;
 
-    LayoutObject* renderer = node.layoutObject();
+    LayoutObject* layoutObject = node.layoutObject();
 
     // For inline elements, absoluteQuads will return a line box based on the line-height
     // and font metrics, which is technically incorrect as replaced elements like images
     // should use their intristic height and expand the linebox  as needed. To get an
     // appropriately sized highlight we descend into the children and have them add their
     // boxes.
-    if (renderer->isLayoutInline()) {
+    if (layoutObject->isLayoutInline()) {
         for (Node* child = LayoutTreeBuilderTraversal::firstChild(node); child; child = LayoutTreeBuilderTraversal::nextSibling(*child))
             computeQuads(*child, outQuads);
     } else {
         // FIXME: this does not need to be absolute, just in the paint invalidation container's space.
-        renderer->absoluteQuads(outQuads);
+        layoutObject->absoluteQuads(outQuads);
     }
 }
 
@@ -333,8 +333,8 @@ void LinkHighlight::updateGeometry()
 
     m_geometryNeedsUpdate = false;
 
-    bool hasRenderer = m_node && m_node->layoutObject();
-    const LayoutBoxModelObject* paintInvalidationContainer = hasRenderer ? m_node->layoutObject()->containerForPaintInvalidation() : 0;
+    bool hasLayoutObject = m_node && m_node->layoutObject();
+    const LayoutBoxModelObject* paintInvalidationContainer = hasLayoutObject ? m_node->layoutObject()->containerForPaintInvalidation() : 0;
     if (paintInvalidationContainer)
         attachLinkHighlightToCompositingLayer(paintInvalidationContainer);
     if (paintInvalidationContainer && computeHighlightLayerPathAndPosition(paintInvalidationContainer)) {
@@ -344,7 +344,7 @@ void LinkHighlight::updateGeometry()
 
         if (m_currentGraphicsLayer && m_currentGraphicsLayer->isTrackingPaintInvalidations())
             m_currentGraphicsLayer->trackPaintInvalidationRect(FloatRect(layer()->position().x, layer()->position().y, layer()->bounds().width, layer()->bounds().height));
-    } else if (!hasRenderer) {
+    } else if (!hasLayoutObject) {
         clearGraphicsLayerLinkHighlightPointer();
         releaseResources();
     }

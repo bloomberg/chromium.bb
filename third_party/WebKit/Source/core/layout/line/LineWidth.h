@@ -64,7 +64,7 @@ public:
     void shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject*);
     void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
     void commit();
-    void applyOverhang(LayoutRubyRun*, LayoutObject* startRenderer, LayoutObject* endRenderer);
+    void applyOverhang(LayoutRubyRun*, LayoutObject* startLayoutObject, LayoutObject* endLayoutObject);
     void fitBelowFloats(bool isFirstLine = false);
     void setTrailingWhitespaceWidth(float width) { m_trailingWhitespaceWidth = width; }
 

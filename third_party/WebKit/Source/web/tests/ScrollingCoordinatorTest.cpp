@@ -86,7 +86,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        DeprecatedPaintLayerCompositor* compositor = frame()->contentRenderer()->compositor();
+        DeprecatedPaintLayerCompositor* compositor = frame()->contentLayoutObject()->compositor();
         ASSERT(compositor);
         ASSERT(compositor->scrollLayer());
 

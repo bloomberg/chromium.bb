@@ -66,7 +66,7 @@ protected:
     CaretVisibility caretVisibility() const { return m_caretVisibility; }
 
 protected:
-    static LayoutBlock* caretRenderer(Node*);
+    static LayoutBlock* caretLayoutObject(Node*);
     static void invalidateLocalCaretRect(Node*, const LayoutRect&);
 
 private:
@@ -80,7 +80,7 @@ class DragCaretController final : public NoBaseWillBeGarbageCollected<DragCaretC
 public:
     static PassOwnPtrWillBeRawPtr<DragCaretController> create();
 
-    LayoutBlock* caretRenderer() const;
+    LayoutBlock* caretLayoutObject() const;
     void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
 
     bool isContentEditable() const { return m_position.rootEditableElement(); }

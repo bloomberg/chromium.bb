@@ -174,12 +174,12 @@ Node* SmartClip::findBestOverlappingNode(Node* rootNode, const IntRect& cropRect
             continue;
         }
 
-        LayoutObject* renderer = node->layoutObject();
-        if (renderer && !nodeRect.isEmpty()) {
-            if (renderer->isText()
-                || renderer->isLayoutImage()
+        LayoutObject* layoutObject = node->layoutObject();
+        if (layoutObject && !nodeRect.isEmpty()) {
+            if (layoutObject->isText()
+                || layoutObject->isLayoutImage()
                 || node->isFrameOwnerElement()
-                || (renderer->style()->hasBackgroundImage() && !shouldSkipBackgroundImage(node))) {
+                || (layoutObject->style()->hasBackgroundImage() && !shouldSkipBackgroundImage(node))) {
                 if (resizedCropRect.intersects(nodeRect)) {
                     minNode = minNodeContainsNodes(minNode, node);
                 } else {
@@ -208,8 +208,8 @@ bool SmartClip::shouldSkipBackgroundImage(Node* node)
     // image out of a CSS background, you're probably going to specify a height
     // or a width. On the other hand, if we've got a legit background image,
     // it's very likely the height or the width will be set to auto.
-    LayoutObject* renderer = node->layoutObject();
-    if (renderer && (renderer->style()->logicalHeight().isAuto() || renderer->style()->logicalWidth().isAuto()))
+    LayoutObject* layoutObject = node->layoutObject();
+    if (layoutObject && (layoutObject->style()->logicalHeight().isAuto() || layoutObject->style()->logicalWidth().isAuto()))
         return true;
 
     return false;

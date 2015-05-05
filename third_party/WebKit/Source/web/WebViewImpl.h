@@ -632,7 +632,7 @@ private:
     StorageClientImpl m_storageClientImpl;
 
     WebSize m_size;
-    // If true, automatically resize the render view around its content.
+    // If true, automatically resize the layout view around its content.
     bool m_shouldAutoResize;
     // The lower bound on the size when auto-resizing.
     IntSize m_minAutoSize;

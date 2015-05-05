@@ -59,7 +59,7 @@ public:
     int getCharNumAtPosition(PassRefPtrWillBeRawPtr<SVGPointTearOff>, ExceptionState&);
     void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);
 
-    static SVGTextContentElement* elementFromRenderer(LayoutObject*);
+    static SVGTextContentElement* elementFromLayoutObject(LayoutObject*);
 
     SVGAnimatedLength* textLength() { return m_textLength.get(); }
     bool textLengthIsSpecifiedByUser() { return m_textLengthIsSpecifiedByUser; }

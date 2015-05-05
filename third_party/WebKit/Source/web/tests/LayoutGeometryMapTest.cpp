@@ -90,7 +90,7 @@ protected:
         return element->layoutBox();
     }
 
-    static const LayoutBoxModelObject* getRenderContainer(WebView* webView, const WTF::AtomicString &elementId)
+    static const LayoutBoxModelObject* getLayoutContainer(WebView* webView, const WTF::AtomicString &elementId)
     {
         LayoutBox* rb = getLayoutBox(webView, elementId);
         if (!rb)
@@ -101,7 +101,7 @@ protected:
         return compositingLayer->layoutObject();
     }
 
-    static const LayoutBoxModelObject* getFrameRenderContainer(const char* frameId, WebView* webView, const WTF::AtomicString &elementId)
+    static const LayoutBoxModelObject* getFrameLayoutContainer(const char* frameId, WebView* webView, const WTF::AtomicString &elementId)
     {
         LayoutBox* rb = getFrameElement(frameId, webView, elementId);
         if (!rb)
@@ -243,22 +243,22 @@ TEST_F(LayoutGeometryMapTest, FixedGeometryTest)
     EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "InnerDiv"), 0);
-    EXPECT_EQ(FloatPoint(20.0f, 14.0f), rgm.mapToContainer(point, getRenderContainer(webView, "CenterDiv")));
+    EXPECT_EQ(FloatPoint(20.0f, 14.0f), rgm.mapToContainer(point, getLayoutContainer(webView, "CenterDiv")));
     EXPECT_EQ(FloatQuad(FloatRect(20.0f, 14.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, nullptr));
 
     rgm.pushMappingsToAncestor(getLayoutBox(webView, "OtherDiv"), getLayoutBox(webView, "InnerDiv"));
-    EXPECT_EQ(FloatPoint(21.0f, 20.0f), rgm.mapToContainer(point, getRenderContainer(webView, "CenterDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 20.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, getRenderContainer(webView, "CenterDiv")));
+    EXPECT_EQ(FloatPoint(21.0f, 20.0f), rgm.mapToContainer(point, getLayoutContainer(webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 20.0f, 15.0f, 25.0f)), rgm.mapToContainer(rect, getLayoutContainer(webView, "CenterDiv")));
 
-    EXPECT_EQ(FloatPoint(21.0f, 20.0f), rgm.mapToContainer(point, getRenderContainer(webView, "InnerDiv")));
+    EXPECT_EQ(FloatPoint(21.0f, 20.0f), rgm.mapToContainer(point, getLayoutContainer(webView, "InnerDiv")));
     EXPECT_EQ(FloatPoint(21.0f, 20.0f), rgm.mapToContainer(point, nullptr));
 
     point = FloatPoint(10.0f, 25.0f);
     rect = FloatRect(22.0f, 15.2f, 15.3f, 0.0f);
-    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, getRenderContainer(webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, getLayoutContainer(webView, "CenterDiv")));
 
-    EXPECT_EQ(FloatPoint(31.0f, 45.0f), rgm.mapToContainer(point, getRenderContainer(webView, "InnerDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, getRenderContainer(webView, "InnerDiv")));
+    EXPECT_EQ(FloatPoint(31.0f, 45.0f), rgm.mapToContainer(point, getLayoutContainer(webView, "InnerDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, getLayoutContainer(webView, "InnerDiv")));
 
     EXPECT_EQ(FloatPoint(31.0f, 45.0f), rgm.mapToContainer(point, nullptr));
     EXPECT_EQ(FloatQuad(FloatRect(43.0f, 35.2f, 15.3f, 0.0f)), rgm.mapToContainer(rect, nullptr));
@@ -315,22 +315,22 @@ TEST_F(LayoutGeometryMapTest, IframeTest)
 
     rgm.pushMappingsToAncestor(getFrameElement("test_frame", webView, "InnerDiv"), 0);
     rgmNoFrame.pushMappingsToAncestor(getFrameElement("test_frame", webView, "InnerDiv"), 0);
-    EXPECT_EQ(FloatPoint(21.0f, 6.0f), rgm.mapToContainer(point, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatPoint(21.0f, 6.0f), rgmNoFrame.mapToContainer(point, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatPoint(21.0f, 6.0f), rgm.mapToContainer(point, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatPoint(21.0f, 6.0f), rgmNoFrame.mapToContainer(point, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
 
-    rgm.pushMappingsToAncestor(getFrameElement("test_frame", webView, "OtherDiv"), getFrameRenderContainer("test_frame", webView, "InnerDiv"));
-    rgmNoFrame.pushMappingsToAncestor(getFrameElement("test_frame", webView, "OtherDiv"), getFrameRenderContainer("test_frame", webView, "InnerDiv"));
-    EXPECT_EQ(FloatPoint(22.0f, 12.0f), rgm.mapToContainer(point, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatPoint(22.0f, 12.0f), rgmNoFrame.mapToContainer(point, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameRenderContainer("test_frame", webView, "CenterDiv")));
+    rgm.pushMappingsToAncestor(getFrameElement("test_frame", webView, "OtherDiv"), getFrameLayoutContainer("test_frame", webView, "InnerDiv"));
+    rgmNoFrame.pushMappingsToAncestor(getFrameElement("test_frame", webView, "OtherDiv"), getFrameLayoutContainer("test_frame", webView, "InnerDiv"));
+    EXPECT_EQ(FloatPoint(22.0f, 12.0f), rgm.mapToContainer(point, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatPoint(22.0f, 12.0f), rgmNoFrame.mapToContainer(point, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(22.0f, 12.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "CenterDiv")));
 
-    EXPECT_EQ(FloatPoint(1.0f, 6.0f), rgm.mapToContainer(point, getFrameRenderContainer("test_frame", webView, "InnerDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameRenderContainer("test_frame", webView, "InnerDiv")));
-    EXPECT_EQ(FloatPoint(1.0f, 6.0f), rgmNoFrame.mapToContainer(point, getFrameRenderContainer("test_frame", webView, "InnerDiv")));
-    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameRenderContainer("test_frame", webView, "InnerDiv")));
+    EXPECT_EQ(FloatPoint(1.0f, 6.0f), rgm.mapToContainer(point, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgm.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
+    EXPECT_EQ(FloatPoint(1.0f, 6.0f), rgmNoFrame.mapToContainer(point, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
+    EXPECT_EQ(FloatQuad(FloatRect(1.0f, 6.0f, 1.0f, 2.0f)), rgmNoFrame.mapToContainer(rect, getFrameLayoutContainer("test_frame", webView, "InnerDiv")));
 
     EXPECT_NEAR(88.8975f, rgm.mapToContainer(point, nullptr).x(), 0.0001f);
     EXPECT_NEAR(8.1532f, rgm.mapToContainer(point, nullptr).y(), 0.0001f);

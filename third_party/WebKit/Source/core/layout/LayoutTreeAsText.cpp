@@ -720,7 +720,7 @@ String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior)
     if (!(behavior & LayoutAsTextDontUpdateLayout))
         frame->document()->updateLayout();
 
-    LayoutObject* layoutObject = frame->contentRenderer();
+    LayoutObject* layoutObject = frame->contentLayoutObject();
     if (!layoutObject || !layoutObject->isBox())
         return String();
 

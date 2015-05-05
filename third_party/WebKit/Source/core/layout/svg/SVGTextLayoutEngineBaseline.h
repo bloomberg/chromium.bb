@@ -39,12 +39,12 @@ public:
     SVGTextLayoutEngineBaseline(const Font&, float effectiveZoom);
 
     float calculateBaselineShift(const ComputedStyle&) const;
-    float calculateAlignmentBaselineShift(bool isVerticalText, const LayoutObject* textRenderer) const;
+    float calculateAlignmentBaselineShift(bool isVerticalText, const LayoutObject* textLayoutObject) const;
     float calculateGlyphOrientationAngle(bool isVerticalText, const SVGComputedStyle&, const UChar& character) const;
     float calculateGlyphAdvanceAndOrientation(bool isVerticalText, const SVGTextMetrics&, float angle, float& xOrientationShift, float& yOrientationShift) const;
 
 private:
-    EAlignmentBaseline dominantBaselineToAlignmentBaseline(bool isVerticalText, const LayoutObject* textRenderer) const;
+    EAlignmentBaseline dominantBaselineToAlignmentBaseline(bool isVerticalText, const LayoutObject* textLayoutObject) const;
 
     const Font& m_font;
 

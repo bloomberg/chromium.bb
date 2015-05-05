@@ -72,12 +72,12 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
             continue;
 
         Node* container = it.currentContainer();
-        LayoutObject* renderer = container->layoutObject();
-        ASSERT(renderer);
-        if (!renderer)
+        LayoutObject* layoutObject = container->layoutObject();
+        ASSERT(layoutObject);
+        if (!layoutObject)
             continue;
 
-        const ComputedStyle* style = renderer->style();
+        const ComputedStyle* style = layoutObject->style();
         const FontPlatformData& fontPlatformData = style->font().primaryFont()->platformData();
         NSFont* font = toNSFont(fontPlatformData.ctFont());
         // If the platform font can't be loaded, it's likely that the site is

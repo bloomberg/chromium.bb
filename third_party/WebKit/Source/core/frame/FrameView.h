@@ -254,11 +254,11 @@ public:
     DoubleSize scrollElementToRect(Element*, const FloatRect&);
     void scrollContentsIfNeededRecursive();
 
-    // Methods to convert points and rects between the coordinate space of the renderer, and this view.
-    IntRect convertFromRenderer(const LayoutObject&, const IntRect&) const;
-    IntRect convertToRenderer(const LayoutObject&, const IntRect&) const;
-    IntPoint convertFromRenderer(const LayoutObject&, const IntPoint&) const;
-    IntPoint convertToRenderer(const LayoutObject&, const IntPoint&) const;
+    // Methods to convert points and rects between the coordinate space of the layoutObject, and this view.
+    IntRect convertFromLayoutObject(const LayoutObject&, const IntRect&) const;
+    IntRect convertToLayoutObject(const LayoutObject&, const IntRect&) const;
+    IntPoint convertFromLayoutObject(const LayoutObject&, const IntPoint&) const;
+    IntPoint convertToLayoutObject(const LayoutObject&, const IntPoint&) const;
 
     bool isFrameViewScrollCorner(LayoutScrollbarPart* scrollCorner) const { return m_scrollCorner == scrollCorner; }
 
@@ -653,7 +653,7 @@ private:
     virtual void contentsResized() override;
     void scrollbarExistenceDidChange();
 
-    // Override Widget methods to do point conversion via renderers, in order to
+    // Override Widget methods to do point conversion via layoutObjects, in order to
     // take transforms into account.
     virtual IntRect convertToContainingView(const IntRect&) const override;
     virtual IntRect convertFromContainingView(const IntRect&) const override;
@@ -792,7 +792,7 @@ private:
 
     RefPtrWillBeMember<Node> m_maintainScrollPositionAnchor;
 
-    // Renderer to hold our custom scroll corner.
+    // layoutObject to hold our custom scroll corner.
     LayoutScrollbarPart* m_scrollCorner;
 
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;

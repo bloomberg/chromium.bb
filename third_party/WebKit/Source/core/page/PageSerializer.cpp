@@ -338,7 +338,7 @@ void PageSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer>
     m_resourceURLs.add(url);
 }
 
-void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* imageRenderer, const KURL& url)
+void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* imageLayoutObject, const KURL& url)
 {
     if (!shouldAddURL(url))
         return;
@@ -346,7 +346,7 @@ void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* ima
     if (!image || image->image() == Image::nullImage() || image->errorOccurred())
         return;
 
-    RefPtr<SharedBuffer> data = imageRenderer ? image->imageForLayoutObject(imageRenderer)->data() : nullptr;
+    RefPtr<SharedBuffer> data = imageLayoutObject ? image->imageForLayoutObject(imageLayoutObject)->data() : nullptr;
     if (!data)
         data = image->image()->data();
 

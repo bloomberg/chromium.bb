@@ -96,7 +96,7 @@ void PopupMenuChromium::disconnectClient()
     m_popupClient = 0;
 #if ENABLE(OILPAN)
     // Cannot be done during finalization, so instead done when the
-    // render object is destroyed and disconnected.
+    // layout object is destroyed and disconnected.
     //
     // FIXME: do this always, regardless of ENABLE(OILPAN).
     dispose();

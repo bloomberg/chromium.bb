@@ -147,7 +147,7 @@ public:
     Position end() const { return m_selection.end(); }
 
     // Return the renderer that is responsible for painting the caret (in the selection start node)
-    LayoutBlock* caretRenderer() const;
+    LayoutBlock* caretLayoutObject() const;
 
     // Bounds of (possibly transformed) caret in absolute coords
     IntRect absoluteCaretBounds();
@@ -205,7 +205,7 @@ public:
     enum EndPointsAdjustmentMode { AdjustEndpointsAtBidiBoundary, DoNotAdjsutEndpoints };
     void setNonDirectionalSelectionIfNeeded(const VisibleSelection&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
     void setFocusedNodeIfNeeded();
-    void notifyRendererOfSelectionChange(EUserTriggered);
+    void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
     EditingStyle* typingStyle() const;
     void setTypingStyle(PassRefPtrWillBeRawPtr<EditingStyle>);

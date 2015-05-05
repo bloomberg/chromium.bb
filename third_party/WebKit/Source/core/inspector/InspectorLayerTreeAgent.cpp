@@ -256,7 +256,7 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
 
 DeprecatedPaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCompositor()
 {
-    LayoutView* layoutView = m_pageAgent->inspectedFrame()->contentRenderer();
+    LayoutView* layoutView = m_pageAgent->inspectedFrame()->contentLayoutObject();
     DeprecatedPaintLayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
     return compositor;
 }

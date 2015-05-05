@@ -332,11 +332,11 @@ void TextIteratorAlgorithm<Strategy>::advance()
                 while (!next && parentNode) {
                     if ((pastEnd && parentNode == m_endContainer) || Strategy::isDescendantOf(*m_endContainer, *parentNode))
                         return;
-                    bool haveRenderer = m_node->layoutObject();
+                    bool haveLayoutObject = m_node->layoutObject();
                     m_node = parentNode;
                     m_fullyClippedStack.pop();
                     parentNode = Strategy::parent(*m_node);
-                    if (haveRenderer)
+                    if (haveLayoutObject)
                         exitNode();
                     if (m_textState.positionNode()) {
                         m_iterationProgress = HandledChildren;
@@ -594,11 +594,11 @@ void TextIteratorAlgorithm<Strategy>::handleTextNodeFirstLetter(LayoutTextFragme
     if (!firstLetterElement)
         return;
 
-    LayoutObject* pseudoRenderer = firstLetterElement->layoutObject();
-    if (pseudoRenderer->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
+    LayoutObject* pseudoLayoutObject = firstLetterElement->layoutObject();
+    if (pseudoLayoutObject->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
         return;
 
-    LayoutObject* firstLetter = pseudoRenderer->slowFirstChild();
+    LayoutObject* firstLetter = pseudoLayoutObject->slowFirstChild();
     ASSERT(firstLetter);
 
     m_remainingTextBox = m_textBox;

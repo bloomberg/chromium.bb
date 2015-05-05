@@ -186,7 +186,7 @@ void DeprecatedPaintLayerCompositor::updateIfNeededRecursive()
 {
     for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            toLocalFrame(child)->contentRenderer()->compositor()->updateIfNeededRecursive();
+            toLocalFrame(child)->contentLayoutObject()->compositor()->updateIfNeededRecursive();
     }
 
     TRACE_EVENT0("blink", "DeprecatedPaintLayerCompositor::updateIfNeededRecursive");
@@ -219,7 +219,7 @@ void DeprecatedPaintLayerCompositor::updateIfNeededRecursive()
     assertNoUnresolvedDirtyBits();
     for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
-            toLocalFrame(child)->contentRenderer()->compositor()->assertNoUnresolvedDirtyBits();
+            toLocalFrame(child)->contentLayoutObject()->compositor()->assertNoUnresolvedDirtyBits();
     }
 #endif
 }

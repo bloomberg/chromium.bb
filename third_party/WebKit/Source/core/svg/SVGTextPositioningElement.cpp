@@ -80,7 +80,7 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     SVGTextContentElement::svgAttributeChanged(attrName);
 }
 
-SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(LayoutObject& layoutObject)
+SVGTextPositioningElement* SVGTextPositioningElement::elementFromLayoutObject(LayoutObject& layoutObject)
 {
     if (!layoutObject.isSVGText() && !layoutObject.isSVGInline())
         return nullptr;

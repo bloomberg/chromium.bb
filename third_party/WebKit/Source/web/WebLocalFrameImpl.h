@@ -357,7 +357,7 @@ private:
     OwnPtrWillBeMember<InspectorOverlay> m_inspectorOverlay;
     OwnPtrWillBeMember<WebDevToolsAgentImpl> m_devToolsAgent;
 
-    // This is set if the frame is the root of a local frame tree, and requires a widget for rendering.
+    // This is set if the frame is the root of a local frame tree, and requires a widget for layout.
     WebFrameWidgetImpl* m_frameWidget;
 
     WebFrameClient* m_client;

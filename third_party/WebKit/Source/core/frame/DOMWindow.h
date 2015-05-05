@@ -224,7 +224,7 @@ protected:
 
     // Set to true when close() has been called. Needed for
     // |window.closed| determinism; having it return 'true'
-    // only after the render widget's deferred window close
+    // only after the layout widget's deferred window close
     // operation has been performed, exposes (confusing)
     // implementation details to scripts.
     bool m_windowIsClosing;

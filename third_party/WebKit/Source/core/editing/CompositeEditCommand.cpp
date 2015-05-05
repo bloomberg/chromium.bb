@@ -733,19 +733,19 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtrWillBeRawPtr<Text> 
 
     document().updateLayout();
 
-    LayoutText* textRenderer = textNode->layoutObject();
-    if (!textRenderer)
+    LayoutText* textLayoutObject = textNode->layoutObject();
+    if (!textLayoutObject)
         return;
 
     Vector<InlineTextBox*> sortedTextBoxes;
     size_t sortedTextBoxesPosition = 0;
 
-    for (InlineTextBox* textBox = textRenderer->firstTextBox(); textBox; textBox = textBox->nextTextBox())
+    for (InlineTextBox* textBox = textLayoutObject->firstTextBox(); textBox; textBox = textBox->nextTextBox())
         sortedTextBoxes.append(textBox);
 
     // If there is mixed directionality text, the boxes can be out of order,
     // (like Arabic with embedded LTR), so sort them first.
-    if (textRenderer->containsReversedText())
+    if (textLayoutObject->containsReversedText())
         std::sort(sortedTextBoxes.begin(), sortedTextBoxes.end(), InlineTextBox::compareByStart);
     InlineTextBox* box = sortedTextBoxes.isEmpty() ? 0 : sortedTextBoxes[sortedTextBoxesPosition];
 

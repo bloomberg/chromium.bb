@@ -171,7 +171,7 @@ private:
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
     void setActiveStyleSheets(Document*, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&, StyleSheetsUpdateType);
 
-    void collectPlatformFontsForRenderer(LayoutText*, HashCountedSet<String>*);
+    void collectPlatformFontsForLayoutObject(LayoutText*, HashCountedSet<String>*);
 
     InspectorStyleSheet* bindStyleSheet(CSSStyleSheet*);
     String unbindStyleSheet(InspectorStyleSheet*);

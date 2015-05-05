@@ -531,9 +531,9 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
     BitArray<numCSSProperties> listedProperties;
     bool anyTransitionHadTransitionAll = false;
-    const LayoutObject* renderer = animatingElement->layoutObject();
-    if (!animationStyleRecalc && style.display() != NONE && renderer && renderer->style() && transitionData) {
-        const ComputedStyle& oldStyle = *renderer->style();
+    const LayoutObject* layoutObject = animatingElement->layoutObject();
+    if (!animationStyleRecalc && style.display() != NONE && layoutObject && layoutObject->style() && transitionData) {
+        const ComputedStyle& oldStyle = *layoutObject->style();
 
         for (size_t i = 0; i < transitionData->propertyList().size(); ++i) {
             const CSSTransitionData::TransitionProperty& transitionProperty = transitionData->propertyList()[i];

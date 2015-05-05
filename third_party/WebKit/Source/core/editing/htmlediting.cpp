@@ -774,12 +774,12 @@ bool isEmptyTableCell(const Node* node)
         return false;
 
     // Check that the table cell contains no child renderers except for perhaps a single <br>.
-    LayoutObject* childRenderer = toLayoutTableCell(renderer)->firstChild();
-    if (!childRenderer)
+    LayoutObject* childLayoutObject = toLayoutTableCell(renderer)->firstChild();
+    if (!childLayoutObject)
         return true;
-    if (!childRenderer->isBR())
+    if (!childLayoutObject->isBR())
         return false;
-    return !childRenderer->nextSibling();
+    return !childLayoutObject->nextSibling();
 }
 
 PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document& document)

@@ -374,7 +374,7 @@ void LocalFrame::setPagePopupOwner(Element& owner)
     m_pagePopupOwner = &owner;
 }
 
-LayoutView* LocalFrame::contentRenderer() const
+LayoutView* LocalFrame::contentLayoutObject() const
 {
     return document() ? document()->layoutView() : nullptr;
 }
@@ -473,10 +473,10 @@ bool LocalFrame::shouldUsePrintingLayout() const
 FloatSize LocalFrame::resizePageRectsKeepingRatio(const FloatSize& originalSize, const FloatSize& expectedSize)
 {
     FloatSize resultSize;
-    if (!contentRenderer())
+    if (!contentLayoutObject())
         return FloatSize();
 
-    if (contentRenderer()->style()->isHorizontalWritingMode()) {
+    if (contentLayoutObject()->style()->isHorizontalWritingMode()) {
         ASSERT(fabs(originalSize.width()) > std::numeric_limits<float>::epsilon());
         float ratio = originalSize.height() / originalSize.width();
         resultSize.setWidth(floorf(expectedSize.width()));
@@ -643,10 +643,10 @@ VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint)
     Node* node = result.innerNodeOrImageMapImage();
     if (!node)
         return VisiblePosition();
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
         return VisiblePosition();
-    VisiblePosition visiblePos = VisiblePosition(renderer->positionForPoint(result.localPoint()));
+    VisiblePosition visiblePos = VisiblePosition(layoutObject->positionForPoint(result.localPoint()));
     if (visiblePos.isNull())
         visiblePos = VisiblePosition(firstPositionInOrBeforeNode(node));
     return visiblePos;
@@ -659,7 +659,7 @@ Document* LocalFrame::documentAtPoint(const IntPoint& pointInRootFrame)
 
     IntPoint pt = view()->rootFrameToContents(pointInRootFrame);
 
-    if (!contentRenderer())
+    if (!contentLayoutObject())
         return nullptr;
     HitTestResult result = eventHandler().hitTestResultAtPoint(pt, HitTestRequest::ReadOnly | HitTestRequest::Active);
     return result.innerNode() ? &result.innerNode()->document() : nullptr;
@@ -803,10 +803,10 @@ void LocalFrame::clearWeakMembers(Visitor* visitor)
 
 String LocalFrame::localLayerTreeAsText(unsigned flags) const
 {
-    if (!contentRenderer())
+    if (!contentLayoutObject())
         return String();
 
-    return contentRenderer()->compositor()->layerTreeAsText(static_cast<LayerTreeFlags>(flags));
+    return contentLayoutObject()->compositor()->layerTreeAsText(static_cast<LayerTreeFlags>(flags));
 }
 
 inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)

@@ -105,11 +105,11 @@ void LineWidth::commit()
     m_uncommittedWidth = 0;
 }
 
-void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, LayoutObject* startRenderer, LayoutObject* endRenderer)
+void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, LayoutObject* startLayoutObject, LayoutObject* endLayoutObject)
 {
     int startOverhang;
     int endOverhang;
-    rubyRun->getOverhang(m_isFirstLine, startRenderer, endRenderer, startOverhang, endOverhang);
+    rubyRun->getOverhang(m_isFirstLine, startLayoutObject, endLayoutObject, startOverhang, endOverhang);
 
     startOverhang = std::min<int>(startOverhang, m_committedWidth);
     m_availableWidth += startOverhang;

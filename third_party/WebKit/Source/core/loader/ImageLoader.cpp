@@ -324,7 +324,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         m_hasPendingLoadEvent = newImage;
         m_imageComplete = !newImage;
 
-        updateRenderer();
+        updateLayoutObject();
         // If newImage exists and is cached, addClient() will result in the load event
         // being queued to fire. Ensure this happens after beforeload is dispatched.
         if (newImage)
@@ -419,7 +419,7 @@ void ImageLoader::notifyFinished(Resource* resource)
     if (m_image)
         m_image->updateImageAnimationPolicy();
 
-    updateRenderer();
+    updateLayoutObject();
 
     if (m_image && m_image->image() && m_image->image()->isSVGImage())
         toSVGImage(m_image->image())->updateUseCounters(element()->document());
@@ -456,33 +456,33 @@ void ImageLoader::notifyFinished(Resource* resource)
 
 LayoutImageResource* ImageLoader::layoutImageResource()
 {
-    LayoutObject* renderer = m_element->layoutObject();
+    LayoutObject* layoutObject = m_element->layoutObject();
 
-    if (!renderer)
+    if (!layoutObject)
         return 0;
 
     // We don't return style generated image because it doesn't belong to the ImageLoader.
     // See <https://bugs.webkit.org/show_bug.cgi?id=42840>
-    if (renderer->isImage() && !static_cast<LayoutImage*>(renderer)->isGeneratedContent())
-        return toLayoutImage(renderer)->imageResource();
+    if (layoutObject->isImage() && !static_cast<LayoutImage*>(layoutObject)->isGeneratedContent())
+        return toLayoutImage(layoutObject)->imageResource();
 
-    if (renderer->isSVGImage())
-        return toLayoutSVGImage(renderer)->imageResource();
+    if (layoutObject->isSVGImage())
+        return toLayoutSVGImage(layoutObject)->imageResource();
 
-    if (renderer->isVideo())
-        return toLayoutVideo(renderer)->imageResource();
+    if (layoutObject->isVideo())
+        return toLayoutVideo(layoutObject)->imageResource();
 
     return 0;
 }
 
-void ImageLoader::updateRenderer()
+void ImageLoader::updateLayoutObject()
 {
     LayoutImageResource* imageResource = layoutImageResource();
 
     if (!imageResource)
         return;
 
-    // Only update the renderer if it doesn't have an image or if what we have
+    // Only update the layoutObject if it doesn't have an image or if what we have
     // is a complete image.  This prevents flickering in the case where a dynamic
     // change is happening between two images.
     ImageResource* cachedImage = imageResource->cachedImage();

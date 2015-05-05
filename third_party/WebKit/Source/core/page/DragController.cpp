@@ -541,7 +541,7 @@ bool DragController::canProcessDrag(DragData* dragData)
         return false;
 
     IntPoint point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(dragData->clientPosition());
-    if (!m_page->deprecatedLocalMainFrame()->contentRenderer())
+    if (!m_page->deprecatedLocalMainFrame()->contentLayoutObject())
         return false;
 
     HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point);
@@ -629,10 +629,10 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
 
     Node* node = nullptr;
     DragSourceAction candidateDragType = DragSourceActionNone;
-    for (const LayoutObject* renderer = startNode->layoutObject(); renderer; renderer = renderer->parent()) {
-        node = renderer->nonPseudoNode();
+    for (const LayoutObject* layoutObject = startNode->layoutObject(); layoutObject; layoutObject = layoutObject->parent()) {
+        node = layoutObject->nonPseudoNode();
         if (!node) {
-            // Anonymous render blocks don't correspond to actual DOM nodes, so we skip over them
+            // Anonymous layout blocks don't correspond to actual DOM nodes, so we skip over them
             // for the purposes of finding a draggable node.
             continue;
         }
@@ -643,11 +643,11 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
             return nullptr;
         }
         if (node->isElementNode()) {
-            EUserDrag dragMode = renderer->style()->userDrag();
+            EUserDrag dragMode = layoutObject->style()->userDrag();
             if (dragMode == DRAG_NONE)
                 continue;
             // Even if the image is part of a selection, we always only drag the image in this case.
-            if (renderer->isImage()
+            if (layoutObject->isImage()
                 && src->settings()
                 && src->settings()->loadsImagesAutomatically()) {
                 dragType = DragSourceActionImage;
@@ -692,10 +692,10 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
 static ImageResource* getImageResource(Element* element)
 {
     ASSERT(element);
-    LayoutObject* renderer = element->layoutObject();
-    if (!renderer || !renderer->isImage())
+    LayoutObject* layoutObject = element->layoutObject();
+    if (!layoutObject || !layoutObject->isImage())
         return nullptr;
-    LayoutImage* image = toLayoutImage(renderer);
+    LayoutImage* image = toLayoutImage(layoutObject);
     return image->cachedImage();
 }
 
@@ -724,7 +724,7 @@ bool DragController::populateDragDataTransfer(LocalFrame* src, const DragState& 
 {
     ASSERT(dragTypeIsValid(state.m_dragType));
     ASSERT(src);
-    if (!src->view() || !src->contentRenderer())
+    if (!src->view() || !src->contentLayoutObject())
         return false;
 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
@@ -845,7 +845,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
 {
     ASSERT(dragTypeIsValid(state.m_dragType));
     ASSERT(src);
-    if (!src->view() || !src->contentRenderer())
+    if (!src->view() || !src->contentLayoutObject())
         return false;
 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);

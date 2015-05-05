@@ -62,18 +62,18 @@ ResourceLoadPriorityOptimizer::~ResourceLoadPriorityOptimizer()
 {
 }
 
-void ResourceLoadPriorityOptimizer::addLayoutObject(LayoutObject* renderer)
+void ResourceLoadPriorityOptimizer::addLayoutObject(LayoutObject* layoutObject)
 {
-    m_objects.add(renderer);
-    renderer->setHasPendingResourceUpdate(true);
+    m_objects.add(layoutObject);
+    layoutObject->setHasPendingResourceUpdate(true);
 }
 
-void ResourceLoadPriorityOptimizer::removeLayoutObject(LayoutObject* renderer)
+void ResourceLoadPriorityOptimizer::removeLayoutObject(LayoutObject* layoutObject)
 {
-    if (!renderer->hasPendingResourceUpdate())
+    if (!layoutObject->hasPendingResourceUpdate())
         return;
-    m_objects.remove(renderer);
-    renderer->setHasPendingResourceUpdate(false);
+    m_objects.remove(layoutObject);
+    layoutObject->setHasPendingResourceUpdate(false);
 }
 
 void ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities()

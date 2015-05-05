@@ -179,11 +179,11 @@ bool hasOffscreenRect(Node* node, WebFocusType type)
         break;
     }
 
-    LayoutObject* render = node->layoutObject();
-    if (!render)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
         return true;
 
-    LayoutRect rect(render->absoluteClippedOverflowRect());
+    LayoutRect rect(layoutObject->absoluteClippedOverflowRect());
     if (rect.isEmpty())
         return true;
 
@@ -282,8 +282,8 @@ bool isScrollableNode(const Node* node)
     if (!node)
         return false;
 
-    if (LayoutObject* renderer = node->layoutObject())
-        return renderer->isBox() && toLayoutBox(renderer)->canBeScrolledAndHasScrollableArea() && node->hasChildren();
+    if (LayoutObject* layoutObject = node->layoutObject())
+        return layoutObject->isBox() && toLayoutBox(layoutObject)->canBeScrolledAndHasScrollableArea() && node->hasChildren();
 
     return false;
 }

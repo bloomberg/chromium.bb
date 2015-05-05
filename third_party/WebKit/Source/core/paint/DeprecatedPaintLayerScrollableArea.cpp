@@ -312,7 +312,7 @@ IntRect DeprecatedPaintLayerScrollableArea::convertFromScrollbarToContainingView
     IntRect rect = scrollbarRect;
     rect.move(scrollbarOffset(scrollbar));
 
-    return view->frameView()->convertFromRenderer(box(), rect);
+    return view->frameView()->convertFromLayoutObject(box(), rect);
 }
 
 IntRect DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntRect& parentRect) const
@@ -321,7 +321,7 @@ IntRect DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollbar
     if (!view)
         return parentRect;
 
-    IntRect rect = view->frameView()->convertToRenderer(box(), parentRect);
+    IntRect rect = view->frameView()->convertToLayoutObject(box(), parentRect);
     rect.move(-scrollbarOffset(scrollbar));
     return rect;
 }
@@ -334,7 +334,7 @@ IntPoint DeprecatedPaintLayerScrollableArea::convertFromScrollbarToContainingVie
 
     IntPoint point = scrollbarPoint;
     point.move(scrollbarOffset(scrollbar));
-    return view->frameView()->convertFromRenderer(box(), point);
+    return view->frameView()->convertFromLayoutObject(box(), point);
 }
 
 IntPoint DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollbar(const Scrollbar* scrollbar, const IntPoint& parentPoint) const
@@ -343,7 +343,7 @@ IntPoint DeprecatedPaintLayerScrollableArea::convertFromContainingViewToScrollba
     if (!view)
         return parentPoint;
 
-    IntPoint point = view->frameView()->convertToRenderer(box(), parentPoint);
+    IntPoint point = view->frameView()->convertToLayoutObject(box(), parentPoint);
 
     point.move(-scrollbarOffset(scrollbar));
     return point;

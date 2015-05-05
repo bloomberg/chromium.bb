@@ -121,9 +121,9 @@ WebDisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) const
 
 bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) const
 {
-    ASSERT(frame && frame->contentRenderer() && frame->contentRenderer()->compositor());
+    ASSERT(frame && frame->contentLayoutObject() && frame->contentLayoutObject()->compositor());
     bool threeDEnabled = false;
-    if (LayoutView* view = frame->contentRenderer())
+    if (LayoutView* view = frame->contentLayoutObject())
         threeDEnabled = view->compositor()->hasAcceleratedCompositing();
     return threeDEnabled;
 }

@@ -45,8 +45,8 @@ class LayoutObject;
 // area of its container, which is counter-intuitive for users.
 //
 // Find-in-page coordinates are represented as normalized fractions of the main frame document with
-// the property that they are built by composing the relative position of each renderer to the maximum
-// effective layout size of its container all the way up the render tree. The resulting coordinates
+// the property that they are built by composing the relative position of each layoutObject to the maximum
+// effective layout size of its container all the way up the layout tree. The resulting coordinates
 // are scroll-independent, representing any contents scaled to the visible area of their container.
 // The provided methods support scroll:overflow and are CSS position and transform-friendly.
 

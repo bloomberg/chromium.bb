@@ -251,7 +251,7 @@ bool SVGTextContentElement::selfHasRelativeLengths() const
     return true;
 }
 
-SVGTextContentElement* SVGTextContentElement::elementFromRenderer(LayoutObject* layoutObject)
+SVGTextContentElement* SVGTextContentElement::elementFromLayoutObject(LayoutObject* layoutObject)
 {
     if (!layoutObject)
         return nullptr;

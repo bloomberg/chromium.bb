@@ -689,14 +689,14 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
     if (!targetNode)
         return false;
 
-    LayoutObject* renderer = targetNode->layoutObject();
-    if (!renderer) {
+    LayoutObject* layoutObject = targetNode->layoutObject();
+    if (!layoutObject) {
         Node* parent = ComposedTreeTraversal::parent(*targetNode);
         if (!parent)
             return false;
 
-        renderer = parent->layoutObject();
-        if (!renderer || !renderer->isListBox())
+        layoutObject = parent->layoutObject();
+        if (!layoutObject || !layoutObject->isListBox())
             return false;
     }
 
@@ -704,7 +704,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
 
     if (m_mouseDownMayStartAutoscroll && !panScrollInProgress()) {
         if (AutoscrollController* controller = autoscrollController()) {
-            controller->startAutoscrollForSelection(renderer);
+            controller->startAutoscrollForSelection(layoutObject);
             m_mouseDownMayStartAutoscroll = false;
         }
     }
@@ -725,13 +725,13 @@ void EventHandler::updateSelectionForMouseDrag()
     FrameView* view = m_frame->view();
     if (!view)
         return;
-    LayoutView* renderer = m_frame->contentRenderer();
-    if (!renderer)
+    LayoutView* layoutObject = m_frame->contentLayoutObject();
+    if (!layoutObject)
         return;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::Move);
     HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
-    renderer->hitTest(result);
+    layoutObject->hitTest(result);
     updateSelectionForMouseDrag(result);
 }
 
@@ -756,9 +756,9 @@ void EventHandler::updateSelectionForMouseDrag(const HitTestResult& hitTestResul
     // Special case to limit selection to the containing block for SVG text.
     // FIXME: Isn't there a better non-SVG-specific way to do this?
     if (Node* selectionBaseNode = newSelection.base().deprecatedNode()) {
-        if (LayoutObject* selectionBaseRenderer = selectionBaseNode->layoutObject()) {
-            if (selectionBaseRenderer->isSVGText()) {
-                if (target->layoutObject()->containingBlock() != selectionBaseRenderer->containingBlock())
+        if (LayoutObject* selectionBaseLayoutObject = selectionBaseNode->layoutObject()) {
+            if (selectionBaseLayoutObject->isSVGText()) {
+                if (target->layoutObject()->containingBlock() != selectionBaseLayoutObject->containingBlock())
                     return;
             }
         }
@@ -839,7 +839,7 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
         handled = true;
     }
 
-    m_frame->selection().notifyRendererOfSelectionChange(UserTriggered);
+    m_frame->selection().notifyLayoutObjectOfSelectionChange(UserTriggered);
 
     m_frame->selection().selectFrameElementInParentIfFullySelected();
 
@@ -853,14 +853,14 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
 
 #if OS(WIN)
 
-void EventHandler::startPanScrolling(LayoutObject* renderer)
+void EventHandler::startPanScrolling(LayoutObject* layoutObject)
 {
-    if (!renderer->isBox())
+    if (!layoutObject->isBox())
         return;
     AutoscrollController* controller = autoscrollController();
     if (!controller)
         return;
-    controller->startPanScrolling(toLayoutBox(renderer), lastKnownMousePosition());
+    controller->startPanScrolling(toLayoutBox(layoutObject), lastKnownMousePosition());
     invalidateClick();
 }
 
@@ -912,10 +912,10 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
     // mousemove events before the first layout should not lead to a premature layout()
     // happening, which could show a flash of white.
     // See also the similar code in Document::prepareMouseEvent.
-    if (!m_frame->contentRenderer() || !m_frame->view() || !m_frame->view()->didFirstLayout())
+    if (!m_frame->contentLayoutObject() || !m_frame->view() || !m_frame->view()->didFirstLayout())
         return result;
 
-    m_frame->contentRenderer()->hitTest(result);
+    m_frame->contentLayoutObject()->hitTest(result);
     if (!request.readOnly())
         m_frame->document()->updateHoverActiveState(request, result.innerElement());
 
@@ -1010,11 +1010,11 @@ static LocalFrame* subframeForTargetNode(Node* node)
     if (!node)
         return nullptr;
 
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer || !renderer->isLayoutPart())
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject || !layoutObject->isLayoutPart())
         return nullptr;
 
-    Widget* widget = toLayoutPart(renderer)->widget();
+    Widget* widget = toLayoutPart(layoutObject)->widget();
     if (!widget || !widget->isFrameView())
         return nullptr;
 
@@ -1097,12 +1097,12 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
     if (!node)
         return selectAutoCursor(result, node, iBeamCursor());
 
-    LayoutObject* renderer = node->layoutObject();
-    const ComputedStyle* style = renderer ? renderer->style() : nullptr;
+    LayoutObject* layoutObject = node->layoutObject();
+    const ComputedStyle* style = layoutObject ? layoutObject->style() : nullptr;
 
-    if (renderer) {
+    if (layoutObject) {
         Cursor overrideCursor;
-        switch (renderer->getCursor(roundedIntPoint(result.localPoint()), overrideCursor)) {
+        switch (layoutObject->getCursor(roundedIntPoint(result.localPoint()), overrideCursor)) {
         case SetCursorBasedOnStyle:
             break;
         case SetCursor:
@@ -1126,7 +1126,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             // Get hotspot and convert from logical pixels to physical pixels.
             IntPoint hotSpot = (*cursors)[i].hotSpot();
             hotSpot.scale(scale, scale);
-            IntSize size = cachedImage->imageForLayoutObject(renderer)->size();
+            IntSize size = cachedImage->imageForLayoutObject(layoutObject)->size();
             if (cachedImage->errorOccurred())
                 continue;
             // Limit the size of cursors (in UI pixels) so that they cannot be
@@ -1135,7 +1135,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             if (size.width() > maximumCursorSize || size.height() > maximumCursorSize)
                 continue;
 
-            Image* image = cachedImage->imageForLayoutObject(renderer);
+            Image* image = cachedImage->imageForLayoutObject(layoutObject);
             // Ensure no overflow possible in calculations above.
             if (scale < minimumCursorScale)
                 continue;
@@ -1231,9 +1231,9 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
         return handCursor();
 
     bool inResizer = false;
-    LayoutObject* renderer = node ? node->layoutObject() : nullptr;
-    if (renderer && m_frame->view()) {
-        DeprecatedPaintLayer* layer = renderer->enclosingLayer();
+    LayoutObject* layoutObject = node ? node->layoutObject() : nullptr;
+    if (layoutObject && m_frame->view()) {
+        DeprecatedPaintLayer* layer = layoutObject->enclosingLayer();
         inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
     }
 
@@ -1246,7 +1246,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
         return iBeam;
     }
 
-    if ((editable || (renderer && renderer->isText() && node->canStartSelection())) && !inResizer && !result.scrollbar())
+    if ((editable || (layoutObject && layoutObject->isText() && node->canStartSelection())) && !inResizer && !result.scrollbar())
         return iBeam;
     return pointerCursor();
 }
@@ -1379,11 +1379,11 @@ static DeprecatedPaintLayer* layerForNode(Node* node)
     if (!node)
         return nullptr;
 
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
         return nullptr;
 
-    DeprecatedPaintLayer* layer = renderer->enclosingLayer();
+    DeprecatedPaintLayer* layer = layoutObject->enclosingLayer();
     if (!layer)
         return nullptr;
 
@@ -2585,17 +2585,17 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
     return false;
 }
 
-bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& gestureEvent, LayoutObject* renderer)
+bool EventHandler::passScrollGestureEventToWidget(const PlatformGestureEvent& gestureEvent, LayoutObject* layoutObject)
 {
     ASSERT(gestureEvent.isScrollEvent());
 
     if (!m_lastGestureScrollOverWidget)
         return false;
 
-    if (!renderer || !renderer->isLayoutPart())
+    if (!layoutObject || !layoutObject->isLayoutPart())
         return false;
 
-    Widget* widget = toLayoutPart(renderer)->widget();
+    Widget* widget = toLayoutPart(layoutObject)->widget();
 
     if (!widget || !widget->isFrameView())
         return false;
@@ -2631,7 +2631,7 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
     if (!view)
         return false;
 
-    // If there's no renderer on the node, send the event to the nearest ancestor with a renderer.
+    // If there's no layoutObject on the node, send the event to the nearest ancestor with a layoutObject.
     // Needed for <option> and <optgroup> elements so we can touch scroll <select>s
     while (m_scrollGestureHandlingNode && !m_scrollGestureHandlingNode->layoutObject())
         m_scrollGestureHandlingNode = m_scrollGestureHandlingNode->parentOrShadowHostNode();
@@ -2668,8 +2668,8 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     Node* node = m_scrollGestureHandlingNode.get();
     if (node) {
-        LayoutObject* renderer = node->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = node->layoutObject();
+        if (!layoutObject)
             return false;
 
         RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
@@ -2677,7 +2677,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
         Node* stopNode = nullptr;
 
         // Try to send the event to the correct view.
-        if (passScrollGestureEventToWidget(gestureEvent, renderer)) {
+        if (passScrollGestureEventToWidget(gestureEvent, layoutObject)) {
             if (gestureEvent.preventPropagation()
                 && !RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
                 // This is an optimization which doesn't apply with
@@ -3247,11 +3247,11 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
     ASSERT(m_frame);
     ASSERT(m_frame->document());
 
-    if (LayoutView* renderer = m_frame->contentRenderer()) {
+    if (LayoutView* layoutObject = m_frame->contentLayoutObject()) {
         if (FrameView* view = m_frame->view()) {
             HitTestRequest request(HitTestRequest::Move);
             HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
-            renderer->hitTest(result);
+            layoutObject->hitTest(result);
             m_frame->document()->updateHoverActiveState(request, result.innerElement());
         }
     }
@@ -3511,7 +3511,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, DragIni
     if (m_mouseDownMayStartDrag) {
         HitTestRequest request(HitTestRequest::ReadOnly);
         HitTestResult result(request, m_mouseDownPos);
-        m_frame->contentRenderer()->hitTest(result);
+        m_frame->contentLayoutObject()->hitTest(result);
         Node* node = result.innerNode();
         if (node) {
             DragController::SelectionDragPolicy selectionDragPolicy = event.event().timestamp() - m_mouseDownTimestamp < TextDragDelay
@@ -3561,12 +3561,12 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     // Check to see if this a DOM based drag, if it is get the DOM specified drag
     // image and offset
     if (dragState().m_dragType == DragSourceActionDHTML) {
-        if (LayoutObject* renderer = dragState().m_dragSrc->layoutObject()) {
-            FloatPoint absPos = renderer->localToAbsolute(FloatPoint(), UseTransforms);
+        if (LayoutObject* layoutObject = dragState().m_dragSrc->layoutObject()) {
+            FloatPoint absPos = layoutObject->localToAbsolute(FloatPoint(), UseTransforms);
             IntSize delta = m_mouseDownPos - roundedIntPoint(absPos);
             dragState().m_dragDataTransfer->setDragImageElement(dragState().m_dragSrc.get(), IntPoint(delta));
         } else {
-            // The renderer has disappeared, this can happen if the onStartDrag handler has hidden
+            // The layoutObject has disappeared, this can happen if the onStartDrag handler has hidden
             // the element in some way. In this case we just kill the drag.
             return false;
         }
@@ -3794,14 +3794,14 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
 {
     HitTestResult result(HitTestRequest(hitType), point);
 
-    if (!frame || !frame->contentRenderer())
+    if (!frame || !frame->contentLayoutObject())
         return result;
     if (frame->view()) {
         IntRect rect = frame->view()->visibleContentRect(IncludeScrollbars);
         if (!rect.contains(roundedIntPoint(point)))
             return result;
     }
-    frame->contentRenderer()->hitTest(result);
+    frame->contentLayoutObject()->hitTest(result);
     return result;
 }
 
@@ -4069,16 +4069,16 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
     // and exclude any prohibited actions.
     TouchAction effectiveTouchAction = TouchActionAuto;
     for (const Node* curNode = &node; curNode; curNode = ComposedTreeTraversal::parent(*curNode)) {
-        if (LayoutObject* renderer = curNode->layoutObject()) {
-            if (renderer->supportsTouchAction()) {
-                TouchAction action = renderer->style()->touchAction();
+        if (LayoutObject* layoutObject = curNode->layoutObject()) {
+            if (layoutObject->supportsTouchAction()) {
+                TouchAction action = layoutObject->style()->touchAction();
                 effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);
                 if (effectiveTouchAction == TouchActionNone)
                     break;
             }
 
             // If we've reached an ancestor that supports a touch action, search no further.
-            if (renderer->isBox() && toLayoutBox(renderer)->scrollsOverflow())
+            if (layoutObject->isBox() && toLayoutBox(layoutObject)->scrollsOverflow())
                 break;
         }
     }

@@ -58,16 +58,16 @@ inline Element* LayoutSearchField::cancelButtonElement() const
 LayoutUnit LayoutSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
 {
     Element* searchDecoration = searchDecorationElement();
-    if (LayoutBox* decorationRenderer = searchDecoration ? searchDecoration->layoutBox() : 0) {
-        decorationRenderer->updateLogicalHeight();
-        nonContentHeight = max(nonContentHeight, decorationRenderer->borderAndPaddingLogicalHeight() + decorationRenderer->marginLogicalHeight());
-        lineHeight = max(lineHeight, decorationRenderer->logicalHeight());
+    if (LayoutBox* decorationLayoutObject = searchDecoration ? searchDecoration->layoutBox() : 0) {
+        decorationLayoutObject->updateLogicalHeight();
+        nonContentHeight = max(nonContentHeight, decorationLayoutObject->borderAndPaddingLogicalHeight() + decorationLayoutObject->marginLogicalHeight());
+        lineHeight = max(lineHeight, decorationLayoutObject->logicalHeight());
     }
     Element* cancelButton = cancelButtonElement();
-    if (LayoutBox* cancelRenderer = cancelButton ? cancelButton->layoutBox() : 0) {
-        cancelRenderer->updateLogicalHeight();
-        nonContentHeight = max(nonContentHeight, cancelRenderer->borderAndPaddingLogicalHeight() + cancelRenderer->marginLogicalHeight());
-        lineHeight = max(lineHeight, cancelRenderer->logicalHeight());
+    if (LayoutBox* cancelLayoutObject = cancelButton ? cancelButton->layoutBox() : 0) {
+        cancelLayoutObject->updateLogicalHeight();
+        nonContentHeight = max(nonContentHeight, cancelLayoutObject->borderAndPaddingLogicalHeight() + cancelLayoutObject->marginLogicalHeight());
+        lineHeight = max(lineHeight, cancelLayoutObject->logicalHeight());
     }
 
     return lineHeight + nonContentHeight;
@@ -78,18 +78,18 @@ LayoutUnit LayoutSearchField::computeLogicalHeightLimit() const
     return logicalHeight();
 }
 
-void LayoutSearchField::centerContainerIfNeeded(LayoutBox* containerRenderer) const
+void LayoutSearchField::centerContainerIfNeeded(LayoutBox* containerLayoutObject) const
 {
-    if (!containerRenderer)
+    if (!containerLayoutObject)
         return;
 
-    if (containerRenderer->logicalHeight() <= contentLogicalHeight())
+    if (containerLayoutObject->logicalHeight() <= contentLogicalHeight())
         return;
 
     // A quirk for find-in-page box on Safari Windows.
     // http://webkit.org/b/63157
-    LayoutUnit logicalHeightDiff = containerRenderer->logicalHeight() - contentLogicalHeight();
-    containerRenderer->setLogicalTop(containerRenderer->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
+    LayoutUnit logicalHeightDiff = containerLayoutObject->logicalHeight() - contentLogicalHeight();
+    containerLayoutObject->setLogicalTop(containerLayoutObject->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
 }
 
 }

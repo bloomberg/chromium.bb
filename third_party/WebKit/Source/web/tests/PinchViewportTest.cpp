@@ -142,7 +142,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        DeprecatedPaintLayerCompositor* compositor = frame()->contentRenderer()->compositor();
+        DeprecatedPaintLayerCompositor* compositor = frame()->contentLayoutObject()->compositor();
         ASSERT(compositor);
         ASSERT(compositor->scrollLayer());
 
@@ -176,7 +176,7 @@ protected:
 private:
     FrameTestHelpers::WebViewHelper m_helper;
 
-    // To prevent platform differneces in content rendering, use mock
+    // To prevent platform differneces in content layout, use mock
     // scrollbars. This is especially needed for Mac, where the presence
     // or absence of a mouse will change frame sizes because of different
     // scrollbar themes.

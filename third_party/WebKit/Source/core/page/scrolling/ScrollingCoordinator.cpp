@@ -549,7 +549,7 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
     MapCoordinatesFlags flags = UseTransforms;
     if (touchHandlerInChildFrame)
         flags |= TraverseDocumentBoundaries;
-    DeprecatedPaintLayer* rootLayer = mainFrame->contentRenderer()->layer();
+    DeprecatedPaintLayer* rootLayer = mainFrame->contentLayoutObject()->layer();
     LayoutGeometryMap geometryMap(flags);
     geometryMap.pushMappingsToAncestor(rootLayer, 0);
     LayerFrameMap layerChildFrameMap;
@@ -633,7 +633,7 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange()
 
     // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
     // needs to commit here. We should expose a cleaner API for this.
-    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentRenderer();
+    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentLayoutObject();
     if (layoutView && layoutView->compositor() && layoutView->compositor()->staleInCompositingMode())
         m_page->deprecatedLocalMainFrame()->view()->scheduleAnimation();
 
@@ -725,7 +725,7 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
         return false;
 
     // We currently only support composited mode.
-    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentRenderer();
+    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentLayoutObject();
     if (!layoutView)
         return false;
     return layoutView->usesCompositing();

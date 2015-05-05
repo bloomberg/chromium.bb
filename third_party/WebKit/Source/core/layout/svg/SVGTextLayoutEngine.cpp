@@ -147,7 +147,7 @@ bool SVGTextLayoutEngine::parentDefinesTextLength(LayoutObject* parent) const
 {
     LayoutObject* currentParent = parent;
     while (currentParent) {
-        if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromRenderer(currentParent)) {
+        if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(currentParent)) {
             SVGLengthContext lengthContext(textContentElement);
             if (textContentElement->lengthAdjust()->currentValue()->enumValue() == SVGLengthAdjustSpacing && textContentElement->textLengthIsSpecifiedByUser())
                 return true;
@@ -206,7 +206,7 @@ void SVGTextLayoutEngine::beginTextPathLayout(LayoutObject* object, SVGTextLayou
     SVGLengthAdjustType lengthAdjust = SVGLengthAdjustUnknown;
     float desiredTextLength = 0;
 
-    if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromRenderer(textPath)) {
+    if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromLayoutObject(textPath)) {
         SVGLengthContext lengthContext(textContentElement);
         lengthAdjust = textContentElement->lengthAdjust()->currentValue()->enumValue();
         if (textContentElement->textLengthIsSpecifiedByUser())
@@ -268,11 +268,11 @@ static inline void dumpTextBoxes(Vector<SVGInlineTextBox*>& boxes)
     for (unsigned boxPosition = 0; boxPosition < boxCount; ++boxPosition) {
         SVGInlineTextBox* textBox = boxes.at(boxPosition);
         Vector<SVGTextFragment>& fragments = textBox->textFragments();
-        fprintf(stderr, "-> Box %i: Dumping text fragments for SVGInlineTextBox, textBox=%p, textRenderer=%p\n", boxPosition, textBox, textBox->textRenderer());
+        fprintf(stderr, "-> Box %i: Dumping text fragments for SVGInlineTextBox, textBox=%p, textLayoutObject=%p\n", boxPosition, textBox, textBox->textLayoutObject());
         fprintf(stderr, "        textBox properties, start=%i, len=%i, box direction=%i\n", textBox->start(), textBox->len(), textBox->direction());
-        fprintf(stderr, "   textRenderer properties, textLength=%i\n", textBox->textRenderer()->textLength());
+        fprintf(stderr, "   textLayoutObject properties, textLength=%i\n", textBox->textLayoutObject()->textLength());
 
-        String characters = textBox->textRenderer()->text();
+        String characters = textBox->textLayoutObject()->text();
 
         unsigned fragmentCount = fragments.size();
         for (unsigned i = 0; i < fragmentCount; ++i) {

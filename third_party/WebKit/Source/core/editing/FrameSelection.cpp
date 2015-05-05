@@ -265,7 +265,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     if (m_selection == s) {
         // Even if selection was not changed, selection offsets may have been changed.
         m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
-        notifyRendererOfSelectionChange(userTriggered);
+        notifyLayoutObjectOfSelectionChange(userTriggered);
         return;
     }
 
@@ -287,7 +287,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     // It will be restored by the vertical arrow navigation code if necessary.
     m_xPosForVerticalArrowNavigation = NoXPosForVerticalArrowNavigation();
     selectFrameElementInParentIfFullySelected();
-    notifyRendererOfSelectionChange(userTriggered);
+    notifyLayoutObjectOfSelectionChange(userTriggered);
     m_frame->editor().respondToChangedSelection(oldSelection, options);
     if (userTriggered == UserTriggered) {
         ScrollAlignment alignment;
@@ -335,7 +335,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
 {
     ASSERT(node.document().isActive());
 
-    bool clearRenderTreeSelection = false;
+    bool clearLayoutTreeSelection = false;
     bool clearDOMTreeSelection = false;
 
     if (startRemoved || endRemoved) {
@@ -354,7 +354,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
         } else
             clearDOMTreeSelection = true;
 
-        clearRenderTreeSelection = true;
+        clearLayoutTreeSelection = true;
     } else if (baseRemoved || extentRemoved) {
         // The base and/or extent are about to be removed, but the start and end aren't.
         // Change the base and extent to the start and end, but don't re-validate the
@@ -369,10 +369,10 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
         // occupied would be invalidated, but, selection gaps that change as a result of
         // the removal wouldn't be invalidated.
         // FIXME: Don't do so much unnecessary invalidation.
-        clearRenderTreeSelection = true;
+        clearLayoutTreeSelection = true;
     }
 
-    if (clearRenderTreeSelection)
+    if (clearLayoutTreeSelection)
         m_selection.start().document()->layoutView()->clearSelection();
 
     if (clearDOMTreeSelection)
@@ -1187,7 +1187,7 @@ void FrameSelection::prepareForDestruction()
 
     m_caretBlinkTimer.stop();
 
-    LayoutView* view = m_frame->contentRenderer();
+    LayoutView* view = m_frame->contentLayoutObject();
     if (view)
         view->clearSelection();
 
@@ -1223,9 +1223,9 @@ void FrameSelection::setExtent(const VisiblePosition &pos, EUserTriggered userTr
     setSelection(VisibleSelection(m_selection.base(), pos.deepEquivalent(), pos.affinity(), selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
 }
 
-LayoutBlock* FrameSelection::caretRenderer() const
+LayoutBlock* FrameSelection::caretLayoutObject() const
 {
-    return CaretBase::caretRenderer(m_selection.start().deprecatedNode());
+    return CaretBase::caretLayoutObject(m_selection.start().deprecatedNode());
 }
 
 static bool isNonOrphanedCaret(const VisibleSelection& selection)
@@ -1413,7 +1413,7 @@ void FrameSelection::selectAll()
     VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root.get()));
     setSelection(newSelection);
     selectFrameElementInParentIfFullySelected();
-    notifyRendererOfSelectionChange(UserTriggered);
+    notifyLayoutObjectOfSelectionChange(UserTriggered);
 }
 
 bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, DirectoinalOption directional, SetSelectionOptions options)
@@ -1568,7 +1568,7 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
     if (willNeedCaretRectUpdate)
         setCaretRectNeedsUpdate();
 
-    LayoutView* view = m_frame->contentRenderer();
+    LayoutView* view = m_frame->contentLayoutObject();
     if (view)
         view->setSelection(*this);
 }
@@ -1612,7 +1612,7 @@ void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
     setCaretRectNeedsUpdate();
 }
 
-void FrameSelection::notifyRendererOfSelectionChange(EUserTriggered userTriggered)
+void FrameSelection::notifyLayoutObjectOfSelectionChange(EUserTriggered userTriggered)
 {
     if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(start()))
         textControl->selectionChanged(userTriggered == UserTriggered);
@@ -1700,7 +1700,7 @@ LayoutRect FrameSelection::unclippedBounds() const
     m_frame->document()->updateLayoutTreeIfNeeded();
 
     FrameView* view = m_frame->view();
-    LayoutView* layoutView = m_frame->contentRenderer();
+    LayoutView* layoutView = m_frame->contentLayoutObject();
 
     if (!view || !layoutView)
         return LayoutRect();

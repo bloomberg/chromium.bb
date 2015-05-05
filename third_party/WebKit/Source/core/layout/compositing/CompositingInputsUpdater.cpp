@@ -76,13 +76,13 @@ static bool hasClippedStackingAncestor(const DeprecatedPaintLayer* layer, const 
 {
     if (layer == clippingLayer)
         return false;
-    const LayoutObject* clippingRenderer = clippingLayer->layoutObject();
+    const LayoutObject* clippingLayoutObject = clippingLayer->layoutObject();
     for (const DeprecatedPaintLayer* current = layer->compositingContainer(); current && current != clippingLayer; current = current->compositingContainer()) {
-        if (current->layoutObject()->hasClipOrOverflowClip() && !clippingRenderer->isDescendantOf(current->layoutObject()))
+        if (current->layoutObject()->hasClipOrOverflowClip() && !clippingLayoutObject->isDescendantOf(current->layoutObject()))
             return true;
 
         if (const LayoutObject* container = current->clippingContainer()) {
-            if (clippingRenderer != container && !clippingRenderer->isDescendantOf(container))
+            if (clippingLayoutObject != container && !clippingLayoutObject->isDescendantOf(container))
                 return true;
         }
     }

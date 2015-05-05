@@ -263,12 +263,12 @@ static inline bool caretBrowsingEnabled(const Frame* frame)
 
 static inline bool hasCursorCaret(const FrameSelection& selection, const LayoutBlock* block, bool caretBrowsing)
 {
-    return selection.caretRenderer() == block && (selection.hasEditableStyle() || caretBrowsing);
+    return selection.caretLayoutObject() == block && (selection.hasEditableStyle() || caretBrowsing);
 }
 
 static inline bool hasDragCaret(const DragCaretController& dragCaretController, const LayoutBlock* block, bool caretBrowsing)
 {
-    return dragCaretController.caretRenderer() == block && (dragCaretController.isContentEditable() || caretBrowsing);
+    return dragCaretController.caretLayoutObject() == block && (dragCaretController.isContentEditable() || caretBrowsing);
 }
 
 void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

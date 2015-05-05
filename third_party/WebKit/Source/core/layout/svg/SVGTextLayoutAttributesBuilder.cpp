@@ -114,7 +114,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxMod
             continue;
 
         LayoutSVGInline& inlineChild = toLayoutSVGInline(*child);
-        SVGTextPositioningElement* element = SVGTextPositioningElement::elementFromRenderer(inlineChild);
+        SVGTextPositioningElement* element = SVGTextPositioningElement::elementFromLayoutObject(inlineChild);
         unsigned atPosition = m_textPositions.size();
         if (element)
             m_textPositions.append(TextPosition(element, m_textLength));
@@ -133,7 +133,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxMod
 
 void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(LayoutSVGText& textRoot)
 {
-    SVGTextPositioningElement* outermostTextElement = SVGTextPositioningElement::elementFromRenderer(textRoot);
+    SVGTextPositioningElement* outermostTextElement = SVGTextPositioningElement::elementFromLayoutObject(textRoot);
     ASSERT(outermostTextElement);
 
     // Grab outermost <text> element value lists and insert them in the character data map.

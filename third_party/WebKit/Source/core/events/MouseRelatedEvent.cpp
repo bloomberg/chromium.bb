@@ -139,7 +139,7 @@ void MouseRelatedEvent::computeRelativePosition()
     m_layerLocation = m_pageLocation;
     m_offsetLocation = m_pageLocation;
 
-    // Must have an updated render tree for this math to work correctly.
+    // Must have an updated layout tree for this math to work correctly.
     targetNode->document().updateLayoutIgnorePendingStylesheets();
 
     // Adjust offsetLocation to be relative to the target's position.

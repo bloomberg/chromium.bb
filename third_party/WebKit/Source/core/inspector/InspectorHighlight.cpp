@@ -84,14 +84,14 @@ void PathBuilder::appendPathElement(const PathElement* pathElement)
 
 class ShapePathBuilder : public PathBuilder {
 public:
-    ShapePathBuilder(FrameView& view, LayoutObject& renderer, const ShapeOutsideInfo& shapeOutsideInfo)
+    ShapePathBuilder(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo)
         : m_view(view)
-        , m_renderer(renderer)
+        , m_layoutObject(layoutObject)
         , m_shapeOutsideInfo(shapeOutsideInfo) { }
 
-    static PassRefPtr<TypeBuilder::Array<JSONValue>> buildPath(FrameView& view, LayoutObject& renderer, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
+    static PassRefPtr<TypeBuilder::Array<JSONValue>> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
     {
-        ShapePathBuilder builder(view, renderer, shapeOutsideInfo);
+        ShapePathBuilder builder(view, layoutObject, shapeOutsideInfo);
         builder.appendPath(path);
         return builder.path();
     }
@@ -100,12 +100,12 @@ protected:
     virtual FloatPoint translatePoint(const FloatPoint& point)
     {
         FloatPoint layoutObjectPoint = m_shapeOutsideInfo.shapeToLayoutObjectPoint(point);
-        return m_view.contentsToViewport(roundedIntPoint(m_renderer.localToAbsolute(layoutObjectPoint)));
+        return m_view.contentsToViewport(roundedIntPoint(m_layoutObject.localToAbsolute(layoutObjectPoint)));
     }
 
 private:
     FrameView& m_view;
-    LayoutObject& m_renderer;
+    LayoutObject& m_layoutObject;
     const ShapeOutsideInfo& m_shapeOutsideInfo;
 };
 
@@ -145,12 +145,12 @@ void contentsQuadToViewport(const FrameView* view, FloatQuad& quad)
 
 const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths* paths, FloatQuad* bounds)
 {
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer || !renderer->isBox() || !toLayoutBox(renderer)->shapeOutsideInfo())
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject || !layoutObject->isBox() || !toLayoutBox(layoutObject)->shapeOutsideInfo())
         return nullptr;
 
     FrameView* containingView = node->document().view();
-    LayoutBox* layoutBox = toLayoutBox(renderer);
+    LayoutBox* layoutBox = toLayoutBox(layoutObject);
     const ShapeOutsideInfo* shapeOutsideInfo = layoutBox->shapeOutsideInfo();
 
     shapeOutsideInfo->computedShape().buildDisplayPaths(*paths);
@@ -162,12 +162,12 @@ const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths*
     return shapeOutsideInfo;
 }
 
-bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin)
+bool buildNodeQuads(LayoutObject* layoutObject, FloatQuad* content, FloatQuad* padding, FloatQuad* border, FloatQuad* margin)
 {
-    FrameView* containingView = renderer->frameView();
+    FrameView* containingView = layoutObject->frameView();
     if (!containingView)
         return false;
-    if (!renderer->isBox() && !renderer->isLayoutInline())
+    if (!layoutObject->isBox() && !layoutObject->isLayoutInline())
         return false;
 
     LayoutRect contentBox;
@@ -175,8 +175,8 @@ bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* paddi
     LayoutRect borderBox;
     LayoutRect marginBox;
 
-    if (renderer->isBox()) {
-        LayoutBox* layoutBox = toLayoutBox(renderer);
+    if (layoutObject->isBox()) {
+        LayoutBox* layoutBox = toLayoutBox(layoutObject);
 
         // LayoutBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
         const int verticalScrollbarWidth = layoutBox->verticalScrollbarWidth();
@@ -194,7 +194,7 @@ bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* paddi
         marginBox = LayoutRect(borderBox.x() - layoutBox->marginLeft(), borderBox.y() - layoutBox->marginTop(),
             borderBox.width() + layoutBox->marginWidth(), borderBox.height() + layoutBox->marginHeight());
     } else {
-        LayoutInline* layoutInline = toLayoutInline(renderer);
+        LayoutInline* layoutInline = toLayoutInline(layoutObject);
 
         // LayoutInline's bounding box includes paddings and borders, excludes margins.
         borderBox = LayoutRect(layoutInline->linesBoundingBox());
@@ -207,10 +207,10 @@ bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* paddi
             borderBox.width() + layoutInline->marginWidth(), borderBox.height());
     }
 
-    *content = renderer->localToAbsoluteQuad(FloatRect(contentBox));
-    *padding = renderer->localToAbsoluteQuad(FloatRect(paddingBox));
-    *border = renderer->localToAbsoluteQuad(FloatRect(borderBox));
-    *margin = renderer->localToAbsoluteQuad(FloatRect(marginBox));
+    *content = layoutObject->localToAbsoluteQuad(FloatRect(contentBox));
+    *padding = layoutObject->localToAbsoluteQuad(FloatRect(paddingBox));
+    *border = layoutObject->localToAbsoluteQuad(FloatRect(borderBox));
+    *margin = layoutObject->localToAbsoluteQuad(FloatRect(marginBox));
 
     contentsQuadToViewport(containingView, *content);
     contentsQuadToViewport(containingView, *padding);
@@ -254,12 +254,12 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
     if (!classNames.isEmpty())
         elementInfo->setString("className", classNames.toString());
 
-    LayoutObject* renderer = element->layoutObject();
+    LayoutObject* layoutObject = element->layoutObject();
     FrameView* containingView = element->document().view();
-    if (!renderer || !containingView)
+    if (!layoutObject || !containingView)
         return elementInfo;
 
-    // Render the getBoundingClientRect() data in the tooltip
+    // layoutObject the getBoundingClientRect() data in the tooltip
     // to be consistent with the rulers (see http://crbug.com/262338).
     ClientRect* boundingBox = element->getBoundingClientRect();
     elementInfo->setString("nodeWidth", String::number(boundingBox->width()));
@@ -340,15 +340,15 @@ void InspectorHighlight::appendPathsForShapeOutside(Node* node, const InspectorH
 
 void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighlightConfig& highlightConfig)
 {
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
         return;
 
     // LayoutSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
-    if (renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot()) {
+    if (layoutObject->node() && layoutObject->node()->isSVGElement() && !layoutObject->isSVGRoot()) {
         Vector<FloatQuad> quads;
-        renderer->absoluteQuads(quads);
-        FrameView* containingView = renderer->frameView();
+        layoutObject->absoluteQuads(quads);
+        FrameView* containingView = layoutObject->frameView();
         for (size_t i = 0; i < quads.size(); ++i) {
             if (containingView)
                 contentsQuadToViewport(containingView, quads[i]);
@@ -358,7 +358,7 @@ void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighligh
     }
 
     FloatQuad content, padding, border, margin;
-    if (!buildNodeQuads(renderer, &content, &padding, &border, &margin))
+    if (!buildNodeQuads(layoutObject, &content, &padding, &border, &margin))
         return;
     appendQuad(content, highlightConfig.content, highlightConfig.contentOutline);
     appendQuad(padding, highlightConfig.padding);
@@ -380,17 +380,17 @@ PassRefPtr<JSONObject> InspectorHighlight::asJSONObject() const
 // static
 bool InspectorHighlight::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxModel>& model)
 {
-    LayoutObject* renderer = node->layoutObject();
+    LayoutObject* layoutObject = node->layoutObject();
     FrameView* view = node->document().view();
-    if (!renderer || !view)
+    if (!layoutObject || !view)
         return false;
 
     FloatQuad content, padding, border, margin;
     if (!buildNodeQuads(node->layoutObject(), &content, &padding, &border, &margin))
         return false;
 
-    IntRect boundingBox = view->contentsToRootFrame(renderer->absoluteBoundingBoxRect());
-    LayoutBoxModelObject* modelObject = renderer->isBoxModelObject() ? toLayoutBoxModelObject(renderer) : nullptr;
+    IntRect boundingBox = view->contentsToRootFrame(layoutObject->absoluteBoundingBoxRect());
+    LayoutBoxModelObject* modelObject = layoutObject->isBoxModelObject() ? toLayoutBoxModelObject(layoutObject) : nullptr;
 
     model = TypeBuilder::DOM::BoxModel::create()
         .setContent(buildArrayForQuad(content))
@@ -405,8 +405,8 @@ bool InspectorHighlight::getBoxModel(Node* node, RefPtr<TypeBuilder::DOM::BoxMod
     if (const ShapeOutsideInfo* shapeOutsideInfo = shapeOutsideInfoForNode(node, &paths, &boundsQuad)) {
         RefPtr<TypeBuilder::DOM::ShapeOutsideInfo> shapeTypeBuilder = TypeBuilder::DOM::ShapeOutsideInfo::create()
             .setBounds(buildArrayForQuad(boundsQuad))
-            .setShape(ShapePathBuilder::buildPath(*view, *renderer, *shapeOutsideInfo, paths.shape))
-            .setMarginShape(ShapePathBuilder::buildPath(*view, *renderer, *shapeOutsideInfo, paths.marginShape));
+            .setShape(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape))
+            .setMarginShape(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape));
         model->setShapeOutside(shapeTypeBuilder);
     }
 

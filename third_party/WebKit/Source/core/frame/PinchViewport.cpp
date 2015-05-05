@@ -439,9 +439,9 @@ void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) 
     if (!mainFrame())
         return;
 
-    ASSERT(frameHost().page().deprecatedLocalMainFrame()->contentRenderer());
+    ASSERT(frameHost().page().deprecatedLocalMainFrame()->contentLayoutObject());
 
-    DeprecatedPaintLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentRenderer()->compositor();
+    DeprecatedPaintLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentLayoutObject()->compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer() ? compositor->scrollLayer()->platformLayer() : 0;
 

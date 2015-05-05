@@ -270,10 +270,10 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
             continue;
         LocalFrame* curLocalChild = toLocalFrame(curChild);
         // Ignore the text of non-visible frames.
-        LayoutView* contentRenderer = curLocalChild->contentRenderer();
+        LayoutView* contentLayoutObject = curLocalChild->contentLayoutObject();
         LayoutPart* ownerLayoutObject = curLocalChild->ownerLayoutObject();
-        if (!contentRenderer || !contentRenderer->size().width() || !contentRenderer->size().height()
-            || (contentRenderer->location().x() + contentRenderer->size().width() <= 0) || (contentRenderer->location().y() + contentRenderer->size().height() <= 0)
+        if (!contentLayoutObject || !contentLayoutObject->size().width() || !contentLayoutObject->size().height()
+            || (contentLayoutObject->location().x() + contentLayoutObject->size().width() <= 0) || (contentLayoutObject->location().y() + contentLayoutObject->size().height() <= 0)
             || (ownerLayoutObject && ownerLayoutObject->style() && ownerLayoutObject->style()->visibility() != VISIBLE)) {
             continue;
         }

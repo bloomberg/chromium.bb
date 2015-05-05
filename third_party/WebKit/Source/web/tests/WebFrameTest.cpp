@@ -705,11 +705,11 @@ static void enableViewportSettings(WebSettings* settings)
 static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierSet = false;
-    for (LayoutObject* renderer = document->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
-        if (renderer->style()) {
-            renderer->mutableStyleRef().setTextAutosizingMultiplier(multiplier);
+    for (LayoutObject* layoutObject = document->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
+        if (layoutObject->style()) {
+            layoutObject->mutableStyleRef().setTextAutosizingMultiplier(multiplier);
 
-            EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
+            EXPECT_EQ(multiplier, layoutObject->style()->textAutosizingMultiplier());
             multiplierSet = true;
         }
     }
@@ -720,9 +720,9 @@ static bool setTextAutosizingMultiplier(Document* document, float multiplier)
 static bool checkTextAutosizingMultiplier(Document* document, float multiplier)
 {
     bool multiplierChecked = false;
-    for (LayoutObject* renderer = document->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
-        if (renderer->style() && renderer->isText()) {
-            EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
+    for (LayoutObject* layoutObject = document->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
+        if (layoutObject->style() && layoutObject->isText()) {
+            EXPECT_EQ(multiplier, layoutObject->style()->textAutosizingMultiplier());
             multiplierChecked = true;
         }
     }
@@ -804,9 +804,9 @@ TEST_F(WebFrameTest, PinchViewportSetSizeInvalidatesTextAutosizingMultipliers)
         if (!frame->isLocalFrame())
             continue;
         EXPECT_TRUE(setTextAutosizingMultiplier(toLocalFrame(frame)->document(), 2));
-        for (LayoutObject* renderer = toLocalFrame(frame)->document()->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
-            if (renderer->isText())
-                EXPECT_FALSE(renderer->needsLayout());
+        for (LayoutObject* layoutObject = toLocalFrame(frame)->document()->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
+            if (layoutObject->isText())
+                EXPECT_FALSE(layoutObject->needsLayout());
         }
     }
 
@@ -815,9 +815,9 @@ TEST_F(WebFrameTest, PinchViewportSetSizeInvalidatesTextAutosizingMultipliers)
     for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        for (LayoutObject* renderer = toLocalFrame(frame)->document()->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
-            if (renderer->isText())
-                EXPECT_TRUE(renderer->needsLayout());
+        for (LayoutObject* layoutObject = toLocalFrame(frame)->document()->layoutView(); layoutObject; layoutObject = layoutObject->nextInPreOrder()) {
+            if (layoutObject->isText())
+                EXPECT_TRUE(layoutObject->needsLayout());
         }
     }
 }
@@ -1834,7 +1834,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 
     webViewHelper.webView()->setPageScaleFactor(2);
 
-    EXPECT_EQ(980, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->contentRenderer()->unscaledDocumentRect().width());
+    EXPECT_EQ(980, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->contentLayoutObject()->unscaledDocumentRect().width());
     EXPECT_EQ(980, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
 }
 
@@ -4133,9 +4133,9 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtentScollsInputField)
     EXPECT_EQ("Lengthy text goes here.", selectionAsString(frame));
 }
 
-static int computeOffset(LayoutObject* renderer, int x, int y)
+static int computeOffset(LayoutObject* layoutObject, int x, int y)
 {
-    return VisiblePosition(renderer->positionForPoint(LayoutPoint(x, y))).deepEquivalent().computeOffsetInContainerNode();
+    return VisiblePosition(layoutObject->positionForPoint(LayoutPoint(x, y))).deepEquivalent().computeOffsetInContainerNode();
 }
 
 // positionForPoint returns the wrong values for contenteditable spans. See
@@ -4146,16 +4146,16 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest)
     FrameTestHelpers::WebViewHelper webViewHelper;
     initializeTextSelectionWebView(m_baseURL + "select_range_span_editable.html", &webViewHelper);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    LayoutObject* renderer = mainFrame->frame()->selection().rootEditableElement()->layoutObject();
-    EXPECT_EQ(0, computeOffset(renderer, -1, -1));
-    EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
+    LayoutObject* layoutObject = mainFrame->frame()->selection().rootEditableElement()->layoutObject();
+    EXPECT_EQ(0, computeOffset(layoutObject, -1, -1));
+    EXPECT_EQ(64, computeOffset(layoutObject, 1000, 1000));
 
     registerMockedHttpURLLoad("select_range_div_editable.html");
     initializeTextSelectionWebView(m_baseURL + "select_range_div_editable.html", &webViewHelper);
     mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    renderer = mainFrame->frame()->selection().rootEditableElement()->layoutObject();
-    EXPECT_EQ(0, computeOffset(renderer, -1, -1));
-    EXPECT_EQ(64, computeOffset(renderer, 1000, 1000));
+    layoutObject = mainFrame->frame()->selection().rootEditableElement()->layoutObject();
+    EXPECT_EQ(0, computeOffset(layoutObject, -1, -1));
+    EXPECT_EQ(64, computeOffset(layoutObject, 1000, 1000));
 }
 
 #if !OS(MACOSX) && !OS(LINUX)
@@ -6305,8 +6305,8 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     webViewImpl->layout();
 
     // Verify that the video layer is visible in fullscreen.
-    DeprecatedPaintLayer* renderLayer =  videoFullscreen->layoutObject()->enclosingLayer();
-    GraphicsLayer* graphicsLayer = renderLayer->graphicsLayerBacking();
+    DeprecatedPaintLayer* paintLayer =  videoFullscreen->layoutObject()->enclosingLayer();
+    GraphicsLayer* graphicsLayer = paintLayer->graphicsLayerBacking();
     EXPECT_TRUE(graphicsLayer->contentsAreVisible());
     context->notifyContextDestroyed();
 }

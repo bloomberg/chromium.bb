@@ -312,12 +312,12 @@ LayoutText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset,
     LayoutObject* pseudoElementLayoutObject = fragment->firstLetterPseudoElement()->layoutObject();
     ASSERT(pseudoElementLayoutObject);
     ASSERT(pseudoElementLayoutObject->slowFirstChild());
-    LayoutText* firstLetterRenderer = toLayoutText(pseudoElementLayoutObject->slowFirstChild());
+    LayoutText* firstLetterLayoutObject = toLayoutText(pseudoElementLayoutObject->slowFirstChild());
 
-    m_offset = firstLetterRenderer->caretMaxOffset();
-    m_offset += collapsedSpaceLength(firstLetterRenderer, m_offset);
+    m_offset = firstLetterLayoutObject->caretMaxOffset();
+    m_offset += collapsedSpaceLength(firstLetterLayoutObject, m_offset);
 
-    return firstLetterRenderer;
+    return firstLetterLayoutObject;
 }
 
 bool SimplifiedBackwardsTextIterator::handleReplacedElement()

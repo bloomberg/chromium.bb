@@ -39,14 +39,14 @@ SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
 {
 }
 
-SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* textRenderer, const TextRun& run)
+SVGTextMetrics::SVGTextMetrics(LayoutSVGInlineText* textLayoutObject, const TextRun& run)
 {
-    ASSERT(textRenderer);
+    ASSERT(textLayoutObject);
 
-    float scalingFactor = textRenderer->scalingFactor();
+    float scalingFactor = textLayoutObject->scalingFactor();
     ASSERT(scalingFactor);
 
-    const Font& scaledFont = textRenderer->scaledFont();
+    const Font& scaledFont = textLayoutObject->scaledFont();
 
     // Calculate width/height using the scaled font, divide this result by the scalingFactor afterwards.
     m_width = scaledFont.width(run) / scalingFactor;

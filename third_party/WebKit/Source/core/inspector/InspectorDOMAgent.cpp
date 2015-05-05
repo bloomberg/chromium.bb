@@ -161,7 +161,7 @@ static Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootF
         hitType |= HitTestRequest::IgnorePointerEventsNone;
     HitTestRequest request(hitType);
     HitTestResult result(request, frame->view()->rootFrameToContents(pointInRootFrame));
-    frame->contentRenderer()->hitTest(result);
+    frame->contentLayoutObject()->hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
     while (node && node->nodeType() == Node::TEXT_NODE)
         node = node->parentNode();
@@ -1199,7 +1199,7 @@ bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
     if (m_searchingForNode == NotSearching)
         return false;
 
-    if (!frame->view() || !frame->contentRenderer())
+    if (!frame->view() || !frame->contentLayoutObject())
         return true;
     Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
 
@@ -1486,7 +1486,7 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
         return;
     HitTestRequest request(HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent);
     HitTestResult result(request, IntPoint(x, y));
-    m_document->frame()->contentRenderer()->hitTest(result);
+    m_document->frame()->contentLayoutObject()->hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
     while (node && node->nodeType() == Node::TEXT_NODE)
         node = node->parentNode();
@@ -2176,14 +2176,14 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer) {
-        *errorString = "No renderer for node, perhaps orphan or hidden node";
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject) {
+        *errorString = "No layout object for node, perhaps orphan or hidden node";
         return;
     }
-    while (renderer && !renderer->isDocumentElement() && !renderer->isRelayoutBoundaryForInspector())
-        renderer = renderer->container();
-    Node* resultNode = renderer ? renderer->generatingNode() : node->ownerDocument();
+    while (layoutObject && !layoutObject->isDocumentElement() && !layoutObject->isRelayoutBoundaryForInspector())
+        layoutObject = layoutObject->container();
+    Node* resultNode = layoutObject ? layoutObject->generatingNode() : node->ownerDocument();
     *relayoutBoundaryNodeId = pushNodePathToFrontend(resultNode);
 }
 

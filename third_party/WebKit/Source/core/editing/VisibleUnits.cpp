@@ -404,11 +404,11 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         bool movingBackward = (direction == MoveLeft && box->direction() == LTR) || (direction == MoveRight && box->direction() == RTL);
         if ((skipsSpaceWhenMovingRight && boxHasSameDirectionalityAsBlock)
             || (!skipsSpaceWhenMovingRight && movingBackward)) {
-            bool logicalStartInRenderer = offsetInBox == static_cast<int>(textBox->start()) && previousBoxInDifferentBlock;
-            isWordBreak = isLogicalStartOfWord(iter, offsetInIterator, logicalStartInRenderer);
+            bool logicalStartInLayoutObject = offsetInBox == static_cast<int>(textBox->start()) && previousBoxInDifferentBlock;
+            isWordBreak = isLogicalStartOfWord(iter, offsetInIterator, logicalStartInLayoutObject);
         } else {
-            bool logicalEndInRenderer = offsetInBox == static_cast<int>(textBox->start() + textBox->len()) && nextBoxInDifferentBlock;
-            isWordBreak = islogicalEndOfWord(iter, offsetInIterator, logicalEndInRenderer);
+            bool logicalEndInLayoutObject = offsetInBox == static_cast<int>(textBox->start() + textBox->len()) && nextBoxInDifferentBlock;
+            isWordBreak = islogicalEndOfWord(iter, offsetInIterator, logicalEndInLayoutObject);
         }
 
         if (isWordBreak)

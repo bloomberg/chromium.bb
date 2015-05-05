@@ -955,7 +955,7 @@ static FloatSize getViewportSize(LocalFrame* frame)
     if (host->settings().viewportEnabled() && frame->isMainFrame())
         frame->document()->updateLayoutIgnorePendingStylesheets();
 
-    // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
+    // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's layoutObject.
     if (Frame* parent = frame->tree().parent()) {
         if (parent && parent->isLocalFrame())
             toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();

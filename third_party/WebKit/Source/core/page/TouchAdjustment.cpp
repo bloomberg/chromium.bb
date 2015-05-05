@@ -129,7 +129,7 @@ bool providesContextMenuItems(Node* node)
         // If the context menu gesture will trigger a selection all selectable nodes are valid targets.
         if (node->layoutObject()->frame()->editor().behavior().shouldSelectOnContextualMenuClick())
             return true;
-        // Only the selected part of the renderer is a valid target, but this will be corrected in
+        // Only the selected part of the layoutObject is a valid target, but this will be corrected in
         // appendContextSubtargetsForNode.
         if (node->layoutObject()->selectionState() != LayoutObject::SelectionNone)
             return true;
@@ -147,7 +147,7 @@ static inline void appendQuadsToSubtargetList(Vector<FloatQuad>& quads, Node* no
 
 static inline void appendBasicSubtargetsForNode(Node* node, SubtargetGeometryList& subtargets)
 {
-    // Node guaranteed to have renderer due to check in node filter.
+    // Node guaranteed to have layoutObject due to check in node filter.
     ASSERT(node->layoutObject());
 
     Vector<FloatQuad> quads;
@@ -166,9 +166,9 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
         return appendBasicSubtargetsForNode(node, subtargets);
 
     Text* textNode = toText(node);
-    LayoutText* textRenderer = textNode->layoutObject();
+    LayoutText* textLayoutObject = textNode->layoutObject();
 
-    if (textRenderer->frame()->editor().behavior().shouldSelectOnContextualMenuClick()) {
+    if (textLayoutObject->frame()->editor().behavior().shouldSelectOnContextualMenuClick()) {
         // Make subtargets out of every word.
         String textValue = textNode->data();
         TextBreakIterator* wordIterator = wordBreakIterator(textValue, 0, textValue.length());
@@ -179,53 +179,53 @@ static inline void appendContextSubtargetsForNode(Node* node, SubtargetGeometryL
         while ((offset = wordIterator->next()) != -1) {
             if (isWordTextBreak(wordIterator)) {
                 Vector<FloatQuad> quads;
-                textRenderer->absoluteQuadsForRange(quads, lastOffset, offset);
+                textLayoutObject->absoluteQuadsForRange(quads, lastOffset, offset);
                 appendQuadsToSubtargetList(quads, textNode, subtargets);
             }
             lastOffset = offset;
         }
     } else {
-        if (textRenderer->selectionState() == LayoutObject::SelectionNone)
+        if (textLayoutObject->selectionState() == LayoutObject::SelectionNone)
             return appendBasicSubtargetsForNode(node, subtargets);
         // If selected, make subtargets out of only the selected part of the text.
         int startPos, endPos;
-        switch (textRenderer->selectionState()) {
+        switch (textLayoutObject->selectionState()) {
         case LayoutObject::SelectionInside:
             startPos = 0;
-            endPos = textRenderer->textLength();
+            endPos = textLayoutObject->textLength();
             break;
         case LayoutObject::SelectionStart:
-            textRenderer->selectionStartEnd(startPos, endPos);
-            endPos = textRenderer->textLength();
+            textLayoutObject->selectionStartEnd(startPos, endPos);
+            endPos = textLayoutObject->textLength();
             break;
         case LayoutObject::SelectionEnd:
-            textRenderer->selectionStartEnd(startPos, endPos);
+            textLayoutObject->selectionStartEnd(startPos, endPos);
             startPos = 0;
             break;
         case LayoutObject::SelectionBoth:
-            textRenderer->selectionStartEnd(startPos, endPos);
+            textLayoutObject->selectionStartEnd(startPos, endPos);
             break;
         default:
             ASSERT_NOT_REACHED();
             return;
         }
         Vector<FloatQuad> quads;
-        textRenderer->absoluteQuadsForRange(quads, startPos, endPos);
+        textLayoutObject->absoluteQuadsForRange(quads, startPos, endPos);
         appendQuadsToSubtargetList(quads, textNode, subtargets);
     }
 }
 
 static inline void appendZoomableSubtargets(Node* node, SubtargetGeometryList& subtargets)
 {
-    LayoutBox* renderer = toLayoutBox(node->layoutObject());
-    ASSERT(renderer);
+    LayoutBox* layoutObject = toLayoutBox(node->layoutObject());
+    ASSERT(layoutObject);
 
     Vector<FloatQuad> quads;
-    FloatRect borderBoxRect = renderer->borderBoxRect();
-    FloatRect contentBoxRect = renderer->contentBoxRect();
-    quads.append(renderer->localToAbsoluteQuad(borderBoxRect));
+    FloatRect borderBoxRect = layoutObject->borderBoxRect();
+    FloatRect contentBoxRect = layoutObject->contentBoxRect();
+    quads.append(layoutObject->localToAbsoluteQuad(borderBoxRect));
     if (borderBoxRect != contentBoxRect)
-        quads.append(renderer->localToAbsoluteQuad(contentBoxRect));
+        quads.append(layoutObject->localToAbsoluteQuad(contentBoxRect));
     // FIXME: For LayoutBlocks, add column boxes and content boxes cleared for floats.
 
     Vector<FloatQuad>::const_iterator it = quads.begin();

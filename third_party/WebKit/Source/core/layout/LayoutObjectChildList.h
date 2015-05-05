@@ -52,11 +52,11 @@ public:
 
     void destroyLeftoverChildren();
 
-    LayoutObject* removeChildNode(LayoutObject* owner, LayoutObject*, bool notifyRenderer = true);
-    void insertChildNode(LayoutObject* owner, LayoutObject* newChild, LayoutObject* beforeChild, bool notifyRenderer = true);
-    void appendChildNode(LayoutObject* owner, LayoutObject* newChild, bool notifyRenderer = true)
+    LayoutObject* removeChildNode(LayoutObject* owner, LayoutObject*, bool notifyLayoutObject = true);
+    void insertChildNode(LayoutObject* owner, LayoutObject* newChild, LayoutObject* beforeChild, bool notifyLayoutObject = true);
+    void appendChildNode(LayoutObject* owner, LayoutObject* newChild, bool notifyLayoutObject = true)
     {
-        insertChildNode(owner, newChild, 0, notifyRenderer);
+        insertChildNode(owner, newChild, 0, notifyLayoutObject);
     }
 
 private:

@@ -103,7 +103,7 @@ namespace blink {
         void setPagePopupOwner(Element&);
         Element* pagePopupOwner() const { return m_pagePopupOwner.get(); }
 
-        LayoutView* contentRenderer() const; // Root of the render tree for the document contained in this frame.
+        LayoutView* contentLayoutObject() const; // Root of the layout tree for the document contained in this frame.
 
         Editor& editor() const;
         EventHandler& eventHandler() const;

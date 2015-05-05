@@ -173,9 +173,9 @@ InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
     return instrumentingAgentsFor(eventTarget->executionContext());
 }
 
-InstrumentingAgents* instrumentingAgentsFor(LayoutObject* renderer)
+InstrumentingAgents* instrumentingAgentsFor(LayoutObject* layoutObject)
 {
-    return instrumentingAgentsFor(renderer->frame());
+    return instrumentingAgentsFor(layoutObject->frame());
 }
 
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope)

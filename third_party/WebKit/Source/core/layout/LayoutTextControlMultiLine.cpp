@@ -88,17 +88,17 @@ PassRefPtr<ComputedStyle> LayoutTextControlMultiLine::createInnerEditorStyle(con
 
 LayoutObject* LayoutTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    LayoutObject* placeholderRenderer = LayoutTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
-    if (!placeholderRenderer)
+    LayoutObject* placeholderLayoutObject = LayoutTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
+    if (!placeholderLayoutObject)
         return 0;
-    if (!placeholderRenderer->isBox())
-        return placeholderRenderer;
-    LayoutBox* placeholderBox = toLayoutBox(placeholderRenderer);
+    if (!placeholderLayoutObject->isBox())
+        return placeholderLayoutObject;
+    LayoutBox* placeholderBox = toLayoutBox(placeholderLayoutObject);
     placeholderBox->mutableStyleRef().setLogicalWidth(Length(contentLogicalWidth() - placeholderBox->borderAndPaddingLogicalWidth(), Fixed));
     placeholderBox->layoutIfNeeded();
     placeholderBox->setX(borderLeft() + paddingLeft());
     placeholderBox->setY(borderTop() + paddingTop());
-    return placeholderRenderer;
+    return placeholderLayoutObject;
 }
 
 }

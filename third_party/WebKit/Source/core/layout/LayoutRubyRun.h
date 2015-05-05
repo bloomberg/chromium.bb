@@ -58,7 +58,7 @@ public:
     virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
     virtual void removeChild(LayoutObject* child) override;
 
-    void getOverhang(bool firstLine, LayoutObject* startRenderer, LayoutObject* endRenderer, int& startOverhang, int& endOverhang) const;
+    void getOverhang(bool firstLine, LayoutObject* startLayoutObject, LayoutObject* endLayoutObject, int& startOverhang, int& endOverhang) const;
 
     static LayoutRubyRun* staticCreateRubyRun(const LayoutObject* parentRuby);
 

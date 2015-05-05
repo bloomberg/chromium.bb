@@ -104,12 +104,12 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame, LocalFrame* mainFr
     WillBeHeapHashSet<RawPtrWillBeMember<Node>> blackList;
     for (const auto& hitResult : hitResults) {
         // Ignore any Nodes that can't be clicked on.
-        LayoutObject* renderer = hitResult.get()->layoutObject();
-        if (!renderer || !hitResult.get()->willRespondToMouseClickEvents())
+        LayoutObject* layoutObject = hitResult.get()->layoutObject();
+        if (!layoutObject || !hitResult.get()->willRespondToMouseClickEvents())
             continue;
 
         // Blacklist all of the Node's containers.
-        for (LayoutBlock* container = renderer->containingBlock(); container; container = container->containingBlock()) {
+        for (LayoutBlock* container = layoutObject->containingBlock(); container; container = container->containingBlock()) {
             Node* containerNode = container->node();
             if (!containerNode)
                 continue;

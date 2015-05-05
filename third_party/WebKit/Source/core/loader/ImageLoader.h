@@ -127,7 +127,7 @@ private:
     void dispatchPendingErrorEvent();
 
     LayoutImageResource* layoutImageResource();
-    void updateRenderer();
+    void updateLayoutObject();
 
     void setImageWithoutConsideringPendingLoadEvent(ImageResource*);
     void sourceImageChanged();

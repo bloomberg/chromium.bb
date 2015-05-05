@@ -2438,8 +2438,8 @@ YearListView.prototype.prepareNewCell = function(row) {
     if (this.highlightedMonth && row === this.highlightedMonth.year - 1) {
         var monthButton = cell.monthButtons[this.highlightedMonth.month];
         monthButton.classList.add(YearListCell.ClassNameHighlighted);
-        // aira-activedescendant assumes both elements have renderers, and
-        // |monthButton| might have no renderer yet.
+        // aira-activedescendant assumes both elements have layoutObjects, and
+        // |monthButton| might have no layoutObject yet.
         var element = this.element;
         setTimeout(function() {
             element.setAttribute("aria-activedescendant", monthButton.id);
@@ -3520,7 +3520,7 @@ CalendarTableView.prototype.updateCells = function() {
         }
     }
     if (activeCell) {
-        // Ensure a renderer because an element with no renderer doesn't post
+        // Ensure a layoutObject because an element with no layoutObject doesn't post
         // activedescendant events. This shouldn't run in the above |for| loop
         // to avoid CSS transition.
         activeCell.element.offsetLeft;

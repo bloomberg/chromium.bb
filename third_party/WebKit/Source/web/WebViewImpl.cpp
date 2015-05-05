@@ -1305,8 +1305,8 @@ Node* WebViewImpl::bestTapNode(const GestureEventWithHitTestResults& targetedTap
     if (!bestTouchNode)
         return nullptr;
 
-    // We might hit something like an image map that has no renderer on it
-    // Walk up the tree until we have a node with an attached renderer
+    // We might hit something like an image map that has no layoutObject on it
+    // Walk up the tree until we have a node with an attached layoutObject
     while (!bestTouchNode->layoutObject()) {
         bestTouchNode = LayoutTreeBuilderTraversal::parent(*bestTouchNode);
         if (!bestTouchNode)
@@ -3384,7 +3384,7 @@ IntSize WebViewImpl::contentsSize() const
 {
     if (!page()->mainFrame()->isLocalFrame())
         return IntSize();
-    LayoutView* root = page()->deprecatedLocalMainFrame()->contentRenderer();
+    LayoutView* root = page()->deprecatedLocalMainFrame()->contentLayoutObject();
     if (!root)
         return IntSize();
     return root->documentRect().size();

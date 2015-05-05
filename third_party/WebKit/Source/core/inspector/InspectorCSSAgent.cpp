@@ -812,10 +812,10 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     style = inspectorStyle->buildArrayForComputedStyle();
 }
 
-void InspectorCSSAgent::collectPlatformFontsForRenderer(LayoutText* renderer, HashCountedSet<String>* fontStats)
+void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutText* layoutObject, HashCountedSet<String>* fontStats)
 {
-    for (InlineTextBox* box = renderer->firstTextBox(); box; box = box->nextTextBox()) {
-        const ComputedStyle& style = renderer->styleRef(box->isFirstLineStyle());
+    for (InlineTextBox* box = layoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+        const ComputedStyle& style = layoutObject->styleRef(box->isFirstLineStyle());
         const Font& font = style.font();
         TextRun run = box->constructTextRunForInspector(style, font);
         SimpleShaper shaper(&font, run);
@@ -853,15 +853,15 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
 
     HashCountedSet<String> fontStats;
     for (size_t i = 0; i < textNodes.size(); ++i) {
-        LayoutText* renderer = textNodes[i]->layoutObject();
-        collectPlatformFontsForRenderer(renderer, &fontStats);
+        LayoutText* layoutObject = textNodes[i]->layoutObject();
+        collectPlatformFontsForLayoutObject(layoutObject, &fontStats);
 
-        if (!renderer->isTextFragment())
+        if (!layoutObject->isTextFragment())
             continue;
 
         // If we're the remaining text from a first-letter then our previous
-        // sibling has to be the first-letter renderer.
-        LayoutObject* previous = renderer->previousSibling();
+        // sibling has to be the first-letter layoutObject.
+        LayoutObject* previous = layoutObject->previousSibling();
         if (!previous)
             continue;
 
@@ -869,8 +869,8 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
             continue;
 
         // The first-letter pseudoElement only has one child, which is the
-        // first-letter renderer.
-        collectPlatformFontsForRenderer(toLayoutText(previous->slowFirstChild()), &fontStats);
+        // first-letter layoutObject.
+        collectPlatformFontsForLayoutObject(toLayoutText(previous->slowFirstChild()), &fontStats);
     }
 
     platformFonts = TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>::create();

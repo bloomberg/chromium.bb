@@ -51,8 +51,8 @@ void SplitTextNodeContainingElementCommand::doApply()
     if (!parent || !parent->parentElement() || !parent->parentElement()->hasEditableStyle())
         return;
 
-    LayoutObject* parentRenderer = parent->layoutObject();
-    if (!parentRenderer || !parentRenderer->isInline()) {
+    LayoutObject* parentLayoutObject = parent->layoutObject();
+    if (!parentLayoutObject || !parentLayoutObject->isInline()) {
         wrapContentsInDummySpan(parent);
         Node* firstChild = parent->firstChild();
         if (!firstChild || !firstChild->isElementNode())

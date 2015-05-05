@@ -46,22 +46,22 @@
 
 namespace blink {
 
-static const LayoutBlock* enclosingScrollableAncestor(const LayoutObject* renderer)
+static const LayoutBlock* enclosingScrollableAncestor(const LayoutObject* layoutObject)
 {
-    ASSERT(!renderer->isLayoutView());
+    ASSERT(!layoutObject->isLayoutView());
 
-    // Trace up the containingBlocks until we reach either the render view or a scrollable object.
-    const LayoutBlock* container = renderer->containingBlock();
+    // Trace up the containingBlocks until we reach either the layoutObject view or a scrollable object.
+    const LayoutBlock* container = layoutObject->containingBlock();
     while (!container->hasOverflowClip() && !container->isLayoutView())
         container = container->containingBlock();
     return container;
 }
 
-static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const LayoutObject* renderer, const LayoutBlock* container)
+static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const LayoutObject* layoutObject, const LayoutBlock* container)
 {
-    ASSERT(renderer);
+    ASSERT(layoutObject);
 
-    ASSERT(container || renderer->isLayoutView());
+    ASSERT(container || layoutObject->isLayoutView());
     if (!container)
         return FloatRect();
 
@@ -86,41 +86,41 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const LayoutObj
 
     // Fixed positions do not make sense in this coordinate system, but need to leave consistent tickmarks.
     // So, use their position when the view is not scrolled, like an absolute position.
-    if (renderer->style()->position() == FixedPosition && container->isLayoutView())
+    if (layoutObject->style()->position() == FixedPosition && container->isLayoutView())
         normalizedRect.move(-toLayoutView(container)->frameView()->scrollOffsetForViewportConstrainedObjects());
 
     normalizedRect.scale(1 / containerRect.width(), 1 / containerRect.height());
     return normalizedRect;
 }
 
-FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const LayoutObject* baseRenderer)
+FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const LayoutObject* baseLayoutObject)
 {
-    if (!baseRenderer || inputRect.isEmpty())
+    if (!baseLayoutObject || inputRect.isEmpty())
         return FloatRect();
 
     // Normalize the input rect to its container block.
-    const LayoutBlock* baseContainer = enclosingScrollableAncestor(baseRenderer);
-    FloatRect normalizedRect = toNormalizedRect(inputRect, baseRenderer, baseContainer);
+    const LayoutBlock* baseContainer = enclosingScrollableAncestor(baseLayoutObject);
+    FloatRect normalizedRect = toNormalizedRect(inputRect, baseLayoutObject, baseContainer);
 
     // Go up across frames.
-    for (const LayoutBox* renderer = baseContainer; renderer; ) {
+    for (const LayoutBox* layoutObject = baseContainer; layoutObject; ) {
 
         // Go up the layout tree until we reach the root of the current frame (the LayoutView).
-        while (!renderer->isLayoutView()) {
-            const LayoutBlock* container = enclosingScrollableAncestor(renderer);
+        while (!layoutObject->isLayoutView()) {
+            const LayoutBlock* container = enclosingScrollableAncestor(layoutObject);
 
             // Compose the normalized rects.
-            FloatRect normalizedBoxRect = toNormalizedRect(renderer->absoluteBoundingBoxRect(), renderer, container);
+            FloatRect normalizedBoxRect = toNormalizedRect(layoutObject->absoluteBoundingBoxRect(), layoutObject, container);
             normalizedRect.scale(normalizedBoxRect.width(), normalizedBoxRect.height());
             normalizedRect.moveBy(normalizedBoxRect.location());
 
-            renderer = container;
+            layoutObject = container;
         }
 
-        ASSERT(renderer->isLayoutView());
+        ASSERT(layoutObject->isLayoutView());
 
-        // Jump to the renderer owning the frame, if any.
-        renderer = renderer->frame() ? renderer->frame()->ownerLayoutObject() : 0;
+        // Jump to the layoutObject owning the frame, if any.
+        layoutObject = layoutObject->frame() ? layoutObject->frame()->ownerLayoutObject() : 0;
     }
 
     return normalizedRect;

@@ -263,11 +263,11 @@ static ImageResource* getImageResource(Element* element)
 {
     // Attempt to pull ImageResource from element
     ASSERT(element);
-    LayoutObject* renderer = element->layoutObject();
-    if (!renderer || !renderer->isImage())
+    LayoutObject* layoutObject = element->layoutObject();
+    if (!layoutObject || !layoutObject->isImage())
         return 0;
 
-    LayoutImage* image = toLayoutImage(renderer);
+    LayoutImage* image = toLayoutImage(layoutObject);
     if (image->cachedImage() && !image->cachedImage()->errorOccurred())
         return image->cachedImage();
 

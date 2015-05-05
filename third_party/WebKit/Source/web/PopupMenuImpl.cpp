@@ -342,7 +342,7 @@ void PopupMenuImpl::disconnectClient()
 {
     m_client = nullptr;
     // Cannot be done during finalization, so instead done when the
-    // render object is destroyed and disconnected.
+    // layout object is destroyed and disconnected.
     dispose();
 }
 
