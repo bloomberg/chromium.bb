@@ -361,9 +361,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    'third_party/swig/Lib/linkruntime.c': [  # http://crbug.com/98585
-        'UNKNOWN',
-    ],
     'third_party/talloc': [
         'GPL (v3 or later)',
         'UNKNOWN',  # http://crbug.com/98588

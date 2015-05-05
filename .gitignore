@@ -373,7 +373,6 @@ v8.log
 /third_party/snappy/src
 /third_party/stp/src
 /third_party/swiftshader/include/
-/third_party/swig
 /third_party/syzygy
 /third_party/syzygy/binaries
 /third_party/trace-viewer

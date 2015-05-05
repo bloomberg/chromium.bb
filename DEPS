@@ -197,9 +197,6 @@ deps = {
   'src/third_party/webgl/src':
    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '66dc43ded4472d20dda860acbf22a06e625ea86a',
 
-  'src/third_party/swig/Lib':
-   Var('chromium_git') + '/chromium/deps/swig/Lib.git' + '@' + 'f2a695d52e61e6a8d967731434f165ed400f0d69',
-
   'src/third_party/webdriver/pylib':
     Var('chromium_git') + '/external/selenium/py.git' + '@' + '5fd78261a75fe08d27ca4835fb6c5ce4b42275bd',
 
@@ -325,9 +322,6 @@ deps_os = {
     'src/third_party/nss':
      Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
 
-    'src/third_party/swig/win':
-     Var('chromium_git') + '/chromium/deps/swig/win.git' + '@' + '986f013ba518541adf5c839811efb35630a31031',
-
     # GNU binutils assembler for x86-32.
     'src/third_party/gnu_binutils':
       Var('chromium_git') + '/native_client/deps/third_party/gnu_binutils.git' + '@' + 'f4003433b61b25666565690caf3d7a7a1a4ec436',
@@ -384,9 +378,6 @@ deps_os = {
     'src/third_party/lighttpd':
      Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
 
-    'src/third_party/swig/mac':
-     Var('chromium_git') + '/chromium/deps/swig/mac.git' + '@' + '1b182eef16df2b506f1d710b34df65d55c1ac44e',
-
     # NSS, for SSLClientSocketNSS.
     'src/third_party/nss':
      Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
@@ -401,9 +392,6 @@ deps_os = {
 
     'src/third_party/xdg-utils':
      Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
-
-    'src/third_party/swig/linux':
-     Var('chromium_git') + '/chromium/deps/swig/linux.git' + '@' + '866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
 
     'src/third_party/lss':
       Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
