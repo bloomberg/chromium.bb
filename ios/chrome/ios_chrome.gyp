@@ -82,6 +82,8 @@
         ],
       },
       'sources': [
+        'browser/app_startup_parameters.h',
+        'browser/app_startup_parameters.mm',
         'browser/application_context.cc',
         'browser/application_context.h',
         'browser/application_context_impl.cc',
