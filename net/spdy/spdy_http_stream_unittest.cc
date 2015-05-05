@@ -189,8 +189,8 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 
   TestLoadTimingNotReused(*http_stream);
   http_stream->Close(true);
@@ -351,8 +351,8 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
 // Test to ensure the SpdyStream state machine does not get confused when a
@@ -454,8 +454,8 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   deterministic_data()->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
 // Test that the SpdyStream state machine can handle sending a final empty data
@@ -540,8 +540,8 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   deterministic_data()->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
 // Test that the SpdyStream state machine handles a chunked upload with no
@@ -610,8 +610,8 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   deterministic_data()->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
@@ -656,8 +656,8 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
 // The tests below are only for SPDY/3 and above.
@@ -747,8 +747,8 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   deterministic_data_->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data_->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data_->AllWriteDataConsumed());
+  EXPECT_TRUE(deterministic_data_->at_read_eof());
+  EXPECT_TRUE(deterministic_data_->at_write_eof());
 }
 
 // TODO(willchan): Write a longer test for SpdyStream that exercises all
