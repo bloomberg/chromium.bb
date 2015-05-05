@@ -1922,6 +1922,70 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
   EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
 }
 
+TEST(LayerAnimationControllerTest, AnimationStartScale) {
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  scoped_ptr<KeyframedTransformAnimationCurve> curve1(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  operations1.AppendScale(2.0, 3.0, 4.0);
+  curve1->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta(), operations1, nullptr));
+  TransformOperations operations2;
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
+  scoped_ptr<Animation> animation(
+      Animation::Create(curve1.Pass(), 1, 1, Animation::TRANSFORM));
+  controller_impl->AddAnimation(animation.Pass());
+
+  float start_scale = 0.f;
+  EXPECT_TRUE(controller_impl->AnimationStartScale(&start_scale));
+  EXPECT_EQ(4.f, start_scale);
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve2(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations3;
+  curve2->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta(), operations3, nullptr));
+  operations3.AppendScale(6.0, 5.0, 4.0);
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(1.0), operations3, nullptr));
+
+  controller_impl->RemoveAnimation(1);
+  animation = Animation::Create(curve2.Pass(), 2, 2, Animation::TRANSFORM);
+
+  // Reverse Direction
+  animation->set_direction(Animation::DIRECTION_REVERSE);
+  controller_impl->AddAnimation(animation.Pass());
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve3(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations4;
+  operations4.AppendScale(5.0, 3.0, 1.0);
+  curve3->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta(), operations4, nullptr));
+  TransformOperations operations5;
+  curve3->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(1.0), operations5, nullptr));
+
+  animation = Animation::Create(curve3.Pass(), 3, 3, Animation::TRANSFORM);
+  controller_impl->AddAnimation(animation.Pass());
+
+  EXPECT_TRUE(controller_impl->AnimationStartScale(&start_scale));
+  EXPECT_EQ(6.f, start_scale);
+
+  controller_impl->GetAnimationById(2)
+      ->SetRunState(Animation::FINISHED, TicksFromSecondsF(0.0));
+
+  // Only unfinished animations should be considered by
+  // AnimationStartScale.
+  EXPECT_TRUE(controller_impl->AnimationStartScale(&start_scale));
+  EXPECT_EQ(5.f, start_scale);
+}
+
 TEST(LayerAnimationControllerTest, MaximumTargetScale) {
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));

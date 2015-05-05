@@ -913,11 +913,14 @@ static inline void UpdateLayerScaleDrawProperties(
     LayerType* layer,
     float ideal_contents_scale,
     float maximum_animation_contents_scale,
+    float starting_animation_contents_scale,
     float page_scale_factor,
     float device_scale_factor) {
   layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
   layer->draw_properties().maximum_animation_contents_scale =
       maximum_animation_contents_scale;
+  layer->draw_properties().starting_animation_contents_scale =
+      starting_animation_contents_scale;
   layer->draw_properties().page_scale_factor = page_scale_factor;
   layer->draw_properties().device_scale_factor = device_scale_factor;
 }
@@ -1017,9 +1020,11 @@ static inline void CalculateAnimationContentsScale(
     const gfx::Transform& parent_transform,
     const gfx::Transform& combined_transform,
     bool* combined_is_animating_scale,
-    float* combined_maximum_animation_contents_scale) {
+    float* combined_maximum_animation_contents_scale,
+    float* combined_starting_animation_contents_scale) {
   *combined_is_animating_scale = false;
   *combined_maximum_animation_contents_scale = 0.f;
+  *combined_starting_animation_contents_scale = 0.f;
 }
 
 static inline void CalculateAnimationContentsScale(
@@ -1029,12 +1034,14 @@ static inline void CalculateAnimationContentsScale(
     const gfx::Transform& ancestor_transform,
     const gfx::Transform& combined_transform,
     bool* combined_is_animating_scale,
-    float* combined_maximum_animation_contents_scale) {
+    float* combined_maximum_animation_contents_scale,
+    float* combined_starting_animation_contents_scale) {
   if (ancestor_is_animating_scale &&
       ancestor_maximum_animation_contents_scale == 0.f) {
     // We've already failed to compute a maximum animated scale at an
     // ancestor, so we'll continue to fail.
     *combined_maximum_animation_contents_scale = 0.f;
+    *combined_starting_animation_contents_scale = 0.f;
     *combined_is_animating_scale = true;
     return;
   }
@@ -1043,6 +1050,7 @@ static inline void CalculateAnimationContentsScale(
     // Computing maximum animated scale in the presence of
     // non-scale/translation transforms isn't supported.
     *combined_maximum_animation_contents_scale = 0.f;
+    *combined_starting_animation_contents_scale = 0.f;
     *combined_is_animating_scale = true;
     return;
   }
@@ -1056,6 +1064,7 @@ static inline void CalculateAnimationContentsScale(
 
   if (!layer_is_animating_scale && !ancestor_is_animating_scale) {
     *combined_maximum_animation_contents_scale = 0.f;
+    *combined_starting_animation_contents_scale = 0.f;
     *combined_is_animating_scale = false;
     return;
   }
@@ -1067,6 +1076,7 @@ static inline void CalculateAnimationContentsScale(
   // a scale of 100.
   if (layer_is_animating_scale && ancestor_is_animating_scale) {
     *combined_maximum_animation_contents_scale = 0.f;
+    *combined_starting_animation_contents_scale = 0.f;
     *combined_is_animating_scale = true;
     return;
   }
@@ -1080,20 +1090,32 @@ static inline void CalculateAnimationContentsScale(
     *combined_maximum_animation_contents_scale =
         ancestor_maximum_animation_contents_scale *
         std::max(layer_transform_scales.x(), layer_transform_scales.y());
+    *combined_starting_animation_contents_scale =
+        *combined_maximum_animation_contents_scale;
     return;
   }
 
   float layer_maximum_animated_scale = 0.f;
+  float layer_start_animated_scale = 0.f;
   if (!layer->layer_animation_controller()->MaximumTargetScale(
           &layer_maximum_animated_scale)) {
     *combined_maximum_animation_contents_scale = 0.f;
     return;
   }
+  if (!layer->layer_animation_controller()->AnimationStartScale(
+          &layer_start_animated_scale)) {
+    *combined_starting_animation_contents_scale = 0.f;
+    return;
+  }
+
   gfx::Vector2dF ancestor_transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(ancestor_transform, 0.f);
-  *combined_maximum_animation_contents_scale =
-      layer_maximum_animated_scale *
+  float max_scale_xy =
       std::max(ancestor_transform_scales.x(), ancestor_transform_scales.y());
+  *combined_maximum_animation_contents_scale =
+      layer_maximum_animated_scale * max_scale_xy;
+  *combined_starting_animation_contents_scale =
+      layer_start_animated_scale * max_scale_xy;
 }
 
 template <typename LayerTypePtr>
@@ -1703,15 +1725,15 @@ static void CalculateDrawPropertiesInternal(
 
   bool combined_is_animating_scale = false;
   float combined_maximum_animation_contents_scale = 0.f;
+  float combined_starting_animation_contents_scale = 0.f;
   if (globals.can_adjust_raster_scales) {
     CalculateAnimationContentsScale(
-        layer,
-        data_from_ancestor.ancestor_is_animating_scale,
+        layer, data_from_ancestor.ancestor_is_animating_scale,
         data_from_ancestor.maximum_animation_contents_scale,
-        data_from_ancestor.parent_matrix,
-        combined_transform,
+        data_from_ancestor.parent_matrix, combined_transform,
         &combined_is_animating_scale,
-        &combined_maximum_animation_contents_scale);
+        &combined_maximum_animation_contents_scale,
+        &combined_starting_animation_contents_scale);
   }
   data_for_children.ancestor_is_animating_scale = combined_is_animating_scale;
   data_for_children.maximum_animation_contents_scale =
@@ -1743,9 +1765,8 @@ static void CalculateDrawPropertiesInternal(
       animating_transform_to_screen);
 
   UpdateLayerScaleDrawProperties(
-      layer,
-      ideal_contents_scale,
-      combined_maximum_animation_contents_scale,
+      layer, ideal_contents_scale, combined_maximum_animation_contents_scale,
+      combined_starting_animation_contents_scale,
       data_from_ancestor.in_subtree_of_page_scale_application_layer
           ? globals.page_scale_factor
           : 1.f,
@@ -1754,9 +1775,9 @@ static void CalculateDrawPropertiesInternal(
   LayerType* mask_layer = layer->mask_layer();
   if (mask_layer) {
     UpdateLayerScaleDrawProperties(
-        mask_layer,
-        ideal_contents_scale,
+        mask_layer, ideal_contents_scale,
         combined_maximum_animation_contents_scale,
+        combined_starting_animation_contents_scale,
         data_from_ancestor.in_subtree_of_page_scale_application_layer
             ? globals.page_scale_factor
             : 1.f,
@@ -1767,9 +1788,9 @@ static void CalculateDrawPropertiesInternal(
       layer->replica_layer() ? layer->replica_layer()->mask_layer() : NULL;
   if (replica_mask_layer) {
     UpdateLayerScaleDrawProperties(
-        replica_mask_layer,
-        ideal_contents_scale,
+        replica_mask_layer, ideal_contents_scale,
         combined_maximum_animation_contents_scale,
+        combined_starting_animation_contents_scale,
         data_from_ancestor.in_subtree_of_page_scale_application_layer
             ? globals.page_scale_factor
             : 1.f,

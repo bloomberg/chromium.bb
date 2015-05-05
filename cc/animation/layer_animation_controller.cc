@@ -513,6 +513,36 @@ bool LayerAnimationController::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
+bool LayerAnimationController::AnimationStartScale(float* start_scale) const {
+  *start_scale = 0.f;
+  for (size_t i = 0; i < animations_.size(); ++i) {
+    if (animations_[i]->is_finished() ||
+        animations_[i]->target_property() != Animation::TRANSFORM)
+      continue;
+
+    bool forward_direction = true;
+    switch (animations_[i]->direction()) {
+      case Animation::DIRECTION_NORMAL:
+      case Animation::DIRECTION_ALTERNATE:
+        forward_direction = animations_[i]->playback_rate() >= 0.0;
+        break;
+      case Animation::DIRECTION_REVERSE:
+      case Animation::DIRECTION_ALTERNATE_REVERSE:
+        forward_direction = animations_[i]->playback_rate() < 0.0;
+        break;
+    }
+
+    const TransformAnimationCurve* transform_animation_curve =
+        animations_[i]->curve()->ToTransformAnimationCurve();
+    float animation_start_scale = 0.f;
+    if (!transform_animation_curve->AnimationStartScale(forward_direction,
+                                                        &animation_start_scale))
+      return false;
+    *start_scale = std::max(*start_scale, animation_start_scale);
+  }
+  return true;
+}
+
 bool LayerAnimationController::MaximumTargetScale(float* max_scale) const {
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {

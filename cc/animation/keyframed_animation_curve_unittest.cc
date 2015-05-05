@@ -677,6 +677,53 @@ TEST(KeyframedAnimationCurveTest, MaximumTargetScale) {
   EXPECT_EQ(0.6f, maximum_scale);
 }
 
+// Tests that starting animation scale is computed as expected.
+TEST(KeyframedAnimationCurveTest, AnimationStartScale) {
+  scoped_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  curve->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta(), operations1, nullptr));
+  operations1.AppendScale(2.f, -3.f, 1.f);
+  curve->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta::FromSecondsD(1.f), operations1,
+                                EaseTimingFunction::Create()));
+
+  float start_scale = 0.f;
+
+  // Forward direction
+  EXPECT_TRUE(curve->AnimationStartScale(true, &start_scale));
+  EXPECT_EQ(1.f, start_scale);
+
+  // Backward direction
+  EXPECT_TRUE(curve->AnimationStartScale(false, &start_scale));
+  EXPECT_EQ(3.f, start_scale);
+
+  TransformOperations operations2;
+  operations2.AppendScale(6.f, 3.f, 2.f);
+  curve->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta::FromSecondsD(2.f), operations2,
+                                EaseTimingFunction::Create()));
+
+  // Backward direction
+  EXPECT_TRUE(curve->AnimationStartScale(true, &start_scale));
+  EXPECT_EQ(1.f, start_scale);
+
+  // Backward direction
+  EXPECT_TRUE(curve->AnimationStartScale(false, &start_scale));
+  EXPECT_EQ(6.f, start_scale);
+
+  TransformOperations operations3;
+  operations3.AppendRotate(1.f, 0.f, 0.f, 90.f);
+  curve->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta::FromSecondsD(3.f), operations3,
+                                EaseTimingFunction::Create()));
+
+  EXPECT_FALSE(curve->AnimationStartScale(false, &start_scale));
+  EXPECT_EQ(0.f, start_scale);
+}
+
 // Tests that an animation with a curve timing function works as expected.
 TEST(KeyframedAnimationCurveTest, CurveTiming) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(

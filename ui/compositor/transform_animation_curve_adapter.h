@@ -33,6 +33,8 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
   bool AffectsScale() const override;
   bool IsTranslation() const override;
   bool PreservesAxisAlignment() const override;
+  bool AnimationStartScale(bool forward_direction,
+                           float* start_scale) const override;
   bool MaximumTargetScale(bool forward_direction,
                           float* max_scale) const override;
 
@@ -64,6 +66,8 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
   bool AffectsScale() const override;
   bool IsTranslation() const override;
   bool PreservesAxisAlignment() const override;
+  bool AnimationStartScale(bool forward_direction,
+                           float* start_scale) const override;
   bool MaximumTargetScale(bool forward_direction,
                           float* max_scale) const override;
 

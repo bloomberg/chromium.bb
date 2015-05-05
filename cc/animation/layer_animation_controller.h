@@ -134,6 +134,11 @@ class CC_EXPORT LayerAnimationController
 
   bool AnimationsPreserveAxisAlignment() const;
 
+  // Sets |start_scale| to the maximum of starting animation scale along any
+  // dimension at any destination in active animations. Returns false if the
+  // starting scale cannot be computed.
+  bool AnimationStartScale(float* start_scale) const;
+
   // Sets |max_scale| to the maximum scale along any dimension at any
   // destination in active animations. Returns false if the maximum scale cannot
   // be computed.

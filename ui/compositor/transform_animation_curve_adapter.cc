@@ -75,6 +75,12 @@ bool TransformAnimationCurveAdapter::PreservesAxisAlignment() const {
          (target_value_.IsIdentity() || target_value_.IsScaleOrTranslation());
 }
 
+bool TransformAnimationCurveAdapter::AnimationStartScale(
+    bool forward_direction,
+    float* start_scale) const {
+  return false;
+}
+
 bool TransformAnimationCurveAdapter::MaximumTargetScale(
     bool forward_direction,
     float* max_scale) const {
@@ -141,6 +147,12 @@ bool InverseTransformCurveAdapter::PreservesAxisAlignment() const {
   return (initial_value_.IsIdentity() ||
           initial_value_.IsScaleOrTranslation()) &&
          (base_curve_.PreservesAxisAlignment());
+}
+
+bool InverseTransformCurveAdapter::AnimationStartScale(
+    bool forward_direction,
+    float* start_scale) const {
+  return false;
 }
 
 bool InverseTransformCurveAdapter::MaximumTargetScale(bool forward_direction,

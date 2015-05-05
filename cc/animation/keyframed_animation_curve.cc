@@ -379,7 +379,27 @@ bool KeyframedTransformAnimationCurve::IsTranslation() const {
   }
   return true;
 }
+bool KeyframedTransformAnimationCurve::AnimationStartScale(
+    bool forward_direction,
+    float* start_scale) const {
+  DCHECK_GE(keyframes_.size(), 2ul);
+  *start_scale = 0.f;
+  size_t start_location = 0;
+  if (!forward_direction) {
+    start_location = keyframes_.size() - 1;
+  }
 
+  gfx::Vector3dF initial_target_scale;
+  if (!keyframes_[start_location]->Value().ScaleComponent(
+          &initial_target_scale))
+    return false;
+  float start_scale_for_segment =
+      fmax(std::abs(initial_target_scale.x()),
+           fmax(std::abs(initial_target_scale.y()),
+                std::abs(initial_target_scale.z())));
+  *start_scale = start_scale_for_segment;
+  return true;
+}
 bool KeyframedTransformAnimationCurve::MaximumTargetScale(
     bool forward_direction,
     float* max_scale) const {

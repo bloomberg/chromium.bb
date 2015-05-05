@@ -964,12 +964,9 @@ void PictureLayerImpl::RecalculateRasterScales() {
   if (draw_properties().screen_space_transform_is_animating &&
       !ShouldAdjustRasterScaleDuringScaleAnimations()) {
     bool can_raster_at_maximum_scale = false;
-    // TODO(ajuma): If we need to deal with scale-down animations starting right
-    // as a layer gets promoted, then we'd want to have the
-    // |starting_animation_contents_scale| passed in here as a separate draw
-    // property so we could try use that when the max is too large.
-    // See crbug.com/422341.
+    bool should_raster_at_starting_scale = false;
     float maximum_scale = draw_properties().maximum_animation_contents_scale;
+    float starting_scale = draw_properties().starting_animation_contents_scale;
     if (maximum_scale) {
       gfx::Size bounds_at_maximum_scale = gfx::ToCeiledSize(
           gfx::ScaleSize(raster_source_->GetSize(), maximum_scale));
@@ -981,10 +978,23 @@ void PictureLayerImpl::RecalculateRasterScales() {
       if (maximum_area <= viewport_area)
         can_raster_at_maximum_scale = true;
     }
+    if (starting_scale && starting_scale > maximum_scale) {
+      gfx::Size bounds_at_starting_scale = gfx::ToCeiledSize(
+          gfx::ScaleSize(raster_source_->GetSize(), starting_scale));
+      int64 start_area = static_cast<int64>(bounds_at_starting_scale.width()) *
+                         static_cast<int64>(bounds_at_starting_scale.height());
+      gfx::Size viewport = layer_tree_impl()->device_viewport_size();
+      int64 viewport_area = static_cast<int64>(viewport.width()) *
+                            static_cast<int64>(viewport.height());
+      if (start_area <= viewport_area)
+        should_raster_at_starting_scale = true;
+    }
     // Use the computed scales for the raster scale directly, do not try to use
     // the ideal scale here. The current ideal scale may be way too large in the
     // case of an animation with scale, and will be constantly changing.
-    if (can_raster_at_maximum_scale)
+    if (should_raster_at_starting_scale)
+      raster_contents_scale_ = starting_scale;
+    else if (can_raster_at_maximum_scale)
       raster_contents_scale_ = maximum_scale;
     else
       raster_contents_scale_ = 1.f * ideal_page_scale_ * ideal_device_scale_;

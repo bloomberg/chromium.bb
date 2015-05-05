@@ -237,17 +237,21 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
-  void SetupDrawPropertiesAndUpdateTiles(FakePictureLayerImpl* layer,
-                                         float ideal_contents_scale,
-                                         float device_scale_factor,
-                                         float page_scale_factor,
-                                         float maximum_animation_contents_scale,
-                                         bool animating_transform_to_screen) {
+  void SetupDrawPropertiesAndUpdateTiles(
+      FakePictureLayerImpl* layer,
+      float ideal_contents_scale,
+      float device_scale_factor,
+      float page_scale_factor,
+      float maximum_animation_contents_scale,
+      float starting_animation_contents_scale,
+      bool animating_transform_to_screen) {
     layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
     layer->draw_properties().device_scale_factor = device_scale_factor;
     layer->draw_properties().page_scale_factor = page_scale_factor;
     layer->draw_properties().maximum_animation_contents_scale =
         maximum_animation_contents_scale;
+    layer->draw_properties().starting_animation_contents_scale =
+        starting_animation_contents_scale;
     layer->draw_properties().screen_space_transform_is_animating =
         animating_transform_to_screen;
     bool resourceless_software_draw = false;
@@ -271,20 +275,17 @@ class PictureLayerImplTest : public testing::Test {
                                     float device_scale_factor,
                                     float page_scale_factor,
                                     float maximum_animation_contents_scale,
+                                    float starting_animation_contents_scale,
                                     bool animating_transform) {
-    SetupDrawPropertiesAndUpdateTiles(pending_layer_,
-                                      contents_scale,
-                                      device_scale_factor,
-                                      page_scale_factor,
-                                      maximum_animation_contents_scale,
-                                      animating_transform);
+    SetupDrawPropertiesAndUpdateTiles(
+        pending_layer_, contents_scale, device_scale_factor, page_scale_factor,
+        maximum_animation_contents_scale, starting_animation_contents_scale,
+        animating_transform);
 
-    SetupDrawPropertiesAndUpdateTiles(active_layer_,
-                                      contents_scale,
-                                      device_scale_factor,
-                                      page_scale_factor,
-                                      maximum_animation_contents_scale,
-                                      animating_transform);
+    SetupDrawPropertiesAndUpdateTiles(
+        active_layer_, contents_scale, device_scale_factor, page_scale_factor,
+        maximum_animation_contents_scale, starting_animation_contents_scale,
+        animating_transform);
   }
 
   void ResetTilingsAndRasterScales() {
@@ -438,7 +439,8 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
 
   SetupTreesWithInvalidation(pending_pile, active_pile, Region());
 
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
@@ -534,7 +536,8 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
 
   SetupTreesWithInvalidation(pending_pile, active_pile, Region());
 
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
 
   // UpdateTiles with valid viewport. Should update tile viewport.
   // Note viewport is considered invalid if and only if in resourceless
@@ -616,7 +619,8 @@ TEST_F(PictureLayerImplTest, ViewportRectForTilePriorityIsCached) {
 
   SetupTreesWithInvalidation(pending_pile, active_pile, Region());
 
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
@@ -776,6 +780,7 @@ TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
                                     3.f,  // device scale
                                     2.f,  // page scale
                                     1.f,  // maximum animation scale
+                                    0.f,  // starting animation scale
                                     false);
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.f,
@@ -789,6 +794,7 @@ TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
                                     3.f,   // device scale
                                     2.2f,  // page scale
                                     1.f,   // maximum animation scale
+                                    0.f,   // starting animation scale
                                     false);
   ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.6f,
@@ -802,6 +808,7 @@ TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
                                     3.3f,   // device scale
                                     2.2f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(6u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -816,6 +823,7 @@ TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
                                     2.2f,   // device scale
                                     3.3f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(6u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -848,6 +856,7 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     3.f,  // device scale
                                     2.f,  // page scale
                                     1.f,  // maximum animation scale
+                                    0.f,  // starting animation scale
                                     false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.f,
@@ -861,6 +870,7 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     3.f,   // device scale
                                     2.2f,  // page scale
                                     1.f,   // maximum animation scale
+                                    0.f,   // starting animation scale
                                     false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.6f,
@@ -874,6 +884,7 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     3.3f,   // device scale
                                     2.2f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -888,6 +899,7 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     2.2f,   // device scale
                                     3.3f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -939,11 +951,11 @@ TEST_F(PictureLayerImplTest, ZoomOutCrash) {
   SetupTrees(pending_pile, active_pile);
   ResetTilingsAndRasterScales();
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
-  SetContentsScaleOnBothLayers(32.0f, 1.0f, 32.0f, 1.0f, false);
+  SetContentsScaleOnBothLayers(32.0f, 1.0f, 32.0f, 1.0f, 0.f, false);
   EXPECT_EQ(32.f, active_layer_->HighResTiling()->contents_scale());
   host_impl_.PinchGestureBegin();
-  SetContentsScaleOnBothLayers(1.0f, 1.0f, 1.0f, 1.0f, false);
-  SetContentsScaleOnBothLayers(1.0f, 1.0f, 1.0f, 1.0f, false);
+  SetContentsScaleOnBothLayers(1.0f, 1.0f, 1.0f, 1.0f, 0.f, false);
+  SetContentsScaleOnBothLayers(1.0f, 1.0f, 1.0f, 1.0f, 0.f, false);
   EXPECT_EQ(active_layer_->tilings()->NumHighResTilings(), 1);
 }
 
@@ -962,7 +974,7 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
   SetupTrees(pending_pile, active_pile);
   ResetTilingsAndRasterScales();
 
-  SetContentsScaleOnBothLayers(2.f, 1.0f, 2.f, 1.0f, false);
+  SetContentsScaleOnBothLayers(2.f, 1.0f, 2.f, 1.0f, 0.f, false);
   EXPECT_BOTH_EQ(num_tilings(), 2u);
   EXPECT_BOTH_EQ(tilings()->tiling_at(0)->contents_scale(), 2.f);
   EXPECT_BOTH_EQ(tilings()->tiling_at(1)->contents_scale(),
@@ -976,7 +988,7 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
 
   // Zoom out by a small amount. We should create a tiling at half
   // the scale (2/kMaxScaleRatioDuringPinch).
-  SetContentsScaleOnBothLayers(1.8f, 1.0f, 1.8f, 1.0f, false);
+  SetContentsScaleOnBothLayers(1.8f, 1.0f, 1.8f, 1.0f, 0.f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(2.0f,
                   active_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -991,12 +1003,12 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
   // Zoom out further, close to our low-res scale factor. We should
   // use that tiling as high-res, and not create a new tiling.
   SetContentsScaleOnBothLayers(low_res_factor * 2.1f, 1.0f,
-                               low_res_factor * 2.1f, 1.0f, false);
+                               low_res_factor * 2.1f, 1.0f, 0.f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Zoom in a lot now. Since we increase by increments of
   // kMaxScaleRatioDuringPinch, this will create a new tiling at 4.0.
-  SetContentsScaleOnBothLayers(3.8f, 1.0f, 3.8f, 1.f, false);
+  SetContentsScaleOnBothLayers(3.8f, 1.0f, 3.8f, 1.f, 0.f, false);
   EXPECT_EQ(4u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(4.0f,
                   active_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -1017,7 +1029,7 @@ TEST_F(PictureLayerImplTest, SnappedTilingDuringZoom) {
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
 
   // Set up the high and low res tilings before pinch zoom.
-  SetContentsScaleOnBothLayers(0.24f, 1.0f, 0.24f, 1.0f, false);
+  SetContentsScaleOnBothLayers(0.24f, 1.0f, 0.24f, 1.0f, 0.f, false);
   EXPECT_EQ(2u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(0.24f,
                   active_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -1032,7 +1044,7 @@ TEST_F(PictureLayerImplTest, SnappedTilingDuringZoom) {
 
   // Zoom out by a small amount. We should create a tiling at half
   // the scale (1/kMaxScaleRatioDuringPinch).
-  SetContentsScaleOnBothLayers(0.2f, 1.0f, 0.2f, 1.0f, false);
+  SetContentsScaleOnBothLayers(0.2f, 1.0f, 0.2f, 1.0f, 0.f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(0.24f,
                   active_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -1046,17 +1058,17 @@ TEST_F(PictureLayerImplTest, SnappedTilingDuringZoom) {
 
   // Zoom out further, close to our low-res scale factor. We should
   // use that tiling as high-res, and not create a new tiling.
-  SetContentsScaleOnBothLayers(0.1f, 1.0f, 0.1f, 1.0f, false);
+  SetContentsScaleOnBothLayers(0.1f, 1.0f, 0.1f, 1.0f, 0.f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Zoom in. 0.25(desired_scale) should be snapped to 0.24 during zoom-in
   // because 0.25(desired_scale) is within the ratio(1.2).
-  SetContentsScaleOnBothLayers(0.25f, 1.0f, 0.25f, 1.0f, false);
+  SetContentsScaleOnBothLayers(0.25f, 1.0f, 0.25f, 1.0f, 0.f, false);
   EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Zoom in a lot. Since we move in factors of two, we should get a scale that
   // is a power of 2 times 0.24.
-  SetContentsScaleOnBothLayers(1.f, 1.0f, 1.f, 1.0f, false);
+  SetContentsScaleOnBothLayers(1.f, 1.0f, 1.f, 1.0f, 0.f, false);
   EXPECT_EQ(4u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(1.92f,
                   active_layer_->tilings()->tiling_at(0)->contents_scale());
@@ -1098,7 +1110,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // Changing the ideal but not creating new tilings.
   scale = 1.5f;
   page_scale = 1.5f;
-  SetContentsScaleOnBothLayers(scale, 1.f, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(scale, 1.f, page_scale, 1.f, 0.f, false);
   EXPECT_EQ(2u, active_layer_->tilings()->num_tilings());
 
   // The tilings are still our target scale, so they aren't removed.
@@ -1111,7 +1123,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // Create a 1.2 scale tiling. Now we have 1.0 and 1.2 tilings. Ideal = 1.2.
   scale = 1.2f;
   page_scale = 1.2f;
-  SetContentsScaleOnBothLayers(1.2f, 1.f, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(1.2f, 1.f, page_scale, 1.f, 0.f, false);
   ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(
       1.f,
@@ -1131,7 +1143,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 0.5. Our target stays 1.2.
-  SetContentsScaleOnBothLayers(0.5f, 1.f, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(0.5f, 1.f, page_scale, 1.f, 0.f, false);
 
   // The high resolution tiling is between target and ideal, so is not
   // removed.  The low res tiling for the old ideal=1.0 scale is removed.
@@ -1140,7 +1152,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 1.0. Our target stays 1.2.
-  SetContentsScaleOnBothLayers(1.f, 1.f, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(1.f, 1.f, page_scale, 1.f, 0.f, false);
 
   // All the tilings are between are target and the ideal, so they are not
   // removed.
@@ -1150,7 +1162,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
 
   // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
   SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.1f, 1.f, page_scale, 1.f,
-                                    false);
+                                    0.f, false);
 
   // Because the pending layer's ideal scale is still 1.0, our tilings fall
   // in the range [1.0,1.2] and are kept.
@@ -1161,7 +1173,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
   // 1.2 still.
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.1f, 1.f, page_scale, 1.f,
-                                    false);
+                                    0.f, false);
 
   // Our 1.0 tiling now falls outside the range between our ideal scale and our
   // target raster scale. But it is in our used tilings set, so nothing is
@@ -1191,26 +1203,23 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
   bool animating_transform = true;
 
   ResetTilingsAndRasterScales();
 
   // Animating, so don't create low res even if there isn't one already.
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
   EXPECT_BOTH_EQ(num_tilings(), 1u);
 
   // Stop animating, low res gets created.
   animating_transform = false;
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
   EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), low_res_factor);
   EXPECT_BOTH_EQ(num_tilings(), 2u);
@@ -1225,11 +1234,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   page_scale = 2.f;
   maximum_animation_scale = 2.f;
   animating_transform = true;
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
   EXPECT_FALSE(active_layer_->LowResTiling());
   EXPECT_FALSE(pending_layer_->LowResTiling());
@@ -1238,11 +1245,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
 
   // Stop animating, new low res gets created for final page scale.
   animating_transform = false;
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
   EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), 2.f * low_res_factor);
   EXPECT_EQ(4u, active_layer_->num_tilings());
@@ -1264,15 +1269,14 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
   bool animating_transform = false;
 
   // Contents exactly fit on one tile at scale 1, no low res.
   float contents_scale = 1.f;
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
   EXPECT_BOTH_EQ(num_tilings(), 1u);
 
@@ -1280,11 +1284,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   // Contents that are smaller than one tile, no low res.
   contents_scale = 0.123f;
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
   EXPECT_BOTH_EQ(num_tilings(), 1u);
 
@@ -1293,11 +1295,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   // Any content bounds that would create more than one tile will
   // generate a low res tiling.
   contents_scale = 2.5f;
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
   EXPECT_BOTH_EQ(LowResTiling()->contents_scale(),
                  contents_scale * low_res_factor);
@@ -1311,9 +1311,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   mask->SetContentBounds(layer_bounds);
   mask->SetDrawsContent(true);
 
-  SetupDrawPropertiesAndUpdateTiles(mask.get(), contents_scale, device_scale,
-                                    page_scale, maximum_animation_scale,
-                                    animating_transform);
+  SetupDrawPropertiesAndUpdateTiles(
+      mask.get(), contents_scale, device_scale, page_scale,
+      maximum_animation_scale, starting_animation_scale, animating_transform);
   EXPECT_EQ(mask->HighResTiling()->contents_scale(), contents_scale);
   EXPECT_EQ(mask->num_tilings(), 1u);
 }
@@ -1374,7 +1374,8 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   active_mask->ReleaseResources();
   pending_mask->RecreateResources();
   active_mask->RecreateResources();
-  SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
   active_mask->HighResTiling()->CreateAllTilesForTesting();
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
   EXPECT_NE(0u, mask_resource_id);
@@ -1419,7 +1420,8 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   active_mask->ReleaseResources();
   pending_mask->RecreateResources();
   active_mask->RecreateResources();
-  SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_mask, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
   active_mask->HighResTiling()->CreateAllTilesForTesting();
   EXPECT_EQ(1u, active_mask->HighResTiling()->AllTilesForTesting().size());
   EXPECT_NE(0u, mask_resource_id);
@@ -1540,6 +1542,7 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
                                     1.f,  // device scale
                                     1.f,  // page scale
                                     1.f,  // maximum animation scale
+                                    0.f,  // starting animation_scale
                                     false);
   EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
 }
@@ -1575,7 +1578,8 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   host_impl_.InitializeRenderer(
       FakeOutputSurface::Create3d(context.Pass()).Pass());
 
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
   ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -1619,7 +1623,8 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   host_impl_.InitializeRenderer(
       FakeOutputSurface::Create3d(context.Pass()).Pass());
 
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
   ASSERT_LE(1u, active_layer_->tilings()->num_tilings());
 
   active_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -2016,8 +2021,10 @@ TEST_F(PictureLayerImplTest,
 
   // Due to layer scale throttling, the raster contents scale is changed to 1,
   // while the ideal is still 2.
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 2.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 2.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
 
   EXPECT_EQ(1.f, active_layer_->HighResTiling()->contents_scale());
   EXPECT_EQ(1.f, active_layer_->raster_contents_scale());
@@ -2492,7 +2499,8 @@ TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
 
   // Since the MinContentsScale is 1, the 0.5 tiling should be replaced by a 1.0
   // tiling.
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 0.5f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 0.5f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
 
   EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
   PictureLayerTiling* tiling =
@@ -2558,7 +2566,7 @@ TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
 TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
   // Set up layers with tilings.
   SetupDefaultTrees(gfx::Size(10, 10));
-  SetContentsScaleOnBothLayers(1.f, 1.f, 1.f, 1.f, false);
+  SetContentsScaleOnBothLayers(1.f, 1.f, 1.f, 1.f, 0.f, false);
   pending_layer_->PushPropertiesTo(active_layer_);
   EXPECT_TRUE(pending_layer_->DrawsContent());
   EXPECT_TRUE(pending_layer_->CanHaveTilings());
@@ -2585,7 +2593,7 @@ TEST_F(PictureLayerImplTest, FirstTilingDuringPinch) {
   // case 4.
   host_impl_.PinchGestureBegin();
   float high_res_scale = 2.3f;
-  SetContentsScaleOnBothLayers(high_res_scale, 1.f, 1.f, 1.f, false);
+  SetContentsScaleOnBothLayers(high_res_scale, 1.f, 1.f, 1.f, 0.f, false);
   EXPECT_EQ(4.f, pending_layer_->HighResTiling()->contents_scale());
 }
 
@@ -2599,7 +2607,8 @@ TEST_F(PictureLayerImplTest, PinchingTooSmall) {
   float high_res_scale = 0.0001f;
   EXPECT_LT(high_res_scale, pending_layer_->MinimumContentsScale());
 
-  SetContentsScaleOnBothLayers(high_res_scale, 1.f, high_res_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(high_res_scale, 1.f, high_res_scale, 1.f, 0.f,
+                               false);
   EXPECT_FLOAT_EQ(pending_layer_->MinimumContentsScale(),
                   pending_layer_->HighResTiling()->contents_scale());
 }
@@ -2610,7 +2619,7 @@ TEST_F(PictureLayerImplTest, PinchingTooSmallWithContentsScale) {
   ResetTilingsAndRasterScales();
 
   float contents_scale = 0.15f;
-  SetContentsScaleOnBothLayers(contents_scale, 1.f, 1.f, 1.f, false);
+  SetContentsScaleOnBothLayers(contents_scale, 1.f, 1.f, 1.f, 0.f, false);
 
   ASSERT_GE(pending_layer_->num_tilings(), 0u);
   EXPECT_FLOAT_EQ(contents_scale,
@@ -2623,10 +2632,68 @@ TEST_F(PictureLayerImplTest, PinchingTooSmallWithContentsScale) {
             pending_layer_->MinimumContentsScale());
 
   SetContentsScaleOnBothLayers(contents_scale * page_scale, 1.f, page_scale,
-                               1.f, false);
+                               1.f, 0.f, false);
   ASSERT_GE(pending_layer_->num_tilings(), 0u);
   EXPECT_FLOAT_EQ(pending_layer_->MinimumContentsScale(),
                   pending_layer_->HighResTiling()->contents_scale());
+}
+
+TEST_F(PictureLayerImplTest, ConsiderAnimationStartScaleForRasterScale) {
+  gfx::Size viewport_size(1000, 1000);
+  host_impl_.SetViewportSize(viewport_size);
+
+  gfx::Size layer_bounds(100, 100);
+  SetupDefaultTrees(layer_bounds);
+
+  float contents_scale = 2.f;
+  float device_scale = 1.f;
+  float page_scale = 1.f;
+  float maximum_animation_scale = 3.f;
+  float starting_animation_scale = 1.f;
+  bool animating_transform = true;
+
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
+
+  // Maximum animation scale is greater than starting animation scale
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
+
+  animating_transform = false;
+
+  // Once we stop animating, a new high-res tiling should be created.
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
+
+  // Starting animation scale greater than maximum animation scale
+  // Bounds at starting scale within the viewport
+  animating_transform = true;
+  starting_animation_scale = 5.f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 5.f);
+
+  // Once we stop animating, a new high-res tiling should be created.
+  animating_transform = false;
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
+
+  // Starting Animation scale greater than maximum animation scale
+  // Bounds at starting scale outisde the viewport
+  animating_transform = true;
+  starting_animation_scale = 11.f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
 }
 
 TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
@@ -2640,6 +2707,7 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
   bool animating_transform = false;
 
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
@@ -2650,11 +2718,9 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   maximum_animation_scale = 3.f;
   contents_scale = 2.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
 
   // Further changes to scale during the animation should not cause a new
@@ -2662,21 +2728,17 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   contents_scale = 4.f;
   maximum_animation_scale = 5.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
 
   // When animating with an unknown maximum animation scale factor, a new
@@ -2685,33 +2747,27 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   contents_scale = 2.f;
   maximum_animation_scale = 0.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), page_scale * device_scale);
 
   // Further changes to scale during the animation should not cause a new
   // high-res tiling to get created.
   contents_scale = 3.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), page_scale * device_scale);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
   contents_scale = 4.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
 
   // When animating with a maxmium animation scale factor that is so large
@@ -2722,22 +2778,18 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   contents_scale = 2.f;
   maximum_animation_scale = 11.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), page_scale * device_scale);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
   contents_scale = 11.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 11.f);
 
   // When animating with a maxmium animation scale factor that is so large
@@ -2748,22 +2800,18 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   contents_scale = 0.1f;
   maximum_animation_scale = 11.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), device_scale * page_scale);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
   contents_scale = 12.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 12.f);
 
   // When animating toward a smaller scale, but that is still so large that the
@@ -2773,22 +2821,18 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   contents_scale = 11.f;
   maximum_animation_scale = 11.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), device_scale * page_scale);
 
   // Once we stop animating, a new high-res tiling should be created.
   animating_transform = false;
   contents_scale = 11.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 11.f);
 }
 
@@ -2805,13 +2849,12 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
   float device_scale = 1.3f;
   float page_scale = 1.4f;
   float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
   bool animating_transform = false;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
 
   // Since we're GPU-rasterizing, starting an animation should cause tiling
@@ -2820,44 +2863,36 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
   contents_scale = 2.f;
   maximum_animation_scale = 4.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
 
   // Further changes to scale during the animation should cause a new high-res
   // tiling to get created.
   contents_scale = 3.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 3.f);
 
   // Since we're re-rasterizing during the animation, scales smaller than 1
   // should be respected.
   contents_scale = 0.25f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 0.25f);
 
   // Once we stop animating, a new high-res tiling should be created.
   contents_scale = 4.f;
   animating_transform = false;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
 }
 
@@ -3281,35 +3316,30 @@ TEST_F(PictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
   float device_scale = 1.f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
   bool animating_transform = false;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
 
   // Changing the source scale without being in an animation will cause
   // the layer to reset its source scale to 1.f.
   contents_scale = 3.f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
 
   // Further changes to the source scale will no longer be reflected in the
   // contents scale.
   contents_scale = 0.5f;
 
-  SetContentsScaleOnBothLayers(contents_scale,
-                               device_scale,
-                               page_scale,
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
-                               animating_transform);
+                               starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
 }
 
@@ -3419,6 +3449,7 @@ TEST_F(NoLowResPictureLayerImplTest, ManageTilingsCreatesTilings) {
                                     3.f,  // device scale
                                     2.f,  // page scale
                                     1.f,  // maximum animation scale
+                                    0.f,  // starting animation scale
                                     false);
   ASSERT_EQ(1u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.f,
@@ -3430,6 +3461,7 @@ TEST_F(NoLowResPictureLayerImplTest, ManageTilingsCreatesTilings) {
                                     3.f,   // device scale
                                     2.2f,  // page scale
                                     1.f,   // maximum animation scale
+                                    0.f,   // starting animation scale
                                     false);
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.6f,
@@ -3441,6 +3473,7 @@ TEST_F(NoLowResPictureLayerImplTest, ManageTilingsCreatesTilings) {
                                     3.3f,   // device scale
                                     2.2f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -3453,6 +3486,7 @@ TEST_F(NoLowResPictureLayerImplTest, ManageTilingsCreatesTilings) {
                                     2.2f,   // device scale
                                     3.3f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -3480,6 +3514,7 @@ TEST_F(NoLowResPictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
                                     3.f,  // device scale
                                     2.f,  // page scale
                                     1.f,  // maximum animation scale
+                                    0.f,  // starting animation scale
                                     false);
   ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.f,
@@ -3491,6 +3526,7 @@ TEST_F(NoLowResPictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
                                     3.f,   // device scale
                                     2.2f,  // page scale
                                     1.f,   // maximum animation scale
+                                    0.f,   // starting animation scale
                                     false);
   ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.6f,
@@ -3502,6 +3538,7 @@ TEST_F(NoLowResPictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
                                     3.3f,   // device scale
                                     2.2f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -3514,6 +3551,7 @@ TEST_F(NoLowResPictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
                                     2.2f,   // device scale
                                     3.3f,   // page scale
                                     1.f,    // maximum animation scale
+                                    0.f,    // starting animation scale
                                     false);
   ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
@@ -3594,7 +3632,8 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
 
   SetupTreesWithInvalidation(pending_pile, active_pile, Region());
 
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
 
   // UpdateTiles with valid viewport. Should update tile viewport.
   // Note viewport is considered invalid if and only if in resourceless
@@ -3683,7 +3722,8 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
 
   ResetTilingsAndRasterScales();
 
-  SetContentsScaleOnBothLayers(scale, device_scale, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(scale, device_scale, page_scale, 1.f, 0.f,
+                               false);
   ASSERT_EQ(1u, active_layer_->tilings()->num_tilings());
 
   // Ensure UpdateTiles won't remove any tilings. Note this is unrelated to
@@ -3701,7 +3741,8 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   // Changing the ideal but not creating new tilings.
   scale *= 1.5f;
   page_scale *= 1.5f;
-  SetContentsScaleOnBothLayers(scale, device_scale, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(scale, device_scale, page_scale, 1.f, 0.f,
+                               false);
   ASSERT_EQ(1u, active_layer_->tilings()->num_tilings());
 
   // The tilings are still our target scale, so they aren't removed.
@@ -3714,7 +3755,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   // Create a 1.2 scale tiling. Now we have 1.0 and 1.2 tilings. Ideal = 1.2.
   scale /= 4.f;
   page_scale /= 4.f;
-  SetContentsScaleOnBothLayers(1.2f, device_scale, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(1.2f, device_scale, page_scale, 1.f, 0.f, false);
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(1.f,
                   active_layer_->tilings()->tiling_at(1)->contents_scale());
@@ -3729,7 +3770,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 0.5. Our target stays 1.2.
-  SetContentsScaleOnBothLayers(0.5f, device_scale, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(0.5f, device_scale, page_scale, 1.f, 0.f, false);
 
   // The high resolution tiling is between target and ideal, so is not
   // removed.  The low res tiling for the old ideal=1.0 scale is removed.
@@ -3738,7 +3779,7 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 1.0. Our target stays 1.2.
-  SetContentsScaleOnBothLayers(1.f, device_scale, page_scale, 1.f, false);
+  SetContentsScaleOnBothLayers(1.f, device_scale, page_scale, 1.f, 0.f, false);
 
   // All the tilings are between are target and the ideal, so they are not
   // removed.
@@ -3747,8 +3788,8 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
-  SetupDrawPropertiesAndUpdateTiles(
-      active_layer_, 1.1f, device_scale, page_scale, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.1f, device_scale,
+                                    page_scale, 1.f, 0.f, false);
 
   // Because the pending layer's ideal scale is still 1.0, our tilings fall
   // in the range [1.0,1.2] and are kept.
@@ -3758,8 +3799,8 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
 
   // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
   // 1.2 still.
-  SetupDrawPropertiesAndUpdateTiles(
-      pending_layer_, 1.1f, device_scale, page_scale, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.1f, device_scale,
+                                    page_scale, 1.f, 0.f, false);
 
   // Our 1.0 tiling now falls outside the range between our ideal scale and our
   // target raster scale. But it is in our used tilings set, so nothing is
@@ -3805,6 +3846,7 @@ TEST_F(NoLowResPictureLayerImplTest, ReleaseResources) {
                                     2.7f,  // device scale
                                     3.2f,  // page scale
                                     1.f,   // maximum animation scale
+                                    0.f,   // starting animation scale
                                     false);
   EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
 }
@@ -3825,7 +3867,8 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
   SetupTrees(pending_pile, active_pile);
 
   ResetTilingsAndRasterScales();
-  SetupDrawPropertiesAndUpdateTiles(active_layer_, 2.5f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 2.5f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
 
   float max_contents_scale = active_layer_->MaximumTilingContentsScale();
   EXPECT_EQ(2.5f, max_contents_scale);
@@ -4714,7 +4757,8 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   // Update tiles.
   pending_layer_->draw_properties().visible_content_rect = viewport;
   pending_layer_->draw_properties().screen_space_transform = transform;
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
   pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
 
   // Ensure we can't activate.
@@ -4727,7 +4771,8 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   // Update tiles.
   pending_layer_->draw_properties().visible_content_rect = viewport;
   pending_layer_->draw_properties().screen_space_transform = transform;
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
+                                    false);
   pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
 
   // Make sure all viewport tiles (viewport from the tiling) are ready to draw.
