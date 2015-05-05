@@ -83,9 +83,7 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   void OnGetExtMessageBundle(const std::string& extension_id,
                              IPC::Message* reply_msg);
   void OnGetExtMessageBundleOnBlockingPool(
-      const base::FilePath& extension_path,
       const std::string& extension_id,
-      const std::string& default_locale,
       IPC::Message* reply_msg);
   void OnExtensionCloseChannel(int port_id, const std::string& error_message);
   void OnAddAPIActionToExtensionActivityLog(

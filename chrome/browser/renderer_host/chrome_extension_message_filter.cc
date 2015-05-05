@@ -235,32 +235,24 @@ void ChromeExtensionMessageFilter::OnPostMessage(
 
 void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
     const std::string& extension_id, IPC::Message* reply_msg) {
-  const extensions::Extension* extension =
-      extension_info_map_->extensions().GetByID(extension_id);
-  base::FilePath extension_path;
-  std::string default_locale;
-  if (extension) {
-    extension_path = extension->path();
-    default_locale = extensions::LocaleInfo::GetDefaultLocale(extension);
-  }
-
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
       base::Bind(
           &ChromeExtensionMessageFilter::OnGetExtMessageBundleOnBlockingPool,
-          this, extension_path, extension_id, default_locale, reply_msg));
+          this, extension_id, reply_msg));
 }
 
 void ChromeExtensionMessageFilter::OnGetExtMessageBundleOnBlockingPool(
-    const base::FilePath& extension_path,
     const std::string& extension_id,
-    const std::string& default_locale,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
+  const extensions::ExtensionSet& extension_set =
+      extension_info_map_->extensions();
+
   scoped_ptr<extensions::MessageBundle::SubstitutionMap> dictionary_map(
-      extensions::file_util::LoadMessageBundleSubstitutionMap(
-          extension_path, extension_id, default_locale));
+      extensions::file_util::LoadMessageBundleSubstitutionMapWithImports(
+          extension_id, extension_set));
 
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(reply_msg,
                                                       *dictionary_map);

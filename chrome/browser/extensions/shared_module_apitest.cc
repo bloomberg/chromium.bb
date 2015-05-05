@@ -46,11 +46,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModuleInstallEvent) {
   ASSERT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("shared_module").AppendASCII("import_pass"),
       1));
+}
 
-  EXPECT_TRUE(listener1.WaitUntilSatisfied());
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModuleLocale) {
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("shared_module").AppendASCII("shared"));
+  ASSERT_TRUE(extension);
 
-  ExtensionTestMessageListener listener2("shared_module_updated", false);
-  ReloadExtension(extension->id());
-
-  EXPECT_TRUE(listener2.WaitUntilSatisfied());
+  EXPECT_TRUE(RunExtensionTest("shared_module/import_locales"));
 }

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/message_bundle.h"
 
 class ExtensionIconSet;
 class GURL;
@@ -22,8 +23,8 @@ class FilePath;
 
 namespace extensions {
 class Extension;
+class ExtensionSet;
 struct InstallWarning;
-class MessageBundle;
 
 // Utilities for manipulating the on-disk storage of extensions.
 namespace file_util {
@@ -123,10 +124,17 @@ MessageBundle* LoadMessageBundle(const base::FilePath& extension_path,
 
 // Loads the extension message bundle substitution map. Contains at least
 // the extension_id item.
-std::map<std::string, std::string>* LoadMessageBundleSubstitutionMap(
+MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
     const base::FilePath& extension_path,
     const std::string& extension_id,
     const std::string& default_locale);
+
+// Loads the extension message bundle substitution map, including messages from
+// Shared Modules that the given extension imports. Contains at least the
+// extension_id item.
+MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapWithImports(
+    const std::string& extension_id,
+    const ExtensionSet& extension_set);
 
 // Helper functions for getting paths for files used in content verification.
 base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path);
