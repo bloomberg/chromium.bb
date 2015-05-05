@@ -35,7 +35,9 @@ class BasePref(object):
   tag_name = None
 
   def __init__(self, elem):
-    assert elem.tag == type(self).tag_name
+    if elem.tag != type(self).tag_name:
+      raise TypeError('Property %r has type %r, but trying to access as %r' %
+                      (elem.get('name'), elem.tag, type(self).tag_name))
     self._elem = elem
 
   def __str__(self):
@@ -160,9 +162,9 @@ _PREF_TYPES = {c.tag_name: c for c in [BooleanPref, FloatPref, IntPref,
                                        LongPref, StringPref, StringSetPref]}
 
 
-class SharedPrefs(collections.MutableMapping):
+class SharedPrefs(object):
   def __init__(self, device, package, filename):
-    """Mapping object to read and update "Shared Prefs" of Android apps.
+    """Helper object to read and update "Shared Prefs" of Android apps.
 
     Such files typically look like, e.g.:
 
@@ -177,9 +179,9 @@ class SharedPrefs(collections.MutableMapping):
 
         prefs = shared_prefs.SharedPrefs(device, 'com.my.app', 'my_prefs.xml')
         prefs.Load()
-        prefs['string:someHashValue'] # => '249b3e5af13d4db2'
-        prefs['int:databaseVersion'] = 42
-        del prefs['boolean:featureEnabled']
+        prefs.GetString('someHashValue') # => '249b3e5af13d4db2'
+        prefs.SetInt('databaseVersion', 42)
+        prefs.Remove('featureEnabled')
         prefs.Commit()
 
     The object may also be used as a context manager to automatically load and
@@ -270,47 +272,79 @@ class SharedPrefs(collections.MutableMapping):
     self._changed = False
 
   def __len__(self):
-    """Get the number of preferences contained in this object."""
+    """Get the number of preferences in this collection."""
     return len(self.xml)
 
-  def __iter__(self):
-    """Iterate over the preference keys, each of the form: 'type:name'."""
-    for child in self.xml:
-      yield ':'.join([child.tag, child.get('name')])
+  def PropertyType(self, key):
+    """Get the type (i.e. tag name) of a property in the collection."""
+    return self._GetChild(key).tag
 
-  def __getitem__(self, key):
-    """Get the value of a preference.
+  def HasProperty(self, key):
+    try:
+      self._GetChild(key)
+      return True
+    except KeyError:
+      return False
 
-    Raises:
-      TypeError when the key is not of the form 'type:name' for a valid type.
-      KeyError when the key is not found in the collection.
-    """
-    return self._GetPref(key).get()
+  def GetBoolean(self, key):
+    """Get a boolean property."""
+    return BooleanPref(self._GetChild(key)).get()
 
-  def __setitem__(self, key, value):
-    """Set the value of a preference.
+  def SetBoolean(self, key, value):
+    """Set a boolean property."""
+    self._SetPrefValue(key, value, BooleanPref)
 
-    Raises:
-      TypeError when the key is not of the form 'type:name' for a valid type.
-    """
-    pref = self._GetPref(key, create=True)
-    if not pref.has_value or pref.get() != value:
-      pref.set(value)
-      self._changed = True
-      logging.info('Setting property: %s', pref)
+  def GetFloat(self, key):
+    """Get a float property."""
+    return FloatPref(self._GetChild(key)).get()
 
-  def __delitem__(self, key):
-    """Delete a preference.
+  def SetFloat(self, key, value):
+    """Set a float property."""
+    self._SetPrefValue(key, value, FloatPref)
 
-    Raises:
-      TypeError when the key is not of the form 'type:name' for a valid type.
-      KeyError when the key is not found in the collection.
-    """
-    self.xml.remove(self._GetPref(key)._elem)
+  def GetInt(self, key):
+    """Get an int property."""
+    return IntPref(self._GetChild(key)).get()
+
+  def SetInt(self, key, value):
+    """Set an int property."""
+    self._SetPrefValue(key, value, IntPref)
+
+  def GetLong(self, key):
+    """Get a long property."""
+    return LongPref(self._GetChild(key)).get()
+
+  def SetLong(self, key, value):
+    """Set a long property."""
+    self._SetPrefValue(key, value, LongPref)
+
+  def GetString(self, key):
+    """Get a string property."""
+    return StringPref(self._GetChild(key)).get()
+
+  def SetString(self, key, value):
+    """Set a string property."""
+    self._SetPrefValue(key, value, StringPref)
+
+  def GetStringSet(self, key):
+    """Get a string set property."""
+    return StringSetPref(self._GetChild(key)).get()
+
+  def SetStringSet(self, key, value):
+    """Set a string set property."""
+    self._SetPrefValue(key, value, StringSetPref)
+
+  def Remove(self, key):
+    """Remove a preference from the collection."""
+    self.xml.remove(self._GetChild(key))
 
   def AsDict(self):
     """Return the properties and their values as a dictionary."""
-    return dict(self.iteritems())
+    d = {}
+    for child in self.xml:
+      pref = _PREF_TYPES[child.tag](child)
+      d[child.get('name')] = pref.get()
+    return d
 
   def __enter__(self):
     """Load preferences file from the device when entering a context."""
@@ -322,21 +356,36 @@ class SharedPrefs(collections.MutableMapping):
     if not exc_type:
       self.Commit()
 
-  def _GetPref(self, key, create=False):
-    """Find a preference by key, possibly creating one if it doesn't exist."""
-    if ':' not in key:
-      raise TypeError('Invalid preference key %r' % key)
-    tag, name = key.split(':', 1)
-    try:
-      mk_pref = _PREF_TYPES[tag]
-    except KeyError:
-      raise TypeError('Invalid preference key %r' % key)
+  def _GetChild(self, key):
+    """Get the underlying xml node that holds the property of a given key.
+
+    Raises:
+      KeyError when the key is not found in the collection.
+    """
     for child in self.xml:
-      if child.get('name') == name:
-        return mk_pref(child)
-    if create:
-      child = ElementTree.SubElement(self.xml, tag, {'name': name})
+      if child.get('name') == key:
+        return child
+    raise KeyError(key)
+
+  def _SetPrefValue(self, key, value, pref_cls):
+    """Set the value of a property.
+
+    Args:
+      key: The key of the property to set.
+      value: The new value of the property.
+      pref_cls: A subclass of BasePref used to access the property.
+
+    Raises:
+      TypeError when the key already exists but with a different type.
+    """
+    try:
+      pref = pref_cls(self._GetChild(key))
+      old_value = pref.get()
+    except KeyError:
+      pref = pref_cls(ElementTree.SubElement(
+          self.xml, pref_cls.tag_name, {'name': key}))
+      old_value = None
+    if old_value != value:
+      pref.set(value)
       self._changed = True
-      return mk_pref(child)
-    else:
-      raise KeyError(key)
+      logging.info('Setting property: %s', pref)

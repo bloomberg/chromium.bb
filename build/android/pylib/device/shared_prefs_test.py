@@ -52,26 +52,33 @@ class SharedPrefsTest(unittest.TestCase):
           '  <boolean name="featureEnabled" value="false" />\n'
           '  <string name="someHashValue">249b3e5af13d4db2</string>\n'
           '</map>'})
-    self.expected_data = {'int:databaseVersion': 107,
-                          'boolean:featureEnabled': False,
-                          'string:someHashValue': '249b3e5af13d4db2'}
+    self.expected_data = {'databaseVersion': 107,
+                          'featureEnabled': False,
+                          'someHashValue': '249b3e5af13d4db2'}
 
-  def testMutableMappingInterface(self):
+  def testPropertyLifetime(self):
     prefs = shared_prefs.SharedPrefs(
         self.device, 'com.some.package', 'prefs.xml')
     self.assertEquals(len(prefs), 0) # collection is empty before loading
-    prefs['int:myValue'] = 444
-    self.assertEquals(prefs['int:myValue'], 444)
-    self.assertTrue('int:myValue' in prefs)
-    del prefs['int:myValue']
-    self.assertFalse('int:myValue' in prefs)
+    prefs.SetInt('myValue', 444)
+    self.assertEquals(len(prefs), 1)
+    self.assertEquals(prefs.GetInt('myValue'), 444)
+    self.assertTrue(prefs.HasProperty('myValue'))
+    prefs.Remove('myValue')
+    self.assertEquals(len(prefs), 0)
+    self.assertFalse(prefs.HasProperty('myValue'))
     with self.assertRaises(KeyError):
-      if prefs['int:myValue'] == 444:
-        assert False
+      prefs.GetInt('myValue')
+
+  def testPropertyType(self):
+    prefs = shared_prefs.SharedPrefs(
+        self.device, 'com.some.package', 'prefs.xml')
+    prefs.SetInt('myValue', 444)
+    self.assertEquals(prefs.PropertyType('myValue'), 'int')
     with self.assertRaises(TypeError):
-      prefs['a_random_key'] = 123
+      prefs.GetString('myValue')
     with self.assertRaises(TypeError):
-      prefs['blob:stuff'] = 123
+      prefs.SetString('myValue', 'hello')
 
   def testLoad(self):
     prefs = shared_prefs.SharedPrefs(
@@ -93,17 +100,15 @@ class SharedPrefsTest(unittest.TestCase):
     self.assertTrue(prefs.changed)
 
   def testCommit(self):
-    sample_data = {'int:magicNumber': 42,
-                   'float:myMetric': 3.14,
-                   'long:bigNumner': 6000000000,
-                   'set:apps': ['gmail', 'chrome', 'music']}
     prefs = shared_prefs.SharedPrefs(
         self.device, 'com.some.package', 'other_prefs.xml')
     self.assertFalse(self.device.FileExists(prefs.path)) # file does not exist
     prefs.Load()
     self.assertEquals(len(prefs), 0) # file did not exist, collection is empty
-    prefs.update(sample_data)
-    self.assertEquals(len(prefs), len(sample_data))
+    prefs.SetInt('magicNumber', 42)
+    prefs.SetFloat('myMetric', 3.14)
+    prefs.SetLong('bigNumner', 6000000000)
+    prefs.SetStringSet('apps', ['gmail', 'chrome', 'music'])
     self.assertFalse(self.device.FileExists(prefs.path)) # still does not exist
     self.assertTrue(prefs.changed)
     prefs.Commit()
@@ -116,7 +121,11 @@ class SharedPrefsTest(unittest.TestCase):
         self.device, 'com.some.package', 'other_prefs.xml')
     self.assertEquals(len(prefs), 0) # collection is empty before loading
     prefs.Load()
-    self.assertEquals(prefs.AsDict(), sample_data) # data survived roundtrip
+    self.assertEquals(prefs.AsDict(), {
+        'magicNumber': 42,
+        'myMetric': 3.14,
+        'bigNumner': 6000000000,
+        'apps': ['gmail', 'chrome', 'music']}) # data survived roundtrip
 
   def testAsContextManager_onlyReads(self):
     with shared_prefs.SharedPrefs(
@@ -127,27 +136,27 @@ class SharedPrefsTest(unittest.TestCase):
   def testAsContextManager_readAndWrite(self):
     with shared_prefs.SharedPrefs(
         self.device, 'com.some.package', 'prefs.xml') as prefs:
-      prefs['boolean:featureEnabled'] = True
-      del prefs['string:someHashValue']
-      prefs['string:newString'] = 'hello'
+      prefs.SetBoolean('featureEnabled', True)
+      prefs.Remove('someHashValue')
+      prefs.SetString('newString', 'hello')
 
     self.assertTrue(self.device.WriteFile.called) # did write
     with shared_prefs.SharedPrefs(
         self.device, 'com.some.package', 'prefs.xml') as prefs:
       # changes persisted
-      self.assertTrue(prefs['boolean:featureEnabled'])
-      self.assertFalse('string:someHashValue' in prefs)
-      self.assertEquals(prefs['string:newString'], 'hello')
-      self.assertTrue('int:databaseVersion' in prefs) # still there
+      self.assertTrue(prefs.GetBoolean('featureEnabled'))
+      self.assertFalse(prefs.HasProperty('someHashValue'))
+      self.assertEquals(prefs.GetString('newString'), 'hello')
+      self.assertTrue(prefs.HasProperty('databaseVersion')) # still there
 
   def testAsContextManager_commitAborted(self):
     with self.assertRaises(TypeError):
       with shared_prefs.SharedPrefs(
           self.device, 'com.some.package', 'prefs.xml') as prefs:
-        prefs['boolean:featureEnabled'] = True
-        del prefs['string:someHashValue']
-        prefs['string:newString'] = 'hello'
-        prefs['a_random_key'] = 'oops!'
+        prefs.SetBoolean('featureEnabled', True)
+        prefs.Remove('someHashValue')
+        prefs.SetString('newString', 'hello')
+        prefs.SetInt('newString', 123) # oops!
 
     self.assertEquals(self.device.WriteFile.call_args_list, []) # did not write
     with shared_prefs.SharedPrefs(
