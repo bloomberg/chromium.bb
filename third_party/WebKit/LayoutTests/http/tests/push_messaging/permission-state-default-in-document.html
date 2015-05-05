@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Push API: permissionState resolves with default when no permission is set</title>
+<title>Push API: permissionState resolves with prompt when no permission is set</title>
 <link rel="manifest" href="resources/push_manifest.json">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
@@ -21,11 +21,11 @@ async_test(function(test) {
             return serviceWorkerRegistration.pushManager.permissionState();
         })
         .then(function(permissionStatus) {
-            assert_equals(permissionStatus, 'default');
+            assert_equals(permissionStatus, 'prompt');
             return service_worker_unregister_and_done(test, workerScope);
         })
         .catch(unreached_rejection(test));
-}, 'Push API: permissionState() resolves with default when permission is not set');
+}, 'Push API: permissionState() resolves with prompt when permission is not set');
 </script>
 </body>
 </html>

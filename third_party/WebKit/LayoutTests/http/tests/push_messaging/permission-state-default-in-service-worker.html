@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>
-   Push API: permissionState when called in service worker resolves with default when no permission is set
+   Push API: permissionState when called in service worker resolves with prompt when no permission is set
 </title>
 <link rel="manifest" href="resources/push_manifest.json">
 <script src="../resources/testharness.js"></script>
@@ -30,12 +30,12 @@ async_test(function(test) {
             assert_equals(event.data.command, 'permissionState');
             assert_true(event.data.success,
                         'permissionState should succeed. Error message: ' + event.data.errorMessage);
-            assert_equals(event.data.permission, 'default');
+            assert_equals(event.data.permission, 'prompt');
 
             test.done();
         });
     }).catch(unreached_rejection(test));
-}, 'permissionState when called in service worker resolves with default when no permission is set');
+}, 'permissionState when called in service worker resolves with prompt when no permission is set');
 </script>
 </body>
 </html>

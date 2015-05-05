@@ -40,6 +40,8 @@ String PushPermissionStatusCallbacks::permissionString(WebPushPermissionStatus s
         return "denied";
     case WebPushPermissionStatusDefault:
         return "default";
+    case WebPushPermissionStatusPrompt:
+        return "prompt";
     }
 
     ASSERT_NOT_REACHED();
