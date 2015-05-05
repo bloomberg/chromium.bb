@@ -58,7 +58,7 @@ chrome/browser/resources/chromeos/chromevox/tools/publish_webstore_extension.py 
 
 chrome/browser/resources/chromeos/chromevox/tools/publish_webstore_extension.py \
   --client_secret $AXS_CHROME_APPS_CLIENT_SECRET \
-  ipkjmjaledkapilfdigkgfmpekpfnkih/Release/ui/accessibility/extensions/colorenhancer \
+  ipkjmjaledkapilfdigkgfmpekpfnkih:out/Release/ui/accessibility/extensions/colorenhancer \
   --publish
 
 chrome/browser/resources/chromeos/chromevox/tools/publish_webstore_extension.py \
