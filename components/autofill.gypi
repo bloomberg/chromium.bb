@@ -205,13 +205,6 @@
         'autofill/core/browser/webdata/autofill_webdata_service.h',
         'autofill/core/browser/webdata/autofill_webdata_service_observer.h',
       ],
-      'conditions': [
-        ['desktop_linux != 1', {
-          # Controls whether Wallet cards can be saved to the local instance of
-          # chrome.
-          'defines': [ 'ENABLE_SAVE_WALLET_CARDS_LOCALLY' ],
-        }],
-      ],
 
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],

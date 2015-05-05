@@ -953,18 +953,28 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     cards_to_suggest.push_back(credit_card);
   }
 
-  // Server cards shadow identical local cards.
+  // De-dupe card suggestions. Full server cards shadow local cards, and
+  // local cards shadow masked server cards.
   for (auto outer_it = cards_to_suggest.begin();
        outer_it != cards_to_suggest.end();
        ++outer_it) {
-    if ((*outer_it)->record_type() == CreditCard::LOCAL_CARD)
-      continue;
 
-    for (auto inner_it = cards_to_suggest.begin();
-         inner_it != cards_to_suggest.end();) {
-      auto inner_it_copy = inner_it++;
-      if ((*inner_it_copy)->IsLocalDuplicateOfServerCard(**outer_it))
-        cards_to_suggest.erase(inner_it_copy);
+    if ((*outer_it)->record_type() == CreditCard::FULL_SERVER_CARD) {
+      for (auto inner_it = cards_to_suggest.begin();
+           inner_it != cards_to_suggest.end();) {
+        auto inner_it_copy = inner_it++;
+        if ((*inner_it_copy)->IsLocalDuplicateOfServerCard(**outer_it))
+          cards_to_suggest.erase(inner_it_copy);
+      }
+    } else if ((*outer_it)->record_type() == CreditCard::LOCAL_CARD) {
+      for (auto inner_it = cards_to_suggest.begin();
+           inner_it != cards_to_suggest.end();) {
+        auto inner_it_copy = inner_it++;
+        if ((*inner_it_copy)->record_type() == CreditCard::MASKED_SERVER_CARD &&
+            (*outer_it)->IsLocalDuplicateOfServerCard(**inner_it_copy)) {
+          cards_to_suggest.erase(inner_it_copy);
+        }
+      }
     }
   }
 

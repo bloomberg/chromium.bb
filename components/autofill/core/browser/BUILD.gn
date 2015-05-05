@@ -117,11 +117,6 @@ static_library("browser") {
     "webdata/autofill_webdata_service_observer.h",
   ]
 
-  # Controls whether Wallet cards can be saved to the local instance of chrome.
-  if (!is_desktop_linux) {
-    defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY" ]
-  }
-
   deps = [
     "//base",
     "//base:i18n",

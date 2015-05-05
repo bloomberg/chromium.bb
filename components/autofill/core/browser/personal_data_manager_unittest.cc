@@ -151,6 +151,8 @@ class PersonalDataManagerTest : public testing::Test {
     std::string account_id =
         account_tracker_->SeedAccountInfo("12345", "syncuser@example.com");
     prefs_->SetString(::prefs::kGoogleServicesAccountId, account_id);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableOfferStoreUnmaskedWalletCards);
   }
 
   // The temporary directory should be deleted at the end to ensure that
@@ -466,6 +468,36 @@ TEST_F(PersonalDataManagerTest, ReturnsServerCreditCards) {
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+}
+
+// Makes sure that full cards are re-masked when full PAN storage is off.
+TEST_F(PersonalDataManagerTest, RefuseToStoreFullCard) {
+  prefs_->SetBoolean(prefs::kAutofillWalletSyncExperimentEnabled, true);
+
+  // On Linux this should be disabled automatically. Elsewhere, only if the
+  // flag is passed.
+#if defined(OS_LINUX)
+  EXPECT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOfferStoreUnmaskedWalletCards));
+#else
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableOfferStoreUnmaskedWalletCards);
+#endif
+
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2015");
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD,
+            personal_data_->GetCreditCards()[0]->record_type());
 }
 
 // Tests that UpdateServerCreditCard can be used to mask or unmask server cards.
@@ -2951,7 +2983,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   // hidden.
   std::vector<CreditCard> server_cards;
   // This server card matches a local card, except the local card is missing the
-  // number. This should count as a dupe.
+  // number. This should count as a dupe. The locally saved card takes
+  // precedence.
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "9012" /* Visa */, "01", "2010");
@@ -2976,14 +3009,14 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   base::MessageLoop::current()->Run();
 
   suggestions = personal_data_->GetCreditCardSuggestions(
-          AutofillType(CREDIT_CARD_NAME), base::string16());
+      AutofillType(CREDIT_CARD_NAME), base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[0].value);
-  EXPECT_NE(suggestions[0].backend_id.guid, credit_card0.guid());
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[1].value);
-  EXPECT_EQ(suggestions[1].backend_id.guid, credit_card2.guid());
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[2].value);
-  EXPECT_NE(suggestions[2].backend_id.guid, credit_card1.guid());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
+  EXPECT_EQ(suggestions[0].backend_id.guid, credit_card1.guid());
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  EXPECT_NE(suggestions[1].backend_id.guid, credit_card0.guid());
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
+  EXPECT_EQ(suggestions[2].backend_id.guid, credit_card2.guid());
   EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
   EXPECT_NE(suggestions[3].backend_id.guid, credit_card2.guid());
 
@@ -3007,10 +3040,10 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
                 "2109"),
             suggestions[3].value);
 
-  // Make sure a server card can be a dupe of more than one local card.
+  // Make sure a full server card can be a dupe of more than one local card.
   CreditCard credit_card3("4141084B-72D7-4B73-90CF-3D6AC154673B",
                           "https://www.example.com");
-  test::SetCreditCardInfo(&credit_card3, "John Dillinger", "", "01", "");
+  test::SetCreditCardInfo(&credit_card3, "Clyde Barrow", "", "04", "");
   personal_data_->AddCreditCard(credit_card3);
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -3020,9 +3053,9 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions) {
   suggestions = personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NAME), base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[0].value);
-  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[1].value);
-  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[2].value);
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
+  EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
+  EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[2].value);
   EXPECT_EQ(ASCIIToUTF16("Bonnie Parker"), suggestions[3].value);
 }
 

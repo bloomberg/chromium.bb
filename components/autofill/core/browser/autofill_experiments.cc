@@ -23,7 +23,12 @@ bool IsAutofillEnabled(const PrefService* pref_service) {
 }
 
 bool OfferStoreUnmaskedCards() {
-#if defined(ENABLE_SAVE_WALLET_CARDS_LOCALLY)
+#if defined(OS_LINUX)
+  // The checkbox can be forced on with a flag, but by default we don't store
+  // on Linux due to lack of system keychain integration. See crbug.com/162735
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableOfferStoreUnmaskedWalletCards);
+#else
   // Query the field trial before checking command line flags to ensure UMA
   // reports the correct group.
   std::string group_name =
@@ -39,8 +44,6 @@ bool OfferStoreUnmaskedCards() {
 
   // Otherwise use the field trial to show the checkbox or not.
   return group_name != "Disabled";
-#else
-  return false;
 #endif
 }
 
