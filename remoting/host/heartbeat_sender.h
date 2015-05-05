@@ -18,7 +18,6 @@
 #include "remoting/signaling/signal_strategy.h"
 
 namespace base {
-class MessageLoopProxy;
 class TimeDelta;
 }  // namespace base
 

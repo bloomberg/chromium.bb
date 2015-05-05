@@ -7,8 +7,10 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/mock_log.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
 #include "policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -63,10 +65,9 @@ class PolicyWatcherTest : public testing::Test {
     EXPECT_CALL(mock_policy_callback_, OnPolicyUpdatePtr(testing::_)).Times(0);
     EXPECT_CALL(mock_policy_callback_, OnPolicyError()).Times(0);
 
-    message_loop_proxy_ = base::MessageLoopProxy::current();
-
     // Retaining a raw pointer to keep control over policy contents.
-    policy_loader_ = new policy::FakeAsyncPolicyLoader(message_loop_proxy_);
+    policy_loader_ =
+        new policy::FakeAsyncPolicyLoader(base::ThreadTaskRunnerHandle::Get());
     policy_watcher_ =
         PolicyWatcher::CreateFromPolicyLoader(make_scoped_ptr(policy_loader_));
 
@@ -206,7 +207,6 @@ class PolicyWatcherTest : public testing::Test {
   static const char* kHostDomain;
   static const char* kPortRange;
   base::MessageLoop message_loop_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockPolicyCallback mock_policy_callback_;
 
   // |policy_loader_| is owned by |policy_watcher_|. PolicyWatcherTest retains

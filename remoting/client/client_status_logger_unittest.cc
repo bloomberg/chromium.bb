@@ -5,7 +5,6 @@
 #include "remoting/client/client_status_logger.h"
 
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "remoting/signaling/server_log_entry_unittest.h"
@@ -68,7 +67,6 @@ class ClientStatusLoggerTest : public testing::Test {
   void SetUp() override {
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, RemoveListener(_));
-    message_loop_proxy_ = base::MessageLoopProxy::current();
     client_status_logger_.reset(
         new ClientStatusLogger(ServerLogEntry::ME2ME,
                                &signal_strategy_,
@@ -77,7 +75,6 @@ class ClientStatusLoggerTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<ClientStatusLogger> client_status_logger_;
 };

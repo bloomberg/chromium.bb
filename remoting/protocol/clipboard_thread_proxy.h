@@ -12,10 +12,6 @@
 #include "base/task_runner.h"
 #include "remoting/protocol/clipboard_stub.h"
 
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
 namespace remoting {
 namespace protocol {
 
