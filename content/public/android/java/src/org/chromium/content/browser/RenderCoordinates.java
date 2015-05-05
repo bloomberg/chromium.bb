@@ -36,10 +36,13 @@ public class RenderCoordinates {
 
     private float mContentOffsetYPix;
 
+    private boolean mHasFrameInfo;
+
     // Internally-visible set of update methods (used by ContentViewCore).
     void reset() {
         mScrollXCss = mScrollYCss = 0;
         mPageScaleFactor = 1.0f;
+        mHasFrameInfo = false;
     }
 
     void updateContentSizeCss(float contentWidthCss, float contentHeightCss) {
@@ -67,6 +70,8 @@ public class RenderCoordinates {
         updateContentSizeCss(contentWidthCss, contentHeightCss);
         mLastFrameViewportWidthCss = viewportWidthCss;
         mLastFrameViewportHeightCss = viewportHeightCss;
+
+        mHasFrameInfo = true;
     }
 
     /**
@@ -340,6 +345,13 @@ public class RenderCoordinates {
      */
     public int getMaxVerticalScrollPixInt() {
         return (int) Math.floor(getMaxVerticalScrollPix());
+    }
+
+    /**
+     * @return Whether a frame info update has been received.
+     */
+    public boolean hasFrameInfo() {
+        return mHasFrameInfo;
     }
 
     /**

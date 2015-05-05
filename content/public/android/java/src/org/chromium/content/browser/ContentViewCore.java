@@ -2875,6 +2875,10 @@ public class ContentViewCore
      */
     public void setBrowserAccessibilityManager(BrowserAccessibilityManager manager) {
         mBrowserAccessibilityManager = manager;
+
+        if (mBrowserAccessibilityManager != null && mRenderCoordinates.hasFrameInfo()) {
+            mBrowserAccessibilityManager.notifyFrameInfoInitialized();
+        }
     }
 
     /**

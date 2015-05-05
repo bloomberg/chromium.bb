@@ -84,7 +84,6 @@ public class BrowserAccessibilityManager {
             ContentViewCore contentViewCore) {
         mNativeObj = nativeBrowserAccessibilityManagerAndroid;
         mContentViewCore = contentViewCore;
-        mContentViewCore.setBrowserAccessibilityManager(this);
         mAccessibilityFocusId = View.NO_ID;
         mIsHovering = false;
         mCurrentRootId = View.NO_ID;
@@ -112,6 +111,9 @@ public class BrowserAccessibilityManager {
                 return delegate.performAction(virtualViewId, action, arguments);
             }
         };
+
+        // This must occur last as it may cause a call to notifyFrameInfoInitialized.
+        mContentViewCore.setBrowserAccessibilityManager(this);
     }
 
     @CalledByNative
