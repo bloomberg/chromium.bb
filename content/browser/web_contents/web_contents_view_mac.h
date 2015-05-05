@@ -78,6 +78,7 @@ class WebContentsViewMac : public WebContentsView,
   void RestoreFocus() override;
   DropData* GetDropData() const override;
   gfx::Rect GetViewBounds() const override;
+  void SetBackgroundColor(SkColor background_color) override;
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() const override;
   void CreateView(const gfx::Size& initial_size,

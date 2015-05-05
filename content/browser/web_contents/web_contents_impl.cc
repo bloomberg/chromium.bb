@@ -4272,6 +4272,13 @@ bool WebContentsImpl::GetAllowOtherViews() {
   return view_->GetAllowOtherViews();
 }
 
+void WebContentsImpl::SetBackgroundColor(SkColor background_color) {
+  if (is_being_destroyed_)
+    return;
+  if (view_)
+    view_->SetBackgroundColor(background_color);
+}
+
 #endif
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,
