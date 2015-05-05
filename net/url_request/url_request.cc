@@ -506,6 +506,10 @@ void URLRequest::Start() {
 
   // Only notify the delegate for the initial request.
   if (network_delegate_) {
+    // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
+    tracked_objects::ScopedTracker tracking_profile25(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start 2.5"));
+
     OnCallToDelegate();
     int error = network_delegate_->NotifyBeforeURLRequest(
         this, before_request_callback_, &delegate_redirect_url_);
