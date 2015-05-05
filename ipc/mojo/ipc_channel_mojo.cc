@@ -156,7 +156,9 @@ void ServerChannelMojo::OnPipeAvailable(
     return;
   }
 
-  client_channel_.Bind(CreateMessagingPipe(handle.Pass()));
+  client_channel_.Bind(
+      mojo::InterfacePtrInfo<ClientChannel>(
+          CreateMessagingPipe(handle.Pass()), 0u));
   client_channel_.set_error_handler(this);
   client_channel_->Init(
       peer.Pass(),
