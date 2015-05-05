@@ -69,7 +69,7 @@ StyleFetchedImage* CSSImageValue::cachedImage(Document* document, const Resource
             request.setCrossOriginAccessControl(document->securityOrigin(), options.allowCredentials, options.credentialsRequested);
 
         if (ResourcePtr<ImageResource> cachedImage = document->fetcher()->fetchImage(request))
-            m_image = StyleFetchedImage::create(cachedImage.get());
+            m_image = StyleFetchedImage::create(cachedImage.get(), document);
     }
 
     return (m_image && m_image->isImageResource()) ? toStyleFetchedImage(m_image) : 0;

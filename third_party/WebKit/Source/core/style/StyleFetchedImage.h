@@ -30,12 +30,13 @@
 
 namespace blink {
 
+class Document;
 class ImageResource;
 
 class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
     WTF_MAKE_FAST_ALLOCATED(StyleFetchedImage);
 public:
-    static PassRefPtr<StyleFetchedImage> create(ImageResource* image) { return adoptRef(new StyleFetchedImage(image)); }
+    static PassRefPtr<StyleFetchedImage> create(ImageResource* image, Document* document) { return adoptRef(new StyleFetchedImage(image, document)); }
     virtual ~StyleFetchedImage();
 
     virtual WrappedImagePtr data() const override { return m_image.get(); }
@@ -53,14 +54,16 @@ public:
     virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
     virtual void addClient(LayoutObject*) override;
     virtual void removeClient(LayoutObject*) override;
+    virtual void notifyFinished(Resource*) override;
     virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;
     virtual bool knownToBeOpaque(const LayoutObject*) const override;
     virtual ImageResource* cachedImage() const override { return m_image.get(); }
 
 private:
-    explicit StyleFetchedImage(ImageResource*);
+    explicit StyleFetchedImage(ImageResource*, Document*);
 
     ResourcePtr<ImageResource> m_image;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImage, isImageResource());

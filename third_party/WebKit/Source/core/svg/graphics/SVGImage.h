@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class Document;
 class FrameView;
 class Page;
 class LayoutBox;
@@ -68,6 +69,8 @@ public:
 
     // Does the SVG image/document contain any animations?
     bool hasAnimations() const;
+
+    void updateUseCounters(Document&) const;
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
     String debugName() const { return "SVGImage"; }

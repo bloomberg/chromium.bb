@@ -555,7 +555,6 @@ public:
         AudioListenerDopplerFactor = 620,
         AudioListenerSpeedOfSound = 621,
         AudioListenerSetVelocity = 622,
-        SVGSMILAnimationInImage = 626,
         CSSSelectorPseudoFullScreenDocument = 627,
         CSSSelectorPseudoFullScreenAncestor = 628,
         CSSSelectorPseudoFullScreen = 629,
@@ -701,6 +700,7 @@ public:
         FullscreenSecureOrigin = 765,
         FullscreenInsecureOrigin = 766,
         DialogInSandboxedContext = 767,
+        SVGSMILAnimationInImageRegardlessOfCache = 768,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

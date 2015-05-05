@@ -33,11 +33,13 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/svg/LayoutSVGImage.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
@@ -418,6 +420,9 @@ void ImageLoader::notifyFinished(Resource* resource)
         m_image->updateImageAnimationPolicy();
 
     updateRenderer();
+
+    if (m_image && m_image->image() && m_image->image()->isSVGImage())
+        toSVGImage(m_image->image())->updateUseCounters(element()->document());
 
     if (!m_hasPendingLoadEvent)
         return;

@@ -27,11 +27,13 @@
 #include "core/css/CSSImageValue.h"
 #include "core/fetch/ImageResource.h"
 #include "core/layout/LayoutObject.h"
+#include "core/svg/graphics/SVGImage.h"
 
 namespace blink {
 
-StyleFetchedImage::StyleFetchedImage(ImageResource* image)
+StyleFetchedImage::StyleFetchedImage(ImageResource* image, Document* document)
     : m_image(image)
+    , m_document(document)
 {
     m_isImageResource = true;
     m_image->addClient(this);
@@ -100,6 +102,12 @@ void StyleFetchedImage::addClient(LayoutObject* layoutObject)
 void StyleFetchedImage::removeClient(LayoutObject* layoutObject)
 {
     m_image->removeClient(layoutObject);
+}
+
+void StyleFetchedImage::notifyFinished(Resource* resource)
+{
+    if (m_image && m_image->image() && m_image->image()->isSVGImage())
+        toSVGImage(m_image->image())->updateUseCounters(*m_document);
 }
 
 PassRefPtr<Image> StyleFetchedImage::image(LayoutObject* layoutObject, const IntSize&) const
