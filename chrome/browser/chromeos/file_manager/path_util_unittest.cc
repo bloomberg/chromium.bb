@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace file_manager {
@@ -14,6 +15,7 @@ namespace util {
 namespace {
 
 TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
 
   // This looks like "/home/chronos/u-hash/Downloads" in the production
