@@ -1582,7 +1582,8 @@ TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
 
 // Test input method focus changes affected by focus changes cross 2 top
 // windows.
-TEST_F(WidgetInputMethodInteractiveTest, TwoTopWindows) {
+// Flaky: https://crbug.com/484836
+TEST_F(WidgetInputMethodInteractiveTest, DISABLED_TwoTopWindows) {
   Widget* widget1 = CreateWidget();
   Widget* widget2 = CreateWidget();
   Textfield* textfield1 = new Textfield;
