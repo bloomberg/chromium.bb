@@ -1,0 +1,44 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="../cast_mode_picker/cast_mode_picker.html">
+<link rel="import" href="../drop_down_button/drop_down_button.html">
+<link rel="import" href="../issue_banner/issue_banner.html">
+<link rel="import" href="../media_router_sink_picker/media_router_sink_picker.html">
+<link rel="import" href="../route_details/route_details.html">
+<polymer-element name="media-router-container">
+<template>
+  <link rel="stylesheet" href="media_router_container.css">
+  <div id="transparent-overlay"
+      class="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}"
+      on-click="{{hideCastMode}}">
+  </div>
+  <div id="container-header"
+      class="{{ {state: currentView_} | isSinkPickerHidden}}">
+    <div id="router-header-text">{{headerText}}</div>
+    <drop-down-button id="drop-down-button"
+        on-click="{{toggleCastMode}}">
+    </drop-down-button>
+    <cast-mode-picker id="cast-modes"
+        class="{{ {castModeHidden: castModeHidden_} | isCastModeHidden }}"
+        castModeList="{{castModeList}}"
+        selectedCastModeValue="{{selectedCastModeValue_}}">
+    </cast-mode-picker>
+    <div id="close-button" on-click="{{closeButtonClicked}}"></div>
+  </div>
+  <issue-banner id="issue-banner" issue="{{issue}}"
+      class="{{ {state: currentView_, issue: issue} | isIssueBannerHidden}}">
+  </issue-banner>
+  <route-details id="route-details"
+      class="{{ {state: currentView_} | isRouteDetailsHidden}}"
+      route="{{currentRoute_}}" sink="{{sinkMap_[[currentRoute_.sinkId]]}}"
+      on-back-click="{{showSinkPickerView}}"
+      on-close-route-click="{{showSinkPickerView}}">
+  </route-details>
+  <media-router-sink-picker id="sinks"
+      class="{{ {state: currentView_} | isSinkPickerHidden}}"
+      on-sink-click="{{onSinkClick}}"
+      sinkList="{{sinkList}}" routeList="{{routeList}}" sinkMap="{{sinkMap_}}"
+      routeMap="{{routeMap_}}" sinkToRouteMap="{{sinkToRouteMap_}}">
+  </media-router-sink-picker>
+</template>
+<script src="media_router_container.js"></script>
+</polymer-element>

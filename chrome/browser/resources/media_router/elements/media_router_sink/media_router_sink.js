@@ -10,9 +10,9 @@ Polymer('media-router-sink', {
      *
      * @attribute sink
      * @type {media_router.Sink}
-     * @default {}
+     * @default null
      */
-    sink: {},
+    sink: null,
 
     /**
      * The route to show.

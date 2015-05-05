@@ -3,6 +3,8 @@
  * found in the LICENSE file. */
 
 .cast-mode {
+  -webkit-padding-end: 5px;
+  -webkit-padding-start: 15px;
   cursor: pointer;
 }
 
@@ -14,17 +16,11 @@
 .cast-mode-list {
   -webkit-user-select: none;
   background-color: white;
-  border: 1px solid #a5a5a5;
+  border: 1px solid rgb(165, 165, 165);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  color: #2c2c2c;
+  color: rgb(44, 44, 44);
   font-size: 0.75em;
   font-weight: normal;
-  margin: 15px 10px 0 0;
-  padding-bottom: 6px;
-  padding-top: 6px;
-  position: absolute;
-  top: 20px;
-  width: 235px;
 }
 
 #selectbox {

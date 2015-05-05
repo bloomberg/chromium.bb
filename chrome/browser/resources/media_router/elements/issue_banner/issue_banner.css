@@ -19,7 +19,9 @@
 }
 
 .blocking-issue-header {
+  display: flex;
   overflow: hidden;
+  padding-top: 10px;
 }
 
 .blocking-issue-message {
@@ -45,20 +47,11 @@
 }
 
 .sad-face {
+  -webkit-margin-start: 20px;
   background-image: -webkit-image-set(
     url(../icon/sad-face.png) 1x,
     url(../icon/sad-face2x.png) 2x);
   background-repeat: no-repeat;
   height: 32px;
   width: 32px;
-}
-
-:host-context(html[dir='ltr']) .sad-face {
-  float: left;
-  left: 4px;
-}
-
-:host-context(html[dir='rtl']) .sad-face {
-  float: right;
-  right: 4px;
 }
