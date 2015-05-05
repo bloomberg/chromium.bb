@@ -50,7 +50,7 @@ public:
     explicit RenderedPosition(const Position&, EAffinity);
     bool isEquivalent(const RenderedPosition&) const;
 
-    bool isNull() const { return !m_renderer; }
+    bool isNull() const { return !m_layoutObject; }
     RootInlineBox* rootBox() { return m_inlineBox ? &m_inlineBox->root() : 0; }
 
     unsigned char bidiLevelOnLeft() const;
@@ -83,7 +83,7 @@ private:
     bool atLeftBoundaryOfBidiRun(ShouldMatchBidiLevel, unsigned char bidiLevelOfRun) const;
     bool atRightBoundaryOfBidiRun(ShouldMatchBidiLevel, unsigned char bidiLevelOfRun) const;
 
-    LayoutObject* m_renderer;
+    LayoutObject* m_layoutObject;
     InlineBox* m_inlineBox;
     int m_offset;
 
@@ -95,7 +95,7 @@ private:
 };
 
 inline RenderedPosition::RenderedPosition()
-    : m_renderer(nullptr)
+    : m_layoutObject(nullptr)
     , m_inlineBox(nullptr)
     , m_offset(0)
     , m_prevLeafChild(uncachedInlineBox())
@@ -103,8 +103,8 @@ inline RenderedPosition::RenderedPosition()
 {
 }
 
-inline RenderedPosition::RenderedPosition(LayoutObject* renderer, InlineBox* box, int offset)
-    : m_renderer(renderer)
+inline RenderedPosition::RenderedPosition(LayoutObject* layoutObject, InlineBox* box, int offset)
+    : m_layoutObject(layoutObject)
     , m_inlineBox(box)
     , m_offset(offset)
     , m_prevLeafChild(uncachedInlineBox())

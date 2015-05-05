@@ -47,7 +47,7 @@ public:
     void appendTextToStringBuilder(StringBuilder&, unsigned position = 0, unsigned maxLength = UINT_MAX) const;
 
     void emitCharacter(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
-    void emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset);
+    void emitText(Node* textNode, LayoutText* layoutObject, int textStartOffset, int textEndOffset);
     void emitAltText(Node*);
     void updateForReplacedElement(Node* baseNode);
     void flushPositionOffsets() const;

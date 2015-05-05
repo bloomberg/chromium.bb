@@ -16,18 +16,18 @@ namespace {
 
 inline bool fullyClipsContents(Node* node)
 {
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer || !renderer->isBox() || !renderer->hasOverflowClip())
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject || !layoutObject->isBox() || !layoutObject->hasOverflowClip())
         return false;
-    return toLayoutBox(renderer)->size().isEmpty();
+    return toLayoutBox(layoutObject)->size().isEmpty();
 }
 
 inline bool ignoresContainerClip(Node* node)
 {
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer || renderer->isText())
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject || layoutObject->isText())
         return false;
-    return renderer->style()->hasOutOfFlowPosition();
+    return layoutObject->style()->hasOutOfFlowPosition();
 }
 
 template <typename Strategy>
@@ -59,10 +59,10 @@ void FullyClippedStateStackAlgorithm<Strategy>::pushFullyClippedState(Node* node
     // FIXME: m_fullyClippedStack was added in response to <https://bugs.webkit.org/show_bug.cgi?id=26364>
     // ("Search can find text that's hidden by overflow:hidden"), but the logic here will not work correctly if
     // a shadow tree redistributes nodes. m_fullyClippedStack relies on the assumption that DOM node hierarchy matches
-    // the render tree, which is not necessarily true if there happens to be shadow DOM distribution or other mechanics
-    // that shuffle around the render objects regardless of node tree hierarchy (like CSS flexbox).
+    // the layout tree, which is not necessarily true if there happens to be shadow DOM distribution or other mechanics
+    // that shuffle around the layout objects regardless of node tree hierarchy (like CSS flexbox).
     //
-    // A more appropriate way to handle this situation is to detect overflow:hidden blocks by using only rendering
+    // A more appropriate way to handle this situation is to detect overflow:hidden blocks by using only layout
     // primitives, not with DOM primitives.
 
     // Push true if this node full clips its contents, or if a parent already has fully

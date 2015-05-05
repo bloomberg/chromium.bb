@@ -924,8 +924,8 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, Lay
 
     node->document().updateLayoutIgnorePendingStylesheets();
 
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
         return VisiblePosition();
 
     RootInlineBox* root = 0;
@@ -953,11 +953,11 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, Lay
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
         LayoutPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
-        LayoutObject& renderer = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
-        Node* node = renderer.node();
+        LayoutObject& layoutObject = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
+        Node* node = layoutObject.node();
         if (node && editingIgnoresContent(node))
             return VisiblePosition(positionInParentBeforeNode(*node));
-        return VisiblePosition(renderer.positionForPoint(pointInLine));
+        return VisiblePosition(layoutObject.positionForPoint(pointInLine));
     }
 
     // Could not find a previous line. This means we must already be on the first line.
@@ -979,8 +979,8 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutU
 
     node->document().updateLayoutIgnorePendingStylesheets();
 
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
         return VisiblePosition();
 
     RootInlineBox* root = 0;
@@ -1011,11 +1011,11 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutU
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
         LayoutPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
-        LayoutObject& renderer = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
-        Node* node = renderer.node();
+        LayoutObject& layoutObject = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
+        Node* node = layoutObject.node();
         if (node && editingIgnoresContent(node))
             return VisiblePosition(positionInParentBeforeNode(*node));
-        return VisiblePosition(renderer.positionForPoint(pointInLine));
+        return VisiblePosition(layoutObject.positionForPoint(pointInLine));
     }
 
     // Could not find a next line. This means we must already be on the last line.
@@ -1203,7 +1203,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
         if (r->isBR() || isBlock(n))
             break;
 
-        // FIXME: We avoid returning a position where the renderer can't accept the caret.
+        // FIXME: We avoid returning a position where the layoutObject can't accept the caret.
         if (r->isText() && toLayoutText(r)->resolvedTextLength()) {
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
             int length = toLayoutText(r)->textLength();
@@ -1390,16 +1390,16 @@ VisiblePosition rightBoundaryOfLine(const VisiblePosition& c, TextDirection dire
     return direction == LTR ? logicalEndOfLine(c) : logicalStartOfLine(c);
 }
 
-LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, LayoutObject*& renderer)
+LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, LayoutObject*& layoutObject)
 {
     if (position.position().isNull()) {
-        renderer = nullptr;
+        layoutObject = nullptr;
         return LayoutRect();
     }
     Node* node = position.position().anchorNode();
 
-    renderer = node->layoutObject();
-    if (!renderer)
+    layoutObject = node->layoutObject();
+    if (!layoutObject)
         return LayoutRect();
 
     InlineBox* inlineBox;
@@ -1407,9 +1407,9 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
     position.position().getInlineBoxAndOffset(position.affinity(), inlineBox, caretOffset);
 
     if (inlineBox)
-        renderer = &inlineBox->layoutObject();
+        layoutObject = &inlineBox->layoutObject();
 
-    return renderer->localCaretRect(inlineBox, caretOffset);
+    return layoutObject->localCaretRect(inlineBox, caretOffset);
 }
 
 }

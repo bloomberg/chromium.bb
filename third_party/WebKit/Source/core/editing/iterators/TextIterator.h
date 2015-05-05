@@ -116,7 +116,7 @@ private:
     void handleTextBox();
     void handleTextNodeFirstLetter(LayoutTextFragment*);
     void emitCharacter(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
-    void emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset);
+    void emitText(Node* textNode, LayoutText* layoutObject, int textStartOffset, int textEndOffset);
 
     // Used by selection preservation code.  There should be one character emitted between every VisiblePosition
     // in the Range used to create the TextIterator.

@@ -642,7 +642,7 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
 {
     resultStart.clear();
     resultEnd.clear();
-    // CharacterIterator requires renderers to be up-to-date.
+    // CharacterIterator requires layoutObjects to be up-to-date.
     if (!inputStart.inDocument())
         return;
     ASSERT(inputStart.document() == inputEnd.document());

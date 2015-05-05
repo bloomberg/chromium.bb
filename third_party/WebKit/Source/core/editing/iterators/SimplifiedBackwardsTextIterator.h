@@ -108,7 +108,7 @@ private:
     // Whether m_node has advanced beyond the iteration range (i.e. m_startNode).
     bool m_havePassedStartNode;
 
-    // Should handle first-letter renderer in the next call to handleTextNode.
+    // Should handle first-letter layoutObject in the next call to handleTextNode.
     bool m_shouldHandleFirstLetter;
 
     // Used when the iteration should stop if form controls are reached.

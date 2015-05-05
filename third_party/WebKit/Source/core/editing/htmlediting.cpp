@@ -354,8 +354,8 @@ TextDirection directionOfEnclosingBlock(const Position& position)
     Element* enclosingBlockElement = enclosingBlock(position.containerNode());
     if (!enclosingBlockElement)
         return LTR;
-    LayoutObject* renderer = enclosingBlockElement->layoutObject();
-    return renderer ? renderer->style()->direction() : LTR;
+    LayoutObject* layoutObject = enclosingBlockElement->layoutObject();
+    return layoutObject ? layoutObject->style()->direction() : LTR;
 }
 
 // This method is used to create positions in the DOM. It returns the maximum valid offset
@@ -399,8 +399,8 @@ String stringWithRebalancedWhitespace(const String& string, bool startIsStartOfP
 
 bool isTableStructureNode(const Node *node)
 {
-    LayoutObject* renderer = node->layoutObject();
-    return (renderer && (renderer->isTableCell() || renderer->isTableRow() || renderer->isTableSection() || renderer->isLayoutTableCol()));
+    LayoutObject* layoutObject = node->layoutObject();
+    return (layoutObject && (layoutObject->isTableCell() || layoutObject->isTableRow() || layoutObject->isTableSection() || layoutObject->isLayoutTableCol()));
 }
 
 const String& nonBreakingSpaceString()
@@ -418,14 +418,14 @@ static bool isSpecialHTMLElement(const Node& n)
     if (n.isLink())
         return true;
 
-    LayoutObject* renderer = n.layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = n.layoutObject();
+    if (!layoutObject)
         return false;
 
-    if (renderer->style()->display() == TABLE || renderer->style()->display() == INLINE_TABLE)
+    if (layoutObject->style()->display() == TABLE || layoutObject->style()->display() == INLINE_TABLE)
         return true;
 
-    if (renderer->style()->isFloating())
+    if (layoutObject->style()->isFloating())
         return true;
 
     return false;
@@ -615,8 +615,8 @@ Node* highestNodeToRemoveInPruning(Node* node, Node* excludeNode)
     Node* previousNode = nullptr;
     Element* rootEditableElement = node ? node->rootEditableElement() : nullptr;
     for (; node; node = node->parentNode()) {
-        if (LayoutObject* renderer = node->layoutObject()) {
-            if (!renderer->canHaveChildren() || hasARenderedDescendant(node, previousNode) || rootEditableElement == node || excludeNode == node)
+        if (LayoutObject* layoutObject = node->layoutObject()) {
+            if (!layoutObject->canHaveChildren() || hasARenderedDescendant(node, previousNode) || rootEditableElement == node || excludeNode == node)
                 return previousNode;
         }
         previousNode = node;
@@ -738,8 +738,8 @@ bool isRenderedTableElement(const Node* node)
     if (!node || !node->isElementNode())
         return false;
 
-    LayoutObject* renderer = node->layoutObject();
-    return (renderer && renderer->isTable());
+    LayoutObject* layoutObject = node->layoutObject();
+    return (layoutObject && layoutObject->isTable());
 }
 
 bool isTableCell(const Node* node)
@@ -753,7 +753,7 @@ bool isEmptyTableCell(const Node* node)
 {
     // Returns true IFF the passed in node is one of:
     //   .) a table cell with no children,
-    //   .) a table cell with a single BR child, and which has no other child renderers, including :before and :after renderers
+    //   .) a table cell with a single BR child, and which has no other child layoutObject, including :before and :after layoutObject
     //   .) the BR child of such a table cell
 
     // Find rendered node
@@ -764,17 +764,17 @@ bool isEmptyTableCell(const Node* node)
 
     // Make sure the rendered node is a table cell or <br>.
     // If it's a <br>, then the parent node has to be a table cell.
-    LayoutObject* renderer = node->layoutObject();
-    if (renderer->isBR()) {
-        renderer = renderer->parent();
-        if (!renderer)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (layoutObject->isBR()) {
+        layoutObject = layoutObject->parent();
+        if (!layoutObject)
             return false;
     }
-    if (!renderer->isTableCell())
+    if (!layoutObject->isTableCell())
         return false;
 
-    // Check that the table cell contains no child renderers except for perhaps a single <br>.
-    LayoutObject* childLayoutObject = toLayoutTableCell(renderer)->firstChild();
+    // Check that the table cell contains no child layoutObjects except for perhaps a single <br>.
+    LayoutObject* childLayoutObject = toLayoutTableCell(layoutObject)->firstChild();
     if (!childLayoutObject)
         return true;
     if (!childLayoutObject->isBR())
@@ -868,11 +868,11 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document& do
 
 bool isNodeRendered(const Node& node)
 {
-    LayoutObject* renderer = node.layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node.layoutObject();
+    if (!layoutObject)
         return false;
 
-    return renderer->style()->visibility() == VISIBLE;
+    return layoutObject->style()->visibility() == VISIBLE;
 }
 
 // return first preceding DOM position rendered at a different location, or "this"
@@ -1121,8 +1121,8 @@ bool isRenderedAsNonInlineTableImageOrHR(const Node* node)
 {
     if (!node)
         return false;
-    LayoutObject* renderer = node->layoutObject();
-    return renderer && ((renderer->isTable() && !renderer->isInline()) || (renderer->isImage() && !renderer->isInline()) || renderer->isHR());
+    LayoutObject* layoutObject = node->layoutObject();
+    return layoutObject && ((layoutObject->isTable() && !layoutObject->isInline()) || (layoutObject->isImage() && !layoutObject->isInline()) || layoutObject->isHR());
 }
 
 bool areIdenticalElements(const Node* first, const Node* second)
@@ -1159,8 +1159,8 @@ bool isNonTableCellHTMLBlockElement(const Node* node)
 
 bool isBlockFlowElement(const Node& node)
 {
-    LayoutObject* renderer = node.layoutObject();
-    return node.isElementNode() && renderer && renderer->isLayoutBlockFlow();
+    LayoutObject* layoutObject = node.layoutObject();
+    return node.isElementNode() && layoutObject && layoutObject->isLayoutBlockFlow();
 }
 
 Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selection)

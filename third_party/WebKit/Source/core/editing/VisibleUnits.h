@@ -99,7 +99,7 @@ VisiblePosition startOfEditableContent(const VisiblePosition&);
 VisiblePosition endOfEditableContent(const VisiblePosition&);
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
 
-// Rect is local to the returned renderer
+// Rect is local to the returned layoutObject
 LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&);
 
 } // namespace blink

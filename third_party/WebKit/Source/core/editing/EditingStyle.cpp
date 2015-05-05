@@ -1234,14 +1234,14 @@ void EditingStyle::removePropertiesInElementDefaultStyle(Element* element)
 void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
 {
     LayoutRect rect = element.boundingBox();
-    LayoutObject* renderer = element.layoutObject();
+    LayoutObject* layoutObject = element.layoutObject();
 
     LayoutUnit x = rect.x();
     LayoutUnit y = rect.y();
     LayoutUnit width = rect.width();
     LayoutUnit height = rect.height();
-    if (renderer && renderer->isBox()) {
-        LayoutBox* layoutBox = toLayoutBox(renderer);
+    if (layoutObject && layoutObject->isBox()) {
+        LayoutBox* layoutBox = toLayoutBox(layoutObject);
 
         x -= layoutBox->marginLeft();
         y -= layoutBox->marginTop();

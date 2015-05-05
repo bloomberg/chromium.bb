@@ -438,13 +438,13 @@ bool isPlainTextMarkup(Node* node)
 static bool shouldPreserveNewline(const Range& range)
 {
     if (Node* node = range.firstNode()) {
-        if (LayoutObject* renderer = node->layoutObject())
-            return renderer->style()->preserveNewline();
+        if (LayoutObject* layoutObject = node->layoutObject())
+            return layoutObject->style()->preserveNewline();
     }
 
     if (Node* node = range.startPosition().anchorNode()) {
-        if (LayoutObject* renderer = node->layoutObject())
-            return renderer->style()->preserveNewline();
+        if (LayoutObject* layoutObject = node->layoutObject())
+            return layoutObject->style()->preserveNewline();
     }
 
     return false;

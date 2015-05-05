@@ -420,15 +420,15 @@ void Editor::writeSelectionToPasteboard()
 static PassRefPtr<Image> imageFromNode(const Node& node)
 {
     node.document().updateLayoutIgnorePendingStylesheets();
-    LayoutObject* renderer = node.layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node.layoutObject();
+    if (!layoutObject)
         return nullptr;
 
-    if (renderer->isCanvas())
+    if (layoutObject->isCanvas())
         return toHTMLCanvasElement(node).copiedImage(FrontBuffer);
 
-    if (renderer->isImage()) {
-        LayoutImage* layoutImage = toLayoutImage(renderer);
+    if (layoutObject->isImage()) {
+        LayoutImage* layoutImage = toLayoutImage(layoutObject);
         if (!layoutImage)
             return nullptr;
 

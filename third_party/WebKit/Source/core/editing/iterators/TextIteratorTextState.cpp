@@ -133,10 +133,10 @@ void TextIteratorTextState::emitCharacter(UChar c, Node* textNode, Node* offsetB
     m_lastCharacter = c;
 }
 
-void TextIteratorTextState::emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset)
+void TextIteratorTextState::emitText(Node* textNode, LayoutText* layoutObject, int textStartOffset, int textEndOffset)
 {
     ASSERT(textNode);
-    m_text = m_emitsOriginalText ? renderer->originalText() : renderer->text();
+    m_text = m_emitsOriginalText ? layoutObject->originalText() : layoutObject->text();
     ASSERT(!m_text.isEmpty());
     ASSERT(0 <= textStartOffset && textStartOffset < static_cast<int>(m_text.length()));
     ASSERT(0 <= textEndOffset && textEndOffset <= static_cast<int>(m_text.length()));

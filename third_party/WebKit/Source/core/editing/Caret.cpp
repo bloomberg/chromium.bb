@@ -128,13 +128,13 @@ LayoutBlock* CaretBase::caretLayoutObject(Node* node)
     if (!node)
         return 0;
 
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject)
         return 0;
 
     // if caretNode is a block and caret is inside it then caret should be painted by that block
-    bool paintedByBlock = renderer->isLayoutBlock() && caretRendersInsideNode(node);
-    return paintedByBlock ? toLayoutBlock(renderer) : renderer->containingBlock();
+    bool paintedByBlock = layoutObject->isLayoutBlock() && caretRendersInsideNode(node);
+    return paintedByBlock ? toLayoutBlock(layoutObject) : layoutObject->containingBlock();
 }
 
 static void mapCaretRectToCaretPainter(LayoutObject* caretLayoutObject, LayoutBlock* caretPainter, LayoutRect& caretRect)
@@ -169,15 +169,15 @@ bool CaretBase::updateCaretRect(Document* document, const PositionWithAffinity& 
 
     ASSERT(caretPosition.position().deprecatedNode()->layoutObject());
 
-    // First compute a rect local to the renderer at the selection start.
-    LayoutObject* renderer;
-    m_caretLocalRect = localCaretRectOfPosition(caretPosition, renderer);
+    // First compute a rect local to the layoutObject at the selection start.
+    LayoutObject* layoutObject;
+    m_caretLocalRect = localCaretRectOfPosition(caretPosition, layoutObject);
 
-    // Get the renderer that will be responsible for painting the caret
-    // (which is either the renderer we just found, or one of its containers).
+    // Get the layoutObject that will be responsible for painting the caret
+    // (which is either the layoutObject we just found, or one of its containers).
     LayoutBlock* caretPainter = caretLayoutObject(caretPosition.position().deprecatedNode());
 
-    mapCaretRectToCaretPainter(renderer, caretPainter, m_caretLocalRect);
+    mapCaretRectToCaretPainter(layoutObject, caretPainter, m_caretLocalRect);
 
     return true;
 }
@@ -257,8 +257,8 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
         return;
 
     LayoutRect drawingRect = localCaretRectWithoutUpdate();
-    if (LayoutBlock* renderer = caretLayoutObject(node))
-        renderer->flipForWritingMode(drawingRect);
+    if (LayoutBlock* layoutObject = caretLayoutObject(node))
+        layoutObject->flipForWritingMode(drawingRect);
     drawingRect.moveBy(roundedIntPoint(paintOffset));
     LayoutRect caret = intersection(drawingRect, clipRect);
     if (caret.isEmpty())

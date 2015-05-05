@@ -362,7 +362,7 @@ void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRef
 {
     // When cloneParagraphUnderNewElement() clones the fallback content
     // of an OBJECT element, the ASSERT below may fire since the return
-    // value of canHaveChildrenForEditing is not reliable until the render
+    // value of canHaveChildrenForEditing is not reliable until the layout
     // object of the OBJECT is created. Hence we ignore this check for OBJECTs.
     ASSERT(canHaveChildrenForEditing(parent.get())
         || (parent->isElementNode() && toElement(parent.get())->tagQName() == objectTag));
@@ -621,8 +621,8 @@ bool CompositeEditCommand::canRebalance(const Position& position) const
     if (textNode->length() == 0)
         return false;
 
-    LayoutText* renderer = textNode->layoutObject();
-    if (renderer && !renderer->style()->collapseWhiteSpace())
+    LayoutText* layoutText = textNode->layoutObject();
+    if (layoutText && !layoutText->style()->collapseWhiteSpace())
         return false;
 
     return true;
@@ -690,8 +690,8 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
 
     if (textNode->length() == 0)
         return;
-    LayoutText* renderer = textNode->layoutObject();
-    if (renderer && !renderer->style()->collapseWhiteSpace())
+    LayoutText* layoutText = textNode->layoutObject();
+    if (layoutText && !layoutText->style()->collapseWhiteSpace())
         return;
 
     // Delete collapsed whitespace so that inserting nbsps doesn't uncollapse it.
@@ -871,13 +871,13 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderI
 
     document().updateLayoutIgnorePendingStylesheets();
 
-    LayoutObject* renderer = container->layoutObject();
-    if (!renderer || !renderer->isLayoutBlockFlow())
+    LayoutObject* layoutObject = container->layoutObject();
+    if (!layoutObject || !layoutObject->isLayoutBlockFlow())
         return nullptr;
 
     // append the placeholder to make sure it follows
     // any unrendered blocks
-    LayoutBlockFlow* block = toLayoutBlockFlow(renderer);
+    LayoutBlockFlow* block = toLayoutBlockFlow(layoutObject);
     if (block->size().height() == 0 || (block->isListItem() && toLayoutListItem(block)->isEmpty()))
         return appendBlockPlaceholder(container);
 

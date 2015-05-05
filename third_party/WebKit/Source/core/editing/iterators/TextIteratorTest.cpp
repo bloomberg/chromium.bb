@@ -211,7 +211,7 @@ TEST_F(TextIteratorTest, NotEnteringTextControlHostingShadowTreeEvenWithOption)
 {
     static const char* bodyContent = "<div>Hello, <input type='text' value='input' id='input'> iterator.</div>";
     static const char* shadowContent = "<span>shadow</span>";
-    // TextIterator doesn't emit "input" nor "shadow" since (1) the renderer for <input> is not created; and
+    // TextIterator doesn't emit "input" nor "shadow" since (1) the layoutObject for <input> is not created; and
     // (2) we don't (yet) recurse into shadow trees.
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "input", shadowContent);
@@ -226,7 +226,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTree)
     static const char* shadowContent = "<span>shadow</span>";
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-    // TextIterator doesn't emit "text" since its renderer is not created. The shadow tree is ignored.
+    // TextIterator doesn't emit "text" since its layoutObject is not created. The shadow tree is ignored.
     EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
     EXPECT_EQ("[Hello, ][shadow][ iterator.]", iterate<ComposedTree>());
 }
@@ -261,7 +261,7 @@ TEST_F(TextIteratorTest, NotEnteringShadowTreeWithContentInsertionPoint)
     static const char* shadowContent = "<span>shadow <content>content</content></span>";
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-    // In this case a renderer for "text" is created, so it shows up here.
+    // In this case a layoutObject for "text" is created, so it shows up here.
     EXPECT_EQ("[Hello, ][text][ iterator.]", iterate<DOMTree>());
     EXPECT_EQ("[Hello, ][shadow ][text][ iterator.]", iterate<ComposedTree>());
 }
@@ -285,7 +285,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption)
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent2);
-    // The first isn't emitted because a renderer for the first is not created.
+    // The first isn't emitted because a layoutObject for the first is not created.
     EXPECT_EQ("[Hello, ][second shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
     EXPECT_EQ("[Hello, ][second shadow][ iterator.]", iterate<ComposedTree>(TextIteratorEntersOpenShadowRoots));
 }
@@ -306,7 +306,7 @@ TEST_F(TextIteratorTest, EnteringShadowTreeWithContentInsertionPointWithOption)
 {
     static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span><content>content</content> shadow</span>";
-    // In this case a renderer for "text" is created, and emitted AFTER any nodes in the shadow tree.
+    // In this case a layoutObject for "text" is created, and emitted AFTER any nodes in the shadow tree.
     // This order does not match the order of the rendered texts, but at this moment it's the expected behavior.
     // FIXME: Fix this. We probably need pure-renderer-based implementation of TextIterator to achieve this.
     setBodyInnerHTML(bodyContent);

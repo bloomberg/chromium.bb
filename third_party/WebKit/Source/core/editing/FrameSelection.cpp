@@ -365,7 +365,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
         else
             m_selection.setWithoutValidation(m_selection.end(), m_selection.start());
     } else if (m_selection.intersectsNode(&node)) {
-        // If we did nothing here, when this node's renderer was destroyed, the rect that it
+        // If we did nothing here, when this node's layoutObject was destroyed, the rect that it
         // occupied would be invalidated, but, selection gaps that change as a result of
         // the removal wouldn't be invalidated.
         // FIXME: Don't do so much unnecessary invalidation.
@@ -1253,13 +1253,13 @@ IntRect FrameSelection::absoluteCaretBounds()
     return absoluteBoundsForLocalRect(m_selection.start().deprecatedNode(), localCaretRectWithoutUpdate());
 }
 
-static LayoutRect localCaretRect(const VisibleSelection& m_selection, const PositionWithAffinity& caretPosition, LayoutObject*& renderer)
+static LayoutRect localCaretRect(const VisibleSelection& m_selection, const PositionWithAffinity& caretPosition, LayoutObject*& layoutObject)
 {
-    renderer = nullptr;
+    layoutObject = nullptr;
     if (!isNonOrphanedCaret(m_selection))
         return LayoutRect();
 
-    return localCaretRectOfPosition(caretPosition, renderer);
+    return localCaretRectOfPosition(caretPosition, layoutObject);
 }
 
 void FrameSelection::invalidateCaretRect()
@@ -1268,9 +1268,9 @@ void FrameSelection::invalidateCaretRect()
         return;
     m_caretRectDirty = false;
 
-    LayoutObject* renderer = nullptr;
-    LayoutRect newRect = localCaretRect(m_selection, PositionWithAffinity(m_selection.start(), m_selection.affinity()), renderer);
-    Node* newNode = renderer ? renderer->node() : nullptr;
+    LayoutObject* layoutObject = nullptr;
+    LayoutRect newRect = localCaretRect(m_selection, PositionWithAffinity(m_selection.start(), m_selection.affinity()), layoutObject);
+    Node* newNode = layoutObject ? layoutObject->node() : nullptr;
 
     if (!m_caretBlinkTimer.isActive() && newNode == m_previousCaretNode && newRect == m_previousCaretRect)
         return;
@@ -1624,10 +1624,10 @@ static bool isFrameElement(const Node* n)
 {
     if (!n)
         return false;
-    LayoutObject* renderer = n->layoutObject();
-    if (!renderer || !renderer->isLayoutPart())
+    LayoutObject* layoutObject = n->layoutObject();
+    if (!layoutObject || !layoutObject->isLayoutPart())
         return false;
-    Widget* widget = toLayoutPart(renderer)->widget();
+    Widget* widget = toLayoutPart(layoutObject)->widget();
     return widget && widget->isFrameView();
 }
 

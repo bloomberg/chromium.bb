@@ -38,15 +38,15 @@
 
 namespace blink {
 
-static inline LayoutObject* rendererFromPosition(const Position& position)
+static inline LayoutObject* layoutObjectFromPosition(const Position& position)
 {
     ASSERT(position.isNotNull());
-    Node* rendererNode = nullptr;
+    Node* layoutObjectNode = nullptr;
     switch (position.anchorType()) {
     case Position::PositionIsOffsetInAnchor:
-        rendererNode = position.computeNodeAfterPosition();
-        if (!rendererNode || !rendererNode->layoutObject())
-            rendererNode = position.anchorNode()->lastChild();
+        layoutObjectNode = position.computeNodeAfterPosition();
+        if (!layoutObjectNode || !layoutObjectNode->layoutObject())
+            layoutObjectNode = position.anchorNode()->lastChild();
         break;
 
     case Position::PositionIsBeforeAnchor:
@@ -54,19 +54,19 @@ static inline LayoutObject* rendererFromPosition(const Position& position)
         break;
 
     case Position::PositionIsBeforeChildren:
-        rendererNode = position.anchorNode()->firstChild();
+        layoutObjectNode = position.anchorNode()->firstChild();
         break;
     case Position::PositionIsAfterChildren:
-        rendererNode = position.anchorNode()->lastChild();
+        layoutObjectNode = position.anchorNode()->lastChild();
         break;
     }
-    if (!rendererNode || !rendererNode->layoutObject())
-        rendererNode = position.anchorNode();
-    return rendererNode->layoutObject();
+    if (!layoutObjectNode || !layoutObjectNode->layoutObject())
+        layoutObjectNode = position.anchorNode();
+    return layoutObjectNode->layoutObject();
 }
 
 RenderedPosition::RenderedPosition(const VisiblePosition& position)
-    : m_renderer(nullptr)
+    : m_layoutObject(nullptr)
     , m_inlineBox(nullptr)
     , m_offset(0)
     , m_prevLeafChild(uncachedInlineBox())
@@ -76,13 +76,13 @@ RenderedPosition::RenderedPosition(const VisiblePosition& position)
         return;
     position.getInlineBoxAndOffset(m_inlineBox, m_offset);
     if (m_inlineBox)
-        m_renderer = &m_inlineBox->layoutObject();
+        m_layoutObject = &m_inlineBox->layoutObject();
     else
-        m_renderer = rendererFromPosition(position.deepEquivalent());
+        m_layoutObject = layoutObjectFromPosition(position.deepEquivalent());
 }
 
 RenderedPosition::RenderedPosition(const Position& position, EAffinity affinity)
-    : m_renderer(nullptr)
+    : m_layoutObject(nullptr)
     , m_inlineBox(nullptr)
     , m_offset(0)
     , m_prevLeafChild(uncachedInlineBox())
@@ -92,9 +92,9 @@ RenderedPosition::RenderedPosition(const Position& position, EAffinity affinity)
         return;
     position.getInlineBoxAndOffset(affinity, m_inlineBox, m_offset);
     if (m_inlineBox)
-        m_renderer = &m_inlineBox->layoutObject();
+        m_layoutObject = &m_inlineBox->layoutObject();
     else
-        m_renderer = rendererFromPosition(position);
+        m_layoutObject = layoutObjectFromPosition(position);
 }
 
 InlineBox* RenderedPosition::prevLeafChild() const
@@ -113,7 +113,7 @@ InlineBox* RenderedPosition::nextLeafChild() const
 
 bool RenderedPosition::isEquivalent(const RenderedPosition& other) const
 {
-    return (m_renderer == other.m_renderer && m_inlineBox == other.m_inlineBox && m_offset == other.m_offset)
+    return (m_layoutObject == other.m_layoutObject && m_inlineBox == other.m_inlineBox && m_offset == other.m_offset)
         || (atLeftmostOffsetInBox() && other.atRightmostOffsetInBox() && prevLeafChild() == other.m_inlineBox)
         || (atRightmostOffsetInBox() && other.atLeftmostOffsetInBox() && nextLeafChild() == other.m_inlineBox);
 }
@@ -209,7 +209,7 @@ Position RenderedPosition::positionAtLeftBoundaryOfBiDiRun() const
     ASSERT(atLeftBoundaryOfBidiRun());
 
     if (atLeftmostOffsetInBox())
-        return createLegacyEditingPosition(m_renderer->node(), m_offset);
+        return createLegacyEditingPosition(m_layoutObject->node(), m_offset);
 
     return createLegacyEditingPosition(nextLeafChild()->layoutObject().node(), nextLeafChild()->caretLeftmostOffset());
 }
@@ -219,7 +219,7 @@ Position RenderedPosition::positionAtRightBoundaryOfBiDiRun() const
     ASSERT(atRightBoundaryOfBidiRun());
 
     if (atRightmostOffsetInBox())
-        return createLegacyEditingPosition(m_renderer->node(), m_offset);
+        return createLegacyEditingPosition(m_layoutObject->node(), m_offset);
 
     return createLegacyEditingPosition(prevLeafChild()->layoutObject().node(), prevLeafChild()->caretRightmostOffset());
 }
@@ -229,8 +229,8 @@ IntRect RenderedPosition::absoluteRect(LayoutUnit* extraWidthToEndOfLine) const
     if (isNull())
         return IntRect();
 
-    IntRect localRect = pixelSnappedIntRect(m_renderer->localCaretRect(m_inlineBox, m_offset, extraWidthToEndOfLine));
-    return localRect == IntRect() ? IntRect() : m_renderer->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
+    IntRect localRect = pixelSnappedIntRect(m_layoutObject->localCaretRect(m_inlineBox, m_offset, extraWidthToEndOfLine));
+    return localRect == IntRect() ? IntRect() : m_layoutObject->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
 }
 
 void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& bound) const
@@ -241,17 +241,17 @@ void RenderedPosition::positionInGraphicsLayerBacking(CompositedSelectionBound& 
     if (isNull())
         return;
 
-    LayoutRect rect = m_renderer->localCaretRect(m_inlineBox, m_offset);
+    LayoutRect rect = m_layoutObject->localCaretRect(m_inlineBox, m_offset);
     DeprecatedPaintLayer* layer = nullptr;
-    bound.edgeTopInLayer = m_renderer->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
-    bound.edgeBottomInLayer = m_renderer->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
+    bound.edgeTopInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMinYCorner(), &layer);
+    bound.edgeBottomInLayer = m_layoutObject->localToInvalidationBackingPoint(rect.minXMaxYCorner(), nullptr);
     bound.layer = layer ? layer->graphicsLayerBacking() : nullptr;
 }
 
 bool layoutObjectContainsPosition(LayoutObject* target, const Position& position)
 {
-    for (LayoutObject* renderer = rendererFromPosition(position); renderer && renderer->node(); renderer = renderer->parent()) {
-        if (renderer == target)
+    for (LayoutObject* layoutObject = layoutObjectFromPosition(position); layoutObject && layoutObject->node(); layoutObject = layoutObject->parent()) {
+        if (layoutObject == target)
             return true;
     }
     return false;

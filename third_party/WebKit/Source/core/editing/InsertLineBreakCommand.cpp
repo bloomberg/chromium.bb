@@ -59,7 +59,7 @@ bool InsertLineBreakCommand::shouldUseBreakElement(const Position& insertionPos)
 {
     // An editing position like [input, 0] actually refers to the position before
     // the input element, and in that case we need to check the input element's
-    // parent's renderer.
+    // parent's layoutObject.
     Position p(insertionPos.parentAnchoredEquivalent());
     return p.deprecatedNode()->layoutObject() && !p.deprecatedNode()->layoutObject()->style()->preserveNewline();
 }

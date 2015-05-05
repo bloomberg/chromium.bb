@@ -36,12 +36,12 @@
 
 namespace blink {
 
-static int collapsedSpaceLength(LayoutText* renderer, int textEnd)
+static int collapsedSpaceLength(LayoutText* layoutText, int textEnd)
 {
-    const String& text = renderer->text();
+    const String& text = layoutText->text();
     int length = text.length();
     for (int i = textEnd; i < length; ++i) {
-        if (!renderer->style()->isCollapsibleWhiteSpace(text[i]))
+        if (!layoutText->style()->isCollapsibleWhiteSpace(text[i]))
             return i - textEnd;
     }
 
@@ -185,13 +185,13 @@ void SimplifiedBackwardsTextIterator::advance()
     while (m_node && !m_havePassedStartNode) {
         // Don't handle node if we start iterating at [node, 0].
         if (!m_handledNode && !(m_node == m_endNode && !m_endOffset)) {
-            LayoutObject* renderer = m_node->layoutObject();
-            if (renderer && renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) {
+            LayoutObject* layoutObject = m_node->layoutObject();
+            if (layoutObject && layoutObject->isText() && m_node->nodeType() == Node::TEXT_NODE) {
                 // FIXME: What about CDATA_SECTION_NODE?
-                if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
+                if (layoutObject->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleTextNode();
-            } else if (renderer && (renderer->isLayoutPart() || TextIterator::supportsAltText(m_node))) {
-                if (renderer->style()->visibility() == VISIBLE && m_offset > 0)
+            } else if (layoutObject && (layoutObject->isLayoutPart() || TextIterator::supportsAltText(m_node))) {
+                if (layoutObject->style()->visibility() == VISIBLE && m_offset > 0)
                     m_handledNode = handleReplacedElement();
             } else {
                 m_handledNode = handleNonTextNode();
@@ -253,12 +253,12 @@ bool SimplifiedBackwardsTextIterator::handleTextNode()
 {
     int startOffset;
     int offsetInNode;
-    LayoutText* renderer = handleFirstLetter(startOffset, offsetInNode);
-    if (!renderer)
+    LayoutText* layoutObject = handleFirstLetter(startOffset, offsetInNode);
+    if (!layoutObject)
         return true;
 
-    String text = renderer->text();
-    if (!renderer->firstTextBox() && text.length() > 0)
+    String text = layoutObject->text();
+    if (!layoutObject->firstTextBox() && text.length() > 0)
         return true;
 
     m_positionEndOffset = m_offset;
@@ -281,26 +281,26 @@ bool SimplifiedBackwardsTextIterator::handleTextNode()
 
 LayoutText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset, int& offsetInNode)
 {
-    LayoutText* renderer = toLayoutText(m_node->layoutObject());
+    LayoutText* layoutObject = toLayoutText(m_node->layoutObject());
     startOffset = (m_node == m_startNode) ? m_startOffset : 0;
 
-    if (!renderer->isTextFragment()) {
+    if (!layoutObject->isTextFragment()) {
         offsetInNode = 0;
-        return renderer;
+        return layoutObject;
     }
 
-    LayoutTextFragment* fragment = toLayoutTextFragment(renderer);
+    LayoutTextFragment* fragment = toLayoutTextFragment(layoutObject);
     int offsetAfterFirstLetter = fragment->start();
     if (startOffset >= offsetAfterFirstLetter) {
         ASSERT(!m_shouldHandleFirstLetter);
         offsetInNode = offsetAfterFirstLetter;
-        return renderer;
+        return layoutObject;
     }
 
     if (!m_shouldHandleFirstLetter && offsetAfterFirstLetter < m_offset) {
         m_shouldHandleFirstLetter = true;
         offsetInNode = offsetAfterFirstLetter;
-        return renderer;
+        return layoutObject;
     }
 
     m_shouldHandleFirstLetter = false;

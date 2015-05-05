@@ -267,10 +267,10 @@ static unsigned verticalScrollDistance(LocalFrame& frame)
     Element* focusedElement = frame.document()->focusedElement();
     if (!focusedElement)
         return 0;
-    LayoutObject* renderer = focusedElement->layoutObject();
-    if (!renderer || !renderer->isBox())
+    LayoutObject* layoutObject = focusedElement->layoutObject();
+    if (!layoutObject || !layoutObject->isBox())
         return 0;
-    LayoutBox& layoutBox = toLayoutBox(*renderer);
+    LayoutBox& layoutBox = toLayoutBox(*layoutObject);
     const ComputedStyle* style = layoutBox.style();
     if (!style)
         return 0;

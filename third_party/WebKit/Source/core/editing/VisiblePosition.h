@@ -94,7 +94,7 @@ public:
         m_deepPosition.getInlineBoxAndOffset(m_affinity, inlineBox, caretOffset);
     }
 
-    // Rect is local to the returned renderer
+    // Rect is local to the returned layoutObject
     LayoutRect localCaretRect(LayoutObject*&) const;
     // Bounds of (possibly transformed) caret in absolute coords
     IntRect absoluteCaretBounds() const;
