@@ -3163,8 +3163,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   EXPECT_GT(number_of_unmarked_tiles, 1u);
 
   // Tiles don't have resources yet.
-  scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
-      pending_layer_->picture_layer_tiling_set(), false));
+  scoped_ptr<TilingSetEvictionQueue> queue(
+      new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set()));
   EXPECT_TRUE(queue->IsEmpty());
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
@@ -3176,8 +3176,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   Tile* last_tile = nullptr;
   size_t distance_decreasing = 0;
   size_t distance_increasing = 0;
-  queue.reset(new TilingSetEvictionQueue(
-      pending_layer_->picture_layer_tiling_set(), false));
+  queue.reset(
+      new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set()));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     if (!last_tile)
@@ -3968,15 +3968,14 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
       : PictureLayerImplTest(OcclusionTrackingSettings()) {}
 
   void VerifyEvictionConsidersOcclusion(FakePictureLayerImpl* layer,
-                                        FakePictureLayerImpl* twin_layer,
                                         WhichTree tree,
                                         size_t expected_occluded_tile_count,
                                         int source_line) {
     size_t occluded_tile_count = 0u;
     Tile* last_tile = nullptr;
 
-    scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
-        layer->picture_layer_tiling_set(), layer && twin_layer));
+    scoped_ptr<TilingSetEvictionQueue> queue(
+        new TilingSetEvictionQueue(layer->picture_layer_tiling_set()));
     while (!queue->IsEmpty()) {
       Tile* tile = queue->Top();
       if (!last_tile)
@@ -4532,29 +4531,29 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
   VerifyEvictionConsidersOcclusion(
-      pending_layer_, active_layer_, PENDING_TREE,
+      pending_layer_, PENDING_TREE,
       total_expected_occluded_tile_count_on_trees[PENDING_TREE], __LINE__);
   VerifyEvictionConsidersOcclusion(
-      active_layer_, pending_layer_, ACTIVE_TREE,
+      active_layer_, ACTIVE_TREE,
       total_expected_occluded_tile_count_on_trees[ACTIVE_TREE], __LINE__);
 
   // Repeat the tests without valid active tree priorities.
   active_layer_->set_has_valid_tile_priorities(false);
   VerifyEvictionConsidersOcclusion(
-      pending_layer_, active_layer_, PENDING_TREE,
+      pending_layer_, PENDING_TREE,
       total_expected_occluded_tile_count_on_trees[PENDING_TREE], __LINE__);
   VerifyEvictionConsidersOcclusion(
-      active_layer_, pending_layer_, ACTIVE_TREE,
+      active_layer_, ACTIVE_TREE,
       total_expected_occluded_tile_count_on_trees[ACTIVE_TREE], __LINE__);
   active_layer_->set_has_valid_tile_priorities(true);
 
   // Repeat the tests without valid pending tree priorities.
   pending_layer_->set_has_valid_tile_priorities(false);
   VerifyEvictionConsidersOcclusion(
-      active_layer_, pending_layer_, ACTIVE_TREE,
+      active_layer_, ACTIVE_TREE,
       total_expected_occluded_tile_count_on_trees[ACTIVE_TREE], __LINE__);
   VerifyEvictionConsidersOcclusion(
-      pending_layer_, active_layer_, PENDING_TREE,
+      pending_layer_, PENDING_TREE,
       total_expected_occluded_tile_count_on_trees[PENDING_TREE], __LINE__);
   pending_layer_->set_has_valid_tile_priorities(true);
 }

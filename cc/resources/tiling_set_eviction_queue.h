@@ -64,8 +64,7 @@ namespace cc {
 // with low priority on one tree, but high combined priority.
 class CC_EXPORT TilingSetEvictionQueue {
  public:
-  TilingSetEvictionQueue(PictureLayerTilingSet* tiling_set,
-                         bool skip_shared_out_of_order_tiles);
+  explicit TilingSetEvictionQueue(PictureLayerTilingSet* tiling_set);
   ~TilingSetEvictionQueue();
 
   Tile* Top();
@@ -94,7 +93,6 @@ class CC_EXPORT TilingSetEvictionQueue {
     EvictionRectIterator();
     EvictionRectIterator(std::vector<PictureLayerTiling*>* tilings,
                          WhichTree tree,
-                         bool skip_shared_out_of_order_tiles,
                          bool skip_pending_visible_rect);
 
     bool done() const { return !tile_; }
@@ -111,7 +109,6 @@ class CC_EXPORT TilingSetEvictionQueue {
     Tile* tile_;
     std::vector<PictureLayerTiling*>* tilings_;
     WhichTree tree_;
-    bool skip_shared_out_of_order_tiles_;
     bool skip_pending_visible_rect_;
     size_t tiling_index_;
   };
@@ -121,7 +118,6 @@ class CC_EXPORT TilingSetEvictionQueue {
     PendingVisibleTilingIterator() = default;
     PendingVisibleTilingIterator(std::vector<PictureLayerTiling*>* tilings,
                                  WhichTree tree,
-                                 bool skip_shared_out_of_order_tiles,
                                  bool return_required_for_activation_tiles);
 
     PendingVisibleTilingIterator& operator++();
@@ -138,7 +134,6 @@ class CC_EXPORT TilingSetEvictionQueue {
     VisibleTilingIterator() = default;
     VisibleTilingIterator(std::vector<PictureLayerTiling*>* tilings,
                           WhichTree tree,
-                          bool skip_shared_out_of_order_tiles,
                           bool return_occluded_tiles,
                           bool return_required_for_activation_tiles);
 
@@ -156,8 +151,7 @@ class CC_EXPORT TilingSetEvictionQueue {
    public:
     SkewportTilingIterator() = default;
     SkewportTilingIterator(std::vector<PictureLayerTiling*>* tilings,
-                           WhichTree tree,
-                           bool skip_shared_out_of_order_tiles);
+                           WhichTree tree);
 
     SkewportTilingIterator& operator++();
 
@@ -169,8 +163,7 @@ class CC_EXPORT TilingSetEvictionQueue {
    public:
     SoonBorderTilingIterator() = default;
     SoonBorderTilingIterator(std::vector<PictureLayerTiling*>* tilings,
-                             WhichTree tree,
-                             bool skip_shared_out_of_order_tiles);
+                             WhichTree tree);
 
     SoonBorderTilingIterator& operator++();
 
@@ -182,8 +175,7 @@ class CC_EXPORT TilingSetEvictionQueue {
    public:
     EventuallyTilingIterator() = default;
     EventuallyTilingIterator(std::vector<PictureLayerTiling*>* tilings,
-                             WhichTree tree,
-                             bool skip_shared_out_of_order_tiles);
+                             WhichTree tree);
 
     EventuallyTilingIterator& operator++();
 
@@ -194,7 +186,6 @@ class CC_EXPORT TilingSetEvictionQueue {
   void AdvancePhase();
 
   WhichTree tree_;
-  bool skip_shared_out_of_order_tiles_;
   Phase phase_;
   Tile* current_tile_;
   std::vector<PictureLayerTiling*> tilings_;
