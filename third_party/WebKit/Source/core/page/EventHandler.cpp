@@ -1047,6 +1047,8 @@ void EventHandler::cursorUpdateTimerFired(Timer<EventHandler>*)
 
 void EventHandler::updateCursor()
 {
+    TRACE_EVENT0("input", "EventHandler::updateCursor");
+
     // We must do a cross-frame hit test because the frame that triggered the cursor
     // update could be occluded by a different frame.
     ASSERT(m_frame == m_frame->localFrameRoot());
@@ -3184,6 +3186,7 @@ void EventHandler::dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad)
 
 void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
 {
+    TRACE_EVENT0("input", "EventHandler::fakeMouseMoveEventTimerFired");
     ASSERT_UNUSED(timer, timer == &m_fakeMouseMoveEventTimer);
     ASSERT(!m_mousePressed);
 
@@ -3234,6 +3237,7 @@ void EventHandler::resizeScrollableAreaDestroyed()
 
 void EventHandler::hoverTimerFired(Timer<EventHandler>*)
 {
+    TRACE_EVENT0("input", "EventHandler::hoverTimerFired");
     m_hoverTimer.stop();
 
     ASSERT(m_frame);
@@ -3251,6 +3255,7 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
 
 void EventHandler::activeIntervalTimerFired(Timer<EventHandler>*)
 {
+    TRACE_EVENT0("input", "EventHandler::activeIntervalTimerFired");
     m_activeIntervalTimer.stop();
 
     if (m_frame
