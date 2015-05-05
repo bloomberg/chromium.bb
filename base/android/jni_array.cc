@@ -53,7 +53,7 @@ ScopedJavaLocalRef<jintArray> ToJavaIntArray(
 
 ScopedJavaLocalRef<jintArray> ToJavaIntArray(
     JNIEnv* env, const std::vector<int>& ints) {
-  return ToJavaIntArray(env, ints.begin(), ints.size());
+  return ToJavaIntArray(env, ints.data(), ints.size());
 }
 
 ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
@@ -72,7 +72,7 @@ ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
 // Returns a new Java long array converted from the given int64 array.
 BASE_EXPORT ScopedJavaLocalRef<jlongArray> ToJavaLongArray(
     JNIEnv* env, const std::vector<int64>& longs) {
-  return ToJavaLongArray(env, longs.begin(), longs.size());
+  return ToJavaLongArray(env, longs.data(), longs.size());
 }
 
 ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(

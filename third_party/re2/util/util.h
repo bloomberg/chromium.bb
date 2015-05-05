@@ -54,7 +54,7 @@ using std::tr1::unordered_set;
 #else
 
 #include <unordered_set>
-#if defined(WIN32) || defined(OS_ANDROID)
+#if defined(WIN32) || (defined(OS_ANDROID) && !defined(_LIBCPP_ABI_VERSION))
 using std::tr1::unordered_set;
 #else
 using std::unordered_set;

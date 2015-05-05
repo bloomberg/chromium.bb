@@ -46,13 +46,7 @@
       "_GLAPI_NO_EXPORTS",
     ],
     'conditions': [
-      ['OS=="android"', {
-        'defines': [
-          '__GLIBC__',
-          '_GNU_SOURCE',
-        ],
-      }],
-      ['OS=="linux"', {
+      ['OS=="android" or OS=="linux"', {
         'defines': [
           '_GNU_SOURCE',
         ],

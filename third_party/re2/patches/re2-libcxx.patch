@@ -12,3 +12,12 @@ index 8f54040..de1ef5b 100644
  
  #include <tr1/unordered_set>
  using std::tr1::unordered_set;
+@@ -54,1 +55,1 @@ using std::tr1::unordered_set;
+ #else
+
+ #include <unordered_set>
+-#if defined(WIN32) || defined(OS_ANDROID)
++#if defined(WIN32) || (defined(OS_ANDROID) && !defined(_LIBCPP_ABI_VERSION))
+ using std::tr1::unordered_set;
+ #else
+ using std::unordered_set;
