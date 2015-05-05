@@ -306,9 +306,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // True is subscribed as keyboard controller observer.
   bool is_observing_keyboard_;
 
-  // The bounds of the virtual keyboard.
-  gfx::Rect keyboard_bounds_;
-
   // True if the host is showing a new version of OOBE screen.
   bool is_new_oobe_;
 

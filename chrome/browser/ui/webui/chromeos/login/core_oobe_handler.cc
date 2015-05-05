@@ -388,13 +388,11 @@ void CoreOobeHandler::UpdateDeviceRequisition() {
 }
 
 void CoreOobeHandler::UpdateKeyboardState() {
-  if (!login::LoginScrollIntoViewEnabled())
-    return;
-
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller) {
     gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
+    ShowControlBar(bounds.IsEmpty());
     SetKeyboardState(!bounds.IsEmpty(), bounds);
   }
 }

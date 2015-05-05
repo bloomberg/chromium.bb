@@ -106,11 +106,6 @@ int GetCurrentUserImageSize() {
 
 namespace login {
 
-bool LoginScrollIntoViewEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableLoginScrollIntoView);
-}
-
 NetworkStateHelper::NetworkStateHelper() {}
 NetworkStateHelper::~NetworkStateHelper() {}
 

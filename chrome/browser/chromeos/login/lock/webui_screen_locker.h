@@ -159,9 +159,6 @@ class WebUIScreenLocker : public WebUILoginView,
   // True is subscribed as keyboard controller observer.
   bool is_observing_keyboard_;
 
-  // The bounds of the virtual keyboard.
-  gfx::Rect keyboard_bounds_;
-
   base::WeakPtrFactory<WebUIScreenLocker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIScreenLocker);

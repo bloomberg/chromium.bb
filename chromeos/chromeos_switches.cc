@@ -72,10 +72,6 @@ const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 
-// Disable login/lock UI (user pods) scrolling into view on JS side when virtual
-// keyboard is shown.
-const char kDisableLoginScrollIntoView[] = "disable-login-scroll-into-view";
-
 // Disable new channel switcher UI.
 const char kDisableNewChannelSwitcherUI[] = "disable-new-channel-switcher-ui";
 

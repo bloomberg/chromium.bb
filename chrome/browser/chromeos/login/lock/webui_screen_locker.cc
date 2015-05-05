@@ -107,8 +107,7 @@ void WebUIScreenLocker::LockScreen() {
   GetOobeUI()->ShowSigninScreen(
       LoginScreenContext(), login_display_.get(), login_display_.get());
 
-  if (login::LoginScrollIntoViewEnabled())
-    DisableKeyboardOverscroll();
+  DisableKeyboardOverscroll();
 }
 
 void WebUIScreenLocker::ScreenLockReady() {
@@ -188,8 +187,7 @@ WebUIScreenLocker::~WebUIScreenLocker() {
     is_observing_keyboard_ = false;
   }
 
-  if (login::LoginScrollIntoViewEnabled())
-    ResetKeyboardOverscrollOverride();
+  ResetKeyboardOverscrollOverride();
 }
 
 void WebUIScreenLocker::OnLockWebUIReady() {
@@ -375,23 +373,19 @@ void WebUIScreenLocker::OnVirtualKeyboardStateChanged(bool activated) {
 
 void WebUIScreenLocker::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty()) {
+  if (new_bounds.IsEmpty()) {
     // Keyboard has been hidden.
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
-      if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false, new_bounds);
+      GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false, new_bounds);
     }
-  } else if (!new_bounds.IsEmpty() && keyboard_bounds_.IsEmpty()) {
+  } else {
     // Keyboard has been shown.
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
-      if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true, new_bounds);
+      GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true, new_bounds);
     }
   }
-
-  keyboard_bounds_ = new_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -396,8 +396,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   if (login_view_ && login_window_)
     login_window_->RemoveRemovalsObserver(this);
 
-  if (login::LoginScrollIntoViewEnabled())
-    ResetKeyboardOverscrollOverride();
+  ResetKeyboardOverscrollOverride();
 
   views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();
@@ -487,8 +486,7 @@ AutoEnrollmentController* LoginDisplayHostImpl::GetAutoEnrollmentController() {
 }
 
 void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
-  if (login::LoginScrollIntoViewEnabled())
-    DisableKeyboardOverscroll();
+  DisableKeyboardOverscroll();
 
   startup_sound_honors_spoken_feedback_ = false;
   TryToPlayStartupSound();
@@ -535,8 +533,7 @@ AppLaunchController* LoginDisplayHostImpl::GetAppLaunchController() {
 
 void LoginDisplayHostImpl::StartUserAdding(
     const base::Closure& completion_callback) {
-  if (login::LoginScrollIntoViewEnabled())
-    DisableKeyboardOverscroll();
+  DisableKeyboardOverscroll();
 
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
   completion_callback_ = completion_callback;
@@ -577,8 +574,7 @@ void LoginDisplayHostImpl::StartUserAdding(
 
 void LoginDisplayHostImpl::StartSignInScreen(
     const LoginScreenContext& context) {
-  if (login::LoginScrollIntoViewEnabled())
-    DisableKeyboardOverscroll();
+  DisableKeyboardOverscroll();
 
   startup_sound_honors_spoken_feedback_ = true;
   TryToPlayStartupSound();
@@ -870,23 +866,19 @@ void LoginDisplayHostImpl::OnVirtualKeyboardStateChanged(bool activated) {
 
 void LoginDisplayHostImpl::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  if (new_bounds.IsEmpty() && !keyboard_bounds_.IsEmpty()) {
+  if (new_bounds.IsEmpty()) {
     // Keyboard has been hidden.
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(true);
-      if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false, new_bounds);
+      GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(false, new_bounds);
     }
-  } else if (!new_bounds.IsEmpty() && keyboard_bounds_.IsEmpty()) {
+  } else if (!new_bounds.IsEmpty()) {
     // Keyboard has been shown.
     if (GetOobeUI()) {
       GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
-      if (login::LoginScrollIntoViewEnabled())
-        GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true, new_bounds);
+      GetOobeUI()->GetCoreOobeActor()->SetKeyboardState(true, new_bounds);
     }
   }
-
-  keyboard_bounds_ = new_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
