@@ -3326,14 +3326,6 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     EXPECT_EQ("hello!", out.response_data) << i;
 
     // Test the response information.
-    EXPECT_TRUE(out.response_info.response_time >
-                out.response_info.request_time) << i;
-    base::TimeDelta test_delay = out.response_info.response_time -
-                                 out.response_info.request_time;
-    base::TimeDelta min_expected_delay;
-    min_expected_delay.FromMilliseconds(10);
-    EXPECT_GT(test_delay.InMillisecondsF(),
-              min_expected_delay.InMillisecondsF()) << i;
     EXPECT_EQ(out.response_info.vary_data.is_valid(),
               test_cases[i].vary_matches) << i;
 
