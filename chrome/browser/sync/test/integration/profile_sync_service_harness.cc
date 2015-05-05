@@ -159,12 +159,6 @@ bool ProfileSyncServiceHarness::SetupSync(
   // until we've finished configuration.
   service()->SetSetupInProgress(true);
 
-  // Authenticate sync client using GAIA credentials.
-  std::string gaia_id = GetGaiaIdForUsername(username_);
-  service()->signin()->SetAuthenticatedAccountInfo(gaia_id, username_);
-  std::string account_id = service()->signin()->GetAuthenticatedAccountId();
-  service()->GoogleSigninSucceeded(account_id, username_, password_);
-
   DCHECK(!username_.empty());
   if (signin_type_ == SigninType::UI_SIGNIN) {
     Browser* browser =
@@ -176,7 +170,9 @@ bool ProfileSyncServiceHarness::SetupSync(
     }
   } else if (signin_type_ == SigninType::FAKE_SIGNIN) {
     // Authenticate sync client using GAIA credentials.
+    std::string gaia_id = GetGaiaIdForUsername(username_);
     service()->signin()->SetAuthenticatedAccountInfo(gaia_id, username_);
+    std::string account_id = service()->signin()->GetAuthenticatedAccountId();
     service()->GoogleSigninSucceeded(account_id, username_, password_);
     ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
       UpdateCredentials(account_id, GenerateFakeOAuth2RefreshTokenString());
