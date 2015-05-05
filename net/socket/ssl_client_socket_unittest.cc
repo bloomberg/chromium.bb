@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -939,22 +940,20 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
 class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
  protected:
   void EnableChannelID() {
-    channel_id_service_.reset(
-        new ChannelIDService(new DefaultChannelIDStore(NULL),
-                             base::MessageLoopProxy::current()));
+    channel_id_service_.reset(new ChannelIDService(
+        new DefaultChannelIDStore(NULL), base::ThreadTaskRunnerHandle::Get()));
     context_.channel_id_service = channel_id_service_.get();
   }
 
   void EnableFailingChannelID() {
     channel_id_service_.reset(new ChannelIDService(
-        new FailingChannelIDStore(), base::MessageLoopProxy::current()));
+        new FailingChannelIDStore(), base::ThreadTaskRunnerHandle::Get()));
     context_.channel_id_service = channel_id_service_.get();
   }
 
   void EnableAsyncFailingChannelID() {
     channel_id_service_.reset(new ChannelIDService(
-        new AsyncFailingChannelIDStore(),
-        base::MessageLoopProxy::current()));
+        new AsyncFailingChannelIDStore(), base::ThreadTaskRunnerHandle::Get()));
     context_.channel_id_service = channel_id_service_.get();
   }
 
