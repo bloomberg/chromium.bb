@@ -209,7 +209,6 @@ int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 	/* TODO: info->max_quad_shader_pipes is not set */
 	/* TODO: info->avail_quad_shader_pipes is not set */
 	/* TODO: info->cache_entries_per_quad_pipe is not set */
-	/* TODO: info->active_rb_pipes is not set */
 	return 0;
 }
 

@@ -526,8 +526,6 @@ struct amdgpu_gpu_info {
 	uint32_t num_hw_gfx_contexts;
 	/** Number of render backend pipes */
 	uint32_t rb_pipes;
-	/** Active render backend pipe number */
-	uint32_t active_rb_pipes;
 	/**  Enabled render backend pipe mask */
 	uint32_t enabled_rb_pipes_mask;
 	/** Frequency of GPU Counter */
