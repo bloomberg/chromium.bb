@@ -427,6 +427,16 @@ void BluetoothDeviceChromeOS::ConnectToServiceInsecurely(
 void BluetoothDeviceChromeOS::CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) {
+  // TODO(sacomoto): Workaround to retrieve the connection for already connected
+  // devices. Currently, BluetoothGattConnection::Disconnect doesn't do
+  // anything, the unique underlying physical GATT connection is kept. This
+  // should be removed once the correct behavour is implemented and the GATT
+  // connections are reference counted (see todo below).
+  if (IsConnected()) {
+    OnCreateGattConnection(callback);
+    return;
+  }
+
   // TODO(armansito): Until there is a way to create a reference counted GATT
   // connection in bluetoothd, simply do a regular connect.
   Connect(NULL,
