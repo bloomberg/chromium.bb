@@ -207,16 +207,21 @@ ScopedTempFile CreateTempFile(scoped_refptr<RefCountedTempDir>* temp_dir) {
   if (!(*temp_dir)->IsValid())
     return file.Pass();
   base::FilePath path;
-  if (!base::CreateTemporaryFileInDir((*temp_dir)->GetPath(), &path))
+  if (!base::CreateTemporaryFileInDir((*temp_dir)->GetPath(), &path)) {
+    PLOG(ERROR) << "Failed to create file in "
+                << (*temp_dir)->GetPath().value();
     return file.Pass();
+  }
   file.reset(new base::File(path,
                             base::File::FLAG_CREATE_ALWAYS |
                             base::File::FLAG_WRITE |
                             base::File::FLAG_READ |
                             base::File::FLAG_DELETE_ON_CLOSE |
                             base::File::FLAG_TEMPORARY));
-  if (!file->IsValid())
+  if (!file->IsValid()) {
+    PLOG(ERROR) << "Failed to create " << path.value();
     file.reset();
+  }
   return file.Pass();
 }
 
@@ -230,6 +235,7 @@ ScopedTempFile CreateTempPdfFile(
       static_cast<int>(data->size()) !=
           pdf_file->WriteAtCurrentPos(data->front_as<char>(), data->size())) {
     pdf_file.reset();
+    return pdf_file.Pass();
   }
   pdf_file->Seek(base::File::FROM_BEGIN, 0);
   return pdf_file.Pass();
@@ -322,7 +328,7 @@ void PdfToEmfUtilityProcessHostClient::OnProcessStarted() {
 
 void PdfToEmfUtilityProcessHostClient::OnTempPdfReady(ScopedTempFile pdf) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!utility_process_host_)
+  if (!utility_process_host_ || !pdf)
     return OnFailed();
   base::ProcessHandle process = utility_process_host_->GetData().handle;
   // Should reply with OnPageCount().
@@ -376,7 +382,7 @@ void PdfToEmfUtilityProcessHostClient::OnTempEmfReady(
     GetPageCallbackData* callback_data,
     ScopedTempFile emf) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!utility_process_host_)
+  if (!utility_process_host_ || !emf)
     return OnFailed();
   base::ProcessHandle process = utility_process_host_->GetData().handle;
   IPC::PlatformFileForTransit transit =
