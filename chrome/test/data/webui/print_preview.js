@@ -187,17 +187,7 @@ PrintPreviewWebUITest.prototype = {
     ];
     this.nativeLayer_ = printPreview.nativeLayer_;
 
-    // Make all transitions and animations take 0ms for testing purposes.
-    // Animations still happen and must be waited on.
-    var noAnimationStyle = document.createElement('style');
-    noAnimationStyle.textContent =
-      '* {' +
-      '  -webkit-transition-duration: 0ms !important;' +
-      '  -webkit-transition-delay: 0ms !important;' +
-      '  -webkit-animation-duration: 0ms !important;' +
-      '  -webkit-animation-delay: 0ms !important;' +
-      '}';
-    document.querySelector('head').appendChild(noAnimationStyle);
+    testing.Test.disableAnimationsAndTransitions();
   }
 };
 

@@ -44,6 +44,24 @@ var testing = {};
    */
   function Test() {};
 
+  /**
+   * Make all transitions and animations take 0ms. NOTE: this will completely
+   * disable webkitTransitionEnd events. If your code relies on them firing, it
+   * will break. webkitAnimationEnd events should still work.
+   */
+  Test.disableAnimationsAndTransitions = function() {
+    var noAnimationStyle = document.createElement('style');
+    noAnimationStyle.id = 'no-animation';
+    noAnimationStyle.textContent =
+      '* {' +
+      '  -webkit-transition-duration: 0ms !important;' +
+      '  -webkit-transition-delay: 0ms !important;' +
+      '  -webkit-animation-duration: 0ms !important;' +
+      '  -webkit-animation-delay: 0ms !important;' +
+      '}';
+    document.querySelector('head').appendChild(noAnimationStyle);
+  };
+
   Test.prototype = {
     /**
      * The name of the test.
@@ -306,6 +324,12 @@ var testing = {};
      * @type {Function}
      */
     tearDown: function() {
+      if (typeof document != 'undefined') {
+        var noAnimationStyle = document.getElementById('no-animation');
+        if (noAnimationStyle)
+          noAnimationStyle.parentNode.removeChild(noAnimationStyle);
+      }
+
       Mock4JS.verifyAllMocks();
     },
 

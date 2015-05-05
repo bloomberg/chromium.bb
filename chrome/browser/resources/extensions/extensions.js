@@ -125,6 +125,14 @@ cr.define('extensions', function() {
     dragEnabled_: false,
 
     /**
+     * Callback for testing purposes. This is called after the "Developer mode"
+     * checkbox is toggled and the div containing developer buttons' height has
+     * been set.
+     * @type {function()?}
+     */
+    testingDeveloperModeCallback: null,
+
+    /**
      * Perform initial setup.
      */
     initialize: function() {
@@ -343,6 +351,9 @@ cr.define('extensions', function() {
       window.requestAnimationFrame(function() {
         devControls.style.height = !showDevControls ? '' :
             buttons.offsetHeight + 'px';
+
+        if (this.testingDeveloperModeCallback)
+          this.testingDeveloperModeCallback();
       }.bind(this));
     },
 
