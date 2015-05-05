@@ -143,7 +143,7 @@ ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& 
     ASSERT(!isEmpty());
     ExecutionContext* executionContext = m_injectedScriptObject.scriptState()->executionContext();
     ScriptState::Scope scope(m_injectedScriptObject.scriptState());
-    v8::Handle<v8::Function> functionObj = function.function();
+    v8::Local<v8::Function> functionObj = function.function();
     DevToolsFunctionInfo info(functionObj);
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "FunctionCall", "data", InspectorFunctionCallEvent::data(executionContext, info.scriptId(), "InjectedScriptSource.js", info.lineNumber()));
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(executionContext, info);
