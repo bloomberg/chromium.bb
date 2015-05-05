@@ -26,6 +26,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrTextureProvider.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -1137,7 +1138,7 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
   class GrContext* gr_context =
       resource_provider_->GrContext(use_worker_context);
   skia::RefPtr<GrTexture> gr_texture =
-      skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+      skia::AdoptRef(gr_context->textureProvider()->wrapBackendTexture(desc));
   if (gr_texture) {
     uint32_t flags = use_distance_field_text
                          ? SkSurfaceProps::kUseDistanceFieldFonts_Flag

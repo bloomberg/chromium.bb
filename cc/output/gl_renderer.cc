@@ -47,6 +47,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
+#include "third_party/skia/include/gpu/GrTextureProvider.h"
 #include "third_party/skia/include/gpu/SkGrTexturePixelRef.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -665,8 +666,8 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
   backend_texture_description.fTextureHandle = lock.texture_id();
   backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
-  skia::RefPtr<GrTexture> texture =
-      skia::AdoptRef(use_gr_context->context()->wrapBackendTexture(
+  skia::RefPtr<GrTexture> texture = skia::AdoptRef(
+      use_gr_context->context()->textureProvider()->wrapBackendTexture(
           backend_texture_description));
   if (!texture) {
     TRACE_EVENT_INSTANT0("cc",
@@ -675,37 +676,26 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
     return skia::RefPtr<SkImage>();
   }
 
-  SkImageInfo info =
+  SkImageInfo src_info =
       SkImageInfo::MakeN32Premul(source_texture_resource->size().width(),
                                  source_texture_resource->size().height());
   // Place the platform texture inside an SkBitmap.
   SkBitmap source;
-  source.setInfo(info);
+  source.setInfo(src_info);
   skia::RefPtr<SkGrPixelRef> pixel_ref =
-      skia::AdoptRef(new SkGrPixelRef(info, texture.get()));
+      skia::AdoptRef(new SkGrPixelRef(src_info, texture.get()));
   source.setPixelRef(pixel_ref.get());
 
-  // Create a scratch texture for backing store.
-  GrTextureDesc desc;
-  desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
-  desc.fSampleCnt = 0;
-  desc.fWidth = source.width();
-  desc.fHeight = source.height();
-  desc.fConfig = kSkia8888_GrPixelConfig;
-  desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
-  skia::RefPtr<GrTexture> backing_store =
-      skia::AdoptRef(use_gr_context->context()->refScratchTexture(
-          desc, GrContext::kExact_ScratchTexMatch));
-  if (!backing_store) {
-    TRACE_EVENT_INSTANT0("cc",
-                         "ApplyImageFilter scratch texture allocation failed",
+  // Create surface to draw into.
+  SkImageInfo dst_info =
+      SkImageInfo::MakeN32Premul(source.width(), source.height());
+  skia::RefPtr<SkSurface> surface = skia::AdoptRef(SkSurface::NewRenderTarget(
+      use_gr_context->context(), SkSurface::kYes_Budgeted, dst_info, 0));
+  if (!surface) {
+    TRACE_EVENT_INSTANT0("cc", "ApplyImageFilter surface allocation failed",
                          TRACE_EVENT_SCOPE_THREAD);
     return skia::RefPtr<SkImage>();
   }
-
-  // Create surface to draw into.
-  skia::RefPtr<SkSurface> surface = skia::AdoptRef(
-      SkSurface::NewRenderTargetDirect(backing_store->asRenderTarget()));
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
 
   // Draw the source bitmap through the filter to the canvas.

@@ -104,13 +104,14 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   // RGBA to BGRA conversion.
   desc.fConfig = kRGBA_8888_GrPixelConfig;
   // kRenderTarget_GrTextureFlagBit avoids a copy before readback in skia.
-  desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+  desc.fFlags = kRenderTarget_GrSurfaceFlag;
   desc.fSampleCnt = 0;
   desc.fOrigin = kTopLeft_GrSurfaceOrigin;
   desc.fWidth = size.width();
   desc.fHeight = size.height();
   skia::RefPtr<GrTexture> texture = skia::AdoptRef(
-      gr->refScratchTexture(desc, GrContext::kExact_ScratchTexMatch));
+      gr->textureProvider()->refScratchTexture(
+          desc, GrTextureProvider::kExact_ScratchTexMatch));
   if (!texture.get())
     return false;
 

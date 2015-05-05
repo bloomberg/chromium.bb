@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrTextureProvider.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "ui/gfx/skbitmap_operations.h"
 
@@ -105,13 +106,14 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   // Use kRGBA_8888_GrPixelConfig, not kSkia8888_GrPixelConfig, to avoid
   // RGBA to BGRA conversion.
   desc.fConfig = kRGBA_8888_GrPixelConfig;
-  desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+  desc.fFlags = kRenderTarget_GrSurfaceFlag;
   desc.fSampleCnt = 0;
   desc.fOrigin = kTopLeft_GrSurfaceOrigin;
   desc.fWidth = size.width();
   desc.fHeight = size.height();
   skia::RefPtr<GrTexture> texture = skia::AdoptRef(
-      gr->refScratchTexture(desc, GrContext::kExact_ScratchTexMatch));
+      gr->textureProvider()->refScratchTexture(
+          desc, GrTextureProvider::kExact_ScratchTexMatch));
   if (!texture.get())
     return false;
 
