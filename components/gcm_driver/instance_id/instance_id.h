@@ -45,6 +45,8 @@ class InstanceID {
   typedef base::Callback<void(InstanceID* instance_id,
                               Result result)> DeleteIDCallback;
 
+  static const int kInstanceIDByteLength = 8;
+
   // Creator.
   // |app_id|: identifies the application that uses the Instance ID.
   // |callback|: to be called when the token refresh is needed.

@@ -232,6 +232,9 @@
       'history/core/browser/visit_tracker_unittest.cc',
       'history/core/common/thumbnail_score_unittest.cc',
     ],
+    'instance_id_unittest_sources': [
+      'gcm_driver/instance_id/instance_id_driver_unittest.cc',
+    ],
     'invalidation_unittest_sources': [
       'invalidation/fake_invalidator_unittest.cc',
       'invalidation/gcm_network_channel_unittest.cc',
@@ -660,6 +663,7 @@
         '<@(gcm_driver_unittest_sources)',
         '<@(google_unittest_sources)',
         '<@(history_unittest_sources)',
+        '<@(instance_id_unittest_sources)',
         '<@(json_schema_unittest_sources)',
         '<@(keyed_service_unittest_sources)',
         '<@(language_usage_metrics_unittest_sources)',
@@ -754,6 +758,7 @@
         'components.gyp:history_core_browser',
         'components.gyp:history_core_common',
         'components.gyp:history_core_test_support',
+        'components.gyp:instance_id_driver',
         'components.gyp:invalidation',
         'components.gyp:invalidation_test_support',
         'components.gyp:json_schema',
@@ -988,6 +993,7 @@
             'gcm_driver/gcm_delayed_task_controller_unittest.cc',
             'gcm_driver/gcm_driver_desktop_unittest.cc',
             'gcm_driver/gcm_stats_recorder_impl_unittest.cc',
+            'gcm_driver/instance_id/instance_id_driver_unittest.cc',
             'sessions/session_backend_unittest.cc',
             'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
             'storage_monitor/media_storage_util_unittest.cc',

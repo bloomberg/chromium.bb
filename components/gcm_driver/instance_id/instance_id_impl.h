@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 
@@ -34,6 +35,14 @@ class InstanceIDImpl : public InstanceID {
   void DeleteID(const DeleteIDCallback& callback) override;
 
  private:
+  void EnsureIDGenerated();
+
+  // The generated Instance ID.
+  std::string id_;
+
+  // The time when the Instance ID has been generated.
+  base::Time creation_time_;
+
   DISALLOW_COPY_AND_ASSIGN(InstanceIDImpl);
 };
 
