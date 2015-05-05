@@ -17,6 +17,8 @@
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
+#include "ash/magnifier/magnification_controller.h"
+#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
@@ -367,9 +369,10 @@ aura::Window* DisplayController::GetRootWindowForDisplayId(int64 id) {
 }
 
 AshWindowTreeHost* DisplayController::GetAshWindowTreeHostForDisplayId(
-    int64 id) {
-  CHECK_EQ(1u, window_tree_hosts_.count(id));
-  return window_tree_hosts_[id];
+    int64 display_id) {
+  CHECK_EQ(1u, window_tree_hosts_.count(display_id))
+      << "display id = " << display_id;
+  return window_tree_hosts_[display_id];
 }
 
 void DisplayController::CloseChildWindows() {
@@ -589,6 +592,10 @@ void DisplayController::UpdateMouseLocationAfterDisplayChange() {
   ::wm::ConvertPointToScreen(dst_root_window, &target_location_in_screen);
   const gfx::Display& target_display =
       display_manager->FindDisplayContainingPoint(target_location_in_screen);
+  // If the original location isn't on any of new display, let ozone move
+  // the cursor.
+  if (!target_display.is_valid())
+    return;
   int64 target_display_id = target_display.id();
 
   // Do not move the cursor if the cursor's location did not change. This avoids
@@ -640,6 +647,14 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     AshWindowTreeHost* ash_host =
         AddWindowTreeHostForDisplay(display, AshWindowTreeHostInitParams());
     RootWindowController::CreateForSecondaryDisplay(ash_host);
+
+    // Magnifier controllers keep pointers to the current root window.
+    // Update them here to avoid accessing them later.
+    Shell::GetInstance()->magnification_controller()->SwitchTargetRootWindow(
+        ash_host->AsWindowTreeHost()->window(), false);
+    Shell::GetInstance()
+        ->partial_magnification_controller()
+        ->SwitchTargetRootWindow(ash_host->AsWindowTreeHost()->window());
 
     if (primary_tree_host_for_replace_) {
       AshWindowTreeHost* to_delete = primary_tree_host_for_replace_;

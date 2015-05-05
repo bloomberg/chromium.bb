@@ -1017,6 +1017,13 @@ void DisplayManager::SetMultiDisplayMode(MultiDisplayMode mode) {
   software_mirroring_display_list_.clear();
 }
 
+void DisplayManager::SetDefaultMultiDisplayMode(MultiDisplayMode mode) {
+  // TODO(oshima): Remove this constrain.
+  DCHECK_EQ(default_multi_display_mode_, EXTENDED);
+  DCHECK_EQ(mode, UNIFIED);
+  default_multi_display_mode_ = mode;
+}
+
 bool DisplayManager::UpdateDisplayBounds(int64 display_id,
                                          const gfx::Rect& new_bounds) {
   if (change_display_upon_host_resize_) {

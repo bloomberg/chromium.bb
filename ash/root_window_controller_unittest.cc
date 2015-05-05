@@ -4,13 +4,13 @@
 
 #include "ash/root_window_controller.h"
 
+#include "ash/display/display_manager.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -295,8 +295,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_LockWindowsInUnified) {
   if (!SupportsMultipleDisplays())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayManagerTestApi test_api(display_manager);
-  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
   UpdateDisplay("500x500");
   const int kLockScreenWindowId = 1000;

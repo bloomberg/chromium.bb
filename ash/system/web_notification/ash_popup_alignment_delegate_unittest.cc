@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ui/gfx/screen.h"
 #include "ui/message_center/message_center_style.h"
 
@@ -233,8 +232,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
   if (!SupportsMultipleDisplays())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  test::DisplayManagerTestApi test_api(display_manager);
-  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
 
   // Reset the delegate as the primary display's shelf will be destroyed during

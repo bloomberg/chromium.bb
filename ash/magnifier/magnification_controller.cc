@@ -93,6 +93,8 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   void HandleFocusedNodeChanged(
       bool is_editable_node,
       const gfx::Rect& node_bounds_in_screen) override;
+  void SwitchTargetRootWindow(aura::Window* new_root_window,
+                              bool redraw_original_root_window) override;
 
   // For test
   gfx::Point GetPointOfInterestForTesting() override {
@@ -136,13 +138,6 @@ class MagnificationControllerImpl : virtual public MagnificationController,
   // the animation is completed. This should be called after animation is
   // started.
   void AfterAnimationMoveCursorTo(const gfx::Point& location);
-
-  // Switch Magnified RootWindow to |new_root_window|. This does following:
-  //  - Unzoom the current root_window.
-  //  - Zoom the given new root_window |new_root_window|.
-  //  - Switch the target window from current window to |new_root_window|.
-  void SwitchTargetRootWindow(aura::Window* new_root_window,
-                              bool redraw_original_root_window);
 
   // Returns if the magnification scale is 1.0 or not (larger then 1.0).
   bool IsMagnified() const;
@@ -387,6 +382,26 @@ void MagnificationControllerImpl::HandleFocusedNodeChanged(
   MoveMagnifierWindowFollowRect(node_bounds_in_root);
 }
 
+void MagnificationControllerImpl::SwitchTargetRootWindow(
+    aura::Window* new_root_window,
+    bool redraw_original_root_window) {
+  DCHECK(new_root_window);
+
+  if (new_root_window == root_window_)
+    return;
+
+  // Stores the previous scale.
+  float scale = GetScale();
+
+  // Unmagnify the previous root window.
+  root_window_->RemoveObserver(this);
+  if (redraw_original_root_window)
+    RedrawKeepingMousePosition(1.0f, true);
+  root_window_ = new_root_window;
+  RedrawKeepingMousePosition(scale, true);
+  root_window_->AddObserver(this);
+}
+
 void MagnificationControllerImpl::AfterAnimationMoveCursorTo(
     const gfx::Point& location) {
   DCHECK(root_window_);
@@ -476,27 +491,6 @@ void MagnificationControllerImpl::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   // TODO(yoshiki): implement here. crbug.com/230979
-}
-
-void MagnificationControllerImpl::SwitchTargetRootWindow(
-    aura::Window* new_root_window,
-    bool redraw_original_root_window) {
-  DCHECK(new_root_window);
-
-  if (new_root_window == root_window_)
-    return;
-
-  // Stores the previous scale.
-  float scale = GetScale();
-
-  // Unmagnify the previous root window.
-  root_window_->RemoveObserver(this);
-  if (redraw_original_root_window)
-    RedrawKeepingMousePosition(1.0f, true);
-
-  root_window_ = new_root_window;
-  RedrawKeepingMousePosition(scale, true);
-  root_window_->AddObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

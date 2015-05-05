@@ -292,7 +292,7 @@ class ASH_EXPORT DisplayManager
   void SetMultiDisplayMode(MultiDisplayMode mode);
 
   // Sets/gets default multi display mode.
-
+  void SetDefaultMultiDisplayMode(MultiDisplayMode mode);
   MultiDisplayMode default_multi_display_mode() const {
     return default_multi_display_mode_;
   }

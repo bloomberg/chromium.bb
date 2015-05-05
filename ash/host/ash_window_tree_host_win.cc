@@ -27,7 +27,9 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
         fullscreen_(false),
         saved_window_style_(0),
         saved_window_ex_style_(0),
-        transformer_helper_(this) {}
+        transformer_helper_(this) {
+    transformer_helper_.Init();
+  }
   ~AshWindowTreeHostWin() override {}
 
  private:

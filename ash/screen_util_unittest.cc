@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/display_manager_test_api.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -118,8 +117,7 @@ TEST_F(ScreenUtilTest, ShelfDisplayBoundsInUnifiedDesktop) {
   if (!SupportsMultipleDisplays())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayManagerTestApi test_api(display_manager);
-  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
 
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(

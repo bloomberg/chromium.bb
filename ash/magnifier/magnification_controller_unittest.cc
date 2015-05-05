@@ -4,6 +4,7 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
@@ -580,6 +581,42 @@ TEST_F(MagnificationControllerTest, FollowTextInputFieldKeyPress) {
   EXPECT_TRUE(new_view_port.Contains(caret_bounds));
   EXPECT_EQ(caret_bounds.x(), new_view_port.CenterPoint().x());
   EXPECT_EQ(view_port.y(), new_view_port.y());
+}
+
+// Make sure that unified desktop can enter magnified mode.
+TEST_F(MagnificationControllerTest, EnableMagnifierInUnifiedDesktop) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
+
+  EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
+
+  GetMagnificationController()->SetEnabled(true);
+
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenFor(Shell::GetPrimaryRootWindow());
+
+  UpdateDisplay("500x500, 500x500");
+  EXPECT_EQ("0,0 1000x500", screen->GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  GetMagnificationController()->SetEnabled(false);
+
+  EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
+
+  GetMagnificationController()->SetEnabled(true);
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  UpdateDisplay("500x500");
+  EXPECT_EQ("0,0 500x500", screen->GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ(2.0f, GetMagnificationController()->GetScale());
+
+  GetMagnificationController()->SetEnabled(false);
+  EXPECT_EQ("0,0 500x500", screen->GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ(1.0f, GetMagnificationController()->GetScale());
 }
 
 }  // namespace ash

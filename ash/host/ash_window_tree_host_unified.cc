@@ -47,8 +47,9 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
 
 AshWindowTreeHostUnified::AshWindowTreeHostUnified(
     const gfx::Rect& initial_bounds)
-    : bounds_(gfx::Rect(initial_bounds.size())) {
+    : bounds_(gfx::Rect(initial_bounds.size())), transformer_helper_(this) {
   CreateCompositor(GetAcceleratedWidget());
+  transformer_helper_.Init();
 }
 
 AshWindowTreeHostUnified::~AshWindowTreeHostUnified() {
@@ -87,12 +88,11 @@ void AshWindowTreeHostUnified::UnConfineCursor() {
 
 void AshWindowTreeHostUnified::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
-  // TODO(oshima): Find out if this is neceessary.
-  NOTIMPLEMENTED();
+  transformer_helper_.SetRootWindowTransformer(transformer.Pass());
 }
 
 gfx::Insets AshWindowTreeHostUnified::GetHostInsets() const {
-  return gfx::Insets();
+  return transformer_helper_.GetHostInsets();
 }
 
 aura::WindowTreeHost* AshWindowTreeHostUnified::AsWindowTreeHost() {
@@ -122,6 +122,24 @@ void AshWindowTreeHostUnified::SetBounds(const gfx::Rect& bounds) {
     return;
   bounds_.set_size(bounds.size());
   OnHostResized(bounds_.size());
+}
+
+gfx::Transform AshWindowTreeHostUnified::GetRootTransform() const {
+  return transformer_helper_.GetTransform();
+}
+
+void AshWindowTreeHostUnified::SetRootTransform(
+    const gfx::Transform& transform) {
+  transformer_helper_.SetTransform(transform);
+}
+
+gfx::Transform AshWindowTreeHostUnified::GetInverseRootTransform() const {
+  return transformer_helper_.GetInverseTransform();
+}
+
+void AshWindowTreeHostUnified::UpdateRootWindowSize(
+    const gfx::Size& host_size) {
+  transformer_helper_.UpdateWindowSize(host_size);
 }
 
 void AshWindowTreeHostUnified::SetCapture() {

@@ -14,6 +14,7 @@ AshRemoteWindowTreeHostWin::AshRemoteWindowTreeHostWin(HWND remote_hwnd)
     : aura::RemoteWindowTreeHostWin(),
       transformer_helper_(this) {
   SetRemoteWindowHandle(remote_hwnd);
+  transformer_helper_.Init();
 }
 
 AshRemoteWindowTreeHostWin::~AshRemoteWindowTreeHostWin() {}

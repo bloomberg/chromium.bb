@@ -35,6 +35,7 @@ namespace ash {
 
 AshWindowTreeHostX11::AshWindowTreeHostX11(const gfx::Rect& initial_bounds)
     : WindowTreeHostX11(initial_bounds), transformer_helper_(this) {
+  transformer_helper_.Init();
   aura::Env::GetInstance()->AddObserver(this);
 }
 

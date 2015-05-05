@@ -1462,11 +1462,11 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   EXPECT_EQ("200x300", host1->GetBounds().size().ToString());
 }
 
-#if !defined(OS_WIN) && defined(USE_X11)
-
 TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
-  test::DisplayManagerTestApi test_api(display_manager());
-  test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  if (!SupportsMultipleDisplays())
+    return;
+
+  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
   display_manager()->SetMultiDisplayMode(DisplayManager::UNIFIED);
   UpdateDisplay("300x200,400x500");
 
@@ -1489,7 +1489,28 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   EXPECT_EQ("900x500", screen->GetPrimaryDisplay().size().ToString());
 }
 
-#endif
+TEST_F(DisplayManagerTest, RotateUnifiedDesktop) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager()->SetMultiDisplayMode(DisplayManager::UNIFIED);
+  UpdateDisplay("300x200,400x500");
+
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+  const gfx::Display& display = screen->GetPrimaryDisplay();
+  EXPECT_EQ("700x500", display.size().ToString());
+  display_manager()->SetDisplayRotation(display.id(), gfx::Display::ROTATE_90,
+                                        gfx::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ("500x700", screen->GetPrimaryDisplay().size().ToString());
+  display_manager()->SetDisplayRotation(display.id(), gfx::Display::ROTATE_0,
+                                        gfx::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ("700x500", screen->GetPrimaryDisplay().size().ToString());
+
+  UpdateDisplay("300x200");
+  EXPECT_EQ("300x200", screen->GetPrimaryDisplay().size().ToString());
+}
 
 class ScreenShutdownTest : public test::AshTestBase {
  public:

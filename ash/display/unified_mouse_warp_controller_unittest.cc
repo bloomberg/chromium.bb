@@ -25,8 +25,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
   void SetUp() override {
     test::AshTestBase::SetUp();
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-    test::DisplayManagerTestApi test_api(display_manager);
-    test_api.SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+    display_manager->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
     display_manager->SetMultiDisplayMode(DisplayManager::UNIFIED);
   }
 

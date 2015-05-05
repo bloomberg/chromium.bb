@@ -56,6 +56,7 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
 
 AshWindowTreeHostOzone::AshWindowTreeHostOzone(const gfx::Rect& initial_bounds)
     : aura::WindowTreeHostOzone(initial_bounds), transformer_helper_(this) {
+  transformer_helper_.Init();
 }
 
 AshWindowTreeHostOzone::~AshWindowTreeHostOzone() {

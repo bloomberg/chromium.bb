@@ -24,6 +24,9 @@ class TransformerHelper {
   explicit TransformerHelper(AshWindowTreeHost* ash_host);
   ~TransformerHelper();
 
+  // Initializes the transformer with identity transform.
+  void Init();
+
   // Returns the the insets that specifies the effective root window
   // area within the host window.
   gfx::Insets GetHostInsets() const;

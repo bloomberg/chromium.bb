@@ -37,15 +37,15 @@ class PartialMagnificationController
   // Returns the current magnification ratio.
   float GetScale() const { return scale_; }
 
- private:
-  void OnMouseMove(const gfx::Point& location_in_root);
-
   // Switch PartialMagnified RootWindow to |new_root_window|. This does
   // following:
   //  - Remove the magnifier from the current root window.
   //  - Create a magnifier in the new root_window |new_root_window|.
   //  - Switch the target window from current window to |new_root_window|.
   void SwitchTargetRootWindow(aura::Window* new_root_window);
+
+ private:
+  void OnMouseMove(const gfx::Point& location_in_root);
 
   // Returns the root window that contains the mouse cursor.
   aura::Window* GetCurrentRootWindow();

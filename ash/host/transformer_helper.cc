@@ -58,10 +58,13 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 
 TransformerHelper::TransformerHelper(AshWindowTreeHost* ash_host)
     : ash_host_(ash_host) {
-  SetTransform(gfx::Transform());
 }
 
 TransformerHelper::~TransformerHelper() {}
+
+void TransformerHelper::Init() {
+  SetTransform(gfx::Transform());
+}
 
 gfx::Insets TransformerHelper::GetHostInsets() const {
   return transformer_->GetHostInsets();
