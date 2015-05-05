@@ -63,7 +63,6 @@ class ChromeNativeAppWindowViews
   // NativeAppWindow implementation.
   void SetFullscreen(int fullscreen_types) override;
   bool IsFullscreenOrPending() const override;
-  void UpdateBadgeIcon() override;
   void UpdateShape(scoped_ptr<SkRegion> region) override;
   bool HasFrameColor() const override;
   SkColor ActiveFrameColor() const override;

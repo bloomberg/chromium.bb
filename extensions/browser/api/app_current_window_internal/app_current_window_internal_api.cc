@@ -23,7 +23,6 @@ namespace Show = app_current_window_internal::Show;
 namespace SetBounds = app_current_window_internal::SetBounds;
 namespace SetSizeConstraints = app_current_window_internal::SetSizeConstraints;
 namespace SetIcon = app_current_window_internal::SetIcon;
-namespace SetBadgeIcon = app_current_window_internal::SetBadgeIcon;
 namespace SetShape = app_current_window_internal::SetShape;
 namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
 namespace SetVisibleOnAllWorkspaces =
@@ -315,36 +314,6 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(AppWindow* window) {
     url = extension()->GetResourceURL(params->icon_url);
 
   window->SetAppIconUrl(url);
-  return true;
-}
-
-bool AppCurrentWindowInternalSetBadgeIconFunction::RunWithWindow(
-    AppWindow* window) {
-  if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev()) {
-    error_ = kDevChannelOnly;
-    return false;
-  }
-
-  scoped_ptr<SetBadgeIcon::Params> params(SetBadgeIcon::Params::Create(*args_));
-  CHECK(params.get());
-  // The |icon_url| parameter may be a blob url (e.g. an image fetched with an
-  // XMLHttpRequest) or a resource url.
-  GURL url(params->icon_url);
-  if (!url.is_valid() && !params->icon_url.empty())
-    url = extension()->GetResourceURL(params->icon_url);
-
-  window->SetBadgeIconUrl(url);
-  return true;
-}
-
-bool AppCurrentWindowInternalClearBadgeFunction::RunWithWindow(
-    AppWindow* window) {
-  if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev()) {
-    error_ = kDevChannelOnly;
-    return false;
-  }
-
-  window->ClearBadge();
   return true;
 }
 

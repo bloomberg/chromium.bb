@@ -40,9 +40,6 @@ class NativeAppWindow : public ui::BaseWindow,
   // Called when the title of the window changes.
   virtual void UpdateWindowTitle() = 0;
 
-  // Called to update the badge icon.
-  virtual void UpdateBadgeIcon() = 0;
-
   // Called when the draggable regions are changed.
   virtual void UpdateDraggableRegions(
       const std::vector<DraggableRegion>& regions) = 0;

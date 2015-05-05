@@ -514,10 +514,6 @@ base::string16 AppWindow::GetTitle() const {
 }
 
 void AppWindow::SetAppIconUrl(const GURL& url) {
-  // If the same url is being used for the badge, ignore it.
-  if (url == badge_icon_url_)
-    return;
-
   // Avoid using any previous icons that were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
@@ -532,29 +528,6 @@ void AppWindow::SetAppIconUrl(const GURL& url) {
       false,  // normal cache policy
       base::Bind(&AppWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
-}
-
-void AppWindow::SetBadgeIconUrl(const GURL& url) {
-  // Avoid using any previous icons that were being downloaded.
-  image_loader_ptr_factory_.InvalidateWeakPtrs();
-
-  // Reset |app_icon_image_| to abort pending image load (if any).
-  badge_icon_image_.reset();
-
-  badge_icon_url_ = url;
-  web_contents()->DownloadImage(
-      url,
-      true,   // is a favicon
-      0,      // no maximum size
-      false,  // normal cache policy
-      base::Bind(&AppWindow::DidDownloadFavicon,
-                 image_loader_ptr_factory_.GetWeakPtr()));
-}
-
-void AppWindow::ClearBadge() {
-  badge_icon_image_.reset();
-  badge_icon_url_ = GURL();
-  UpdateBadgeIcon(gfx::Image());
 }
 
 void AppWindow::UpdateShape(scoped_ptr<SkRegion> region) {
@@ -766,21 +739,14 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
 //------------------------------------------------------------------------------
 // Private methods
 
-void AppWindow::UpdateBadgeIcon(const gfx::Image& image) {
-  badge_icon_ = image;
-  native_app_window_->UpdateBadgeIcon();
-}
-
 void AppWindow::DidDownloadFavicon(
     int id,
     int http_status_code,
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
-  if ((image_url != app_icon_url_ && image_url != badge_icon_url_) ||
-      bitmaps.empty()) {
+  if (image_url != app_icon_url_ || bitmaps.empty())
     return;
-  }
 
   // Bitmaps are ordered largest to smallest. Choose the smallest bitmap
   // whose height >= the preferred size.
@@ -791,12 +757,7 @@ void AppWindow::DidDownloadFavicon(
     largest_index = i;
   }
   const SkBitmap& largest = bitmaps[largest_index];
-  if (image_url == app_icon_url_) {
-    UpdateAppIcon(gfx::Image::CreateFrom1xBitmap(largest));
-    return;
-  }
-
-  UpdateBadgeIcon(gfx::Image::CreateFrom1xBitmap(largest));
+  UpdateAppIcon(gfx::Image::CreateFrom1xBitmap(largest));
 }
 
 void AppWindow::OnExtensionIconImageChanged(IconImage* image) {

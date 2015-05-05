@@ -353,22 +353,6 @@ bool ChromeNativeAppWindowViews::IsFullscreenOrPending() const {
   return is_fullscreen_;
 }
 
-void ChromeNativeAppWindowViews::UpdateBadgeIcon() {
-  const gfx::Image* icon = NULL;
-  if (!app_window()->badge_icon().IsEmpty()) {
-    icon = &app_window()->badge_icon();
-    // chrome::DrawTaskbarDecoration can do interesting things with non-square
-    // bitmaps.
-    // TODO(benwells): Refactor chrome::DrawTaskbarDecoration to not be avatar
-    // specific, and lift this restriction.
-    if (icon->Width() != icon->Height()) {
-      LOG(ERROR) << "Attempt to set a non-square badge; request ignored.";
-      return;
-    }
-  }
-  chrome::DrawTaskbarDecoration(GetNativeWindow(), icon);
-}
-
 void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
   shape_ = region.Pass();
   widget()->SetShape(shape() ? new SkRegion(*shape()) : nullptr);

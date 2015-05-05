@@ -1288,21 +1288,6 @@ function testRestoreAfterGeometryCacheChange() {
   ]);
 }
 
-function testBadging() {
-  chrome.test.runTests([
-    function testSettingAndClearingBadge() {
-      chrome.app.window.create('test.html', callbackPass(function(win) {
-        win.setBadgeIcon('square.png');
-        win.clearBadge();
-        win.setBadgeIcon('non_square.png');
-        win.clearBadge();
-        chrome.test.sendMessage(
-            'WaitForRoundTrip', callbackPass(function(reply) {}));
-      }));
-    },
-  ]);
-}
-
 function testFrameColors() {
   chrome.test.runTests([
     function testWithNoColor() {

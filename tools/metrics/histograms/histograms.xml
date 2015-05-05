@@ -51221,8 +51221,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="677" label="HID_SENDFEATUREREPORT"/>
   <int value="678" label="HOTWORDPRIVATE_SETENABLED"/>
   <int value="679" label="HOTWORDPRIVATE_GETSTATUS"/>
-  <int value="680" label="APP_CURRENTWINDOWINTERNAL_SETBADGEICON"/>
-  <int value="681" label="APP_CURRENTWINDOWINTERNAL_CLEARBADGE"/>
+  <int value="680" label="DELETED_APP_CURRENTWINDOWINTERNAL_SETBADGEICON"/>
+  <int value="681" label="DELETED_APP_CURRENTWINDOWINTERNAL_CLEARBADGE"/>
   <int value="682" label="DELETED_WEBVIEW_SETZOOM"/>
   <int value="683" label="DELETED_WEBVIEW_GETZOOM"/>
   <int value="684" label="DEVELOPERPRIVATE_REQUESTFILESOURCE"/>

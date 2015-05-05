@@ -251,11 +251,6 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestBadging) {
-  ASSERT_TRUE(
-      RunAppWindowAPITestAndWaitForRoundTrip("testBadging")) << message_;
-}
-
 // TODO(benwells): Implement on Mac.
 #if defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestFrameColors) {

@@ -363,14 +363,6 @@ namespace app.window {
     // TODO(stevenjb): Investigate implementing this on Windows and OSX.
     [nodoc] static void setIcon(DOMString iconUrl);
 
-    // Set a badge icon for the window.
-    // TODO(benwells): Document this properly before going to stable.
-    [nodoc] static void setBadgeIcon(DOMString iconUrl);
-
-    // Clear the current for the window.
-    // TODO(benwells): Document this properly before going to stable.
-    [nodoc] static void clearBadge();
-
     // Is the window always on top?
     static boolean isAlwaysOnTop();
 

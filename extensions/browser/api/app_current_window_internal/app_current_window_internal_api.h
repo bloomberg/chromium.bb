@@ -152,28 +152,6 @@ class AppCurrentWindowInternalSetIconFunction
   bool RunWithWindow(AppWindow* window) override;
 };
 
-class AppCurrentWindowInternalSetBadgeIconFunction
-    : public AppCurrentWindowInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setBadgeIcon",
-                             APP_CURRENTWINDOWINTERNAL_SETBADGEICON)
-
- protected:
-  ~AppCurrentWindowInternalSetBadgeIconFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
-};
-
-class AppCurrentWindowInternalClearBadgeFunction
-    : public AppCurrentWindowInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.clearBadge",
-                             APP_CURRENTWINDOWINTERNAL_CLEARBADGE)
-
- protected:
-  ~AppCurrentWindowInternalClearBadgeFunction() override {}
-  bool RunWithWindow(AppWindow* window) override;
-};
-
 class AppCurrentWindowInternalSetShapeFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:

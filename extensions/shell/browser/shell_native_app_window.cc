@@ -122,10 +122,6 @@ void ShellNativeAppWindow::UpdateWindowTitle() {
   // No window title to update.
 }
 
-void ShellNativeAppWindow::UpdateBadgeIcon() {
-  // No badge to update.
-}
-
 void ShellNativeAppWindow::UpdateDraggableRegions(
     const std::vector<DraggableRegion>& regions) {
   NOTIMPLEMENTED();

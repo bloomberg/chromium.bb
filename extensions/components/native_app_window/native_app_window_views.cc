@@ -352,10 +352,6 @@ void NativeAppWindowViews::UpdateWindowTitle() {
   widget_->UpdateWindowTitle();
 }
 
-void NativeAppWindowViews::UpdateBadgeIcon() {
-  // Stub implementation. See also ChromeNativeAppWindowViews.
-}
-
 void NativeAppWindowViews::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.

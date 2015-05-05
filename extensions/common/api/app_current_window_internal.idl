@@ -48,8 +48,6 @@ namespace app.currentWindowInternal {
     static void setSizeConstraints(DOMString boundsType,
                                    SizeConstraints constraints);
     static void setIcon(DOMString icon_url);
-    static void setBadgeIcon(DOMString icon_url);
-    static void clearBadge();
     static void setShape(Region region);
     static void setAlwaysOnTop(boolean always_on_top);
     static void setVisibleOnAllWorkspaces(boolean always_visible);

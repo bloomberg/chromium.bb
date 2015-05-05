@@ -136,7 +136,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   bool IsFullscreenOrPending() const override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
-  void UpdateBadgeIcon() override;
   void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) override;
   SkRegion* GetDraggableRegion() override;
