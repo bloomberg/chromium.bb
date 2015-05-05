@@ -162,7 +162,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   bool AtEof() {
-    return socket_data_->at_read_eof() && socket_data_->at_write_eof();
+    return socket_data_->AllReadDataConsumed() &&
+           socket_data_->AllWriteDataConsumed();
   }
 
   void ProcessPacket(scoped_ptr<QuicEncryptedPacket> packet) {
