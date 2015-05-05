@@ -31438,6 +31438,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Net error codes for failed Rappor uploads.</summary>
 </histogram>
 
+<histogram name="rappor.last_daily_sample" enum="DailyEventIntervalType">
+  <obsolete>
+    Removed 2015/05/05.
+  </obsolete>
+  <owner>holte@chromium.org</owner>
+  <summary>
+    Rappor.DailyEvent.IntervalType reported under the wrong name.
+  </summary>
+</histogram>
+
+<histogram name="Rappor.LoadCohortResult" enum="RapporLoadResultType">
+  <owner>holte@chromium.org</owner>
+  <summary>
+    Success or errors encountered when loading Rappor cohort pref.
+  </summary>
+</histogram>
+
+<histogram name="Rappor.LoadSecretResult" enum="RapporLoadResultType">
+  <owner>holte@chromium.org</owner>
+  <summary>
+    Success or errors encountered when loading Rappor secret pref.
+  </summary>
+</histogram>
+
 <histogram name="Rappor.UploadResponseCode" enum="HttpResponseCode">
   <owner>holte@chromium.org</owner>
   <summary>
@@ -60792,6 +60816,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Upload Success"/>
   <int value="1" label="Upload Rejected"/>
   <int value="2" label="Queue Overflowed"/>
+</enum>
+
+<enum name="RapporLoadResultType" type="int">
+  <int value="0" label="LOAD_SUCCESS"/>
+  <int value="1" label="LOAD_EMPTY_VALUE"/>
+  <int value="2" label="LOAD_CORRUPT_VALUE"/>
 </enum>
 
 <enum name="RecentTabsAction" type="int">
