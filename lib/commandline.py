@@ -25,7 +25,6 @@ import urlparse
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -892,7 +891,7 @@ def RunInsideChroot(command, auto_detect_brick=False,
 
   # Produce the command line to execute inside the chroot.
   argv = sys.argv[:]
-  argv[0] = git.ReinterpretPathForChroot(argv[0])
+  argv[0] = path_util.ToChrootPath(argv[0])
 
   target_arg = any(getattr(command.options, arg, None)
                    for arg in ('blueprint', 'board', 'brick', 'host'))

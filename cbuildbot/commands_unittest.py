@@ -16,7 +16,6 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -55,7 +54,7 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
       returncode = 1 if raises else 0
       m.AddCmdResult(cmd, returncode=returncode, side_effect=WriteError)
       m.AddCmdResult(sudo_cmd, returncode=returncode, side_effect=WriteError)
-      with mock.patch.object(git, 'ReinterpretPathForChroot',
+      with mock.patch.object(path_util, 'ToChrootPath',
                              side_effect=lambda x: x):
         with cros_test_lib.LoggingCapturer():
           # If the script failed, the exception should be raised and printed.
@@ -423,7 +422,7 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
 
   def testGenerateAuZip(self):
     """Test Basic generate_au_zip Command."""
-    with mock.patch.object(git, 'ReinterpretPathForChroot',
+    with mock.patch.object(path_util, 'ToChrootPath',
                            side_effect=lambda x: x):
       commands.GenerateAuZip(self._buildroot, '/tmp/taco', None)
     self.assertCommandContains(['./build_library/generate_au_zip.py'])
@@ -782,7 +781,7 @@ class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     self._board = 'test-board'
     self._image_dir = 'image-dir'
     self._result_dir = 'result-dir'
-    self.PatchObject(git, 'ReinterpretPathForChroot',
+    self.PatchObject(path_util, 'ToChrootPath',
                      side_effect=lambda x: x)
 
   def testRunTestImage(self):

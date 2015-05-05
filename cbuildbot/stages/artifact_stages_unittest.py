@@ -21,11 +21,11 @@ from chromite.cbuildbot.stages import build_stages_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib import path_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 from chromite.cbuildbot.stages.generic_stages_unittest import patches
@@ -89,7 +89,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Stage construction for archive steps."""
     stage = self.ConstructStage()
     self.PatchObject(stage._upload_queue, 'put', autospec=True)
-    self.PatchObject(git, 'ReinterpretPathForChroot', return_value='',
+    self.PatchObject(path_util, 'ToChrootPath', return_value='',
                      autospec=True)
     return stage
 

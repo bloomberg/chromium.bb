@@ -85,7 +85,7 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
     cmd = cmd[:]
     cmd[0] = os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR, cmd[0])
     if enter_chroot:
-      cmd[0] = git.ReinterpretPathForChroot(cmd[0])
+      cmd[0] = path_util.ToChrootPath(cmd[0])
 
   # If we are entering the chroot, create status file for tracking what
   # packages failed to build.
@@ -96,7 +96,7 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
       kwargs['extra_env'] = (kwargs.get('extra_env') or {}).copy()
       status_file = stack.Add(tempfile.NamedTemporaryFile, dir=chroot_tmp)
       kwargs['extra_env']['PARALLEL_EMERGE_STATUS_FILE'] = \
-          git.ReinterpretPathForChroot(status_file.name)
+          path_util.ToChrootPath(status_file.name)
     runcmd = cros_build_lib.RunCommand
     if sudo:
       runcmd = cros_build_lib.SudoRunCommand
@@ -489,7 +489,7 @@ def GetFirmwareVersions(buildroot, board):
                          'usr', 'sbin', 'chromeos-firmwareupdate')
   if not os.path.isfile(updater):
     return FirmwareVersions(None, None)
-  updater = git.ReinterpretPathForChroot(updater)
+  updater = path_util.ToChrootPath(updater)
 
   result = cros_build_lib.RunCommand([updater, '-V'], enter_chroot=True,
                                      capture_output=True, log_output=True,
@@ -533,7 +533,7 @@ def GenerateAuZip(buildroot, image_dir, extra_env=None):
   Raises:
     failures_lib.BuildScriptFailure if the called script fails.
   """
-  chroot_image_dir = git.ReinterpretPathForChroot(image_dir)
+  chroot_image_dir = path_util.ToChrootPath(image_dir)
   cmd = ['./build_library/generate_au_zip.py', '-o', chroot_image_dir]
   RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
@@ -598,7 +598,8 @@ def RunUnitTests(buildroot, board, full, blacklist=None, extra_env=None):
   #   uprev noticed were changed.
   if not full:
     package_file = _PACKAGE_FILE % {'buildroot': buildroot}
-    cmd += ['--package_file=%s' % git.ReinterpretPathForChroot(package_file)]
+    cmd += ['--package_file=%s' %
+            path_util.ToChrootPath(package_file)]
 
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]
@@ -1075,7 +1076,7 @@ def GenerateStackTraces(buildroot, board, test_results_dir,
         if not got_symbols or curr_file.find('crasher_nobreakpad') == 0:
           continue
         # Precess the minidump from within chroot.
-        minidump = git.ReinterpretPathForChroot(full_file_path)
+        minidump = path_util.ToChrootPath(full_file_path)
         cwd = os.path.join(buildroot, 'src', 'scripts')
         cros_build_lib.RunCommand(
             ['minidump_stackwalk', minidump, symbol_dir], cwd=cwd,
@@ -1210,8 +1211,8 @@ def UprevPackages(buildroot, boards, overlays, enter_chroot=True):
   """Uprevs non-browser chromium os packages that have changed."""
   drop_file = _PACKAGE_FILE % {'buildroot': buildroot}
   if enter_chroot:
-    overlays = [git.ReinterpretPathForChroot(x) for x in overlays]
-    drop_file = git.ReinterpretPathForChroot(drop_file)
+    overlays = [path_util.ToChrootPath(x) for x in overlays]
+    drop_file = path_util.ToChrootPath(drop_file)
   cmd = ['cros_mark_as_stable', '--all',
          '--boards=%s' % ':'.join(boards),
          '--overlays=%s' % ':'.join(overlays),
@@ -1533,7 +1534,7 @@ def MakeNetboot(buildroot, board, image_dir):
   """
   cmd = ['./make_netboot.sh',
          '--board=%s' % board,
-         '--image_dir=%s' % git.ReinterpretPathForChroot(image_dir)]
+         '--image_dir=%s' % path_util.ToChrootPath(image_dir)]
   RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
 
 
@@ -1548,7 +1549,7 @@ def MakeFactoryToolkit(buildroot, board, output_dir, version=None):
   """
   cmd = ['./make_factory_toolkit.sh',
          '--board=%s' % board,
-         '--output_dir=%s' % git.ReinterpretPathForChroot(output_dir)]
+         '--output_dir=%s' % path_util.ToChrootPath(output_dir)]
   if version is not None:
     cmd.extend(['--version', version])
   RunBuildScript(buildroot, cmd, capture_output=True, enter_chroot=True)
@@ -1566,7 +1567,7 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
   image = os.path.join(image_dir, constants.BASE_IMAGE_BIN)
   cmd = ['./mod_image_for_recovery.sh',
          '--board=%s' % board,
-         '--image=%s' % git.ReinterpretPathForChroot(image)]
+         '--image=%s' % path_util.ToChrootPath(image)]
   RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
                  enter_chroot=True)
 
@@ -2034,11 +2035,11 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
   suffix = 'dev.bin'
 
   cwd = os.path.join(build_root, 'src', 'scripts')
-  path = git.ReinterpretPathForChroot(
+  path = path_util.ToChrootPath(
       os.path.join(build_root, 'src', 'platform', 'dev', 'host'))
   chroot_dir = os.path.join(build_root, 'chroot')
   chroot_tmp = os.path.join(chroot_dir, 'tmp')
-  chroot_target = git.ReinterpretPathForChroot(target_image_path)
+  chroot_target = path_util.ToChrootPath(target_image_path)
 
   with osutils.TempDir(base_dir=chroot_tmp,
                        prefix='generate_payloads') as temp_dir:

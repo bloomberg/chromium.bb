@@ -126,27 +126,6 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
   return False
 
 
-def ReinterpretPathForChroot(path):
-  """Returns reinterpreted path from outside the chroot for use inside.
-
-  Args:
-    path: The path to reinterpret.  Must be in src tree.
-  """
-  root_path = os.path.join(FindRepoDir(path), '..')
-
-  path_abs_path = os.path.abspath(path)
-  root_abs_path = os.path.abspath(root_path)
-
-  # Strip the repository root from the path and strip first /.
-  relative_path = path_abs_path.replace(root_abs_path, '')[1:]
-
-  if relative_path == path_abs_path:
-    raise Exception('Error: path is outside your src tree, cannot reinterpret.')
-
-  new_path = os.path.join('/home', os.getenv('USER'), 'trunk', relative_path)
-  return new_path
-
-
 def IsGitRepo(cwd):
   """Checks if there's a git repo rooted at a directory."""
   return os.path.isdir(os.path.join(cwd, '.git'))

@@ -19,11 +19,10 @@ from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cgroups
-from chromite.lib import path_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import timeout_util
 
 
@@ -442,7 +441,7 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._test_root = os.path.join(self.build_root, 'tmp/results_dir')
     self.PatchObject(commands, 'CreateTestRoot', autospec=True,
                      return_value='/tmp/results_dir')
-    self.PatchObject(git, 'ReinterpretPathForChroot',
+    self.PatchObject(path_util, 'ToChrootPath',
                      side_effect=lambda x: x)
     self._Prepare()
 

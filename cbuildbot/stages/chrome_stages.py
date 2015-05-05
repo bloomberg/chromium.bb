@@ -20,9 +20,9 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import path_util
 
 
 class SyncChromeStage(generic_stages.BuilderStage,
@@ -148,7 +148,7 @@ class ChromeSDKStage(generic_stages.BoardSpecificBuilderStage,
     extra_env = {}
     if self._run.config.useflags:
       extra_env['USE'] = ' '.join(self._run.config.useflags)
-    in_chroot_path = git.ReinterpretPathForChroot(self.archive_path)
+    in_chroot_path = path_util.ToChrootPath(self.archive_path)
     cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
            self._current_board, '--package', constants.CHROME_CP]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,

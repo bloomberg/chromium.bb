@@ -15,8 +15,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import rewrite_git_alternates
+from chromite.lib import path_util
 from chromite.lib import retry_util
+from chromite.lib import rewrite_git_alternates
 
 
 # File that marks a buildroot as being used by a trybot
@@ -329,7 +330,7 @@ class RepoRepository(object):
     if post_sync:
       chroot_path = os.path.join(self._referenced_repo, '.repo', 'chroot',
                                  'external')
-      chroot_path = git.ReinterpretPathForChroot(chroot_path)
+      chroot_path = path_util.ToChrootPath(chroot_path)
       rewrite_git_alternates.RebuildRepoCheckout(
           self.directory, self._referenced_repo, chroot_path)
 

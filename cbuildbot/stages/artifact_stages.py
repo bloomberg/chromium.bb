@@ -22,9 +22,9 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper
-from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import path_util
 from chromite.lib import portage_util
 
 
@@ -118,7 +118,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     extra_env = {}
     if self._run.config.useflags:
       extra_env['USE'] = ' '.join(self._run.config.useflags)
-    in_chroot_path = git.ReinterpretPathForChroot(self.archive_path)
+    in_chroot_path = path_util.ToChrootPath(self.archive_path)
     cmd = ['generate_delta_sysroot', '--out-dir', in_chroot_path,
            '--board', self._current_board]
     # TODO(mtennant): Make this condition into one run param.

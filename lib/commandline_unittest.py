@@ -17,8 +17,8 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import git
 from chromite.lib import gs
+from chromite.lib import path_util
 from chromite.lib import workspace_lib
 
 # pylint: disable=protected-access
@@ -558,8 +558,8 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
     self.orig_argv = sys.argv
     sys.argv = ['/cmd', 'arg1', 'arg2']
 
-    self.mockReinterpret = self.PatchObject(
-        git, 'ReinterpretPathForChroot', return_value='/inside/cmd')
+    self.mockFromHostToChrootPath = self.PatchObject(
+        path_util, 'ToChrootPath', return_value='/inside/cmd')
 
     # Return values for these two should be set by each test.
     self.mock_inside_chroot = self.PatchObject(cros_build_lib, 'IsInsideChroot')

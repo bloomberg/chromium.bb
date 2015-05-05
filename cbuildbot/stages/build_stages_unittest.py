@@ -18,10 +18,10 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import git
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib import path_util
 from chromite.lib import portage_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
@@ -298,7 +298,8 @@ class BuildImageStageMock(partial_mock.PartialMock):
       self.backup['_BuildImages'](*args, **kwargs)
 
   def _GenerateAuZip(self, *args, **kwargs):
-    with patch(git, 'ReinterpretPathForChroot', return_value='/chroot/path'):
+    with patch(path_util, 'ToChrootPath',
+               return_value='/chroot/path'):
       self.backup['_GenerateAuZip'](*args, **kwargs)
 
 
