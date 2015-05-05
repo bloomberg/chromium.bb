@@ -100,7 +100,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
 
     messageStorage()->reportMessage(m_frame->document(), consoleMessage);
 
-    if (consoleMessage->source() == CSSMessageSource || consoleMessage->source() == NetworkMessageSource)
+    if (consoleMessage->source() == NetworkMessageSource)
         return;
 
     RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;

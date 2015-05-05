@@ -126,7 +126,6 @@ static TypeBuilder::Console::ConsoleMessage::Source::Enum messageSourceValue(Mes
     case StorageMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Storage;
     case AppCacheMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Appcache;
     case RenderingMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Rendering;
-    case CSSMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Css;
     case SecurityMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Security;
     case OtherMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Other;
     case DeprecationMessageSource: return TypeBuilder::Console::ConsoleMessage::Source::Deprecation;

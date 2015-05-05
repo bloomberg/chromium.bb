@@ -36,7 +36,6 @@ enum MessageSource {
     StorageMessageSource,
     AppCacheMessageSource,
     RenderingMessageSource,
-    CSSMessageSource,
     SecurityMessageSource,
     OtherMessageSource,
     DeprecationMessageSource,
