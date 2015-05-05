@@ -155,6 +155,7 @@ executable("views_examples_with_content_exe") {
     ":views_examples_with_content_lib",
     "//base",
     "//content",
+    "//content:startup_helper_win",
     "//ui/views_content_client",
   ]
 

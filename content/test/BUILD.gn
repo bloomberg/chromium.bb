@@ -657,6 +657,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
       "//base/allocator",
       "//base/test:test_support",
       "//content/public/common",
+      "//gpu/blink",
       "//gpu/command_buffer/common",
       "//testing/gtest",
       "//third_party/WebKit/public:blink",

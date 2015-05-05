@@ -17,6 +17,7 @@ executable("app_installer") {
   deps = [
     ":util",
     "//base",
+    "//mojo/environment:chromium",
   ]
 
   # TODO(GYP) manifest.

@@ -287,6 +287,7 @@ source_set("unittests") {
   ]
   deps = [
     ":test_support",
+    "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
