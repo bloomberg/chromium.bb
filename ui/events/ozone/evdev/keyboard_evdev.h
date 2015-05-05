@@ -58,6 +58,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void StopKeyRepeat();
   void ScheduleKeyRepeat(const base::TimeDelta& delay);
   void OnRepeatTimeout(unsigned int sequence);
+  void OnRepeatCommit(unsigned int sequence);
   void DispatchKey(unsigned int key,
                    bool down,
                    bool repeat,
