@@ -166,7 +166,7 @@ public:
             setUrlToLoad(sourceURL, AllowURLReplacement);
     }
 
-    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source)
+    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences)
     {
         if (!shouldPreload() || !m_matchedMediaAttribute)
             return nullptr;
@@ -177,7 +177,7 @@ public:
             resourceWidth.width = m_sourceSize;
             resourceWidth.isSet = true;
         }
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), resourceWidth);
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), resourceWidth, clientHintsPreferences);
         if (isCORSEnabled())
             request->setCrossOriginEnabled(allowStoredCredentials());
         request->setCharset(charset());
@@ -436,6 +436,17 @@ void TokenPreloadScanner::scan(const CompactHTMLToken& token, const SegmentedStr
     scanCommon(token, source, requests);
 }
 
+static void handleMetaViewport(const String& attributeValue, CachedDocumentParameters* documentParameters)
+{
+    ViewportDescription description(ViewportDescription::ViewportMeta);
+    HTMLMetaElement::getViewportDescriptionFromContentAttribute(attributeValue, description, nullptr, documentParameters->viewportMetaZeroValuesQuirk);
+    FloatSize initialViewport(documentParameters->mediaValues->viewportHeight(), documentParameters->mediaValues->viewportWidth());
+    PageScaleConstraints constraints = description.resolve(initialViewport, documentParameters->defaultViewportMinWidth);
+    MediaValuesCached* cachedMediaValues = static_cast<MediaValuesCached*>(documentParameters->mediaValues.get());
+    cachedMediaValues->setViewportHeight(constraints.layoutSize.height());
+    cachedMediaValues->setViewportWidth(constraints.layoutSize.width());
+}
+
 template<typename Token>
 void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& source, PreloadRequestStream& requests)
 {
@@ -496,23 +507,20 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
         }
         if (match(tagImpl, metaTag)) {
             const typename Token::Attribute* equivAttribute = token.getAttributeItem(http_equivAttr);
-            if (equivAttribute && equalIgnoringCase(String(equivAttribute->value), "content-security-policy")) {
-                m_isCSPEnabled = true;
+            if (equivAttribute) {
+                String equivAttributeValue(equivAttribute->value);
+                if (equalIgnoringCase(equivAttributeValue, "content-security-policy"))
+                    m_isCSPEnabled = true;
+                else if (equalIgnoringCase(equivAttributeValue, "accept-ch"))
+                    handleAcceptClientHintsHeader(equivAttributeValue, m_clientHintsPreferences);
                 return;
             }
             const typename Token::Attribute* nameAttribute = token.getAttributeItem(nameAttr);
             if (nameAttribute && equalIgnoringCase(String(nameAttribute->value), "viewport")) {
                 const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
-
-                if (contentAttribute) {
-                    ViewportDescription description(ViewportDescription::ViewportMeta);
-                    HTMLMetaElement::getViewportDescriptionFromContentAttribute(String(contentAttribute->value), description, nullptr, m_documentParameters->viewportMetaZeroValuesQuirk);
-                    FloatSize initialViewport(m_documentParameters->mediaValues->viewportHeight(), m_documentParameters->mediaValues->viewportWidth());
-                    PageScaleConstraints constraints = description.resolve(initialViewport, m_documentParameters->defaultViewportMinWidth);
-                    MediaValuesCached* cachedMediaValues = static_cast<MediaValuesCached*>(m_documentParameters->mediaValues.get());
-                    cachedMediaValues->setViewportHeight(constraints.layoutSize.height());
-                    cachedMediaValues->setViewportWidth(constraints.layoutSize.width());
-                }
+                if (contentAttribute)
+                    handleMetaViewport(String(contentAttribute->value), m_documentParameters.get());
+                return;
             }
         }
 
@@ -526,7 +534,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
         scanner.processAttributes(token.attributes());
         if (m_inPicture)
             scanner.handlePictureSourceURL(m_pictureSourceURL);
-        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source);
+        OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source, m_clientHintsPreferences);
         if (request)
             requests.append(request.release());
         return;

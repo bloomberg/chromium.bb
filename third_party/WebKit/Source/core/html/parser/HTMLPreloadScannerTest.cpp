@@ -7,6 +7,7 @@
 
 #include "core/MediaTypeNames.h"
 #include "core/css/MediaValuesCached.h"
+#include "core/fetch/ClientHintsPreferences.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/testing/DummyPageHolder.h"
@@ -21,6 +22,7 @@ typedef struct {
     const char* outputBaseURL;
     Resource::Type type;
     int resourceWidth;
+    ClientHintsPreferences preferences;
 } TestCase;
 
 class MockHTMLResourcePreloader : public ResourcePreloader {
@@ -110,9 +112,10 @@ TEST_F(HTMLPreloadScannerTest, testImages)
         {"http://example.test", "<img srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
     };
 
-    for (auto testCase: testCases)
+    for (auto testCase : testCases)
         test(testCase);
 }
+
 TEST_F(HTMLPreloadScannerTest, testImagesWithViewport)
 {
     TestCase testCases[] = {
@@ -131,7 +134,42 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewport)
         {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
     };
 
-    for (auto testCase: testCases)
+    for (auto testCase : testCases)
+        test(testCase);
+}
+
+TEST_F(HTMLPreloadScannerTest, testViewportNoContent)
+{
+    TestCase testCases[] = {
+        {"http://example.test", "<meta name=viewport><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<meta name=viewport content=sdkbsdkjnejjha><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
+    };
+
+    for (auto testCase : testCases)
+        test(testCase);
+}
+
+TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH)
+{
+    ClientHintsPreferences dpr;
+    ClientHintsPreferences rw;
+    ClientHintsPreferences dprAndRw;
+    dpr.setShouldSendDPR(true);
+    dprAndRw.setShouldSendDPR(true);
+    rw.setShouldSendRW(true);
+    dprAndRw.setShouldSendRW(true);
+    TestCase testCases[] = {
+        {"http://example.test", "<meta http-equiv='accept-ch' content='bla'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='dprw'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<meta http-equiv='accept-ch'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dpr},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='bla,dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dpr},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  rw  '><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, rw},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  rw  , wutever'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, rw},
+        {"http://example.test", "<meta http-equiv='accept-ch' content='  rw  , wutever, dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dprAndRw},
+    };
+
+    for (auto testCase : testCases)
         test(testCase);
 }
 

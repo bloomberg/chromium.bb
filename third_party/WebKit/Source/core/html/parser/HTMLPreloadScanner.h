@@ -117,6 +117,7 @@ private:
     String m_pictureSourceURL;
     size_t m_templateCount;
     OwnPtr<CachedDocumentParameters> m_documentParameters;
+    ClientHintsPreferences m_clientHintsPreferences;
 
     Vector<Checkpoint> m_checkpoints;
 };

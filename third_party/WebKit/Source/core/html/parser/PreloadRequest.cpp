@@ -36,6 +36,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
 
     request.setDefer(m_defer);
     request.setResourceWidth(m_resourceWidth);
+    request.setClientHintsPreferences(m_clientHintsPreferences);
 
     return request;
 }

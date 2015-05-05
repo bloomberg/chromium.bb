@@ -616,10 +616,13 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
     if (!RuntimeEnabledFeatures::clientHintsEnabled() || !m_document)
         return;
 
-    if (m_document->clientHintsPreferences().shouldSendDPR())
+    bool shouldSendDPR = m_document->clientHintsPreferences().shouldSendDPR() || fetchRequest.clientHintsPreferences().shouldSendDPR();
+    bool shouldSendRW = m_document->clientHintsPreferences().shouldSendRW() || fetchRequest.clientHintsPreferences().shouldSendRW();
+
+    if (shouldSendDPR)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
 
-    if (m_document->clientHintsPreferences().shouldSendRW() && frame()->view()) {
+    if (shouldSendRW && frame()->view()) {
         FetchRequest::ResourceWidth resourceWidth = fetchRequest.resourceWidth();
         float usedResourceWidth = resourceWidth.isSet ? resourceWidth.width : frame()->view()->viewportWidth();
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(usedResourceWidth)));

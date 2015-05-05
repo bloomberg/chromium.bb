@@ -27,6 +27,7 @@
 #define FetchRequest_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -69,6 +70,7 @@ public:
     void setForPreload(bool forPreload) { m_forPreload = forPreload; }
     DeferOption defer() const { return m_defer; }
     ResourceWidth resourceWidth() const { return m_resourceWidth; }
+    const ClientHintsPreferences& clientHintsPreferences() const { return m_clientHintPreferences; }
     void setDefer(DeferOption defer) { m_defer = defer; }
     void setContentSecurityCheck(ContentSecurityPolicyDisposition contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
     void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials, CredentialRequest);
@@ -77,6 +79,7 @@ public:
     OriginRestriction originRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
     void setResourceWidth(ResourceWidth);
+    void setClientHintsPreferences(ClientHintsPreferences& preferences) { m_clientHintPreferences.set(preferences); }
 
 private:
     ResourceRequest m_resourceRequest;
@@ -87,6 +90,7 @@ private:
     DeferOption m_defer;
     OriginRestriction m_originRestriction;
     ResourceWidth m_resourceWidth;
+    ClientHintsPreferences m_clientHintPreferences;
 };
 
 } // namespace blink

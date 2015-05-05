@@ -5,6 +5,7 @@
 #ifndef PreloadRequest_h
 #define PreloadRequest_h
 
+#include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
 #include "wtf/text/TextPosition.h"
@@ -15,9 +16,9 @@ class Document;
 
 class PreloadRequest {
 public:
-    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const FetchRequest::ResourceWidth& resourceWidth = FetchRequest::ResourceWidth())
+    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const FetchRequest::ResourceWidth& resourceWidth = FetchRequest::ResourceWidth(), const ClientHintsPreferences& clientHintsPreferences = ClientHintsPreferences())
     {
-        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, resourceWidth));
+        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, resourceWidth, clientHintsPreferences));
     }
 
     bool isSafeToSendToAnotherThread() const;
@@ -41,7 +42,13 @@ public:
     const String& baseURL() const { return m_baseURL.string(); }
 
 private:
-    PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const FetchRequest::ResourceWidth& resourceWidth)
+    PreloadRequest(const String& initiatorName,
+        const TextPosition& initiatorPosition,
+        const String& resourceURL,
+        const KURL& baseURL,
+        Resource::Type resourceType,
+        const FetchRequest::ResourceWidth& resourceWidth,
+        const ClientHintsPreferences& clientHintsPreferences)
         : m_initiatorName(initiatorName)
         , m_initiatorPosition(initiatorPosition)
         , m_resourceURL(resourceURL.isolatedCopy())
@@ -52,6 +59,7 @@ private:
         , m_discoveryTime(monotonicallyIncreasingTime())
         , m_defer(FetchRequest::NoDefer)
         , m_resourceWidth(resourceWidth)
+        , m_clientHintsPreferences(clientHintsPreferences)
     {
     }
 
@@ -68,6 +76,7 @@ private:
     double m_discoveryTime;
     FetchRequest::DeferOption m_defer;
     FetchRequest::ResourceWidth m_resourceWidth;
+    ClientHintsPreferences m_clientHintsPreferences;
 };
 
 typedef Vector<OwnPtr<PreloadRequest>> PreloadRequestStream;
