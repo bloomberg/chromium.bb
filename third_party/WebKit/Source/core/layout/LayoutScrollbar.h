@@ -56,6 +56,8 @@ public:
 
     LayoutScrollbarPart* getPart(ScrollbarPart partType) { return m_parts.get(partType); }
 
+    virtual void invalidateRect(const IntRect&) override;
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

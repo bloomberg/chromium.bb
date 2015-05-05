@@ -3087,12 +3087,15 @@ void FrameView::addChild(PassRefPtrWillBeRawPtr<Widget> prpChild)
 
 void FrameView::setHasHorizontalScrollbar(bool hasBar)
 {
-    if (hasBar && !m_horizontalScrollbar) {
+    if (hasBar == !!m_horizontalScrollbar)
+        return;
+
+    if (hasBar) {
         m_horizontalScrollbar = createScrollbar(HorizontalScrollbar);
         addChild(m_horizontalScrollbar.get());
         didAddScrollbar(m_horizontalScrollbar.get(), HorizontalScrollbar);
         m_horizontalScrollbar->styleChanged();
-    } else if (!hasBar && m_horizontalScrollbar) {
+    } else {
         willRemoveScrollbar(m_horizontalScrollbar.get(), HorizontalScrollbar);
         // If the scrollbar has been marked as overlapping the window resizer,
         // then its removal should reduce the count.
@@ -3101,16 +3104,22 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar)
         removeChild(m_horizontalScrollbar.get());
         m_horizontalScrollbar = nullptr;
     }
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        invalidateScrollCorner(scrollCornerRect());
 }
 
 void FrameView::setHasVerticalScrollbar(bool hasBar)
 {
-    if (hasBar && !m_verticalScrollbar) {
+    if (hasBar == !!m_verticalScrollbar)
+        return;
+
+    if (hasBar) {
         m_verticalScrollbar = createScrollbar(VerticalScrollbar);
         addChild(m_verticalScrollbar.get());
         didAddScrollbar(m_verticalScrollbar.get(), VerticalScrollbar);
         m_verticalScrollbar->styleChanged();
-    } else if (!hasBar && m_verticalScrollbar) {
+    } else {
         willRemoveScrollbar(m_verticalScrollbar.get(), VerticalScrollbar);
         // If the scrollbar has been marked as overlapping the window resizer,
         // then its removal should reduce the count.
@@ -3119,6 +3128,9 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
         removeChild(m_verticalScrollbar.get());
         m_verticalScrollbar = nullptr;
     }
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        invalidateScrollCorner(scrollCornerRect());
 }
 
 void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode verticalMode,
@@ -3714,7 +3726,7 @@ void FrameView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppres
             m_verticalScrollbar->invalidate();
 
         // Invalidate the scroll corner too on unsuppress.
-        invalidateRect(scrollCornerRect());
+        invalidateScrollCorner(scrollCornerRect());
     }
 }
 
@@ -3826,6 +3838,8 @@ bool FrameView::isScrollCornerVisible() const
 void FrameView::invalidateScrollCornerRect(const IntRect& rect)
 {
     invalidateRect(rect);
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && m_scrollCorner)
+        layoutView()->invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
 }
 
 void FrameView::paintPanScrollIcon(GraphicsContext* context)

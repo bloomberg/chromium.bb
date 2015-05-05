@@ -186,6 +186,12 @@
     "reference_args": []
   },
   {
+    "prefix": "slimmingpaint",
+    "base": "scrollbars",
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
+    "reference_args": []
+  },
+  {
     "prefix": "rootlayerscrolls",
     "base": "fast/scrolling",
     "args": ["--root-layer-scrolls"]
