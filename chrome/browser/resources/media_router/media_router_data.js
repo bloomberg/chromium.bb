@@ -18,15 +18,16 @@ cr.define('media_router', function() {
 
 
   /**
-   * @param {number} castMode The type of cast mode.
+   * @param {number} type The type of cast mode. This corresponds to the
+   *   C++ MediaCastMode.
    * @param {string} title The title of the cast mode.
    * @param {string} description The description of the cast mode.
    * @constructor
    * @struct
    */
-  var CastMode = function(castMode, title, description) {
+  var CastMode = function(type, title, description) {
     /** @type {number} */
-    this.castMode = castMode;
+    this.type = type;
 
     /** @type {string} */
     this.title = title;

@@ -6,7 +6,7 @@
     <select id="selectbox" value="{{selectedCastMode}}">
       <template repeat="{{mode in castModeList}}">
         <option class="cast-mode" on-click="{{onCastModeSelected}}"
-            value="{{mode.castMode}}">
+            value="{{mode.type}}">
           {{mode.description}}
         </option>
       </template>

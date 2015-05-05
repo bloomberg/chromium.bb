@@ -10,43 +10,56 @@ Polymer('cast-mode-picker', {
      * The list of CastModes to show.
      *
      * @attribute castModeList
-     * @type {!Array<!media_router.CastMode>}
-     * @default []
+     * @type {?Array<!media_router.CastMode>}
+     * @default null
      */
-    castModeList: [],
+    castModeList: null,
 
     /**
-     * Maps each cast mode ID to the type of cast mode.
-     *
-     * @attribute castModeMap
-     * @type {!Object<number, !media_router.CastMode>}
-     * @default {}
-    */
-    castModeMap: {},
+     * The value of the selected cast mode in |castModeList|, or -1 if the
+     * user has explicitly selected a mode.
+     * @type {number}
+     * @default -1
+     */
+    selectedCastModeValue: -1,
+  },
+
+  observe: {
+    castModeList: 'updateSelectBoxSize',
   },
 
   created: function() {
     this.castModeList = [];
-    this.castModeMap = {};
-
-    /**
-     * -1 means users did not select mode explicitly.
-     * @type {number}
-     */
-    this.selectedCastMode = -1;
   },
 
-  castModeListChanged: function(oldValue, newValue) {
-    this.$.selectbox.size = Math.max(newValue.length, 1);
-    this.castModeMap = {};
-    this.castModeList.forEach(function(e) {
-      this.castModeMap[e.castMode] = e;
+  /**
+   * Fires a cast-mode-click event. This is called when one of the cast modes
+   * has been selected.
+   *
+   * @param {!Event} event The event object.
+   * @param {!Object} detail The details of the event.
+   * @param {!Element} sender Reference to clicked node.
+   */
+  onCastModeSelected: function(event, detail, sender) {
+    this.castModeList.forEach(function(castMode) {
+      if (castMode.type == sender.value) {
+        this.fire('cast-mode-click', {
+          headerText: this.castModeMap_[castMode.type].title
+        });
+        this.selectedCastModeValue = sender.value;
+        return;
+      }
     }, this);
   },
 
-  onCastModeSelected: function(event, detail, sender) {
-    this.fire('cast-mode-click', {
-      headerText: this.castModeMap[sender.value].title
-    });
+  /**
+   * Called when |castModeList| has changed. Updates the size of the select
+   * node.
+   *
+   * @param {?Array<!media_router.CastMode>} newValue The new value for
+   *   |castModeList|.
+   */
+  updateSelectBoxSize: function(oldValue, newValue) {
+    this.$.selectbox.size = Math.max(newValue.length, 1);
   },
 });
