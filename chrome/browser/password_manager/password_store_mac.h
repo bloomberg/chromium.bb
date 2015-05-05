@@ -93,8 +93,9 @@ class PasswordStoreMac : public password_manager::PasswordStore {
       const GURL& origin_domain) override;
 
   // Adds the given form to the Keychain if it's something we want to store
-  // there (i.e., not a blacklist entry). Returns true if the operation
-  // succeeded (either we added successfully, or we didn't need to).
+  // there (i.e., not a blacklist entry or a federated login). Returns true if
+  // the operation succeeded (either we added successfully, or we didn't need
+  // to).
   bool AddToKeychainIfNecessary(const autofill::PasswordForm& form);
 
   // Returns true if our database contains a form that exactly matches the given

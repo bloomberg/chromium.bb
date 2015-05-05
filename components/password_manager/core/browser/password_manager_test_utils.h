@@ -22,6 +22,10 @@ extern const char kTestingAvatarUrlSpec[];
 extern const char kTestingFederationUrlSpec[];
 extern const int kTestingDaysAfterPasswordsAreSynced;
 
+// Magic value for PasswordFormData::password_value to indicate a federated
+// login.
+extern const wchar_t kTestingFederatedLoginMarker[];
+
 // Struct used for creation of PasswordForms from static arrays of data.
 // Note: This is only meant to be used in unit test.
 struct PasswordFormData {

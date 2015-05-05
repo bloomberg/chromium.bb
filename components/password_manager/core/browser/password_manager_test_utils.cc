@@ -17,6 +17,7 @@ namespace password_manager {
 const char kTestingAvatarUrlSpec[] = "https://accounts.google.com/Avatar";
 const char kTestingFederationUrlSpec[] = "https://accounts.google.com/login";
 const int kTestingDaysAfterPasswordsAreSynced = 1;
+const wchar_t kTestingFederatedLoginMarker[] = L"__federated__";
 
 scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
     const PasswordFormData& form_data) {
@@ -44,13 +45,16 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
     form->username_value = base::WideToUTF16(form_data.username_value);
     form->display_name = form->username_value;
     form->skip_zero_click = true;
-    if (form_data.password_value)
-      form->password_value = base::WideToUTF16(form_data.password_value);
+    if (form_data.password_value) {
+      if (wcscmp(form_data.password_value, kTestingFederatedLoginMarker) == 0)
+        form->federation_url = GURL(kTestingFederationUrlSpec);
+      else
+        form->password_value = base::WideToUTF16(form_data.password_value);
+    }
   } else {
     form->blacklisted_by_user = true;
   }
   form->avatar_url = GURL(kTestingAvatarUrlSpec);
-  form->federation_url = GURL(kTestingFederationUrlSpec);
   return form.Pass();
 }
 

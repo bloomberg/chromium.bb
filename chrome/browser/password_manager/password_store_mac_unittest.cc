@@ -166,7 +166,17 @@ void CheckFormsAgainstExpectations(
       EXPECT_EQ(WideToUTF16(expectation->username_value), form->username_value);
       EXPECT_EQ(WideToUTF16(expectation->username_value), form->display_name);
       EXPECT_TRUE(form->skip_zero_click);
-      EXPECT_EQ(WideToUTF16(expectation->password_value), form->password_value);
+      if (expectation->password_value &&
+          wcscmp(expectation->password_value,
+                 password_manager::kTestingFederatedLoginMarker) == 0) {
+        EXPECT_TRUE(form->password_value.empty());
+        EXPECT_EQ(GURL(password_manager::kTestingFederationUrlSpec),
+                  form->federation_url);
+      } else {
+        EXPECT_EQ(WideToUTF16(expectation->password_value),
+                  form->password_value);
+        EXPECT_TRUE(form->federation_url.is_empty());
+      }
     } else {
       EXPECT_TRUE(form->blacklisted_by_user);
     }
@@ -180,8 +190,6 @@ void CheckFormsAgainstExpectations(
                       password_manager::kTestingDaysAfterPasswordsAreSynced),
         form->date_synced);
     EXPECT_EQ(GURL(password_manager::kTestingAvatarUrlSpec), form->avatar_url);
-    EXPECT_EQ(GURL(password_manager::kTestingFederationUrlSpec),
-              form->federation_url);
   }
 }
 
@@ -300,7 +308,7 @@ class PasswordStoreMacInternalsTest : public testing::Test {
         // Password for an Android application.
         {kSecAuthenticationTypeHTMLForm,
          "android://hash@com.domain.some/",
-         kSecProtocolTypeHTTP,
+         kSecProtocolTypeHTTPS,
          "",
          0,
          NULL,
@@ -452,6 +460,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
     const size_t expected_merge_matches;
   };
   // Most fields are left blank because we don't care about them for searching.
+  /* clang-format off */
   TestDataAndExpectation test_data[] = {
     // An HTML form we've seen.
     { { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
@@ -488,10 +497,27 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
         NULL, NULL, NULL, NULL, NULL, L"digest_auth_user", NULL, false, true,
         0 },
       0, 0 },
-    // Garbage forms should have no matches.
+    // Android credentials (both legacy ones with origin, and without).
+    { { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+        "android://hash@com.domain.some/", NULL, NULL, NULL, NULL, L"joe_user",
+        NULL, false, true, 0 },
+      1, 1 },
+    { { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+        NULL, NULL, NULL, NULL, NULL, L"joe_user", NULL, false, true, 0 },
+      1, 1 },
+    // Federated logins do not have a corresponding Keychain entry, and should
+    // not match the username/password stored for the same application. Note
+    // that it will match for filling, however, because that part does not know
+    // that it is a federated login.
+    { { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+        NULL, NULL, NULL, NULL, NULL, L"joe_user",
+        password_manager::kTestingFederatedLoginMarker, false, true, 0 },
+      1, 0 },
+    /// Garbage forms should have no matches.
     { { PasswordForm::SCHEME_HTML, "foo/bar/baz",
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 0, 0 },
   };
+  /* clang-format on */
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
@@ -803,10 +829,20 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMatch) {
     PasswordForm form_b(form_a);
     EXPECT_FALSE(FormsMatchForMerge(form_a, form_b, STRICT_FORM_MATCH));
   }
+
+  // Federated login forms should never match for merging either.
+  {
+    PasswordForm form_b(base_form);
+    form_b.federation_url = GURL(password_manager::kTestingFederationUrlSpec);
+    EXPECT_FALSE(FormsMatchForMerge(base_form, form_b, STRICT_FORM_MATCH));
+    EXPECT_FALSE(FormsMatchForMerge(form_b, base_form, STRICT_FORM_MATCH));
+    EXPECT_FALSE(FormsMatchForMerge(form_b, form_b, STRICT_FORM_MATCH));
+  }
 }
 
 TEST_F(PasswordStoreMacInternalsTest, TestFormMerge) {
   // Set up a bunch of test data to use in varying combinations.
+  /* clang-format off */
   PasswordFormData keychain_user_1 =
       { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
         "http://some.domain.com/", "", L"", L"", L"", L"joe_user", L"sekrit",
@@ -824,6 +860,10 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMerge) {
       { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
         "http://some.domain.com/", "", L"", L"", L"", NULL, NULL,
         false, false, 1010101010 };
+  PasswordFormData keychain_android =
+      { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+        "", "", L"", L"", L"", L"joe_user", L"secret",
+        false, true, 1234567890 };
 
   PasswordFormData db_user_1 =
       { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
@@ -847,6 +887,15 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMerge) {
         "http://some.domain.com/path.html", "http://some.domain.com/action.cgi",
         L"submit", L"username", L"password", NULL, NULL,
         true, false, 1212121212 };
+  PasswordFormData db_android =
+      { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+        "android://hash@com.domain.some/", "", L"", L"", L"", L"joe_user", L"",
+        false, true, 1234567890 };
+  PasswordFormData db_federated =
+      { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+        "android://hash@com.domain.some/", "", L"", L"", L"", L"joe_user",
+        password_manager::kTestingFederatedLoginMarker,
+        false, true, 3434343434 };
 
   PasswordFormData merged_user_1 =
       { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
@@ -865,6 +914,11 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMerge) {
         "http://some.domain.com/handlepage.cgi",
         L"submit", L"username", L"password", L"joe_user", L"otherpassword",
         true, false, 1234567890 };
+  PasswordFormData merged_android =
+      { PasswordForm::SCHEME_HTML, "android://hash@com.domain.some/",
+        "android://hash@com.domain.some/", "", L"", L"", L"", L"joe_user",
+        L"secret", false, true, 1234567890 };
+  /* clang-format on */
 
   // Build up the big multi-dimensional array of data sets that will actually
   // drive the test. Use vectors rather than arrays so that initialization is
@@ -877,7 +931,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMerge) {
     DATABASE_OUTPUT,
     MERGE_IO_ARRAY_COUNT  // termination marker
   };
-  const unsigned int kTestCount = 4;
+  const unsigned int kTestCount = 5;
   std::vector< std::vector< std::vector<PasswordFormData*> > > test_data(
       MERGE_IO_ARRAY_COUNT, std::vector< std::vector<PasswordFormData*> >(
           kTestCount, std::vector<PasswordFormData*>()));
@@ -928,6 +982,16 @@ TEST_F(PasswordStoreMacInternalsTest, TestFormMerge) {
   test_data[MERGE_OUTPUT][current_test].push_back(&merged_user_1);
   test_data[MERGE_OUTPUT][current_test].push_back(
       &merged_user_1_with_both_paths);
+
+  // Test that Android credentails are matched correctly and that federated
+  // credentials are not tried to be matched with a Keychain item.
+  ++current_test;
+  CHECK(current_test < kTestCount);
+  test_data[KEYCHAIN_INPUT][current_test].push_back(&keychain_android);
+  test_data[DATABASE_INPUT][current_test].push_back(&db_federated);
+  test_data[DATABASE_INPUT][current_test].push_back(&db_android);
+  test_data[MERGE_OUTPUT][current_test].push_back(&db_federated);
+  test_data[MERGE_OUTPUT][current_test].push_back(&merged_android);
 
   for (unsigned int test_case = 0; test_case <= current_test; ++test_case) {
     ScopedVector<autofill::PasswordForm> keychain_forms;
@@ -1166,6 +1230,56 @@ class PasswordStoreMacTest : public testing::Test {
     EXPECT_FALSE(store_->GetBackgroundTaskRunner());
     base::MessageLoop::current()->RunUntilIdle();
     store_ = nullptr;
+  }
+
+  // Verifies that the given |form| can be properly stored so that it can be
+  // retrieved by FillMatchingLogins() and GetAutofillableLogins(), and then it
+  // can be properly removed.
+  void VerifyCredentialLifecycle(const PasswordForm& form) {
+    // Run everything twice to make sure no garbage is left behind that would
+    // prevent storing the form a second time.
+    for (size_t iteration = 0; iteration < 2; ++iteration) {
+      SCOPED_TRACE(testing::Message("Iteration: ") << iteration);
+
+      MockPasswordStoreConsumer mock_consumer;
+      EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()))
+          .WillOnce(QuitUIMessageLoop());
+      store()->GetAutofillableLogins(&mock_consumer);
+      base::MessageLoop::current()->Run();
+      ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
+      store()->AddLogin(form);
+      FinishAsyncProcessing();
+
+      PasswordForm returned_form;
+      EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
+          .WillOnce(
+              DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
+
+      // The query operations will also do some housekeeping: they will remove
+      // dangling credentials in the LoginDatabase without a matching Keychain
+      // item when one is expected. If the logic that stores the Keychain item
+      // is incorrect, this will wipe the newly added form before the second
+      // query.
+      store()->GetAutofillableLogins(&mock_consumer);
+      base::MessageLoop::current()->Run();
+      ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+      EXPECT_EQ(form, returned_form);
+
+      PasswordForm query_form = form;
+      query_form.password_value.clear();
+      query_form.username_value.clear();
+      EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
+          .WillOnce(
+              DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
+      store()->GetLogins(query_form, PasswordStore::ALLOW_PROMPT,
+                         &mock_consumer);
+      base::MessageLoop::current()->Run();
+      ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+      EXPECT_EQ(form, returned_form);
+
+      store()->RemoveLogin(form);
+    }
   }
 
   base::FilePath test_login_db_file_path() const {
@@ -1690,35 +1804,24 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
   EXPECT_EQ(0u, all_forms.size());
 }
 
-// Verify that Android app passwords are retrievable.
+// Verify that Android app passwords can be stored, retrieved, and deleted.
 // Regression test for http://crbug.com/455551
-TEST_F(PasswordStoreMacTest, AndroidCredentialsMatchAfterInsertion) {
+TEST_F(PasswordStoreMacTest, StoringAndRetrievingAndroidCredentials) {
   PasswordForm form;
   form.signon_realm = "android://7x7IDboo8u9YKraUsbmVkuf1@net.rateflix.app/";
   form.username_value = base::UTF8ToUTF16("randomusername");
   form.password_value = base::UTF8ToUTF16("password");
-  store()->AddLogin(form);
-  FinishAsyncProcessing();
 
-  PasswordForm returned_form;
-  MockPasswordStoreConsumer mock_consumer;
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
-      .WillOnce(
-          DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
+  VerifyCredentialLifecycle(form);
+}
 
-  store()->GetAutofillableLogins(&mock_consumer);
-  base::MessageLoop::current()->Run();
-  ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
-  EXPECT_EQ(form, returned_form);
+// Verify that federated credentials can be stored, retrieved and deleted.
+TEST_F(PasswordStoreMacTest, StoringAndRetrievingFederatedCredentials) {
+  PasswordForm form;
+  form.signon_realm = "android://7x7IDboo8u9YKraUsbmVkuf1@net.rateflix.app/";
+  form.federation_url = GURL(password_manager::kTestingFederationUrlSpec);
+  form.username_value = base::UTF8ToUTF16("randomusername");
+  form.password_value = base::UTF8ToUTF16("");  // No password.
 
-  PasswordForm query_form = form;
-  query_form.password_value.clear();
-  query_form.username_value.clear();
-  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
-      .WillOnce(
-          DoAll(SaveACopyOfFirstForm(&returned_form), QuitUIMessageLoop()));
-  store()->GetLogins(query_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
-  base::MessageLoop::current()->Run();
-  ::testing::Mock::VerifyAndClearExpectations(&mock_consumer);
-  EXPECT_EQ(form, returned_form);
+  VerifyCredentialLifecycle(form);
 }
