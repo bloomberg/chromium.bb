@@ -409,20 +409,7 @@ void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
 // static
 bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     const IPC::Message& message) {
-  switch (message.type()) {
-    case BrowserPluginMsg_AdvanceFocus::ID:
-    case BrowserPluginMsg_CompositorFrameSwapped::ID:
-    case BrowserPluginMsg_GuestGone::ID:
-    case BrowserPluginMsg_SetContentsOpaque::ID:
-    case BrowserPluginMsg_SetCursor::ID:
-    case BrowserPluginMsg_SetMouseLock::ID:
-    case BrowserPluginMsg_SetTooltipText::ID:
-    case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
-      return true;
-    default:
-      break;
-  }
-  return false;
+  return IPC_MESSAGE_CLASS(message) == BrowserPluginMsgStart;
 }
 
 void BrowserPlugin::updateGeometry(const WebRect& window_rect,

@@ -36,13 +36,8 @@ GuestViewMessageFilter::~GuestViewMessageFilter() {
 void GuestViewMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
-  switch (message.type()) {
-    case GuestViewHostMsg_AttachGuest::ID:
-      *thread = BrowserThread::UI;
-      break;
-    default:
-      break;
-  }
+  if (IPC_MESSAGE_CLASS(message) == GuestViewMsgStart)
+    *thread = BrowserThread::UI;
 }
 
 void GuestViewMessageFilter::OnDestruct() const {

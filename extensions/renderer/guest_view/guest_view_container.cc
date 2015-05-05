@@ -49,15 +49,8 @@ GuestViewContainer::~GuestViewContainer() {}
 
 // static.
 bool GuestViewContainer::HandlesMessage(const IPC::Message& msg) {
-  switch (msg.type()) {
-    case ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK::ID:
-    case ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted::ID:
-    case GuestViewMsg_GuestAttached::ID:
-    case GuestViewMsg_GuestDetached::ID:
-      return true;
-    default:
-      return false;
-  }
+  return (IPC_MESSAGE_CLASS(msg) == GuestViewMsgStart) ||
+      (IPC_MESSAGE_CLASS(msg) == ExtensionsGuestViewMsgStart);
 }
 
 void GuestViewContainer::RenderFrameDestroyed() {

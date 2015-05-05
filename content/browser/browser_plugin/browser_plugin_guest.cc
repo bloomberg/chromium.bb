@@ -560,26 +560,8 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
 // static
 bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
-  switch (message.type()) {
-    case BrowserPluginHostMsg_CompositorFrameSwappedACK::ID:
-    case BrowserPluginHostMsg_Detach::ID:
-    case BrowserPluginHostMsg_DragStatusUpdate::ID:
-    case BrowserPluginHostMsg_ExecuteEditCommand::ID:
-    case BrowserPluginHostMsg_ExtendSelectionAndDelete::ID:
-    case BrowserPluginHostMsg_HandleInputEvent::ID:
-    case BrowserPluginHostMsg_ImeConfirmComposition::ID:
-    case BrowserPluginHostMsg_ImeSetComposition::ID:
-    case BrowserPluginHostMsg_LockMouse_ACK::ID:
-    case BrowserPluginHostMsg_ReclaimCompositorResources::ID:
-    case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
-    case BrowserPluginHostMsg_SetFocus::ID:
-    case BrowserPluginHostMsg_SetVisibility::ID:
-    case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
-    case BrowserPluginHostMsg_UpdateGeometry::ID:
-      return true;
-    default:
-      return false;
-  }
+  return (message.type() != BrowserPluginHostMsg_Attach::ID) &&
+      (IPC_MESSAGE_CLASS(message) == BrowserPluginMsgStart);
 }
 
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
