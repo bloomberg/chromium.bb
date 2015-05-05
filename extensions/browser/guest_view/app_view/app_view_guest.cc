@@ -176,7 +176,11 @@ void AppViewGuest::CreateWebContents(
     callback.Run(nullptr);
     return;
   }
-
+  // Verifying that the appId is not the same as the host application.
+  if (owner_host() == app_id) {
+    callback.Run(nullptr);
+    return;
+  }
   const base::DictionaryValue* data = nullptr;
   if (!create_params.GetDictionary(appview::kData, &data)) {
     callback.Run(nullptr);

@@ -115,3 +115,13 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMultipleConnects) {
              skeleton_app->id(),
              NO_TEST_SERVER);
 }
+
+// Tests that <appview> does not embed self (the app which owns appview).
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewEmbedSelfShouldFail) {
+  const extensions::Extension* skeleton_app =
+      InstallPlatformApp("app_view/shim/skeleton");
+  TestHelper("testAppViewEmbedSelfShouldFail",
+             "app_view/shim",
+             skeleton_app->id(),
+             NO_TEST_SERVER);
+}

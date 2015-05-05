@@ -162,12 +162,30 @@ function testAppViewMultipleConnects(appToEmbed) {
   appview.connect(appToEmbed, { 'foo': 'bleep' }, callback);
 };
 
+function testAppViewEmbedSelfShouldFail(appToEmbed) {
+  var appview = new AppView();
+  var currentapp_id = chrome.runtime.id;
+  LOG('appToEmbed ' + currentapp_id);
+  document.body.appendChild(appview);
+  LOG('Attempting to embed self...(id=' + currentapp_id + ').');
+  appview.connect(currentapp_id, undefined, function(success) {
+    if (success) {
+      LOG('UNEXPECTED CONNECTION.');
+      embedder.test.fail();
+      return;
+    };
+    LOG('EXPECTED REFUSAL.');
+    embedder.test.succeed();
+  });
+};
+
 embedder.test.testList = {
   'testAppViewWithUndefinedDataShouldSucceed':
       testAppViewWithUndefinedDataShouldSucceed,
   'testAppViewRefusedDataShouldFail': testAppViewRefusedDataShouldFail,
   'testAppViewGoodDataShouldSucceed': testAppViewGoodDataShouldSucceed,
-  'testAppViewMultipleConnects': testAppViewMultipleConnects
+  'testAppViewMultipleConnects': testAppViewMultipleConnects,
+  'testAppViewEmbedSelfShouldFail': testAppViewEmbedSelfShouldFail
 };
 
 onload = function() {
