@@ -14,12 +14,12 @@ nexe = env.ComponentProgram('untrusted_check_test',
                                         '${PTHREAD_LIBS}',
                                         '${NONIRT_LIBS}'])
 
-# nacl-newlib and nacl-glibc's abort() implementations produce
-# different exit codes.
-if env.Bit('nacl_glibc'):
+# The old (x86) nacl-glibc abort produces a different death signal from the
+# norm.
+if env.Bit('nacl_glibc') and env.Bit('build_x86'):
   expected_exit_status = 'untrusted_sigsegv'
 else:
-  # abort() from libnacl exits via __builtin_trap().
+  # Modern implementations end with calling __builtin_trap.
   expected_exit_status = 'untrusted_builtin_trap'
 
 # Valgrind and ASan interfere with the exit status
