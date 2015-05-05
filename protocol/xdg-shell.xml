@@ -189,6 +189,15 @@
 	the surface belongs. The compositor can use this to group multiple
 	surfaces together, or to determine how to launch a new application.
 
+	For D-Bus activatable applications, the app ID is used as the D-Bus
+	service name.
+
+	The compositor shell will try to group application surfaces together
+	by their app ID.  As a best practice, it is suggested to select app
+	ID's that match the basename of the application's .desktop file.
+	For example, "org.freedesktop.FooViewer" where the .desktop file is
+	"org.freedesktop.FooViewer.desktop".
+
 	See the desktop-entry specification [0] for more details on
 	application identifiers and how they relate to well-known D-Bus
 	names and .desktop files.
