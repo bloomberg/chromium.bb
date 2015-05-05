@@ -806,7 +806,6 @@
         '--input-jars-paths=>(proguard_input_jar_paths)',
         '--proguard-configs=>(proguard_flags_paths)',
 
-
         '--test-jar-path', '<(test_jar_path)',
         '--obfuscated-jar-path', '<(obfuscated_jar_path)',
 

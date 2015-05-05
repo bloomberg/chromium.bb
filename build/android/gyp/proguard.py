@@ -5,54 +5,32 @@
 # found in the LICENSE file.
 
 import optparse
-import os
 import sys
 
 from util import build_utils
+from util import proguard_util
 
 def DoProguard(options):
-  injars = options.input_path
-  outjars = options.output_path
+  proguard = proguard_util.ProguardCmdBuilder(options.proguard_path)
+  proguard.injars(build_utils.ParseGypList(options.input_paths))
+  proguard.configs(build_utils.ParseGypList(options.proguard_configs))
+  proguard.outjar(options.output_path)
+
+  if options.mapping:
+    proguard.mapping(options.mapping)
+
+  if options.is_test:
+    proguard.is_test(True)
+
   classpath = []
   for arg in options.classpath:
     classpath += build_utils.ParseGypList(arg)
   classpath = list(set(classpath))
-  libraryjars = ':'.join(classpath)
-  # proguard does its own dependency checking, which can be avoided by deleting
-  # the output.
-  if os.path.exists(options.output_path):
-    os.remove(options.output_path)
-  proguard_cmd = ['java', '-jar',
-                  options.proguard_path,
-                  '-injars', injars,
-                  '-outjars', outjars,
-                  '-libraryjars', libraryjars,
-                  '@' + options.proguard_config]
-  build_utils.CheckOutput(proguard_cmd, print_stdout=True,
-                          stdout_filter=FilterProguardOutput)
+  proguard.libraryjars(classpath)
 
+  proguard.CheckOutput()
 
-def FilterProguardOutput(output):
-  '''ProGuard outputs boring stuff to stdout (proguard version, jar path, etc)
-  as well as interesting stuff (notes, warnings, etc). If stdout is entirely
-  boring, this method suppresses the output.
-  '''
-  ignore_patterns = [
-    'ProGuard, version ',
-    'Reading program jar [',
-    'Reading library jar [',
-    'Preparing output jar [',
-    '  Copying resources from program jar [',
-  ]
-  for line in output.splitlines():
-    for pattern in ignore_patterns:
-      if line.startswith(pattern):
-        break
-    else:
-      # line doesn't match any of the patterns; it's probably something worth
-      # printing out.
-      return output
-  return ''
+  return proguard.GetInputs()
 
 
 def main(args):
@@ -61,23 +39,27 @@ def main(args):
   build_utils.AddDepfileOption(parser)
   parser.add_option('--proguard-path',
                     help='Path to the proguard executable.')
-  parser.add_option('--input-path',
-                    help='Path to the .jar file proguard should run on.')
+  parser.add_option('--input-paths',
+                    help='Paths to the .jar files proguard should run on.')
   parser.add_option('--output-path', help='Path to the generated .jar file.')
-  parser.add_option('--proguard-config',
-                    help='Path to the proguard configuration file.')
+  parser.add_option('--proguard-configs',
+                    help='Paths to proguard configuration files.')
+  parser.add_option('--mapping', help='Path to proguard mapping to apply.')
+  parser.add_option('--is-test', action='store_true',
+      help='If true, extra proguard options for instrumentation tests will be '
+      'added.')
   parser.add_option('--classpath', action='append',
-                    help="Classpath for proguard.")
+                    help='Classpath for proguard.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
   options, _ = parser.parse_args(args)
 
-  DoProguard(options)
+  inputs = DoProguard(options)
 
   if options.depfile:
     build_utils.WriteDepfile(
         options.depfile,
-        build_utils.GetPythonDependencies())
+        inputs + build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)
