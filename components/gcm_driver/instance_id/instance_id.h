@@ -64,27 +64,28 @@ class InstanceID {
   // Returns the time when the InstanceID has been generated.
   virtual base::Time GetCreationTime() = 0;
 
-  // Retrieves a token that allows the identified "audience" to access the
-  // service defined as "scope".
-  // |audience|: identifies the entity that is authorized to access resources
-  //             associated with this Instance ID. It can be another Instance
-  //             ID or a project ID.
+  // Retrieves a token that allows the authorized entity to access the service
+  // defined as "scope".
+  // |authorized_entity|: identifies the entity that is authorized to access
+  //                      resources associated with this Instance ID. It can be
+  //                      another Instance ID or a project ID.
   // |scope|: identifies authorized actions that the authorized entity can take.
   //          E.g. for sending GCM messages, "GCM" scope should be used.
   // |options|: allows including a small number of string key/value pairs that
   //            will be associated with the token and may be used in processing
   //            the request.
   // |callback|: to be called once the asynchronous operation is done.
-  virtual void GetToken(const std::string& audience,
+  virtual void GetToken(const std::string& authorized_entity,
                         const std::string& scope,
                         const std::map<std::string, std::string>& options,
                         const GetTokenCallback& callback) = 0;
 
   // Revokes a granted token.
-  // |audience|: the audience that is passed for obtaining a token.
+  // |authorized_entity|: the authorized entity that is passed for obtaining a
+  //                      token.
   // |scope|: the scope that is passed for obtaining a token.
   // |callback|: to be called once the asynchronous operation is done.
-  virtual void DeleteToken(const std::string& audience,
+  virtual void DeleteToken(const std::string& authorized_entity,
                            const std::string& scope,
                            const DeleteTokenCallback& callback) = 0;
 

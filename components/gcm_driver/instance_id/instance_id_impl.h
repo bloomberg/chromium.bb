@@ -25,11 +25,11 @@ class InstanceIDImpl : public InstanceID {
   // InstanceID:
   std::string GetID() override;
   base::Time GetCreationTime() override;
-  void GetToken(const std::string& audience,
+  void GetToken(const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
                 const GetTokenCallback& callback) override;
-  void DeleteToken(const std::string& audience,
+  void DeleteToken(const std::string& authorized_entity,
                    const std::string& scope,
                    const DeleteTokenCallback& callback) override;
   void DeleteID(const DeleteIDCallback& callback) override;

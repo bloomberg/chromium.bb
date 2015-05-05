@@ -8,7 +8,7 @@ namespace instanceID {
   dictionary GetTokenParams {
     // Identifies the entity that is authorized to access resources associated
     // with this Instance ID. It can be another Instance ID or a project ID.
-    DOMString audience;
+    DOMString authorizedEntity;
 
     // Identifies authorized actions that the authorized entity can take.
     // E.g. for sending GCM messages, <code>GCM</code> scope should be used.
@@ -21,8 +21,8 @@ namespace instanceID {
 
   // Parameters for deleteToken.
   dictionary DeleteTokenParams {
-    // The audience that is passed for obtaining a token.
-    DOMString audience;
+    // The authorized entity that is passed for obtaining a token.
+    DOMString authorizedEntity;
 
     // The scope that is passed for obtaining a token.
     DOMString scope;
@@ -57,7 +57,7 @@ namespace instanceID {
     //     check $(ref:runtime.lastError) for error when creationTime is zero.
     static void getCreationTime(GetCreationTimeCallback callback);
 
-    // Return a token that allows the identified audience to access the service
+    // Return a token that allows the authorized entity to access the service
     // defined as scope.
     // |getTokenParams| : getToken parameters.
     // |callback| : Function called when the retrieval completes. It should

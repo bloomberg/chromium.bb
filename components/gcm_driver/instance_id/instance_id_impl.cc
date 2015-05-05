@@ -35,14 +35,14 @@ base::Time InstanceIDImpl::GetCreationTime() {
 }
 
 void InstanceIDImpl::GetToken(
-    const std::string& audience,
+    const std::string& authorized_entity,
     const std::string& scope,
     const std::map<std::string, std::string>& options,
     const GetTokenCallback& callback) {
   NOTIMPLEMENTED();
 }
 
-void InstanceIDImpl::DeleteToken(const std::string& audience,
+void InstanceIDImpl::DeleteToken(const std::string& authorized_entity,
                                  const std::string& scope,
                                  const DeleteTokenCallback& callback) {
   NOTIMPLEMENTED();
