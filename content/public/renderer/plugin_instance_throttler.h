@@ -62,6 +62,8 @@ class CONTENT_EXPORT PluginInstanceThrottler {
 
     virtual void OnThrottleStateChange() {}
 
+    virtual void OnPeripheralStateChange() {}
+
     // Called when the plugin should be hidden due to a placeholder.
     virtual void OnHiddenForPlaceholder(bool hidden) {}
 

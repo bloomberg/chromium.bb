@@ -135,6 +135,7 @@
 #include "ppapi/c/trusted/ppb_file_chooser_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/callback_tracker.h"
+#include "ppapi/shared_impl/dictionary_var.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
@@ -180,6 +181,59 @@ PluginModuleSet* GetLivePluginSet() {
   CR_DEFINE_STATIC_LOCAL(PluginModuleSet, live_plugin_libs, ());
   return &live_plugin_libs;
 }
+
+class PowerSaverTestPluginDelegate : public PluginInstanceThrottler::Observer {
+ public:
+  explicit PowerSaverTestPluginDelegate(PluginInstanceThrottlerImpl* throttler)
+      : throttler_(throttler) {
+    throttler_->AddObserver(this);
+    PostPowerSaverStatusToJavaScript(throttler_, "initial");
+  }
+
+  virtual ~PowerSaverTestPluginDelegate() { throttler_->RemoveObserver(this); }
+
+  static void PostPowerSaverStatusToJavaScript(
+      PluginInstanceThrottlerImpl* throttler,
+      const std::string& source) {
+    if (!throttler->GetWebPlugin() || !throttler->GetWebPlugin()->instance())
+      return;
+
+    PepperPluginInstanceImpl* instance = throttler->GetWebPlugin()->instance();
+
+    // Refcounted by the returned PP_Var.
+    ppapi::DictionaryVar* dictionary = new ppapi::DictionaryVar;
+    dictionary->Set(ppapi::StringVar::StringToPPVar("source"),
+                    ppapi::StringVar::StringToPPVar(source));
+    dictionary->Set(
+        ppapi::StringVar::StringToPPVar("isHiddenForPlaceholder"),
+        PP_MakeBool(PP_FromBool(throttler->IsHiddenForPlaceholder())));
+    dictionary->Set(ppapi::StringVar::StringToPPVar("isPeripheral"),
+                    PP_MakeBool(PP_FromBool(throttler->power_saver_enabled())));
+    dictionary->Set(ppapi::StringVar::StringToPPVar("isThrottled"),
+                    PP_MakeBool(PP_FromBool(throttler->IsThrottled())));
+
+    instance->PostMessageToJavaScript(dictionary->GetPPVar());
+  }
+
+ private:
+  void OnThrottleStateChange() override {
+    PostPowerSaverStatusToJavaScript(throttler_, "throttleStatusChange");
+  }
+
+  void OnPeripheralStateChange() override {
+    PostPowerSaverStatusToJavaScript(throttler_, "peripheralStatusChange");
+  }
+
+  void OnHiddenForPlaceholder(bool hidden) override {
+    PostPowerSaverStatusToJavaScript(throttler_,
+                                     "hiddenForPlaceholderStatusChange");
+  }
+
+  void OnThrottlerDestroyed() override { delete this; }
+
+  // Non-owning pointer.
+  PluginInstanceThrottlerImpl* const throttler_;
+};
 
 // PPB_Core --------------------------------------------------------------------
 
@@ -246,12 +300,24 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
 
 PP_Bool IsOutOfProcess() { return PP_FALSE; }
 
-PP_Bool IsPeripheral(PP_Instance instance_id) {
+void PostPowerSaverStatus(PP_Instance instance_id) {
   PepperPluginInstanceImpl* plugin_instance =
       host_globals->GetInstance(instance_id);
   if (!plugin_instance || !plugin_instance->throttler())
-    return PP_FALSE;
-  return PP_FromBool(plugin_instance->throttler()->power_saver_enabled());
+    return;
+
+  PowerSaverTestPluginDelegate::PostPowerSaverStatusToJavaScript(
+      plugin_instance->throttler(), "getPowerSaverStatusResponse");
+}
+
+void SubscribeToPowerSaverNotifications(PP_Instance instance_id) {
+  PepperPluginInstanceImpl* plugin_instance =
+      host_globals->GetInstance(instance_id);
+  if (!plugin_instance || !plugin_instance->throttler())
+    return;
+
+  // Manages its own lifetime.
+  new PowerSaverTestPluginDelegate(plugin_instance->throttler());
 }
 
 void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
@@ -302,7 +368,8 @@ const PPB_Testing_Private testing_interface = {
     &QuitMessageLoop,
     &GetLiveObjectsForInstance,
     &IsOutOfProcess,
-    &IsPeripheral,
+    &PostPowerSaverStatus,
+    &SubscribeToPowerSaverNotifications,
     &SimulateInputEvent,
     &GetDocumentURL,
     &GetLiveVars,

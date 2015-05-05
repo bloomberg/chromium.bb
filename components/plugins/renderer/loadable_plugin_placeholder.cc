@@ -292,20 +292,7 @@ void LoadablePluginPlaceholder::LoadPlugin() {
     ReplacePlugin(premade_throttler_->GetWebPlugin());
     premade_throttler_ = nullptr;
   } else {
-    // TODO(mmenke):  In the case of prerendering, feed into
-    //                ChromeContentRendererClient::CreatePlugin instead, to
-    //                reduce the chance of future regressions.
-    scoped_ptr<PluginInstanceThrottler> throttler;
-#if defined(ENABLE_PLUGINS)
-    // If the plugin has already been marked essential in its placeholder form,
-    // we shouldn't create a new throttler and start the process all over again.
-    if (power_saver_enabled_)
-      throttler = PluginInstanceThrottler::Create();
-#endif
-    WebPlugin* plugin = render_frame()->CreatePlugin(
-        GetFrame(), plugin_info_, GetPluginParams(), throttler.Pass());
-
-    ReplacePlugin(plugin);
+    ReplacePlugin(CreatePlugin());
   }
 }
 
@@ -346,6 +333,10 @@ const content::WebPluginInfo& LoadablePluginPlaceholder::GetPluginInfo() const {
 
 void LoadablePluginPlaceholder::SetIdentifier(const std::string& identifier) {
   identifier_ = identifier;
+}
+
+const std::string& LoadablePluginPlaceholder::GetIdentifier() const {
+  return identifier_;
 }
 
 bool LoadablePluginPlaceholder::LoadingBlocked() const {

@@ -858,16 +858,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         bool is_prerendering =
             prerender::PrerenderHelper::IsPrerendering(render_frame);
 
-        // TODO(tommycli): Plugin Power Saver is disabled on prerendered pages.
+        // TODO(tommycli): Background tab plugin deferral is disabled.
         // This is because the placeholder does not feed back into
         // ChromeContentRendererClient::CreatePlugin. Because of this, it does
         // not handle the preroll to UI overlay placeholder flow correctly.
-        //
-        // Background tab plugin deferral is disabled for the same reason.
-        //
         // https://crbug.com/471427
         bool power_saver_enabled =
-            !is_prerendering &&
             status ==
                 ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
 

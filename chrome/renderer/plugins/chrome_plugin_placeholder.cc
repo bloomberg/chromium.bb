@@ -13,6 +13,7 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/custom_menu_commands.h"
+#include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "content/app/strings/grit/content_strings.h"
@@ -364,6 +365,24 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
   context_menu_request_id_ = render_frame()->ShowContextMenu(this, params);
   g_last_active_menu = this;
 #endif  // OS_ANDROID
+}
+
+blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
+  scoped_ptr<content::PluginInstanceThrottler> throttler;
+#if defined(ENABLE_PLUGINS)
+  // If the plugin has already been marked essential in its placeholder form,
+  // we shouldn't create a new throttler and start the process all over again.
+  if (power_saver_enabled()) {
+    throttler = content::PluginInstanceThrottler::Create();
+    // PluginPreroller manages its own lifetime.
+    new PluginPreroller(render_frame(), GetFrame(), GetPluginParams(),
+                        GetPluginInfo(), GetIdentifier(), title_,
+                        l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, title_),
+                        throttler.get());
+  }
+#endif
+  return render_frame()->CreatePlugin(GetFrame(), GetPluginInfo(),
+                                      GetPluginParams(), throttler.Pass());
 }
 
 gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(

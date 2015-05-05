@@ -40,22 +40,22 @@ class PluginPowerSaverBrowserTest : virtual public InProcessBrowserTest {
   bool IsPluginPeripheral(const char* element_id) {
     std::string script = base::StringPrintf(
         "var plugin = window.document.getElementById('%s');"
-        "function handleEvent() {"
+        "function handleEvent(event) {"
         "  if (event.data.isPeripheral != undefined &&"
-        "      event.data.source == 'getPeripheralStatusResponse') {"
+        "      event.data.source === 'getPowerSaverStatusResponse') {"
         "    window.domAutomationController.send("
         "        event.data.isPeripheral ? 'peripheral' : 'essential');"
         "    plugin.removeEventListener('message', handleEvent);"
         "  }"
         "}"
-        "if (plugin == undefined ||"
+        "if (plugin === undefined ||"
         "    (plugin.nodeName != 'OBJECT' && plugin.nodeName != 'EMBED')) {"
         "  window.domAutomationController.send('error');"
-        "} else if (plugin.postMessage == undefined) {"
+        "} else if (plugin.postMessage === undefined) {"
         "  window.domAutomationController.send('peripheral');"
         "} else {"
         "  plugin.addEventListener('message', handleEvent);"
-        "  plugin.postMessage('getPeripheralStatus');"
+        "  plugin.postMessage('getPowerSaverStatus');"
         "}",
         element_id);
 
@@ -71,7 +71,7 @@ class PluginPowerSaverBrowserTest : virtual public InProcessBrowserTest {
   // status message during:
   //  - Plugin creation, to handle a plugin freshly created from a poster.
   //  - Peripheral status change.
-  //  - In response to the explicit 'getPeripheralStatus' request, in case the
+  //  - In response to the explicit 'getPowerSaverStatus' request, in case the
   //    test has missed the above two events.
   void SimulateClickAndAwaitMarkedEssential(const char* element_id,
                                             const gfx::Point& point) {
@@ -80,19 +80,19 @@ class PluginPowerSaverBrowserTest : virtual public InProcessBrowserTest {
 
     std::string script = base::StringPrintf(
         "var plugin = window.document.getElementById('%s');"
-        "function handleEvent() {"
-        "  if (event.data.isPeripheral == false) {"
+        "function handleEvent(event) {"
+        "  if (event.data.isPeripheral === false) {"
         "    window.domAutomationController.send('essential');"
         "    plugin.removeEventListener('message', handleEvent);"
         "  }"
         "}"
-        "if (plugin == undefined ||"
+        "if (plugin === undefined ||"
         "    (plugin.nodeName != 'OBJECT' && plugin.nodeName != 'EMBED')) {"
         "  window.domAutomationController.send('error');"
         "} else {"
         "  plugin.addEventListener('message', handleEvent);"
         "  if (plugin.postMessage != undefined) {"
-        "    plugin.postMessage('getPeripheralStatus');"
+        "    plugin.postMessage('getPowerSaverStatus');"
         "  }"
         "}",
         element_id);

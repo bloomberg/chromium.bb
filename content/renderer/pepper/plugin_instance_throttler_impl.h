@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
+#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -39,7 +40,7 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   bool IsHiddenForPlaceholder() const override;
   void MarkPluginEssential(PowerSaverUnthrottleMethod method) override;
   void SetHiddenForPlaceholder(bool hidden) override;
-  blink::WebPlugin* GetWebPlugin() const override;
+  PepperWebPluginImpl* GetWebPlugin() const override;
   const gfx::Size& GetSize() const override;
   void NotifyAudioThrottled() override;
 
@@ -97,9 +98,6 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
 
   // Number of frames we've examined to find a keyframe.
   int frames_examined_;
-
-  // Plugin module name as of initialization.
-  std::string plugin_module_name_;
 
   // Plugin's unobscured dimensions as of initialization.
   gfx::Size unobscured_size_;

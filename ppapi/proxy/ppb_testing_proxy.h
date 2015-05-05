@@ -39,7 +39,8 @@ class PPB_Testing_Proxy : public InterfaceProxy {
   void OnMsgRunMessageLoop(PP_Instance instance);
   void OnMsgQuitMessageLoop(PP_Instance instance);
   void OnMsgGetLiveObjectsForInstance(PP_Instance instance, uint32_t* result);
-  void OnMsgIsPeripheral(PP_Instance instance, PP_Bool* result);
+  void OnMsgPostPowerSaverStatus(PP_Instance instance);
+  void OnMsgSubscribeToPowerSaverNotifications(PP_Instance instance);
   void OnMsgSimulateInputEvent(PP_Instance instance,
                                const ppapi::InputEventData& input_event);
   void OnMsgSetMinimumArrayBufferSizeForShmem(uint32_t threshold);

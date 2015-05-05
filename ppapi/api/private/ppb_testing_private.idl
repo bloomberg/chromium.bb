@@ -77,11 +77,20 @@ interface PPB_Testing_Private {
    * otherwise.
    */
   PP_Bool IsOutOfProcess();
-  
+
   /**
-   * Returns PP_TRUE if the plugin is peripheral, PP_FALSE otherwise.
+   * Posts the plugin's current Power Saver status to JavaScript. The plugin
+   * itself does not recieve anything. This is not idiomatic for Pepper,
+   * but convenient for testing.
    */
-  PP_Bool IsPeripheral([in] PP_Instance instance);
+  void PostPowerSaverStatus([in] PP_Instance instance);
+
+  /**
+   * Subscribes to changes to the plugin's Power Saver status. The status
+   * changes are not forwarded to the plugin itself, but posted to JavaScript.
+   * This is not idiomatic for Pepper, but conveienent for testing.
+   */
+  void SubscribeToPowerSaverNotifications([in] PP_Instance instance);
 
   /**
    * Passes the input event to the browser, which sends it back to the

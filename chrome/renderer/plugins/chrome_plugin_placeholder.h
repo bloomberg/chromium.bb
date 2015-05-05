@@ -69,6 +69,9 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
                           const base::string16& title);
   ~ChromePluginPlaceholder() override;
 
+  // content::LoadablePluginPlaceholder method
+  blink::WebPlugin* CreatePlugin() override;
+
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;

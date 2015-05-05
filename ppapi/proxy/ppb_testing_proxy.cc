@@ -80,16 +80,25 @@ PP_Bool IsOutOfProcess() {
   return PP_TRUE;
 }
 
-PP_Bool IsPeripheral(PP_Instance instance_id) {
+void PostPowerSaverStatus(PP_Instance instance_id) {
   ProxyAutoLock lock;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
   if (!dispatcher)
-    return PP_FALSE;
+    return;
 
-  PP_Bool result = PP_FALSE;
-  dispatcher->Send(new PpapiHostMsg_PPBTesting_IsPeripheral(
-      API_ID_PPB_TESTING, instance_id, &result));
-  return result;
+  dispatcher->Send(new PpapiHostMsg_PPBTesting_PostPowerSaverStatus(
+      API_ID_PPB_TESTING, instance_id));
+}
+
+void SubscribeToPowerSaverNotifications(PP_Instance instance_id) {
+  ProxyAutoLock lock;
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return;
+
+  dispatcher->Send(
+      new PpapiHostMsg_PPBTesting_SubscribeToPowerSaverNotifications(
+          API_ID_PPB_TESTING, instance_id));
 }
 
 void SimulateInputEvent(PP_Instance instance_id, PP_Resource input_event) {
@@ -150,7 +159,8 @@ const PPB_Testing_Private testing_interface = {
     &QuitMessageLoop,
     &GetLiveObjectsForInstance,
     &IsOutOfProcess,
-    &IsPeripheral,
+    &PostPowerSaverStatus,
+    &SubscribeToPowerSaverNotifications,
     &SimulateInputEvent,
     &GetDocumentURL,
     &GetLiveVars,
@@ -186,7 +196,11 @@ bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgReadImageData)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                         OnMsgGetLiveObjectsForInstance)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_IsPeripheral, OnMsgIsPeripheral)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_PostPowerSaverStatus,
+                        OnMsgPostPowerSaverStatus)
+    IPC_MESSAGE_HANDLER(
+        PpapiHostMsg_PPBTesting_SubscribeToPowerSaverNotifications,
+        OnMsgSubscribeToPowerSaverNotifications)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_SimulateInputEvent,
                         OnMsgSimulateInputEvent)
     IPC_MESSAGE_HANDLER(
@@ -219,9 +233,13 @@ void PPB_Testing_Proxy::OnMsgGetLiveObjectsForInstance(PP_Instance instance,
   *result = ppb_testing_impl_->GetLiveObjectsForInstance(instance);
 }
 
-void PPB_Testing_Proxy::OnMsgIsPeripheral(PP_Instance instance,
-                                          PP_Bool* result) {
-  *result = ppb_testing_impl_->IsPeripheral(instance);
+void PPB_Testing_Proxy::OnMsgPostPowerSaverStatus(PP_Instance instance) {
+  ppb_testing_impl_->PostPowerSaverStatus(instance);
+}
+
+void PPB_Testing_Proxy::OnMsgSubscribeToPowerSaverNotifications(
+    PP_Instance instance) {
+  ppb_testing_impl_->SubscribeToPowerSaverNotifications(instance);
 }
 
 void PPB_Testing_Proxy::OnMsgSimulateInputEvent(

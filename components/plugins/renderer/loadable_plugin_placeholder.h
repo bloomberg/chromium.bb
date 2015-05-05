@@ -24,6 +24,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   }
 
 #if defined(ENABLE_PLUGINS)
+  bool power_saver_enabled() const { return power_saver_enabled_; }
+
   void set_power_saver_enabled(bool power_saver_enabled) {
     power_saver_enabled_ = power_saver_enabled;
   }
@@ -58,6 +60,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   void SetPluginInfo(const content::WebPluginInfo& plugin_info);
   const content::WebPluginInfo& GetPluginInfo() const;
   void SetIdentifier(const std::string& identifier);
+  const std::string& GetIdentifier() const;
   bool LoadingAllowed() const { return allow_loading_; }
 
   // Replace this placeholder with a different plugin (which could be
@@ -92,6 +95,9 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   void UpdateMessage();
 
   bool LoadingBlocked() const;
+
+  // Plugin creation is embedder-specific.
+  virtual blink::WebPlugin* CreatePlugin() = 0;
 
   content::WebPluginInfo plugin_info_;
 

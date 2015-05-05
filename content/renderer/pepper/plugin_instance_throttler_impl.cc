@@ -9,11 +9,8 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
-#include "ppapi/shared_impl/scoped_pp_var.h"
-#include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -98,16 +95,10 @@ void PluginInstanceThrottlerImpl::MarkPluginEssential(
   state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
   RecordUnthrottleMethodMetric(method);
 
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnPeripheralStateChange());
+
   if (was_throttled)
     FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottleStateChange());
-
-  // Notify the Power Saver test plugin of a peripheral status change.
-  if (web_plugin_ && web_plugin_->instance() &&
-      plugin_module_name_ == ppapi::kPowerSaverTestPluginName) {
-    web_plugin_->instance()->HandleMessage(ppapi::ScopedPPVar(
-        ppapi::ScopedPPVar::PassRef(),
-        ppapi::StringVar::StringToPPVar("peripheralStatusChange")));
-  }
 }
 
 void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
@@ -115,7 +106,7 @@ void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnHiddenForPlaceholder(hidden));
 }
 
-blink::WebPlugin* PluginInstanceThrottlerImpl::GetWebPlugin() const {
+PepperWebPluginImpl* PluginInstanceThrottlerImpl::GetWebPlugin() const {
   DCHECK(web_plugin_);
   return web_plugin_;
 }
@@ -140,7 +131,7 @@ void PluginInstanceThrottlerImpl::Initialize(
     const GURL& content_origin,
     const std::string& plugin_module_name,
     const gfx::Size& unobscured_size) {
-  plugin_module_name_ = plugin_module_name;
+  DCHECK(unobscured_size_.IsEmpty());
   unobscured_size_ = unobscured_size;
 
   // |frame| may be nullptr in tests.
@@ -151,7 +142,9 @@ void PluginInstanceThrottlerImpl::Initialize(
                                        unobscured_size.width(),
                                        unobscured_size.height(),
                                        &cross_origin_main_content)) {
+      DCHECK_NE(THROTTLER_STATE_MARKED_ESSENTIAL, state_);
       state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnPeripheralStateChange());
 
       if (cross_origin_main_content)
         helper->WhitelistContentOrigin(content_origin);

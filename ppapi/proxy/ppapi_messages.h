@@ -1204,9 +1204,11 @@ IPC_SYNC_MESSAGE_ROUTED3_1(
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                            PP_Instance /* instance */,
                            uint32 /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_IsPeripheral,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBTesting_PostPowerSaverStatus,
+                           PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED1_0(
+    PpapiHostMsg_PPBTesting_SubscribeToPowerSaverNotifications,
+    PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBTesting_SimulateInputEvent,
                     PP_Instance /* instance */,
                     ppapi::InputEventData /* input_event */)
