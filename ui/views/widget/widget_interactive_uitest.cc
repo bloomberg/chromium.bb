@@ -9,8 +9,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -28,16 +26,15 @@
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_WIN)
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
-#elif defined(USE_X11)
-#include "ui/base/x/x11_util.h"
-#include "ui/views/test/x11_property_change_waiter.h"
 #endif
 
 namespace views {
@@ -157,6 +154,21 @@ class NestedLoopCaptureView : public View {
 class WidgetActivationWaiter : public WidgetObserver {
  public:
   WidgetActivationWaiter(Widget* widget, bool active) : observed_(false) {
+#if defined(OS_WIN)
+    // On Windows, a HWND can receive a WM_ACTIVATE message without the value
+    // of ::GetActiveWindow() updating to reflect that change. This can cause
+    // the active window reported by IsActive() to get out of sync. Usually this
+    // happens after a call to HWNDMessageHandler::Deactivate() which works by
+    // activating some other window, which might be in another application.
+    // Doing this can trigger the native OS activation-blocker, causing the
+    // taskbar icon to flash instead. But since activation of native widgets on
+    // Windows is synchronous, we never have to wait anyway, so it's safe to
+    // return here.
+    if (active == widget->IsActive()) {
+      observed_ = true;
+      return;
+    }
+#endif
     // Always expect a change for tests using this.
     EXPECT_NE(active, widget->IsActive());
     widget->AddObserver(this);
@@ -180,31 +192,6 @@ class WidgetActivationWaiter : public WidgetObserver {
 
   DISALLOW_COPY_AND_ASSIGN(WidgetActivationWaiter);
 };
-
-#if defined(USE_X11)
-class WidgetActivationWaiterX11 : public X11PropertyChangeWaiter {
- public:
-  explicit WidgetActivationWaiterX11(Widget* widget, bool active)
-      : X11PropertyChangeWaiter(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW"),
-        window_(widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget()) {
-    EXPECT_NE(active, widget->IsActive());
-  }
-
-  ~WidgetActivationWaiterX11() override {}
-
- private:
-  // X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
-    XID xid = 0;
-    ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);
-    return xid != window_;
-  }
-
-  XID window_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetActivationWaiterX11);
-};
-#endif
 
 ui::WindowShowState GetWidgetShowState(const Widget* widget) {
   // Use IsMaximized/IsMinimized/IsFullScreen instead of GetWindowPlacement
@@ -245,22 +232,30 @@ void ShowSync(Widget* widget) {
   waiter.Wait();
 }
 
-#if defined(USE_AURA)
-void ActivatePlatformWindowSync(Widget* widget) {
+void DeactivateSync(Widget* widget) {
+#if defined(OS_MACOSX)
+  // Deactivation of a window isn't a concept on Mac: If an application is
+  // active and it has any activatable windows, then one of them is always
+  // active. But we can simulate deactivation (e.g. as if another application
+  // became active) by temporarily making |widget| non-activatable, then
+  // activating (and closing) a temporary widget.
+  widget->widget_delegate()->set_can_activate(false);
+  Widget* stealer = new Widget;
+  stealer->Init(Widget::InitParams(Widget::InitParams::TYPE_WINDOW));
+  ShowSync(stealer);
+  stealer->CloseNow();
+  widget->widget_delegate()->set_can_activate(true);
+#else
+  WidgetActivationWaiter waiter(widget, false);
+  widget->Deactivate();
+  waiter.Wait();
+#endif
+}
+
 #if defined(OS_WIN)
+void ActivatePlatformWindow(Widget* widget) {
   ::SetActiveWindow(
       widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-#elif defined(OS_CHROMEOS)
-  widget->Activate();
-#elif defined(USE_X11)
-  if (!widget->IsActive()) {
-    WidgetActivationWaiterX11 waiter(widget, true);
-    widget->Activate();
-    waiter.Wait();
-  }
-#else
-  ActivateSync(widget);
-#endif
 }
 #endif
 
@@ -306,23 +301,10 @@ class WidgetTestInteractive : public WidgetTest {
     return controller->context_menu_ && controller->context_menu_->visible();
   }
 
-  scoped_ptr<Widget> CreateWidget() {
-#if !defined(USE_AURA)
-    return NULL;
-#else
-    scoped_ptr<Widget> widget(new Widget);
-    Widget::InitParams params =
-        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect(0, 0, 200, 200);
-#if defined(OS_CHROMEOS)
-    params.native_widget = NULL;
-#else
-    params.native_widget = new DesktopNativeWidgetAura(widget.get());
-#endif
-    widget->Init(params);
-    return widget.Pass();
-#endif
+  Widget* CreateWidget() {
+    Widget* widget = CreateNativeDesktopWidget();
+    widget->SetBounds(gfx::Rect(0, 0, 200, 200));
+    return widget;
   }
 };
 
@@ -338,13 +320,13 @@ class WidgetTestInteractive : public WidgetTest {
 // TODO(ananta): Discuss with erg on how to write this test for linux x11 aura.
 TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   // Create widget 1 and expect the active window to be its window.
-  View* contents_view1 = new View;
-  contents_view1->SetFocusable(true);
-  scoped_ptr<Widget> widget1(CreateWidget());
-  widget1->SetContentsView(contents_view1);
+  View* focusable_view1 = new View;
+  focusable_view1->SetFocusable(true);
+  Widget* widget1 = CreateWidget();
+  widget1->GetContentsView()->AddChildView(focusable_view1);
   widget1->Show();
-  aura::Window* root_window1= widget1->GetNativeView()->GetRootWindow();
-  contents_view1->RequestFocus();
+  aura::Window* root_window1 = widget1->GetNativeView()->GetRootWindow();
+  focusable_view1->RequestFocus();
 
   EXPECT_TRUE(root_window1 != NULL);
   aura::client::ActivationClient* activation_client1 =
@@ -353,13 +335,13 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1->GetNativeView());
 
   // Create widget 2 and expect the active window to be its window.
-  View* contents_view2 = new View;
-  scoped_ptr<Widget> widget2(CreateWidget());
-  widget2->SetContentsView(contents_view2);
+  View* focusable_view2 = new View;
+  Widget* widget2 = CreateWidget();
+  widget1->GetContentsView()->AddChildView(focusable_view2);
   widget2->Show();
   aura::Window* root_window2 = widget2->GetNativeView()->GetRootWindow();
-  contents_view2->RequestFocus();
-  ActivatePlatformWindowSync(widget2.get());
+  focusable_view2->RequestFocus();
+  ActivatePlatformWindow(widget2);
 
   aura::client::ActivationClient* activation_client2 =
       aura::client::GetActivationClient(root_window2);
@@ -370,11 +352,14 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
 
   // Now set focus back to widget 1 and expect the active window to be its
   // window.
-  contents_view1->RequestFocus();
-  ActivatePlatformWindowSync(widget1.get());
+  focusable_view1->RequestFocus();
+  ActivatePlatformWindow(widget1);
   EXPECT_EQ(activation_client2->GetActiveWindow(),
             reinterpret_cast<aura::Window*>(NULL));
   EXPECT_EQ(activation_client1->GetActiveWindow(), widget1->GetNativeView());
+
+  widget2->CloseNow();
+  widget1->CloseNow();
 }
 #endif  // defined(OS_WIN)
 
@@ -926,7 +911,7 @@ TEST_F(WidgetTestInteractive, MAYBE_TouchSelectionQuickMenuIsNotActivated) {
   views_delegate().set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
 
-  scoped_ptr<Widget> widget(CreateWidget());
+  Widget* widget = CreateWidget();
 
   Textfield* textfield = new Textfield;
   textfield->SetBounds(0, 0, 200, 20);
@@ -949,6 +934,7 @@ TEST_F(WidgetTestInteractive, MAYBE_TouchSelectionQuickMenuIsNotActivated) {
   EXPECT_TRUE(widget->IsActive());
   EXPECT_TRUE(IsQuickMenuVisible(static_cast<TouchSelectionControllerImpl*>(
       textfield_test_api.touch_selection_controller())));
+  widget->CloseNow();
 }
 
 TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
@@ -1454,37 +1440,63 @@ TEST_F(WidgetCaptureTest, MouseEventDispatchedToRightWindow) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(USE_AURA)
+class WidgetInputMethodInteractiveTest : public WidgetTestInteractive {
+ public:
+  WidgetInputMethodInteractiveTest() {}
+
+  // testing::Test:
+  void SetUp() override {
+    WidgetTestInteractive::SetUp();
+#if defined(OS_WIN)
+    // On Windows, Widget::Deactivate() works by activating the next topmost
+    // window on the z-order stack. This only works if there is at least one
+    // other window, so make sure that is the case.
+    deactivate_widget_ = CreateWidget();
+    deactivate_widget_->Show();
+#endif
+  }
+
+  void TearDown() override {
+    if (deactivate_widget_)
+      deactivate_widget_->CloseNow();
+    WidgetTestInteractive::TearDown();
+  }
+
+ private:
+  Widget* deactivate_widget_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetInputMethodInteractiveTest);
+};
+
 // Test input method focus changes affected by top window activaction.
-TEST_F(WidgetTestInteractive, InputMethodFocus_activation) {
-  scoped_ptr<Widget> widget(CreateWidget());
-  scoped_ptr<Textfield> textfield(new Textfield);
-  widget->GetRootView()->AddChildView(textfield.get());
-  widget->Show();
+TEST_F(WidgetInputMethodInteractiveTest, Activation) {
+  Widget* widget = CreateWidget();
+  Textfield* textfield = new Textfield;
+  widget->GetRootView()->AddChildView(textfield);
   textfield->RequestFocus();
 
-  ActivatePlatformWindowSync(widget.get());
+  ShowSync(widget);
 
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
             widget->GetInputMethod()->GetTextInputType());
 
-  widget->Deactivate();
+  DeactivateSync(widget);
 
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget->GetInputMethod()->GetTextInputType());
+  widget->CloseNow();
 }
 
 // Test input method focus changes affected by focus changes within 1 window.
-TEST_F(WidgetTestInteractive, InputMethodFocus_1_window) {
-  scoped_ptr<Widget> widget(CreateWidget());
-  scoped_ptr<Textfield> textfield1(new Textfield);
-  scoped_ptr<Textfield> textfield2(new Textfield);
+TEST_F(WidgetInputMethodInteractiveTest, OneWindow) {
+  Widget* widget = CreateWidget();
+  Textfield* textfield1 = new Textfield;
+  Textfield* textfield2 = new Textfield;
   textfield2->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  widget->GetRootView()->AddChildView(textfield1.get());
-  widget->GetRootView()->AddChildView(textfield2.get());
-  widget->Show();
+  widget->GetRootView()->AddChildView(textfield1);
+  widget->GetRootView()->AddChildView(textfield2);
 
-  ActivatePlatformWindowSync(widget.get());
+  ShowSync(widget);
 
   textfield1->RequestFocus();
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
@@ -1494,58 +1506,44 @@ TEST_F(WidgetTestInteractive, InputMethodFocus_1_window) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD,
             widget->GetInputMethod()->GetTextInputType());
 
-// Window::Blur doesn't work for CrOS, because it uses NWA instead of DNWA and
-// involves the AuraTestHelper which setup the input method as DummyInputMethod.
-// Please refer to CreateWidget method above.
+// Widget::Deactivate() doesn't work for CrOS, because it uses NWA instead of
+// DNWA (which just activates the last active window) and involves the
+// AuraTestHelper which sets the input method as DummyInputMethod.
 #if !defined(OS_CHROMEOS)
-  aura::Window* window = widget->GetNativeWindow();
-  window->Blur();
+  DeactivateSync(widget);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget->GetInputMethod()->GetTextInputType());
 
-  window->Focus();
+  ActivateSync(widget);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD,
             widget->GetInputMethod()->GetTextInputType());
 
-  window->Blur();
+  DeactivateSync(widget);
   textfield1->RequestFocus();
-  window->Focus();
-  EXPECT_TRUE(window->HasFocus());
+  ActivateSync(widget);
+  EXPECT_TRUE(widget->IsActive());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
             widget->GetInputMethod()->GetTextInputType());
 #endif
+  widget->CloseNow();
 }
 
 // Test input method focus changes affected by focus changes cross 2 windows
 // which shares the same top window.
-TEST_F(WidgetTestInteractive, InputMethodFocus_2_windows) {
-  scoped_ptr<Widget> widget(CreateWidget());
-  widget->Show();
-
-  views::View* parent_root = new View;
-  scoped_ptr<Widget> parent(new Widget);
-  Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  parent_params.ownership =
-      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  parent_params.context = widget->GetNativeWindow();
-  parent->Init(parent_params);
-  parent->SetContentsView(parent_root);
+TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
+  Widget* parent = CreateWidget();
   parent->SetBounds(gfx::Rect(100, 100, 100, 100));
-  parent->Show();
 
-  scoped_ptr<Widget> child(new Widget());
-  Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
-  child_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  child_params.parent = parent->GetNativeWindow();
-  child->Init(child_params);
+  Widget* child = CreateChildNativeWidgetWithParent(parent);
   child->SetBounds(gfx::Rect(0, 0, 50, 50));
   child->Show();
 
-  scoped_ptr<Textfield> textfield_parent(new Textfield);
-  scoped_ptr<Textfield> textfield_child(new Textfield);
+  Textfield* textfield_parent = new Textfield;
+  Textfield* textfield_child = new Textfield;
   textfield_parent->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  parent->GetRootView()->AddChildView(textfield_parent.get());
-  child->GetRootView()->AddChildView(textfield_child.get());
+  parent->GetRootView()->AddChildView(textfield_parent);
+  child->GetRootView()->AddChildView(textfield_child);
+  ShowSync(parent);
 
   EXPECT_EQ(parent->GetInputMethod(), child->GetInputMethod());
 
@@ -1557,67 +1555,71 @@ TEST_F(WidgetTestInteractive, InputMethodFocus_2_windows) {
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
             parent->GetInputMethod()->GetTextInputType());
 
-// Window::Blur doesn't work for CrOS, because it uses NWA instead of DNWA and
-// involves the AuraTestHelper which setup the input method as DummyInputMethod.
-// Please refer to CreateWidget method above.
+// Widget::Deactivate() doesn't work for CrOS, because it uses NWA instead of
+// DNWA (which just activates the last active window) and involves the
+// AuraTestHelper which sets the input method as DummyInputMethod.
 #if !defined(OS_CHROMEOS)
-  child->GetNativeWindow()->Blur();
+  DeactivateSync(parent);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             parent->GetInputMethod()->GetTextInputType());
 
-  child->GetNativeWindow()->Focus();
+  ActivateSync(parent);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
             parent->GetInputMethod()->GetTextInputType());
 
   textfield_parent->RequestFocus();
-  parent->GetNativeWindow()->Blur();
+  DeactivateSync(parent);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             parent->GetInputMethod()->GetTextInputType());
 
-  parent->GetNativeWindow()->Focus();
+  ActivateSync(parent);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD,
             parent->GetInputMethod()->GetTextInputType());
 #endif
+
+  parent->CloseNow();
 }
 
 // Test input method focus changes affected by focus changes cross 2 top
 // windows.
-TEST_F(WidgetTestInteractive, InputMethodFocus_2_top_windows) {
-  scoped_ptr<Widget> widget1(CreateWidget());
-  scoped_ptr<Widget> widget2(CreateWidget());
-  scoped_ptr<Textfield> textfield1(new Textfield);
-  scoped_ptr<Textfield> textfield2(new Textfield);
+TEST_F(WidgetInputMethodInteractiveTest, TwoTopWindows) {
+  Widget* widget1 = CreateWidget();
+  Widget* widget2 = CreateWidget();
+  Textfield* textfield1 = new Textfield;
+  Textfield* textfield2 = new Textfield;
   textfield2->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  widget1->GetRootView()->AddChildView(textfield1.get());
-  widget2->GetRootView()->AddChildView(textfield2.get());
+  widget1->GetRootView()->AddChildView(textfield1);
+  widget2->GetRootView()->AddChildView(textfield2);
   widget1->Show();
   widget2->Show();
 
   textfield1->RequestFocus();
   textfield2->RequestFocus();
 
-  ActivatePlatformWindowSync(widget1.get());
+  ActivateSync(widget1);
 
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
             widget1->GetInputMethod()->GetTextInputType());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget2->GetInputMethod()->GetTextInputType());
 
-  ActivatePlatformWindowSync(widget2.get());
+  ActivateSync(widget2);
 
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget1->GetInputMethod()->GetTextInputType());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD,
             widget2->GetInputMethod()->GetTextInputType());
+
+  widget2->CloseNow();
+  widget1->CloseNow();
 }
 
 // Test input method focus changes affected by textfield's state changes.
-TEST_F(WidgetTestInteractive, InputMethodFocus_textfield) {
-  scoped_ptr<Widget> widget(CreateWidget());
-  scoped_ptr<Textfield> textfield(new Textfield);
-  widget->GetRootView()->AddChildView(textfield.get());
-  widget->Show();
-  ActivatePlatformWindowSync(widget.get());
+TEST_F(WidgetInputMethodInteractiveTest, TextField) {
+  Widget* widget = CreateWidget();
+  Textfield* textfield = new Textfield;
+  widget->GetRootView()->AddChildView(textfield);
+  ShowSync(widget);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget->GetInputMethod()->GetTextInputType());
 
@@ -1636,8 +1638,8 @@ TEST_F(WidgetTestInteractive, InputMethodFocus_textfield) {
   textfield->SetReadOnly(true);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
             widget->GetInputMethod()->GetTextInputType());
+  widget->CloseNow();
 }
-#endif  // defined(USE_AURA)
 
 }  // namespace test
 }  // namespace views
