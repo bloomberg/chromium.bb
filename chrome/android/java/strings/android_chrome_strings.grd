@@ -135,9 +135,6 @@
       <message name="IDS_MENU_HELP" desc="Menu item for opening the help page. [CHAR-LIMIT=27]">
         Help &amp; feedback
       </message>
-      <message name="IDS_HELP" desc="Title for the help view.">
-        Help
-      </message>
       <message name="IDS_MANAGED_BY_YOUR_ADMINISTRATOR" desc="Popup message when the user clicks a UI element that has been disabled by enterprise policy.">
         Managed by your administrator
       </message>
@@ -537,9 +534,6 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_WEBSITE_SETTINGS_SEARCH" desc="The label for the search button on the Website Settings page.">
         Search
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CHANGE" desc="The label for the text allowing users to change the Location/Protected content default setting.">
-        Change
-      </message>
       <message name="IDS_WEBSITE_RESET" desc="The label for the button allowing users to clear all data and reset the permissions for a website.">
         Clear &amp; reset
       </message>
@@ -588,18 +582,10 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_MIC_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice access for the website [CHAR-LIMIT=32]">
         Access your microphone
       </message>
-      <message name="IDS_VOICE_AND_VIDEO_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice and video access for the website [CHAR-LIMIT=32]">
-        Access your mic and camera
-      </message>
 
       <!-- Protected content preferences -->
       <message name="IDS_PROTECTED_CONTENT" desc="Title for link to protected content settings [CHAR-LIMIT=32]">
         Protected content
-      </message>
-      <message name="IDS_PROTECTED_CONTENT_PREFS_DESCRIPTION" desc="Description of Protected Content preference">
-        When protected content is ON, websites will be able to authenticate your device to ensure it is authorized to play premium, protected videos.
-
-If OFF, you may not be able to play premium videos on this device.
       </message>
       <message name="IDS_PROTECTED_CONTENT_RESET_FAILED" desc="Protected content preference device credential reset failure toast">
         Reset failed. Ensure your device is online and try again.
@@ -796,9 +782,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_NEED_PASSPHRASE" desc="Error message when a passphrase is needed for decrypting sync data.">
         Passphrase required
       </message>
-      <message name="IDS_SYNC_NEED_PASSWORD" desc="Error message when a password is needed for decrypting sync data.">
-        Password required
-      </message>
       <message name="IDS_SYNC_SETUP_PROGRESS" desc="Message indicating that sync setup is in progress">
         Setup in progress…
       </message>
@@ -931,9 +914,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_PASSPHRASE_TYPE_TITLE" desc="Title of sync passphrase type dialog. [CHAR-LIMIT=24]">
         Encryption
       </message>
-      <message name="IDS_SYNC_PASSPHRASE_TYPE_NONE" desc="Option to encrypt sync data with no passphrase.">
-        Don’t encrypt
-      </message>
       <message name="IDS_SYNC_PASSPHRASE_TYPE_KEYSTORE" desc="Option to encrypt only passwords, using your Google credentials.">
         Encrypt passwords with Google credentials
       </message>
@@ -957,12 +937,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_SYNC_ENTER_CUSTOM_PASSPHRASE_HINT_CONFIRM" desc="Hint for the passphrase confirmation field when user is to type in a passphrase. [CHAR-LIMIT=30]">
         Confirm passphrase
-      </message>
-      <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE" desc="Prompt user to enter their custom sync password.">
-        Sign in with your Google Account:
-      </message>
-      <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_HINT" desc="Hint for the password field when user is to type in a Google Account password. [CHAR-LIMIT=30]">
-        Password
       </message>
       <message name="IDS_SYNC_PASSPHRASE_CANNOT_BE_BLANK" desc="Inform user that they cannot use a blank password [CHAR-LIMIT=40]">
         This field cannot be blank
@@ -1112,9 +1086,6 @@ You are signing in with a managed account and giving its administrator control o
       </message>
       <message name="IDS_TRANSLATE_NEVER_TRANSLATE_LANGUAGE" meaning="Android" desc="Text to display on the never translate language button. [CHAR-LIMIT=64]">
         Never translate <ph name="LANGUAGE">%1$s<ex>French</ex></ph>
-      </message>
-      <message name="IDS_MENU_DISMISS_BTN" desc="Content description for the settings menu button when the menu is open.">
-        Dismiss the menu
       </message>
       <message name="IDS_MENU_PRINT" desc="Menu item for printing the current page. [CHAR-LIMIT=27]">
         Print…
@@ -1444,9 +1415,6 @@ Hit the back button to exit.
       </message>
       <message name="IDS_CHOOSE_ACCOUNT_SIGN_IN" desc="Sign in button for choose google account dialog [CHAR-LIMIT=20]">
         Sign in
-      </message>
-      <message name="IDS_FRE_NEXT" desc="Button that advances the First Run Experience forward">
-        Next
       </message>
       <message name="IDS_FRE_DONE" desc="Button to dismiss the sign-in screen once the user is done">
         Done
