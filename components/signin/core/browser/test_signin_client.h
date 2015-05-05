@@ -98,6 +98,7 @@ class TestSigninClient : public SigninClient {
       content_settings::Observer* observer) override;
   void RemoveContentSettingsObserver(
       content_settings::Observer* observer) override;
+  void DelayNetworkCall(const base::Closure& callback) override;
 
  private:
   // Loads the token database.
