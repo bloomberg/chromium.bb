@@ -30,9 +30,6 @@
                 "trybots": {
                     "launched": {
                         "tryserver.chromium.linux": {
-                            "linux_chromium_asan_rel_ng": [
-                                "defaulttests"
-                            ]
                         },
                         "tryserver.chromium.mac": {
                             "mac_chromium_gn_rel": [
@@ -119,7 +116,7 @@
                     "linux_android_rel_ng": [
                         "defaulttests"
                     ],
-                    "linux_chromium_asan_rel": [
+                    "linux_chromium_asan_rel_ng": [
                         "defaulttests"
                     ],
                     "linux_chromium_chromeos_compile_dbg_ng": [
