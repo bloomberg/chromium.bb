@@ -187,8 +187,7 @@ bool IsGloballyReachable(const IPAddressNumber& dest,
                          const BoundNetLog& net_log) {
   // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
   tracked_objects::ScopedTracker tracking_profile_1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 IsGloballyReachable (create udp socket)"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 IsGloballyReachable"));
 
   scoped_ptr<DatagramClientSocket> socket(
       ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
@@ -196,22 +195,13 @@ bool IsGloballyReachable(const IPAddressNumber& dest,
           RandIntCallback(),
           net_log.net_log(),
           net_log.source()));
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile_2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 IsGloballyReachable (connect)"));
   int rv = socket->Connect(IPEndPoint(dest, 53));
   if (rv != OK)
     return false;
-  tracked_objects::ScopedTracker tracking_profile_3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 IsGloballyReachable (get local addr)"));
   IPEndPoint endpoint;
   rv = socket->GetLocalAddress(&endpoint);
   if (rv != OK)
     return false;
-  tracked_objects::ScopedTracker tracking_profile_4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 IsGloballyReachable (remainder)"));
   DCHECK_EQ(ADDRESS_FAMILY_IPV6, endpoint.GetFamily());
   const IPAddressNumber& address = endpoint.address();
   bool is_link_local = (address[0] == 0xFE) && ((address[1] & 0xC0) == 0x80);
@@ -1886,10 +1876,6 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
                               const CompletionCallback& callback,
                               RequestHandle* out_req,
                               const BoundNetLog& source_net_log) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile_1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 1"));
-
   DCHECK(addresses);
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(false, callback.is_null());
@@ -1901,24 +1887,14 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
 
   LogStartRequest(source_net_log, info);
 
-  tracked_objects::ScopedTracker tracking_profile_1a(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 1a"));
-
   IPAddressNumber ip_number;
   IPAddressNumber* ip_number_ptr = nullptr;
   if (ParseIPLiteralToNumber(info.hostname(), &ip_number))
     ip_number_ptr = &ip_number;
 
-  tracked_objects::ScopedTracker tracking_profile_1b(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 1b"));
-
   // Build a key that identifies the request in the cache and in the
   // outstanding jobs map.
   Key key = GetEffectiveKeyForRequest(info, ip_number_ptr, source_net_log);
-
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile_2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 2"));
 
   int rv = ResolveHelper(key, info, ip_number_ptr, addresses, source_net_log);
   if (rv != ERR_DNS_CACHE_MISS) {
