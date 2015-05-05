@@ -19,10 +19,15 @@ void PaintArc(Canvas* canvas,
               SkColor color,
               SkScalar start_angle,
               SkScalar sweep) {
+  // Stroke width depends on size.
+  // . For size < 28:          3 - (28 - size) / 16
+  // . For 28 <= size:         (8 + size) / 12
+  SkScalar stroke_width = bounds.width() < 28
+                              ? 3.0 - SkIntToScalar(28 - bounds.width()) / 16.0
+                              : SkIntToScalar(bounds.width() + 8) / 12.0;
+  Rect oval = bounds;
   // Inset by half the stroke width to make sure the whole arc is inside
   // the visible rect.
-  SkScalar stroke_width = SkIntToScalar(bounds.width()) / 10.0;
-  Rect oval = bounds;
   int inset = SkScalarCeilToInt(stroke_width / 2.0);
   oval.Inset(inset, inset);
 
