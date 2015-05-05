@@ -78,7 +78,13 @@
     <request name="get_xdg_surface">
       <description summary="create a shell surface from a surface">
 	This creates an xdg_surface for the given surface and gives it the
-	xdg_surface role. See the documentation of xdg_surface for more details.
+	xdg_surface role. A wl_surface can only be given an xdg_surface role
+	once. If get_xdg_surface is called with a wl_surface that already has
+	an active xdg_surface associated with it, or if it had any other role,
+	an error is raised.
+
+	See the documentation of xdg_surface for more details about what an
+	xdg_surface is and how it is used.
       </description>
       <arg name="id" type="new_id" interface="xdg_surface"/>
       <arg name="surface" type="object" interface="wl_surface"/>
@@ -87,10 +93,16 @@
     <request name="get_xdg_popup">
       <description summary="create a popup for a surface">
 	This creates an xdg_popup for the given surface and gives it the
-	xdg_popup role. See the documentation of xdg_popup for more details.
+	xdg_popup role. A wl_surface can only be given an xdg_popup role
+	once. If get_xdg_popup is called with a wl_surface that already has
+	an active xdg_popup associated with it, or if it had any other role,
+	an error is raised.
 
 	This request must be used in response to some sort of user action
 	like a button press, key press, or touch down event.
+
+	See the documentation of xdg_popup for more details about what an
+	xdg_popup is and how it is used.
       </description>
       <arg name="id" type="new_id" interface="xdg_popup"/>
       <arg name="surface" type="object" interface="wl_surface"/>
