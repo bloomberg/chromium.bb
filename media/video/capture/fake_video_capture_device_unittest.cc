@@ -35,9 +35,13 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
   MockBuffer(int buffer_id, size_t size)
       : id_(buffer_id), size_(size), data_(new uint8[size_]) {}
   ~MockBuffer() override { delete[] data_; }
+
   int id() const override { return id_; }
   size_t size() const override { return size_; }
   void* data() override { return data_; }
+  gfx::GpuMemoryBufferType GetType() override {
+    return gfx::SHARED_MEMORY_BUFFER;
+  }
   ClientBuffer AsClientBuffer() override { return nullptr; }
 
  private:

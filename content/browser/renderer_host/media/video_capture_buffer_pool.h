@@ -51,6 +51,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
     virtual ~BufferHandle() {}
     virtual size_t size() const = 0;
     virtual void* data() = 0;
+    virtual gfx::GpuMemoryBufferType GetType() = 0;
     virtual ClientBuffer AsClientBuffer() = 0;
   };
 
@@ -114,6 +115,10 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
     size_t pixel_count() const { return pixel_count_; }
     void set_pixel_count(size_t count) { pixel_count_ = count; }
+    media::VideoFrame::Format pixel_format() const { return pixel_format_; }
+    void set_pixel_format(media::VideoFrame::Format format) {
+      pixel_format_ = format;
+    }
     bool held_by_producer() const { return held_by_producer_; }
     void set_held_by_producer(bool value) { held_by_producer_ = value; }
     int consumer_hold_count() const { return consumer_hold_count_; }
@@ -130,6 +135,7 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
    private:
     size_t pixel_count_;
+    media::VideoFrame::Format pixel_format_;
     // Indicates whether this Tracker is currently referenced by the producer.
     bool held_by_producer_;
     // Number of consumer processes which hold this Tracker.

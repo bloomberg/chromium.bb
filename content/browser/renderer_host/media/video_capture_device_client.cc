@@ -117,6 +117,9 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
   int id() const override { return id_; }
   size_t size() const override { return buffer_handle_->size(); }
   void* data() override { return buffer_handle_->data(); }
+  gfx::GpuMemoryBufferType GetType() override {
+    return buffer_handle_->GetType();
+  }
   ClientBuffer AsClientBuffer() override {
     return buffer_handle_->AsClientBuffer();
   }

@@ -46,6 +46,9 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
 
   size_t size() const override { return size_; }
   void* data() override { return data_; }
+  gfx::GpuMemoryBufferType GetType() override {
+    return gfx::SHARED_MEMORY_BUFFER;
+  }
   ClientBuffer AsClientBuffer() override { return nullptr; }
 
  private:
@@ -72,6 +75,9 @@ class GpuMemoryBufferBufferHandle
 
   size_t size() const override { return size_; }
   void* data() override { return data_[0]; }
+  gfx::GpuMemoryBufferType GetType() override {
+    return gmb_->GetHandle().type;
+  }
   ClientBuffer AsClientBuffer() override { return gmb_->AsClientBuffer(); }
 
  private:
@@ -134,6 +140,7 @@ bool VideoCaptureBufferPool::SharedMemTracker::Init(
     VideoFrame::Format format,
     const gfx::Size& dimensions) {
   DVLOG(2) << "allocating ShMem of " << dimensions.ToString();
+  set_pixel_format(format);
   // Input |dimensions| can be 0x0 for trackers that do not require memory
   // backing. The allocated size is calculated using VideoFrame methods since
   // this will be the abstraction used to wrap the underlying data.
@@ -159,6 +166,7 @@ bool VideoCaptureBufferPool::GpuMemoryBufferTracker::Init(
   // BrowserGpuMemoryBufferManager::current() may not be accessed on IO Thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(BrowserGpuMemoryBufferManager::current());
+  set_pixel_format(format);
   set_pixel_count(dimensions.GetArea());
   gpu_memory_buffer_ =
       BrowserGpuMemoryBufferManager::current()->AllocateGpuMemoryBuffer(
@@ -299,8 +307,10 @@ int VideoCaptureBufferPool::ReserveForProducerInternal(
        ++it) {
     Tracker* const tracker = it->second;
     if (!tracker->consumer_hold_count() && !tracker->held_by_producer()) {
-      if (tracker->pixel_count() >= size_in_pixels) {
-        // Existing tracker is big enough. Reuse it.
+      if (tracker->pixel_count() >= size_in_pixels &&
+          (tracker->pixel_format() ==
+           VideoPixelFormatToVideoFrameFormat(format))) {
+        // Existing tracker is big enough and has correct format. Reuse it.
         tracker->set_held_by_producer(true);
         return it->first;
       }

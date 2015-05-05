@@ -393,6 +393,9 @@ class StubClient : public media::VideoCaptureDevice::Client {
     int id() const override { return id_; }
     size_t size() const override { return buffer_handle_->size(); }
     void* data() override { return buffer_handle_->data(); }
+    gfx::GpuMemoryBufferType GetType() override {
+      return gfx::SHARED_MEMORY_BUFFER;
+    }
     ClientBuffer AsClientBuffer() override { return nullptr; }
 
    private:
