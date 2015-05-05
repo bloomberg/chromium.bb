@@ -6,7 +6,6 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [386, 136, 15, 65],
         [386, 1, 15, 200],
         [1, 186, 400, 15],
         [1, 1, 400, 200],
@@ -25,7 +24,6 @@
       "paintInvalidationClients": [
         "InlineBox",
         "RootInlineBox",
-        "LayoutEmbeddedObject OBJECT",
         "RootInlineBox",
         "InlineBox",
         "LayoutEmbeddedObject OBJECT",
