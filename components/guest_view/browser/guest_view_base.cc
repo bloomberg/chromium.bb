@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_base.h"
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/guest_view/browser/guest_view_event.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/common/guest_view_constants.h"
+#include "components/guest_view/common/guest_view_messages.h"
 #include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -16,10 +20,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/guest_view/guest_view_event.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
-#include "extensions/common/guest_view/guest_view_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
@@ -28,7 +28,7 @@ namespace content {
 struct FrameNavigateParams;
 }
 
-namespace extensions {
+namespace guest_view {
 
 namespace {
 
@@ -148,8 +148,8 @@ GuestViewBase::GuestViewBase(content::WebContents* owner_web_contents)
       guest_instance_id_(
           GuestViewManager::FromBrowserContext(browser_context_)->
               GetNextInstanceID()),
-      view_instance_id_(guestview::kInstanceIDNone),
-      element_instance_id_(guestview::kInstanceIDNone),
+      view_instance_id_(kInstanceIDNone),
+      element_instance_id_(kInstanceIDNone),
       initialized_(false),
       is_being_destroyed_(false),
       guest_host_(nullptr),
@@ -215,8 +215,7 @@ void GuestViewBase::InitWithWebContents(
       AddGuest(guest_instance_id_, guest_web_contents);
 
   // Populate the view instance ID if we have it on creation.
-  create_params.GetInteger(guestview::kParameterInstanceId,
-                           &view_instance_id_);
+  create_params.GetInteger(kParameterInstanceId, &view_instance_id_);
 
   if (CanRunInDetachedState())
     SetUpSizing(create_params);
@@ -245,12 +244,11 @@ void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
 
   // Dispatch the onResize event.
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetInteger(guestview::kOldWidth, old_size.width());
-  args->SetInteger(guestview::kOldHeight, old_size.height());
-  args->SetInteger(guestview::kNewWidth, new_size.width());
-  args->SetInteger(guestview::kNewHeight, new_size.height());
-  DispatchEventToGuestProxy(
-      new GuestViewEvent(guestview::kEventResize, args.Pass()));
+  args->SetInteger(kOldWidth, old_size.width());
+  args->SetInteger(kOldHeight, old_size.height());
+  args->SetInteger(kNewWidth, new_size.width());
+  args->SetInteger(kNewHeight, new_size.height());
+  DispatchEventToGuestProxy(new GuestViewEvent(kEventResize, args.Pass()));
 }
 
 gfx::Size GuestViewBase::GetDefaultSize() const {
@@ -260,7 +258,7 @@ gfx::Size GuestViewBase::GetDefaultSize() const {
         ->GetRenderWidgetHostView()
         ->GetVisibleViewportSize();
   } else {
-    return gfx::Size(guestview::kDefaultWidth, guestview::kDefaultHeight);
+    return gfx::Size(kDefaultWidth, kDefaultHeight);
   }
 }
 
@@ -405,7 +403,7 @@ void GuestViewBase::DidDetach() {
   StopTrackingEmbedderZoomLevel();
   owner_web_contents()->Send(new GuestViewMsg_GuestDetached(
       element_instance_id_));
-  element_instance_id_ = guestview::kInstanceIDNone;
+  element_instance_id_ = kInstanceIDNone;
 }
 
 WebContents* GuestViewBase::GetOwnerWebContents() const {
@@ -460,8 +458,7 @@ void GuestViewBase::Destroy() {
 
 void GuestViewBase::SetAttachParams(const base::DictionaryValue& params) {
   attach_params_.reset(params.DeepCopy());
-  attach_params_->GetInteger(guestview::kParameterInstanceId,
-                             &view_instance_id_);
+  attach_params_->GetInteger(kParameterInstanceId, &view_instance_id_);
 }
 
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
@@ -738,22 +735,22 @@ double GuestViewBase::GetEmbedderZoomFactor() const {
 void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   // Read the autosize parameters passed in from the embedder.
   bool auto_size_enabled = auto_size_enabled_;
-  params.GetBoolean(guestview::kAttributeAutoSize, &auto_size_enabled);
+  params.GetBoolean(kAttributeAutoSize, &auto_size_enabled);
 
   int max_height = max_auto_size_.height();
   int max_width = max_auto_size_.width();
-  params.GetInteger(guestview::kAttributeMaxHeight, &max_height);
-  params.GetInteger(guestview::kAttributeMaxWidth, &max_width);
+  params.GetInteger(kAttributeMaxHeight, &max_height);
+  params.GetInteger(kAttributeMaxWidth, &max_width);
 
   int min_height = min_auto_size_.height();
   int min_width = min_auto_size_.width();
-  params.GetInteger(guestview::kAttributeMinHeight, &min_height);
-  params.GetInteger(guestview::kAttributeMinWidth, &min_width);
+  params.GetInteger(kAttributeMinHeight, &min_height);
+  params.GetInteger(kAttributeMinWidth, &min_width);
 
   double element_height = 0.0;
   double element_width = 0.0;
-  params.GetDouble(guestview::kElementHeight, &element_height);
-  params.GetDouble(guestview::kElementWidth, &element_width);
+  params.GetDouble(kElementHeight, &element_height);
+  params.GetDouble(kElementWidth, &element_width);
 
   // Set the normal size to the element size so that the guestview will fit
   // the element initially if autosize is disabled.
@@ -762,7 +759,7 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   // If the element size was provided in logical units (versus physical), then
   // it will be converted to physical units.
   bool element_size_is_logical = false;
-  params.GetBoolean(guestview::kElementSizeIsLogical, &element_size_is_logical);
+  params.GetBoolean(kElementSizeIsLogical, &element_size_is_logical);
   if (element_size_is_logical) {
     // Convert the element size from logical pixels to physical pixels.
     normal_height = LogicalPixelsToPhysicalPixels(element_height);
@@ -821,4 +818,4 @@ void GuestViewBase::StopTrackingEmbedderZoomLevel() {
   embedder_zoom_controller->RemoveObserver(this);
 }
 
-}  // namespace extensions
+}  // namespace guest_view

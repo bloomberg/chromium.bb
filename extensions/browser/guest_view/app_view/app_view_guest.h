@@ -6,9 +6,9 @@
 #define EXTENSIONS_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
 
 #include "base/id_map.h"
+#include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
-#include "extensions/browser/guest_view/guest_view.h"
 
 namespace extensions {
 class Extension;
@@ -18,7 +18,7 @@ class ExtensionHost;
 // AppViewGuest is created on attachment. That is, when a guest WebContents is
 // associated with a particular embedder WebContents. This happens on calls to
 // the connect API.
-class AppViewGuest : public GuestView<AppViewGuest>,
+class AppViewGuest : public guest_view::GuestView<AppViewGuest>,
                      public ExtensionFunctionDispatcher::Delegate {
  public:
   static const char Type[];

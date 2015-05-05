@@ -7,7 +7,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
 
 namespace {
 
@@ -19,11 +18,6 @@ class ChromeConstrainedWindowViewsClient
 
  private:
   // ConstrainedWindowViewsClient:
-  content::WebContents* GetEmbedderWebContents(
-      content::WebContents* initiator_web_contents) override {
-    return extensions::GuestViewBase::GetTopLevelWebContents(
-        initiator_web_contents);
-  }
   web_modal::ModalDialogHost* GetModalDialogHost(
       gfx::NativeWindow parent) override {
     // Get the browser dialog management and hosting components from |parent|.

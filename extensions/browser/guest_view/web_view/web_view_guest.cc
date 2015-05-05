@@ -8,6 +8,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
+#include "components/guest_view/browser/guest_view_event.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -37,8 +40,6 @@
 #include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/guest_view/guest_view_event.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -46,7 +47,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
@@ -59,6 +59,9 @@ using content::RenderFrameHost;
 using content::ResourceType;
 using content::StoragePartition;
 using content::WebContents;
+using guest_view::GuestViewBase;
+using guest_view::GuestViewEvent;
+using guest_view::GuestViewManager;
 using ui_zoom::ZoomController;
 
 namespace extensions {
@@ -245,7 +248,7 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
 int WebViewGuest::GetViewInstanceId(WebContents* contents) {
   auto guest = FromWebContents(contents);
   if (!guest)
-    return guestview::kInstanceIDNone;
+    return guest_view::kInstanceIDNone;
 
   return guest->view_instance_id();
 }
@@ -310,7 +313,7 @@ void WebViewGuest::DidAttachToEmbedder() {
 
 void WebViewGuest::DidDropLink(const GURL& url) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guestview::kUrl, url.spec());
+  args->SetString(guest_view::kUrl, url.spec());
   DispatchEventToView(
       new GuestViewEvent(webview::kEventDropLink, args.Pass()));
 }
@@ -542,7 +545,7 @@ bool WebViewGuest::PreHandleGestureEvent(content::WebContents* source,
 void WebViewGuest::LoadProgressChanged(content::WebContents* source,
                                        double progress) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guestview::kUrl, web_contents()->GetURL().spec());
+  args->SetString(guest_view::kUrl, web_contents()->GetURL().spec());
   args->SetDouble(webview::kProgress, progress);
   DispatchEventToView(
       new GuestViewEvent(webview::kEventLoadProgress, args.Pass()));
@@ -553,10 +556,10 @@ void WebViewGuest::LoadAbort(bool is_top_level,
                              int error_code,
                              const std::string& error_type) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetBoolean(guestview::kIsTopLevel, is_top_level);
-  args->SetString(guestview::kUrl, url.possibly_invalid_spec());
-  args->SetInteger(guestview::kCode, error_code);
-  args->SetString(guestview::kReason, error_type);
+  args->SetBoolean(guest_view::kIsTopLevel, is_top_level);
+  args->SetString(guest_view::kUrl, url.possibly_invalid_spec());
+  args->SetInteger(guest_view::kCode, error_code);
+  args->SetString(guest_view::kReason, error_type);
   DispatchEventToView(
       new GuestViewEvent(webview::kEventLoadAbort, args.Pass()));
 }
@@ -765,8 +768,8 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     }
   }
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guestview::kUrl, url.spec());
-  args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
+  args->SetString(guest_view::kUrl, url.spec());
+  args->SetBoolean(guest_view::kIsTopLevel, !render_frame_host->GetParent());
   args->SetString(webview::kInternalBaseURLForDataURL,
                   web_contents()
                       ->GetController()
@@ -805,8 +808,8 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
     bool is_error_page,
     bool is_iframe_srcdoc) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetString(guestview::kUrl, validated_url.spec());
-  args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
+  args->SetString(guest_view::kUrl, validated_url.spec());
+  args->SetBoolean(guest_view::kIsTopLevel, !render_frame_host->GetParent());
   DispatchEventToView(
       new GuestViewEvent(webview::kEventLoadStart, args.Pass()));
 }
@@ -867,7 +870,7 @@ void WebViewGuest::LoadRedirect(const GURL& old_url,
                                 const GURL& new_url,
                                 bool is_top_level) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetBoolean(guestview::kIsTopLevel, is_top_level);
+  args->SetBoolean(guest_view::kIsTopLevel, is_top_level);
   args->SetString(webview::kNewURL, new_url.spec());
   args->SetString(webview::kOldURL, old_url.spec());
   DispatchEventToView(

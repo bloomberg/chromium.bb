@@ -4,23 +4,26 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_factory.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
+using guest_view::GuestViewManager;
+using guest_view::TestGuestViewManagerFactory;
+
 class AppViewTest : public extensions::PlatformAppBrowserTest {
  public:
   AppViewTest() {
-    extensions::GuestViewManager::set_factory_for_testing(&factory_);
+    GuestViewManager::set_factory_for_testing(&factory_);
   }
 
   enum TestServer {
@@ -70,7 +73,7 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 
-  extensions::TestGuestViewManagerFactory factory_;
+  TestGuestViewManagerFactory factory_;
 };
 
 // Tests that <appview> is able to navigate to another installed app.

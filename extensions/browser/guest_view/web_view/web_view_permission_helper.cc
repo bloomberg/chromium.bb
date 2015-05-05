@@ -4,11 +4,11 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 
+#include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
@@ -16,6 +16,7 @@
 
 using content::BrowserPluginGuestDelegate;
 using content::RenderViewHost;
+using guest_view::GuestViewEvent;
 
 namespace extensions {
 
@@ -142,7 +143,7 @@ void RecordUserInitiatedUMA(
 
 WebViewPermissionHelper::WebViewPermissionHelper(WebViewGuest* web_view_guest)
     : content::WebContentsObserver(web_view_guest->web_contents()),
-      next_permission_request_id_(guestview::kInstanceIDNone),
+      next_permission_request_id_(guest_view::kInstanceIDNone),
       web_view_guest_(web_view_guest),
       weak_factory_(this) {
       web_view_permission_helper_delegate_.reset(
@@ -192,7 +193,7 @@ void WebViewPermissionHelper::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, request.security_origin.spec());
+  request_info.SetString(guest_view::kUrl, request.security_origin.spec());
   RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_MEDIA,
       request_info,

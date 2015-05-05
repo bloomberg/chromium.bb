@@ -11,11 +11,11 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
 #include "chrome/browser/task_manager/task_manager_util.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
@@ -137,7 +137,7 @@ void ExtensionInformation::GetAll(const NewWebContentsCallback& callback) {
 bool ExtensionInformation::CheckOwnership(WebContents* web_contents) {
   // Don't add WebContents that belong to a guest (those are handled by
   // GuestInformation). Otherwise they will be added twice.
-  if (extensions::GuestViewBase::IsGuest(web_contents))
+  if (guest_view::GuestViewBase::IsGuest(web_contents))
     return false;
 
   // Extension WebContents tracked by this class will always host extension

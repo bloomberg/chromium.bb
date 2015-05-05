@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/guest_view_event.h"
+#include "components/guest_view/browser/guest_view_event.h"
 
-#include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 
-namespace extensions {
+namespace guest_view {
 
 GuestViewEvent::GuestViewEvent(const std::string& name,
                                scoped_ptr<base::DictionaryValue> args)
@@ -25,4 +25,4 @@ void GuestViewEvent::Dispatch(GuestViewBase* guest, int instance_id) {
   delete this;
 }
 
-}  // namespace extensions
+}  // namespace guest_view

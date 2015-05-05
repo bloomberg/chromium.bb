@@ -8,6 +8,9 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_factory.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -18,9 +21,6 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
@@ -33,6 +33,9 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/gfx/switches.h"
+
+using guest_view::GuestViewManager;
+using guest_view::TestGuestViewManager;
 
 namespace {
 
@@ -248,7 +251,7 @@ TestGuestViewManager* WebViewAPITest::GetGuestViewManager() {
     manager = static_cast<TestGuestViewManager*>(
         GuestViewManager::CreateWithDelegate(
             context,
-            scoped_ptr<guestview::GuestViewManagerDelegate>(
+            scoped_ptr<guest_view::GuestViewManagerDelegate>(
                 new ExtensionsGuestViewManagerDelegate(context))));
   }
   return manager;

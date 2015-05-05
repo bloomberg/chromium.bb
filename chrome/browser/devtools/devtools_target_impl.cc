@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/favicon_status.h"
@@ -20,7 +21,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 
@@ -60,8 +60,8 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents, bool is_tab)
       tab_id_(-1) {
   set_type(kTargetTypeOther);
 
-  extensions::GuestViewBase* guest =
-      extensions::GuestViewBase::FromWebContents(web_contents);
+  guest_view::GuestViewBase* guest =
+      guest_view::GuestViewBase::FromWebContents(web_contents);
   WebContents* guest_contents = guest ? guest->embedder_web_contents() : NULL;
   if (guest_contents) {
     set_type(kTargetTypeWebView);

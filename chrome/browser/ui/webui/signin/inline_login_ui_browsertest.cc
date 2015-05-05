@@ -25,6 +25,7 @@
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -37,7 +38,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/base/url_util.h"
@@ -54,6 +54,7 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 
+using guest_view::GuestViewManager;
 using login_ui_test_utils::ExecuteJsToSigninInSigninFrame;
 using login_ui_test_utils::WaitUntilUIReady;
 
@@ -188,9 +189,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, MAYBE_DifferentStorageId) {
     // Make sure storage partition of embedded webview is different from
     // parent.
     std::set<content::WebContents*> set;
-    extensions::GuestViewManager* manager =
-        extensions::GuestViewManager::FromBrowserContext(
-            info.contents->GetBrowserContext());
+    GuestViewManager* manager = GuestViewManager::FromBrowserContext(
+        info.contents->GetBrowserContext());
     manager->ForEachGuest(info.contents, base::Bind(&AddToSet, &set));
     ASSERT_EQ(1u, set.size());
     content::WebContents* webview_contents = *set.begin();

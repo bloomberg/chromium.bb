@@ -5,9 +5,9 @@
 #include "extensions/shell/browser/shell_browser_context.h"
 
 #include "base/command_line.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/shell/browser/shell_network_delegate.h"
 #include "extensions/shell/browser/shell_special_storage_policy.h"
 #include "extensions/shell/browser/shell_url_request_context_getter.h"
@@ -35,7 +35,7 @@ ShellBrowserContext::~ShellBrowserContext() {
 }
 
 content::BrowserPluginGuestManager* ShellBrowserContext::GetGuestManager() {
-  return GuestViewManager::FromBrowserContext(this);
+  return guest_view::GuestViewManager::FromBrowserContext(this);
 }
 
 storage::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {

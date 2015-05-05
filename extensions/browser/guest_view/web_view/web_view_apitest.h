@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "extensions/browser/guest_view/test_guest_view_manager.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "extensions/shell/test/shell_test.h"
 #include "ui/gfx/switches.h"
 
@@ -11,8 +11,11 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace extensions {
+namespace guestview {
 class TestGuestViewManager;
+}  // namesapce guestview
+
+namespace extensions {
 
 // Base class for WebView tests in app_shell.
 class WebViewAPITest : public AppShellTest {
@@ -33,7 +36,7 @@ class WebViewAPITest : public AppShellTest {
   content::WebContents* GetEmbedderWebContents();
 
   // Returns the GuestViewManager singleton.
-  TestGuestViewManager* GetGuestViewManager();
+  guest_view::TestGuestViewManager* GetGuestViewManager();
 
   content::WebContents* GetGuestWebContents();
   void SendMessageToGuestAndWait(const std::string& message,
@@ -47,7 +50,7 @@ class WebViewAPITest : public AppShellTest {
   void TearDownOnMainThread() override;
 
   content::WebContents* embedder_web_contents_;
-  TestGuestViewManagerFactory factory_;
+  guest_view::TestGuestViewManagerFactory factory_;
   base::DictionaryValue test_config_;
 
  private:

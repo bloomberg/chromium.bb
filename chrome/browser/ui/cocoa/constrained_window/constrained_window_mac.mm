@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #import "chrome/browser/ui/cocoa/single_web_contents_dialog_manager_cocoa.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
 
 using web_modal::WebContentsModalDialogManager;
 
@@ -23,12 +23,8 @@ ConstrainedWindowMac::ConstrainedWindowMac(
 
   // |web_contents| may be embedded within a chain of nested GuestViews. If it
   // is, follow the chain of embedders to the outermost WebContents and use it.
-  while (extensions::GuestViewBase* guest_view =
-             extensions::GuestViewBase::FromWebContents(web_contents)) {
-    if (!guest_view->embedder_web_contents())
-      break;
-    web_contents = guest_view->embedder_web_contents();
-  }
+  web_contents =
+      guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
 
   auto manager = WebContentsModalDialogManager::FromWebContents(web_contents);
   scoped_ptr<SingleWebContentsDialogManagerCocoa> native_manager(

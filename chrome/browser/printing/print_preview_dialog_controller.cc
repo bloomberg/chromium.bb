@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_controller.h"
@@ -35,7 +36,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 using content::NavigationController;
@@ -101,14 +101,8 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
   *size = kMinDialogSize;
 
   web_modal::WebContentsModalDialogHost* host = NULL;
-  content::WebContents* outermost_web_contents = initiator_;
-  const extensions::GuestViewBase* guest_view =
-      extensions::GuestViewBase::FromWebContents(outermost_web_contents);
-  while (guest_view && guest_view->attached()) {
-    outermost_web_contents = guest_view->embedder_web_contents();
-    guest_view =
-        extensions::GuestViewBase::FromWebContents(outermost_web_contents);
-  }
+  content::WebContents* outermost_web_contents =
+      guest_view::GuestViewBase::GetTopLevelWebContents(initiator_);
   Browser* browser = chrome::FindBrowserWithWebContents(outermost_web_contents);
   if (browser)
     host = browser->window()->GetWebContentsModalDialogHost();

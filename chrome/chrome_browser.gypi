@@ -3008,6 +3008,7 @@
         '../components/components.gyp:favicon_core',
         '../components/components.gyp:gcm_driver',
         '../components/components.gyp:google_core_browser',
+        '../components/components.gyp:guest_view',
         '../components/components.gyp:handoff',
         '../components/components.gyp:history_core_browser',
         '../components/components.gyp:history_core_common',

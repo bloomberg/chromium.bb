@@ -4,10 +4,10 @@
 
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 
+#include "components/guest_view/common/guest_view_constants.h"
+#include "components/guest_view/common/guest_view_messages.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
-#include "extensions/common/guest_view/guest_view_messages.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -142,7 +142,7 @@ ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
 }
 
 ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
-  if (element_instance_id() != guestview::kInstanceIDNone)
+  if (element_instance_id() != guest_view::kInstanceIDNone)
     g_guest_view_container_map.Get().erase(element_instance_id());
 
   if (pending_response_.get())

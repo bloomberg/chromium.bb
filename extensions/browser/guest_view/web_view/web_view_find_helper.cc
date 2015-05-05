@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "components/guest_view/browser/guest_view_event.h"
 #include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
-#include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
+
+using guest_view::GuestViewEvent;
 
 namespace extensions {
 

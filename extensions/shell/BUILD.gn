@@ -33,6 +33,7 @@ source_set("app_shell_lib") {
     "//base:prefs",
     "//components/devtools_discovery",
     "//components/devtools_http_handler",
+    "//components/guest_view:guest_view",
     "//components/pref_registry",
     "//components/update_client",
     "//components/user_prefs",

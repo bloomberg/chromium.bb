@@ -16,11 +16,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "grit/browser_resources.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -137,8 +137,8 @@ content::RenderFrameHost* InlineLoginUI::GetAuthFrame(
   is_webview = is_webview || chromeos::StartupUtils::IsWebviewSigninEnabled();
 #endif
   if (is_webview) {
-    extensions::GuestViewManager* manager =
-        extensions::GuestViewManager::FromBrowserContext(
+    guest_view::GuestViewManager* manager =
+        guest_view::GuestViewManager::FromBrowserContext(
             web_contents->GetBrowserContext());
     if (manager) {
       manager->ForEachGuest(web_contents,

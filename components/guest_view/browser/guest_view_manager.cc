@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
+#include "components/guest_view/browser/guest_view_manager_factory.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -14,19 +19,13 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_manager_delegate.h"
-#include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
-#include "net/base/escape.h"
 #include "url/gurl.h"
 
 using content::BrowserContext;
 using content::SiteInstance;
 using content::WebContents;
-using guestview::GuestViewManagerDelegate;
 
-namespace extensions {
+namespace guest_view {
 
 // static
 GuestViewManagerFactory* GuestViewManager::factory_ = nullptr;
@@ -54,7 +53,7 @@ GuestViewManager* GuestViewManager::CreateWithDelegate(
     } else {
       guest_manager = new GuestViewManager(context, delegate.Pass());
     }
-    context->SetUserData(guestview::kGuestViewManagerKeyName, guest_manager);
+    context->SetUserData(kGuestViewManagerKeyName, guest_manager);
   }
   return guest_manager;
 }
@@ -63,7 +62,7 @@ GuestViewManager* GuestViewManager::CreateWithDelegate(
 GuestViewManager* GuestViewManager::FromBrowserContext(
     BrowserContext* context) {
   return static_cast<GuestViewManager*>(context->GetUserData(
-      guestview::kGuestViewManagerKeyName));
+      kGuestViewManagerKeyName));
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceIDSafely(
@@ -158,7 +157,7 @@ content::WebContents* GuestViewManager::GetGuestByInstanceID(
     int element_instance_id) {
   int guest_instance_id = GetGuestInstanceIDForElementID(owner_process_id,
                                                          element_instance_id);
-  if (guest_instance_id == guestview::kInstanceIDNone)
+  if (guest_instance_id == kInstanceIDNone)
     return nullptr;
 
   return GetGuestByInstanceID(guest_instance_id);
@@ -169,7 +168,7 @@ int GuestViewManager::GetGuestInstanceIDForElementID(int owner_process_id,
   auto iter = instance_id_map_.find(
       ElementInstanceKey(owner_process_id, element_instance_id));
   if (iter == instance_id_map_.end())
-    return guestview::kInstanceIDNone;
+    return kInstanceIDNone;
   return iter->second;
 }
 
@@ -273,6 +272,8 @@ void GuestViewManager::DispatchEvent(const std::string& event_name,
                                      scoped_ptr<base::DictionaryValue> args,
                                      GuestViewBase* guest,
                                      int instance_id) {
+  // TODO(fsamuel): GuestViewManager should probably do something more useful
+  // here like log an error if the event could not be dispatched.
   delegate_->DispatchEvent(event_name, args.Pass(), guest, instance_id);
 }
 
@@ -322,7 +323,7 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
     int guest_instance_id) {
   // The embedder is trying to access a guest with a negative or zero
   // instance ID.
-  if (guest_instance_id <= guestview::kInstanceIDNone)
+  if (guest_instance_id <= kInstanceIDNone)
     return false;
 
   // The embedder is trying to access an instance ID that has not yet been
@@ -372,4 +373,4 @@ bool GuestViewManager::ElementInstanceKey::operator==(
     (element_instance_id == other.element_instance_id);
 }
 
-}  // namespace extensions
+}  // namespace guest_view

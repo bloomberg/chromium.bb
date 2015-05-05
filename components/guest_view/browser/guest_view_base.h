@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
+#ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_BASE_H_
+#define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_BASE_H_
 
 #include <queue>
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/guest_host.h"
@@ -16,11 +17,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
 
 struct RendererContentSettingRules;
 
-namespace extensions {
+namespace guest_view {
 
 class GuestViewEvent;
 
@@ -229,7 +229,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Returns whether this guest has an associated embedder.
   bool attached() const {
-    return element_instance_id_ != guestview::kInstanceIDNone;
+    return element_instance_id_ != kInstanceIDNone;
   }
 
   // Returns the instance ID of the <*view> element.
@@ -453,6 +453,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   DISALLOW_COPY_AND_ASSIGN(GuestViewBase);
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_BASE_H_
+#endif  // COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_BASE_H_

@@ -5,24 +5,25 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_factory.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 using extensions::ExtensionsGuestViewManagerDelegate;
-using extensions::GuestViewManager;
-using extensions::TestGuestViewManager;
+using guest_view::GuestViewManager;
+using guest_view::TestGuestViewManager;
+using guest_view::TestGuestViewManagerFactory;
 
 class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
  public:
   ExtensionViewTest() {
-    extensions::GuestViewManager::set_factory_for_testing(&factory_);
+    GuestViewManager::set_factory_for_testing(&factory_);
   }
 
-  extensions::TestGuestViewManager* GetGuestViewManager() {
+  TestGuestViewManager* GetGuestViewManager() {
     TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
         TestGuestViewManager::FromBrowserContext(browser()->profile()));
     // TestGuestViewManager::WaitForSingleGuestCreated may and will get called
@@ -31,7 +32,7 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
       manager = static_cast<TestGuestViewManager*>(
           GuestViewManager::CreateWithDelegate(
               browser()->profile(),
-              scoped_ptr<guestview::GuestViewManagerDelegate>(
+              scoped_ptr<guest_view::GuestViewManagerDelegate>(
                   new ExtensionsGuestViewManagerDelegate(
                       browser()->profile()))));
     }
@@ -70,7 +71,7 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 
-  extensions::TestGuestViewManagerFactory factory_;
+  TestGuestViewManagerFactory factory_;
 };
 
 // Tests that <extensionview> can be created and added to the DOM.

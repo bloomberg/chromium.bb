@@ -6,11 +6,11 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
 
 namespace extensions {
 
@@ -58,7 +58,7 @@ void JavaScriptDialogHelper::RunJavaScriptDialog(
   request_info.Set(webview::kMessageType,
                    new base::StringValue(
                        JavaScriptMessageTypeToString(javascript_message_type)));
-  request_info.Set(guestview::kUrl, new base::StringValue(origin_url.spec()));
+  request_info.Set(guest_view::kUrl, new base::StringValue(origin_url.spec()));
   WebViewPermissionHelper* web_view_permission_helper =
       WebViewPermissionHelper::FromWebContents(web_contents);
   web_view_permission_helper->RequestPermission(

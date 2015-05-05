@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/guest_view/guest_view_constants.h"
+#include "components/guest_view/common/guest_view_constants.h"
 
-namespace guestview {
+namespace guest_view {
 
 // Sizing attributes/parameters.
 const char kAttributeAutoSize[] = "autosize";

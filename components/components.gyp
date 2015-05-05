@@ -30,6 +30,7 @@
     'favicon_base.gypi',
     'gcm_driver.gypi',
     'google.gypi',
+    'guest_view.gypi',
     'handoff.gypi',
     'history.gypi',
     'infobars.gypi',

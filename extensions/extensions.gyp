@@ -126,6 +126,7 @@
         '../base/base.gyp:base_prefs',
         '../components/components.gyp:browsing_data',
         '../components/components.gyp:device_event_log_component',
+        '../components/components.gyp:guest_view',
         '../components/components.gyp:keyed_service_content',
         '../components/components.gyp:keyed_service_core',
         '../components/components.gyp:onc_component',
@@ -207,6 +208,7 @@
       'type': 'static_library',
       'dependencies': [
         'extensions_resources.gyp:extensions_resources',
+        '../components/components.gyp:guest_view',
         '../content/content.gyp:content_resources',
         '../gin/gin.gyp:gin',
         '../third_party/WebKit/public/blink.gyp:blink',

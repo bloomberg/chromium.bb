@@ -5,7 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_SURFACE_WORKER_SURFACE_WORKER_GUEST_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_SURFACE_WORKER_SURFACE_WORKER_GUEST_H_
 
-#include "extensions/browser/guest_view/guest_view.h"
+#include "components/guest_view/browser/guest_view.h"
 
 namespace extensions {
 class Extension;
@@ -13,11 +13,12 @@ class ExtensionHost;
 
 // An SurfaceWorkerGuest provides the browser-side implementation of the
 // prototype <wtframe> API.
-class SurfaceWorkerGuest : public GuestView<SurfaceWorkerGuest> {
+class SurfaceWorkerGuest : public guest_view::GuestView<SurfaceWorkerGuest> {
  public:
   static const char Type[];
 
-  static GuestViewBase* Create(content::WebContents* owner_web_contents);
+  static guest_view::GuestViewBase* Create(
+      content::WebContents* owner_web_contents);
 
   // content::WebContentsDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;

@@ -5,6 +5,7 @@
 #include "extensions/shell/browser/shell_content_browser_client.h"
 
 #include "base/command_line.h"
+#include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -16,7 +17,7 @@
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/guest_view/guest_view_message_filter.h"
+#include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/process_map.h"
@@ -93,7 +94,11 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(
       new IOThreadExtensionMessageFilter(render_process_id, browser_context));
   host->AddFilter(
-      new GuestViewMessageFilter(render_process_id, browser_context));
+      new guest_view::GuestViewMessageFilter(
+          render_process_id, browser_context));
+  host->AddFilter(
+      new ExtensionsGuestViewMessageFilter(
+          render_process_id, browser_context));
   // PluginInfoMessageFilter is not required because app_shell does not have
   // the concept of disabled plugins.
 #if !defined(DISABLE_NACL)

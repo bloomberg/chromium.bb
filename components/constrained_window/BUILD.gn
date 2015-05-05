@@ -10,6 +10,7 @@ static_library("constrained_window") {
   ]
 
   deps = [
+    "//components/guest_view:guest_view",
     "//components/web_modal",
     "//ui/views",
     "//skia",

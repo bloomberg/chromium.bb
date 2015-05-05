@@ -6,7 +6,7 @@
 #define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_DELEGATE_H_
 
 #include "base/callback.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_base.h"
 
 namespace content {
 class RenderViewHost;

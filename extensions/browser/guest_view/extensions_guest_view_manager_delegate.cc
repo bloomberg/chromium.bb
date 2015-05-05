@@ -4,14 +4,14 @@
 
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -19,6 +19,9 @@
 #include "extensions/browser/process_map.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
+
+using guest_view::GuestViewBase;
+using guest_view::GuestViewManager;
 
 namespace extensions {
 
@@ -51,7 +54,7 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
 }
 
 bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(
-    extensions::GuestViewBase* guest) {
+    GuestViewBase* guest) {
   const Feature* feature =
       FeatureProvider::GetAPIFeature(guest->GetAPINamespace());
   CHECK(feature);
@@ -74,14 +77,13 @@ bool ExtensionsGuestViewManagerDelegate::IsGuestAvailableToContext(
 }
 
 bool ExtensionsGuestViewManagerDelegate::IsOwnedByExtension(
-    extensions::GuestViewBase* guest) {
+    GuestViewBase* guest) {
   return !!ProcessManager::Get(context_)->
       GetExtensionForWebContents(guest->owner_web_contents());
 }
 
 void ExtensionsGuestViewManagerDelegate::RegisterAdditionalGuestViewTypes() {
-  extensions::GuestViewManager* manager =
-      extensions::GuestViewManager::FromBrowserContext(context_);
+  GuestViewManager* manager = GuestViewManager::FromBrowserContext(context_);
   manager->RegisterGuestViewType<AppViewGuest>();
   manager->RegisterGuestViewType<ExtensionOptionsGuest>();
   manager->RegisterGuestViewType<ExtensionViewGuest>();

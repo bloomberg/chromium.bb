@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/test_guest_view_manager.h"
+#include "components/guest_view/browser/test_guest_view_manager.h"
 
-#include "extensions/browser/guest_view/guest_view_manager_delegate.h"
+#include "base/memory/scoped_ptr.h"
+#include "components/guest_view/browser/guest_view_manager_delegate.h"
 
-using guestview::GuestViewManagerDelegate;
-
-namespace extensions {
+namespace guest_view {
 
 TestGuestViewManager::TestGuestViewManager(
     content::BrowserContext* context,
@@ -20,11 +19,11 @@ TestGuestViewManager::TestGuestViewManager(
 TestGuestViewManager::~TestGuestViewManager() {
 }
 
-int TestGuestViewManager::GetNumGuestsActive() const {
+size_t TestGuestViewManager::GetNumGuestsActive() const {
   return guest_web_contents_by_instance_id_.size();
 }
 
-int TestGuestViewManager::GetNumRemovedInstanceIDs() const {
+size_t TestGuestViewManager::GetNumRemovedInstanceIDs() const {
   return removed_instance_ids_.size();
 }
 
@@ -89,7 +88,7 @@ TestGuestViewManagerFactory::~TestGuestViewManagerFactory() {
 
 GuestViewManager* TestGuestViewManagerFactory::CreateGuestViewManager(
     content::BrowserContext* context,
-    scoped_ptr<guestview::GuestViewManagerDelegate> delegate) {
+    scoped_ptr<GuestViewManagerDelegate> delegate) {
   if (!test_guest_view_manager_) {
     test_guest_view_manager_ =
         new TestGuestViewManager(context, delegate.Pass());
@@ -97,4 +96,4 @@ GuestViewManager* TestGuestViewManagerFactory::CreateGuestViewManager(
   return test_guest_view_manager_;
 }
 
-}  // namespace extensions
+}  // namespace guest_view

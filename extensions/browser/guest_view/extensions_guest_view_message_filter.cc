@@ -4,13 +4,13 @@
 
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
@@ -23,7 +23,8 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
-using guestview::GuestViewManagerDelegate;
+using guest_view::GuestViewManager;
+using guest_view::GuestViewManagerDelegate;
 
 namespace extensions {
 
@@ -119,8 +120,8 @@ void ExtensionsGuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
 
   base::DictionaryValue create_params;
   create_params.SetString(mime_handler_view::kViewId, view_id);
-  create_params.SetInteger(guestview::kElementWidth, element_size.width());
-  create_params.SetInteger(guestview::kElementHeight, element_size.height());
+  create_params.SetInteger(guest_view::kElementWidth, element_size.width());
+  create_params.SetInteger(guest_view::kElementHeight, element_size.height());
   manager->CreateGuest(MimeHandlerViewGuest::Type,
                        embedder_web_contents,
                        create_params,
@@ -143,7 +144,7 @@ void ExtensionsGuestViewMessageFilter::OnResizeGuest(
   if (!mhvg)
     return;
 
-  SetSizeParams set_size_params;
+  guest_view::SetSizeParams set_size_params;
   set_size_params.enable_auto_size.reset(new bool(false));
   set_size_params.normal_size.reset(new gfx::Size(new_size));
   mhvg->SetSize(set_size_params);
@@ -166,8 +167,8 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
     return;
 
   base::DictionaryValue attach_params;
-  attach_params.SetInteger(guestview::kElementWidth, element_size.width());
-  attach_params.SetInteger(guestview::kElementHeight, element_size.height());
+  attach_params.SetInteger(guest_view::kElementWidth, element_size.width());
+  attach_params.SetInteger(guest_view::kElementHeight, element_size.height());
   auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   CHECK(manager);
   manager->AttachGuest(embedder_render_process_id,

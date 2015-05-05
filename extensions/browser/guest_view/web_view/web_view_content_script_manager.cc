@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
@@ -15,7 +16,6 @@
 #include "extensions/browser/declarative_user_script_manager.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"

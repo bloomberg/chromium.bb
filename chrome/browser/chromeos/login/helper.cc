@@ -18,9 +18,9 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,8 +65,8 @@ bool FindGuestByPartitionName(const std::string& partition_name,
 // a matching partition could not be found.
 content::StoragePartition* GetPartition(content::WebContents* embedder,
                                         const std::string& partition_name) {
-  extensions::GuestViewManager* manager =
-      extensions::GuestViewManager::FromBrowserContext(
+  guest_view::GuestViewManager* manager =
+      guest_view::GuestViewManager::FromBrowserContext(
           embedder->GetBrowserContext());
   if (!manager)
     return nullptr;

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/guest_view_message_filter.h"
+#include "components/guest_view/browser/guest_view_message_filter.h"
 
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/common/guest_view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/common/guest_view/guest_view_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 using content::BrowserContext;
@@ -18,7 +18,7 @@ using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
 
-namespace extensions {
+namespace guest_view {
 
 GuestViewMessageFilter::GuestViewMessageFilter(int render_process_id,
                                                BrowserContext* context)
@@ -77,4 +77,4 @@ void GuestViewMessageFilter::OnAttachGuest(
                        params);
 }
 
-}  // namespace extensions
+}  // namespace guest_view

@@ -5,6 +5,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 
 #include "base/strings/stringprintf.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_process_host.h"
@@ -22,13 +23,13 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/url_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
+using guest_view::GuestViewBase;
 
 namespace extensions {
 

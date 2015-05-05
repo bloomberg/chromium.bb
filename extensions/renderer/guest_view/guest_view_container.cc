@@ -4,12 +4,12 @@
 
 #include "extensions/renderer/guest_view/guest_view_container.h"
 
+#include "components/guest_view/common/guest_view_constants.h"
+#include "components/guest_view/common/guest_view_messages.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
-#include "extensions/common/guest_view/guest_view_messages.h"
 
 namespace extensions {
 
@@ -39,7 +39,7 @@ void GuestViewContainer::RenderFrameLifetimeObserver::OnDestruct() {
 }
 
 GuestViewContainer::GuestViewContainer(content::RenderFrame* render_frame)
-    : element_instance_id_(guestview::kInstanceIDNone),
+    : element_instance_id_(guest_view::kInstanceIDNone),
       render_frame_(render_frame) {
   render_frame_lifetime_observer_.reset(
       new RenderFrameLifetimeObserver(this, render_frame_));
@@ -66,7 +66,7 @@ void GuestViewContainer::RenderFrameDestroyed() {
 }
 
 void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
-  DCHECK_EQ(element_instance_id_, guestview::kInstanceIDNone);
+  DCHECK_EQ(element_instance_id_, guest_view::kInstanceIDNone);
   element_instance_id_ = element_instance_id;
 }
 

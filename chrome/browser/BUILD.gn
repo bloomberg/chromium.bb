@@ -99,6 +99,7 @@ source_set("browser") {
     "//components/favicon_base",
     "//components/gcm_driver",
     "//components/google/core/browser",
+    "//components/guest_view:guest_view",
     "//components/handoff",
     "//components/history/core/browser",
     "//components/history/core/common",

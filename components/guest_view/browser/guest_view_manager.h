@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
+#ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_H_
+#define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_H_
 
 #include <map>
 
@@ -22,26 +22,24 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
-namespace guestview {
-class GuestViewManagerDelegate;
-}  // namespace guestview
+namespace guest_view {
 
-namespace extensions{
 class GuestViewBase;
+class GuestViewManagerDelegate;
 class GuestViewManagerFactory;
 
 class GuestViewManager : public content::BrowserPluginGuestManager,
                          public base::SupportsUserData::Data {
  public:
   GuestViewManager(content::BrowserContext* context,
-                   scoped_ptr<guestview::GuestViewManagerDelegate> delegate);
+                   scoped_ptr<GuestViewManagerDelegate> delegate);
   ~GuestViewManager() override;
 
   // Returns the GuestViewManager associated with |context|. If one isn't
   // available, then it is created and returned.
   static GuestViewManager* CreateWithDelegate(
       content::BrowserContext* context,
-      scoped_ptr<guestview::GuestViewManagerDelegate> delegate);
+      scoped_ptr<GuestViewManagerDelegate> delegate);
 
   // Returns the GuestViewManager associated with |context|. If one isn't
   // available, then nullptr is returned.
@@ -204,11 +202,11 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   content::BrowserContext* context_;
 
-  scoped_ptr<guestview::GuestViewManagerDelegate> delegate_;
+  scoped_ptr<GuestViewManagerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewManager);
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_H_
+#endif  // COMPONETS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_H_

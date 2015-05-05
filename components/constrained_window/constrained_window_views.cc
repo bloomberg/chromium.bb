@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "components/constrained_window/constrained_window_views_client.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/views/border.h"
@@ -134,8 +135,8 @@ views::Widget* ShowWebModalDialogViews(
   DCHECK(constrained_window_views_client);
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
-  content::WebContents* web_contents = constrained_window_views_client->
-      GetEmbedderWebContents(initiator_web_contents);
+  content::WebContents* web_contents =
+      guest_view::GuestViewBase::GetTopLevelWebContents(initiator_web_contents);
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
   web_modal::PopupManager* popup_manager =
       web_modal::PopupManager::FromWebContents(web_contents);

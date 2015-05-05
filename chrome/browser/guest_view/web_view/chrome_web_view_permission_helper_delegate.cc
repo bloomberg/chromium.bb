@@ -132,7 +132,7 @@ void ChromeWebViewPermissionHelperDelegate::CanDownload(
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, url.spec());
+  request_info.SetString(guest_view::kUrl, url.spec());
   web_view_permission_helper()->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_DOWNLOAD,
       request_info,
@@ -155,10 +155,10 @@ void ChromeWebViewPermissionHelperDelegate::RequestPointerLockPermission(
     bool last_unlocked_by_target,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.SetBoolean(guestview::kUserGesture, user_gesture);
+  request_info.SetBoolean(guest_view::kUserGesture, user_gesture);
   request_info.SetBoolean(webview::kLastUnlockedBySelf,
                           last_unlocked_by_target);
-  request_info.SetString(guestview::kUrl,
+  request_info.SetString(guest_view::kUrl,
                          web_contents()->GetLastCommittedURL().spec());
 
   web_view_permission_helper()->RequestPermission(
@@ -184,8 +184,8 @@ void ChromeWebViewPermissionHelperDelegate::RequestGeolocationPermission(
     bool user_gesture,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, requesting_frame.spec());
-  request_info.SetBoolean(guestview::kUserGesture, user_gesture);
+  request_info.SetString(guest_view::kUrl, requesting_frame.spec());
+  request_info.SetBoolean(guest_view::kUserGesture, user_gesture);
 
   // It is safe to hold an unretained pointer to
   // ChromeWebViewPermissionHelperDelegate because this callback is called from
@@ -268,7 +268,7 @@ void ChromeWebViewPermissionHelperDelegate::RequestFileSystemPermission(
     bool allowed_by_default,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.SetString(guestview::kUrl, url.spec());
+  request_info.SetString(guest_view::kUrl, url.spec());
   web_view_permission_helper()->RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_FILESYSTEM,
       request_info,

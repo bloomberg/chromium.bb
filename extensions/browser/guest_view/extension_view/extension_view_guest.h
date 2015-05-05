@@ -6,9 +6,9 @@
 #define EXTENSIONS_BROWSER_GUEST_VIEW_EXTENSION_VIEW_EXTENSION_VIEW_GUEST_H_
 
 #include "base/macros.h"
+#include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/guest_view/extension_view/extension_view_guest_delegate.h"
-#include "extensions/browser/guest_view/guest_view.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -18,11 +18,11 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionViewGuest
-    : public extensions::GuestView<ExtensionViewGuest>,
-      public extensions::ExtensionFunctionDispatcher::Delegate {
+    : public guest_view::GuestView<ExtensionViewGuest>,
+      public ExtensionFunctionDispatcher::Delegate {
  public:
   static const char Type[];
-  static extensions::GuestViewBase* Create(
+  static guest_view::GuestViewBase* Create(
       content::WebContents* owner_web_contents);
 
   // Request navigating the guest to the provided |src| URL.

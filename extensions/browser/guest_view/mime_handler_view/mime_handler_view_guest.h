@@ -6,8 +6,8 @@
 #define EXTENSIONS_BROWSER_GUEST_VIEW_MIME_HANDLER_VIEW_MIME_HANDLER_VIEW_GUEST_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/guest_view/guest_view.h"
 
 namespace content {
 class WebContents;
@@ -50,10 +50,11 @@ class StreamContainer {
   base::WeakPtrFactory<StreamContainer> weak_factory_;
 };
 
-class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
+class MimeHandlerViewGuest : public guest_view::GuestView<MimeHandlerViewGuest>,
                              public ExtensionFunctionDispatcher::Delegate {
  public:
-  static GuestViewBase* Create(content::WebContents* owner_web_contents);
+  static guest_view::GuestViewBase* Create(
+      content::WebContents* owner_web_contents);
 
   static const char Type[];
 

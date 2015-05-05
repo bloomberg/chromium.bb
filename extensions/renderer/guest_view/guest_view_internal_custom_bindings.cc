@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -87,7 +87,7 @@ void GuestViewInternalCustomBindings::AttachGuest(
 
   // Add flag to |params| to indicate that the element size is specified in
   // logical units.
-  params->SetBoolean(guestview::kElementSizeIsLogical, true);
+  params->SetBoolean(guest_view::kElementSizeIsLogical, true);
 
   linked_ptr<ExtensionsGuestViewContainer::Request> request(
       new ExtensionsGuestViewContainer::AttachRequest(

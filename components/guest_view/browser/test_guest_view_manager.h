@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_
+#ifndef COMPONENTS_GUEST_VIEW_BROWSER_TEST_GUEST_VIEW_MANAGER_H_
+#define COMPONENTS_GUEST_VIEW_BROWSER_TEST_GUEST_VIEW_MANAGER_H_
 
 #include "base/memory/linked_ptr.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/guest_view_manager_factory.h"
 
-namespace extensions {
+namespace guest_view {
 
 class TestGuestViewManager : public GuestViewManager {
  public:
   TestGuestViewManager(
       content::BrowserContext* context,
-      scoped_ptr<guestview::GuestViewManagerDelegate> delegate);
+      scoped_ptr<GuestViewManagerDelegate> delegate);
   ~TestGuestViewManager() override;
 
   void WaitForAllGuestsDeleted();
@@ -27,10 +27,10 @@ class TestGuestViewManager : public GuestViewManager {
 
   // Returns the number of guests currently still alive at the time of calling
   // this method.
-  int GetNumGuestsActive() const;
+  size_t GetNumGuestsActive() const;
 
   // Returns the size of the set of removed instance IDs.
-  int GetNumRemovedInstanceIDs() const;
+  size_t GetNumRemovedInstanceIDs() const;
 
   // Returns the number of guests that have been created since the creation of
   // this GuestViewManager.
@@ -69,7 +69,7 @@ class TestGuestViewManagerFactory : public GuestViewManagerFactory {
 
   GuestViewManager* CreateGuestViewManager(
       content::BrowserContext* context,
-      scoped_ptr<guestview::GuestViewManagerDelegate> delegate) override;
+      scoped_ptr<GuestViewManagerDelegate> delegate) override;
 
  private:
   TestGuestViewManager* test_guest_view_manager_;
@@ -77,6 +77,6 @@ class TestGuestViewManagerFactory : public GuestViewManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestGuestViewManagerFactory);
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_TEST_GUEST_VIEW_MANAGER_H_
+#endif  // COMPONENTS_GUEST_VIEW_BROWSER_TEST_GUEST_VIEW_MANAGER_H_

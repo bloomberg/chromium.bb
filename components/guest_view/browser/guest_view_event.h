@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_EVENT_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_EVENT_H_
+#ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_EVENT_H_
+#define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_EVENT_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
-namespace extensions {
+namespace guest_view {
 
 class GuestViewBase;
 
@@ -36,6 +36,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(GuestViewEvent);
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_EVENT_H_
+#endif  // COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_EVENT_H_

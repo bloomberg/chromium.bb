@@ -7,14 +7,14 @@
 #include <map>
 #include <set>
 
+#include "components/guest_view/common/guest_view_constants.h"
+#include "components/guest_view/common/guest_view_messages.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
-#include "extensions/common/guest_view/guest_view_messages.h"
 #include "gin/arguments.h"
 #include "gin/dictionary.h"
 #include "gin/handle.h"
@@ -264,7 +264,7 @@ void MimeHandlerViewContainer::PostMessageFromValue(
 
 void MimeHandlerViewContainer::OnCreateMimeHandlerViewGuestACK(
     int element_instance_id) {
-  DCHECK_NE(this->element_instance_id(), guestview::kInstanceIDNone);
+  DCHECK_NE(this->element_instance_id(), guest_view::kInstanceIDNone);
   DCHECK_EQ(this->element_instance_id(), element_instance_id);
 
   if (!render_frame())
@@ -307,7 +307,7 @@ void MimeHandlerViewContainer::CreateMimeHandlerViewGuest() {
   // The loader has completed loading |view_id_| so we can dispose it.
   loader_.reset();
 
-  DCHECK_NE(element_instance_id(), guestview::kInstanceIDNone);
+  DCHECK_NE(element_instance_id(), guest_view::kInstanceIDNone);
 
   if (!render_frame())
     return;

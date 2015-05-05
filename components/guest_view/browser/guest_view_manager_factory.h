@@ -2,32 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
+#ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_FACTORY_H_
+#define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_FACTORY_H_
 
 namespace content {
 class BrowserContext;
 }
 
-namespace guestview {
-class GuestViewManagerDelegate;
-}  // namespace guestview
-
-namespace extensions {
+namespace guest_view {
 
 class GuestViewManager;
+class GuestViewManagerDelegate;
 
 class GuestViewManagerFactory {
  public:
   virtual GuestViewManager* CreateGuestViewManager(
       content::BrowserContext* context,
-      scoped_ptr<guestview::GuestViewManagerDelegate> delegate) = 0;
+      scoped_ptr<GuestViewManagerDelegate> delegate) = 0;
 
  protected:
   virtual ~GuestViewManagerFactory() {}
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MANAGER_FACTORY_H_
+#endif  // COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_FACTORY_H_
 

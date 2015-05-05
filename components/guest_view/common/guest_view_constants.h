@@ -4,10 +4,10 @@
 
 // Constants used for the WebView API.
 
-#ifndef EXTENSIONS_COMMON_GUEST_VIEW_GUEST_VIEW_CONSTANTS_H_
-#define EXTENSIONS_COMMON_GUEST_VIEW_GUEST_VIEW_CONSTANTS_H_
+#ifndef COMPONENTS_GUEST_VIEW_COMMON_GUEST_VIEW_CONSTANTS_H_
+#define COMPONENTS_GUEST_VIEW_COMMON_GUEST_VIEW_CONSTANTS_H_
 
-namespace guestview {
+namespace guest_view {
 
 // Sizing attributes/parameters.
 extern const char kAttributeAutoSize[];
@@ -45,6 +45,6 @@ extern const int kInstanceIDNone;
 extern const int kDefaultWidth;
 extern const int kDefaultHeight;
 
-}  // namespace guestview
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_COMMON_GUEST_VIEW_GUEST_VIEW_CONSTANTS_H_
+#endif  // COMPONENTS_GUEST_VIEW_COMMON_GUEST_VIEW_CONSTANTS_H_

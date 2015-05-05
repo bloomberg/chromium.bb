@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "components/guest_view/browser/guest_view.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/guest_view/guest_view.h"
 #include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
@@ -33,7 +33,7 @@ class WebViewInternalFindFunction;
 // a particular embedder WebContents. This happens on either initial navigation
 // or through the use of the New Window API, when a new window is attached to
 // a particular <webview>.
-class WebViewGuest : public GuestView<WebViewGuest>,
+class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
                      public content::NotificationObserver {
  public:
   static GuestViewBase* Create(content::WebContents* owner_web_contents);
@@ -50,7 +50,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                                              std::string* partition_name,
                                              bool* in_memory);
 
-  // Returns guestview::kInstanceIDNone if |contents| does not correspond to a
+  // Returns guest_view::kInstanceIDNone if |contents| does not correspond to a
   // WebViewGuest.
   static int GetViewInstanceId(content::WebContents* contents);
 

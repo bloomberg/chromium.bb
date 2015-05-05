@@ -317,7 +317,7 @@ gfx::Vector2d RenderViewContextMenu::GetOffset(
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   WebContents* top_level_web_contents =
-      extensions::GuestViewBase::GetTopLevelWebContents(web_contents);
+      guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
   if (web_contents && top_level_web_contents &&
       web_contents != top_level_web_contents) {
     gfx::Rect bounds = web_contents->GetContainerBounds();
@@ -797,7 +797,7 @@ void RenderViewContextMenu::AppendMediaItems() {
 
 void RenderViewContextMenu::AppendPluginItems() {
   if (params_.page_url == params_.src_url ||
-      extensions::GuestViewBase::IsGuest(source_web_contents_)) {
+      guest_view::GuestViewBase::IsGuest(source_web_contents_)) {
     // Full page plugin, so show page menu items.
     if (params_.link_url.is_empty() && params_.selection_text.empty())
       AppendPageItems();

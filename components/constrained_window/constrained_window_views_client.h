@@ -21,11 +21,6 @@ class ConstrainedWindowViewsClient {
  public:
   virtual ~ConstrainedWindowViewsClient() {}
 
-  // Returns the web contents that a constrained window should be modal to
-  // in the embedder's context.
-  virtual content::WebContents* GetEmbedderWebContents(
-      content::WebContents* initiator_web_contents) = 0;
-
   // Returns the modal window host for the |parent| native window.
   virtual web_modal::ModalDialogHost* GetModalDialogHost(
       gfx::NativeWindow parent) = 0;

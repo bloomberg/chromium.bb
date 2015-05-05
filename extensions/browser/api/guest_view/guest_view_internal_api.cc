@@ -4,16 +4,18 @@
 
 #include "extensions/browser/api/guest_view/guest_view_internal_api.h"
 
+#include "components/guest_view/browser/guest_view_base.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
-#include "extensions/browser/guest_view/guest_view_base.h"
-#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/common/api/guest_view_internal.h"
-#include "extensions/common/guest_view/guest_view_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-using guestview::GuestViewManagerDelegate;
+using guest_view::GuestViewBase;
+using guest_view::GuestViewManager;
+using guest_view::GuestViewManagerDelegate;
 
 namespace guest_view_internal = extensions::core_api::guest_view_internal;
 
@@ -53,7 +55,7 @@ bool GuestViewInternalCreateGuestFunction::RunAsync() {
 
   // Add flag to |create_params| to indicate that the element size is specified
   // in logical units.
-  create_params->SetBoolean(guestview::kElementSizeIsLogical, true);
+  create_params->SetBoolean(guest_view::kElementSizeIsLogical, true);
 
   guest_view_manager->CreateGuest(view_type,
                                   sender_web_contents,
@@ -72,8 +74,8 @@ void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
     content_window_id = guest->proxy_routing_id();
   }
   scoped_ptr<base::DictionaryValue> return_params(new base::DictionaryValue());
-  return_params->SetInteger(guestview::kID, guest_instance_id);
-  return_params->SetInteger(guestview::kContentWindowID, content_window_id);
+  return_params->SetInteger(guest_view::kID, guest_instance_id);
+  return_params->SetInteger(guest_view::kContentWindowID, content_window_id);
   SetResult(return_params.release());
   SendResponse(true);
 }
@@ -114,7 +116,7 @@ bool GuestViewInternalSetSizeFunction::RunAsync() {
   if (!guest)
     return false;
 
-  SetSizeParams set_size_params;
+  guest_view::SetSizeParams set_size_params;
   if (params->params.enable_auto_size) {
     set_size_params.enable_auto_size.reset(
         params->params.enable_auto_size.release());

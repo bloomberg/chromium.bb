@@ -11,11 +11,12 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/browsing_data/storage_partition_http_cache_data_remover.h"
+#include "components/guest_view/browser/guest_view_event.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
-#include "extensions/browser/guest_view/guest_view_event.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
 #if defined(ENABLE_PRINTING)
@@ -26,6 +27,8 @@
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
+
+using guest_view::GuestViewEvent;
 
 namespace extensions {
 

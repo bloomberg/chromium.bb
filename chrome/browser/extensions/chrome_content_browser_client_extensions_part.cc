@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/render_process_host.h"
@@ -35,7 +36,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
-#include "extensions/browser/guest_view/guest_view_message_filter.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/view_type_utils.h"
@@ -380,7 +380,7 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
   host->AddFilter(new ExtensionMessageFilter(id, profile));
   host->AddFilter(new IOThreadExtensionMessageFilter(id, profile));
   host->AddFilter(new ExtensionsGuestViewMessageFilter(id, profile));
-  host->AddFilter(new GuestViewMessageFilter(id, profile));
+  host->AddFilter(new guest_view::GuestViewMessageFilter(id, profile));
   extension_web_request_api_helpers::SendExtensionWebRequestStatusToHost(host);
 }
 

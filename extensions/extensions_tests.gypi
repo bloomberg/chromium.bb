@@ -81,7 +81,6 @@
       'browser/extension_registry_unittest.cc',
       'browser/file_highlighter_unittest.cc',
       'browser/file_reader_unittest.cc',
-      'browser/guest_view/guest_view_manager_unittest.cc',
       'browser/image_loader_unittest.cc',
       'browser/info_map_unittest.cc',
       'browser/lazy_background_task_queue_unittest.cc',

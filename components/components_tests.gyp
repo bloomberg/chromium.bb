@@ -217,6 +217,9 @@
       'google/core/browser/google_url_tracker_unittest.cc',
       'google/core/browser/google_util_unittest.cc',
     ],
+    'guest_view_unittest_sources': [
+      'guest_view/browser/guest_view_manager_unittest.cc'
+    ],
     'history_unittest_sources': [
       'history/content/browser/content_history_backend_unittest.cc',
       'history/core/browser/android/android_history_types_unittest.cc',
@@ -755,6 +758,8 @@
         'components.gyp:gcm_driver',
         'components.gyp:gcm_driver_test_support',
         'components.gyp:google_core_browser',
+        'components.gyp:guest_view',
+        'components.gyp:guest_view_test_support',
         'components.gyp:history_core_browser',
         'components.gyp:history_core_common',
         'components.gyp:history_core_test_support',
@@ -844,6 +849,7 @@
           'sources': [
             '<@(devtools_http_handler_unittest_sources)',
             '<@(error_page_unittest_sources)',
+            '<@(guest_view_unittest_sources)',
             '<@(navigation_interception_unittest_sources)',
             '<@(network_hints_unittest_sources)',
             '<@(power_unittest_sources)',

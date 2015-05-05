@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MESSAGE_FILTER_H_
-#define EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MESSAGE_FILTER_H_
+#ifndef COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MESSAGE_FILTER_H_
+#define COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MESSAGE_FILTER_H_
 
 #include <string>
 
@@ -24,7 +24,7 @@ namespace gfx {
 class Size;
 }
 
-namespace extensions {
+namespace guest_view {
 
 // This class filters out incoming GuestView-specific IPC messages from the
 // renderer process. It is created on the UI thread. Messages may be handled on
@@ -62,6 +62,6 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(GuestViewMessageFilter);
 };
 
-}  // namespace extensions
+}  // namespace guest_view
 
-#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_GUEST_VIEW_MESSAGE_FILTER_H_
+#endif  // COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MESSAGE_FILTER_H_
