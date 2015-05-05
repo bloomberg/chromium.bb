@@ -13,6 +13,8 @@ import shutil
 import socket
 import subprocess
 
+import psutil
+
 BROWSER_TEST_ID = 'browser_tests'
 PROD_DIR_ID = '#PROD_DIR#'
 HOST_HASH_VALUE = hashlib.md5(socket.gethostname()).hexdigest()
@@ -162,6 +164,15 @@ def SetupUserProfileDir(me2me_manifest_file, it2me_manifest_file,
     shutil.copyfile(manifest_file_src, manifest_file_dest)
 
 
+def PrintRunningProcesses():
+  processes = psutil.get_process_list()
+  processes = sorted(processes, key=lambda process: process.name)
+
+  print 'List of running processes:\n'
+  for process in processes:
+    print process.name
+
+
 def main(args):
 
   InitialiseTestMachineForLinux(args.cfg_file)
@@ -181,6 +192,9 @@ def main(args):
       if not RestartMe2MeHost():
         # Host restart failed. Don't run any more tests.
         raise Exception('Host restart failed.')
+
+      # Print list of currently running processes.
+      PrintRunningProcesses()
 
   # All tests completed. Include host-logs in the test results.
   host_log_contents = ''

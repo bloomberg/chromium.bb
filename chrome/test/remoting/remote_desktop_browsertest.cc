@@ -510,6 +510,7 @@ void RemoteDesktopBrowserTest::Cleanup() {
 }
 
 content::WebContents* RemoteDesktopBrowserTest::SetUpTest() {
+  LOG(INFO) << "Starting Test Setup.";
   VerifyInternetAccess();
   Install();
   content::WebContents* app_web_content = LaunchChromotingApp(false);
