@@ -295,7 +295,6 @@
       'tests/LinkHighlightTest.cpp',
       'tests/ListenerLeakTest.cpp',
       'tests/MHTMLTest.cpp',
-      'tests/MemoryInfo.cpp',
       'tests/OpenTypeVerticalDataTest.cpp',
       'tests/PageSerializerTest.cpp',
       'tests/PaintAggregatorTest.cpp',
