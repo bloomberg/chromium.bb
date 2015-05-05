@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/time/tick_clock.h"
+#include "base/timer/timer.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/media_export.h"
 #include "media/base/video_renderer_sink.h"
@@ -37,6 +38,9 @@ class VideoFrame;
 // VideoRenderSink::RenderCallback implementations must call Start() and Stop()
 // once new frames are expected or are no longer expected to be ready; this data
 // is relayed to the compositor to avoid extraneous callbacks.
+//
+// VideoFrameCompositor is also responsible for pumping UpdateCurrentFrame()
+// callbacks in the background when |client_| has decided to suspend them.
 //
 // VideoFrameCompositor must live on the same thread as the compositor, though
 // it may be constructed on any thread.
@@ -68,14 +72,6 @@ class MEDIA_EXPORT VideoFrameCompositor
   // called before destruction starts.
   ~VideoFrameCompositor() override;
 
-  // Returns |current_frame_| if it was refreshed recently; otherwise, if
-  // |callback_| is available, requests a new frame and returns that one.
-  //
-  // This is required for programmatic frame requests where the compositor may
-  // have stopped issuing UpdateCurrentFrame() callbacks in response to
-  // visibility changes in the output layer.
-  scoped_refptr<VideoFrame> GetCurrentFrameAndUpdateIfStale();
-
   // cc::VideoFrameProvider implementation. These methods must be called on the
   // |compositor_task_runner_|.
   void SetVideoFrameProviderClient(
@@ -96,11 +92,15 @@ class MEDIA_EXPORT VideoFrameCompositor
     tick_clock_ = tick_clock.Pass();
   }
 
-  base::TimeDelta get_stale_frame_threshold_for_testing() const {
-    return stale_frame_threshold_;
-  }
-
   void clear_current_frame_for_testing() { current_frame_ = nullptr; }
+
+  // Enables or disables background rendering. If |enabled|, |timeout| is the
+  // amount of time to wait after the last Render() call before starting the
+  // background rendering mode.  Note, this can not disable the background
+  // rendering call issues when a sink is started.
+  void set_background_rendering_for_testing(bool enabled) {
+    background_rendering_enabled_ = enabled;
+  }
 
  private:
   // Called on the compositor thread in response to Start() or Stop() calls;
@@ -108,11 +108,21 @@ class MEDIA_EXPORT VideoFrameCompositor
   void OnRendererStateUpdate(bool new_state);
 
   // Handles setting of |current_frame_| and fires |natural_size_changed_cb_|
-  // and |opacity_changed_cb_| when the frame properties changes.  Will also
-  // call DidReceiveFrame() on |client_| if |notify_client_of_new_frames| is
-  // true and a new frame is encountered.
-  bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame,
-                       bool notify_client_of_new_frames);
+  // and |opacity_changed_cb_| when the frame properties changes.
+  bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame);
+
+  // Called by |background_rendering_timer_| when enough time elapses where we
+  // haven't seen a Render() call.
+  void BackgroundRender();
+
+  // If |callback_| is available, calls Render() with the provided properties.
+  // Updates |is_background_rendering_|, |last_interval_|, and resets
+  // |background_rendering_timer_|.  Ensures that natural size and opacity
+  // changes are correctly fired.  Returns true if there's a new frame available
+  // via GetCurrentFrame().
+  bool CallRender(base::TimeTicks deadline_min,
+                  base::TimeTicks deadline_max,
+                  bool background_rendering);
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_ptr<base::TickClock> tick_clock_;
@@ -121,22 +131,25 @@ class MEDIA_EXPORT VideoFrameCompositor
   const base::Callback<void(gfx::Size)> natural_size_changed_cb_;
   const base::Callback<void(bool)> opacity_changed_cb_;
 
-  base::TimeDelta stale_frame_threshold_;
+  // Allows tests to disable the background rendering task.
+  bool background_rendering_enabled_;
+
+  // Manages UpdateCurrentFrame() callbacks if |client_| has stopped sending
+  // them for various reasons.  Runs on |compositor_task_runner_| and is reset
+  // after each successful UpdateCurrentFrame() call.
+  base::Timer background_rendering_timer_;
 
   // These values are only set and read on the compositor thread.
   cc::VideoFrameProvider::Client* client_;
   scoped_refptr<VideoFrame> current_frame_;
   bool rendering_;
   bool rendered_last_frame_;
+  bool is_background_rendering_;
+  base::TimeDelta last_interval_;
 
   // These values are updated and read from the media and compositor threads.
   base::Lock lock_;
   VideoRendererSink::RenderCallback* callback_;
-
-  // These values are set on the compositor thread under lock and may be read
-  // from the media thread under lock.
-  base::TimeTicks last_frame_update_time_;
-  base::TimeDelta last_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);
 };

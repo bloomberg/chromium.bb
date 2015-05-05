@@ -78,17 +78,13 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // VideoRendererSink::RenderCallback implementation.
   scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
-                                   base::TimeTicks deadline_max) override;
+                                   base::TimeTicks deadline_max,
+                                   bool background_rendering) override;
   void OnFrameDropped() override;
 
   void enable_new_video_renderer_for_testing() {
     use_new_video_renderering_path_ = true;
   }
-
-  // Enables or disables background rendering. If |enabled|, |timeout| is the
-  // amount of time to wait after the last Render() call before starting the
-  // background rendering mode.
-  void SetBackgroundRenderingForTesting(bool enabled, base::TimeDelta timeout);
 
  private:
   // Creates a dedicated |thread_| for video rendering.
@@ -128,6 +124,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // Note that having enough data may be due to reaching end of stream.
   bool HaveEnoughData_Locked();
   void TransitionToHaveEnough_Locked();
+  void TransitionToHaveNothing();
 
   // Runs |statistics_cb_| with |frames_decoded_| and |frames_dropped_|, resets
   // them to 0, and then waits on |frame_available_| for up to the
@@ -137,15 +134,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // Called after we've painted the first frame.  If |time_progressing_| is
   // false it Stop() on |sink_|.
   void MaybeStopSinkAfterFirstPaint();
-
-  // Resets and primes the |background_rendering_timer_|, when the timer fires
-  // it calls the BackgroundRender() method below.
-  void StartBackgroundRenderTimer();
-
-  // Called by |background_rendering_timer_| when enough time elapses where we
-  // haven't seen a Render() call.
-  void BackgroundRender();
-  void BackgroundRender_Locked();
 
   // Returns true if there is no more room for additional buffered frames.
   bool HaveReachedBufferingCap();
@@ -183,7 +171,7 @@ class MEDIA_EXPORT VideoRendererImpl
   bool low_delay_;
 
   // Queue of incoming frames yet to be painted.
-  typedef std::deque<scoped_refptr<VideoFrame> > VideoFrameQueue;
+  typedef std::deque<scoped_refptr<VideoFrame>> VideoFrameQueue;
   VideoFrameQueue ready_frames_;
 
   // Keeps track of whether we received the end of stream buffer and finished
@@ -269,17 +257,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // timing related information.
   scoped_ptr<VideoRendererAlgorithm> algorithm_;
 
-  // Indicates that Render() callbacks from |sink_| have timed out, so we've
-  // entered a background rendering mode where dropped frames are not counted.
-  bool is_background_rendering_;
-
-  // Allows tests to disable the background rendering task.
-  bool should_use_background_renderering_;
-
-  // Manages expiration of stale video frames if Render() callbacks timeout.  Do
-  // not access from the thread Render() is called on.  Must only be used on
-  // |task_runner_|.
-  base::RepeatingTimer<VideoRendererImpl> background_rendering_timer_;
+  // Indicates that Render() was called with |background_rendering| set to true,
+  // so we've entered a background rendering mode where dropped frames are not
+  // counted.
+  bool was_background_rendering_;
 
   // Indicates whether or not media time is currently progressing or not.
   bool time_progressing_;
@@ -287,13 +268,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // Indicates that Render() should only render the first frame and then request
   // that the sink be stopped.
   bool render_first_frame_and_stop_;
-
-  // The time to wait for Render() before firing BackgroundRender().
-  base::TimeDelta background_rendering_timeout_;
-
-  // Updated on every Render() call, checked by |background_rendering_timer_| to
-  // determine if background rendering should start.
-  base::TimeTicks last_render_time_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;

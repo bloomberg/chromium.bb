@@ -48,8 +48,10 @@ class NullVideoSinkTest : public testing::Test,
   }
 
   // VideoRendererSink::RenderCallback implementation.
-  MOCK_METHOD2(Render,
-               scoped_refptr<VideoFrame>(base::TimeTicks, base::TimeTicks));
+  MOCK_METHOD3(Render,
+               scoped_refptr<VideoFrame>(base::TimeTicks,
+                                         base::TimeTicks,
+                                         bool));
   MOCK_METHOD0(OnFrameDropped, void());
 
   MOCK_METHOD1(FrameReceived, void(const scoped_refptr<VideoFrame>&));
@@ -76,7 +78,7 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
     sink->Start(this);
     const base::TimeTicks current_time = tick_clock_.NowTicks();
     const base::TimeTicks current_interval_end = current_time + kInterval;
-    EXPECT_CALL(*this, Render(current_time, current_interval_end))
+    EXPECT_CALL(*this, Render(current_time, current_interval_end, false))
         .WillOnce(Return(test_frame));
     WaitableMessageLoopEvent event;
     EXPECT_CALL(*this, FrameReceived(test_frame))
@@ -84,12 +86,16 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
     event.RunAndWait();
   }
 
+  // Verify that toggling background rendering mode issues the right bit to
+  // each Render() call.
+  sink->set_background_render(true);
+
   // A second call returning the same frame should not result in a new call to
   // FrameReceived().
   {
     SCOPED_TRACE("Waiting for second render call.");
     WaitableMessageLoopEvent event;
-    EXPECT_CALL(*this, Render(_, _))
+    EXPECT_CALL(*this, Render(_, _, true))
         .WillOnce(Return(test_frame))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*this, FrameReceived(test_frame)).Times(0);
@@ -127,11 +133,11 @@ TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
   for (int i = 0; i < kTestRuns; ++i) {
     if (i < kTestRuns - 1) {
       EXPECT_CALL(*this, Render(current_time + i * interval,
-                                current_time + (i + 1) * interval))
+                                current_time + (i + 1) * interval, false))
           .WillOnce(Return(test_frame));
     } else {
       EXPECT_CALL(*this, Render(current_time + i * interval,
-                                current_time + (i + 1) * interval))
+                                current_time + (i + 1) * interval, false))
           .WillOnce(DoAll(RunClosure(event.GetClosure()), Return(nullptr)));
     }
   }
@@ -140,4 +146,4 @@ TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
   sink->Stop();
 }
 
-}
+}  // namespace media

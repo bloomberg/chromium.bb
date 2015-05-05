@@ -985,7 +985,7 @@ static void GetCurrentFrameAndSignal(
     scoped_refptr<VideoFrame>* video_frame_out,
     base::WaitableEvent* event) {
   TRACE_EVENT0("media", "GetCurrentFrameAndSignal");
-  *video_frame_out = compositor->GetCurrentFrameAndUpdateIfStale();
+  *video_frame_out = compositor->GetCurrentFrame();
   event->Signal();
 }
 

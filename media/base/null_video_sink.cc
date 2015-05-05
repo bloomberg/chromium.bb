@@ -22,7 +22,8 @@ NullVideoSink::NullVideoSink(
       task_runner_(task_runner),
       started_(false),
       callback_(nullptr),
-      tick_clock_(&default_tick_clock_) {
+      tick_clock_(&default_tick_clock_),
+      background_render_(false) {
 }
 
 NullVideoSink::~NullVideoSink() {
@@ -53,14 +54,12 @@ void NullVideoSink::CallRender() {
   DCHECK(started_);
 
   const base::TimeTicks end_of_interval = current_render_time_ + interval_;
-  if (current_render_time_ > pause_end_time_) {
-    scoped_refptr<VideoFrame> new_frame =
-        callback_->Render(current_render_time_, end_of_interval);
-    const bool is_new_frame = new_frame != last_frame_;
-    last_frame_ = new_frame;
-    if (is_new_frame)
-      new_frame_cb_.Run(new_frame);
-  }
+  scoped_refptr<VideoFrame> new_frame = callback_->Render(
+      current_render_time_, end_of_interval, background_render_);
+  const bool is_new_frame = new_frame != last_frame_;
+  last_frame_ = new_frame;
+  if (is_new_frame)
+    new_frame_cb_.Run(new_frame);
 
   current_render_time_ += interval_;
 
@@ -92,10 +91,6 @@ void NullVideoSink::CallRender() {
 void NullVideoSink::PaintFrameUsingOldRenderingPath(
     const scoped_refptr<VideoFrame>& frame) {
   new_frame_cb_.Run(frame);
-}
-
-void NullVideoSink::PauseRenderCallbacks(base::TimeTicks pause_until) {
-  pause_end_time_ = pause_until;
 }
 
 }  // namespace media

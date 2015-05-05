@@ -36,9 +36,6 @@ using ::testing::StrictMock;
 
 namespace media {
 
-// Threshold for Render() callbacks used for testing; should not be zero.
-static const int kTestBackgroundRenderTimeoutMs = 25;
-
 ACTION_P(RunClosure, closure) {
   closure.Run();
 }
@@ -71,9 +68,6 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
       renderer_->enable_new_video_renderer_for_testing();
     renderer_->SetTickClockForTesting(scoped_ptr<base::TickClock>(tick_clock_));
     null_video_sink_->set_tick_clock_for_testing(tick_clock_);
-
-    // Disable background rendering for tests by default.
-    renderer_->SetBackgroundRenderingForTesting(false, base::TimeDelta());
 
     // Start wallclock time at a non-zero value.
     AdvanceWallclockTimeInMs(12345);
@@ -150,11 +144,6 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
     SCOPED_TRACE("Destroy()");
     renderer_.reset();
     message_loop_.RunUntilIdle();
-  }
-
-  void SuspendRenderCallbacks() {
-    null_video_sink_->PauseRenderCallbacks(base::TimeTicks() +
-                                           base::TimeDelta::Max());
   }
 
   // Parses a string representation of video frames and generates corresponding
@@ -300,6 +289,8 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
   // Must be destroyed before |renderer_| since they share |tick_clock_|.
   scoped_ptr<NullVideoSink> null_video_sink_;
 
+  PipelineStatistics last_pipeline_statistics_;
+
  private:
   base::TimeTicks GetWallClockTime(base::TimeDelta time) {
     base::AutoLock l(lock_);
@@ -333,7 +324,9 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
     message_loop_.PostTask(FROM_HERE, callback);
   }
 
-  void OnStatisticsUpdate(const PipelineStatistics& stats) {}
+  void OnStatisticsUpdate(const PipelineStatistics& stats) {
+    last_pipeline_statistics_ = stats;
+  }
 
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
@@ -588,34 +581,30 @@ TEST_P(VideoRendererImplTest, Underflow) {
   Destroy();
 }
 
-// Tests the case where the video started in the background and never received
-// any Render() calls and time never started progressing (so the sink should be
-// stopped immediately).
-TEST_P(VideoRendererImplTest, BackgroundRenderingStopsAfterFirstFrame) {
+// Verifies that the sink is stopped after rendering the first frame if
+// playback hasn't started.
+TEST_P(VideoRendererImplTest, RenderingStopsAfterFirstFrame) {
   // This test is only for the new rendering path.
   if (!GetParam())
     return;
 
-  // By default, tests disable background rendering, so enable it now and give
-  // a short, but non-zero, timeout.
-  renderer_->SetBackgroundRenderingForTesting(
-      true, base::TimeDelta::FromMilliseconds(kTestBackgroundRenderTimeoutMs));
-
   InitializeWithLowDelay(true);
   QueueFrames("0");
 
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-
-  // Pause callbacks forever, but don't start the sink. Ended should not fire.
-  SuspendRenderCallbacks();
-  StartPlayingFrom(0);
-  EXPECT_TRUE(IsReadPending());
-  SatisfyPendingReadWithEndOfStream();
 
   {
     SCOPED_TRACE("Waiting for sink to stop.");
     WaitableMessageLoopEvent event;
+
+    null_video_sink_->set_background_render(true);
     null_video_sink_->set_stop_cb(event.GetClosure());
+    StartPlayingFrom(0);
+
+    EXPECT_TRUE(IsReadPending());
+    SatisfyPendingReadWithEndOfStream();
+
     event.RunAndWait();
   }
 
@@ -623,87 +612,50 @@ TEST_P(VideoRendererImplTest, BackgroundRenderingStopsAfterFirstFrame) {
   Destroy();
 }
 
-// Tests the case where the video started in the background and never received
-// any Render() calls, but time is progressing.
-TEST_P(VideoRendererImplTest, BackgroundRenderingNeverStarted) {
+// Verifies that the sink is stopped after rendering the first frame if
+// playback ha started.
+TEST_P(VideoRendererImplTest, RenderingStopsAfterOneFrameWithEOS) {
   // This test is only for the new rendering path.
   if (!GetParam())
     return;
 
-  // By default, tests disable background rendering, so enable it now and give
-  // a short, but non-zero, timeout.
-  renderer_->SetBackgroundRenderingForTesting(
-      true, base::TimeDelta::FromMilliseconds(kTestBackgroundRenderTimeoutMs));
-
-  Initialize();
-  QueueFrames("0 10 20 30");
-
-  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
-
-  // Start the sink and pause callbacks forever.
-  renderer_->OnTimeStateChanged(true);
-  SuspendRenderCallbacks();
-  StartPlayingFrom(0);
-  AdvanceTimeInMs(41);
-  AdvanceWallclockTimeInMs(kTestBackgroundRenderTimeoutMs);
-
-  // Eventually background rendering should request new buffers and at that
-  // point fire the ended event if rendering has completed.
-  WaitForPendingRead();
-  SatisfyPendingReadWithEndOfStream();
-  WaitForEnded();
-  Destroy();
-}
-
-// Tests the case where the video started in the background and never received
-// any Render() calls, but time is progressing and there's only a single frame
-// in the video.
-TEST_P(VideoRendererImplTest, BackgroundRenderingNeverStartedSingleFrame) {
-  // This test is only for the new rendering path.
-  if (!GetParam())
-    return;
-
-  // By default, tests disable background rendering, so enable it now and give
-  // a short, but non-zero, timeout.
-  renderer_->SetBackgroundRenderingForTesting(
-      true, base::TimeDelta::FromMilliseconds(kTestBackgroundRenderTimeoutMs));
-
-  Initialize();
+  InitializeWithLowDelay(true);
   QueueFrames("0");
 
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
 
-  // Start the sink and pause callbacks forever.
-  renderer_->OnTimeStateChanged(true);
-  SuspendRenderCallbacks();
-  StartPlayingFrom(0);
+  {
+    SCOPED_TRACE("Waiting for sink to stop.");
+    WaitableMessageLoopEvent event;
 
-  AdvanceWallclockTimeInMs(kTestBackgroundRenderTimeoutMs);
+    null_video_sink_->set_stop_cb(event.GetClosure());
+    StartPlayingFrom(0);
+    renderer_->OnTimeStateChanged(true);
 
-  // Eventually background rendering should request new buffers and at that
-  // point fire the ended event if rendering has completed.
-  WaitForPendingRead();
-  SatisfyPendingReadWithEndOfStream();
+    EXPECT_TRUE(IsReadPending());
+    SatisfyPendingReadWithEndOfStream();
+
+    event.RunAndWait();
+  }
+
   WaitForEnded();
   Destroy();
 }
 
 // Tests the case where the video started and received a single Render() call,
 // then the video was put into the background.
-TEST_P(VideoRendererImplTest, BackgroundRenderingRenderStartedThenStopped) {
+TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
   // This test is only for the new rendering path.
   if (!GetParam())
     return;
 
-  // By default, tests disable background rendering, so enable it now and give
-  // a short, but non-zero, timeout.
-  renderer_->SetBackgroundRenderingForTesting(
-      true, base::TimeDelta::FromMilliseconds(kTestBackgroundRenderTimeoutMs));
-
   Initialize();
   QueueFrames("0 10 20 30");
 
-  // Start the sink and wait for the first callback.
+  // Start the sink and wait for the first callback.  Set statistics to a non
+  // zero value, once we have some decoded frames they should be overwritten.
+  last_pipeline_statistics_.video_frames_dropped = 1;
   {
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
@@ -712,19 +664,26 @@ TEST_P(VideoRendererImplTest, BackgroundRenderingRenderStartedThenStopped) {
     StartPlayingFrom(0);
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
+    EXPECT_EQ(0u, last_pipeline_statistics_.video_frames_dropped);
   }
 
   renderer_->OnTimeStateChanged(true);
 
-  // Suspend all future callbacks and synthetically advance the media time.
-  SuspendRenderCallbacks();
+  // Suspend all future callbacks and synthetically advance the media time,
+  // because this is a background render, we won't underflow by waiting until
+  // a pending read is ready.
+  null_video_sink_->set_background_render(true);
   AdvanceTimeInMs(41);
-  AdvanceWallclockTimeInMs(kTestBackgroundRenderTimeoutMs);
-
-  // Eventually background rendering should request new buffers and at that
-  // point fire the ended event if rendering has completed.
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(30)));
   WaitForPendingRead();
   SatisfyPendingReadWithEndOfStream();
+
+  // If this wasn't background rendering mode, this would result in two frames
+  // being dropped, but since we set background render to true, none should be
+  // reported
+  EXPECT_EQ(0u, last_pipeline_statistics_.video_frames_dropped);
+  EXPECT_EQ(4u, last_pipeline_statistics_.video_frames_decoded);
+
   WaitForEnded();
   Destroy();
 }
