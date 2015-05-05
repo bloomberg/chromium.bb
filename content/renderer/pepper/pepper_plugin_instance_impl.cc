@@ -2031,7 +2031,10 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
     else if (fullscreen_container_)
       fullscreen_container_->SetLayer(NULL);
     web_layer_.reset();
-    texture_layer_ = NULL;
+    if (texture_layer_) {
+      texture_layer_->ClearClient();
+      texture_layer_ = NULL;
+    }
     compositor_layer_ = NULL;
   }
 
