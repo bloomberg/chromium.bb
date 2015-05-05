@@ -214,6 +214,10 @@ public:
     // This is executed between layout tests runs
     void clearOpener() { setOpener(0); }
 
+    // Inserts the given frame as a child of this frame, so that it is the next
+    // child after |previousSibling|, or first child if |previousSibling| is null.
+    BLINK_EXPORT void insertAfter(WebFrame* child, WebFrame* previousSibling);
+
     // Adds the given frame as a child of this frame.
     BLINK_EXPORT void appendChild(WebFrame*);
 

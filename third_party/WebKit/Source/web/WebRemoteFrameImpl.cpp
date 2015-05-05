@@ -714,12 +714,18 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const
     return WebString();
 }
 
+// TODO(alexmos): Remove once Chromium side is updated to take previous sibling.
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client)
+{
+    return createLocalChild(name, sandboxFlags, client, lastChild());
+}
+
+WebLocalFrame* WebRemoteFrameImpl::createLocalChild(const WebString& name, WebSandboxFlags sandboxFlags, WebFrameClient* client, WebFrame* previousSibling)
 {
     WebLocalFrameImpl* child = toWebLocalFrameImpl(WebLocalFrame::create(client));
     WillBeHeapHashMap<WebFrame*, OwnPtrWillBeMember<FrameOwner>>::AddResult result =
         m_ownersForChildren.add(child, RemoteBridgeFrameOwner::create(child, static_cast<SandboxFlags>(sandboxFlags)));
-    appendChild(child);
+    insertAfter(child, previousSibling);
     // FIXME: currently this calls LocalFrame::init() on the created LocalFrame, which may
     // result in the browser observing two navigations to about:blank (one from the initial
     // frame creation, and one from swapping it into the remote process). FrameLoader might

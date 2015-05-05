@@ -7329,4 +7329,39 @@ TEST_F(WebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     popupWebViewHelper.reset();
 }
 
+TEST_F(WebFrameTest, CreateLocalChildWithPreviousSibling)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->setMainFrame(remoteClient.frame());
+    WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
+
+    WebLocalFrame* secondFrame = parent->createLocalChild("", WebSandboxFlags::None, nullptr, nullptr);
+    WebLocalFrame* fourthFrame = parent->createLocalChild("", WebSandboxFlags::None, nullptr, secondFrame);
+    WebLocalFrame* thirdFrame = parent->createLocalChild("", WebSandboxFlags::None, nullptr, secondFrame);
+    WebLocalFrame* firstFrame = parent->createLocalChild("", WebSandboxFlags::None, nullptr, nullptr);
+
+    EXPECT_EQ(firstFrame, parent->firstChild());
+    EXPECT_EQ(nullptr, firstFrame->previousSibling());
+    EXPECT_EQ(secondFrame, firstFrame->nextSibling());
+
+    EXPECT_EQ(firstFrame, secondFrame->previousSibling());
+    EXPECT_EQ(thirdFrame, secondFrame->nextSibling());
+
+    EXPECT_EQ(secondFrame, thirdFrame->previousSibling());
+    EXPECT_EQ(fourthFrame, thirdFrame->nextSibling());
+
+    EXPECT_EQ(thirdFrame, fourthFrame->previousSibling());
+    EXPECT_EQ(nullptr, fourthFrame->nextSibling());
+    EXPECT_EQ(fourthFrame, parent->lastChild());
+
+    EXPECT_EQ(parent, firstFrame->parent());
+    EXPECT_EQ(parent, secondFrame->parent());
+    EXPECT_EQ(parent, thirdFrame->parent());
+    EXPECT_EQ(parent, fourthFrame->parent());
+
+    view->close();
+}
+
 } // namespace blink

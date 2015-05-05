@@ -142,23 +142,38 @@ void WebFrame::setOpener(WebFrame* opener)
     m_opener = opener;
 }
 
-void WebFrame::appendChild(WebFrame* child)
+void WebFrame::insertAfter(WebFrame* newChild, WebFrame* previousSibling)
 {
-    // FIXME: Original code asserts that the frames have the same Page. We
-    // should add an equivalent check... figure out what.
-    child->m_parent = this;
-    WebFrame* oldLast = m_lastChild;
-    m_lastChild = child;
+    newChild->m_parent = this;
 
-    if (oldLast) {
-        child->m_previousSibling = oldLast;
-        oldLast->m_nextSibling = child;
+    WebFrame* next;
+    if (!previousSibling) {
+        // Insert at the beginning if no previous sibling is specified.
+        next = m_firstChild;
+        m_firstChild = newChild;
     } else {
-        m_firstChild = child;
+        ASSERT(previousSibling->m_parent == this);
+        next = previousSibling->m_nextSibling;
+        previousSibling->m_nextSibling = newChild;
+        newChild->m_previousSibling = previousSibling;
+    }
+
+    if (next) {
+        newChild->m_nextSibling = next;
+        next->m_previousSibling = newChild;
+    } else {
+        m_lastChild = newChild;
     }
 
     toCoreFrame(this)->tree().invalidateScopedChildCount();
     toCoreFrame(this)->host()->incrementSubframeCount();
+}
+
+void WebFrame::appendChild(WebFrame* child)
+{
+    // TODO(dcheng): Original code asserts that the frames have the same Page.
+    // We should add an equivalent check... figure out what.
+    insertAfter(child, m_lastChild);
 }
 
 void WebFrame::removeChild(WebFrame* child)

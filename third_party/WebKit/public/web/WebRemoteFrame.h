@@ -17,7 +17,9 @@ class WebRemoteFrame : public WebFrame {
 public:
     BLINK_EXPORT static WebRemoteFrame* create(WebRemoteFrameClient*);
 
+    // TODO(alexmos): Remove once Chromium side is updated to take previous sibling.
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*) = 0;
+    virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*, WebFrame*) = 0;
 
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) = 0;
 
