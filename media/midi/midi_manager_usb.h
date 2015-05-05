@@ -11,12 +11,13 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "media/base/media_export.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/usb_midi_device.h"
+#include "media/midi/usb_midi_export.h"
 #include "media/midi/usb_midi_input_stream.h"
 #include "media/midi/usb_midi_jack.h"
 #include "media/midi/usb_midi_output_stream.h"
@@ -26,9 +27,10 @@ namespace media {
 class MidiScheduler;
 
 // MidiManager for USB-MIDI.
-class MEDIA_EXPORT MidiManagerUsb : public MidiManager,
-                                    public UsbMidiDeviceDelegate,
-                                    public UsbMidiInputStream::Delegate {
+class USB_MIDI_EXPORT MidiManagerUsb
+    : public MidiManager,
+      public UsbMidiDeviceDelegate,
+      NON_EXPORTED_BASE(public UsbMidiInputStream::Delegate) {
  public:
   explicit MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> device_factory);
   ~MidiManagerUsb() override;

@@ -6,14 +6,14 @@
 #define MEDIA_MIDI_USB_MIDI_JACK_H_
 
 #include "base/basictypes.h"
-#include "media/base/media_export.h"
+#include "media/midi/usb_midi_export.h"
 
 namespace media {
 
 class UsbMidiDevice;
 
 // UsbMidiJack represents an EMBEDDED MIDI jack.
-struct MEDIA_EXPORT UsbMidiJack {
+struct USB_MIDI_EXPORT UsbMidiJack {
   // The direction of the endpoint associated with an EMBEDDED MIDI jack.
   // Note that an IN MIDI jack associated with an OUT endpoint has
   // ***DIRECTION_OUT*** direction.

@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "media/base/media_export.h"
+#include "media/midi/midi_export.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_result.h"
 
@@ -25,7 +25,7 @@ namespace media {
 // A MidiManagerClient registers with the MidiManager to receive MIDI data.
 // See MidiManager::RequestAccess() and MidiManager::ReleaseAccess()
 // for details.
-class MEDIA_EXPORT MidiManagerClient {
+class MIDI_EXPORT MidiManagerClient {
  public:
   virtual ~MidiManagerClient() {}
 
@@ -63,7 +63,7 @@ class MEDIA_EXPORT MidiManagerClient {
 };
 
 // Manages access to all MIDI hardware.
-class MEDIA_EXPORT MidiManager {
+class MIDI_EXPORT MidiManager {
  public:
   static const size_t kMaxPendingClientCount = 128;
 

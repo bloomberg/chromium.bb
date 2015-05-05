@@ -233,8 +233,6 @@ if (is_win) {
       "installer_state_unittest.cc",
       "installer_util_test_common.cc",
       "installer_util_test_common.h",
-      "installer_util_unittests.rc",
-      "installer_util_unittests_resource.h",
       "language_selector_unittest.cc",
       "legacy_firewall_manager_win_unittest.cc",
       "logging_installer_unittest.cc",

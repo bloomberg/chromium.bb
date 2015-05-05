@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "media/base/media_export.h"
+#include "media/midi/midi_export.h"
 
 namespace media {
 
@@ -15,7 +15,7 @@ class MidiManager;
 class MidiManagerClient;
 
 // TODO(crbug.com/467442): Make tasks cancelable per client.
-class MEDIA_EXPORT MidiScheduler final {
+class MIDI_EXPORT MidiScheduler final {
  public:
   explicit MidiScheduler(MidiManager* manager);
   ~MidiScheduler();

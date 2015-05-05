@@ -84,4 +84,8 @@ source_set("unit_tests") {
     sources += [ "resources_unittest.cc" ]
     deps += [ "//breakpad:client" ]
   }
+
+  if (is_win) {
+    libs = [ "rpcrt4.lib" ]  # For UuidCreate in breakpad_win_unittest.cc.
+  }
 }

@@ -385,6 +385,8 @@ if (!is_android) {
       configs -= [ "//build/config/win:default_incremental_linking" ]
       configs +=
           [ "//build/config/win:default_large_module_incremental_linking" ]
+
+      libs = [ "oleacc.lib" ]
     }
 
     if (is_mac) {

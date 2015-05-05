@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "media/base/media_export.h"
+#include "media/midi/usb_midi_export.h"
 #include "media/midi/usb_midi_jack.h"
 
 namespace media {
@@ -20,7 +20,7 @@ class UsbMidiDevice;
 // generates input / output lists of MIDIPortInfo.
 // This is not a generic USB descriptor parser: this parser is designed
 // for collecting USB-MIDI jacks information from the descriptor.
-class MEDIA_EXPORT UsbMidiDescriptorParser {
+class USB_MIDI_EXPORT UsbMidiDescriptorParser {
  public:
   struct DeviceInfo {
     DeviceInfo()

@@ -7,13 +7,13 @@
 
 #include <jni.h>
 
-#include "media/base/media_export.h"
+#include "media/midi/midi_export.h"
 
 namespace media {
 namespace midi {
 
 // Register all JNI bindings necessary for media/midi.
-MEDIA_EXPORT bool RegisterJni(JNIEnv* env);
+MIDI_EXPORT bool RegisterJni(JNIEnv* env);
 
 }  // namespace midi
 }  // namespace media

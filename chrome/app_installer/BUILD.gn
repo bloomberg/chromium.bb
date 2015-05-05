@@ -50,6 +50,7 @@ test("app_installer_unittests") {
     ":util",
     "//base",
     "//base/test:run_all_unittests",
+    "//mojo/environment:chromium",
     "//net:test_support",
     "//testing/gtest",
   ]

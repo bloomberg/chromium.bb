@@ -294,9 +294,6 @@ if (!is_mac) {
       "//third_party/mojo/src/mojo/edk/test:test_support",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
       "//third_party/mojo/src/mojo/public/js",
-
-      #"//ppapi:ppapi_tests",  TODO(GYP)
-      #"//ppapi:ppapi_unittest_shared",  TODO(GYP)
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/WebKit/public:blink",
@@ -314,7 +311,7 @@ if (!is_mac) {
       "//ui/snapshot",
     ]
 
-    data_deps = []
+    data_deps = [ "//ppapi:ppapi_tests" ]  # Loaded at runtime.
 
     if (!is_chromeos) {
       sources -=
@@ -327,22 +324,6 @@ if (!is_mac) {
               ".",
               "//content")
 
-      # TODO(GYP) Windows support
-      #       'resource_include_dirs': [
-      #         '<(SHARED_INTERMEDIATE_DIR)/webkit',
-      #       ],
-      #       'sources': [
-      #         'shell/app/resource.h',
-      #         'shell/app/shell.rc',
-      #         # TODO:  It would be nice to have these pulled in
-      #         # automatically from direct_dependent_settings in
-      #         # their various targets (net.gyp:net_resources, etc.),
-      #         # but that causes errors in other targets when
-      #         # resulting .res files get referenced multiple times.
-      #         '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.rc',
-      #         '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.rc',
-      #         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-      #       ],
       deps += [
         "//content/app/strings",
         "//net:net_resources",
@@ -351,11 +332,7 @@ if (!is_mac) {
         "//third_party/isimpledom",
       ]
 
-      # TODO(GYP) Windows
-      #         'Debug_Base': {
-      #           'msvs_settings': {
-      #             'VCLinkerTool': {
-      #               'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+      libs = [ "oleacc.lib" ]
     }
 
     if (is_linux) {
@@ -600,6 +577,7 @@ test("content_unittests") {
   if (use_aura) {
     deps += [
       "//ui/aura",
+      "//ui/aura_extra",
       "//ui/wm",
     ]
   } else {

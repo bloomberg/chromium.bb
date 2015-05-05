@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/time/time.h"
-#include "media/base/media_export.h"
+#include "media/midi/usb_midi_export.h"
 #include "media/midi/usb_midi_jack.h"
 
 namespace media {
@@ -21,9 +21,9 @@ class UsbMidiDevice;
 // UsbMidiInputStream converts USB-MIDI data to MIDI data.
 // See "USB Device Class Definition for MIDI Devices" Release 1.0,
 // Section 4 "USB-MIDI Event Packets" for details.
-class MEDIA_EXPORT UsbMidiInputStream {
+class USB_MIDI_EXPORT UsbMidiInputStream {
  public:
-  class MEDIA_EXPORT Delegate {
+  class USB_MIDI_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
     // This function is called when some data arrives to a USB-MIDI jack.

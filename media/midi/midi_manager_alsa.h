@@ -18,11 +18,12 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "device/udev_linux/scoped_udev.h"
+#include "media/midi/midi_export.h"
 #include "media/midi/midi_manager.h"
 
 namespace media {
 
-class MEDIA_EXPORT MidiManagerAlsa final : public MidiManager {
+class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
  public:
   MidiManagerAlsa();
   ~MidiManagerAlsa() override;

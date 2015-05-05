@@ -20,6 +20,7 @@
       'usb_midi_descriptor_parser.cc',
       'usb_midi_descriptor_parser.h',
       'usb_midi_device.h',
+      'usb_midi_export.h',
       'usb_midi_input_stream.cc',
       'usb_midi_input_stream.h',
       'usb_midi_jack.h',
@@ -36,12 +37,13 @@
         '../../base/base.gyp:base',
       ],
       'defines': [
-        'MEDIA_IMPLEMENTATION',
+        'MIDI_IMPLEMENTATION',
       ],
       'include_dirs': [
         '../..',
       ],
       'sources': [
+        'midi_export.h',
         'midi_manager.cc',
         'midi_manager.h',
         'midi_manager_android.cc',
@@ -98,6 +100,9 @@
             'midi_jni_registrar.cc',
             'midi_jni_registrar.h',
           ],
+          'defines': [
+            'EXPORT_USB_MIDI',
+          ],
         }],
         ['OS=="mac"', {
           'link_settings': {
@@ -123,9 +128,6 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:run_all_unittests',
         '../../testing/gtest.gyp:gtest',
-      ],
-      'defines': [
-        'MEDIA_IMPLEMENTATION',
       ],
       'include_dirs': [
         '../..',

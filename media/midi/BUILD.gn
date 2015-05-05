@@ -26,25 +26,21 @@ config("midi_config") {
 }
 
 # USB MIDI specific source files that are used in Android port, and unit tests.
-source_set("usb_midi") {
-  sources = [
-    "midi_manager_usb.cc",
-    "midi_manager_usb.h",
-    "usb_midi_descriptor_parser.cc",
-    "usb_midi_descriptor_parser.h",
-    "usb_midi_device.h",
-    "usb_midi_input_stream.cc",
-    "usb_midi_input_stream.h",
-    "usb_midi_jack.h",
-    "usb_midi_output_stream.cc",
-    "usb_midi_output_stream.h",
-  ]
-
-  defines = [ "MEDIA_IMPLEMENTATION" ]
-  deps = [
-    "//base",
-  ]
-}
+# These can't easily be a source set because "midi" is a component and the
+# component export flags must always be the same.
+usb_midi_sources = [
+  "midi_manager_usb.cc",
+  "midi_manager_usb.h",
+  "usb_midi_descriptor_parser.cc",
+  "usb_midi_descriptor_parser.h",
+  "usb_midi_device.h",
+  "usb_midi_export.h",
+  "usb_midi_input_stream.cc",
+  "usb_midi_input_stream.h",
+  "usb_midi_jack.h",
+  "usb_midi_output_stream.cc",
+  "usb_midi_output_stream.h",
+]
 
 # Android specific Java source files that are used to generate jni header files.
 if (is_android) {
@@ -67,6 +63,7 @@ if (is_android) {
 
 component("midi") {
   sources = [
+    "midi_export.h",
     "midi_manager.cc",
     "midi_manager.h",
     "midi_manager_mac.cc",
@@ -85,25 +82,29 @@ component("midi") {
 
   configs += [ ":midi_config" ]
 
-  defines = [ "MEDIA_IMPLEMENTATION" ]
-  deps = []
+  defines = [ "MIDI_IMPLEMENTATION" ]
+  deps = [
+    "//base",
+  ]
   libs = []
 
   if (is_android) {
     sources += [
-      "midi_jni_registrar.cc",
-      "midi_jni_registrar.h",
-      "midi_manager_android.cc",
-      "usb_midi_device_android.cc",
-      "usb_midi_device_android.h",
-      "usb_midi_device_factory_android.cc",
-      "usb_midi_device_factory_android.h",
-    ]
+                 "midi_jni_registrar.cc",
+                 "midi_jni_registrar.h",
+                 "midi_manager_android.cc",
+                 "usb_midi_device_android.cc",
+                 "usb_midi_device_android.h",
+                 "usb_midi_device_factory_android.cc",
+                 "usb_midi_device_factory_android.h",
+               ] + usb_midi_sources
+
+    # Since the USB sources are part of the component.
+    defines += [ "EXPORT_USB_MIDI" ]
 
     deps += [
       "//base:i18n",
       ":midi_jni_headers",
-      ":usb_midi",
     ]
   }
 
@@ -155,7 +156,7 @@ test("midi_unittests") {
   ]
 
   if (!is_android) {
-    deps += [ ":usb_midi" ]
+    sources += usb_midi_sources
   }
 
   if (is_mac) {

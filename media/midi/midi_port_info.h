@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "media/base/media_export.h"
+#include "media/midi/midi_export.h"
 
 namespace media {
 
@@ -20,7 +20,7 @@ enum MidiPortState {
   MIDI_PORT_STATE_LAST = MIDI_PORT_OPENED,
 };
 
-struct MEDIA_EXPORT MidiPortInfo final {
+struct MIDI_EXPORT MidiPortInfo final {
   MidiPortInfo();
   MidiPortInfo(const std::string& in_id,
                const std::string& in_manufacturer,

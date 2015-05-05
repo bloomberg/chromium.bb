@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "media/base/media_export.h"
+#include "media/midi/midi_export.h"
 
 namespace media {
 
@@ -38,7 +38,7 @@ namespace media {
 //         dispatch(next_message);
 //     }
 //   }
-class MEDIA_EXPORT MidiMessageQueue {
+class MIDI_EXPORT MidiMessageQueue {
  public:
   // Initializes the queue. Set true to |allow_running_status| to enable
   // "MIDI running status" reconstruction.
