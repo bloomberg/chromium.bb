@@ -602,8 +602,7 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     base::CommandLine* command_line) const {
   DCHECK(command_line);
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
-      !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
+  if (ShouldDisableAcceleratedVideoDecode(command_line))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
 #if defined(ENABLE_WEBRTC)
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE) &&
@@ -658,8 +657,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
                                     IntSetToString(gpu_driver_bugs_));
   }
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
-      !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
+  if (ShouldDisableAcceleratedVideoDecode(command_line)) {
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
   }
 #if defined(ENABLE_WEBRTC)
@@ -739,9 +737,10 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
   }
 #endif
 
-  if (!IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAcceleratedVideoDecode)) {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (!ShouldDisableAcceleratedVideoDecode(command_line) &&
+      !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
     prefs->pepper_accelerated_video_decode_enabled = true;
   }
 }
@@ -877,6 +876,26 @@ bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING))
     return false;
   return true;
+}
+
+
+bool GpuDataManagerImplPrivate::ShouldDisableAcceleratedVideoDecode(
+    const base::CommandLine* command_line) const {
+  // Make sure that we initialize the experiment first to make sure that
+  // statistics are bucket correctly in all cases.
+  // This experiment is temporary and will be removed once enough data
+  // to resolve crbug/442039 has been collected.
+  const std::string group_name = base::FieldTrialList::FindFullName(
+      "DisableAcceleratedVideoDecode");
+  if (command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
+    // It was already disabled on the command line.
+    return false;
+  }
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
+    return true;
+  if (group_name == "Disabled")
+    return true;
+  return false;
 }
 
 void GpuDataManagerImplPrivate::GetDisabledExtensions(

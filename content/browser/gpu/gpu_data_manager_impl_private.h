@@ -89,6 +89,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void HandleGpuSwitch();
 
   bool CanUseGpuBrowserCompositor() const;
+  bool ShouldDisableAcceleratedVideoDecode(
+      const base::CommandLine* command_line) const;
 
   void GetDisabledExtensions(std::string* disabled_extensions) const;
 
@@ -280,4 +282,3 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_GPU_GPU_DATA_MANAGER_IMPL_PRIVATE_H_
-
