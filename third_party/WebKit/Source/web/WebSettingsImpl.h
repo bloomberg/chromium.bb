@@ -196,6 +196,7 @@ public:
     bool doubleTapToZoomEnabled() const;
     bool perTilePaintingEnabled() const { return m_perTilePaintingEnabled; }
     bool supportDeprecatedTargetDensityDPI() const { return m_supportDeprecatedTargetDensityDPI; }
+    bool viewportMetaEnabled() const;
     bool viewportMetaLayoutSizeQuirk() const { return m_viewportMetaLayoutSizeQuirk; }
     bool viewportMetaNonUserScalableQuirk() const { return m_viewportMetaNonUserScalableQuirk; }
     bool clobberUserAgentInitialScaleQuirk() const { return m_clobberUserAgentInitialScaleQuirk; }

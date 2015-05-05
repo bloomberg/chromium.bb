@@ -677,6 +677,11 @@ bool WebSettingsImpl::viewportEnabled() const
     return m_settings->viewportEnabled();
 }
 
+bool WebSettingsImpl::viewportMetaEnabled() const
+{
+    return m_settings->viewportMetaEnabled();
+}
+
 bool WebSettingsImpl::doubleTapToZoomEnabled() const
 {
     return m_devToolsEmulator->doubleTapToZoomEnabled();

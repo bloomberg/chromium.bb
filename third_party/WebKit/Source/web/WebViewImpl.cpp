@@ -3299,6 +3299,13 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
 
 void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription& description)
 {
+    // If we're not reading the viewport meta tag, allow GPU rasterization.
+    if (!settingsImpl()->viewportMetaEnabled()) {
+        m_matchesHeuristicsForGpuRasterization = true;
+        if (m_layerTreeView)
+            m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
+    }
+
     if (!settings()->viewportEnabled() || !page() || (!m_size.width && !m_size.height) || !page()->mainFrame()->isLocalFrame())
         return;
 
