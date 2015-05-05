@@ -382,7 +382,8 @@ void ContentDecryptorDelegate::Initialize(
     const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
-    const base::Closure& fatal_plugin_error_cb) {
+    const base::Closure& fatal_plugin_error_cb,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(!key_system.empty());
   DCHECK(key_system_.empty());
   key_system_ = key_system;
@@ -394,8 +395,9 @@ void ContentDecryptorDelegate::Initialize(
   session_expiration_update_cb_ = session_expiration_update_cb;
   fatal_plugin_error_cb_ = fatal_plugin_error_cb;
 
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   plugin_decryption_interface_->Initialize(
-      pp_instance_, StringVar::StringToPPVar(key_system_),
+      pp_instance_, promise_id, StringVar::StringToPPVar(key_system_),
       PP_FromBool(allow_distinctive_identifier),
       PP_FromBool(allow_persistent_state));
 }

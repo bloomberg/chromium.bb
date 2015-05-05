@@ -262,6 +262,8 @@
       'renderer/media/audio_message_filter.h',
       'renderer/media/audio_renderer_mixer_manager.cc',
       'renderer/media/audio_renderer_mixer_manager.h',
+      'renderer/media/crypto/cdm_initialized_promise.cc',
+      'renderer/media/crypto/cdm_initialized_promise.h',
       'renderer/media/crypto/pepper_cdm_wrapper.h',
       'renderer/media/crypto/pepper_cdm_wrapper_impl.cc',
       'renderer/media/crypto/pepper_cdm_wrapper_impl.h',

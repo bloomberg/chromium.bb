@@ -7,8 +7,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
+#include "media/base/media_keys.h"
 #include "media/cdm/aes_decryptor.h"
 #include "url/gurl.h"
 #if defined(ENABLE_PEPPER_CDMS)
@@ -49,7 +52,7 @@ void RenderCdmFactory::Create(
     const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
+    const media::CdmCreatedCB& cdm_created_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!security_origin.is_valid()) {
@@ -58,35 +61,37 @@ void RenderCdmFactory::Create(
     return;
   }
 
-  scoped_ptr<media::MediaKeys> cdm;
-
   if (media::CanUseAesDecryptor(key_system)) {
     // TODO(sandersd): Currently the prefixed API always allows distinctive
     // identifiers and persistent state. Once that changes we can sanity check
     // here that neither is allowed for AesDecryptor, since it does not support
     // them and should never be configured that way. http://crbug.com/455271
-    cdm.reset(new media::AesDecryptor(security_origin, session_message_cb,
-                                      session_closed_cb,
-                                      session_keys_change_cb));
-  } else {
-#if defined(ENABLE_PEPPER_CDMS)
-    cdm = PpapiDecryptor::Create(
-        key_system, allow_distinctive_identifier, allow_persistent_state,
-        security_origin, create_pepper_cdm_cb_, session_message_cb,
-        session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
-        session_expiration_update_cb);
-#elif defined(ENABLE_BROWSER_CDMS)
-    DCHECK(allow_distinctive_identifier);
-    DCHECK(allow_persistent_state);
-    cdm = ProxyMediaKeys::Create(
-        key_system, security_origin, manager_, session_message_cb,
-        session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
-        session_expiration_update_cb);
-#endif  // defined(ENABLE_PEPPER_CDMS)
+    scoped_ptr<media::MediaKeys> cdm(
+        new media::AesDecryptor(security_origin, session_message_cb,
+                                session_closed_cb, session_keys_change_cb));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm)));
+    return;
   }
 
+#if defined(ENABLE_PEPPER_CDMS)
+  PpapiDecryptor::Create(
+      key_system, allow_distinctive_identifier, allow_persistent_state,
+      security_origin, create_pepper_cdm_cb_, session_message_cb,
+      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
+      session_expiration_update_cb, cdm_created_cb);
+#elif defined(ENABLE_BROWSER_CDMS)
+  DCHECK(allow_distinctive_identifier);
+  DCHECK(allow_persistent_state);
+  ProxyMediaKeys::Create(key_system, security_origin, manager_,
+                         session_message_cb, session_closed_cb,
+                         legacy_session_error_cb, session_keys_change_cb,
+                         session_expiration_update_cb, cdm_created_cb);
+#else
+  // No possible CDM to create, so fail the request.
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm)));
+      FROM_HERE, base::Bind(cdm_created_cb, nullptr));
+#endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
 }  // namespace content

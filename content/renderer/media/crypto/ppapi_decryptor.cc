@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/renderer/media/crypto/cdm_initialized_promise.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
@@ -22,7 +23,7 @@
 
 namespace content {
 
-scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
+void PpapiDecryptor::Create(
     const std::string& key_system,
     bool allow_distinctive_identifier,
     bool allow_persistent_state,
@@ -32,27 +33,33 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const media::SessionClosedCB& session_closed_cb,
     const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
-    const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
+    const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+    const media::CdmCreatedCB& cdm_created_cb) {
   std::string plugin_type = media::GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
   scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper =
       create_pepper_cdm_cb.Run(plugin_type, security_origin);
   if (!pepper_cdm_wrapper) {
     DLOG(ERROR) << "Plugin instance creation failed.";
-    return scoped_ptr<PpapiDecryptor>();
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(cdm_created_cb, nullptr));
   }
 
-  return scoped_ptr<PpapiDecryptor>(new PpapiDecryptor(
-      key_system, allow_distinctive_identifier, allow_persistent_state,
-      pepper_cdm_wrapper.Pass(), session_message_cb, session_closed_cb,
-      legacy_session_error_cb, session_keys_change_cb,
-      session_expiration_update_cb));
+  scoped_ptr<PpapiDecryptor> ppapi_decryptor(
+      new PpapiDecryptor(pepper_cdm_wrapper.Pass(), session_message_cb,
+                         session_closed_cb, legacy_session_error_cb,
+                         session_keys_change_cb, session_expiration_update_cb));
+
+  // PpapiDecryptor ownership passed to the promise, but keep a copy in order
+  // to call InitializeCdm().
+  PpapiDecryptor* ppapi_decryptor_copy = ppapi_decryptor.get();
+  scoped_ptr<CdmInitializedPromise> promise(
+      new CdmInitializedPromise(cdm_created_cb, ppapi_decryptor.Pass()));
+  ppapi_decryptor_copy->InitializeCdm(key_system, allow_distinctive_identifier,
+                                      allow_persistent_state, promise.Pass());
 }
 
 PpapiDecryptor::PpapiDecryptor(
-    const std::string& key_system,
-    bool allow_distinctive_identifier,
-    bool allow_persistent_state,
     scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -73,7 +80,17 @@ PpapiDecryptor::PpapiDecryptor(
   DCHECK(!legacy_session_error_cb_.is_null());
   DCHECK(!session_keys_change_cb.is_null());
   DCHECK(!session_expiration_update_cb.is_null());
+}
 
+PpapiDecryptor::~PpapiDecryptor() {
+  pepper_cdm_wrapper_.reset();
+}
+
+void PpapiDecryptor::InitializeCdm(
+    const std::string& key_system,
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
   base::WeakPtr<PpapiDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   CdmDelegate()->Initialize(
       key_system, allow_distinctive_identifier, allow_persistent_state,
@@ -82,11 +99,8 @@ PpapiDecryptor::PpapiDecryptor(
       base::Bind(&PpapiDecryptor::OnLegacySessionError, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionKeysChange, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionExpirationUpdate, weak_this),
-      base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this));
-}
-
-PpapiDecryptor::~PpapiDecryptor() {
-  pepper_cdm_wrapper_.reset();
+      base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this),
+      promise.Pass());
 }
 
 void PpapiDecryptor::SetServerCertificate(

@@ -50,7 +50,7 @@ class RenderCdmFactory : public media::CdmFactory, public RenderFrameObserver {
       const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
-      const CdmCreatedCB& cdm_created_cb) override;
+      const media::CdmCreatedCB& cdm_created_cb) override;
 
  private:
 #if defined(ENABLE_PEPPER_CDMS)

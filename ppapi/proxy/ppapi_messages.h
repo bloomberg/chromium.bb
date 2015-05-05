@@ -783,8 +783,9 @@ IPC_MESSAGE_ROUTED3(
     int32_t /* result */)
 
 // PPP_ContentDecryptor_Dev
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_Initialize,
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPPContentDecryptor_Initialize,
                     PP_Instance /* instance */,
+                    uint32_t /* promise_id */,
                     ppapi::proxy::SerializedVar /* key_system, String */,
                     PP_Bool /* allow_distinctive_identifier */,
                     PP_Bool /* allow_persistent_state */)

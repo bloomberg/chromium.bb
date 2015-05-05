@@ -15,10 +15,10 @@ class GURL;
 
 namespace media {
 
+using CdmCreatedCB = base::Callback<void(scoped_ptr<MediaKeys>)>;
+
 class MEDIA_EXPORT CdmFactory {
  public:
-  using CdmCreatedCB = base::Callback<void(scoped_ptr<MediaKeys>)>;
-
   CdmFactory();
   virtual ~CdmFactory();
 

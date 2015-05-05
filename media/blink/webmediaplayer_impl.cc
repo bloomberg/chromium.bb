@@ -699,7 +699,9 @@ void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
 
 void WebMediaPlayerImpl::SetCdm(const CdmAttachedCB& cdm_attached_cb,
                                 CdmContext* cdm_context) {
-  pipeline_.SetCdm(cdm_context, cdm_attached_cb);
+  // If CDM initialization succeeded, tell the pipeline about it.
+  if (cdm_context)
+    pipeline_.SetCdm(cdm_context, cdm_attached_cb);
 }
 
 void WebMediaPlayerImpl::OnCdmAttached(

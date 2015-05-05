@@ -34,7 +34,8 @@ class ContentDecryptor_Private {
   // TODO(tomfinegan): This could be optimized to pass pp::Var instead of
   // strings. The change would allow the CDM wrapper to reuse vars when
   // replying to the browser.
-  virtual void Initialize(const std::string& key_system,
+  virtual void Initialize(uint32_t promise_id,
+                          const std::string& key_system,
                           bool allow_distinctive_identifier,
                           bool allow_persistent_state) = 0;
   virtual void SetServerCertificate(uint32_t promise_id,

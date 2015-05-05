@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M43 = 0.14
+  M44 = 0.15
 };
 
 /**
@@ -23,6 +23,9 @@ interface PPP_ContentDecryptor_Private {
   /**
    * Initialize for the specified key system.
    *
+   * @param[in] promise_id A reference for the promise that gets resolved or
+   * rejected depending upon the success or failure of initialization.
+   *
    * @param[in] key_system A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
    * @param[in] allow_distinctive_identifier Inform the CDM that it may use a
@@ -32,6 +35,7 @@ interface PPP_ContentDecryptor_Private {
    */
   void Initialize(
       [in] PP_Instance instance,
+      [in] uint32_t promise_id,
       [in] PP_Var key_system,
       [in] PP_Bool allow_distinctive_identifier,
       [in] PP_Bool allow_persistent_state);

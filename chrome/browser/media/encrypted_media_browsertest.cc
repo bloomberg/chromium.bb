@@ -653,7 +653,8 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
 
 #if defined(ENABLE_PEPPER_CDMS)
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
-  TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem, kEmeKeyError);
+  TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,
+                       kEmeNotSupportedError);
 }
 
 // When CDM crashes, we should still get a decode error.

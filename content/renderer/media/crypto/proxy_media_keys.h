@@ -13,6 +13,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "media/base/cdm_context.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/media_keys.h"
@@ -26,7 +27,7 @@ class RendererCdmManager;
 // A MediaKeys proxy that wraps the EME part of RendererCdmManager.
 class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
  public:
-  static scoped_ptr<ProxyMediaKeys> Create(
+  static void Create(
       const std::string& key_system,
       const GURL& security_origin,
       RendererCdmManager* manager,
@@ -34,7 +35,8 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       const media::SessionClosedCB& session_closed_cb,
       const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
-      const media::SessionExpirationUpdateCB& session_expiration_update_cb);
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      const media::CdmCreatedCB& cdm_created_cb);
 
   ~ProxyMediaKeys() override;
 
@@ -97,7 +99,8 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       const media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
   void InitializeCdm(const std::string& key_system,
-                     const GURL& security_origin);
+                     const GURL& security_origin,
+                     scoped_ptr<media::SimpleCdmPromise> promise);
 
   RendererCdmManager* manager_;
   int cdm_id_;

@@ -51,7 +51,8 @@ class CdmAdapter : public pp::Instance,
   // PPP_ContentDecryptor_Private implementation.
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
-  void Initialize(const std::string& key_system,
+  void Initialize(uint32_t promise_id,
+                  const std::string& key_system,
                   bool allow_distinctive_identifier,
                   bool allow_persistent_state) override;
   void SetServerCertificate(uint32_t promise_id,
@@ -164,7 +165,7 @@ class CdmAdapter : public pp::Instance,
     std::string legacy_destination_url;
   };
 
-  bool CreateCdmInstance(const std::string& key_system);
+  CdmWrapper* CreateCdmInstance(const std::string& key_system);
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into

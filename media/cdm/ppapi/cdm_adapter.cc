@@ -340,40 +340,34 @@ CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
 
 CdmAdapter::~CdmAdapter() {}
 
-bool CdmAdapter::CreateCdmInstance(const std::string& key_system) {
-  PP_DCHECK(!cdm_);
-  cdm_ = make_linked_ptr(CdmWrapper::Create(
-      key_system.data(), key_system.size(), GetCdmHost, this));
-  bool success = cdm_ != NULL;
+CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
+  CdmWrapper* cdm = CdmWrapper::Create(key_system.data(), key_system.size(),
+                                       GetCdmHost, this);
 
   const std::string message = "CDM instance for " + key_system +
-                              (success ? "" : " could not be") + " created.";
+                              (cdm ? "" : " could not be") + " created.";
   DLOG_TO_CONSOLE(message);
   CDM_DLOG() << message;
 
-  return success;
+  return cdm;
 }
 
-// No errors should be reported in this function because the spec says:
-// "Store this new error object internally with the MediaKeys instance being
-// created. This will be used to fire an error against any session created for
-// this instance." These errors will be reported during session creation
-// (CreateSession()) or session loading (LoadSession()).
-// TODO(xhwang): If necessary, we need to store the error here if we want to
-// support more specific error reporting (other than "Unknown").
-void CdmAdapter::Initialize(const std::string& key_system,
+void CdmAdapter::Initialize(uint32_t promise_id,
+                            const std::string& key_system,
                             bool allow_distinctive_identifier,
                             bool allow_persistent_state) {
   PP_DCHECK(!key_system.empty());
-  // TODO(jrummell): Remove this check when CDM creation is asynchronous.
-  // http://crbug.com/469003
-  PP_DCHECK(key_system_.empty() || (key_system_ == key_system && cdm_));
+  PP_DCHECK(!cdm_);
 
 #if defined(CHECK_DOCUMENT_URL)
   PP_URLComponents_Dev url_components = {};
   const pp::URLUtil_Dev* url_util = pp::URLUtil_Dev::Get();
-  if (!url_util)
+  if (!url_util) {
+    RejectPromise(promise_id, cdm::kUnknownError, 0,
+                  "Unable to determine origin.");
     return;
+  }
+
   pp::Var href = url_util->GetDocumentURL(pp::InstanceHandle(pp_instance()),
                                           &url_components);
   PP_DCHECK(href.is_string());
@@ -388,14 +382,18 @@ void CdmAdapter::Initialize(const std::string& key_system,
   }
 #endif  // defined(CHECK_DOCUMENT_URL)
 
-  if (!cdm_ && !CreateCdmInstance(key_system))
+  cdm_ = make_linked_ptr(CreateCdmInstance(key_system));
+  if (!cdm_) {
+    RejectPromise(promise_id, cdm::kInvalidAccessError, 0,
+                  "Unable to create CDM.");
     return;
+  }
 
-  PP_DCHECK(cdm_);
   key_system_ = key_system;
   allow_distinctive_identifier_ = allow_distinctive_identifier;
   allow_persistent_state_ = allow_persistent_state;
   cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state);
+  OnResolvePromise(promise_id);
 }
 
 void CdmAdapter::SetServerCertificate(uint32_t promise_id,
@@ -412,17 +410,6 @@ void CdmAdapter::SetServerCertificate(uint32_t promise_id,
     return;
   }
 
-  // Initialize() doesn't report an error, so SetServerCertificate() can be
-  // called even if Initialize() failed.
-  // TODO(jrummell): Remove this code when prefixed EME gets removed.
-  if (!cdm_) {
-    RejectPromise(promise_id,
-                  cdm::kInvalidStateError,
-                  0,
-                  "CDM has not been initialized.");
-    return;
-  }
-
   cdm_->SetServerCertificate(
       promise_id, server_certificate_ptr, server_certificate_size);
 }
@@ -431,19 +418,6 @@ void CdmAdapter::CreateSessionAndGenerateRequest(uint32_t promise_id,
                                                  PP_SessionType session_type,
                                                  PP_InitDataType init_data_type,
                                                  pp::VarArrayBuffer init_data) {
-  // Initialize() doesn't report an error, so CreateSession() can be called
-  // even if Initialize() failed.
-  // TODO(jrummell): Remove this code when prefixed EME gets removed.
-  // TODO(jrummell): Verify that Initialize() failing does not resolve the
-  // MediaKeys.create() promise.
-  if (!cdm_) {
-    RejectPromise(promise_id,
-                  cdm::kInvalidStateError,
-                  0,
-                  "CDM has not been initialized.");
-    return;
-  }
-
   cdm_->CreateSessionAndGenerateRequest(
       promise_id, PpSessionTypeToCdmSessionType(session_type),
       PpInitDataTypeToCdmInitDataType(init_data_type),
@@ -453,19 +427,6 @@ void CdmAdapter::CreateSessionAndGenerateRequest(uint32_t promise_id,
 void CdmAdapter::LoadSession(uint32_t promise_id,
                              PP_SessionType session_type,
                              const std::string& session_id) {
-  // Initialize() doesn't report an error, so LoadSession() can be called
-  // even if Initialize() failed.
-  // TODO(jrummell): Remove this code when prefixed EME gets removed.
-  // TODO(jrummell): Verify that Initialize() failing does not resolve the
-  // MediaKeys.create() promise.
-  if (!cdm_) {
-    RejectPromise(promise_id,
-                  cdm::kInvalidStateError,
-                  0,
-                  "CDM has not been initialized.");
-    return;
-  }
-
   cdm_->LoadSession(promise_id, PpSessionTypeToCdmSessionType(session_type),
                     session_id.data(), session_id.size());
 }

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
 #include "media/base/cdm_context.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
@@ -34,7 +35,7 @@ class PpapiDecryptor : public media::MediaKeys,
                        public media::CdmContext,
                        public media::Decryptor {
  public:
-  static scoped_ptr<PpapiDecryptor> Create(
+  static void Create(
       const std::string& key_system,
       bool allow_distinctive_identifier,
       bool allow_persistent_state,
@@ -44,7 +45,8 @@ class PpapiDecryptor : public media::MediaKeys,
       const media::SessionClosedCB& session_closed_cb,
       const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
-      const media::SessionExpirationUpdateCB& session_expiration_update_cb);
+      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+      const media::CdmCreatedCB& cdm_created_cb);
 
   ~PpapiDecryptor() override;
 
@@ -95,15 +97,17 @@ class PpapiDecryptor : public media::MediaKeys,
 
  private:
   PpapiDecryptor(
-      const std::string& key_system,
-      bool allow_distinctive_identifier,
-      bool allow_persistent_state,
       scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb);
+
+  void InitializeCdm(const std::string& key_system,
+                     bool allow_distinctive_identifier,
+                     bool allow_persistent_state,
+                     scoped_ptr<media::SimpleCdmPromise> promise);
 
   void OnDecoderInitialized(StreamType stream_type, bool success);
 

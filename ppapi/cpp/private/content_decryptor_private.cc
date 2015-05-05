@@ -25,6 +25,7 @@ static const char kPPPContentDecryptorInterface[] =
     PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE;
 
 void Initialize(PP_Instance instance,
+                uint32_t promise_id,
                 PP_Var key_system_arg,
                 PP_Bool allow_distinctive_identifier,
                 PP_Bool allow_persistent_state) {
@@ -37,10 +38,10 @@ void Initialize(PP_Instance instance,
   if (!key_system_var.is_string())
     return;
 
-  static_cast<ContentDecryptor_Private*>(object)->Initialize(
-      key_system_var.AsString(),
-      PP_ToBool(allow_distinctive_identifier),
-      PP_ToBool(allow_persistent_state));
+  static_cast<ContentDecryptor_Private*>(object)
+      ->Initialize(promise_id, key_system_var.AsString(),
+                   PP_ToBool(allow_distinctive_identifier),
+                   PP_ToBool(allow_persistent_state));
 }
 
 void SetServerCertificate(PP_Instance instance,

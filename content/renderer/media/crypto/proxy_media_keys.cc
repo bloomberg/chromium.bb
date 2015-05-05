@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "content/renderer/media/crypto/cdm_initialized_promise.h"
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
@@ -16,7 +17,7 @@
 
 namespace content {
 
-scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
+void ProxyMediaKeys::Create(
     const std::string& key_system,
     const GURL& security_origin,
     RendererCdmManager* manager,
@@ -24,13 +25,20 @@ scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
     const media::SessionClosedCB& session_closed_cb,
     const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
-    const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
+    const media::SessionExpirationUpdateCB& session_expiration_update_cb,
+    const media::CdmCreatedCB& cdm_created_cb) {
   DCHECK(manager);
   scoped_ptr<ProxyMediaKeys> proxy_media_keys(new ProxyMediaKeys(
       manager, session_message_cb, session_closed_cb, legacy_session_error_cb,
       session_keys_change_cb, session_expiration_update_cb));
-  proxy_media_keys->InitializeCdm(key_system, security_origin);
-  return proxy_media_keys.Pass();
+
+  // ProxyMediaKeys ownership passed to the promise, but keep a copy in order
+  // to call InitializeCdm().
+  ProxyMediaKeys* proxy_media_keys_copy = proxy_media_keys.get();
+  scoped_ptr<CdmInitializedPromise> promise(
+      new CdmInitializedPromise(cdm_created_cb, proxy_media_keys.Pass()));
+  proxy_media_keys_copy->InitializeCdm(key_system, security_origin,
+                                       promise.Pass());
 }
 
 ProxyMediaKeys::~ProxyMediaKeys() {
@@ -193,9 +201,13 @@ ProxyMediaKeys::ProxyMediaKeys(
   cdm_id_ = manager->RegisterMediaKeys(this);
 }
 
-void ProxyMediaKeys::InitializeCdm(const std::string& key_system,
-                                   const GURL& security_origin) {
+void ProxyMediaKeys::InitializeCdm(
+    const std::string& key_system,
+    const GURL& security_origin,
+    scoped_ptr<media::SimpleCdmPromise> promise) {
+  // TODO(jrummell): |Pass promise| on. http://crbug.com/469003.
   manager_->InitializeCdm(cdm_id_, this, key_system, security_origin);
+  promise->resolve();
 }
 
 }  // namespace content
