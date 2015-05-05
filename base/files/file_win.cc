@@ -6,7 +6,7 @@
 
 #include <io.h>
 
-#include "base/files/file_tracing.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/threading/thread_restrictions.h"
@@ -31,19 +31,15 @@ PlatformFile File::TakePlatformFile() {
 }
 
 void File::Close() {
-  if (!file_.IsValid())
-    return;
-
-  ThreadRestrictions::AssertIOAllowed();
-  SCOPED_FILE_TRACE("Close");
-  file_.Close();
+  if (file_.IsValid()) {
+    ThreadRestrictions::AssertIOAllowed();
+    file_.Close();
+  }
 }
 
 int64 File::Seek(Whence whence, int64 offset) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-
-  SCOPED_FILE_TRACE_WITH_SIZE("Seek", offset);
 
   LARGE_INTEGER distance, res;
   distance.QuadPart = offset;
@@ -59,8 +55,6 @@ int File::Read(int64 offset, char* data, int size) {
   DCHECK(!async_);
   if (size < 0)
     return -1;
-
-  SCOPED_FILE_TRACE_WITH_SIZE("Read", size);
 
   LARGE_INTEGER offset_li;
   offset_li.QuadPart = offset;
@@ -85,8 +79,6 @@ int File::ReadAtCurrentPos(char* data, int size) {
   if (size < 0)
     return -1;
 
-  SCOPED_FILE_TRACE_WITH_SIZE("ReadAtCurrentPos", size);
-
   DWORD bytes_read;
   if (::ReadFile(file_.Get(), data, size, &bytes_read, NULL))
     return bytes_read;
@@ -97,12 +89,10 @@ int File::ReadAtCurrentPos(char* data, int size) {
 }
 
 int File::ReadNoBestEffort(int64 offset, char* data, int size) {
-  // TODO(dbeam): trace this separately?
   return Read(offset, data, size);
 }
 
 int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
-  // TODO(dbeam): trace this separately?
   return ReadAtCurrentPos(data, size);
 }
 
@@ -110,8 +100,6 @@ int File::Write(int64 offset, const char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   DCHECK(!async_);
-
-  SCOPED_FILE_TRACE_WITH_SIZE("Write", size);
 
   LARGE_INTEGER offset_li;
   offset_li.QuadPart = offset;
@@ -134,8 +122,6 @@ int File::WriteAtCurrentPos(const char* data, int size) {
   if (size < 0)
     return -1;
 
-  SCOPED_FILE_TRACE_WITH_SIZE("WriteAtCurrentPos", size);
-
   DWORD bytes_written;
   if (::WriteFile(file_.Get(), data, size, &bytes_written, NULL))
     return bytes_written;
@@ -150,9 +136,6 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
 int64 File::GetLength() {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-
-  SCOPED_FILE_TRACE("GetLength");
-
   LARGE_INTEGER size;
   if (!::GetFileSizeEx(file_.Get(), &size))
     return -1;
@@ -163,8 +146,6 @@ int64 File::GetLength() {
 bool File::SetLength(int64 length) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-
-  SCOPED_FILE_TRACE_WITH_SIZE("SetLength", length);
 
   // Get the current file pointer.
   LARGE_INTEGER file_pointer;
@@ -195,8 +176,6 @@ bool File::SetTimes(Time last_access_time, Time last_modified_time) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
-  SCOPED_FILE_TRACE("SetTimes");
-
   FILETIME last_access_filetime = last_access_time.ToFileTime();
   FILETIME last_modified_filetime = last_modified_time.ToFileTime();
   return (::SetFileTime(file_.Get(), NULL, &last_access_filetime,
@@ -206,8 +185,6 @@ bool File::SetTimes(Time last_access_time, Time last_modified_time) {
 bool File::GetInfo(Info* info) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-
-  SCOPED_FILE_TRACE("GetInfo");
 
   BY_HANDLE_FILE_INFORMATION file_info;
   if (!GetFileInformationByHandle(file_.Get(), &file_info))
@@ -228,9 +205,6 @@ bool File::GetInfo(Info* info) {
 
 File::Error File::Lock() {
   DCHECK(IsValid());
-
-  SCOPED_FILE_TRACE("Lock");
-
   BOOL result = LockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
     return OSErrorToFileError(GetLastError());
@@ -239,9 +213,6 @@ File::Error File::Lock() {
 
 File::Error File::Unlock() {
   DCHECK(IsValid());
-
-  SCOPED_FILE_TRACE("Unlock");
-
   BOOL result = UnlockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
     return OSErrorToFileError(GetLastError());
@@ -251,8 +222,6 @@ File::Error File::Unlock() {
 File File::Duplicate() {
   if (!IsValid())
     return File();
-
-  SCOPED_FILE_TRACE("Duplicate");
 
   HANDLE other_handle = nullptr;
 
@@ -309,7 +278,7 @@ File::Error File::OSErrorToFileError(DWORD last_error) {
   }
 }
 
-void File::DoInitialize(uint32 flags) {
+void File::DoInitialize(const FilePath& name, uint32 flags) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
 
@@ -377,7 +346,7 @@ void File::DoInitialize(uint32 flags) {
   if (flags & FLAG_BACKUP_SEMANTICS)
     create_flags |= FILE_FLAG_BACKUP_SEMANTICS;
 
-  file_.Set(CreateFile(path_.value().c_str(), access, sharing, NULL,
+  file_.Set(CreateFile(name.value().c_str(), access, sharing, NULL,
                        disposition, create_flags, NULL));
 
   if (file_.IsValid()) {

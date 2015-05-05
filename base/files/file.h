@@ -18,7 +18,6 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/move.h"
@@ -31,6 +30,8 @@
 FORWARD_DECLARE_TEST(FileTest, MemoryCorruption);
 
 namespace base {
+
+class FilePath;
 
 #if defined(OS_WIN)
 typedef HANDLE PlatformFile;
@@ -161,8 +162,8 @@ class BASE_EXPORT File {
   File();
 
   // Creates or opens the given file. This will fail with 'access denied' if the
-  // |path| contains path traversal ('..') components.
-  File(const FilePath& path, uint32 flags);
+  // |name| contains path traversal ('..') components.
+  File(const FilePath& name, uint32 flags);
 
   // Takes ownership of |platform_file|.
   explicit File(PlatformFile platform_file);
@@ -179,7 +180,7 @@ class BASE_EXPORT File {
   File& operator=(RValue other);
 
   // Creates or opens the given file.
-  void Initialize(const FilePath& path, uint32 flags);
+  void Initialize(const FilePath& name, uint32 flags);
 
   bool IsValid() const;
 
@@ -190,7 +191,7 @@ class BASE_EXPORT File {
 
   // Returns the OS result of opening this file. Note that the way to verify
   // the success of the operation is to use IsValid(), not this method:
-  //   File file(path, flags);
+  //   File file(name, flags);
   //   if (!file.IsValid())
   //     return;
   Error error_details() const { return error_details_; }
@@ -304,8 +305,6 @@ class BASE_EXPORT File {
  private:
   FRIEND_TEST_ALL_PREFIXES(::FileTest, MemoryCorruption);
 
-  friend class ScopedFileTrace;
-
 #if defined(OS_POSIX)
   // Encloses a single ScopedFD, saving a cheap tamper resistent memory checksum
   // alongside it. This checksum is validated at every access, allowing early
@@ -351,9 +350,9 @@ class BASE_EXPORT File {
   };
 #endif
 
-  // Creates or opens the given file. Only called if |path_| has no
-  // traversal ('..') components.
-  void DoInitialize(uint32 flags);
+  // Creates or opens the given file. Only called if |name| has no traversal
+  // ('..') components.
+  void DoInitialize(const FilePath& name, uint32 flags);
 
   // TODO(tnagel): Reintegrate into Flush() once histogram isn't needed anymore,
   // cf. issue 473337.
@@ -366,18 +365,6 @@ class BASE_EXPORT File {
 #elif defined(OS_POSIX)
   MemoryCheckingScopedFD file_;
 #endif
-
-  // Path that |Initialize()| was called with. Only set if safe (i.e. no '..').
-  FilePath path_;
-
-  class TraceEnabler {
-   public:
-    TraceEnabler();
-    ~TraceEnabler();
-  };
-
-  // Object tied to the lifetime of this File that enables/disables tracing.
-  TraceEnabler trace_enabler_;
 
   Error error_details_;
   bool created_;

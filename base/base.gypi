@@ -209,8 +209,6 @@
           'files/file_posix.cc',
           'files/file_proxy.cc',
           'files/file_proxy.h',
-          'files/file_tracing.cc',
-          'files/file_tracing.h',
           'files/file_util.cc',
           'files/file_util.h',
           'files/file_util_android.cc',
