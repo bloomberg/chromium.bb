@@ -9,8 +9,6 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeAnimator;
 import android.animation.TimeAnimator.TimeListener;
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.util.Log;
 
 /**
@@ -82,9 +80,6 @@ public class AnimationFrameTimeHistogram {
     /**
      * Record Android animation frame rate and return the result.
      */
-    // Note: TimeAnimator was added to the Android public API in level 16, but has actually been
-    // available since level 14. So, it's safe to use TimeAnimator here, even on ICS.
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private static class Recorder implements TimeListener {
         // TODO(kkimlabs): If we can use in the future, migrate to Choreographer for minimal
         //                 workload.

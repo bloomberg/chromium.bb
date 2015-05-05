@@ -4,9 +4,7 @@
 
 package org.chromium.ui.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Layout;
 import android.text.SpannableString;
@@ -63,7 +61,6 @@ public class TextViewWithClickableSpans extends TextView {
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public boolean performAccessibilityAction(int action, Bundle arguments) {
         // BrailleBack will generate an accessibility click event directly
         // on this view, make sure we handle that correctly.

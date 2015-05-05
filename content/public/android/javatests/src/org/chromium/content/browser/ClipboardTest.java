@@ -4,11 +4,9 @@
 
 package org.chromium.content.browser;
 
-import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.text.TextUtils;
 
@@ -48,7 +46,6 @@ public class ClipboardTest extends ContentShellTestBase {
      * the HTML representation of the fragment to be available.
      */
     @LargeTest
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Feature({"Clipboard", "TextInput"})
     @RerunWithUpdatedContainerView
     public void testCopyDocumentFragment() throws Throwable {
@@ -82,13 +79,9 @@ public class ClipboardTest extends ContentShellTestBase {
         final ClipData clip = clipboardManager.getPrimaryClip();
         assertEquals(EXPECTED_TEXT_RESULT, clip.getItemAt(0).coerceToText(getActivity()));
 
-        // Android JellyBean and higher should have a HTML representation on the clipboard as well.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            String htmlText = clip.getItemAt(0).getHtmlText();
-
-            assertNotNull(htmlText);
-            assertTrue(htmlText.contains(EXPECTED_HTML_NEEDLE));
-        }
+        String htmlText = clip.getItemAt(0).getHtmlText();
+        assertNotNull(htmlText);
+        assertTrue(htmlText.contains(EXPECTED_HTML_NEEDLE));
     }
 
     private void copy(final ImeAdapter adapter) {

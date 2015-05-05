@@ -511,14 +511,8 @@ class AudioManagerAndroid {
                 ? DEFAULT_FRAME_PER_BUFFER : Integer.parseInt(framesPerBuffer);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @CalledByNative
     private static boolean shouldUseAcousticEchoCanceler() {
-        // AcousticEchoCanceler was added in API level 16 (Jelly Bean).
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            return false;
-        }
-
         // Verify that this device is among the supported/tested models.
         List<String> supportedModels = Arrays.asList(SUPPORTED_AEC_MODELS);
         if (!supportedModels.contains(Build.MODEL)) {

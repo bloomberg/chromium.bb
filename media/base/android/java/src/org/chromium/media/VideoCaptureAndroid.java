@@ -30,10 +30,6 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
         };
 
         static int getImageFormat() {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-                return ImageFormat.NV21;
-            }
-
             for (String buggyDevice : COLORSPACE_BUGGY_DEVICE_LIST) {
                 if (buggyDevice.contentEquals(android.os.Build.MODEL)) {
                     return ImageFormat.NV21;

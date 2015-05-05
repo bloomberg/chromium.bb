@@ -128,10 +128,6 @@ class MediaResourceGetter {
 
     @VisibleForTesting
     MediaMetadata extract(int fd, long offset, long length) {
-        if (!androidDeviceOk(android.os.Build.MODEL, android.os.Build.VERSION.SDK_INT)) {
-            return EMPTY_METADATA;
-        }
-
         configure(fd, offset, length);
         return doExtractMetadata();
     }
@@ -139,10 +135,6 @@ class MediaResourceGetter {
     @VisibleForTesting
     MediaMetadata extract(final Context context, final String url,
                           final String cookies, final String userAgent) {
-        if (!androidDeviceOk(android.os.Build.MODEL, android.os.Build.VERSION.SDK_INT)) {
-            return EMPTY_METADATA;
-        }
-
         if (!configure(context, url, cookies, userAgent)) {
             Log.e(TAG, "Unable to configure metadata extractor");
             return EMPTY_METADATA;
@@ -327,18 +319,6 @@ class MediaResourceGetter {
             }
         }
         return false;
-    }
-
-    /**
-     * Special case handling for device/OS combos that simply do not work.
-     * @param model the model of device being examined
-     * @param sdkVersion the version of the SDK installed on the device
-     * @return true if the device can be used correctly, otherwise false
-     */
-    @VisibleForTesting
-    static boolean androidDeviceOk(final String model, final int sdkVersion) {
-        return !("GT-I9100".contentEquals(model)
-                && sdkVersion < android.os.Build.VERSION_CODES.JELLY_BEAN);
     }
 
     // The methods below can be used by unit tests to fake functionality.

@@ -574,22 +574,4 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
         assertEquals(offset, mFakeMRG.mOffset);
         assertEquals(length, mFakeMRG.mLength);
     }
-
-    @SmallTest
-    public void testAndroidDeviceOk_BadModel_BadVersion() {
-        assertFalse(MediaResourceGetter.androidDeviceOk(
-                "GT-I9100", android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1));
-    }
-
-    @SmallTest
-    public void testAndroidDeviceOk_BadModel_GoodVersion() {
-        assertTrue(MediaResourceGetter.androidDeviceOk(
-                "GT-I9100", android.os.Build.VERSION_CODES.JELLY_BEAN));
-    }
-
-    @SmallTest
-    public void testAndroidDeviceOk_GoodModel_AnyVersion() {
-        assertTrue(MediaResourceGetter.androidDeviceOk(
-                "Happy Device", android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH));
-    }
 }
