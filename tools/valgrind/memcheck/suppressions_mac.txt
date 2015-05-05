@@ -286,5 +286,4 @@
    fun:_ZN2v88internal18StackFrameIterator5ResetEPNS0_14ThreadLocalTopE
    fun:_ZN2v88internal18StackFrameIteratorC2EPNS0_7IsolateE
    fun:_ZN2v88internal18StackFrameIteratorC1EPNS0_7IsolateE
-   fun:_ZN2v88internal7Isolate11FindHandlerEv
 }
