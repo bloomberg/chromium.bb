@@ -809,7 +809,7 @@ bool PictureLayerTiling::IsTileRequiredForDraw(const Tile* tile) const {
   return true;
 }
 
-void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
+void PictureLayerTiling::UpdateTilePriority(Tile* tile) const {
   tile->set_priority(ComputePriorityForTile(tile));
   tile->set_is_occluded(IsTileOccluded(tile));
   tile->set_required_for_activation(IsTileRequiredForActivation(tile));

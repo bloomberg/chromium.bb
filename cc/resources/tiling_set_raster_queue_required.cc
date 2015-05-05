@@ -108,7 +108,7 @@ TilingSetRasterQueueRequired::TilingIterator::TilingIterator(
   // for occlusion, since the tile's internal state has not yet been updated.
   if (current_tile_ && current_tile_->NeedsRaster() &&
       !tiling_->IsTileOccluded(current_tile_)) {
-    tiling_->UpdateTileAndTwinPriority(current_tile_);
+    tiling_->UpdateTilePriority(current_tile_);
     return;
   }
   ++(*this);
@@ -135,7 +135,7 @@ TilingSetRasterQueueRequired::TilingIterator&
 
     // If the tile is occluded, we also can skip it. Note that we use the tiling
     // check for occlusion, since tile's internal state has not yet been updated
-    // (by UpdateTileAndTwinPriority). The tiling check does not rely on tile's
+    // (by UpdateTilePriority). The tiling check does not rely on tile's
     // internal state (it is, in fact, used to determine the tile's state).
     if (tiling_->IsTileOccluded(current_tile_))
       continue;
@@ -146,7 +146,7 @@ TilingSetRasterQueueRequired::TilingIterator&
   }
 
   if (current_tile_)
-    tiling_->UpdateTileAndTwinPriority(current_tile_);
+    tiling_->UpdateTilePriority(current_tile_);
   return *this;
 }
 

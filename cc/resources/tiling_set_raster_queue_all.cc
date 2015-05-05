@@ -174,7 +174,7 @@ void TilingSetRasterQueueAll::OnePriorityRectIterator::AdvanceToNextTile(
     }
     tile_ = tiling_->TileAt(iterator->index_x(), iterator->index_y());
   }
-  tiling_->UpdateTileAndTwinPriority(tile_);
+  tiling_->UpdateTilePriority(tile_);
 }
 
 template <typename TilingIteratorType>
@@ -185,7 +185,7 @@ bool TilingSetRasterQueueAll::OnePriorityRectIterator::
     tile_ = nullptr;
     return false;
   }
-  tiling_->UpdateTileAndTwinPriority(tile_);
+  tiling_->UpdateTilePriority(tile_);
   return true;
 }
 

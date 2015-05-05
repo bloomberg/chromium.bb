@@ -115,7 +115,7 @@ class CC_EXPORT PictureLayerTiling {
   }
   void UpdateAllTilePrioritiesForTesting() {
     for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-      UpdateTileAndTwinPriority(it->second.get());
+      UpdateTilePriority(it->second.get());
   }
   std::vector<scoped_refptr<Tile>> AllRefTilesForTesting() const {
     std::vector<scoped_refptr<Tile>> all_tiles;
@@ -274,7 +274,7 @@ class CC_EXPORT PictureLayerTiling {
   bool IsTileOccludedOnCurrentTree(const Tile* tile) const;
   bool ShouldCreateTileAt(int i, int j) const;
   bool IsTileOccluded(const Tile* tile) const;
-  void UpdateTileAndTwinPriority(Tile* tile) const;
+  void UpdateTilePriority(Tile* tile) const;
   TilePriority ComputePriorityForTile(const Tile* tile) const;
   bool has_visible_rect_tiles() const { return has_visible_rect_tiles_; }
   bool has_skewport_rect_tiles() const { return has_skewport_rect_tiles_; }
