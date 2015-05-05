@@ -32,10 +32,11 @@ TEST_F('OutputE2ETest', 'Links', function() {
       assertEqualsJSON({string_: 'Click hereLink', 'spans_': [
         // Attributes.
         {value: 'name', start: 0, end: 10},
-        {value: 'role', start: 10, end: 14},
 
-        // Link earcon (based on the role).
-        {value: {}, start: 10, end: 14}
+        // Link earcon (based on the name).
+        {value: {}, start: 0, end: 10},
+
+        {value: 'role', start: 10, end: 14}
       ]}, o.toSpannable());
   });
 });
@@ -141,12 +142,10 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       range = cursors.Range.fromNode(el);
       o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'Heading 1|b|Link', 'spans_': [
-        // Heading attributes.
-        {value: 'name', start: 10, end: 11},
-
         // Link.
-        {value: 'role', start: 12, end: 16},
-        {value: {}, start: 12, end: 16}
+        {value: 'name', start: 10, end: 11},
+        {value: {}, start: 10, end: 11},
+        {value: 'role', start: 12, end: 16}
       ]}, o.toSpannableForTest());
   });
 });
@@ -164,13 +163,14 @@ TEST_F('OutputE2ETest', 'Audio', function() {
 
               // Button.
               [{value: 'name', start: 23, end: 23},
+
+              // Button earcon.
+              {value: {}, start: 23, end: 23},
+
               {value: 'value', start: 24, end: 24},
               {value: 'description', start: 25, end: 29},
               {value: 'help', start: 30, end: 44},
-              {value: 'role', start: 45, end: 51},
-
-              // Button earcon.
-              {value: {}, start: 45, end: 51}]
+              {value: 'role', start: 45, end: 51}]
           }, o.toSpannableForTest());
 
       el = el.nextSibling;
@@ -197,13 +197,13 @@ TEST_F('OutputE2ETest', 'Input', function() {
       var expected = {string_: '', 'spans_': [
               {value: 'name', start: 0, end: 0},
 
+              // Earcon
+              {value: {}, start: 0, end: 0},
+
               // Selection span.
               {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
 
-              {value: 'value', start: 1, end: 1},
-
-              // Earcon
-              {value: {}, start: 2, end: 2}
+              {value: 'value', start: 1, end: 1}
       ]};
 
       var expectedValues = [
@@ -212,10 +212,10 @@ TEST_F('OutputE2ETest', 'Input', function() {
         '||Password edit text',
         '||Edit text, number entry',
         {string_: '||Spin button', spans_: [{value: 'name', start: 0, end: 0},
+            {value: {}, start: 0, end: 0},
             {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
             {value: 'value', start: 1, end: 1},
-            {value: 'role', start: 2, end: 13},
-            {value: {}, start: 2, end: 13}]},
+            {value: 'role', start: 2, end: 13}]},
         {string_: '||Time', spans_: [{value: 'name', start: 0, end: 0},
             {value: 'value', start: 1, end: 1},
             {value: 'role', start: 2, end: 6}]},
@@ -248,9 +248,9 @@ TEST_F('OutputE2ETest', 'List', function() {
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON({string_: 'list|with 3 items|a||List item', spans_: [
           {value: 'name', start: 18, end: 19},
+          {value: {}, start: 18, end: 19},
           {value: 'value', start:20, end: 20},
-          {value: 'role', start: 21, end: 30},
-          {value: {}, start: 21, end: 30}
+          {value: 'role', start: 21, end: 30}
       ]}, o.toSpannableForTest());
   });
 });
@@ -349,12 +349,14 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
         spans_: [
           // ListBox.
           // Earcon.
-          {value: {}, start: 1, end: 9},
+          {value: {}, start: 0, end: 0},
 
           {value: 'name', start: 23, end: 23},
-          {value: 'role', start:24, end: 33},
+
           // Earcon.
-          {value: {}, start: 24, end: 33}
+          {value: {}, start: 23, end: 23},
+
+          {value: 'role', start:24, end: 33}
     ]}, o.toSpannableForTest());
   });
 });

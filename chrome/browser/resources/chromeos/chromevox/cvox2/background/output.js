@@ -53,8 +53,6 @@ Output = function() {
   /** @type {!Array<Object>} */
   this.locations_ = [];
   /** @type {function()} */
-  this.speechStartCallback_;
-  /** @type {function()} */
   this.speechEndCallback_;
 
   /**
@@ -435,8 +433,7 @@ Output.RULES = {
     },
     textField: {
       speak: '$name $value $if(' +
-          '$textInputType, @input_type_+$textInputType, @input_type_text) ' +
-          '$earcon(EDITABLE_TEXT)',
+          '$textInputType, @input_type_+$textInputType, @input_type_text)',
       braille: ''
     },
     toolbar: {
@@ -616,15 +613,6 @@ Output.prototype = {
    * Triggers callback for a speech event.
    * @param {function()} callback
    */
-  onSpeechStart: function(callback) {
-    this.speechStartCallback_ = callback;
-    return this;
-  },
-
-  /**
-   * Triggers callback for a speech event.
-   * @param {function()} callback
-   */
   onSpeechEnd: function(callback) {
     this.speechEndCallback_ = callback;
     return this;
@@ -638,10 +626,18 @@ Output.prototype = {
     var queueMode = cvox.QueueMode.FLUSH;
     this.buffer_.forEach(function(buff, i, a) {
       if (buff.toString()) {
-        if (this.speechStartCallback_ && i == 0)
-          this.speechProperties_['startCallback'] = this.speechStartCallback_;
-        else
-          this.speechProperties_['startCallback'] = null;
+        (function() {
+          var scopedBuff = buff;
+          this.speechProperties_['startCallback'] = function() {
+            var actions = scopedBuff.getSpansInstanceOf(Output.Action);
+            if (actions) {
+              actions.forEach(function(a) {
+                a.run();
+              });
+            }
+          };
+        }.bind(this)());
+
         if (this.speechEndCallback_ && i == a.length - 1)
           this.speechProperties_['endCallback'] = this.speechEndCallback_;
         else
@@ -649,12 +645,6 @@ Output.prototype = {
         cvox.ChromeVox.tts.speak(
             buff.toString(), queueMode, this.speechProperties_);
         queueMode = cvox.QueueMode.QUEUE;
-      }
-      var actions = buff.getSpansInstanceOf(Output.Action);
-      if (actions) {
-        actions.forEach(function(a) {
-          a.run();
-        });
       }
     }.bind(this));
 
@@ -779,6 +769,19 @@ Output.prototype = {
             token = 'name';
           options.annotation.push(token);
           this.append_(buff, text, options);
+        } else if (token == 'name') {
+          options.annotation.push(token);
+          var earconFinder = node;
+          while (earconFinder) {
+            var info = Output.ROLE_INFO_[earconFinder.role];
+            if (info && info.earconId) {
+              options.annotation.push(
+                  new Output.EarconAction(info.earconId));
+              break;
+            }
+            earconFinder = earconFinder.parent;
+          }
+          this.append_(buff, node.attributes.name, options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);
           if (node.name)
@@ -829,19 +832,15 @@ Output.prototype = {
         } else if (token == 'role') {
           options.annotation.push(token);
           var msg = node.role;
-          var earconId = null;
           var info = Output.ROLE_INFO_[node.role];
           if (info) {
             if (this.formatOptions_.braille)
               msg = cvox.ChromeVox.msgs.getMsg(info.msgId + '_brl');
             else
               msg = cvox.ChromeVox.msgs.getMsg(info.msgId);
-            earconId = info.earconId;
           } else {
             console.error('Missing role info for ' + node.role);
           }
-          if (earconId)
-            options.annotation.push(new Output.EarconAction(earconId));
           this.append_(buff, msg, options);
         } else if (node.attributes[token] !== undefined) {
           options.annotation.push(token);
