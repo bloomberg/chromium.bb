@@ -44,7 +44,7 @@
                     android:layout_height="@dimen/fre_image_carousel_height"
                     android:layout_marginBottom="@dimen/fre_margin"
                     android:contentDescription="@null"
-                    android:src="@drawable/fre_chrome_logo" />
+                    android:src="@drawable/fre_product_logo" />
 
                 <LinearLayout
                     android:id="@+id/text_wrapper"
