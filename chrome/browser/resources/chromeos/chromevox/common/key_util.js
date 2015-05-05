@@ -9,10 +9,18 @@
 
 
 goog.provide('cvox.KeyUtil');
+goog.provide('cvox.SimpleKeyEvent');
 
 goog.require('cvox.ChromeVox');
 goog.require('cvox.KeySequence');
 
+/**
+ * @typedef {{ctrlKey: (boolean|undefined),
+ *            altKey: (boolean|undefined),
+ *            shiftKey: (boolean|undefined),
+ *            keyCode: (number|undefined)}}
+ */
+cvox.SimpleKeyEvent;
 
 /**
  * Create the namespace
@@ -59,7 +67,7 @@ cvox.KeyUtil.maxSeqLength = 2;
 /**
  * Convert a key event into a Key Sequence representation.
  *
- * @param {Event} keyEvent The keyEvent to convert.
+ * @param {Event|cvox.SimpleKeyEvent} keyEvent The keyEvent to convert.
  * @return {cvox.KeySequence} A key sequence representation of the key event.
  */
 cvox.KeyUtil.keyEventToKeySequence = function(keyEvent) {

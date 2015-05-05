@@ -11,6 +11,7 @@
 goog.provide('cvox.KeySequence');
 
 goog.require('cvox.ChromeVox');
+goog.require('cvox.PlatformFilter');
 
 
 /**
@@ -46,6 +47,9 @@ cvox.KeySequence = function(
     originalEvent, opt_cvoxModifier, opt_skipStripping, opt_doubleTap) {
   /** @type {boolean} */
   this.doubleTap = !!opt_doubleTap;
+
+  /** @type {cvox.PlatformFilter} */
+  this.platformFilter;
 
   if (opt_cvoxModifier == undefined) {
     this.cvoxModifier = this.isCVoxModifierActive(originalEvent);

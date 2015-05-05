@@ -1605,6 +1605,7 @@ chrome.automation.AutomationNode.prototype.indexInParent;
 /**
  * @type {{
  *     name: string,
+ *     url: string,
  *     value: string,
  *     textSelStart: number,
  *     textSelEnd: number,
@@ -1743,3 +1744,10 @@ chrome.commands = {};
  * @type {ChromeEvent}
  */
 chrome.commands.onCommand;
+
+/**
+ * @param {function(Array<{description: string,
+ *                         name: string,
+ *                         shortcut: string}>): void} callback
+ */
+chrome.commands.getAll = function(callback) {};
