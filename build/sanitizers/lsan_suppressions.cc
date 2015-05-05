@@ -66,7 +66,9 @@ char kLSanDefaultSuppressions[] =
 "leak:gin/object_template_builder.h\n"
 "leak:gin::internal::Dispatcher\n"
 "leak:blink::LocalDOMWindow::getComputedStyle\n"
-"leak:blink::RemoteDOMWindow::create\n"
+// This should really be RemoteDOMWindow::create, but symbolization is
+// weird in release builds. https://crbug.com/484760
+"leak:blink::RemoteFrame::create\n"
 
 // http://crbug.com/356785
 "leak:content::RenderViewImplTest_DecideNavigationPolicyForWebUI_Test::TestBody\n"
