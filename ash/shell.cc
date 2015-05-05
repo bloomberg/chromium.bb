@@ -121,6 +121,7 @@
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/ash_constants.h"
+#include "ash/content/display/display_color_manager_chromeos.h"
 #include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_configurator_animation.h"
@@ -811,6 +812,7 @@ Shell::~Shell() {
   keyboard::KeyboardController::ResetInstance(NULL);
 
 #if defined(OS_CHROMEOS)
+  display_color_manager_.reset();
   if (display_change_observer_)
     display_configurator_->RemoveObserver(display_change_observer_.get());
   if (display_configurator_animation_)
@@ -863,6 +865,8 @@ void Shell::Init(const ShellInitParams& init_params) {
         delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;
   }
+  display_color_manager_.reset(
+      new DisplayColorManager(display_configurator_.get()));
 #endif  // defined(OS_CHROMEOS)
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();

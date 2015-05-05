@@ -623,6 +623,13 @@ XRRCrtcGamma* NativeDisplayDelegateX11::CreateGammaRampForProfile(
   return NULL;
 }
 
+bool NativeDisplayDelegateX11::SetGammaRamp(
+    const ui::DisplaySnapshot& output,
+    const std::vector<GammaRampRGBEntry>& lut) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void NativeDisplayDelegateX11::DrawBackground() {
   if (!background_color_argb_)
     return;

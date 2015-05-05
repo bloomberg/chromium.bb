@@ -36,6 +36,7 @@ class ScreenManager;
 
 struct DisplayMode_Params;
 struct DisplaySnapshot_Params;
+struct GammaRampRGBEntry;
 
 class DrmGpuPlatformSupport : public GpuPlatformSupport {
  public:
@@ -78,6 +79,7 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
   void OnRemoveGraphicsDevice(const base::FilePath& path);
   void OnGetHDCPState(int64_t display_id);
   void OnSetHDCPState(int64_t display_id, HDCPState state);
+  void OnSetGammaRamp(int64_t id, const std::vector<GammaRampRGBEntry>& lut);
 
   void SetIOTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);

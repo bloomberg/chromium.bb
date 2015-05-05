@@ -240,6 +240,11 @@ bool MockDrmDevice::CommitProperties(drmModePropertySet* properties,
   return false;
 }
 
+bool MockDrmDevice::SetGammaRamp(uint32_t crtc_id,
+                                 const std::vector<GammaRampRGBEntry>& lut) {
+  return true;
+}
+
 void MockDrmDevice::RunCallbacks() {
   while (!callbacks_.empty()) {
     PageFlipCallback callback = callbacks_.front();

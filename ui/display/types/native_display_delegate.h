@@ -24,6 +24,8 @@ class DisplaySnapshot;
 
 class NativeDisplayObserver;
 
+struct GammaRampRGBEntry;
+
 typedef base::Callback<void(const std::vector<ui::DisplaySnapshot*>&)>
     GetDisplaysCallback;
 typedef base::Callback<void(bool)> ConfigureCallback;
@@ -102,6 +104,10 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual bool SetColorCalibrationProfile(
       const ui::DisplaySnapshot& output,
       ui::ColorCalibrationProfile new_profile) = 0;
+
+  // Set the gamma ramp for the display.
+  virtual bool SetGammaRamp(const ui::DisplaySnapshot& output,
+                            const std::vector<GammaRampRGBEntry>& lut) = 0;
 
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 

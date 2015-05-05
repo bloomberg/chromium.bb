@@ -9,6 +9,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/files/file.h"
 #include "base/single_thread_task_runner.h"
+#include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/ozone/common/display_util.h"
@@ -190,6 +191,21 @@ bool DrmGpuDisplayManager::RelinquishDisplayControl() {
     }
   }
   return true;
+}
+
+void DrmGpuDisplayManager::SetGammaRamp(
+    int64_t id,
+    const std::vector<GammaRampRGBEntry>& lut) {
+  DrmDisplaySnapshot* display = FindDisplaySnapshot(id);
+  if (!display) {
+    LOG(ERROR) << "There is no display with ID " << id;
+    return;
+  }
+
+  if (!display->drm()->SetGammaRamp(display->crtc(), lut)) {
+    LOG(ERROR) << "Failed to set gamma ramp for display: crtc_id = "
+               << display->crtc() << " size = " << lut.size();
+  }
 }
 
 DrmDisplaySnapshot* DrmGpuDisplayManager::FindDisplaySnapshot(int64_t id) {

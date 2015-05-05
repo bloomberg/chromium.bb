@@ -243,6 +243,13 @@ bool DrmNativeDisplayDelegate::SetColorCalibrationProfile(
   return false;
 }
 
+bool DrmNativeDisplayDelegate::SetGammaRamp(
+    const ui::DisplaySnapshot& output,
+    const std::vector<GammaRampRGBEntry>& lut) {
+  proxy_->Send(new OzoneGpuMsg_SetGammaRamp(output.display_id(), lut));
+  return true;
+}
+
 void DrmNativeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {
   observers_.AddObserver(observer);
 }
