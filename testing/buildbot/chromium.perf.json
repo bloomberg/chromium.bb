@@ -240,6 +240,15 @@
     "scripts": [
       {
         "args": [
+          "angle_perftests",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "angle_perftests",
+        "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
           "performance_browser_tests",
           "--test-launcher-print-test-stdio=always",
           "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
@@ -253,6 +262,15 @@
   },
   "Win 7 Intel GPU Perf": {
     "scripts": [
+      {
+        "args": [
+          "angle_perftests",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "angle_perftests",
+        "script": "gtest_perf_test.py"
+      },
       {
         "args": [
           "performance_browser_tests",
@@ -287,7 +305,6 @@
         "args": [
           "angle_perftests",
           "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=DrawCallPerf*",
           "--test-launcher-jobs=1"
         ],
         "name": "angle_perftests",
