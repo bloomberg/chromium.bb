@@ -44,9 +44,16 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   // the AddressMap changes, |link_callback| when the list of online
   // links changes, and |tunnel_callback| when the list of online
   // tunnels changes.
+  // |ignored_interfaces| is the list of interfaces to ignore.  Changes to an
+  // ignored interface will not cause any callback to be run. An ignored
+  // interface will not have entries in GetAddressMap() and GetOnlineLinks().
+  // NOTE: Only ignore interfaces not used to connect to the internet. Adding
+  // interfaces used to connect to the internet can cause critical network
+  // changed signals to be lost allowing incorrect stale state to persist.
   AddressTrackerLinux(const base::Closure& address_callback,
                       const base::Closure& link_callback,
-                      const base::Closure& tunnel_callback);
+                      const base::Closure& tunnel_callback,
+                      const base::hash_set<std::string>& ignored_interfaces);
   ~AddressTrackerLinux() override;
 
   // In tracking mode, it starts watching the system configuration for
@@ -125,6 +132,9 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   // Does |interface_index| refer to a tunnel interface?
   bool IsTunnelInterface(int interface_index) const;
 
+  // Is interface with index |interface_index| in list of ignored interfaces?
+  bool IsInterfaceIgnored(int interface_index) const;
+
   // Updates current_connection_type_ based on the network list.
   void UpdateCurrentConnectionType();
 
@@ -146,6 +156,9 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux :
   // Set of interface indices for links that are currently online.
   mutable base::Lock online_links_lock_;
   base::hash_set<int> online_links_;
+
+  // Set of interface names that should be ignored.
+  const base::hash_set<std::string> ignored_interfaces_;
 
   base::Lock connection_type_lock_;
   bool connection_type_initialized_;

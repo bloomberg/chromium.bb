@@ -16,12 +16,18 @@ namespace net {
 class NET_EXPORT_PRIVATE NetworkChangeNotifierLinux
     : public NetworkChangeNotifier {
  public:
-  static NetworkChangeNotifierLinux* Create();
+  // Creates NetworkChangeNotifierLinux with a list of ignored interfaces.
+  // |ignored_interfaces| is the list of interfaces to ignore. An ignored
+  // interface will not trigger IP address or connection type notifications.
+  // NOTE: Only ignore interfaces not used to connect to the internet. Adding
+  // interfaces used to connect to the internet can cause critical network
+  // changed signals to be lost allowing incorrect stale state to persist.
+  explicit NetworkChangeNotifierLinux(
+      const base::hash_set<std::string>& ignored_interfaces);
 
  private:
   class Thread;
 
-  NetworkChangeNotifierLinux();
   ~NetworkChangeNotifierLinux() override;
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsLinux();
 
