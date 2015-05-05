@@ -262,7 +262,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // for us.
     controller().LoadURL(
         url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    int entry_id = controller().GetPendingEntry()->GetUniqueID();
 
     // Simulate the BeforeUnload_ACK that is received from the current renderer
     // for a cross-site navigation.
@@ -289,7 +288,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // state is being checked.
     RenderFrameHostDeletedObserver rfh_observer(old_rfh);
     RenderViewHostDeletedObserver rvh_observer(old_rfh->GetRenderViewHost());
-    active_rfh->SendNavigate(max_page_id + 1, entry_id, true, url);
+    active_rfh->SendNavigate(max_page_id + 1, url);
 
     // Make sure that we start to run the unload handler at the time of commit.
     bool expecting_rfh_shutdown = false;
@@ -352,7 +351,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // Navigate to a cross-site URL.
     contents()->GetController().LoadURL(
         kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    int entry_id = contents()->GetController().GetPendingEntry()->GetUniqueID();
     contents()->GetMainFrame()->PrepareForCommit();
     EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
@@ -368,7 +366,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // BeforeUnload finishes.
     ntp_rfh->SendBeforeUnloadACK(true);
 
-    dest_rfh->SendNavigate(101, entry_id, true, kDestUrl);
+    dest_rfh->SendNavigate(101, kDestUrl);
     ntp_rfh->OnSwappedOut();
 
     EXPECT_TRUE(ntp_rfh->is_swapped_out());
@@ -437,23 +435,21 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
   // we use the committed one.
   contents2->GetController().LoadURL(
       kChromeUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  int entry_id = contents2->GetController().GetPendingEntry()->GetUniqueID();
   contents2->GetMainFrame()->PrepareForCommit();
   TestRenderFrameHost* ntp_rfh2 = contents2->GetMainFrame();
   EXPECT_FALSE(contents2->CrossProcessNavigationPending());
-  ntp_rfh2->SendNavigate(100, entry_id, true, kChromeUrl);
+  ntp_rfh2->SendNavigate(100, kChromeUrl);
 
   // The second one is the opposite, creating a cross-site transition and
   // requiring a beforeunload ack.
   contents2->GetController().LoadURL(
       kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  entry_id = contents2->GetController().GetPendingEntry()->GetUniqueID();
   contents2->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents2->CrossProcessNavigationPending());
   TestRenderFrameHost* dest_rfh2 = contents2->GetPendingMainFrame();
   ASSERT_TRUE(dest_rfh2);
 
-  dest_rfh2->SendNavigate(101, entry_id, true, kDestUrl);
+  dest_rfh2->SendNavigate(101, kDestUrl);
 
   // The two RFH's should be different in every way.
   EXPECT_NE(contents()->GetMainFrame()->GetProcess(), dest_rfh2->GetProcess());
@@ -469,10 +465,8 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
 
   contents2->GetController().LoadURL(
       kChromeUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  entry_id = contents2->GetController().GetPendingEntry()->GetUniqueID();
   contents2->GetMainFrame()->PrepareForCommit();
-  contents2->GetPendingMainFrame()->SendNavigate(102, entry_id, true,
-                                                 kChromeUrl);
+  contents2->GetPendingMainFrame()->SendNavigate(102, kChromeUrl);
 
   EXPECT_NE(contents()->GetMainFrame()->GetSiteInstance(),
             contents2->GetMainFrame()->GetSiteInstance());
@@ -603,11 +597,9 @@ TEST_F(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingSwapOut) {
   // Navigate to a cross-site URL and commit the new page.
   controller().LoadURL(
       kDestUrl, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
-  contents()->TestDidNavigate(rfh2, 1, entry_id, true, kDestUrl,
-                              ui::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(rfh2, 1, kDestUrl, ui::PAGE_TRANSITION_TYPED);
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
   EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
 
@@ -861,7 +853,6 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // GetURL() call.
   controller().LoadURL(
       kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
 
   // Simulate response from RenderFrame for DispatchBeforeUnload.
   contents()->GetMainFrame()->PrepareForCommit();
@@ -870,7 +861,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   RenderFrameHost* last_rfh = contents()->GetPendingMainFrame();
   int32 new_id =
       contents()->GetMaxPageIDForSiteInstance(last_rfh->GetSiteInstance()) + 1;
-  contents()->GetPendingMainFrame()->SendNavigate(new_id, entry_id, true, kUrl);
+  contents()->GetPendingMainFrame()->SendNavigate(new_id, kUrl);
 
   EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
   NavigationEntry* last_committed = controller().GetLastCommittedEntry();
@@ -888,7 +879,6 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // Navigate, again.
   controller().LoadURL(
       kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
 
   // The same RenderViewHost should be reused.
@@ -896,8 +886,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_EQ(last_rfh, contents()->GetMainFrame());
 
   // The renderer sends a commit.
-  contents()->GetMainFrame()->SendNavigateWithTransition(
-      new_id, entry_id, false, kUrl, ui::PAGE_TRANSITION_TYPED);
+  contents()->GetMainFrame()->SendNavigate(new_id, kUrl);
   EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
   EXPECT_FALSE(controller().GetPendingEntry());
 
@@ -1198,9 +1187,7 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
 
   // Before that RFH has committed, the evil page reloads itself.
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = 0;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = false;
+  params.page_id = 1;
   params.url = kUrl2;
   params.transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   params.should_update_history = false;
@@ -1280,8 +1267,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetUniqueID(), false,
-                     entry1->GetURL());
+  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetURL());
   EXPECT_TRUE(rfh2->IsWaitingForUnloadACK());
   EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh2->rfh_state());
 
@@ -1289,8 +1275,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   contents()->GetController().GoForward();
   contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry2 = contents()->GetController().GetPendingEntry();
-  rfh2->SendNavigate(entry2->GetPageID(), entry2->GetUniqueID(), false,
-                     entry2->GetURL());
+  rfh2->SendNavigate(entry2->GetPageID(), entry2->GetURL());
   EXPECT_EQ(rfh2, main_test_rfh());
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
   EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
@@ -1469,8 +1454,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetUniqueID(), false,
-                     entry1->GetURL());
+  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetURL());
 
   // Ensure the opener is still cleared.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1503,8 +1487,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   contents()->GetController().GoBack();
   contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetUniqueID(), false,
-                     entry1->GetURL());
+  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetURL());
 
   // Disown the opener from rfh2.
   rfh2->DidDisownOpener();
@@ -1778,7 +1761,6 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
@@ -1791,8 +1773,7 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
 
   // The new page commits.
-  contents()->TestDidNavigate(rfh2, 1, entry_id, true, kUrl2,
-                              ui::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(rfh2, 1, kUrl2, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
@@ -1828,15 +1809,13 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
-  contents()->TestDidNavigate(rfh2, 1, entry_id, true, kUrl2,
-                              ui::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(rfh2, 1, kUrl2, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
@@ -1873,14 +1852,12 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   rfh1->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
-  contents()->TestDidNavigate(rfh2, 1, entry_id, true, kUrl2,
-                              ui::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(rfh2, 1, kUrl2, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);

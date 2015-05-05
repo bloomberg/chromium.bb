@@ -104,56 +104,29 @@ class DataReductionProxyDebugBlockingPageTest
       user_response_ = CANCEL;
   }
 
-  void Navigate(const char* url,
-                int page_id,
-                int nav_entry_id,
-                bool did_create_new_entry) {
-    NavigateInternal(url, page_id, nav_entry_id, did_create_new_entry, false);
-  }
-
-  void NavigateCrossSite(const char* url,
-                         int page_id,
-                         int nav_entry_id,
-                         bool did_create_new_entry) {
-    NavigateInternal(url, page_id, nav_entry_id, did_create_new_entry, true);
-  }
-
-  void NavigateInternal(const char* url,
-                        int page_id,
-                        int nav_entry_id,
-                        bool did_create_new_entry,
-                        bool is_cross_site) {
-    // The pending RVH should commit for cross-site navigations.
-    content::RenderFrameHost* render_frame_host =
-        is_cross_site
-            ? content::WebContentsTester::For(web_contents())
-                  ->GetPendingMainFrame()
-            : web_contents()->GetMainFrame();
-
-    content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(render_frame_host, page_id, nav_entry_id,
-                          did_create_new_entry, GURL(url),
-                          ui::PAGE_TRANSITION_TYPED);
+  void Navigate(const char* url, int page_id) {
+    content::WebContentsTester::For(web_contents())->TestDidNavigate(
+        web_contents()->GetMainFrame(), page_id, GURL(url),
+        ui::PAGE_TRANSITION_TYPED);
   }
 
   void GoBack(bool is_cross_site) {
-    content::NavigationEntry* entry =
-        web_contents()->GetController().GetEntryAtOffset(-1);
-    ASSERT_TRUE(entry);
-    web_contents()->GetController().GoBack();
+     content::NavigationEntry* entry =
+         web_contents()->GetController().GetEntryAtOffset(-1);
+     ASSERT_TRUE(entry);
+     web_contents()->GetController().GoBack();
 
-    // The pending RVH should commit for cross-site navigations.
-    content::RenderFrameHost* render_frame_host =
-        is_cross_site
-            ? content::WebContentsTester::For(web_contents())
-                  ->GetPendingMainFrame()
-            : web_contents()->GetMainFrame();
-
-    content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(render_frame_host, entry->GetPageID(),
-                          entry->GetUniqueID(), false, GURL(entry->GetURL()),
-                          ui::PAGE_TRANSITION_TYPED);
-  }
+     // The pending RVH should commit for cross-site navigations.
+     content::RenderFrameHost* render_frame_host = is_cross_site ?
+         content::WebContentsTester::For(
+             web_contents())->GetPendingMainFrame() :
+         web_contents()->GetMainFrame();
+     content::WebContentsTester::For(web_contents())->TestDidNavigate(
+         render_frame_host,
+         entry->GetPageID(),
+         GURL(entry->GetURL()),
+         ui::PAGE_TRANSITION_TYPED);
+   }
 
   void ShowInterstitial(bool is_subresource, const char* url) {
     DataReductionProxyDebugUIManager::BypassResource resource;
@@ -256,7 +229,6 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, BypassPageProceed) {
   // Start a load.
   controller().LoadURL(GURL(kBypassURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
 
   // Simulate the load causing an interstitial to be shown.
   ShowInterstitial(false, kBypassURL);
@@ -272,7 +244,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, BypassPageProceed) {
   // The interstitial is shown until the navigation commits.
   ASSERT_TRUE(GetDataReductionProxyDebugBlockingPage());
   // Commit the navigation.
-  Navigate(kBypassURL, 1, pending_id, true);
+  Navigate(kBypassURL, 1);
   // The interstitial should be gone now.
   EXPECT_EQ(OK, user_response());
   ASSERT_FALSE(GetDataReductionProxyDebugBlockingPage());
@@ -282,10 +254,10 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, BypassPageProceed) {
 // and not proceeding.
 TEST_F(DataReductionProxyDebugBlockingPageTest, BypassSubresourceDontProceed) {
   // Navigate somewhere.
-  Navigate(kGoogleURL, 1, 0, true);
+  Navigate(kGoogleURL, 1);
 
   // Navigate somewhere else.
-  Navigate(kOtherURL, 2, 0, true);
+  Navigate(kOtherURL, 2);
 
   // Simulate that page loading a bypass-resource triggering an interstitial.
   ShowInterstitial(true, kBypassURL);
@@ -311,7 +283,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, BypassSubresourceDontProceed) {
 // and proceeding.
 TEST_F(DataReductionProxyDebugBlockingPageTest, BypassSubresourceProceed) {
   // Navigate somewhere.
-  Navigate(kGoogleURL, 1, 0, true);
+  Navigate(kGoogleURL, 1);
 
   // Simulate that page loading a bypass-resource triggering an interstitial.
   ShowInterstitial(true, kBypassURL);
@@ -338,15 +310,15 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, BypassSubresourceProceed) {
 TEST_F(DataReductionProxyDebugBlockingPageTest,
        BypassMultipleSubresourcesDontProceed) {
   // Navigate somewhere.
-  Navigate(kGoogleURL, 1, 0, true);
+  Navigate(kGoogleURL, 1);
 
   // Navigate somewhere else.
-  Navigate(kOtherURL, 2, 0, true);
+  Navigate(kOtherURL, 2);
 
   // Simulate that page loading a bypass-resource triggering an interstitial.
   ShowInterstitial(true, kBypassURL);
 
-  // More bypassed resources loading causing more interstitials. The new
+  // More bypassedd resources loading causing more interstitials. The new
   // interstitials should be queued.
   ShowInterstitial(true, kBypassURL2);
   ShowInterstitial(true, kBypassURL3);
@@ -360,7 +332,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest,
   EXPECT_EQ(CANCEL, user_response());
   EXPECT_FALSE(GetDataReductionProxyDebugBlockingPage());
 
-  // The user did not proceed, the controller should be back to the first page,
+  // The user did not proceed, the controler should be back to the first page,
   // the 2nd one should have been removed from the navigation controller.
   ASSERT_EQ(1, controller().GetEntryCount());
   EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
@@ -372,7 +344,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest,
 TEST_F(DataReductionProxyDebugBlockingPageTest,
        BypassMultipleSubresourcesProceed) {
   // Navigate somewhere.
-  Navigate(kGoogleURL, 1, 0, true);
+  Navigate(kGoogleURL, 1);
 
   // Simulate that page loading a bypass-resource triggering an interstitial.
   ShowInterstitial(true, kBypassURL);
@@ -399,12 +371,11 @@ TEST_F(DataReductionProxyDebugBlockingPageTest,
 // controller entries are OK.
 TEST_F(DataReductionProxyDebugBlockingPageTest, NavigatingBackAndForth) {
   // Navigate somewhere.
-  Navigate(kGoogleURL, 1, 0, true);
+  Navigate(kGoogleURL, 1);
 
   // Now navigate to a bypassed page triggerring an interstitial.
   controller().LoadURL(GURL(kBypassURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
   ShowInterstitial(false, kBypassURL);
   DataReductionProxyDebugBlockingPage* interstitial =
       GetDataReductionProxyDebugBlockingPage();
@@ -412,7 +383,7 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, NavigatingBackAndForth) {
 
   // Proceed through the 1st interstitial.
   ProceedThroughInterstitial(interstitial);
-  Navigate(kBypassURL, 2, pending_id, true);  // Commit navigation.
+  Navigate(kBypassURL, 2);  // Commit the navigation.
   GoBack(true);
 
   // We are back on the first page.
@@ -423,15 +394,13 @@ TEST_F(DataReductionProxyDebugBlockingPageTest, NavigatingBackAndForth) {
 
   // Navigate forward to the bypassed URL.
   web_contents()->GetController().GoForward();
-  pending_id = controller().GetPendingEntry()->GetUniqueID();
   ShowInterstitial(false, kBypassURL);
   interstitial = GetDataReductionProxyDebugBlockingPage();
   ASSERT_TRUE(interstitial);
 
   // Let's proceed and make sure everything is OK.
   ProceedThroughInterstitial(interstitial);
-  // Commit the navigation.
-  NavigateCrossSite(kBypassURL, 2, pending_id, false);
+  Navigate(kBypassURL, 2);  // Commit the navigation.
   interstitial = GetDataReductionProxyDebugBlockingPage();
   ASSERT_FALSE(interstitial);
   ASSERT_EQ(2, controller().GetEntryCount());

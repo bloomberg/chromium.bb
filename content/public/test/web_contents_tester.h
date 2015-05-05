@@ -78,28 +78,17 @@ class WebContentsTester {
   // Does nothing if no cross-navigation is pending.
   virtual void ProceedWithCrossSiteNavigation() = 0;
 
-  // Simulates a navigation with the given information.
-  //
-  // Guidance for calling these:
-  // - nav_entry_id should be 0 if simulating a renderer-initiated navigation;
-  //   if simulating a browser-initiated one, pass the GetUniqueID() value of
-  //   the NavigationController's PendingEntry.
-  // - did_create_new_entry should be true if simulating a navigation that
-  //   created a new navigation entry; false for history navigations, reloads,
-  //   and other navigations that don't affect the history list.
   virtual void TestDidNavigate(RenderFrameHost* render_frame_host,
                                int page_id,
-                               int nav_entry_id,
-                               bool did_create_new_entry,
                                const GURL& url,
                                ui::PageTransition transition) = 0;
-  virtual void TestDidNavigateWithReferrer(RenderFrameHost* render_frame_host,
-                                           int page_id,
-                                           int nav_entry_id,
-                                           bool did_create_new_entry,
-                                           const GURL& url,
-                                           const Referrer& referrer,
-                                           ui::PageTransition transition) = 0;
+
+  virtual void TestDidNavigateWithReferrer(
+      RenderFrameHost* render_frame_host,
+      int page_id,
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition transition) = 0;
 };
 
 }  // namespace content

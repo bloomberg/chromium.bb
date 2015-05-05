@@ -167,10 +167,9 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   const GURL url("http://www.google.com");
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
-  contents()->TestDidNavigate(contents()->GetMainFrame(), 1, pending_id, true,
-                              url, ui::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(
+      contents()->GetMainFrame(), 1, url, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
   TestDevToolsClientHost client_host;
@@ -189,10 +188,9 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  pending_id = controller().GetPendingEntry()->GetUniqueID();
   contents()->GetMainFrame()->PrepareForCommit();
-  contents()->TestDidNavigate(contents()->GetMainFrame(), 1, pending_id, false,
-                              url, ui::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(
+      contents()->GetMainFrame(), 1, url, ui::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(client_host.agent_host(),
             DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
