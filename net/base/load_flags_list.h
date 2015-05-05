@@ -25,11 +25,6 @@ LOAD_FLAG(PREFERRING_CACHE, 1 << 2)
 // resource from the cache (or some equivalent local store).
 LOAD_FLAG(ONLY_FROM_CACHE, 1 << 3)
 
-// Indicate that if the request fails at the network level in a way that
-// indicates the source is unreachable, the request should fail over
-// to as if LOAD_PREFERRING_CACHE had been set.
-LOAD_FLAG(FROM_CACHE_IF_OFFLINE, 1 << 4)
-
 // This is a navigation that will not use the cache at all.  It does not
 // impact the HTTP request headers.
 LOAD_FLAG(DISABLE_CACHE, 1 << 4)
