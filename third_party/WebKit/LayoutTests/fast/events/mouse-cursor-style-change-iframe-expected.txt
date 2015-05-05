@@ -5,18 +5,18 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Mouse moved to cursor changing div
-Cursor Info: type=Hand hotSpot=0,0
-PASS window.internals.getCurrentCursorInfo(document) is "type=Hand hotSpot=0,0"
+PASS window.internals.getCurrentCursorInfo() is "type=Hand hotSpot=0,0"
 Changing cursor style
-PASS window.internals.getCurrentCursorInfo(document) is "type=Wait hotSpot=0,0"
+PASS internals.getCurrentCursorInfo() is "type=Wait hotSpot=0,0"
 
 Now move mouse onto iframe above cursor changing div
 PASS document.elementFromPoint(100, y) is frame
 PASS document.elementsFromPoint(100, y).indexOf(container) > 0 is true
-PASS window.internals.getCurrentCursorInfo(document) is "type=IBeam hotSpot=0,0"
+PASS internals.cursorUpdatePending is false
+PASS window.internals.getCurrentCursorInfo() is "type=IBeam hotSpot=0,0"
 
 Changing cursor style of the background should not affect the cursor as it sits over the iframe
-PASS window.internals.getCurrentCursorInfo(document) is "type=IBeam hotSpot=0,0"
+PASS internals.getCurrentCursorInfo() is "type=IBeam hotSpot=0,0"
 PASS successfullyParsed is true
 
 TEST COMPLETE

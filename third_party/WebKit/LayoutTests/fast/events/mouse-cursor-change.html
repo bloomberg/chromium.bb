@@ -14,6 +14,8 @@
 <br/>
 <div id="console"></div>
 <script>
+// This appears to be just to accomodate style update (cursor is updated immediately on mouse events).
+// TODO(rbyers): replace with updateAfterDisplay or requestAnimationFrame
 var CURSOR_UPDATE_DELAY = 50;
 
 description("Test that mouse cursors are changed correctly on mouse events.");
@@ -31,7 +33,7 @@ if (window.testRunner) {
 function runTest(prepare, next) {
     prepare();
     setTimeout(function() {
-        debug('Cursor Info: ' + window.internals.getCurrentCursorInfo(document));
+        debug('Cursor Info: ' + window.internals.getCurrentCursorInfo());
         debug('');
         next();
     }, CURSOR_UPDATE_DELAY);

@@ -277,7 +277,9 @@ public:
     PassRefPtr<DOMArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
     PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<DOMArrayBuffer>) const;
 
-    String getCurrentCursorInfo(Document*, ExceptionState&);
+    String getCurrentCursorInfo();
+
+    bool cursorUpdatePending() const;
 
     String markerTextForListItem(Element*);
 

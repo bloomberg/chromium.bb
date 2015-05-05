@@ -121,6 +121,9 @@ public:
     void scheduleHoverStateUpdate();
     void scheduleCursorUpdate();
 
+    // Return whether a mouse cursor update is currently pending.  Used for testing.
+    bool cursorUpdatePending();
+
     void setResizingFrameSet(HTMLFrameSetElement*);
 
     void resizeScrollableAreaDestroyed();

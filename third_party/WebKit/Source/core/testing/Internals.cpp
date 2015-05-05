@@ -1911,14 +1911,8 @@ static const char* cursorTypeToString(Cursor::Type cursorType)
     return "UNKNOWN";
 }
 
-String Internals::getCurrentCursorInfo(Document* document, ExceptionState& exceptionState)
+String Internals::getCurrentCursorInfo()
 {
-    ASSERT(document);
-    if (!document->frame()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
-        return String();
-    }
-
     Cursor cursor = frame()->page()->chrome().getLastSetCursorForTesting();
 
     StringBuilder result;
@@ -1942,6 +1936,11 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionState& excep
     }
 
     return result.toString();
+}
+
+bool Internals::cursorUpdatePending() const
+{
+    return frame()->eventHandler().cursorUpdatePending();
 }
 
 PassRefPtr<DOMArrayBuffer> Internals::serializeObject(PassRefPtr<SerializedScriptValue> value) const

@@ -21,11 +21,11 @@
                     return;
                 eventSender.dragMode = false;
                 eventSender.mouseMoveTo(50, 50);
-                var originalInfo = window.internals.getCurrentCursorInfo(document);
+                var originalInfo = window.internals.getCurrentCursorInfo();
 
                 // The view is 800x600 in tests.
                 eventSender.mouseMoveTo(799, 500);
-                var scrollbarInfo = window.internals.getCurrentCursorInfo(document);
+                var scrollbarInfo = window.internals.getCurrentCursorInfo();
                 log("Hovered pointer: " + originalInfo);
                 log("Scrollbar pointer: " + scrollbarInfo);
             }

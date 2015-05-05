@@ -3150,6 +3150,11 @@ void EventHandler::scheduleCursorUpdate()
         m_cursorUpdateTimer.startOneShot(cursorUpdateInterval, FROM_HERE);
 }
 
+bool EventHandler::cursorUpdatePending()
+{
+    return m_cursorUpdateTimer.isActive();
+}
+
 void EventHandler::dispatchFakeMouseMoveEventSoon()
 {
     if (m_mousePressed)

@@ -14,6 +14,8 @@
 <br/>
 <div id="console"></div>
 <script>
+// This appears to be just to accomodate style update (cursor is updated immediately on mouse events).
+// TODO(rbyers): replace with updateAfterDisplay or requestAnimationFrame
 var CURSOR_UPDATE_DELAY = 50;
 
 description("Test that there is no mousemove event fired when changing cursor.");
@@ -33,14 +35,14 @@ if (window.eventSender) {
     var node = document.getElementById('target');
     debug('TEST CASE: ' + node.textContent);
     eventSender.mouseMoveTo(node.offsetLeft + 3, node.offsetTop + 3);
-    debug('Cursor Info: ' + window.internals.getCurrentCursorInfo(document));
+    debug('Cursor Info: ' + window.internals.getCurrentCursorInfo());
     node.addEventListener('mousemove', function() {
         testFailed('Mousemove event should not be fired when changing cursor');
         finishJSTest();
     });
     node.style.cursor = 'help';
     setTimeout(function() {
-        debug('Cursor Info: ' + window.internals.getCurrentCursorInfo(document));
+        debug('Cursor Info: ' + window.internals.getCurrentCursorInfo());
         debug('');
     }, CURSOR_UPDATE_DELAY);
 

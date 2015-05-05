@@ -233,8 +233,10 @@
     [RaisesException, TypeChecking=Interface] ClientRectList nonDraggableRegions(Document document);
 
     // Returns a string with information about the mouse cursor used at the specified client location.
-    [RaisesException, TypeChecking=Interface] DOMString getCurrentCursorInfo(Document document);
+    [TypeChecking=Interface] DOMString getCurrentCursorInfo();
 
+    readonly attribute boolean cursorUpdatePending;
+    
     [TypeChecking=Interface] DOMString markerTextForListItem(Element element);
 
     SerializedScriptValue deserializeBuffer(ArrayBuffer buffer);

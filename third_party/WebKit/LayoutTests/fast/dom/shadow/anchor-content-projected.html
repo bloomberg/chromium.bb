@@ -37,7 +37,7 @@ window.onload = function() {
 
 window.onhashchange = function() {
     if (window.internals)
-        debug('Cursor Info: ' + window.internals.getCurrentCursorInfo(document));
+        debug('Cursor Info: ' + window.internals.getCurrentCursorInfo());
     shouldBeEqualToString("window.location.hash", "#link-clicked");
     finishJSTest();
 };
