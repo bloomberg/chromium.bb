@@ -5,9 +5,14 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 
+#include <vector>
+
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/presentation_session.h"
+#include "content/public/browser/presentation_session_message.h"
 
 namespace content {
 
@@ -38,6 +43,8 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       base::Callback<void(const PresentationSessionInfo&)>;
   using PresentationSessionErrorCallback =
       base::Callback<void(const PresentationError&)>;
+  using PresentationSessionMessageCallback = base::Callback<void(
+      scoped_ptr<ScopedVector<PresentationSessionMessage>>)>;
 
   virtual ~PresentationServiceDelegate() {}
 
@@ -129,6 +136,14 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       const std::string& presentation_id,
       const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;
+
+  // Gets the next batch of messages from all presentation sessions in the frame
+  // |render_process_id|, |render_frame_id|: ID for originating frame.
+  // |message_cb|: Invoked with a non-empty list of messages.
+  virtual void ListenForSessionMessages(
+      int render_process_id,
+      int render_frame_id,
+      const PresentationSessionMessageCallback& message_cb) = 0;
 };
 
 }  // namespace content

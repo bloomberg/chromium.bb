@@ -213,7 +213,8 @@ void PresentationDispatcher::OnSessionStateChange(
 
 void PresentationDispatcher::OnSessionMessagesReceived(
     mojo::Array<presentation::SessionMessagePtr> messages) {
-  if (!controller_)
+  // When messages is null, there is an error at presentation service side.
+  if (!controller_ || messages.is_null())
     return;
 
   for (size_t i = 0; i < messages.size(); ++i) {

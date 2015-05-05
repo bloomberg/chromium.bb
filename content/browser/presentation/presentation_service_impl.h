@@ -28,6 +28,7 @@ namespace content {
 
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
+struct PresentationSessionMessage;
 class RenderFrameHost;
 
 // Implementation of Mojo PresentationService.
@@ -175,6 +176,8 @@ class CONTENT_EXPORT PresentationServiceImpl
       ListenForDefaultSessionStartAfterSet);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
       DefaultSessionStartReset);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           ReceiveSessionMessagesAfterReset);
 
   // |render_frame_host|: The RFH this instance is associated with.
   // |web_contents|: The WebContents to observe.
@@ -267,6 +270,13 @@ class CONTENT_EXPORT PresentationServiceImpl
       const std::string& presentation_id,
       const NewSessionMojoCallback& callback);
 
+  // Passed to embedder's implementation of PresentationServiceDelegate for
+  // later invocation when session messages arrive.
+  // For optimization purposes, this method will empty the messages
+  // passed to it.
+  void OnSessionMessages(
+      scoped_ptr<ScopedVector<PresentationSessionMessage>> messages);
+
   // Removes the head of the queue (which represents the request that has just
   // been processed).
   // Checks if there are any queued StartSession requests and if so, executes
@@ -317,6 +327,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // RAII binding of |this| to an Presentation interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
   scoped_ptr<mojo::Binding<presentation::PresentationService>> binding_;
+
+  scoped_ptr<SessionMessagesCallback> on_session_messages_callback_;
 
   // ID of the RenderFrameHost this object is associated with.
   int render_process_id_;

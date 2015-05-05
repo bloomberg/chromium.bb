@@ -98,6 +98,8 @@ interface PresentationService {
             PresentationSessionState newState);
 
     // Called when the frame is ready to process the next batch of messages.
+    // When the callback carries null messages, there is an error
+    // at the presentation service side.
     ListenForSessionMessages()
-        => (array<SessionMessage> messages);
+        => (array<SessionMessage>? messages);
 };

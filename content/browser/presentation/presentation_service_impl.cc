@@ -10,11 +10,36 @@
 #include "content/browser/presentation/presentation_type_converters.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/presentation_session_message.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/frame_navigate_params.h"
+
+namespace {
+
+// The return value takes ownership of the contents of |input|.
+presentation::SessionMessagePtr ToMojoSessionMessage(
+    content::PresentationSessionMessage* input) {
+  presentation::SessionMessagePtr output(presentation::SessionMessage::New());
+  output->presentation_url.Swap(&input->presentation_url);
+  output->presentation_id.Swap(&input->presentation_id);
+  if (input->is_binary()) {
+    // binary data
+    output->type = presentation::PresentationMessageType::
+        PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
+    output->data.Swap(input->data.get());
+  } else {
+    // string message
+    output->type =
+        presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
+    output->message.Swap(input->message.get());
+  }
+  return output.Pass();
+}
+
+}  // namespace
 
 namespace content {
 
@@ -335,7 +360,37 @@ bool PresentationServiceImpl::FrameMatches(
 
 void PresentationServiceImpl::ListenForSessionMessages(
     const SessionMessagesCallback& callback) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "ListenForSessionMessages";
+  if (!delegate_) {
+    callback.Run(mojo::Array<presentation::SessionMessagePtr>());
+    return;
+  }
+
+  // Crash early if renderer is misbehaving.
+  CHECK(!on_session_messages_callback_.get());
+
+  on_session_messages_callback_.reset(new SessionMessagesCallback(callback));
+  delegate_->ListenForSessionMessages(
+      render_process_id_, render_frame_id_,
+      base::Bind(&PresentationServiceImpl::OnSessionMessages,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void PresentationServiceImpl::OnSessionMessages(
+    scoped_ptr<ScopedVector<PresentationSessionMessage>> messages) {
+  DCHECK(messages.get() && !messages->empty());
+  if (!on_session_messages_callback_.get()) {
+    // The Reset method of this class was invoked.
+    return;
+  }
+
+  mojo::Array<presentation::SessionMessagePtr> mojoMessages(messages->size());
+  for (size_t i = 0; i < messages->size(); ++i) {
+    mojoMessages[i] = ToMojoSessionMessage((*messages)[i]);
+  }
+
+  on_session_messages_callback_->Run(mojoMessages.Pass());
+  on_session_messages_callback_.reset();
 }
 
 void PresentationServiceImpl::DidNavigateAnyFrame(
@@ -388,6 +443,11 @@ void PresentationServiceImpl::Reset() {
   queued_start_session_requests_.clear();
   FlushNewSessionCallbacks();
   default_session_start_context_.reset();
+  if (on_session_messages_callback_.get()) {
+    on_session_messages_callback_->Run(
+        mojo::Array<presentation::SessionMessagePtr>());
+    on_session_messages_callback_.reset();
+  }
 }
 
 // static
