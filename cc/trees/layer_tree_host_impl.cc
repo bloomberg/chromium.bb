@@ -3103,6 +3103,8 @@ void LayerTreeHostImpl::AddVideoFrameController(
     VideoFrameController* controller) {
   bool was_empty = video_frame_controllers_.empty();
   video_frame_controllers_.insert(controller);
+  if (current_begin_frame_args_.IsValid())
+    controller->OnBeginFrame(current_begin_frame_args_);
   if (was_empty)
     client_->SetVideoNeedsBeginFrames(true);
 }

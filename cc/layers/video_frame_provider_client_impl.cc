@@ -118,8 +118,8 @@ void VideoFrameProviderClientImpl::StartRendering() {
   TRACE_EVENT0("cc", "VideoFrameProviderClientImpl::StartRendering");
   DCHECK(!rendering_);
   DCHECK(!stopped_);
-  client_->AddVideoFrameController(this);
   rendering_ = true;
+  client_->AddVideoFrameController(this);
 }
 
 void VideoFrameProviderClientImpl::StopRendering() {

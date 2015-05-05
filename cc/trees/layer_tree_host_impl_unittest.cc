@@ -7894,5 +7894,47 @@ TEST_F(LayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   EXPECT_EQ(0u, pass1->quad_list.size());
 }
 
+class FakeVideoFrameController : public VideoFrameController {
+ public:
+  void OnBeginFrame(const BeginFrameArgs& args) override {
+    begin_frame_args_ = args;
+  }
+
+  const BeginFrameArgs& begin_frame_args() { return begin_frame_args_; }
+
+ private:
+  BeginFrameArgs begin_frame_args_;
+};
+
+TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+  FakeVideoFrameController controller;
+
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  EXPECT_FALSE(controller.begin_frame_args().IsValid());
+  host_impl_->AddVideoFrameController(&controller);
+  EXPECT_TRUE(controller.begin_frame_args().IsValid());
+  host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
+}
+
+TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+  FakeVideoFrameController controller;
+
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
+
+  EXPECT_FALSE(controller.begin_frame_args().IsValid());
+  host_impl_->AddVideoFrameController(&controller);
+  EXPECT_FALSE(controller.begin_frame_args().IsValid());
+
+  begin_frame_args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+  EXPECT_FALSE(controller.begin_frame_args().IsValid());
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  EXPECT_TRUE(controller.begin_frame_args().IsValid());
+}
+
 }  // namespace
 }  // namespace cc
