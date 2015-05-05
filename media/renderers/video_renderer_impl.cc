@@ -30,8 +30,8 @@ VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
       use_new_video_renderering_path_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableNewVideoRenderer)),
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableNewVideoRenderer)),
       sink_(sink),
       sink_started_(false),
       video_frame_stream_(

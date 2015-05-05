@@ -6898,11 +6898,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SUPERVISED_USER_SAFESITES_ONLINE_CHECK_ONLY" desc="Description for the choice to enable only the online check in the supervised user SafeSites filtering feature.">
         Online check only
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_VIDEO_RENDERER_NAME" desc="Title for the flag to enable the new video rendering path for video elements.">
-        Enable the new video rendering path for video elements.
+      <message name="IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_NAME" desc="Title for the flag to disable the new video rendering path for video elements.">
+        Disables the new video rendering path for video elements.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NEW_VIDEO_RENDERER_DESCRIPTION" desc="Description for the flag to enable the new video rendering path for video elements.">
-        Enables the new compositor driven video rendering path for smoother playback in video elements.
+      <message name="IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_DESCRIPTION" desc="Description for the flag to disable the new video rendering path for video elements.">
+        Disables the new compositor driven video rendering path for video elements.
       </message>
 
       <!-- Crashes -->

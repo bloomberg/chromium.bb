@@ -82,8 +82,8 @@ class MEDIA_EXPORT VideoRendererImpl
                                    bool background_rendering) override;
   void OnFrameDropped() override;
 
-  void enable_new_video_renderer_for_testing() {
-    use_new_video_renderering_path_ = true;
+  void disable_new_video_renderer_for_testing() {
+    use_new_video_renderering_path_ = false;
   }
 
  private:

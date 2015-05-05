@@ -9,8 +9,8 @@ namespace switches {
 // Allow users to specify a custom buffer size for debugging purpose.
 const char kAudioBufferSize[] = "audio-buffer-size";
 
-// Enables the new vsync driven video renderering path.
-const char kEnableNewVideoRenderer[] = "enable-new-video-renderer";
+// Disables the new vsync driven video renderering path.
+const char kDisableNewVideoRenderer[] = "disable-new-video-renderer";
 
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
