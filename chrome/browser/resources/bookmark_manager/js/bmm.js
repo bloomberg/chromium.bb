@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('bmm', function() {
+  'use strict';
+
   /**
    * Whether a node contains another node.
    * TODO(yosin): Once JavaScript style guide is updated and linter follows

@@ -4,6 +4,8 @@
 
 
 cr.define('bmm', function() {
+  'use strict';
+
   /**
    * The id of the bookmark root.
    * @type {string}

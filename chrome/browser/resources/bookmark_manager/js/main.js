@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 (function() {
+'use strict';
+
 /** @const */ var BookmarkList = bmm.BookmarkList;
 /** @const */ var BookmarkTree = bmm.BookmarkTree;
 /** @const */ var Command = cr.ui.Command;

@@ -23,6 +23,8 @@ var ReorderInfo;
 var MoveInfo;
 
 cr.define('bmm', function() {
+  'use strict';
+
   var List = cr.ui.List;
   var ListItem = cr.ui.ListItem;
   var ArrayDataModel = cr.ui.ArrayDataModel;
