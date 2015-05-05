@@ -7,7 +7,7 @@ Import('env')
 
 list_mappings_test_nexe = env.ComponentProgram(
     'list_mappings_test',
-    'list_mappings_test.cc',
+    'list_mappings_test.c',
     EXTRA_LIBS=['${LIST_MAPPINGS_LIBS}', '${NONIRT_LIBS}'])
 
 node = env.CommandSelLdrTestNacl(
