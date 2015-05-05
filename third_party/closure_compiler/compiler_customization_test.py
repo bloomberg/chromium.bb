@@ -4,16 +4,13 @@
 # found in the LICENSE file.
 
 import os
-from sys import path as sys_path
 import unittest
-
-_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys_path.insert(0, _SCRIPT_DIR)
 
 from compile import Checker
 from processor import FileCache, Processor
 
 
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 _SRC_DIR = os.path.join(_SCRIPT_DIR, os.pardir, os.pardir)
 _RESOURCES_DIR = os.path.join(_SRC_DIR, "ui", "webui", "resources", "js")
 _ASSERT_JS = os.path.join(_RESOURCES_DIR, "assert.js")
