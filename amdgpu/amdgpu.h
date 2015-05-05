@@ -98,26 +98,6 @@ enum amdgpu_bo_handle_type {
 };
 
 /**
- * Enum describing possible context reset states
- *
- * \sa amdgpu_cs_query_reset_state()
- *
-*/
-enum amdgpu_cs_ctx_reset_state {
-	/** No reset was detected */
-	amdgpu_cs_reset_no_error = 0,
-
-	/** Reset/TDR was detected and context caused */
-	amdgpu_cs_reset_guilty   = 1,
-
-	/** Reset/TDR was detected caused by other context */
-	amdgpu_cs_reset_innocent = 2,
-
-	/** Reset TDR was detected by cause of it unknown */
-	amdgpu_cs_reset_unknown  = 3
-};
-
-/**
  * For performance reasons and to simplify logic libdrm_amdgpu will handle
  * IBs only some pre-defined sizes.
  *
@@ -920,7 +900,8 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context);
  * Query reset state for the specific GPU Context
  *
  * \param   context - \c [in]  GPU Context handle
- * \param   state   - \c [out] Reset state status
+ * \param   state   - \c [out] One of AMDGPU_CTX_*_RESET
+ * \param   hangs   - \c [out] Number of hangs caused by the context.
  *
  * \return   0 on success\n
  *          >0 - AMD specific error code\n
@@ -930,7 +911,7 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context);
  *
 */
 int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
-				enum amdgpu_cs_ctx_reset_state *state);
+				uint32_t *state, uint32_t *hangs);
 
 
 /*

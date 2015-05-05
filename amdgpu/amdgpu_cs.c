@@ -611,6 +611,27 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 	return r;
 }
 
+int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
+				uint32_t *state, uint32_t *hangs)
+{
+	union drm_amdgpu_ctx args;
+	int r;
+
+	if (!context)
+		return -EINVAL;
+
+	memset(&args, 0, sizeof(args));
+	args.in.op = AMDGPU_CTX_OP_QUERY_STATE;
+	args.in.ctx_id = context->id;
+	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CTX,
+				&args, sizeof(args));
+	if (!r) {
+		*state = args.out.state.reset_status;
+		*hangs = args.out.state.hangs;
+	}
+	return r;
+}
+
 static uint32_t amdgpu_cs_fence_index(unsigned ip, unsigned ring)
 {
 	return ip * AMDGPU_CS_MAX_RINGS + ring;
