@@ -62,7 +62,7 @@ def _HideDefaults(cfg):
   """
   d = {}
   child_configs = cfg.get('child_configs')
-  default = cbuildbot_config.default
+  default = cbuildbot_config.GetDefault()
   if child_configs:
     default = child_configs[0].derive(grouped=False)
     d['child_configs'] = [_HideDefaults(x) for x in child_configs]
@@ -166,7 +166,7 @@ def main(argv):
   if options.separate_defaults:
     for k, v in config.iteritems():
       config[k] = _HideDefaults(v)
-    config['_default'] = cbuildbot_config.default
+    config['_default'] = cbuildbot_config.GetDefault()
 
   # If config_targets specified, only dump/load those.
   if options.config_targets:

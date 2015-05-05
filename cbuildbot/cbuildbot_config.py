@@ -1097,7 +1097,7 @@ class BuildConfig(dict):
 
     # Add ourselves into the global dictionary, adding in the defaults.
     new_config = self.derive(*inherits, **overrides)
-    config[name] = default.derive(self, new_config)
+    config[name] = _default.derive(self, new_config)
 
     # Return a BuildConfig object without the defaults, so that other objects
     # can derive from us without inheriting the defaults.
@@ -1121,11 +1121,15 @@ class BuildConfig(dict):
     Returns:
       A new BuildConfig instance.
     """
-    child_configs = [default.derive(x, grouped=True) for x in args]
+    child_configs = [_default.derive(x, grouped=True) for x in args]
     return args[0].add_config(name, child_configs=child_configs, **kwargs)
 
-default = BuildConfig(**_settings)
 
+def GetDefault():
+  """Create the cannonical default build configuration."""
+  return BuildConfig(**_settings)
+
+_default = GetDefault()
 
 # Arch-specific mixins.
 
