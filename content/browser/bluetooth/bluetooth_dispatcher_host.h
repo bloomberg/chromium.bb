@@ -51,6 +51,23 @@ class BluetoothDispatcherHost final
                      const std::string& device_instance_id);
   void OnSetBluetoothMockDataSetForTesting(const std::string& name);
 
+  // Callbacks for BluetoothAdapter::StartDiscoverySession.
+  void OnDiscoverySessionStarted(
+      int thread_id,
+      int request_id,
+      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+  void OnDiscoverySessionStartedError(int thread_id, int request_id);
+
+  // Stop in progress discovery session.
+  void StopDiscoverySession(
+      int thread_id,
+      int request_id,
+      scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
+
+  // Callbacks for BluetoothDiscoverySession::Stop.
+  void OnDiscoverySessionStopped(int thread_id, int request_id);
+  void OnDiscoverySessionStoppedError(int thread_id, int request_id);
+
   // A BluetoothAdapter instance representing an adapter of the system.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
