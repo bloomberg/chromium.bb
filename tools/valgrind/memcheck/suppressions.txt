@@ -511,6 +511,15 @@
    fun:_ZN7content18ManifestParserTest13ParseManifestERKN4base16BasicStringPieceISsEE
    fun:_ZN7content45ManifestParserTest_IconDensityParseRules_Test8TestBodyEv
 }
+{
+   bug_484444
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN4mojo7BindingINS_15ServiceProviderEE4BindENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEPK15MojoAsyncWaiter
+   fun:_ZN4mojo7BindingINS_15ServiceProviderEE4BindENS_16InterfaceRequestIS1_EEPK15MojoAsyncWaiter
+   fun:_ZN7content19ServiceRegistryImpl4BindEN4mojo16InterfaceRequestINS1_15ServiceProviderEEE
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
