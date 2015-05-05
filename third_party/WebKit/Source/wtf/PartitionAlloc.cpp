@@ -177,7 +177,7 @@ void partitionAllocGenericInit(PartitionRootGeneric* root)
             // This avoids invoking undefined behavior for an excessive shift.
             subOrderIndexMask = static_cast<size_t>(-1) >> (kGenericNumBucketsPerOrderBits + 1);
         } else {
-            subOrderIndexMask = ((1ul << order) - 1) >> (kGenericNumBucketsPerOrderBits + 1);
+            subOrderIndexMask = ((static_cast<size_t>(1) << order) - 1) >> (kGenericNumBucketsPerOrderBits + 1);
         }
         root->orderSubIndexMasks[order] = subOrderIndexMask;
     }
