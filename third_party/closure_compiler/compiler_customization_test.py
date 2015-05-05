@@ -4,11 +4,14 @@
 # found in the LICENSE file.
 
 import os
+from sys import path as sys_path
 import unittest
+
+SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+sys_path.insert(0, SCRIPT_PATH)
 
 from checker import Checker
 from processor import FileCache, Processor
-
 
 ASSERT_FILE = os.path.join("..", "..", "ui", "webui", "resources", "js",
     "assert.js")
@@ -18,8 +21,7 @@ UI_FILE = os.path.join("..", "..", "ui", "webui", "resources", "js", "cr",
 
 
 def rel_to_abs(rel_path):
-  script_path = os.path.dirname(os.path.abspath(__file__))
-  return os.path.join(script_path, rel_path)
+  return os.path.join(SCRIPT_PATH, rel_path)
 
 
 class CompilerCustomizationTest(unittest.TestCase):
