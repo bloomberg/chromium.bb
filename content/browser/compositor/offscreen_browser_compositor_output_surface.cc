@@ -29,9 +29,11 @@ namespace content {
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         const scoped_refptr<ContextProviderCommandBuffer>& context,
+        const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         scoped_ptr<BrowserCompositorOverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(context,
+                                     vsync_manager,
                                      overlay_candidate_validator.Pass()),
       fbo_(0),
       is_backbuffer_discarded_(false),

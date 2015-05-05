@@ -1240,6 +1240,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableTouchEditing,
     switches::kDisableV8IdleTasks,
     switches::kDomAutomationController,
+    switches::kEnableBeginFrameScheduling,
     switches::kEnableBleedingEdgeRenderingFastPaths,
     switches::kEnableBlinkFeatures,
     switches::kEnableBrowserSideNavigation,

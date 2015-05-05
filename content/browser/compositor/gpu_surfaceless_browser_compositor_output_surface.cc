@@ -20,11 +20,13 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         const scoped_refptr<ContextProviderCommandBuffer>& context,
         int surface_id,
+        const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         scoped_ptr<BrowserCompositorOverlayCandidateValidator>
             overlay_candidate_validator,
         unsigned internalformat,
         BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(context,
+                                        vsync_manager,
                                         overlay_candidate_validator.Pass()),
       internalformat_(internalformat),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {

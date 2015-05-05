@@ -25,8 +25,7 @@ class BeginFrameObserverProxyClient {
 // This class is used to manage all of the RenderWidgetHostView state and
 // functionality that is associated with BeginFrame message handling.
 class CONTENT_EXPORT BeginFrameObserverProxy
-    : public ui::CompositorBeginFrameObserver,
-      public ui::CompositorObserver {
+    : public ui::CompositorBeginFrameObserver {
  public:
   explicit BeginFrameObserverProxy(BeginFrameObserverProxyClient* client);
   ~BeginFrameObserverProxy() override;
@@ -38,17 +37,6 @@ class CONTENT_EXPORT BeginFrameObserverProxy
 
   // Overridden from ui::CompositorBeginFrameObserver:
   void OnSendBeginFrame(const cc::BeginFrameArgs& args) override;
-
-  // Overridden from ui::CompositorObserver:
-  // TODO(simonhong): Stop overriding ui::CompositorObserver. We need to make
-  // sure that this class should be destroyed before ui::Compositor.
-  void OnCompositingDidCommit(ui::Compositor* compositor) override {}
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override {}
-  void OnCompositingEnded(ui::Compositor* compositor) override {}
-  void OnCompositingAborted(ui::Compositor* compositor) override {}
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
  private:
   void StartObservingBeginFrames();
