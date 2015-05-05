@@ -49,24 +49,31 @@ udev_seat_create(struct udev_input *input, const char *seat_name);
 static void
 udev_seat_destroy(struct udev_seat *seat);
 
+static struct udev_seat *
+get_udev_seat(struct udev_input *input, struct libinput_device *device)
+{
+	struct libinput_seat *libinput_seat;
+	const char *seat_name;
+
+	libinput_seat = libinput_device_get_seat(device);
+	seat_name = libinput_seat_get_logical_name(libinput_seat);
+	return udev_seat_get_named(input, seat_name);
+}
+
 static void
 device_added(struct udev_input *input, struct libinput_device *libinput_device)
 {
 	struct weston_compositor *c;
 	struct evdev_device *device;
 	struct weston_output *output;
-	const char *seat_name;
 	const char *output_name;
-	struct libinput_seat *libinput_seat;
 	struct weston_seat *seat;
 	struct udev_seat *udev_seat;
 	struct weston_pointer *pointer;
 
 	c = input->compositor;
-	libinput_seat = libinput_device_get_seat(libinput_device);
 
-	seat_name = libinput_seat_get_logical_name(libinput_seat);
-	udev_seat = udev_seat_get_named(input, seat_name);
+	udev_seat = get_udev_seat(input, libinput_device);
 	if (!udev_seat)
 		return;
 
