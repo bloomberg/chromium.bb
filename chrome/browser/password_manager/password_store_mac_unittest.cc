@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/password_manager/core/browser/login_database.h"
@@ -1217,7 +1218,8 @@ class PasswordStoreMacTest : public testing::Test {
   void CreateAndInitPasswordStore(
       scoped_ptr<password_manager::LoginDatabase> login_db) {
     store_ = new TestPasswordStoreMac(
-        base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
         make_scoped_ptr<AppleKeychain>(new MockAppleKeychain), login_db.Pass());
     ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
   }

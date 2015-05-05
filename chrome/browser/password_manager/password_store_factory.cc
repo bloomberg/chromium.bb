@@ -8,6 +8,7 @@
 #include "base/environment.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/sync_metrics.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -237,7 +238,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
       new password_manager::LoginDatabase(login_db_file_path));
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
-      base::MessageLoopProxy::current());
+      base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::DB));

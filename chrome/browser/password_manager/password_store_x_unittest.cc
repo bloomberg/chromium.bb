@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -309,7 +310,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   scoped_ptr<password_manager::LoginDatabase> login_db(
       new password_manager::LoginDatabase(test_login_db_file_path()));
   scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       login_db.Pass(), GetBackend()));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
@@ -410,7 +411,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   login_db.reset(new password_manager::LoginDatabase(login_db_file));
   scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
-      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
       login_db.Pass(), GetBackend()));
   store->Init(syncer::SyncableService::StartSyncFlare());
 
