@@ -124,7 +124,6 @@ var tests = [
     while (queuedMessages.length) {
       handleMessage(queuedMessages.shift());
     }
-
   },
 
   function testDataUrl() {
@@ -140,6 +139,11 @@ var tests = [
     fetchUrl(streamDetails.streamUrl)
         .then(expectSuccessfulReadLong)
         .then(chrome.test.succeed);
+  },
+
+  function testResizeBeforeAttach() {
+    checkStreamDetails('testResizeBeforeAttach.csv', true);
+    chrome.test.succeed();
   }
 ];
 

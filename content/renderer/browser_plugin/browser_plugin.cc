@@ -420,13 +420,18 @@ void BrowserPlugin::updateGeometry(const WebRect& window_rect,
   int old_width = view_rect_.width();
   int old_height = view_rect_.height();
   view_rect_ = window_rect;
+
   if (!ready_) {
-    if (delegate_) {
-      delegate_->DidResizeElement(gfx::Size(), view_rect_.size());
+    if (delegate_)
       delegate_->Ready();
-    }
     ready_ = true;
   }
+
+  if (delegate_) {
+    delegate_->DidResizeElement(
+        gfx::Size(old_width, old_height), view_rect_.size());
+  }
+
   if (!attached())
     return;
 
@@ -435,11 +440,6 @@ void BrowserPlugin::updateGeometry(const WebRect& window_rect,
     BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateGeometry(
         browser_plugin_instance_id_, view_rect_));
     return;
-  }
-
-  if (delegate_) {
-    delegate_->DidResizeElement(
-        gfx::Size(old_width, old_height), view_rect_.size());
   }
 }
 

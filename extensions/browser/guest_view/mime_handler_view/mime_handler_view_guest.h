@@ -101,10 +101,11 @@ class MimeHandlerViewGuest : public guest_view::GuestView<MimeHandlerViewGuest>,
   std::string view_id() const { return view_id_; }
   base::WeakPtr<StreamContainer> GetStream() const;
 
- private:
+ protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;
 
+ private:
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   scoped_ptr<MimeHandlerViewGuestDelegate> delegate_;

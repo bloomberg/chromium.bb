@@ -81,8 +81,14 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   template <typename T>
   void RegisterGuestViewType() {
-    auto it = guest_view_registry_.find(T::Type);
-    DCHECK(it == guest_view_registry_.end());
+    // If the GuestView type |T| is already registered, then there is nothing
+    // more to do. If an existing entry in the registry was created by this
+    // function for type |T|, then registering again would have no effect, and
+    // if it was registered elsewhere, then we do not want to overwrite it. Note
+    // that it is possible for tests to have special test factory methods
+    // registered here.
+    if (guest_view_registry_.count(T::Type))
+      return;
     guest_view_registry_[T::Type] = base::Bind(&T::Create);
   }
 
