@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 
 namespace base {
-class TaskRunner;
+class SingleThreadTaskRunner;
 class TimeDelta;
 }
 
@@ -66,7 +66,7 @@ class OneShotEvent {
   // tasks will be executed.
   //
   // Omitting the |runner| argument indicates that |task| should run
-  // on MessageLoopProxy::current().
+  // on current thread's TaskRunner.
   //
   // Tasks may be run in an arbitrary order, not just FIFO.  Tasks
   // will never be called on the current thread before this function
@@ -80,7 +80,7 @@ class OneShotEvent {
             const base::Closure& task) const;
   void Post(const tracked_objects::Location& from_here,
             const base::Closure& task,
-            const scoped_refptr<base::TaskRunner>& runner) const;
+            const scoped_refptr<base::SingleThreadTaskRunner>& runner) const;
   void PostDelayed(const tracked_objects::Location& from_here,
                    const base::Closure& task,
                    const base::TimeDelta& delay) const;
@@ -90,7 +90,7 @@ class OneShotEvent {
 
   void PostImpl(const tracked_objects::Location& from_here,
                 const base::Closure& task,
-                const scoped_refptr<base::TaskRunner>& runner,
+                const scoped_refptr<base::SingleThreadTaskRunner>& runner,
                 const base::TimeDelta& delay) const;
 
   base::ThreadChecker thread_checker_;

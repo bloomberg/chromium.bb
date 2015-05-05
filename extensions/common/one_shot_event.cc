@@ -7,25 +7,26 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
-using base::TaskRunner;
+using base::SingleThreadTaskRunner;
 
 namespace extensions {
 
 struct OneShotEvent::TaskInfo {
   TaskInfo() {}
   TaskInfo(const tracked_objects::Location& from_here,
-           const scoped_refptr<TaskRunner>& runner,
+           const scoped_refptr<SingleThreadTaskRunner>& runner,
            const base::Closure& task,
            const base::TimeDelta& delay)
       : from_here(from_here), runner(runner), task(task), delay(delay) {
     CHECK(runner.get());  // Detect mistakes with a decent stack frame.
   }
   tracked_objects::Location from_here;
-  scoped_refptr<TaskRunner> runner;
+  scoped_refptr<SingleThreadTaskRunner> runner;
   base::Closure task;
   base::TimeDelta delay;
 };
@@ -42,20 +43,21 @@ OneShotEvent::~OneShotEvent() {}
 
 void OneShotEvent::Post(const tracked_objects::Location& from_here,
                         const base::Closure& task) const {
-  PostImpl(
-      from_here, task, base::MessageLoopProxy::current(), base::TimeDelta());
+  PostImpl(from_here, task, base::ThreadTaskRunnerHandle::Get(),
+           base::TimeDelta());
 }
 
-void OneShotEvent::Post(const tracked_objects::Location& from_here,
-                        const base::Closure& task,
-                        const scoped_refptr<TaskRunner>& runner) const {
+void OneShotEvent::Post(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task,
+    const scoped_refptr<SingleThreadTaskRunner>& runner) const {
   PostImpl(from_here, task, runner, base::TimeDelta());
 }
 
 void OneShotEvent::PostDelayed(const tracked_objects::Location& from_here,
                                const base::Closure& task,
                                const base::TimeDelta& delay) const {
-  PostImpl(from_here, task, base::MessageLoopProxy::current(), delay);
+  PostImpl(from_here, task, base::ThreadTaskRunnerHandle::Get(), delay);
 }
 
 void OneShotEvent::Signal() {
@@ -81,7 +83,7 @@ void OneShotEvent::Signal() {
 
 void OneShotEvent::PostImpl(const tracked_objects::Location& from_here,
                             const base::Closure& task,
-                            const scoped_refptr<TaskRunner>& runner,
+                            const scoped_refptr<SingleThreadTaskRunner>& runner,
                             const base::TimeDelta& delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 

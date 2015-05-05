@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/thread_task_runner_handle.h"
 #include "device/serial/serial_device_enumerator.h"
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
@@ -439,7 +440,7 @@ class SerialApiTest : public ApiTestBase {
                             new device::SerialConnectionFactory(
                                 base::Bind(&SerialApiTest::GetIoHandler,
                                            base::Unretained(this)),
-                                base::MessageLoopProxy::current()),
+                                base::ThreadTaskRunnerHandle::Get()),
                             scoped_ptr<device::SerialDeviceEnumerator>(
                                 new FakeSerialDeviceEnumerator)),
                         &request);

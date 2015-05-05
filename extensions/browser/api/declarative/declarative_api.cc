@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
@@ -152,12 +153,11 @@ bool RulesFunction::RunAsync() {
     bool success = RunAsyncOnCorrectThread();
     SendResponse(success);
   } else {
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner =
         content::BrowserThread::GetMessageLoopProxyForThread(
             rules_registry_->owner_thread());
     base::PostTaskAndReplyWithResult(
-        message_loop_proxy.get(),
-        FROM_HERE,
+        thread_task_runner.get(), FROM_HERE,
         base::Bind(&RulesFunction::RunAsyncOnCorrectThread, this),
         base::Bind(&RulesFunction::SendResponse, this));
   }

@@ -6,10 +6,10 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -89,9 +89,9 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     sandboxed_unpacker_ = new SandboxedUnpacker(
         extensions::CRXFileInfo(std::string(), original_path, package_hash),
         Manifest::INTERNAL, Extension::NO_FLAGS, extensions_dir_.path(),
-        base::MessageLoopProxy::current(), client_);
+        base::ThreadTaskRunnerHandle::Get(), client_);
 
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&SandboxedUnpacker::Start, sandboxed_unpacker_.get()));
     client_->WaitForUnpack();

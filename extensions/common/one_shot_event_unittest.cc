@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,7 +77,7 @@ TEST(OneShotEventTest, PostDefaultsToCurrentMessageLoop) {
 
 void CheckSignaledAndPostIncrement(
     OneShotEvent* event,
-    const scoped_refptr<base::TaskRunner>& runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& runner,
     int* i) {
   EXPECT_TRUE(event->is_signaled());
   event->Post(FROM_HERE, base::Bind(&Increment, i), runner);
