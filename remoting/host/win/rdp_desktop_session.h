@@ -37,7 +37,7 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
       _ClassFactoryCreatorClass;
 
   RdpDesktopSession();
-  ~RdpDesktopSession();
+  ~RdpDesktopSession() override;
 
   // IRdpDesktopSession implementation.
   STDMETHOD(Connect)(long width,
