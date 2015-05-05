@@ -18,25 +18,21 @@
 
 namespace {
 
-const int kBufferSize = 1024;
-
 // Returns whether |path|'s MD5 was successfully written to |digest_string|.
 bool MD5Sum(const char* path, std::string* digest_string) {
-  std::ifstream stream(path);
-  if (!stream.good()) {
+  base::ScopedFILE file(fopen(path, "rb"));
+  if (!file) {
     LOG(ERROR) << "Could not open file " << path;
     return false;
   }
   base::MD5Context ctx;
   base::MD5Init(&ctx);
-  char buf[kBufferSize];
-  while (stream.good()) {
-    std::streamsize bytes_read = stream.readsome(buf, sizeof(buf));
-    if (bytes_read == 0)
-      break;
-    base::MD5Update(&ctx, base::StringPiece(buf, bytes_read));
-  }
-  if (stream.fail()) {
+  const size_t kBufferSize = 1 << 16;
+  scoped_ptr<char[]> buf(new char[kBufferSize]);
+  size_t len;
+  while ((len = fread(buf.get(), 1, kBufferSize, file.get())) > 0)
+    base::MD5Update(&ctx, base::StringPiece(buf.get(), len));
+  if (ferror(file.get())) {
     LOG(ERROR) << "Error reading file " << path;
     return false;
   }
