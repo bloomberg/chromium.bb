@@ -578,7 +578,7 @@ group("gn_only") {
   testonly = true
 
   deps = [
-    "//mandoline",
+    "//mandoline:all",
   ]
 
   if (!is_android && !is_ios) {

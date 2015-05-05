@@ -6,16 +6,11 @@ import("//third_party/mojo/src/mojo/public/mojo.gni")
 
 group("desktop") {
   deps = [
-    ":mandoline_exe",
+    ":mandoline",
   ]
 }
 
-executable("mandoline_exe") {
-  # TODO(beng): due to a gn bug this can't actually be "mandoline" otherwise
-  #             we end up with a cycle with //mandoline:mandoline which seems
-  #             counter-intuitive. brettw is looking at it.
-  output_name = "mandoline_exe"
-
+executable("mandoline") {
   sources = [
     "launcher_process.cc",
     "launcher_process.h",
