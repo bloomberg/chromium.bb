@@ -161,7 +161,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
 
     const bool fresh_algorithm = !algorithm_.have_rendered_frames_;
 
-    base::TimeDelta last_frame_timestamp = kNoTimestamp();
+    base::TimeDelta last_start_timestamp = kNoTimestamp();
     bool should_use_cadence = false;
     int glitch_count = 0;
     const base::TimeTicks start_time = tick_clock_->NowTicks();
@@ -192,10 +192,10 @@ class VideoRendererAlgorithmTest : public testing::Test {
       // If we have a frame, the timestamps should always be monotonically
       // increasing.
       if (frame) {
-        if (last_frame_timestamp != kNoTimestamp())
-          ASSERT_LE(last_frame_timestamp, frame->timestamp());
+        if (last_start_timestamp != kNoTimestamp())
+          ASSERT_LE(last_start_timestamp, frame->timestamp());
         else
-          last_frame_timestamp = frame->timestamp();
+          last_start_timestamp = frame->timestamp();
       }
 
       // Only verify certain properties for fresh instances.
@@ -219,8 +219,9 @@ class VideoRendererAlgorithmTest : public testing::Test {
       // within the last render interval.
       if (!is_using_cadence() || !frames_queued() ||
           GetCurrentFrameDisplayCount() < GetCurrentFrameIdealDisplayCount()) {
-        ASSERT_EQ(GetUsableFrameCount(deadline_max),
-                  algorithm_.EffectiveFramesQueued());
+        ASSERT_NEAR(GetUsableFrameCount(deadline_max),
+                    algorithm_.EffectiveFramesQueued(),
+                    fresh_algorithm ? 0 : 1);
       } else if (is_using_cadence() && !IsUsingFractionalCadence()) {
         // If there was no glitch in the last render, the two queue sizes should
         // be off by exactly one frame; i.e., the current frame doesn't count.
@@ -293,7 +294,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
       return frames_queued();
 
     for (size_t i = 0; i < frames_queued(); ++i)
-      if (algorithm_.EndTimeForFrame(i) > deadline_max)
+      if (algorithm_.frame_queue_[i].end_time > deadline_max)
         return frames_queued() - i;
     return 0;
   }
@@ -981,6 +982,41 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFrames) {
 
   // Advancing expiry once more should mark the frame as ineffective.
   tg.step();
+  ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
+  EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());
+}
+
+TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesCadence) {
+  TickGenerator tg(tick_clock_->NowTicks(), 50);
+  disable_cadence_hysteresis();
+
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(0)));
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(1)));
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(2)));
+
+  ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
+  EXPECT_EQ(3u, algorithm_.EffectiveFramesQueued());
+
+  time_source_.StartTicking();
+
+  size_t frames_dropped = 0;
+  scoped_refptr<VideoFrame> frame = RenderAndStep(&tg, &frames_dropped);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(tg.interval(0), frame->timestamp());
+  EXPECT_EQ(0u, frames_dropped);
+  ASSERT_TRUE(is_using_cadence());
+  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+
+  // Advance expiry enough that some frames are removed, but one remains and is
+  // still counted as effective.
+  ASSERT_EQ(2u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(1) +
+                                               max_acceptable_drift() * 1.25));
+  EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
+
+  // Advancing expiry once more should mark the frame as ineffective.
+  tg.step(3);
   ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current()));
   EXPECT_EQ(1u, frames_queued());
   EXPECT_EQ(0u, algorithm_.EffectiveFramesQueued());

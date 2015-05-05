@@ -80,7 +80,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     // If duration is unknown, we don't have enough frames to make a good guess
     // about which frame to use, so always choose the first.
     if (average_frame_duration_ == base::TimeDelta() &&
-        !ready_frame.wall_clock_time.is_null()) {
+        !ready_frame.start_time.is_null()) {
       ++ready_frame.render_count;
     }
 
@@ -173,7 +173,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
 
         DVLOG(2) << "Dropping unrendered (or always dropped) frame "
                  << frame.frame->timestamp()
-                 << ", wall clock: " << frame.wall_clock_time.ToInternalValue()
+                 << ", wall clock: " << frame.start_time.ToInternalValue()
                  << " (" << frame.render_count << ", " << frame.drop_count
                  << ")";
         ++(*frames_dropped);
@@ -215,10 +215,10 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
   // their render interval is further than |max_acceptable_drift_| from the
   // given |deadline|.
   size_t frames_to_expire = 0;
-  const base::TimeTicks minimum_frame_time =
+  const base::TimeTicks minimum_start_time =
       deadline - max_acceptable_drift_ - average_frame_duration_;
   for (; frames_to_expire < frame_queue_.size() - 1; ++frames_to_expire) {
-    if (frame_queue_[frames_to_expire].wall_clock_time >= minimum_frame_time)
+    if (frame_queue_[frames_to_expire].start_time >= minimum_start_time)
       break;
   }
 
@@ -235,12 +235,16 @@ size_t VideoRendererAlgorithm::RemoveExpiredFrames(base::TimeTicks deadline) {
 }
 
 void VideoRendererAlgorithm::OnLastFrameDropped() {
-  DCHECK(have_rendered_frames_);
-  DCHECK(!frame_queue_.empty());
+  // Since compositing is disconnected from the algorithm, the algorithm may be
+  // Reset() in between ticks of the compositor, so discard notifications which
+  // are invalid.
+  //
   // If frames were expired by RemoveExpiredFrames() this count may be zero when
   // the OnLastFrameDropped() call comes in.
-  if (!frame_queue_[last_frame_index_].render_count)
+  if (!have_rendered_frames_ || frame_queue_.empty() ||
+      !frame_queue_[last_frame_index_].render_count) {
     return;
+  }
 
   ++frame_queue_[last_frame_index_].drop_count;
   DCHECK_LE(frame_queue_[last_frame_index_].drop_count,
@@ -273,10 +277,9 @@ size_t VideoRendererAlgorithm::EffectiveFramesQueued() const {
     size_t expired_frames = last_frame_index_;
     DCHECK_LT(last_frame_index_, frame_queue_.size());
     for (; expired_frames < frame_queue_.size(); ++expired_frames) {
-      if (frame_queue_[expired_frames].wall_clock_time.is_null() ||
-          EndTimeForFrame(expired_frames) > last_deadline_max_) {
+      const ReadyFrame& frame = frame_queue_[expired_frames];
+      if (frame.end_time.is_null() || frame.end_time > last_deadline_max_)
         break;
-      }
     }
     return frame_queue_.size() - expired_frames;
   }
@@ -286,10 +289,15 @@ size_t VideoRendererAlgorithm::EffectiveFramesQueued() const {
   if (start_index < 0)
     return 0;
 
+  const base::TimeTicks minimum_start_time =
+      last_deadline_max_ - max_acceptable_drift_;
   size_t renderable_frame_count = 0;
   for (size_t i = start_index; i < frame_queue_.size(); ++i) {
-    if (frame_queue_[i].render_count < frame_queue_[i].ideal_render_count)
+    const ReadyFrame& frame = frame_queue_[i];
+    if (frame.render_count < frame.ideal_render_count &&
+        (frame.end_time.is_null() || frame.end_time > minimum_start_time)) {
       ++renderable_frame_count;
+    }
   }
 
   return renderable_frame_count;
@@ -372,33 +380,38 @@ bool VideoRendererAlgorithm::UpdateFrameStatistics() {
   // relative to real time as the code below executes.
   for (size_t i = 0; i < frame_queue_.size(); ++i) {
     ReadyFrame& frame = frame_queue_[i];
-    const bool new_frame = frame.wall_clock_time.is_null();
-    frame.wall_clock_time = time_converter_cb_.Run(frame.frame->timestamp());
+    const bool new_frame = frame.start_time.is_null();
+    frame.start_time = time_converter_cb_.Run(frame.frame->timestamp());
 
     // If time stops or never started, exit immediately.
-    if (frame.wall_clock_time.is_null())
+    if (frame.start_time.is_null()) {
+      frame.end_time = base::TimeTicks();
       return false;
+    }
 
     // TODO(dalecurtis): An unlucky tick of a playback rate change could cause
     // this to skew so much that time goes backwards between calls.  Fix this by
     // either converting all timestamps at once or with some retry logic.
     if (i > 0) {
+      frame_queue_[i - 1].end_time = frame.start_time;
       const base::TimeDelta delta =
-          frame.wall_clock_time - frame_queue_[i - 1].wall_clock_time;
+          frame.start_time - frame_queue_[i - 1].start_time;
       CHECK_GT(delta, base::TimeDelta());
       if (new_frame)
         frame_duration_calculator_.AddSample(delta);
     }
   }
 
-  // Do we have enough frames to compute statistics?
-  const bool have_frame_duration = average_frame_duration_ != base::TimeDelta();
-  if (frame_queue_.size() < 2 && !have_frame_duration)
+  if (!frame_duration_calculator_.count())
     return false;
 
   // Compute |average_frame_duration_|, a moving average of the last few frames;
   // see kMovingAverageSamples for the exact number.
   average_frame_duration_ = frame_duration_calculator_.Average();
+
+  // Update the frame end time for the last frame based on the average.
+  frame_queue_.back().end_time =
+      frame_queue_.back().start_time + average_frame_duration_;
 
   // ITU-R BR.265 recommends a maximum acceptable drift of +/- half of the frame
   // duration; there are other asymmetric, more lenient measures, that we're
@@ -513,23 +526,23 @@ int VideoRendererAlgorithm::FindBestFrameByCoverage(
   base::TimeDelta best_coverage;
   std::vector<base::TimeDelta> coverage(frame_queue_.size(), base::TimeDelta());
   for (size_t i = last_frame_index_; i < frame_queue_.size(); ++i) {
+    const ReadyFrame& frame = frame_queue_[i];
+
     // Frames which start after the deadline interval have zero coverage.
-    if (frame_queue_[i].wall_clock_time > deadline_max)
+    if (frame.start_time > deadline_max)
       break;
 
     // Clamp frame end times to a maximum of |deadline_max|.
-    const base::TimeTicks frame_end_time =
-        std::min(deadline_max, EndTimeForFrame(i));
+    const base::TimeTicks end_time = std::min(deadline_max, frame.end_time);
 
     // Frames entirely before the deadline interval have zero coverage.
-    if (frame_end_time < deadline_min)
+    if (end_time < deadline_min)
       continue;
 
     // If we're here, the current frame overlaps the deadline in some way; so
     // compute the duration of the interval which is covered.
     const base::TimeDelta duration =
-        frame_end_time -
-        std::max(deadline_min, frame_queue_[i].wall_clock_time);
+        end_time - std::max(deadline_min, frame.start_time);
 
     coverage[i] = duration;
     if (coverage[i] > best_coverage) {
@@ -596,32 +609,21 @@ int VideoRendererAlgorithm::FindBestFrameByDrift(
 base::TimeDelta VideoRendererAlgorithm::CalculateAbsoluteDriftForFrame(
     base::TimeTicks deadline_min,
     int frame_index) const {
+  const ReadyFrame& frame = frame_queue_[frame_index];
   // If the frame lies before the deadline, compute the delta against the end
   // of the frame's duration.
-  const base::TimeTicks frame_end_time = EndTimeForFrame(frame_index);
-  if (frame_end_time < deadline_min)
-    return deadline_min - frame_end_time;
+  if (frame.end_time < deadline_min)
+    return deadline_min - frame.end_time;
 
   // If the frame lies after the deadline, compute the delta against the frame's
-  // wall clock time.
-  const ReadyFrame& frame = frame_queue_[frame_index];
-  if (frame.wall_clock_time > deadline_min)
-    return frame.wall_clock_time - deadline_min;
+  // start time.
+  if (frame.start_time > deadline_min)
+    return frame.start_time - deadline_min;
 
   // Drift is zero for frames which overlap the deadline interval.
-  DCHECK_GE(deadline_min, frame.wall_clock_time);
-  DCHECK_GE(frame_end_time, deadline_min);
+  DCHECK_GE(deadline_min, frame.start_time);
+  DCHECK_GE(frame.end_time, deadline_min);
   return base::TimeDelta();
-}
-
-base::TimeTicks VideoRendererAlgorithm::EndTimeForFrame(
-    size_t frame_index) const {
-  DCHECK_LT(frame_index, frame_queue_.size());
-  DCHECK_GT(average_frame_duration_, base::TimeDelta());
-  return frame_index + 1 < frame_queue_.size()
-             ? frame_queue_[frame_index + 1].wall_clock_time
-             : frame_queue_[frame_index].wall_clock_time +
-                   average_frame_duration_;
 }
 
 }  // namespace media

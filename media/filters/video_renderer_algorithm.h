@@ -152,7 +152,12 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
     bool operator<(const ReadyFrame& other) const;
 
     scoped_refptr<VideoFrame> frame;
-    base::TimeTicks wall_clock_time;
+
+    // |start_time| is only available after UpdateFrameStatistics() has been
+    // called and |end_time| only after we have more than one frame.
+    base::TimeTicks start_time;
+    base::TimeTicks end_time;
+
     int ideal_render_count;
     int render_count;
     int drop_count;
@@ -219,17 +224,13 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
                            base::TimeDelta* selected_frame_drift) const;
 
   // Calculates the drift from |deadline_min| for the given |frame_index|.  If
-  // the [wall_clock_time, wall_clock_time + average_frame_duration_] lies
-  // before |deadline_min| the drift is the delta between |deadline_min| and
-  // |wall_clock_time + average_frame_duration_|. If the frame overlaps
-  // |deadline_min| the drift is zero. If the frame lies after |deadline_min|
-  // the drift is the delta between |deadline_min| and |wall_clock_time|.
+  // the [start_time, end_time] lies before |deadline_min| the drift is
+  // the delta between |deadline_min| and |end_time|. If the frame
+  // overlaps |deadline_min| the drift is zero. If the frame lies after
+  // |deadline_min| the drift is the delta between |deadline_min| and
+  // |start_time|.
   base::TimeDelta CalculateAbsoluteDriftForFrame(base::TimeTicks deadline_min,
                                                  int frame_index) const;
-
-  // Returns the wall clock time of the next frame if it exists, otherwise it
-  // returns the time of the requested frame plus |average_frame_duration_|.
-  base::TimeTicks EndTimeForFrame(size_t frame_index) const;
 
   // Queue of incoming frames waiting for rendering.
   using VideoFrameQueue = std::deque<ReadyFrame>;

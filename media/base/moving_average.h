@@ -29,12 +29,14 @@ class MEDIA_EXPORT MovingAverage {
   // Resets the state of the class to its initial post-construction state.
   void Reset();
 
+  size_t count() const { return count_; }
+
  private:
   // Maximum number of elements allowed in the average.
   const size_t depth_;
 
   // Number of elements seen thus far.
-  size_t count_;
+  uint64_t count_;
 
   std::vector<base::TimeDelta> samples_;
   base::TimeDelta total_;

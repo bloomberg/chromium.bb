@@ -29,7 +29,7 @@ base::TimeDelta MovingAverage::Average() const {
   // TODO(dalecurtis): Consider limiting |depth| to powers of two so that we can
   // replace the integer divide with a bit shift operation.
 
-  return total_ / std::min(depth_, count_);
+  return total_ / std::min(static_cast<uint64_t>(depth_), count_);
 }
 
 void MovingAverage::Reset() {
