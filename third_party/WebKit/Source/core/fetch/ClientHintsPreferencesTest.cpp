@@ -3,20 +3,16 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/loader/AcceptClientHints.h"
-
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/fetch/ClientHintsPreferences.h"
 
 #include <gtest/gtest.h>
 
 namespace blink {
 
-class AcceptClientHintsTest : public ::testing::Test {
+class ClientHintsPreferencesTest : public ::testing::Test {
 };
 
-TEST_F(AcceptClientHintsTest, Basic)
+TEST_F(ClientHintsPreferencesTest, Basic)
 {
     struct TestCase {
         const char* headerValue;
@@ -30,11 +26,11 @@ TEST_F(AcceptClientHintsTest, Basic)
         {"DPRW", false, false},
     };
 
-    for (size_t i = 0; i < arraysize(cases); ++i) {
+    for (auto testCase : cases) {
         ClientHintsPreferences preferences;
-        const char* value = cases[i].headerValue;
-        bool expectationRW = cases[i].expectationRW;
-        bool expectationDPR = cases[i].expectationDPR;
+        const char* value = testCase.headerValue;
+        bool expectationRW = testCase.expectationRW;
+        bool expectationDPR = testCase.expectationDPR;
 
         handleAcceptClientHintsHeader(value, preferences);
         EXPECT_EQ(expectationRW, preferences.shouldSendRW());

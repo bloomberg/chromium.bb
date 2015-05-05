@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AcceptClientHints_h
-#define AcceptClientHints_h
+#ifndef ClientHintsPreferences_h
+#define ClientHintsPreferences_h
 
 #include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"

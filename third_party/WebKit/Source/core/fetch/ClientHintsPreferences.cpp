@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/loader/AcceptClientHints.h"
+#include "core/fetch/ClientHintsPreferences.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/HTTPParsers.h"
