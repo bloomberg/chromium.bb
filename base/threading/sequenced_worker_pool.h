@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 
 namespace tracked_objects {
@@ -21,7 +22,7 @@ class Location;
 
 namespace base {
 
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 
 template <class T> class DeleteHelper;
 
@@ -345,7 +346,7 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
   class Inner;
   class Worker;
 
-  const scoped_refptr<MessageLoopProxy> constructor_message_loop_;
+  const scoped_refptr<SingleThreadTaskRunner> constructor_task_runner_;
 
   // Avoid pulling in too many headers by putting (almost) everything
   // into |inner_|.

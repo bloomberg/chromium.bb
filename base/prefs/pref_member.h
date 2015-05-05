@@ -65,8 +65,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
                      bool is_user_modifiable,
                      const base::Closure& callback) const;
 
-    void MoveToThread(
-        const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+    void MoveToThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
     // See PrefMember<> for description.
     bool IsManaged() const {
@@ -92,7 +91,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
 
     bool IsOnCorrectThread() const;
 
-    scoped_refptr<base::SingleThreadTaskRunner> thread_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
     mutable bool is_managed_;
     mutable bool is_user_modifiable_;
 
@@ -113,8 +112,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   // See PrefMember<> for description.
   void Destroy();
 
-  void MoveToThread(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  void MoveToThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // PrefObserver
   void OnPreferenceChanged(PrefService* service,
@@ -201,8 +199,7 @@ class PrefMember : public subtle::PrefMemberBase {
   // via PostTask.
   // This method should only be used from the thread the PrefMember is currently
   // on, which is the UI thread by default.
-  void MoveToThread(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  void MoveToThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     subtle::PrefMemberBase::MoveToThread(task_runner);
   }
 

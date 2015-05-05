@@ -17,11 +17,11 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
@@ -1157,29 +1157,26 @@ SequencedWorkerPool::GetSequenceTokenForCurrentThread() {
   return *token;
 }
 
-SequencedWorkerPool::SequencedWorkerPool(
-    size_t max_threads,
-    const std::string& thread_name_prefix)
-    : constructor_message_loop_(MessageLoopProxy::current()),
+SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
+                                         const std::string& thread_name_prefix)
+    : constructor_task_runner_(ThreadTaskRunnerHandle::Get()),
       inner_(new Inner(this, max_threads, thread_name_prefix, NULL)) {
 }
 
-SequencedWorkerPool::SequencedWorkerPool(
-    size_t max_threads,
-    const std::string& thread_name_prefix,
-    TestingObserver* observer)
-    : constructor_message_loop_(MessageLoopProxy::current()),
+SequencedWorkerPool::SequencedWorkerPool(size_t max_threads,
+                                         const std::string& thread_name_prefix,
+                                         TestingObserver* observer)
+    : constructor_task_runner_(ThreadTaskRunnerHandle::Get()),
       inner_(new Inner(this, max_threads, thread_name_prefix, observer)) {
 }
 
 SequencedWorkerPool::~SequencedWorkerPool() {}
 
 void SequencedWorkerPool::OnDestruct() const {
-  DCHECK(constructor_message_loop_.get());
   // Avoid deleting ourselves on a worker thread (which would
   // deadlock).
   if (RunsTasksOnCurrentThread()) {
-    constructor_message_loop_->DeleteSoon(FROM_HERE, this);
+    constructor_task_runner_->DeleteSoon(FROM_HERE, this);
   } else {
     delete this;
   }
@@ -1299,7 +1296,7 @@ void SequencedWorkerPool::SignalHasWorkForTesting() {
 }
 
 void SequencedWorkerPool::Shutdown(int max_new_blocking_tasks_after_shutdown) {
-  DCHECK(constructor_message_loop_->BelongsToCurrentThread());
+  DCHECK(constructor_task_runner_->BelongsToCurrentThread());
   inner_->Shutdown(max_new_blocking_tasks_after_shutdown);
 }
 
