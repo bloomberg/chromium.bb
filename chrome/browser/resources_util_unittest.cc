@@ -22,7 +22,6 @@ TEST(ResourcesUtil, SpotCheckIds) {
     {"IDR_PAGEINFO_BAD", IDR_PAGEINFO_BAD},
     // IDRs from ui/resources/ui_resources.grd should be valid.
     {"IDR_CHECKMARK", IDR_CHECKMARK},
-    {"IDR_THROBBER", IDR_THROBBER},
 #if defined(OS_CHROMEOS)
     // Check IDRs from ui/chromeos/resources/ui_chromeos_resources.grd.
     {"IDR_LOGIN_DEFAULT_USER", IDR_LOGIN_DEFAULT_USER},

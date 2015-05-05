@@ -324,10 +324,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ResultsTableNegativeText,
     kColorId_ResultsTableNegativeHoveredText,
     kColorId_ResultsTableNegativeSelectedText,
-    // TODO(benrg): move other hardcoded colors here.
     // Colors for the material spinner (aka throbber).
     kColorId_ThrobberSpinningColor,
     kColorId_ThrobberWaitingColor,
+    kColorId_ThrobberLightColor,
+    // TODO(benrg): move other hardcoded colors here.
 
     kColorId_NumColors,
   };

@@ -998,8 +998,10 @@
       </if>
       <!-- Instant Extended API toolbar background is common for all platforms. -->
       <structure type="chrome_scaled_image" name="IDR_THEME_WINDOW_CONTROL_BACKGROUND" file="notused.png" />
-      <structure type="chrome_scaled_image" name="IDR_THROBBER_LIGHT" file="common/throbber_light.png" />
-      <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="common/throbber_waiting.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_THROBBER_LIGHT" file="common/throbber_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="common/throbber_waiting.png" />
+      </if>
       <if expr="use_ash">
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_BOTTOM" file="common/toolbar_shade_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="common/toolbar_shade_left.png" />

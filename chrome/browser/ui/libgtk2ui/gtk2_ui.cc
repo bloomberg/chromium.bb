@@ -200,9 +200,6 @@ const int kOtherToolbarButtonIDs[] = {
   IDR_TOOLBAR_BEZEL_HOVER,
   IDR_TOOLBAR_BEZEL_PRESSED,
   IDR_BROWSER_ACTIONS_OVERFLOW,
-  IDR_THROBBER,
-  IDR_THROBBER_WAITING,
-  IDR_THROBBER_LIGHT,
 
   // TODO(erg): The dropdown arrow should be tinted because we're injecting
   // various background GTK colors, but the code that accesses them needs to be

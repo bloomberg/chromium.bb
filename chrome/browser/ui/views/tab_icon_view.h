@@ -41,13 +41,6 @@ class TabIconView : public views::MenuButton {
 
   void PaintThrobber(gfx::Canvas* canvas);
   void PaintFavicon(gfx::Canvas* canvas, const gfx::ImageSkia& image);
-  void PaintIcon(gfx::Canvas* canvas,
-                 const gfx::ImageSkia& image,
-                 int src_x,
-                 int src_y,
-                 int src_w,
-                 int src_h,
-                 bool filter);
 
   // Our model.
   chrome::TabIconViewModel* model_;

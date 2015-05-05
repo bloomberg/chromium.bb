@@ -407,9 +407,11 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
     }
 
     // Throbber
-    case kColorId_ThrobberSpinningColor: {
+    case kColorId_ThrobberSpinningColor:
+    case kColorId_ThrobberLightColor: {
       return GetEntryStyle()->bg[GTK_STATE_SELECTED];
     }
+
     case kColorId_ThrobberWaitingColor:
     case kColorId_NumColors:
       NOTREACHED();
