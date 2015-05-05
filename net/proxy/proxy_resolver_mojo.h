@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -31,17 +32,23 @@ class MojoProxyResolverFactory;
 // Implementation of ProxyResolver that connects to a Mojo service to evaluate
 // PAC scripts. This implementation only knows about Mojo services, and
 // therefore that service may live in or out of process.
+//
+// This implementation reports disconnections from the Mojo service (i.e. if the
+// service is out-of-process and that process crashes) using the error code
+// ERR_PAC_SCRIPT_TERMINATED.
 class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
  public:
   // Constructs a ProxyResolverMojo that connects to a mojo proxy resolver
   // implementation using |resolver_ptr|. The implementation uses
   // |host_resolver| as the DNS resolver, using |host_resolver_binding| to
-  // communicate with it.
+  // communicate with it. When deleted, the closure contained within
+  // |on_delete_callback_runner| will be run.
   // TODO(amistry): Add ProxyResolverErrorObserver and NetLog.
-  ProxyResolverMojo(interfaces::ProxyResolverPtr resolver_ptr,
-                    scoped_ptr<interfaces::HostResolver> host_resolver,
-                    scoped_ptr<mojo::Binding<interfaces::HostResolver>>
-                        host_resolver_binding);
+  ProxyResolverMojo(
+      interfaces::ProxyResolverPtr resolver_ptr,
+      scoped_ptr<interfaces::HostResolver> host_resolver,
+      scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding,
+      scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner);
   ~ProxyResolverMojo() override;
 
   // ProxyResolver implementation:
@@ -76,6 +83,8 @@ class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
 
   base::ThreadChecker thread_checker_;
 
+  scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverMojo);
 };
 
@@ -83,8 +92,9 @@ class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
 // create implementations of a Mojo proxy resolver to back a ProxyResolverMojo.
 class ProxyResolverFactoryMojo : public ProxyResolverFactory {
  public:
-  ProxyResolverFactoryMojo(interfaces::ProxyResolverFactory* mojo_proxy_factory,
+  ProxyResolverFactoryMojo(MojoProxyResolverFactory* mojo_proxy_factory,
                            HostResolver* host_resolver);
+  ~ProxyResolverFactoryMojo() override;
 
   // ProxyResolverFactory override.
   int CreateProxyResolver(
@@ -96,7 +106,7 @@ class ProxyResolverFactoryMojo : public ProxyResolverFactory {
  private:
   class Job;
 
-  interfaces::ProxyResolverFactory* const mojo_proxy_factory_;
+  MojoProxyResolverFactory* const mojo_proxy_factory_;
   HostResolver* const host_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryMojo);

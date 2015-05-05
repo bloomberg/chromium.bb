@@ -13,6 +13,10 @@
 #include "content/public/common/service_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+const int kUtilityProcessIdleTimeoutSeconds = 5;
+}
+
 // static
 UtilityProcessMojoProxyResolverFactory*
 UtilityProcessMojoProxyResolverFactory::GetInstance() {
@@ -29,10 +33,11 @@ UtilityProcessMojoProxyResolverFactory::
 
 UtilityProcessMojoProxyResolverFactory::
     ~UtilityProcessMojoProxyResolverFactory() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Attempting to create utility process for proxy resolver";
   content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(
@@ -46,17 +51,19 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
         utility_process_host->GetServiceRegistry();
     service_registry->ConnectToRemoteService(&resolver_factory_);
     resolver_factory_.set_error_handler(this);
+    weak_utility_process_host_ = utility_process_host->AsWeakPtr();
   } else {
     LOG(ERROR) << "Unable to connect to utility process";
   }
 }
 
-void UtilityProcessMojoProxyResolverFactory::CreateResolver(
+scoped_ptr<base::ScopedClosureRunner>
+UtilityProcessMojoProxyResolverFactory::CreateResolver(
     const mojo::String& pac_script,
     mojo::InterfaceRequest<net::interfaces::ProxyResolver> req,
     net::interfaces::HostResolverPtr host_resolver,
     net::interfaces::ProxyResolverFactoryRequestClientPtr client) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!resolver_factory_)
     CreateProcessAndConnect();
 
@@ -64,13 +71,43 @@ void UtilityProcessMojoProxyResolverFactory::CreateResolver(
     // If there's still no factory, then utility process creation failed so
     // close |req|'s message pipe, which should cause a connection error.
     req = nullptr;
-    return;
+    return nullptr;
   }
+  idle_timer_.Stop();
+  num_proxy_resolvers_++;
   resolver_factory_->CreateResolver(pac_script, req.Pass(),
                                     host_resolver.Pass(), client.Pass());
+  return make_scoped_ptr(new base::ScopedClosureRunner(
+      base::Bind(&UtilityProcessMojoProxyResolverFactory::OnResolverDestroyed,
+                 base::Unretained(this))));
 }
 
 void UtilityProcessMojoProxyResolverFactory::OnConnectionError() {
   DVLOG(1) << "Disconnection from utility process detected";
+  resolver_factory_.reset();
+}
+
+void UtilityProcessMojoProxyResolverFactory::OnResolverDestroyed() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GT(num_proxy_resolvers_, 0u);
+  if (--num_proxy_resolvers_ == 0) {
+    // When all proxy resolvers have been destroyed, the proxy resolver utility
+    // process is no longer needed. However, new proxy resolvers may be created
+    // shortly after being destroyed (e.g. due to a network change). If the
+    // utility process is shut down immediately, this would cause unnecessary
+    // process churn, so wait for an idle timeout before shutting down the
+    // proxy resolver utility process.
+    idle_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kUtilityProcessIdleTimeoutSeconds), this,
+        &UtilityProcessMojoProxyResolverFactory::OnIdleTimeout);
+  }
+}
+
+void UtilityProcessMojoProxyResolverFactory::OnIdleTimeout() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(num_proxy_resolvers_, 0u);
+  delete weak_utility_process_host_.get();
+  weak_utility_process_host_.reset();
   resolver_factory_.reset();
 }

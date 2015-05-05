@@ -11,6 +11,7 @@
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mojo_host_resolver_impl.h"
+#include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
@@ -112,11 +113,13 @@ void ProxyResolverMojo::Job::LoadStateChanged(int32_t load_state) {
 ProxyResolverMojo::ProxyResolverMojo(
     interfaces::ProxyResolverPtr resolver_ptr,
     scoped_ptr<interfaces::HostResolver> host_resolver,
-    scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding)
+    scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding,
+    scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner)
     : ProxyResolver(true),
       mojo_proxy_resolver_ptr_(resolver_ptr.Pass()),
       mojo_host_resolver_(host_resolver.Pass()),
-      mojo_host_resolver_binding_(host_resolver_binding.Pass()) {
+      mojo_host_resolver_binding_(host_resolver_binding.Pass()),
+      on_delete_callback_runner_(on_delete_callback_runner.Pass()) {
   mojo_proxy_resolver_ptr_.set_error_handler(this);
 }
 
@@ -159,14 +162,8 @@ int ProxyResolverMojo::GetProxyForURL(const GURL& url,
                                       const BoundNetLog& net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If the Mojo service is not connected, fail. The Mojo service is connected
-  // when the script is set, which must be done after construction and after a
-  // previous request returns ERR_PAC_SCRIPT_TERMINATED due to the Mojo proxy
-  // resolver process crashing.
-  if (!mojo_proxy_resolver_ptr_) {
-    DVLOG(1) << "ProxyResolverMojo::GetProxyForURL: Mojo not connected";
+  if (!mojo_proxy_resolver_ptr_)
     return ERR_PAC_SCRIPT_TERMINATED;
-  }
 
   Job* job = new Job(this, url, results, callback);
   bool inserted = pending_jobs_.insert(job).second;
@@ -210,7 +207,7 @@ class ProxyResolverFactoryMojo::Job
     interfaces::ProxyResolverFactoryRequestClientPtr client_ptr;
     binding_.Bind(mojo::GetProxy(&client_ptr));
     host_resolver_binding_->Bind(mojo::GetProxy(&host_resolver_ptr));
-    factory_->mojo_proxy_factory_->CreateResolver(
+    on_delete_callback_runner_ = factory_->mojo_proxy_factory_->CreateResolver(
         mojo::String::From(pac_script->utf16()), mojo::GetProxy(&resolver_ptr_),
         host_resolver_ptr.Pass(), client_ptr.Pass());
     resolver_ptr_.set_error_handler(this);
@@ -219,6 +216,7 @@ class ProxyResolverFactoryMojo::Job
 
   void OnConnectionError() override {
     callback_.Run(ERR_PAC_SCRIPT_TERMINATED);
+    on_delete_callback_runner_.reset();
   }
 
  private:
@@ -226,10 +224,11 @@ class ProxyResolverFactoryMojo::Job
     resolver_ptr_.set_error_handler(nullptr);
     binding_.set_error_handler(nullptr);
     if (error == OK) {
-      resolver_->reset(new ProxyResolverMojo(resolver_ptr_.Pass(),
-                                             host_resolver_.Pass(),
-                                             host_resolver_binding_.Pass()));
+      resolver_->reset(new ProxyResolverMojo(
+          resolver_ptr_.Pass(), host_resolver_.Pass(),
+          host_resolver_binding_.Pass(), on_delete_callback_runner_.Pass()));
     }
+    on_delete_callback_runner_.reset();
     callback_.Run(error);
   }
 
@@ -240,15 +239,18 @@ class ProxyResolverFactoryMojo::Job
   mojo::Binding<interfaces::ProxyResolverFactoryRequestClient> binding_;
   scoped_ptr<interfaces::HostResolver> host_resolver_;
   scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding_;
+  scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner_;
 };
 
 ProxyResolverFactoryMojo::ProxyResolverFactoryMojo(
-    interfaces::ProxyResolverFactory* mojo_proxy_factory,
+    MojoProxyResolverFactory* mojo_proxy_factory,
     HostResolver* host_resolver)
     : ProxyResolverFactory(true),
       mojo_proxy_factory_(mojo_proxy_factory),
       host_resolver_(host_resolver) {
 }
+
+ProxyResolverFactoryMojo::~ProxyResolverFactoryMojo() = default;
 
 int ProxyResolverFactoryMojo::CreateProxyResolver(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,

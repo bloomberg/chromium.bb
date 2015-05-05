@@ -6,13 +6,16 @@
 
 #include <string>
 
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
+#include "net/proxy/in_process_mojo_proxy_resolver_factory.h"
 #include "net/proxy/mock_proxy_script_fetcher.h"
+#include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,22 +39,35 @@ const char kDnsResolvePacScript[] =
 
 }  // namespace
 
-class ProxyServiceMojoTest : public testing::Test {
+class ProxyServiceMojoTest : public testing::Test,
+                             public MojoProxyResolverFactory {
  protected:
   void SetUp() override {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
     fetcher_ = new MockProxyScriptFetcher;
-    proxy_service_.reset(CreateProxyServiceUsingMojoInProcess(
-        new ProxyConfigServiceFixed(
-            ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
+    proxy_service_.reset(CreateProxyServiceUsingMojoFactory(
+        this, new ProxyConfigServiceFixed(
+                  ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
         fetcher_, new DoNothingDhcpProxyScriptFetcher(), &mock_host_resolver_,
         nullptr /* NetLog* */, nullptr /* NetworkDelegate* */));
+  }
+
+  scoped_ptr<base::ScopedClosureRunner> CreateResolver(
+      const mojo::String& pac_script,
+      mojo::InterfaceRequest<interfaces::ProxyResolver> req,
+      interfaces::HostResolverPtr host_resolver,
+      interfaces::ProxyResolverFactoryRequestClientPtr client) override {
+    InProcessMojoProxyResolverFactory::GetInstance()->CreateResolver(
+        pac_script, req.Pass(), host_resolver.Pass(), client.Pass());
+    return make_scoped_ptr(
+        new base::ScopedClosureRunner(on_delete_closure_.closure()));
   }
 
   MockHostResolver mock_host_resolver_;
   MockProxyScriptFetcher* fetcher_;  // Owned by |proxy_service_|.
   scoped_ptr<ProxyService> proxy_service_;
+  TestClosure on_delete_closure_;
 };
 
 TEST_F(ProxyServiceMojoTest, Basic) {
@@ -71,6 +87,8 @@ TEST_F(ProxyServiceMojoTest, Basic) {
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_EQ("PROXY foo:1234", info.ToPacString());
   EXPECT_EQ(0u, mock_host_resolver_.num_resolve());
+  proxy_service_.reset();
+  on_delete_closure_.WaitForResult();
 }
 
 TEST_F(ProxyServiceMojoTest, DnsResolution) {
@@ -90,6 +108,8 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_EQ("QUIC bar:4321", info.ToPacString());
   EXPECT_EQ(1u, mock_host_resolver_.num_resolve());
+  proxy_service_.reset();
+  on_delete_closure_.WaitForResult();
 }
 
 }  // namespace net

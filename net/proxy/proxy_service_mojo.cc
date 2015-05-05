@@ -5,9 +5,10 @@
 #include "net/proxy/proxy_service_mojo.h"
 
 #include "base/logging.h"
-#include "net/dns/host_resolver_mojo.h"
+#include "net/dns/mojo_host_resolver_impl.h"
 #include "net/interfaces/proxy_resolver_service.mojom.h"
 #include "net/proxy/in_process_mojo_proxy_resolver_factory.h"
+#include "net/proxy/mojo_proxy_resolver_factory.h"
 #include "net/proxy/mojo_proxy_resolver_impl.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_mojo.h"
@@ -17,7 +18,7 @@
 namespace net {
 
 ProxyService* CreateProxyServiceUsingMojoFactory(
-    interfaces::ProxyResolverFactory* mojo_proxy_factory,
+    MojoProxyResolverFactory* mojo_proxy_factory,
     ProxyConfigService* proxy_config_service,
     ProxyScriptFetcher* proxy_script_fetcher,
     DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher,
