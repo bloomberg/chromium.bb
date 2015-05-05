@@ -153,6 +153,7 @@ group("both_gn_and_gyp") {
     "//ui/display:display_unittests",
     "//ui/events:events_unittests",
     "//ui/gfx:gfx_unittests",
+    "//ui/gl:gl_unittests",
     "//ui/touch_selection:ui_touch_selection_unittests",
     "//url:url_unittests",
   ]
@@ -775,6 +776,7 @@ if (is_linux) {
       "//ui/display:display_unittests",  # PASSES 2/25/2015
       "//ui/events:events_unittests",  # PASSES 2/25/2015
       "//ui/gfx:gfx_unittests",  # PASSES 2/25/2015
+      "//ui/gl:gl_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",  # PASSES 2/25/2015
       "//ui/views:views_unittests",  # PASSES (*) 2/25/2015
       "//ui/wm:wm_unittests",  # PASSES 2/25/2015
@@ -846,6 +848,7 @@ if (is_linux) {
       "//ui/display:display_unittests",  # PASSES 4/20/2015
       "//ui/events:events_unittests",  # PASSES 4/20/2015
       "//ui/gfx:gfx_unittests",  # PASSES (with assertion failure?) 4/20/2015
+      "//ui/gl:gl_unittests",
       "//ui/message_center:message_center_unittests",  # PASSES 4/20/2015
       "//ui/touch_selection:ui_touch_selection_unittests",  # PASSES 4/20/2015
       "//ui/views:views_unittests",  # TooltipControllerTest failures

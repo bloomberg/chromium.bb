@@ -202,6 +202,7 @@
         '../ui/display/display.gyp:display_unittests',
         '../ui/events/events.gyp:events_unittests',
         '../ui/gfx/gfx_tests.gyp:gfx_unittests',
+        '../ui/gl/gl_tests.gyp:gl_unittests',
         '../ui/message_center/message_center.gyp:message_center_unittests',
         '../ui/snapshot/snapshot.gyp:snapshot_unittests',
         '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
