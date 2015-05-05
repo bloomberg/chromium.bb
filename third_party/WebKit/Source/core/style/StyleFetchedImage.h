@@ -60,10 +60,10 @@ public:
     virtual ImageResource* cachedImage() const override { return m_image.get(); }
 
 private:
-    explicit StyleFetchedImage(ImageResource*, Document*);
+    StyleFetchedImage(ImageResource*, Document*);
 
     ResourcePtr<ImageResource> m_image;
-    RawPtrWillBeMember<Document> m_document;
+    RawPtrWillBePersistent<Document> m_document;
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImage, isImageResource());

@@ -106,8 +106,10 @@ void StyleFetchedImage::removeClient(LayoutObject* layoutObject)
 
 void StyleFetchedImage::notifyFinished(Resource* resource)
 {
-    if (m_image && m_image->image() && m_image->image()->isSVGImage())
+    if (m_document && m_image && m_image->image() && m_image->image()->isSVGImage())
         toSVGImage(m_image->image())->updateUseCounters(*m_document);
+    // Oilpan: do not prolong the Document's lifetime.
+    m_document.clear();
 }
 
 PassRefPtr<Image> StyleFetchedImage::image(LayoutObject* layoutObject, const IntSize&) const
