@@ -14,9 +14,10 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -43,14 +44,14 @@ struct WatchData {
   WatchData()
       : id(0),
         handle_signals(MOJO_HANDLE_SIGNAL_NONE),
-        message_loop(NULL) {}
+        task_runner(NULL) {}
 
   WatcherID id;
   Handle handle;
   MojoHandleSignals handle_signals;
   base::TimeTicks deadline;
   base::Callback<void(MojoResult)> callback;
-  scoped_refptr<base::MessageLoopProxy> message_loop;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
 };
 
 // WatcherBackend --------------------------------------------------------------
@@ -124,7 +125,7 @@ void WatcherBackend::RemoveAndNotify(const Handle& handle,
   handle_to_data_.erase(handle);
   MessagePumpMojo::current()->RemoveHandler(handle);
 
-  data.message_loop->PostTask(FROM_HERE, base::Bind(data.callback, result));
+  data.task_runner->PostTask(FROM_HERE, base::Bind(data.callback, result));
 }
 
 bool WatcherBackend::GetMojoHandleByWatcherID(WatcherID watcher_id,
@@ -238,9 +239,9 @@ WatcherID WatcherThreadManager::StartWatching(
   request_data.start_data.callback = callback;
   request_data.start_data.handle_signals = handle_signals;
   request_data.start_data.deadline = deadline;
-  request_data.start_data.message_loop = base::MessageLoopProxy::current();
-  DCHECK_NE(static_cast<base::MessageLoopProxy*>(NULL),
-            request_data.start_data.message_loop.get());
+  request_data.start_data.task_runner = base::ThreadTaskRunnerHandle::Get();
+  DCHECK_NE(static_cast<base::SingleThreadTaskRunner*>(NULL),
+            request_data.start_data.task_runner.get());
   AddRequest(request_data);
   return request_data.start_data.id;
 }
