@@ -450,7 +450,7 @@ class AdbWrapper(object):
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
     """
-    cmd = ['backup', path]
+    cmd = ['backup', '-f', path]
     if apk:
       cmd.append('-apk')
     if shared:
