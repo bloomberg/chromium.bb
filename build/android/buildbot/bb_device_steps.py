@@ -537,6 +537,11 @@ def RunGPUTests(options):
           '--browser=android-content-shell', 'webgl_conformance',
           '--webgl-conformance-version=1.0.1'])
 
+  bb_annotations.PrintNamedStep('android_webview_webgl_conformance_tests')
+  RunCmd(['content/test/gpu/run_gpu_test.py',
+          '--browser=android-webview-shell', 'webgl_conformance',
+          '--webgl-conformance-version=1.0.1'])
+
   bb_annotations.PrintNamedStep('gpu_rasterization_tests')
   RunCmd(['content/test/gpu/run_gpu_test.py',
           'gpu_rasterization',
