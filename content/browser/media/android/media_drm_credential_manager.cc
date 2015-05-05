@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "jni/MediaDrmCredentialManager_jni.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "url/gurl.h"
@@ -101,7 +102,7 @@ bool MediaDrmCredentialManager::ResetCredentialsInternal(
 
   if (!media_drm_bridge_->SetSecurityLevel(security_level)) {
     // No need to reset credentials for unsupported |security_level|.
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(reset_credentials_cb, true));
     return true;
   }

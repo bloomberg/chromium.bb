@@ -4,7 +4,7 @@
 
 #include "content/browser/media/capture/web_contents_tracker.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,10 +24,10 @@ WebContentsTracker::~WebContentsTracker() {
 
 void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
                                const ChangeCallback& callback) {
-  DCHECK(!message_loop_.get() || message_loop_->BelongsToCurrentThread());
+  DCHECK(!task_runner_.get() || task_runner_->BelongsToCurrentThread());
 
-  message_loop_ = base::MessageLoopProxy::current();
-  DCHECK(message_loop_.get());
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  DCHECK(task_runner_.get());
   callback_ = callback;
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -41,7 +41,7 @@ void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
 }
 
 void WebContentsTracker::Stop() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   callback_.Reset();
 
@@ -88,17 +88,17 @@ void WebContentsTracker::OnPossibleTargetChange(bool force_callback_run) {
            << " to RenderWidgetHost@" << rwh;
   last_target_ = rwh;
 
-  if (message_loop_->BelongsToCurrentThread()) {
+  if (task_runner_->BelongsToCurrentThread()) {
     MaybeDoCallback(rwh);
   } else {
-    message_loop_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&WebContentsTracker::MaybeDoCallback, this, rwh));
   }
 }
 
 void WebContentsTracker::MaybeDoCallback(RenderWidgetHost* rwh) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!callback_.is_null())
     callback_.Run(rwh);

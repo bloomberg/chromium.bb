@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
@@ -86,7 +87,7 @@ class MockWebContentsTracker : public WebContentsTracker {
 class MockVirtualAudioInputStream : public VirtualAudioInputStream {
  public:
   explicit MockVirtualAudioInputStream(
-      const scoped_refptr<base::MessageLoopProxy>& worker_loop)
+      const scoped_refptr<base::SingleThreadTaskRunner>& worker_loop)
       : VirtualAudioInputStream(TestAudioParameters(), worker_loop,
                                 VirtualAudioInputStream::AfterCloseCallback()),
         real_(TestAudioParameters(), worker_loop,

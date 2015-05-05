@@ -22,7 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -99,8 +99,8 @@ class CONTENT_EXPORT WebContentsTracker
   // RenderWidgetHosts.
   const bool track_fullscreen_rwh_;
 
-  // MessageLoop corresponding to the thread that called Start().
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  // TaskRunner corresponding to the thread that called Start().
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Callback to run when the target RenderWidgetHost has changed.
   ChangeCallback callback_;
