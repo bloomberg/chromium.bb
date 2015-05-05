@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from integration_tests import chrome_proxy_measurements as measurements
+from common.chrome_proxy_benchmark import ChromeProxyBenchmark
 from integration_tests import chrome_proxy_pagesets as pagesets
+from integration_tests import chrome_proxy_measurements as measurements
 from telemetry import benchmark
 from telemetry.core.backends.chrome import android_browser_finder
 
@@ -11,101 +12,6 @@ from telemetry.core.backends.chrome import android_browser_finder
 ANDROID_CHROME_BROWSERS = [
   browser for browser in android_browser_finder.CHROME_PACKAGE_NAMES
     if 'webview' not in browser]
-
-class ChromeProxyLatency(benchmark.Benchmark):
-  tag = 'latency'
-  test = measurements.ChromeProxyLatency
-  page_set = pagesets.Top20PageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.latency.top_20'
-
-
-class ChromeProxyLatencyDirect(benchmark.Benchmark):
-  tag = 'latency_direct'
-  test = measurements.ChromeProxyLatency
-  page_set = pagesets.Top20PageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.latency_direct.top_20'
-
-
-class ChromeProxyLatencySynthetic(ChromeProxyLatency):
-  page_set = pagesets.SyntheticPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.latency.synthetic'
-
-
-class ChromeProxyLatencySyntheticDirect(ChromeProxyLatencyDirect):
-  page_set = pagesets.SyntheticPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.latency_direct.synthetic'
-
-
-class ChromeProxyDataSaving(benchmark.Benchmark):
-  tag = 'data_saving'
-  test = measurements.ChromeProxyDataSaving
-  page_set = pagesets.Top20PageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.data_saving.top_20'
-
-
-class ChromeProxyDataSavingDirect(benchmark.Benchmark):
-  tag = 'data_saving_direct'
-  test = measurements.ChromeProxyDataSaving
-  page_set = pagesets.Top20PageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.data_saving_direct.top_20'
-
-
-class ChromeProxyDataSavingSynthetic(ChromeProxyDataSaving):
-  page_set = pagesets.SyntheticPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.data_saving.synthetic'
-
-
-class ChromeProxyDataSavingSyntheticDirect(ChromeProxyDataSavingDirect):
-  page_set = pagesets.SyntheticPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.data_saving_direct.synthetic'
-
-
-class ChromeProxyHeaderValidation(benchmark.Benchmark):
-  tag = 'header_validation'
-  test = measurements.ChromeProxyHeaders
-  page_set = pagesets.Top20PageSet
-
-  @classmethod
-  def Name(cls):
-    return 'chrome_proxy_benchmark.header_validation.top_20'
-
-
-class ChromeProxyBenchmark(benchmark.Benchmark):
-  @classmethod
-  def AddCommandLineArgs(cls, parser):
-    parser.add_option(
-        '--extra-chrome-proxy-via-header',
-        type='string', dest="extra_header",
-        help='Adds an expected Via header for the Chrome-Proxy tests.')
-
-  @classmethod
-  def ProcessCommandLineArgs(cls, parser, args):
-    if args.extra_header:
-      measurements.ChromeProxyValidation.extra_via_header = args.extra_header
 
 
 class ChromeProxyClientVersion(ChromeProxyBenchmark):

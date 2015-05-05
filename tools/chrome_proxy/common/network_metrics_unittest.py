@@ -5,7 +5,7 @@
 import base64
 import unittest
 
-from integration_tests import network_metrics
+from common import network_metrics
 from telemetry.timeline import event
 from telemetry.unittest_util import test_page_test_results
 

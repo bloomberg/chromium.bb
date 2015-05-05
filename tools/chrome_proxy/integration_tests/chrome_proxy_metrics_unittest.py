@@ -5,8 +5,9 @@
 import base64
 import unittest
 
+from common import chrome_proxy_metrics as common_metrics
+from common import network_metrics_unittest as network_unittest
 from integration_tests import chrome_proxy_metrics as metrics
-from integration_tests import network_metrics_unittest as network_unittest
 from telemetry.unittest_util import test_page_test_results
 
 TEST_EXTRA_VIA_HEADER = '1.1 EXTRA_VIA_HEADER'
@@ -29,7 +30,7 @@ EVENT_HTML_PROXY_VIA = (
         'Content-Type': 'text/html',
         'Content-Encoding': 'gzip',
         'X-Original-Content-Length': str(len(network_unittest.HTML_BODY)),
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER,
         },
     body=network_unittest.HTML_BODY,
     remote_port=443))
@@ -42,7 +43,7 @@ EVENT_HTML_PROXY_EXTRA_VIA = (
         'Content-Type': 'text/html',
         'Content-Encoding': 'gzip',
         'X-Original-Content-Length': str(len(network_unittest.HTML_BODY)),
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER + ", " +
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER + ", " +
         TEST_EXTRA_VIA_HEADER,
         },
     body=network_unittest.HTML_BODY,
@@ -56,7 +57,7 @@ EVENT_HTML_PROXY_VIA_HTTP_FALLBACK = (
         'Content-Type': 'text/html',
         'Content-Encoding': 'gzip',
         'X-Original-Content-Length': str(len(network_unittest.HTML_BODY)),
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER,
         },
     body=network_unittest.HTML_BODY,
     remote_port=80))
@@ -69,7 +70,7 @@ EVENT_IMAGE_PROXY_VIA = (
         'Content-Type': 'image/jpeg',
         'Content-Encoding': 'gzip',
         'X-Original-Content-Length': str(network_unittest.IMAGE_OCL),
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER,
         },
     body=base64.b64encode(network_unittest.IMAGE_BODY),
     base64_encoded_body=True,
@@ -83,7 +84,7 @@ EVENT_IMAGE_PROXY_VIA_HTTP_FALLBACK = (
         'Content-Type': 'image/jpeg',
         'Content-Encoding': 'gzip',
         'X-Original-Content-Length': str(network_unittest.IMAGE_OCL),
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER,
         },
     body=base64.b64encode(network_unittest.IMAGE_BODY),
     base64_encoded_body=True,
@@ -97,7 +98,7 @@ EVENT_IMAGE_PROXY_CACHED = (
         'Content-Type': 'image/jpeg',
         'Content-Encoding': 'gzip',
         'X-Original-Content-Length': str(network_unittest.IMAGE_OCL),
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER,
         },
     body=base64.b64encode(network_unittest.IMAGE_BODY),
     base64_encoded_body=True,
@@ -120,7 +121,7 @@ EVENT_MALWARE_PROXY = (
     url='http://test.malware',
     response_headers={
         'X-Malware-Url': '1',
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER,
         'Location': 'http://test.malware',
         },
     status=307))
@@ -132,7 +133,7 @@ EVENT_IMAGE_BYPASS = (
     response_headers={
         'Chrome-Proxy': 'bypass=1',
         'Content-Type': 'text/html',
-        'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
+        'Via': '1.1 ' + common_metrics.CHROME_PROXY_VIA_HEADER,
         },
     status=502))
 
@@ -158,63 +159,6 @@ class ChromeProxyMetricTest(unittest.TestCase):
     metrics.GetProxyInfoFromNetworkInternals = stub
     ChromeProxyMetricTest._test_proxy_info = info
 
-  def testChromeProxyResponse(self):
-    # An https non-proxy response.
-    resp = metrics.ChromeProxyResponse(
-        network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
-            url='https://test.url',
-            response_headers={
-                'Content-Type': 'text/html',
-                'Content-Length': str(len(network_unittest.HTML_BODY)),
-                'Via': 'some other via',
-                },
-            body=network_unittest.HTML_BODY))
-    self.assertFalse(resp.ShouldHaveChromeProxyViaHeader())
-    self.assertFalse(resp.HasChromeProxyViaHeader())
-    self.assertTrue(resp.IsValidByViaHeader())
-
-    # A proxied JPEG image response
-    resp = metrics.ChromeProxyResponse(
-        network_unittest.NetworkMetricTest.MakeNetworkTimelineEvent(
-            url='http://test.image',
-            response_headers={
-                'Content-Type': 'image/jpeg',
-                'Content-Encoding': 'gzip',
-                'Via': '1.1 ' + metrics.CHROME_PROXY_VIA_HEADER,
-                'X-Original-Content-Length': str(network_unittest.IMAGE_OCL),
-                },
-            body=base64.b64encode(network_unittest.IMAGE_BODY),
-            base64_encoded_body=True))
-    self.assertTrue(resp.ShouldHaveChromeProxyViaHeader())
-    self.assertTrue(resp.HasChromeProxyViaHeader())
-    self.assertTrue(resp.IsValidByViaHeader())
-
-  def testChromeProxyMetricForDataSaving(self):
-    metric = metrics.ChromeProxyMetric()
-    events = [
-        EVENT_HTML_DIRECT,
-        EVENT_HTML_PROXY_VIA,
-        EVENT_IMAGE_PROXY_CACHED,
-        EVENT_IMAGE_DIRECT]
-    metric.SetEvents(events)
-
-    self.assertTrue(len(events), len(list(metric.IterResponses(None))))
-    results = test_page_test_results.TestPageTestResults(self)
-
-    metric.AddResultsForDataSaving(None, results)
-    results.AssertHasPageSpecificScalarValue('resources_via_proxy', 'count', 2)
-    results.AssertHasPageSpecificScalarValue('resources_from_cache', 'count', 1)
-    results.AssertHasPageSpecificScalarValue('resources_direct', 'count', 2)
-
-    # Passing in zero responses should cause a failure.
-    metric.SetEvents([])
-    no_responses_exception = False
-    try:
-      metric.AddResultsForDataSaving(None, results)
-    except metrics.ChromeProxyMetricException:
-      no_responses_exception = True
-    self.assertTrue(no_responses_exception)
-
   def testChromeProxyMetricForHeaderValidation(self):
     metric = metrics.ChromeProxyMetric()
     metric.SetEvents([
@@ -228,7 +172,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     missing_via_exception = False
     try:
       metric.AddResultsForHeaderValidation(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       missing_via_exception = True
     # Only the HTTP image response does not have a valid Via header.
     self.assertTrue(missing_via_exception)
@@ -245,7 +189,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     no_responses_exception = False
     try:
       metric.AddResultsForHeaderValidation(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
 
@@ -263,7 +207,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     exception_occurred = False
     try:
       metric.AddResultsForExtraViaHeader(None, results, TEST_EXTRA_VIA_HEADER)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       exception_occurred = True
     # The response had the chrome proxy via header, but not the extra expected
     # via header.
@@ -281,7 +225,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     bypass_exception = False
     try:
       metric.AddResultsForBypass(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       bypass_exception = True
     # Two of the first three events have Via headers.
     self.assertTrue(bypass_exception)
@@ -296,7 +240,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     no_responses_exception = False
     try:
       metric.AddResultsForBypass(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
 
@@ -314,7 +258,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     no_responses_exception = False
     try:
       metric.AddResultsForCorsBypass(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
 
@@ -332,7 +276,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     exception_occurred = False
     try:
       metric.AddResultsForBlockOnce(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       exception_occurred = True
     # The second response was over direct, but was expected via proxy.
     self.assertTrue(exception_occurred)
@@ -342,7 +286,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     no_responses_exception = False
     try:
       metric.AddResultsForBlockOnce(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
 
@@ -375,7 +319,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     exception_occurred = False
     try:
       metric.AddResultsForHTTPFallback(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       exception_occurred = True
     # The responses came through the SPDY proxy, but were expected through the
     # HTTP fallback proxy.
@@ -386,7 +330,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     no_responses_exception = False
     try:
       metric.AddResultsForHTTPFallback(None, results)
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
 
@@ -405,7 +349,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     exception_occurred = False
     try:
       metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       exception_occurred = True
     # The first response was expected through the HTTP fallback proxy.
     self.assertTrue(exception_occurred)
@@ -416,7 +360,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     exception_occurred = False
     try:
       metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       exception_occurred = True
     # All but the first response were expected to be over direct.
     self.assertTrue(exception_occurred)
@@ -427,7 +371,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     exception_occurred = False
     try:
       metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       exception_occurred = True
     # The first response was expected through the HTTP fallback proxy.
     self.assertTrue(exception_occurred)
@@ -437,6 +381,7 @@ class ChromeProxyMetricTest(unittest.TestCase):
     no_responses_exception = False
     try:
       metric.AddResultsForHTTPToDirectFallback(None, results, 'test.html2')
-    except metrics.ChromeProxyMetricException:
+    except common_metrics.ChromeProxyMetricException:
       no_responses_exception = True
     self.assertTrue(no_responses_exception)
+

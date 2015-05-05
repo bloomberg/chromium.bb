@@ -5,88 +5,12 @@
 import logging
 import time
 
-from integration_tests import network_metrics
+from common import chrome_proxy_metrics
+from common import network_metrics
+from common.chrome_proxy_metrics import ChromeProxyMetricException
 from telemetry.page import page_test
 from telemetry.value import scalar
 
-
-class ChromeProxyMetricException(page_test.MeasurementFailure):
-  pass
-
-
-CHROME_PROXY_VIA_HEADER = 'Chrome-Compression-Proxy'
-
-
-class ChromeProxyResponse(network_metrics.HTTPResponse):
-  """ Represents an HTTP response from a timeleine event."""
-  def __init__(self, event):
-    super(ChromeProxyResponse, self).__init__(event)
-
-  def ShouldHaveChromeProxyViaHeader(self):
-    resp = self.response
-    # Ignore https and data url
-    if resp.url.startswith('https') or resp.url.startswith('data:'):
-      return False
-    # Ignore 304 Not Modified and cache hit.
-    if resp.status == 304 or resp.served_from_cache:
-      return False
-    # Ignore invalid responses that don't have any header. Log a warning.
-    if not resp.headers:
-      logging.warning('response for %s does not any have header '
-                      '(refer=%s, status=%s)',
-                      resp.url, resp.GetHeader('Referer'), resp.status)
-      return False
-    return True
-
-  def HasChromeProxyViaHeader(self):
-    via_header = self.response.GetHeader('Via')
-    if not via_header:
-      return False
-    vias = [v.strip(' ') for v in via_header.split(',')]
-    # The Via header is valid if it has a 4-character version prefix followed by
-    # the proxy name, for example, "1.1 Chrome-Compression-Proxy".
-    return any(v[4:] == CHROME_PROXY_VIA_HEADER for v in vias)
-
-  def HasExtraViaHeader(self, extra_header):
-    via_header = self.response.GetHeader('Via')
-    if not via_header:
-      return False
-    vias = [v.strip(' ') for v in via_header.split(',')]
-    return any(v == extra_header for v in vias)
-
-  def IsValidByViaHeader(self):
-    return (not self.ShouldHaveChromeProxyViaHeader() or
-            self.HasChromeProxyViaHeader())
-
-  def GetChromeProxyClientType(self):
-    """Get the client type directive from the Chrome-Proxy request header.
-
-    Returns:
-        The client type directive from the Chrome-Proxy request header for the
-        request that lead to this response. For example, if the request header
-        "Chrome-Proxy: c=android" is present, then this method would return
-        "android". Returns None if no client type directive is present.
-    """
-    if 'Chrome-Proxy' not in self.response.request_headers:
-      return None
-
-    chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
-    values = [v.strip() for v in chrome_proxy_request_header.split(',')]
-    for value in values:
-      kvp = value.split('=', 1)
-      if len(kvp) == 2 and kvp[0].strip() == 'c':
-        return kvp[1].strip()
-    return None
-
-  def HasChromeProxyLoFi(self):
-    if 'Chrome-Proxy' not in self.response.request_headers:
-      return False
-    chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
-    values = [v.strip() for v in chrome_proxy_request_header.split(',')]
-    for value in values:
-      if len(value) == 5 and value == 'q=low':
-        return True
-    return False
 
 class ChromeProxyMetric(network_metrics.NetworkMetric):
   """A Chrome proxy timeline metric."""
@@ -100,7 +24,7 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     self._events = events
 
   def ResponseFromEvent(self, event):
-    return ChromeProxyResponse(event)
+    return chrome_proxy_metrics.ChromeProxyResponse(event)
 
   def AddResults(self, tab, results):
     raise NotImplementedError
