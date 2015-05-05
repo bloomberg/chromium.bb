@@ -1750,17 +1750,6 @@
     }                                                      \
   }
 
-// void OnWTSSessionChange(WPARAM nStatusCode, PWTSSESSION_NOTIFICATION
-// nSessionID)
-#define CR_MSG_WM_WTSSESSION_CHANGE(func)           \
-  if (uMsg == WM_WTSSESSION_CHANGE) {               \
-    SetMsgHandled(TRUE);                            \
-    func(wParam, (PWTSSESSION_NOTIFICATION)lParam); \
-    lResult = 0;                                    \
-    if (IsMsgHandled())                             \
-      return TRUE;                                  \
-  }
-
 // OnThemeChanged()
 #define CR_MSG_WM_THEMECHANGED(func) \
   if (uMsg == WM_THEMECHANGED) {     \

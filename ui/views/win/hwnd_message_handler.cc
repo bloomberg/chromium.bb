@@ -7,10 +7,9 @@
 #include <dwmapi.h>
 #include <oleacc.h>
 #include <shellapi.h>
-#include <wtsapi32.h>
-#pragma comment(lib, "wtsapi32.lib")
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
@@ -43,6 +42,7 @@
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
+#include "ui/views/win/windows_session_change_observer.h"
 
 namespace views {
 namespace {
@@ -1464,7 +1464,9 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   tracked_objects::ScopedTracker tracking_profile8(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnCreate8"));
 
-  WTSRegisterSessionNotification(hwnd(), NOTIFY_FOR_THIS_SESSION);
+  windows_session_change_observer_.reset(new WindowsSessionChangeObserver(
+      base::Bind(&HWNDMessageHandler::OnSessionChange,
+                 base::Unretained(this))));
 
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
@@ -1475,7 +1477,7 @@ void HWNDMessageHandler::OnDestroy() {
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 HWNDMessageHandler::OnDestroy"));
 
-  WTSUnRegisterSessionNotification(hwnd());
+  windows_session_change_observer_.reset(nullptr);
   delegate_->HandleDestroying();
 }
 
@@ -2207,21 +2209,6 @@ LRESULT HWNDMessageHandler::OnScrollMessage(UINT message,
   return 0;
 }
 
-void HWNDMessageHandler::OnSessionChange(WPARAM status_code,
-                                         PWTSSESSION_NOTIFICATION session_id) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 HWNDMessageHandler::OnSessionChange"));
-
-  // Direct3D presents are ignored while the screen is locked, so force the
-  // window to be redrawn on unlock.
-  if (status_code == WTS_SESSION_UNLOCK)
-    ForceRedrawWindow(10);
-
-  SetMsgHandled(FALSE);
-}
-
 LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
                                         WPARAM w_param,
                                         LPARAM l_param) {
@@ -2632,6 +2619,18 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
   else if (window_pos->flags & SWP_HIDEWINDOW)
     delegate_->HandleVisibilityChanged(false);
   SetMsgHandled(FALSE);
+}
+
+void HWNDMessageHandler::OnSessionChange(WPARAM status_code) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "440919 HWNDMessageHandler::OnSessionChange"));
+
+  // Direct3D presents are ignored while the screen is locked, so force the
+  // window to be redrawn on unlock.
+  if (status_code == WTS_SESSION_UNLOCK)
+    ForceRedrawWindow(10);
 }
 
 void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {

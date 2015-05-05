@@ -42,6 +42,7 @@ namespace views {
 class FullscreenHandler;
 class HWNDMessageHandlerDelegate;
 class InputMethod;
+class WindowsSessionChangeObserver;
 
 // These two messages aren't defined in winuser.h, but they are sent to windows
 // with captions. They appear to paint the window caption and frame.
@@ -400,7 +401,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
     CR_MSG_WM_THEMECHANGED(OnThemeChanged)
     CR_MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
     CR_MSG_WM_WINDOWPOSCHANGING(OnWindowPosChanging)
-    CR_MSG_WM_WTSSESSION_CHANGE(OnSessionChange)
   CR_END_MSG_MAP()
 
   // Message Handlers.
@@ -445,7 +445,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void OnPaint(HDC dc);
   LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnScrollMessage(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnSessionChange(WPARAM status_code, PWTSSESSION_NOTIFICATION session_id);
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   void OnSetFocus(HWND last_focused_window);
   LRESULT OnSetIcon(UINT size_type, HICON new_icon);
@@ -457,6 +456,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
   LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnWindowPosChanging(WINDOWPOS* window_pos);
   void OnWindowPosChanged(WINDOWPOS* window_pos);
+
+  // Receives Windows Session Change notifications.
+  void OnSessionChange(WPARAM status_code);
 
   typedef std::vector<ui::TouchEvent> TouchEvents;
   // Helper to handle the list of touch events passed in. We need this because
@@ -628,6 +630,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // The factory used with BEGIN_SAFE_MSG_MAP_EX.
   base::WeakPtrFactory<HWNDMessageHandler> weak_factory_;
+
+  // Manages observation of Windows Session Change messages.
+  scoped_ptr<WindowsSessionChangeObserver> windows_session_change_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

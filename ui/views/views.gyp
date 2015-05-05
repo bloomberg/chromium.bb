@@ -347,6 +347,8 @@
       'win/hwnd_util_aurawin.cc',
       'win/scoped_fullscreen_visibility.cc',
       'win/scoped_fullscreen_visibility.h',
+      'win/windows_session_change_observer.cc',
+      'win/windows_session_change_observer.h',
     ],
     'views_aura_sources': [
       'accessibility/ax_aura_obj_cache.cc',
