@@ -51541,7 +51541,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="983" label="FILEMANAGERPRIVATE_ISPIEXLOADERENABLED"/>
   <int value="984" label="HOTWORDPRIVATE_SPEAKERMODELEXISTSRESULT"/>
   <int value="985" label="SETTINGSPRIVATE_SETPREF"/>
-  <int value="986" label="DELETED_SETTINGSPRIVATE_SETNUMERICPREF"/>
+  <int value="986" label="DELETED_SETTINGSPRIVATE_SETDOUBLEPREF"/>
   <int value="987" label="DELETED_SETTINGSPRIVATE_SETSTRINGPREF"/>
   <int value="988" label="DELETED_SETTINGSPRIVATE_SETURLPREF"/>
   <int value="989" label="SETTINGSPRIVATE_GETALLPREFS"/>
@@ -51585,6 +51585,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1027" label="SEARCHENGINESPRIVATE_REMOVESEARCHENGINE"/>
   <int value="1028" label="SEARCHENGINESPRIVATE_UPDATESEARCHENGINE"/>
   <int value="1029" label="SEARCHENGINESPRIVATE_OPTINTOHOTWORDING"/>
+  <int value="1030" label="WEBSTOREWIDGETPRIVATE_INSTALLWEBSTOREITEM"/>
+  <int value="1031" label="WEBSTOREWIDGETPRIVATE_GETSTRINGS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

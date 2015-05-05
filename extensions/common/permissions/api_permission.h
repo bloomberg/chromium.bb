@@ -205,6 +205,7 @@ class APIPermission {
     kWebrtcAudioPrivate,
     kWebrtcLoggingPrivate,
     kWebstorePrivate,
+    kWebstoreWidgetPrivate,
     kWebView,
     kWindowShape,
     kScreenlockPrivate,

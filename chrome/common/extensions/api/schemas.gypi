@@ -85,6 +85,7 @@
       'webrtc_audio_private.idl',
       'webrtc_logging_private.idl',
       'webstore_private.json',
+      'webstore_widget_private.idl',
       'windows.json',
     ],
     'main_schema_include_rules': [
