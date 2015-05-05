@@ -101,6 +101,8 @@ void AddDateTimeStrings(content::WebUIDataSource* html_source) {
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "internetPageTitle", IDS_SETTINGS_INTERNET_PAGE_TITLE);
+  html_source->AddLocalizedString(
+      "internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL_PAGE_TITLE);
 }
 #endif
 

@@ -62,6 +62,31 @@ Polymer('cr-settings-main', {
   },
 
   /**
+   * Polymer changed event for selectedPageId. See note for onCoreSelect_ below.
+   */
+  selectedPageIdChanged: function() {
+    this.$.pageContainer.selected = this.selectedPageId;
+  },
+
+  /**
+   * We observe $.pageContainer.on-core-select instead of using data binding
+   * for two reasons:
+   * 1) We need to exclude subpages
+   * 2) There is a bug with data binding or our useage of it here causing
+   *    this.selectedPage to get set to the index of $.pageContainer instead of
+   *    the valueattr identifier (PAGE_ID). TODO(stevenjb/jlklien): Investigate
+   *    fixing this and using filters once we switch to Polymer 0.8.
+   * @private
+   */
+  onCoreSelect_: function(event) {
+    if (event.target != this.$.pageContainer || !event.detail.isSelected ||
+        event.detail.item.subpage) {
+      return;
+    }
+    this.selectedPageId = event.detail.item.PAGE_ID;
+  },
+
+  /**
    * If no page is selected, selects the first page. This happens on load and
    * when a selected page is removed.
    *

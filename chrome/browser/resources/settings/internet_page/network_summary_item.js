@@ -164,9 +164,7 @@ Polymer('cr-network-summary-item', {
    * @private
    */
   updateSelectable_: function() {
-    // TODO(stevenjb): Make any actionable item selectable.
-    var selectable =
-          this.expandIsVisible_(this.deviceState, this.networkStateList);
+    var selectable = this.deviceIsEnabled_(this.deviceState);
     this.$.details.classList.toggle('selectable', selectable);
   },
 });

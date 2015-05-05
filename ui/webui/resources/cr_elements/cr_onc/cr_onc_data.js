@@ -27,6 +27,26 @@ Polymer('cr-onc-data', {
         /** @type {chrome.networkingPrivate.NetworkStateProperties} */({});
   },
 
+  /**
+   * TODO(stevenjb): Handle Managed property dictionaries.
+   * @param {string} key The property key.
+   * @return {?} The property value if it exists, otherwise undefined.
+   */
+  getProperty: function(key) {
+    var data = this.data;
+    while (true) {
+      var index = key.indexOf('.');
+      if (index < 0)
+        break;
+      var keyComponent = key.substr(0, index);
+      if (!(keyComponent in data))
+        return undefined;
+      data = data[keyComponent];
+      key = key.substr(index + 1);
+    }
+    return data[key];
+  },
+
   /** @return {boolean} True if the network is connected. */
   connected: function() {
     return this.data.ConnectionState == CrOnc.ConnectionState.CONNECTED;
@@ -45,32 +65,25 @@ Polymer('cr-onc-data', {
   /** @return {number} The signal strength of the network. */
   getStrength: function() {
     var type = this.data.Type;
-    var strength = 0;
-    if (type == 'WiFi')
-      strength = this.data.WiFi ? this.data.WiFi.SignalStrength : 0;
-    else if (type == 'Cellular')
-      strength = this.data.Cellular ? this.data.Cellular.SignalStrength : 0;
-    else if (type == 'WiMAX')
-      strength = this.data.WiMAX ? this.data.WiMAX.SignalStrength : 0;
-    return strength;
+    var key = type + '.SignalStrength';
+    return this.getProperty(key) || 0;
   },
 
   /** @return {CrOnc.Security} The ONC security type. */
   getWiFiSecurity: function() {
-    return (this.data.WiFi && this.data.WiFi.Security) ?
-        this.data.WiFi.Security : CrOnc.Security.NONE;
+    return this.getProperty('WiFi.Security') || CrOnc.Security.NONE;
   },
 
   /** @return {CrOnc.RoamingState} The ONC roaming state. */
   getCellularRoamingState: function() {
-    return (this.data.Cellular && this.data.Cellular.RoamingState) ?
-        this.data.Cellular.RoamingState : CrOnc.RoamingState.UNKNOWN;
+    return this.getProperty('Cellular.RoamingState') ||
+        CrOnc.RoamingState.UNKNOWN;
   },
 
   /** @return {CrOnc.NetworkTechnology} The ONC network technology. */
   getCellularTechnology: function() {
-    return (this.data.Cellular && this.data.Cellular.NetworkTechnology) ?
-        this.data.Cellular.NetworkTechnology : CrOnc.NetworkTechnology.UNKNOWN;
+    return this.getProperty('Cellular.NetworkTechnology') ||
+        CrOnc.NetworkTechnology.UNKNOWN;
   }
 });
 

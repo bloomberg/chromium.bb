@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
+<link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/search_page/search_page.html">
 <link rel="import" href="chrome://md-settings/routes.html">
@@ -18,11 +19,16 @@
       <cr-settings-page-header selectedPage="{{$.pageContainer.selectedItem}}">
       </cr-settings-page-header>
       <content select="core-icon-button"></content>
-      <more-route-selector>
-        <core-animated-pages id="pageContainer" selected="{{selectedPageId}}"
-            valueattr="PAGE_ID" transitions="cross-fade">
+      <more-route-selector selectedParams="{{params}}">
+        <core-animated-pages id="pageContainer"
+            on-core-select="{{onCoreSelect_}}" valueattr="PAGE_ID"
+            transitions="cross-fade">
 <if expr="chromeos">
-          <cr-settings-internet-page route="internet"></cr-settings-internet-page>
+          <cr-settings-internet-page route="internet">
+          </cr-settings-internet-page>
+          <cr-settings-internet-detail-page route="internet-detail"
+              subpage="true" guid="{{params.guid}}">
+          </cr-settings-internet-detail-page>
 </if>
           <cr-settings-a11y-page prefs="{{prefs}}" route="a11y">
           </cr-settings-a11y-page>

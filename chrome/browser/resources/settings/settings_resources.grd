@@ -245,6 +245,15 @@
                  file="settings.js"
                  type="chrome_html" />
       <if expr="chromeos">
+        <structure name="IDR_SETTINGS_INTERNET_DETAIL_PAGE_STYLE_HTML"
+                   file="internet_page/internet_detail_page_style.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INTERNET_DETAIL_PAGE_HTML"
+                   file="internet_page/internet_detail_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INTERNET_DETAIL_PAGE_JS"
+                   file="internet_page/internet_detail_page.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_INTERNET_PAGE_HTML"
                    file="internet_page/internet_page.html"
                    type="chrome_html" />

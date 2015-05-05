@@ -169,7 +169,7 @@ Polymer('cr-network-summary', {
       this.connectToNetwork_(onc);
       return;
     }
-    // TODO(stevenjb): Show details for connected or unconfigured networks.
+    MoreRouting.navigateTo('internet-detail', {guid: onc.data.GUID});
   },
 
   /**
