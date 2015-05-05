@@ -1491,6 +1491,7 @@ _x86_internal_release_boards = frozenset([
   'mccloud',
   'monroe',
   'ninja',
+  'orco',
   'panther',
   'panther_embedded',
   'panther_moblab',
@@ -2926,6 +2927,11 @@ _AddGroupConfig('rambi-d', 'banjo', (
     important=False
 )
 
+_AddGroupConfig('rambi-e', 'orco', (
+),
+    important=False
+)
+
 # daisy-based boards
 _AddGroupConfig('daisy', 'daisy', (
     'daisy_spring',
@@ -3088,6 +3094,7 @@ _firmware_boards = frozenset([
   'lumpy',
   'monroe',
   'ninja',
+  'orco',
   'panther',
   'parrot',
   'parry',
@@ -3128,6 +3135,7 @@ _x86_depthcharge_firmware_boards = frozenset([
   'leon',
   'link',
   'ninja',
+  'orco',
   'parry',
   'quawks',
   'rambi',
@@ -3302,6 +3310,7 @@ _waterfall_config_map = {
       'peach-freon-release-group',
       'pineview-freon-release-group',
       'rambi-d-release-group',
+      'rambi-e-release-group',
       'strago-release-group',
       'veyron-b-release-group',
       'veyron-c-release-group',
