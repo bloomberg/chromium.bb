@@ -912,6 +912,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case FullscreenInsecureOrigin:
         return "requestFullscreen() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
+    case PushSubscriptionId:
+        return "'PushSubscription.subscriptionId' is deprecated and is now included in 'PushSubscription.endpoint'. It will be removed in Chrome 45, around August 2015.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

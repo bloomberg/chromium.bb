@@ -26,7 +26,7 @@ public:
 
     virtual ~PushSubscription();
 
-    const String& endpoint() const { return m_endpoint; }
+    String endpoint() const;
     const String& subscriptionId() const { return m_subscriptionId; }
     ScriptPromise unsubscribe(ScriptState*);
 

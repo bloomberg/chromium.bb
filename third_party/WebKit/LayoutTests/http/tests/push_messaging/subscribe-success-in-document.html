@@ -31,10 +31,15 @@ async_test(function(test) {
 
             assert_will_be_idl_attribute(pushSubscription, 'endpoint');
             assert_equals(typeof pushSubscription.endpoint, 'string');
+
+            // The |subscriptionId| attribute is being deprecated, and its value
+            // is now the last part of the |endpoint| attribute.
+            assert_true(pushSubscription.endpoint.endsWith(pushSubscription.subscriptionId));
+
             try {
-              var endpointUrl = new URL(pushSubscription.endpoint);
+                var endpointUrl = new URL(pushSubscription.endpoint);
             } catch(e) {
-              assert_unreached('Constructing a URL from the endpoint should not throw.');
+                assert_unreached('Constructing a URL from the endpoint should not throw.');
             }
 
             return service_worker_unregister_and_done(test, workerScope);
