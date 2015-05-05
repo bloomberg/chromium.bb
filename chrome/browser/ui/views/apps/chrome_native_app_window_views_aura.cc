@@ -118,6 +118,19 @@ ChromeNativeAppWindowViewsAura::ChromeNativeAppWindowViewsAura() {
 ChromeNativeAppWindowViewsAura::~ChromeNativeAppWindowViewsAura() {
 }
 
+void ChromeNativeAppWindowViewsAura::InitializeWindow(
+    AppWindow* app_window,
+    const AppWindow::CreateParams& create_params) {
+  ChromeNativeAppWindowViews::InitializeWindow(app_window, create_params);
+  // Restore docked state on ash desktop and ignore it elsewhere.
+  if (create_params.state == ui::SHOW_STATE_DOCKED &&
+      chrome::GetHostDesktopTypeForNativeWindow(widget()->GetNativeWindow()) ==
+          chrome::HOST_DESKTOP_TYPE_ASH) {
+    widget()->GetNativeWindow()->SetProperty(aura::client::kShowStateKey,
+                                             create_params.state);
+  }
+}
+
 void ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(
     const AppWindow::CreateParams& create_params,
     views::Widget::InitParams* init_params,
@@ -147,11 +160,14 @@ void ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(
 }
 
 void ChromeNativeAppWindowViewsAura::OnBeforePanelWidgetInit(
+    bool use_default_bounds,
     views::Widget::InitParams* init_params,
     views::Widget* widget) {
-  ChromeNativeAppWindowViews::OnBeforePanelWidgetInit(init_params, widget);
+  ChromeNativeAppWindowViews::OnBeforePanelWidgetInit(use_default_bounds,
+                                                      init_params,
+                                                      widget);
 
-  if (ash::Shell::HasInstance()) {
+  if (ash::Shell::HasInstance() && use_default_bounds) {
     // Open a new panel on the target root.
     init_params->bounds = ash::ScreenUtil::ConvertRectToScreen(
         ash::Shell::GetTargetRootWindow(), gfx::Rect(GetPreferredSize()));
@@ -223,6 +239,10 @@ ui::WindowShowState ChromeNativeAppWindowViewsAura::GetRestoredState() const {
       }
       return ui::SHOW_STATE_FULLSCREEN;
     }
+    if (widget()->GetNativeWindow()->GetProperty(aura::client::kShowStateKey) ==
+        ui::SHOW_STATE_DOCKED) {
+      return ui::SHOW_STATE_DOCKED;
+    }
   }
   // Whitelist states to return so that invalid and transient states
   // are not saved and used to restore windows when they are recreated.
@@ -235,6 +255,7 @@ ui::WindowShowState ChromeNativeAppWindowViewsAura::GetRestoredState() const {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_MINIMIZED:
     case ui::SHOW_STATE_INACTIVE:
+    case ui::SHOW_STATE_DOCKED:
     case ui::SHOW_STATE_END:
       return ui::SHOW_STATE_NORMAL;
   }

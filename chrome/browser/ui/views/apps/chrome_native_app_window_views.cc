@@ -108,6 +108,7 @@ void ChromeNativeAppWindowViews::OnBeforeWidgetInit(
 }
 
 void ChromeNativeAppWindowViews::OnBeforePanelWidgetInit(
+    bool use_default_bounds,
     views::Widget::InitParams* init_params,
     views::Widget* widget) {
 }
@@ -142,7 +143,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   SetContentSizeConstraints(create_params.GetContentMinimumSize(frame_insets),
                             create_params.GetContentMaximumSize(frame_insets));
   if (!window_bounds.IsEmpty()) {
-    typedef AppWindow::BoundsSpecification BoundsSpecification;
+    using BoundsSpecification = AppWindow::BoundsSpecification;
     bool position_specified =
         window_bounds.x() != BoundsSpecification::kUnspecifiedPosition &&
         window_bounds.y() != BoundsSpecification::kUnspecifiedPosition;
@@ -210,8 +211,18 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
   else if (preferred_size_.height() < kMinPanelHeight)
     preferred_size_.set_height(kMinPanelHeight);
 
-  params.bounds = gfx::Rect(preferred_size_);
-  OnBeforePanelWidgetInit(&params, widget());
+  // When a panel is not docked it will be placed at a default origin in the
+  // currently active target root window.
+  bool use_default_bounds = create_params.state != ui::SHOW_STATE_DOCKED;
+  // Sanitize initial origin reseting it in case it was not specified.
+  using BoundsSpecification = AppWindow::BoundsSpecification;
+  bool position_specified =
+      initial_window_bounds.x() != BoundsSpecification::kUnspecifiedPosition &&
+      initial_window_bounds.y() != BoundsSpecification::kUnspecifiedPosition;
+  params.bounds = (use_default_bounds || !position_specified) ?
+      gfx::Rect(preferred_size_) :
+      gfx::Rect(initial_window_bounds.origin(), preferred_size_);
+  OnBeforePanelWidgetInit(use_default_bounds, &params, widget());
   widget()->Init(params);
   widget()->set_focus_on_creation(create_params.focused);
 }

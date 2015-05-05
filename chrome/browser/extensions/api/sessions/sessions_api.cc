@@ -300,6 +300,7 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
   windows::WindowState state = windows::WINDOW_STATE_NONE;
   switch (window.show_state) {
     case ui::SHOW_STATE_NORMAL:
+    case ui::SHOW_STATE_DOCKED:
       state = windows::WINDOW_STATE_NORMAL;
       break;
     case ui::SHOW_STATE_MINIMIZED:

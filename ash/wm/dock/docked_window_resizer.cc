@@ -299,13 +299,15 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
       action = was_docked_ ? DOCKED_ACTION_UNDOCK : DOCKED_ACTION_NONE;
     }
   } else {
-    // Docked state was not changed but still need to record a UMA action.
+    // |action| is recorded in UMA and used to maintain |window_state_|.
     if (is_resized && is_docked_ && was_docked_)
       action = DOCKED_ACTION_RESIZE;
     else if (is_docked_ && was_docked_)
       action = DOCKED_ACTION_REORDER;
     else if (is_docked_ && !was_docked_)
       action = DOCKED_ACTION_DOCK;
+    else if (!is_docked_ && was_docked_)
+      action = DOCKED_ACTION_UNDOCK;
     else
       action = DOCKED_ACTION_NONE;
   }

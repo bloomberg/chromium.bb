@@ -30,12 +30,18 @@ class ChromeNativeAppWindowViewsAura : public ChromeNativeAppWindowViews,
   ~ChromeNativeAppWindowViewsAura() override;
 
  protected:
+  // NativeAppWindowViews implementation.
+  void InitializeWindow(
+      extensions::AppWindow* app_window,
+      const extensions::AppWindow::CreateParams& create_params) override;
+
   // ChromeNativeAppWindowViews implementation.
   void OnBeforeWidgetInit(
       const extensions::AppWindow::CreateParams& create_params,
       views::Widget::InitParams* init_params,
       views::Widget* widget) override;
-  void OnBeforePanelWidgetInit(views::Widget::InitParams* init_params,
+  void OnBeforePanelWidgetInit(bool use_default_bounds,
+                               views::Widget::InitParams* init_params,
                                views::Widget* widget) override;
   apps::AppWindowFrameView* CreateNonStandardAppFrame() override;
 

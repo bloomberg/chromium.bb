@@ -184,6 +184,7 @@ void AssignOptionalValue(const scoped_ptr<T>& source,
 ui::WindowShowState ConvertToWindowShowState(windows::WindowState state) {
   switch (state) {
     case windows::WINDOW_STATE_NORMAL:
+    case windows::WINDOW_STATE_DOCKED:
       return ui::SHOW_STATE_NORMAL;
     case windows::WINDOW_STATE_MINIMIZED:
       return ui::SHOW_STATE_MINIMIZED;
@@ -220,6 +221,7 @@ bool IsValidStateForWindowsCreateFunction(
       return !(create_data->focused && !*create_data->focused) && !has_bound &&
              !is_panel;
     case windows::WINDOW_STATE_NORMAL:
+    case windows::WINDOW_STATE_DOCKED:
     case windows::WINDOW_STATE_NONE:
       return true;
   }
@@ -562,6 +564,7 @@ bool WindowsCreateFunction::RunSync() {
     if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
       AppWindow::CreateParams create_params;
       create_params.window_type = AppWindow::WINDOW_TYPE_V1_PANEL;
+      create_params.window_key = extension_id;
       create_params.window_spec.bounds = window_bounds;
       create_params.focused = saw_focus_key && focused;
       AppWindow* app_window = new AppWindow(

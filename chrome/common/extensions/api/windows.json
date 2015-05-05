@@ -20,7 +20,7 @@
         "id": "WindowState",
         "type": "string",
         "description": "The state of this browser window. Under some circumstances a Window may not be assigned state property, for example when querying closed windows from the $(ref:sessions) API.",
-        "enum": ["normal", "minimized", "maximized", "fullscreen"]
+        "enum": ["normal", "minimized", "maximized", "fullscreen", "docked"]
       },
       {
         "id": "Window",
