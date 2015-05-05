@@ -50,7 +50,7 @@ public:
     virtual ~FilterEffectBuilder();
     DECLARE_TRACE();
 
-    bool build(LayoutObject* renderer, const FilterOperations&);
+    bool build(LayoutObject*, const FilterOperations&);
 
     PassRefPtrWillBeRawPtr<FilterEffect> lastEffect() const
     {

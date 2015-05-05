@@ -110,10 +110,10 @@ void BlockPainter::paintChild(LayoutBox& child, const PaintInfo& paintInfo, cons
         child.paint(paintInfo, childPoint);
 }
 
-void BlockPainter::paintChildrenOfFlexibleBox(LayoutFlexibleBox& renderFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void BlockPainter::paintChildrenOfFlexibleBox(LayoutFlexibleBox& layoutFlexibleBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    for (LayoutBox* child = renderFlexibleBox.orderIterator().first(); child; child = renderFlexibleBox.orderIterator().next())
-        BlockPainter(renderFlexibleBox).paintChildAsInlineBlock(*child, paintInfo, paintOffset);
+    for (LayoutBox* child = layoutFlexibleBox.orderIterator().first(); child; child = layoutFlexibleBox.orderIterator().next())
+        BlockPainter(layoutFlexibleBox).paintChildAsInlineBlock(*child, paintInfo, paintOffset);
 }
 
 void BlockPainter::paintChildAsInlineBlock(LayoutBox& child, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -135,7 +135,7 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintIn
     paintAsInlineBlock(inlineBox.layoutObject(), paintInfo, childPoint);
 }
 
-void BlockPainter::paintAsInlineBlock(LayoutObject& renderer, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
+void BlockPainter::paintAsInlineBlock(LayoutObject& layoutObject, const PaintInfo& paintInfo, const LayoutPoint& childPoint)
 {
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;
@@ -147,16 +147,16 @@ void BlockPainter::paintAsInlineBlock(LayoutObject& renderer, const PaintInfo& p
     bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
     PaintInfo info(paintInfo);
     info.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
-    renderer.paint(info, childPoint);
+    layoutObject.paint(info, childPoint);
     if (!preservePhase) {
         info.phase = PaintPhaseChildBlockBackgrounds;
-        renderer.paint(info, childPoint);
+        layoutObject.paint(info, childPoint);
         info.phase = PaintPhaseFloat;
-        renderer.paint(info, childPoint);
+        layoutObject.paint(info, childPoint);
         info.phase = PaintPhaseForeground;
-        renderer.paint(info, childPoint);
+        layoutObject.paint(info, childPoint);
         info.phase = PaintPhaseOutline;
-        renderer.paint(info, childPoint);
+        layoutObject.paint(info, childPoint);
     }
 }
 
@@ -246,7 +246,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     if (paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)
         paintContinuationOutlines(paintInfo, paintOffset);
 
-    // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
+    // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground && hasCaret()) {
         LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
@@ -475,11 +475,11 @@ void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const Layout
 {
     LayoutInline* inlineCont = m_layoutBlock.inlineElementContinuation();
     if (inlineCont && inlineCont->style()->hasOutline() && inlineCont->style()->visibility() == VISIBLE) {
-        LayoutInline* inlineRenderer = toLayoutInline(inlineCont->node()->layoutObject());
+        LayoutInline* inlineLayoutObject = toLayoutInline(inlineCont->node()->layoutObject());
         LayoutBlock* cb = m_layoutBlock.containingBlock();
 
         bool inlineEnclosedInSelfPaintingLayer = false;
-        for (LayoutBoxModelObject* box = inlineRenderer; box != cb; box = box->parent()->enclosingBoxModelObject()) {
+        for (LayoutBoxModelObject* box = inlineLayoutObject; box != cb; box = box->parent()->enclosingBoxModelObject()) {
             if (box->hasSelfPaintingLayer()) {
                 inlineEnclosedInSelfPaintingLayer = true;
                 break;
@@ -487,12 +487,12 @@ void BlockPainter::paintContinuationOutlines(const PaintInfo& info, const Layout
         }
 
         // Do not add continuations for outline painting by our containing block if we are a relative positioned
-        // anonymous block (i.e. have our own layer), paint them straightaway instead. This is because a block depends on renderers in its continuation table being
+        // anonymous block (i.e. have our own layer), paint them straightaway instead. This is because a block depends on layoutObjects in its continuation table being
         // in the same layer.
         if (!inlineEnclosedInSelfPaintingLayer && !m_layoutBlock.hasLayer())
-            cb->addContinuationWithOutline(inlineRenderer);
-        else if (!inlineRenderer->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && m_layoutBlock.hasLayer()))
-            InlinePainter(*inlineRenderer).paintOutline(info, paintOffset - m_layoutBlock.locationOffset() + inlineRenderer->containingBlock()->location());
+            cb->addContinuationWithOutline(inlineLayoutObject);
+        else if (!inlineLayoutObject->firstLineBox() || (!inlineEnclosedInSelfPaintingLayer && m_layoutBlock.hasLayer()))
+            InlinePainter(*inlineLayoutObject).paintOutline(info, paintOffset - m_layoutBlock.locationOffset() + inlineLayoutObject->containingBlock()->location());
     }
 
     ContinuationOutlineTableMap* table = continuationOutlineTable();

@@ -13,12 +13,12 @@ class LayoutSVGRoot;
 
 class SVGRootPainter {
 public:
-    SVGRootPainter(LayoutSVGRoot& renderSVGRoot) : m_renderSVGRoot(renderSVGRoot) { }
+    SVGRootPainter(LayoutSVGRoot& layoutSVGRoot) : m_layoutSVGRoot(layoutSVGRoot) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
 
 private:
-    LayoutSVGRoot& m_renderSVGRoot;
+    LayoutSVGRoot& m_layoutSVGRoot;
 };
 
 } // namespace blink

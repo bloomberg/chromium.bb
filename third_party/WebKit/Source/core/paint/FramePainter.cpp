@@ -96,7 +96,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     LayoutView* layoutView = m_frameView.layoutView();
     if (!layoutView) {
-        WTF_LOG_ERROR("called FramePainter::paint with nil renderer");
+        WTF_LOG_ERROR("called FramePainter::paint with nil layoutObject");
         return;
     }
 
@@ -124,7 +124,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     m_frameView.setIsPainting(true);
 
     // m_frameView.nodeToDraw() is used to draw only one element (and its descendants)
-    LayoutObject* renderer = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->layoutObject() : 0;
+    LayoutObject* layoutObject = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->layoutObject() : 0;
     DeprecatedPaintLayer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
@@ -137,10 +137,10 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
-    layerPainter.paint(context, LayoutRect(rect), m_frameView.paintBehavior(), renderer);
+    layerPainter.paint(context, LayoutRect(rect), m_frameView.paintBehavior(), layoutObject);
 
     if (rootLayer->containsDirtyOverlayScrollbars())
-        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), m_frameView.paintBehavior(), renderer);
+        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), m_frameView.paintBehavior(), layoutObject);
 
     m_frameView.setIsPainting(false);
 

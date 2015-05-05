@@ -12,11 +12,11 @@ class LayoutSVGText;
 
 class SVGTextPainter {
 public:
-    SVGTextPainter(LayoutSVGText& renderSVGText) : m_renderSVGText(renderSVGText) { }
+    SVGTextPainter(LayoutSVGText& layoutSVGText) : m_layoutSVGText(layoutSVGText) { }
     void paint(const PaintInfo&);
 
 private:
-    LayoutSVGText& m_renderSVGText;
+    LayoutSVGText& m_layoutSVGText;
 };
 
 } // namespace blink

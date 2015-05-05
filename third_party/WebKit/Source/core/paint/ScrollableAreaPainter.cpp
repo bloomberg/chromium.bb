@@ -99,7 +99,7 @@ void ScrollableAreaPainter::paintOverflowControls(GraphicsContext* context, cons
     // will be false, and we should just tell the root layer that there are overlay scrollbars
     // that need to be painted. That will cause the second pass through the layer tree to run,
     // and we'll paint the scrollbars then. In the meantime, cache tx and ty so that the
-    // second pass doesn't need to re-enter the RenderTree to get it right.
+    // second pass doesn't need to re-enter the LayoutTree to get it right.
     if (m_scrollableArea.hasOverlayScrollbars() && !paintingOverlayControls) {
         m_scrollableArea.setCachedOverlayScrollbarOffset(paintOffset);
         // It's not necessary to do the second pass if the scrollbars paint into layers.

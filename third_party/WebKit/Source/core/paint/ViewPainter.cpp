@@ -37,7 +37,7 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     BlockPainter(m_layoutView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
 }
 
-static inline bool rendererObscuresBackground(LayoutBox* rootBox)
+static inline bool layoutObjectObscuresBackground(LayoutBox* rootBox)
 {
     ASSERT(rootBox);
     const ComputedStyle& style = rootBox->styleRef();
@@ -68,7 +68,7 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     bool shouldPaintBackground = true;
     Node* documentElement = m_layoutView.document().documentElement();
     if (LayoutBox* rootBox = documentElement ? toLayoutBox(documentElement->layoutObject()) : 0)
-        shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !rendererObscuresBackground(rootBox);
+        shouldPaintBackground = !rootFillsViewportBackground(rootBox) || !layoutObjectObscuresBackground(rootBox);
 
     // If painting will entirely fill the view, no need to fill the background.
     if (!shouldPaintBackground)

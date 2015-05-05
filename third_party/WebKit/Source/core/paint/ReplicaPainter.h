@@ -13,12 +13,12 @@ class LayoutReplica;
 
 class ReplicaPainter {
 public:
-    ReplicaPainter(LayoutReplica& renderReplica) : m_renderReplica(renderReplica) { }
+    ReplicaPainter(LayoutReplica& layoutReplica) : m_layoutReplica(layoutReplica) { }
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
-    LayoutReplica& m_renderReplica;
+    LayoutReplica& m_layoutReplica;
 };
 
 } // namespace blink

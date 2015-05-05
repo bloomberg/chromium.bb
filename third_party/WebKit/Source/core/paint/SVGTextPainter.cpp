@@ -18,18 +18,18 @@ void SVGTextPainter::paint(const PaintInfo& paintInfo)
         return;
 
     PaintInfo blockInfo(paintInfo);
-    TransformRecorder transformRecorder(*blockInfo.context, m_renderSVGText, m_renderSVGText.localToParentTransform());
+    TransformRecorder transformRecorder(*blockInfo.context, m_layoutSVGText, m_layoutSVGText.localToParentTransform());
 
     // When transitioning from SVG to block painters we need to keep the PaintInfo rect up-to-date
     // because it can be used for clipping.
-    m_renderSVGText.updatePaintInfoRect(blockInfo.rect);
+    m_layoutSVGText.updatePaintInfoRect(blockInfo.rect);
 
-    BlockPainter(m_renderSVGText).paint(blockInfo, LayoutPoint());
+    BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
 
     // Paint the outlines, if any
     if (paintInfo.phase == PaintPhaseForeground) {
         blockInfo.phase = PaintPhaseSelfOutline;
-        BlockPainter(m_renderSVGText).paint(blockInfo, LayoutPoint());
+        BlockPainter(m_layoutSVGText).paint(blockInfo, LayoutPoint());
     }
 }
 

@@ -20,22 +20,22 @@ namespace {
 
 class TextPainterTest : public RenderingTest {
 public:
-    TextPainterTest() : m_renderText(nullptr) { }
+    TextPainterTest() : m_layoutText(nullptr) { }
 
 protected:
-    LayoutText* layoutText() { return m_renderText; }
+    LayoutText* layoutText() { return m_layoutText; }
 
 private:
     virtual void SetUp() override
     {
         RenderingTest::SetUp();
         setBodyInnerHTML("Hello world");
-        m_renderText = toLayoutText(document().body()->firstChild()->layoutObject());
-        ASSERT_TRUE(m_renderText);
-        ASSERT_EQ("Hello world", m_renderText->text());
+        m_layoutText = toLayoutText(document().body()->firstChild()->layoutObject());
+        ASSERT_TRUE(m_layoutText);
+        ASSERT_EQ("Hello world", m_layoutText->text());
     }
 
-    LayoutText* m_renderText;
+    LayoutText* m_layoutText;
 };
 
 TEST_F(TextPainterTest, TextPaintingStyle_Simple)

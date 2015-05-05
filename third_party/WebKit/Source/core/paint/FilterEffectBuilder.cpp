@@ -71,9 +71,9 @@ DEFINE_TRACE(FilterEffectBuilder)
     visitor->trace(m_referenceFilters);
 }
 
-bool FilterEffectBuilder::build(LayoutObject* renderer, const FilterOperations& operations)
+bool FilterEffectBuilder::build(LayoutObject* layoutObject, const FilterOperations& operations)
 {
-    const ComputedStyle* style = renderer->style();
+    const ComputedStyle* style = layoutObject->style();
     float zoom = style ? style->effectiveZoom() : 1.0f;
 
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
@@ -85,7 +85,7 @@ bool FilterEffectBuilder::build(LayoutObject* renderer, const FilterOperations& 
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
             RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(zoom);
-            effect = ReferenceFilterBuilder::build(referenceFilter.get(), *renderer, previousEffect.get(), toReferenceFilterOperation(*filterOperation));
+            effect = ReferenceFilterBuilder::build(referenceFilter.get(), *layoutObject, previousEffect.get(), toReferenceFilterOperation(*filterOperation));
             referenceFilter->setLastEffect(effect);
             m_referenceFilters.append(referenceFilter);
             break;

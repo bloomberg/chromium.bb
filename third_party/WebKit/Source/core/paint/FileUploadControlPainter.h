@@ -13,12 +13,12 @@ class LayoutFileUploadControl;
 
 class FileUploadControlPainter {
 public:
-    FileUploadControlPainter(LayoutFileUploadControl& renderFileUploadControl) : m_renderFileUploadControl(renderFileUploadControl) { }
+    FileUploadControlPainter(LayoutFileUploadControl& layoutFileUploadControl) : m_layoutFileUploadControl(layoutFileUploadControl) { }
 
     void paintObject(const PaintInfo&, const LayoutPoint&);
 
 private:
-    LayoutFileUploadControl& m_renderFileUploadControl;
+    LayoutFileUploadControl& m_layoutFileUploadControl;
 };
 
 } // namespace blink

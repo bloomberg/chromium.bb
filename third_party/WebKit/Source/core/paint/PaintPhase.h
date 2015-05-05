@@ -30,7 +30,7 @@ namespace blink {
 
 /*
  *  The painting of a layer occurs in three distinct phases.  Each phase involves
- *  a recursive descent into the layer's render objects. The first phase is the background phase.
+ *  a recursive descent into the layer's layout objects. The first phase is the background phase.
  *  The backgrounds and borders of all blocks are painted.  Inlines are not painted at all.
  *  Floats must paint above block backgrounds but entirely below inline content that can overlap them.
  *  In the foreground phase, all inlines are fully painted.  Inline replaced elements will get all

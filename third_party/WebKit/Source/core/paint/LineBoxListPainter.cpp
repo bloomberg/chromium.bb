@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
+void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     // Only paint during the foreground/selection phases.
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseOutline
@@ -22,13 +22,13 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
         && paintInfo.phase != PaintPhaseMask)
         return;
 
-    ASSERT(renderer->isLayoutBlock() || (renderer->isLayoutInline() && renderer->hasLayer())); // The only way an inline could paint like this is if it has a layer.
+    ASSERT(layoutObject->isLayoutBlock() || (layoutObject->isLayoutInline() && layoutObject->hasLayer())); // The only way an inline could paint like this is if it has a layer.
 
     // If we have no lines then we have no work to do.
     if (!m_lineBoxList.firstLineBox())
         return;
 
-    if (!m_lineBoxList.anyLineIntersectsRect(renderer, LayoutRect(paintInfo.rect), paintOffset))
+    if (!m_lineBoxList.anyLineIntersectsRect(layoutObject, LayoutRect(paintInfo.rect), paintOffset))
         return;
 
     PaintInfo info(paintInfo);
@@ -39,7 +39,7 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* renderer, const PaintInfo& 
     // them. Note that boxes can easily overlap, so we can't make any assumptions
     // based off positions of our first line box or our last line box.
     for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr; curr = curr->nextLineBox()) {
-        if (m_lineBoxList.lineIntersectsDirtyRect(renderer, curr, info, paintOffset)) {
+        if (m_lineBoxList.lineIntersectsDirtyRect(layoutObject, curr, info, paintOffset)) {
             RootInlineBox& root = curr->root();
             curr->paint(info, paintOffset, root.lineTop(), root.lineBottom());
         }

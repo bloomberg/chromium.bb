@@ -20,7 +20,7 @@ class LayoutSVGShape;
 
 class SVGShapePainter {
 public:
-    SVGShapePainter(LayoutSVGShape& renderSVGShape) : m_renderSVGShape(renderSVGShape) { }
+    SVGShapePainter(LayoutSVGShape& layoutSVGShape) : m_layoutSVGShape(layoutSVGShape) { }
 
     void paint(const PaintInfo&);
 
@@ -32,7 +32,7 @@ private:
     void paintMarker(const PaintInfo&, LayoutSVGResourceMarker&, const MarkerPosition&, float);
     void strokeZeroLengthLineCaps(GraphicsContext*, const SkPaint&);
 
-    LayoutSVGShape& m_renderSVGShape;
+    LayoutSVGShape& m_layoutSVGShape;
 };
 
 } // namespace blink

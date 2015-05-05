@@ -18,13 +18,13 @@ class LayoutScrollbarPart;
 
 class ScrollbarPainter {
 public:
-    ScrollbarPainter(LayoutScrollbar& renderScrollbar) : m_renderScrollbar(renderScrollbar) { }
+    ScrollbarPainter(LayoutScrollbar& layoutScrollbar) : m_layoutScrollbar(layoutScrollbar) { }
 
     void paintPart(GraphicsContext*, ScrollbarPart, const IntRect&);
     static void paintIntoRect(LayoutScrollbarPart*, GraphicsContext*, const LayoutPoint& paintOffset, const LayoutRect&);
 
 private:
-    LayoutScrollbar& m_renderScrollbar;
+    LayoutScrollbar& m_layoutScrollbar;
 };
 
 } // namespace blink

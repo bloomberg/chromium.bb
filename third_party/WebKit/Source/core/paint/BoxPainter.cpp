@@ -144,15 +144,15 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
         paintInfo.context->endLayer();
 }
 
-static bool skipBodyBackground(const LayoutBox* bodyElementRenderer)
+static bool skipBodyBackground(const LayoutBox* bodyElementLayoutObject)
 {
-    ASSERT(bodyElementRenderer->isBody());
+    ASSERT(bodyElementLayoutObject->isBody());
     // The <body> only paints its background if the root element has defined a background independent of the body,
-    // or if the <body>'s parent is not the document element's renderer (e.g. inside SVG foreignObject).
-    LayoutObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->layoutObject();
-    return documentElementRenderer
-        && !documentElementRenderer->hasBackground()
-        && (documentElementRenderer == bodyElementRenderer->parent());
+    // or if the <body>'s parent is not the document element's layoutObject (e.g. inside SVG foreignObject).
+    LayoutObject* documentElementLayoutObject = bodyElementLayoutObject->document().documentElement()->layoutObject();
+    return documentElementLayoutObject
+        && !documentElementLayoutObject->hasBackground()
+        && (documentElementLayoutObject == bodyElementLayoutObject->parent());
 }
 
 void BoxPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, const Color& backgroundColor, BackgroundBleedAvoidance bleedAvoidance)
@@ -327,7 +327,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     bool hasRoundedBorder = obj.style()->hasBorderRadius() && (includeLeftEdge || includeRightEdge);
     bool clippedWithLocalScrolling = obj.hasOverflowClip() && bgLayer.attachment() == LocalBackgroundAttachment;
     bool isBorderFill = bgLayer.clip() == BorderFillBox;
-    bool isDocumentElementRenderer = obj.isDocumentElement();
+    bool isDocumentElementLayoutObject = obj.isDocumentElement();
     bool isBottomLayer = !bgLayer.next();
 
     Color bgColor = color;
@@ -348,7 +348,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     // We don't try to avoid loading the background images, because this style flag is only set
     // when printing, and at that point we've already loaded the background images anyway. (To avoid
     // loading the background images we'd have to do this check when applying styles rather than
-    // while rendering.)
+    // while layout.)
     if (forceBackgroundToWhite) {
         // Note that we can't reuse this variable below because the bgColor might be changed
         bool shouldPaintBackgroundColor = isBottomLayer && bgColor.alpha();
@@ -361,7 +361,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     bool colorVisible = bgColor.alpha();
 
     // Fast path for drawing simple color backgrounds.
-    if (!isDocumentElementRenderer && !clippedWithLocalScrolling && !shouldPaintBackgroundImage && isBorderFill && isBottomLayer) {
+    if (!isDocumentElementLayoutObject && !clippedWithLocalScrolling && !shouldPaintBackgroundImage && isBorderFill && isBottomLayer) {
         if (!colorVisible)
             return;
 
@@ -478,7 +478,7 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     if (isBottomLayer) {
         IntRect backgroundRect(pixelSnappedIntRect(scrolledPaintRect));
         bool boxShadowShouldBeAppliedToBackground = obj.boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
-        bool isOpaqueRoot = (isDocumentElementRenderer && !bgColor.hasAlpha()) || isDocumentElementWithOpaqueBackground(obj);
+        bool isOpaqueRoot = (isDocumentElementLayoutObject && !bgColor.hasAlpha()) || isDocumentElementWithOpaqueBackground(obj);
         if (boxShadowShouldBeAppliedToBackground || !shouldPaintBackgroundImage || !bgLayer.hasOpaqueImage(&obj) || !bgLayer.hasRepeatXY() || (isOpaqueRoot && !toLayoutBox(&obj)->size().height()))  {
             if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !boxShadowShouldBeAppliedToBackground)
                 backgroundRect.intersect(paintInfo.rect);
@@ -642,9 +642,9 @@ bool BoxPainter::isDocumentElementWithOpaqueBackground(LayoutObject& obj)
     if (ownerElement) {
         if (!isHTMLFrameElement(*ownerElement)) {
             // Locate the <body> element using the DOM. This is easier than trying
-            // to crawl around a render tree with potential :before/:after content and
+            // to crawl around a layout tree with potential :before/:after content and
             // anonymous blocks created by inline <body> tags etc. We can locate the <body>
-            // render object very easily via the DOM.
+            // layout object very easily via the DOM.
             HTMLElement* body = obj.document().body();
             if (body) {
                 // Can't scroll a frameset document anyway.

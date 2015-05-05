@@ -58,21 +58,21 @@ struct PaintInfo {
     {
     }
 
-    void updatePaintingRootForChildren(const LayoutObject* renderer)
+    void updatePaintingRootForChildren(const LayoutObject* layoutObject)
     {
         if (!paintingRoot)
             return;
 
         // If we're the painting root, kids draw normally, and see root of 0.
-        if (paintingRoot == renderer) {
+        if (paintingRoot == layoutObject) {
             paintingRoot = 0;
             return;
         }
     }
 
-    bool shouldPaintWithinRoot(const LayoutObject* renderer) const
+    bool shouldPaintWithinRoot(const LayoutObject* layoutObject) const
     {
-        return !paintingRoot || paintingRoot == renderer;
+        return !paintingRoot || paintingRoot == layoutObject;
     }
 
     bool forceBlackText() const { return paintBehavior & PaintBehaviorForceBlackText; }
@@ -88,9 +88,9 @@ struct PaintInfo {
     ListHashSet<LayoutInline*>* outlineObjects() const { return m_outlineObjects; }
     void setOutlineObjects(ListHashSet<LayoutInline*>* objects) { m_outlineObjects = objects; }
 
-    // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout rendering/.
+    // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout layout/.
     GraphicsContext* context;
-    IntRect rect; // dirty rect used for culling non-intersecting renderers
+    IntRect rect; // dirty rect used for culling non-intersecting layoutObjects
     PaintPhase phase;
     PaintBehavior paintBehavior;
     LayoutObject* paintingRoot; // used to draw just one element and its visual kids

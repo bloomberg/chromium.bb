@@ -32,10 +32,10 @@
 #ifndef GraphicsContextAnnotator_h
 #define GraphicsContextAnnotator_h
 
-#define ANNOTATE_GRAPHICS_CONTEXT(paintInfo, renderer) \
+#define ANNOTATE_GRAPHICS_CONTEXT(paintInfo, layoutObject) \
     GraphicsContextAnnotator scopedGraphicsContextAnnotator; \
     if (UNLIKELY(paintInfo.context->annotationMode())) \
-        scopedGraphicsContextAnnotator.annotate(paintInfo, renderer)
+        scopedGraphicsContextAnnotator.annotate(paintInfo, layoutObject)
 
 namespace blink {
 

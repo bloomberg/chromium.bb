@@ -20,41 +20,41 @@ namespace blink {
 
 void SVGContainerPainter::paint(const PaintInfo& paintInfo)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderSVGContainer);
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutSVGContainer);
 
     // Spec: groups w/o children still may render filter content.
-    if (!m_renderSVGContainer.firstChild() && !m_renderSVGContainer.selfWillPaint())
+    if (!m_layoutSVGContainer.firstChild() && !m_layoutSVGContainer.selfWillPaint())
         return;
 
     // Spec: An empty viewBox on the <svg> element disables rendering.
-    ASSERT(m_renderSVGContainer.element());
-    if (isSVGSVGElement(*m_renderSVGContainer.element()) && toSVGSVGElement(*m_renderSVGContainer.element()).hasEmptyViewBox())
+    ASSERT(m_layoutSVGContainer.element());
+    if (isSVGSVGElement(*m_layoutSVGContainer.element()) && toSVGSVGElement(*m_layoutSVGContainer.element()).hasEmptyViewBox())
         return;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer, m_renderSVGContainer.localToParentTransform());
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGContainer, m_layoutSVGContainer.localToParentTransform());
     {
         OwnPtr<FloatClipRecorder> clipRecorder;
-        if (m_renderSVGContainer.isSVGViewportContainer() && SVGLayoutSupport::isOverflowHidden(&m_renderSVGContainer)) {
-            FloatRect viewport = m_renderSVGContainer.localToParentTransform().inverse().mapRect(toLayoutSVGViewportContainer(m_renderSVGContainer).viewport());
-            clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_renderSVGContainer, paintInfoBeforeFiltering.phase, viewport));
+        if (m_layoutSVGContainer.isSVGViewportContainer() && SVGLayoutSupport::isOverflowHidden(&m_layoutSVGContainer)) {
+            FloatRect viewport = m_layoutSVGContainer.localToParentTransform().inverse().mapRect(toLayoutSVGViewportContainer(m_layoutSVGContainer).viewport());
+            clipRecorder = adoptPtr(new FloatClipRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGContainer, paintInfoBeforeFiltering.phase, viewport));
         }
 
-        SVGPaintContext paintContext(m_renderSVGContainer, paintInfoBeforeFiltering);
+        SVGPaintContext paintContext(m_layoutSVGContainer, paintInfoBeforeFiltering);
         bool continueRendering = true;
         if (paintContext.paintInfo().phase == PaintPhaseForeground)
             continueRendering = paintContext.applyClipMaskAndFilterIfNecessary();
 
         if (continueRendering) {
-            paintContext.paintInfo().updatePaintingRootForChildren(&m_renderSVGContainer);
-            for (LayoutObject* child = m_renderSVGContainer.firstChild(); child; child = child->nextSibling())
+            paintContext.paintInfo().updatePaintingRootForChildren(&m_layoutSVGContainer);
+            for (LayoutObject* child = m_layoutSVGContainer.firstChild(); child; child = child->nextSibling())
                 child->paint(paintContext.paintInfo(), IntPoint());
         }
     }
 
-    if (paintInfoBeforeFiltering.phase == PaintPhaseForeground && m_renderSVGContainer.style()->outlineWidth() && m_renderSVGContainer.style()->visibility() == VISIBLE) {
-        LayoutRect layoutBoundingBox(m_renderSVGContainer.paintInvalidationRectInLocalCoordinates());
-        ObjectPainter(m_renderSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, layoutBoundingBox);
+    if (paintInfoBeforeFiltering.phase == PaintPhaseForeground && m_layoutSVGContainer.style()->outlineWidth() && m_layoutSVGContainer.style()->visibility() == VISIBLE) {
+        LayoutRect layoutBoundingBox(m_layoutSVGContainer.paintInvalidationRectInLocalCoordinates());
+        ObjectPainter(m_layoutSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, layoutBoundingBox);
     }
 }
 

@@ -37,14 +37,14 @@
 namespace blink {
 
 enum AnnotationMode {
-    AnnotateRendererName    = 1 << 0,
-    AnnotatePaintPhase      = 1 << 1,
-    AnnotateElementId       = 1 << 2,
-    AnnotateElementClass    = 1 << 3,
-    AnnotateElementTag      = 1 << 4,
-    AnnotateInspectorId     = 1 << 5,
+    AnnotateLayoutObjectName = 1 << 0,
+    AnnotatePaintPhase       = 1 << 1,
+    AnnotateElementId        = 1 << 2,
+    AnnotateElementClass     = 1 << 3,
+    AnnotateElementTag       = 1 << 4,
+    AnnotateInspectorId      = 1 << 5,
 
-    AnnotateAll             = 0x3f
+    AnnotateAll              = 0x3f
 };
 
 typedef unsigned AnnotationModeFlags;

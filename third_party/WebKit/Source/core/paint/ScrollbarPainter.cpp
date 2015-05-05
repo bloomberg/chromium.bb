@@ -14,23 +14,23 @@ namespace blink {
 
 void ScrollbarPainter::paintPart(GraphicsContext* graphicsContext, ScrollbarPart partType, const IntRect& rect)
 {
-    LayoutScrollbarPart* partRenderer = m_renderScrollbar.getPart(partType);
-    if (!partRenderer)
+    LayoutScrollbarPart* partLayoutObject = m_layoutScrollbar.getPart(partType);
+    if (!partLayoutObject)
         return;
-    paintIntoRect(partRenderer, graphicsContext, m_renderScrollbar.location(), LayoutRect(rect));
+    paintIntoRect(partLayoutObject, graphicsContext, m_layoutScrollbar.location(), LayoutRect(rect));
 }
 
-void ScrollbarPainter::paintIntoRect(LayoutScrollbarPart* renderScrollbarPart, GraphicsContext* graphicsContext, const LayoutPoint& paintOffset, const LayoutRect& rect)
+void ScrollbarPainter::paintIntoRect(LayoutScrollbarPart* layoutScrollbarPart, GraphicsContext* graphicsContext, const LayoutPoint& paintOffset, const LayoutRect& rect)
 {
     // Make sure our dimensions match the rect.
     // FIXME: Setting these is a bad layering violation!
-    renderScrollbarPart->setLocation(rect.location() - toSize(paintOffset));
-    renderScrollbarPart->setWidth(rect.width());
-    renderScrollbarPart->setHeight(rect.height());
+    layoutScrollbarPart->setLocation(rect.location() - toSize(paintOffset));
+    layoutScrollbarPart->setWidth(rect.width());
+    layoutScrollbarPart->setHeight(rect.height());
 
     // Now do the paint.
     PaintInfo paintInfo(graphicsContext, pixelSnappedIntRect(rect), PaintPhaseBlockBackground, PaintBehaviorNormal);
-    BlockPainter blockPainter(*renderScrollbarPart);
+    BlockPainter blockPainter(*layoutScrollbarPart);
     blockPainter.paint(paintInfo, paintOffset);
     paintInfo.phase = PaintPhaseChildBlockBackgrounds;
     blockPainter.paint(paintInfo, paintOffset);

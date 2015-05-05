@@ -12,12 +12,12 @@ class LayoutSVGContainer;
 
 class SVGContainerPainter {
 public:
-    SVGContainerPainter(LayoutSVGContainer& renderSVGContainer) : m_renderSVGContainer(renderSVGContainer) { }
+    SVGContainerPainter(LayoutSVGContainer& layoutSVGContainer) : m_layoutSVGContainer(layoutSVGContainer) { }
 
     void paint(const PaintInfo&);
 
 private:
-    LayoutSVGContainer& m_renderSVGContainer;
+    LayoutSVGContainer& m_layoutSVGContainer;
 };
 
 } // namespace blink

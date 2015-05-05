@@ -23,30 +23,30 @@ namespace blink {
 
 void SVGImagePainter::paint(const PaintInfo& paintInfo)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_renderSVGImage);
+    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, &m_layoutSVGImage);
 
     if (paintInfo.phase != PaintPhaseForeground
-        || m_renderSVGImage.style()->visibility() == HIDDEN
-        || !m_renderSVGImage.imageResource()->hasImage())
+        || m_layoutSVGImage.style()->visibility() == HIDDEN
+        || !m_layoutSVGImage.imageResource()->hasImage())
         return;
 
-    FloatRect boundingBox = m_renderSVGImage.paintInvalidationRectInLocalCoordinates();
+    FloatRect boundingBox = m_layoutSVGImage.paintInvalidationRectInLocalCoordinates();
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_renderSVGImage, m_renderSVGImage.localToParentTransform());
+    TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGImage, m_layoutSVGImage.localToParentTransform());
     {
-        SVGPaintContext paintContext(m_renderSVGImage, paintInfoBeforeFiltering);
+        SVGPaintContext paintContext(m_layoutSVGImage, paintInfoBeforeFiltering);
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-            LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_renderSVGImage, paintContext.paintInfo().phase, boundingBox);
+            LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_layoutSVGImage, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
                 // There's no need to cache a buffered SkPicture with slimming
                 // paint because it's automatically done in the display list.
-                if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+                if (m_layoutSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled()) {
                     paintForeground(paintContext.paintInfo());
                 } else {
-                    RefPtr<const SkPicture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
+                    RefPtr<const SkPicture>& bufferedForeground = m_layoutSVGImage.bufferedForeground();
                     if (!bufferedForeground) {
-                        paintContext.paintInfo().context->beginRecording(m_renderSVGImage.objectBoundingBox());
+                        paintContext.paintInfo().context->beginRecording(m_layoutSVGImage.objectBoundingBox());
                         paintForeground(paintContext.paintInfo());
                         bufferedForeground = paintContext.paintInfo().context->endRecording();
                     }
@@ -57,26 +57,26 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         }
     }
 
-    if (m_renderSVGImage.style()->outlineWidth()) {
+    if (m_layoutSVGImage.style()->outlineWidth()) {
         PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
         outlinePaintInfo.phase = PaintPhaseSelfOutline;
         LayoutRect layoutBoundingBox(boundingBox);
-        ObjectPainter(m_renderSVGImage).paintOutline(outlinePaintInfo, layoutBoundingBox, layoutBoundingBox);
+        ObjectPainter(m_layoutSVGImage).paintOutline(outlinePaintInfo, layoutBoundingBox, layoutBoundingBox);
     }
 }
 
 void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
 {
-    RefPtr<Image> image = m_renderSVGImage.imageResource()->image();
-    FloatRect destRect = m_renderSVGImage.objectBoundingBox();
+    RefPtr<Image> image = m_layoutSVGImage.imageResource()->image();
+    FloatRect destRect = m_layoutSVGImage.objectBoundingBox();
     FloatRect srcRect(0, 0, image->width(), image->height());
 
-    SVGImageElement* imageElement = toSVGImageElement(m_renderSVGImage.element());
+    SVGImageElement* imageElement = toSVGImageElement(m_layoutSVGImage.element());
     imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
 
     InterpolationQuality interpolationQuality = InterpolationDefault;
-    if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled())
-        interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, &m_renderSVGImage, image.get(), image.get(), LayoutSize(destRect.size()));
+    if (m_layoutSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled())
+        interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, &m_layoutSVGImage, image.get(), image.get(), LayoutSize(destRect.size()));
 
     InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();
     paintInfo.context->setImageInterpolationQuality(interpolationQuality);

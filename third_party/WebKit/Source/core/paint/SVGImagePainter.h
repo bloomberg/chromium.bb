@@ -12,7 +12,7 @@ class LayoutSVGImage;
 
 class SVGImagePainter {
 public:
-    SVGImagePainter(LayoutSVGImage& renderSVGImage) : m_renderSVGImage(renderSVGImage) { }
+    SVGImagePainter(LayoutSVGImage& layoutSVGImage) : m_layoutSVGImage(layoutSVGImage) { }
 
     void paint(const PaintInfo&);
 
@@ -20,7 +20,7 @@ private:
     // Assumes the PaintInfo context has had all local transforms applied.
     void paintForeground(const PaintInfo&);
 
-    LayoutSVGImage& m_renderSVGImage;
+    LayoutSVGImage& m_layoutSVGImage;
 };
 
 } // namespace blink
