@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015 Samsung
+ * Copyright © 2015 Samsung Electronics Co., Ltd
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
