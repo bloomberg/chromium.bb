@@ -335,10 +335,8 @@ cr.define('cr.ui', function() {
      */
     onWebkitTransitionEnd_: function(e) {
       // Ignore irrelevant transitions that might bubble up.
-      if (e.target !== this.container_ ||
-          e.propertyName != '-webkit-transform') {
+      if (e.target !== this.container_ || e.propertyName != 'transform')
         return;
-      }
       this.fireChangeEndedEvent_(true);
     },
 
