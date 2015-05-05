@@ -468,7 +468,22 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   bool scroll_on_main_thread = false;
   LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, type, layer_impl, &scroll_on_main_thread, NULL);
-  return CurrentlyScrollingLayer() == scrolling_layer_impl;
+
+  if (!scrolling_layer_impl)
+    return false;
+
+  if (CurrentlyScrollingLayer() == scrolling_layer_impl)
+    return true;
+
+  // For active scrolling state treat the inner/outer viewports interchangeably.
+  if ((CurrentlyScrollingLayer() == InnerViewportScrollLayer() &&
+       scrolling_layer_impl == OuterViewportScrollLayer()) ||
+      (CurrentlyScrollingLayer() == OuterViewportScrollLayer() &&
+       scrolling_layer_impl == InnerViewportScrollLayer())) {
+    return true;
+  }
+
+  return false;
 }
 
 bool LayerTreeHostImpl::HaveWheelEventHandlersAt(
