@@ -309,12 +309,7 @@ public class ImeAdapter {
     }
 
     public boolean dispatchKeyEvent(KeyEvent event) {
-        // Physical keyboards have their events come through here instead of
-        // AdapterInputConnection.
-        if (mInputConnection != null) {
-            return mInputConnection.sendKeyEvent(event);
-        }
-        return translateAndSendNativeEvents(event, 0);
+        return translateAndSendNativeEvents(event);
     }
 
     private int shouldSendKeyEventWithKeyCode(String text) {
@@ -389,11 +384,11 @@ public class ImeAdapter {
         translateAndSendNativeEvents(new KeyEvent(eventTime, eventTime,
                 KeyEvent.ACTION_DOWN, keyCode, 0, 0,
                 KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
-                flags), 0);
+                flags));
         translateAndSendNativeEvents(new KeyEvent(SystemClock.uptimeMillis(), eventTime,
                 KeyEvent.ACTION_UP, keyCode, 0, 0,
                 KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
-                flags), 0);
+                flags));
     }
 
     // Calls from Java to C++
@@ -428,9 +423,9 @@ public class ImeAdapter {
             // composition below.
             if (keyCode > 0 && isCommit && mLastComposeText == null && textStr.length() == 1) {
                 mLastSyntheticKeyCode = keyCode;
-                return translateAndSendNativeEvents(keyEvent, 0)
+                return translateAndSendNativeEvents(keyEvent)
                         && translateAndSendNativeEvents(
-                                KeyEvent.changeAction(keyEvent, KeyEvent.ACTION_UP), 0);
+                                KeyEvent.changeAction(keyEvent, KeyEvent.ACTION_UP));
             }
 
             // Always send compose events. This is a quick fix for http://crbug.com/476497.
@@ -485,7 +480,7 @@ public class ImeAdapter {
         nativeFinishComposingText(mNativeImeAdapterAndroid);
     }
 
-    boolean translateAndSendNativeEvents(KeyEvent event, int accentChar) {
+    boolean translateAndSendNativeEvents(KeyEvent event) {
         if (mNativeImeAdapterAndroid == 0) return false;
 
         int action = event.getAction();
@@ -503,11 +498,9 @@ public class ImeAdapter {
             return false;
         }
         mViewEmbedder.onImeEvent();
-        int unicodeChar = AdapterInputConnection.maybeAddAccentToCharacter(
-                accentChar, event.getUnicodeChar());
         return nativeSendKeyEvent(mNativeImeAdapterAndroid, event, event.getAction(),
                 getModifiers(event.getMetaState()), event.getEventTime(), event.getKeyCode(),
-                             /*isSystemKey=*/false, unicodeChar);
+                             /*isSystemKey=*/false, event.getUnicodeChar());
     }
 
     boolean sendSyntheticKeyEvent(int eventType, long timestampMs, int keyCode, int modifiers,

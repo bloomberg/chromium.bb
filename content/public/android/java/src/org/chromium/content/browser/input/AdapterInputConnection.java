@@ -10,7 +10,6 @@ import android.text.InputType;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
@@ -31,7 +30,6 @@ import org.chromium.ui.base.ime.TextInputType;
 public class AdapterInputConnection extends BaseInputConnection {
     private static final String TAG = "AdapterInputConnection";
     private static final boolean DEBUG = false;
-    private static final int NO_ACCENT = 0;
     /**
      * Selection value should be -1 if not known. See EditorInfo.java for details.
      */
@@ -44,7 +42,6 @@ public class AdapterInputConnection extends BaseInputConnection {
 
     private boolean mSingleLine;
     private int mNumNestedBatchEdits = 0;
-    private int mPendingAccent;
 
     private int mLastUpdateSelectionStart = INVALID_SELECTION;
     private int mLastUpdateSelectionEnd = INVALID_SELECTION;
@@ -146,16 +143,6 @@ public class AdapterInputConnection extends BaseInputConnection {
         updateSelectionIfRequired();
     }
 
-    public static int maybeAddAccentToCharacter(int accentChar, int unicodeChar) {
-        if (accentChar != NO_ACCENT) {
-            int combinedChar = KeyEvent.getDeadChar(accentChar, unicodeChar);
-            if (combinedChar != 0) {
-                return combinedChar;
-            }
-        }
-        return unicodeChar;
-    }
-
     /**
      * Updates the AdapterInputConnection's internal representation of the text being edited and
      * its selection and composition properties. The resulting Editable is accessible through the
@@ -246,8 +233,6 @@ public class AdapterInputConnection extends BaseInputConnection {
         mLastUpdateSelectionEnd = selectionEnd;
         mLastUpdateCompositionStart = compositionStart;
         mLastUpdateCompositionEnd = compositionEnd;
-        // Change in selection or cursor position invalidates any pending accent.
-        mPendingAccent = NO_ACCENT;
     }
 
     /**
@@ -402,22 +387,6 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (DEBUG) {
             Log.w(TAG, "sendKeyEvent [" + event.getAction() + "] [" + event.getKeyCode() + "]");
         }
-
-        // Short-cut modifier keys so they're not affected by accents.
-        if (KeyEvent.isModifierKey(event.getKeyCode())) {
-            return mImeAdapter.translateAndSendNativeEvents(event, NO_ACCENT);
-        }
-
-        // Some keys we just want to pass events straight through.  This allows
-        // proper "repeating key" behavior with physical keyboards.
-        int eventKeyCode = event.getKeyCode();
-        if (eventKeyCode == KeyEvent.KEYCODE_DEL || eventKeyCode == KeyEvent.KEYCODE_FORWARD_DEL) {
-            mPendingAccent = 0;
-            return mImeAdapter.translateAndSendNativeEvents(event, NO_ACCENT);
-        }
-
-        int unicodeChar = event.getUnicodeChar();
-
         // If this is a key-up, and backspace/del or if the key has a character representation,
         // need to update the underlying Editable (i.e. the local representation of the text
         // being edited).
@@ -428,24 +397,26 @@ public class AdapterInputConnection extends BaseInputConnection {
             } else if (event.getKeyCode() == KeyEvent.KEYCODE_FORWARD_DEL) {
                 deleteSurroundingText(0, 1);
                 return true;
-            } else if (unicodeChar != 0) {
-                int selectionStart = Selection.getSelectionStart(mEditable);
-                int selectionEnd = Selection.getSelectionEnd(mEditable);
-                if (selectionStart > selectionEnd) {
-                    int temp = selectionStart;
-                    selectionStart = selectionEnd;
-                    selectionEnd = temp;
+            } else {
+                int unicodeChar = event.getUnicodeChar();
+                if (unicodeChar != 0) {
+                    int selectionStart = Selection.getSelectionStart(mEditable);
+                    int selectionEnd = Selection.getSelectionEnd(mEditable);
+                    if (selectionStart > selectionEnd) {
+                        int temp = selectionStart;
+                        selectionStart = selectionEnd;
+                        selectionEnd = temp;
+                    }
+                    mEditable.replace(selectionStart, selectionEnd,
+                            Character.toString((char) unicodeChar));
                 }
-                int combinedChar = maybeAddAccentToCharacter(mPendingAccent, unicodeChar);
-                mEditable.replace(selectionStart, selectionEnd,
-                        Character.toString((char) combinedChar));
             }
         } else if (event.getAction() == KeyEvent.ACTION_DOWN) {
             // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
             if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                 beginBatchEdit();
                 finishComposingText();
-                mImeAdapter.translateAndSendNativeEvents(event, 0);
+                mImeAdapter.translateAndSendNativeEvents(event);
                 endBatchEdit();
                 return true;
             } else if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
@@ -454,46 +425,7 @@ public class AdapterInputConnection extends BaseInputConnection {
                 return true;
             }
         }
-
-        // Physical keyboards also have their events come through here though not
-        // by BaseInputConnection.  In order to support "accent" key sequences
-        // such as "~n" or "^o" we have to record that one has been pressed
-        // and, if an accentable letter follows, delete the accent glyph and
-        // insert the composed character.
-
-        // Copy class variable to local because class version may get indirectly
-        // cleared by the deleteSurroundingText() call below.
-        int pendingAccent = mPendingAccent;
-        int nextAccent = mPendingAccent;
-
-        if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) != 0) {
-            pendingAccent = NO_ACCENT;
-            nextAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
-        } else if (pendingAccent != NO_ACCENT) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                int combined = KeyEvent.getDeadChar(pendingAccent, unicodeChar);
-                if (combined != 0) {
-                    // Previous accent combines with new character to create
-                    // a new accented character.  First delete the displayed
-                    // accent so it appears overwritten by the composition.
-                    super.deleteSurroundingText(1, 0);
-                    mImeAdapter.deleteSurroundingText(1, 0);
-                } else {
-                    // Previous accent doesn't combine with this character
-                    // so assume both are completely independent.
-                    pendingAccent = NO_ACCENT;
-                    nextAccent = NO_ACCENT;
-                }
-            }
-
-            if (event.getAction() == KeyEvent.ACTION_UP) {
-                // Forget accent after release of key being accented.
-                nextAccent = NO_ACCENT;
-            }
-        }
-
-        mImeAdapter.translateAndSendNativeEvents(event, pendingAccent);
-        mPendingAccent = nextAccent;
+        mImeAdapter.translateAndSendNativeEvents(event);
         return true;
     }
 
@@ -535,7 +467,6 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (DEBUG) Log.w(TAG, "restartInput");
         getInputMethodManagerWrapper().restartInput(mInternalView);
         mNumNestedBatchEdits = 0;
-        mPendingAccent = NO_ACCENT;
     }
 
     /**
