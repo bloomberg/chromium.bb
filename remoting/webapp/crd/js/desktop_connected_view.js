@@ -254,6 +254,19 @@ remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
   this.plugin_.injectKeyCombination([0x070046]);
 };
 
+/**
+ * Sets and stores the key remapping setting for the current host. If set,
+ * these mappings override the defaults for the client platform.
+ *
+ * @param {string} remappings Comma-separated list of key remappings.
+ */
+remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
+  this.plugin_.setRemapKeys(remappings);
+  // Save the new remapping setting.
+  this.host_.options.remapKeys = remappings;
+  this.host_.options.save();
+};
+
 /** @param {remoting.VideoFrameRecorder} recorder */
 remoting.DesktopConnectedView.prototype.setVideoFrameRecorder =
     function(recorder) {

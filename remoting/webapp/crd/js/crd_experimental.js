@@ -29,3 +29,17 @@ remoting.experimental.setDesktopScale = function(desktopScale) {
     viewport.setDesktopScale(desktopScale);
   }
 };
+
+/**
+ * Sets and stores the key remapping setting for the current host. If set,
+ * these mappings override the defaults for the client platform.
+ *
+ * @param {string} remappings Comma-separated list of key remappings.
+ */
+remoting.experimental.setRemapKeys = function(remappings) {
+  var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
+  if (drApp instanceof remoting.DesktopRemoting) {
+    var connectedView = drApp.getConnectedViewForTesting();
+    connectedView.setRemapKeys(remappings);
+  }
+};

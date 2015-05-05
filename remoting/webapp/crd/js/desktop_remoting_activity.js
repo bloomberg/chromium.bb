@@ -91,11 +91,13 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
   this.connectedView_ = new remoting.DesktopConnectedView(
       document.getElementById('client-container'), connectionInfo);
 
-  // By default, under ChromeOS, remap the right Control key to the right
-  // Win / Cmd key.
-  if (remoting.platformIsChromeOS()) {
-    connectionInfo.plugin().setRemapKeys('0x0700e4>0x0700e7');
+  // Apply the default or previously-specified keyboard remapping.
+  var remapping = connectionInfo.host().options.remapKeys;
+  if (remapping === '' && remoting.platformIsChromeOS()) {
+    // Under ChromeOS, remap the right Control key to the right Win/Cmd key.
+    remapping = '0x0700e4>0x0700e7';
   }
+  connectionInfo.plugin().setRemapKeys(remapping);
 
   if (connectionInfo.plugin().hasCapability(
           remoting.ClientSession.Capability.VIDEO_RECORDER)) {
