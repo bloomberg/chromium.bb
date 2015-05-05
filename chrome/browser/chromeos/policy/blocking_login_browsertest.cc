@@ -230,7 +230,13 @@ class BlockingLoginTest
   DISALLOW_COPY_AND_ASSIGN(BlockingLoginTest);
 };
 
-IN_PROC_BROWSER_TEST_P(BlockingLoginTest, LoginBlocksForUser) {
+// http://crbug.com/452523
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_LoginBlocksForUser DISABLED_LoginBlocksForUser
+#else
+#define MAYBE_LoginBlocksForUser LoginBlocksForUser
+#endif
+IN_PROC_BROWSER_TEST_P(BlockingLoginTest, MAYBE_LoginBlocksForUser) {
   // Verify that there isn't a logged in user when the test starts.
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
