@@ -669,6 +669,9 @@ void SSLBlockingPage::FinishCertCollection() {
 }
 
 bool SSLBlockingPage::ShouldShowCertificateReporterCheckbox() {
+#if defined(OS_IOS)
+  return false;
+#else
   // Only show the checkbox iff the user is part of the respective Finch group
   // and the window is not incognito and the feature is not disabled by policy.
   const bool in_incognito =
@@ -678,9 +681,11 @@ bool SSLBlockingPage::ShouldShowCertificateReporterCheckbox() {
              kHTTPSErrorReporterFinchGroupShowPossiblySend &&
          !in_incognito &&
          IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
+#endif
 }
 
 bool SSLBlockingPage::ShouldReportCertificateError() {
+#if !defined(OS_IOS)
   DCHECK(ShouldShowCertificateReporterCheckbox());
   // Even in case the checkbox was shown, we don't send error reports
   // for all of these users. Check the Finch configuration for a sending
@@ -695,6 +700,7 @@ bool SSLBlockingPage::ShouldReportCertificateError() {
         return base::RandDouble() <= sendingThreshold;
     }
   }
+#endif
   return false;
 }
 
