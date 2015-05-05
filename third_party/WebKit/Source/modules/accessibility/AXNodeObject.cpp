@@ -288,9 +288,17 @@ const AXObject* AXNodeObject::inheritsPresentationalRoleFrom() const
     HTMLElement* element = nullptr;
     if (node() && node()->isHTMLElement())
         element = toHTMLElement(node());
-    if (!parent->hasInheritedPresentationalRole()
-        && !isPresentationalInTable(parent, element))
-        return 0;
+    if (!parent->hasInheritedPresentationalRole()) {
+        if (!layoutObject() || !layoutObject()->isBoxModelObject())
+            return 0;
+
+        LayoutBoxModelObject* cssBox = toLayoutBoxModelObject(layoutObject());
+        if (!cssBox->isTableCell() && !cssBox->isTableRow())
+            return 0;
+
+        if (!isPresentationalInTable(parent, element))
+            return 0;
+    }
     // ARIA spec says that when a parent object is presentational and this object
     // is a required owned element of that parent, then this object is also presentational.
     if (isRequiredOwnedElement(parent, roleValue(), element))
