@@ -91,6 +91,11 @@
     element.style.gridTemplateAreas = "'foobar'";
     shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", '"foobar"')
     element.style.gridTemplateAreas = "initial";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", 'none');
+    element.style.gridTemplateAreas = "'foobar'";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", '"foobar"')
+    element.style.gridTemplateAreas = "none";
+    shouldBeEqualToString("window.getComputedStyle(element).getPropertyValue('grid-template-areas')", 'none');
     document.body.removeChild(element);
 
     debug("Test grid-template-areas: inherit");

@@ -15,6 +15,9 @@ PASS window.getComputedStyle(gridWithHorizontalRectangle).getPropertyValue('grid
 PASS window.getComputedStyle(gridWithVerticalRectangle).getPropertyValue('grid-template-areas') is "\"a a\" \"a a\" \"a a\""
 Test grid-template-areas: initial
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "\"foobar\""
+PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
+PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "\"foobar\""
+PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "none"
 Test grid-template-areas: inherit
 PASS window.getComputedStyle(parentElement).getPropertyValue('grid-template-areas') is "\"foo bar\""
 PASS window.getComputedStyle(element).getPropertyValue('grid-template-areas') is "\"foo bar\""
