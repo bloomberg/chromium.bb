@@ -43,12 +43,31 @@ function hitTestCountDelta(doc)
     return newCount - lastCount;
 }
 
-function logCounts(name, documents)
+function logCounts(label, documents, eventSenderFunction)
 {
-    var msg = name + ':';
+    if (eventSenderFunction)
+        eventSenderFunction();
+
+    var countStr = '';
     for(var i = 0; i < documents.length; i++)
-        msg += ' ' + hitTestCountDelta(documents[i]);
-    debug(msg);
+        countStr += ' ' + hitTestCountDelta(documents[i]);
+
+    // Get the same counts with multiTargetTapNotification enabled
+    var countStr2 = '';
+    if (eventSenderFunction) {
+        window.internals.settings.setMultiTargetTapNotificationEnabled(true);
+        eventSenderFunction();
+        for(var i = 0; i < documents.length; i++)
+            countStr2 += ' ' + hitTestCountDelta(documents[i]);
+        window.internals.settings.setMultiTargetTapNotificationEnabled(false);
+
+        if (countStr == countStr2)
+            countStr2 = ''
+    }
+
+    // We are interested about countStr2 only when it's different
+    debug(label + ':' + countStr
+        + ((countStr2 == '')? '': ' [with multiTargetTapNotification:' + countStr2 + ']'));
 }
 
 function clearCounts(documents)
@@ -61,52 +80,66 @@ function sendEvents(targetX, targetY, documents)
 {
     logCounts('Initial', documents);
 
-    eventSender.mouseMoveTo(targetX, targetY);
-    logCounts('MouseMove', documents);
+    logCounts('MouseMove', documents, function() {
+        eventSender.mouseMoveTo(targetX, targetY);
+    });
 
-    eventSender.mouseDown();
-    logCounts('MouseDown', documents);
+    logCounts('MouseDown', documents, function() {
+        eventSender.mouseDown();
+    });
 
-    eventSender.mouseUp();
-    logCounts('MouseUp', documents);
+    logCounts('MouseUp', documents, function() {
+        eventSender.mouseUp();
+    });
 
-    eventSender.mouseScrollBy(0, 5);
-    logCounts('Wheel', documents);
+    logCounts('Wheel', documents, function() {
+        eventSender.mouseScrollBy(0, 5);
+    });
 
-    eventSender.addTouchPoint(targetX, targetY);
-    eventSender.touchStart();
-    logCounts('TouchStart', documents);
+    logCounts('TouchStart', documents, function() {
+        eventSender.addTouchPoint(targetX, targetY);
+        eventSender.touchStart();
+    });
 
-    eventSender.updateTouchPoint(0, targetX + 1, targetY);
-    eventSender.touchMove();
-    logCounts('TouchMove', documents);
+    logCounts('TouchMove', documents, function() {
+        eventSender.updateTouchPoint(0, targetX + 1, targetY);
+        eventSender.touchMove();
+    });
 
-    eventSender.releaseTouchPoint(0);
-    eventSender.touchEnd();
-    logCounts('TouchEnd', documents);
+    logCounts('TouchEnd', documents, function() {
+        eventSender.releaseTouchPoint(0);
+        eventSender.touchEnd();
+    });
 
-    eventSender.gestureTapDown(targetX, targetY, 30, 30);
-    logCounts('GestureTapDown', documents);
+    logCounts('GestureTapDown', documents, function() {
+        eventSender.gestureTapDown(targetX, targetY, 30, 30);
+    });
 
-    eventSender.gestureShowPress(targetX, targetY, 30, 30);
-    logCounts('GestureShowPress', documents);
+    logCounts('GestureShowPress', documents, function() {
+        eventSender.gestureShowPress(targetX, targetY, 30, 30);
+    });
 
-    eventSender.gestureTap(targetX, targetY, 1, 30, 30);
-    logCounts('GestureTap', documents);
+    logCounts('GestureTap', documents, function() {
+        eventSender.gestureTap(targetX, targetY, 1, 30, 30);
+    });
 
-    eventSender.gestureTapDown(targetX, targetY, 30, 30);
-    clearCounts(documents);
-    eventSender.gestureScrollBegin(targetX, targetY);
-    logCounts('GestureScrollBegin', documents);
+    logCounts('GestureScrollBegin', documents, function() {
+        eventSender.gestureTapDown(targetX, targetY, 30, 30);
+        clearCounts(documents);
+        eventSender.gestureScrollBegin(targetX, targetY);
+    });
 
-    eventSender.gestureTapCancel(targetX, targetY);
-    logCounts('GestureTapCancel', documents);
+    logCounts('GestureTapCancel', documents, function() {
+        eventSender.gestureTapCancel(targetX, targetY);
+    });
 
-    eventSender.gestureScrollUpdate(0, 5);
-    logCounts('GestureScrollUpdate', documents);
+    logCounts('GestureScrollUpdate', documents, function() {
+        eventSender.gestureScrollUpdate(0, 5);
+    });
 
-    eventSender.gestureScrollEnd(0, 5);
-    logCounts('GestureScrollEnd', documents);
+    logCounts('GestureScrollEnd', documents, function() {
+        eventSender.gestureScrollEnd(0, 5);
+    });
 }
 
 function centerOf(element) {
@@ -118,6 +151,8 @@ function centerOf(element) {
 }
 
 onload = function() {
+    window.internals.settings.setMultiTargetTapNotificationEnabled(false);
+
     debug('Event on a simple div');
     debug('---------------------');
     var point = centerOf(document.getElementById('target'));
@@ -145,5 +180,6 @@ onload = function() {
     var point = centerOf(document.getElementById('target'));
     sendEvents(point.x, point.y, [document]);
     debug('');
+    window.internals.settings.setViewportEnabled(true);
 }
 </script>

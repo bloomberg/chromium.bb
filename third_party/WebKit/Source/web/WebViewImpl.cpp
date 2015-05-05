@@ -788,20 +788,22 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             // FIXME: We shouldn't pass details of the PinchViewport offset to render_view_impl.
             WebSize pinchViewportOffset = flooredIntSize(page()->frameHost().pinchViewport().location());
 
-            Vector<IntRect> goodTargets;
-            WillBeHeapVector<RawPtrWillBeMember<Node>> highlightNodes;
-            findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets, highlightNodes);
-            // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
-            // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
-            if (goodTargets.size() >= 2 && m_client
-                && m_client->didTapMultipleTargets(pinchViewportOffset, boundingBox, goodTargets)) {
+            if (m_webSettings->multiTargetTapNotificationEnabled()) {
+                Vector<IntRect> goodTargets;
+                WillBeHeapVector<RawPtrWillBeMember<Node>> highlightNodes;
+                findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets, highlightNodes);
+                // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
+                // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
+                if (goodTargets.size() >= 2 && m_client
+                    && m_client->didTapMultipleTargets(pinchViewportOffset, boundingBox, goodTargets)) {
 
-                enableTapHighlights(highlightNodes);
-                for (size_t i = 0; i < m_linkHighlights.size(); ++i)
-                    m_linkHighlights[i]->startHighlightAnimationIfNeeded();
-                eventSwallowed = true;
-                eventCancelled = true;
-                break;
+                    enableTapHighlights(highlightNodes);
+                    for (size_t i = 0; i < m_linkHighlights.size(); ++i)
+                        m_linkHighlights[i]->startHighlightAnimationIfNeeded();
+                    eventSwallowed = true;
+                    eventCancelled = true;
+                    break;
+                }
             }
         }
 

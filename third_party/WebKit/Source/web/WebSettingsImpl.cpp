@@ -652,6 +652,16 @@ void WebSettingsImpl::setEnableTouchAdjustment(bool enabled)
     m_settings->setTouchAdjustmentEnabled(enabled);
 }
 
+bool WebSettingsImpl::multiTargetTapNotificationEnabled()
+{
+    return m_settings->multiTargetTapNotificationEnabled();
+}
+
+void WebSettingsImpl::setMultiTargetTapNotificationEnabled(bool enabled)
+{
+    m_settings->setMultiTargetTapNotificationEnabled(enabled);
+}
+
 int WebSettingsImpl::availablePointerTypes() const
 {
     return m_settings->availablePointerTypes();

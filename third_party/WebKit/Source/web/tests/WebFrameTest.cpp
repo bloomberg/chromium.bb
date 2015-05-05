@@ -4522,6 +4522,16 @@ TEST_F(WebFrameTest, DisambiguationPopup)
         else
             EXPECT_FALSE(client.triggered());
     }
+
+    // The same taps shouldn't trigger didTapMultipleTargets() after disabling the notification for
+    // multi-target-tap.
+    webViewHelper.webView()->settings()->setMultiTargetTapNotificationEnabled(false);
+
+    for (int i = 0; i <= 46; i++) {
+        client.resetTriggered();
+        webViewHelper.webView()->handleInputEvent(fatTap(10 + i * 5, 590));
+        EXPECT_FALSE(client.triggered());
+    }
 }
 
 TEST_F(WebFrameTest, DisambiguationPopupNoContainer)
@@ -4656,6 +4666,13 @@ TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
     client.resetTriggered();
     webViewHelper.webView()->handleInputEvent(fatTap(10, 60));
     EXPECT_TRUE(client.triggered());
+
+    // The same tap shouldn't trigger didTapMultipleTargets() after disabling the notification for
+    // multi-target-tap.
+    webViewHelper.webView()->settings()->setMultiTargetTapNotificationEnabled(false);
+    client.resetTriggered();
+    webViewHelper.webView()->handleInputEvent(fatTap(10, 60));
+    EXPECT_FALSE(client.triggered());
 }
 
 TEST_F(WebFrameTest, DisambiguationPopupBlacklist)

@@ -144,6 +144,10 @@ maxTouchPoints type=int, initial=0
 # crbug.com/304895 tracks removal once we're satisfied with the algorithm.
 touchAdjustmentEnabled initial=true
 
+# Determines whether WebViewClient::didTapMultipleTargets will be used for
+# touch disambiguation.
+multiTargetTapNotificationEnabled initial=true
+
 syncXHRInDocumentsEnabled initial=true
 cookieEnabled initial=true
 navigateOnDragDrop initial=true

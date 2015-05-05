@@ -165,6 +165,8 @@ public:
     virtual void setEditingBehavior(EditingBehavior) = 0;
     virtual void setEnableScrollAnimator(bool) = 0;
     virtual void setEnableTouchAdjustment(bool) = 0;
+    virtual bool multiTargetTapNotificationEnabled() = 0;
+    virtual void setMultiTargetTapNotificationEnabled(bool) = 0;
     virtual void setRegionBasedColumnsEnabled(bool) = 0;
     virtual void setExperimentalWebGLEnabled(bool) = 0;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
