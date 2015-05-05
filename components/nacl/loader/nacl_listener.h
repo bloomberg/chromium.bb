@@ -5,6 +5,7 @@
 #ifndef CHROME_NACL_NACL_LISTENER_H_
 #define CHROME_NACL_NACL_LISTENER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -65,6 +66,14 @@ class NaClListener : public IPC::Listener {
  private:
   bool OnMessageReceived(const IPC::Message& msg) override;
 
+  typedef base::Callback<void(const IPC::Message&,
+                              IPC::PlatformFileForTransit,
+                              base::FilePath)> OpenResourceReplyCallback;
+
+  bool OnOpenResource(const IPC::Message& msg,
+                      const std::string& key,
+                      OpenResourceReplyCallback cb);
+
   void OnStart(const nacl::NaClStartParams& params);
 
   // A channel back to the browser.
@@ -96,6 +105,12 @@ class NaClListener : public IPC::Listener {
 
   // Used to identify what thread we're on.
   base::MessageLoop* main_loop_;
+
+  typedef std::map<
+    std::string,  // manifest key
+    std::pair<IPC::PlatformFileForTransit,
+              base::FilePath> > PrefetchedResourceFilesMap;
+  PrefetchedResourceFilesMap prefetched_resource_files_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClListener);
 };

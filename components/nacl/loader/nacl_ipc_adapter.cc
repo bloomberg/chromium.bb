@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/task_runner_util.h"
+#include "base/tuple.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_platform_file.h"
@@ -326,11 +327,13 @@ NaClIPCAdapter::IOThreadData::~IOThreadData() {
 
 NaClIPCAdapter::NaClIPCAdapter(const IPC::ChannelHandle& handle,
                                base::TaskRunner* runner,
-                               ResolveFileTokenCallback resolve_file_token_cb)
+                               ResolveFileTokenCallback resolve_file_token_cb,
+                               OpenResourceCallback open_resource_cb)
     : lock_(),
       cond_var_(&lock_),
       task_runner_(runner),
       resolve_file_token_cb_(resolve_file_token_cb),
+      open_resource_cb_(open_resource_cb),
       locked_data_() {
   io_thread_data_.channel_ = IPC::Channel::CreateServer(handle, this);
   // Note, we can not PostTask for ConnectChannelOnIOThread here. If we did,
@@ -504,11 +507,11 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
       // arbitrary code in a plugin process.
       DCHECK(!resolve_file_token_cb_.is_null());
 
-      // resolve_file_token_cb_ must be invoked from the main thread.
+      // resolve_file_token_cb_ must be invoked from the I/O thread.
       resolve_file_token_cb_.Run(
           token_lo,
           token_hi,
-          base::Bind(&NaClIPCAdapter::OnFileTokenResolved,
+          base::Bind(&NaClIPCAdapter::SaveOpenResourceMessage,
                      this,
                      msg));
 
@@ -626,9 +629,10 @@ scoped_ptr<IPC::Message> CreateOpenResourceReply(
   return new_msg.Pass();
 }
 
-void NaClIPCAdapter::OnFileTokenResolved(const IPC::Message& orig_msg,
-                                         IPC::PlatformFileForTransit ipc_fd,
-                                         base::FilePath file_path) {
+void NaClIPCAdapter::SaveOpenResourceMessage(
+    const IPC::Message& orig_msg,
+    IPC::PlatformFileForTransit ipc_fd,
+    base::FilePath file_path) {
   // The path where an invalid ipc_fd is returned isn't currently
   // covered by any tests.
   if (ipc_fd == IPC::InvalidPlatformFileForTransit()) {
@@ -788,6 +792,23 @@ void NaClIPCAdapter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
   int id = IPC::SyncMessage::GetMessageId(*message.get());
   DCHECK(io_thread_data_.pending_sync_msgs_.find(id) ==
          io_thread_data_.pending_sync_msgs_.end());
+
+  // Handle PpapiHostMsg_OpenResource locally without sending an IPC to the
+  // renderer when possible.
+  PpapiHostMsg_OpenResource::Schema::SendParam send_params;
+  if (!open_resource_cb_.is_null() &&
+      message->type() == PpapiHostMsg_OpenResource::ID &&
+      PpapiHostMsg_OpenResource::ReadSendParam(message.get(), &send_params)) {
+    const std::string key = get<0>(send_params);
+    // Both open_resource_cb_ and SaveOpenResourceMessage must be invoked
+    // from the I/O thread.
+    if (open_resource_cb_.Run(
+            *message.get(), key,
+            base::Bind(&NaClIPCAdapter::SaveOpenResourceMessage, this))) {
+      // The callback sent a reply to the untrusted side.
+      return;
+    }
+  }
 
   if (message->is_sync())
     io_thread_data_.pending_sync_msgs_[id] = message->type();

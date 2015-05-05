@@ -267,8 +267,7 @@ NaClProcessHost::~NaClProcessHost() {
   }
 
   // Note: this does not work on Windows, though we currently support this
-  // prefetching feature only on Non-SFI mode, which is supported only on
-  // Linux/ChromeOS, so it should be ok.
+  // prefetching feature only on POSIX platforms, so it should be ok.
 #if defined(OS_WIN)
   DCHECK(prefetched_resource_files_.empty());
 #else
@@ -871,21 +870,26 @@ bool NaClProcessHost::StartNaClExecution() {
     return false;
   }
 
+  // Pass the pre-opened resource files to the loader. We do not have to reopen
+  // resource files here even for SFI mode because the descriptors are not from
+  // a renderer.
+  for (size_t i = 0; i < prefetched_resource_files_.size(); ++i) {
+    params.prefetched_resource_files.push_back(
+        NaClResourcePrefetchResult(
+            prefetched_resource_files_[i].file,
+            // For the same reason as the comment below, always use an empty
+            // base::FilePath for non-SFI mode.
+            (uses_nonsfi_mode_ ? base::FilePath() :
+             prefetched_resource_files_[i].file_path_metadata),
+            prefetched_resource_files_[i].file_key));
+  }
+  prefetched_resource_files_.clear();
+
   base::FilePath file_path;
   if (uses_nonsfi_mode_) {
     // Don't retrieve the file path when using nonsfi mode; there's no
     // validation caching in that case, so it's unnecessary work, and would
     // expose the file path to the plugin.
-
-    // Pass the pre-opened resource files to the loader. For the same reason
-    // as above, use an empty base::FilePath.
-    for (size_t i = 0; i < prefetched_resource_files_.size(); ++i) {
-      params.prefetched_resource_files.push_back(NaClResourcePrefetchResult(
-          prefetched_resource_files_[i].file,
-          base::FilePath(),
-          prefetched_resource_files_[i].file_key));
-    }
-    prefetched_resource_files_.clear();
   } else {
     if (NaClBrowser::GetInstance()->GetFilePath(nexe_token_.lo,
                                                 nexe_token_.hi,
@@ -906,8 +910,6 @@ bool NaClProcessHost::StartNaClExecution() {
         return true;
       }
     }
-    // TODO(yusukes): Handle |prefetched_resource_files_| for SFI-NaCl.
-    DCHECK(prefetched_resource_files_.empty());
   }
 
   params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),

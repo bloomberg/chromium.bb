@@ -146,11 +146,13 @@ void SetUpIPCAdapter(
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     struct NaClApp* nap,
     int nacl_fd,
-    NaClIPCAdapter::ResolveFileTokenCallback resolve_file_token_cb) {
+    NaClIPCAdapter::ResolveFileTokenCallback resolve_file_token_cb,
+    NaClIPCAdapter::OpenResourceCallback open_resource_cb) {
   scoped_refptr<NaClIPCAdapter> ipc_adapter(
       new NaClIPCAdapter(*handle,
                          message_loop_proxy.get(),
-                         resolve_file_token_cb));
+                         resolve_file_token_cb,
+                         open_resource_cb));
   ipc_adapter->ConnectChannel();
 #if defined(OS_POSIX)
   handle->socket =
@@ -279,6 +281,32 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
+bool NaClListener::OnOpenResource(
+    const IPC::Message& msg,
+    const std::string& key,
+    NaClIPCAdapter::OpenResourceReplyCallback cb) {
+  // This callback is executed only on |io_thread_| with NaClIPCAdapter's
+  // |lock_| not being held.
+  DCHECK(!cb.is_null());
+  PrefetchedResourceFilesMap::iterator it =
+      prefetched_resource_files_.find(key);
+
+  if (it != prefetched_resource_files_.end()) {
+    // Fast path for prefetched FDs.
+    IPC::PlatformFileForTransit file = it->second.first;
+    base::FilePath path = it->second.second;
+    prefetched_resource_files_.erase(it);
+    // A pre-opened resource descriptor is available. Run the reply callback
+    // and return true.
+    cb.Run(msg, file, path);
+    return true;
+  }
+
+  // Return false to fall back to the slow path. Let NaClIPCAdapter issue an
+  // IPC to the renderer.
+  return false;
+}
+
 void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   int urandom_fd = dup(base::GetUrandomFD());
@@ -307,6 +335,18 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   IPC::ChannelHandle ppapi_renderer_handle;
   IPC::ChannelHandle manifest_service_handle;
 
+  for (size_t i = 0; i < params.prefetched_resource_files.size(); ++i) {
+    bool result = prefetched_resource_files_.insert(std::make_pair(
+        params.prefetched_resource_files[i].file_key,
+        std::make_pair(
+            params.prefetched_resource_files[i].file,
+            params.prefetched_resource_files[i].file_path_metadata))).second;
+    if (!result) {
+      LOG(FATAL) << "Duplicated open_resource key: "
+                 << params.prefetched_resource_files[i].file_key;
+    }
+  }
+
   if (params.enable_ipc_proxy) {
     browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
     ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
@@ -317,15 +357,19 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     // communicate with the host and to initialize the IPC dispatchers.
     SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
                     nap, NACL_CHROME_DESC_BASE,
-                    NaClIPCAdapter::ResolveFileTokenCallback());
+                    NaClIPCAdapter::ResolveFileTokenCallback(),
+                    NaClIPCAdapter::OpenResourceCallback());
     SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.message_loop_proxy(),
                     nap, NACL_CHROME_DESC_BASE + 1,
-                    NaClIPCAdapter::ResolveFileTokenCallback());
+                    NaClIPCAdapter::ResolveFileTokenCallback(),
+                    NaClIPCAdapter::OpenResourceCallback());
     SetUpIPCAdapter(&manifest_service_handle,
                     io_thread_.message_loop_proxy(),
                     nap,
                     NACL_CHROME_DESC_BASE + 2,
                     base::Bind(&NaClListener::ResolveFileToken,
+                               base::Unretained(this)),
+                    base::Bind(&NaClListener::OnOpenResource,
                                base::Unretained(this)));
   }
 
@@ -433,9 +477,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   std::string file_path_str = params.nexe_file_path_metadata.AsUTF8Unsafe();
   args->nexe_desc = NaClDescCreateWithFilePathMetadata(nexe_file,
                                                        file_path_str.c_str());
-
-  // TODO(yusukes): Support pre-opening resource files.
-  CHECK(params.prefetched_resource_files.empty());
 
   int exit_status;
   if (!NaClChromeMainStart(nap, args, &exit_status))

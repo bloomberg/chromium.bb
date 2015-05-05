@@ -422,7 +422,7 @@ void LaunchSelLdr(PP_Instance instance,
       IPC::InvalidPlatformFileForTransit();
 
   std::vector<NaClResourcePrefetchRequest> resource_prefetch_request_list;
-  if (process_type == kNativeNaClProcessType && uses_nonsfi_mode) {
+  if (process_type == kNativeNaClProcessType) {
     JsonManifest* manifest = GetJsonManifest(instance);
     if (manifest) {
       manifest->GetPrefetchableFiles(&resource_prefetch_request_list);

@@ -170,6 +170,9 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
   nacl::NaClLaunchParams safe_launch_params(launch_params);
   safe_launch_params.resource_prefetch_request_list.clear();
 
+  // TODO(yusukes): Fix NaClProcessHost::~NaClProcessHost() and remove the
+  // ifdef.
+#if !defined(OS_WIN)
   const std::vector<NaClResourcePrefetchRequest>& original_request_list =
       launch_params.resource_prefetch_request_list;
   content::SiteInstance* site_instance = rvh->GetSiteInstance();
@@ -186,6 +189,7 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
     safe_launch_params.resource_prefetch_request_list.push_back(
         original_request_list[i]);
   }
+#endif
 
   // Process a list of resource file URLs in
   // |launch_params.resource_files_to_prefetch|.
