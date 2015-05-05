@@ -4,6 +4,8 @@
 
 {
   'sources': [
+    'issue_manager_unittest.cc',
+    'issue_unittest.cc',
     'media_route_unittest.cc',
     'media_sink_unittest.cc',
     'media_source_helper_unittest.cc',

@@ -19,6 +19,11 @@ source_set("router_core") {
     "//url",
   ]
   sources = [
+    "issue.cc",
+    "issue.h",
+    "issue_manager.cc",
+    "issue_manager.h",
+    "issues_observer.h",
     "media_route.cc",
     "media_route.h",
     "media_route_id.h",

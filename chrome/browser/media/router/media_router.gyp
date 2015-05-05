@@ -16,6 +16,11 @@
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
+        'issue.cc',
+        'issue.h',
+        'issue_manager.cc',
+        'issue_manager.h',
+        'issue_observer.h',
         'media_route.cc',
         'media_route.h',
         'media_route_id.h',
