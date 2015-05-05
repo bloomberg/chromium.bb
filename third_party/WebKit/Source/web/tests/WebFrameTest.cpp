@@ -6949,6 +6949,35 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     remoteFrame->close();
 }
 
+TEST_F(WebFrameSwapTest, SwapInitializesGlobal)
+{
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+    v8::Local<v8::Value> windowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window"));
+    ASSERT_TRUE(windowTop->IsObject());
+
+    v8::Local<v8::Value> lastChild = mainFrame()->executeScriptAndReturnValue(WebScriptSource("saved = window[2]"));
+    ASSERT_TRUE(lastChild->IsObject());
+
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteFrame = remoteClient.frame();
+    mainFrame()->lastChild()->swap(remoteFrame);
+    remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+    v8::Local<v8::Value> remoteWindowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource("saved.top"));
+    EXPECT_TRUE(remoteWindowTop->IsObject());
+    EXPECT_TRUE(windowTop->StrictEquals(remoteWindowTop));
+
+    FrameTestHelpers::TestWebFrameClient client;
+    WebLocalFrame* localFrame = WebLocalFrame::create(&client);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
+    remoteFrame->swap(localFrame);
+    v8::Local<v8::Value> localWindowTop = mainFrame()->executeScriptAndReturnValue(WebScriptSource("saved.top"));
+    EXPECT_TRUE(localWindowTop->IsObject());
+    EXPECT_TRUE(windowTop->StrictEquals(localWindowTop));
+
+    reset();
+}
+
 TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable)
 {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
