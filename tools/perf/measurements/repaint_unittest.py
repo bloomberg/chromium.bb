@@ -33,6 +33,7 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
+  @decorators.Disabled('chromeos')  # crbug.com/483212
   def testRepaint(self):
     ps = self.CreateEmptyPageSet()
     ps.AddUserStory(TestRepaintPage(ps, ps.base_dir))

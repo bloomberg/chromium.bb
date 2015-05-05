@@ -3,7 +3,11 @@
 # found in the LICENSE file.
 import multiprocessing
 import os
-import sqlite3
+
+try:
+  import sqlite3  # Not present on ChromeOS DUT.
+except ImportError:
+  pass
 
 import page_sets
 

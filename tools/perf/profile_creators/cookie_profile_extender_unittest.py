@@ -2,10 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
-import sqlite3
 import tempfile
 import unittest
 
+try:
+  import sqlite3  # Not present on ChromeOS.
+except ImportError:
+  pass
+
+
+from telemetry import decorators
 from profile_creators.cookie_profile_extender import CookieProfileExtender
 
 
@@ -27,6 +33,7 @@ class CookieProfileExtenderTest(unittest.TestCase):
     connection.commit()
     connection.close()
 
+  @decorators.Disabled('chromeos')  # crbug.com/483212
   def testCookieCount(self):
     # Neither tempfile.TemporaryFile() nor tempfile.NamedTemporaryFile() work
     # well here. The former doesn't work at all, since it doesn't gaurantee a

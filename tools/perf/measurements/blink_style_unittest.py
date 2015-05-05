@@ -4,6 +4,7 @@
 
 from measurements import blink_style
 
+from telemetry import decorators
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
 
@@ -19,6 +20,7 @@ class BlinkStyleTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
 
+  @decorators.Disabled('chromeos')  # crbug.com/483212
   def testForParsing(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blink_style.html')
     measurement = blink_style.BlinkStyle()
