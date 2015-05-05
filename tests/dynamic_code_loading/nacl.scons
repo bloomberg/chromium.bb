@@ -112,11 +112,7 @@ env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test',
                        is_broken=is_broken or
 # This test is flaky on mac10.7-newlib-dbg-asan.
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
-                                 (env.Bit('asan') and env.Bit('host_mac')) or
-# This test is flaky on nacl-clang:
-# See https://code.google.com/p/nativeclient/issues/detail?id=3980
-                                 (env.Bit('nacl_clang') and
-                                  env.Bit('build_x86_32')))
+                                 (env.Bit('asan') and env.Bit('host_mac')))
 
 node = env.CommandSelLdrTestNacl(
     'write_to_dyncode_before_alloc.out',

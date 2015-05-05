@@ -384,6 +384,24 @@ void test_hlt_filled_bundle(void) {
   }
 }
 
+/*
+ * If threading tests have run before in this process, nacl_dyncode_delete will
+ * return EAGAIN if the threads have not finished trusted-side cleanup yet.
+ * (this is related to the
+ * https://code.google.com/p/nativeclient/issues/detail?id=1028).
+ * If we have joined the thread already, then we just need to wait until it
+ * finishes untrusted-side cleanup and calls IRT thread_exit. Doing this allows
+ * the tests to run in any order. Only the first deletion in a non-threaded test
+ * needs to do this.
+ */
+int dyncode_delete_with_retry(void *dest, size_t size) {
+  int rc;
+  do {
+    rc = nacl_dyncode_delete(dest, size);
+  } while (rc != 0 && errno == EAGAIN);
+  return rc;
+}
+
 /* Check that we can dynamically delete code. */
 void test_deleting_code(void) {
   uint8_t *load_area = (uint8_t *) allocate_code_space(1);
@@ -398,7 +416,7 @@ void test_deleting_code(void) {
   rc = func();
   assert(rc == MARKER_OLD);
 
-  rc = nacl_dyncode_delete(load_area, sizeof(buf));
+  rc = dyncode_delete_with_retry(load_area, sizeof(buf));
   assert(rc == 0);
   assert(load_area[0] != buf[0]);
 
@@ -453,7 +471,7 @@ void test_deleting_code_from_invalid_ranges(void) {
   assert(sizeof(buf) / NACL_BUNDLE_SIZE >= 2);
   assert(sizeof(buf) % NACL_BUNDLE_SIZE == 0);
 
-  rc = nacl_dyncode_delete(load_addr, sizeof(buf));
+  rc = dyncode_delete_with_retry(load_addr, sizeof(buf));
   assert(rc == -1);
   assert(errno == EFAULT);
 
@@ -540,7 +558,9 @@ void test_demand_alloc_of_fragmented_pages(void) {
   /* Cause pages 2 and 3 to be allocated. */
   rc = nacl_load_code(load_area + smaller_size_load_offset, data, smaller_size);
   assert(rc == 0);
-  rc = nacl_dyncode_delete(load_area + smaller_size_load_offset, smaller_size);
+
+  rc = dyncode_delete_with_retry(load_area + smaller_size_load_offset,
+                                 smaller_size);
   assert(rc == 0);
 
   /* Cause pages 0, 1, 4 and 5 to be allocated as well. */
