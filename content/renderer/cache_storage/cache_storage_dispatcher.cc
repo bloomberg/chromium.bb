@@ -176,11 +176,7 @@ class CacheStorageDispatcher::WebCache : public blink::WebServiceWorkerCache {
                                       query_params);
   }
   virtual void dispatchBatch(
-#ifdef CRBUG_482827
       CacheBatchCallbacks* callbacks,
-#else
-      CacheWithResponsesCallbacks* callbacks,
-#endif
       const blink::WebVector<BatchOperation>& batch_operations) {
     if (!dispatcher_)
       return;
@@ -473,15 +469,9 @@ void CacheStorageDispatcher::OnCacheBatchSuccess(
 
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Batch",
                       TimeTicks::Now() - cache_batch_times_[request_id]);
-#ifdef CRBUG_482827
   blink::WebServiceWorkerCache::CacheBatchCallbacks* callbacks =
       cache_batch_callbacks_.Lookup(request_id);
   callbacks->onSuccess();
-#else
-  blink::WebServiceWorkerCache::CacheWithResponsesCallbacks* callbacks =
-      cache_batch_callbacks_.Lookup(request_id);
-  callbacks->onSuccess(&web_responses);
-#endif
   cache_batch_callbacks_.Remove(request_id);
   cache_batch_times_.erase(request_id);
 }
@@ -527,13 +517,8 @@ void CacheStorageDispatcher::OnCacheBatchError(
     int request_id,
     blink::WebServiceWorkerCacheError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
-#ifdef CRBUG_482827
   blink::WebServiceWorkerCache::CacheBatchCallbacks* callbacks =
       cache_batch_callbacks_.Lookup(request_id);
-#else
-  blink::WebServiceWorkerCache::CacheWithResponsesCallbacks* callbacks =
-      cache_batch_callbacks_.Lookup(request_id);
-#endif
   callbacks->onError(&reason);
   cache_batch_callbacks_.Remove(request_id);
   cache_batch_times_.erase(request_id);
@@ -636,11 +621,7 @@ void CacheStorageDispatcher::dispatchKeysForCache(
 
 void CacheStorageDispatcher::dispatchBatchForCache(
     int cache_id,
-#ifdef CRBUG_482827
     blink::WebServiceWorkerCache::CacheBatchCallbacks* callbacks,
-#else
-    blink::WebServiceWorkerCache::CacheWithResponsesCallbacks* callbacks,
-#endif
     const blink::WebVector<blink::WebServiceWorkerCache::BatchOperation>&
         web_operations) {
   int request_id = cache_batch_callbacks_.Add(callbacks);
