@@ -3581,3 +3581,20 @@
    fun:_ZN5blink10UseCounterC1Ev
    fun:_ZN5blink4PageC1ERNS0_11PageClientsE
 }
+{
+   bug_484456
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content26GpuProcessTransportFactory23CreatePerCompositorDataEPN2ui10CompositorE
+   fun:_ZN7content26GpuProcessTransportFactory19CreateOutputSurfaceEN4base7WeakPtrIN2ui10CompositorEEE
+   fun:_ZN2ui10Compositor23RequestNewOutputSurfaceEv
+   fun:_ZN2cc13LayerTreeHost23RequestNewOutputSurfaceEv
+   fun:_ZN2cc17SingleThreadProxy23RequestNewOutputSurfaceEv
+}
+{
+   bug_484459
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content17ResourceScheduler15OnClientCreatedEiibb
+   fun:_ZN7content26ResourceDispatcherHostImpl23OnRenderViewHostCreatedEiibb
+}
