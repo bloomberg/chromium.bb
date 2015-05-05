@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
@@ -474,6 +475,23 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertEquals(mContentViewCore.getSelectedText(), "SampleTextToCopy");
     }
 
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testSelectActionBarSearchAndShareLaunchesNewTask() throws Exception {
+        DOMUtils.longPressNode(this, mContentViewCore, "textarea");
+        assertWaitForSelectActionBarVisible(true);
+        assertTrue(mContentViewCore.hasSelection());
+        assertNotNull(mContentViewCore.getSelectActionHandler());
+        selectActionBarSearch();
+        Intent i = getActivity().getLastSentIntent();
+        int new_task_flag = Intent.FLAG_ACTIVITY_NEW_TASK;
+        assertEquals(i.getFlags() & new_task_flag, new_task_flag);
+
+        selectActionBarShare();
+        i = getActivity().getLastSentIntent();
+        assertEquals(i.getFlags() & new_task_flag, new_task_flag);
+    }
+
     private void selectActionBarPaste() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -506,6 +524,24 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
             @Override
             public void run() {
                 mContentViewCore.getSelectActionHandler().copy();
+            }
+        });
+    }
+
+    private void selectActionBarSearch() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.getSelectActionHandler().search();
+            }
+        });
+    }
+
+    private void selectActionBarShare() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.getSelectActionHandler().share();
             }
         });
     }

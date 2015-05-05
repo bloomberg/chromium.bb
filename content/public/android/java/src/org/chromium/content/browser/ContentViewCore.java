@@ -2039,7 +2039,7 @@ public class ContentViewCore
                     final String query = getSelectedText();
                     if (TextUtils.isEmpty(query)) return;
 
-                    // See if ContentViewClient wants to override
+                    // See if ContentViewClient wants to override.
                     if (getContentViewClient().doesPerformWebSearch()) {
                         getContentViewClient().performWebSearch(query);
                         return;
@@ -2049,9 +2049,7 @@ public class ContentViewCore
                     i.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
                     i.putExtra(SearchManager.QUERY, query);
                     i.putExtra(Browser.EXTRA_APPLICATION_ID, getContext().getPackageName());
-                    if (activityFromContext(getContext()) == null) {
-                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    }
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         getContext().startActivity(i);
                     } catch (android.content.ActivityNotFoundException ex) {

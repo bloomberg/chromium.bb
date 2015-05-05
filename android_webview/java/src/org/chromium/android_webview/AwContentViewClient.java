@@ -5,7 +5,6 @@
 package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
-import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -197,24 +196,5 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     @Override
     public boolean isExternalFlingActive() {
         return mAwContents.isFlingActive();
-    }
-
-    @Override
-    public boolean doesPerformWebSearch() {
-        return true;
-    }
-
-    @Override
-    public void performWebSearch(String query) {
-        Intent i = new Intent(Intent.ACTION_WEB_SEARCH);
-        i.putExtra(SearchManager.EXTRA_NEW_SEARCH, true);
-        i.putExtra(SearchManager.QUERY, query);
-        i.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            mContext.startActivity(i);
-        } catch (android.content.ActivityNotFoundException ex) {
-            // If no app handles it, do nothing.
-        }
     }
 }

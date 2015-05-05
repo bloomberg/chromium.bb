@@ -42,6 +42,7 @@ public class ContentShellActivity extends Activity {
 
     private ShellManager mShellManager;
     private WindowAndroid mWindowAndroid;
+    private Intent mLastSentIntent;
 
     @Override
     @SuppressFBWarnings("DM_EXIT")
@@ -202,6 +203,16 @@ public class ContentShellActivity extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mWindowAndroid.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void startActivity(Intent i) {
+        mLastSentIntent = i;
+        super.startActivity(i);
+    }
+
+    public Intent getLastSentIntent() {
+        return mLastSentIntent;
     }
 
     private static String getUrlFromIntent(Intent intent) {
