@@ -606,7 +606,6 @@ public:
         Fetch = 675,
         FetchBodyStream = 676,
         XMLHttpRequestAsynchronous = 677,
-        AudioBufferSourceBufferOnce = 678,
         WhiteSpacePreFromXMLSpace = 679,
         WhiteSpaceNowrapFromXMLSpace = 680,
         SVGElementXmlbase = 681,

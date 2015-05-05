@@ -339,9 +339,10 @@ void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& ex
     ASSERT(isMainThread());
 
     if (m_buffer) {
-        // Setting the buffer more than once is deprecated.  Change this to a DOM exception in M45
-        // or so.
-        UseCounter::countDeprecation(context()->executionContext(), UseCounter::AudioBufferSourceBufferOnce);
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "Cannot set buffer after it has been already been set");
+        return;
     }
 
     // The context must be locked since changing the buffer can re-configure the number of channels that are output.

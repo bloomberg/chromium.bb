@@ -175,9 +175,7 @@ function runTest() {
     buffer = context.createBuffer(1,1, context.sampleRate);
     shouldNotThrow("source = context.createBufferSource()");
     shouldNotThrow("source.buffer = buffer");
-    // Setting the buffer twice will eventually throw an error, but for now, it's just a deprecation
-    // warning.
-    shouldNotThrow("source.buffer = context.createBuffer(1, 10, context.sampleRate)");
+    shouldThrow("source.buffer = context.createBuffer(1, 10, context.sampleRate)");
     shouldThrow("source.start(-1)");
     shouldThrow("source.start(Infinity)");
     shouldThrow("source.start(-Infinity)");

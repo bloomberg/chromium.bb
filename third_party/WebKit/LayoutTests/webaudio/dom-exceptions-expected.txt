@@ -1,7 +1,6 @@
 CONSOLE WARNING: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
 CONSOLE WARNING: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
 CONSOLE WARNING: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: Setting AudioBufferSourceNode.buffer more than once is deprecated and will no longer work in Chrome 43.
 CONSOLE WARNING: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 CONSOLE WARNING: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 Tests DOM exception messages
@@ -81,7 +80,7 @@ PASS node.curve = new Float32Array(2) did not throw exception.
 PASS node.curve = null did not throw exception.
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
-PASS source.buffer = context.createBuffer(1, 10, context.sampleRate) did not throw exception.
+PASS source.buffer = context.createBuffer(1, 10, context.sampleRate) threw exception InvalidStateError: Failed to set the 'buffer' property on 'AudioBufferSourceNode': Cannot set buffer after it has been already been set.
 PASS source.start(-1) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioBufferSourceNode': The start time provided (-1) is less than the minimum bound (0)..
 PASS source.start(Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(-Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
