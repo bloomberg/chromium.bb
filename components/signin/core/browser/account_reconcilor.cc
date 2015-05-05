@@ -211,7 +211,8 @@ void AccountReconcilor::OnContentSettingChanged(
 }
 
 void AccountReconcilor::OnEndBatchChanges() {
-  VLOG(1) << "AccountReconcilor::OnEndBatchChanges";
+  VLOG(1) << "AccountReconcilor::OnEndBatchChanges. "
+          << "Reconcilor state: " << is_reconcile_started_;
   // Remember that accounts have changed if a reconcile is already started.
   chrome_accounts_changed_ = is_reconcile_started_;
   StartReconcile();
@@ -285,6 +286,7 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
         const GoogleServiceAuthError& error) {
   VLOG(1) << "AccountReconcilor::OnGaiaAccountsInCookieUpdated: "
           << "CookieJar " << accounts.size() << " accounts, "
+          << "Reconcilor's state is " << is_reconcile_started_ << ", "
           << "Error was " << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
     gaia_accounts_ = accounts;

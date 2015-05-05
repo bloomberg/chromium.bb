@@ -541,11 +541,15 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
   }
 
   list_accounts_fetched_once_ = true;
+  HandleNextRequest();
+  // HandleNextRequest before sending out the notification because some
+  // services, in response to OnGaiaAccountsInCookieUpdated, may try in return
+  // to call ListAccounts, which would immediately return false if the
+  // ListAccounts request is still sitting in queue.
   FOR_EACH_OBSERVER(Observer, observer_list_,
       OnGaiaAccountsInCookieUpdated(
           listed_accounts_,
           GoogleServiceAuthError(GoogleServiceAuthError::NONE)));
-  HandleNextRequest();
 }
 
 void GaiaCookieManagerService::OnListAccountsFailure(
