@@ -23,36 +23,21 @@ namespace {
 
 net::NetLogCaptureMode GetCaptureModeFromCommandLine(
     const base::CommandLine& command_line) {
-  const net::NetLogCaptureMode kDefault = net::NetLogCaptureMode::Default();
+  if (command_line.HasSwitch(switches::kNetLogCaptureMode)) {
+    std::string capture_mode_string =
+        command_line.GetSwitchValueASCII(switches::kNetLogCaptureMode);
 
-  // TODO(eroman): The NetLog "capture mode" used to be called the "log
-  // level". To preserve backwards compatibility the log level of old is
-  // converted into a capture mode.
-  if (!command_line.HasSwitch(switches::kNetLogLevel))
-    return kDefault;
-
-  std::string log_level_string =
-      command_line.GetSwitchValueASCII(switches::kNetLogLevel);
-
-  int level;
-  if (!base::StringToInt(log_level_string, &level))
-    return kDefault;
-
-  switch (level) {
-    case 0:
-      return net::NetLogCaptureMode::IncludeSocketBytes();
-    case 1:
-      return net::NetLogCaptureMode::IncludeCookiesAndCredentials();
-    case 2:
+    if (capture_mode_string == "Default")
       return net::NetLogCaptureMode::Default();
-    case 3:
-      return net::NetLogCaptureMode::None();
-    default:
-      LOG(ERROR) << "Unrecognized --" << switches::kNetLogLevel;
-      break;
+    if (capture_mode_string == "IncludeCookiesAndCredentials")
+      return net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+    if (capture_mode_string == "IncludeSocketBytes")
+      return net::NetLogCaptureMode::IncludeSocketBytes();
+
+    LOG(ERROR) << "Unrecognized value for --" << switches::kNetLogCaptureMode;
   }
 
-  return kDefault;
+  return net::NetLogCaptureMode::Default();
 }
 
 }  // namespace
