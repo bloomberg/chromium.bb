@@ -12,7 +12,7 @@ namespace base {
 namespace trace_event {
 
 // Dump provider which collects process-wide memory stats.
-class JavaHeapDumpProvider : public MemoryDumpProvider {
+class BASE_EXPORT JavaHeapDumpProvider : public MemoryDumpProvider {
  public:
   static JavaHeapDumpProvider* GetInstance();
 

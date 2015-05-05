@@ -53,6 +53,7 @@
       }],
     ],
     'trace_event_test_sources' : [
+      'trace_event/java_heap_dump_provider_android_unittest.cc',
       'trace_event/memory_allocator_dump_unittest.cc',
       'trace_event/memory_dump_manager_unittest.cc',
       'trace_event/process_memory_maps_dump_provider_unittest.cc',
