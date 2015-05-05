@@ -44,8 +44,7 @@ void MojoApplication::OnActivate(
   DCHECK(message_pipe.is_valid());
 
   ApplicationSetupPtr application_setup;
-  application_setup.Bind(
-      mojo::InterfacePtrInfo<ApplicationSetup>(message_pipe.Pass(), 0u));
+  application_setup.Bind(message_pipe.Pass());
 
   mojo::ServiceProviderPtr services;
   mojo::ServiceProviderPtr exposed_services;
