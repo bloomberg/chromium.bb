@@ -520,6 +520,23 @@
    fun:_ZN4mojo7BindingINS_15ServiceProviderEE4BindENS_16InterfaceRequestIS1_EEPK15MojoAsyncWaiter
    fun:_ZN7content19ServiceRegistryImpl4BindEN4mojo16InterfaceRequestINS1_15ServiceProviderEEE
 }
+{
+   bug_484444b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4mojo8internal11FilterChain6AppendINS0_22MessageHeaderValidatorEEEvv
+   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE25ConfigureProxyIfNecessaryEv
+   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE8instanceEv
+}
+{
+   bug_484444c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4mojo8internal10SharedDataIPNS0_6RouterEEC2ERKS3_
+   fun:_ZN4mojo8internal6RouterC1ENS_16ScopedHandleBaseINS_17MessagePipeHandleEEENS0_11FilterChainEPK15MojoAsyncWaiter
+   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE25ConfigureProxyIfNecessaryEv
+   fun:_ZN4mojo8internal17InterfacePtrStateINS_15ServiceProviderEE8instanceEv
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -3597,4 +3614,15 @@
    fun:_Znw*
    fun:_ZN7content17ResourceScheduler15OnClientCreatedEiibb
    fun:_ZN7content26ResourceDispatcherHostImpl23OnRenderViewHostCreatedEiibb
+}
+{
+   bug_484882
+   Memcheck:Uninitialized
+   fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
+   fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
+   fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_PK6SkRectf
+   fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_
+   fun:_ZNK5blink4Path18strokeBoundingRectERKNS_10StrokeDataE
+   fun:_ZNK5blink14LayoutSVGShape26calculateStrokeBoundingBoxEv
+   fun:_ZN5blink14LayoutSVGShape22updateShapeFromElementEv
 }
