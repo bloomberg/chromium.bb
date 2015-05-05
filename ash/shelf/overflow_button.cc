@@ -37,9 +37,8 @@ const int kBackgroundOffset = (48 - kButtonHoverSize) / 2;
 OverflowButton::OverflowButton(views::ButtonListener* listener)
     : CustomButton(listener),
       bottom_image_(NULL) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  bottom_image_ = rb.GetImageNamed(IDR_ASH_SHELF_OVERFLOW).ToImageSkia();
-
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  bottom_image_ = rb->GetImageNamed(IDR_ASH_SHELF_OVERFLOW).ToImageSkia();
 
   SetAccessibilityFocusable(true);
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));

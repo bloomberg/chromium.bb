@@ -172,8 +172,8 @@ const gfx::FontList* ShelfMenuModelAdapter::GetLabelFontList(
   if (command_id != kCommandIdOfMenuName)
     return MenuModelAdapter::GetLabelFontList(command_id);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return &rb.GetFontList(ui::ResourceBundle::BoldFont);
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  return &rb->GetFontList(ui::ResourceBundle::BoldFont);
 }
 
 bool ShelfMenuModelAdapter::IsCommandEnabled(int id) const {
