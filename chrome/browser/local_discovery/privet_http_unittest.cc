@@ -6,6 +6,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -244,8 +245,8 @@ class PrivetHTTPTest : public ::testing::Test {
   PrivetHTTPTest() {
     PrivetURLFetcher::ResetTokenMapForTests();
 
-    request_context_= new net::TestURLRequestContextGetter(
-        base::MessageLoopProxy::current());
+    request_context_ = new net::TestURLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get());
     privet_client_ =
         PrivetV1HTTPClient::CreateDefault(make_scoped_ptr<PrivetHTTPClient>(
             new PrivetHTTPClientImpl("sampleDevice._privet._tcp.local",

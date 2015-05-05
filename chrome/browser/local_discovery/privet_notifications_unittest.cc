@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
-
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/privet_notifications.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -80,8 +80,9 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
 
 class PrivetNotificationsListenerTest : public ::testing::Test {
  public:
-  PrivetNotificationsListenerTest() : request_context_(
-      new net::TestURLRequestContextGetter(base::MessageLoopProxy::current())) {
+  PrivetNotificationsListenerTest()
+      : request_context_(new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get())) {
     notification_listener_.reset(new PrivetNotificationsListener(
         scoped_ptr<PrivetHTTPAsynchronousFactory>(
             new MockPrivetHttpFactory(request_context_.get())),

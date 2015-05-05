@@ -4,6 +4,7 @@
 
 #include "chrome/browser/local_discovery/wifi/credential_getter_win.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,7 +22,7 @@ void CredentialGetterWin::StartGetCredentials(
     const std::string& network_guid,
     const CredentialsCallback& callback) {
   callback_ = callback;
-  callback_runner_ = base::MessageLoopProxy::current();
+  callback_runner_ = base::ThreadTaskRunnerHandle::Get();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
@@ -31,7 +32,7 @@ void CredentialGetterWin::StartGetCredentials(
 void CredentialGetterWin::StartOnIOThread(const std::string& network_guid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
-      this, base::MessageLoopProxy::current());
+      this, base::ThreadTaskRunnerHandle::Get());
   host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME));
   host->ElevatePrivileges();

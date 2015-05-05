@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/local_discovery/gcd_api_flow_impl.h"
 #include "content/public/test/test_browser_thread.h"
@@ -45,7 +46,7 @@ class GCDApiFlowTest : public testing::Test {
   GCDApiFlowTest()
       : ui_thread_(content::BrowserThread::UI, &loop_),
         request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
+            base::ThreadTaskRunnerHandle::Get())),
         account_id_(kAccountId) {}
 
   ~GCDApiFlowTest() override {}

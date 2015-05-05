@@ -4,6 +4,7 @@
 
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -282,8 +283,9 @@ void ServiceDiscoveryHostClient::StartOnIOThread() {
 void ServiceDiscoveryHostClient::OnSocketsReady(const SocketInfoList& sockets) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!utility_host_);
-  utility_host_ = UtilityProcessHost::Create(
-      this, base::MessageLoopProxy::current().get())->AsWeakPtr();
+  utility_host_ =
+      UtilityProcessHost::Create(
+          this, base::ThreadTaskRunnerHandle::Get().get())->AsWeakPtr();
   utility_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_SERVICE_DISCOVERY_HANDLER_NAME));
   utility_host_->EnableMDns();
@@ -304,8 +306,9 @@ void ServiceDiscoveryHostClient::OnSocketsReady(const SocketInfoList& sockets) {
 void ServiceDiscoveryHostClient::StartOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!utility_host_);
-  utility_host_ = UtilityProcessHost::Create(
-      this, base::MessageLoopProxy::current().get())->AsWeakPtr();
+  utility_host_ =
+      UtilityProcessHost::Create(
+          this, base::ThreadTaskRunnerHandle::Get().get())->AsWeakPtr();
   utility_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_SERVICE_DISCOVERY_HANDLER_NAME));
   utility_host_->EnableMDns();

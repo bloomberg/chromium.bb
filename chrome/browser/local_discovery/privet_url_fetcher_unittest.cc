@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -88,8 +89,8 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
 class PrivetURLFetcherTest : public ::testing::Test {
  public:
   PrivetURLFetcherTest() {
-    request_context_= new net::TestURLRequestContextGetter(
-        base::MessageLoopProxy::current());
+    request_context_ = new net::TestURLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get());
     privet_urlfetcher_.reset(new PrivetURLFetcher(
         GURL(kSamplePrivetURL),
         net::URLFetcher::POST,

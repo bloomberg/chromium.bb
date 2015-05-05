@@ -5,6 +5,7 @@
 #include "chrome/browser/local_discovery/privet_local_printer_lister.h"
 
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -109,7 +110,7 @@ class PrivetLocalPrinterListerTest : public testing::Test {
     test_service_discovery_client_ = new TestServiceDiscoveryClient();
     test_service_discovery_client_->Start();
     url_request_context_ = new net::TestURLRequestContextGetter(
-        base::MessageLoopProxy::current());
+        base::ThreadTaskRunnerHandle::Get());
     local_printer_lister_.reset(new PrivetLocalPrinterLister(
         test_service_discovery_client_.get(),
         url_request_context_.get(),

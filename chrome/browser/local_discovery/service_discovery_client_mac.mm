@@ -10,6 +10,8 @@
 
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 
 using local_discovery::ServiceWatcherImplMac;
@@ -157,12 +159,13 @@ void ServiceDiscoveryClientMac::StartThreadIfNotStarted() {
 ServiceWatcherImplMac::NetServiceBrowserContainer::NetServiceBrowserContainer(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> service_discovery_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_type_(service_type),
       callback_(callback),
-      callback_runner_(base::MessageLoopProxy::current()),
+      callback_runner_(base::ThreadTaskRunnerHandle::Get()),
       service_discovery_runner_(service_discovery_runner),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 ServiceWatcherImplMac::NetServiceBrowserContainer::
     ~NetServiceBrowserContainer() {
@@ -226,7 +229,7 @@ void ServiceWatcherImplMac::NetServiceBrowserContainer::DeleteSoon() {
 ServiceWatcherImplMac::ServiceWatcherImplMac(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> service_discovery_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_type_(service_type),
       callback_(callback),
       started_(false),
@@ -273,12 +276,13 @@ void ServiceWatcherImplMac::OnServicesUpdate(ServiceWatcher::UpdateType update,
 ServiceResolverImplMac::NetServiceContainer::NetServiceContainer(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> service_discovery_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_name_(service_name),
       callback_(callback),
-      callback_runner_(base::MessageLoopProxy::current()),
+      callback_runner_(base::ThreadTaskRunnerHandle::Get()),
       service_discovery_runner_(service_discovery_runner),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 ServiceResolverImplMac::NetServiceContainer::~NetServiceContainer() {
   DCHECK(IsOnServiceDiscoveryThread());
@@ -366,7 +370,7 @@ void ServiceResolverImplMac::NetServiceContainer::SetServiceForTesting(
 ServiceResolverImplMac::ServiceResolverImplMac(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> service_discovery_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_name_(service_name),
       callback_(callback),
       has_resolved_(false),

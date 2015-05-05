@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/hmac.h"
@@ -40,8 +41,8 @@ const char kInfoResponse[] =
 class MockPrivetHTTPClient : public PrivetHTTPClient {
  public:
   MockPrivetHTTPClient() {
-    request_context_ =
-        new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
+    request_context_ = new net::TestURLRequestContextGetter(
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   MOCK_METHOD0(GetName, const std::string&());

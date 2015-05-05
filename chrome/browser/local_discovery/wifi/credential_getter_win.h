@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -40,7 +40,7 @@ class CredentialGetterWin : public content::UtilityProcessHostClient {
   void PostCallback(bool success, const std::string& key_data);
 
   CredentialsCallback callback_;
-  scoped_refptr<base::MessageLoopProxy> callback_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
 };
 
 }  // namespace wifi
