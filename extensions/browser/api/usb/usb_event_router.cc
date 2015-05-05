@@ -40,7 +40,7 @@ bool WillDispatchDeviceEvent(scoped_refptr<UsbDevice> device,
   DevicePermissions* device_permissions =
       DevicePermissionsManager::Get(browser_context)
           ->GetForExtension(extension->id());
-  if (device_permissions->FindEntry(device).get()) {
+  if (device_permissions->FindUsbDeviceEntry(device).get()) {
     return true;
   }
 

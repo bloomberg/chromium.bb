@@ -18,9 +18,8 @@
 #include "base/threading/thread_checker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/browser_thread.h"
+#include "device/hid/hid_service.h"
 #include "device/usb/usb_service.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 
 template <typename T>
@@ -36,12 +35,20 @@ class BrowserContext;
 
 namespace extensions {
 
+class ProcessManager;
+
 // Stores information about a device saved with access granted.
-class DevicePermissionEntry
-    : public base::RefCountedThreadSafe<DevicePermissionEntry> {
+class DevicePermissionEntry : public base::RefCounted<DevicePermissionEntry> {
  public:
+  enum class Type {
+    USB,
+    HID,
+  };
+
   DevicePermissionEntry(scoped_refptr<device::UsbDevice> device);
-  DevicePermissionEntry(uint16_t vendor_id,
+  DevicePermissionEntry(scoped_refptr<device::HidDeviceInfo> device);
+  DevicePermissionEntry(Type type,
+                        uint16_t vendor_id,
                         uint16_t product_id,
                         const base::string16& serial_number,
                         const base::string16& manufacturer_string,
@@ -59,6 +66,7 @@ class DevicePermissionEntry
 
   base::string16 GetPermissionMessageString() const;
 
+  Type type() const { return type_; }
   uint16_t vendor_id() const { return vendor_id_; }
   uint16_t product_id() const { return product_id_; }
   const base::string16& serial_number() const { return serial_number_; }
@@ -68,16 +76,22 @@ class DevicePermissionEntry
   base::string16 GetProduct() const;
 
  private:
-  friend class base::RefCountedThreadSafe<DevicePermissionEntry>;
+  friend class base::RefCounted<DevicePermissionEntry>;
   friend class DevicePermissionsManager;
 
   ~DevicePermissionEntry();
 
   void set_last_used(const base::Time& last_used) { last_used_ = last_used; }
 
-  // The USB device tracked by this entry, may be null if this entry was
-  // restored from ExtensionPrefs.
-  scoped_refptr<device::UsbDevice> device_;
+  // The USB device tracked by this entry. Will be nullptr if this entry was
+  // restored from ExtensionPrefs or type_ is not Type::USB.
+  scoped_refptr<device::UsbDevice> usb_device_;
+  // The HID device tracked by this entry. Will be nullptr if this entry was
+  // restored from ExtensionPrefs or type_ is not Type::HID.
+  scoped_refptr<device::HidDeviceInfo> hid_device_;
+
+  // The type of device this entry represents.
+  Type type_;
   // The vendor ID of this device.
   uint16_t vendor_id_;
   // The product ID of this device.
@@ -97,12 +111,11 @@ class DevicePermissions {
  public:
   virtual ~DevicePermissions();
 
-  // Attempts to find a permission entry matching the given device. The device
-  // serial number is presented separately so that this function does not need
-  // to call device->GetSerialNumber() which may not be possible on the
-  // current thread.
-  scoped_refptr<DevicePermissionEntry> FindEntry(
+  // Attempts to find a permission entry matching the given device.
+  scoped_refptr<DevicePermissionEntry> FindUsbDeviceEntry(
       scoped_refptr<device::UsbDevice> device) const;
+  scoped_refptr<DevicePermissionEntry> FindHidDeviceEntry(
+      scoped_refptr<device::HidDeviceInfo> device) const;
 
   const std::set<scoped_refptr<DevicePermissionEntry>>& entries() const {
     return entries_;
@@ -116,19 +129,29 @@ class DevicePermissions {
                     const std::string& extension_id);
 
   std::set<scoped_refptr<DevicePermissionEntry>> entries_;
-  std::map<scoped_refptr<device::UsbDevice>,
-           scoped_refptr<DevicePermissionEntry>> ephemeral_devices_;
+  std::map<device::UsbDevice*, scoped_refptr<DevicePermissionEntry>>
+      ephemeral_usb_devices_;
+  std::map<device::HidDeviceInfo*, scoped_refptr<DevicePermissionEntry>>
+      ephemeral_hid_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissions);
 };
 
 // Manages saved device permissions for all extensions.
 class DevicePermissionsManager : public KeyedService,
-                                 public base::NonThreadSafe,
                                  public ProcessManagerObserver,
-                                 public device::UsbService::Observer {
+                                 public device::UsbService::Observer,
+                                 public device::HidService::Observer {
  public:
   static DevicePermissionsManager* Get(content::BrowserContext* context);
+
+  static base::string16 GetPermissionMessage(
+      uint16 vendor_id,
+      uint16 product_id,
+      const base::string16& manufacturer_string,
+      const base::string16& product_string,
+      const base::string16& serial_number,
+      bool always_include_manufacturer);
 
   // The DevicePermissions object for a given extension.
   DevicePermissions* GetForExtension(const std::string& extension_id);
@@ -140,6 +163,8 @@ class DevicePermissionsManager : public KeyedService,
 
   void AllowUsbDevice(const std::string& extension_id,
                       scoped_refptr<device::UsbDevice> device);
+  void AllowHidDevice(const std::string& extension_id,
+                      scoped_refptr<device::HidDeviceInfo> device);
 
   // Updates the "last used" timestamp on the given device entry and writes it
   // out to ExtensionPrefs.
@@ -169,12 +194,19 @@ class DevicePermissionsManager : public KeyedService,
   // UsbService::Observer implementation
   void OnDeviceRemovedCleanup(scoped_refptr<device::UsbDevice> device) override;
 
+  // HidService::Observer implementation
+  void OnDeviceRemovedCleanup(
+      scoped_refptr<device::HidDeviceInfo> device) override;
+
+  base::ThreadChecker thread_checker_;
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
   ScopedObserver<ProcessManager, ProcessManagerObserver>
       process_manager_observer_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_service_observer_;
+  ScopedObserver<device::HidService, device::HidService::Observer>
+      hid_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissionsManager);
 };

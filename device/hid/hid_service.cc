@@ -34,6 +34,10 @@ void HidService::Observer::OnDeviceRemoved(
     scoped_refptr<HidDeviceInfo> device_info) {
 }
 
+void HidService::Observer::OnDeviceRemovedCleanup(
+    scoped_refptr<HidDeviceInfo> device_info) {
+}
+
 HidService* HidService::GetInstance(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
   if (g_service == NULL) {
@@ -124,10 +128,15 @@ void HidService::RemoveDevice(const HidDeviceId& device_id) {
   if (it != devices_.end()) {
     HID_LOG(USER) << "HID device removed: deviceId='" << device_id << "'";
 
+    scoped_refptr<HidDeviceInfo> device = it->second;
     if (enumeration_ready_) {
-      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(it->second));
+      FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device));
     }
     devices_.erase(it);
+    if (enumeration_ready_) {
+      FOR_EACH_OBSERVER(Observer, observer_list_,
+                        OnDeviceRemovedCleanup(device));
+    }
   }
 }
 

@@ -13,6 +13,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/core/device_client.h"
+#include "device/hid/hid_device_info.h"
+#include "device/hid/hid_service.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/browser/extension_host.h"
@@ -20,6 +22,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,6 +30,8 @@ namespace extensions {
 
 using content::BrowserContext;
 using content::BrowserThread;
+using device::HidDeviceInfo;
+using device::HidService;
 using device::UsbDevice;
 using device::UsbService;
 using extensions::APIPermission;
@@ -46,6 +51,9 @@ const char kDeviceType[] = "type";
 
 // Type identifier for USB devices.
 const char kDeviceTypeUsb[] = "usb";
+
+// Type identifier for HID devices.
+const char kDeviceTypeHid[] = "hid";
 
 // The vendor ID of the device that the app had permission to access.
 const char kDeviceVendorId[] = "vendor_id";
@@ -67,6 +75,18 @@ const char kDeviceProductString[] = "product_string";
 // Serialized timestamp of the last time when the device was opened by the app.
 const char kDeviceLastUsed[] = "last_used_time";
 
+// Converts a DevicePermissionEntry::Type to a string for the prefs file.
+const char* TypeToString(DevicePermissionEntry::Type type) {
+  switch (type) {
+    case DevicePermissionEntry::Type::USB:
+      return kDeviceTypeUsb;
+    case DevicePermissionEntry::Type::HID:
+      return kDeviceTypeHid;
+  }
+  NOTREACHED();
+  return "";
+}
+
 // Persists a DevicePermissionEntry in ExtensionPrefs.
 void SaveDevicePermissionEntry(BrowserContext* context,
                                const std::string& extension_id,
@@ -87,7 +107,7 @@ bool MatchesDevicePermissionEntry(const base::DictionaryValue* value,
                                   scoped_refptr<DevicePermissionEntry> entry) {
   std::string type;
   if (!value->GetStringWithoutPathExpansion(kDeviceType, &type) ||
-      type != kDeviceTypeUsb) {
+      type != TypeToString(entry->type())) {
     return false;
   }
   int vendor_id;
@@ -164,6 +184,62 @@ void ClearDevicePermissionEntries(ExtensionPrefs* prefs,
   prefs->UpdateExtensionPref(extension_id, kDevices, NULL);
 }
 
+scoped_refptr<DevicePermissionEntry> ReadDevicePermissionEntry(
+    const base::DictionaryValue* entry) {
+  int vendor_id;
+  if (!entry->GetIntegerWithoutPathExpansion(kDeviceVendorId, &vendor_id) ||
+      vendor_id < 0 || vendor_id > UINT16_MAX) {
+    return nullptr;
+  }
+
+  int product_id;
+  if (!entry->GetIntegerWithoutPathExpansion(kDeviceProductId, &product_id) ||
+      product_id < 0 || product_id > UINT16_MAX) {
+    return nullptr;
+  }
+
+  base::string16 serial_number;
+  if (!entry->GetStringWithoutPathExpansion(kDeviceSerialNumber,
+                                            &serial_number)) {
+    return nullptr;
+  }
+
+  base::string16 manufacturer_string;
+  // Ignore failure as this string is optional.
+  entry->GetStringWithoutPathExpansion(kDeviceManufacturerString,
+                                       &manufacturer_string);
+
+  base::string16 product_string;
+  // Ignore failure as this string is optional.
+  entry->GetStringWithoutPathExpansion(kDeviceProductString, &product_string);
+
+  // If a last used time is not stored in ExtensionPrefs last_used.is_null()
+  // will be true.
+  std::string last_used_str;
+  int64 last_used_i64 = 0;
+  base::Time last_used;
+  if (entry->GetStringWithoutPathExpansion(kDeviceLastUsed, &last_used_str) &&
+      base::StringToInt64(last_used_str, &last_used_i64)) {
+    last_used = base::Time::FromInternalValue(last_used_i64);
+  }
+
+  std::string type;
+  if (!entry->GetStringWithoutPathExpansion(kDeviceType, &type)) {
+    return nullptr;
+  }
+
+  if (type == kDeviceTypeUsb) {
+    return new DevicePermissionEntry(
+        DevicePermissionEntry::Type::USB, vendor_id, product_id, serial_number,
+        manufacturer_string, product_string, last_used);
+  } else if (type == kDeviceTypeHid) {
+    return new DevicePermissionEntry(
+        DevicePermissionEntry::Type::HID, vendor_id, product_id, serial_number,
+        base::string16(), product_string, last_used);
+  }
+  return nullptr;
+}
+
 // Returns all DevicePermissionEntries for the app.
 std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
     ExtensionPrefs* prefs,
@@ -176,65 +252,22 @@ std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
 
   for (const base::Value* entry : *devices) {
     const base::DictionaryValue* entry_dict;
-    if (!entry->GetAsDictionary(&entry_dict)) {
-      continue;
+    if (entry->GetAsDictionary(&entry_dict)) {
+      scoped_refptr<DevicePermissionEntry> device_entry =
+          ReadDevicePermissionEntry(entry_dict);
+      if (entry_dict) {
+        result.insert(device_entry);
+      }
     }
-    std::string type;
-    if (!entry_dict->GetStringWithoutPathExpansion(kDeviceType, &type) ||
-        type != kDeviceTypeUsb) {
-      continue;
-    }
-    int vendor_id;
-    if (!entry_dict->GetIntegerWithoutPathExpansion(kDeviceVendorId,
-                                                    &vendor_id) ||
-        vendor_id < 0 || vendor_id > UINT16_MAX) {
-      continue;
-    }
-    int product_id;
-    if (!entry_dict->GetIntegerWithoutPathExpansion(kDeviceProductId,
-                                                    &product_id) ||
-        product_id < 0 || product_id > UINT16_MAX) {
-      continue;
-    }
-    base::string16 serial_number;
-    if (!entry_dict->GetStringWithoutPathExpansion(kDeviceSerialNumber,
-                                                   &serial_number)) {
-      continue;
-    }
-
-    base::string16 manufacturer_string;
-    // Ignore failure as this string is optional.
-    entry_dict->GetStringWithoutPathExpansion(kDeviceManufacturerString,
-                                              &manufacturer_string);
-
-    base::string16 product_string;
-    // Ignore failure as this string is optional.
-    entry_dict->GetStringWithoutPathExpansion(kDeviceProductString,
-                                              &product_string);
-
-    // If a last used time is not stored in ExtensionPrefs last_used.is_null()
-    // will be true.
-    std::string last_used_str;
-    int64 last_used_i64 = 0;
-    base::Time last_used;
-    if (entry_dict->GetStringWithoutPathExpansion(kDeviceLastUsed,
-                                                  &last_used_str) &&
-        base::StringToInt64(last_used_str, &last_used_i64)) {
-      last_used = base::Time::FromInternalValue(last_used_i64);
-    }
-
-    result.insert(new DevicePermissionEntry(vendor_id, product_id,
-                                            serial_number, manufacturer_string,
-                                            product_string, last_used));
   }
   return result;
 }
 
 }  // namespace
 
-DevicePermissionEntry::DevicePermissionEntry(
-    scoped_refptr<device::UsbDevice> device)
-    : device_(device),
+DevicePermissionEntry::DevicePermissionEntry(scoped_refptr<UsbDevice> device)
+    : usb_device_(device),
+      type_(Type::USB),
       vendor_id_(device->vendor_id()),
       product_id_(device->product_id()),
       serial_number_(device->serial_number()),
@@ -243,13 +276,25 @@ DevicePermissionEntry::DevicePermissionEntry(
 }
 
 DevicePermissionEntry::DevicePermissionEntry(
+    scoped_refptr<HidDeviceInfo> device)
+    : hid_device_(device),
+      type_(Type::HID),
+      vendor_id_(device->vendor_id()),
+      product_id_(device->product_id()),
+      serial_number_(base::UTF8ToUTF16(device->serial_number())),
+      product_string_(base::UTF8ToUTF16(device->product_name())) {
+}
+
+DevicePermissionEntry::DevicePermissionEntry(
+    Type type,
     uint16_t vendor_id,
     uint16_t product_id,
     const base::string16& serial_number,
     const base::string16& manufacturer_string,
     const base::string16& product_string,
     const base::Time& last_used)
-    : vendor_id_(vendor_id),
+    : type_(type),
+      vendor_id_(vendor_id),
       product_id_(product_id),
       serial_number_(serial_number),
       manufacturer_string_(manufacturer_string),
@@ -269,13 +314,15 @@ scoped_ptr<base::Value> DevicePermissionEntry::ToValue() const {
     return nullptr;
   }
 
-  scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
-  entry_dict->SetStringWithoutPathExpansion(kDeviceType, kDeviceTypeUsb);
-  entry_dict->SetIntegerWithoutPathExpansion(kDeviceVendorId, vendor_id_);
-  entry_dict->SetIntegerWithoutPathExpansion(kDeviceProductId, product_id_);
   DCHECK(!serial_number_.empty());
-  entry_dict->SetStringWithoutPathExpansion(kDeviceSerialNumber,
-                                            serial_number_);
+  scoped_ptr<base::DictionaryValue> entry_dict(
+      DictionaryBuilder()
+          .Set(kDeviceType, TypeToString(type_))
+          .Set(kDeviceVendorId, vendor_id_)
+          .Set(kDeviceProductId, product_id_)
+          .Set(kDeviceSerialNumber, serial_number_)
+          .Build());
+
   if (!manufacturer_string_.empty()) {
     entry_dict->SetStringWithoutPathExpansion(kDeviceManufacturerString,
                                               manufacturer_string_);
@@ -293,54 +340,19 @@ scoped_ptr<base::Value> DevicePermissionEntry::ToValue() const {
 }
 
 base::string16 DevicePermissionEntry::GetPermissionMessageString() const {
-  if (serial_number_.empty()) {
-    return l10n_util::GetStringFUTF16(IDS_DEVICE_PERMISSIONS_DEVICE_NAME,
-                                      GetProduct(), GetManufacturer());
-  } else {
-    return l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_SERIAL, GetProduct(),
-        GetManufacturer(), serial_number_);
-  }
-}
-
-base::string16 DevicePermissionEntry::GetManufacturer() const {
-  if (manufacturer_string_.empty()) {
-    const char* vendor_name = device::UsbIds::GetVendorName(vendor_id_);
-    if (vendor_name) {
-      return base::UTF8ToUTF16(vendor_name);
-    } else {
-      return l10n_util::GetStringFUTF16(
-          IDS_DEVICE_UNKNOWN_VENDOR,
-          base::ASCIIToUTF16(base::StringPrintf("0x%04x", vendor_id_)));
-    }
-  } else {
-    return manufacturer_string_;
-  }
-}
-
-base::string16 DevicePermissionEntry::GetProduct() const {
-  if (product_string_.empty()) {
-    const char* product_name =
-        device::UsbIds::GetProductName(vendor_id_, product_id_);
-    if (product_name) {
-      return base::UTF8ToUTF16(product_name);
-    } else {
-      return l10n_util::GetStringFUTF16(
-          IDS_DEVICE_UNKNOWN_PRODUCT,
-          base::ASCIIToUTF16(base::StringPrintf("0x%04x", product_id_)));
-    }
-  } else {
-    return product_string_;
-  }
+  return DevicePermissionsManager::GetPermissionMessage(
+      vendor_id_, product_id_, manufacturer_string_, product_string_,
+      serial_number_, type_ == Type::USB);
 }
 
 DevicePermissions::~DevicePermissions() {
 }
 
-scoped_refptr<DevicePermissionEntry> DevicePermissions::FindEntry(
-    scoped_refptr<device::UsbDevice> device) const {
-  const auto& ephemeral_device_entry = ephemeral_devices_.find(device);
-  if (ephemeral_device_entry != ephemeral_devices_.end()) {
+scoped_refptr<DevicePermissionEntry> DevicePermissions::FindUsbDeviceEntry(
+    scoped_refptr<UsbDevice> device) const {
+  const auto& ephemeral_device_entry =
+      ephemeral_usb_devices_.find(device.get());
+  if (ephemeral_device_entry != ephemeral_usb_devices_.end()) {
     return ephemeral_device_entry->second;
   }
 
@@ -349,19 +361,34 @@ scoped_refptr<DevicePermissionEntry> DevicePermissions::FindEntry(
   }
 
   for (const auto& entry : entries_) {
-    if (!entry->IsPersistent()) {
-      continue;
+    if (entry->IsPersistent() && entry->vendor_id() == device->vendor_id() &&
+        entry->product_id() == device->product_id() &&
+        entry->serial_number() == device->serial_number()) {
+      return entry;
     }
-    if (entry->vendor_id() != device->vendor_id()) {
-      continue;
+  }
+  return nullptr;
+}
+
+scoped_refptr<DevicePermissionEntry> DevicePermissions::FindHidDeviceEntry(
+    scoped_refptr<HidDeviceInfo> device) const {
+  const auto& ephemeral_device_entry =
+      ephemeral_hid_devices_.find(device.get());
+  if (ephemeral_device_entry != ephemeral_hid_devices_.end()) {
+    return ephemeral_device_entry->second;
+  }
+
+  if (device->serial_number().empty()) {
+    return nullptr;
+  }
+
+  base::string16 serial_number = base::UTF8ToUTF16(device->serial_number());
+  for (const auto& entry : entries_) {
+    if (entry->IsPersistent() && entry->vendor_id() == device->vendor_id() &&
+        entry->product_id() == device->product_id() &&
+        entry->serial_number() == serial_number) {
+      return entry;
     }
-    if (entry->product_id() != device->product_id()) {
-      continue;
-    }
-    if (entry->serial_number() != device->serial_number()) {
-      continue;
-    }
-    return entry;
   }
   return nullptr;
 }
@@ -378,9 +405,98 @@ DevicePermissionsManager* DevicePermissionsManager::Get(
   return DevicePermissionsManagerFactory::GetForBrowserContext(context);
 }
 
+// static
+base::string16 DevicePermissionsManager::GetPermissionMessage(
+    uint16 vendor_id,
+    uint16 product_id,
+    const base::string16& manufacturer_string,
+    const base::string16& product_string,
+    const base::string16& serial_number,
+    bool always_include_manufacturer) {
+  base::string16 product = product_string;
+  if (product.empty()) {
+    const char* product_name =
+        device::UsbIds::GetProductName(vendor_id, product_id);
+    if (product_name) {
+      product = base::UTF8ToUTF16(product_name);
+    }
+  }
+
+  base::string16 manufacturer = manufacturer_string;
+  if (manufacturer_string.empty()) {
+    const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
+    if (vendor_name) {
+      manufacturer = base::UTF8ToUTF16(vendor_name);
+    }
+  }
+
+  if (serial_number.empty()) {
+    if (product.empty()) {
+      product = base::ASCIIToUTF16(base::StringPrintf("%04x", product_id));
+      if (manufacturer.empty()) {
+        manufacturer =
+            base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id));
+        return l10n_util::GetStringFUTF16(
+            IDS_DEVICE_NAME_WITH_UNKNOWN_PRODUCT_UNKNOWN_VENDOR, product,
+            manufacturer);
+      } else {
+        return l10n_util::GetStringFUTF16(
+            IDS_DEVICE_NAME_WITH_UNKNOWN_PRODUCT_VENDOR, product, manufacturer);
+      }
+    } else {
+      if (always_include_manufacturer) {
+        if (manufacturer.empty()) {
+          manufacturer =
+              base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id));
+          return l10n_util::GetStringFUTF16(
+              IDS_DEVICE_NAME_WITH_PRODUCT_UNKNOWN_VENDOR, product,
+              manufacturer);
+        } else {
+          return l10n_util::GetStringFUTF16(IDS_DEVICE_NAME_WITH_PRODUCT_VENDOR,
+                                            product, manufacturer);
+        }
+      } else {
+        return product;
+      }
+    }
+  } else {
+    if (product.empty()) {
+      product = base::ASCIIToUTF16(base::StringPrintf("%04x", product_id));
+      if (manufacturer.empty()) {
+        manufacturer =
+            base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id));
+        return l10n_util::GetStringFUTF16(
+            IDS_DEVICE_NAME_WITH_UNKNOWN_PRODUCT_UNKNOWN_VENDOR_SERIAL, product,
+            manufacturer, serial_number);
+      } else {
+        return l10n_util::GetStringFUTF16(
+            IDS_DEVICE_NAME_WITH_UNKNOWN_PRODUCT_VENDOR_SERIAL, product,
+            manufacturer, serial_number);
+      }
+    } else {
+      if (always_include_manufacturer) {
+        if (manufacturer.empty()) {
+          manufacturer =
+              base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id));
+          return l10n_util::GetStringFUTF16(
+              IDS_DEVICE_NAME_WITH_PRODUCT_UNKNOWN_VENDOR_SERIAL, product,
+              manufacturer, serial_number);
+        } else {
+          return l10n_util::GetStringFUTF16(
+              IDS_DEVICE_NAME_WITH_PRODUCT_VENDOR_SERIAL, product, manufacturer,
+              serial_number);
+        }
+      } else {
+        return l10n_util::GetStringFUTF16(IDS_DEVICE_NAME_WITH_PRODUCT_SERIAL,
+                                          product, serial_number);
+      }
+    }
+  }
+}
+
 DevicePermissions* DevicePermissionsManager::GetForExtension(
     const std::string& extension_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DevicePermissions* device_permissions = GetInternal(extension_id);
   if (!device_permissions) {
     device_permissions = new DevicePermissions(context_, extension_id);
@@ -393,7 +509,7 @@ DevicePermissions* DevicePermissionsManager::GetForExtension(
 std::vector<base::string16>
 DevicePermissionsManager::GetPermissionMessageStrings(
     const std::string& extension_id) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<base::string16> messages;
   const DevicePermissions* device_permissions = GetInternal(extension_id);
   if (device_permissions) {
@@ -405,10 +521,9 @@ DevicePermissionsManager::GetPermissionMessageStrings(
   return messages;
 }
 
-void DevicePermissionsManager::AllowUsbDevice(
-    const std::string& extension_id,
-    scoped_refptr<device::UsbDevice> device) {
-  DCHECK(CalledOnValidThread());
+void DevicePermissionsManager::AllowUsbDevice(const std::string& extension_id,
+                                              scoped_refptr<UsbDevice> device) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DevicePermissions* device_permissions = GetForExtension(extension_id);
 
   scoped_refptr<DevicePermissionEntry> device_entry(
@@ -416,25 +531,22 @@ void DevicePermissionsManager::AllowUsbDevice(
 
   if (device_entry->IsPersistent()) {
     for (const auto& entry : device_permissions->entries()) {
-      if (entry->vendor_id() != device_entry->vendor_id()) {
-        continue;
-      }
-      if (entry->product_id() != device_entry->product_id()) {
-        continue;
-      }
-      if (entry->serial_number() == device_entry->serial_number()) {
+      if (entry->vendor_id() == device_entry->vendor_id() &&
+          entry->product_id() == device_entry->product_id() &&
+          entry->serial_number() == device_entry->serial_number()) {
         return;
       }
     }
 
     device_permissions->entries_.insert(device_entry);
     SaveDevicePermissionEntry(context_, extension_id, device_entry);
-  } else if (!ContainsKey(device_permissions->ephemeral_devices_, device)) {
+  } else if (!ContainsKey(device_permissions->ephemeral_usb_devices_,
+                          device.get())) {
     // Non-persistent devices cannot be reliably identified when they are
     // reconnected so such devices are only remembered until disconnect.
     // Register an observer here so that this set doesn't grow undefinitely.
     device_permissions->entries_.insert(device_entry);
-    device_permissions->ephemeral_devices_[device] = device_entry;
+    device_permissions->ephemeral_usb_devices_[device.get()] = device_entry;
 
     // Only start observing when an ephemeral device has been added so that
     // UsbService is not automatically initialized on profile creation (which it
@@ -446,10 +558,48 @@ void DevicePermissionsManager::AllowUsbDevice(
   }
 }
 
+void DevicePermissionsManager::AllowHidDevice(
+    const std::string& extension_id,
+    scoped_refptr<HidDeviceInfo> device) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DevicePermissions* device_permissions = GetForExtension(extension_id);
+
+  scoped_refptr<DevicePermissionEntry> device_entry(
+      new DevicePermissionEntry(device));
+
+  if (device_entry->IsPersistent()) {
+    for (const auto& entry : device_permissions->entries()) {
+      if (entry->vendor_id() == device_entry->vendor_id() &&
+          entry->product_id() == device_entry->product_id() &&
+          entry->serial_number() == device_entry->serial_number()) {
+        return;
+      }
+    }
+
+    device_permissions->entries_.insert(device_entry);
+    SaveDevicePermissionEntry(context_, extension_id, device_entry);
+  } else if (!ContainsKey(device_permissions->ephemeral_hid_devices_,
+                          device.get())) {
+    // Non-persistent devices cannot be reliably identified when they are
+    // reconnected so such devices are only remembered until disconnect.
+    // Register an observer here so that this set doesn't grow undefinitely.
+    device_permissions->entries_.insert(device_entry);
+    device_permissions->ephemeral_hid_devices_[device.get()] = device_entry;
+
+    // Only start observing when an ephemeral device has been added so that
+    // HidService is not automatically initialized on profile creation (which it
+    // would be if this call were in the constructor).
+    HidService* hid_service = device::DeviceClient::Get()->GetHidService();
+    if (!hid_service_observer_.IsObserving(hid_service)) {
+      hid_service_observer_.Add(hid_service);
+    }
+  }
+}
+
 void DevicePermissionsManager::UpdateLastUsed(
     const std::string& extension_id,
     scoped_refptr<DevicePermissionEntry> entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   entry->set_last_used(base::Time::Now());
   if (entry->IsPersistent()) {
     UpdateDevicePermissionEntry(context_, extension_id, entry);
@@ -459,20 +609,24 @@ void DevicePermissionsManager::UpdateLastUsed(
 void DevicePermissionsManager::RemoveEntry(
     const std::string& extension_id,
     scoped_refptr<DevicePermissionEntry> entry) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DevicePermissions* device_permissions = GetInternal(extension_id);
   DCHECK(device_permissions);
   DCHECK(ContainsKey(device_permissions->entries_, entry));
   device_permissions->entries_.erase(entry);
   if (entry->IsPersistent()) {
     RemoveDevicePermissionEntry(context_, extension_id, entry);
+  } else if (entry->type_ == DevicePermissionEntry::Type::USB) {
+    device_permissions->ephemeral_usb_devices_.erase(entry->usb_device_.get());
+  } else if (entry->type_ == DevicePermissionEntry::Type::HID) {
+    device_permissions->ephemeral_hid_devices_.erase(entry->hid_device_.get());
   } else {
-    device_permissions->ephemeral_devices_.erase(entry->device_);
+    NOTREACHED();
   }
 }
 
 void DevicePermissionsManager::Clear(const std::string& extension_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ClearDevicePermissionEntries(ExtensionPrefs::Get(context_), extension_id);
   DevicePermissions* device_permissions = GetInternal(extension_id);
@@ -486,7 +640,8 @@ DevicePermissionsManager::DevicePermissionsManager(
     content::BrowserContext* context)
     : context_(context),
       process_manager_observer_(this),
-      usb_service_observer_(this) {
+      usb_service_observer_(this),
+      hid_service_observer_(this) {
   process_manager_observer_.Add(ProcessManager::Get(context));
 }
 
@@ -510,31 +665,51 @@ DevicePermissions* DevicePermissionsManager::GetInternal(
 
 void DevicePermissionsManager::OnBackgroundHostClose(
     const std::string& extension_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   DevicePermissions* device_permissions = GetInternal(extension_id);
   if (device_permissions) {
     // When all of the app's windows are closed and the background page is
     // suspended all ephemeral device permissions are cleared.
-    for (const auto& map_entry : device_permissions->ephemeral_devices_) {
+    for (const auto& map_entry : device_permissions->ephemeral_usb_devices_) {
       device_permissions->entries_.erase(map_entry.second);
     }
-    device_permissions->ephemeral_devices_.clear();
+    device_permissions->ephemeral_usb_devices_.clear();
+    for (const auto& map_entry : device_permissions->ephemeral_hid_devices_) {
+      device_permissions->entries_.erase(map_entry.second);
+    }
+    device_permissions->ephemeral_hid_devices_.clear();
   }
 }
 
 void DevicePermissionsManager::OnDeviceRemovedCleanup(
     scoped_refptr<UsbDevice> device) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (const auto& map_entry : extension_id_to_device_permissions_) {
     // An ephemeral device cannot be identified if it is reconnected and so
     // permission to access it is cleared on disconnect.
     DevicePermissions* device_permissions = map_entry.second;
     const auto& device_entry =
-        device_permissions->ephemeral_devices_.find(device);
-    if (device_entry != device_permissions->ephemeral_devices_.end()) {
+        device_permissions->ephemeral_usb_devices_.find(device.get());
+    if (device_entry != device_permissions->ephemeral_usb_devices_.end()) {
       device_permissions->entries_.erase(device_entry->second);
-      device_permissions->ephemeral_devices_.erase(device);
+      device_permissions->ephemeral_usb_devices_.erase(device_entry);
+    }
+  }
+}
+
+void DevicePermissionsManager::OnDeviceRemovedCleanup(
+    scoped_refptr<device::HidDeviceInfo> device) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (const auto& map_entry : extension_id_to_device_permissions_) {
+    // An ephemeral device cannot be identified if it is reconnected and so
+    // permission to access it is cleared on disconnect.
+    DevicePermissions* device_permissions = map_entry.second;
+    const auto& device_entry =
+        device_permissions->ephemeral_hid_devices_.find(device.get());
+    if (device_entry != device_permissions->ephemeral_hid_devices_.end()) {
+      device_permissions->entries_.erase(device_entry->second);
+      device_permissions->ephemeral_hid_devices_.erase(device_entry);
     }
   }
 }

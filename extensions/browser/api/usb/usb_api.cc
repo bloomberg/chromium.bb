@@ -400,7 +400,7 @@ bool UsbPermissionCheckingFunction::HasDevicePermission(
       device_permissions_manager_->GetForExtension(extension_id());
   DCHECK(device_permissions);
 
-  permission_entry_ = device_permissions->FindEntry(device);
+  permission_entry_ = device_permissions->FindUsbDeviceEntry(device);
   if (permission_entry_.get()) {
     return true;
   }

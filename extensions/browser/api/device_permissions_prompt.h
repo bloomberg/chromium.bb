@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -19,6 +19,8 @@ class WebContents;
 }
 
 namespace device {
+class HidDeviceFilter;
+class HidDeviceInfo;
 class UsbDevice;
 class UsbDeviceFilter;
 }
@@ -33,6 +35,8 @@ class DevicePermissionsPrompt {
  public:
   using UsbDevicesCallback = base::Callback<void(
       const std::vector<scoped_refptr<device::UsbDevice>>&)>;
+  using HidDevicesCallback = base::Callback<void(
+      const std::vector<scoped_refptr<device::HidDeviceInfo>>&)>;
 
   // Context information available to the UI implementation.
   class Prompt : public base::RefCounted<Prompt> {
@@ -92,6 +96,8 @@ class DevicePermissionsPrompt {
    protected:
     virtual ~Prompt();
 
+    void AddCheckedDevice(scoped_ptr<DeviceInfo> device, bool allowed);
+
     const Extension* extension() const { return extension_; }
     Observer* observer() const { return observer_; }
     content::BrowserContext* browser_context() const {
@@ -121,6 +127,12 @@ class DevicePermissionsPrompt {
                         bool multiple,
                         const std::vector<device::UsbDeviceFilter>& filters,
                         const UsbDevicesCallback& callback);
+
+  void AskForHidDevices(const Extension* extension,
+                        content::BrowserContext* context,
+                        bool multiple,
+                        const std::vector<device::HidDeviceFilter>& filters,
+                        const HidDevicesCallback& callback);
 
  protected:
   virtual void ShowDialog() = 0;
