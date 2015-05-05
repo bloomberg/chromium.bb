@@ -190,8 +190,8 @@ static AtkStateSet* ax_platform_node_auralinux_ref_state_set(
 static gfx::Point FindAtkObjectParentCoords(AtkObject* atk_object) {
   if (atk_object_get_role(atk_object) == ATK_ROLE_WINDOW) {
     int x, y;
-    atk_component_get_position(ATK_COMPONENT(atk_object),
-        &x, &y, ATK_XY_WINDOW);
+    atk_component_get_extents(ATK_COMPONENT(atk_object),
+        &x, &y, nullptr, nullptr, ATK_XY_WINDOW);
     gfx::Point window_coords(x, y);
     return window_coords;
   }
