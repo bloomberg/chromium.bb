@@ -40,7 +40,7 @@ LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
     , m_progressionIsInline(true)
     , m_isBeingEvacuated(false)
 {
-    setFlowThreadState(InsideInFlowThread);
+    setIsInsideFlowThread(true);
 }
 
 LayoutMultiColumnFlowThread::~LayoutMultiColumnFlowThread()

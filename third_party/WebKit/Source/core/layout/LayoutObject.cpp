@@ -265,7 +265,7 @@ bool LayoutObject::isLegend() const
     return isHTMLLegendElement(node());
 }
 
-void LayoutObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
+void LayoutObject::setIsInsideFlowThreadIncludingDescendants(bool insideFlowThread)
 {
     LayoutObject* next;
     for (LayoutObject *object = this; object; object = next) {
@@ -275,8 +275,8 @@ void LayoutObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
             continue;
         }
         next = object->nextInPreOrder(this);
-        ASSERT(state != object->flowThreadState());
-        object->setFlowThreadState(state);
+        ASSERT(insideFlowThread != object->isInsideFlowThread());
+        object->setIsInsideFlowThread(insideFlowThread);
     }
 }
 
@@ -598,7 +598,7 @@ LayoutBox* LayoutObject::enclosingScrollableBox() const
 
 LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
 {
-    ASSERT(flowThreadState() != NotInsideFlowThread);
+    ASSERT(isInsideFlowThread());
 
     // See if we have the thread cached because we're in the middle of layout.
     if (LayoutState* layoutState = view()->layoutState()) {
@@ -2515,7 +2515,7 @@ void LayoutObject::willBeRemovedFromTree()
 
 void LayoutObject::removeFromLayoutFlowThread()
 {
-    if (flowThreadState() == NotInsideFlowThread)
+    if (!isInsideFlowThread())
         return;
 
     // Sometimes we remove the element from the flow, but it's not destroyed at that time.
@@ -2542,7 +2542,7 @@ void LayoutObject::removeFromLayoutFlowThreadRecursive(LayoutFlowThread* layoutF
 
     if (layoutFlowThread && layoutFlowThread != this)
         layoutFlowThread->flowThreadDescendantWillBeRemoved(this);
-    setFlowThreadState(NotInsideFlowThread);
+    setIsInsideFlowThread(false);
     RELEASE_ASSERT(!spannerPlaceholder());
 }
 

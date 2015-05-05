@@ -360,7 +360,7 @@ LayoutInline* LayoutInline::clone() const
 {
     LayoutInline* cloneInline = new LayoutInline(node());
     cloneInline->setStyle(mutableStyle());
-    cloneInline->setFlowThreadState(flowThreadState());
+    cloneInline->setIsInsideFlowThread(isInsideFlowThread());
     return cloneInline;
 }
 

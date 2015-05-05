@@ -132,7 +132,7 @@ void LayoutTreeBuilderForElement::createLayoutObject()
 
     // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
     // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
-    newLayoutObject->setFlowThreadState(parentLayoutObject->flowThreadState());
+    newLayoutObject->setIsInsideFlowThread(parentLayoutObject->isInsideFlowThread());
 
     LayoutObject* nextLayoutObject = this->nextLayoutObject();
     m_node->setLayoutObject(newLayoutObject);
@@ -163,7 +163,7 @@ void LayoutTreeBuilderForText::createLayoutObject()
 
     // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
     // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
-    newLayoutObject->setFlowThreadState(parentLayoutObject->flowThreadState());
+    newLayoutObject->setIsInsideFlowThread(parentLayoutObject->isInsideFlowThread());
 
     LayoutObject* nextLayoutObject = this->nextLayoutObject();
     m_node->setLayoutObject(newLayoutObject);

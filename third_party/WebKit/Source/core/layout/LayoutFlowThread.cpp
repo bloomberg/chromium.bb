@@ -42,7 +42,6 @@ LayoutFlowThread::LayoutFlowThread()
     , m_regionsHaveUniformLogicalHeight(true)
     , m_pageLogicalSizeChanged(false)
 {
-    setFlowThreadState(InsideOutOfFlowThread);
 }
 
 void LayoutFlowThread::removeRegionFromThread(LayoutMultiColumnSet* columnSet)

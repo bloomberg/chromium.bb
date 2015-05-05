@@ -203,7 +203,7 @@ public:
     // function follows the containing block chain.
     LayoutFlowThread* flowThreadContainingBlock() const
     {
-        if (flowThreadState() == NotInsideFlowThread)
+        if (!isInsideFlowThread())
             return 0;
         return locateFlowThreadContainingBlock();
     }
@@ -287,9 +287,9 @@ protected:
         // Only update if our flow thread state is different from our new parent and if we're not a LayoutFlowThread.
         // A LayoutFlowThread is always considered to be inside itself, so it never has to change its state
         // in response to parent changes.
-        FlowThreadState newState = parent ? parent->flowThreadState() : NotInsideFlowThread;
-        if (newState != flowThreadState() && !isLayoutFlowThread())
-            setFlowThreadStateIncludingDescendants(newState);
+        bool insideFlowThread = parent && parent->isInsideFlowThread();
+        if (insideFlowThread != isInsideFlowThread() && !isLayoutFlowThread())
+            setIsInsideFlowThreadIncludingDescendants(insideFlowThread);
     }
 
     //////////////////////////////////////////
@@ -430,16 +430,10 @@ public:
             setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::LineBoxesChanged);
     }
 
-    enum FlowThreadState {
-        NotInsideFlowThread = 0,
-        InsideOutOfFlowThread = 1,
-        InsideInFlowThread = 2,
-    };
+    void setIsInsideFlowThreadIncludingDescendants(bool);
 
-    void setFlowThreadStateIncludingDescendants(FlowThreadState);
-
-    FlowThreadState flowThreadState() const { return m_bitfields.flowThreadState(); }
-    void setFlowThreadState(FlowThreadState state) { m_bitfields.setFlowThreadState(state); }
+    bool isInsideFlowThread() const { return m_bitfields.isInsideFlowThread(); }
+    void setIsInsideFlowThread(bool insideFlowThread) { m_bitfields.setIsInsideFlowThread(insideFlowThread); }
 
     // FIXME: Until all SVG layoutObjects can be subclasses of LayoutSVGModelObject we have
     // to add SVG layoutObject methods to LayoutObject with an ASSERT_NOT_REACHED() default implementation.
@@ -1314,13 +1308,13 @@ private:
             , m_ancestorLineBoxDirty(false)
             , m_layoutDidGetCalledSinceLastFrame(false)
             , m_hasPendingResourceUpdate(false)
+            , m_isInsideFlowThread(false)
             , m_childrenInline(false)
             , m_hasColumns(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
             , m_lastBoxDecorationBackgroundObscured(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
-            , m_flowThreadState(NotInsideFlowThread)
             , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
             , m_fullPaintInvalidationReason(PaintInvalidationNone)
         {
@@ -1362,6 +1356,8 @@ private:
 
         ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
 
+        ADD_BOOLEAN_BITFIELD(isInsideFlowThread, IsInsideFlowThread);
+
         // from LayoutBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
         ADD_BOOLEAN_BITFIELD(hasColumns, HasColumns);
@@ -1375,7 +1371,6 @@ private:
     private:
         unsigned m_positionedState : 2; // PositionedState
         unsigned m_selectionState : 3; // SelectionState
-        unsigned m_flowThreadState : 2; // FlowThreadState
         unsigned m_boxDecorationBackgroundState : 2; // BoxDecorationBackgroundState
         unsigned m_fullPaintInvalidationReason : 5; // PaintInvalidationReason
 
@@ -1393,9 +1388,6 @@ private:
 
         ALWAYS_INLINE SelectionState selectionState() const { return static_cast<SelectionState>(m_selectionState); }
         ALWAYS_INLINE void setSelectionState(SelectionState selectionState) { m_selectionState = selectionState; }
-
-        ALWAYS_INLINE FlowThreadState flowThreadState() const { return static_cast<FlowThreadState>(m_flowThreadState); }
-        ALWAYS_INLINE void setFlowThreadState(FlowThreadState flowThreadState) { m_flowThreadState = flowThreadState; }
 
         ALWAYS_INLINE BoxDecorationBackgroundState boxDecorationBackgroundState() const { return static_cast<BoxDecorationBackgroundState>(m_boxDecorationBackgroundState); }
         ALWAYS_INLINE void setBoxDecorationBackgroundState(BoxDecorationBackgroundState s) { m_boxDecorationBackgroundState = s; }

@@ -596,7 +596,7 @@ LayoutBlock* LayoutBlock::clone() const
         // generated content added yet.
         cloneBlock->setChildrenInline(cloneBlock->firstChild() ? cloneBlock->firstChild()->isInline() : childrenInline());
     }
-    cloneBlock->setFlowThreadState(flowThreadState());
+    cloneBlock->setIsInsideFlowThread(isInsideFlowThread());
     return cloneBlock;
 }
 
