@@ -13,6 +13,8 @@
 #include "base/process/memory.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/child_process_messages.h"
 
@@ -83,9 +85,13 @@ void SendDeletedDiscardableSharedMemoryMessage(
 ChildDiscardableSharedMemoryManager::ChildDiscardableSharedMemoryManager(
     ThreadSafeSender* sender)
     : heap_(base::GetPageSize()), sender_(sender) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, base::ThreadTaskRunnerHandle::Get());
 }
 
 ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
   // TODO(reveman): Determine if this DCHECK can be enabled. crbug.com/430533
   // DCHECK_EQ(heap_.GetSize(), heap_.GetSizeOfFreeLists());
   if (heap_.GetSize())
@@ -170,7 +176,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   // Create span for allocated memory.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(heap_.Grow(
-      shared_memory.Pass(), allocation_size_in_bytes,
+      shared_memory.Pass(), allocation_size_in_bytes, new_id,
       base::Bind(&SendDeletedDiscardableSharedMemoryMessage, sender_, new_id)));
 
   // Unlock and insert any left over memory into free lists.
@@ -187,6 +193,11 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
   return make_scoped_ptr(new DiscardableMemoryImpl(this, new_span.Pass()));
+}
+
+bool ChildDiscardableSharedMemoryManager::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  return heap_.OnMemoryDump(pmd);
 }
 
 void ChildDiscardableSharedMemoryManager::ReleaseFreeMemory() {

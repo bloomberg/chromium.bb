@@ -8,6 +8,7 @@
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "content/common/discardable_shared_memory_heap.h"
@@ -18,7 +19,8 @@ namespace content {
 // Implementation of DiscardableMemoryAllocator that allocates
 // discardable memory segments through the browser process.
 class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
-    : public base::DiscardableMemoryAllocator {
+    : public base::DiscardableMemoryAllocator,
+      public base::trace_event::MemoryDumpProvider {
  public:
   explicit ChildDiscardableSharedMemoryManager(ThreadSafeSender* sender);
   ~ChildDiscardableSharedMemoryManager() override;
@@ -26,6 +28,9 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
   // Overridden from base::DiscardableMemoryAllocator:
   scoped_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
+
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 
   // Release memory and associated resources that have been purged.
   void ReleaseFreeMemory();

@@ -7,9 +7,13 @@
 #include <algorithm>
 
 #include "base/memory/discardable_shared_memory.h"
+#include "base/strings/stringprintf.h"
 
 namespace content {
 namespace {
+
+const char kMemoryAllocatorHeapNamePrefix[] = "segment";
+const char kMemoryAllocatorName[] = "discardable";
 
 bool IsPowerOfTwo(size_t x) {
   return (x & (x - 1)) == 0;
@@ -35,10 +39,12 @@ DiscardableSharedMemoryHeap::ScopedMemorySegment::ScopedMemorySegment(
     DiscardableSharedMemoryHeap* heap,
     scoped_ptr<base::DiscardableSharedMemory> shared_memory,
     size_t size,
+    int32_t id,
     const base::Closure& deleted_callback)
     : heap_(heap),
       shared_memory_(shared_memory.Pass()),
       size_(size),
+      id_(id),
       deleted_callback_(deleted_callback) {
 }
 
@@ -53,6 +59,11 @@ bool DiscardableSharedMemoryHeap::ScopedMemorySegment::IsUsed() const {
 
 bool DiscardableSharedMemoryHeap::ScopedMemorySegment::IsResident() const {
   return heap_->IsMemoryResident(shared_memory_.get());
+}
+
+void DiscardableSharedMemoryHeap::ScopedMemorySegment::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) const {
+  heap_->OnMemoryDump(shared_memory_.get(), size_, id_, pmd);
 }
 
 DiscardableSharedMemoryHeap::DiscardableSharedMemoryHeap(size_t block_size)
@@ -75,6 +86,7 @@ DiscardableSharedMemoryHeap::~DiscardableSharedMemoryHeap() {
 scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
     scoped_ptr<base::DiscardableSharedMemory> shared_memory,
     size_t size,
+    int32_t id,
     const base::Closure& deleted_callback) {
   // Memory must be aligned to block size.
   DCHECK_EQ(
@@ -93,8 +105,8 @@ scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
   num_blocks_ += span->length_;
 
   // Start tracking if segment is resident by adding it to |memory_segments_|.
-  memory_segments_.push_back(new ScopedMemorySegment(this, shared_memory.Pass(),
-                                                     size, deleted_callback));
+  memory_segments_.push_back(new ScopedMemorySegment(
+      this, shared_memory.Pass(), size, id, deleted_callback));
 
   return span.Pass();
 }
@@ -212,6 +224,16 @@ size_t DiscardableSharedMemoryHeap::GetSizeOfFreeLists() const {
   return num_free_blocks_ * block_size_;
 }
 
+bool DiscardableSharedMemoryHeap::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  std::for_each(
+      memory_segments_.begin(), memory_segments_.end(),
+      [pmd](const ScopedMemorySegment* segment) {
+        segment->OnMemoryDump(pmd);
+      });
+  return true;
+}
+
 void DiscardableSharedMemoryHeap::InsertIntoFreeList(
     scoped_ptr<DiscardableSharedMemoryHeap::Span> span) {
   DCHECK(!IsInFreeList(span.get()));
@@ -314,6 +336,42 @@ void DiscardableSharedMemoryHeap::ReleaseMemory(
       RemoveFromFreeList(span);
     }
   }
+}
+
+void DiscardableSharedMemoryHeap::OnMemoryDump(
+    const base::DiscardableSharedMemory* shared_memory,
+    size_t size,
+    int32_t id,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  std::string heap_name = base::StringPrintf(
+      "%s/%s_%d", kMemoryAllocatorName, kMemoryAllocatorHeapNamePrefix, id);
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(heap_name);
+  DCHECK(dump);
+
+  size_t allocated_objects_count = 0;
+  size_t allocated_objects_size_in_bytes = 0;
+  size_t offset =
+      reinterpret_cast<size_t>(shared_memory->memory()) / block_size_;
+  size_t end = offset + size / block_size_;
+  while (offset < end) {
+    Span* span = spans_[offset];
+    if (!IsInFreeList(span)) {
+      allocated_objects_count++;
+      allocated_objects_size_in_bytes += span->length_;
+    }
+    offset += span->length_;
+  }
+
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameOuterSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(size));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectsCount,
+                  base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                  static_cast<uint64_t>(allocated_objects_count));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameInnerSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(allocated_objects_size_in_bytes));
 }
 
 }  // namespace content

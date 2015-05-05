@@ -10,6 +10,7 @@
 #include "base/containers/linked_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -53,6 +54,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // |shared_memory| has been deleted.
   scoped_ptr<Span> Grow(scoped_ptr<base::DiscardableSharedMemory> shared_memory,
                         size_t size,
+                        int32_t id,
                         const base::Closure& deleted_callback);
 
   // Merge |span| into the free lists. This will coalesce |span| with
@@ -83,22 +85,30 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // Returns bytes of memory currently in the free lists.
   size_t GetSizeOfFreeLists() const;
 
+  // Dumps memory statistics for chrome://tracing.
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
+
  private:
   class ScopedMemorySegment {
    public:
     ScopedMemorySegment(DiscardableSharedMemoryHeap* heap,
                         scoped_ptr<base::DiscardableSharedMemory> shared_memory,
                         size_t size,
+                        int32_t id,
                         const base::Closure& deleted_callback);
     ~ScopedMemorySegment();
 
     bool IsUsed() const;
     bool IsResident() const;
 
+    // Used for dumping memory statistics from the segment to chrome://tracing.
+    void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) const;
+
    private:
     DiscardableSharedMemoryHeap* const heap_;
     scoped_ptr<base::DiscardableSharedMemory> shared_memory_;
     const size_t size_;
+    const int32_t id_;
     const base::Closure deleted_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedMemorySegment);
@@ -114,6 +124,12 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   bool IsMemoryResident(const base::DiscardableSharedMemory* shared_memory);
   void ReleaseMemory(const base::DiscardableSharedMemory* shared_memory,
                      size_t size);
+
+  // Dumps memory statistics about a memory segment for chrome://tracing.
+  void OnMemoryDump(const base::DiscardableSharedMemory* shared_memory,
+                    size_t size,
+                    int32_t id,
+                    base::trace_event::ProcessMemoryDump* pmd);
 
   size_t block_size_;
   size_t num_blocks_;

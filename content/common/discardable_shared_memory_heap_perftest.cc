@@ -32,13 +32,15 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
   const size_t kBlocks = 4096;
   const size_t kSegments = 16;
   size_t segment_size = block_size * kBlocks;
+  int next_discardable_shared_memory_id = 0;
 
   for (size_t i = 0; i < kSegments; ++i) {
     scoped_ptr<base::DiscardableSharedMemory> memory(
         new base::DiscardableSharedMemory);
     ASSERT_TRUE(memory->CreateAndMap(segment_size));
-    heap.MergeIntoFreeLists(
-        heap.Grow(memory.Pass(), segment_size, base::Bind(NullTask)).Pass());
+    heap.MergeIntoFreeLists(heap.Grow(memory.Pass(), segment_size,
+                                      next_discardable_shared_memory_id++,
+                                      base::Bind(NullTask)).Pass());
   }
 
   unsigned kSeed = 1;

@@ -30,6 +30,7 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
 
   const size_t kBlocks = 10;
   size_t memory_size = block_size * kBlocks;
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
@@ -37,7 +38,8 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
 
   // Create new span for memory.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
-      heap.Grow(memory.Pass(), memory_size, base::Bind(NullTask)));
+      heap.Grow(memory.Pass(), memory_size, next_discardable_shared_memory_id++,
+                base::Bind(NullTask)));
 
   // Size should match |memory_size|.
   EXPECT_EQ(memory_size, heap.GetSize());
@@ -75,12 +77,14 @@ TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
 
   const size_t kBlocks = 6;
   size_t memory_size = block_size * kBlocks;
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(memory_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
-      heap.Grow(memory.Pass(), memory_size, base::Bind(NullTask)));
+      heap.Grow(memory.Pass(), memory_size, next_discardable_shared_memory_id++,
+                base::Bind(NullTask)));
 
   // Split span into two.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> leftover =
@@ -130,12 +134,14 @@ TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
 
   const size_t kBlocks = 6;
   size_t memory_size = block_size * kBlocks;
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(memory_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
-      heap.Grow(memory.Pass(), memory_size, base::Bind(NullTask)));
+      heap.Grow(memory.Pass(), memory_size, next_discardable_shared_memory_id++,
+                base::Bind(NullTask)));
 
   // Split span into two.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> leftover =
@@ -152,12 +158,14 @@ TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
 TEST(DiscardableSharedMemoryHeapTest, Grow) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory1(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory1->CreateAndMap(block_size));
-  heap.MergeIntoFreeLists(
-      heap.Grow(memory1.Pass(), block_size, base::Bind(NullTask)).Pass());
+  heap.MergeIntoFreeLists(heap.Grow(memory1.Pass(), block_size,
+                                    next_discardable_shared_memory_id++,
+                                    base::Bind(NullTask)).Pass());
 
   // Remove a span from free lists.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span1 =
@@ -171,8 +179,9 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
   scoped_ptr<base::DiscardableSharedMemory> memory2(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory2->CreateAndMap(block_size));
-  heap.MergeIntoFreeLists(
-      heap.Grow(memory2.Pass(), block_size, base::Bind(NullTask)).Pass());
+  heap.MergeIntoFreeLists(heap.Grow(memory2.Pass(), block_size,
+                                    next_discardable_shared_memory_id++,
+                                    base::Bind(NullTask)).Pass());
 
   // Memory should now be available.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span2 =
@@ -187,12 +196,14 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
 TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(block_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.Grow(memory.Pass(), block_size, base::Bind(NullTask));
+      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
+                base::Bind(NullTask));
 
   // Free lists should be empty.
   EXPECT_EQ(0u, heap.GetSizeOfFreeLists());
@@ -213,12 +224,14 @@ TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
 TEST(DiscardableSharedMemoryHeapTest, ReleasePurgedMemory) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(block_size));
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.Grow(memory.Pass(), block_size, base::Bind(NullTask));
+      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
+                base::Bind(NullTask));
 
   // Unlock memory so it can be purged.
   span->shared_memory()->Unlock(0, 0);
@@ -241,12 +254,14 @@ TEST(DiscardableSharedMemoryHeapTest, Slack) {
 
   const size_t kBlocks = 6;
   size_t memory_size = block_size * kBlocks;
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(memory_size));
-  heap.MergeIntoFreeLists(
-      heap.Grow(memory.Pass(), memory_size, base::Bind(NullTask)).Pass());
+  heap.MergeIntoFreeLists(heap.Grow(memory.Pass(), memory_size,
+                                    next_discardable_shared_memory_id++,
+                                    base::Bind(NullTask)).Pass());
 
   // No free span that is less or equal to 3 + 1.
   EXPECT_FALSE(heap.SearchFreeLists(3, 1));
@@ -271,13 +286,14 @@ void OnDeleted(bool* deleted) {
 TEST(DiscardableSharedMemoryHeapTest, DeletedCallback) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
+  int next_discardable_shared_memory_id = 0;
 
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   ASSERT_TRUE(memory->CreateAndMap(block_size));
   bool deleted = false;
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span =
-      heap.Grow(memory.Pass(), block_size,
+      heap.Grow(memory.Pass(), block_size, next_discardable_shared_memory_id++,
                 base::Bind(OnDeleted, base::Unretained(&deleted)));
 
   heap.MergeIntoFreeLists(span.Pass());
