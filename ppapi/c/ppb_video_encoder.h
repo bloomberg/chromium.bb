@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_encoder.idl modified Thu Feb  5 10:33:32 2015. */
+/* From ppb_video_encoder.idl modified Tue May  5 18:07:09 2015. */
 
 #ifndef PPAPI_C_PPB_VIDEO_ENCODER_H_
 #define PPAPI_C_PPB_VIDEO_ENCODER_H_
@@ -50,9 +50,8 @@
  *   it. Any pending callbacks will abort before the encoder is destroyed.
  *
  * Available video codecs vary by platform.
- * All: theora, vorbis, vp8.
- * Chrome and ChromeOS: h264.
- * ChromeOS: mpeg4.
+ * All: vp8 (software).
+ * ChromeOS, depending on your device: h264 (hardware), vp8 (hardware)
  */
 struct PPB_VideoEncoder_0_1 { /* dev */
   /**
