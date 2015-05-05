@@ -257,30 +257,6 @@ TEST_F(FrameTreeTest, FindFrames) {
   EXPECT_EQ(nullptr, frame_tree->FindByName("no such frame"));
 }
 
-// Check that PreviousSibling() is retrieved correctly.
-TEST_F(FrameTreeTest, PreviousSibling) {
-  // Add a few child frames to the main frame.
-  FrameTree* frame_tree = contents()->GetFrameTree();
-  FrameTreeNode* root = frame_tree->root();
-  main_test_rfh()->OnCreateChildFrame(22, "child0", SandboxFlags::NONE);
-  main_test_rfh()->OnCreateChildFrame(23, "child1", SandboxFlags::NONE);
-  main_test_rfh()->OnCreateChildFrame(24, "child2", SandboxFlags::NONE);
-  FrameTreeNode* child0 = root->child_at(0);
-  FrameTreeNode* child1 = root->child_at(1);
-  FrameTreeNode* child2 = root->child_at(2);
-
-  // Add one grandchild frame.
-  child1->current_frame_host()->OnCreateChildFrame(33, "grandchild",
-                                                   SandboxFlags::NONE);
-  FrameTreeNode* grandchild = child1->child_at(0);
-
-  EXPECT_EQ(nullptr, root->PreviousSibling());
-  EXPECT_EQ(nullptr, child0->PreviousSibling());
-  EXPECT_EQ(child0, child1->PreviousSibling());
-  EXPECT_EQ(child1, child2->PreviousSibling());
-  EXPECT_EQ(nullptr, grandchild->PreviousSibling());
-}
-
 // Do some simple manipulations of the frame tree, making sure that
 // WebContentsObservers see a consistent view of the tree as we go.
 TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {

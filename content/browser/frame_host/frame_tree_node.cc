@@ -162,19 +162,6 @@ bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
   return false;
 }
 
-FrameTreeNode* FrameTreeNode::PreviousSibling() const {
-  if (!parent_)
-    return nullptr;
-
-  for (size_t i = 0; i < parent_->child_count(); ++i) {
-    if (parent_->child_at(i) == this)
-      return (i == 0) ? nullptr : parent_->child_at(i - 1);
-  }
-
-  NOTREACHED() << "FrameTreeNode not found in its parent's children.";
-  return nullptr;
-}
-
 bool FrameTreeNode::IsLoading() const {
   RenderFrameHostImpl* current_frame_host =
       render_manager_.current_frame_host();
