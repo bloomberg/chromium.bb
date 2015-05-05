@@ -47,13 +47,7 @@ CTLogVerifier::~CTLogVerifier() {
     EVP_PKEY_free(public_key_);
 }
 
-CTLogVerifier::CTLogVerifier()
-    : hash_algorithm_(ct::DigitallySigned::HASH_ALGO_NONE),
-      signature_algorithm_(ct::DigitallySigned::SIG_ALGO_ANONYMOUS),
-      public_key_(NULL) {}
-
-bool CTLogVerifier::Init(const base::StringPiece& public_key,
-                         const base::StringPiece& description) {
+bool CTLogVerifier::Init(const base::StringPiece& public_key) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   const uint8_t* ptr = reinterpret_cast<const uint8_t*>(public_key.data());
@@ -63,7 +57,6 @@ bool CTLogVerifier::Init(const base::StringPiece& public_key,
     return false;
 
   key_id_ = crypto::SHA256HashString(public_key);
-  description_ = description.as_string();
 
   // Right now, only RSASSA-PKCS1v15 with SHA-256 and ECDSA with SHA-256 are
   // supported.

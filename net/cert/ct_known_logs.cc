@@ -21,7 +21,8 @@ ScopedVector<CTLogVerifier> CreateLogVerifiersForKnownLogs() {
     const CTLogInfo& log(kCTLogList[i]);
     base::StringPiece key(log.log_key, arraysize(log.log_key) - 1);
 
-    verifiers.push_back(CTLogVerifier::Create(key, log.log_name).release());
+    verifiers.push_back(
+        CTLogVerifier::Create(key, log.log_name, log.log_url).release());
   }
 
   return verifiers.Pass();

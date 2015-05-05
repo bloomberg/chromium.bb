@@ -733,17 +733,19 @@ void IOThread::InitAsync() {
     for (std::vector<std::string>::iterator it = logs.begin(); it != logs.end();
          ++it) {
       const std::string& curr_log = *it;
-      size_t delim_pos = curr_log.find(":");
-      CHECK(delim_pos != std::string::npos)
-          << "CT log description not provided (switch format"
-             " is 'description:base64_key')";
-      std::string log_description(curr_log.substr(0, delim_pos));
+      std::vector<std::string> log_metadata;
+      base::SplitString(curr_log, ':', &log_metadata);
+      CHECK_GE(log_metadata.size(), 3u)
+          << "CT log metadata missing: Switch format is "
+          << "'description:base64_key:url_without_schema'.";
+      std::string log_description(log_metadata[0]);
+      std::string log_url(std::string("https://") + log_metadata[2]);
       std::string ct_public_key_data;
-      CHECK(base::Base64Decode(curr_log.substr(delim_pos + 1),
-                               &ct_public_key_data))
+      CHECK(base::Base64Decode(log_metadata[1], &ct_public_key_data))
           << "Unable to decode CT public key.";
       scoped_ptr<net::CTLogVerifier> external_log_verifier(
-          net::CTLogVerifier::Create(ct_public_key_data, log_description));
+          net::CTLogVerifier::Create(ct_public_key_data, log_description,
+                                     log_url));
       CHECK(external_log_verifier) << "Unable to parse CT public key.";
       VLOG(1) << "Adding log with description " << log_description;
       ct_verifier->AddLog(external_log_verifier.Pass());

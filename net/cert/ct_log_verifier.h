@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "url/gurl.h"
 
 // Forward declare the crypto types to avoid having to include the full
 // headers.
@@ -35,9 +36,9 @@ class NET_EXPORT CTLogVerifier {
   // using |public_key|, which is a DER-encoded SubjectPublicKeyInfo.
   // If |public_key| refers to an unsupported public key, returns NULL.
   // |description| is a textual description of the log.
-  static scoped_ptr<CTLogVerifier> Create(
-      const base::StringPiece& public_key,
-      const base::StringPiece& description);
+  static scoped_ptr<CTLogVerifier> Create(const base::StringPiece& public_key,
+                                          const base::StringPiece& description,
+                                          const base::StringPiece& url);
 
   ~CTLogVerifier();
 
@@ -58,11 +59,10 @@ class NET_EXPORT CTLogVerifier {
  private:
   FRIEND_TEST_ALL_PREFIXES(CTLogVerifierTest, VerifySignature);
 
-  CTLogVerifier();
+  CTLogVerifier(const base::StringPiece& description, const GURL& url);
 
   // Performs crypto-library specific initialization.
-  bool Init(const base::StringPiece& public_key,
-            const base::StringPiece& description);
+  bool Init(const base::StringPiece& public_key);
 
   // Performs the underlying verification using the selected public key. Note
   // that |signature| contains the raw signature data (eg: without any
@@ -76,6 +76,7 @@ class NET_EXPORT CTLogVerifier {
 
   std::string key_id_;
   std::string description_;
+  GURL url_;
   ct::DigitallySigned::HashAlgorithm hash_algorithm_;
   ct::DigitallySigned::SignatureAlgorithm signature_algorithm_;
   scoped_ptr<ct::SignedTreeHead> signed_tree_head_;

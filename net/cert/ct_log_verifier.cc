@@ -13,11 +13,25 @@ namespace net {
 // static
 scoped_ptr<CTLogVerifier> CTLogVerifier::Create(
     const base::StringPiece& public_key,
-    const base::StringPiece& description) {
-  scoped_ptr<CTLogVerifier> result(new CTLogVerifier());
-  if (!result->Init(public_key, description))
+    const base::StringPiece& description,
+    const base::StringPiece& url) {
+  GURL log_url(url.as_string());
+  if (!log_url.is_valid())
+    return nullptr;
+  scoped_ptr<CTLogVerifier> result(new CTLogVerifier(description, log_url));
+  if (!result->Init(public_key))
     result.reset();
   return result.Pass();
+}
+
+CTLogVerifier::CTLogVerifier(const base::StringPiece& description,
+                             const GURL& url)
+    : description_(description.as_string()),
+      url_(url),
+      hash_algorithm_(ct::DigitallySigned::HASH_ALGO_NONE),
+      signature_algorithm_(ct::DigitallySigned::SIG_ALGO_ANONYMOUS),
+      public_key_(NULL) {
+  DCHECK(url_.is_valid());
 }
 
 bool CTLogVerifier::Verify(const ct::LogEntry& entry,

@@ -31,7 +31,8 @@ class CTObjectsExtractorTest : public ::testing::Test {
     test_cert_ = X509Certificate::CreateFromBytes(der_test_cert.data(),
                                                   der_test_cert.length());
 
-    log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog").Pass();
+    log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog",
+                                 "https://ct.example.com").Pass();
     ASSERT_TRUE(log_);
   }
 
