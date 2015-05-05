@@ -170,7 +170,11 @@ class SyncPointClientImpl : public VideoFrame::SyncPointClient {
 // Generates an RGB image from a VideoFrame. Convert YUV to RGB plain on GPU.
 class VideoImageGenerator : public SkImageGenerator {
  public:
-  VideoImageGenerator(const scoped_refptr<VideoFrame>& frame) : frame_(frame) {
+  VideoImageGenerator(const scoped_refptr<VideoFrame>& frame)
+      : SkImageGenerator(
+            SkImageInfo::MakeN32Premul(frame->visible_rect().width(),
+                                       frame->visible_rect().height()))
+      , frame_(frame) {
     DCHECK(frame_.get());
   }
   ~VideoImageGenerator() override {}
@@ -178,14 +182,6 @@ class VideoImageGenerator : public SkImageGenerator {
   void set_frame(const scoped_refptr<VideoFrame>& frame) { frame_ = frame; }
 
  protected:
-  bool onGetInfo(SkImageInfo* info) override {
-    info->fWidth = frame_->visible_rect().width();
-    info->fHeight = frame_->visible_rect().height();
-    info->fColorType = kN32_SkColorType;
-    info->fAlphaType = kPremul_SkAlphaType;
-    return true;
-  }
-
   Result onGetPixels(const SkImageInfo& info,
                      void* pixels,
                      size_t row_bytes,
