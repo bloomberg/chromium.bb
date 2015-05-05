@@ -6,8 +6,13 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+
+using extensions::Extension;
+using extensions::ProcessManager;
 
 ContextMenuContentTypePlatformApp::ContextMenuContentTypePlatformApp(
     content::WebContents* web_contents,
@@ -16,6 +21,13 @@ ContextMenuContentTypePlatformApp::ContextMenuContentTypePlatformApp(
 }
 
 ContextMenuContentTypePlatformApp::~ContextMenuContentTypePlatformApp() {
+}
+
+const Extension* ContextMenuContentTypePlatformApp::GetExtension() const {
+  ProcessManager* process_manager =
+      ProcessManager::Get(source_web_contents()->GetBrowserContext());
+  return process_manager->GetExtensionForWebContents(
+      source_web_contents());
 }
 
 bool ContextMenuContentTypePlatformApp::SupportsGroup(int group) {

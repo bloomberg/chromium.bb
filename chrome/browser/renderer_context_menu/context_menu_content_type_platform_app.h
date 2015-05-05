@@ -7,6 +7,10 @@
 
 #include "components/renderer_context_menu/context_menu_content_type.h"
 
+namespace extensions {
+class Extension;
+}
+
 class ContextMenuContentTypePlatformApp : public ContextMenuContentType {
  public:
   ~ContextMenuContentTypePlatformApp() override;
@@ -20,6 +24,8 @@ class ContextMenuContentTypePlatformApp : public ContextMenuContentType {
 
  private:
   friend class ContextMenuContentTypeFactory;
+
+  const extensions::Extension* GetExtension() const;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentTypePlatformApp);
 };

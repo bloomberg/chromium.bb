@@ -7,6 +7,10 @@
 
 #include "components/renderer_context_menu/context_menu_content_type.h"
 
+namespace extensions {
+class Extension;
+}
+
 // A ContextMenuContentType for <webview> guest.
 // Guests are rendered inside chrome apps, but have most of the actions
 // that a regular web page has. Currently actions/items that are suppressed from
@@ -24,6 +28,8 @@ class ContextMenuContentTypeWebView : public ContextMenuContentType {
 
  private:
   friend class ContextMenuContentTypeFactory;
+
+  const extensions::Extension* GetExtension() const;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentTypeWebView);
 };

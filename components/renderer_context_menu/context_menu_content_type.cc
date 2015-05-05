@@ -9,18 +9,8 @@
 #include "content/public/common/url_constants.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
-#if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/process_manager.h"
-#include "extensions/common/extension.h"
-#endif
-
 using blink::WebContextMenuData;
 using content::WebContents;
-
-#if defined(ENABLE_EXTENSIONS)
-using extensions::Extension;
-using extensions::ProcessManager;
-#endif
 
 namespace {
 
@@ -47,15 +37,6 @@ ContextMenuContentType::ContextMenuContentType(
 
 ContextMenuContentType::~ContextMenuContentType() {
 }
-
-#if defined(ENABLE_EXTENSIONS)
-const Extension* ContextMenuContentType::GetExtension() const {
-  ProcessManager* process_manager =
-      ProcessManager::Get(source_web_contents_->GetBrowserContext());
-  return process_manager->GetExtensionForWebContents(
-      source_web_contents_);
-}
-#endif
 
 bool ContextMenuContentType::SupportsGroup(int group) {
   const bool has_selection = !params_.selection_text.empty();

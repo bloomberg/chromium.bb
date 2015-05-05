@@ -176,6 +176,11 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   scoped_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
 #endif
 
+  // In the case of a MimeHandlerView this will point to the WebContents that
+  // embeds the MimeHandlerViewGuest. Otherwise this will be the same as
+  // |source_web_contents_|.
+  content::WebContents* embedder_web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
 

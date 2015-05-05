@@ -8,8 +8,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+
+using extensions::Extension;
+using extensions::ProcessManager;
 
 ContextMenuContentTypeWebView::ContextMenuContentTypeWebView(
     content::WebContents* web_contents,
@@ -18,6 +22,13 @@ ContextMenuContentTypeWebView::ContextMenuContentTypeWebView(
 }
 
 ContextMenuContentTypeWebView::~ContextMenuContentTypeWebView() {
+}
+
+const Extension* ContextMenuContentTypeWebView::GetExtension() const {
+  ProcessManager* process_manager =
+      ProcessManager::Get(source_web_contents()->GetBrowserContext());
+  return process_manager->GetExtensionForWebContents(
+      source_web_contents());
 }
 
 bool ContextMenuContentTypeWebView::SupportsGroup(int group) {

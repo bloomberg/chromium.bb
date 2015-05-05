@@ -103,6 +103,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/text_elider.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#endif
+
 #if defined(ENABLE_PRINTING)
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "components/printing/common/print_messages.h"
@@ -303,6 +307,19 @@ content::Referrer CreateSaveAsReferrer(
       content::Referrer(referring_url.GetAsReferrer(), params.referrer_policy));
 }
 
+content::WebContents* GetWebContentsToUse(content::WebContents* web_contents) {
+#if defined(ENABLE_EXTENSIONS)
+  // If we're viewing in a MimeHandlerViewGuest, use its embedder WebContents.
+  if (extensions::MimeHandlerViewGuest::FromWebContents(web_contents)) {
+    WebContents* top_level_web_contents =
+        guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
+    if (top_level_web_contents)
+      return top_level_web_contents;
+  }
+#endif
+  return web_contents;
+}
+
 bool g_custom_id_ranges_initialized = false;
 
 const int kSpellcheckRadioGroup = 1;
@@ -350,7 +367,8 @@ RenderViewContextMenu::RenderViewContextMenu(
                        base::Bind(MenuItemMatchesParams, params_)),
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
-          ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())) {
+          ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
+      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,

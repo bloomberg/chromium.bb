@@ -15,9 +15,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/menu_item.h"
-#if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#endif
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
 using blink::WebContextMenuData;
@@ -129,17 +126,6 @@ void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
   }
 }
 
-content::WebContents* GetWebContentsToUse(content::WebContents* web_contents) {
-// If we're viewing in a MimeHandlerViewGuest, use its embedder WebContents.
-#if defined(ENABLE_EXTENSIONS)
-  auto guest_view =
-      extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
-  if (guest_view)
-    return guest_view->embedder_web_contents();
-#endif
-  return web_contents;
-}
-
 }  // namespace
 
 // static
@@ -169,7 +155,6 @@ RenderViewContextMenuBase::RenderViewContextMenuBase(
     const content::ContextMenuParams& params)
     : params_(params),
       source_web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
-      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)),
       browser_context_(source_web_contents_->GetBrowserContext()),
       menu_model_(this),
       render_frame_id_(render_frame_host->GetRoutingID()),
