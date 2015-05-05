@@ -49,7 +49,6 @@ class FakeSchedulerClient : public SchedulerClient {
  public:
   FakeSchedulerClient()
       : automatic_swap_ack_(true),
-        begin_frame_is_sent_to_children_(false),
         scheduler_(nullptr) {
     Reset();
   }
@@ -61,7 +60,7 @@ class FakeSchedulerClient : public SchedulerClient {
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
     log_anticipated_draw_time_change_ = false;
-    begin_frame_is_sent_to_children_ = false;
+    begin_frame_args_sent_to_children_ = BeginFrameArgs();
   }
 
   void set_scheduler(TestScheduler* scheduler) { scheduler_ = scheduler; }
@@ -160,7 +159,7 @@ class FakeSchedulerClient : public SchedulerClient {
   void DidBeginImplFrameDeadline() override {}
 
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
-    begin_frame_is_sent_to_children_ = true;
+    begin_frame_args_sent_to_children_ = args;
   }
 
   void SendBeginMainFrameNotExpectedSoon() override {
@@ -174,7 +173,11 @@ class FakeSchedulerClient : public SchedulerClient {
   }
 
   bool begin_frame_is_sent_to_children() const {
-    return begin_frame_is_sent_to_children_;
+    return begin_frame_args_sent_to_children_.IsValid();
+  }
+
+  const BeginFrameArgs& begin_frame_args_sent_to_children() const {
+    return begin_frame_args_sent_to_children_;
   }
 
   void PushAction(const char* description) {
@@ -192,12 +195,37 @@ class FakeSchedulerClient : public SchedulerClient {
   bool automatic_swap_ack_;
   int num_draws_;
   bool log_anticipated_draw_time_change_;
-  bool begin_frame_is_sent_to_children_;
+  BeginFrameArgs begin_frame_args_sent_to_children_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
   std::vector<scoped_refptr<base::trace_event::ConvertableToTraceFormat>>
       states_;
   TestScheduler* scheduler_;
+};
+
+class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
+ public:
+  SchedulerClientWithFixedEstimates(
+      base::TimeDelta draw_duration,
+      base::TimeDelta begin_main_frame_to_commit_duration,
+      base::TimeDelta commit_to_activate_duration)
+      : draw_duration_(draw_duration),
+        begin_main_frame_to_commit_duration_(
+            begin_main_frame_to_commit_duration),
+        commit_to_activate_duration_(commit_to_activate_duration) {}
+
+  base::TimeDelta DrawDurationEstimate() override { return draw_duration_; }
+  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
+    return begin_main_frame_to_commit_duration_;
+  }
+  base::TimeDelta CommitToActivateDurationEstimate() override {
+    return commit_to_activate_duration_;
+  }
+
+ private:
+  base::TimeDelta draw_duration_;
+  base::TimeDelta begin_main_frame_to_commit_duration_;
+  base::TimeDelta commit_to_activate_duration_;
 };
 
 class FakeExternalBeginFrameSource : public BeginFrameSourceMixIn {
@@ -452,6 +480,32 @@ TEST_F(SchedulerTest, SendBeginFramesToChildrenWithoutCommit) {
   client_->Reset();
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
+}
+
+TEST_F(SchedulerTest, SendBeginFramesToChildrenDeadlineNotAdjusted) {
+  // Set up client with specified estimates.
+  SchedulerClientWithFixedEstimates* client =
+      new SchedulerClientWithFixedEstimates(
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromMilliseconds(2),
+          base::TimeDelta::FromMilliseconds(4));
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+
+  EXPECT_FALSE(client_->needs_begin_frames());
+  scheduler_->SetChildrenNeedBeginFrames(true);
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  EXPECT_TRUE(client_->needs_begin_frames());
+
+  client_->Reset();
+
+  BeginFrameArgs frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src());
+  fake_external_begin_frame_source()->TestOnBeginFrame(frame_args);
+
+  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
+  EXPECT_EQ(client_->begin_frame_args_sent_to_children().deadline,
+            frame_args.deadline);
 }
 
 TEST_F(SchedulerTest, VideoNeedsBeginFrames) {
@@ -1255,31 +1309,6 @@ TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
   EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
-
-class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
- public:
-  SchedulerClientWithFixedEstimates(
-      base::TimeDelta draw_duration,
-      base::TimeDelta begin_main_frame_to_commit_duration,
-      base::TimeDelta commit_to_activate_duration)
-      : draw_duration_(draw_duration),
-        begin_main_frame_to_commit_duration_(
-            begin_main_frame_to_commit_duration),
-        commit_to_activate_duration_(commit_to_activate_duration) {}
-
-  base::TimeDelta DrawDurationEstimate() override { return draw_duration_; }
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() override {
-    return begin_main_frame_to_commit_duration_;
-  }
-  base::TimeDelta CommitToActivateDurationEstimate() override {
-    return commit_to_activate_duration_;
-  }
-
- private:
-    base::TimeDelta draw_duration_;
-    base::TimeDelta begin_main_frame_to_commit_duration_;
-    base::TimeDelta commit_to_activate_duration_;
-};
 
 void SchedulerTest::MainFrameInHighLatencyMode(
     int64 begin_main_frame_to_commit_estimate_in_ms,

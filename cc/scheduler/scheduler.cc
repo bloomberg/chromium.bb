@@ -340,22 +340,14 @@ void Scheduler::SetupPollingMechanisms() {
 bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
 
-  // Deliver BeginFrames to children.
-  if (state_machine_.children_need_begin_frames()) {
-    BeginFrameArgs adjusted_args_for_children(args);
-    // Adjust a deadline for child schedulers.
-    // TODO(simonhong): Once we have commitless update, we can get rid of
-    // BeginMainFrameToCommitDurationEstimate() +
-    // CommitToActivateDurationEstimate().
-    adjusted_args_for_children.deadline -=
-        (client_->BeginMainFrameToCommitDurationEstimate() +
-         client_->CommitToActivateDurationEstimate() +
-         client_->DrawDurationEstimate() + EstimatedParentDrawTime());
-    client_->SendBeginFramesToChildren(adjusted_args_for_children);
-  }
-
+  // TODO(brianderson): Adjust deadline in the DisplayScheduler.
   BeginFrameArgs adjusted_args(args);
   adjusted_args.deadline -= EstimatedParentDrawTime();
+
+  // Deliver BeginFrames to children.
+  // TODO(brianderson): Move this responsibility to the DisplayScheduler.
+  if (state_machine_.children_need_begin_frames())
+    client_->SendBeginFramesToChildren(adjusted_args);
 
   if (settings_.using_synchronous_renderer_compositor) {
     BeginImplFrameSynchronous(adjusted_args);
