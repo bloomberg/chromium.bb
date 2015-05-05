@@ -120,8 +120,6 @@ class AVFoundationInternal {
 // This contains the logic of checking whether AVFoundation is supported.
 // It's called only once and the results are cached in a static bool.
 bool IsAVFoundationSupportedHelper() {
-  CHECK([NSThread isMainThread]);
-
   // AVFoundation is only available on OS Lion and above.
   if (!base::mac::IsOSLionOrLater()) {
     LogCaptureApi(CAPTURE_API_QTKIT_DUE_TO_OS_PREVIOUS_TO_LION);
