@@ -8,6 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
@@ -128,6 +129,7 @@ class StackedTabStripLayoutTest : public testing::Test {
     return view_model_.ideal_bounds(index).x();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<StackedTabStripLayout> layout_;
   views::ViewModel view_model_;
 

@@ -7,6 +7,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -25,6 +26,7 @@ class ChromeMetricsServiceAccessorTest : public testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   ScopedTestingLocalState testing_local_state_;
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

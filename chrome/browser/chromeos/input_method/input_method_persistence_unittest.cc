@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,6 +69,7 @@ class InputMethodPersistenceTest : public testing::Test {
                   language_prefs::kPreferredKeyboardLayout));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSyncable* mock_user_prefs_;
   MockInputMethodManager mock_manager_;
   TestingProfileManager mock_profile_manager_;
