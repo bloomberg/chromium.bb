@@ -120,6 +120,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void GuestZoomChanged(double old_zoom_level, double new_zoom_level) override;
   bool IsAutoSizeSupported() const override;
   bool IsDragAndDropEnabled() const override;
+  void SignalWhenReady(const base::Closure& callback) override;
   void WillAttachToEmbedder() override;
   void WillDestroy() override;
 

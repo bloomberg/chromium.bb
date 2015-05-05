@@ -281,7 +281,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void SetGuestHost(content::GuestHost* guest_host) final;
   void WillAttach(content::WebContents* embedder_web_contents,
                   int browser_plugin_instance_id,
-                  bool is_full_page_plugin) final;
+                  bool is_full_page_plugin,
+                  const base::Closure& callback) final;
 
   // ui_zoom::ZoomObserver implementation.
   void OnZoomChanged(
@@ -347,6 +348,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   bool ShouldResumeRequestsForCreatedWindow() override;
 
   void SetGuestZoomLevelToMatchEmbedder();
+
+  // Signals that the guest view is ready.  The default implementation signals
+  // immediately, but derived class can override this if they need to do
+  // asynchronous setup.
+  virtual void SignalWhenReady(const base::Closure& callback);
 
  private:
   class OwnerContentsObserver;

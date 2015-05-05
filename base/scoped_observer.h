@@ -48,6 +48,8 @@ class ScopedObserver {
         sources_.end();
   }
 
+  bool IsObservingSources() const { return !sources_.empty(); }
+
  private:
   Observer* observer_;
 

@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/supports_user_data.h"
+#include "extensions/browser/user_script_loader.h"
 
 struct HostID;
 
@@ -26,7 +28,8 @@ class UserScript;
 // guest adds and removes programmatically.
 // TODO(hanxi): crbug.com/476938. Introduce a new class to manage the lifetime
 // of <webview> and clean up WebViewContentScriptManager.
-class WebViewContentScriptManager : public base::SupportsUserData::Data {
+class WebViewContentScriptManager : public base::SupportsUserData::Data,
+                                    public UserScriptLoader::Observer {
  public:
   explicit WebViewContentScriptManager(
       content::BrowserContext* browser_context);
@@ -57,6 +60,12 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data {
   std::set<int> GetContentScriptIDSet(int embedder_process_id,
                                       int view_instance_id);
 
+  // Checks if there is any pending content scripts to load.
+  // If no, run |callback| immediately; otherwise caches the |callback|, and
+  // the |callback| will be called after all the pending content scripts are
+  // loaded.
+  void SignalOnScriptsLoaded(const base::Closure& callback);
+
  private:
   class OwnerWebContentsObserver;
 
@@ -67,14 +76,30 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data {
   using OwnerWebContentsObserverMap =
       std::map<content::WebContents*, linked_ptr<OwnerWebContentsObserver>>;
 
+  // UserScriptLoader::Observer implementation:
+  void OnScriptsLoaded(UserScriptLoader* loader) override;
+  void OnUserScriptLoaderDestroyed(UserScriptLoader* loader) override;
+
   // Called by OwnerWebContentsObserver when the observer sees a main frame
   // navigation or sees the process has went away or the |embedder_web_contents|
   // is being destroyed.
   void RemoveObserver(content::WebContents* embedder_web_contents);
 
+  // If |user_script_loader_observer_| doesn't observe any source, we will run
+  // all the remaining callbacks in |pending_scripts_loading_callbacks_|.
+  void RunCallbacksIfReady();
+
   OwnerWebContentsObserverMap owner_web_contents_observer_map_;
 
   GuestContentScriptMap guest_content_script_map_;
+
+  // WebViewContentScriptManager observes UserScriptLoader to wait for scripts
+  // loaded event.
+  ScopedObserver<UserScriptLoader, UserScriptLoader::Observer>
+      user_script_loader_observer_;
+
+  // Caches callbacks and resumes them when all the scripts are loaded.
+  std::vector<base::Closure> pending_scripts_loading_callbacks_;
 
   content::BrowserContext* browser_context_;
 

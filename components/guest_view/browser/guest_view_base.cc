@@ -478,7 +478,8 @@ void GuestViewBase::SetGuestHost(content::GuestHost* guest_host) {
 
 void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
                                int element_instance_id,
-                               bool is_full_page_plugin) {
+                               bool is_full_page_plugin,
+                               const base::Closure& callback) {
   if (owner_web_contents_ != embedder_web_contents) {
     DCHECK_EQ(owner_contents_observer_->web_contents(), owner_web_contents_);
     // Stop tracking the old embedder's zoom level.
@@ -497,6 +498,16 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
   is_full_page_plugin_ = is_full_page_plugin;
 
   WillAttachToEmbedder();
+
+  // Completing attachment will resume suspended resource loads and then send
+  // queued events.
+  SignalWhenReady(callback);
+}
+
+void GuestViewBase::SignalWhenReady(const base::Closure& callback) {
+  // The default behavior is to call the |callback| immediately. Derived classes
+  // can implement an alternative signal for readiness.
+  callback.Run();
 }
 
 int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) const {

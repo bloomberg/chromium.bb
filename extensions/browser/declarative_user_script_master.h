@@ -56,6 +56,8 @@ class DeclarativeUserScriptMaster {
 
   const HostID& host_id() const { return host_id_; }
 
+  UserScriptLoader* loader() { return loader_.get(); }
+
  private:
   // ID of host that owns scripts that this component manages.
   HostID host_id_;

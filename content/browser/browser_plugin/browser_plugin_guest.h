@@ -339,6 +339,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                          bool is_top_level,
                          const std::string& name);
 
+  // Called when WillAttach is complete.
+  void OnWillAttachComplete(WebContentsImpl* embedder_web_contents,
+                            const BrowserPluginHostMsg_Attach_Params& params);
+
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
 

@@ -962,6 +962,11 @@ void WebViewGuest::RequestPointerLockPermission(
       callback);
 }
 
+void WebViewGuest::SignalWhenReady(const base::Closure& callback) {
+  auto manager = WebViewContentScriptManager::Get(browser_context());
+  manager->SignalOnScriptsLoaded(callback);
+}
+
 void WebViewGuest::WillAttachToEmbedder() {
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
       owner_web_contents()->GetRenderProcessHost()->GetID(),
@@ -985,8 +990,17 @@ void WebViewGuest::NavigateGuest(const std::string& src,
 
   GURL url = ResolveURL(src);
 
-  LoadURLWithParams(url, content::Referrer(),
-                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+  // We wait for all the content scripts to load and then navigate the guest
+  // if the navigation is embedder-initiated. For browser-initiated navigations,
+  // content scripts will be ready.
+  if (force_navigation) {
+    SignalWhenReady(
+        base::Bind(&WebViewGuest::LoadURLWithParams,
+                   weak_ptr_factory_.GetWeakPtr(), url, content::Referrer(),
+                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, force_navigation));
+    return;
+  }
+  LoadURLWithParams(url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                     force_navigation);
 }
 
@@ -1090,8 +1104,8 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
   // Only read the src attribute if this is not a New Window API flow.
   if (!is_pending_new_window) {
     std::string src;
-    params.GetString(webview::kAttributeSrc, &src);
-    NavigateGuest(src, false /* force_navigation */);
+    if (params.GetString(webview::kAttributeSrc, &src))
+      NavigateGuest(src, true /* force_navigation */);
   }
 }
 
@@ -1319,7 +1333,7 @@ void WebViewGuest::LoadURLWithParams(const GURL& url,
   if (scheme_is_blocked || !url.is_valid()) {
     LoadAbort(true /* is_top_level */, url, net::ERR_ABORTED,
               net::ErrorToShortString(net::ERR_ABORTED));
-    NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
+    NavigateGuest(url::kAboutBlankURL, false /* force_navigation */);
     return;
   }
 

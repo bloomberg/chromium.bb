@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -41,6 +42,11 @@ class UserScriptLoader : public content::NotificationObserver {
   using LoadScriptsCallback =
       base::Callback<void(scoped_ptr<UserScriptList>,
                           scoped_ptr<base::SharedMemory>)>;
+  class Observer {
+   public:
+    virtual void OnScriptsLoaded(UserScriptLoader* loader) = 0;
+    virtual void OnUserScriptLoaderDestroyed(UserScriptLoader* loader) = 0;
+  };
 
   // Parses the includes out of |script| and returns them in |includes|.
   static bool ParseMetadataHeader(const base::StringPiece& script_text,
@@ -78,6 +84,10 @@ class UserScriptLoader : public content::NotificationObserver {
   // Pickle user scripts and return pointer to the shared memory.
   static scoped_ptr<base::SharedMemory> Serialize(
       const extensions::UserScriptList& scripts);
+
+  // Adds or removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  protected:
   // Allows the derived classes have different ways to load user scripts.
@@ -163,6 +173,9 @@ class UserScriptLoader : public content::NotificationObserver {
   // ID of the host that owns these scripts, if any. This is only set to a
   // non-empty value for declarative user script shared memory regions.
   HostID host_id_;
+
+  // The associated observers.
+  ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<UserScriptLoader> weak_factory_;
 

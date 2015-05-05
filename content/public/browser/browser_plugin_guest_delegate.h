@@ -31,9 +31,12 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Notification that the embedder will begin attachment. This is called
   // prior to resuming resource loads. |element_instance_id| uniquely identifies
   // the element that will serve as a container for the guest.
+  // Once the content embedder has completed setting up state for attachment, it
+  // must call the |completion_callback| to complete attachment.
   virtual void WillAttach(content::WebContents* embedder_web_contents,
                           int element_instance_id,
-                          bool is_full_page_plugin) {}
+                          bool is_full_page_plugin,
+                          const base::Closure& completion_callback) {}
 
   virtual WebContents* CreateNewGuestWindow(
       const WebContents::CreateParams& create_params);

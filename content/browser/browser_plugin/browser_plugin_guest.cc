@@ -631,9 +631,21 @@ void BrowserPluginGuest::Attach(
         ack);
     last_pending_frame_.reset();
   }
-  delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id,
-                        params.is_full_page_plugin);
 
+  // The guest is owned by the embedder. Attach is queued up so we cannot
+  // change embedders before attach completes. If the embedder goes away,
+  // so does the guest and so we will never call WillAttachComplete because
+  // we have a weak ptr.
+  delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id,
+                        params.is_full_page_plugin,
+                        base::Bind(&BrowserPluginGuest::OnWillAttachComplete,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   embedder_web_contents, params));
+}
+
+void BrowserPluginGuest::OnWillAttachComplete(
+    WebContentsImpl* embedder_web_contents,
+    const BrowserPluginHostMsg_Attach_Params& params) {
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager
   // does not create a new RenderView on navigation.

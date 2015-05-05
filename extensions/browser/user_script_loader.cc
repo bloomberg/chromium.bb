@@ -154,6 +154,7 @@ UserScriptLoader::UserScriptLoader(BrowserContext* browser_context,
 }
 
 UserScriptLoader::~UserScriptLoader() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnUserScriptLoaderDestroyed(this));
 }
 
 void UserScriptLoader::AddScripts(const std::set<UserScript>& scripts) {
@@ -317,6 +318,14 @@ scoped_ptr<base::SharedMemory> UserScriptLoader::Serialize(
                                                 /*read_only=*/true));
 }
 
+void UserScriptLoader::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void UserScriptLoader::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void UserScriptLoader::SetReady(bool ready) {
   bool was_ready = ready_;
   ready_ = ready;
@@ -358,10 +367,12 @@ void UserScriptLoader::OnScriptsLoaded(
   }
   changed_hosts_.clear();
 
+  // TODO(hanxi): Remove the NOTIFICATION_USER_SCRIPTS_UPDATED.
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
       content::Source<BrowserContext>(browser_context_),
       content::Details<base::SharedMemory>(shared_memory_.get()));
+  FOR_EACH_OBSERVER(Observer, observers_, OnScriptsLoaded(this));
 }
 
 void UserScriptLoader::SendUpdate(content::RenderProcessHost* process,

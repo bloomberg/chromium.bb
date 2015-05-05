@@ -87,7 +87,7 @@ class WebViewContentScriptManager::OwnerWebContentsObserver
 
 WebViewContentScriptManager::WebViewContentScriptManager(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : user_script_loader_observer_(this), browser_context_(browser_context) {
 }
 
 WebViewContentScriptManager::~WebViewContentScriptManager() {
@@ -141,22 +141,34 @@ void WebViewContentScriptManager::AddContentScripts(
 
   // Step 2: updates the guest_content_script_map_.
   ContentScriptMap& map = iter->second;
+  std::set<UserScript> scripts_to_delete;
   for (const UserScript& script : scripts) {
     auto map_iter = map.find(script.name());
     // If a content script has the same name as the new one, remove the old
     // script first, and insert the new one.
     if (map_iter != map.end()) {
-      master->RemoveScript(map_iter->second);
+      scripts_to_delete.insert(map_iter->second);
       map.erase(map_iter);
     }
     map.insert(std::pair<std::string, UserScript>(script.name(), script));
     ids_to_add.insert(script.id());
   }
 
-  // Step 3: adds new scripts to the master.
+  if (!scripts_to_delete.empty()) {
+    master->RemoveScripts(scripts_to_delete);
+  }
+
+  // Step 3: makes WebViewContentScriptManager become an observer of the
+  // |loader| for scripts loaded event.
+  UserScriptLoader* loader = master->loader();
+  DCHECK(loader);
+  if (!user_script_loader_observer_.IsObserving(loader))
+    user_script_loader_observer_.Add(loader);
+
+  // Step 4: adds new scripts to the master.
   master->AddScripts(scripts, embedder_process_id, embedder_routing_id);
 
-  // Step 4: creates owner web contents observer for the given
+  // Step 5: creates owner web contents observer for the given
   // |embedder_web_contents| if it doesn't exist.
   auto observer_iter =
       owner_web_contents_observer_map_.find(embedder_web_contents);
@@ -169,7 +181,7 @@ void WebViewContentScriptManager::AddContentScripts(
     observer_iter->second->add_view_instance_id(view_instance_id);
   }
 
-  // Step 5: updates WebViewRenderState in the IO thread.
+  // Step 6: updates WebViewRenderState in the IO thread.
   // It is safe to use base::Unretained(WebViewRendererState::GetInstance())
   // since WebViewRendererState::GetInstance() always returns a Singleton of
   // WebViewRendererState.
@@ -208,7 +220,7 @@ void WebViewContentScriptManager::RemoveContentScripts(
   std::set<UserScript> scripts_to_delete;
 
   // Step 1: removes content scripts from |master| and updates
-  // |guest_content_script_map_|
+  // |guest_content_script_map_|.
   std::map<std::string, UserScript>& map = script_map_iter->second;
   // If the |script_name_list| is empty, all the content scripts added by the
   // guest will be removed; otherwise, removes the scripts in the
@@ -232,10 +244,17 @@ void WebViewContentScriptManager::RemoveContentScripts(
     }
   }
 
-  // Step 2: removes content scripts from master.
+  // Step 2: makes WebViewContentScriptManager become an observer of the
+  // |loader| for scripts loaded event.
+  UserScriptLoader* loader = master->loader();
+  DCHECK(loader);
+  if (!user_script_loader_observer_.IsObserving(loader))
+    user_script_loader_observer_.Add(loader);
+
+  // Step 3: removes content scripts from master.
   master->RemoveScripts(scripts_to_delete);
 
-  // Step 3: updates WebViewRenderState in the IO thread.
+  // Step 4: updates WebViewRenderState in the IO thread.
   if (!ids_to_delete.empty()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
@@ -265,6 +284,34 @@ std::set<int> WebViewContentScriptManager::GetContentScriptIDSet(
     ids.insert(pair.second.id());
 
   return ids;
+}
+
+void WebViewContentScriptManager::SignalOnScriptsLoaded(
+    const base::Closure& callback) {
+  if (!user_script_loader_observer_.IsObservingSources()) {
+    callback.Run();
+    return;
+  }
+  pending_scripts_loading_callbacks_.push_back(callback);
+}
+
+void WebViewContentScriptManager::OnScriptsLoaded(UserScriptLoader* loader) {
+  user_script_loader_observer_.Remove(loader);
+  RunCallbacksIfReady();
+}
+
+void WebViewContentScriptManager::OnUserScriptLoaderDestroyed(
+    UserScriptLoader* loader) {
+  user_script_loader_observer_.Remove(loader);
+  RunCallbacksIfReady();
+}
+
+void WebViewContentScriptManager::RunCallbacksIfReady() {
+  if (user_script_loader_observer_.IsObservingSources())
+    return;
+  for (auto& callback : pending_scripts_loading_callbacks_)
+    callback.Run();
+  pending_scripts_loading_callbacks_.clear();
 }
 
 }  // namespace extensions
