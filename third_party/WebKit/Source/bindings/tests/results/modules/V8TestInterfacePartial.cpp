@@ -307,7 +307,7 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
 
     v8::Local<v8::Signature> defaultSignature;
     if (!RuntimeEnabledFeatures::featureNameEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount, 0, 0, 0, 0, 0, 0);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount, 0, 0, 0, 0, 0, 0);
     else
         defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
             0, 0,

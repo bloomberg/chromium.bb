@@ -283,7 +283,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
     {% if runtime_enabled_function %}
     if (!{{runtime_enabled_function}}())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "", {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "{{interface_name}}", {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0);
     else
     {% endif %}
     {% set runtime_enabled_indent = 4 if runtime_enabled_function else 0 %}
