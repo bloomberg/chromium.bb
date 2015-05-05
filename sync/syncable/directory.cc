@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/base64.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -1561,6 +1562,7 @@ void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
 }
 
 void Directory::OnCatastrophicError() {
+  UMA_HISTOGRAM_BOOLEAN("Sync.DirectoryCatastrophicError", true);
   ReadTransaction trans(FROM_HERE, this);
   OnUnrecoverableError(&trans, FROM_HERE,
                        "Catastrophic error detected, Sync DB is unrecoverable");

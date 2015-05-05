@@ -40582,6 +40582,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Enumeration of types of dictionary association failures.</summary>
 </histogram>
 
+<histogram name="Sync.DirectoryCatastrophicError" enum="BooleanError">
+  <owner>maniscalco@chromium.org</owner>
+  <summary>
+    Whether the Sync Directory encountered a catastrophic error.
+  </summary>
+</histogram>
+
 <histogram name="Sync.DirectoryOpenFailedMac">
   <obsolete>
     Deprecated 11/2011. No longer tracked.
