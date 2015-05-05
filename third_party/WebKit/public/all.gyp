@@ -41,15 +41,6 @@
             ],
         },
         {
-            'target_name': 'blink_unittests',
-            'type': 'none',
-            'dependencies': [
-                'blink_tests',
-            ],
-        },
-        {
-            # TODO(tfarina): Update Chromium to use blink_test_binaries and then
-            # remove this. crbug.com/483171
             # GN version: //third_party/WebKit/public:blink_tests
             'target_name': 'blink_tests',
             'type': 'none',
