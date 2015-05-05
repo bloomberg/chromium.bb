@@ -188,8 +188,8 @@ HacksAndPatches() {
 }
 
 
-InstallMissingArmLibrariesAndHeadersIntoJail() {
-  Banner "Install Libs And Headers Into Jail"
+InstallMissingArmLibrariesAndHeadersIntoSysroot() {
+  Banner "Install Libs And Headers Into Sysroot"
 
   mkdir -p ${TMP}/armhf-packages
   mkdir -p ${INSTALL_ROOT}
@@ -209,7 +209,7 @@ InstallMissingArmLibrariesAndHeadersIntoJail() {
 }
 
 
-CleanupJailSymlinks() {
+CleanupSysrootSymlinks() {
   Banner "jail symlink cleanup"
 
   pushd ${INSTALL_ROOT}
@@ -338,17 +338,38 @@ BuildAndInstallQemu() {
 }
 
 #@
-#@ BuildJail
+#@ BuildSysroot
 #@
 #@    Build everything and package it
-BuildJail() {
+BuildSysroot() {
   ClearInstallDir
-  InstallMissingArmLibrariesAndHeadersIntoJail \
+  InstallMissingArmLibrariesAndHeadersIntoSysroot \
     ${BASE_DEP_FILES} ${EXTRA_DEP_FILES}
-  CleanupJailSymlinks
+  CleanupSysrootSymlinks
   HacksAndPatches
   BuildAndInstallQemu
   CreateTarBall
+}
+
+#@
+#@ UploadArchive <revision>
+#@
+#@    Upload archive to Cloud Storage along with json manifest and
+#@    update toolchain_revisions to point to new version.
+#@    This requires write access the Cloud Storage bucket for Native Client.
+UploadArchive() {
+  REV=$1
+  TAR_NAME=$(basename ${TAR_ARCHIVE})
+  GS_FILE=nativeclient-archive2/toolchain/${REV}/${TAR_NAME}
+  URL=https://storage.googleapis.com/${GS_FILE}
+  set -x
+  gsutil cp -a public-read ${TAR_ARCHIVE} gs://${GS_FILE}
+  local package_version=build/package_version/package_version.py
+  ${package_version} archive --archive-package arm_trusted ${TAR_ARCHIVE}@${URL}
+  ${package_version} upload --upload-package arm_trusted --revision ${REV}
+  ${package_version} setrevision --revision-package arm_trusted --revision \
+      ${REV}
+  set +x
 }
 
 #
