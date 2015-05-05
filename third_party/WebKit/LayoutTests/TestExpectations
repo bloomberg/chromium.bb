@@ -1,3 +1,4 @@
+#
 # turn off Slimming Paint tests for all non-Linux platforms...
 crbug.com/453972 [ Mac ] virtual/slimmingpaint/ [ Skip ]
 crbug.com/453972 [ Win ] virtual/slimmingpaint/ [ Skip ]
@@ -657,6 +658,11 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
 crbug.com/469386 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ ImageOnlyFailure ]
+
+crbug.com/477076 fast/block/margin-collapse/004.html [ NeedsRebaseline ]
+crbug.com/477076 fast/block/margin-collapse/block-inside-inline/004.html [ NeedsRebaseline ]
+crbug.com/477076 virtual/slimmingpaint/fast/block/margin-collapse/004.html [ NeedsRebaseline ]
+crbug.com/477076 virtual/slimmingpaint/fast/block/margin-collapse/block-inside-inline/004.html [ NeedsRebaseline ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
 # Windows, Mac and Android use a statically-linked BoringSSL.

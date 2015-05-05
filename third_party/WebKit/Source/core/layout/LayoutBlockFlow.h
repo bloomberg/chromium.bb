@@ -342,10 +342,6 @@ private:
     void setDidBreakAtLineToAvoidWidow();
     bool didBreakAtLineToAvoidWidow() const { return m_rareData && m_rareData->m_didBreakAtLineToAvoidWidow; }
 
-    void clearFormattingContextLowestFloatLogicalBottom();
-    LayoutUnit formattingContextLowestFloatLogicalBottom() const { ASSERT(createsNewFormattingContext()); return m_rareData ?  m_rareData->m_lowestFloatLogicalBottom : LayoutUnit(); }
-    void setFormattingContextLowestFloatLogicalBottom(LayoutUnit);
-
 public:
     struct FloatWithRect {
         FloatWithRect(LayoutBox* f)
@@ -395,7 +391,6 @@ public:
         LayoutBlockFlowRareData(const LayoutBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
             , m_paginationStrut(0)
-            , m_lowestFloatLogicalBottom(0)
             , m_multiColumnFlowThread(nullptr)
             , m_lineBreakToAvoidWidow(-1)
             , m_didBreakAtLineToAvoidWidow(false)
@@ -423,7 +418,6 @@ public:
 
         MarginValues m_margins;
         LayoutUnit m_paginationStrut;
-        LayoutUnit m_lowestFloatLogicalBottom;
 
         LayoutMultiColumnFlowThread* m_multiColumnFlowThread;
 
