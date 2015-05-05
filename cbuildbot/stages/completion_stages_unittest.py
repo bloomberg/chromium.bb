@@ -15,6 +15,7 @@ from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import generate_chromeos_config
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.stages import completion_stages
@@ -184,14 +185,12 @@ class MasterSlaveSyncCompletionStageTest(
   def testGetSlavesForMaster(self):
     """Tests that we get the slaves for a fake unified master configuration."""
     test_config = self._GetTestConfig()
-    self.PatchObject(cbuildbot_config, 'GetConfig', return_value=test_config)
+    # Temp solution until we can load test configs.
+    self.PatchObject(generate_chromeos_config, '_CONFIG', test_config)
+
     stage = self.ConstructStage()
     p = stage._GetSlaveConfigs()
-    self.assertTrue(test_config['test3'] in p)
-    self.assertTrue(test_config['test5'] in p)
-    self.assertFalse(test_config['test1'] in p)
-    self.assertFalse(test_config['test2'] in p)
-    self.assertFalse(test_config['test4'] in p)
+    self.assertEqual([test_config['test3'], test_config['test5']], p)
 
   def testIsFailureFatal(self):
     """Tests the correctness of the _IsFailureFatal method"""
