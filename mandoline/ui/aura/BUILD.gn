@@ -52,5 +52,6 @@ source_set("aura") {
     "//ui/events",
     "//ui/events:events_base",
     "//ui/gl",
+    "//ui/views",
   ]
 }

@@ -30,6 +30,10 @@ source_set("options_sources") {
     "//build/sanitizers/sanitizer_options.cc",
   ]
 
+  if (is_asan) {
+    sources += [ "//build/sanitizers/asan_suppressions.cc" ]
+  }
+
   if (is_tsan) {
     sources += [ "//build/sanitizers/tsan_suppressions.cc" ]
   }
