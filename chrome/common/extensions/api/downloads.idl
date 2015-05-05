@@ -482,13 +482,14 @@ namespace downloads {
     // complete; otherwise return an error through $(ref:runtime.lastError).
     static void removeFile(long downloadId, optional NullCallback callback);
 
-    // Prompt the user to accept a dangerous download. Does not automatically
-    // accept dangerous downloads. If the download is accepted, then an
-    // $(ref:onChanged) event will fire, otherwise nothing will happen.  When all
-    // the data is fetched into a temporary file and either the download is not
-    // dangerous or the danger has been accepted, then the temporary file is
-    // renamed to the target filename, the |state| changes to 'complete', and
-    // $(ref:onChanged) fires.
+    // Prompt the user to accept a dangerous download. Can only be called from a
+    // visible context (tab, window, or page/browser action popup). Does not
+    // automatically accept dangerous downloads. If the download is accepted,
+    // then an $(ref:onChanged) event will fire, otherwise nothing will happen.
+    // When all the data is fetched into a temporary file and either the
+    // download is not dangerous or the danger has been accepted, then the
+    // temporary file is renamed to the target filename, the |state| changes to
+    // 'complete', and $(ref:onChanged) fires.
     // |downloadId|: The identifier for the $(ref:DownloadItem).
     // |callback|: Called when the danger prompt dialog closes.
     static void acceptDanger(long downloadId, optional NullCallback callback);
