@@ -194,11 +194,12 @@ TEST_F(ThreadTest, ThreadName) {
   EXPECT_EQ("ThreadName", a.thread_name());
 }
 
-// Make sure we can't use a thread between Start() and Init().
+// Make sure Init() is called after Start() and before
+// WaitUntilThreadInitialized() returns.
 TEST_F(ThreadTest, SleepInsideInit) {
   SleepInsideInitThread t;
   EXPECT_FALSE(t.InitCalled());
-  t.Start();
+  t.StartAndWaitForTesting();
   EXPECT_TRUE(t.InitCalled());
 }
 

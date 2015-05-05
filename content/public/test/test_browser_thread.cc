@@ -58,6 +58,10 @@ bool TestBrowserThread::Start() {
   return impl_->Start();
 }
 
+bool TestBrowserThread::StartAndWaitForTesting() {
+  return impl_->StartAndWaitForTesting();
+}
+
 bool TestBrowserThread::StartIOThread() {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;

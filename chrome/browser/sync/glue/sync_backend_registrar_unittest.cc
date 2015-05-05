@@ -336,6 +336,9 @@ TEST_F(SyncBackendRegistrarShutdownTest, BlockingShutdown) {
       base::Bind(&SyncBackendRegistrar::Shutdown,
                  base::Unretained(registrar.release())));
 
+  // Make sure the thread starts running.
+  sync_thread->WaitUntilThreadStarted();
+
   // The test verifies that the sync thread doesn't block because
   // of the blocked DB thread and can finish the shutdown.
   sync_thread->message_loop()->RunUntilIdle();

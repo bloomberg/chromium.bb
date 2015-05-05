@@ -22,9 +22,6 @@ class BrowserThreadDelegate {
   // Called prior to starting the message loop
   virtual void Init() = 0;
 
-  // Called as the first task on the thread's message loop.
-  virtual void InitAsync() = 0;
-
   // Called just after the message loop ends.
   virtual void CleanUp() = 0;
 };
