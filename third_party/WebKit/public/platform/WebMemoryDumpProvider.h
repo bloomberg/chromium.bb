@@ -5,8 +5,6 @@
 #ifndef WebMemoryDumpProvider_h
 #define WebMemoryDumpProvider_h
 
-#include "WebNonCopyable.h"
-
 namespace blink {
 
 class WebProcessMemoryDump;
@@ -16,6 +14,8 @@ class WebProcessMemoryDump;
 // Platform::registerMemoryDumpProvider()) to dump stats for their allocators.
 class BLINK_PLATFORM_EXPORT WebMemoryDumpProvider {
 public:
+    virtual ~WebMemoryDumpProvider() { }
+
     // Called by the MemoryDumpManager when generating memory dumps. Embedders
     // are expected to populate the WebProcessMemoryDump* argument and return
     // true on success or false if anything went wrong and the dump should be

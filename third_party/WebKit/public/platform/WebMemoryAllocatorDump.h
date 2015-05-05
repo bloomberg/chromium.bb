@@ -6,15 +6,16 @@
 #define WebMemoryAllocatorDump_h
 
 #include "WebCommon.h"
-#include "WebNonCopyable.h"
 #include "WebString.h"
 
 namespace blink {
 
 // A container which holds all the attributes of a particular dump for a given
 // allocator.
-class BLINK_PLATFORM_EXPORT WebMemoryAllocatorDump : public WebNonCopyable {
+class BLINK_PLATFORM_EXPORT WebMemoryAllocatorDump {
 public:
+    virtual ~WebMemoryAllocatorDump() { }
+
     // Adds a scalar attribute to the dump.
     // Arguments:
     //   name: name of the attribute. Typical names, emitted by most allocators

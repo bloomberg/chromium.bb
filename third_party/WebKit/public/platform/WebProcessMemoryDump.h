@@ -5,7 +5,6 @@
 #ifndef WebProcessMemoryDump_h
 #define WebProcessMemoryDump_h
 
-#include "WebNonCopyable.h"
 #include "WebString.h"
 
 namespace blink {
@@ -15,8 +14,10 @@ class WebMemoryAllocatorDump;
 // A container which holds all the dumps for the various allocators for a given
 // process. Embedders of WebMemoryDumpProvider are expected to populate a
 // WebProcessMemoryDump instance with the stats of their allocators.
-class BLINK_PLATFORM_EXPORT WebProcessMemoryDump : public WebNonCopyable {
+class BLINK_PLATFORM_EXPORT WebProcessMemoryDump {
 public:
+    virtual ~WebProcessMemoryDump() { }
+
     // Creates a new MemoryAllocatorDump with the given name and returns the
     // empty object back to the caller. |absoluteName| uniquely identifies the
     // dump within the scope of a ProcessMemoryDump. It is possible to express
