@@ -50,15 +50,6 @@ group("all_blink") {
   ]
 }
 
-# TODO(tfarina): Update Chromium to use blink_test_binaries and then
-# remove this. crbug.com/483171
-# GYP version: WebKit/public/all.gyp:blink_unittests
-group("blink_unittests") {
-  testonly = true
-
-  deps = [ ":blink_tests" ]
-}
-
 group("blink_tests") {
   testonly = true
 
