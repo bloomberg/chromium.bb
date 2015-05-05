@@ -26,8 +26,6 @@ class DrmDisplaySnapshot;
 class DrmDisplayMode;
 class ScreenManager;
 
-struct GammaRampRGBEntry;
-
 class DrmGpuDisplayManager {
  public:
   DrmGpuDisplayManager(ScreenManager* screen_manager,
@@ -57,9 +55,6 @@ class DrmGpuDisplayManager {
 
   bool GetHDCPState(int64_t display_id, HDCPState* state);
   bool SetHDCPState(int64_t display_id, HDCPState state);
-
-  // Set the gamma ramp for a particular display id.
-  void SetGammaRamp(int64_t id, const std::vector<GammaRampRGBEntry>& lut);
 
  private:
   DrmDisplaySnapshot* FindDisplaySnapshot(int64_t id);

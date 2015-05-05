@@ -105,13 +105,6 @@ bool NativeDisplayDelegateOzone::SetColorCalibrationProfile(
   return false;
 }
 
-bool NativeDisplayDelegateOzone::SetGammaRamp(
-    const ui::DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& lut) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void NativeDisplayDelegateOzone::AddObserver(NativeDisplayObserver* observer) {
   NOTIMPLEMENTED();
 }

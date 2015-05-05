@@ -16,7 +16,6 @@
 namespace ui {
 
 class CrtcController;
-struct GammaRampRGBEntry;
 
 // The real DrmDevice makes actual DRM calls which we can't use in unit tests.
 class MockDrmDevice : public ui::DrmDevice {
@@ -109,8 +108,6 @@ class MockDrmDevice : public ui::DrmDevice {
   bool CommitProperties(drmModePropertySet* properties,
                         uint32_t flags,
                         const PageFlipCallback& callback) override;
-  bool SetGammaRamp(uint32_t crtc_id,
-                    const std::vector<GammaRampRGBEntry>& lut) override;
 
  private:
   ~MockDrmDevice() override;

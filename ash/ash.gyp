@@ -43,8 +43,6 @@
       'autoclick/autoclick_controller.h',
       'cancel_mode.cc',
       'cancel_mode.h',
-      'content/display/display_color_manager_chromeos.cc',
-      'content/display/display_color_manager_chromeos.h',
       'content/display/screen_orientation_controller_chromeos.cc',
       'content/display/screen_orientation_controller_chromeos.h',
       'debug.cc',
@@ -969,7 +967,6 @@
             # Ash #includes power_supply_properties.pb.h directly.
             '../chromeos/chromeos.gyp:power_manager_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-            '../third_party/qcms/qcms.gyp:qcms',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',

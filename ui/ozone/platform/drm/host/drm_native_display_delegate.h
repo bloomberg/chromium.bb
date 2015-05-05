@@ -63,8 +63,6 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
       const DisplaySnapshot& output) override;
   bool SetColorCalibrationProfile(const DisplaySnapshot& output,
                                   ColorCalibrationProfile new_profile) override;
-  bool SetGammaRamp(const ui::DisplaySnapshot& output,
-                    const std::vector<GammaRampRGBEntry>& lut) override;
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
 

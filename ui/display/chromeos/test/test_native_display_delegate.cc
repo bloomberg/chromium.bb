@@ -132,13 +132,6 @@ bool TestNativeDisplayDelegate::SetColorCalibrationProfile(
   return false;
 }
 
-bool TestNativeDisplayDelegate::SetGammaRamp(
-    const ui::DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& lut) {
-  log_->AppendAction(SetGammaRampAction(output, lut));
-  return true;
-}
-
 void TestNativeDisplayDelegate::AddObserver(NativeDisplayObserver* observer) {
 }
 

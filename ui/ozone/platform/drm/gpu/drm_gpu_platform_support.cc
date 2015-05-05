@@ -216,7 +216,6 @@ bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_RemoveGraphicsDevice, OnRemoveGraphicsDevice)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_GetHDCPState, OnGetHDCPState)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetHDCPState, OnSetHDCPState)
-  IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetGammaRamp, OnSetGammaRamp);
   IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
@@ -293,12 +292,6 @@ void DrmGpuPlatformSupport::OnAddGraphicsDevice(
 
 void DrmGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
   drm_device_manager_->RemoveDrmDevice(path);
-}
-
-void DrmGpuPlatformSupport::OnSetGammaRamp(
-    int64_t id,
-    const std::vector<GammaRampRGBEntry>& lut) {
-  ndd_->SetGammaRamp(id, lut);
 }
 
 void DrmGpuPlatformSupport::RelinquishGpuResources(

@@ -26,7 +26,6 @@
         'types/display_snapshot.cc',
         'types/display_snapshot.h',
         'types/display_types_export.h',
-        'types/gamma_ramp_rgb_entry.h',
         'types/native_display_delegate.h',
         'types/native_display_observer.h',
       ],

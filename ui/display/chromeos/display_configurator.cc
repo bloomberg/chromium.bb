@@ -754,17 +754,6 @@ bool DisplayConfigurator::SetColorCalibrationProfile(
   return false;
 }
 
-bool DisplayConfigurator::SetGammaRamp(
-    int64_t display_id,
-    const std::vector<GammaRampRGBEntry>& lut) {
-  for (const DisplaySnapshot* display : cached_displays_) {
-    if (display->display_id() == display_id)
-      return native_display_delegate_->SetGammaRamp(*display, lut);
-  }
-
-  return false;
-}
-
 void DisplayConfigurator::PrepareForExit() {
   configure_display_ = false;
 }

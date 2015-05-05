@@ -34,7 +34,6 @@ class SingleThreadTaskRunner;
 namespace ui {
 
 class HardwareDisplayPlaneManager;
-struct GammaRampRGBEntry;
 
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
@@ -160,10 +159,6 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   virtual bool CommitProperties(drmModePropertySet* properties,
                                 uint32_t flags,
                                 const PageFlipCallback& callback);
-
-  // Set the gamma ramp for |crtc_id| to reflect the ramps in |lut|.
-  virtual bool SetGammaRamp(uint32_t crtc_id,
-                            const std::vector<GammaRampRGBEntry>& lut);
 
   // Drm master related
   virtual bool SetMaster();
