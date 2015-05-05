@@ -10,11 +10,11 @@
 
     'remoting_locales': [
       # Note: list duplicated in GN build. See //remoting/remoting_locales.gni
-      'ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'en-GB', 'es',
-      'es-419', 'et', 'fi', 'fil', 'fr', 'he', 'hi', 'hr', 'hu', 'id',
-      'it', 'ja', 'ko', 'lt', 'lv', 'nb', 'nl', 'pl', 'pt-BR', 'pt-PT',
-      'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'th', 'tr', 'uk', 'vi',
-      'zh-CN', 'zh-TW',
+      'am', 'ar', 'bg', 'bn', 'ca', 'cs', 'da', 'de', 'el', 'en', 'en-GB', 'es',
+      'es-419', 'et', 'fa', 'fake-bidi', 'fi', 'fil', 'fr', 'gu', 'he', 'hi',
+      'hr', 'hu', 'id', 'it', 'ja', 'kn', 'ko', 'lt', 'lv', 'ml', 'mr', 'ms',
+      'nb', 'nl', 'pl', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sk', 'sl', 'sr', 'sv',
+      'sw', 'ta', 'te', 'th', 'tr', 'uk', 'vi', 'zh-CN', 'zh-TW',
     ],
     'remoting_webapp_locale_files': [
       # Build the list of .json files generated from remoting_strings.grd.
