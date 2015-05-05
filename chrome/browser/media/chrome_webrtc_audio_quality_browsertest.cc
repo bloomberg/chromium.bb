@@ -182,6 +182,8 @@ class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
                                const base::FilePath& recording,
                                const std::string& constraints,
                                const base::TimeDelta recording_time);
+  void TestWithFakeDeviceGetUserMedia(const std::string& constraints,
+                                      const std::string& perf_modifier);
 };
 
 namespace {
@@ -644,8 +646,9 @@ void MAYBE_WebRtcAudioQualityBrowserTest::SetupAndRecordAudioCall(
   HangUp(left_tab);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestCallQualityWithAudioFromFakeDevice) {
+void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
+    const std::string& constraints,
+    const std::string& perf_modifier) {
   if (OnWinXp() || OnWin8()) {
     // http://crbug.com/379798.
     LOG(ERROR) << "This test is not implemented for Windows XP/Win8.";
@@ -657,11 +660,25 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   base::FilePath recording = CreateTemporaryWaveFile();
 
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
-      reference_file, recording, kAudioOnlyCallConstraints,
+      reference_file, recording, constraints,
       base::TimeDelta::FromSeconds(30)));
 
-  ComputeAndPrintPesqResults(reference_file, recording, "_getusermedia");
+  ComputeAndPrintPesqResults(reference_file, recording, perf_modifier);
   DeleteFileUnlessTestFailed(recording, false);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+                       MANUAL_TestCallQualityWithAudioFromFakeDevice) {
+  TestWithFakeDeviceGetUserMedia(kAudioOnlyCallConstraints, "_getusermedia");
+}
+
+// Test the new 48KHz audio processing path.
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+                       MANUAL_TestCallQualityWithAudioFromFakeDevice48Khz) {
+  const char* kAudio48KhzAudioProcessingConstraints =
+      "{audio: { optional: [{ googAudioProcessing48kHzSupport: true }] } }";
+  TestWithFakeDeviceGetUserMedia(kAudio48KhzAudioProcessingConstraints,
+                                 "_getusermedia_48khz");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
