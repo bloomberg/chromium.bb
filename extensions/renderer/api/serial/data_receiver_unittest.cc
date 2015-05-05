@@ -38,7 +38,7 @@ class DataReceiverFactory : public gin::Wrappable<DataReceiverFactory> {
     callback_.Run(mojo::GetProxy(&sink), client.Pass());
 
     gin::Dictionary result = gin::Dictionary::CreateEmpty(isolate_);
-    result.Set("source", sink.PassMessagePipe().release());
+    result.Set("source", sink.PassInterface().PassHandle().release());
     result.Set("client", client_request.PassMessagePipe().release());
     return result;
   }
