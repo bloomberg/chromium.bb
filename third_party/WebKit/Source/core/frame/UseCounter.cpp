@@ -912,6 +912,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case PushSubscriptionId:
         return "'PushSubscription.subscriptionId' is deprecated and is now included in 'PushSubscription.endpoint'. It will be removed in Chrome 45, around August 2015.";
 
+    case DocumentGetCSSCanvasContext:
+        return "The -webkit-canvas CSS feature is deprecated. Please use a positioned <canvas> element instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
