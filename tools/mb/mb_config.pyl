@@ -164,6 +164,16 @@
       'Linux GN': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot'
     },
+    'chromium.webrtc.fyi': {
+      'Android GN': 'android_gn_release_bot',
+      'Android GN (dbg)': 'android_gn_debug_bot',
+      'Linux GN': 'gn_release_bot',
+      'Linux GN (dbg)': 'gn_debug_bot',
+      'Mac GN': 'gn_release_bot',
+      'Mac GN (dbg)': 'gn_debug_static_bot',
+      'Win GN': 'gn_release_bot_x86',
+      'Win GN (dbg)': 'gn_debug_static_bot_x86',
+    },
     'client.v8': {
       'V8 Linux GN': 'gn_release_bot',
       'V8 Android GN (dbg)': 'android_gn_debug_bot',
