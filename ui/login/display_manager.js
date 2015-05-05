@@ -1061,10 +1061,8 @@ cr.define('cr.ui.login', function() {
       $('enterprise-info').hidden = false;
     }
 
-    var assetIdValue =
-        ((assetId == "") ? loadTimeData.getString('noneSpecified') : assetId);
-    $('asset-id').textContent =
-        loadTimeData.getStringF('assetIdLabel', assetIdValue);
+    $('asset-id').textContent = ((assetId == "") ? "" :
+        loadTimeData.getStringF('assetIdLabel', assetId));
   };
 
   /**

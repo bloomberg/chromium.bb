@@ -98,7 +98,6 @@ void CoreOobeHandler::DeclareLocalizedValues(
 
   // Strings for Asset Identifier shown in version string.
   builder->Add("assetIdLabel", IDS_OOBE_ASSET_ID_LABEL);
-  builder->Add("noneSpecified", IDS_OOBE_NONE_SPECIFIED);
 }
 
 void CoreOobeHandler::Initialize() {
