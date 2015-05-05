@@ -287,7 +287,7 @@ cr.define('ntp', function() {
     onDragCloneTransitionEnd_: function(e) {
       if (this.classList.contains('dragging') &&
           (e.propertyName == 'left' || e.propertyName == 'top' ||
-           e.propertyName == '-webkit-transform')) {
+           e.propertyName == 'transform')) {
         this.finalizeDrag_();
       }
     },
