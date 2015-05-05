@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -374,7 +375,7 @@ class SupervisedUserServiceExtensionTestBase
 
     SupervisedUserURLFilter* url_filter = service->GetURLFilterForUIThread();
     url_filter->SetBlockingTaskRunnerForTesting(
-        base::MessageLoopProxy::current());
+        base::ThreadTaskRunnerHandle::Get());
     url_filter_observer_.Init(url_filter);
 
     // Wait for the initial update to finish.

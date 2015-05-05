@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/extension_install_checker.h"
@@ -63,11 +63,10 @@ class ExtensionInstallCheckerMock : public extensions::ExtensionInstallChecker {
  private:
   void CheckRequirements() override {
     // Simulate an asynchronous operation.
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionInstallCheckerMock::RequirementsErrorCheckDone,
-                   base::Unretained(this),
-                   current_sequence_number()));
+                   base::Unretained(this), current_sequence_number()));
   }
 
   void RequirementsErrorCheckDone(int sequence_number) {

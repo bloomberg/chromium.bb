@@ -8,7 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
@@ -108,9 +108,8 @@ class FamilyInfoFetcherTest : public testing::Test,
  public:
   FamilyInfoFetcherTest()
       : request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
-        fetcher_(this, kAccountId, &token_service_, request_context_.get()) {
-  }
+            base::ThreadTaskRunnerHandle::Get())),
+        fetcher_(this, kAccountId, &token_service_, request_context_.get()) {}
 
   MOCK_METHOD1(OnGetFamilyProfileSuccess,
                void(const FamilyInfoFetcher::FamilyProfile& family));

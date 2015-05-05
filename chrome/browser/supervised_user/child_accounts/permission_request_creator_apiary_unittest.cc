@@ -5,6 +5,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
@@ -33,7 +34,7 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
  public:
   PermissionRequestCreatorApiaryTest()
       : request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
+            base::ThreadTaskRunnerHandle::Get())),
         permission_creator_(&token_service_,
                             kAccountId,
                             request_context_.get()) {

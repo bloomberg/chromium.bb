@@ -12,6 +12,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -190,11 +191,12 @@ LevelDBPrefStore::LevelDBPrefStore(
     base::SequencedTaskRunner* sequenced_task_runner)
     : path_(filename),
       sequenced_task_runner_(sequenced_task_runner),
-      original_task_runner_(base::MessageLoopProxy::current()),
+      original_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       read_only_(false),
       initialized_(false),
       read_error_(PREF_READ_ERROR_NONE),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 LevelDBPrefStore::~LevelDBPrefStore() {
   CommitPendingWrite();

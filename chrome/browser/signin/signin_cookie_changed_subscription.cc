@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/signin_cookie_changed_subscription.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -48,8 +49,7 @@ void SigninCookieChangedSubscription::RegisterForCookieChangedNotifications(
   // notifications.
   net::CookieStore::CookieChangedCallback run_on_current_thread_callback =
       base::Bind(&SigninCookieChangedSubscription::RunAsyncOnCookieChanged,
-                 base::MessageLoopProxy::current(),
-                 this->AsWeakPtr());
+                 base::ThreadTaskRunnerHandle::Get(), this->AsWeakPtr());
   base::Closure register_closure =
       base::Bind(&RegisterForCookieChangesOnIOThread,
                  context_getter_,

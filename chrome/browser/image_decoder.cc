@@ -160,8 +160,8 @@ void ImageDecoder::CancelImpl(ImageRequest* image_request) {
 void ImageDecoder::StartBatchMode() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   utility_process_host_ =
-      UtilityProcessHost::Create(this, base::MessageLoopProxy::current().get())
-          ->AsWeakPtr();
+      UtilityProcessHost::Create(
+          this, base::ThreadTaskRunnerHandle::Get().get())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_IMAGE_DECODER_NAME));
   if (!utility_process_host_->StartBatchMode()) {

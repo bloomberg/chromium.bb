@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/account_service_flag_fetcher.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -31,7 +31,7 @@ class AccountServiceFlagFetcherTest : public testing::Test {
  public:
   AccountServiceFlagFetcherTest()
       : request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())) {
+            base::ThreadTaskRunnerHandle::Get())) {
     service_flags_.push_back("some_flag");
     service_flags_.push_back("another_flag");
     service_flags_.push_back("andonemore");
