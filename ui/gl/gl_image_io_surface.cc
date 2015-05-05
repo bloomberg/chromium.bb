@@ -23,7 +23,7 @@ GLImageIOSurface::~GLImageIOSurface() {
 bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!io_surface_);
-  io_surface_.reset(io_surface);
+  io_surface_.reset(io_surface, base::scoped_policy::RETAIN);
   return true;
 }
 
