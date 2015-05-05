@@ -590,7 +590,7 @@
             'media/media.gyp:cast_media',
           ],
           'conditions': [
-            ['ozone_platform=="egltest"', {
+            ['ozone_platform_egltest==1', {
               'dependencies': [
                 '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
               ],
