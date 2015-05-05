@@ -73,35 +73,42 @@ protected:
 };
 
 // FIXME: Consider using CallbackPromiseAdapter.
-class CachePutCallbacks : public CacheWithResponsesCallbacks {
+class CachePutCallbacks : public WebServiceWorkerCache::CacheBatchCallbacks {
     WTF_MAKE_NONCOPYABLE(CachePutCallbacks);
 public:
     CachePutCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
-        : CacheWithResponsesCallbacks(resolver) { }
+        : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
+    void onSuccess() override
     {
-        // FIXME: Since response is ignored, consider simplifying public API.
         m_resolver->resolve();
         m_resolver.clear();
     }
+
+    void onError(WebServiceWorkerCacheError* reason) override
+    {
+        m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+        m_resolver.clear();
+    }
+
+private:
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
 // FIXME: Consider using CallbackPromiseAdapter.
-class CacheDeleteCallback : public WebServiceWorkerCache::CacheWithResponsesCallbacks {
+class CacheDeleteCallback : public WebServiceWorkerCache::CacheBatchCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheDeleteCallback);
 public:
     CacheDeleteCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver) { }
 
-    virtual void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
+    void onSuccess() override
     {
-        // FIXME: Since response is ignored, consider simplifying public API.
         m_resolver->resolve(true);
         m_resolver.clear();
     }
 
-    virtual void onError(WebServiceWorkerCacheError* reason) override
+    void onError(WebServiceWorkerCacheError* reason) override
     {
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);

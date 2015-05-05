@@ -331,8 +331,7 @@ private:
     RefPtrWillBePersistent<DeleteCacheCallback> m_callback;
 };
 
-class DeleteCacheEntry
-    : public WebServiceWorkerCache::CacheWithResponsesCallbacks {
+class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
     WTF_MAKE_NONCOPYABLE(DeleteCacheEntry);
 public:
 
@@ -342,7 +341,7 @@ public:
     }
     virtual ~DeleteCacheEntry() { }
 
-    void onSuccess(WebVector<WebServiceWorkerResponse>* requests)
+    void onSuccess()
     {
         m_callback->sendSuccess();
     }

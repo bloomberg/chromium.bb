@@ -140,12 +140,12 @@ public:
         return callbacks->onError(&error);
     }
 
-    virtual void dispatchBatch(CacheWithResponsesCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
+    virtual void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
     {
         m_lastErrorWebCacheMethodCalled = "dispatchBatch";
         checkBatchOperationsIfProvided(batchOperations);
 
-        OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
+        OwnPtr<CacheBatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
         WebServiceWorkerCacheError error = m_error;
         return callbacks->onError(&error);
     }
@@ -573,10 +573,10 @@ public:
         return callbacks->onSuccess(&m_responses);
     }
 
-    virtual void dispatchBatch(CacheWithResponsesCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
+    virtual void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
     {
-        OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onSuccess(&m_responses);
+        OwnPtr<CacheBatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
+        return callbacks->onSuccess();
     }
 
 private:

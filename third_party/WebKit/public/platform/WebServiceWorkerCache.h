@@ -24,6 +24,11 @@ public:
     typedef WebCallbacks<WebVector<WebServiceWorkerResponse>, WebServiceWorkerCacheError> CacheWithResponsesCallbacks;
     typedef WebCallbacks<WebVector<WebServiceWorkerRequest>, WebServiceWorkerCacheError> CacheWithRequestsCallbacks;
 
+    // TODO(nhiroki): Remove this define after landing the chromium-side patch.
+    // http://crbug.com/482827
+#define CRBUG_482827
+    using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
+
     virtual ~WebServiceWorkerCache() { }
 
     // Options that affect the scope of searches.
@@ -59,7 +64,7 @@ public:
     virtual void dispatchMatch(CacheMatchCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
     virtual void dispatchMatchAll(CacheWithResponsesCallbacks*, const WebServiceWorkerRequest&, const QueryParams&) = 0;
     virtual void dispatchKeys(CacheWithRequestsCallbacks*, const WebServiceWorkerRequest*, const QueryParams&) = 0;
-    virtual void dispatchBatch(CacheWithResponsesCallbacks*, const WebVector<BatchOperation>&) = 0;
+    virtual void dispatchBatch(CacheBatchCallbacks*, const WebVector<BatchOperation>&) = 0;
 };
 
 } // namespace blink
