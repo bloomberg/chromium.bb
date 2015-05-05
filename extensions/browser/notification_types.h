@@ -69,12 +69,6 @@ enum NotificationType {
   // details about why the install failed.
   NOTIFICATION_EXTENSION_INSTALL_ERROR,
 
-  // Sent when an extension has been uninstalled. The details are an Extension,
-  // and the source is a BrowserContext*.
-  //
-  // DEPRECATED: Use ExtensionRegistry::AddObserver instead.
-  NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-
   // Sent when an extension uninstall is not allowed because the extension is
   // not user manageable.  The details are an Extension, and the source is a
   // BrowserContext*.

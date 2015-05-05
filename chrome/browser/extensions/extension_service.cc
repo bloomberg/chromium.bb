@@ -767,10 +767,6 @@ bool ExtensionService::UninstallExtension(
   UntrackTerminatedExtension(extension->id());
 
   // Notify interested parties that we've uninstalled this extension.
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-      content::Source<Profile>(profile_),
-      content::Details<const Extension>(extension.get()));
   ExtensionRegistry::Get(profile_)
       ->TriggerOnUninstalled(extension.get(), reason);
 
@@ -1409,10 +1405,6 @@ void ExtensionService::RemoveComponentExtension(
       GetExtensionById(extension_id, false));
   UnloadExtension(extension_id, UnloadedExtensionInfo::REASON_UNINSTALL);
   if (extension.get()) {
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-        content::Source<Profile>(profile_),
-        content::Details<const Extension>(extension.get()));
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
         extension.get(), extensions::UNINSTALL_REASON_COMPONENT_REMOVED);
   }
