@@ -709,6 +709,13 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN, \
         category_group, name, id, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val, \
         arg2_name, arg2_val)
+#define TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TTS2(category_group, name, \
+        id, arg1_name, arg1_val, arg2_name, arg2_val) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN, \
+        category_group, name, id, \
+        TRACE_EVENT_FLAG_ASYNC_TTS | TRACE_EVENT_FLAG_COPY, \
+        arg1_name, arg1_val, arg2_name, arg2_val)
+
 // Records a single NESTABLE_ASYNC_END event called "name" immediately, with 2
 // associated arguments. If the category is not enabled, then this does nothing.
 #define TRACE_EVENT_NESTABLE_ASYNC_END2(category_group, name, id, arg1_name, \
@@ -716,6 +723,13 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_NESTABLE_ASYNC_END, \
         category_group, name, id, TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val, \
         arg2_name, arg2_val)
+#define TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TTS2(category_group, name, \
+        id, arg1_name, arg1_val, arg2_name, arg2_val) \
+    INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_NESTABLE_ASYNC_END, \
+        category_group, name, id, \
+        TRACE_EVENT_FLAG_ASYNC_TTS | TRACE_EVENT_FLAG_COPY, \
+        arg1_name, arg1_val, arg2_name, arg2_val)
+
 // Records a single NESTABLE_ASYNC_INSTANT event called "name" immediately,
 // with 2 associated arguments. If the category is not enabled, then this
 // does nothing.
@@ -1081,6 +1095,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 #define TRACE_EVENT_FLAG_SCOPE_OFFSET (static_cast<unsigned char>(1 << 3))
 #define TRACE_EVENT_FLAG_SCOPE_EXTRA  (static_cast<unsigned char>(1 << 4))
 #define TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP (static_cast<unsigned char>(1 << 5))
+#define TRACE_EVENT_FLAG_ASYNC_TTS    (static_cast<unsigned char>(1 << 6))
 
 #define TRACE_EVENT_FLAG_SCOPE_MASK   (static_cast<unsigned char>( \
     TRACE_EVENT_FLAG_SCOPE_OFFSET | TRACE_EVENT_FLAG_SCOPE_EXTRA))

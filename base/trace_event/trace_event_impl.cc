@@ -742,6 +742,11 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
     StringAppendF(out, ",\"tts\":%" PRId64, thread_time_int64);
   }
 
+  // Output async tts marker field if flag is set.
+  if (flags_ & TRACE_EVENT_FLAG_ASYNC_TTS) {
+    StringAppendF(out, ", \"use_async_tts\":1");
+  }
+
   // If id_ is set, print it out as a hex string so we don't loose any
   // bits (it might be a 64-bit pointer).
   if (flags_ & TRACE_EVENT_FLAG_HAS_ID)
