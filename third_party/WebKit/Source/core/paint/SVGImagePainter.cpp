@@ -39,7 +39,9 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         if (paintContext.applyClipMaskAndFilterIfNecessary()) {
             LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_renderSVGImage, paintContext.paintInfo().phase, boundingBox);
             if (!recorder.canUseCachedDrawing()) {
-                if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
+                // There's no need to cache a buffered SkPicture with slimming
+                // paint because it's automatically done in the display list.
+                if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled()) {
                     paintForeground(paintContext.paintInfo());
                 } else {
                     RefPtr<const SkPicture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
@@ -73,7 +75,7 @@ void SVGImagePainter::paintForeground(const PaintInfo& paintInfo)
     imageElement->preserveAspectRatio()->currentValue()->transformRect(destRect, srcRect);
 
     InterpolationQuality interpolationQuality = InterpolationDefault;
-    if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC)
+    if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled())
         interpolationQuality = ImageQualityController::imageQualityController()->chooseInterpolationQuality(paintInfo.context, &m_renderSVGImage, image.get(), image.get(), LayoutSize(destRect.size()));
 
     InterpolationQuality previousInterpolationQuality = paintInfo.context->imageInterpolationQuality();

@@ -2097,7 +2097,6 @@ crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-userSpace
 
 crbug.com/477743 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ ImageOnlyFailure Pass ]
 crbug.com/477743 virtual/slimmingpaint/svg/W3C-SVG-1.1/filters-composite-02-b.svg [ Crash Pass ]
-crbug.com/477743 virtual/slimmingpaint/svg/as-image/zero-size-buffered-image-nopaint.html [ Crash Timeout ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/filters/feTile.svg [ ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
@@ -2106,7 +2105,6 @@ crbug.com/477743 virtual/slimmingpaint/svg/custom/use-disappears-after-style-upd
 crbug.com/477743 virtual/slimmingpaint/svg/custom/viewport-resource-inval.svg [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/dom/filter-reference-in-shadow-tree.html [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/dom/references-in-shadow-trees.html [ Crash ImageOnlyFailure ]
-crbug.com/477743 virtual/slimmingpaint/svg/repaint/buffered-rendering-static-image.html [ Failure Crash Timeout ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/filter-child-repaint.svg [ Failure ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/inner-svg-change-viewBox.svg [ Failure Crash ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/paintorder-filtered.svg [ Failure ]
