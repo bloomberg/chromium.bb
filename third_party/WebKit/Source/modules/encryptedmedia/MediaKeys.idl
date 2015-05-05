@@ -29,6 +29,7 @@ enum MediaKeySessionType {
 };
 
 [
+    ActiveDOMObject,
     RuntimeEnabled=EncryptedMedia,
     GarbageCollected,
     TypeChecking=Interface

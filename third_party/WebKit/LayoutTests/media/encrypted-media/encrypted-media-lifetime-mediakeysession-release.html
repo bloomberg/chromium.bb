@@ -9,7 +9,7 @@
     <body>
         <div id="log"></div>
         <script>
-            // Since MediaKeySession (but not MediaKeys) are ActiveDOMObjects,
+            // Since MediaKeySession (and MediaKeys) are ActiveDOMObjects,
             // we can determine when they are garbage collected.
             // MediaKeySessions remain as long as:
             //   JavaScript has a reference to it
@@ -39,36 +39,41 @@
                 }).then(function(result) {
                     mediaKeys = result;
 
-                    // Verify MediaKeys are not an ActiveDOMObject.
-                    // In non-Oilpan, numActiveDOMObjectsCreate() == 0.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 3.
-                    // (1 MediaKeysInitializer and
+                    // Verify MediaKeys is an ActiveDOMObject.
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 4.
+                    // (1 MediaKeys,
+                    //  1 MediaKeysInitializer and
                     //  1 MediaKeySystemAccessInitializer (navigator.requestMediaKeySystemAccess() use above),
                     //  1 MediaKeySystemAccessInitializer (isInitDataSupported() (via getSupportedInitDataType())))
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 3, 'MediaKeys.create()');
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 1, 4, 'MediaKeys.create()');
 
                     mediaKeySession1 = mediaKeys.createSession();
                     return mediaKeySession1.generateRequest(initDataType, initData);
                 }).then(function() {
-                    // Should be 1 MediaKeySession.
-                    // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 5.
-                    // (1 MediaKeysInitializer,
+                    // Should be 1 MediaKeys + 1 MediaKeySession.
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 6.
+                    // (1 MediaKeys,
+                    //  1 MediaKeysInitializer,
                     //  2 MediaKeySystemAccessInitializers,
                     //  1 ContentDecryptionModuleResultPromise and
                     //  1 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 5, 'MediaKeys.createSession(1)');
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 2, 6, 'MediaKeys.createSession(1)');
+
                     mediaKeySession2 = mediaKeys.createSession();
                     return mediaKeySession2.generateRequest(initDataType, initData);
                 }).then(function() {
-                    // Should be 2 MediaKeySessions.
-                    // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 7.
-                    // (1 MediaKeysInitializer,
+                    // Should be 1 MediaKeys + 2 MediaKeySessions.
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 3.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 8.
+                    // (1 MediaKeys,
+                    //  1 MediaKeysInitializer,
                     //  2 MediaKeySystemAccessInitializers,
                     //  2 ContentDecryptionModuleResultPromise and
                     //  2 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 7, 'mediaKeys.createSession(2)');
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 3, 8, 'mediaKeys.createSession(2)');
+
                     // Close the sessions. Once completed, only the JS
                     // reference to them keeps them around.
                     return mediaKeySession1.close();
@@ -78,25 +83,29 @@
                     // Since both sessions have been closed, dropping the
                     // reference to them from JS will result in the session
                     // being garbage-collected.
-                    // Should be 2 MediaKeySessions.
-                    // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 9.
-                    // (1 MediaKeysInitializer,
+                    // Should be 1 MediaKeys + 2 MediaKeySessions.
+                    // In non-Oilpan, numActiveDOMObjectsCreate() == 3.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 10.
+                    // (1 MediaKeys,
+                    //  1 MediaKeysInitializer,
                     //  2 MediaKeySystemAccessInitializers,
                     //  4 ContentDecryptionModuleResultPromise and
                     //  2 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 9, 'after close');
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 3, 10, 'after close');
 
                     mediaKeySession1 = null;
                     return createGCPromise();
-                }).then(function(result) {
-                    // Only mediaKeySession2 should remain.
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2, 'mediaKeySession1 not collected');
+                }).then(function() {
+                    // Only MediaKeys + mediaKeySession2 should remain.
+                    // In non-Oilpan, there is also something from createGCPromise().
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 2, 3, 'mediaKeySession1 not collected');
 
                     mediaKeySession2 = null;
                     return createGCPromise();
-                }).then(function(result) {
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 1, 'mediaKeySession2 not collected');
+                }).then(function() {
+                    // Only MediaKeys should remain.
+                    // In non-Oilpan, there is also something from createGCPromise().
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 1, 2, 'mediaKeySession2 not collected');
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

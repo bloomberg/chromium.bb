@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/Timer.h"
 #include "public/platform/WebContentDecryptionModule.h"
@@ -48,11 +48,11 @@ class WebContentDecryptionModule;
 
 // References are held by JS and HTMLMediaElement.
 // The WebContentDecryptionModule has the same lifetime as this object.
-class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
+class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ActiveDOMObject, public ScriptWrappable {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    MediaKeys(ExecutionContext*, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
+    static MediaKeys* create(ExecutionContext*, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
     virtual ~MediaKeys();
 
     // FIXME: This should be removed after crbug.com/425186 is fully
@@ -67,10 +67,16 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    // ContextLifecycleObserver
+    // ActiveDOMObject implementation.
+    // FIXME: This class could derive from ContextLifecycleObserver
+    // again once hasPendingActivity() is moved to ScriptWrappable
+    // (http://crbug.com/483722).
     virtual void contextDestroyed() override;
+    virtual bool hasPendingActivity() const override;
+    virtual void stop() override;
 
 private:
+    MediaKeys(ExecutionContext*, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
     class PendingAction;
 
     bool sessionTypeSupported(WebEncryptedMediaSessionType);

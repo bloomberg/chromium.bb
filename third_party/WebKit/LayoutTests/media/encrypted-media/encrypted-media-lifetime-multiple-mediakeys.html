@@ -9,22 +9,7 @@
     <body>
         <div id="log"></div>
         <script>
-            // Since MediaKeys are not ActiveDOMObjects, it is hard to
-            // determine when they are garbage collected. For the test below
-            // a MediaKeySession (which is an ActiveDOMObject) is added to each
-            // MediaKeys object so there is something to count.
-
-            // MediaKeySessions remain as long as:
-            //   JavaScript has a reference to it
-            //   OR (MediaKeys is around
-            //       AND the session has not received a close() event)
-            // In the tests below, we do not close any session nor keep a
-            // Javascript reference to any session, so MediaKeySessions remain
-            // as long as the associated MediaKeys object is around.
-
-            // For this test, create several MediaKeys (each with a
-            // MediaKeySession object so they can be counted) and verify
-            // lifetime.
+            // For this test, create several MediaKeys and verify lifetime.
             async_test(function(test)
             {
                 var mediaKeys;
@@ -35,135 +20,104 @@
                     return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
                 }
 
-                // Create a MediaKeys object and an associated MediaKeySession
-                // object. |mediaKeys| is updated to refer to the new MediaKeys
-                // object. Returns a promise that resolves with the new
-                // MediaKeySession object.
-                function createMediaKeyWithMediaKeySession()
+                // Create a MediaKeys object. Returns a promise that resolves
+                // with the new MediaKeys object.
+                function createMediaKeys()
                 {
-                    var initDataType;
-                    var initData;
-
                     return getSupportedInitDataType().then(function(type) {
-                        initDataType = type;
-                        initData = getInitData(initDataType);
                         return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
                     }).then(function(access) {
                         return access.createMediaKeys();
-                    }).then(function(result) {
-                        mediaKeys = result;
-                        var mediaKeySession = mediaKeys.createSession();
-                        return mediaKeySession.generateRequest(initDataType, initData).then(function() {
-                            return mediaKeySession;
-                        });
+                    }).then(function(mediaKeys) {
+                        return mediaKeys;
                     });
                 }
 
-                // Create a few MediaKeys + MediaKeySession objects. Only keep
-                // a reference to the last one created.
-                createMediaKeyWithMediaKeySession().then(function(mediaKeySession) {
-                    // Should be 1 MediaKeySession.
+                // Create a few MediaKeys objects. Only keep a reference to the
+                // last one created.
+                createMediaKeys().then(function(result) {
+                    // Should be 1 MediaKeys.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
-                    // In Oilpan, numActiveDOMObjectsCreated() <= 5.
+                    // In Oilpan, numActiveDOMObjectsCreated() <= 4.
                     // (1 MediaKeysInitializer,
                     //  1 MediaKeySystemAccessInitializer (navigator.requestMediaKeySystemAccess() use above),
-                    //  1 MediaKeySystemAccessInitializer (isInitDataSupported() (via getSupportedInitDataType())),
-                    //  1 ContentDecryptionModuleResultPromise and
-                    //  1 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 5);
-                    return createMediaKeyWithMediaKeySession();
-                }).then(function(mediaKeySession) {
-                    // Should be 2 MediaKeySessions.
+                    //  1 MediaKeySystemAccessInitializer (isInitDataSupported() (via getSupportedInitDataType())) and
+                    //  1 ContentDecryptionModuleResultPromise).
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 1, 4);
+
+                    return createMediaKeys();
+                }).then(function(result) {
+                    // Should be 2 MediaKeys.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 10.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 8.
                     // (2 MediaKeysInitializer,
-                    //  4 MediaKeySystemAccessInitializer,
-                    //  2 ContentDecryptionModuleResultPromise and
-                    //  2 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 10);
-                    return createMediaKeyWithMediaKeySession();
-                }).then(function(mediaKeySession) {
-                    // Should be 3 MediaKeySessions.
+                    //  4 MediaKeySystemAccessInitializer and
+                    //  2 ContentDecryptionModuleResultPromise).
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 2, 8);
+
+                    return createMediaKeys();
+                }).then(function(result) {
+                    // Should be 3 MediaKeys.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 3.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 15.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 12.
                     // (3 MediaKeysInitializer,
-                    //  6 MediaKeySystemAccessInitializer,
-                    //  3 ContentDecryptionModuleResultPromise and
-                    //  3 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 15);
-                    return createMediaKeyWithMediaKeySession();
-                }).then(function(mediaKeySession) {
-                    // Should be 4 MediaKeySessions.
+                    //  6 MediaKeySystemAccessInitializer and
+                    //  3 ContentDecryptionModuleResultPromise).
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 3, 12);
+
+                    return createMediaKeys();
+                }).then(function(result) {
+                    // Should be 4 MediaKeys.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 4.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 20.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 16.
                     // (4 MediaKeysInitializer,
-                    //  8 MediaKeySystemAccessInitializer,
-                    //  4 ContentDecryptionModuleResultPromise and
-                    //  4 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 20);
-                    return createMediaKeyWithMediaKeySession();
-                }).then(function(mediaKeySession) {
-                    // Should be 5 MediaKeySessions.
+                    //  8 MediaKeySystemAccessInitializer and
+                    //  4 ContentDecryptionModuleResultPromise).
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 4, 16);
+
+                    return createMediaKeys();
+                }).then(function(result) {
+                    // Should be 5 MediaKeys.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 5.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 25.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 20.
                     // (5 MediaKeysInitializer,
-                    //  10 MediaKeySystemAccessInitializer,
-                    //  5 ContentDecryptionModuleResultPromise and
-                    //  5 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 25);
+                    //  10 MediaKeySystemAccessInitializer and
+                    //  5 ContentDecryptionModuleResultPromise).
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 5, 20);
 
                     // |mediaKeys| refers to the most recently created MediaKeys
                     // object.
-                    //
-                    // In order for the MediaKeySession objects to have no
-                    // outstanding activity so that they can be garbage
+                    mediaKeys = result;
+
+                    // In order for the MediaKey objects to be garbage
                     // collected, it needs time to process any pending events.
-                    // As a "message" event is generated when a new session is
-                    // created, we need to allow the event to run (we're not
-                    // doing anything with the event in this test).
                     return delayToAllowEventProcessingPromise();
                 }).then(function(result) {
                     // In non-Oilpan, numActiveDOMObjectsCreated() == 5
                     // (5 MediaKeySession objects).
-                    // In Oilpan, numActiveDOMObjectsCreated() <= 28
+                    // In Oilpan, numActiveDOMObjectsCreated() <= 23
                     // (5 MediaKeysInitializer,
                     //  12 MediaKeySystemAccessInitializer,
-                    //  5 ContentDecryptionModuleResultPromise,
-                    //  5 MediaKeySession, and
+                    //  5 ContentDecryptionModuleResultPromise and
                     //  1 DOMTimer (in delayToAllowEventProcessingPromise))
-                    assert_true(numActiveDOMObjectsCreated() >= 5);
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 28);
+                    assert_between_inclusive(numActiveDOMObjectsCreated(), 5, 23);
 
                     // As we only have a reference (|mediaKeys|) to the last
                     // created MediaKeys object, the other 4 MediaKeys objects
                     // are available to be garbage collected.
-                    //
-                    // Since MediaKeySessions remain alive as long as MediaKeys
-                    // is around, it is possible that gc() checks the
-                    // MediaKeySession object first, and doesn't collect it
-                    // since MediaKeys hasn't been collected yet. Thus run gc()
-                    // twice, to ensure that the unreferenced MediaKeySession
-                    // objects get collected.
                     return createGCPromise();
                 }).then(function(result) {
-                    return createGCPromise();
-                }).then(function(result) {
-                    // Should be 1 MediaKeySession, the session for |mediaKeys|
-                    // and DOMTimer.
+                    // Should be 1 MediaKeys and DOMTimer.
                     assert_less_than_equal(numActiveDOMObjectsCreated(), 2);
                     assert_equals(typeof mediaKeys.createSession, 'function');
 
                     // Release the last MediaKeys object created.
                     mediaKeys = null;
 
-                    // Run gc() again to reclaim the remaining MediaKeys object
-                    // and the last MediaKeySession. gc() run twice in case
-                    // MediaKeySession checked first and not collected in the
-                    // first pass.
+                    // Run gc() again to reclaim the remaining MediaKeys object.
                     return createGCPromise();
                 }).then(function(result) {
-                    return createGCPromise();
-                }).then(function(result) {
+                    // Should be just a DOMTimer.
                     assert_less_than_equal(numActiveDOMObjectsCreated(), 1);
                     test.done();
                 }).catch(function(error) {

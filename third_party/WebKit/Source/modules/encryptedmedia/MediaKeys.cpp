@@ -81,8 +81,15 @@ private:
     const RefPtr<DOMArrayBuffer> m_data;
 };
 
+MediaKeys* MediaKeys::create(ExecutionContext* context, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
+{
+    MediaKeys* mediaKeys = new MediaKeys(context, keySystem, supportedSessionTypes, cdm);
+    mediaKeys->suspendIfNeeded();
+    return mediaKeys;
+}
+
 MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
-    : ContextLifecycleObserver(context)
+    : ActiveDOMObject(context)
     , m_keySystem(keySystem)
     , m_supportedSessionTypes(supportedSessionTypes)
     , m_cdm(cdm)
@@ -204,15 +211,35 @@ WebContentDecryptionModule* MediaKeys::contentDecryptionModule()
 DEFINE_TRACE(MediaKeys)
 {
     visitor->trace(m_pendingActions);
-    ContextLifecycleObserver::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 void MediaKeys::contextDestroyed()
 {
-    ContextLifecycleObserver::contextDestroyed();
+    ActiveDOMObject::contextDestroyed();
 
-    // We don't need the CDM anymore.
+    // We don't need the CDM anymore. Only destroyed after all related
+    // ActiveDOMObjects have been stopped.
     m_cdm.clear();
+}
+
+bool MediaKeys::hasPendingActivity() const
+{
+    // Remain around if there are pending events.
+    WTF_LOG(Media, "MediaKeys(%p)::hasPendingActivity %s%s", this,
+        ActiveDOMObject::hasPendingActivity() ? " ActiveDOMObject::hasPendingActivity()" : "",
+        !m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "");
+
+    return ActiveDOMObject::hasPendingActivity() || !m_pendingActions.isEmpty();
+}
+
+void MediaKeys::stop()
+{
+    ActiveDOMObject::stop();
+
+    if (m_timer.isActive())
+        m_timer.stop();
+    m_pendingActions.clear();
 }
 
 } // namespace blink
