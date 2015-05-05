@@ -81,6 +81,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_occlusion_for_tile_prioritization;
   bool record_full_layer;
   bool use_display_lists;
+  bool use_cached_picture_in_display_list;
   bool verify_property_trees;
   bool gather_pixel_refs;
   bool use_compositor_animation_timelines;

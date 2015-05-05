@@ -69,6 +69,7 @@ LayerTreeSettings::LayerTreeSettings()
       use_occlusion_for_tile_prioritization(false),
       record_full_layer(false),
       use_display_lists(false),
+      use_cached_picture_in_display_list(true),
       verify_property_trees(false),
       gather_pixel_refs(false),
       use_compositor_animation_timelines(false) {
