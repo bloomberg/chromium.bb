@@ -1162,6 +1162,8 @@ bo_create(int fd, unsigned int format,
 	switch (format) {
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
+	case DRM_FORMAT_YUV420:
+	case DRM_FORMAT_YVU420:
 		virtual_height = height * 3 / 2;
 		break;
 
