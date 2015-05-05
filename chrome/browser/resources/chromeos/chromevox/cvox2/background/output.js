@@ -337,6 +337,11 @@ Output.STATE_INFO_ = {
     off: {
       msgId: 'aria_expanded_false'
     }
+  },
+  visited: {
+    on: {
+      msgId: 'visited_state'
+    }
   }
 };
 

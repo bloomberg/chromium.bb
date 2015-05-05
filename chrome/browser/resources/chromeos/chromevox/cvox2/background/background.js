@@ -142,15 +142,8 @@ Background.prototype = {
     var current = this.currentRange_;
     var dir = Dir.FORWARD;
     var pred = null;
+    var predErrorMsg = undefined;
     switch (command) {
-      case 'nextHeading':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.heading;
-        break;
-      case 'previousHeading':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.heading;
-        break;
       case 'nextCharacter':
         current = current.move(cursors.Unit.CHARACTER, Dir.FORWARD);
         break;
@@ -169,13 +162,95 @@ Background.prototype = {
       case 'previousLine':
         current = current.move(cursors.Unit.LINE, Dir.BACKWARD);
         break;
+      case 'nextButton':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.button;
+        predErrorMsg = 'no_next_button';
+        break;
+      case 'previousButton':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.button;
+        predErrorMsg = 'no_previous_button';
+        break;
+      case 'nextCheckBox':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.checkBox;
+        predErrorMsg = 'no_next_checkbox';
+        break;
+      case 'previousCheckBox':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.checkBox;
+        predErrorMsg = 'no_previous_checkbox';
+        break;
+      case 'nextComboBox':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.comboBox;
+        predErrorMsg = 'no_next_combo_box';
+        break;
+      case 'previousComboBox':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.comboBox;
+        predErrorMsg = 'no_previous_combo_box';
+        break;
+      case 'nextEditText':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.editText;
+        predErrorMsg = 'no_next_edit_text';
+        break;
+      case 'previousEditText':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.editText;
+        predErrorMsg = 'no_previous_edit_text';
+        break;
+      case 'nextFormField':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.formField;
+        predErrorMsg = 'no_next_form_field';
+        break;
+      case 'previousFormField':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.formField;
+        predErrorMsg = 'no_previous_form_field';
+        break;
+      case 'nextHeading':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.heading;
+        predErrorMsg = 'no_next_heading';
+        break;
+      case 'previousHeading':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.heading;
+        predErrorMsg = 'no_previous_heading';
+        break;
       case 'nextLink':
         dir = Dir.FORWARD;
         pred = AutomationPredicate.link;
+        predErrorMsg = 'no_next_link';
         break;
       case 'previousLink':
         dir = Dir.BACKWARD;
         pred = AutomationPredicate.link;
+        predErrorMsg = 'no_previous_link';
+        break;
+      case 'nextTable':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.table;
+        predErrorMsg = 'no_next_table';
+        break;
+      case 'previousTable':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.table;
+        predErrorMsg = 'no_previous_table';
+        break;
+      case 'nextVisitedLink':
+        dir = Dir.FORWARD;
+        pred = AutomationPredicate.visitedLink;
+        predErrorMsg = 'no_next_visited_link';
+        break;
+      case 'previousVisitedLink':
+        dir = Dir.BACKWARD;
+        pred = AutomationPredicate.visitedLink;
+        predErrorMsg = 'no_previous_visited_link';
         break;
       case 'nextElement':
         current = current.move(cursors.Unit.NODE, Dir.FORWARD);
@@ -229,8 +304,13 @@ Background.prototype = {
       var node = AutomationUtil.findNextNode(
           current.getBound(dir).getNode(), dir, pred);
 
-      if (node)
+      if (node) {
         current = cursors.Range.fromNode(node);
+      } else {
+          cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg(predErrorMsg),
+                                  cvox.QueueMode.FLUSH);
+        return;
+      }
     }
 
     if (current) {

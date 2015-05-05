@@ -1481,6 +1481,12 @@
       <message desc="Spoken to describe a visited link." name="IDS_CHROMEVOX_VISITED_LINK">
         Visited link
       </message>
+      <message desc="Spoken to describe the visited state (e.g. for links)." name="IDS_CHROMEVOX_VISITED_STATE">
+        Visited
+      </message>
+      <message desc="Brailled to describe the visited state (e.g. for links)." name="IDS_CHROMEVOX_VISITED_STATE_BRL">
+        vtd
+      </message>
       <message desc="Brailled to describe an &lt;a&gt; tag." name="IDS_CHROMEVOX_TAG_LINK_BRL">
         lnk
       </message>
