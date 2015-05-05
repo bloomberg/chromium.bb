@@ -185,6 +185,11 @@ bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
   if (event.type == WebInputEvent::GestureTap)
     return false;
 
+  // For LongPress events we return false, since otherwise the context menu will
+  // be suppressed. https://crbug.com/482842
+  if (event.type == WebInputEvent::GestureLongPress)
+    return false;
+
   if (event.type == WebInputEvent::ContextMenu) {
     if (delegate_) {
       const WebMouseEvent& mouse_event =
