@@ -309,7 +309,7 @@ C = Conditions
 # Files shared between all deployment types.
 _COPY_PATHS_COMMON = (
     Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
-    Path('icudtl.dat', cond=C.GypSet('icu_use_data_file_flag')),
+    Path('icudtl.dat'),
     # Set as optional for backwards compatibility.
     Path('lib/libpeerconnection.so',
          exe=True,
