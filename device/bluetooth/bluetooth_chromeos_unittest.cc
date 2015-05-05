@@ -655,6 +655,31 @@ TEST_F(BluetoothChromeOSTest, StopDiscovery) {
   EXPECT_FALSE(observer.last_discovering());
 
   EXPECT_FALSE(adapter_->IsDiscovering());
+  discovery_sessions_.clear();
+  callback_count_ = 0;
+
+  // Test that the Stop callbacks get called even if the
+  // BluetoothDiscoverySession objects gets deleted
+  adapter_->SetPowered(true, GetCallback(), GetErrorCallback());
+  adapter_->StartDiscoverySession(
+      base::Bind(&BluetoothChromeOSTest::DiscoverySessionCallback,
+                 base::Unretained(this)),
+      GetErrorCallback());
+  message_loop_.Run();
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  callback_count_ = 0;
+  ASSERT_TRUE(adapter_->IsPowered());
+  ASSERT_TRUE(adapter_->IsDiscovering());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  ASSERT_TRUE(discovery_sessions_[0]->IsActive());
+
+  discovery_sessions_[0]->Stop(GetCallback(), GetErrorCallback());
+  discovery_sessions_.clear();
+
+  message_loop_.Run();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
 }
 
 TEST_F(BluetoothChromeOSTest, Discovery) {

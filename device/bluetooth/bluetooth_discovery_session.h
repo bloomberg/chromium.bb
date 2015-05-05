@@ -129,8 +129,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
  private:
   friend class BluetoothAdapter;
 
-  // Internal callback invoked when a call to Stop has succeeded.
-  void OnStop(const base::Closure& callback);
+  // Internal callback invoked when a call to
+  // BluetoothAdapter::RemoveDiscoverySession has succeeded. Invokes
+  // |deactivate_discovery_session| if the session object still
+  // exists when this callback executes. Always invokes |success_callback|.
+  static void OnDiscoverySessionRemoved(
+      const base::Closure& deactivate_discovery_session,
+      const base::Closure& success_callback);
+
+  // Deactivate discovery session object after
+  // BluetoothAdapter::RemoveDiscoverySession completes.
+  void DeactivateDiscoverySession();
 
   // Marks this instance as inactive. Called by BluetoothAdapter to mark a
   // session as inactive in the case of an unexpected change to the adapter
