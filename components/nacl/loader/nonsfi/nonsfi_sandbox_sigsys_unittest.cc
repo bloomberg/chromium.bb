@@ -13,6 +13,7 @@
 
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
+#include "sandbox/linux/system_headers/linux_syscalls.h"
 
 namespace {
 
@@ -20,12 +21,13 @@ namespace {
 // are appropriately disallowed. They should raise SIGSYS regardless
 // of arguments. We always pass five zeros not to pass uninitialized
 // values to syscalls.
-#define RESTRICT_SYSCALL_DEATH_TEST_IMPL(name, sysno)                        \
-  BPF_DEATH_TEST_C(NaClNonSfiSandboxSIGSYSTest,                              \
-                   name,                                                     \
-                   DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()), \
-                   nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {               \
-    syscall(sysno, 0, 0, 0, 0, 0, 0);                                        \
+#define RESTRICT_SYSCALL_DEATH_TEST_IMPL(name, sysno)                   \
+  BPF_DEATH_TEST_C(NaClNonSfiSandboxSIGSYSTest,                         \
+                   name,                                                \
+                   DEATH_SEGV_MESSAGE(                                  \
+                       sandbox::GetErrorMessageContentForTests()),      \
+                   nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {          \
+    syscall(sysno, 0, 0, 0, 0, 0, 0);                                   \
   }
 
 #define RESTRICT_SYSCALL_DEATH_TEST(name)               \

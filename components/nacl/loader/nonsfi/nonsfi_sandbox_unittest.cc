@@ -10,7 +10,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/futex.h>
+#include <linux/net.h>
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
@@ -18,7 +18,6 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
-#include <sys/ptrace.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
@@ -39,8 +38,9 @@
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
+#include "sandbox/linux/system_headers/linux_futex.h"
+#include "sandbox/linux/system_headers/linux_signal.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
-#include "third_party/lss/linux_syscall_support.h"  // for MAKE_PROCESS_CPUCLOCK
 
 namespace {
 
@@ -70,7 +70,7 @@ TEST(NaClNonSfiSandboxTest, BPFIsSupported) {
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  invalid_sysno,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   syscall(999);
 }
@@ -97,7 +97,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 int DoFork() {
   // Call clone() to do a fork().
-  const int pid = syscall(__NR_clone, SIGCHLD, NULL);
+  const int pid = syscall(__NR_clone, LINUX_SIGCHLD, NULL);
   if (pid == 0)
     _exit(0);
   return pid;
@@ -116,7 +116,8 @@ TEST(NaClNonSfiSandboxTest, DoFork) {
 // Then, try this in the sandbox.
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  clone_for_fork,
-                 DEATH_MESSAGE(sandbox::GetCloneErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(
+                     sandbox::GetCloneErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   DoFork();
 }
@@ -131,7 +132,8 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  prctl_SET_DUMPABLE,
-                 DEATH_MESSAGE(sandbox::GetPrctlErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(
+                     sandbox::GetPrctlErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   syscall(__NR_prctl, PR_SET_DUMPABLE, 1UL);
 }
@@ -157,101 +159,172 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  accept,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  accept(0, NULL, NULL);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0};
+  syscall(__NR_socketcall, SYS_ACCEPT, args);
+#else
+  syscall(__NR_accept, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  bind,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  bind(0, NULL, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0};
+  syscall(__NR_socketcall, SYS_BIND, args);
+#else
+  syscall(__NR_bind, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  connect,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  connect(0, NULL, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0};
+  syscall(__NR_socketcall, SYS_CONNECT, args);
+#else
+  syscall(__NR_connect, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  getpeername,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  getpeername(0, NULL, NULL);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0};
+  syscall(__NR_socketcall, SYS_GETPEERNAME, args);
+#else
+  syscall(__NR_getpeername, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  getsockname,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  struct sockaddr addr;
-  socklen_t addrlen = 0;
-  getsockname(0, &addr, &addrlen);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0};
+  syscall(__NR_socketcall, SYS_GETSOCKNAME, args);
+#else
+  syscall(__NR_getsockname, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  getsockopt,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  getsockopt(0, 0, 0, NULL, NULL);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0, 0, 0};
+  syscall(__NR_socketcall, SYS_GETSOCKOPT, args);
+#else
+  syscall(__NR_getsockname, 0, 0, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  listen,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  listen(0, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0};
+  syscall(__NR_socketcall, SYS_LISTEN, args);
+#else
+  syscall(__NR_listen, 0, 0);
+#endif
 }
 
+// On x86_64 architecture, there is no __NR_recv system call. Note: recv()
+// syscall wrapper usually uses __NR_recvfrom, instead, (like in glibc).
+#if defined(__i386__) || defined(__arm__)
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  recv,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  recv(0, NULL, 0, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0, 0};
+  syscall(__NR_socketcall, SYS_RECV, args);
+#else
+  syscall(__NR_recv, 0, 0, 0, 0);
+#endif
 }
+#endif
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  recvfrom,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  recvfrom(0, NULL, 0, 0, NULL, NULL);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0, 0, 0, 0};
+  syscall(__NR_socketcall, SYS_RECVFROM, args);
+#else
+  syscall(__NR_recvfrom, 0, 0, 0, 0, 0, 0);
+#endif
 }
 
+// On x86_64 architecture, there is no __NR_send system call. Note: send()
+// syscall wrapper usually uses __NR_sendto, instead, (like in glibc).
+#if defined(__i386__) || defined(__arm__)
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  send,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  send(0, NULL, 0, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0, 0};
+  syscall(__NR_socketcall, SYS_SEND, args);
+#else
+  syscall(__NR_send, 0, 0, 0, 0);
+#endif
 }
+#endif
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  sendto,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  sendto(0, NULL, 0, 0, NULL, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0, 0, 0, 0};
+  syscall(__NR_socketcall, SYS_SENDTO, args);
+#else
+  syscall(__NR_sendto, 0, 0, 0, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  setsockopt,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  setsockopt(0, 0, 0, NULL, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0, 0, 0};
+  syscall(__NR_socketcall, SYS_SETSOCKOPT, args);
+#else
+  syscall(__NR_setsockopt, 0, 0, 0, 0, 0);
+#endif
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  socket,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-  socket(0, 0, 0);
+#if defined(__i386__)
+  uintptr_t args[] = {0, 0, 0};
+  syscall(__NR_socketcall, SYS_SOCKET, args);
+#else
+  syscall(__NR_socket, 0, 0, 0);
+#endif
 }
 
 #if defined(__x86_64__) || defined(__arm__)
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  socketpair,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   int fds[2];
   socketpair(AF_INET, SOCK_STREAM, 0, fds);
@@ -268,7 +341,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  fcntl_SETFD,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   base::ScopedFD fds[2];
   DoSocketpair(fds);
@@ -288,7 +361,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  fcntl_GETFL_SETFL,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   base::ScopedFD fds[2];
   DoSocketpair(fds);
@@ -297,21 +370,22 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  fcntl_DUPFD,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   fcntl(0, F_DUPFD);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  fcntl_DUPFD_CLOEXEC,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   fcntl(0, F_DUPFD_CLOEXEC);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  FutexWithRequeuePriorityInheritence,
-                 DEATH_MESSAGE(sandbox::GetFutexErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(
+                     sandbox::GetFutexErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI, 0, NULL, NULL, 0);
   _exit(1);
@@ -319,7 +393,8 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  FutexWithRequeuePriorityInheritencePrivate,
-                 DEATH_MESSAGE(sandbox::GetFutexErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(
+                     sandbox::GetFutexErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI_PRIVATE, 0, NULL, NULL, 0);
   _exit(1);
@@ -335,7 +410,8 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  FutexWithUnlockPIPrivate,
-                 DEATH_MESSAGE(sandbox::GetFutexErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(
+                     sandbox::GetFutexErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   syscall(__NR_futex, NULL, FUTEX_UNLOCK_PI_PRIVATE, 0, NULL, NULL, 0);
   _exit(1);
@@ -356,7 +432,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_unallowed_flag,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE,
        MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
@@ -364,7 +440,7 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_unallowed_prot,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   mmap(NULL, getpagesize(), PROT_READ | PROT_GROWSDOWN,
        MAP_ANONYMOUS, -1, 0);
@@ -372,28 +448,28 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_exec,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   mmap(NULL, getpagesize(), PROT_EXEC, MAP_ANONYMOUS, -1, 0);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_read_exec,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   mmap(NULL, getpagesize(), PROT_READ | PROT_EXEC, MAP_ANONYMOUS, -1, 0);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_write_exec,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   mmap(NULL, getpagesize(), PROT_WRITE | PROT_EXEC, MAP_ANONYMOUS, -1, 0);
 }
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mmap_read_write_exec,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE | PROT_EXEC,
        MAP_ANONYMOUS, -1, 0);
@@ -410,7 +486,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  mprotect_unallowed_prot,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   // We have tested DoAllowedAnonymousMmap is allowed in
   // mmap_allowed, so we can make sure the following mprotect call
@@ -455,7 +531,7 @@ BPF_TEST_C(NaClNonSfiSandboxTest,
 
 BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
                  clock_gettime_crash_monotonic_raw,
-                 DEATH_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
