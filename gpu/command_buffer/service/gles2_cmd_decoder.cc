@@ -2622,6 +2622,9 @@ bool GLES2DecoderImpl::Initialize(
   glActiveTexture(GL_TEXTURE0);
   CHECK_GL_ERROR();
 
+  // cache ALPHA_BITS result for re-use with clear behaviour
+  GLint alpha_bits = 0;
+
   if (offscreen) {
     if (attrib_parser.samples > 0 && attrib_parser.sample_buffers > 0 &&
         features().chromium_framebuffer_multisample) {
@@ -2774,7 +2777,6 @@ bool GLES2DecoderImpl::Initialize(
     // can't do anything about that.
 
     if (!surfaceless_) {
-      GLint alpha_bits = 0;
       GLint depth_bits = 0;
       GLint stencil_bits = 0;
 
@@ -2862,8 +2864,20 @@ bool GLES2DecoderImpl::Initialize(
   call_gl_clear = surface_->GetHandle();
 #endif
   if (call_gl_clear) {
+    // On configs where we report no alpha, if the underlying surface has
+    // alpha, clear the surface alpha to 1.0 to be correct on ReadPixels/etc.
+    bool clear_alpha = back_buffer_color_format_ == GL_RGB && alpha_bits > 0;
+    if (clear_alpha) {
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
     // Clear the backbuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    // Restore alpha clear value if we changed it.
+    if (clear_alpha) {
+      glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    }
   }
 
   supports_post_sub_buffer_ = surface->SupportsPostSubBuffer();
