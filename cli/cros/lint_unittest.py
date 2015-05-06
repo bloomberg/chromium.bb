@@ -167,6 +167,12 @@ class DocStringCheckerTest(CheckerTestCase):
       Args:
         return: Foo!
       """,
+      """the indentation is extra special
+
+      Returns:
+        First line is two spaces which is ok.
+          Then we indent some more!
+      """,
   )
 
   BAD_FUNC_DOCSTRINGS = (
@@ -248,6 +254,31 @@ class DocStringCheckerTest(CheckerTestCase):
 
       Blah.
        """,
+      """the indentation is incorrect
+
+      Returns:
+       one space but should be two
+      """,
+      """the indentation is incorrect
+
+      Returns:
+         three spaces but should be two (and we have just one line)
+      """,
+      """the indentation is incorrect
+
+      Args:
+         some: has three spaces but should be two
+      """,
+      """the indentation is incorrect
+
+      Args:
+       some: has one space but should be two
+      """,
+      """the indentation is incorrect
+
+      Args:
+          some: has four spaces but should be two
+      """,
   )
 
   # The current linter isn't good enough yet to detect these.

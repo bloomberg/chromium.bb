@@ -113,19 +113,18 @@ class DocStringChecker(BaseChecker):
                 ('module-missing-docstring'), _MessageCP001),
       'C9002': ('Classes should have docstrings (even a one liner)',
                 ('class-missing-docstring'), _MessageCP002),
-      'C9003': ('Trailing whitespace in docstring'
-                ': %s' % MSG_ARGS,
+      'C9003': ('Trailing whitespace in docstring: ' + MSG_ARGS,
                 ('docstring-trailing-whitespace'), _MessageCP003),
       'C9004': ('Leading whitespace in docstring (excess or missing)'
-                ': %s' % MSG_ARGS,
+                ': ' + MSG_ARGS,
                 ('docstring-leading-whitespace'), _MessageCP004),
       'C9005': ('Closing triple quotes should not be cuddled',
                 ('docstring-cuddled-quotes'), _MessageCP005),
       'C9006': ('Section names should be preceded by one blank line'
-                ': %s' % MSG_ARGS,
+                ': ' + MSG_ARGS,
                 ('docstring-section-newline'), _MessageCP006),
       'C9007': ('Section names should be "Args:", "Returns:", "Yields:", '
-                'and "Raises:": %s' % MSG_ARGS,
+                'and "Raises:": ' + MSG_ARGS,
                 ('docstring-section-name'), _MessageCP007),
       'C9008': ('Sections should be in the order: Args, Returns/Yields, Raises',
                 ('docstring-section-order'), _MessageCP008),
@@ -137,11 +136,12 @@ class DocStringChecker(BaseChecker):
                 ('docstring-misnamed-args'), _MessageCP011),
       'C9012': ('Incorrectly formatted Args section: %(arg)s',
                 ('docstring-arg-spacing'), _MessageCP012),
-      'C9013': ('Too many blank lines in a row: %s' % MSG_ARGS,
+      'C9013': ('Too many blank lines in a row: ' + MSG_ARGS,
                 ('docstring-too-many-newlines'), _MessageCP013),
       'C9014': ('Second line should be blank',
                 ('docstring-second-line-blank'), _MessageCP014),
-      'C9015': ('Section indentation is incorrect: %s' % MSG_ARGS,
+      'C9015': ('Section indentation should be %(want_indent)s spaces, not '
+                '%(curr_indent)s spaces: ' + MSG_ARGS,
                 ('docstring-section-indent'), _MessageCP015),
       'C9016': ('Closing triple quotes should be indented with %(want_indent)s '
                 'spaces, not %(curr_indent)s',
@@ -357,9 +357,13 @@ class DocStringChecker(BaseChecker):
       # We're going to check the section line itself.
       lineno = section.lineno
       line = section.header
+      want_indent = indent_len + 2
+      line_indent_len = len(line) - len(line.lstrip(' '))
       margs = {
           'offset': lineno,
           'line': line,
+          'want_indent': want_indent,
+          'curr_indent': line_indent_len,
       }
 
       # Make sure it has some number of leading whitespace.
@@ -375,8 +379,30 @@ class DocStringChecker(BaseChecker):
       if lines[lineno - 2] != '':
         self.add_message('C9006', node=node, line=node.fromlineno, args=margs)
 
-      # Check the indentation level on all the sections.
-      if len(line) - len(line.lstrip(' ')) != indent_len:
+      # Check the indentation level on the section header (e.g. Args:).
+      if line_indent_len != indent_len:
+        self.add_message('C9015', node=node, line=node.fromlineno, args=margs)
+
+      # Now check the indentation of subtext in each section.
+      saw_exact = False
+      for i, line in enumerate(section.lines, start=1):
+        # Every line should be indented at least the minimum.
+        # Always update margs so that if we drop through below, it has
+        # reasonable values when generating the message.
+        line_indent_len = len(line) - len(line.lstrip(' '))
+        margs.update({
+            'line': line,
+            'offset': lineno + i,
+            'curr_indent': line_indent_len,
+        })
+        if line_indent_len == want_indent:
+          saw_exact = True
+        elif line_indent_len < want_indent:
+          self.add_message('C9015', node=node, line=node.fromlineno, args=margs)
+
+      # If none of the lines were indented at the exact level, then something
+      # is amiss like they're all incorrectly offset.
+      if not saw_exact:
         self.add_message('C9015', node=node, line=node.fromlineno, args=margs)
 
   def _check_all_args_in_doc(self, node, _lines, sections):
