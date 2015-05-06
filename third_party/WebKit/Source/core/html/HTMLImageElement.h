@@ -29,6 +29,7 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/network/ResourceResponse.h"
 #include "wtf/WeakPtr.h"
 
 namespace blink {
@@ -108,6 +109,8 @@ public:
     void setIsFallbackImage() { m_isFallbackImage = true; }
 
     float sourceSize(Element&);
+
+    void forceReload() const;
 
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0, bool createdByParser = false);

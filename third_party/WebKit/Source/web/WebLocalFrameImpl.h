@@ -58,6 +58,7 @@ class WebDevToolsAgentImpl;
 class WebDevToolsFrontendImpl;
 class WebFrameClient;
 class WebFrameWidgetImpl;
+class WebNode;
 class WebPerformance;
 class WebPlugin;
 class WebPluginContainerImpl;
@@ -132,6 +133,7 @@ public:
     virtual v8::Local<v8::Context> mainWorldScriptContext() const override;
     virtual void reload(bool ignoreCache) override;
     virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) override;
+    virtual void reloadImage(const WebNode&) override;
     virtual void loadRequest(const WebURLRequest&) override;
     virtual void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy) override;
     virtual void loadData(

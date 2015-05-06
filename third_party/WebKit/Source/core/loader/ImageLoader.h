@@ -73,7 +73,9 @@ public:
         // FIXME - Verify that this is the right behavior according to the spec.
         UpdateIgnorePreviousError,
         // This forces the image to update its intrinsic size, even if the image source has not changed.
-        UpdateSizeChanged
+        UpdateSizeChanged,
+        // This force the image to refetch and reload the image source, even if it has not changed.
+        UpdateForcedReload
     };
 
     enum BypassMainWorldBehavior {

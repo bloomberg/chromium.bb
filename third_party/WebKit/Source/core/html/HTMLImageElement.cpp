@@ -638,6 +638,11 @@ float HTMLImageElement::sourceSize(Element& element)
     return SizesAttributeParser(MediaValuesDynamic::create(document()), sizes).length();
 }
 
+void HTMLImageElement::forceReload() const
+{
+    imageLoader().updateFromElement(ImageLoader::UpdateForcedReload);
+}
+
 void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior behavior)
 {
     if (!document().isActive())

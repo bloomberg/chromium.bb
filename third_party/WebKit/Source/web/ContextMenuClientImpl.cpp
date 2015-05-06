@@ -46,6 +46,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -60,6 +61,7 @@
 #include "core/page/Page.h"
 #include "platform/ContextMenu.h"
 #include "platform/Widget.h"
+#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebPoint.h"
@@ -230,6 +232,11 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         // An image can be null for many reasons, like being blocked, no image
         // data received from server yet.
         data.hasImageContents = r.image() && !r.image()->isNull();
+        if (data.hasImageContents) {
+            HTMLImageElement* imageElement = toHTMLImageElement(r.innerNodeOrImageMapImage());
+            if (imageElement && imageElement->cachedImage())
+                data.imageResponseExtraData = WrappedResourceResponse(imageElement->cachedImage()->response()).extraData();
+        }
     } else if (!r.absoluteMediaURL().isEmpty()) {
         data.srcURL = r.absoluteMediaURL();
 

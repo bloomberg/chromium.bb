@@ -35,6 +35,7 @@
 #include "../platform/WebReferrerPolicy.h"
 #include "../platform/WebString.h"
 #include "../platform/WebURL.h"
+#include "../platform/WebURLResponse.h"
 #include "../platform/WebVector.h"
 #include "WebHistoryItem.h"
 #include "WebMenuItemInfo.h"
@@ -77,6 +78,10 @@ struct WebContextMenuData {
 
     // Whether the image in context is a null.
     bool hasImageContents;
+
+    // If |media_type| is MediaTypeImage and |has_image_contents| is true, then
+    // this contains the image's WebURLResponse::ExtraData.
+    WebURLResponse::ExtraData* imageResponseExtraData;
 
     // The absolute URL of the page in context.
     WebURL pageURL;
@@ -174,6 +179,7 @@ struct WebContextMenuData {
     WebContextMenuData()
         : mediaType(MediaTypeNone)
         , hasImageContents(true)
+        , imageResponseExtraData(nullptr)
         , mediaFlags(MediaNone)
         , isSpellCheckingEnabled(false)
         , misspellingHash(0)

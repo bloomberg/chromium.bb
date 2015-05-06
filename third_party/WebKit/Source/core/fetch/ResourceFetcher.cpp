@@ -737,6 +737,9 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (m_allowStaleResources)
         return Use;
 
+    if (request.cachePolicy() == ResourceRequestCachePolicy::ReloadBypassingCache)
+        return Reload;
+
     if (!fetchRequest.options().canReuseRequest(existingResource->options()))
         return Reload;
 

@@ -124,6 +124,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/PluginDocument.h"
@@ -921,6 +922,15 @@ void WebLocalFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ig
 {
     ASSERT(frame());
     frame()->loader().reload(ignoreCache ? EndToEndReload : NormalReload, overrideUrl);
+}
+
+void WebLocalFrameImpl::reloadImage(const WebNode& webNode)
+{
+    const Node* node = webNode.constUnwrap<Node>();
+    if (isHTMLImageElement(*node)) {
+        const HTMLImageElement& imageElement = toHTMLImageElement(*node);
+        imageElement.forceReload();
+    }
 }
 
 void WebLocalFrameImpl::loadRequest(const WebURLRequest& request)

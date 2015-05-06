@@ -16,6 +16,7 @@ class WebContentSettingsClient;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
 class WebFrameClient;
+class WebNode;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
 struct WebPrintPresetOptions;
@@ -136,6 +137,11 @@ public:
     // Old version of the above function missing |requestId|.
     // TODO(benwells): remove this once the above is rolled into chrome.
     virtual void willShowInstallBannerPrompt(const WebVector<WebString>& platforms, WebAppBannerPromptReply*) = 0;
+
+    // Image reload -----------------------------------------------------------
+
+    // If the provided node is an image, reload the image bypassing the cache.
+    virtual void reloadImage(const WebNode&) = 0;
 };
 
 } // namespace blink

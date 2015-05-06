@@ -267,6 +267,8 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
         ResourceRequest resourceRequest(url);
         resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
+        if (updateBehavior == UpdateForcedReload)
+            resourceRequest.setCachePolicy(ResourceRequestCachePolicy::ReloadBypassingCache);
         if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isNull())
             resourceRequest.setRequestContext(WebURLRequest::RequestContextImageSet);
         FetchRequest request(resourceRequest, element()->localName(), resourceLoaderOptions);
