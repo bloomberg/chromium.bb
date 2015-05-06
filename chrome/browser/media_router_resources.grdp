@@ -2,6 +2,7 @@
 <grit-part>
   <!-- General -->
   <include name="IDR_MEDIA_ROUTER_COMMON_CSS" file="resources\media_router\media_router_common.css" type="BINDATA" />
+  <include name="IDR_MEDIA_ROUTER_CSS" file="resources\media_router\media_router.css" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_DATA_JS" file="resources\media_router\media_router_data.js" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_JS" file="resources\media_router\media_router.js" type="BINDATA" />
   <include name="IDR_MEDIA_ROUTER_HTML" file="resources\media_router\media_router.html" type="BINDATA" />

@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <title i18n-content="mediaRouterTitle"></title>
-  <!--
-  TODO(apacible): Add media router resources when available.
-  -->
+
+  <link rel="stylesheet" href="media_router.css">
+  <link rel="import" href="chrome://media-router/elements/media_router_container/media_router_container.html">
+
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
@@ -13,9 +14,7 @@
   <script src="chrome://media-router/strings.js"></script>
 </head>
 <body>
-  <!--
-  TODO(apacible): Add media router resources when available.
-  -->
+  <media-router-container id="media-router-container"></media-router-container>
   <script src="chrome://resources/js/i18n_template_polymer.js"></script>
 </body>
 </html>

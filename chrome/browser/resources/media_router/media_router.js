@@ -9,12 +9,25 @@
 cr.define('media_router', function() {
   'use strict';
 
+  // The media-router-container element. Initialized after polymer is ready.
+  var container = null;
+
   /**
    * Initializes the Media Router WebUI and requests initial media
    * router content, such as the media sink and media route lists.
    */
   function initialize() {
-    // TODO(imcheng): Implement.
+    // TODO(apacible): Add chrome.send call when browser WebUI message
+    // handler is implemented.
+
+    container = $('media-router-container');
+    media_router.ui.setContainer(container);
+
+    container.addEventListener('cast-mode-click', onCastModeClick);
+    container.addEventListener('close-button-click', onCloseDialogClick);
+    container.addEventListener('close-route-click', onCloseRouteClick);
+    container.addEventListener('create-route', onCreateRoute);
+    container.addEventListener('issue-action-click', onIssueActionClick);
   }
 
   /**
@@ -28,7 +41,7 @@ cr.define('media_router', function() {
    *                cast mode.
    */
   function onCastModeClick(data) {
-    // TODO(imcheng): Implement.
+    container.headerText = data.detail.headerText;
   }
 
   /**
@@ -50,7 +63,10 @@ cr.define('media_router', function() {
    *   helpURL - the help URL for the issue.
    */
   function onIssueActionClick(data) {
-    // TODO(imcheng): Implement.
+    media_router.browserApi.actOnIssue(data.detail.id,
+                                       data.detail.actionType,
+                                       data.detail.helpURL);
+    container.issue = null;
   }
 
   /**

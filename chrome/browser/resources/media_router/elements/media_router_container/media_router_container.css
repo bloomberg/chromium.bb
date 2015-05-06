@@ -8,14 +8,15 @@
 }
 
 :host-context(html[dir='ltr']) #cast-modes {
-  right: 20px;
+  right: 35px;
 }
 
 :host-context(html[dir='rtl']) #cast-modes {
-  left: 20px;
+  left: 35px;
 }
 
 #close-button {
+  -webkit-margin-start: 15px;
   align-self: flex-start;
   background-image: -webkit-image-set(
     url(../icon/close-gray.png) 1x,

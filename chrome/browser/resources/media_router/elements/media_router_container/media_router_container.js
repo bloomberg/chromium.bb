@@ -174,6 +174,7 @@ Polymer('media-router-container', {
    *   into this filter.
    * Parameters in |value|:
    *   state - The current state of media-router-container.
+   *   issue - The current value of |issue|.
    */
   isIssueBannerHidden: function(value) {
     return value['issue'] ||

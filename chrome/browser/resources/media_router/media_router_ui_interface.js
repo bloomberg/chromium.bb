@@ -7,22 +7,16 @@
 cr.define('media_router.ui', function() {
   'use strict';
 
-  /**
-   * Sets the list of discovered sinks.
-   *
-   * @param {!Array<!media_router.Sink>} sinkList
-   */
-  function setSinkList(sinkList) {
-    // TODO(imcheng): Implement.
-  }
+  // The media-router-container element.
+  var container = null;
 
   /**
-   * Sets the list of currently active routes.
+   * Adds a new route.
    *
-   * @param {!Array<!media_router.Route>} routeList
+   * @param {!media_router.Route} route
    */
-  function setRouteList(routeList) {
-    // TODO(imcheng): Implement.
+  function addRoute(route) {
+    container.addRoute(route);
   }
 
   /**
@@ -31,7 +25,16 @@ cr.define('media_router.ui', function() {
    * @param {!Array<!media_router.CastMode>} castModeList
    */
   function setCastModeList(castModeList) {
-    // TODO(imcheng): Implement.
+    container.castModeList = castModeList;
+  }
+
+  /**
+   * Sets |container|.
+   *
+   * @param {!MediaRouterContainerElement} mediaRouterContainer
+   */
+  function setContainer(mediaRouterContainer) {
+    container = mediaRouterContainer;
   }
 
   /**
@@ -40,15 +43,34 @@ cr.define('media_router.ui', function() {
    * @param {!media_router.Issue} issue
    */
   function setIssue(issue) {
-    // TODO(imcheng): Implement.
+    container.issue = issue;
+  }
+
+  /**
+   * Sets the list of currently active routes.
+   *
+   * @param {!Array<!media_router.Route>} routeList
+   */
+  function setRouteList(routeList) {
+    container.routeList = routeList;
+  }
+
+  /**
+   * Sets the list of discovered sinks.
+   *
+   * @param {!Array<!media_router.Sink>} sinkList
+   */
+  function setSinkList(sinkList) {
+    container.sinkList = sinkList;
   }
 
   return {
     addRoute: addRoute,
     setCastModeList: setCastModeList,
-    setSinkList: setSinkList,
-    setRouteList: setRouteList,
+    setContainer: setContainer,
     setIssue: setIssue,
+    setRouteList: setRouteList,
+    setSinkList: setSinkList,
   };
 });
 
