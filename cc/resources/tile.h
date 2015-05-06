@@ -6,6 +6,7 @@
 #define CC_RESOURCES_TILE_H_
 
 #include "base/memory/ref_counted.h"
+#include "cc/base/ref_counted_managed.h"
 #include "cc/resources/raster_source.h"
 #include "cc/resources/tile_draw_info.h"
 #include "cc/resources/tile_priority.h"
@@ -16,13 +17,8 @@ namespace cc {
 
 class TileManager;
 
-class CC_EXPORT Tile {
+class CC_EXPORT Tile : public RefCountedManaged<Tile> {
  public:
-  class Deleter {
-   public:
-    void operator()(Tile* tile) const;
-  };
-
   enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0 };
 
   typedef uint64 Id;
@@ -100,7 +96,9 @@ class CC_EXPORT Tile {
 
  private:
   friend class TileManager;
+  friend class PrioritizedTileSet;
   friend class FakeTileManager;
+  friend class BinComparator;
   friend class FakePictureLayerImpl;
 
   // Methods called by by tile manager.
@@ -116,7 +114,6 @@ class CC_EXPORT Tile {
 
   bool HasRasterTask() const { return !!raster_task_.get(); }
 
-  TileManager* tile_manager_;
   scoped_refptr<RasterSource> raster_source_;
   gfx::Size desired_texture_size_;
   gfx::Rect content_rect_;
@@ -143,8 +140,6 @@ class CC_EXPORT Tile {
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };
-
-using ScopedTilePtr = scoped_ptr<Tile, Tile::Deleter>;
 
 }  // namespace cc
 
