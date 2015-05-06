@@ -412,7 +412,10 @@ def main(argv):
 
   # Many of our tests require a valid chroot to run. Make sure it's created
   # before we block network access.
-  if ChrootAvailable() and not cros_build_lib.IsInsideChroot():
+  chroot = os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR)
+  if (not os.path.exists(chroot) and
+      ChrootAvailable() and
+      not cros_build_lib.IsInsideChroot()):
     cros_build_lib.RunCommand(['cros_sdk', '--create'])
 
   # Now let's run some tests.
