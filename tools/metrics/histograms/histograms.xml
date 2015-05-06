@@ -10175,6 +10175,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.PopupCreateTime" units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The time taken between a user clicking on a button to open a popup, and the
+    popup finishing loading its initial URL. This is a good way to measure the
+    UI responsiveness of extension popups. It will be strictly larger than
+    Extensions.PopupLoadTime2, which only measures the time it takes to load -
+    there may be a delay between clicking and starting to load, for example, if
+    the popup's host got caught in a queue.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.PopupLoadTime" units="milliseconds">
   <obsolete>
     Replaced by Extensions.PopupLoadTime2.
@@ -10188,7 +10200,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     The time taken for an extension popup to load its initial URL. This may not
     include the time taken for an extension process to start, if the extension
-    already has a background page running.
+    already has a background page running. It does not necessarily correlate
+    with the amount of time since the popup was *clicked* either, since there
+    may be a delay between the user clicking and the loading started.
+    Extensions.PopupCreateTime measures this instead.
   </summary>
 </histogram>
 

@@ -474,6 +474,8 @@ void ExtensionHost::RecordStopLoadingUMA() {
   } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
                                load_start_->Elapsed());
+    UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupCreateTime",
+                               create_start_.Elapsed());
   }
 }
 

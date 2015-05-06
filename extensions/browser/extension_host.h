@@ -198,7 +198,15 @@ class ExtensionHost : public DeferredStartRenderHost,
   // The type of view being hosted.
   ViewType extension_host_type_;
 
-  // Measures how long since the initial URL started loading.
+  // Measures how long since the ExtensionHost object was created. This can be
+  // used to measure the responsiveness of UI. For example, it's important to
+  // keep this as low as possible for popups. Contrast this to |load_start_|,
+  // for which a low value does not necessarily mean a responsive UI, as
+  // ExtensionHosts may sit in an ExtensionHostQueue for a long time.
+  base::ElapsedTimer create_start_;
+
+  // Measures how long since the initial URL started loading. This timer is
+  // started only once the ExtensionHost has exited the ExtensionHostQueue.
   scoped_ptr<base::ElapsedTimer> load_start_;
 
   ObserverList<ExtensionHostObserver> observer_list_;
