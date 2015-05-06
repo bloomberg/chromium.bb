@@ -10,40 +10,64 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
-using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
+// static
+base::android::ScopedJavaLocalRef<jobject> AwPermissionRequest::Create(
+    scoped_ptr<AwPermissionRequestDelegate> delegate,
+    base::WeakPtr<AwPermissionRequest>* weak_ptr) {
+  base::android::ScopedJavaLocalRef<jobject> java_peer;
+  AwPermissionRequest* permission_request =
+      new AwPermissionRequest(delegate.Pass(), &java_peer);
+  *weak_ptr = permission_request->weak_factory_.GetWeakPtr();
+  return java_peer;
+}
+
 AwPermissionRequest::AwPermissionRequest(
-    scoped_ptr<AwPermissionRequestDelegate> delegate)
+    scoped_ptr<AwPermissionRequestDelegate> delegate,
+    ScopedJavaLocalRef<jobject>* java_peer)
     : delegate_(delegate.Pass()),
+      processed_(false),
       weak_factory_(this) {
   DCHECK(delegate_.get());
+  DCHECK(java_peer);
+
+  JNIEnv* env = AttachCurrentThread();
+  *java_peer = Java_AwPermissionRequest_create(
+      env, reinterpret_cast<jlong>(this),
+      ConvertUTF8ToJavaString(env, GetOrigin().spec()).obj(), GetResources());
+  java_ref_ = JavaObjectWeakGlobalRef(env, java_peer->obj());
 }
 
 AwPermissionRequest::~AwPermissionRequest() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_object = java_ref_.get(env);
-  if (j_object.is_null())
-    return;
-  Java_AwPermissionRequest_detachNativeInstance(env, j_object.obj());
+  OnAcceptInternal(false);
 }
 
 void AwPermissionRequest::OnAccept(JNIEnv* env,
                                    jobject jcaller,
                                    jboolean accept) {
-  delegate_->NotifyRequestResult(accept);
-  delete this;
+  OnAcceptInternal(accept);
 }
 
-ScopedJavaLocalRef<jobject> AwPermissionRequest::CreateJavaPeer() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_object = Java_AwPermissionRequest_create(
-      env, reinterpret_cast<jlong>(this),
-      ConvertUTF8ToJavaString(env, GetOrigin().spec()).obj(), GetResources());
-  java_ref_ = JavaObjectWeakGlobalRef(env, j_object.obj());
-  return j_object;
+void AwPermissionRequest::OnAcceptInternal(bool accept) {
+  if (!processed_) {
+    delegate_->NotifyRequestResult(accept);
+    processed_ = true;
+  }
+}
+
+void AwPermissionRequest::DeleteThis() {
+  ScopedJavaLocalRef<jobject> j_request = GetJavaObject();
+  if (j_request.is_null())
+    return;
+  Java_AwPermissionRequest_destroyNative(AttachCurrentThread(),
+                                         j_request.obj());
+}
+
+void AwPermissionRequest::Destroy(JNIEnv* env, jobject obj) {
+  delete this;
 }
 
 ScopedJavaLocalRef<jobject> AwPermissionRequest::GetJavaObject() {
@@ -56,6 +80,11 @@ const GURL& AwPermissionRequest::GetOrigin() {
 
 int64 AwPermissionRequest::GetResources() {
   return delegate_->GetResources();
+}
+
+void AwPermissionRequest::CancelAndDelete() {
+  processed_ = true;
+  DeleteThis();
 }
 
 bool RegisterAwPermissionRequest(JNIEnv* env) {

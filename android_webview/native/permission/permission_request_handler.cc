@@ -47,10 +47,11 @@ void PermissionRequestHandler::SendRequest(
     return;
   }
 
-  AwPermissionRequest* aw_request = new AwPermissionRequest(request.Pass());
-  requests_.push_back(
-      base::WeakPtr<AwPermissionRequest>(aw_request->GetWeakPtr()));
-  client_->OnPermissionRequest(aw_request);
+  base::WeakPtr<AwPermissionRequest> weak_request;
+  base::android::ScopedJavaLocalRef<jobject> java_peer =
+      AwPermissionRequest::Create(request.Pass(), &weak_request);
+  requests_.push_back(weak_request);
+  client_->OnPermissionRequest(java_peer, weak_request.get());
   PruneRequests();
 }
 
@@ -60,7 +61,7 @@ void PermissionRequestHandler::CancelRequest(const GURL& origin,
   // resources.
   RequestIterator i = FindRequest(origin, resources);
   while (i != requests_.end()) {
-    CancelRequest(i);
+    CancelRequestInternal(i);
     requests_.erase(i);
     i = FindRequest(origin, resources);
   }
@@ -105,19 +106,17 @@ PermissionRequestHandler::FindRequest(const GURL& origin,
   return i;
 }
 
-void PermissionRequestHandler::CancelRequest(RequestIterator i) {
-  if (i->get())
-    client_->OnPermissionRequestCanceled(i->get());
-  // The request's grant()/deny() could be called upon
-  // OnPermissionRequestCanceled. Delete AwPermissionRequest if it still
-  // exists.
-  if (i->get())
-    delete i->get();
+void PermissionRequestHandler::CancelRequestInternal(RequestIterator i) {
+  AwPermissionRequest* request = i->get();
+  if (request) {
+    client_->OnPermissionRequestCanceled(request);
+    request->CancelAndDelete();
+  }
 }
 
 void PermissionRequestHandler::CancelAllRequests() {
   for (RequestIterator i = requests_.begin(); i != requests_.end(); ++i)
-    CancelRequest(i);
+    CancelRequestInternal(i);
 }
 
 void PermissionRequestHandler::PruneRequests() {

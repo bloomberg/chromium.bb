@@ -52,7 +52,7 @@ class PermissionRequestHandler : public content::WebContentsObserver {
   RequestIterator FindRequest(const GURL& origin, int64 resources);
 
   // Cancel the given request.
-  void CancelRequest(RequestIterator i);
+  void CancelRequestInternal(RequestIterator i);
 
   void CancelAllRequests();
 

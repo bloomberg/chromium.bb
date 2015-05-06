@@ -145,7 +145,8 @@ class AwContents : public FindHelper::Listener,
                                  jstring origin);
 
   // PermissionRequestHandlerClient implementation.
-  void OnPermissionRequest(AwPermissionRequest* request) override;
+  void OnPermissionRequest(base::android::ScopedJavaLocalRef<jobject> j_request,
+                           AwPermissionRequest* request) override;
   void OnPermissionRequestCanceled(AwPermissionRequest* request) override;
 
   PermissionRequestHandler* GetPermissionRequestHandler() {

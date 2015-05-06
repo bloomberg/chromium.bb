@@ -18,6 +18,7 @@ class AwPermissionRequestDelegate;
 // and its' Java peer to represent the request to AwContentsClient.
 // The specific permission request should implement the
 // AwPermissionRequestDelegate interface, See MediaPermissionRequest.
+// This object is owned by the java peer.
 class AwPermissionRequest {
  public:
   // The definition must synced with Android's
@@ -29,23 +30,19 @@ class AwPermissionRequest {
     ProtectedMediaId = 1 << 3,
   };
 
-  // Take the ownership of |delegate|.
-  AwPermissionRequest(scoped_ptr<AwPermissionRequestDelegate> delegate);
-  virtual ~AwPermissionRequest();
+  // Take the ownership of |delegate|. Returns the native pointer in
+  // |weak_ptr|, which is owned by the returned java peer.
+  static base::android::ScopedJavaLocalRef<jobject> Create(
+      scoped_ptr<AwPermissionRequestDelegate> delegate,
+      base::WeakPtr<AwPermissionRequest>* weak_ptr);
 
-  base::WeakPtr<AwPermissionRequest> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  // Create and return Java peer.
-  base::android::ScopedJavaLocalRef<jobject> CreateJavaPeer();
-
-  // Return the Java peer.
+  // Return the Java peer. Must be null-checked.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Invoked by Java peer when request is processed, |granted| indicates the
   // request was granted or not.
   void OnAccept(JNIEnv* env, jobject jcaller, jboolean granted);
+  void Destroy(JNIEnv* env, jobject obj);
 
   // Return the origin which initiated the request.
   const GURL& GetOrigin();
@@ -53,12 +50,24 @@ class AwPermissionRequest {
   // Return the resources origin requested.
   int64 GetResources();
 
+  // Cancel this request. Guarantee that
+  // AwPermissionRequestDelegate::NotifyRequestResult will not be called after
+  // this call. This also deletes this object, so weak pointers are invalidated
+  // and raw pointers become dangling pointers.
+  void CancelAndDelete();
+
  private:
-  friend class TestAwPermissionRequest;
+  AwPermissionRequest(scoped_ptr<AwPermissionRequestDelegate> delegate,
+                      base::android::ScopedJavaLocalRef<jobject>* java_peer);
+  ~AwPermissionRequest();
+
+  void OnAcceptInternal(bool accept);
+  void DeleteThis();
 
   scoped_ptr<AwPermissionRequestDelegate> delegate_;
   JavaObjectWeakGlobalRef java_ref_;
 
+  bool processed_;
   base::WeakPtrFactory<AwPermissionRequest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwPermissionRequest);

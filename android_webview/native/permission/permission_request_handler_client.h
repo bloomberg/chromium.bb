@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_CLIENT_H
 
+#include "base/android/scoped_java_ref.h"
+
 namespace android_webview {
 
 class AwPermissionRequest;
@@ -14,7 +16,9 @@ class PermissionRequestHandlerClient {
   PermissionRequestHandlerClient();
   virtual ~PermissionRequestHandlerClient();
 
-  virtual void OnPermissionRequest(AwPermissionRequest* request) = 0;
+  virtual void OnPermissionRequest(
+      base::android::ScopedJavaLocalRef<jobject> java_request,
+      AwPermissionRequest* request) = 0;
   virtual void OnPermissionRequestCanceled(AwPermissionRequest* request) = 0;
 };
 

@@ -51,8 +51,12 @@ class TestPermissionRequestHandlerClient :
   TestPermissionRequestHandlerClient()
       : request_(NULL) {}
 
-  void OnPermissionRequest(AwPermissionRequest* request) override {
+  void OnPermissionRequest(
+      base::android::ScopedJavaLocalRef<jobject> j_request,
+      AwPermissionRequest* request) override {
+    DCHECK(request);
     request_ = request;
+    java_request_ = j_request;
     requested_permission_ =
         Permission(request->GetOrigin(), request->GetResources());
   }
@@ -76,11 +80,13 @@ class TestPermissionRequestHandlerClient :
 
   void Grant() {
     request_->OnAccept(NULL, NULL, true);
+    request_->Destroy(NULL, NULL);
     request_ = NULL;
   }
 
   void Deny() {
     request_->OnAccept(NULL, NULL, false);
+    request_->Destroy(NULL, NULL);
     request_ = NULL;
   }
 
@@ -91,6 +97,7 @@ class TestPermissionRequestHandlerClient :
   }
 
  private:
+  base::android::ScopedJavaLocalRef<jobject> java_request_;
   AwPermissionRequest* request_;
   Permission requested_permission_;
   Permission canceled_permission_;
