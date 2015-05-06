@@ -1036,6 +1036,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setDeviceSupportsTouch(prefs.device_supports_touch);
   settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);
+  settings->setMultiTargetTapNotificationEnabled(
+      switches::IsLinkDisambiguationPopupEnabled());
 
   settings->setDeferredImageDecodingEnabled(
       prefs.deferred_image_decoding_enabled);
@@ -3590,8 +3592,7 @@ bool RenderViewImpl::didTapMultipleTargets(
     const WebSize& inner_viewport_offset,
     const WebRect& touch_rect,
     const WebVector<WebRect>& target_rects) {
-  if (!switches::IsLinkDisambiguationPopupEnabled())
-    return false;
+  DCHECK(switches::IsLinkDisambiguationPopupEnabled());
 
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
