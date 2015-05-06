@@ -98,6 +98,7 @@ component("ash") {
       "//ui/display/util",
       "//chromeos",
       "//chromeos:power_manager_proto",
+      "//third_party/qcms",
       "//ui/chromeos/resources",
       "//ui/chromeos/strings",
       "//ui/chromeos:ui_chromeos",

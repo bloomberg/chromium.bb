@@ -11,6 +11,7 @@ component("types") {
     "display_snapshot.cc",
     "display_snapshot.h",
     "display_types_export.h",
+    "gamma_ramp_rgb_entry.h",
     "native_display_delegate.h",
     "native_display_observer.h",
   ]

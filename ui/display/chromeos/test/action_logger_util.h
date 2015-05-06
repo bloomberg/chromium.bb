@@ -6,6 +6,7 @@
 #define UI_DISPLAY_CHROMEOS_TEST_ACTION_LOGGER_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "ui/display/types/display_constants.h"
 
@@ -16,6 +17,7 @@ class Size;
 
 namespace ui {
 
+struct GammaRampRGBEntry;
 class DisplayMode;
 class DisplaySnapshot;
 
@@ -62,6 +64,9 @@ std::string GetFramebufferAction(const gfx::Size& size,
 std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
                                   HDCPState state);
 
+// Returns a string describing a TestNativeDisplayDelegate::SetGammaRamp() call;
+std::string SetGammaRampAction(const ui::DisplaySnapshot& output,
+                               const std::vector<GammaRampRGBEntry>& lut);
 // Joins a sequence of strings describing actions (e.g. kScreenDim) such
 // that they can be compared against a string returned by
 // ActionLogger::GetActionsAndClear().  The list of actions must be

@@ -18,6 +18,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 
@@ -582,6 +583,34 @@ bool DrmDevice::SetMaster() {
 bool DrmDevice::DropMaster() {
   DCHECK(file_.IsValid());
   return (drmDropMaster(file_.GetPlatformFile()) == 0);
+}
+
+bool DrmDevice::SetGammaRamp(uint32_t crtc_id,
+                             const std::vector<GammaRampRGBEntry>& lut) {
+  ScopedDrmCrtcPtr crtc = GetCrtc(crtc_id);
+
+  // TODO(robert.bradford) resample the incoming ramp to match what the kernel
+  // expects.
+  if (static_cast<size_t>(crtc->gamma_size) != lut.size()) {
+    LOG(ERROR) << "Gamma table size mismatch: supplied " << lut.size()
+               << " expected " << crtc->gamma_size;
+  }
+
+  std::vector<uint16_t> r, g, b;
+  r.reserve(lut.size());
+  g.reserve(lut.size());
+  b.reserve(lut.size());
+
+  for (size_t i = 0; i < lut.size(); ++i) {
+    r.push_back(lut[i].r);
+    g.push_back(lut[i].g);
+    b.push_back(lut[i].b);
+  }
+
+  DCHECK(file_.IsValid());
+  TRACE_EVENT0("drm", "DrmDevice::SetGamma");
+  return (drmModeCrtcSetGamma(file_.GetPlatformFile(), crtc_id, r.size(), &r[0],
+                              &g[0], &b[0]) == 0);
 }
 
 }  // namespace ui

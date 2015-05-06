@@ -30,6 +30,8 @@ class Size;
 }
 
 namespace ui {
+struct DisplayConfigureRequest;
+struct GammaRampRGBEntry;
 class DisplayLayoutManager;
 class DisplayMode;
 class DisplaySnapshot;
@@ -259,6 +261,10 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Updates the color calibration to |new_profile|.
   bool SetColorCalibrationProfile(int64_t display_id,
                                   ui::ColorCalibrationProfile new_profile);
+
+  // Sets the gamma ramp for |display_id| to the values in |lut|.
+  bool SetGammaRamp(int64_t display_id,
+                    const std::vector<GammaRampRGBEntry>& lut);
 
  private:
   class DisplayLayoutManagerImpl;
