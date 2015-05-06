@@ -88,7 +88,7 @@ class GLHelperTest : public testing::Test {
       std::string* output,
       const scoped_refptr<base::RefCountedString>& json_events_str,
       bool has_more_events) {
-    if (output->size() > 1) {
+    if (output->size() > 1 && !json_events_str->data().empty()) {
       output->append(",");
     }
     output->append(json_events_str->data());
