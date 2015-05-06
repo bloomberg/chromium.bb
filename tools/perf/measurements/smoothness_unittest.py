@@ -15,8 +15,8 @@ from measurements import smoothness
 class FakeTracingController(object):
   def __init__(self):
     self.category_filter = None
-
-  def Start(self, _options, category_filter):
+  def Start(self, options, category_filter):
+    del options  # unused
     self.category_filter = category_filter
 
   def IsChromeTracingSupported(self):

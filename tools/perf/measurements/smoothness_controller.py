@@ -13,7 +13,7 @@ from telemetry.page import page_test
 
 
 class SmoothnessController(object):
-  def __init__(self, auto_issuing_marker=True):
+  def __init__(self):
     self._timeline_model = None
     self._trace_data = None
     self._interaction = None

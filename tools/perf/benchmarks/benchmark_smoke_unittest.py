@@ -62,7 +62,8 @@ def SmokeTestGenerator(benchmark):
   return BenchmarkSmokeTest
 
 
-def load_tests(_, _2, _3):
+def load_tests(loader, standard_tests, pattern):
+  del loader, standard_tests, pattern  # unused
   suite = progress_reporter.TestSuite()
 
   benchmarks_dir = os.path.dirname(__file__)

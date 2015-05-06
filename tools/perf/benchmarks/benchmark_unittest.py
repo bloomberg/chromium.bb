@@ -62,7 +62,8 @@ def _AddBenchmarkOptionsTests(suite):
   suite.addTest(TestNoBenchmarkNamesDuplication())
 
 
-def load_tests(_, _2, _3):
+def load_tests(loader, standard_tests, pattern):
+  del loader, standard_tests, pattern  # unused
   suite = progress_reporter.TestSuite()
   _AddBenchmarkOptionsTests(suite)
   return suite

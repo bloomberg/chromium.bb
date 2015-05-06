@@ -42,11 +42,11 @@ class DrawProperties(page_test.PageTest):
 
     (cdp_avg, cdp_sum) = self.ComputeAverageAndSumOfDurations(
         timeline_model,
-        "LayerTreeHostCommon::CalculateDrawProperties");
+        'LayerTreeHostCommon::CalculateDrawProperties')
 
     (pt_avg, pt_sum) = self.ComputeAverageAndSumOfDurations(
         timeline_model,
-        "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+        'LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees')
 
     reduction = 100.0 * (1.0 - (pt_sum / cdp_sum))
 
