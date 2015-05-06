@@ -51,10 +51,8 @@ class NET_EXPORT CTLogVerifier {
   bool Verify(const ct::LogEntry& entry,
               const ct::SignedCertificateTimestamp& sct);
 
-  // Verifies and sets |signed_tree_head|. If |signed_tree_head|'s signature is
-  // valid, stores it and returns true. Otherwise, discards the sth and
-  // returns false.
-  bool SetSignedTreeHead(scoped_ptr<ct::SignedTreeHead> signed_tree_head);
+  // Returns true if the signature in |signed_tree_head| verifies.
+  bool VerifySignedTreeHead(const ct::SignedTreeHead& signed_tree_head);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CTLogVerifierTest, VerifySignature);
@@ -79,7 +77,6 @@ class NET_EXPORT CTLogVerifier {
   GURL url_;
   ct::DigitallySigned::HashAlgorithm hash_algorithm_;
   ct::DigitallySigned::SignatureAlgorithm signature_algorithm_;
-  scoped_ptr<ct::SignedTreeHead> signed_tree_head_;
 
 #if defined(USE_OPENSSL)
   EVP_PKEY* public_key_;

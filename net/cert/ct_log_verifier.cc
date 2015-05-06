@@ -59,16 +59,15 @@ bool CTLogVerifier::Verify(const ct::LogEntry& entry,
   return VerifySignature(serialized_data, sct.signature.signature_data);
 }
 
-bool CTLogVerifier::SetSignedTreeHead(
-    scoped_ptr<ct::SignedTreeHead> signed_tree_head) {
-  if (!SignatureParametersMatch(signed_tree_head->signature))
+bool CTLogVerifier::VerifySignedTreeHead(
+    const ct::SignedTreeHead& signed_tree_head) {
+  if (!SignatureParametersMatch(signed_tree_head.signature))
     return false;
 
   std::string serialized_data;
-  ct::EncodeTreeHeadSignature(*signed_tree_head.get(), &serialized_data);
+  ct::EncodeTreeHeadSignature(signed_tree_head, &serialized_data);
   if (VerifySignature(serialized_data,
-                      signed_tree_head->signature.signature_data)) {
-    signed_tree_head_.reset(signed_tree_head.release());
+                      signed_tree_head.signature.signature_data)) {
     return true;
   }
   return false;
