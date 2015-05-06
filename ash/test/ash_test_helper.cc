@@ -29,7 +29,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "ui/keyboard/keyboard.h"
 #endif
 
 #if defined(OS_WIN)
@@ -126,7 +125,6 @@ void AshTestHelper::TearDown() {
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_initialized_ = false;
   }
-  keyboard::ResetKeyboardForTesting();
 #endif
 
   aura::Env::DeleteInstance();

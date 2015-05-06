@@ -10,13 +10,8 @@
 
 namespace keyboard {
 
-static bool initialized = false;
-
-void ResetKeyboardForTesting() {
-  initialized = false;
-}
-
 void InitializeKeyboard() {
+  static bool initialized = false;
   if (initialized)
     return;
   initialized = true;
