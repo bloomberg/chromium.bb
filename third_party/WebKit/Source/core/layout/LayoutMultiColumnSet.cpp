@@ -34,8 +34,9 @@
 namespace blink {
 
 LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flowThread)
-    : LayoutRegion(0, flowThread)
+    : LayoutBlockFlow(0)
     , m_fragmentainerGroups(*this)
+    , m_flowThread(flowThread)
 {
 }
 
@@ -99,6 +100,37 @@ LayoutUnit LayoutMultiColumnSet::logicalTopInFlowThread() const
 LayoutUnit LayoutMultiColumnSet::logicalBottomInFlowThread() const
 {
     return lastFragmentainerGroup().logicalBottomInFlowThread();
+}
+
+LayoutRect LayoutMultiColumnSet::flowThreadPortionOverflowRect() const
+{
+    return overflowRectForFlowThreadPortion(flowThreadPortionRect(), !previousSiblingMultiColumnSet(), !nextSiblingMultiColumnSet());
+}
+
+LayoutRect LayoutMultiColumnSet::overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const
+{
+    if (hasOverflowClip())
+        return flowThreadPortionRect;
+
+    LayoutRect flowThreadOverflow = m_flowThread->visualOverflowRect();
+
+    // Only clip along the flow thread axis.
+    LayoutRect clipRect;
+    if (m_flowThread->isHorizontalWritingMode()) {
+        LayoutUnit minY = isFirstPortion ? flowThreadOverflow.y() : flowThreadPortionRect.y();
+        LayoutUnit maxY = isLastPortion ? std::max(flowThreadPortionRect.maxY(), flowThreadOverflow.maxY()) : flowThreadPortionRect.maxY();
+        LayoutUnit minX = std::min(flowThreadPortionRect.x(), flowThreadOverflow.x());
+        LayoutUnit maxX = std::max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX());
+        clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
+    } else {
+        LayoutUnit minX = isFirstPortion ? flowThreadOverflow.x() : flowThreadPortionRect.x();
+        LayoutUnit maxX = isLastPortion ? std::max(flowThreadPortionRect.maxX(), flowThreadOverflow.maxX()) : flowThreadPortionRect.maxX();
+        LayoutUnit minY = std::min(flowThreadPortionRect.y(), (flowThreadOverflow.y()));
+        LayoutUnit maxY = std::max(flowThreadPortionRect.y(), (flowThreadOverflow.maxY()));
+        clipRect = LayoutRect(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    return clipRect;
 }
 
 bool LayoutMultiColumnSet::heightIsAuto() const
@@ -189,6 +221,12 @@ void LayoutMultiColumnSet::expandToEncompassFlowThreadContentsIfNeeded()
     m_fragmentainerGroups.last().expandToEncompassFlowThreadOverflow();
 }
 
+void LayoutMultiColumnSet::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
+{
+    minLogicalWidth = m_flowThread->minPreferredLogicalWidth();
+    maxLogicalWidth = m_flowThread->maxPreferredLogicalWidth();
+}
+
 void LayoutMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
     LayoutUnit logicalHeight;
@@ -248,37 +286,31 @@ void LayoutMultiColumnSet::addOverflowFromChildren()
 
 void LayoutMultiColumnSet::insertedIntoTree()
 {
-    LayoutRegion::insertedIntoTree();
-
-    attachRegion();
+    LayoutBlockFlow::insertedIntoTree();
+    attachToFlowThread();
 }
 
 void LayoutMultiColumnSet::willBeRemovedFromTree()
 {
-    LayoutRegion::willBeRemovedFromTree();
-
-    detachRegion();
+    LayoutBlockFlow::willBeRemovedFromTree();
+    detachFromFlowThread();
 }
 
-void LayoutMultiColumnSet::attachRegion()
+void LayoutMultiColumnSet::attachToFlowThread()
 {
     if (documentBeingDestroyed())
         return;
 
-    // A region starts off invalid.
-    setIsValid(false);
-
     if (!m_flowThread)
         return;
 
-    // Only after adding the region to the thread, the region is marked to be valid.
-    m_flowThread->addRegionToThread(this);
+    m_flowThread->addColumnSetToThread(this);
 }
 
-void LayoutMultiColumnSet::detachRegion()
+void LayoutMultiColumnSet::detachFromFlowThread()
 {
     if (m_flowThread) {
-        m_flowThread->removeRegionFromThread(this);
+        m_flowThread->removeColumnSetFromThread(this);
         m_flowThread = 0;
     }
 }

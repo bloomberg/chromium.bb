@@ -183,7 +183,7 @@ void LayoutMultiColumnFlowThread::evacuateAndDestroy()
 
 LayoutSize LayoutMultiColumnFlowThread::columnOffset(const LayoutPoint& point) const
 {
-    if (!hasValidRegionInfo())
+    if (!hasValidColumnSetInfo())
         return LayoutSize(0, 0);
 
     LayoutPoint flowThreadPoint = flipForWritingMode(point);
@@ -222,7 +222,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(Layout
         return m_lastSetWorkedOn;
     }
 
-    ASSERT(!m_regionsInvalidated);
+    ASSERT(!m_columnSetsInvalidated);
     if (m_multiColumnSetList.isEmpty())
         return 0;
     if (offset <= 0)
@@ -269,14 +269,14 @@ void LayoutMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLa
             m_needsColumnHeightsRecalculation = columnSet->heightIsAuto();
     }
 
-    invalidateRegions();
+    invalidateColumnSets();
     layout();
 }
 
 bool LayoutMultiColumnFlowThread::recalculateColumnHeights()
 {
     // All column sets that needed layout have now been laid out, so we can finally validate them.
-    validateRegions();
+    validateColumnSets();
 
     if (!m_needsColumnHeightsRecalculation)
         return false;
@@ -338,7 +338,7 @@ void LayoutMultiColumnFlowThread::createAndInsertMultiColumnSet(LayoutBox* inser
     LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     LayoutMultiColumnSet* newSet = LayoutMultiColumnSet::createAnonymous(*this, multicolContainer->styleRef());
     multicolContainer->LayoutBlock::addChild(newSet, insertBefore);
-    invalidateRegions();
+    invalidateColumnSets();
 
     // We cannot handle immediate column set siblings (and there's no need for it, either).
     // There has to be at least one spanner separating them.
@@ -401,7 +401,7 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
     return false;
 }
 
-void LayoutMultiColumnFlowThread::addRegionToThread(LayoutMultiColumnSet* columnSet)
+void LayoutMultiColumnFlowThread::addColumnSetToThread(LayoutMultiColumnSet* columnSet)
 {
     if (LayoutMultiColumnSet* nextSet = columnSet->nextSiblingMultiColumnSet()) {
         LayoutMultiColumnSetList::iterator it = m_multiColumnSetList.find(nextSet);
@@ -410,7 +410,6 @@ void LayoutMultiColumnFlowThread::addRegionToThread(LayoutMultiColumnSet* column
     } else {
         m_multiColumnSetList.add(columnSet);
     }
-    columnSet->setIsValid(true);
 }
 
 void LayoutMultiColumnFlowThread::willBeRemovedFromTree()
@@ -419,7 +418,7 @@ void LayoutMultiColumnFlowThread::willBeRemovedFromTree()
     // are siblings of this object, and there may be pointers to this object's sibling somewhere
     // further up on the call stack.
     for (LayoutMultiColumnSet* columnSet = firstMultiColumnSet(); columnSet; columnSet = columnSet->nextSiblingMultiColumnSet())
-        columnSet->detachRegion();
+        columnSet->detachFromFlowThread();
     multiColumnBlockFlow()->resetMultiColumnFlowThread();
     LayoutFlowThread::willBeRemovedFromTree();
 }
@@ -599,7 +598,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
                 // Need to merge two column sets.
                 nextColumnBox->destroy();
                 previousColumnBox->setNeedsLayout(LayoutInvalidationReason::ColumnsChanged);
-                invalidateRegions();
+                invalidateColumnSets();
             }
         }
         placeholder->destroy();
@@ -718,7 +717,7 @@ void LayoutMultiColumnFlowThread::updateMinimumPageHeight(LayoutUnit offset, Lay
         multicolSet->updateMinimumColumnHeight(offset, minHeight);
 }
 
-bool LayoutMultiColumnFlowThread::addForcedRegionBreak(LayoutUnit offset, LayoutObject* /*breakChild*/, bool /*isBefore*/, LayoutUnit* offsetBreakAdjustment)
+bool LayoutMultiColumnFlowThread::addForcedColumnBreak(LayoutUnit offset, LayoutObject* /*breakChild*/, bool /*isBefore*/, LayoutUnit* offsetBreakAdjustment)
 {
     if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset)) {
         multicolSet->addContentRun(offset);

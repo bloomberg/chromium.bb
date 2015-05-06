@@ -38,16 +38,13 @@
 namespace blink {
 
 class LayoutMultiColumnSet;
-class LayoutRegion;
 
 typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
-// LayoutFlowThread is used to collect all the layout objects that participate in a
-// flow thread. It will also help in doing the layout. However, it will not layout
-// directly to screen. Instead, LayoutRegion objects will redirect their paint
-// and nodeAtPoint methods to this object. Each LayoutRegion will actually be a viewPort
-// of the LayoutFlowThread.
-
+// LayoutFlowThread is used to collect all the layout objects that participate in a flow thread. It
+// will also help in doing the layout. However, it will not layout directly to screen. Instead,
+// LayoutMultiColumnSet objects will redirect their paint and nodeAtPoint methods to this
+// object. Each LayoutMultiColumnSet will actually be a viewPort of the LayoutFlowThread.
 class CORE_EXPORT LayoutFlowThread: public LayoutBlockFlow {
 public:
     LayoutFlowThread();
@@ -77,16 +74,16 @@ public:
 
     virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
-    virtual void addRegionToThread(LayoutMultiColumnSet*) = 0;
-    virtual void removeRegionFromThread(LayoutMultiColumnSet*);
+    virtual void addColumnSetToThread(LayoutMultiColumnSet*) = 0;
+    virtual void removeColumnSetFromThread(LayoutMultiColumnSet*);
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    bool hasRegions() const { return m_multiColumnSetList.size(); }
+    bool hasColumnSets() const { return m_multiColumnSetList.size(); }
 
-    void validateRegions();
-    void invalidateRegions();
-    bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_multiColumnSetList.isEmpty(); }
+    void validateColumnSets();
+    void invalidateColumnSets();
+    bool hasValidColumnSetInfo() const { return !m_columnSetsInvalidated && !m_multiColumnSetList.isEmpty(); }
 
     virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
@@ -96,13 +93,9 @@ public:
     virtual void setPageBreak(LayoutUnit /*offset*/, LayoutUnit /*spaceShortage*/) { }
     virtual void updateMinimumPageHeight(LayoutUnit /*offset*/, LayoutUnit /*minHeight*/) { }
 
-    bool regionsHaveUniformLogicalHeight() const { return m_regionsHaveUniformLogicalHeight; }
+    bool columnSetsHaveUniformLogicalHeight() const { return m_columnSetsHaveUniformLogicalHeight; }
 
-    // FIXME: These 2 functions should return a LayoutMultiColumnSet.
-    LayoutRegion* firstRegion() const;
-    LayoutRegion* lastRegion() const;
-
-    virtual bool addForcedRegionBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
+    virtual bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
 
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
@@ -156,8 +149,8 @@ protected:
 
     MultiColumnSetIntervalTree m_multiColumnSetIntervalTree;
 
-    bool m_regionsInvalidated : 1;
-    bool m_regionsHaveUniformLogicalHeight : 1;
+    bool m_columnSetsInvalidated : 1;
+    bool m_columnSetsHaveUniformLogicalHeight : 1;
     bool m_pageLogicalSizeChanged : 1;
 };
 

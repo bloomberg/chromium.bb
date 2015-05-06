@@ -20,9 +20,6 @@ static bool canHaveGeneratedChildren(const LayoutObject& layoutObject)
     if (layoutObject.isMedia() || layoutObject.isTextControl() || layoutObject.isMenuList())
         return false;
 
-    if (layoutObject.isLayoutRegion())
-        return true;
-
     // Input elements can't have generated children, but button elements can. We'll
     // write the code assuming any other button types that might emerge in the future
     // can also have children.

@@ -358,7 +358,6 @@ public:
     bool isLayoutImage() const { return isOfType(LayoutObjectLayoutImage); }
     bool isLayoutMultiColumnSet() const { return isOfType(LayoutObjectLayoutMultiColumnSet); }
     bool isLayoutMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder); }
-    bool isLayoutRegion() const { return isOfType(LayoutObjectLayoutRegion); }
     bool isLayoutScrollbarPart() const { return isOfType(LayoutObjectLayoutScrollbarPart); }
     bool isLayoutView() const { return isOfType(LayoutObjectLayoutView); }
     bool isReplica() const { return isOfType(LayoutObjectReplica); }
@@ -1094,7 +1093,6 @@ protected:
         LayoutObjectLayoutMultiColumnSet,
         LayoutObjectLayoutMultiColumnSpannerPlaceholder,
         LayoutObjectLayoutPart,
-        LayoutObjectLayoutRegion,
         LayoutObjectLayoutScrollbarPart,
         LayoutObjectLayoutView,
         LayoutObjectReplica,

@@ -28,7 +28,6 @@
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutRegion.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextRunConstructor.h"
@@ -1521,7 +1520,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
 void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
 {
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool clearLinesForPagination = firstLineBox() && flowThread && !flowThread->hasRegions();
+    bool clearLinesForPagination = firstLineBox() && flowThread && !flowThread->hasColumnSets();
 
     // Figure out if we should clear out our line boxes.
     // FIXME: Handle resize eventually!

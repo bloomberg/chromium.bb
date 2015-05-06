@@ -1808,7 +1808,7 @@ bool CompositedDeprecatedPaintLayerMapping::containsPaintedContent() const
     if (layoutObject->isReplaced() && !isCompositedPlugin(layoutObject))
         return true;
 
-    if (layoutObject->isLayoutRegion())
+    if (layoutObject->isLayoutMultiColumnSet())
         return true;
 
     if (layoutObject->node() && layoutObject->node()->isDocumentNode()) {
@@ -2108,7 +2108,7 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
     context->setDeviceScaleFactor(deviceScaleFactor);
 
     if (paintInfo.paintLayer->compositingState() != PaintsIntoGroupedBacking) {
-        // FIXME: GraphicsLayers need a way to split for LayoutRegions.
+        // FIXME: GraphicsLayers need a way to split for multicol.
         DeprecatedPaintLayerPaintingInfo paintingInfo(paintInfo.paintLayer, LayoutRect(dirtyRect), PaintBehaviorNormal, paintInfo.paintLayer->subpixelAccumulation());
         DeprecatedPaintLayerPainter(*paintInfo.paintLayer).paintLayerContents(context, paintingInfo, paintLayerFlags);
 

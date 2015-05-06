@@ -643,8 +643,6 @@
             'layout/LayoutProgress.h',
             'layout/LayoutQuote.cpp',
             'layout/LayoutQuote.h',
-            'layout/LayoutRegion.cpp',
-            'layout/LayoutRegion.h',
             'layout/LayoutReplaced.cpp',
             'layout/LayoutReplica.cpp',
             'layout/LayoutReplica.h',

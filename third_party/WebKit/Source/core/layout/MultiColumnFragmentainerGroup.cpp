@@ -203,7 +203,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     // Now we can compare with the flow thread portions owned by each column. First let's
     // see if the rect intersects our flow thread portion at all.
     LayoutRect clippedRect(layerBoundsInFlowThread);
-    clippedRect.intersect(m_columnSet.LayoutRegion::flowThreadPortionOverflowRect()); // FIXME: clean up this mess.
+    clippedRect.intersect(m_columnSet.flowThreadPortionOverflowRect());
     if (clippedRect.isEmpty())
         return;
 
@@ -497,7 +497,6 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRect(const La
     //
     // FIXME: Eventually we will know overflow on a per-column basis, but we can't do this until we have a painting
     // mode that understands not to paint contents from a previous column in the overflow area of a following column.
-    // This problem applies to regions and pages as well and is not unique to columns.
     bool isFirstColumn = !columnIndex;
     bool isLastColumn = columnIndex == columnCount - 1;
     bool isLTR = m_columnSet.style()->isLeftToRightDirection();
@@ -506,7 +505,7 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRect(const La
 
     // Calculate the overflow rectangle, based on the flow thread's, clipped at column logical
     // top/bottom unless it's the first/last column.
-    LayoutRect overflowRect = m_columnSet.overflowRectForFlowThreadPortion(portionRect, isFirstColumn && m_columnSet.isFirstRegion(), isLastColumn && m_columnSet.isLastRegion());
+    LayoutRect overflowRect = m_columnSet.overflowRectForFlowThreadPortion(portionRect, isFirstColumn && !m_columnSet.previousSiblingMultiColumnSet(), isLastColumn && !m_columnSet.nextSiblingMultiColumnSet());
 
     // Avoid overflowing into neighboring columns, by clipping in the middle of adjacent column
     // gaps. Also make sure that we avoid rounding errors.

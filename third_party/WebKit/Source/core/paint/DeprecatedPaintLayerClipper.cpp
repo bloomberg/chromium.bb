@@ -178,7 +178,7 @@ void DeprecatedPaintLayerClipper::clearClipRectsIncludingDescendants(ClipRectsCa
 LayoutRect DeprecatedPaintLayerClipper::childrenClipRect() const
 {
     // FIXME: border-radius not accounted for.
-    // FIXME: Regions not accounted for.
+    // FIXME: Flow thread based columns not accounted for.
     DeprecatedPaintLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
@@ -246,8 +246,8 @@ void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context
         if (toLayoutBox(m_layoutObject).hasVisualOverflow()) {
             // FIXME: Perhaps we should be propagating the borderbox as the clip rect for children, even though
             //        we may need to inflate our clip specifically for shadows or outsets.
-            // FIXME: Does not do the right thing with CSS regions yet, since we don't yet factor in the
-            // individual region boxes as overflow.
+            // FIXME: Does not do the right thing with columns yet, since we don't yet factor in the
+            // individual column boxes as overflow.
             LayoutRect layerBoundsWithVisualOverflow = toLayoutBox(m_layoutObject).visualOverflowRect();
             toLayoutBox(m_layoutObject).flipForWritingMode(layerBoundsWithVisualOverflow); // DeprecatedPaintLayer are in physical coordinates, so the overflow has to be flipped.
             layerBoundsWithVisualOverflow.moveBy(offset);

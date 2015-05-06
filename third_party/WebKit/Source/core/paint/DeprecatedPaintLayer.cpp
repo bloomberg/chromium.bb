@@ -1359,7 +1359,7 @@ static inline const DeprecatedPaintLayer* accumulateOffsetTowardsAncestor(const 
     // FIXME: Positioning of out-of-flow(fixed, absolute) elements collected in a LayoutFlowThread
     // may need to be revisited in a future patch.
     // If the fixed layoutObject is inside a LayoutFlowThread, we should not compute location using localToAbsolute,
-    // since localToAbsolute maps the coordinates from flow thread to regions coordinates and regions can be
+    // since localToAbsolute maps the coordinates from flow thread to column set coordinates and column sets can be
     // positioned in a completely different place in the viewport (LayoutView).
     if (position == FixedPosition && (!ancestorLayer || ancestorLayer == layoutObject->view()->layer())) {
         // If the fixed layer's container is the root, just add in the offset of the view. We can obtain this by calling

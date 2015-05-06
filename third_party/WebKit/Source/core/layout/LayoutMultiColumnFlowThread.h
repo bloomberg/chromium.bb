@@ -44,7 +44,7 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 // multicol container is parented into the flow thread at the time of layoutObject insertion.
 //
 // Apart from this flow thread child, the multicol container will also have LayoutMultiColumnSet
-// "region" children, which are used to position the columns visually. The flow thread is in charge
+// children, which are used to position the columns visually. The flow thread is in charge
 // of layout, and, after having calculated the column width, it lays out content as if everything
 // were in one tall single column, except that there will typically be some amount of blank space
 // (also known as pagination struts) at the offsets where the actual column boundaries are. This
@@ -192,7 +192,7 @@ private:
     void createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore = 0);
     virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
-    virtual void addRegionToThread(LayoutMultiColumnSet*) override;
+    virtual void addColumnSetToThread(LayoutMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
     virtual LayoutUnit skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) override;
     virtual void flowThreadDescendantWasInserted(LayoutObject*) override;
@@ -202,7 +202,7 @@ private:
     virtual void updateLogicalWidth() override;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
-    virtual bool addForcedRegionBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
+    virtual bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
     virtual bool isPageLogicalHeightKnown() const override;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a
