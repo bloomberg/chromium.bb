@@ -10,12 +10,14 @@
 namespace content {
 
 class V4L2VP8Picture;
+class VaapiVP8Picture;
 
 class VP8Picture : public base::RefCounted<VP8Picture> {
  public:
   VP8Picture();
 
   virtual V4L2VP8Picture* AsV4L2VP8Picture();
+  virtual VaapiVP8Picture* AsVaapiVP8Picture();
 
  protected:
   friend class base::RefCounted<VP8Picture>;

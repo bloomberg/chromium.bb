@@ -197,7 +197,9 @@ void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
                                     kMD5StringLength;
       CHECK(hex_only) << *md5_string;
   }
-  CHECK_GE(md5_strings->size(), 1U) << all_md5s;
+  CHECK_GE(md5_strings->size(), 1U) << "  MD5 checksum file ("
+                                    << filepath.MaybeAsASCII()
+                                    << ") missing or empty.";
 }
 
 // State of the GLRenderingVDAClient below.  Order matters here as the test

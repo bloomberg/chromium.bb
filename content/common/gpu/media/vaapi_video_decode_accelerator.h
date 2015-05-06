@@ -72,6 +72,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
 
  private:
   class VaapiH264Accelerator;
+  class VaapiVP8Accelerator;
 
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);
@@ -271,10 +272,10 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
-  // Comes after vaapi_wrapper_ to ensure its destructor is executed before
-  // vaapi_wrapper_ is destroyed.
+  // Accelerators come after vaapi_wrapper_ to ensure they are destroyed first.
   scoped_ptr<VaapiH264Accelerator> h264_accelerator_;
-  // After h264_accelerator_ to ensure correct destruction order.
+  scoped_ptr<VaapiVP8Accelerator> vp8_accelerator_;
+  // After *_accelerator_ to ensure correct destruction order.
   scoped_ptr<AcceleratedVideoDecoder> decoder_;
 
   base::Thread decoder_thread_;

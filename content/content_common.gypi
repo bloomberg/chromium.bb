@@ -829,6 +829,10 @@
         'common/gpu/media/h264_decoder.h',
         'common/gpu/media/h264_dpb.cc',
         'common/gpu/media/h264_dpb.h',
+        'common/gpu/media/vp8_decoder.cc',
+        'common/gpu/media/vp8_decoder.h',
+        'common/gpu/media/vp8_picture.cc',
+        'common/gpu/media/vp8_picture.h',
       ],
     }],
     ['chromeos==1 and use_v4l2_codec==1', {
@@ -856,10 +860,6 @@
         'common/gpu/media/v4l2_video_decode_accelerator.h',
         'common/gpu/media/v4l2_video_encode_accelerator.cc',
         'common/gpu/media/v4l2_video_encode_accelerator.h',
-        'common/gpu/media/vp8_decoder.cc',
-        'common/gpu/media/vp8_decoder.h',
-        'common/gpu/media/vp8_picture.cc',
-        'common/gpu/media/vp8_picture.h',
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',

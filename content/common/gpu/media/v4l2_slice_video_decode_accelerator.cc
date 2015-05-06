@@ -296,7 +296,7 @@ class V4L2SliceVideoDecodeAccelerator::V4L2VP8Accelerator
   V4L2VP8Accelerator(V4L2SliceVideoDecodeAccelerator* v4l2_dec);
   ~V4L2VP8Accelerator() override;
 
-  // H264Decoder::VP8Accelerator implementation.
+  // VP8Decoder::VP8Accelerator implementation.
   scoped_refptr<VP8Picture> CreateVP8Picture() override;
 
   bool SubmitDecode(const scoped_refptr<VP8Picture>& pic,

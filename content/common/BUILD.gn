@@ -342,6 +342,10 @@ source_set("common") {
       "gpu/media/h264_decoder.h",
       "gpu/media/h264_dpb.cc",
       "gpu/media/h264_dpb.h",
+      "gpu/media/vp8_decoder.cc",
+      "gpu/media/vp8_decoder.h",
+      "gpu/media/vp8_picture.cc",
+      "gpu/media/vp8_picture.h",
     ]
     if (use_v4lplugin) {
       defines += [ "USE_LIBV4L2" ]
@@ -363,10 +367,6 @@ source_set("common") {
         "gpu/media/v4l2_video_decode_accelerator.h",
         "gpu/media/v4l2_video_encode_accelerator.cc",
         "gpu/media/v4l2_video_encode_accelerator.h",
-        "gpu/media/vp8_decoder.cc",
-        "gpu/media/vp8_decoder.h",
-        "gpu/media/vp8_picture.cc",
-        "gpu/media/vp8_picture.h",
       ]
       libs = [
         "EGL",

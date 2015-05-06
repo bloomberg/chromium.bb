@@ -16,4 +16,8 @@ V4L2VP8Picture* VP8Picture::AsV4L2VP8Picture() {
   return nullptr;
 }
 
+VaapiVP8Picture* VP8Picture::AsVaapiVP8Picture() {
+  return nullptr;
+}
+
 }  // namespace content
