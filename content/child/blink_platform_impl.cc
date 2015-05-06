@@ -649,12 +649,7 @@ blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-#ifndef WEB_CONVERTABLE_TO_TRACE_FORMAT_IS_MOVED
-    // TODO(hiroshige): Remove #ifndef once the Blink-side CL is landed.
-    const blink::WebConvertableToTraceFormat* convertable_values,
-#else
     blink::WebConvertableToTraceFormat* convertable_values,
-#endif
     unsigned char flags) {
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
       convertable_wrappers[2];
