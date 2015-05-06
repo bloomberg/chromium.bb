@@ -93,12 +93,6 @@ public:
     void move(const FloatSize&);
     FloatPoint location() const { return m_offset; }
 
-    // Sets the location of the pinch viewport relative to the document. This
-    // will attempt to scroll the root FrameView such that the pinch viewport
-    // is at the given location. It will then scroll the pinch viewport if
-    // scrolling only the root FrameView couldn't reach the location.
-    void setLocationInDocument(const DoublePoint&);
-
     // Sets the size of the inner viewport when unscaled in CSS pixels.
     void setSize(const IntSize&);
     IntSize size() const { return m_size; }
@@ -126,8 +120,6 @@ public:
     void registerLayersWithTreeView(WebLayerTreeView*) const;
     void clearLayersForTreeView(WebLayerTreeView*) const;
 
-    ScrollResult wheelEvent(const PlatformWheelEvent&);
-
     // The portion of the unzoomed frame visible in the inner "pinch" viewport,
     // in partial CSS pixels. Relative to the main frame.
     FloatRect visibleRect() const;
@@ -141,11 +133,6 @@ public:
     // scale isn't applied.
     FloatRect mainViewToViewportCSSPixels(const FloatRect&) const;
     FloatPoint viewportCSSPixelsToRootFrame(const FloatPoint&) const;
-
-    // Scroll the main frame and pinch viewport so that the given rect in the
-    // top-level document is centered in the viewport. This method will avoid
-    // scrolling the pinch viewport unless necessary.
-    void scrollIntoView(const LayoutRect&);
 
     // Clamp the given point, in document coordinates, to the maximum/minimum
     // scroll extents of the viewport within the document.
@@ -175,6 +162,8 @@ public:
     IntPoint rootFrameToViewport(const IntPoint&) const;
 
     // ScrollableArea implementation
+    virtual DoubleRect visibleContentRectDouble(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
+    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     virtual bool shouldUseIntegerScrollOffset() const override;
     virtual bool isActive() const override { return false; }
     virtual int scrollSize(ScrollbarOrientation) const override;

@@ -59,6 +59,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/ScrollAlignment.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TracedLayoutObject.h"
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
@@ -67,6 +68,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/AutoscrollController.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
@@ -85,7 +87,9 @@
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -142,9 +146,6 @@ FrameView::FrameView(LocalFrame* frame)
 {
     ASSERT(m_frame);
     init();
-
-    if (!m_frame->isMainFrame())
-        return;
 }
 
 PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame)
@@ -806,6 +807,13 @@ void FrameView::performPreLayoutTasks()
 
     document->updateLayoutTreeIfNeeded();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
+
+    if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
+        ScrollableArea& visualViewport = page()->frameHost().pinchViewport();
+        ScrollableArea* layoutViewport = layoutViewportScrollableArea();
+        ASSERT(layoutViewport);
+        m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
+    }
 }
 
 static inline void layoutFromRootObject(LayoutObject& root)
@@ -1507,34 +1515,6 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
         scrollToAnchor();
 }
 
-DoubleSize FrameView::scrollElementToRect(Element* element, const FloatRect& targetRectInFrame)
-{
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
-
-    // Obtain focused element's bounding box in frame space. Use |pixelSnappedIntRect| for rounding
-    // to pixel as opposed to |enclosingIntRect|. It gives a better combined (location and size)
-    // rounding error resulting in a more accurate scroll offset.
-    // FIXME: It would probably be best to do the whole calculation in LayoutUnits but contentsToRootFrame
-    // and friends don't have LayoutRect/Point versions yet.
-    FrameView* elementView = element->document().view();
-    IntRect boundsInContent = pixelSnappedIntRect(element->boundingBox());
-    IntRect boundsInFrame = contentsToFrame(rootFrameToContents(elementView->contentsToRootFrame(boundsInContent)));
-
-    int centeringOffsetX = (targetRectInFrame.width() - boundsInFrame.width()) / 2;
-    int centeringOffsetY = (targetRectInFrame.height() - boundsInFrame.height()) / 2;
-
-    IntSize scrollDelta(
-        boundsInFrame.x() - centeringOffsetX - targetRectInFrame.x(),
-        boundsInFrame.y() - centeringOffsetY - targetRectInFrame.y());
-
-    DoublePoint targetOffset = DoublePoint(scrollPosition() + scrollDelta);
-
-    // Update frame scroll offset to make target element visible.
-    setScrollPosition(targetOffset);
-
-    return targetOffset - scrollPositionDouble();
-}
-
 void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior scrollBehavior)
 {
     cancelProgrammaticScrollAnimation();
@@ -1544,14 +1524,8 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollBehavior
     if (newScrollPosition == scrollPositionDouble())
         return;
 
-    if (scrollBehavior == ScrollBehaviorAuto) {
-        Element* scrollElement = m_frame->document()->scrollingElement();
-        LayoutObject* layoutObject = scrollElement ? scrollElement->layoutObject() : nullptr;
-        if (layoutObject && layoutObject->style()->scrollBehavior() == ScrollBehaviorSmooth)
-            scrollBehavior = ScrollBehaviorSmooth;
-        else
-            scrollBehavior = ScrollBehaviorInstant;
-    }
+    if (scrollBehavior == ScrollBehaviorAuto)
+        scrollBehavior = scrollBehaviorStyle();
 
     if (scrollBehavior == ScrollBehaviorInstant) {
         DoubleSize newOffset(newScrollPosition.x(), newScrollPosition.y());
@@ -2202,7 +2176,8 @@ bool FrameView::shouldUseIntegerScrollOffset() const
 {
     if (m_frame->settings() && !m_frame->settings()->preferCompositingToLCDTextEnabled())
         return true;
-    return false;
+
+    return ScrollableArea::shouldUseIntegerScrollOffset();
 }
 
 bool FrameView::isActive() const
@@ -2316,6 +2291,11 @@ IntRect FrameView::scrollableAreaBoundingBox() const
 bool FrameView::isScrollable()
 {
     return scrollingReasons() == Scrollable;
+}
+
+bool FrameView::isProgrammaticallyScrollable()
+{
+    return !m_inUpdateScrollbars;
 }
 
 FrameView::ScrollingReasons FrameView::scrollingReasons()
@@ -2961,7 +2941,7 @@ ScrollResult FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
     if (m_frame->settings()->rootLayerScrolls())
         return ScrollResult(false);
 
-    return ScrollableArea::handleWheelEvent(wheelEvent);
+    return ScrollableArea::handleWheel(wheelEvent);
 }
 
 bool FrameView::isVerticalDocument() const
@@ -3209,15 +3189,6 @@ IntRect FrameView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion)
     return IntRect(flooredIntPoint(m_scrollPosition), expandedIntSize(visibleContentSize));
 }
 
-IntRect FrameView::visualViewportRect() const
-{
-    if (!m_frame->isMainFrame())
-        return visibleContentRect();
-
-    PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
-    return enclosingIntRect(pinchViewport.visibleRectInDocument());
-}
-
 IntSize FrameView::contentsSize() const
 {
     return m_contentsSize;
@@ -3226,25 +3197,6 @@ IntSize FrameView::contentsSize() const
 IntPoint FrameView::minimumScrollPosition() const
 {
     return IntPoint(-scrollOrigin().x(), -scrollOrigin().y());
-}
-
-IntPoint FrameView::adjustScrollPositionWithinRange(const IntPoint& scrollPoint) const
-{
-    if (!constrainsScrollingToContentEdge())
-        return scrollPoint;
-
-    IntPoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPosition());
-    newScrollPosition = newScrollPosition.expandedTo(minimumScrollPosition());
-    return newScrollPosition;
-}
-
-DoublePoint FrameView::adjustScrollPositionWithinRange(const DoublePoint& scrollPoint) const
-{
-    if (!constrainsScrollingToContentEdge())
-        return scrollPoint;
-    DoublePoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPositionDouble());
-    newScrollPosition = newScrollPosition.expandedTo(minimumScrollPositionDouble());
-    return newScrollPosition;
 }
 
 void FrameView::adjustScrollbarOpacity()
@@ -3283,12 +3235,12 @@ void FrameView::setScrollOffset(const DoublePoint& offset)
     scrollTo(adjustScrollPositionWithinRange(offset));
 }
 
-bool FrameView::scroll(ScrollDirection direction, ScrollGranularity granularity)
+bool FrameView::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
 {
     ScrollDirection physicalDirection =
         toPhysicalDirection(direction, isVerticalDocument(), isFlippedDocument());
 
-    return ScrollableArea::scroll(physicalDirection, granularity);
+    return ScrollableArea::scroll(physicalDirection, granularity, delta);
 }
 
 void FrameView::windowResizerRectChanged()
@@ -3806,6 +3758,20 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const
     return false;
 }
 
+LayoutRect FrameView::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+{
+    LayoutRect viewRect(visibleContentRect());
+    LayoutRect exposeRect = ScrollAlignment::getRectToExpose(viewRect, rectInContent, alignX, alignY);
+
+    double xOffset = exposeRect.x();
+    double yOffset = exposeRect.y();
+
+    setScrollPosition(DoublePoint(xOffset, yOffset));
+
+    // Scrolling the FrameView cannot change the input rect's location relative to the document.
+    return rectInContent;
+}
+
 IntRect FrameView::scrollCornerRect() const
 {
     IntRect cornerRect;
@@ -3840,6 +3806,16 @@ void FrameView::invalidateScrollCornerRect(const IntRect& rect)
     invalidateRect(rect);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled() && m_scrollCorner)
         layoutView()->invalidateDisplayItemClientForNonCompositingDescendantsOf(*m_scrollCorner);
+}
+
+ScrollBehavior FrameView::scrollBehaviorStyle() const
+{
+    Element* scrollElement = m_frame->document()->scrollingElement();
+    LayoutObject* layoutObject = scrollElement ? scrollElement->layoutObject() : nullptr;
+    if (layoutObject && layoutObject->style()->scrollBehavior() == ScrollBehaviorSmooth)
+        return ScrollBehaviorSmooth;
+
+    return ScrollBehaviorInstant;
 }
 
 void FrameView::paintPanScrollIcon(GraphicsContext* context)
@@ -4002,6 +3978,14 @@ int FrameView::viewportWidth() const
 }
 
 ScrollableArea* FrameView::scrollableArea()
+{
+    if (m_viewportScrollableArea)
+        return m_viewportScrollableArea.get();
+
+    return layoutViewportScrollableArea();
+}
+
+ScrollableArea* FrameView::layoutViewportScrollableArea()
 {
     Settings* settings = frame().settings();
     if (!settings || !settings->rootLayerScrolls())

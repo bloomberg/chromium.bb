@@ -10,6 +10,7 @@
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
+#include "platform/geometry/DoubleRect.h"
 #include "web/DevToolsEmulator.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
@@ -99,10 +100,9 @@ void InspectorEmulationAgent::viewportChanged()
         return;
 
     FrameView* view = m_webViewImpl->mainFrameImpl()->frameView();
-    FrameHost& host = m_webViewImpl->page()->frameHost();
     IntSize contentsSize = view->contentsSize();
     FloatPoint scrollOffset;
-    scrollOffset = host.pinchViewport().visibleRectInDocument().location();
+    scrollOffset = FloatPoint(view->scrollableArea()->visibleContentRectDouble().location());
 
     RefPtr<TypeBuilder::Emulation::Viewport> viewport = TypeBuilder::Emulation::Viewport::create()
         .setScrollX(scrollOffset.x())

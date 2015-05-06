@@ -17,6 +17,8 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "platform/PlatformGestureEvent.h"
+#include "platform/geometry/DoublePoint.h"
+#include "platform/geometry/DoubleRect.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
@@ -239,18 +241,18 @@ TEST_F(PinchViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation)
     ASSERT_POINT_EQ(FloatPoint(400, 300), pinchViewport.location());
     ASSERT_POINT_EQ(DoublePoint(200, 1400), frameView.scrollPositionDouble());
 
-    FloatPoint expectedLocation = pinchViewport.visibleRectInDocument().location();
+    DoublePoint expectedLocation = frameView.scrollableArea()->visibleContentRectDouble().location();
 
     // Shrink the WebView, this should cause both viewports to shrink and
     // WebView should do whatever it needs to do to preserve the visible
     // location.
     webViewImpl()->resize(IntSize(700, 550));
 
-    EXPECT_POINT_EQ(expectedLocation, pinchViewport.visibleRectInDocument().location());
+    EXPECT_POINT_EQ(expectedLocation, frameView.scrollableArea()->visibleContentRectDouble().location());
 
     webViewImpl()->resize(IntSize(800, 600));
 
-    EXPECT_POINT_EQ(expectedLocation, pinchViewport.visibleRectInDocument().location());
+    EXPECT_POINT_EQ(expectedLocation, frameView.scrollableArea()->visibleContentRectDouble().location());
 }
 
 
@@ -1062,54 +1064,6 @@ TEST_F(PinchViewportTest, TestClientNotifiedOfScrollEvents)
     webViewImpl()->mainFrameImpl()->setClient(oldClient);
 }
 
-// Test that the scrollIntoView correctly scrolls the main frame
-// and pinch viewports such that the given rect is centered in the viewport.
-TEST_F(PinchViewportTest, TestScrollingDocumentRegionIntoView)
-{
-    initializeWithDesktopSettings();
-    webViewImpl()->resize(IntSize(100, 150));
-
-    registerMockedHttpURLLoad("200-by-300-viewport.html");
-    navigateTo(m_baseURL + "200-by-300-viewport.html");
-
-    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
-
-    // Test that the pinch viewport is scrolled if the viewport has been
-    // resized (as is the case when the ChromeOS keyboard comes up) but not
-    // scaled.
-    webViewImpl()->resizePinchViewport(WebSize(100, 100));
-    pinchViewport.scrollIntoView(LayoutRect(100, 250, 50, 50));
-    EXPECT_POINT_EQ(IntPoint(75, 150), frame()->view()->scrollPosition());
-    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 50), pinchViewport.visibleRect().location());
-
-    pinchViewport.scrollIntoView(LayoutRect(25, 75, 50, 50));
-    EXPECT_POINT_EQ(IntPoint(0, 0), frame()->view()->scrollPosition());
-    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 50), pinchViewport.visibleRect().location());
-
-    // Reset the pinch viewport's size, scale the page and repeat the test
-    webViewImpl()->resizePinchViewport(IntSize(100, 150));
-    webViewImpl()->setPageScaleFactor(2);
-    pinchViewport.setLocation(FloatPoint());
-
-    pinchViewport.scrollIntoView(LayoutRect(50, 75, 50, 75));
-    EXPECT_POINT_EQ(IntPoint(50, 75), frame()->view()->scrollPosition());
-    EXPECT_FLOAT_POINT_EQ(FloatPoint(), pinchViewport.visibleRect().location());
-
-    pinchViewport.scrollIntoView(LayoutRect(190, 290, 10, 10));
-    EXPECT_POINT_EQ(IntPoint(100, 150), frame()->view()->scrollPosition());
-    EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 75), pinchViewport.visibleRect().location());
-
-    // Scrolling into view the viewport rect itself should be a no-op.
-    webViewImpl()->resizePinchViewport(IntSize(100, 100));
-    webViewImpl()->setPageScaleFactor(1.5f);
-    frame()->view()->scrollTo(IntPoint(50, 50));
-    pinchViewport.setLocation(FloatPoint(0, 10));
-
-    pinchViewport.scrollIntoView(LayoutRect(pinchViewport.visibleRectInDocument()));
-    EXPECT_POINT_EQ(IntPoint(50, 50), frame()->view()->scrollPosition());
-    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 10), pinchViewport.visibleRect().location());
-}
-
 // Tests that calling scroll into view on a visible element doesn cause
 // a scroll due to a fractional offset. Bug crbug.com/463356.
 TEST_F(PinchViewportTest, ScrollIntoViewFractionalOffset)
@@ -1640,43 +1594,6 @@ TEST_F(PinchViewportTest, AccessibilityHitTestWhileZoomedIn)
     WebAXObject hitNode = webDoc.accessibilityObject().hitTest(WebPoint(154, 165));
     EXPECT_EQ(std::string("Target4"), hitNode.title().utf8());
 }
-
-// Tests that the setLocationInDocument method works correctly.
-TEST_F(PinchViewportTest, TestSetLocationInDocument)
-{
-    initializeWithDesktopSettings();
-    webViewImpl()->resize(IntSize(500, 500));
-    registerMockedHttpURLLoad("content-width-1000.html");
-    navigateTo(m_baseURL + "content-width-1000.html");
-
-    PinchViewport& pinchViewport = webViewImpl()->page()->frameHost().pinchViewport();
-    ScrollableArea& rootFrame = *webViewImpl()->mainFrameImpl()->frameView()->scrollableArea();
-
-    pinchViewport.setScale(2);
-
-    // Ensure that the FrameView scrolls first.
-    pinchViewport.setLocationInDocument(DoublePoint(100, 100));
-    EXPECT_POINT_EQ(DoublePoint(0, 0), pinchViewport.location());
-    EXPECT_POINT_EQ(DoublePoint(100, 100), rootFrame.scrollPositionDouble());
-
-    // Scroll to the FrameView's extent, the pinch viewport should scroll the
-    // remainder.
-    pinchViewport.setLocationInDocument(DoublePoint(700, 1700));
-    EXPECT_POINT_EQ(DoublePoint(200, 200), pinchViewport.location());
-    EXPECT_POINT_EQ(DoublePoint(500, 1500), rootFrame.scrollPositionDouble());
-
-    // Only the PinchViewport should scroll further. Make sure it doesn't scroll
-    // out of bounds.
-    pinchViewport.setLocationInDocument(DoublePoint(780, 1780));
-    EXPECT_POINT_EQ(DoublePoint(250, 250), pinchViewport.location());
-    EXPECT_POINT_EQ(DoublePoint(500, 1500), rootFrame.scrollPositionDouble());
-
-    // Scroll all the way back.
-    pinchViewport.setLocationInDocument(DoublePoint(0, 0));
-    EXPECT_POINT_EQ(DoublePoint(0, 0), pinchViewport.location());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrame.scrollPositionDouble());
-}
-
 
 // Tests that the maximum scroll offset of the viewport can be fractional.
 TEST_F(PinchViewportTest, TestCoordinateTransforms)

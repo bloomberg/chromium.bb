@@ -458,7 +458,7 @@ void LayoutBox::scrollToOffset(const DoubleSize& offset, ScrollBehavior scrollBe
         layer()->scrollableArea()->scrollToOffset(offset, ScrollOffsetClamped, scrollBehavior);
 }
 
-static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
+static bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
 {
     // If scrollbars aren't explicitly forbidden, permit scrolling.
     if (frameElementBase && frameElementBase->scrollingMode() != ScrollbarAlwaysOff)
@@ -493,57 +493,31 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
     if (hasOverflowClip() && !restrictedByLineClamp) {
         // Don't scroll to reveal an overflow layer that is restricted by the -webkit-line-clamp property.
         // This will prevent us from revealing text hidden by the slider in Safari RSS.
-        newRect = layer()->scrollableArea()->exposeRect(rect, alignX, alignY);
+        newRect = layer()->scrollableArea()->scrollIntoView(rect, alignX, alignY);
     } else if (!parentBox && canBeProgramaticallyScrolled()) {
         if (FrameView* frameView = this->frameView()) {
             HTMLFrameOwnerElement* ownerElement = document().ownerElement();
+            HTMLFrameElementBase* frameElementBase = nullptr;
 
-            if (ownerElement && ownerElement->layoutObject()) {
-                HTMLFrameElementBase* frameElementBase = isHTMLFrameElementBase(*ownerElement) ? toHTMLFrameElementBase(ownerElement) : 0;
-                if (frameElementAndViewPermitScroll(frameElementBase, frameView)) {
-                    LayoutRect viewRect(frameView->visibleContentRect());
-                    LayoutRect exposeRect = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
+            if (ownerElement)
+                frameElementBase = isHTMLFrameElementBase(*ownerElement) ? toHTMLFrameElementBase(ownerElement) : nullptr;
 
-                    double xOffset = exposeRect.x();
-                    double yOffset = exposeRect.y();
-                    // Adjust offsets if they're outside of the allowable range.
-                    xOffset = std::max(0.0, std::min<double>(frameView->contentsWidth(), xOffset));
-                    yOffset = std::max(0.0, std::min<double>(frameView->contentsHeight(), yOffset));
+            // TODO(bokan): Why do we only do the frameElementAndViewPermit scroll check in the subframe case?
+            // Seems dated in any case, we should be checking for scrollability at the ScrollableArea level.
+            bool canScroll = !ownerElement || frameElementAndViewPermitScroll(frameElementBase, frameView);
+            if (canScroll)
+                frameView->scrollableArea()->scrollIntoView(rect, alignX, alignY);
 
-                    frameView->setScrollPosition(DoublePoint(xOffset, yOffset));
-                    if (frameView->safeToPropagateScrollToParent()) {
-                        parentBox = ownerElement->layoutObject()->enclosingBox();
-                        // FIXME: This doesn't correctly convert the rect to
-                        // absolute coordinates in the parent.
-                        newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
-                        newRect.setY(rect.y() - frameView->scrollY() + frameView->y());
-                    } else {
-                        parentBox = 0;
-                    }
+            if (ownerElement && ownerElement->layoutObject() && canScroll) {
+                if (frameView->safeToPropagateScrollToParent()) {
+                    parentBox = ownerElement->layoutObject()->enclosingBox();
+                    // FIXME: This doesn't correctly convert the rect to
+                    // absolute coordinates in the parent.
+                    newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
+                    newRect.setY(rect.y() - frameView->scrollY() + frameView->y());
+                } else {
+                    parentBox = 0;
                 }
-            } else {
-                PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
-
-                // We want to move the rect into the viewport that excludes the scrollbars so we intersect
-                // the pinch viewport with the scrollbar-excluded frameView content rect. However, we don't
-                // use visibleContentRect directly since it floors the scroll position. Instead, we use
-                // FrameView::scrollPositionDouble and construct a LayoutRect from that (the FrameView size
-                // is always integer sized.
-                LayoutRect frameRect = LayoutRect(
-                    frameView->scrollPositionDouble(),
-                    frameView->visibleContentRect().size());
-                LayoutRect viewRect = intersection(
-                    LayoutRect(pinchViewport.visibleRectInDocument()), frameRect);
-                LayoutRect r = ScrollAlignment::getRectToExpose(viewRect, rect, alignX, alignY);
-
-                // pinchViewport.scrollIntoView will attempt to center the given rect within the viewport
-                // so to prevent it from adjusting r's coordinates the rect must match the viewport's size
-                // i.e. add the subtracted scrollbars from above back in.
-                // FIXME: This is hacky and required because getRectToExpose doesn't naturally account
-                // for the two viewports. crbug.com/449340.
-                r.setSize(LayoutSize(pinchViewport.visibleRectInDocument().size()));
-
-                pinchViewport.scrollIntoView(r);
             }
         }
     }

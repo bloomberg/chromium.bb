@@ -12,6 +12,7 @@
 #include "core/frame/PinchViewport.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/EventHandler.h"
+#include "platform/geometry/DoubleRect.h"
 #include "web/PageScaleConstraintsSet.h"
 
 namespace blink {
@@ -101,13 +102,13 @@ void RotationViewportAnchor::setAnchor()
     // FIXME: Scroll offsets are now fractional (DoublePoint and FloatPoint for the FrameView and PinchViewport
     //        respectively. This path should be rewritten without pixel snapping.
     IntRect outerViewRect = m_rootFrameView->visibleContentRect();
-    IntRect innerViewRect = enclosedIntRect(m_pinchViewport->visibleRectInDocument());
+    IntRect innerViewRect = enclosedIntRect(m_rootFrameView->scrollableArea()->visibleContentRectDouble());
 
     m_oldPageScaleFactor = m_pinchViewport->scale();
     m_oldMinimumPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().minimumScale;
 
     // Save the absolute location in case we won't find the anchor node, we'll fall back to that.
-    m_pinchViewportInDocument = m_pinchViewport->visibleRectInDocument().location();
+    m_pinchViewportInDocument = FloatPoint(m_rootFrameView->scrollableArea()->visibleContentRectDouble().location());
 
     m_anchorNode.clear();
     m_anchorNodeBounds = LayoutRect();

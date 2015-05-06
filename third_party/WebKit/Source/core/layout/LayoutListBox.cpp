@@ -149,7 +149,7 @@ void LayoutListBox::scrollToRect(const LayoutRect& rect)
     if (hasOverflowClip()) {
         ASSERT(layer());
         ASSERT(layer()->scrollableArea());
-        layer()->scrollableArea()->exposeRect(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+        layer()->scrollableArea()->scrollIntoView(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
     }
 }
 

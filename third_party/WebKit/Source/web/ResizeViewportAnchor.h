@@ -5,7 +5,7 @@
 #ifndef ResizeViewportAnchor_h
 #define ResizeViewportAnchor_h
 
-#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/DoublePoint.h"
 #include "platform/heap/Handle.h"
 #include "web/ViewportAnchor.h"
 
@@ -26,7 +26,7 @@ public:
 private:
     // Inner viewport origin in the reference frame of the root document, in CSS
     // pixels.
-    FloatPoint m_pinchViewportInDocument;
+    DoublePoint m_pinchViewportInDocument;
 };
 
 } // namespace blink

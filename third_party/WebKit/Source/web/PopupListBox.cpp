@@ -177,7 +177,7 @@ bool PopupListBox::handleWheelEvent(const PlatformWheelEvent& event)
         return true;
     }
 
-    ScrollableArea::handleWheelEvent(event);
+    ScrollableArea::handleWheel(event);
     return true;
 }
 

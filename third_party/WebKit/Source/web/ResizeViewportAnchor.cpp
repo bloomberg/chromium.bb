@@ -7,7 +7,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/PinchViewport.h"
-#include "platform/geometry/DoublePoint.h"
+#include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatSize.h"
 
@@ -15,19 +15,13 @@ namespace blink {
 
 ResizeViewportAnchor::ResizeViewportAnchor(FrameView& rootFrameView, PinchViewport& pinchViewport)
     : ViewportAnchor(rootFrameView, pinchViewport)
-    , m_pinchViewportInDocument(m_pinchViewport->visibleRectInDocument().location())
+    , m_pinchViewportInDocument(rootFrameView.scrollableArea()->visibleContentRectDouble().location())
 {
 }
 
 ResizeViewportAnchor::~ResizeViewportAnchor()
 {
-    FloatSize delta = m_pinchViewportInDocument - m_pinchViewport->visibleRectInDocument().location();
-
-    DoublePoint targetFrameViewPosition = m_rootFrameView->scrollPositionDouble() + DoubleSize(delta);
-    m_rootFrameView->setScrollPosition(targetFrameViewPosition);
-
-    DoubleSize remainder = targetFrameViewPosition - m_rootFrameView->scrollPositionDouble();
-    m_pinchViewport->move(toFloatSize(remainder));
+    m_rootFrameView->scrollableArea()->setScrollPosition(m_pinchViewportInDocument);
 }
 
 } // namespace blink

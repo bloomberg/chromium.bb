@@ -922,7 +922,11 @@ bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool u
         clampedPoint = pinchViewport.clampDocumentOffsetAtScale(targetPosition, newScale);
         if (!durationInSeconds) {
             setPageScaleFactor(newScale);
-            pinchViewport.setLocationInDocument(DoublePoint(clampedPoint.x, clampedPoint.y));
+
+            FrameView* view = mainFrameImpl()->frameView();
+            if (view && view->scrollableArea())
+                view->scrollableArea()->setScrollPosition(DoublePoint(clampedPoint.x, clampedPoint.y));
+
             return false;
         }
     }
@@ -2913,18 +2917,16 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
         return false;
 
     if (!m_webSettings->autoZoomFocusedNodeToLegibleScale()) {
+        frame->document()->updateLayoutIgnorePendingStylesheets();
+
         PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
-
-        // FIXME: The pixel snapping shouldn't be done ad-hoc. crbug.com/458579.
-        IntRect viewportRectInRootFrame(
-            ceiledIntPoint(pinchViewport.location()),
-            expandedIntSize(pinchViewport.visibleSize()));
-
         FloatRect targetRectInRootFrame = pinchViewport.viewportToRootFrame(rectInViewport);
-        DoubleSize remainder = frame->view()->scrollElementToRect(element, IntRect(targetRectInRootFrame));
 
-        // Scroll the remainder in the pinch viewport.
-        page()->frameHost().pinchViewport().move(FloatPoint(remainder.width(), remainder.height()));
+        FrameView* elementView = element->document().view();
+        IntRect boundsInRootFrame = elementView->contentsToRootFrame(pixelSnappedIntRect(element->boundingBox()));
+        LayoutRect boundsInRootContent = LayoutRect(frame->view()->frameToContents(boundsInRootFrame));
+
+        frame->view()->scrollableArea()->scrollIntoRect(boundsInRootContent, targetRectInRootFrame);
         return false;
     }
 
@@ -3159,7 +3161,7 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
 
 void WebViewImpl::setMainFrameScrollOffset(const WebPoint& origin)
 {
-    updateMainFrameScrollPosition(DoublePoint(origin.x, origin.y), false);
+    updateLayoutViewportScrollPosition(DoublePoint(origin.x, origin.y), false);
 }
 
 float WebViewImpl::deviceScaleFactor() const
@@ -3441,7 +3443,7 @@ float WebViewImpl::maximumPageScaleFactor() const
 
 void WebViewImpl::resetScrollAndScaleState()
 {
-    updateMainFrameScrollPosition(IntPoint(), true);
+    updateLayoutViewportScrollPosition(IntPoint(), true);
     page()->frameHost().pinchViewport().reset();
 
     if (!page()->mainFrame()->isLocalFrame())
@@ -4287,7 +4289,7 @@ void WebViewImpl::initializeLayerTreeView()
     ASSERT(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
 }
 
-void WebViewImpl::updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll)
+void WebViewImpl::updateLayoutViewportScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll)
 {
     if (!page()->mainFrame()->isLocalFrame())
         return;
@@ -4297,7 +4299,7 @@ void WebViewImpl::updateMainFrameScrollPosition(const DoublePoint& scrollPositio
     if (!frameView)
         return;
 
-    ScrollableArea* scrollableArea = frameView->scrollableArea();
+    ScrollableArea* scrollableArea = frameView->layoutViewportScrollableArea();
     if (scrollableArea->scrollPositionDouble() == scrollPosition)
         return;
 
@@ -4330,7 +4332,7 @@ void WebViewImpl::applyViewportDeltas(
 
     frameView->setElasticOverscroll(elasticOverscrollDelta + frameView->elasticOverscroll());
 
-    updateMainFrameScrollPosition(frameView->scrollableArea()->scrollPositionDouble() +
+    updateLayoutViewportScrollPosition(frameView->layoutViewportScrollableArea()->scrollPositionDouble() +
         DoubleSize(outerViewportDelta.width, outerViewportDelta.height), /* programmaticScroll */ false);
 }
 

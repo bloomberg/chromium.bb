@@ -243,7 +243,8 @@ bool DeprecatedPaintLayerScrollableArea::shouldUseIntegerScrollOffset() const
     Frame* frame = box().frame();
     if (frame->settings() && !frame->settings()->preferCompositingToLCDTextEnabled())
         return true;
-    return false;
+
+    return ScrollableArea::shouldUseIntegerScrollOffset();
 }
 
 bool DeprecatedPaintLayerScrollableArea::isActive() const
@@ -616,7 +617,7 @@ void DeprecatedPaintLayerScrollableArea::scrollToOffset(const DoubleSize& scroll
     DoubleSize newScrollOffset = clamp == ScrollOffsetClamped ? clampScrollOffset(scrollOffset) : scrollOffset;
     if (newScrollOffset != adjustedScrollOffset()) {
         if (scrollBehavior == ScrollBehaviorAuto)
-            scrollBehavior = box().style()->scrollBehavior();
+            scrollBehavior = scrollBehaviorStyle();
         DoublePoint origin(scrollOrigin());
         if (scrollBehavior == ScrollBehaviorSmooth) {
             // FIXME: Make programmaticallyScrollSmoothlyToOffset take DoublePoint. crbug.com/243871.
@@ -724,6 +725,11 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
 
     DisableCompositingQueryAsserts disabler;
     positionOverflowControls();
+}
+
+ScrollBehavior DeprecatedPaintLayerScrollableArea::scrollBehaviorStyle() const
+{
+    return box().style()->scrollBehavior();
 }
 
 bool DeprecatedPaintLayerScrollableArea::hasHorizontalOverflow() const
@@ -1301,7 +1307,7 @@ void DeprecatedPaintLayerScrollableArea::resize(const PlatformEvent& evt, const 
     // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
 }
 
-LayoutRect DeprecatedPaintLayerScrollableArea::exposeRect(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+LayoutRect DeprecatedPaintLayerScrollableArea::scrollIntoView(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
 {
     LayoutRect localExposeRect(box().absoluteToLocalQuad(FloatQuad(FloatRect(rect)), UseTransforms).boundingBox());
     localExposeRect.move(-box().borderLeft(), -box().borderTop());

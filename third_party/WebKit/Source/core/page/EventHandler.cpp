@@ -944,9 +944,8 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
     if (!node || !node->layoutObject())
         return false;
 
-    bool rootLayerScrolls = m_frame->settings() && m_frame->settings()->rootLayerScrolls();
     LayoutBox* curBox = node->layoutObject()->enclosingBox();
-    while (curBox && (rootLayerScrolls || !curBox->isLayoutView())) {
+    while (curBox && !curBox->isLayoutView()) {
         ScrollDirection physicalDirection = toPhysicalDirection(
             direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
 
@@ -2180,15 +2179,8 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (!view)
         return false;
 
-    // If this is the main frame, then the pinch viewport is responsible for
-    // scrolling the frame.
-    if (m_frame->isMainFrame()) {
-        if (m_frame->page()->frameHost().pinchViewport().wheelEvent(event).didScroll)
-            RETURN_WHEEL_EVENT_HANDLED();
-    } else {
-        if (view->wheelEvent(event).didScroll)
-            RETURN_WHEEL_EVENT_HANDLED();
-    }
+    if (view->scrollableArea()->handleWheel(event).didScroll)
+        RETURN_WHEEL_EVENT_HANDLED();
 
     return false;
 #undef RETURN_WHEEL_EVENT_HANDLED

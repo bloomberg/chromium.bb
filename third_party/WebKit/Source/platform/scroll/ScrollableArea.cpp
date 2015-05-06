@@ -34,8 +34,10 @@
 
 #include "platform/HostWindow.h"
 #include "platform/Logging.h"
-#include "platform/graphics/GraphicsLayer.h"
+#include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/PassOwnPtr.h"
@@ -122,8 +124,9 @@ GraphicsLayer* ScrollableArea::layerForContainer() const
 
 bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
 {
-    ScrollbarOrientation orientation;
+    ASSERT(!isLogical(direction));
 
+    ScrollbarOrientation orientation;
     if (direction == ScrollUp || direction == ScrollDown)
         orientation = VerticalScrollbar;
     else
@@ -176,6 +179,34 @@ void ScrollableArea::scrollToOffsetWithoutAnimation(ScrollbarOrientation orienta
         scrollToOffsetWithoutAnimation(FloatPoint(offset, scrollAnimator()->currentPosition().y()));
     else
         scrollToOffsetWithoutAnimation(FloatPoint(scrollAnimator()->currentPosition().x(), offset));
+}
+
+void ScrollableArea::scrollIntoRect(const LayoutRect& rectInContent, const FloatRect& targetRectInFrame)
+{
+    // Use |pixelSnappedIntRect| for rounding to pixel as opposed to |enclosingIntRect|. It gives a better
+    // combined (location and size) rounding error resulting in a more accurate scroll offset.
+    // FIXME: It would probably be best to do the whole calculation in LayoutUnits but contentsToRootFrame
+    // and friends don't have LayoutRect/Point versions yet.
+    IntRect boundsInContent = pixelSnappedIntRect(rectInContent);
+    IntRect boundsInFrame(boundsInContent.location() - toIntSize(scrollPosition()), boundsInContent.size());
+
+    int centeringOffsetX = (targetRectInFrame.width() - boundsInFrame.width()) / 2;
+    int centeringOffsetY = (targetRectInFrame.height() - boundsInFrame.height()) / 2;
+
+    IntSize scrollDelta(
+        boundsInFrame.x() - centeringOffsetX - targetRectInFrame.x(),
+        boundsInFrame.y() - centeringOffsetY - targetRectInFrame.y());
+
+    DoublePoint targetOffset = DoublePoint(scrollPosition() + scrollDelta);
+
+    setScrollPosition(targetOffset);
+}
+
+LayoutRect ScrollableArea::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+{
+    // TODO(bokan): This should really be implemented here but ScrollAlignment is in Core which is a dependency violation.
+    ASSERT_NOT_REACHED();
+    return LayoutRect();
 }
 
 void ScrollableArea::programmaticallyScrollSmoothlyToOffset(const FloatPoint& offset)
@@ -242,7 +273,7 @@ bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, Scro
     return true;
 }
 
-ScrollResult ScrollableArea::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
+ScrollResult ScrollableArea::handleWheel(const PlatformWheelEvent& wheelEvent)
 {
     // Wheel events which do not scroll are used to trigger zooming.
     if (!wheelEvent.canScroll())
@@ -250,6 +281,25 @@ ScrollResult ScrollableArea::handleWheelEvent(const PlatformWheelEvent& wheelEve
 
     cancelProgrammaticScrollAnimation();
     return scrollAnimator()->handleWheelEvent(wheelEvent);
+}
+
+IntPoint ScrollableArea::adjustScrollPositionWithinRange(const IntPoint& scrollPoint) const
+{
+    if (!constrainsScrollingToContentEdge())
+        return scrollPoint;
+
+    IntPoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPosition());
+    newScrollPosition = newScrollPosition.expandedTo(minimumScrollPosition());
+    return newScrollPosition;
+}
+
+DoublePoint ScrollableArea::adjustScrollPositionWithinRange(const DoublePoint& scrollPoint) const
+{
+    if (!constrainsScrollingToContentEdge())
+        return scrollPoint;
+    DoublePoint newScrollPosition = scrollPoint.shrunkTo(maximumScrollPositionDouble());
+    newScrollPosition = newScrollPosition.expandedTo(minimumScrollPositionDouble());
+    return newScrollPosition;
 }
 
 // NOTE: Only called from Internals for testing.
@@ -474,6 +524,11 @@ void ScrollableArea::cancelProgrammaticScrollAnimation()
         programmaticScrollAnimator->cancelAnimation();
 }
 
+DoubleRect ScrollableArea::visibleContentRectDouble(IncludeScrollbarsInRect scrollbarInclusion) const
+{
+    return visibleContentRect(scrollbarInclusion);
+}
+
 IntRect ScrollableArea::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     int verticalScrollbarWidth = 0;
@@ -496,6 +551,12 @@ IntPoint ScrollableArea::clampScrollPosition(const IntPoint& scrollPosition) con
 {
     return scrollPosition.shrunkTo(maximumScrollPosition()).expandedTo(minimumScrollPosition());
 }
+
+DoublePoint ScrollableArea::clampScrollPosition(const DoublePoint& scrollPosition) const
+{
+    return scrollPosition.shrunkTo(maximumScrollPositionDouble()).expandedTo(minimumScrollPositionDouble());
+}
+
 
 int ScrollableArea::lineStep(ScrollbarOrientation) const
 {

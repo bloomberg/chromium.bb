@@ -1029,10 +1029,6 @@ double LocalDOMWindow::scrollX() const
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
     double viewportX = view->scrollableArea()->scrollPositionDouble().x();
-
-    if (frame()->isMainFrame())
-        viewportX += host->pinchViewport().location().x();
-
     return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
 }
 
@@ -1052,10 +1048,6 @@ double LocalDOMWindow::scrollY() const
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
     double viewportY = view->scrollableArea()->scrollPositionDouble().y();
-
-    if (frame()->isMainFrame())
-        viewportY += host->pinchViewport().location().y();
-
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 
@@ -1152,26 +1144,6 @@ double LocalDOMWindow::devicePixelRatio() const
     return frame()->devicePixelRatio();
 }
 
-// FIXME: This class shouldn't be explicitly moving the viewport around. crbug.com/371896
-static void scrollViewportTo(LocalFrame* frame, DoublePoint offset, ScrollBehavior scrollBehavior)
-{
-    FrameView* view = frame->view();
-    if (!view)
-        return;
-
-    FrameHost* host = frame->host();
-    if (!host)
-        return;
-
-    view->scrollableArea()->setScrollPosition(offset, scrollBehavior);
-
-    if (frame->isMainFrame()) {
-        PinchViewport& pinchViewport = frame->host()->pinchViewport();
-        DoubleSize excessDelta = offset - DoublePoint(pinchViewport.visibleRectInDocument().location());
-        pinchViewport.move(FloatPoint(excessDelta.width(), excessDelta.height()));
-    }
-}
-
 void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior) const
 {
     if (!isCurrentlyDisplayedInFrame())
@@ -1183,19 +1155,13 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     if (!view)
         return;
 
-    FrameHost* host = frame()->host();
-    if (!host)
-        return;
-
     if (std::isnan(x) || std::isnan(y))
         return;
 
-    DoublePoint currentOffset = frame()->isMainFrame()
-        ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
-        : view->scrollableArea()->scrollPositionDouble();
+    DoublePoint currentOffset = view->scrollableArea()->scrollPositionDouble();
+    DoubleSize scaledDelta(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
 
-    DoubleSize scaledOffset(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
-    scrollViewportTo(frame(), currentOffset + scaledOffset, scrollBehavior);
+    view->scrollableArea()->setScrollPosition(currentOffset + scaledDelta, scrollBehavior);
 }
 
 void LocalDOMWindow::scrollBy(const ScrollToOptions& scrollToOptions) const
@@ -1216,6 +1182,10 @@ void LocalDOMWindow::scrollTo(double x, double y) const
     if (!isCurrentlyDisplayedInFrame())
         return;
 
+    FrameView* view = frame()->view();
+    if (!view)
+        return;
+
     if (std::isnan(x) || std::isnan(y))
         return;
 
@@ -1225,7 +1195,7 @@ void LocalDOMWindow::scrollTo(double x, double y) const
         document()->updateLayoutIgnorePendingStylesheets();
 
     DoublePoint layoutPos(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
-    scrollViewportTo(frame(), layoutPos, ScrollBehaviorAuto);
+    view->scrollableArea()->setScrollPosition(layoutPos, ScrollBehaviorAuto);
 }
 
 void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
@@ -1235,10 +1205,6 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
 
     FrameView* view = frame()->view();
     if (!view)
-        return;
-
-    FrameHost* host = frame()->host();
-    if (!host)
         return;
 
     // It is only necessary to have an up-to-date layout if the position may be clamped,
@@ -1253,9 +1219,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     double scaledX = 0.0;
     double scaledY = 0.0;
 
-    DoublePoint currentOffset = frame()->isMainFrame()
-        ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
-        : view->scrollableArea()->scrollPositionDouble();
+    DoublePoint currentOffset = view->scrollableArea()->scrollPositionDouble();
     scaledX = currentOffset.x();
     scaledY = currentOffset.y();
 
@@ -1273,7 +1237,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
 
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
     ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
-    scrollViewportTo(frame(), DoublePoint(scaledX, scaledY), scrollBehavior);
+    view->scrollableArea()->setScrollPosition(DoublePoint(scaledX, scaledY), scrollBehavior);
 }
 
 void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const

@@ -544,7 +544,7 @@ private:
     void setUserAgentPageScaleConstraints(PageScaleConstraints newConstraints);
     IntSize contentsSize() const;
 
-    void updateMainFrameScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);
+    void updateLayoutViewportScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);
 
     void performResize();
     void resizeViewWhileAnchored(FrameView*);

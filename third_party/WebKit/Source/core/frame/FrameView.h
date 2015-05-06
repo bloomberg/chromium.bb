@@ -27,6 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
+#include "core/frame/RootFrameViewport.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -56,12 +57,12 @@ class LayoutPart;
 class LocalFrame;
 class KURL;
 class Node;
-class Page;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutScrollbarPart;
 class LayoutView;
+class Page;
 class ScrollingCoordinator;
 class TracedValue;
 struct CompositedSelection;
@@ -244,14 +245,6 @@ public:
     bool scrollToAnchor(const String&);
     void maintainScrollPositionAtAnchor(Node*);
 
-    // Scrolls an |element| into a given |rect| in the frame view. The given
-    // |element| must either be in this Frame's document, or the document of one
-    // of this Frame's child Frames. This method is not recursive; it will not
-    // scroll the child Frames so that the |element| is in view. Returns the
-    // amount of scroll remaining to center the |element|, e.g. this can happen
-    // if the FrameView becomes fully scrolled but |element| still isn't
-    // centered in |rect|.
-    DoubleSize scrollElementToRect(Element*, const FloatRect&);
     void scrollContentsIfNeededRecursive();
 
     // Methods to convert points and rects between the coordinate space of the layoutObject, and this view.
@@ -270,7 +263,8 @@ public:
     };
 
     ScrollingReasons scrollingReasons();
-    bool isScrollable();
+    virtual bool isScrollable() override;
+    virtual bool isProgrammaticallyScrollable() override;
 
     enum ScrollbarModesCalculationStrategy { RulesFromWebContentOnly, AnyRule };
     void calculateScrollbarModesForLayout(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy = AnyRule);
@@ -368,6 +362,11 @@ public:
     virtual bool isScrollCornerVisible() const override;
     virtual bool userInputScrollable(ScrollbarOrientation) const override;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const override;
+    virtual bool scroll(ScrollDirection, ScrollGranularity, float delta = 1) override;
+    virtual LayoutRect scrollIntoView(
+        const LayoutRect& rectInContent,
+        const ScrollAlignment& alignX,
+        const ScrollAlignment& alignY) override;
 
     // The window that hosts the FrameView. The FrameView will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
@@ -423,11 +422,6 @@ public:
     virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     IntSize visibleSize() const { return visibleContentRect().size(); }
 
-    // The visual viewport in the document. For subframes, this will be the visibleContentRect.
-    // For the main frame, we delegate to the PinchViewport as the visual viewport will be affected
-    // by page scale.
-    IntRect visualViewportRect() const;
-
     // visibleContentRect().size() is computed from unscaledVisibleContentSize() divided by the value of visibleContentScaleFactor.
     // For the main frame, visibleContentScaleFactor is equal to the page's pageScaleFactor; it's 1 otherwise.
     IntSize unscaledVisibleContentSize(IncludeScrollbarsInRect = ExcludeScrollbars) const;
@@ -448,9 +442,6 @@ public:
     DoubleSize scrollOffsetDouble() const { return DoubleSize(m_scrollPosition.x(), m_scrollPosition.y()); }
     DoubleSize pendingScrollDelta() const { return m_pendingScrollDelta; }
     virtual IntPoint minimumScrollPosition() const override; // The minimum position we can be scrolled to.
-    // Adjust the passed in scroll position to keep it between the minimum and maximum positions.
-    IntPoint adjustScrollPositionWithinRange(const IntPoint&) const;
-    DoublePoint adjustScrollPositionWithinRange(const DoublePoint&) const;
     int scrollX() const { return scrollPosition().x(); }
     int scrollY() const { return scrollPosition().y(); }
 
@@ -462,8 +453,6 @@ public:
     {
         return setScrollPosition(scrollPositionDouble() + s, behavior);
     }
-
-    bool scroll(ScrollDirection, ScrollGranularity);
 
     // Scroll the actual contents of the view (either blitting or invalidating as needed).
     void scrollContents(const IntSize& scrollDelta);
@@ -567,8 +556,16 @@ public:
     void notifyPageThatContentAreaWillPaint() const;
     FrameView* parentFrameView() const;
 
-    // Returns the scrollable area for the frame.
+    // Returns the scrollable area for the frame. For the root frame, this will
+    // be the RootFrameViewport, which adds pinch-zoom semantics to scrolling.
+    // For non-root frames, this will be the the ScrollableArea used by the
+    // FrameView, depending on whether root-layer-scrolls is enabled.
     ScrollableArea* scrollableArea();
+
+    // Used to get at the underlying layoutViewport in the rare instances where
+    // we actually want to scroll *just* the layout viewport (e.g. when sending
+    // deltas from CC). For typical scrolling cases, use scrollableArea().
+    ScrollableArea* layoutViewportScrollableArea();
 
     int viewportWidth() const;
 
@@ -593,6 +590,7 @@ protected:
     void setHasVerticalScrollbar(bool);
 
     virtual void invalidateScrollCornerRect(const IntRect&) override;
+    virtual ScrollBehavior scrollBehaviorStyle() const override;
 
     void scrollContentsIfNeeded();
 
@@ -849,6 +847,11 @@ private:
     bool m_clipsRepaints;
 
     OwnPtr<LayoutAnalyzer> m_analyzer;
+
+    // Exists only on root frame.
+    // TODO(bokan): crbug.com/484188. We should specialize FrameView for the
+    // main frame.
+    OwnPtr<ScrollableArea> m_viewportScrollableArea;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

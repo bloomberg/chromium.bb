@@ -745,14 +745,7 @@ bool LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
 
     bool consumed = remainingDelta != delta;
 
-    if (scrollAreaOnBothAxes(remainingDelta, *view()))
-        return true;
-
-    // If this is the main frame and it didn't scroll, propagate up to the pinch viewport.
-    if (!isMainFrame())
-        return consumed;
-
-    if (scrollAreaOnBothAxes(remainingDelta, host()->pinchViewport()))
+    if (scrollAreaOnBothAxes(remainingDelta, *view()->scrollableArea()))
         return true;
 
     return consumed;

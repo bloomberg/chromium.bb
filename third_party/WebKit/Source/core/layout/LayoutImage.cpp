@@ -47,6 +47,7 @@
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/geometry/DoubleRect.h"
 
 namespace blink {
 
@@ -182,7 +183,7 @@ bool LayoutImage::intersectsVisibleViewport()
     while (layoutView->frame()->ownerLayoutObject())
         layoutView = layoutView->frame()->ownerLayoutObject()->view();
     mapRectToPaintInvalidationBacking(layoutView, rect, 0);
-    return rect.intersects(LayoutRect(layoutView->frameView()->visualViewportRect()));
+    return rect.intersects(LayoutRect(layoutView->frameView()->scrollableArea()->visibleContentRectDouble()));
 }
 
 PaintInvalidationReason LayoutImage::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)

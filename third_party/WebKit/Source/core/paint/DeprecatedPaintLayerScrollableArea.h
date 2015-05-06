@@ -100,7 +100,7 @@ public:
     virtual DoublePoint scrollPositionDouble() const override;
     virtual IntPoint minimumScrollPosition() const override;
     virtual IntPoint maximumScrollPosition() const override;
-    virtual IntRect visibleContentRect(IncludeScrollbarsInRect) const override;
+    virtual IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     virtual int visibleHeight() const override;
     virtual int visibleWidth() const override;
     virtual IntSize contentsSize() const override;
@@ -180,7 +180,7 @@ public:
 
     bool hitTestResizerInFragments(const DeprecatedPaintLayerFragments&, const HitTestLocation&) const;
 
-    LayoutRect exposeRect(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
+    virtual LayoutRect scrollIntoView(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY) override;
 
     // Returns true if scrollable area is in the FrameView's collection of scrollable areas. This can
     // only happen if we're scrollable, visible to hit test, and do in fact overflow. This means that
@@ -215,6 +215,9 @@ public:
 
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
+
+protected:
+    virtual ScrollBehavior scrollBehaviorStyle() const override;
 
 private:
     bool hasHorizontalOverflow() const;
