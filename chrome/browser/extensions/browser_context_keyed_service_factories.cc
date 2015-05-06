@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
+#include "chrome/browser/extensions/api/autofill_private/autofill_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_display_private_api.h"
@@ -80,6 +81,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ActivityLogAPI::GetFactoryInstance();
   extensions::ApiResourceManager<
       extensions::UsbDeviceResource>::GetFactoryInstance();
+  extensions::AutofillPrivateEventRouterFactory::GetInstance();
   extensions::BookmarksAPI::GetFactoryInstance();
   extensions::BookmarkManagerPrivateAPI::GetFactoryInstance();
   extensions::BluetoothAPI::GetFactoryInstance();

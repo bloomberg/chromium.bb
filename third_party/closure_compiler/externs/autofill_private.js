@@ -47,7 +47,7 @@ var AutofillMetadata;
  *   addressLevel3: (string|undefined),
  *   postalCode: (string|undefined),
  *   sortingCode: (string|undefined),
- *   country: (string|undefined),
+ *   countryCode: (string|undefined),
  *   phoneNumbers: (!Array<string>|undefined),
  *   emailAddresses: (!Array<string>|undefined),
  *   languageCode: (string|undefined),
@@ -59,9 +59,10 @@ var AddressEntry;
 
 /**
  * @typedef {{
- *   field: !chrome.autofillPrivate.AddressField,
+ *   field: number,
  *   fieldName: string,
- *   isLongField: boolean
+ *   isLongField: boolean,
+ *   placeholder: (string|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/autofillPrivate#type-AddressComponent
  */
@@ -69,7 +70,15 @@ var AddressComponent;
 
 /**
  * @typedef {{
- *   components: !Array<AddressComponent>,
+ *   row: !Array<AddressComponent>
+ * }}
+ * @see https://developer.chrome.com/extensions/autofillPrivate#type-AddressComponentRow
+ */
+var AddressComponentRow;
+
+/**
+ * @typedef {{
+ *   components: !Array<AddressComponentRow>,
  *   languageCode: string
  * }}
  * @see https://developer.chrome.com/extensions/autofillPrivate#type-AddressComponents
@@ -109,8 +118,9 @@ chrome.autofillPrivate.saveAddress = function(address) {};
 
 /**
  * Gets the address components for a given country code.
- * @param {string} countryCode The country code for which to fetch the
- *     components.
+ * @param {string} countryCode A two-character string representing the address'
+ *     country     whose components should be returned. See autofill_country.cc
+ *     for a     list of valid codes.
  * @param {function(AddressComponents):void} callback Callback which will be
  *     called with components.
  * @see https://developer.chrome.com/extensions/autofillPrivate#method-getAddressComponents
@@ -139,7 +149,6 @@ chrome.autofillPrivate.removeEntry = function(guid) {};
  * @param {ValidatePhoneParams} params The parameters to this function.
  * @param {function(!Array<string>):void} callback Callback which will be called
  *     with validated phone numbers.
- * @return {!Array<string>}
  * @see https://developer.chrome.com/extensions/autofillPrivate#method-validatePhoneNumbers
  */
 chrome.autofillPrivate.validatePhoneNumbers = function(params, callback) {};

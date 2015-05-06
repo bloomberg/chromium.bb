@@ -8,13 +8,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
 class AutofillPrivateSaveAddressFunction : public UIThreadExtensionFunction {
  public:
-  AutofillPrivateSaveAddressFunction() {}
+  AutofillPrivateSaveAddressFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.saveAddress",
                              AUTOFILLPRIVATE_SAVEADDRESS);
 
@@ -25,6 +26,8 @@ class AutofillPrivateSaveAddressFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateSaveAddressFunction);
 };
 
@@ -47,7 +50,7 @@ class AutofillPrivateGetAddressComponentsFunction :
 
 class AutofillPrivateSaveCreditCardFunction : public UIThreadExtensionFunction {
  public:
-  AutofillPrivateSaveCreditCardFunction() {}
+  AutofillPrivateSaveCreditCardFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.saveCreditCard",
                              AUTOFILLPRIVATE_SAVECREDITCARD);
 
@@ -58,12 +61,14 @@ class AutofillPrivateSaveCreditCardFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateSaveCreditCardFunction);
 };
 
 class AutofillPrivateRemoveEntryFunction : public UIThreadExtensionFunction {
  public:
-  AutofillPrivateRemoveEntryFunction() {}
+  AutofillPrivateRemoveEntryFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.removeEntry",
                              AUTOFILLPRIVATE_REMOVEENTRY);
 
@@ -74,6 +79,8 @@ class AutofillPrivateRemoveEntryFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateRemoveEntryFunction);
 };
 
@@ -96,7 +103,7 @@ class AutofillPrivateValidatePhoneNumbersFunction :
 
 class AutofillPrivateMaskCreditCardFunction : public UIThreadExtensionFunction {
  public:
-  AutofillPrivateMaskCreditCardFunction() {}
+  AutofillPrivateMaskCreditCardFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.maskCreditCard",
                              AUTOFILLPRIVATE_MASKCREDITCARD);
 
@@ -107,6 +114,8 @@ class AutofillPrivateMaskCreditCardFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateMaskCreditCardFunction);
 };
 

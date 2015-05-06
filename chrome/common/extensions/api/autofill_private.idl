@@ -80,7 +80,9 @@ namespace autofillPrivate {
     // a sorting code system is CEDEX in France.
     DOMString? sortingCode;
 
-    DOMString? country;
+    // A two-character string representing the address' country. See
+    // autofill_country.cc for a list of valid codes.
+    DOMString? countryCode;
 
     DOMString[]? phoneNumbers;
 
@@ -94,7 +96,7 @@ namespace autofillPrivate {
   // A component to be shown in an address editor. Different countries have
   // different components to their addresses.
   dictionary AddressComponent {
-    // The type of field that this is.
+    // The field type.
     AddressField field;
 
     // The name of the field.
@@ -102,6 +104,17 @@ namespace autofillPrivate {
 
     // A hint for the UI regarding whether the input is likely to be long.
     boolean isLongField;
+
+    // A placeholder for the text field to be used when the user has not yet
+    // input a value for the field.
+    DOMString? placeholder;
+  };
+
+  // A row of address components. Each component in a row should be shown in the
+  // same row in the UI. For example, city, state, and zip code are all included
+  // on the same line for US addresses.
+  dictionary AddressComponentRow {
+    AddressComponent[] row;
   };
 
   // The address components for a given country code. Each entry in |components|
@@ -111,7 +124,7 @@ namespace autofillPrivate {
   // includes the associated language code.
   dictionary AddressComponents {
     // The components.
-    AddressComponent[][] components;
+    AddressComponentRow[] components;
 
     // The language code.
     DOMString languageCode;
@@ -147,7 +160,8 @@ namespace autofillPrivate {
     // number resides.
     long indexOfNewNumber;
 
-    // The country code for the numbers.
+    // A two-character string representing the address' country. See
+    // autofill_country.cc for a list of valid codes.
     DOMString countryCode;
   };
 
@@ -165,7 +179,9 @@ namespace autofillPrivate {
 
     // Gets the address components for a given country code.
     //
-    // |countryCode|: The country code for which to fetch the components.
+    // |countryCode|: A two-character string representing the address' country
+    //     whose components should be returned. See autofill_country.cc for a
+    //     list of valid codes.
     // |callback|: Callback which will be called with components.
     static void getAddressComponents(DOMString countryCode,
         GetAddressComponentsCallback callback);
@@ -187,7 +203,7 @@ namespace autofillPrivate {
     //
     // |params|: The parameters to this function.
     // |callback|: Callback which will be called with validated phone numbers.
-    static DOMString[] validatePhoneNumbers(ValidatePhoneParams params,
+    static void validatePhoneNumbers(ValidatePhoneParams params,
         ValidatePhoneNumbersCallback callback);
 
     // Clears the data associated with a wallet card which was saved

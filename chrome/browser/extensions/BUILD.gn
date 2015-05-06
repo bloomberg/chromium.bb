@@ -68,6 +68,7 @@ source_set("extensions") {
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
+    "//third_party/libaddressinput:util",
     "//third_party/re2",
     "//third_party/webrtc/modules/desktop_capture",
     "//ui/accessibility:ax_gen",

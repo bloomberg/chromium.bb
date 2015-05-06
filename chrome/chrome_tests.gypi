@@ -119,6 +119,7 @@
       'browser/extensions/alert_apitest.cc',
       'browser/extensions/all_urls_apitest.cc',
       'browser/extensions/api/activity_log_private/activity_log_private_apitest.cc',
+      'browser/extensions/api/autofill_private/autofill_private_apitest.cc',
       'browser/extensions/api/automation/automation_apitest.cc',
       'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
       'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc',
