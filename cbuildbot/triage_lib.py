@@ -599,7 +599,7 @@ class CalculateSuspects(object):
       if message is None:
         return None
       bot_id = message.builder
-      config = cbuildbot_config.config.get(bot_id)
+      config = cbuildbot_config.GetConfig().get(bot_id)
       if not config:
         return None
       responsible_overlays.update(

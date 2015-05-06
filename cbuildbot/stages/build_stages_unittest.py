@@ -224,11 +224,11 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
     with parallel.BackgroundTaskRunner(task) as queue:
       # Loop through all major configuration types and pick one from each.
       for bot_type in config.CONFIG_TYPE_DUMP_ORDER:
-        for bot_id in config.config:
+        for bot_id in config.GetConfig():
           if bot_id.endswith(bot_type):
             # Skip any config without a board, since those configs do not
             # build packages.
-            cfg = config.config[bot_id]
+            cfg = config.GetConfig()[bot_id]
             if cfg.boards:
               # Skip boards w/out a local overlay.  Like when running a
               # public manifest and testing private-only boards.

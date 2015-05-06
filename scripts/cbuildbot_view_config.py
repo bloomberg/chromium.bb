@@ -159,7 +159,7 @@ def main(argv):
   if options.for_buildbot:
     convert = _InjectDisplayPosition
 
-  config = convert(cbuildbot_config.config)
+  config = convert(cbuildbot_config.GetConfig())
 
   # Separate the defaults and show them at the top. We prefix the name with
   # an underscore so that it sorts to the top.

@@ -150,7 +150,7 @@ class BuilderRunPickleTest(_BuilderRunTestCase):
   """Make sure BuilderRun objects can be pickled."""
 
   def setUp(self):
-    self.real_config = cbuildbot_config.config['x86-alex-release-group']
+    self.real_config = cbuildbot_config.GetConfig()['x86-alex-release-group']
     self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersion',
                      return_value=DEFAULT_VERSION)
 

@@ -50,7 +50,7 @@ def GetBoardKey(config, board=None):
 def GetAllImportantBoardKeys():
   """Get a list of all board keys used in a top-level config."""
   boards = set()
-  for config in cbuildbot_config.config.values():
+  for config in cbuildbot_config.GetConfig().values():
     if config.important:
       for board in config.boards:
         boards.add(GetBoardKey(config, board))
@@ -64,7 +64,7 @@ def GetChromePrebuiltConfigs():
     A dict mapping BoardKey objects to configs.
   """
   boards = {}
-  master_chromium_pfq = cbuildbot_config.config['master-chromium-pfq']
+  master_chromium_pfq = cbuildbot_config.GetConfig()['master-chromium-pfq']
   for config in cbuildbot_config.GetSlavesForMaster(master_chromium_pfq):
     if config.prebuilts:
       for board in config.boards:

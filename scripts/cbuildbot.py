@@ -62,7 +62,7 @@ def _PrintValidConfigs(display_all=False):
                  trybot_list=True.
   """
   def _GetSortKey(config_name):
-    config_dict = cbuildbot_config.config[config_name]
+    config_dict = cbuildbot_config.GetConfig()[config_name]
     return (not config_dict['trybot_list'], config_dict['description'],
             config_name)
 
@@ -70,11 +70,11 @@ def _PrintValidConfigs(display_all=False):
   print()
   print('config'.ljust(COLUMN_WIDTH), 'description')
   print('------'.ljust(COLUMN_WIDTH), '-----------')
-  config_names = cbuildbot_config.config.keys()
+  config_names = cbuildbot_config.GetConfig().keys()
   config_names.sort(key=_GetSortKey)
   for name in config_names:
-    if display_all or cbuildbot_config.config[name]['trybot_list']:
-      desc = cbuildbot_config.config[name].get('description')
+    if display_all or cbuildbot_config.GetConfig()[name]['trybot_list']:
+      desc = cbuildbot_config.GetConfig()[name].get('description')
       desc = desc if desc else ''
       print(name.ljust(COLUMN_WIDTH), desc)
 
@@ -83,8 +83,8 @@ def _PrintValidConfigs(display_all=False):
 
 def _GetConfig(config_name):
   """Gets the configuration for the build if it exists, None otherwise."""
-  if cbuildbot_config.config.has_key(config_name):
-    return cbuildbot_config.config[config_name]
+  if cbuildbot_config.GetConfig().has_key(config_name):
+    return cbuildbot_config.GetConfig()[config_name]
 
 
 def _ConfirmBuildRoot(buildroot):

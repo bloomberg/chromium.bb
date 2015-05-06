@@ -157,7 +157,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         self.Complain(msg % (', '.join(str(x) for x in pfqs), compat_id),
                       fatal=False)
 
-    for _name, config in sorted(cbuildbot_config.config.items()):
+    for _name, config in sorted(cbuildbot_config.GetConfig().items()):
       # Skip over configs that don't have Chrome or have >1 board.
       if config.sync_chrome is False or len(config.boards) != 1:
         continue
@@ -185,7 +185,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     This means that all of the subconfigs in the release group have matching
     use flags, cflags, and architecture.
     """
-    for config in cbuildbot_config.config.values():
+    for config in cbuildbot_config.GetConfig().values():
       # Only test release groups.
       if not config.name.endswith('-release-group'):
         continue

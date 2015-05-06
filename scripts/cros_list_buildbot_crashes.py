@@ -110,7 +110,7 @@ class CrashTriager(object):
     """Create a worker process for processing crash lists."""
     with parallel.BackgroundTaskRunner(self._ProcessCrashListForBot,
                                        processes=self.jobs) as queue:
-      for bot_id, build_config in cbuildbot_config.config.iteritems():
+      for bot_id, build_config in cbuildbot_config.GetConfig().iteritems():
         if build_config['vm_tests']:
           queue.put((bot_id, build_config))
       yield

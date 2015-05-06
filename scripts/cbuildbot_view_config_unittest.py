@@ -82,7 +82,7 @@ class JsonCompareTest(cros_test_lib.TempDirTestCase,
     path = self._DumpTarget()
 
     # Tweak the config value for TARGET and run comparison.
-    config = cbuildbot_view_config.cbuildbot_config.config
+    config = cbuildbot_view_config.cbuildbot_config.GetConfig()
     orig_name = config[self.TARGET]['name']
     try:
       config[self.TARGET]['name'] = 'FOO'

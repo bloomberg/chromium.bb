@@ -59,6 +59,12 @@ CONFIG_TYPE_DUMP_ORDER = (
     constants.PAYLOADS_TYPE,
 )
 
+_CONFIG = {}
+
+def GetConfig():
+  """Get the full build configuration."""
+  return _CONFIG
+
 
 def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
@@ -167,15 +173,8 @@ def GetDefaultWaterfall(build_config):
       return constants.WATERFALL_EXTERNAL
 
 
-# List of usable cbuildbot configs; see add_config method.
-# TODO(mtennant): This is seriously buried in this file.  Move to top
-# and rename something that stands out in a file where the word "config"
-# is used everywhere.
-config = {}
-
-
 # pylint: disable=W0102
-def GetCanariesForChromeLKGM(configs=config):
+def GetCanariesForChromeLKGM(configs=GetConfig()):
   """Grabs a list of builders that are important for the Chrome LKGM."""
   builders = []
   for build_name, conf in configs.iteritems():
@@ -199,7 +198,7 @@ def FindFullConfigsForBoard(board=None):
   ext_cfgs = []
   int_cfgs = []
 
-  for name, c in config.iteritems():
+  for name, c in GetConfig().iteritems():
     if c['boards'] and (board is None or board in c['boards']):
       if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
         int_cfgs.append(c.deepcopy())
@@ -243,7 +242,7 @@ def GetSlavesForMaster(master_config, options=None):
       not have a manifest_version.
   """
   # This is confusing.  "config" really should be capitalized in this file.
-  all_configs = config
+  all_configs = GetConfig()
 
   assert master_config['manifest_version']
   assert master_config['master']
@@ -1097,7 +1096,7 @@ class BuildConfig(dict):
 
     # Add ourselves into the global dictionary, adding in the defaults.
     new_config = self.derive(*inherits, **overrides)
-    config[name] = _default.derive(self, new_config)
+    _CONFIG[name] = _default.derive(self, new_config)
 
     # Return a BuildConfig object without the defaults, so that other objects
     # can derive from us without inheriting the defaults.
@@ -1707,7 +1706,7 @@ def _CreateConfigsForBoards(config_base, boards, name_suffix, **kwargs):
   """
   for board in boards:
     config_name = '%s-%s' % (board, name_suffix)
-    if config_name not in config:
+    if config_name not in _CONFIG:
       base = BuildConfig()
       config_base.add_config(config_name, base, _base_configs[board], **kwargs)
 
@@ -2336,17 +2335,17 @@ def ShardHWTestsBetweenBuilders(*args):
   names = args
   # Verify sanity before sharding the HWTests.
   for name in names:
-    assert len(config[name].hw_tests) == len(names), \
+    assert len(_CONFIG[name].hw_tests) == len(names), \
       '%s should have %d tests, but found %d' % (
-          name, len(names), len(config[name].hw_tests))
+          name, len(names), len(_CONFIG[name].hw_tests))
   for name in names[1:]:
-    for test1, test2 in zip(config[name].hw_tests, config[names[0]].hw_tests):
+    for test1, test2 in zip(_CONFIG[name].hw_tests, _CONFIG[names[0]].hw_tests):
       assert test1.__dict__ == test2.__dict__, \
           '%s and %s have different hw_tests configured' % (names[0], name)
 
   # Assign each config the Nth HWTest.
   for i, name in enumerate(names):
-    config[name]['hw_tests'] = [config[name].hw_tests[i]]
+    _CONFIG[name]['hw_tests'] = [_CONFIG[name].hw_tests[i]]
 
 # Shard the bvt-inline and bvt-cq hw tests between similar builders.
 # The first builder gets bvt-inline, and the second builder gets bvt-cq.
@@ -2371,40 +2370,40 @@ no_vmtest_pre_cq.add_config(constants.BINHOST_PRE_CQ,
 # TODO(davidjames): Update daisy_spring to build images again.
 BuildConfig.add_group('mixed-a-pre-cq',
   # daisy_spring w/kernel 3.8.
-  config['daisy_spring-compile-only-pre-cq'],
+  _CONFIG['daisy_spring-compile-only-pre-cq'],
   # lumpy w/kernel 3.8.
-  config['lumpy-compile-only-pre-cq'],
+  _CONFIG['lumpy-compile-only-pre-cq'],
 )
 
 BuildConfig.add_group('mixed-b-pre-cq',
   # arm64 w/kernel 3.14.
-  config['rush_ryu-compile-only-pre-cq'],
+  _CONFIG['rush_ryu-compile-only-pre-cq'],
   # samus w/kernel 3.14.
-  config['samus-compile-only-pre-cq'],
+  _CONFIG['samus-compile-only-pre-cq'],
 )
 
 BuildConfig.add_group('mixed-c-pre-cq',
   # brillo
-  config['storm-compile-only-pre-cq'],
+  _CONFIG['storm-compile-only-pre-cq'],
 )
 
 BuildConfig.add_group('external-mixed-pre-cq',
-  config['x86-generic-no-vmtest-pre-cq'],
-  config['amd64-generic-no-vmtest-pre-cq'],
+  _CONFIG['x86-generic-no-vmtest-pre-cq'],
+  _CONFIG['amd64-generic-no-vmtest-pre-cq'],
 )
 
 BuildConfig.add_group('kernel-3_14-a-pre-cq',
-  config['x86-generic-no-vmtest-pre-cq'],
-  config['arm-generic-no-vmtest-pre-cq']
+  _CONFIG['x86-generic-no-vmtest-pre-cq'],
+  _CONFIG['arm-generic-no-vmtest-pre-cq']
 )
 
 BuildConfig.add_group('kernel-3_14-b-pre-cq',
-  config['storm-no-vmtest-pre-cq'],
+  _CONFIG['storm-no-vmtest-pre-cq'],
 )
 
 BuildConfig.add_group('kernel-3_14-c-pre-cq',
-  config['veyron_pinky-no-vmtest-pre-cq'],
-  config['rush_ryu-no-vmtest-pre-cq']
+  _CONFIG['veyron_pinky-no-vmtest-pre-cq'],
+  _CONFIG['rush_ryu-no-vmtest-pre-cq']
 )
 
 # TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
@@ -2413,10 +2412,10 @@ BuildConfig.add_group('kernel-3_14-c-pre-cq',
 BuildConfig.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
-  config['rambi-pre-cq'],
+  _CONFIG['rambi-pre-cq'],
 
   # daisy_spring w/kernel 3.8.
-  config['daisy_spring-compile-only-pre-cq'],
+  _CONFIG['daisy_spring-compile-only-pre-cq'],
 
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
@@ -2426,13 +2425,13 @@ BuildConfig.add_group(constants.PRE_CQ_GROUP_CONFIG,
                                   build_packages_in_background=False),
 
   # samus w/kernel 3.14.
-  config['samus-compile-only-pre-cq'],
+  _CONFIG['samus-compile-only-pre-cq'],
 
   # lumpy w/kernel 3.8.
-  config['lumpy-compile-only-pre-cq'],
+  _CONFIG['lumpy-compile-only-pre-cq'],
 
   # arm64 w/kernel 3.4.
-  config['rush_ryu-compile-only-pre-cq'],
+  _CONFIG['rush_ryu-compile-only-pre-cq'],
 )
 
 internal_paladin.add_config('pre-cq-launcher',
@@ -2585,7 +2584,7 @@ def _AddAFDOConfigs():
     )
 
     config_name = '%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO)
-    if config_name not in config:
+    if config_name not in _CONFIG:
       generate_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO,
                                            'generate')
       use_config_name = '%s-%s-%s' % (board, CONFIG_TYPE_RELEASE_AFDO, 'use')
@@ -2800,7 +2799,7 @@ def _AddGroupConfig(name, base_board, group_boards=(),
 
     all_boards = [base_board] + list(group_boards) + list(group_variant_boards)
     desc = '%s; Group config (boards: %s)' % (
-        config['%s-%s' % (base_board, group)].description,
+        _CONFIG['%s-%s' % (base_board, group)].description,
         ', '.join(all_boards))
 
     for board in all_boards:
@@ -2811,7 +2810,7 @@ def _AddGroupConfig(name, base_board, group_boards=(),
       else:
         subconfig = {}
       board_config = '%s-%s' % (board, group)
-      configs.append(config[board_config].derive(subconfig, **kwargs))
+      configs.append(_CONFIG[board_config].derive(subconfig, **kwargs))
 
       config_name = '%s-%s-group' % (name, group)
       important = group == 'release' and kwargs.get('important', True)
@@ -3205,7 +3204,7 @@ def _AddPayloadConfigs():
       _search_config_and_children(child)
 
   # Search all configs for boards that generate payloads.
-  for _, search_config in config.iteritems():
+  for _, search_config in _CONFIG.iteritems():
     _search_config_and_children(search_config)
 
   # Generate a payloads trybot config for every board that generates payloads.
@@ -3335,12 +3334,12 @@ _waterfall_config_map = {
 }
 
 def _SetupWaterfalls():
-  for name, c in config.iteritems():
+  for name, c in _CONFIG.iteritems():
     c['active_waterfall'] = GetDefaultWaterfall(c)
 
   # Apply manual configs.
   for waterfall, names in _waterfall_config_map.iteritems():
     for name in names:
-      config[name]['active_waterfall'] = waterfall
+      _CONFIG[name]['active_waterfall'] = waterfall
 
 _SetupWaterfalls()

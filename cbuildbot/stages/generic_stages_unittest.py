@@ -15,7 +15,7 @@ import unittest
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import cbuildbot_config as config
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
@@ -83,7 +83,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
     This will populate the following attributes on self:
       run: A BuilderRun object.
-      bot_id: The bot id (name) that was used from config.config.
+      bot_id: The bot id (name) that was used from cbuildbot_config.GetConfig().
       self._boards: Same as self._run.config.boards.  TODO(mtennant): remove.
       self._current_board: First board in list, if there is one.
 
@@ -126,12 +126,13 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     cbuildbot._FinishParsing(options, args)
 
     # Populate build_config corresponding to self._bot_id.
-    build_config = copy.deepcopy(config.config[self._bot_id])
+    build_config = copy.deepcopy(cbuildbot_config.GetConfig()[self._bot_id])
     build_config['manifest_repo_url'] = 'fake_url'
     if extra_config:
       build_config.update(extra_config)
     if options.remote_trybot:
-      build_config = config.OverrideConfigForTrybot(build_config, options)
+      build_config = cbuildbot_config.OverrideConfigForTrybot(
+          build_config, options)
     options.managed_chrome = build_config['sync_chrome']
 
     self._boards = build_config['boards']

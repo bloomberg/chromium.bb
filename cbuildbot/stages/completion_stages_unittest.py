@@ -184,7 +184,7 @@ class MasterSlaveSyncCompletionStageTest(
   def testGetSlavesForMaster(self):
     """Tests that we get the slaves for a fake unified master configuration."""
     test_config = self._GetTestConfig()
-    self.PatchObject(cbuildbot_config, 'config', test_config)
+    self.PatchObject(cbuildbot_config, 'GetConfig', return_value=test_config)
     stage = self.ConstructStage()
     p = stage._GetSlaveConfigs()
     self.assertTrue(test_config['test3'] in p)

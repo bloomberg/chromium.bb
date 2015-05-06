@@ -1197,7 +1197,7 @@ class PreCQLauncherStage(SyncStage):
         configs_to_test.update(constants.PRE_CQ_DEFAULT_CONFIGS)
 
       # Verify that all of the configs are valid.
-      if all(c in cbuildbot_config.config for c in configs_to_test):
+      if all(c in cbuildbot_config.GetConfig() for c in configs_to_test):
         return configs_to_test
 
     return None

@@ -12,7 +12,7 @@ import signal
 import StringIO
 import time
 
-from chromite.cbuildbot import cbuildbot_config as config
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
@@ -116,7 +116,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
     self._bot_id = 'x86-generic-paladin'
-    build_config = config.config[self._bot_id]
+    build_config = cbuildbot_config.GetConfig()[self._bot_id]
     self.build_root = '/fake_root'
 
     # Create a class to hold

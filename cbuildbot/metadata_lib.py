@@ -720,7 +720,7 @@ def FindLatestFullVersion(builder, version):
     -bNNNN suffix.
   """
   gs_ctx = gs.GSContext()
-  config = cbuildbot_config.config[builder]
+  config = cbuildbot_config.GetConfig()[builder]
   base_url = archive_lib.GetBaseUploadURI(config)
   latest_file_url = os.path.join(base_url, 'LATEST-%s' % version)
   try:
@@ -743,7 +743,7 @@ def GetBuildMetadata(builder, full_version):
     |builder| and |full_version|.
   """
   gs_ctx = gs.GSContext()
-  config = cbuildbot_config.config[builder]
+  config = cbuildbot_config.GetConfig()[builder]
   base_url = archive_lib.GetBaseUploadURI(config)
   try:
     archive_url = os.path.join(base_url, full_version)

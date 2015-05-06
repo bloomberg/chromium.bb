@@ -12,7 +12,7 @@ import glob
 import optparse
 import os
 
-from chromite.cbuildbot import cbuildbot_config as config
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
@@ -83,7 +83,7 @@ class RunBuildStagesTest(cros_build_lib_unittest.RunCommandTempDirTestCase,
     osutils.SafeMakedirs(self.buildroot)
     # Always stub RunCommmand out as we use it in every method.
     self.bot_id = 'x86-generic-paladin'
-    self.build_config = copy.deepcopy(config.config[self.bot_id])
+    self.build_config = copy.deepcopy(cbuildbot_config.GetConfig()[self.bot_id])
     self.build_config['master'] = False
     self.build_config['important'] = False
 

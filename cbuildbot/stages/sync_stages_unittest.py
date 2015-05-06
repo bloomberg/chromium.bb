@@ -493,7 +493,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testVerificationsForChangeValidConfig(self):
     change = MockPatch()
-    configs_to_test = cbuildbot_config.config.keys()[:5]
+    configs_to_test = cbuildbot_config.GetConfig().keys()[:5]
     return_string = ' '.join(configs_to_test)
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value=return_string)
