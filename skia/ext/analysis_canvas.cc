@@ -213,6 +213,29 @@ void AnalysisCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
   ++draw_op_count_;
 }
 
+void AnalysisCanvas::onDrawImage(const SkImage*,
+                                 SkScalar left,
+                                 SkScalar top,
+                                 const SkPaint*) {
+  is_solid_color_ = false;
+  is_transparent_ = false;
+  ++draw_op_count_;
+}
+
+void AnalysisCanvas::onDrawImageRect(const SkImage*,
+                                     const SkRect* src,
+                                     const SkRect& dst,
+                                     const SkPaint* paint) {
+  // Call drawRect to determine transparency,
+  // but reset solid color to false.
+  SkPaint tmpPaint;
+  if (!paint)
+    paint = &tmpPaint;
+  drawRect(dst, *paint);
+  is_solid_color_ = false;
+  ++draw_op_count_;
+}
+
 void AnalysisCanvas::onDrawSprite(const SkBitmap& bitmap,
                                   int left,
                                   int top,

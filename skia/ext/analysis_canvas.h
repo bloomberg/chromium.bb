@@ -52,6 +52,14 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                         const SkIRect& center,
                         const SkRect& dst,
                         const SkPaint* paint = NULL) override;
+  void onDrawImage(const SkImage*,
+                    SkScalar left,
+                    SkScalar top,
+                    const SkPaint* paint = NULL) override;
+  void onDrawImageRect(const SkImage*,
+                        const SkRect* src,
+                        const SkRect& dst,
+                        const SkPaint* paint) override;
   void onDrawSprite(const SkBitmap&,
                     int left,
                     int top,
