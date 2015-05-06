@@ -1048,6 +1048,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 .setApplicationMustBeInForeground(chromeAppInForegroundRequired)
                 .setRedirectHandler(redirectHandler)
                 .setIsBackgroundTabNavigation(isBackgroundTabNavigation)
+                .setIsMainFrame(true)
                 .build();
         OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
         boolean startActivityCalled = mDelegate.startActivityIntent != null;

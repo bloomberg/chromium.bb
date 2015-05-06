@@ -399,6 +399,8 @@
       # chrome/chrome_browser_extensions.gypi.
       'browser/external_protocol/external_protocol_handler.cc',
       'browser/external_protocol/external_protocol_handler.h',
+      'browser/external_protocol/external_protocol_observer.cc',
+      'browser/external_protocol/external_protocol_observer.h',
       'browser/file_select_helper.cc',
       'browser/file_select_helper.h',
       'browser/file_select_helper_mac.mm',
@@ -933,8 +935,6 @@
       'browser/download/notification/download_notification_item.h',
       'browser/download/notification/download_notification_manager.cc',
       'browser/download/notification/download_notification_manager.h',
-      'browser/external_protocol/external_protocol_observer.cc',
-      'browser/external_protocol/external_protocol_observer.h',
       'browser/feedback/feedback_profile_observer.cc',
       'browser/feedback/feedback_profile_observer.h',
       'browser/feedback/show_feedback_page.cc',

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 template <class T> class ScopedVector;
@@ -74,7 +75,10 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // guarantee that the app successfully handled it.
   virtual bool HandleExternalProtocol(const GURL& url,
                                       int child_id,
-                                      int route_id);
+                                      int route_id,
+                                      bool is_main_frame,
+                                      ui::PageTransition page_transition,
+                                      bool has_user_gesture);
 
   // Returns true if we should force the given resource to be downloaded.
   // Otherwise, the content layer decides.

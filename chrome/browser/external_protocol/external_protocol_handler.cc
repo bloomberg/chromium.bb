@@ -60,14 +60,17 @@ void RunExternalProtocolDialogWithDelegate(
     const GURL& url,
     int render_process_host_id,
     int routing_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture,
     ExternalProtocolHandler::Delegate* delegate) {
   if (!delegate) {
-    ExternalProtocolHandler::RunExternalProtocolDialog(url,
-                                                       render_process_host_id,
-                                                       routing_id);
+    ExternalProtocolHandler::RunExternalProtocolDialog(
+        url, render_process_host_id, routing_id, page_transition,
+        has_user_gesture);
   } else {
-    delegate->RunExternalProtocolDialog(url, render_process_host_id,
-                                        routing_id);
+    delegate->RunExternalProtocolDialog(
+        url, render_process_host_id, routing_id, page_transition,
+        has_user_gesture);
   }
 }
 
@@ -94,12 +97,16 @@ class ExternalDefaultProtocolObserver
                                   int render_process_host_id,
                                   int tab_contents_id,
                                   bool prompt_user,
+                                  ui::PageTransition page_transition,
+                                  bool has_user_gesture,
                                   ExternalProtocolHandler::Delegate* delegate)
       : delegate_(delegate),
         escaped_url_(escaped_url),
         render_process_host_id_(render_process_host_id),
         tab_contents_id_(tab_contents_id),
-        prompt_user_(prompt_user) {}
+        prompt_user_(prompt_user),
+        page_transition_(page_transition),
+        has_user_gesture_(has_user_gesture) {}
 
   void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) override {
@@ -126,8 +133,9 @@ class ExternalDefaultProtocolObserver
       // Ask the user if they want to allow the protocol. This will call
       // LaunchUrlWithoutSecurityCheck if the user decides to accept the
       // protocol.
-      RunExternalProtocolDialogWithDelegate(escaped_url_,
-          render_process_host_id_, tab_contents_id_, delegate_);
+      RunExternalProtocolDialogWithDelegate(
+          escaped_url_, render_process_host_id_, tab_contents_id_,
+          page_transition_, has_user_gesture_, delegate_);
       return;
     }
 
@@ -139,10 +147,12 @@ class ExternalDefaultProtocolObserver
 
  private:
   ExternalProtocolHandler::Delegate* delegate_;
-  GURL escaped_url_;
-  int render_process_host_id_;
-  int tab_contents_id_;
-  bool prompt_user_;
+  const GURL escaped_url_;
+  const int render_process_host_id_;
+  const int tab_contents_id_;
+  const bool prompt_user_;
+  const ui::PageTransition page_transition_;
+  const bool has_user_gesture_;
 };
 
 }  // namespace
@@ -252,10 +262,13 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
 }
 
 // static
-void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
-                                                    int render_process_host_id,
-                                                    int tab_contents_id,
-                                                    Delegate* delegate) {
+void ExternalProtocolHandler::LaunchUrlWithDelegate(
+    const GURL& url,
+    int render_process_host_id,
+    int tab_contents_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture,
+    Delegate* delegate) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
   // Escape the input scheme to be sure that the command does not
@@ -280,6 +293,8 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
                                           render_process_host_id,
                                           tab_contents_id,
                                           block_state == UNKNOWN,
+                                          page_transition,
+                                          has_user_gesture,
                                           delegate);
   scoped_refptr<ShellIntegration::DefaultProtocolClientWorker> worker =
       CreateShellWorker(observer, escaped_url.scheme(), delegate);

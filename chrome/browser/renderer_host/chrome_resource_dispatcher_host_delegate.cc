@@ -238,8 +238,12 @@ bool IsPluginEnabledForExtension(const Extension* extension,
 }
 #endif  // !defined(ENABLE_EXTENSIONS)
 
-#if !defined(OS_ANDROID)
-void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
+void LaunchURL(
+    const GURL& url,
+    int render_process_id,
+    int render_view_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
   content::WebContents* web_contents =
@@ -260,9 +264,10 @@ void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
       url,
       render_process_id,
       render_view_id,
+      page_transition,
+      has_user_gesture,
       g_external_protocol_handler_delegate);
 }
-#endif  // !defined(OS_ANDROID)
 
 #if !defined(DISABLE_NACL)
 void AppendComponentUpdaterThrottles(
@@ -515,24 +520,28 @@ ResourceDispatcherHostLoginDelegate*
 bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     const GURL& url,
     int child_id,
-    int route_id) {
-#if defined(OS_ANDROID)
-  // Android use a resource throttle to handle external as well as internal
-  // protocols.
-  return false;
-#else
-
+    int route_id,
+    bool is_main_frame,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
 #if defined(ENABLE_EXTENSIONS)
   if (extensions::WebViewRendererState::GetInstance()->IsGuest(child_id))
     return false;
-
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&LaunchURL, url, child_id, route_id));
+#if defined(OS_ANDROID)
+  // Main frame external protocols are handled by
+  // InterceptNavigationResourceThrottle.
+  if (is_main_frame)
+    return false;
+#endif  // defined(ANDROID)
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&LaunchURL, url, child_id, route_id, page_transition,
+                 has_user_gesture));
   return true;
-#endif
 }
 
 void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(

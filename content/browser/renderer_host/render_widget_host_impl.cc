@@ -1783,8 +1783,10 @@ InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
   if (!process_->HasConnection())
     return INPUT_EVENT_ACK_STATE_UNKNOWN;
 
-  if (event.type == WebInputEvent::MouseDown)
+  if (event.type == WebInputEvent::MouseDown ||
+      event.type == WebInputEvent::GestureTapDown) {
     OnUserGesture();
+  }
 
   return view_ ? view_->FilterInputEvent(event)
                : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;

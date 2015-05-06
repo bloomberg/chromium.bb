@@ -112,7 +112,7 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
       Referrer::SanitizeForRequest(
           url, Referrer(GURL(request_->referrer()), info->GetReferrerPolicy())),
       info->HasUserGesture(), method == "POST", info->GetPageTransition(),
-      is_redirect, is_external_protocol);
+      is_redirect, is_external_protocol, true);
 
   BrowserThread::PostTask(
       BrowserThread::UI,

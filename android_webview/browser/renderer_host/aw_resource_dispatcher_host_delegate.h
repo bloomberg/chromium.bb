@@ -49,7 +49,10 @@ class AwResourceDispatcherHostDelegate
       net::URLRequest* request) override;
   bool HandleExternalProtocol(const GURL& url,
                               int child_id,
-                              int route_id) override;
+                              int route_id,
+                              bool is_main_frame,
+                              ui::PageTransition page_transition,
+                              bool has_user_gesture) override;
   void OnResponseStarted(net::URLRequest* request,
                          content::ResourceContext* resource_context,
                          content::ResourceResponse* response,

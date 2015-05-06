@@ -1057,7 +1057,9 @@ class NeverRunsExternalProtocolHandlerDelegate
   void BlockRequest() override {}
   void RunExternalProtocolDialog(const GURL& url,
                                  int render_process_host_id,
-                                 int routing_id) override {
+                                 int routing_id,
+                                 ui::PageTransition page_transition,
+                                 bool has_user_gesture) override {
     NOTREACHED();
   }
   void LaunchUrlWithoutSecurityCheck(const GURL& url) override { NOTREACHED(); }

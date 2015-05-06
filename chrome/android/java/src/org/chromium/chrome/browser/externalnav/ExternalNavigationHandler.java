@@ -358,6 +358,11 @@ public class ExternalNavigationHandler {
      */
     private OverrideUrlLoadingResult clobberCurrentTabWithFallbackUrl(
             String browserFallbackUrl, ExternalNavigationParams params) {
+        if (!params.isMainFrame()) {
+            // For subframes, we don't support fallback url for now.
+            // http://crbug.com/364522.
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
         // NOTE: any further redirection from fall-back URL should not override URL loading.
         // Otherwise, it can be used in chain for fingerprinting multiple app installation
         // status in one shot. In order to prevent this scenario, we notify redirection

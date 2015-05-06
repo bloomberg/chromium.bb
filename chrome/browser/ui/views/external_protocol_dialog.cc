@@ -31,7 +31,8 @@ const int kMessageWidth = 400;
 
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
-    const GURL& url, int render_process_host_id, int routing_id) {
+    const GURL& url, int render_process_host_id, int routing_id,
+    ui::PageTransition page_transition, bool has_user_gesture) {
   scoped_ptr<ExternalProtocolDialogDelegate> delegate(
       new ExternalProtocolDialogDelegate(url,
                                          render_process_host_id,

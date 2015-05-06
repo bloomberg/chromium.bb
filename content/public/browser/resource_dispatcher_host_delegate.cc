@@ -42,9 +42,13 @@ ResourceDispatcherHostLoginDelegate*
   return nullptr;
 }
 
-bool ResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
-                                                            int child_id,
-                                                            int route_id) {
+bool ResourceDispatcherHostDelegate::HandleExternalProtocol(
+    const GURL& url,
+    int child_id,
+    int route_id,
+    bool is_main_frame,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
   return true;
 }
 

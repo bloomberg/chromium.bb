@@ -5,13 +5,40 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
 #include "base/logging.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/tab_contents/tab_util.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/navigation_interception/navigation_params.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
+#include "ui/base/page_transition_types.h"
+
+using content::WebContents;
 
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
-    const GURL& url, int render_process_host_id, int routing_id) {
-  // Chrome on Android uses a throttle-based mechansim to intercept links
-  // so that the user may choose to run an Android application instead of
-  // loading the link in the browser. The throttle is also used to handle
-  // external protocols, so this code should not be reachable.
-  NOTREACHED();
+    const GURL& url,
+    int render_process_host_id,
+    int routing_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture) {
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id, routing_id);
+  if (!web_contents)
+    return;
+  navigation_interception::InterceptNavigationDelegate* delegate =
+      navigation_interception::InterceptNavigationDelegate::Get(web_contents);
+  if (!delegate)
+    return;
+
+  navigation_interception::NavigationParams navigation_params(
+      url,
+      content::Referrer(),
+      has_user_gesture,       // has_user_gesture
+      false,                  // is_post, doesn't matter here.
+      page_transition,
+      false,                  // is_redirect, doesn't matter here.
+      true,                   // is_external_protocol
+      false);                 // is_main_frame
+  delegate->ShouldIgnoreNavigation(navigation_params);
 }

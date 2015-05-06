@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/shell_integration.h"
+#include "ui/base/page_transition_types.h"
 
 class GURL;
 class PrefRegistrySimple;
@@ -32,9 +33,12 @@ class ExternalProtocolHandler {
         const std::string& protocol) = 0;
     virtual BlockState GetBlockState(const std::string& scheme) = 0;
     virtual void BlockRequest() = 0;
-    virtual void RunExternalProtocolDialog(const GURL& url,
-                                           int render_process_host_id,
-                                           int routing_id) = 0;
+    virtual void RunExternalProtocolDialog(
+        const GURL& url,
+        int render_process_host_id,
+        int routing_id,
+        ui::PageTransition page_transition,
+        bool has_user_gesture) = 0;
     virtual void LaunchUrlWithoutSecurityCheck(const GURL& url) = 0;
     virtual void FinishedProcessingCheck() = 0;
     virtual ~Delegate() {}
@@ -53,17 +57,12 @@ class ExternalProtocolHandler {
   // LaunchUrlWithoutSecurityCheck is called on the io thread and the
   // application is launched.
   // Must run on the UI thread.
-  static void LaunchUrl(const GURL& url,
-                        int render_process_host_id,
-                        int tab_contents_id) {
-    LaunchUrlWithDelegate(url, render_process_host_id, tab_contents_id, NULL);
-  }
-
-  // Version of LaunchUrl allowing use of a delegate to facilitate unit
-  // testing.
+  // Allowing use of a delegate to facilitate unit testing.
   static void LaunchUrlWithDelegate(const GURL& url,
                                     int render_process_host_id,
                                     int tab_contents_id,
+                                    ui::PageTransition page_transition,
+                                    bool has_user_gesture,
                                     Delegate* delegate);
 
   // Creates and runs a External Protocol dialog box.
@@ -78,7 +77,9 @@ class ExternalProtocolHandler {
   // This is implemented separately on each platform.
   static void RunExternalProtocolDialog(const GURL& url,
                                         int render_process_host_id,
-                                        int routing_id);
+                                        int routing_id,
+                                        ui::PageTransition page_transition,
+                                        bool has_user_gesture);
 
   // Register the ExcludedSchemes preference.
   static void RegisterPrefs(PrefRegistrySimple* registry);

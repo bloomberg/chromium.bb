@@ -40,7 +40,7 @@ class FakeExternalProtocolHandlerDelegate
         os_state_(ShellIntegration::UNKNOWN_DEFAULT),
         has_launched_(false),
         has_prompted_(false),
-        has_blocked_ (false) {}
+        has_blocked_(false) {}
 
   ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
       ShellIntegration::DefaultWebClientObserver* observer,
@@ -61,7 +61,9 @@ class FakeExternalProtocolHandlerDelegate
 
   void RunExternalProtocolDialog(const GURL& url,
                                  int render_process_host_id,
-                                 int routing_id) override {
+                                 int routing_id,
+                                 ui::PageTransition page_transition,
+                                 bool has_user_gesture) override {
     ASSERT_EQ(block_state_, ExternalProtocolHandler::UNKNOWN);
     ASSERT_NE(os_state_, ShellIntegration::IS_DEFAULT);
     has_prompted_ = true;
@@ -120,7 +122,8 @@ class ExternalProtocolHandlerTest : public testing::Test {
 
     delegate_.set_block_state(block_state);
     delegate_.set_os_state(os_state);
-    ExternalProtocolHandler::LaunchUrlWithDelegate(url, 0, 0, &delegate_);
+    ExternalProtocolHandler::LaunchUrlWithDelegate(
+        url, 0, 0, ui::PAGE_TRANSITION_LINK, true, &delegate_);
     if (block_state != ExternalProtocolHandler::BLOCK)
       base::MessageLoop::current()->Run();
 

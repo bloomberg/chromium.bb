@@ -20,7 +20,8 @@
 
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
-    const GURL& url, int render_process_host_id, int routing_id) {
+    const GURL& url, int render_process_host_id, int routing_id,
+    ui::PageTransition page_transition, bool has_user_gesture) {
   [[ExternalProtocolDialogController alloc] initWithGURL:&url
                                      renderProcessHostId:render_process_host_id
                                                routingId:routing_id];

@@ -21,7 +21,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
   return Java_NavigationParams_create(
       env, jstring_url.obj(), params.is_post(), params.has_user_gesture(),
       params.transition_type(), params.is_redirect(),
-      params.is_external_protocol(), has_user_gesture_carryover);
+      params.is_external_protocol(), params.is_main_frame(),
+      has_user_gesture_carryover);
 }
 
 // Register native methods.
