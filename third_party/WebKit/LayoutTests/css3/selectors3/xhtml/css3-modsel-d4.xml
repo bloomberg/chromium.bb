@@ -24,7 +24,7 @@
       el2.parentNode.insertBefore(el3.nextSibling, el2);
     }
 
-    window.setTimeout("test()", 100);
+    window.onload = test;
    ]]>
   </script>
 

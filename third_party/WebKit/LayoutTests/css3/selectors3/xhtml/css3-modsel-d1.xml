@@ -24,7 +24,7 @@
       document.getElementById('test').appendChild(document.createTextNode('This line should be green.'));
     }
 
-    window.setTimeout("test()", 100);
+    window.onload = test;
    ]]>
   </script>
 

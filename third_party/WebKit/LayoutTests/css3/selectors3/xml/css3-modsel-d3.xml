@@ -10,7 +10,7 @@
       document.getElementsByTagNameNS('', 't')[1].setAttributeNS('', 'attribute', 'start middle end');
     }
 
-    window.setTimeout("test()", 100);
+    window.onload = test;
    ]]>
   </script>
 

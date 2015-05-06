@@ -12,7 +12,7 @@
       el.parentNode.parentNode.insertBefore(document.createElementNS('http://www.w3.org/1999/xhtml', 'div'), el.parentNode);
     }
 
-    window.setTimeout("test()", 100);
+    window.onload = test;
    ]]>
   </script>
   
