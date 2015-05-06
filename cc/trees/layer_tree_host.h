@@ -152,6 +152,8 @@ class CC_EXPORT LayerTreeHost {
   virtual void SetNeedsUpdateLayers();
   virtual void SetNeedsCommit();
   virtual void SetNeedsFullTreeSync();
+  virtual void SetNeedsMetaInfoRecomputation(
+      bool needs_meta_info_recomputation);
   void SetNeedsRedraw();
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   bool CommitRequested() const;
@@ -306,6 +308,9 @@ class CC_EXPORT LayerTreeHost {
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
   PropertyTrees* property_trees() { return &property_trees_; }
+  bool needs_meta_info_recomputation() {
+    return needs_meta_info_recomputation_;
+  }
 
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
@@ -375,6 +380,7 @@ class CC_EXPORT LayerTreeHost {
 
   bool inside_begin_main_frame_;
   bool needs_full_tree_sync_;
+  bool needs_meta_info_recomputation_;
 
   base::CancelableClosure prepaint_callback_;
 

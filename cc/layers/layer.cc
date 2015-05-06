@@ -53,6 +53,8 @@ Layer::Layer()
       transform_tree_index_(-1),
       opacity_tree_index_(-1),
       clip_tree_index_(-1),
+      num_layer_or_descendants_with_copy_request_(0),
+      num_layer_or_descendants_with_input_handler_(0),
       should_flatten_transform_from_property_tree_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
@@ -404,6 +406,7 @@ bool Layer::HasAncestor(const Layer* ancestor) const {
 void Layer::RequestCopyOfOutput(
     scoped_ptr<CopyOutputRequest> request) {
   DCHECK(IsPropertyChangeAllowed());
+  int size = copy_requests_.size();
   if (void* source = request->source()) {
     auto it = std::find_if(
         copy_requests_.begin(), copy_requests_.end(),
@@ -414,7 +417,21 @@ void Layer::RequestCopyOfOutput(
   if (request->IsEmpty())
     return;
   copy_requests_.push_back(request.Pass());
+  if (size == 0) {
+    bool copy_request_added = true;
+    UpdateNumCopyRequestsForSubtree(copy_request_added);
+  }
   SetNeedsCommit();
+}
+
+void Layer::UpdateNumCopyRequestsForSubtree(bool add) {
+  int change = add ? 1 : -1;
+  for (Layer* layer = this; layer; layer = layer->parent()) {
+    layer->num_layer_or_descendants_with_copy_request_ += change;
+    layer->draw_properties().layer_or_descendant_has_copy_request =
+        (layer->num_layer_or_descendants_with_copy_request_ != 0);
+    DCHECK_GE(layer->num_layer_or_descendants_with_copy_request_, 0);
+  }
 }
 
 void Layer::SetBackgroundColor(SkColor background_color) {
@@ -762,6 +779,8 @@ void Layer::SetClipParent(Layer* ancestor) {
     clip_parent_->AddClipChild(this);
 
   SetNeedsCommit();
+  if (layer_tree_host_)
+    layer_tree_host_->SetNeedsMetaInfoRecomputation(true);
 }
 
 void Layer::AddClipChild(Layer* child) {
@@ -879,8 +898,22 @@ void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
   DCHECK(IsPropertyChangeAllowed());
   if (have_wheel_event_handlers_ == have_wheel_event_handlers)
     return;
+  if (touch_event_handler_region_.IsEmpty() && layer_tree_host_ &&
+      !layer_tree_host_->needs_meta_info_recomputation())
+    UpdateNumInputHandlersForSubtree(have_wheel_event_handlers);
+
   have_wheel_event_handlers_ = have_wheel_event_handlers;
   SetNeedsCommit();
+}
+
+void Layer::UpdateNumInputHandlersForSubtree(bool add) {
+  int change = add ? 1 : -1;
+  for (Layer* layer = this; layer; layer = layer->parent()) {
+    layer->num_layer_or_descendants_with_input_handler_ += change;
+    layer->draw_properties().layer_or_descendant_has_input_handler =
+        (layer->num_layer_or_descendants_with_input_handler_ != 0);
+    DCHECK_GE(layer->num_layer_or_descendants_with_input_handler_, 0);
+  }
 }
 
 void Layer::SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
@@ -903,6 +936,10 @@ void Layer::SetTouchEventHandlerRegion(const Region& region) {
   DCHECK(IsPropertyChangeAllowed());
   if (touch_event_handler_region_ == region)
     return;
+  if (!have_wheel_event_handlers_ && layer_tree_host_ &&
+      !layer_tree_host_->needs_meta_info_recomputation())
+    UpdateNumInputHandlersForSubtree(!region.IsEmpty());
+
   touch_event_handler_region_ = region;
   SetNeedsCommit();
 }
@@ -1148,6 +1185,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollCompensationAdjustment(ScrollCompensationAdjustment());
 
   // Wrap the copy_requests_ in a PostTask to the main thread.
+  int size = copy_requests_.size();
   ScopedPtrVector<CopyOutputRequest> main_thread_copy_requests;
   for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
        it != copy_requests_.end();
@@ -1166,6 +1204,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   }
   if (!copy_requests_.empty() && layer_tree_host_)
     layer_tree_host_->property_trees()->needs_rebuild = true;
+  if (size != 0)
+    UpdateNumCopyRequestsForSubtree(false);
   copy_requests_.clear();
   layer->PassCopyRequests(&main_thread_copy_requests);
 

@@ -1184,20 +1184,20 @@ static inline void RemoveSurfaceForEarlyExit(
 }
 
 struct PreCalculateMetaInformationRecursiveData {
-  bool layer_or_descendant_has_copy_request;
-  bool layer_or_descendant_has_input_handler;
   int num_unclipped_descendants;
+  int num_layer_or_descendants_with_copy_request;
+  int num_layer_or_descendants_with_input_handler;
 
   PreCalculateMetaInformationRecursiveData()
-      : layer_or_descendant_has_copy_request(false),
-        layer_or_descendant_has_input_handler(false),
-        num_unclipped_descendants(0) {}
+      : num_unclipped_descendants(0),
+        num_layer_or_descendants_with_copy_request(0),
+        num_layer_or_descendants_with_input_handler(0) {}
 
   void Merge(const PreCalculateMetaInformationRecursiveData& data) {
-    layer_or_descendant_has_copy_request |=
-        data.layer_or_descendant_has_copy_request;
-    layer_or_descendant_has_input_handler |=
-        data.layer_or_descendant_has_input_handler;
+    num_layer_or_descendants_with_copy_request +=
+        data.num_layer_or_descendants_with_copy_request;
+    num_layer_or_descendants_with_input_handler +=
+        data.num_layer_or_descendants_with_input_handler;
     num_unclipped_descendants += data.num_unclipped_descendants;
   }
 };
@@ -1220,11 +1220,91 @@ static void ValidateRenderSurface(LayerImpl* layer) {
 static void ValidateRenderSurface(Layer* layer) {
 }
 
-// Recursively walks the layer tree to compute any information that is needed
-// before doing the main recursion.
-template <typename LayerType>
+static void ResetDrawProperties(Layer* layer) {
+  layer->draw_properties().sorted_for_recursion = false;
+  layer->draw_properties().has_child_with_a_scroll_parent = false;
+  layer->draw_properties().layer_or_descendant_is_drawn = false;
+  layer->draw_properties().visited = false;
+  if (!HasInvertibleOrAnimatedTransform(layer)) {
+    // Layers with singular transforms should not be drawn, the whole subtree
+    // can be skipped.
+    return;
+  }
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    Layer* child_layer = layer->child_at(i);
+    if (child_layer->scroll_parent())
+      layer->draw_properties().has_child_with_a_scroll_parent = true;
+    ResetDrawProperties(child_layer);
+  }
+}
+
+static void ResetDrawProperties(LayerImpl* layer) {
+}
+
+static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
+  return layer->layer_tree_host()->needs_meta_info_recomputation();
+}
+
+// Recursively walks the layer tree(if needed) to compute any information
+// that is needed before doing the main recursion.
 static void PreCalculateMetaInformation(
-    LayerType* layer,
+    Layer* layer,
+    PreCalculateMetaInformationRecursiveData* recursive_data) {
+  ValidateRenderSurface(layer);
+  if (!HasInvertibleOrAnimatedTransform(layer)) {
+    // Layers with singular transforms should not be drawn, the whole subtree
+    // can be skipped.
+    return;
+  }
+
+  if (!IsMetaInformationRecomputationNeeded(layer)) {
+    DCHECK(IsRootLayer(layer));
+    return;
+  }
+
+  if (layer->clip_parent())
+    recursive_data->num_unclipped_descendants++;
+
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    Layer* child_layer = layer->child_at(i);
+
+    PreCalculateMetaInformationRecursiveData data_for_child;
+    PreCalculateMetaInformation(child_layer, &data_for_child);
+
+    recursive_data->Merge(data_for_child);
+  }
+
+  if (layer->clip_children()) {
+    int num_clip_children = layer->clip_children()->size();
+    DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
+    recursive_data->num_unclipped_descendants -= num_clip_children;
+  }
+
+  if (layer->HasCopyRequest())
+    recursive_data->num_layer_or_descendants_with_copy_request++;
+
+  if (!layer->touch_event_handler_region().IsEmpty() ||
+      layer->have_wheel_event_handlers())
+    recursive_data->num_layer_or_descendants_with_input_handler++;
+
+  layer->draw_properties().num_unclipped_descendants =
+      recursive_data->num_unclipped_descendants;
+  layer->draw_properties().layer_or_descendant_has_copy_request =
+      (recursive_data->num_layer_or_descendants_with_copy_request != 0);
+  layer->draw_properties().layer_or_descendant_has_input_handler =
+      (recursive_data->num_layer_or_descendants_with_input_handler != 0);
+  layer->set_num_layer_or_descandant_with_copy_request(
+      recursive_data->num_layer_or_descendants_with_copy_request);
+  layer->set_num_layer_or_descandant_with_input_handler(
+      recursive_data->num_layer_or_descendants_with_input_handler);
+
+  if (IsRootLayer(layer))
+    layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
+}
+
+static void PreCalculateMetaInformation(
+    LayerImpl* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   ValidateRenderSurface(layer);
 
@@ -1243,8 +1323,7 @@ static void PreCalculateMetaInformation(
     recursive_data->num_unclipped_descendants++;
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    LayerType* child_layer =
-        LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
+    LayerImpl* child_layer = layer->child_at(i);
 
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformation(child_layer, &data_for_child);
@@ -1261,18 +1340,18 @@ static void PreCalculateMetaInformation(
   }
 
   if (layer->HasCopyRequest())
-    recursive_data->layer_or_descendant_has_copy_request = true;
+    recursive_data->num_layer_or_descendants_with_copy_request++;
 
   if (!layer->touch_event_handler_region().IsEmpty() ||
       layer->have_wheel_event_handlers())
-    recursive_data->layer_or_descendant_has_input_handler = true;
+    recursive_data->num_layer_or_descendants_with_input_handler++;
 
   layer->draw_properties().num_unclipped_descendants =
       recursive_data->num_unclipped_descendants;
   layer->draw_properties().layer_or_descendant_has_copy_request =
-      recursive_data->layer_or_descendant_has_copy_request;
+      (recursive_data->num_layer_or_descendants_with_copy_request != 0);
   layer->draw_properties().layer_or_descendant_has_input_handler =
-      recursive_data->layer_or_descendant_has_input_handler;
+      (recursive_data->num_layer_or_descendants_with_input_handler != 0);
 }
 
 template <typename LayerType>
@@ -2586,6 +2665,7 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
     TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                        "LayerTreeHostCommon::CalculateDrawProperties");
   }
+  ResetDrawProperties(inputs->root_layer);
 
   std::vector<AccumulatedSurfaceState<LayerType>> accumulated_surface_state;
   CalculateDrawPropertiesInternal<LayerType>(

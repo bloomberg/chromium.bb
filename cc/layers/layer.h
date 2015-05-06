@@ -552,6 +552,21 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
 
   void DidBeginTracing();
+  void set_num_layer_or_descandant_with_copy_request(
+      int num_layer_or_descendants_with_copy_request) {
+    num_layer_or_descendants_with_copy_request_ =
+        num_layer_or_descendants_with_copy_request;
+  }
+
+  void set_num_layer_or_descandant_with_input_handler(
+      int num_layer_or_descendants_with_input_handler) {
+    num_layer_or_descendants_with_input_handler_ =
+        num_layer_or_descendants_with_input_handler;
+  }
+
+  int num_layer_or_descendants_with_input_handler() {
+    return num_layer_or_descendants_with_input_handler_;
+  }
 
  protected:
   friend class LayerImpl;
@@ -668,6 +683,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // children.
   void RemoveFromClipTree();
 
+  void UpdateNumCopyRequestsForSubtree(bool add);
+  void UpdateNumInputHandlersForSubtree(bool add);
+
   LayerList children_;
   Layer* parent_;
 
@@ -691,6 +709,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int transform_tree_index_;
   int opacity_tree_index_;
   int clip_tree_index_;
+  int num_layer_or_descendants_with_copy_request_;
+  int num_layer_or_descendants_with_input_handler_;
   gfx::Vector2dF offset_to_transform_parent_;
   bool should_flatten_transform_from_property_tree_ : 1;
   bool should_scroll_on_main_thread_ : 1;

@@ -9486,5 +9486,77 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
 }
 
+TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
+  // Ensure that the treewalk in LayerTreeHostCommom::
+  // PreCalculateMetaInformation happens when its required.
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+
+  root->AddChild(parent);
+  parent->AddChild(child);
+
+  child->SetClipParent(root.get());
+
+  gfx::Transform identity;
+
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(parent.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(parent->draw_properties().num_unclipped_descendants, 1);
+
+  // Ensure the dynamic update to input handlers happens.
+  child->SetHaveWheelEventHandlers(true);
+  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_input_handler);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_input_handler);
+
+  child->SetHaveWheelEventHandlers(false);
+  EXPECT_FALSE(root->draw_properties().layer_or_descendant_has_input_handler);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_FALSE(root->draw_properties().layer_or_descendant_has_input_handler);
+
+  child->RequestCopyOfOutput(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);
+}
+
+TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {
+  // Ensure that the treewalk in LayertreeHostCommon::
+  // PreCalculateMetaInformation updates input handlers correctly.
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = Layer::Create();
+
+  root->AddChild(child);
+
+  child->SetHaveWheelEventHandlers(true);
+
+  gfx::Transform identity;
+
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  EXPECT_EQ(root->num_layer_or_descendants_with_input_handler(), 0);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(root->num_layer_or_descendants_with_input_handler(), 1);
+  child->SetHaveWheelEventHandlers(false);
+  EXPECT_EQ(root->num_layer_or_descendants_with_input_handler(), 0);
+}
+
 }  // namespace
 }  // namespace cc

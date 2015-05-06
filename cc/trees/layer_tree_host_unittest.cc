@@ -6522,6 +6522,45 @@ class LayerPreserveRenderSurfaceFromOutputRequests : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerPreserveRenderSurfaceFromOutputRequests);
 
+class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    root = Layer::Create();
+    child = Layer::Create();
+    root->AddChild(child);
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(CopyOutputCallback)));
+        EXPECT_TRUE(
+            root->draw_properties().layer_or_descendant_has_copy_request);
+        break;
+      case 2:
+        EXPECT_FALSE(
+            root->draw_properties().layer_or_descendant_has_copy_request);
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> root;
+  scoped_refptr<Layer> child;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateCopyRequests);
+
 class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
  protected:
   void SetupTree() override {

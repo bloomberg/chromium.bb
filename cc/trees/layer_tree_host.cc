@@ -102,6 +102,7 @@ LayerTreeHost::LayerTreeHost(
       next_ui_resource_id_(1),
       inside_begin_main_frame_(false),
       needs_full_tree_sync_(true),
+      needs_meta_info_recomputation_(true),
       client_(client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
@@ -515,9 +516,14 @@ void LayerTreeHost::SetNeedsCommit() {
 
 void LayerTreeHost::SetNeedsFullTreeSync() {
   needs_full_tree_sync_ = true;
+  needs_meta_info_recomputation_ = true;
 
   property_trees_.needs_rebuild = true;
   SetNeedsCommit();
+}
+
+void LayerTreeHost::SetNeedsMetaInfoRecomputation(bool needs_recomputation) {
+  needs_meta_info_recomputation_ = needs_recomputation;
 }
 
 void LayerTreeHost::SetNeedsRedraw() {
