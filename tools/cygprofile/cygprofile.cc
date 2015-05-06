@@ -205,7 +205,7 @@ void ThreadLog::AddEntry(void* address) {
   in_use_ = true;
 
   CHECK_EQ(tid_, GetTID());
-  const std::pair<std::hash_set<void*>::iterator, bool> pair =
+  const std::pair<base::hash_set<void*>::iterator, bool> pair =
       called_functions_.insert(address);
   const bool did_insert = pair.second;
 

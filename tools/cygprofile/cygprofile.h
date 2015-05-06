@@ -113,7 +113,7 @@ class ThreadLog {
 
   // Keeps track of all functions that have been logged on this thread so we do
   // not record duplicates.
-  std::hash_set<void*> called_functions_;
+  base::hash_set<void*> called_functions_;
 
   // A lock that guards |entries_| usage between per-thread instrumentation
   // routine and timer flush callback. So the contention could happen only
