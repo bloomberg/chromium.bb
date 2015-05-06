@@ -64,8 +64,7 @@ class ContextMenuContentType {
  protected:
   const content::ContextMenuParams& params() const { return params_; }
 
-  // TODO(lazyboy): Return const content::WebContents*.
-  content::WebContents* source_web_contents() const {
+  const content::WebContents* source_web_contents() const {
     return source_web_contents_;
   }
 
@@ -75,7 +74,7 @@ class ContextMenuContentType {
   bool IsInternalResourcesURL(const GURL& url);
 
   const content::ContextMenuParams params_;
-  content::WebContents* source_web_contents_;
+  content::WebContents* const source_web_contents_;
   const bool supports_custom_items_;
 
   // A boolean callback to check if the url points to the internal

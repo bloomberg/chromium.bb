@@ -103,7 +103,7 @@ class ProcessManager : public KeyedService,
   const Extension* GetExtensionForRenderFrameHost(
       content::RenderFrameHost* render_frame_host);
   const Extension* GetExtensionForWebContents(
-      content::WebContents* web_contents);
+      const content::WebContents* web_contents);
 
   // Getter and setter for the lazy background page's keepalive count. This is
   // the count of how many outstanding "things" are keeping the page alive.

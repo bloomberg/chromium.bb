@@ -454,7 +454,7 @@ const Extension* ProcessManager::GetExtensionForRenderFrameHost(
 }
 
 const Extension* ProcessManager::GetExtensionForWebContents(
-    content::WebContents* web_contents) {
+    const content::WebContents* web_contents) {
   if (!web_contents->GetSiteInstance())
     return nullptr;
   return extension_registry_->enabled_extensions().GetByID(
