@@ -135,7 +135,8 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallSameOrigin) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
+// Flaky: https://crbug.com/485160
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, DISABLED_SmallCrossOrigin) {
   LoadHTML(
       "<object id='plugin' data='http://otherorigin.com/fake.swf' "
       "    type='application/x-ppapi-tests' width='400' height='100'>"
