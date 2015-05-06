@@ -895,19 +895,13 @@ String UseCounter::deprecationMessage(Feature feature)
 
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
     case GeolocationInsecureOrigin:
-        return "Geolocation via getCurrentPosition() and watchPosition() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+        return "getCurrentPosition() and watchPosition() are deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
     case GetUserMediaInsecureOrigin:
-        return "getUserMedia() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
-
-    case DeviceMotionInsecureOrigin:
-        return "The 'devicemotion' event will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
-
-    case DeviceOrientationInsecureOrigin:
-        return "The 'deviceorientation' event will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+        return "getUserMedia() is deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
     case FullscreenInsecureOrigin:
-        return "requestFullscreen() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+        return "requestFullscreen() is deprecated on insecure origins, and support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
 
     case PushSubscriptionId:
         return "'PushSubscription.subscriptionId' is deprecated and is now included in 'PushSubscription.endpoint'. It will be removed in Chrome 45, around August 2015.";
