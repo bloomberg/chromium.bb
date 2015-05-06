@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/cast_receiver_session_delegate.h"
 
 namespace blink {
@@ -67,7 +68,7 @@ class CastReceiverSession : public base::RefCounted<CastReceiverSession> {
   media::cast::FrameReceiverConfig audio_config_;
   media::cast::FrameReceiverConfig video_config_;
   scoped_ptr<CastReceiverSessionDelegate> delegate_;
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   media::VideoCaptureFormat format_;
 
   DISALLOW_COPY_AND_ASSIGN(CastReceiverSession);

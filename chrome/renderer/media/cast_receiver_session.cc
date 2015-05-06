@@ -57,12 +57,12 @@ class CastReceiverSession::VideoCapturerSource :
 
 CastReceiverSession::CastReceiverSession()
     : delegate_(new CastReceiverSessionDelegate()),
-      io_message_loop_proxy_(
+      io_task_runner_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()) {}
 
 CastReceiverSession::~CastReceiverSession() {
   // We should always be able to delete the object on the IO thread.
-  CHECK(io_message_loop_proxy_->DeleteSoon(FROM_HERE, delegate_.release()));
+  CHECK(io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release()));
 }
 
 void CastReceiverSession::Start(
@@ -77,7 +77,7 @@ void CastReceiverSession::Start(
   audio_config_ = audio_config;
   video_config_ = video_config;
   format_ = capture_format;
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CastReceiverSessionDelegate::Start,
                  base::Unretained(delegate_.get()),
@@ -99,7 +99,7 @@ void CastReceiverSession::Start(
 
 void CastReceiverSession::StartAudio(
     scoped_refptr<CastReceiverAudioValve> audio_valve) {
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CastReceiverSessionDelegate::StartAudio,
                  base::Unretained(delegate_.get()),
@@ -108,7 +108,7 @@ void CastReceiverSession::StartAudio(
 
 void CastReceiverSession::StartVideo(
     content::VideoCaptureDeliverFrameCB frame_callback) {
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CastReceiverSessionDelegate::StartVideo,
                  base::Unretained(delegate_.get()),
@@ -116,7 +116,7 @@ void CastReceiverSession::StartVideo(
 }
 
 void CastReceiverSession::StopVideo() {
-  io_message_loop_proxy_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CastReceiverSessionDelegate::StopVideo,
                  base::Unretained(delegate_.get())));

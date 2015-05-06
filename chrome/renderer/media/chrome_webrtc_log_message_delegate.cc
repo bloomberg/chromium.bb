@@ -5,14 +5,14 @@
 #include "chrome/renderer/media/chrome_webrtc_log_message_delegate.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/common/partial_circular_buffer.h"
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
 
 ChromeWebRtcLogMessageDelegate::ChromeWebRtcLogMessageDelegate(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     WebRtcLoggingMessageFilter* message_filter)
-    : io_message_loop_(io_message_loop),
+    : io_task_runner_(io_task_runner),
       logging_started_(false),
       message_filter_(message_filter) {
   content::InitWebRtcLoggingDelegate(this);
@@ -25,7 +25,7 @@ ChromeWebRtcLogMessageDelegate::~ChromeWebRtcLogMessageDelegate() {
 void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
   WebRtcLoggingMessageData data(base::Time::Now(), message);
 
-  io_message_loop_->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE, base::Bind(
           &ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread,
           base::Unretained(this),
@@ -50,7 +50,7 @@ void ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread(
         base::TimeDelta::FromMilliseconds(100)) {
       SendLogBuffer();
     } else {
-      io_message_loop_->PostDelayedTask(
+      io_task_runner_->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ChromeWebRtcLogMessageDelegate::SendLogBuffer,
                      base::Unretained(this)),

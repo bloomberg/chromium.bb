@@ -22,7 +22,7 @@
 namespace base {
 class BinaryValue;
 class DictionaryValue;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
@@ -71,7 +71,7 @@ class CastSessionDelegateBase {
   scoped_ptr<media::cast::CastTransportSender> cast_transport_;
 
   // Proxy to the IO message loop.
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   base::WeakPtrFactory<CastSessionDelegateBase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSessionDelegateBase);

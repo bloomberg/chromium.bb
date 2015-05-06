@@ -5,12 +5,9 @@
 #ifndef CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 #define CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 
+#include "base/single_thread_task_runner.h"
 #include "chrome/common/media/webrtc_logging_message_data.h"
 #include "ipc/message_filter.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 class ChromeWebRtcLogMessageDelegate;
 
@@ -20,20 +17,20 @@ class ChromeWebRtcLogMessageDelegate;
 class WebRtcLoggingMessageFilter : public IPC::MessageFilter {
  public:
   explicit WebRtcLoggingMessageFilter(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   virtual void AddLogMessages(
       const std::vector<WebRtcLoggingMessageData>& messages);
   virtual void LoggingStopped();
 
-  const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {
-    return io_message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() {
+    return io_task_runner_;
   }
 
  protected:
   ~WebRtcLoggingMessageFilter() override;
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Owned by this class. The only other pointer to it is in libjingle's logging
   // file. That's a global pointer used on different threads, so we will leak

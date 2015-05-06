@@ -7,8 +7,9 @@
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/renderer/media/cast_threads.h"
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
@@ -32,14 +33,14 @@ static base::LazyInstance<CastThreads> g_cast_threads =
     LAZY_INSTANCE_INITIALIZER;
 
 CastSessionDelegateBase::CastSessionDelegateBase()
-    : io_message_loop_proxy_(
+    : io_task_runner_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()),
       weak_factory_(this) {
-  DCHECK(io_message_loop_proxy_.get());
+  DCHECK(io_task_runner_.get());
 }
 
 CastSessionDelegateBase::~CastSessionDelegateBase() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 }
 
 void CastSessionDelegateBase::StartUDP(
@@ -47,14 +48,14 @@ void CastSessionDelegateBase::StartUDP(
     const net::IPEndPoint& remote_endpoint,
     scoped_ptr<base::DictionaryValue> options,
     const ErrorCallback& error_callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
   // TODO(hubbe): Create cast environment in ctor instead.
   cast_environment_ = new CastEnvironment(
       scoped_ptr<base::TickClock>(new base::DefaultTickClock()).Pass(),
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       g_cast_threads.Get().GetAudioEncodeMessageLoopProxy(),
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy());
 
@@ -75,7 +76,7 @@ void CastSessionDelegateBase::StartUDP(
 void CastSessionDelegateBase::StatusNotificationCB(
     const ErrorCallback& error_callback,
     media::cast::CastTransportStatus status) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   std::string error_message;
 
   switch (status) {
@@ -95,18 +96,18 @@ void CastSessionDelegateBase::StatusNotificationCB(
 
 CastSessionDelegate::CastSessionDelegate()
     : weak_factory_(this) {
-  DCHECK(io_message_loop_proxy_.get());
+  DCHECK(io_task_runner_.get());
 }
 
 CastSessionDelegate::~CastSessionDelegate() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 }
 
 void CastSessionDelegate::StartAudio(
     const AudioSenderConfig& config,
     const AudioFrameInputAvailableCallback& callback,
     const ErrorCallback& error_callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!cast_transport_ || !cast_sender_) {
     error_callback.Run("Destination not set.");
@@ -127,7 +128,7 @@ void CastSessionDelegate::StartVideo(
     const media::cast::CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const media::cast::CreateVideoEncodeMemoryCallback&
         create_video_encode_mem_cb) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!cast_transport_ || !cast_sender_) {
     error_callback.Run("Destination not set.");
@@ -150,7 +151,7 @@ void CastSessionDelegate::StartUDP(
     const net::IPEndPoint& remote_endpoint,
     scoped_ptr<base::DictionaryValue> options,
     const ErrorCallback& error_callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   CastSessionDelegateBase::StartUDP(local_endpoint,
                                     remote_endpoint,
                                     options.Pass(),
@@ -162,7 +163,7 @@ void CastSessionDelegate::StartUDP(
 }
 
 void CastSessionDelegate::ToggleLogging(bool is_audio, bool enable) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!event_subscribers_.get())
     return;
 
@@ -176,7 +177,7 @@ void CastSessionDelegate::GetEventLogsAndReset(
     bool is_audio,
     const std::string& extra_data,
     const EventLogsCallback& callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
     callback.Run(make_scoped_ptr(new base::BinaryValue).Pass());
@@ -230,7 +231,7 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
 void CastSessionDelegate::GetStatsAndReset(bool is_audio,
                                            const StatsCallback& callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (!event_subscribers_.get()) {
     callback.Run(make_scoped_ptr(new base::DictionaryValue).Pass());
@@ -307,7 +308,7 @@ void CastSessionDelegate::ReceivePacket(
 void CastSessionDelegate::LogRawEvents(
     const std::vector<media::cast::PacketEvent>& packet_events,
     const std::vector<media::cast::FrameEvent>& frame_events) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   for (std::vector<media::cast::PacketEvent>::const_iterator it =
            packet_events.begin();

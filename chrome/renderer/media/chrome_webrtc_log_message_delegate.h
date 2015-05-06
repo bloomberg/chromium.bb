@@ -13,7 +13,7 @@
 #include "ipc/ipc_channel_proxy.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 class PartialCircularBuffer;
@@ -28,7 +28,7 @@ class ChromeWebRtcLogMessageDelegate
       public base::NonThreadSafe {
  public:
   ChromeWebRtcLogMessageDelegate(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       WebRtcLoggingMessageFilter* message_filter);
 
   ~ChromeWebRtcLogMessageDelegate() override;
@@ -45,7 +45,7 @@ class ChromeWebRtcLogMessageDelegate
   void LogMessageOnIOThread(const WebRtcLoggingMessageData& message);
   void SendLogBuffer();
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   bool logging_started_;
   std::vector<WebRtcLoggingMessageData> log_buffer_;
 

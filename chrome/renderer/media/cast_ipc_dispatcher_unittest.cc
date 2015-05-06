@@ -4,6 +4,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/cast_messages.h"
 #include "chrome/renderer/media/cast_ipc_dispatcher.h"
 #include "ipc/ipc_message_macros.h"
@@ -15,7 +16,7 @@ namespace {
 class CastIPCDispatcherTest : public testing::Test {
  public:
   CastIPCDispatcherTest() {
-    dispatcher_ = new CastIPCDispatcher(base::MessageLoopProxy::current());
+    dispatcher_ = new CastIPCDispatcher(base::ThreadTaskRunnerHandle::Get());
   }
 
  protected:

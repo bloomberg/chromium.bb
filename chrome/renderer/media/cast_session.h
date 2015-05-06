@@ -16,7 +16,7 @@
 namespace base {
 class BinaryValue;
 class DictionaryValue;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
@@ -100,8 +100,8 @@ class CastSession : public base::RefCounted<CastSession> {
   // because it is owned by this object.
   scoped_ptr<CastSessionDelegate> delegate_;
 
-  // Proxy to the IO message loop.
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  // Proxy to the IO task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSession);
 };

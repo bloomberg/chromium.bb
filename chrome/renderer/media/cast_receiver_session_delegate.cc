@@ -27,7 +27,7 @@ void CastReceiverSessionDelegate::Start(
     const media::VideoCaptureFormat& format,
     const ErrorCallback& error_callback) {
   format_ = format;
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   CastSessionDelegateBase::StartUDP(local_endpoint,
                                     remote_endpoint,
                                     options.Pass(),
@@ -51,7 +51,7 @@ void CastReceiverSessionDelegate::ReceivePacket(
 
 void CastReceiverSessionDelegate::StartAudio(
     scoped_refptr<CastReceiverAudioValve> audio_valve) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   audio_valve_ = audio_valve;
   cast_receiver_->RequestDecodedAudioFrame(on_audio_decoded_cb_);
 }
@@ -60,7 +60,7 @@ void CastReceiverSessionDelegate::OnDecodedAudioFrame(
     scoped_ptr<media::AudioBus> audio_bus,
     const base::TimeTicks& playout_time,
     bool is_continous) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!audio_valve_)
     return;
 
@@ -83,7 +83,7 @@ void CastReceiverSessionDelegate::OnDecodedAudioFrame(
 
 void CastReceiverSessionDelegate::StartVideo(
     content::VideoCaptureDeliverFrameCB video_callback) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   frame_callback_ = video_callback;
   cast_receiver_->RequestDecodedVideoFrame(on_video_decoded_cb_);
 }

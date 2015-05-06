@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/media/cast_ipc_dispatcher.h"
 
+#include "base/single_thread_task_runner.h"
 #include "chrome/common/cast_messages.h"
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
 #include "ipc/ipc_message_macros.h"
@@ -11,15 +12,15 @@
 CastIPCDispatcher* CastIPCDispatcher::global_instance_ = NULL;
 
 CastIPCDispatcher::CastIPCDispatcher(
-    const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : sender_(NULL),
-      io_message_loop_(io_message_loop) {
-  DCHECK(io_message_loop_.get());
+      io_task_runner_(io_task_runner) {
+  DCHECK(io_task_runner_.get());
   DCHECK(!global_instance_);
 }
 
 CastIPCDispatcher::~CastIPCDispatcher() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(!global_instance_);
 }
 
@@ -28,7 +29,7 @@ CastIPCDispatcher* CastIPCDispatcher::Get() {
 }
 
 void CastIPCDispatcher::Send(IPC::Message* message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (sender_) {
     sender_->Send(message);
   } else {
@@ -45,7 +46,7 @@ void CastIPCDispatcher::RemoveSender(int32 channel_id) {
 }
 
 bool CastIPCDispatcher::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CastIPCDispatcher, message)
     IPC_MESSAGE_HANDLER(CastMsg_NotifyStatusChange, OnNotifyStatusChange)
@@ -59,21 +60,21 @@ bool CastIPCDispatcher::OnMessageReceived(const IPC::Message& message) {
 }
 
 void CastIPCDispatcher::OnFilterAdded(IPC::Sender* sender) {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(!global_instance_);
   global_instance_ = this;
   sender_ = sender;
 }
 
 void CastIPCDispatcher::OnFilterRemoved() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(this, global_instance_);
   global_instance_ = NULL;
   sender_ = NULL;
 }
 
 void CastIPCDispatcher::OnChannelClosing() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(this, global_instance_);
 }
 
