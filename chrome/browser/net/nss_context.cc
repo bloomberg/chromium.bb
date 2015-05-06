@@ -4,7 +4,9 @@
 
 #include "chrome/browser/net/nss_context.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -15,18 +17,18 @@ namespace {
 
 // Relays callback to the right message loop.
 void DidGetCertDBOnIOThread(
-    scoped_refptr<base::MessageLoopProxy> response_message_loop,
+    const scoped_refptr<base::SequencedTaskRunner>& response_task_runner,
     const base::Callback<void(net::NSSCertDatabase*)>& callback,
     net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  response_message_loop->PostTask(FROM_HERE, base::Bind(callback, cert_db));
+  response_task_runner->PostTask(FROM_HERE, base::Bind(callback, cert_db));
 }
 
 // Gets NSSCertDatabase for the resource context.
 void GetCertDBOnIOThread(
     content::ResourceContext* context,
-    scoped_refptr<base::MessageLoopProxy> response_message_loop,
+    const scoped_refptr<base::SequencedTaskRunner>& response_task_runner,
     const base::Callback<void(net::NSSCertDatabase*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -34,10 +36,10 @@ void GetCertDBOnIOThread(
   // been initialized.
   net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
       context,
-      base::Bind(&DidGetCertDBOnIOThread, response_message_loop, callback));
+      base::Bind(&DidGetCertDBOnIOThread, response_task_runner, callback));
 
   if (cert_db)
-    DidGetCertDBOnIOThread(response_message_loop, callback, cert_db);
+    DidGetCertDBOnIOThread(response_task_runner, callback, cert_db);
 }
 
 }  // namespace
@@ -51,7 +53,7 @@ void GetNSSCertDatabaseForProfile(
                           FROM_HERE,
                           base::Bind(&GetCertDBOnIOThread,
                                      profile->GetResourceContext(),
-                                     base::MessageLoopProxy::current(),
+                                     base::ThreadTaskRunnerHandle::Get(),
                                      callback));
 }
 

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -114,7 +115,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
   base::RunLoop().RunUntilIdle();
   store_ = new QuotaPolicyChannelIDStore(
       temp_dir_.path().Append(kTestChannelIDFilename),
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       NULL);
 
   // Reload and test for persistence
@@ -149,7 +150,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
   channel_ids.clear();
   store_ = new QuotaPolicyChannelIDStore(
       temp_dir_.path().Append(kTestChannelIDFilename),
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       NULL);
 
   // Reload and check if the channel ID has been removed.
@@ -181,7 +182,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   // Reload store, it should still have both channel IDs.
   store_ = new QuotaPolicyChannelIDStore(
       temp_dir_.path().Append(kTestChannelIDFilename),
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       storage_policy);
   Load(&channel_ids);
   ASSERT_EQ(2U, channel_ids.size());
@@ -206,7 +207,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   channel_ids.clear();
   store_ = new QuotaPolicyChannelIDStore(
       temp_dir_.path().Append(kTestChannelIDFilename),
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       NULL);
 
   // Reload and check that the nonpersistent.com channel IDs have been removed.

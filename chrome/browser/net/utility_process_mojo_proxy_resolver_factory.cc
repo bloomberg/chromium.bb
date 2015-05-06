@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
@@ -42,7 +44,7 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
   content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(
           scoped_refptr<content::UtilityProcessHostClient>(),
-          base::MessageLoopProxy::current().get());
+          base::ThreadTaskRunnerHandle::Get());
   utility_process_host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME));
   bool process_started = utility_process_host->StartMojoMode();
