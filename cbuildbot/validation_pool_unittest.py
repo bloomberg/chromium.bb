@@ -265,6 +265,16 @@ class TestUploadedLocalPatch(patch_unittest.UploadedLocalPatchTestCase,
     self.assertEqual(patches[1].id, patch4.id)
 
 
+def FakeFetchChangesForRepo(fetched_changes, by_repo, repo):
+  """Fake version of the "PatchSeries._FetchChangesForRepo" method.
+
+  Thes does nothing to the changes and simply copies them into the output
+  dict.
+  """
+  for c in by_repo[repo]:
+    fetched_changes[c.id] = c
+
+
 class TestPatchSeries(PatchSeriesTestCase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
@@ -272,6 +282,8 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.StartPatcher(FakePatch())
     self.PatchObject(FakePatch, 'assertEqual', new=self.assertEqual)
     self.PatchObject(FakePatch, 'build_root', new=self.build_root)
+    self.PatchObject(validation_pool, '_FetchChangesForRepo',
+                     new=FakeFetchChangesForRepo)
     self.StartPatcher(FakeGerritPatch())
 
   def SetPatchDeps(self, patch, parents=(), cq=()):
