@@ -137,6 +137,10 @@ class UI_BASE_IME_EXPORT InputMethodChromeOS
   // including dead key etc.
   CharacterComposer character_composer_;
 
+  // Indicates whether currently is handling a physical key event.
+  // This is used in CommitText/UpdateCompositionText/etc.
+  bool handling_key_event_;
+
   // Used for making callbacks.
   base::WeakPtrFactory<InputMethodChromeOS> weak_ptr_factory_;
 

@@ -37,6 +37,7 @@ InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)
     : composing_text_(false),
       composition_changed_(false),
+      handling_key_event_(false),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
   chromeos::IMEBridge::Get()->SetInputContextHandler(this);
@@ -86,6 +87,8 @@ void InputMethodChromeOS::ProcessKeyEventDone(const ui::KeyEvent* event,
 
   if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED)
     ProcessKeyEventPostIME(*event, is_handled);
+
+  handling_key_event_ = false;
 }
 
 bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
@@ -109,6 +112,7 @@ bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
+  handling_key_event_ = true;
   // If |context_| is not usable, then we can only dispatch the key event as is.
   // We only dispatch the key event to input method when the |context_| is an
   // normal input field (not a password field).
@@ -330,9 +334,8 @@ void InputMethodChromeOS::UpdateContextFocusState() {
     OnCaretBoundsChanged(GetTextInputClient());
 }
 
-void InputMethodChromeOS::ProcessKeyEventPostIME(
-    const ui::KeyEvent& event,
-    bool handled) {
+void InputMethodChromeOS::ProcessKeyEventPostIME(const ui::KeyEvent& event,
+                                                 bool handled) {
   TextInputClient* client = GetTextInputClient();
   if (!client) {
     // As ibus works asynchronously, there is a chance that the focused client
@@ -473,7 +476,7 @@ void InputMethodChromeOS::CommitText(const std::string& text) {
 
   // If we are not handling key event, do not bother sending text result if the
   // focused text input client does not support text input.
-  if (!IsTextInputTypeNone()) {
+  if (!handling_key_event_ && !IsTextInputTypeNone()) {
     SendFakeProcessKeyEvent(true);
     GetTextInputClient()->InsertText(utf16_text);
     SendFakeProcessKeyEvent(false);
@@ -515,13 +518,15 @@ void InputMethodChromeOS::UpdateCompositionText(
   if (composition_.text.length())
     composing_text_ = true;
 
-  // If we receive a composition text without pending key event, then we need to
-  // send it to the focused text input client directly.
-  SendFakeProcessKeyEvent(true);
-  GetTextInputClient()->SetCompositionText(composition_);
-  SendFakeProcessKeyEvent(false);
-  composition_changed_ = false;
-  composition_.Clear();
+  if (!handling_key_event_) {
+    // If we receive a composition text without pending key event, then we need
+    // to send it to the focused text input client directly.
+    SendFakeProcessKeyEvent(true);
+    GetTextInputClient()->SetCompositionText(composition_);
+    SendFakeProcessKeyEvent(false);
+    composition_changed_ = false;
+    composition_.Clear();
+  }
 }
 
 void InputMethodChromeOS::HidePreeditText() {
@@ -532,13 +537,15 @@ void InputMethodChromeOS::HidePreeditText() {
   composition_changed_ = true;
   composition_.Clear();
 
-  TextInputClient* client = GetTextInputClient();
-  if (client && client->HasCompositionText()) {
-    SendFakeProcessKeyEvent(true);
-    client->ClearCompositionText();
-    SendFakeProcessKeyEvent(false);
+  if (!handling_key_event_) {
+    TextInputClient* client = GetTextInputClient();
+    if (client && client->HasCompositionText()) {
+      SendFakeProcessKeyEvent(true);
+      client->ClearCompositionText();
+      SendFakeProcessKeyEvent(false);
+    }
+    composition_changed_ = false;
   }
-  composition_changed_ = false;
 }
 
 void InputMethodChromeOS::DeleteSurroundingText(int32 offset, uint32 length) {
