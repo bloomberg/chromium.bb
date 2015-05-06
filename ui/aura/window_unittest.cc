@@ -1703,7 +1703,7 @@ TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {
   scoped_ptr<Window> w1(
       CreateTestWindowWithBounds(gfx::Rect(0, 0, 100, 100), root_window()));
 
-  EXPECT_FALSE(!w1->layer());
+  EXPECT_TRUE(w1->layer());
   w1->layer()->GetAnimator()->set_disable_timer_for_test(true);
   ui::LayerAnimator* animator = w1->layer()->GetAnimator();
 
@@ -1881,8 +1881,8 @@ TEST_F(WindowObserverTest, WindowVisibility) {
   // Hide should make the window invisible and the passed visible
   // parameter is false.
   w2->Hide();
-  EXPECT_FALSE(!GetVisibilityInfo());
-  EXPECT_FALSE(!GetVisibilityInfo());
+  EXPECT_TRUE(GetVisibilityInfo());
+  EXPECT_TRUE(GetVisibilityInfo());
   if (!GetVisibilityInfo())
     return;
   EXPECT_FALSE(GetVisibilityInfo()->window_visible);
@@ -1895,7 +1895,7 @@ TEST_F(WindowObserverTest, WindowVisibility) {
   ResetVisibilityInfo();
   EXPECT_TRUE(!GetVisibilityInfo());
   w2->Show();
-  EXPECT_FALSE(!GetVisibilityInfo());
+  EXPECT_TRUE(GetVisibilityInfo());
   if (!GetVisibilityInfo())
     return;
   EXPECT_FALSE(GetVisibilityInfo()->window_visible);
@@ -1908,7 +1908,7 @@ TEST_F(WindowObserverTest, WindowVisibility) {
   w2->Hide();
   ResetVisibilityInfo();
   w2->Show();
-  EXPECT_FALSE(!GetVisibilityInfo());
+  EXPECT_TRUE(GetVisibilityInfo());
   if (!GetVisibilityInfo())
     return;
   EXPECT_TRUE(GetVisibilityInfo()->window_visible);
@@ -2643,7 +2643,7 @@ TEST_F(WindowTest, DelegateDestroysSelfOnWindowDestroy) {
 
 class HierarchyObserver : public WindowObserver {
  public:
-  HierarchyObserver(Window* target) : target_(target) {
+  explicit HierarchyObserver(Window* target) : target_(target) {
     target_->AddObserver(this);
   }
   ~HierarchyObserver() override { target_->RemoveObserver(this); }
@@ -2835,7 +2835,6 @@ TEST_F(WindowTest, OnWindowHierarchyChange) {
     w1.reset();
     w2.reset();
   }
-
 }
 
 namespace {
@@ -2874,7 +2873,7 @@ class TestLayerAnimationObserver : public ui::LayerAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestLayerAnimationObserver);
 };
 
-}
+}  // namespace
 
 TEST_F(WindowTest, WindowDestroyCompletesAnimations) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(

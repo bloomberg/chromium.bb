@@ -150,7 +150,7 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
     // A NULL |audio_bus| indicates a decode error, which we don't expect.
-    ASSERT_FALSE(!audio_bus);
+    ASSERT_TRUE(audio_bus);
 
     // Did the decoder detect whether frames were dropped?
     EXPECT_EQ(should_be_continuous, is_continuous);

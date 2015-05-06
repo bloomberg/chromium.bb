@@ -132,7 +132,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
     // A NULL |video_frame| indicates a decode error, which we don't expect.
-    ASSERT_FALSE(!video_frame.get());
+    ASSERT_TRUE(video_frame.get());
 
     // Did the decoder detect whether frames were dropped?
     EXPECT_EQ(should_be_continuous, is_continuous);

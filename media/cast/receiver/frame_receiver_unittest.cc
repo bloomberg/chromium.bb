@@ -44,7 +44,7 @@ class FakeFrameClient {
 
   void DeliverEncodedFrame(scoped_ptr<EncodedFrame> frame) {
     SCOPED_TRACE(::testing::Message() << "num_called_ is " << num_called_);
-    ASSERT_FALSE(!frame)
+    ASSERT_TRUE(frame)
         << "If at shutdown: There were unsatisfied requests enqueued.";
     ASSERT_FALSE(expected_results_.empty());
     EXPECT_EQ(expected_results_.front().first, frame->frame_id);
@@ -146,6 +146,7 @@ class FrameReceiverTest : public ::testing::Test {
   // must remain alive until after its destruction.
   scoped_ptr<FrameReceiver> receiver_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FrameReceiverTest);
 };
 

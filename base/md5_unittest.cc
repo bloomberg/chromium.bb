@@ -246,7 +246,7 @@ TEST(MD5, IntermediateFinal) {
   EXPECT_TRUE(!memcmp(&header_digest, &check_header_digest,
                       sizeof(header_digest)));
   EXPECT_TRUE(!memcmp(&digest, &check_full_digest, sizeof(digest)));
-  EXPECT_FALSE(!memcmp(&digest, &header_digest, sizeof(digest)));
+  EXPECT_TRUE(memcmp(&digest, &header_digest, sizeof(digest)));
 }
 
 }  // namespace base

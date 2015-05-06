@@ -138,7 +138,7 @@ TEST(CookieUtilTest, TestCookieDateParsing) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     parsed_time = cookie_util::ParseCookieTime(tests[i].str);
     if (!tests[i].valid) {
-      EXPECT_FALSE(!parsed_time.is_null()) << tests[i].str;
+      EXPECT_TRUE(parsed_time.is_null()) << tests[i].str;
       continue;
     }
     EXPECT_TRUE(!parsed_time.is_null()) << tests[i].str;
