@@ -22,13 +22,19 @@ ScopedHandle GetHandleForPath(const base::FilePath& path) {
 
   ScopedHandle to_pass;
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid())
+  if (!file.IsValid()) {
+    LOG(WARNING) << "file not valid, path=" << path.value();
     return ScopedHandle();
+  }
 
   MojoHandle mojo_handle;
-  if (MojoCreatePlatformHandleWrapper(file.TakePlatformFile(), &mojo_handle) !=
-      MOJO_RESULT_OK)
+  MojoResult create_result =
+      MojoCreatePlatformHandleWrapper(file.TakePlatformFile(), &mojo_handle);
+  if (create_result != MOJO_RESULT_OK) {
+    LOG(WARNING) << "unable to create wrapper, path=" << path.value()
+                 << "result=" << create_result;
     return ScopedHandle();
+  }
 
   return ScopedHandle(mojo::Handle(mojo_handle)).Pass();
 }

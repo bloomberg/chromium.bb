@@ -36,7 +36,15 @@ base::FilePath GetPathForApplicationUrl(const GURL& application_url) {
     return base::FilePath();
 
   base::FilePath base_path;
+#if defined(OS_ANDROID)
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &base_path);
+  // |base_path| on android has an additional path, need to go up a level to get
+  // at other apps resources.
+  base_path = base_path.DirName();
+  base_path = base_path.AppendASCII("app_local_apps");
+#else
   PathService::Get(base::DIR_EXE, &base_path);
+#endif
   return base_path.AppendASCII(path).AppendASCII("resources");
 }
 
@@ -45,7 +53,7 @@ base::FilePath GetPathForResourceNamed(const base::FilePath& app_path,
   CHECK(!app_path.empty());
 
   if (resource_path.empty() || resource_path[0] == '/' ||
-      resource_path.back() == '/' ||
+      resource_path[resource_path.size() - 1] == '/' ||
       resource_path.find("//") != std::string::npos)
     return base::FilePath();
 

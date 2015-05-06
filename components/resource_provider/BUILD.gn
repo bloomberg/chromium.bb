@@ -2,24 +2,79 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
 import("//mojo/mojo_application_package.gni")
+import("//testing/test.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
-mojo_native_application("resource_provider") {
-  sources = [
-    "main.cc",
-    "resource_provider_app.cc",
-    "resource_provider_app.h",
-  ]
+if (is_android) {
+  import("//build/config/android/rules.gni")
 
-  deps = [
-    ":lib",
-    "//base",
-    "//components/resource_provider/public/interfaces",
-    "//mojo/application",
-    "//mojo/environment:chromium",
-    "//url",
-  ]
+  java_library_path = "$target_out_dir/java_library.dex.jar"
+
+  mojo_android_application("resource_provider") {
+    input_so = "$root_out_dir/lib.stripped/libresource_provider_lib.so"
+    input_dex_jar = java_library_path
+  }
+
+  shared_library("resource_provider_lib") {
+    sources = [
+      "android/android_hooks.cc",
+      "main.cc",
+      "resource_provider_app.cc",
+      "resource_provider_app.h",
+    ]
+
+    deps = [
+      ":jni_headers",
+      ":lib",
+      "//base",
+      "//components/resource_provider/public/interfaces",
+      "//mojo/application",
+      "//mojo/environment:chromium",
+      "//third_party/mojo/src/mojo/public/c/system:for_shared_library",
+      "//url",
+    ]
+  }
+
+  generate_jni("jni_headers") {
+    sources = [
+      "android/java/org/chromium/resource_provider/Main.java",
+    ]
+    jni_package = "components/resource_provider"
+  }
+
+  android_library("java_classes") {
+    java_files = [ "android/java/org/chromium/resource_provider/Main.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
+  android_standalone_library("java_library") {
+    dex_path = java_library_path
+
+    deps = [
+      ":java_classes",
+    ]
+  }
+} else {
+  mojo_native_application("resource_provider") {
+    sources = [
+      "main.cc",
+      "resource_provider_app.cc",
+      "resource_provider_app.h",
+    ]
+
+    deps = [
+      ":lib",
+      "//base",
+      "//components/resource_provider/public/interfaces",
+      "//mojo/application",
+      "//mojo/environment:chromium",
+      "//url",
+    ]
+  }
 }
 
 source_set("lib") {
