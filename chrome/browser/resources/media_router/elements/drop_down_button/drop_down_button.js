@@ -13,7 +13,7 @@ Polymer('drop-down-button', {
   useShownIcon_: false,
 
   /**
-   * Fires a drop-down-button-click event. This is called when the element is
+   * Fires a drop-down-button-click event. This is called when |this| is
    * clicked. Switches the value of |useShownIcon_|.
    */
   onButtonClick: function() {

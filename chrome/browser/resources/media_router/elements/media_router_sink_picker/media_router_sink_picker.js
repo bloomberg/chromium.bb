@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Shows a list of discovered sinks and their routes, if they exist.
+// This Polymer element shows a list of discovered sinks and their routes,
+// if they exist.
 Polymer('media-router-sink-picker', {
   publish: {
     /**

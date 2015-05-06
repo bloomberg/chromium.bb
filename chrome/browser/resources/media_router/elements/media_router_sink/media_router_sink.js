@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Shows information about an available media sink.
+// This Polymer element shows information about a media sink.
 Polymer('media-router-sink', {
   publish: {
     /**

@@ -18,6 +18,8 @@ Polymer('cast-mode-picker', {
     /**
      * The value of the selected cast mode in |castModeList|, or -1 if the
      * user has not explicitly selected a mode.
+     *
+     * @attribute selectedCastModeValue
      * @type {number}
      * @default -1
      */

@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 // This Polymer element shows information from media that is currently cast
-// to a device. It is assumed that the passed in route and sink correspond
-// with each other.
+// to a device. It is assumed that |route| and |sink| correspond to each other.
 Polymer('route-details', {
   publish: {
     /**
@@ -53,7 +52,7 @@ Polymer('route-details', {
   },
 
   /**
-   * Updates activityStatus_ with the name of the current sink.
+   * Updates |activityStatus_| with the name of |sink|.
    */
   updateActivityStatus: function() {
     this.activityStatus_ = this.sink ?

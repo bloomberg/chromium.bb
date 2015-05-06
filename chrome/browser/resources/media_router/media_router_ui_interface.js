@@ -1,6 +1,6 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // API invoked by the browser MediaRouterWebUIMessageHandler to communicate
 // with this UI.
@@ -80,9 +80,8 @@ cr.define('media_router.browserApi', function() {
    * Requests that a media route be started with the given sink.
    *
    * @param {!media_router.Sink} sink
-   * @param {number} selectedCastMode -1 if users did not select
-   *   a cast mode in the cast mode picker. Otherwise, it is the mode users
-   *   selected.
+   * @param {number} selectedCastMode The value of the cast mode the user
+   *   selected, or -1 if the user has not explicitly selected a mode.
    */
   function requestRoute(sink, selectedCastMode) {
     // TODO(imcheng): Implement.

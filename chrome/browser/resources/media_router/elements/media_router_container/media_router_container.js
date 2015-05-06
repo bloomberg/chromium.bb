@@ -15,8 +15,8 @@
     SINK_PICKER: 2,
   };
 
-// This element contains the entire media router interface. It handles hiding
-// and showing specific components.
+// This Polymer element contains the entire media router interface. It handles
+// hiding and showing specific components.
 Polymer('media-router-container', {
   publish: {
     /**
@@ -81,7 +81,7 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Whether or not the cast mode is currently hidden.
+   * Whether or not the cast-mode-picker is currently hidden.
    * @private {boolean}
    * @default true
    */
@@ -138,29 +138,28 @@ Polymer('media-router-container', {
   sinkToRouteMap_: null,
 
   /**
-   * Adds route to routeList.
+   * Adds |route| to |routeList|.
    *
    * @param {!media_router.Route} route The route to add.
    */
   addRoute: function(route) {
-    // Check if the route already exists or if its associated sink
+    // Check if |route| already exists or if its associated sink
     // does not exist.
     if (this.routeMap_[route.id] || !this.sinkMap_[route.sinkId])
       return;
 
     // If there is an existing route associated with the same sink, its
-    // sinkToRouteMap_ entry will be overwritten with that of the new route,
+    // |sinkToRouteMap_| entry will be overwritten with that of the new route,
     // which results in the correct sink to route mapping.
     this.routeList.push(route);
   },
 
   /**
-   * Filter that returns a class to be set on the element that called this.
-   * Returns 'hide' if value.castModeHidden is true.
+   * Filter that returns 'hide' if |value|.castModeHidden is true.
    *
    * @param {{castModeHidden: boolean}} value The parameters passed into this
    *   filter.
-   * Parameters in value:
+   * Parameters in |value|:
    *   castModeHidden - Whether or not the cast mode is currently hidden.
    */
   isCastModeHidden: function(value) {
@@ -168,13 +167,12 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Filter that returns a class to be set on the element that called this.
-   * Returns 'hide' if issue is null and value.state is not
-   *   MediaRouterContainerView.BLOCKING_ISSUE.
+   * Filter that returns 'hide' if |issue| is null and |value|.state is not
+   * MediaRouterContainerView.BLOCKING_ISSUE.
    *
    * @param {{state: !MediaRouterContainerView}} value The parameters passed
    *   into this filter.
-   * Parameters in value:
+   * Parameters in |value|:
    *   state - The current state of media-router-container.
    */
   isIssueBannerHidden: function(value) {
@@ -183,13 +181,12 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Filter that returns a class to be set on the element that called this.
-   * Returns 'hide' if value.state is not
-   *   MediaRouterContainerView.ROUTE_DETAILS.
+   * Filter that returns 'hide' if |value|.state is not
+   * MediaRouterContainerView.ROUTE_DETAILS.
    *
    * @param {{state: !MediaRouterContainerView}} value The parameters passed
    *   into this filter.
-   * Parameters in value:
+   * Parameters in |value|:
    *   state - The current state of media-router-container.
    */
   isRouteDetailsHidden: function(value) {
@@ -198,12 +195,12 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Filter that returns a class to be set on the element that called this.
-   * Returns 'hide' if value.state is not MediaRouterContainerView.SINK_PICKER.
+   * Filter that returns 'hide' if |value|.state is not
+   * MediaRouterContainerView.SINK_PICKER.
    *
    * @param {{state: !MediaRouterContainerView}} value The parameters passed
    *   into this filter.
-   * Parameters in value:
+   * Parameters in |value|:
    *   state - The current state of media-router-container.
    */
   isSinkPickerHidden: function(value) {
@@ -211,10 +208,10 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Creates a route if one doesn't already doesn't exist.
+   * Creates a new route if |route| is null.
    *
    * @param {!media_router.Sink} sink The sink to use.
-   * @param {!media_router.Route} route The current route tied to sink.
+   * @param {!media_router.Route} route The current route tied to |sink|.
    */
   maybeCreateRoute: function(sink, route) {
     if (route) {
@@ -235,15 +232,15 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Called when issue has changed. Shows issue-banner if there exists an issue
-   * to show. If newValue is null, then show the previously shown view.
+   * Called when |issue| has changed. Shows issue-banner if there exists an
+   * issue to show. If |newValue| is null, then show the previous view.
    *
-   * @param {?media_router.Issue} oldValue The previous value for issue.
-   * @param {?media_router.Issue} newValue The new value for issue.
+   * @param {?media_router.Issue} oldValue The previous value for |issue|.
+   * @param {?media_router.Issue} newValue The new value for |issue|.
    */
   issueChanged: function(oldValue, newValue) {
     if (newValue) {
-      // Checks that the new issue is blocking. Also checks that previous issue
+      // Checks that |newValue| is blocking. Also checks that previous issue
       // either did not exist or was not a blocking issue.
       if (newValue.isBlocking && (!oldValue || !oldValue.isBlocking)) {
         this.previousView_ = this.currentView_;
@@ -263,13 +260,12 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Called when an on-sink-click event bubbles up. Updates the current route
-   * and calls maybeCreateRoute in case currentRoute_ doesn't exist.
+   * Called when an on-sink-click event bubbles up. Updates |currentRoute_|.
    *
    * @param {{detail: {route: ?media_router.Route, sink: !media_router.Sink}}}
    *   data The information passed up with the event.
-   * Parameters in data.detail:
-   *   route - The existing route associated with the sink. Can be null.
+   * Parameters in |data|.detail:
+   *   route - The existing route associated with |sink|.
    *   sink - The sink that was clicked.
    */
   onSinkClick: function(data) {
@@ -278,14 +274,15 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Called when routeList is updated. Rebuilds routeMap_ and sinkToRouteMap_.
+   * Called when |routeList| is updated. Rebuilds |routeMap_| and
+   * |sinkToRouteMap_|.
    */
   rebuildRouteMaps: function() {
-    // Reset routeMap_ and sinkToRouteMap_.
+    // Reset |routeMap_| and |sinkToRouteMap_|.
     this.routeMap_ = {};
     this.sinkToRouteMap_ = {};
 
-    // Rebuild routeMap_ and sinkToRouteMap_.
+    // Rebuild |routeMap_| and |sinkToRouteMap_|.
     this.routeList.forEach(function(route) {
       this.routeMap_[route.id] = route;
       this.sinkToRouteMap_[route.sinkId] = route.id;
@@ -293,20 +290,20 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Called when sinkList is updated. Rebuilds sinkMap_.
+   * Called when |sinkList| is updated. Rebuilds |sinkMap_|.
    */
   rebuildSinkMap: function() {
-    // Reset sinkMap_.
+    // Reset |sinkMap_|.
     this.sinkMap_ = {};
 
-    // Rebuild sinkMap_.
+    // Rebuild |sinkMap_|.
     this.sinkList.forEach(function(sink) {
       this.sinkMap_[sink.id] = sink;
     }, this);
   },
 
   /**
-   * Updates currentView_ to ROUTE_DETAILS.
+   * Updates |currentView_| to ROUTE_DETAILS.
    */
   showRouteDetailsView: function() {
     this.previousView_ = this.currentView_;
@@ -314,7 +311,7 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Updates currentView_ to SINK_PICKER.
+   * Updates |currentView_| to SINK_PICKER.
    */
   showSinkPickerView: function() {
     this.previousView_ = this.currentView_;
@@ -322,7 +319,7 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Toggles castModeHidden_.
+   * Toggles |castModeHidden_|.
    */
   toggleCastMode: function() {
     this.castModeHidden_ = !this.castModeHidden_;
