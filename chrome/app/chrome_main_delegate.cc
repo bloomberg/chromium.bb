@@ -83,6 +83,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/java_exception_reporter.h"
 #include "chrome/common/descriptors_android.h"
 #else
 // Diagnostics is only available on non-android platforms.
@@ -784,10 +785,12 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // Zygote needs to call InitCrashReporter() in RunZygote().
   if (process_type != switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
-    if (process_type.empty())
+    if (process_type.empty()) {
       breakpad::InitCrashReporter(process_type);
-    else
+      chrome::android::InitJavaExceptionReporter();
+    } else {
       breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+    }
 #else  // !defined(OS_ANDROID)
     breakpad::InitCrashReporter(process_type);
 #endif  // defined(OS_ANDROID)

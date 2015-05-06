@@ -99,7 +99,9 @@ class BASE_EXPORT BuildInfo {
     return java_exception_info_;
   }
 
-  void set_java_exception_info(const std::string& info);
+  void SetJavaExceptionInfo(const std::string& info);
+
+  void ClearJavaExceptionInfo();
 
   static bool RegisterBindings(JNIEnv* env);
 

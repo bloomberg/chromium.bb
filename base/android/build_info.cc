@@ -68,9 +68,14 @@ BuildInfo* BuildInfo::GetInstance() {
   return Singleton<BuildInfo, BuildInfoSingletonTraits >::get();
 }
 
-void BuildInfo::set_java_exception_info(const std::string& info) {
+void BuildInfo::SetJavaExceptionInfo(const std::string& info) {
   DCHECK(!java_exception_info_) << "info should be set only once.";
   java_exception_info_ = strndup(info.c_str(), 4096);
+}
+
+void BuildInfo::ClearJavaExceptionInfo() {
+  delete java_exception_info_;
+  java_exception_info_ = nullptr;
 }
 
 // static

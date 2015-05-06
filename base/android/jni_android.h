@@ -130,6 +130,10 @@ BASE_EXPORT bool ClearException(JNIEnv* env);
 // This function will call CHECK() macro if there's any pending exception.
 BASE_EXPORT void CheckException(JNIEnv* env);
 
+// This returns a string representation of the java stack trace.
+BASE_EXPORT std::string GetJavaExceptionInfo(JNIEnv* env,
+                                             jthrowable java_throwable);
+
 }  // namespace android
 }  // namespace base
 
