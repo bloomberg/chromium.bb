@@ -26,9 +26,13 @@ LargeIconService::~LargeIconService() {
 base::CancelableTaskTracker::TaskId
     LargeIconService::GetLargeIconOrFallbackStyle(
         const GURL& page_url,
+        int min_source_size_in_pixel,
         int desired_size_in_pixel,
         const favicon_base::LargeIconCallback& callback,
         base::CancelableTaskTracker* tracker) {
+  DCHECK_GE(1, min_source_size_in_pixel);
+  DCHECK_GE(0, desired_size_in_pixel);
+
   // TODO(beaudoin): For now this is just a wrapper around
   //   GetLargestRawFaviconForPageURL. Add the logic required to select the best
   //   possible large icon. Also add logic to fetch-on-demand when the URL of
@@ -36,13 +40,15 @@ base::CancelableTaskTracker::TaskId
   return favicon_service_->GetLargestRawFaviconForPageURL(
       page_url,
       large_icon_types_,
-      desired_size_in_pixel,
+      std::max(min_source_size_in_pixel, desired_size_in_pixel),
       base::Bind(&LargeIconService::RunLargeIconCallback,
-                 base::Unretained(this), callback, desired_size_in_pixel),
+                 base::Unretained(this), callback, min_source_size_in_pixel,
+                 desired_size_in_pixel),
       tracker);
 }
 
 bool LargeIconService::ResizeLargeIconIfValid(
+    int min_source_size_in_pixel,
     int desired_size_in_pixel,
     const favicon_base::FaviconRawBitmapResult& bitmap_result,
     favicon_base::FaviconRawBitmapResult* resized_bitmap_result) {
@@ -52,15 +58,14 @@ bool LargeIconService::ResizeLargeIconIfValid(
     return false;
 
   // Require bitmap to be large enough. It's square, so just check width.
-  if (bitmap_result.pixel_size.width() < desired_size_in_pixel) {
-    // TODO(beaudoin): Potentially relax this, and allow icon to be scaled up.
+  if (bitmap_result.pixel_size.width() < min_source_size_in_pixel)
     return false;
-  }
 
   *resized_bitmap_result = bitmap_result;
 
-  // Special case: Can use |resized_bitmap_result| as is.
-  if (bitmap_result.pixel_size.width() == desired_size_in_pixel)
+  // Special case: Can use |bitmap_result| as is.
+  if (desired_size_in_pixel == 0 ||
+      bitmap_result.pixel_size.width() == desired_size_in_pixel)
     return true;
 
   // Resize bitmap: decode PNG, resize, and re-encode PNG.
@@ -86,11 +91,12 @@ bool LargeIconService::ResizeLargeIconIfValid(
 
 void LargeIconService::RunLargeIconCallback(
     const favicon_base::LargeIconCallback& callback,
+    int min_source_size_in_pixel,
     int desired_size_in_pixel,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   favicon_base::FaviconRawBitmapResult resized_bitmap_result;
-  if (ResizeLargeIconIfValid(desired_size_in_pixel, bitmap_result,
-                             &resized_bitmap_result)) {
+  if (ResizeLargeIconIfValid(min_source_size_in_pixel, desired_size_in_pixel,
+                             bitmap_result, &resized_bitmap_result)) {
     callback.Run(favicon_base::LargeIconResult(resized_bitmap_result));
     return;
   }

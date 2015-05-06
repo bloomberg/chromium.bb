@@ -78,7 +78,7 @@ jboolean LargeIconBridge::GetLargeIconForURL(
     jobject obj,
     jobject j_profile,
     jstring j_page_url,
-    jint desired_size_px,
+    jint min_source_size_px,
     jobject j_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   if (!profile)
@@ -98,7 +98,8 @@ jboolean LargeIconBridge::GetLargeIconForURL(
 
   large_icon_service->GetLargeIconOrFallbackStyle(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
-      desired_size_px,
+      min_source_size_px,
+      0,  // Do not resize.
       callback_runner,
       &cancelable_task_tracker_);
 

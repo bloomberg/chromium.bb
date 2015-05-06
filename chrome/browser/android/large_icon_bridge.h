@@ -20,7 +20,7 @@ class LargeIconBridge {
                               jobject obj,
                               jobject j_profile,
                               jstring j_page_url,
-                              jint desired_size_px,
+                              jint min_source_size_px,
                               jobject j_callback);
   static bool RegisterLargeIconBridge(JNIEnv* env);
 

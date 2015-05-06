@@ -61,8 +61,10 @@ void LargeIconSource::StartDataRequest(
     return;
   }
 
+  // TODO(beaudoin): Potentially allow icon to be scaled up.
   large_icon_service_->GetLargeIconOrFallbackStyle(
       url,
+      parser.size_in_pixels(),  // Reducing this will enable scale up.
       parser.size_in_pixels(),
       base::Bind(&LargeIconSource::OnLargeIconDataAvailable,
                  base::Unretained(this), callback, url,
