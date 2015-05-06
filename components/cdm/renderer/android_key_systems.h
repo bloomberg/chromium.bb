@@ -12,12 +12,7 @@
 namespace cdm {
 
 void AddAndroidWidevine(
-    std::vector<media::KeySystemInfo>* concrete_key_systems,
-    // TODO(sandersd): Non-compositing support depends on the
-    // use_video_overlay_for_embedded_encrypted_video pref, which may differ per
-    // WebContents, meaning this cannot be a global setting for the renderer
-    // process. Handle this per WebContents instead. http://crbug.com/467779
-    bool is_non_compositing_supported);
+    std::vector<media::KeySystemInfo>* concrete_key_systems);
 
 // Add platform-supported key systems which are not explicitly handled
 // by Chrome.

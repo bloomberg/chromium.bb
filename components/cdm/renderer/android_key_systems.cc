@@ -17,7 +17,9 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+using media::EmeFeatureSupport;
 using media::EmeRobustness;
+using media::EmeSessionTypeSupport;
 using media::KeySystemInfo;
 using media::SupportedCodecs;
 
@@ -39,60 +41,50 @@ static SupportedKeySystemResponse QueryKeySystemSupport(
   return response;
 }
 
-void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems,
-                        bool is_non_compositing_supported) {
+void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems) {
   SupportedKeySystemResponse response = QueryKeySystemSupport(
       kWidevineKeySystem);
 
-  // When creating the WIDEVINE key system, BrowserCdmFactoryAndroid configures
-  // the CDM's security level based on a pref. Therefore the supported
-  // codec/robustenss combinations depend on that pref, represented by
-  // |bool is_non_compositing_supported|.
-  // TODO(sandersd): For unprefixed, set the security level based on the
-  // requested robustness instead of the flag. http://crbug.com/467779
-  // We should also stop using the term "non_compositing."
-  SupportedCodecs codecs = response.compositing_codecs;
-  EmeRobustness max_audio_robustness = EmeRobustness::SW_SECURE_CRYPTO;
-  EmeRobustness max_video_robustness = EmeRobustness::SW_SECURE_CRYPTO;
-  if (is_non_compositing_supported) {
-    codecs = response.non_compositing_codecs;
-    max_audio_robustness = EmeRobustness::HW_SECURE_CRYPTO;
-    max_video_robustness = EmeRobustness::HW_SECURE_ALL;
-  }
+  // Since we do not control the implementation of the MediaDrm API on Android,
+  // we assume that it can and will make use of persistence even though no
+  // persistence-based features are supported.
 
-  // We are using MediaDrm API on Android and we cannot guarantee that API
-  // doesn't use persistent storage on the device. Therefore always set
-  // persistent state to EmeFeatureSupport::ALWAYS_ENABLED to err on the
-  // safe side.
-
-  if (codecs != media::EME_CODEC_NONE) {
+  if (response.compositing_codecs != media::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
-        WIDEVINE, codecs, max_audio_robustness, max_video_robustness,
-        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
-        media::EmeSessionTypeSupport::
-            NOT_SUPPORTED,  // persistent-release-message.
-        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Persistent state.
-        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Distinctive
-                                                   // identifier.
+        WIDEVINE,
+        response.compositing_codecs,           // Regular codecs.
+        response.non_compositing_codecs,       // Hardware-secure codecs.
+        EmeRobustness::HW_SECURE_CRYPTO,       // Max audio robustness.
+        EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
+        EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+        EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
+        EmeFeatureSupport::ALWAYS_ENABLED,     // Persistent state.
+        EmeFeatureSupport::ALWAYS_ENABLED,     // Distinctive identifier.
         concrete_key_systems);
+  } else {
+    // It doesn't make sense to support secure codecs but not regular codecs.
+    DCHECK(response.non_compositing_codecs == media::EME_CODEC_NONE);
   }
 
   // For compatibility with the prefixed API, register a separate L1 key system.
-  // When creating the WIDEVINE_HR_NON_COMPOSITING key system,
-  // BrowserCdmFactoryAndroid does not configure the CDM's security level (that
-  // is, leaves it as L1); therefore only secure codecs are supported.
-  // TODO(ddorwin): Remove with unprefixed. http://crbug.com/249976
-  if (response.non_compositing_codecs != media::EME_CODEC_NONE) {
+  // This key systems acts as though only hardware-secure codecs are available.
+  // We only register support for codecs with both regular and hardware-secure
+  // variants so that we can be sure they will work regardless of the renderer
+  // preference.
+  SupportedCodecs secure_codecs =
+      response.compositing_codecs & response.non_compositing_codecs;
+  if (secure_codecs != media::EME_CODEC_NONE) {
+    // Note: The prefixed API only consults the regular codecs field.
     AddWidevineWithCodecs(
-        WIDEVINE_HR_NON_COMPOSITING, response.non_compositing_codecs,
-        EmeRobustness::HW_SECURE_CRYPTO,              // Max audio robustness.
-        EmeRobustness::HW_SECURE_ALL,                 // Max video robustness.
-        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
-        media::EmeSessionTypeSupport::
-            NOT_SUPPORTED,  // persistent-release-message.
-        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Persistent state.
-        media::EmeFeatureSupport::ALWAYS_ENABLED,  // Distinctive
-                                                   // identifier.
+        WIDEVINE_HR_NON_COMPOSITING,
+        secure_codecs,                         // Regular codecs.
+        media::EME_CODEC_NONE,                 // Hardware-secure codecs.
+        EmeRobustness::HW_SECURE_CRYPTO,       // Max audio robustness.
+        EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
+        EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+        EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
+        EmeFeatureSupport::ALWAYS_ENABLED,     // Persistent state.
+        EmeFeatureSupport::ALWAYS_ENABLED,     // Distinctive identifier.
         concrete_key_systems);
   }
 }
@@ -121,7 +113,8 @@ void AddAndroidPlatformKeySystems(
 #endif  // defined(USE_PROPRIETARY_CODECS)
       info.max_audio_robustness = EmeRobustness::EMPTY;
       info.max_video_robustness = EmeRobustness::EMPTY;
-      // Assume the worst case (from a user point of view).
+      // Assume that platform key systems support no features but can and will
+      // make use of persistence and identifiers.
       info.persistent_license_support =
           media::EmeSessionTypeSupport::NOT_SUPPORTED;
       info.persistent_release_message_support =

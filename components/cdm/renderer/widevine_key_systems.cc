@@ -29,6 +29,9 @@ static std::string GetDirectParentName(std::string name) {
 void AddWidevineWithCodecs(
     WidevineCdmType widevine_cdm_type,
     SupportedCodecs supported_codecs,
+#if defined(OS_ANDROID)
+    SupportedCodecs supported_secure_codecs,
+#endif  // defined(OS_ANDROID)
     media::EmeRobustness max_audio_robustness,
     media::EmeRobustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
@@ -57,6 +60,9 @@ void AddWidevineWithCodecs(
   // there are no codecs supported in that container. Fix this when we support
   // initDataType.
   info.supported_codecs = supported_codecs;
+#if defined(OS_ANDROID)
+  info.supported_secure_codecs = supported_secure_codecs;
+#endif  // defined(OS_ANDROID)
 
   // Here we assume that support for a container imples support for the
   // associated initialization data type. KeySystems handles validating

@@ -78,7 +78,8 @@ class MEDIA_EXPORT KeySystemConfigSelector {
   bool IsSupportedContentType(const std::string& key_system,
                               EmeMediaType media_type,
                               const std::string& container_mime_type,
-                              const std::string& codecs);
+                              const std::string& codecs,
+                              ConfigState* config_state);
 
   const KeySystems* key_systems_;
   MediaPermission* media_permission_;

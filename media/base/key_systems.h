@@ -34,10 +34,9 @@ class MEDIA_EXPORT KeySystems {
       const std::string& key_system,
       EmeInitDataType init_data_type) const = 0;
 
-  // Returns whether the list of codecs are supported together by |key_system|.
-  // TODO(sandersd): Return a rule instead of a bool so that codec selection can
-  // affect other configuration options (namely robustness).
-  virtual bool IsSupportedCodecCombination(
+  // Returns the configuration rule for supporting a container and list of
+  // codecs.
+  virtual EmeConfigRule GetContentTypeConfigRule(
       const std::string& key_system,
       EmeMediaType media_type,
       const std::string& container_mime_type,

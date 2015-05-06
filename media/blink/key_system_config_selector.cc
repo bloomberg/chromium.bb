@@ -177,6 +177,12 @@ class KeySystemConfigSelector::ConfigState {
       case EmeConfigRule::IDENTIFIER_AND_PERSISTENCE_REQUIRED:
         return (!is_identifier_not_allowed_ && IsPermissionPossible() &&
                 !is_persistence_not_allowed_);
+#if defined(OS_ANDROID)
+      case EmeConfigRule::SECURE_CODECS_NOT_ALLOWED:
+        return !are_secure_codecs_required_;
+      case EmeConfigRule::SECURE_CODECS_REQUIRED:
+        return !are_secure_codecs_not_allowed_;
+#endif  // defined(OS_ANDROID)
       case EmeConfigRule::SUPPORTED:
         return true;
     }
@@ -210,6 +216,14 @@ class KeySystemConfigSelector::ConfigState {
         is_identifier_required_ = true;
         is_persistence_required_ = true;
         return;
+#if defined(OS_ANDROID)
+      case EmeConfigRule::SECURE_CODECS_NOT_ALLOWED:
+        are_secure_codecs_not_allowed_ = true;
+        return;
+      case EmeConfigRule::SECURE_CODECS_REQUIRED:
+        are_secure_codecs_required_ = true;
+        return;
+#endif  // defined(OS_ANDROID)
       case EmeConfigRule::SUPPORTED:
         return;
     }
@@ -219,10 +233,12 @@ class KeySystemConfigSelector::ConfigState {
  private:
   // Whether permission to use a distinctive identifier was requested. If set,
   // |is_permission_granted_| represents the final decision.
-  const bool was_permission_requested_;
+  // (Not changed by adding rules.)
+  bool was_permission_requested_;
 
   // Whether permission to use a distinctive identifier has been granted.
-  const bool is_permission_granted_;
+  // (Not changed by adding rules.)
+  bool is_permission_granted_;
 
   // Whether a rule has been added that requires or blocks a distinctive
   // identifier.
@@ -236,7 +252,11 @@ class KeySystemConfigSelector::ConfigState {
   bool is_persistence_required_ = false;
   bool is_persistence_not_allowed_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ConfigState);
+#if defined(OS_ANDROID)
+  // Whether a rule has been added that requires or blocks secure codecs.
+  bool are_secure_codecs_required_ = false;
+  bool are_secure_codecs_not_allowed_ = false;
+#endif  // defined(OS_ANDROID)
 };
 
 KeySystemConfigSelector::KeySystemConfigSelector(
@@ -256,38 +276,40 @@ bool KeySystemConfigSelector::IsSupportedContentType(
     const std::string& key_system,
     EmeMediaType media_type,
     const std::string& container_mime_type,
-    const std::string& codecs) {
+    const std::string& codecs,
+    KeySystemConfigSelector::ConfigState* config_state) {
   // TODO(sandersd): Move contentType parsing from Blink to here so that invalid
   // parameters can be rejected. http://crbug.com/417561
   std::string container_lower = base::StringToLowerASCII(container_mime_type);
 
-  // Check that |container_mime_type| and |codecs| are supported by the CDM.
-  // This check does not handle extended codecs, so extended codec information
-  // is stripped.
-  std::vector<std::string> codec_vector;
-  net::ParseCodecString(codecs, &codec_vector, true);
-  if (!key_systems_->IsSupportedCodecCombination(
-          key_system, media_type, container_lower, codec_vector)) {
+  // Check that |container_mime_type| is supported by Chrome.
+  if (!net::IsSupportedMediaMimeType(container_lower))
     return false;
-  }
-
-  // Check that |container_mime_type| is supported by Chrome. This can only
-  // happen if the CDM declares support for a container that Chrome does not.
-  if (!net::IsSupportedMediaMimeType(container_lower)) {
-    NOTREACHED();
-    return false;
-  }
 
   // Check that |codecs| are supported by Chrome. This is done primarily to
   // validate extended codecs, but it also ensures that the CDM cannot support
   // codecs that Chrome does not (which could complicate the robustness
   // algorithm).
-  if (codec_vector.empty())
-    return true;
-  codec_vector.clear();
+  std::vector<std::string> codec_vector;
   net::ParseCodecString(codecs, &codec_vector, false);
-  return (net::IsSupportedStrictMediaMimeType(container_lower, codec_vector) ==
-          net::IsSupported);
+  if (!codec_vector.empty() &&
+      (net::IsSupportedStrictMediaMimeType(container_lower, codec_vector) !=
+       net::IsSupported)) {
+    return false;
+  }
+
+  // Check that |container_mime_type| and |codecs| are supported by the CDM.
+  // This check does not handle extended codecs, so extended codec information
+  // is stripped (extended codec information was checked above).
+  std::vector<std::string> stripped_codec_vector;
+  net::ParseCodecString(codecs, &stripped_codec_vector, true);
+  EmeConfigRule codecs_rule = key_systems_->GetContentTypeConfigRule(
+      key_system, media_type, container_lower, stripped_codec_vector);
+  if (!config_state->IsRuleSupported(codecs_rule))
+    return false;
+  config_state->AddRule(codecs_rule);
+
+  return true;
 }
 
 bool KeySystemConfigSelector::GetSupportedCapabilities(
@@ -318,12 +340,15 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
                << "a capability contentType was empty.";
       return false;
     }
+
     // 3.4-3.11. (Implemented by IsSupportedContentType().)
+    ConfigState proposed_config_state = *config_state;
     if (!base::IsStringASCII(capability.mimeType) ||
         !base::IsStringASCII(capability.codecs) ||
         !IsSupportedContentType(key_system, media_type,
                                 base::UTF16ToASCII(capability.mimeType),
-                                base::UTF16ToASCII(capability.codecs))) {
+                                base::UTF16ToASCII(capability.codecs),
+                                &proposed_config_state)) {
       continue;
     }
     // 3.12. If robustness is not the empty string, run the following steps:
@@ -335,9 +360,9 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
         continue;
       EmeConfigRule robustness_rule = key_systems_->GetRobustnessConfigRule(
           key_system, media_type, base::UTF16ToASCII(capability.robustness));
-      if (!config_state->IsRuleSupported(robustness_rule))
+      if (!proposed_config_state.IsRuleSupported(robustness_rule))
         continue;
-      config_state->AddRule(robustness_rule);
+      proposed_config_state.AddRule(robustness_rule);
       // 3.12.2. Add robustness to configuration.
       //         (It's already added, we use capability as configuration.)
     }
@@ -345,11 +370,11 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
     //       encrypted media data as specified by configuration, including all
     //       media types, in combination with local accumulated capabilities,
     //       continue to the next iteration.
-    //       (This is handled when adding rules to |config_state|.)
+    //       (This is handled when adding rules to |proposed_config_state|.)
     // 3.14. Add configuration to supported media capabilities.
     supported_media_capabilities->push_back(capability);
     // 3.15. Add configuration to local accumulated capabilities.
-    //       (Skipped as we directly update |config_state|.)
+    *config_state = proposed_config_state;
   }
   // 4. If supported media capabilities is empty, return null.
   if (supported_media_capabilities->empty()) {
@@ -367,6 +392,7 @@ KeySystemConfigSelector::GetSupportedConfiguration(
     const blink::WebMediaKeySystemConfiguration& candidate,
     ConfigState* config_state,
     blink::WebMediaKeySystemConfiguration* accumulated_configuration) {
+  // TODO(sandersd): Set state of SECURE_CODECS from renderer pref.
   // From https://w3c.github.io/encrypted-media/#get-supported-configuration
   // 1. Let accumulated configuration be empty. (Done by caller.)
   // 2. If the initDataTypes member is present in candidate configuration, run

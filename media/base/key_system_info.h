@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 
@@ -35,14 +36,19 @@ struct MEDIA_EXPORT KeySystemInfo {
 
   std::string key_system;
 
-  InitDataTypeMask supported_init_data_types;
-  SupportedCodecs supported_codecs;
-  EmeRobustness max_audio_robustness;
-  EmeRobustness max_video_robustness;
-  EmeSessionTypeSupport persistent_license_support;
-  EmeSessionTypeSupport persistent_release_message_support;
-  EmeFeatureSupport persistent_state_support;
-  EmeFeatureSupport distinctive_identifier_support;
+  InitDataTypeMask supported_init_data_types = kInitDataTypeMaskNone;
+  SupportedCodecs supported_codecs = EME_CODEC_NONE;
+#if defined(OS_ANDROID)
+  SupportedCodecs supported_secure_codecs = EME_CODEC_NONE;
+#endif  // defined(OS_ANDROID)
+  EmeRobustness max_audio_robustness = EmeRobustness::INVALID;
+  EmeRobustness max_video_robustness = EmeRobustness::INVALID;
+  EmeSessionTypeSupport persistent_license_support =
+      EmeSessionTypeSupport::INVALID;
+  EmeSessionTypeSupport persistent_release_message_support =
+      EmeSessionTypeSupport::INVALID;
+  EmeFeatureSupport persistent_state_support = EmeFeatureSupport::INVALID;
+  EmeFeatureSupport distinctive_identifier_support = EmeFeatureSupport::INVALID;
 
   // A hierarchical parent for |key_system|. This value can be used to check
   // supported types but cannot be used to instantiate a MediaKeys object.
@@ -50,7 +56,7 @@ struct MEDIA_EXPORT KeySystemInfo {
   std::string parent_key_system;
 
   // The following indicate how the corresponding CDM should be instantiated.
-  bool use_aes_decryptor;
+  bool use_aes_decryptor = false;
 #if defined(ENABLE_PEPPER_CDMS)
   std::string pepper_type;
 #endif

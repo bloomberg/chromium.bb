@@ -129,6 +129,15 @@ enum class EmeConfigRule {
   // The configuration option is supported if both a distinctive identifier and
   // persistent state are available.
   IDENTIFIER_AND_PERSISTENCE_REQUIRED,
+#if defined(OS_ANDROID)
+  // The configuration option is supported if no hardware-secure codecs are used
+  // (as they would be for video if secure surfaces are enabled).
+  SECURE_CODECS_NOT_ALLOWED,
+  // The configuration option is supported if only hardware-secure codecs are
+  // used. This implies that secure surfaces (hole-punching) are required for
+  // video.
+  SECURE_CODECS_REQUIRED,
+#endif  // defined(OS_ANDROID)
   // The configuration option is supported without conditions.
   SUPPORTED,
 };

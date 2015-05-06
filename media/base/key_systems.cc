@@ -202,7 +202,7 @@ class KeySystemsImpl : public KeySystems {
   bool IsSupportedInitDataType(const std::string& key_system,
                                EmeInitDataType init_data_type) const override;
 
-  bool IsSupportedCodecCombination(
+  EmeConfigRule GetContentTypeConfigRule(
       const std::string& key_system,
       EmeMediaType media_type,
       const std::string& container_mime_type,
@@ -665,7 +665,7 @@ bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
   return concrete_key_system_map_.count(key_system) != 0;
 }
 
-bool KeySystemsImpl::IsSupportedCodecCombination(
+EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
     const std::string& key_system,
     EmeMediaType media_type,
     const std::string& container_mime_type,
@@ -677,12 +677,12 @@ bool KeySystemsImpl::IsSupportedCodecCombination(
   switch (media_type) {
     case EmeMediaType::AUDIO:
       if (!StartsWithASCII(container_mime_type, "audio/", true))
-        return false;
+        return EmeConfigRule::NOT_SUPPORTED;
       media_type_codec_mask = audio_codec_mask_;
       break;
     case EmeMediaType::VIDEO:
       if (!StartsWithASCII(container_mime_type, "video/", true))
-        return false;
+        return EmeConfigRule::NOT_SUPPORTED;
       media_type_codec_mask = video_codec_mask_;
       break;
   }
@@ -692,26 +692,43 @@ bool KeySystemsImpl::IsSupportedCodecCombination(
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return false;
+    return EmeConfigRule::NOT_SUPPORTED;
   }
   SupportedCodecs key_system_codec_mask =
       key_system_iter->second.supported_codecs;
+#if defined(OS_ANDROID)
+  SupportedCodecs key_system_secure_codec_mask =
+      key_system_iter->second.supported_secure_codecs;
+#endif  // defined(OS_ANDROID)
+
 
   // Check that the container is supported by the key system. (This check is
   // necessary because |codecs| may be empty.)
   SupportedCodecs container_codec_mask =
       GetCodecMaskForContainer(container_mime_type) & media_type_codec_mask;
   if ((key_system_codec_mask & container_codec_mask) == 0)
-    return false;
+    return EmeConfigRule::NOT_SUPPORTED;
 
   // Check that the codecs are supported by the key system and container.
+  EmeConfigRule support = EmeConfigRule::SUPPORTED;
   for (size_t i = 0; i < codecs.size(); i++) {
     SupportedCodecs codec = GetCodecForString(codecs[i]);
     if ((codec & key_system_codec_mask & container_codec_mask) == 0)
-      return false;
+      return EmeConfigRule::NOT_SUPPORTED;
+#if defined(OS_ANDROID)
+    // Check whether the codec supports a hardware-secure mode; if not, indicate
+    // that hardware-secure codecs are not available for all listed codecs.
+    // Because the check for regular codec support is early-exit, we don't have
+    // to consider codecs that are only supported in hardware-secure mode. We
+    // could do so, and make use of SECURE_CODECS_REQUIRED, if it turns out that
+    // hardware-secure-only codecs actually exist and are useful.
+    if ((codec & key_system_secure_codec_mask) == 0)
+      support = EmeConfigRule::SECURE_CODECS_NOT_ALLOWED;
+#endif  // defined(OS_ANDROID)
+
   }
 
-  return true;
+  return support;
 }
 
 EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
@@ -754,8 +771,8 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     return EmeConfigRule::NOT_SUPPORTED;
   }
 
-#if defined(OS_CHROMEOS)
   if (key_system == kWidevineKeySystem) {
+#if defined(OS_CHROMEOS)
     // Hardware security requires remote attestation.
     if (robustness >= EmeRobustness::HW_SECURE_CRYPTO)
       return EmeConfigRule::IDENTIFIER_REQUIRED;
@@ -768,8 +785,11 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
         max_robustness == EmeRobustness::HW_SECURE_ALL) {
       return EmeConfigRule::IDENTIFIER_RECOMMENDED;
     }
-  }
+#elif defined(OS_ANDROID)
+    if (robustness > EmeRobustness::SW_SECURE_CRYPTO)
+      return EmeConfigRule::SECURE_CODECS_REQUIRED;
 #endif  // defined(OS_CHROMEOS)
+  }
 
   return EmeConfigRule::SUPPORTED;
 }

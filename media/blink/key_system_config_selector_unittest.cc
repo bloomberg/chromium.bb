@@ -69,20 +69,21 @@ class FakeKeySystems : public KeySystems {
     return false;
   }
 
-  bool IsSupportedCodecCombination(
+  // TODO(sandersd): Secure codec simulation.
+  EmeConfigRule GetContentTypeConfigRule(
       const std::string& key_system,
       EmeMediaType media_type,
       const std::string& container_mime_type,
       const std::vector<std::string>& codecs) const override {
     if (container_mime_type == kUnsupportedContainer)
-      return false;
+      return EmeConfigRule::NOT_SUPPORTED;
     DCHECK_EQ(kSupportedContainer, container_mime_type);
     for (const std::string& codec : codecs) {
       if (codec == kUnsupportedCodec)
-        return false;
+        return EmeConfigRule::NOT_SUPPORTED;
       DCHECK_EQ(kSupportedCodec, codec);
     }
-    return true;
+    return EmeConfigRule::SUPPORTED;
   }
 
   EmeConfigRule GetRobustnessConfigRule(

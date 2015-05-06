@@ -14,6 +14,10 @@
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
+using ::media::EmeFeatureSupport;
+using ::media::EmeRobustness;
+using ::media::EmeSessionTypeSupport;
+
 namespace chromecast {
 namespace shell {
 
@@ -40,24 +44,28 @@ void AddKeySystemWithCodecs(
 void AddChromecastKeySystems(
     std::vector<::media::KeySystemInfo>* key_systems_info) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
+  ::media::SupportedCodecs codecs =
+      ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1;
   AddWidevineWithCodecs(
-      cdm::WIDEVINE, ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1,
-      ::media::EmeRobustness::HW_SECURE_ALL,          // Max audio robustness.
-      ::media::EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
-      ::media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
-      ::media::EmeSessionTypeSupport::
-          NOT_SUPPORTED,  // persistent-release-message.
+      cdm::WIDEVINE,
+      codecs,                                // Regular codecs.
+#if defined(OS_ANDROID)
+      codecs,                                // Hardware-secure codecs.
+#endif  // defined(OS_ANDROID)
+      EmeRobustness::HW_SECURE_ALL,          // Max audio robustness.
+      EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
+      EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+      EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
       // Note: On Chromecast, all CDMs may have persistent state.
-      ::media::EmeFeatureSupport::ALWAYS_ENABLED,  // Persistent state.
-      ::media::EmeFeatureSupport::ALWAYS_ENABLED,  // Distinctive
-                                                   // identifier.
+      EmeFeatureSupport::ALWAYS_ENABLED,     // Persistent state.
+      EmeFeatureSupport::ALWAYS_ENABLED,     // Distinctive identifier.
       key_systems_info);
-#endif
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 #if defined(PLAYREADY_CDM_AVAILABLE)
   AddKeySystemWithCodecs(media::kChromecastPlayreadyKeySystem,
                          key_systems_info);
-#endif
+#endif  // defined(PLAYREADY_CDM_AVAILABLE)
 }
 
 }  // namespace shell

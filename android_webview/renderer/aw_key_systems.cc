@@ -9,11 +9,7 @@ namespace android_webview {
 
 void AwAddKeySystems(
     std::vector<media::KeySystemInfo>* key_systems_info) {
-  // TODO(sandersd): Non-compositing support depends on the
-  // use_video_overlay_for_embedded_encrypted_video pref, which may differ per
-  // WebContents. For now, err on the side of registering support.
-  // http://crbug.com/467779
-  cdm::AddAndroidWidevine(key_systems_info, true);
+  cdm::AddAndroidWidevine(key_systems_info);
   cdm::AddAndroidPlatformKeySystems(key_systems_info);
 }
 
