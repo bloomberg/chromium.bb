@@ -17,15 +17,10 @@ group("runner") {
 
   deps = [
     ":mojo_runner",
-    ":mojo_runner_unittests",
-    "//mojo/shell:mojo_shell_unittests",
   ]
 
   if (is_android) {
-    deps += [
-      ":mojo_runner_apk",
-      ":mojo_runner_unittests_apk",
-    ]
+    deps += [ ":mojo_runner_apk" ]
   }
 }
 
@@ -128,6 +123,11 @@ source_set("lib") {
 
   public_deps = [
     ":switches",
+  ]
+
+  data_deps = [
+    "//components/core_services",
+    "//mojo/services/tracing",
   ]
 
   if (is_android) {

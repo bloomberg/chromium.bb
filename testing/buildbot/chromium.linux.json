@@ -125,14 +125,12 @@
       "content_unittests",
       "extensions_browsertests",
       "extensions_unittests",
-      "html_viewer_unittests",
       "interactive_ui_tests",
       "mandoline:all",
       "media_unittests",
       "net_unittests",
       "sync_integration_tests",
-      "unit_tests",
-      "view_manager_service_unittests"
+      "unit_tests"
     ],
     "gtest_tests": [
       {

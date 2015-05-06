@@ -5,6 +5,16 @@
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
+group("test_service") {
+  # Meta-target, don't link into production code.
+  testonly = true
+  deps = [
+    ":bindings",
+    ":test_app",
+    ":test_request_tracker_app",
+  ]
+}
+
 mojom("bindings") {
   sources = [
     "test_request_tracker.mojom",

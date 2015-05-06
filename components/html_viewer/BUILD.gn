@@ -145,6 +145,13 @@ source_set("lib") {
   if (is_win) {
     sources += [ "html_viewer_version.rc" ]
   }
+
+  data_deps = [
+    "//components/clipboard",
+    "//components/native_viewport",
+    "//components/surfaces",
+    "//components/view_manager",
+  ]
 }
 
 if (is_android) {

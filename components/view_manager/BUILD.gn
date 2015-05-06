@@ -95,6 +95,14 @@ source_set("view_manager_lib") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  data_deps = [
+    "//components/native_viewport",
+    "//components/surfaces",
+
+    # TODO(msw|sky): VM and WM connect to each other; avoid circular dependency.
+    #"//components/window_manager:lib",
+  ]
 }
 
 source_set("test_support") {
@@ -116,7 +124,7 @@ source_set("test_support") {
   ]
 }
 
-test("view_manager_service_unittests") {
+test("view_manager_unittests") {
   sources = [
     "animation_runner_unittest.cc",
     "focus_controller_unittest.cc",

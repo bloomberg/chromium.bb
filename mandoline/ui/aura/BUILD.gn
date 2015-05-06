@@ -54,4 +54,9 @@ source_set("aura") {
     "//ui/gl",
     "//ui/views",
   ]
+
+  data_deps = [
+    "//components/native_viewport",
+    "//components/surfaces",
+  ]
 }

@@ -5,13 +5,19 @@
 import("//third_party/mojo/src/mojo/public/mojo.gni")
 
 group("app") {
+  deps = [
+    "//mandoline/ui",
+  ]
+
   if (is_android) {
-    deps = [
-      "//mandoline/app/android",
-    ]
+    deps += [ "//mandoline/app/android" ]
   } else {
-    deps = [
-      "//mandoline/app/desktop",
-    ]
+    deps += [ "//mandoline/app/desktop" ]
   }
+
+  data_deps = [
+    "//components/html_viewer",
+    "//components/kiosk_wm:window_manager",
+    "//mojo/runner:mojo_runner",
+  ]
 }

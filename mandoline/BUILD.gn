@@ -6,14 +6,32 @@ group("all") {
   # Meta-target, don't link into production code.
   testonly = true
 
-  # TODO(beng): should be able to remove this in favor of explicit dependencies
-  #             from subdirs.
   deps = [
-    "//mandoline/ui",
-    "//mojo",
+    ":tests",
   ]
 
   if (!is_component_build) {
     deps += [ "//mandoline/app" ]
+  }
+}
+
+group("tests") {
+  testonly = true
+  deps = [
+    "//mojo:tests",
+  ]
+
+  # TODO(GYP): Make this work.
+  if (!is_component_build && !is_mac) {
+    deps += [
+      "//components/clipboard:apptests",
+      "//components/html_viewer:apptests",
+      "//components/html_viewer:html_viewer_unittests",
+      "//components/resource_provider:apptests",
+      "//components/resource_provider:resource_provider_unittests",
+      "//components/view_manager:apptests",
+      "//components/view_manager:view_manager_unittests",
+      "//components/window_manager:apptests",
+    ]
   }
 }

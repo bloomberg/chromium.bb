@@ -5,89 +5,17 @@
 import("//build/config/ui.gni")
 
 group("services") {
+  # Meta-target, don't link into production code.
+  testonly = true
   deps = [
     "//mojo/services/network/public/interfaces",
-    "//components/clipboard/public/interfaces",
-    "//components/native_viewport/public/interfaces",
-    "//components/surfaces/public/interfaces",
-    "//components/view_manager/public/interfaces",
-    "//mandoline/services/navigation/public/interfaces",
-    "//third_party/mojo_services/src/content_handler/public/interfaces",
-    "//ui/mojo/events:interfaces",
-    "//ui/mojo/geometry:interfaces",
+    "//mojo/services/test_service",
   ]
 
   if (!is_component_build) {
     deps += [
-      "//components/core_services",
-      "//components/html_viewer",
-      "//components/kiosk_wm:window_manager",
-      "//components/native_viewport",
-      "//components/resource_provider",
-      "//components/surfaces",
-      "//components/view_manager",
-      "//components/window_manager:lib",
       "//mojo/services/network",
       "//mojo/services/tracing",
     ]
-
-    # TODO(GYP): Make this work.
-    if (is_mac) {
-      deps -= [
-        "//components/html_viewer",
-        "//components/kiosk_wm:window_manager",
-        "//components/native_viewport",
-        "//components/view_manager",
-        "//components/window_manager:lib",
-      ]
-    }
-  }
-}
-
-group("tests") {
-  testonly = true
-  deps = [
-    ":services",
-  ]
-  if (!is_component_build) {
-    deps += [
-      "//components/html_viewer:html_viewer_unittests",
-      "//components/resource_provider:tests",
-      "//components/view_manager:view_manager_service_unittests",
-    ]
-
-    # TODO(GYP): Make this work.
-    if (is_mac) {
-      deps -= [
-        "//components/html_viewer:html_viewer_unittests",
-        "//components/view_manager:view_manager_service_unittests",
-      ]
-    }
-  }
-}
-
-group("apptests") {
-  testonly = true
-  deps = [
-    ":services",
-  ]
-  if (!is_component_build) {
-    deps += [
-      "//components/clipboard:apptests",
-      "//components/html_viewer:apptests",
-      "//components/resource_provider:apptests",
-      "//components/view_manager:apptests",
-      "//components/window_manager:apptests",
-      "//mojo/services/network:apptests",
-    ]
-
-    # TODO(GYP): Make this work.
-    if (is_mac) {
-      deps -= [
-        "//components/html_viewer:apptests",
-        "//components/view_manager:apptests",
-        "//components/window_manager:apptests",
-      ]
-    }
   }
 }

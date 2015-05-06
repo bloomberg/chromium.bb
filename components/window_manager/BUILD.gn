@@ -27,6 +27,8 @@ source_set("lib") {
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
   ]
+
+  data_deps = [ "//components/view_manager" ]
 }
 
 # A basic window manager with a default delegate used for testing.

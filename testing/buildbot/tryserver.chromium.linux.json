@@ -85,7 +85,6 @@
       "gn_unittests",
       "google_apis_unittests",
       "gpu_unittests",
-      "html_viewer_unittests",
       "interactive_ui_tests",
       "ipc_tests",
       "jingle_unittests",
@@ -104,7 +103,6 @@
       "ui_touch_selection_unittests",
       "unit_tests",
       "url_unittests",
-      "view_manager_service_unittests",
       "views_unittests",
       "wm_unittests"
     ],
@@ -173,14 +171,12 @@
       "browser_tests",
       "content_browsertests",
       "extensions_browsertests",
-      "html_viewer_unittests",
       "interactive_ui_tests",
       "mandoline:all",
       "media_unittests",
       "net_unittests",
       "sync_integration_tests",
-      "unit_tests",
-      "view_manager_service_unittests"
+      "unit_tests"
     ],
     "gtest_tests": [
       {

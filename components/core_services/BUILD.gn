@@ -24,4 +24,6 @@ mojo_native_application("core_services") {
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
+
+  data_deps = [ "//components/clipboard" ]
 }
