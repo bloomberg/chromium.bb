@@ -435,7 +435,13 @@ TEST_F(ThreadWatcherTest, CrashOnHangThreadsAllArgs) {
 
 // Test registration. When thread_watcher_list_ goes out of scope after
 // TearDown, all thread watcher objects will be deleted.
-TEST_F(ThreadWatcherTest, Registration) {
+// This test is crashing flakily on Android: http://crbug.com/485091
+#if defined(OS_ANDROID)
+#define MAYBE_Registration DISABLED_Registration
+#else
+#define MAYBE_Registration Registration
+#endif
+TEST_F(ThreadWatcherTest, MAYBE_Registration) {
   // Check ThreadWatcher object has all correct parameters.
   EXPECT_EQ(io_thread_id, io_watcher_->thread_id());
   EXPECT_EQ(io_thread_name, io_watcher_->thread_name());

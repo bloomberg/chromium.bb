@@ -38,7 +38,8 @@ void NotifyApplicationStateChange(base::android::ApplicationState state) {
 
 }  // namespace
 
-TEST(ThreadWatcherAndroidTest, ApplicationStatusNotification) {
+// This test is flaky: http://crbug.com/485091.
+TEST(ThreadWatcherAndroidTest, DISABLED_ApplicationStatusNotification) {
   // Do not delay the ThreadWatcherList initialization for this test.
   ThreadWatcherList::g_initialize_delay_seconds = 0;
 
