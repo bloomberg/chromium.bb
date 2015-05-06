@@ -102,7 +102,9 @@ class CONTENT_EXPORT DownloadResourceHandler
   // thread before StartOnUIThread is called.
   // Created on IO thread, but only accessed on UI thread. |tab_info_| holds
   // the pointer until we pass it off to StartOnUIThread or DeleteSoon.
-  DownloadTabInfo* tab_info_;
+  // Marked as a scoped_ptr<> to indicate ownership of the structure, but
+  // deletion must occur on the IO thread.
+  scoped_ptr<DownloadTabInfo> tab_info_;
 
   // Data flow
   scoped_refptr<net::IOBuffer> read_buffer_;       // From URLRequest.

@@ -57,7 +57,7 @@ void CallStartedCBOnUIThread(
 // DownloadResourceHandler members from the UI thread.
 static void StartOnUIThread(
     scoped_ptr<DownloadCreateInfo> info,
-    DownloadResourceHandler::DownloadTabInfo* tab_info,
+    scoped_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info,
     scoped_ptr<ByteStreamReader> stream,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -96,6 +96,9 @@ void InitializeDownloadTabInfoOnUIThread(
   }
 }
 
+void DeleteOnUIThread(
+    scoped_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info) {}
+
 }  // namespace
 
 const int DownloadResourceHandler::kDownloadByteStreamSize = 100 * 1024;
@@ -109,6 +112,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       download_id_(id),
       started_cb_(started_cb),
       save_info_(save_info.Pass()),
+      tab_info_(new DownloadTabInfo()),
       last_buffer_size_(0),
       bytes_read_(0),
       pause_count_(0),
@@ -116,10 +120,12 @@ DownloadResourceHandler::DownloadResourceHandler(
       on_response_started_called_(false) {
   RecordDownloadCount(UNTHROTTLED_COUNT);
 
-  // Do UI thread initialization asap after DownloadResourceHandler creation
-  // since the tab could be navigated before StartOnUIThread gets called.
+  // Do UI thread initialization for tab_info_ asap after
+  // DownloadResourceHandler creation since the tab could be navigated
+  // before StartOnUIThread gets called.  This is safe because deletion
+  // will occur via PostTask() as well, which will serialized behind this
+  // PostTask()
   const ResourceRequestInfoImpl* request_info = GetRequestInfo();
-  tab_info_ = new DownloadTabInfo();
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -128,7 +134,7 @@ DownloadResourceHandler::DownloadResourceHandler(
                                        request_info->GetChildID(),
                                        request_info->GetRouteID(),
                                        request_info->GetRequestID()),
-                 tab_info_));
+                 tab_info_.get()));
   power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Download in progress");
@@ -243,14 +249,12 @@ bool DownloadResourceHandler::OnResponseStarted(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&StartOnUIThread,
                  base::Passed(&info),
-                 base::Owned(tab_info_),
+                 base::Passed(&tab_info_),
                  base::Passed(&stream_reader),
                  // Pass to StartOnUIThread so that variable
                  // access is always on IO thread but function
                  // is called on UI thread.
                  started_cb_));
-  // Now owned by the task that was just posted.
-  tab_info_ = NULL;
   // Guaranteed to be called in StartOnUIThread
   started_cb_.Reset();
 
@@ -530,8 +534,11 @@ DownloadResourceHandler::~DownloadResourceHandler() {
 
   // tab_info_ must be destroyed on UI thread, since
   // InitializeDownloadTabInfoOnUIThread might still be using it.
-  if (tab_info_)
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, tab_info_);
+  if (tab_info_.get()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DeleteOnUIThread, base::Passed(&tab_info_)));
+  }
 
   UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",
                       base::TimeTicks::Now() - download_start_time_);
