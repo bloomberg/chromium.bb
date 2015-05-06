@@ -164,18 +164,24 @@ bool IsFloatingVirtualKeyboardEnabled() {
 }
 
 bool IsGestureTypingEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGestureTyping);
+  std::string keyboard_switch =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kGestureTyping);
+  return keyboard_switch == switches::kGestureTypingEnabled;
 }
 
 bool IsGestureSelectionEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGestureSelection);
+  std::string keyboard_switch =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kGestureSelection);
+  return keyboard_switch == switches::kGestureSelectionEnabled;
 }
 
 bool IsGestureDeletionEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableGestureDeletion);
+  std::string keyboard_switch =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kGestureDeletion);
+  return keyboard_switch == switches::kGestureDeletionEnabled;
 }
 
 bool IsMaterialDesignEnabled() {

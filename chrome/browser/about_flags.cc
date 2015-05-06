@@ -476,6 +476,36 @@ const Experiment::Choice kFloatingVirtualKeyboardChoices[] = {
     keyboard::switches::kFloatingVirtualKeyboard,
     keyboard::switches::kFloatingVirtualKeyboardEnabled},
 };
+
+const Experiment::Choice kGestureTypingChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    keyboard::switches::kGestureTyping,
+    keyboard::switches::kGestureTypingDisabled},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    keyboard::switches::kGestureTyping,
+    keyboard::switches::kGestureTypingEnabled},
+};
+
+const Experiment::Choice kGestureSelectionChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    keyboard::switches::kGestureSelection,
+    keyboard::switches::kGestureSelectionDisabled},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    keyboard::switches::kGestureSelection,
+    keyboard::switches::kGestureSelectionEnabled},
+};
+
+const Experiment::Choice kGestureDeletionChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    keyboard::switches::kGestureDeletion,
+    keyboard::switches::kGestureDeletionDisabled},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    keyboard::switches::kGestureDeletion,
+    keyboard::switches::kGestureDeletionEnabled},
+};
 #endif
 
 const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
@@ -1451,25 +1481,25 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kFloatingVirtualKeyboardChoices)
   },
   {
-    "enable-gesture-typing",
-    IDS_FLAGS_ENABLE_GESTURE_TYPING_NAME,
-    IDS_FLAGS_ENABLE_GESTURE_TYPING_DESCRIPTION,
+    "gesture-typing",
+    IDS_FLAGS_GESTURE_TYPING_NAME,
+    IDS_FLAGS_GESTURE_TYPING_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(keyboard::switches::kEnableGestureTyping)
+    MULTI_VALUE_TYPE(kGestureTypingChoices)
   },
   {
-    "enable-gesture-deletion",
-    IDS_FLAGS_ENABLE_GESTURE_DELETION_NAME,
-    IDS_FLAGS_ENABLE_GESTURE_DELETION_DESCRIPTION,
+    "gesture-selection",
+    IDS_FLAGS_GESTURE_SELECTION_NAME,
+    IDS_FLAGS_GESTURE_SELECTION_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(keyboard::switches::kEnableGestureDeletion)
+    MULTI_VALUE_TYPE(kGestureSelectionChoices)
   },
   {
-    "enable-gesture-selection",
-    IDS_FLAGS_ENABLE_GESTURE_SELECTION_NAME,
-    IDS_FLAGS_ENABLE_GESTURE_SELECTION_DESCRIPTION,
+    "gesture-deletion",
+    IDS_FLAGS_GESTURE_DELETION_NAME,
+    IDS_FLAGS_GESTURE_DELETION_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(keyboard::switches::kEnableGestureSelection)
+    MULTI_VALUE_TYPE(kGestureDeletionChoices)
   },
   {
     "disable-smart-virtual-keyboard",

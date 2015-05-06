@@ -55562,6 +55562,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1349872906"
       label="disallow-autofill-sync-credential-for-reauth"/>
   <int value="-1349532167" label="enable-wifi-credential-sync"/>
+  <int value="-1346722635" label="gesture-selection"/>
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
@@ -55594,6 +55595,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1052415111" label="malware-interstitial-v2"/>
   <int value="-1052219252" label="disable-captive-portal-bypass-proxy"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
+  <int value="-1020450980" label="gesture-deletion"/>
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
   <int value="-979034258" label="disable-ntp-other-sessions-menu"/>
@@ -55800,6 +55802,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1181056275" label="enable-cloud-backup"/>
   <int value="1185424279" label="enable-media-router"/>
+  <int value="1192302892" label="gesture-typing"/>
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
