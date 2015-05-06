@@ -233,12 +233,6 @@ void RenderWidgetCompositor::Initialize() {
     settings.use_compositor_animation_timelines = true;
     blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
   }
-  if (cmd->HasSwitch(switches::kEnableBeginFrameScheduling) &&
-      !widget_->for_oopif()) {
-    // TODO(simonhong): Apply BeginFrame scheduling for OOPIF.
-    // See crbug.com/471411.
-    settings.use_external_begin_frame_source = true;
-  }
 
   settings.default_tile_size = CalculateDefaultTileSize(widget_);
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
@@ -431,6 +425,8 @@ void RenderWidgetCompositor::Initialize() {
   // TODO(danakj): Only do this on low end devices.
   settings.create_low_res_tiling = true;
 
+  settings.use_external_begin_frame_source = true;
+
 #elif !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
@@ -456,6 +452,14 @@ void RenderWidgetCompositor::Initialize() {
     settings.create_low_res_tiling = true;
   if (cmd->HasSwitch(switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
+  if (cmd->HasSwitch(switches::kEnableBeginFrameScheduling))
+    settings.use_external_begin_frame_source = true;
+
+  if (widget_->for_oopif()) {
+    // TODO(simonhong): Apply BeginFrame scheduling for OOPIF.
+    // See crbug.com/471411.
+    settings.use_external_begin_frame_source = false;
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
       compositor_deps_->GetCompositorImplThreadTaskRunner();
