@@ -105,7 +105,7 @@ typedef CdmPromiseInternal<std::string> NewSessionPromise;
 
 // Render process ID to BrowserCdmManager map.
 typedef std::map<int, BrowserCdmManager*> BrowserCdmManagerMap;
-base::LazyInstance<BrowserCdmManagerMap> g_browser_cdm_manager_map =
+base::LazyInstance<BrowserCdmManagerMap>::Leaky g_browser_cdm_manager_map =
     LAZY_INSTANCE_INITIALIZER;
 
 BrowserCdmManager* BrowserCdmManager::FromProcess(int render_process_id) {

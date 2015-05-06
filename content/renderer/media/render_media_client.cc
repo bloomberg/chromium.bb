@@ -12,7 +12,7 @@
 
 namespace content {
 
-static base::LazyInstance<RenderMediaClient> g_render_media_client =
+static base::LazyInstance<RenderMediaClient>::Leaky g_render_media_client =
     LAZY_INSTANCE_INITIALIZER;
 
 void RenderMediaClient::Initialize() {

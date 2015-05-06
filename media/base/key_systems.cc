@@ -289,7 +289,7 @@ class KeySystemsImpl : public KeySystems {
   DISALLOW_COPY_AND_ASSIGN(KeySystemsImpl);
 };
 
-static base::LazyInstance<KeySystemsImpl> g_key_systems =
+static base::LazyInstance<KeySystemsImpl>::Leaky g_key_systems =
     LAZY_INSTANCE_INITIALIZER;
 
 KeySystemsImpl* KeySystemsImpl::GetInstance() {
