@@ -22,14 +22,14 @@ public:
     // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
-    virtual PassRefPtr<SerializedScriptValue> create(v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
-    PassRefPtr<SerializedScriptValue> create(v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
+    virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&);
+    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> createFromWire(const String&);
     PassRefPtr<SerializedScriptValue> createFromWireBytes(const char* data, size_t length);
     PassRefPtr<SerializedScriptValue> create(const String&);
-    virtual PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*);
+    virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const String&);
     PassRefPtr<SerializedScriptValue> create();
-    PassRefPtr<SerializedScriptValue> create(const ScriptValue&, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
+    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const ScriptValue&, WebBlobInfoArray*, ExceptionState&);
 
     // Never throws exceptions.
     PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Isolate*, v8::Local<v8::Value>);

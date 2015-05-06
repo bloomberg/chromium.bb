@@ -15,8 +15,8 @@ class SerializedScriptValueForModulesFactory final : public SerializedScriptValu
 public:
     SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() { }
 
-    virtual PassRefPtr<SerializedScriptValue> create(v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*) override;
-    virtual PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*) override;
+    virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&) override;
+    virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const String&) override;
 
 protected:
     virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*) override;

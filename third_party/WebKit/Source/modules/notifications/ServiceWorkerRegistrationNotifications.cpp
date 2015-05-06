@@ -73,7 +73,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     // FIXME: Unify the code path here with the Notification.create() function.
     Vector<char> dataAsWireBytes;
     if (options.hasData()) {
-        RefPtr<SerializedScriptValue> data = SerializedScriptValueFactory::instance().create(options.data(), nullptr, exceptionState, options.data().isolate());
+        RefPtr<SerializedScriptValue> data = SerializedScriptValueFactory::instance().create(options.data().isolate(), options.data(), nullptr, exceptionState);
         if (exceptionState.hadException())
             return exceptionState.reject(scriptState);
 

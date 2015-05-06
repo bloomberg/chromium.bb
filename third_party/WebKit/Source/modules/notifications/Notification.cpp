@@ -87,7 +87,7 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
 
     RefPtr<SerializedScriptValue> data;
     if (options.hasData()) {
-        data = SerializedScriptValueFactory::instance().create(options.data(), nullptr, exceptionState, options.data().isolate());
+        data = SerializedScriptValueFactory::instance().create(options.data().isolate(), options.data(), nullptr, exceptionState);
         if (exceptionState.hadException())
             return nullptr;
     }

@@ -14,7 +14,7 @@ namespace blink {
 
 SerializedScriptValueFactory* SerializedScriptValueFactory::m_instance = 0;
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     RefPtr<SerializedScriptValue> serializedValue = create();
     SerializedScriptValueWriter writer;
@@ -45,21 +45,21 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Local
     return serializedValue.release();
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ExceptionState& exceptionState)
 {
-    return create(value, messagePorts, arrayBuffers, 0, exceptionState, isolate);
+    return create(isolate, value, messagePorts, arrayBuffers, 0, exceptionState);
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createAndSwallowExceptions(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     TrackExceptionState exceptionState;
-    return create(value, 0, 0, exceptionState, isolate);
+    return create(isolate, value, 0, 0, exceptionState);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(const ScriptValue& value, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, const ScriptValue& value, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     ASSERT(isolate->InContext());
-    return create(value.v8Value(), 0, 0, blobInfo, exceptionState, isolate);
+    return create(isolate, value.v8Value(), 0, 0, blobInfo, exceptionState);
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createFromWire(const String& data)
@@ -83,10 +83,10 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createFromWireBy
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(const String& data)
 {
-    return create(data, v8::Isolate::GetCurrent());
+    return create(v8::Isolate::GetCurrent(), data);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(const String& data, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, const String& data)
 {
     ASSERT_NOT_REACHED();
     SerializedScriptValueWriter writer;

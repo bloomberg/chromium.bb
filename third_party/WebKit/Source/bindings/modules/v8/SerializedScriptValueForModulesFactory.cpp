@@ -12,7 +12,7 @@
 
 namespace blink {
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::create();
     SerializedScriptValueWriterForModules writer;
@@ -43,7 +43,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     return serializedValue.release();
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(const String& data, v8::Isolate* isolate)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, const String& data)
 {
     SerializedScriptValueWriterForModules writer;
     writer.writeWebCoreString(data);
