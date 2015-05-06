@@ -204,11 +204,12 @@ public class ContentSettingsResources {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
                 return R.string.website_settings_category_cookie_allowed;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                return R.string.website_settings_category_ask_before_accessing;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-                return R.string.website_settings_category_ask_before_accessing_camera;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-                return R.string.website_settings_category_ask_before_accessing_mic;
+                return R.string.website_settings_category_ask_before_accessing;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+                return R.string.website_settings_category_allowed_recommended;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
                 return R.string.website_settings_category_ask_before_sending;
             default:
@@ -221,11 +222,10 @@ public class ContentSettingsResources {
      */
     public static int getDisabledSummary(int contentType) {
         switch (contentType) {
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-                return R.string.website_settings_category_block_all;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN:
+                return R.string.website_settings_category_ask_first_recommended;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
-                return R.string.website_settings_category_block_recommended;
+                return R.string.website_settings_category_blocked_recommended;
             default:
                 return getCategorySummary(getDefaultDisabledValue(contentType));
         }

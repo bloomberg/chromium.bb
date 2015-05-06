@@ -504,23 +504,21 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_ACCESSIBILITY_COLLAPSED_GROUP" desc="The accessibility text to read when the selected widget is collapsed.">
         Collapsed - click to expand.
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLOCK_ALL" desc="Summary text explaining that a permission is blocked for all sites.">
-        Block all sites
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLOCKED_RECOMMENDED" desc="Summary text explaining that a permission is blocked, which is the recommended setting.">
+        Blocked (recommended)
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLOCK_RECOMMENDED" desc="Summary text explaining that a permission is blocked, which is the recommended setting.">
-        Block (recommended)
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALLOWED_RECOMMENDED" desc="Summary text explaining that a permission is allowed, which is the recommended setting.">
+        Allowed (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_FIRST_RECOMMENDED" desc="Summary text explaining that the user will be asked before a site is granted a
+particular permission.">
+        Ask first (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_SENDING" desc="Summary text explaining that permission will be requested before sending things, e.g. notifications.">
         Ask before sending (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING" desc="Summary text explaining that permission will be requested before accessing something, like location.">
         Ask before accessing (recommended)
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING_CAMERA" desc="Summary text explaining that permission will be requested before accessing the camera.">
-        Ask before accessing camera (recommended)
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING_MIC" desc="Summary text explaining that permission will be requested before accessing the microphone.">
-        Ask before accessing microphone (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
         Allow sites to save and read cookie data (recommended)
