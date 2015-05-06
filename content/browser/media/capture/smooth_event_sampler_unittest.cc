@@ -279,6 +279,58 @@ TEST(SmoothEventSamplerTest, Sample24HertzAt30Hertz) {
   }
 }
 
+// Tests that changing the minimum capture period during usage results in the
+// desired behavior.
+TEST(SmoothEventSamplerTest, Sample60HertzWithVariedCapturePeriods) {
+  const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 60;
+  const base::TimeDelta one_to_one_period = vsync;
+  const base::TimeDelta two_to_one_period = vsync * 2;
+  const base::TimeDelta two_and_three_to_one_period =
+      base::TimeDelta::FromSeconds(1) / 24;
+  const int redundant_capture_goal = 1;
+
+  SmoothEventSampler sampler(one_to_one_period, redundant_capture_goal);
+  base::TimeTicks t = InitialTestTimeTicks();
+
+  TestRedundantCaptureStrategy(one_to_one_period, redundant_capture_goal,
+                               &sampler, &t);
+
+  // With the capture rate at 60 Hz, we should capture every vsync.
+  for (int i = 0; i < 100; i++) {
+    SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
+    SteadyStateSampleAndAdvance(vsync, &sampler, &t);
+  }
+
+  // Now change to the capture rate to 30 Hz, and we should capture every other
+  // vsync.
+  sampler.SetMinCapturePeriod(two_to_one_period);
+  for (int i = 0; i < 100; i++) {
+    SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
+    SteadyStateNoSampleAndAdvance(vsync, &sampler, &t);
+    SteadyStateSampleAndAdvance(vsync, &sampler, &t);
+  }
+
+  // Now change the capture rate back to 60 Hz, and we should capture every
+  // vsync again.
+  sampler.SetMinCapturePeriod(one_to_one_period);
+  for (int i = 0; i < 100; i++) {
+    SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
+    SteadyStateSampleAndAdvance(vsync, &sampler, &t);
+  }
+
+  // Now change the capture rate to 24 Hz, and we should capture with a 2-3-2-3
+  // cadence.
+  sampler.SetMinCapturePeriod(two_and_three_to_one_period);
+  for (int i = 0; i < 100; i++) {
+    SCOPED_TRACE(base::StringPrintf("Iteration %d", i));
+    SteadyStateNoSampleAndAdvance(vsync, &sampler, &t);
+    SteadyStateNoSampleAndAdvance(vsync, &sampler, &t);
+    SteadyStateSampleAndAdvance(vsync, &sampler, &t);
+    SteadyStateNoSampleAndAdvance(vsync, &sampler, &t);
+    SteadyStateSampleAndAdvance(vsync, &sampler, &t);
+  }
+}
+
 TEST(SmoothEventSamplerTest, DoubleDrawAtOneTimeStillDirties) {
   const base::TimeDelta capture_period = base::TimeDelta::FromSeconds(1) / 30;
   const base::TimeDelta overdue_period = base::TimeDelta::FromSeconds(1);

@@ -21,12 +21,17 @@ const int kOverdueDirtyThresholdMillis = 250;  // 4 FPS
 
 SmoothEventSampler::SmoothEventSampler(base::TimeDelta min_capture_period,
                                        int redundant_capture_goal)
-    :  min_capture_period_(min_capture_period),
-       redundant_capture_goal_(redundant_capture_goal),
-       token_bucket_capacity_(min_capture_period + min_capture_period / 2),
+    :  redundant_capture_goal_(redundant_capture_goal),
        overdue_sample_count_(0),
-       token_bucket_(token_bucket_capacity_) {
-  DCHECK_GT(min_capture_period_.InMicroseconds(), 0);
+       token_bucket_(base::TimeDelta::Max()) {
+  SetMinCapturePeriod(min_capture_period);
+}
+
+void SmoothEventSampler::SetMinCapturePeriod(base::TimeDelta period) {
+  DCHECK_GT(period, base::TimeDelta());
+  min_capture_period_ = period;
+  token_bucket_capacity_ = period + period / 2;
+  token_bucket_ = std::min(token_bucket_capacity_, token_bucket_);
 }
 
 void SmoothEventSampler::ConsiderPresentationEvent(base::TimeTicks event_time) {

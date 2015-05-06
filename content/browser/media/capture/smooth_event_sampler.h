@@ -16,7 +16,10 @@ class CONTENT_EXPORT SmoothEventSampler {
   SmoothEventSampler(base::TimeDelta min_capture_period,
                      int redundant_capture_goal);
 
+  // Get/Set minimum capture period. When setting a new value, the state of the
+  // sampler is retained so that sampling will continue smoothly.
   base::TimeDelta min_capture_period() const { return min_capture_period_; }
+  void SetMinCapturePeriod(base::TimeDelta p);
 
   // Add a new event to the event history, and consider whether it ought to be
   // sampled. The event is not recorded as a sample until RecordSample() is
@@ -40,9 +43,9 @@ class CONTENT_EXPORT SmoothEventSampler {
   bool HasUnrecordedEvent() const;
 
  private:
-  const base::TimeDelta min_capture_period_;
+  base::TimeDelta min_capture_period_;
   const int redundant_capture_goal_;
-  const base::TimeDelta token_bucket_capacity_;
+  base::TimeDelta token_bucket_capacity_;
 
   base::TimeTicks current_event_;
   base::TimeTicks last_sample_;
