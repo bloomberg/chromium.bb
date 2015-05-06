@@ -90,6 +90,8 @@
         'browser/application_context_impl.h',
         'browser/arch_util.cc',
         'browser/arch_util.h',
+        'browser/authentication/constants.h',
+        'browser/authentication/constants.mm',
         'browser/autofill/autofill_agent_utils.h',
         'browser/autofill/autofill_agent_utils.mm',
         'browser/autofill/form_input_accessory_view.h',
