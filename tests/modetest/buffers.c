@@ -423,13 +423,13 @@ fill_smpte_rgb16(const struct rgb_info *rgb, unsigned char *mem,
 		MAKE_RGBA(rgb, 0, 0, 192, 255),		/* blue */
 	};
 	const uint16_t colors_middle[] = {
-		MAKE_RGBA(rgb, 0, 0, 192, 255),		/* blue */
-		MAKE_RGBA(rgb, 19, 19, 19, 255),	/* black */
-		MAKE_RGBA(rgb, 192, 0, 192, 255),	/* magenta */
-		MAKE_RGBA(rgb, 19, 19, 19, 255),	/* black */
-		MAKE_RGBA(rgb, 0, 192, 192, 255),	/* cyan */
-		MAKE_RGBA(rgb, 19, 19, 19, 255),	/* black */
-		MAKE_RGBA(rgb, 192, 192, 192, 255),	/* grey */
+		MAKE_RGBA(rgb, 0, 0, 192, 127),		/* blue */
+		MAKE_RGBA(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA(rgb, 192, 0, 192, 127),	/* magenta */
+		MAKE_RGBA(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA(rgb, 0, 192, 192, 127),	/* cyan */
+		MAKE_RGBA(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA(rgb, 192, 192, 192, 127),	/* grey */
 	};
 	const uint16_t colors_bottom[] = {
 		MAKE_RGBA(rgb, 0, 33, 76, 255),		/* in-phase */
@@ -547,13 +547,13 @@ fill_smpte_rgb32(const struct rgb_info *rgb, unsigned char *mem,
 		MAKE_RGBA(rgb, 0, 0, 192, 255),		/* blue */
 	};
 	const uint32_t colors_middle[] = {
-		MAKE_RGBA(rgb, 0, 0, 192, 255),		/* blue */
-		MAKE_RGBA(rgb, 19, 19, 19, 255),	/* black */
-		MAKE_RGBA(rgb, 192, 0, 192, 255),	/* magenta */
-		MAKE_RGBA(rgb, 19, 19, 19, 255),	/* black */
-		MAKE_RGBA(rgb, 0, 192, 192, 255),	/* cyan */
-		MAKE_RGBA(rgb, 19, 19, 19, 255),	/* black */
-		MAKE_RGBA(rgb, 192, 192, 192, 255),	/* grey */
+		MAKE_RGBA(rgb, 0, 0, 192, 127),		/* blue */
+		MAKE_RGBA(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA(rgb, 192, 0, 192, 127),	/* magenta */
+		MAKE_RGBA(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA(rgb, 0, 192, 192, 127),	/* cyan */
+		MAKE_RGBA(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA(rgb, 192, 192, 192, 127),	/* grey */
 	};
 	const uint32_t colors_bottom[] = {
 		MAKE_RGBA(rgb, 0, 33, 76, 255),		/* in-phase */
