@@ -692,6 +692,9 @@
         'cflags': [
           '<!@(<(pkg-config) --cflags dbus-1)',
         ],
+        'defines': [
+          'USE_DBUS',
+        ],
       },
       'link_settings': {
         'ldflags': [

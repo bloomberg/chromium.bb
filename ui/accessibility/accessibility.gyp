@@ -63,10 +63,20 @@
             '../../third_party/iaccessible2/iaccessible2.gyp:iaccessible2'
           ],
         }],
+        ['OS=="linux" and chromeos==0 and use_gconf==1',{
+          'dependencies': [
+            '../../build/linux/system.gyp:gconf',
+          ],
+        }],
+        ['OS=="linux" and chromeos==0 and use_dbus==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:dbus',
+            '../../dbus/dbus.gyp:dbus',
+          ],
+        }],
         ['OS=="linux" and chromeos==0 and use_x11==1', {
           'dependencies': [
             '../../build/linux/system.gyp:atk',
-            '../../build/linux/system.gyp:gconf',
             '../../build/linux/system.gyp:glib',
           ],
           'variables': {
