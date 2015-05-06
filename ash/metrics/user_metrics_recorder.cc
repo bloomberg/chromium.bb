@@ -510,6 +510,9 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_TRAY_LOCK_SCREEN:
       base::RecordAction(base::UserMetricsAction("Tray_LockScreen"));
       break;
+    case ash::UMA_TRAY_OVERVIEW:
+      base::RecordAction(base::UserMetricsAction("Tray_Overview"));
+      break;
     case ash::UMA_TRAY_SHUT_DOWN:
       base::RecordAction(base::UserMetricsAction("Tray_ShutDown"));
       break;

@@ -18,6 +18,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"
+#include "base/test/user_action_tester.h"
 #include "base/time/time.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
@@ -28,6 +29,8 @@
 namespace ash {
 
 namespace {
+
+const char kTrayOverview[] = "Tray_Overview";
 
 OverviewButtonTray* GetTray() {
   return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->
@@ -97,6 +100,38 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(Shell::GetInstance()->window_selector_controller()->
       IsSelecting());
+}
+
+// Tests that tapping on the control will record the user action Tray_Overview.
+TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
+  ASSERT_FALSE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+
+  // Tapping on the control when there are no windows (and thus the user cannot
+  // enter overview mode) should still record the action.
+  base::UserActionTester user_action_tester;
+  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  GetTray()->PerformAction(tap);
+  ASSERT_FALSE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kTrayOverview));
+
+  // With one window present, tapping on the control to enter overview mode
+  // should record the user action.
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  GetTray()->PerformAction(tap);
+  ASSERT_TRUE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(2, user_action_tester.GetActionCount(kTrayOverview));
+
+  // Tapping on the control to exit overview mode should record the
+  // user action.
+  GetTray()->PerformAction(tap);
+  ASSERT_FALSE(
+      Shell::GetInstance()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(3, user_action_tester.GetActionCount(kTrayOverview));
 }
 
 // Tests that a second OverviewButtonTray has been created, and only shows

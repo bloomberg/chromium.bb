@@ -11758,6 +11758,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Tray_Overview">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <description>
+    Records when the user presses the overview mode button in the Ash system
+    tray. Overview mode is a feature of Ash that shows thumbnails of all
+    currently-open windows.
+  </description>
+</action>
+
 <action name="Tray_ShutDown">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
