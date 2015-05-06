@@ -263,6 +263,16 @@ PassRefPtr<JSONObject> objectForSkBitmap(const SkBitmap& bitmap)
     return bitmapItem.release();
 }
 
+PassRefPtr<JSONObject> objectForSkImage(const SkImage* image)
+{
+    RefPtr<JSONObject> imageItem = JSONObject::create();
+    imageItem->setNumber("width", image->width());
+    imageItem->setNumber("height", image->height());
+    imageItem->setBoolean("opaque", image->isOpaque());
+    imageItem->setNumber("uniqueID", image->uniqueID());
+    return imageItem.release();
+}
+
 PassRefPtr<JSONArray> arrayForSkMatrix(const SkMatrix& matrix)
 {
     RefPtr<JSONArray> matrixArray = JSONArray::create();
@@ -621,6 +631,31 @@ void LoggingCanvas::onDrawBitmapNine(const SkBitmap& bitmap, const SkIRect& cent
     if (paint)
         params->setObject("paint", objectForSkPaint(*paint));
     this->SkCanvas::onDrawBitmapNine(bitmap, center, dst, paint);
+}
+
+void LoggingCanvas::onDrawImage(const SkImage* image, SkScalar left, SkScalar top, const SkPaint* paint)
+{
+    AutoLogger logger(this);
+    RefPtr<JSONObject> params = logger.logItemWithParams("drawImage");
+    params->setNumber("left", left);
+    params->setNumber("top", top);
+    params->setObject("image", objectForSkImage(image));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
+    this->SkCanvas::onDrawImage(image, left, top, paint);
+}
+
+void LoggingCanvas::onDrawImageRect(const SkImage* image, const SkRect* src, const SkRect& dst, const SkPaint* paint)
+{
+    AutoLogger logger(this);
+    RefPtr<JSONObject> params = logger.logItemWithParams("drawImageRect");
+    params->setObject("image", objectForSkImage(image));
+    if (src)
+        params->setObject("src", objectForSkRect(*src));
+    params->setObject("dst", objectForSkRect(dst));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
+    this->SkCanvas::onDrawImageRect(image, src, dst, paint);
 }
 
 void LoggingCanvas::onDrawSprite(const SkBitmap& bitmap, int left, int top, const SkPaint* paint)
