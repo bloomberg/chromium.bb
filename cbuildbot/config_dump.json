@@ -66018,7 +66018,8 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "x86-alex_freon-chromium-pfq": {
         "boards": [
