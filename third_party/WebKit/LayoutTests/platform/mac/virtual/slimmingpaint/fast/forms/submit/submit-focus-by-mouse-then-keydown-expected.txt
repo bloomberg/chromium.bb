@@ -9,6 +9,9 @@
         [3, 4, 63, 29]
       ],
       "paintInvalidationClients": [
+        "LayoutButton INPUT",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text",
         "LayoutButton INPUT"
       ]
     }

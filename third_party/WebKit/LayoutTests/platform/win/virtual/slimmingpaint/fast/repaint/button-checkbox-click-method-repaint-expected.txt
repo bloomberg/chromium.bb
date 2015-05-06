@@ -9,6 +9,7 @@
         [12, 61, 30, 30]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow INPUT id='checkbox'",
         "LayoutBlockFlow INPUT id='checkbox'"
       ]
     }

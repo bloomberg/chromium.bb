@@ -9,6 +9,9 @@
         [3, 4, 55, 29]
       ],
       "paintInvalidationClients": [
+        "LayoutButton BUTTON",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text",
         "LayoutButton BUTTON"
       ]
     }
