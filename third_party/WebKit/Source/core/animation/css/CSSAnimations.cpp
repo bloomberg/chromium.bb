@@ -97,7 +97,7 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffect(St
                 } else if (value->isValueList()) {
                     timingFunction = CSSToStyleMap::mapAnimationTimingFunction(toCSSValueList(value)->item(0));
                 } else {
-                    ASSERT(value->isInheritedValue() || value->isInitialValue() || value->isUnsetValue());
+                    ASSERT(value->isCSSWideKeyword());
                     timingFunction = CSSTimingData::initialTimingFunction();
                 }
                 keyframe->setEasing(timingFunction.release());

@@ -414,8 +414,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
     if (forceDefaultInterpolation)
         return nullptr;
 
-    if (fromCSSValue->isUnsetValue() || fromCSSValue->isInheritedValue() || fromCSSValue->isInitialValue()
-        || toCSSValue->isUnsetValue() || toCSSValue->isInheritedValue() || toCSSValue->isInitialValue())
+    if (fromCSSValue->isCSSWideKeyword() || toCSSValue->isCSSWideKeyword())
         fallBackToLegacy = true;
 
     if (fallBackToLegacy) {
