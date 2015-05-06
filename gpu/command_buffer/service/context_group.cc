@@ -168,7 +168,7 @@ bool ContextGroup::Initialize(
                       &max_texture_size) ||
       !QueryGLFeature(GL_MAX_CUBE_MAP_TEXTURE_SIZE, kMinCubeMapSize,
                       &max_cube_map_texture_size) ||
-      (feature_info_->IsES3Capable() &&
+      (feature_info_->gl_version_info().IsES3Capable() &&
        !QueryGLFeature(GL_MAX_3D_TEXTURE_SIZE, kMin3DTextureSize,
                        &max_3d_texture_size)) ||
       (feature_info_->feature_flags().arb_texture_rectangle &&

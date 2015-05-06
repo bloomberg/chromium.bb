@@ -599,6 +599,35 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleCompressedTexSubImage3D(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::CompressedTexSubImage3D& c =
+      *static_cast<const gles2::cmds::CompressedTexSubImage3D*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint xoffset = static_cast<GLint>(c.xoffset);
+  GLint yoffset = static_cast<GLint>(c.yoffset);
+  GLint zoffset = static_cast<GLint>(c.zoffset);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLsizei imageSize = static_cast<GLsizei>(c.imageSize);
+  uint32_t data_size = imageSize;
+  const void* data = GetSharedMemoryAs<const void*>(
+      c.data_shm_id, c.data_shm_offset, data_size);
+  if (data == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
+                            height, depth, format, imageSize, data);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleCopyBufferSubData(
     uint32_t immediate_data_size,
     const void* cmd_data) {

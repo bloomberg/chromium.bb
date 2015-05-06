@@ -82,6 +82,9 @@ void NormalizeInitState(gpu::gles2::GLES2DecoderTestBase::InitState* init) {
   init->extensions += "GL_EXT_framebuffer_object ";
 }
 
+const uint32 kMaxColorAttachments = 16;
+const uint32 kMaxDrawBuffers = 16;
+
 }  // namespace Anonymous
 
 namespace gpu {
@@ -227,9 +230,18 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   EXPECT_TRUE(
       group_->Initialize(mock_decoder_.get(), DisallowedFeatures()));
 
+  if (group_->feature_info()->IsES3Capable()) {
+    EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxColorAttachments))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_DRAW_BUFFERS, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxDrawBuffers))
+        .RetiresOnSaturation();
+  }
+
   if (group_->feature_info()->feature_flags().native_vertex_array_object) {
     EXPECT_CALL(*gl_, GenVertexArraysOES(1, _))
-      .WillOnce(SetArgumentPointee<1>(kServiceVertexArrayId))
+        .WillOnce(SetArgumentPointee<1>(kServiceVertexArrayId))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, BindVertexArrayOES(_)).Times(1).RetiresOnSaturation();
   }
@@ -380,6 +392,9 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   shared_memory_base_ = buffer->memory();
 
   static const int32 kLoseContextWhenOutOfMemory = 0x10002;
+  static const int32 kES3ContextRequired = 0x10003;
+
+  bool es3_context_required = group_->feature_info()->IsES3Capable();
 
   int32 attributes[] = {
       EGL_ALPHA_SIZE,
@@ -389,7 +404,10 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       EGL_STENCIL_SIZE,
       normalized_init.request_stencil ? 8 : 0,
       kLoseContextWhenOutOfMemory,
-      normalized_init.lose_context_when_out_of_memory ? 1 : 0, };
+      normalized_init.lose_context_when_out_of_memory ? 1 : 0,
+      kES3ContextRequired,
+      es3_context_required ? 1 : 0
+  };
   std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));

@@ -491,7 +491,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     } else {
       // For other targets, texture dimensions should already be defined.
       GLsizei width = 0, height = 0;
-      info->GetLevelSize(texture_target_, 0, &width, &height);
+      info->GetLevelSize(texture_target_, 0, &width, &height, nullptr);
       if (width != texture_dimensions_.width() ||
           height != texture_dimensions_.height()) {
         DLOG(ERROR) << "Size mismatch for texture id " << texture_ids[i];

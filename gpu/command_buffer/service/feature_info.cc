@@ -201,6 +201,9 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine& command_line) {
   feature_flags_.enable_subscribe_uniform =
       command_line.HasSwitch(switches::kEnableSubscribeUniformExtension);
 
+  unsafe_es3_apis_enabled_ =
+      command_line.HasSwitch(switches::kEnableUnsafeES3APIs);
+
   static const GLenum kAlphaTypes[] = {
       GL_UNSIGNED_BYTE,
   };
@@ -1114,6 +1117,8 @@ void FeatureInfo::InitializeFeatures() {
 }
 
 bool FeatureInfo::IsES3Capable() const {
+  if (!unsafe_es3_apis_enabled_)
+    return false;
   if (gl_version_info_)
     return gl_version_info_->IsES3Capable();
   return false;

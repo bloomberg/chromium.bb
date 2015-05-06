@@ -135,7 +135,7 @@ class TextureAttachment
     GLsizei temp_width = 0;
     GLsizei temp_height = 0;
     texture_ref_->texture()->GetLevelSize(
-        target_, level_, &temp_width, &temp_height);
+        target_, level_, &temp_width, &temp_height, nullptr);
     return temp_width;
   }
 
@@ -143,7 +143,7 @@ class TextureAttachment
     GLsizei temp_width = 0;
     GLsizei temp_height = 0;
     texture_ref_->texture()->GetLevelSize(
-        target_, level_, &temp_width, &temp_height);
+        target_, level_, &temp_width, &temp_height, nullptr);
     return temp_height;
   }
 

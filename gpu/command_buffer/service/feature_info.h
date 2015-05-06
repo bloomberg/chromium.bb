@@ -160,6 +160,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   // Flags for Workarounds.
   Workarounds workarounds_;
 
+  // Whether the command line switch kEnableUnsafeES3APIs is passed in.
+  bool unsafe_es3_apis_enabled_;
+
   scoped_ptr<gfx::GLVersionInfo> gl_version_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureInfo);

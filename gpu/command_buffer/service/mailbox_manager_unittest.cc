@@ -372,7 +372,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
       kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
   manager2_->PullTextureUpdates(0);
   GLsizei width, height;
-  new_texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height);
+  new_texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr);
   EXPECT_EQ(16, width);
   EXPECT_EQ(32, height);
 
@@ -401,7 +401,7 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   // The last change to the texture should be visible without a sync point (i.e.
   // push).
   manager2_->PullTextureUpdates(0);
-  new_texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height);
+  new_texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr);
   EXPECT_EQ(64, width);
   EXPECT_EQ(64, height);
 

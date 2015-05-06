@@ -91,16 +91,21 @@ void GLES2DecoderManualInitTest::EnableDisableTest(GLenum cap,
 }
 
 void GLES3DecoderTest::SetUp() {
-  // Test codepath with workaround clear_alpha_in_readpixels because
-  // ReadPixelsEmulator emulates the incorrect driver behavior.
   base::CommandLine command_line(0, NULL);
   command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
   InitState init;
-  init.gl_version = "4.4";
+  init.gl_version = "OpenGL ES 3.0";
   init.bind_generates_resource = true;
   InitDecoderWithCommandLine(init, &command_line);
 }
 
+
+TEST_P(GLES3DecoderTest, Basic) {
+  // Make sure the setup is correct for ES3.
+  EXPECT_TRUE(decoder_->unsafe_es3_apis_enabled());
+  EXPECT_TRUE(feature_info()->validators()->texture_bind_target.IsValid(
+      GL_TEXTURE_3D));
+}
 
 TEST_P(GLES2DecoderTest, GetIntegervCached) {
   struct TestInfo {
@@ -1286,6 +1291,8 @@ INSTANTIATE_TEST_CASE_P(Service,
                         ::testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDoCommandsTest, ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest, ::testing::Bool());
 
 }  // namespace gles2
 }  // namespace gpu

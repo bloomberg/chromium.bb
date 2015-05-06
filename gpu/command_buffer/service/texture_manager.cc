@@ -647,28 +647,35 @@ bool Texture::ValidForTexture(
     GLint level,
     GLint xoffset,
     GLint yoffset,
+    GLint zoffset,
     GLsizei width,
     GLsizei height,
+    GLsizei depth,
     GLenum type) const {
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < face_infos_.size() &&
       static_cast<size_t>(level) < face_infos_[face_index].level_infos.size()) {
     const LevelInfo& info = face_infos_[face_index].level_infos[level];
-    int32 right;
-    int32 top;
-    return SafeAddInt32(xoffset, width, &right) &&
-           SafeAddInt32(yoffset, height, &top) &&
+    int32 max_x;
+    int32 max_y;
+    int32 max_z;
+    return SafeAddInt32(xoffset, width, &max_x) &&
+           SafeAddInt32(yoffset, height, &max_y) &&
+           SafeAddInt32(zoffset, depth, &max_z) &&
            xoffset >= 0 &&
            yoffset >= 0 &&
-           right <= info.width &&
-           top <= info.height &&
+           zoffset >= 0 &&
+           max_x <= info.width &&
+           max_y <= info.height &&
+           max_z <= info.depth &&
            type == info.type;
   }
   return false;
 }
 
 bool Texture::GetLevelSize(
-    GLint target, GLint level, GLsizei* width, GLsizei* height) const {
+    GLint target, GLint level,
+    GLsizei* width, GLsizei* height, GLsizei* depth) const {
   DCHECK(width);
   DCHECK(height);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
@@ -678,6 +685,8 @@ bool Texture::GetLevelSize(
     if (info.target != 0) {
       *width = info.width;
       *height = info.height;
+      if (depth)
+        *depth = info.depth;
       return true;
     }
   }
@@ -1680,7 +1689,8 @@ void TextureManager::DoTexImage2D(
   GLenum tex_type = 0;
   GLenum tex_format = 0;
   bool level_is_same =
-      texture->GetLevelSize(args.target, args.level, &tex_width, &tex_height) &&
+      texture->GetLevelSize(
+          args.target, args.level, &tex_width, &tex_height, nullptr) &&
       texture->GetLevelType(args.target, args.level, &tex_type, &tex_format) &&
       args.width == tex_width && args.height == tex_height &&
       args.type == tex_type && args.format == tex_format;

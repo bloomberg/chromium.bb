@@ -73,7 +73,8 @@ TEST_P(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
   Texture* texture = texture_ref->texture();
   GLint width = 0;
   GLint height = 0;
-  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, 2, &width, &height));
+  EXPECT_FALSE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 2, &width, &height, nullptr));
   DoTexImage2D(GL_TEXTURE_2D,
                0,
                GL_RGBA,
@@ -93,7 +94,8 @@ TEST_P(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
   cmd.Init(GL_TEXTURE_2D);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, 2, &width, &height));
+  EXPECT_FALSE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 2, &width, &height, nullptr));
 }
 
 TEST_P(GLES2DecoderTest, GenerateMipmapClearsUnclearedTexture) {
@@ -575,7 +577,8 @@ TEST_P(GLES2DecoderTest, TexImage2DGLError) {
   TextureRef* texture_ref = manager->GetTexture(client_texture_id_);
   ASSERT_TRUE(texture_ref != NULL);
   Texture* texture = texture_ref->texture();
-  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+  EXPECT_FALSE(
+      texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height, nullptr));
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_OUT_OF_MEMORY))
@@ -604,7 +607,8 @@ TEST_P(GLES2DecoderTest, TexImage2DGLError) {
            kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+  EXPECT_FALSE(
+      texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height, nullptr));
 }
 
 TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
@@ -619,7 +623,8 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
   TextureRef* texture_ref = manager->GetTexture(client_texture_id_);
   ASSERT_TRUE(texture_ref != NULL);
   Texture* texture = texture_ref->texture();
-  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+  EXPECT_FALSE(
+      texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height, nullptr));
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_OUT_OF_MEMORY))
@@ -633,7 +638,8 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
   cmd.Init(target, level, internal_format, 0, 0, width, height);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
+  EXPECT_FALSE(
+      texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height, nullptr));
 }
 
 TEST_P(GLES3DecoderTest, CompressedTexImage3DBucket) {
@@ -680,9 +686,10 @@ TEST_P(GLES3DecoderTest, CompressedTexImage3DBucket) {
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsOnES2) {
+TEST_P(GLES2DecoderTest, CompressedTexImage3DFailsOnES2) {
   const uint32 kBucketId = 123;
   const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
   const GLint kLevel = 0;
@@ -695,15 +702,30 @@ TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsOnES2) {
   const GLsizei kImageSize = 32;
   bucket->SetSize(kImageSize);
 
-  CompressedTexImage3DBucket cmd;
-  cmd.Init(kTarget,
-           kLevel,
-           kInternalFormat,
-           kWidth,
-           kHeight,
-           kDepth,
-           kBucketId);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  {
+    CompressedTexImage3DBucket cmd;
+    cmd.Init(kTarget,
+             kLevel,
+             kInternalFormat,
+             kWidth,
+             kHeight,
+             kDepth,
+             kBucketId);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
+
+  {
+    CompressedTexSubImage3DBucket cmd;
+    cmd.Init(kTarget,
+             kLevel,
+             0, 0, 0,
+             kWidth,
+             kHeight,
+             kDepth,
+             kInternalFormat,
+             kBucketId);
+    EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+  }
 }
 
 TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
@@ -716,7 +738,7 @@ TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
   const GLsizei kDepth = 4;
   CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
   ASSERT_TRUE(bucket != NULL);
-  const GLsizei kBadImageSize = 64;  // Correct size should be 128.
+  const GLsizei kBadImageSize = 64;
   bucket->SetSize(kBadImageSize);
 
   DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
@@ -731,6 +753,161 @@ TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
            kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(GLES3DecoderTest, CompressedTexSubImage3DFails) {
+  const uint32 kBucketId = 123;
+  const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
+  const GLint kLevel = 0;
+  const GLenum kInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 8;
+  const GLsizei kDepth = 4;
+  const GLint kBorder = 0;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  const GLsizei kImageSize = 128;
+  bucket->SetSize(kImageSize);
+
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+
+  CompressedTexImage3DBucket tex_cmd;
+  tex_cmd.Init(kTarget,
+               kLevel,
+               kInternalFormat,
+               kWidth,
+               kHeight,
+               kDepth,
+               kBucketId);
+  EXPECT_CALL(*gl_,
+              CompressedTexImage3D(kTarget, kLevel, kInternalFormat, kWidth,
+                                   kHeight, kDepth, kBorder, kImageSize, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  const GLint kXOffset = 0;
+  const GLint kYOffset = 0;
+  const GLint kZOffset = 0;
+  const GLint kSubWidth = 4;
+  const GLint kSubHeight = 4;
+  const GLint kSubDepth = 4;
+  const GLenum kFormat = kInternalFormat;
+  CompressedTexSubImage3DBucket cmd;
+
+  // Incorrect image size.
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           kYOffset,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           kFormat,
+           kBucketId);
+  const GLsizei kBadSubImageSize = 32;
+  const GLsizei kSubImageSize = 64;
+  bucket->SetSize(kBadSubImageSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Incorrect format.
+  const GLenum kBadFormat = GL_COMPRESSED_R11_EAC;
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           kYOffset,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           kBadFormat,
+           kBucketId);
+  bucket->SetSize(kSubImageSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Negative offset.
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           -4,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           kFormat,
+           kBucketId);
+  bucket->SetSize(kSubImageSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // offset + size > texture size
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           kYOffset + 8,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           kFormat,
+           kBucketId);
+  bucket->SetSize(kSubImageSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // offset not a multiple of 4.
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           kYOffset + 1,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           kFormat,
+           kBucketId);
+  bucket->SetSize(kSubImageSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // offset + width not a multlple of 4 .
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           kYOffset,
+           kZOffset,
+           kSubWidth,
+           kSubHeight + 3,
+           kSubDepth,
+           kFormat,
+           kBucketId);
+  const GLsizei kSubImageSize2 = 128;
+  bucket->SetSize(kSubImageSize2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Bad bucket id.
+  const uint32 kBadBucketId = 444;
+  cmd.Init(kTarget,
+           kLevel,
+           kXOffset,
+           kYOffset,
+           kZOffset,
+           kSubWidth,
+           kSubHeight,
+           kSubDepth,
+           kFormat,
+           kBadBucketId);
+  bucket->SetSize(kSubImageSize);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
@@ -1982,14 +2159,16 @@ TEST_P(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   GLenum type;
   GLenum internal_format;
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(3, width);
   EXPECT_EQ(1, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height, nullptr));
   EXPECT_EQ(2, width);
   EXPECT_EQ(4, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 1, &type, &internal_format));
@@ -2019,14 +2198,16 @@ TEST_P(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Texture is redefined.
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(3, width);
   EXPECT_EQ(1, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height, nullptr));
   EXPECT_EQ(2, width);
   EXPECT_EQ(4, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 1, &type, &internal_format));
@@ -2064,14 +2245,16 @@ TEST_P(GLES2DecoderTest, ProduceAndConsumeDirectTextureCHROMIUM) {
   GLenum type;
   GLenum internal_format;
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(3, width);
   EXPECT_EQ(1, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height, nullptr));
   EXPECT_EQ(2, width);
   EXPECT_EQ(4, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 1, &type, &internal_format));
@@ -2099,14 +2282,16 @@ TEST_P(GLES2DecoderTest, ProduceAndConsumeDirectTextureCHROMIUM) {
   DoBindTexture(GL_TEXTURE_2D, kNewClientId, kServiceTextureId);
 
   // Texture is redefined.
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(3, width);
   EXPECT_EQ(1, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
   EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
   EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height, nullptr));
   EXPECT_EQ(2, width);
   EXPECT_EQ(4, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 1, &type, &internal_format));
@@ -2351,7 +2536,8 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   GLenum type;
   GLenum internal_format;
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(3, width);
   EXPECT_EQ(1, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
@@ -2362,14 +2548,16 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   // Bind image to texture.
   // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
   DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1);
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   // Image should now be set.
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
   // Define new texture image.
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   // Image should no longer be set.
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 }
@@ -2516,7 +2704,8 @@ TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   GLenum type;
   GLenum internal_format;
 
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(3, width);
   EXPECT_EQ(1, height);
   EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
@@ -2527,7 +2716,8 @@ TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   // Bind image to texture.
   // ScopedGLErrorSuppressor calls GetError on its constructor and destructor.
   DoBindTexImage2DCHROMIUM(GL_TEXTURE_2D, 1);
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   // Image should now be set.
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
@@ -2540,7 +2730,8 @@ TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   ReleaseTexImage2DCHROMIUM release_tex_image_2d_cmd;
   release_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(release_tex_image_2d_cmd));
-  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   // Image should no longer be set.
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 }

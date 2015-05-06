@@ -167,6 +167,21 @@ void GLES2CompressedTexImage3D(GLenum target,
                                               width, height, depth, border,
                                               imageSize, data);
 }
+void GLES2CompressedTexSubImage3D(GLenum target,
+                                  GLint level,
+                                  GLint xoffset,
+                                  GLint yoffset,
+                                  GLint zoffset,
+                                  GLsizei width,
+                                  GLsizei height,
+                                  GLsizei depth,
+                                  GLenum format,
+                                  GLsizei imageSize,
+                                  const void* data) {
+  gles2::GetGLContext()->CompressedTexSubImage3D(
+      target, level, xoffset, yoffset, zoffset, width, height, depth, format,
+      imageSize, data);
+}
 void GLES2CopyBufferSubData(GLenum readtarget,
                             GLenum writetarget,
                             GLintptr readoffset,
@@ -1503,6 +1518,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glCompressedTexImage3D",
      reinterpret_cast<GLES2FunctionPointer>(glCompressedTexImage3D),
+    },
+    {
+     "glCompressedTexSubImage3D",
+     reinterpret_cast<GLES2FunctionPointer>(glCompressedTexSubImage3D),
     },
     {
      "glCopyBufferSubData",

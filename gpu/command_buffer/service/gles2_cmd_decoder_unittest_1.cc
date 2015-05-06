@@ -161,14 +161,6 @@ void GLES2DecoderTestBase::SpecializedSetup<
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<
-    cmds::GetRenderbufferParameteriv, 0>(
-        bool /* valid */) {
-  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
-                    kServiceRenderbufferId);
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramiv, 0>(
     bool valid) {
   if (valid) {

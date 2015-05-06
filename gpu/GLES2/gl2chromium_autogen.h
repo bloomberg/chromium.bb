@@ -46,6 +46,7 @@
 #define glCompressedTexImage2D GLES2_GET_FUN(CompressedTexImage2D)
 #define glCompressedTexSubImage2D GLES2_GET_FUN(CompressedTexSubImage2D)
 #define glCompressedTexImage3D GLES2_GET_FUN(CompressedTexImage3D)
+#define glCompressedTexSubImage3D GLES2_GET_FUN(CompressedTexSubImage3D)
 #define glCopyBufferSubData GLES2_GET_FUN(CopyBufferSubData)
 #define glCopyTexImage2D GLES2_GET_FUN(CopyTexImage2D)
 #define glCopyTexSubImage2D GLES2_GET_FUN(CopyTexSubImage2D)

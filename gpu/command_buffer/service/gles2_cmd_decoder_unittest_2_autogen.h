@@ -12,6 +12,96 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivValidArgs) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  SpecializedSetup<cmds::GetRenderbufferParameteriv, 0>(true);
+  typedef cmds::GetRenderbufferParameteriv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(
+      *gl_, GetRenderbufferParameterivEXT(
+                GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, result->GetData()));
+  result->size = 0;
+  cmds::GetRenderbufferParameteriv cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+                GL_RENDERBUFFER_RED_SIZE),
+            result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivInvalidArgs0_0) {
+  EXPECT_CALL(*gl_, GetRenderbufferParameterivEXT(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetRenderbufferParameteriv, 0>(false);
+  cmds::GetRenderbufferParameteriv::Result* result =
+      static_cast<cmds::GetRenderbufferParameteriv::Result*>(
+          shared_memory_address_);
+  result->size = 0;
+  cmds::GetRenderbufferParameteriv cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_RENDERBUFFER_RED_SIZE, shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivInvalidArgs2_0) {
+  EXPECT_CALL(*gl_, GetRenderbufferParameterivEXT(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetRenderbufferParameteriv, 0>(false);
+  cmds::GetRenderbufferParameteriv::Result* result =
+      static_cast<cmds::GetRenderbufferParameteriv::Result*>(
+          shared_memory_address_);
+  result->size = 0;
+  cmds::GetRenderbufferParameteriv cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, kInvalidSharedMemoryId,
+           0);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
+TEST_P(GLES2DecoderTest2, GetRenderbufferParameterivInvalidArgs2_1) {
+  EXPECT_CALL(*gl_, GetRenderbufferParameterivEXT(_, _, _)).Times(0);
+  SpecializedSetup<cmds::GetRenderbufferParameteriv, 0>(false);
+  cmds::GetRenderbufferParameteriv::Result* result =
+      static_cast<cmds::GetRenderbufferParameteriv::Result*>(
+          shared_memory_address_);
+  result->size = 0;
+  cmds::GetRenderbufferParameteriv cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RENDERBUFFER_RED_SIZE, shared_memory_id_,
+           kInvalidSharedMemoryOffset);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result->size);
+}
+
+TEST_P(GLES2DecoderTest2, GetSamplerParameterfvValidArgs) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  SpecializedSetup<cmds::GetSamplerParameterfv, 0>(true);
+  typedef cmds::GetSamplerParameterfv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(*gl_,
+              GetSamplerParameterfv(kServiceSamplerId, GL_TEXTURE_MAG_FILTER,
+                                    result->GetData()));
+  result->size = 0;
+  cmds::GetSamplerParameterfv cmd;
+  cmd.Init(client_sampler_id_, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
+           shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(
+      decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_TEXTURE_MAG_FILTER),
+      result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest2, GetSamplerParameterivValidArgs) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -1563,39 +1653,6 @@ TEST_P(GLES2DecoderTest2, UniformMatrix3x4fvImmediateValidArgs) {
                                                   ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix3x4fvImmediate, 0>(true);
   GLfloat temp[12 * 2] = {
-      0,
-  };
-  cmd.Init(1, 2, &temp[0]);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, sizeof(temp)));
-}
-
-TEST_P(GLES2DecoderTest2, UniformMatrix4fvImmediateValidArgs) {
-  cmds::UniformMatrix4fvImmediate& cmd =
-      *GetImmediateAs<cmds::UniformMatrix4fvImmediate>();
-  EXPECT_CALL(*gl_,
-              UniformMatrix4fv(1, 2, false, reinterpret_cast<GLfloat*>(
-                                                ImmediateDataAddress(&cmd))));
-  SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(true);
-  GLfloat temp[16 * 2] = {
-      0,
-  };
-  cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, UniformMatrix4x2fvImmediateValidArgs) {
-  cmds::UniformMatrix4x2fvImmediate& cmd =
-      *GetImmediateAs<cmds::UniformMatrix4x2fvImmediate>();
-  EXPECT_CALL(*gl_,
-              UniformMatrix4x2fv(1, 2, false, reinterpret_cast<GLfloat*>(
-                                                  ImmediateDataAddress(&cmd))));
-  SpecializedSetup<cmds::UniformMatrix4x2fvImmediate, 0>(true);
-  GLfloat temp[8 * 2] = {
       0,
   };
   cmd.Init(1, 2, &temp[0]);

@@ -97,10 +97,12 @@ class GPU_EXPORT Texture {
     return cleared_;
   }
 
-  // Get the width and height for a particular level. Returns false if level
+  // Get the width/height/depth for a particular level. Returns false if level
   // does not exist.
+  // |depth| is optional and can be nullptr.
   bool GetLevelSize(
-      GLint target, GLint level, GLsizei* width, GLsizei* height) const;
+      GLint target, GLint level,
+      GLsizei* width, GLsizei* height, GLsizei* depth) const;
 
   // Get the type of a level. Returns false if level does not exist.
   bool GetLevelType(
@@ -121,8 +123,10 @@ class GPU_EXPORT Texture {
       GLint level,
       GLint xoffset,
       GLint yoffset,
+      GLint zoffset,
       GLsizei width,
       GLsizei height,
+      GLsizei depth,
       GLenum type) const;
 
   bool IsValid() const {

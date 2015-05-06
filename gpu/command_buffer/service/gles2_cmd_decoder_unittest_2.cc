@@ -252,6 +252,14 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest2, ::testing::Bool());
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<
+    cmds::GetRenderbufferParameteriv, 0>(
+        bool /* valid */) {
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::RenderbufferStorage, 0>(
     bool valid) {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
@@ -451,12 +459,6 @@ template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix3fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT3);
-};
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_MAT4);
 };
 
 template <>

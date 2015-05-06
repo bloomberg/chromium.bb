@@ -37,6 +37,13 @@ class GLES2DecoderTest3 : public GLES2DecoderTestBase {
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest3, ::testing::Bool());
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(
+    bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_MAT4);
+};
+
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::UseProgram, 0>(
     bool /* valid */) {
   // Needs the same setup as LinkProgram.

@@ -2103,6 +2103,12 @@ _FUNCTION_INFO = {
     'data_transfer_methods': ['bucket', 'shm'],
     'unsafe': True,
   },
+  'CompressedTexSubImage3D': {
+    'type': 'Data',
+    'data_transfer_methods': ['bucket', 'shm'],
+    'decoder_func': 'DoCompressedTexSubImage3D',
+    'unsafe': True,
+  },
   'CopyTexSubImage3D': {
     'defer_reads': True,
     'unsafe': True,
@@ -4995,14 +5001,15 @@ class ManualHandler(CustomHandler):
 
 
 class DataHandler(TypeHandler):
-  """Handler for glBufferData, glBufferSubData, glTexImage2D, glTexSubImage2D,
-     glCompressedTexImage2D, glCompressedTexImageSub2D."""
+  """Handler for glBufferData, glBufferSubData, glTexImage*D, glTexSubImage*D,
+     glCompressedTexImage*D, glCompressedTexImageSub*D."""
   def __init__(self):
     TypeHandler.__init__(self)
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
-    if func.name == 'CompressedTexSubImage2DBucket':
+    if (func.name == 'CompressedTexSubImage2DBucket' or
+        func.name == 'CompressedTexSubImage3DBucket'):
       func.cmd_args = func.cmd_args[:-1]
       func.AddCmdArg(Argument('bucket_id', 'GLuint'))
 
@@ -5015,9 +5022,12 @@ class DataHandler(TypeHandler):
     if name == 'BufferData' or name == 'BufferSubData':
       file.Write("  uint32_t data_size = size;\n")
     elif (name == 'CompressedTexImage2D' or
-          name == 'CompressedTexSubImage2D'):
+          name == 'CompressedTexSubImage2D' or
+          name == 'CompressedTexImage3D' or
+          name == 'CompressedTexSubImage3D'):
       file.Write("  uint32_t data_size = imageSize;\n")
-    elif (name == 'CompressedTexSubImage2DBucket'):
+    elif (name == 'CompressedTexSubImage2DBucket' or
+          name == 'CompressedTexSubImage3DBucket'):
       file.Write("  Bucket* bucket = GetBucket(c.bucket_id);\n")
       file.Write("  uint32_t data_size = bucket->size();\n")
       file.Write("  GLsizei imageSize = data_size;\n")
@@ -5080,7 +5090,8 @@ class DataHandler(TypeHandler):
 
   def WriteBucketServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
-    if not func.name == 'CompressedTexSubImage2DBucket':
+    if ((not func.name == 'CompressedTexSubImage2DBucket') and
+        (not func.name == 'CompressedTexSubImage3DBucket')):
       TypeHandler.WriteBucketServiceImplemenation(self, func, file)
 
 
