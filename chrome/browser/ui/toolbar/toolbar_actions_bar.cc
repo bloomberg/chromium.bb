@@ -229,6 +229,17 @@ size_t ToolbarActionsBar::GetIconCount() const {
   if (!model_)
     return 0u;
 
+  int pop_out_modifier = 0;
+  // If there is a popped out action, it could affect the number of visible
+  // icons - but only if it wouldn't otherwise be visible.
+  if (popped_out_action_) {
+    size_t popped_out_index =
+        std::find(toolbar_actions_.begin(),
+                  toolbar_actions_.end(),
+                  popped_out_action_) - toolbar_actions_.begin();
+    pop_out_modifier = popped_out_index >= model_->visible_icon_count() ? 1 : 0;
+  }
+
   // We purposefully do not account for any "popped out" actions in overflow
   // mode. This is because the popup cannot be showing while the overflow menu
   // is open, so there's no concern there. Also, if the user has a popped out
@@ -237,7 +248,7 @@ size_t ToolbarActionsBar::GetIconCount() const {
   // want to "slide" the action back in.
   size_t visible_icons = in_overflow_mode() ?
       toolbar_actions_.size() - model_->visible_icon_count() :
-      model_->visible_icon_count() + (popped_out_action_ ? 1 : 0);
+      model_->visible_icon_count() + pop_out_modifier;
 
 #if DCHECK_IS_ON()
   // Good time for some sanity checks: We should never try to display more
