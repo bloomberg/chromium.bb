@@ -142,12 +142,16 @@ void ProtectedMediaIdentifierPermissionContext::CancelPermissionRequest(
   if (request == pending_requests_.end() || !request->second.second.Equals(id))
     return;
 
-  // Close the |widget_|. OnPlatformVerificationConsentResponse() will be fired
-  // during this process, but since |web_contents| is removed from
-  // |pending_requests_|, the callback will simply be dropped.
   views::Widget* widget = request->second.first;
   pending_requests_.erase(request);
-  widget->Close();
+
+  // If |web_contents| is being destroyed, |widget| could be invalid. No need to
+  // manually close it here. Otherwise, close the |widget| here.
+  // OnPlatformVerificationConsentResponse() will be fired during this process,
+  // but since |web_contents| is removed from |pending_requests_|, the callback
+  // will simply be dropped.
+  if (!web_contents->IsBeingDestroyed())
+    widget->Close();
 #else
   PermissionContextBase::CancelPermissionRequest(web_contents, id);
 #endif
