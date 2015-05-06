@@ -1025,12 +1025,12 @@ WGC3Denum WebGraphicsContext3DImpl::clientWaitSync(WGC3Dsync sync,
                                                    WGC3Duint64 timeout) {
   return gl_->ClientWaitSync(reinterpret_cast<GLsync>(sync), flags, timeout);
 }
-//DELEGATE_TO_GL_9(compressedTexImage3D, CompressedTexImage3D, WGC3Denum,
-//                 WGC3Dint, WGC3Denum, WGC3Dsizei, WGC3Dsizei, WGC3Dsizei,
-//                 WGC3Dint, WGC3Dsizei, const void *)
-//DELEGATE_TO_GL_11(compressedTexSubImage3D, CompressedTexSubImage3D, WGC3Denum,
-//                  WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dsizei,
-//                  WGC3Dsizei, WGC3Dsizei, WGC3Denum, WGC3Dsizei, const void *)
+DELEGATE_TO_GL_9(compressedTexImage3D, CompressedTexImage3D, WGC3Denum,
+                 WGC3Dint, WGC3Denum, WGC3Dsizei, WGC3Dsizei, WGC3Dsizei,
+                 WGC3Dint, WGC3Dsizei, const void *)
+DELEGATE_TO_GL_11(compressedTexSubImage3D, CompressedTexSubImage3D, WGC3Denum,
+                  WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dsizei,
+                  WGC3Dsizei, WGC3Dsizei, WGC3Denum, WGC3Dsizei, const void *)
 DELEGATE_TO_GL_5(copyBufferSubData, CopyBufferSubData, WGC3Denum, WGC3Denum,
                  WGC3Dintptr, WGC3Dintptr, WGC3Dsizeiptr)
 DELEGATE_TO_GL_9(copyTexSubImage3D, CopyTexSubImage3D, WGC3Denum, WGC3Dint,
