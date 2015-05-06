@@ -43,26 +43,26 @@ ElementAnimations::ElementAnimations()
 ElementAnimations::~ElementAnimations()
 {
 #if !ENABLE(OILPAN)
-    for (Animation* animation : m_animations)
-        animation->notifyElementDestroyed();
-    m_animations.clear();
+    for (KeyframeEffect* effect : m_effects)
+        effect->notifyElementDestroyed();
+    m_effects.clear();
 #endif
 }
 
 void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
 {
-    for (const auto& entry : m_players) {
-        const AnimationPlayer& player = *entry.key;
-        ASSERT(player.source());
+    for (const auto& entry : m_animations) {
+        const Animation& animation = *entry.key;
+        ASSERT(animation.source());
         // FIXME: Needs to consider AnimationGroup once added.
-        ASSERT(player.source()->isAnimation());
-        const Animation& animation = *toAnimation(player.source());
-        if (animation.isCurrent()) {
-            if (animation.affects(PropertyHandle(CSSPropertyOpacity)))
+        ASSERT(animation.source()->isAnimation());
+        const KeyframeEffect& effect = *toKeyframeEffect(animation.source());
+        if (effect.isCurrent()) {
+            if (effect.affects(PropertyHandle(CSSPropertyOpacity)))
                 style.setHasCurrentOpacityAnimation(true);
-            if (animation.affects(PropertyHandle(CSSPropertyTransform)))
+            if (effect.affects(PropertyHandle(CSSPropertyTransform)))
                 style.setHasCurrentTransformAnimation(true);
-            if (animation.affects(PropertyHandle(CSSPropertyWebkitFilter)))
+            if (effect.affects(PropertyHandle(CSSPropertyWebkitFilter)))
                 style.setHasCurrentFilterAnimation(true);
         }
     }
@@ -77,7 +77,7 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
 
 void ElementAnimations::restartAnimationOnCompositor()
 {
-    for (const auto& entry : m_players)
+    for (const auto& entry : m_animations)
         entry.key->restartAnimationOnCompositor();
 }
 
@@ -86,7 +86,7 @@ DEFINE_TRACE(ElementAnimations)
 #if ENABLE(OILPAN)
     visitor->trace(m_cssAnimations);
     visitor->trace(m_defaultStack);
-    visitor->trace(m_players);
+    visitor->trace(m_animations);
 #endif
 }
 

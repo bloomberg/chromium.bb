@@ -33,16 +33,16 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationNode.h"
+#include "core/animation/EffectModel.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-class CORE_EXPORT InertAnimation final : public AnimationNode {
+class CORE_EXPORT InertAnimation final : public AnimationEffect {
 public:
-    static PassRefPtrWillBeRawPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused, double inheritedTime);
+    static PassRefPtrWillBeRawPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
     void sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&);
-    AnimationEffect* effect() const { return m_effect.get(); }
+    EffectModel* effect() const { return m_effect.get(); }
     bool paused() const { return m_paused; }
 
     DECLARE_VIRTUAL_TRACE();
@@ -52,8 +52,8 @@ protected:
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
 
 private:
-    InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, bool paused, double inheritedTime);
-    RefPtrWillBeMember<AnimationEffect> m_effect;
+    InertAnimation(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
+    RefPtrWillBeMember<EffectModel> m_effect;
     bool m_paused;
     double m_inheritedTime;
 };

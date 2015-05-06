@@ -6,8 +6,8 @@
 #define SampledEffect_h
 
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationPlayer.h"
 #include "core/animation/Interpolation.h"
+#include "core/animation/KeyframeEffect.h"
 #include "wtf/BitArray.h"
 #include "wtf/Vector.h"
 
@@ -17,7 +17,7 @@ class SVGElement;
 
 class SampledEffect : public NoBaseWillBeGarbageCollected<SampledEffect> {
 public:
-    static PassOwnPtrWillBeRawPtr<SampledEffect> create(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
+    static PassOwnPtrWillBeRawPtr<SampledEffect> create(KeyframeEffect* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
     {
         return adoptPtrWillBeNoop(new SampledEffect(animation, interpolations));
     }
@@ -33,22 +33,22 @@ public:
 
     void setInterpolations(PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations) { m_interpolations = interpolations; }
 
-    Animation* animation() const { return m_animation; }
+    KeyframeEffect* effect() const { return m_effect; }
     unsigned sequenceNumber() const { return m_sequenceNumber; }
-    Animation::Priority priority() const { return m_priority; }
+    KeyframeEffect::Priority priority() const { return m_priority; }
 
     DECLARE_TRACE();
 
     void applySVGUpdate(SVGElement&);
 
 private:
-    SampledEffect(Animation*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>);
+    SampledEffect(KeyframeEffect*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>);
 
-    RawPtrWillBeWeakMember<Animation> m_animation;
-    RefPtrWillBeMember<AnimationPlayer> m_player;
+    RawPtrWillBeWeakMember<KeyframeEffect> m_effect;
+    RefPtrWillBeMember<Animation> m_animation;
     OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> m_interpolations;
     const unsigned m_sequenceNumber;
-    Animation::Priority m_priority;
+    KeyframeEffect::Priority m_priority;
 };
 
 } // namespace blink

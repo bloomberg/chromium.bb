@@ -33,7 +33,7 @@ public:
 
     class PropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, AnimationEffect::CompositeOperation);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, EffectModel::CompositeOperation);
 
         AnimatableValue* value() const { return m_value.get(); }
         virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const override final { return m_value; }

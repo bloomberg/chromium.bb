@@ -103,13 +103,13 @@ DEFINE_TRACE(StringKeyframe)
     Keyframe::trace(visitor);
 }
 
-StringKeyframe::CSSPropertySpecificKeyframe::CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value, AnimationEffect::CompositeOperation op)
+StringKeyframe::CSSPropertySpecificKeyframe::CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value, EffectModel::CompositeOperation op)
     : Keyframe::PropertySpecificKeyframe(offset, easing, op)
     , m_value(value)
 { }
 
 StringKeyframe::CSSPropertySpecificKeyframe::CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue* value)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, AnimationEffect::CompositeReplace)
+    : Keyframe::PropertySpecificKeyframe(offset, easing, EffectModel::CompositeReplace)
     , m_value(value)
 {
     ASSERT(!isNull(m_offset));
@@ -441,7 +441,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtrWillBeNoop(new CSSPropertySpecificKeyframe(offset, easing, static_cast<CSSValue*>(0), AnimationEffect::CompositeAdd));
+    return adoptPtrWillBeNoop(new CSSPropertySpecificKeyframe(offset, easing, static_cast<CSSValue*>(0), EffectModel::CompositeAdd));
 }
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::CSSPropertySpecificKeyframe::cloneWithOffset(double offset) const
@@ -458,14 +458,14 @@ DEFINE_TRACE(StringKeyframe::CSSPropertySpecificKeyframe)
     Keyframe::PropertySpecificKeyframe::trace(visitor);
 }
 
-SVGPropertySpecificKeyframe::SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value, AnimationEffect::CompositeOperation op)
+SVGPropertySpecificKeyframe::SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value, EffectModel::CompositeOperation op)
     : Keyframe::PropertySpecificKeyframe(offset, easing, op)
     , m_value(value)
 {
 }
 
 SVGPropertySpecificKeyframe::SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String& value)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, AnimationEffect::CompositeReplace)
+    : Keyframe::PropertySpecificKeyframe(offset, easing, EffectModel::CompositeReplace)
     , m_value(value)
 {
     ASSERT(!isNull(m_offset));
@@ -483,7 +483,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKe
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtrWillBeNoop(new SVGPropertySpecificKeyframe(offset, easing, "", AnimationEffect::CompositeAdd));
+    return adoptPtrWillBeNoop(new SVGPropertySpecificKeyframe(offset, easing, "", EffectModel::CompositeAdd));
 }
 
 namespace {

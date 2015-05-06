@@ -2,23 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://www.w3.org/TR/web-animations/#the-animationtiming-interface
-
-// TODO(dstockwell): This interface does not exist in the latest spec, which
-// instead has a AnimationEffectTimingReadonly interface:
-// https://w3c.github.io/web-animations/#the-animationeffecttimingreadonly-interface
+// https://w3c.github.io/web-animations/#the-animationeffecttiming-interface
+// TODO(dstockwell): Should extend AnimationEffectTimingReadOnly
 
 [
-    ImplementedAs=AnimationNodeTiming,
     RuntimeEnabled=WebAnimationsAPI,
     WillBeGarbageCollected,
-] interface Timing {
+] interface AnimationEffectTiming {
     attribute double delay;
     attribute double endDelay;
     attribute DOMString fill;
     attribute double iterationStart;
     attribute unrestricted double iterations;
     attribute (unrestricted double or DOMString) duration;
+    // TODO(dstockwell): playbackRate has been removed from level 1.
     attribute double playbackRate;
     attribute DOMString direction;
     attribute DOMString easing;

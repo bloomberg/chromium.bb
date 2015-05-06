@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationPlayer.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/StyleChangeReason.h"
@@ -756,22 +756,22 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSetLayerTreeId::data(c
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationEvent::data(const AnimationPlayer& player)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationEvent::data(const Animation& player)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("id", String::number(player.sequenceNumber()));
     value->setString("state", player.playState());
-    if (const AnimationNode* source = player.source()) {
+    if (const AnimationEffect* source = player.source()) {
         value->setString("name", source->name());
         if (source->isAnimation()) {
-            if (Element* target = toAnimation(source)->target())
+            if (Element* target = toKeyframeEffect(source)->target())
                 setNodeInfo(value.get(), target, "nodeId", "nodeName");
         }
     }
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationStateEvent::data(const AnimationPlayer& player)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationStateEvent::data(const Animation& player)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("state", player.playState());

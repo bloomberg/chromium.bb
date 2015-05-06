@@ -189,7 +189,7 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
     // FIXME: Remove the dependency on element.
     if (!element)
@@ -233,7 +233,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
         String compositeString;
         DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
         if (compositeString == "add")
-            keyframe->setComposite(AnimationEffect::CompositeAdd);
+            keyframe->setComposite(EffectModel::CompositeAdd);
 
         String timingFunctionString;
         if (DictionaryHelper::get(keyframeDictionary, "easing", timingFunctionString)) {
@@ -283,10 +283,10 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
     return keyframeEffectModel;
 }
 
-PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, const AnimationEffectOrDictionarySequence& effectInput, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const EffectModelOrDictionarySequence& effectInput, ExceptionState& exceptionState)
 {
-    if (effectInput.isAnimationEffect())
-        return effectInput.getAsAnimationEffect();
+    if (effectInput.isEffectModel())
+        return effectInput.getAsEffectModel();
     if (effectInput.isDictionarySequence())
         return convert(element, effectInput.getAsDictionarySequence(), exceptionState);
     return nullptr;

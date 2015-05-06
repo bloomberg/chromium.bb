@@ -11,11 +11,11 @@
 namespace blink {
 
 class Dictionary;
-class AnimationTimingProperties;
+class KeyframeEffectOptions;
 
 class CORE_EXPORT TimingInput {
 public:
-    static Timing convert(const AnimationTimingProperties& timingInput);
+    static Timing convert(const KeyframeEffectOptions& timingInput);
     static Timing convert(double duration);
 
     static void setStartDelay(Timing&, double startDelay);

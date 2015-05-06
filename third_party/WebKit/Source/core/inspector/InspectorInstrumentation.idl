@@ -420,10 +420,10 @@ interface InspectorInstrumentation {
     void traceAsyncCallbackCompleted(const InspectorInstrumentationCookie&);
 
     [Animation, Inline=FastReturn]
-    void didCreateAnimationPlayer(Document*, AnimationPlayer* player);
+    void didCreateAnimation(Document*, Animation* player);
 
     [Animation, Inline=FastReturn]
-    void didCancelAnimationPlayer(Document*, AnimationPlayer* player);
+    void didCancelAnimation(Document*, Animation* player);
 }
 
 interface InspectorConsoleInstrumentation {

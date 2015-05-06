@@ -13,8 +13,8 @@
 
 namespace blink {
 
+class Animation;
 class AnimationNode;
-class AnimationPlayer;
 class AnimationTimeline;
 class Element;
 class InspectorDOMAgent;
@@ -42,15 +42,15 @@ public:
     virtual void setTiming(ErrorString*, const String& playerId, double duration, double delay) override;
 
     // API for InspectorInstrumentation
-    void didCreateAnimationPlayer(AnimationPlayer*);
-    void didCancelAnimationPlayer(AnimationPlayer*);
+    void didCreateAnimation(Animation*);
+    void didCancelAnimation(Animation*);
     void didClearDocumentOfWindowObject(LocalFrame*);
 
     // API for InspectorFrontend
     virtual void enable(ErrorString*) override;
 
     // Methods for other agents to use.
-    AnimationPlayer* assertAnimationPlayer(ErrorString*, const String& id);
+    Animation* assertAnimation(ErrorString*, const String& id);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -59,15 +59,15 @@ private:
 
     typedef TypeBuilder::Animation::AnimationPlayer::Type::Enum AnimationType;
 
-    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&);
-    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > buildArrayForAnimationPlayers(Element&, const WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >);
-    double normalizedStartTime(AnimationPlayer&);
+    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(Animation&);
+    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(Animation&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer>> buildArrayForAnimations(Element&, const WillBeHeapVector<RefPtrWillBeMember<Animation>>);
+    double normalizedStartTime(Animation&);
     AnimationTimeline& referenceTimeline();
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer>> m_idToAnimationPlayer;
+    WillBeHeapHashMap<String, RefPtrWillBeMember<Animation>> m_idToAnimation;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;
 };
 

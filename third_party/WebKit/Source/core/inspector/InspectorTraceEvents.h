@@ -13,7 +13,7 @@
 #include "wtf/Functional.h"
 
 namespace blink {
-class AnimationPlayer;
+class Animation;
 class CSSStyleSheetResource;
 class DescendantInvalidationSet;
 class Document;
@@ -342,12 +342,12 @@ public:
 
 class InspectorAnimationEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const AnimationPlayer&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
 };
 
 class InspectorAnimationStateEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const AnimationPlayer&);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
 };
 
 } // namespace blink

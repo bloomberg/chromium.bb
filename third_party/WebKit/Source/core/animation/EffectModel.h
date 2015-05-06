@@ -28,48 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositorPendingAnimations_h
-#define CompositorPendingAnimations_h
+#ifndef EffectModel_h
+#define EffectModel_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
-#include "core/animation/Animation.h"
-#include "platform/Timer.h"
+#include "core/animation/PropertyHandle.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Vector.h"
+#include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
-// Manages the starting of pending animations on the compositor following a
-// compositing update.
-// For CSS Animations, used to synchronize the start of main-thread animations
-// with compositor animations when both classes of CSS Animations are triggered
-// by the same recalc
-class CORE_EXPORT CompositorPendingAnimations final {
-    DISALLOW_ALLOCATION();
+class Interpolation;
+
+class CORE_EXPORT EffectModel : public RefCountedWillBeGarbageCollectedFinalized<EffectModel>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
+    enum CompositeOperation {
+        CompositeReplace,
+        CompositeAdd,
+    };
 
-    CompositorPendingAnimations()
-        : m_timer(this, &CompositorPendingAnimations::timerFired)
-        , m_compositorGroup(1)
-    { }
+    EffectModel() { }
+    virtual ~EffectModel() { }
+    virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const = 0;
 
-    void add(Animation*);
-    // Returns whether we are waiting for an animation to start and should
-    // service again on the next frame.
-    bool update(bool startOnCompositor = true);
-    void notifyCompositorAnimationStarted(double monotonicAnimationStartTime, int compositorGroup = 0);
+    virtual bool affects(PropertyHandle) const { return false; };
+    virtual bool isKeyframeEffectModel() const { return false; }
 
-    DECLARE_TRACE();
-
-private:
-    void timerFired(Timer<CompositorPendingAnimations>*) { update(false); }
-
-    WillBeHeapVector<RefPtrWillBeMember<Animation>> m_pending;
-    WillBeHeapVector<RefPtrWillBeMember<Animation>> m_waitingForCompositorAnimationStart;
-    Timer<CompositorPendingAnimations> m_timer;
-    int m_compositorGroup;
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 } // namespace blink
 
-#endif
+#endif // EffectModel_h

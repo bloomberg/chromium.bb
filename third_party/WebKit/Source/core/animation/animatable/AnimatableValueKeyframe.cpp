@@ -44,13 +44,13 @@ DEFINE_TRACE(AnimatableValueKeyframe)
     Keyframe::trace(visitor);
 }
 
-AnimatableValueKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue* value, AnimationEffect::CompositeOperation op)
+AnimatableValueKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue* value, EffectModel::CompositeOperation op)
     : Keyframe::PropertySpecificKeyframe(offset, easing, op)
     , m_value(const_cast<AnimatableValue*>(value))
 { }
 
 AnimatableValueKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtrWillBeRawPtr<AnimatableValue> value)
-    : Keyframe::PropertySpecificKeyframe(offset, easing, AnimationEffect::CompositeReplace)
+    : Keyframe::PropertySpecificKeyframe(offset, easing, EffectModel::CompositeReplace)
     , m_value(value)
 {
     ASSERT(!isNull(m_offset));
@@ -70,7 +70,7 @@ PassRefPtrWillBeRawPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificK
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::PropertySpecificKeyframe::neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const
 {
-    return adoptPtrWillBeNoop(new AnimatableValueKeyframe::PropertySpecificKeyframe(offset, easing, AnimatableValue::neutralValue(), AnimationEffect::CompositeAdd));
+    return adoptPtrWillBeNoop(new AnimatableValueKeyframe::PropertySpecificKeyframe(offset, easing, AnimatableValue::neutralValue(), EffectModel::CompositeAdd));
 }
 
 DEFINE_TRACE(AnimatableValueKeyframe::PropertySpecificKeyframe)

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationNodeTiming_h
-#define AnimationNodeTiming_h
+#ifndef AnimationEffectTiming_h
+#define AnimationEffectTiming_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/animation/AnimationNode.h"
+#include "core/animation/AnimationEffect.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -15,10 +15,10 @@ namespace blink {
 
 class UnrestrictedDoubleOrString;
 
-class CORE_EXPORT AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming>, public ScriptWrappable {
+class CORE_EXPORT AnimationEffectTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffectTiming>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<AnimationNodeTiming> create(AnimationNode* parent);
+    static PassRefPtrWillBeRawPtr<AnimationEffectTiming> create(AnimationEffect* parent);
     double delay();
     double endDelay();
     String fill();
@@ -42,8 +42,8 @@ public:
     DECLARE_TRACE();
 
 private:
-    RefPtrWillBeMember<AnimationNode> m_parent;
-    explicit AnimationNodeTiming(AnimationNode*);
+    RefPtrWillBeMember<AnimationEffect> m_parent;
+    explicit AnimationEffectTiming(AnimationEffect*);
 };
 
 } // namespace blink

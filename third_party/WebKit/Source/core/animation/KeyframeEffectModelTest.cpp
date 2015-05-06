@@ -112,8 +112,8 @@ TEST(AnimationKeyframeEffectModel, BasicOperation)
 TEST(AnimationKeyframeEffectModel, CompositeReplaceNonInterpolable)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(unknownAnimatableValue(3.0), unknownAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
-    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setComposite(EffectModel::CompositeReplace);
+    keyframes[1]->setComposite(EffectModel::CompositeReplace);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 0.6, duration, values);
@@ -123,8 +123,8 @@ TEST(AnimationKeyframeEffectModel, CompositeReplaceNonInterpolable)
 TEST(AnimationKeyframeEffectModel, CompositeReplace)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
-    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setComposite(EffectModel::CompositeReplace);
+    keyframes[1]->setComposite(EffectModel::CompositeReplace);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 0.6, duration, values);
@@ -135,8 +135,8 @@ TEST(AnimationKeyframeEffectModel, CompositeReplace)
 TEST(AnimationKeyframeEffectModel, DISABLED_CompositeAdd)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
-    keyframes[1]->setComposite(AnimationEffect::CompositeAdd);
+    keyframes[0]->setComposite(EffectModel::CompositeAdd);
+    keyframes[1]->setComposite(EffectModel::CompositeAdd);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 0.6, duration, values);
@@ -146,9 +146,9 @@ TEST(AnimationKeyframeEffectModel, DISABLED_CompositeAdd)
 TEST(AnimationKeyframeEffectModel, CompositeEaseIn)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setComposite(EffectModel::CompositeReplace);
     keyframes[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
-    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[1]->setComposite(EffectModel::CompositeReplace);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 0.6, duration, values);
@@ -160,9 +160,9 @@ TEST(AnimationKeyframeEffectModel, CompositeEaseIn)
 TEST(AnimationKeyframeEffectModel, CompositeCubicBezier)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setComposite(EffectModel::CompositeReplace);
     keyframes[0]->setEasing(CubicBezierTimingFunction::create(0.42, 0, 0.58, 1));
-    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[1]->setComposite(EffectModel::CompositeReplace);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 0.6, duration, values);
@@ -174,8 +174,8 @@ TEST(AnimationKeyframeEffectModel, CompositeCubicBezier)
 TEST(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(unknownAnimatableValue(3.0), unknownAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
-    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setComposite(EffectModel::CompositeReplace);
+    keyframes[1]->setComposite(EffectModel::CompositeReplace);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 1.6, duration, values);
@@ -186,8 +186,8 @@ TEST(AnimationKeyframeEffectModel, ExtrapolateReplace)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
-    keyframes[0]->setComposite(AnimationEffect::CompositeReplace);
-    keyframes[1]->setComposite(AnimationEffect::CompositeReplace);
+    keyframes[0]->setComposite(EffectModel::CompositeReplace);
+    keyframes[1]->setComposite(EffectModel::CompositeReplace);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 1.6, duration, values);
     expectDoubleValue(3.0 * -0.6 + 5.0 * 1.6, values->at(0));
@@ -197,8 +197,8 @@ TEST(AnimationKeyframeEffectModel, ExtrapolateReplace)
 TEST(AnimationKeyframeEffectModel, DISABLED_ExtrapolateAdd)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
-    keyframes[1]->setComposite(AnimationEffect::CompositeAdd);
+    keyframes[0]->setComposite(EffectModel::CompositeAdd);
+    keyframes[1]->setComposite(EffectModel::CompositeAdd);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 1.6, duration, values);
@@ -365,7 +365,7 @@ TEST(AnimationKeyframeEffectModel, DISABLED_PerKeyframeComposite)
     keyframes[1] = AnimatableValueKeyframe::create();
     keyframes[1]->setOffset(1.0);
     keyframes[1]->setPropertyValue(CSSPropertyLeft, pixelAnimatableValue(5.0).get());
-    keyframes[1]->setComposite(AnimationEffect::CompositeAdd);
+    keyframes[1]->setComposite(EffectModel::CompositeAdd);
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
@@ -401,8 +401,8 @@ TEST(AnimationKeyframeEffectModel, MultipleProperties)
 TEST(AnimationKeyframeEffectModel, DISABLED_RecompositeCompositableValue)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
-    keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
-    keyframes[1]->setComposite(AnimationEffect::CompositeAdd);
+    keyframes[0]->setComposite(EffectModel::CompositeAdd);
+    keyframes[1]->setComposite(EffectModel::CompositeAdd);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> values = nullptr;
     effect->sample(0, 0.6, duration, values);
@@ -430,7 +430,7 @@ TEST(AnimationKeyframeEffectModel, DISABLED_DependsOnUnderlyingValue)
     keyframes[0] = AnimatableValueKeyframe::create();
     keyframes[0]->setOffset(0.0);
     keyframes[0]->setPropertyValue(CSSPropertyLeft, pixelAnimatableValue(1.0).get());
-    keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
+    keyframes[0]->setComposite(EffectModel::CompositeAdd);
     keyframes[1] = AnimatableValueKeyframe::create();
     keyframes[1]->setOffset(0.5);
     keyframes[1]->setPropertyValue(CSSPropertyLeft, pixelAnimatableValue(1.0).get());
@@ -480,7 +480,7 @@ TEST(AnimationKeyframeEffectModel, ToKeyframeEffectModel)
     AnimatableValueKeyframeVector keyframes(0);
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
 
-    AnimationEffect* baseEffect = effect.get();
+    EffectModel* baseEffect = effect.get();
     EXPECT_TRUE(toAnimatableValueKeyframeEffectModel(baseEffect));
 }
 

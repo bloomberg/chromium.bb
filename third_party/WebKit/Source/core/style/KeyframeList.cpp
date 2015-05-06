@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/style/KeyframeList.h"
 
-#include "core/animation/Animation.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/css/StylePropertySet.h"
 #include "core/layout/LayoutObject.h"
 

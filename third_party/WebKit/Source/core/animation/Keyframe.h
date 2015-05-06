@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationNode.h"
+#include "core/animation/EffectModel.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/animatable/AnimatableValue.h"
 
@@ -26,8 +26,8 @@ public:
     void setOffset(double offset) { m_offset = offset; }
     double offset() const { return m_offset; }
 
-    void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }
-    AnimationEffect::CompositeOperation composite() const { return m_composite; }
+    void setComposite(EffectModel::CompositeOperation composite) { m_composite = composite; }
+    EffectModel::CompositeOperation composite() const { return m_composite; }
 
     void setEasing(PassRefPtr<TimingFunction> easing) { m_easing = easing; }
     TimingFunction& easing() const { return *m_easing; }
@@ -57,7 +57,7 @@ public:
         virtual ~PropertySpecificKeyframe() { }
         double offset() const { return m_offset; }
         TimingFunction& easing() const { return *m_easing; }
-        AnimationEffect::CompositeOperation composite() const { return m_composite; }
+        EffectModel::CompositeOperation composite() const { return m_composite; }
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const = 0;
 
         // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
@@ -74,11 +74,11 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     protected:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, AnimationEffect::CompositeOperation);
+        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, EffectModel::CompositeOperation);
 
         double m_offset;
         RefPtr<TimingFunction> m_easing;
-        AnimationEffect::CompositeOperation m_composite;
+        EffectModel::CompositeOperation m_composite;
     };
 
     virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> createPropertySpecificKeyframe(PropertyHandle) const = 0;
@@ -86,11 +86,11 @@ public:
 protected:
     Keyframe()
         : m_offset(nullValue())
-        , m_composite(AnimationEffect::CompositeReplace)
+        , m_composite(EffectModel::CompositeReplace)
         , m_easing(LinearTimingFunction::shared())
     {
     }
-    Keyframe(double offset, AnimationEffect::CompositeOperation composite, PassRefPtr<TimingFunction> easing)
+    Keyframe(double offset, EffectModel::CompositeOperation composite, PassRefPtr<TimingFunction> easing)
         : m_offset(offset)
         , m_composite(composite)
         , m_easing(easing)
@@ -98,7 +98,7 @@ protected:
     }
 
     double m_offset;
-    AnimationEffect::CompositeOperation m_composite;
+    EffectModel::CompositeOperation m_composite;
     RefPtr<TimingFunction> m_easing;
 };
 

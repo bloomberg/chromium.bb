@@ -55,8 +55,8 @@ class CSSAnimations final {
 public:
     CSSAnimations();
 
-    const AtomicString getAnimationNameForInspector(const AnimationPlayer&);
-    bool isTransitionAnimationForInspector(const AnimationPlayer&) const;
+    const AtomicString getAnimationNameForInspector(const Animation&);
+    bool isTransitionAnimationForInspector(const Animation&) const;
 
     static const StylePropertyShorthand& propertiesForTransitionAll();
     static bool isAllowedAnimation(CSSPropertyID);
@@ -72,11 +72,11 @@ public:
 private:
     class RunningAnimation final : public RefCountedWillBeGarbageCollectedFinalized<RunningAnimation> {
     public:
-        RunningAnimation(PassRefPtrWillBeRawPtr<AnimationPlayer> player, CSSAnimationUpdate::NewAnimation animation)
-            : player(player)
-            , specifiedTiming(animation.timing)
-            , styleRule(animation.styleRule)
-            , styleRuleVersion(animation.styleRuleVersion)
+        RunningAnimation(PassRefPtrWillBeRawPtr<Animation> animation, CSSAnimationUpdate::NewAnimation newAnimation)
+            : animation(animation)
+            , specifiedTiming(newAnimation.timing)
+            , styleRule(newAnimation.styleRule)
+            , styleRuleVersion(newAnimation.styleRuleVersion)
         {
         }
 
@@ -89,11 +89,11 @@ private:
 
         DEFINE_INLINE_TRACE()
         {
-            visitor->trace(player);
+            visitor->trace(animation);
             visitor->trace(styleRule);
         }
 
-        RefPtrWillBeMember<AnimationPlayer> player;
+        RefPtrWillBeMember<Animation> animation;
         Timing specifiedTiming;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -104,12 +104,12 @@ private:
     public:
         DEFINE_INLINE_TRACE()
         {
-            visitor->trace(player);
+            visitor->trace(animation);
             visitor->trace(from);
             visitor->trace(to);
         }
 
-        RefPtrWillBeMember<AnimationPlayer> player;
+        RefPtrWillBeMember<Animation> animation;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
     };
@@ -131,17 +131,17 @@ private:
     static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element* animatingElement, double timelineCurrentTime);
     static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element* animatingElement, double timelineCurrentTime);
 
-    class AnimationEventDelegate final : public AnimationNode::EventDelegate {
+    class AnimationEventDelegate final : public AnimationEffect::EventDelegate {
     public:
         AnimationEventDelegate(Element* animationTarget, const AtomicString& name)
             : m_animationTarget(animationTarget)
             , m_name(name)
-            , m_previousPhase(AnimationNode::PhaseNone)
+            , m_previousPhase(AnimationEffect::PhaseNone)
             , m_previousIteration(nullValue())
         {
         }
-        virtual bool requiresIterationEvents(const AnimationNode&) override;
-        virtual void onEventCondition(const AnimationNode&) override;
+        virtual bool requiresIterationEvents(const AnimationEffect&) override;
+        virtual void onEventCondition(const AnimationEffect&) override;
         DECLARE_VIRTUAL_TRACE();
 
     private:
@@ -152,20 +152,20 @@ private:
         void maybeDispatch(Document::ListenerType, const AtomicString& eventName, double elapsedTime);
         RawPtrWillBeMember<Element> m_animationTarget;
         const AtomicString m_name;
-        AnimationNode::Phase m_previousPhase;
+        AnimationEffect::Phase m_previousPhase;
         double m_previousIteration;
     };
 
-    class TransitionEventDelegate final : public AnimationNode::EventDelegate {
+    class TransitionEventDelegate final : public AnimationEffect::EventDelegate {
     public:
         TransitionEventDelegate(Element* transitionTarget, CSSPropertyID property)
             : m_transitionTarget(transitionTarget)
             , m_property(property)
-            , m_previousPhase(AnimationNode::PhaseNone)
+            , m_previousPhase(AnimationEffect::PhaseNone)
         {
         }
-        virtual bool requiresIterationEvents(const AnimationNode&) override { return false; }
-        virtual void onEventCondition(const AnimationNode&) override;
+        virtual bool requiresIterationEvents(const AnimationEffect&) override { return false; }
+        virtual void onEventCondition(const AnimationEffect&) override;
         DECLARE_VIRTUAL_TRACE();
 
     private:
@@ -176,7 +176,7 @@ private:
 
         RawPtrWillBeMember<Element> m_transitionTarget;
         const CSSPropertyID m_property;
-        AnimationNode::Phase m_previousPhase;
+        AnimationEffect::Phase m_previousPhase;
     };
 };
 

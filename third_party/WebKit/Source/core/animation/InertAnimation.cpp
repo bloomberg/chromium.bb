@@ -34,13 +34,13 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InertAnimation> InertAnimation::create(PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, bool paused, double inheritedTime)
+PassRefPtrWillBeRawPtr<InertAnimation> InertAnimation::create(PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, bool paused, double inheritedTime)
 {
     return adoptRefWillBeNoop(new InertAnimation(effect, timing, paused, inheritedTime));
 }
 
-InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, bool paused, double inheritedTime)
-    : AnimationNode(timing)
+InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, bool paused, double inheritedTime)
+    : AnimationEffect(timing)
     , m_effect(effect)
     , m_paused(paused)
     , m_inheritedTime(inheritedTime)
@@ -69,7 +69,7 @@ double InertAnimation::calculateTimeToEffectChange(bool, double, double) const
 DEFINE_TRACE(InertAnimation)
 {
     visitor->trace(m_effect);
-    AnimationNode::trace(visitor);
+    AnimationEffect::trace(visitor);
 }
 
 } // namespace blink

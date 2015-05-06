@@ -11,26 +11,26 @@ var keyframes = [{opacity: '1'}, {opacity: '0'}];
 var timingObject = {duration: 2, iterations: 5};
 
 test(function() {
-    var animation = new Animation(element, keyframes, timingObject);
-    assert_not_equals(animation, undefined);
-    assert_equals(animation.constructor, Animation);
-}, 'Calling new Animation() with a timing object input should create an animation.');
+    var keyframeEffect = new KeyframeEffect(element, keyframes, timingObject);
+    assert_not_equals(keyframeEffect, undefined);
+    assert_equals(keyframeEffect.constructor, KeyframeEffect);
+}, 'Calling new KeyframeEffect() with a timing object input should create an keyframeEffect.');
 
 test(function() {
-    var animation = new Animation(element, keyframes, 2);
-    assert_not_equals(animation, undefined);
-    assert_equals(animation.constructor, Animation);
-}, 'Calling new Animation() with a duration input should create an animation.');
+    var keyframeEffect = new KeyframeEffect(element, keyframes, 2);
+    assert_not_equals(keyframeEffect, undefined);
+    assert_equals(keyframeEffect.constructor, KeyframeEffect);
+}, 'Calling new KeyframeEffect() with a duration input should create an keyframeEffect.');
 
 test(function() {
-    var animation = new Animation(element, keyframes);
-    assert_not_equals(animation, undefined);
-    assert_equals(animation.constructor, Animation);
-}, 'Calling new Animation() with no timing input should create an animation.');
+    var keyframeEffect = new KeyframeEffect(element, keyframes);
+    assert_not_equals(keyframeEffect, undefined);
+    assert_equals(keyframeEffect.constructor, KeyframeEffect);
+}, 'Calling new KeyframeEffect() with no timing input should create an keyframeEffect.');
 
 test(function() {
-    var animation = new Animation(null, keyframes);
-    assert_not_equals(animation, undefined);
-    assert_equals(animation.constructor, Animation);
-}, 'Calling new Animation() with no target should create an animation.');
+    var keyframeEffect = new KeyframeEffect(null, keyframes);
+    assert_not_equals(keyframeEffect, undefined);
+    assert_equals(keyframeEffect.constructor, KeyframeEffect);
+}, 'Calling new KeyframeEffect() with no target should create an keyframeEffect.');
 </script>

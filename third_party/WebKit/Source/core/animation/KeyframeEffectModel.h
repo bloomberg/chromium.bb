@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationNode.h"
+#include "core/animation/EffectModel.h"
 #include "core/animation/InterpolationEffect.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/StringKeyframe.h"
@@ -52,7 +52,7 @@ namespace blink {
 class Element;
 class KeyframeEffectModelTest;
 
-class CORE_EXPORT KeyframeEffectModelBase : public AnimationEffect {
+class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 public:
     // FIXME: Implement accumulation.
 
@@ -87,7 +87,7 @@ public:
         return m_keyframeGroups->get(property)->keyframes();
     }
 
-    // AnimationEffect implementation.
+    // EffectModel implementation.
     virtual void sample(int iteration, double fraction, double iterationDuration, OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&) const override;
 
     virtual bool isKeyframeEffectModel() const override { return true; }
@@ -177,26 +177,26 @@ using StringKeyframeEffectModel = KeyframeEffectModel<StringKeyframe>;
 using StringKeyframeVector = StringKeyframeEffectModel::KeyframeVector;
 using StringPropertySpecificKeyframeVector = StringKeyframeEffectModel::PropertySpecificKeyframeVector;
 
-DEFINE_TYPE_CASTS(KeyframeEffectModelBase, AnimationEffect, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
+DEFINE_TYPE_CASTS(KeyframeEffectModelBase, EffectModel, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
 DEFINE_TYPE_CASTS(AnimatableValueKeyframeEffectModel, KeyframeEffectModelBase, value, value->isAnimatableValueKeyframeEffectModel(), value.isAnimatableValueKeyframeEffectModel());
 DEFINE_TYPE_CASTS(StringKeyframeEffectModel, KeyframeEffectModelBase, value, value->isStringKeyframeEffectModel(), value.isStringKeyframeEffectModel());
 
-inline const AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(const AnimationEffect* base)
+inline const AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(const EffectModel* base)
 {
     return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
-inline AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(AnimationEffect* base)
+inline AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(EffectModel* base)
 {
     return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
-inline const StringKeyframeEffectModel* toStringKeyframeEffectModel(const AnimationEffect* base)
+inline const StringKeyframeEffectModel* toStringKeyframeEffectModel(const EffectModel* base)
 {
     return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }
 
-inline StringKeyframeEffectModel* toStringKeyframeEffectModel(AnimationEffect* base)
+inline StringKeyframeEffectModel* toStringKeyframeEffectModel(EffectModel* base)
 {
     return toStringKeyframeEffectModel(toKeyframeEffectModelBase(base));
 }

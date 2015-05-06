@@ -6,21 +6,21 @@
 #define EffectInput_h
 
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
+#include "core/animation/EffectModel.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class AnimationEffect;
-class AnimationEffectOrDictionarySequence;
+class EffectModel;
+class EffectModelOrDictionarySequence;
 class Dictionary;
 class Element;
 class ExceptionState;
 
 class CORE_EXPORT EffectInput {
 public:
-    static PassRefPtrWillBeRawPtr<AnimationEffect> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<AnimationEffect> convert(Element*, const AnimationEffectOrDictionarySequence&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<EffectModel> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<EffectModel> convert(Element*, const EffectModelOrDictionarySequence&, ExceptionState&);
 };
 
 } // namespace blink

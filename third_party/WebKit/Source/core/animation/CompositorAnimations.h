@@ -32,14 +32,14 @@
 #define CompositorAnimations_h
 
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
+#include "core/animation/EffectModel.h"
 #include "core/animation/Timing.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class AnimationPlayer;
+class Animation;
 class Element;
 class FloatBox;
 
@@ -50,18 +50,18 @@ public:
     static bool isCompositableProperty(CSSPropertyID property) { return property == CSSPropertyOpacity || property == CSSPropertyTransform || property == CSSPropertyWebkitFilter; }
     static CSSPropertyID CompositableProperties[3];
 
-    virtual bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const AnimationPlayer*, const AnimationEffect&, double playerPlaybackRate);
-    virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const AnimationPlayer&, const AnimationEffect&);
+    virtual bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const Animation*, const EffectModel&, double animationPlaybackRate);
+    virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const Animation&, const EffectModel&);
     virtual bool canStartAnimationOnCompositor(const Element&);
     // FIXME: This should return void. We should know ahead of time whether these animations can be started.
-    virtual bool startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const AnimationPlayer&, const AnimationEffect&, Vector<int>& startedAnimationIds, double playerPlaybackRate);
-    virtual void cancelAnimationOnCompositor(const Element&, const AnimationPlayer&, int id);
-    virtual void pauseAnimationForTestingOnCompositor(const Element&, const AnimationPlayer&, int id, double pauseTime);
+    virtual bool startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const Animation&, const EffectModel&, Vector<int>& startedAnimationIds, double animationPlaybackRate);
+    virtual void cancelAnimationOnCompositor(const Element&, const Animation&, int id);
+    virtual void pauseAnimationForTestingOnCompositor(const Element&, const Animation&, int id, double pauseTime);
 
-    virtual bool canAttachCompositedLayers(const Element&, const AnimationPlayer&);
-    virtual void attachCompositedLayers(const Element&, const AnimationPlayer&);
+    virtual bool canAttachCompositedLayers(const Element&, const Animation&);
+    virtual void attachCompositedLayers(const Element&, const Animation&);
 
-    virtual bool getAnimatedBoundingBox(FloatBox&, const AnimationEffect&, double minValue, double maxValue) const;
+    virtual bool getAnimatedBoundingBox(FloatBox&, const EffectModel&, double minValue, double maxValue) const;
 protected:
     CompositorAnimations() { }
 

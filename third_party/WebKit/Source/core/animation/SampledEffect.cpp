@@ -11,27 +11,27 @@
 
 namespace blink {
 
-SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
-    : m_animation(animation)
-    , m_player(animation->player())
+SampledEffect::SampledEffect(KeyframeEffect* effect, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
+    : m_effect(effect)
+    , m_animation(effect->animation())
     , m_interpolations(interpolations)
-    , m_sequenceNumber(animation->player()->sequenceNumber())
-    , m_priority(animation->priority())
+    , m_sequenceNumber(effect->animation()->sequenceNumber())
+    , m_priority(effect->priority())
 {
     ASSERT(m_interpolations && !m_interpolations->isEmpty());
 }
 
 void SampledEffect::clear()
 {
-    m_player = nullptr;
+    m_effect = nullptr;
     m_animation = nullptr;
     m_interpolations->clear();
 }
 
 DEFINE_TRACE(SampledEffect)
 {
+    visitor->trace(m_effect);
     visitor->trace(m_animation);
-    visitor->trace(m_player);
 #if ENABLE(OILPAN)
     visitor->trace(m_interpolations);
 #endif

@@ -33,8 +33,9 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationPlayer.h"
+#include "core/animation/EffectModel.h"
+#include "core/animation/KeyframeEffect.h"
+#include "core/animation/PropertyHandle.h"
 #include "core/animation/SampledEffect.h"
 #include "platform/geometry/FloatBox.h"
 #include "wtf/HashSet.h"
@@ -55,7 +56,7 @@ public:
     void add(PassOwnPtrWillBeRawPtr<SampledEffect> effect) { m_effects.append(effect); }
     bool isEmpty() const { return m_effects.isEmpty(); }
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
-    static ActiveInterpolationMap activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>* suppressedAnimationPlayers, Animation::Priority, double timelineCurrentTime);
+    static ActiveInterpolationMap activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, double timelineCurrentTime);
 
     bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
     DECLARE_TRACE();

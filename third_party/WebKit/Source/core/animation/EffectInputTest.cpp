@@ -52,7 +52,7 @@ TEST_F(AnimationEffectInputTest, SortedOffsets)
     jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
 
-    RefPtrWillBeRawPtr<AnimationEffect> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
+    RefPtrWillBeRawPtr<EffectModel> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     const KeyframeEffectModelBase& keyframeEffect = *toKeyframeEffectModelBase(animationEffect.get());
     EXPECT_EQ(1.0, keyframeEffect.getFrames()[1]->offset());
@@ -94,7 +94,7 @@ TEST_F(AnimationEffectInputTest, LooslySorted)
     jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
     jsKeyframes.append(Dictionary(keyframe3, m_isolate, exceptionState));
 
-    RefPtrWillBeRawPtr<AnimationEffect> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
+    RefPtrWillBeRawPtr<EffectModel> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     const KeyframeEffectModelBase& keyframeEffect = *toKeyframeEffectModelBase(animationEffect.get());
     EXPECT_EQ(1, keyframeEffect.getFrames()[2]->offset());

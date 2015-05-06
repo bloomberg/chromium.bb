@@ -11,13 +11,13 @@ var element = document.getElementById('e');
 var style = getComputedStyle(element);
 var duration = 1;
 
-var animation = new Animation(element,
+var keyframeEffect = new KeyframeEffect(element,
     [{opacity: '1', offset: 0},
     {opacity: '0', offset: 1}],
     duration);
 
 test(function() {
-    var player = document.timeline.play(animation);
+    var player = document.timeline.play(keyframeEffect);
     player.pause();
     player.currentTime = duration / 2;
     assert_equals(style.opacity, '0.5');

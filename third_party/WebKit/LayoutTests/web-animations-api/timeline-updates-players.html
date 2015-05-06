@@ -8,9 +8,9 @@
 
 <script>
 var element = document.getElementById('element');
-var animation = new Animation(element, [{left: '0px'}, {left: '100px'}], 10);
+var keyframeEffect = new KeyframeEffect(element, [{left: '0px'}, {left: '100px'}], 10);
 test(function() {
-    var player = document.timeline.play(animation);
+    var player = document.timeline.play(keyframeEffect);
     player.finish();
     assert_equals(getComputedStyle(element).left, 'auto');
 
@@ -21,7 +21,7 @@ test(function() {
 }, 'Player updated after finish and play');
 
 test(function() {
-    var player = document.timeline.play(animation);
+    var player = document.timeline.play(keyframeEffect);
     assert_equals(getComputedStyle(element).left, '0px');
     var source = player.source
     player.source = null;

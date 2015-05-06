@@ -32,10 +32,10 @@
 #define ElementAnimation_h
 
 #include "bindings/core/v8/UnionTypesCore.h"
-#include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/ElementAnimations.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/animation/TimingInput.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -48,50 +48,50 @@ class Dictionary;
 
 class ElementAnimation {
 public:
-    static AnimationPlayer* animate(Element& element, const AnimationEffectOrDictionarySequence& effectInput, double duration, ExceptionState& exceptionState)
+    static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, double duration, ExceptionState& exceptionState)
     {
-        RefPtrWillBeRawPtr<AnimationEffect> effect = EffectInput::convert(&element, effectInput, exceptionState);
+        RefPtrWillBeRawPtr<EffectModel> effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, TimingInput::convert(duration));
     }
 
-    static AnimationPlayer* animate(Element& element, const AnimationEffectOrDictionarySequence& effectInput, const AnimationTimingProperties& timingInput, ExceptionState& exceptionState)
+    static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState& exceptionState)
     {
-        RefPtrWillBeRawPtr<AnimationEffect> effect = EffectInput::convert(&element, effectInput, exceptionState);
+        RefPtrWillBeRawPtr<EffectModel> effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, TimingInput::convert(timingInput));
     }
 
-    static AnimationPlayer* animate(Element& element, const AnimationEffectOrDictionarySequence& effectInput, ExceptionState& exceptionState)
+    static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, ExceptionState& exceptionState)
     {
-        RefPtrWillBeRawPtr<AnimationEffect> effect = EffectInput::convert(&element, effectInput, exceptionState);
+        RefPtrWillBeRawPtr<EffectModel> effect = EffectInput::convert(&element, effectInput, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, Timing());
     }
 
-    static WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> getAnimationPlayers(Element& element)
+    static WillBeHeapVector<RefPtrWillBeMember<Animation>> getAnimations(Element& element)
     {
-        WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> animationPlayers;
+        WillBeHeapVector<RefPtrWillBeMember<Animation>> animationss;
 
         if (!element.hasAnimations())
-            return animationPlayers;
+            return animationss;
 
-        for (const auto& player : element.document().timeline().getAnimationPlayers()) {
-            ASSERT(player->source());
-            if (toAnimation(player->source())->target() == element && (player->source()->isCurrent() || player->source()->isInEffect()))
-                animationPlayers.append(player);
+        for (const auto& animation : element.document().timeline().getAnimations()) {
+            ASSERT(animation->source());
+            if (toKeyframeEffect(animation->source())->target() == element && (animation->source()->isCurrent() || animation->source()->isInEffect()))
+                animationss.append(animation);
         }
-        return animationPlayers;
+        return animationss;
     }
 
 private:
-    static AnimationPlayer* animateInternal(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing)
+    static Animation* animateInternal(Element& element, PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing)
     {
-        RefPtrWillBeRawPtr<Animation> animation = Animation::create(&element, effect, timing);
-        return element.document().timeline().play(animation.get());
+        RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(&element, effect, timing);
+        return element.document().timeline().play(keyframeEffect.get());
     }
 };
 

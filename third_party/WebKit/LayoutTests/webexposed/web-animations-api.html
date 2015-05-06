@@ -7,8 +7,8 @@ test(function() {
 }, 'Element.animate() should be exposed.');
 
 test(function() {
-    assert_false('getAnimationPlayers' in Element.prototype);
-}, 'Element.getAnimationPlayers() should not be exposed without experimental web platform features enabled.\nThis test is expected to fail in LayoutTests/webexposed.')
+    assert_false('getAnimations' in Element.prototype);
+}, 'Element.getAnimations() should not be exposed without experimental web platform features enabled.\nThis test is expected to fail in LayoutTests/webexposed.')
 
 test(function() {
     assert_false('Animation' in window);

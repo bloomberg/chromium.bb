@@ -27,11 +27,11 @@ test(function() {
         {opacity: '0', color: 'red'}
         ];
 
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes1); });
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes2); });
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes3); });
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes4); });
-}, 'Calling new Animation() with a mismatched keyframe property should throw a NotSupportedError.');
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes1); });
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes2); });
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes3); });
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes4); });
+}, 'Calling new KeyframeEffect() with a mismatched keyframe property should throw a NotSupportedError.');
 
 test(function() {
     var validKeyframes1 = [
@@ -45,9 +45,9 @@ test(function() {
         {width: '10px', height: '10px', offset: 1}
         ];
 
-    assert_not_equals(new Animation(element, validKeyframes1), undefined);
-    assert_not_equals(new Animation(element, validKeyframes2), undefined);
-}, 'Calling new Animation() with no offset specified for the first keyframe should create and animation.');
+    assert_not_equals(new KeyframeEffect(element, validKeyframes1), undefined);
+    assert_not_equals(new KeyframeEffect(element, validKeyframes2), undefined);
+}, 'Calling new KeyframeEffect() with no offset specified for the first keyframe should create and animation.');
 
 test(function() {
     var partialKeyframes1 = [
@@ -59,9 +59,9 @@ test(function() {
         {opacity: '0'}
         ];
 
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes1); });
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes2); });
-}, 'Calling new Animation() with the offset of the first keyframe specified but not equal to 0 should throw a NotSupportedError.');
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes1); });
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes2); });
+}, 'Calling new KeyframeEffect() with the offset of the first keyframe specified but not equal to 0 should throw a NotSupportedError.');
 
 test(function() {
     var validKeyframes1 = [
@@ -75,9 +75,9 @@ test(function() {
         {width: '10px'}
         ];
 
-    assert_not_equals(new Animation(element, validKeyframes1), undefined);
-    assert_not_equals(new Animation(element, validKeyframes2), undefined);
-}, 'Calling new Animation() with no offset specified for the last keyframe should create an animation.');
+    assert_not_equals(new KeyframeEffect(element, validKeyframes1), undefined);
+    assert_not_equals(new KeyframeEffect(element, validKeyframes2), undefined);
+}, 'Calling new KeyframeEffect() with no offset specified for the last keyframe should create an animation.');
 
 test(function() {
     var partialKeyframes1 = [
@@ -89,9 +89,9 @@ test(function() {
         {opacity: '0', offset: 0.1}
         ];
 
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes1); });
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes2); });
-}, 'Calling new Animation() with the offset of the last keyframe specified but not equal to 1 should throw a NotSupportedError.');
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes1); });
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes2); });
+}, 'Calling new KeyframeEffect() with the offset of the last keyframe specified but not equal to 1 should throw a NotSupportedError.');
 
 test(function() {
     var partialKeyframes1 = [
@@ -106,9 +106,9 @@ test(function() {
         ];
 
     // Height is missing keyframe at offset: 1
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes1); });
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes2); });
-}, 'Calling new Animation() with a keyframe that has no offset specified, is followed by other keyframes, ' +
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes1); });
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes2); });
+}, 'Calling new KeyframeEffect() with a keyframe that has no offset specified, is followed by other keyframes, ' +
     'and is the last keyframe for a property, should throw a NotSupportedError.');
 
 test(function() {
@@ -124,8 +124,8 @@ test(function() {
         ];
 
     // Height is missing keyframe at offset: 0
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes1); });
-    assert_throws('NOT_SUPPORTED_ERR', function() { new Animation(element, partialKeyframes2); });
-}, 'Calling new Animation() with a keyframe that has no offset specified, is preceded by other keyframes, ' +
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes1); });
+    assert_throws('NOT_SUPPORTED_ERR', function() { new KeyframeEffect(element, partialKeyframes2); });
+}, 'Calling new KeyframeEffect() with a keyframe that has no offset specified, is preceded by other keyframes, ' +
     'and is the first keyframe for a property, should throw a NotSupportedError.');
 </script>

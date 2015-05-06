@@ -33,8 +33,8 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationPlayer.h"
+#include "core/animation/Animation.h"
+#include "core/animation/EffectModel.h"
 #include "core/dom/Element.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -46,7 +46,7 @@
 namespace blink {
 
 class Document;
-class AnimationNode;
+class AnimationEffect;
 
 // AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
 class CORE_EXPORT AnimationTimeline : public RefCountedWillBeGarbageCollectedFinalized<AnimationTimeline>, public ScriptWrappable {
@@ -69,19 +69,19 @@ public:
     void serviceAnimations(TimingUpdateReason);
     void scheduleNextService();
 
-    AnimationPlayer* play(AnimationNode*);
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> getAnimationPlayers();
+    Animation* play(AnimationEffect*);
+    WillBeHeapVector<RefPtrWillBeMember<Animation>> getAnimations();
 
-    void playerAttached(AnimationPlayer&);
+    void animationAttached(Animation&);
 #if !ENABLE(OILPAN)
-    void playerDestroyed(AnimationPlayer* player)
+    void animationDestroyed(Animation* animation)
     {
-        ASSERT(m_players.contains(player));
-        m_players.remove(player);
+        ASSERT(m_animations.contains(animation));
+        m_animations.remove(animation);
     }
 #endif
 
-    bool hasPendingUpdates() const { return !m_playersNeedingUpdate.isEmpty(); }
+    bool hasPendingUpdates() const { return !m_animationsNeedingUpdate.isEmpty(); }
     double zeroTime();
     double currentTime(bool& isNull);
     double currentTime();
@@ -92,8 +92,8 @@ public:
     double effectiveTime();
     void pauseAnimationsForTesting(double);
 
-    void setOutdatedAnimationPlayer(AnimationPlayer*);
-    bool hasOutdatedAnimationPlayer() const;
+    void setOutdatedAnimation(Animation*);
+    bool hasOutdatedAnimation() const;
     bool needsAnimationTimingUpdate();
 
     void setPlaybackRate(double);
@@ -116,10 +116,10 @@ private:
     RawPtrWillBeMember<Document> m_document;
     double m_zeroTime;
     bool m_zeroTimeInitialized;
-    // AnimationPlayers which will be updated on the next frame
+    // Animations which will be updated on the next frame
     // i.e. current, in effect, or had timing changed
-    WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer>> m_playersNeedingUpdate;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer>> m_players;
+    WillBeHeapHashSet<RefPtrWillBeMember<Animation>> m_animationsNeedingUpdate;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<Animation>> m_animations;
 
     double m_playbackRate;
 

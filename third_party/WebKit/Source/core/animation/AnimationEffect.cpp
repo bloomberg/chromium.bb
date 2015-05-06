@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "core/animation/AnimationNode.h"
+#include "core/animation/AnimationEffect.h"
 
-#include "core/animation/AnimationNodeTiming.h"
-#include "core/animation/AnimationPlayer.h"
+#include "core/animation/Animation.h"
+#include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/ComputedTimingProperties.h"
 #include "core/animation/TimingCalculations.h"
 
@@ -51,10 +51,10 @@ Timing::FillMode resolvedFillMode(Timing::FillMode fillMode, bool isAnimation)
 
 } // namespace
 
-AnimationNode::AnimationNode(const Timing& timing, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
+AnimationEffect::AnimationEffect(const Timing& timing, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
     : m_parent(nullptr)
     , m_startTime(0)
-    , m_player(nullptr)
+    , m_animation(nullptr)
     , m_timing(timing)
     , m_eventDelegate(eventDelegate)
     , m_calculated()
@@ -64,21 +64,21 @@ AnimationNode::AnimationNode(const Timing& timing, PassOwnPtrWillBeRawPtr<EventD
     m_timing.assertValid();
 }
 
-double AnimationNode::iterationDuration() const
+double AnimationEffect::iterationDuration() const
 {
     double result = std::isnan(m_timing.iterationDuration) ? intrinsicIterationDuration() : m_timing.iterationDuration;
     ASSERT(result >= 0);
     return result;
 }
 
-double AnimationNode::repeatedDuration() const
+double AnimationEffect::repeatedDuration() const
 {
     const double result = multiplyZeroAlwaysGivesZero(iterationDuration(), m_timing.iterationCount);
     ASSERT(result >= 0);
     return result;
 }
 
-double AnimationNode::activeDurationInternal() const
+double AnimationEffect::activeDurationInternal() const
 {
     const double result = m_timing.playbackRate
         ? repeatedDuration() / std::abs(m_timing.playbackRate)
@@ -87,17 +87,17 @@ double AnimationNode::activeDurationInternal() const
     return result;
 }
 
-void AnimationNode::updateSpecifiedTiming(const Timing& timing)
+void AnimationEffect::updateSpecifiedTiming(const Timing& timing)
 {
     // FIXME: Test whether the timing is actually different?
     m_timing = timing;
     invalidate();
-    if (m_player)
-        m_player->setOutdated();
+    if (m_animation)
+        m_animation->setOutdated();
     specifiedTimingChanged();
 }
 
-void AnimationNode::computedTiming(ComputedTimingProperties& computedTiming)
+void AnimationEffect::computedTiming(ComputedTimingProperties& computedTiming)
 {
     // ComputedTimingProperties members.
     computedTiming.setStartTime(startTimeInternal() * 1000);
@@ -112,7 +112,7 @@ void AnimationNode::computedTiming(ComputedTimingProperties& computedTiming)
         computedTiming.setCurrentIteration(ensureCalculated().currentIteration);
     }
 
-    // AnimationTimingProperties members.
+    // KeyframeEffectOptions members.
     computedTiming.setDelay(specifiedTiming().startDelay * 1000);
     computedTiming.setEndDelay(specifiedTiming().endDelay * 1000);
     computedTiming.setFill(Timing::fillModeString(resolvedFillMode(specifiedTiming().fillMode, isAnimation())));
@@ -128,7 +128,7 @@ void AnimationNode::computedTiming(ComputedTimingProperties& computedTiming)
     computedTiming.setEasing(specifiedTiming().timingFunction->toString());
 }
 
-ComputedTimingProperties AnimationNode::computedTiming()
+ComputedTimingProperties AnimationEffect::computedTiming()
 {
     ComputedTimingProperties result;
     computedTiming(result);
@@ -136,7 +136,7 @@ ComputedTimingProperties AnimationNode::computedTiming()
 }
 
 
-void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason reason) const
+void AnimationEffect::updateInheritedTime(double inheritedTime, TimingUpdateReason reason) const
 {
     bool needsUpdate = m_needsUpdate || (m_lastUpdateTime != inheritedTime && !(isNull(m_lastUpdateTime) && isNull(inheritedTime)));
     m_needsUpdate = false;
@@ -149,7 +149,7 @@ void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason
 
         const Phase currentPhase = calculatePhase(activeDuration, localTime, m_timing);
         // FIXME: parentPhase depends on groups being implemented.
-        const AnimationNode::Phase parentPhase = AnimationNode::PhaseActive;
+        const AnimationEffect::Phase parentPhase = AnimationEffect::PhaseActive;
         const double activeTime = calculateActiveTime(activeDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localTime, parentPhase, currentPhase, m_timing);
 
         double currentIteration;
@@ -175,7 +175,7 @@ void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason
             const double localActiveDuration = m_timing.playbackRate ? localRepeatedDuration / std::abs(m_timing.playbackRate) : std::numeric_limits<double>::infinity();
             ASSERT(localActiveDuration >= 0);
             const double localLocalTime = localTime < m_timing.startDelay ? localTime : localActiveDuration + m_timing.startDelay;
-            const AnimationNode::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_timing);
+            const AnimationEffect::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_timing);
             const double localActiveTime = calculateActiveTime(localActiveDuration, resolvedFillMode(m_timing.fillMode, isAnimation()), localLocalTime, parentPhase, localCurrentPhase, m_timing);
             const double startOffset = m_timing.iterationStart * localIterationDuration;
             ASSERT(startOffset >= 0);
@@ -196,9 +196,9 @@ void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason
         m_calculated.localTime = m_lastUpdateTime - m_startTime;
     }
 
-    // Test for events even if timing didn't need an update as the player may have gained a start time.
-    // FIXME: Refactor so that we can ASSERT(m_player) here, this is currently required to be nullable for testing.
-    if (reason == TimingUpdateForAnimationFrame && (!m_player || m_player->hasStartTime() || m_player->paused())) {
+    // Test for events even if timing didn't need an update as the animation may have gained a start time.
+    // FIXME: Refactor so that we can ASSERT(m_animation) here, this is currently required to be nullable for testing.
+    if (reason == TimingUpdateForAnimationFrame && (!m_animation || m_animation->hasStartTime() || m_animation->paused())) {
         if (m_eventDelegate)
             m_eventDelegate->onEventCondition(*this);
     }
@@ -211,25 +211,25 @@ void AnimationNode::updateInheritedTime(double inheritedTime, TimingUpdateReason
     }
 }
 
-const AnimationNode::CalculatedTiming& AnimationNode::ensureCalculated() const
+const AnimationEffect::CalculatedTiming& AnimationEffect::ensureCalculated() const
 {
-    if (!m_player)
+    if (!m_animation)
         return m_calculated;
-    if (m_player->outdated())
-        m_player->update(TimingUpdateOnDemand);
-    ASSERT(!m_player->outdated());
+    if (m_animation->outdated())
+        m_animation->update(TimingUpdateOnDemand);
+    ASSERT(!m_animation->outdated());
     return m_calculated;
 }
 
-PassRefPtrWillBeRawPtr<AnimationNodeTiming> AnimationNode::timing()
+PassRefPtrWillBeRawPtr<AnimationEffectTiming> AnimationEffect::timing()
 {
-    return AnimationNodeTiming::create(this);
+    return AnimationEffectTiming::create(this);
 }
 
-DEFINE_TRACE(AnimationNode)
+DEFINE_TRACE(AnimationEffect)
 {
     visitor->trace(m_parent);
-    visitor->trace(m_player);
+    visitor->trace(m_animation);
     visitor->trace(m_eventDelegate);
 }
 

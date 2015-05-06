@@ -13,6 +13,6 @@
 ] interface AnimationTimeline {
     attribute double? currentTime;
     attribute double playbackRate;
-    AnimationPlayer play(AnimationNode source);
-    sequence<AnimationPlayer> getAnimationPlayers();
+    Animation play(AnimationEffectReadOnly source);
+    sequence<Animation> getAnimations();
 };

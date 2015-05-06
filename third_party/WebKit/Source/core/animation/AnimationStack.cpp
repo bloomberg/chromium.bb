@@ -74,13 +74,13 @@ AnimationStack::AnimationStack()
 bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) const
 {
     for (const auto& effect : m_effects) {
-        if (effect->animation() && effect->animation()->hasActiveAnimationsOnCompositor(property))
+        if (effect->effect() && effect->effect()->hasActiveAnimationsOnCompositor(property))
             return true;
     }
     return false;
 }
 
-ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer>>* suppressedAnimationPlayers, Animation::Priority priority, double timelineCurrentTime)
+ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>* suppressedAnimations, KeyframeEffect::Priority priority, double timelineCurrentTime)
 {
     // We don't exactly know when new animations will start, but timelineCurrentTime is a good estimate.
 
@@ -92,7 +92,7 @@ ActiveInterpolationMap AnimationStack::activeInterpolations(AnimationStack* anim
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
         animationStack->removeClearedEffects();
         for (const auto& effect : effects) {
-            if (effect->priority() != priority || (suppressedAnimationPlayers && effect->animation() && suppressedAnimationPlayers->contains(effect->animation()->player())))
+            if (effect->priority() != priority || (suppressedAnimations && effect->effect() && suppressedAnimations->contains(effect->effect()->animation())))
                 continue;
             copyToActiveInterpolationMap(effect->interpolations(), result);
         }
@@ -108,7 +108,7 @@ void AnimationStack::removeClearedEffects()
 {
     size_t dest = 0;
     for (auto& effect : m_effects) {
-        if (effect->animation())
+        if (effect->effect())
             m_effects[dest++].swap(effect);
     }
     m_effects.shrink(dest);
@@ -122,17 +122,15 @@ DEFINE_TRACE(AnimationStack)
 bool AnimationStack::getAnimatedBoundingBox(FloatBox& box, CSSPropertyID property) const
 {
     FloatBox originalBox(box);
-    for (const auto& effect : m_effects) {
-        if (effect->animation() && effect->animation()->affects(PropertyHandle(property))) {
-            Animation* anim = effect->animation();
-            if (!anim)
-                continue;
-            const Timing& timing = anim->specifiedTiming();
+    for (const auto& sampledEffect : m_effects) {
+        if (sampledEffect->effect() && sampledEffect->effect()->affects(PropertyHandle(property))) {
+            KeyframeEffect* effect = sampledEffect->effect();
+            const Timing& timing = effect->specifiedTiming();
             double startRange = 0;
             double endRange = 1;
             timing.timingFunction->range(&startRange, &endRange);
             FloatBox expandingBox(originalBox);
-            if (!CompositorAnimations::instance()->getAnimatedBoundingBox(expandingBox, *anim->effect(), startRange, endRange))
+            if (!CompositorAnimations::instance()->getAnimatedBoundingBox(expandingBox, *effect->effect(), startRange, endRange))
                 return false;
             box.expandTo(expandingBox);
         }

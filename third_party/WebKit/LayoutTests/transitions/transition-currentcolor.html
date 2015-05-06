@@ -18,8 +18,8 @@ requestAnimationFrame(function() {
   target2.style.borderLeftColor = "orange";
   requestAnimationFrame(function() {
     // Only 'color' should transition
-    test1.step(function() { assert_equals(target1.getAnimationPlayers().length, 1); });
-    test2.step(function() { assert_equals(target2.getAnimationPlayers().length, 1); });
+    test1.step(function() { assert_equals(target1.getAnimations().length, 1); });
+    test2.step(function() { assert_equals(target2.getAnimations().length, 1); });
     test1.done();
     test2.done();
   });

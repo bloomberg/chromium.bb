@@ -41,7 +41,7 @@ public:
 
     class CSSPropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
-        CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*, AnimationEffect::CompositeOperation);
+        CSSPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, CSSValue*, EffectModel::CompositeOperation);
 
         CSSValue* value() const { return m_value.get(); }
 
@@ -70,7 +70,7 @@ public:
 
     class SVGPropertySpecificKeyframe : public Keyframe::PropertySpecificKeyframe {
     public:
-        SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String&, AnimationEffect::CompositeOperation);
+        SVGPropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const String&, EffectModel::CompositeOperation);
 
         const String& value() const { return m_value; }
 

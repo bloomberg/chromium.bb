@@ -28,16 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/web-animations/#the-animationnode-interface
-
-// TODO(dstockwell): This interface has been renamed to AnimationEffectReadonly
-// in the latest spec:
-// https://w3c.github.io/web-animations/#the-animationeffectreadonly-interface
+// https://w3c.github.io/web-animations/#the-keyframeeffect-interfaces
 
 [
+    // TODO(dstockwell): the third argument should be "optional (unrestricted double or KeyframeEffectOptions) timing".
+    Constructor(Element? target, sequence<Dictionary> keyframes, optional unrestricted double timing),
+    Constructor(Element? target, sequence<Dictionary> keyframes, KeyframeEffectOptions timing),
+    RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI,
-    WillBeGarbageCollected,
-] interface AnimationNode {
-    readonly attribute Timing timing;
-    readonly attribute ComputedTimingProperties computedTiming;
+    TypeChecking=Interface,
+] interface KeyframeEffect : AnimationEffectReadOnly {
 };

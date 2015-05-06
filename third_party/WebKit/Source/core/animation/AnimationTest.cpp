@@ -1,464 +1,882 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (c) 2013, Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "config.h"
 #include "core/animation/Animation.h"
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/UnionTypesCore.h"
-#include "bindings/core/v8/V8AnimationTimingProperties.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationNodeTiming.h"
-#include "core/animation/AnimationTestHelper.h"
 #include "core/animation/AnimationTimeline.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/Timing.h"
+#include "core/animation/ElementAnimations.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/dom/QualifiedName.h"
+#include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
-#include <v8.h>
 
-namespace blink {
+using namespace blink;
+
+namespace {
 
 class AnimationAnimationTest : public ::testing::Test {
 protected:
-    AnimationAnimationTest()
-        : pageHolder(DummyPageHolder::create())
-        , document(pageHolder->document())
-        , element(document.createElement("foo", ASSERT_NO_EXCEPTION))
+    virtual void SetUp()
     {
-        document.animationClock().resetTimeForTesting(document.timeline().zeroTime());
-        EXPECT_EQ(0, document.timeline().currentTime());
+        setUpWithoutStartingTimeline();
+        startTimeline();
     }
 
-    OwnPtr<DummyPageHolder> pageHolder;
-    Document& document;
-    RefPtrWillBePersistent<Element> element;
+    void setUpWithoutStartingTimeline()
+    {
+        document = Document::create();
+        document->animationClock().resetTimeForTesting();
+        timeline = AnimationTimeline::create(document.get());
+        animation = timeline->play(0);
+        animation->setStartTime(0);
+        animation->setSource(makeAnimation().get());
+    }
+
+    void startTimeline()
+    {
+        simulateFrame(0);
+    }
+
+    PassRefPtrWillBeRawPtr<KeyframeEffect> makeAnimation(double duration = 30, double playbackRate = 1)
+    {
+        Timing timing;
+        timing.iterationDuration = duration;
+        timing.playbackRate = playbackRate;
+        return KeyframeEffect::create(0, nullptr, timing);
+    }
+
+    bool simulateFrame(double time)
+    {
+        document->animationClock().updateTime(time);
+        document->compositorPendingAnimations().update(false);
+        // The timeline does not know about our animation, so we have to explicitly call update().
+        return animation->update(TimingUpdateForAnimationFrame);
+    }
+
+    RefPtrWillBePersistent<Document> document;
+    RefPtrWillBePersistent<AnimationTimeline> timeline;
+    RefPtrWillBePersistent<Animation> animation;
     TrackExceptionState exceptionState;
 };
 
-class AnimationAnimationV8Test : public AnimationAnimationTest {
-protected:
-    AnimationAnimationV8Test()
-        : m_isolate(v8::Isolate::GetCurrent())
-        , m_scope(m_isolate)
-    {
-    }
-
-    template<typename T>
-    static PassRefPtrWillBeRawPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, T timingInput, ExceptionState& exceptionState)
-    {
-        return Animation::create(element, keyframeDictionaryVector, timingInput, exceptionState);
-    }
-    static PassRefPtrWillBeRawPtr<Animation> createAnimation(Element* element, Vector<Dictionary> keyframeDictionaryVector, ExceptionState& exceptionState)
-    {
-        return Animation::create(element, keyframeDictionaryVector, exceptionState);
-    }
-
-    v8::Isolate* m_isolate;
-
-private:
-    V8TestingScope m_scope;
-};
-
-TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
+TEST_F(AnimationAnimationTest, InitialState)
 {
-    Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    setUpWithoutStartingTimeline();
+    animation = timeline->play(0);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_FALSE(animation->paused());
+    EXPECT_EQ(1, animation->playbackRate());
+    EXPECT_FALSE(animation->hasStartTime());
+    EXPECT_TRUE(isNull(animation->startTimeInternal()));
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(keyframe1, "easing", "ease-in-out");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "1");
-    setV8ObjectPropertyAsString(keyframe2, "easing", "cubic-bezier(1, 1, 0.3, 0.3)");
-
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-
-    String value1;
-    ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[0], "width", value1));
-    ASSERT_EQ("100px", value1);
-
-    String value2;
-    ASSERT_TRUE(DictionaryHelper::get(jsKeyframes[1], "width", value2));
-    ASSERT_EQ("0px", value2);
-
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, 0, exceptionState);
-
-    Element* target = animation->target();
-    EXPECT_EQ(*element.get(), *target);
-
-    const KeyframeVector keyframes = toKeyframeEffectModelBase(animation->effect())->getFrames();
-
-    EXPECT_EQ(0, keyframes[0]->offset());
-    EXPECT_EQ(1, keyframes[1]->offset());
-
-    const CSSValue* keyframe1Width = toStringKeyframe(keyframes[0].get())->cssPropertyValue(CSSPropertyWidth);
-    const CSSValue* keyframe2Width = toStringKeyframe(keyframes[1].get())->cssPropertyValue(CSSPropertyWidth);
-    ASSERT(keyframe1Width);
-    ASSERT(keyframe2Width);
-
-    EXPECT_EQ("100px", keyframe1Width->cssText());
-    EXPECT_EQ("0px", keyframe2Width->cssText());
-
-    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut)), keyframes[0]->easing());
-    EXPECT_EQ(*(CubicBezierTimingFunction::create(1, 1, 0.3, 0.3).get()), keyframes[1]->easing());
+    startTimeline();
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_EQ(0, timeline->currentTimeInternal());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_FALSE(animation->paused());
+    EXPECT_EQ(1, animation->playbackRate());
+    EXPECT_EQ(0, animation->startTimeInternal());
+    EXPECT_TRUE(animation->hasStartTime());
 }
 
-TEST_F(AnimationAnimationV8Test, CanSetDuration)
+
+TEST_F(AnimationAnimationTest, CurrentTimeDoesNotSetOutdated)
 {
-    Vector<Dictionary, 0> jsKeyframes;
-    double duration = 2000;
-
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, duration, exceptionState);
-
-    EXPECT_EQ(duration / 1000, animation->specifiedTiming().iterationDuration);
+    EXPECT_FALSE(animation->outdated());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_FALSE(animation->outdated());
+    // FIXME: We should split simulateFrame into a version that doesn't update
+    // the animation and one that does, as most of the tests don't require update()
+    // to be called.
+    document->animationClock().updateTime(10);
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    EXPECT_FALSE(animation->outdated());
 }
 
-TEST_F(AnimationAnimationV8Test, CanOmitSpecifiedDuration)
+TEST_F(AnimationAnimationTest, SetCurrentTime)
 {
-    Vector<Dictionary, 0> jsKeyframes;
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, exceptionState);
-    EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    animation->setCurrentTimeInternal(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(20, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, NegativeDurationIsAuto)
+TEST_F(AnimationAnimationTest, SetCurrentTimeNegative)
 {
-    Vector<Dictionary, 0> jsKeyframes;
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, -2, exceptionState);
-    EXPECT_TRUE(std::isnan(animation->specifiedTiming().iterationDuration));
+    animation->setCurrentTimeInternal(-10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(-10, animation->currentTimeInternal());
+    simulateFrame(20);
+    EXPECT_EQ(10, animation->currentTimeInternal());
+
+    animation->setPlaybackRate(-2);
+    animation->setCurrentTimeInternal(-10);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(-10, animation->currentTimeInternal());
+    simulateFrame(40);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_EQ(-10, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, MismatchedKeyframePropertyRaisesException)
+TEST_F(AnimationAnimationTest, SetCurrentTimeNegativeWithoutSimultaneousPlaybackRateChange)
 {
-    Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
-
-    // Height property appears only in keyframe2
-    setV8ObjectPropertyAsString(keyframe2, "height", "100px");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "1");
-
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-
-    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
-
-    EXPECT_TRUE(exceptionState.hadException());
-    EXPECT_EQ(NotSupportedError, exceptionState.code());
+    simulateFrame(20);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    animation->setPlaybackRate(-1);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    simulateFrame(30);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    animation->setCurrentTime(-10 * 1000);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, MissingOffsetZeroRaisesException)
+TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEnd)
 {
-    Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
+    animation->setCurrentTime(50 * 1000);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_EQ(50, animation->currentTimeInternal());
+    simulateFrame(20);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_EQ(50, animation->currentTimeInternal());
 
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0.1");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "1");
-
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-
-    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
-
-    EXPECT_TRUE(exceptionState.hadException());
-    EXPECT_EQ(NotSupportedError, exceptionState.code());
+    animation->setPlaybackRate(-2);
+    animation->setCurrentTime(50 * 1000);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(50, animation->currentTimeInternal());
+    simulateFrame(20);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    simulateFrame(40);
+    EXPECT_EQ(10, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, MissingOffsetOneRaisesException)
+TEST_F(AnimationAnimationTest, SetCurrentTimeBeforeTimelineStarted)
 {
-    Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "0.1");
-
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-
-    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
-
-    EXPECT_TRUE(exceptionState.hadException());
-    EXPECT_EQ(NotSupportedError, exceptionState.code());
+    setUpWithoutStartingTimeline();
+    animation->setCurrentTimeInternal(5);
+    EXPECT_EQ(5, animation->currentTimeInternal());
+    startTimeline();
+    simulateFrame(10);
+    EXPECT_EQ(15, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, MissingOffsetZeroAndOneRaisesException)
+TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEndBeforeTimelineStarted)
 {
-    Vector<Dictionary> jsKeyframes;
-    v8::Local<v8::Object> keyframe1 = v8::Object::New(m_isolate);
-    v8::Local<v8::Object> keyframe2 = v8::Object::New(m_isolate);
-
-    setV8ObjectPropertyAsString(keyframe1, "width", "100px");
-    setV8ObjectPropertyAsString(keyframe1, "offset", "0.1");
-    setV8ObjectPropertyAsString(keyframe2, "width", "0px");
-    setV8ObjectPropertyAsString(keyframe2, "offset", "0.2");
-
-    jsKeyframes.append(Dictionary(keyframe1, m_isolate, exceptionState));
-    jsKeyframes.append(Dictionary(keyframe2, m_isolate, exceptionState));
-
-    createAnimation(element.get(), jsKeyframes, 0, exceptionState);
-
-    EXPECT_TRUE(exceptionState.hadException());
-    EXPECT_EQ(NotSupportedError, exceptionState.code());
+    setUpWithoutStartingTimeline();
+    animation->setCurrentTime(250 * 1000);
+    EXPECT_EQ(250, animation->currentTimeInternal());
+    startTimeline();
+    simulateFrame(10);
+    EXPECT_EQ(250, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, SpecifiedGetters)
+TEST_F(AnimationAnimationTest, SetCurrentTimeMax)
 {
-    Vector<Dictionary, 0> jsKeyframes;
-
-    v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-    setV8ObjectPropertyAsNumber(timingInput, "delay", 2);
-    setV8ObjectPropertyAsNumber(timingInput, "endDelay", 0.5);
-    setV8ObjectPropertyAsString(timingInput, "fill", "backwards");
-    setV8ObjectPropertyAsNumber(timingInput, "iterationStart", 2);
-    setV8ObjectPropertyAsNumber(timingInput, "iterations", 10);
-    setV8ObjectPropertyAsNumber(timingInput, "playbackRate", 2);
-    setV8ObjectPropertyAsString(timingInput, "direction", "reverse");
-    setV8ObjectPropertyAsString(timingInput, "easing", "step-start");
-    AnimationTimingProperties timingInputDictionary;
-    V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
-
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
-
-    RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
-    EXPECT_EQ(2, specified->delay());
-    EXPECT_EQ(0.5, specified->endDelay());
-    EXPECT_EQ("backwards", specified->fill());
-    EXPECT_EQ(2, specified->iterationStart());
-    EXPECT_EQ(10, specified->iterations());
-    EXPECT_EQ(2, specified->playbackRate());
-    EXPECT_EQ("reverse", specified->direction());
-    EXPECT_EQ("step-start", specified->easing());
+    animation->setCurrentTimeInternal(std::numeric_limits<double>::max());
+    EXPECT_EQ(std::numeric_limits<double>::max(), animation->currentTimeInternal());
+    simulateFrame(100);
+    EXPECT_EQ(std::numeric_limits<double>::max(), animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, SpecifiedDurationGetter)
+TEST_F(AnimationAnimationTest, SetCurrentTimeSetsStartTime)
 {
-    Vector<Dictionary, 0> jsKeyframes;
-
-    v8::Local<v8::Object> timingInputWithDuration = v8::Object::New(m_isolate);
-    setV8ObjectPropertyAsNumber(timingInputWithDuration, "duration", 2.5);
-    AnimationTimingProperties timingInputDictionaryWithDuration;
-    V8AnimationTimingProperties::toImpl(m_isolate, timingInputWithDuration, timingInputDictionaryWithDuration, exceptionState);
-
-    RefPtrWillBeRawPtr<Animation> animationWithDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryWithDuration, exceptionState);
-
-    RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedWithDuration = animationWithDuration->timing();
-    UnrestrictedDoubleOrString duration;
-    specifiedWithDuration->duration(duration);
-    EXPECT_TRUE(duration.isUnrestrictedDouble());
-    EXPECT_EQ(2.5, duration.getAsUnrestrictedDouble());
-    EXPECT_FALSE(duration.isString());
-
-
-    v8::Local<v8::Object> timingInputNoDuration = v8::Object::New(m_isolate);
-    AnimationTimingProperties timingInputDictionaryNoDuration;
-    V8AnimationTimingProperties::toImpl(m_isolate, timingInputNoDuration, timingInputDictionaryNoDuration, exceptionState);
-
-    RefPtrWillBeRawPtr<Animation> animationNoDuration = createAnimation(element.get(), jsKeyframes, timingInputDictionaryNoDuration, exceptionState);
-
-    RefPtrWillBeRawPtr<AnimationNodeTiming> specifiedNoDuration = animationNoDuration->timing();
-    UnrestrictedDoubleOrString duration2;
-    specifiedNoDuration->duration(duration2);
-    EXPECT_FALSE(duration2.isUnrestrictedDouble());
-    EXPECT_TRUE(duration2.isString());
-    EXPECT_EQ("auto", duration2.getAsString());
+    EXPECT_EQ(0, animation->startTime());
+    animation->setCurrentTime(1000);
+    EXPECT_EQ(-1000, animation->startTime());
+    simulateFrame(1);
+    EXPECT_EQ(-1000, animation->startTime());
+    EXPECT_EQ(2000, animation->currentTime());
 }
 
-TEST_F(AnimationAnimationV8Test, SpecifiedSetters)
+TEST_F(AnimationAnimationTest, SetStartTime)
 {
-    Vector<Dictionary, 0> jsKeyframes;
-    v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-    AnimationTimingProperties timingInputDictionary;
-    V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
-
-    RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
-
-    EXPECT_EQ(0, specified->delay());
-    specified->setDelay(2);
-    EXPECT_EQ(2, specified->delay());
-
-    EXPECT_EQ(0, specified->endDelay());
-    specified->setEndDelay(0.5);
-    EXPECT_EQ(0.5, specified->endDelay());
-
-    EXPECT_EQ("auto", specified->fill());
-    specified->setFill("backwards");
-    EXPECT_EQ("backwards", specified->fill());
-
-    EXPECT_EQ(0, specified->iterationStart());
-    specified->setIterationStart(2);
-    EXPECT_EQ(2, specified->iterationStart());
-
-    EXPECT_EQ(1, specified->iterations());
-    specified->setIterations(10);
-    EXPECT_EQ(10, specified->iterations());
-
-    EXPECT_EQ(1, specified->playbackRate());
-    specified->setPlaybackRate(2);
-    EXPECT_EQ(2, specified->playbackRate());
-
-    EXPECT_EQ("normal", specified->direction());
-    specified->setDirection("reverse");
-    EXPECT_EQ("reverse", specified->direction());
-
-    EXPECT_EQ("linear", specified->easing());
-    specified->setEasing("step-start");
-    EXPECT_EQ("step-start", specified->easing());
+    simulateFrame(20);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(0, animation->startTimeInternal());
+    EXPECT_EQ(20 * 1000, animation->currentTime());
+    animation->setStartTime(10 * 1000);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(10, animation->startTimeInternal());
+    EXPECT_EQ(10 * 1000, animation->currentTime());
+    simulateFrame(30);
+    EXPECT_EQ(10, animation->startTimeInternal());
+    EXPECT_EQ(20 * 1000, animation->currentTime());
+    animation->setStartTime(-20 * 1000);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
 }
 
-TEST_F(AnimationAnimationV8Test, SetSpecifiedDuration)
+TEST_F(AnimationAnimationTest, SetStartTimeLimitsAnimation)
 {
-    Vector<Dictionary, 0> jsKeyframes;
-    v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
-    AnimationTimingProperties timingInputDictionary;
-    V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
-    RefPtrWillBeRawPtr<Animation> animation = createAnimation(element.get(), jsKeyframes, timingInputDictionary, exceptionState);
-
-    RefPtrWillBeRawPtr<AnimationNodeTiming> specified = animation->timing();
-
-    UnrestrictedDoubleOrString duration;
-    specified->duration(duration);
-    EXPECT_FALSE(duration.isUnrestrictedDouble());
-    EXPECT_TRUE(duration.isString());
-    EXPECT_EQ("auto", duration.getAsString());
-
-    UnrestrictedDoubleOrString inDuration;
-    inDuration.setUnrestrictedDouble(2.5);
-    specified->setDuration(inDuration);
-    UnrestrictedDoubleOrString duration2;
-    specified->duration(duration2);
-    EXPECT_TRUE(duration2.isUnrestrictedDouble());
-    EXPECT_EQ(2.5, duration2.getAsUnrestrictedDouble());
-    EXPECT_FALSE(duration2.isString());
+    animation->setStartTime(-50 * 1000);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    animation->setPlaybackRate(-1);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    animation->setStartTime(-100 * 1000);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_TRUE(animation->limited());
 }
 
-TEST_F(AnimationAnimationTest, TimeToEffectChange)
+TEST_F(AnimationAnimationTest, SetStartTimeOnLimitedAnimation)
+{
+    simulateFrame(30);
+    animation->setStartTime(-10 * 1000);
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    animation->setCurrentTimeInternal(50);
+    animation->setStartTime(-40 * 1000);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+    EXPECT_TRUE(animation->limited());
+}
+
+TEST_F(AnimationAnimationTest, StartTimePauseFinish)
+{
+    animation->pause();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    animation->finish(exceptionState);
+    EXPECT_EQ(Animation::Paused, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+}
+
+TEST_F(AnimationAnimationTest, PauseBeatsFinish)
+{
+    animation->pause();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Paused, animation->playStateInternal());
+    animation->finish(exceptionState);
+    EXPECT_EQ(Animation::Paused, animation->playStateInternal());
+}
+
+TEST_F(AnimationAnimationTest, StartTimeFinishPause)
+{
+    animation->finish(exceptionState);
+    EXPECT_EQ(-30 * 1000, animation->startTime());
+    animation->pause();
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+}
+
+TEST_F(AnimationAnimationTest, StartTimeWithZeroPlaybackRate)
+{
+    animation->setPlaybackRate(0);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+}
+
+TEST_F(AnimationAnimationTest, PausePlay)
+{
+    simulateFrame(10);
+    animation->pause();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_TRUE(animation->paused());
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    simulateFrame(20);
+    EXPECT_EQ(Animation::Paused, animation->playStateInternal());
+    animation->play();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    simulateFrame(20);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_FALSE(animation->paused());
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    simulateFrame(30);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, PauseBeforeTimelineStarted)
+{
+    setUpWithoutStartingTimeline();
+    animation->pause();
+    EXPECT_TRUE(animation->paused());
+    animation->play();
+    EXPECT_FALSE(animation->paused());
+
+    animation->pause();
+    startTimeline();
+    simulateFrame(100);
+    EXPECT_TRUE(animation->paused());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, PlayRewindsToStart)
+{
+    animation->setCurrentTimeInternal(30);
+    animation->play();
+    EXPECT_EQ(0, animation->currentTimeInternal());
+
+    animation->setCurrentTimeInternal(40);
+    animation->play();
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+
+    animation->setCurrentTimeInternal(-10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    animation->play();
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+}
+
+TEST_F(AnimationAnimationTest, PlayRewindsToEnd)
+{
+    animation->setPlaybackRate(-1);
+    animation->play();
+    EXPECT_EQ(30, animation->currentTimeInternal());
+
+    animation->setCurrentTimeInternal(40);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    animation->play();
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+
+    animation->setCurrentTimeInternal(-10);
+    animation->play();
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    simulateFrame(20);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+}
+
+TEST_F(AnimationAnimationTest, PlayWithPlaybackRateZeroDoesNotSeek)
+{
+    animation->setPlaybackRate(0);
+    animation->play();
+    EXPECT_EQ(0, animation->currentTimeInternal());
+
+    animation->setCurrentTimeInternal(40);
+    animation->play();
+    EXPECT_EQ(40, animation->currentTimeInternal());
+
+    animation->setCurrentTimeInternal(-10);
+    animation->play();
+    EXPECT_EQ(-10, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, PlayAfterPauseWithPlaybackRateZeroUpdatesPlayState)
+{
+    animation->pause();
+    animation->setPlaybackRate(0);
+    simulateFrame(1);
+    EXPECT_EQ(Animation::Paused, animation->playStateInternal());
+    animation->play();
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+}
+
+TEST_F(AnimationAnimationTest, Reverse)
+{
+    animation->setCurrentTimeInternal(10);
+    animation->pause();
+    animation->reverse();
+    EXPECT_FALSE(animation->paused());
+    EXPECT_EQ(-1, animation->playbackRate());
+    EXPECT_EQ(10, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero)
+{
+    animation->setCurrentTimeInternal(10);
+    animation->setPlaybackRate(0);
+    animation->pause();
+    animation->reverse();
+    EXPECT_TRUE(animation->paused());
+    EXPECT_EQ(0, animation->playbackRate());
+    EXPECT_EQ(10, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, ReverseDoesNotSeekWithNoSource)
+{
+    animation->setSource(0);
+    animation->setCurrentTimeInternal(10);
+    animation->reverse();
+    EXPECT_EQ(10, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, ReverseSeeksToStart)
+{
+    animation->setCurrentTimeInternal(-10);
+    animation->setPlaybackRate(-1);
+    animation->reverse();
+    EXPECT_EQ(0, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, ReverseSeeksToEnd)
+{
+    animation->setCurrentTime(40 * 1000);
+    animation->reverse();
+    EXPECT_EQ(30, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, ReverseBeyondLimit)
+{
+    animation->setCurrentTimeInternal(40);
+    animation->setPlaybackRate(-1);
+    animation->reverse();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+
+    animation->setCurrentTimeInternal(-10);
+    animation->reverse();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(30, animation->currentTimeInternal());
+}
+
+
+TEST_F(AnimationAnimationTest, Finish)
+{
+    animation->finish(exceptionState);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+
+    animation->setPlaybackRate(-1);
+    animation->finish(exceptionState);
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_EQ(Animation::Finished, animation->playStateInternal());
+
+    EXPECT_FALSE(exceptionState.hadException());
+}
+
+TEST_F(AnimationAnimationTest, FinishAfterSourceEnd)
+{
+    animation->setCurrentTime(40 * 1000);
+    animation->finish(exceptionState);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, FinishBeforeStart)
+{
+    animation->setCurrentTimeInternal(-10);
+    animation->setPlaybackRate(-1);
+    animation->finish(exceptionState);
+    EXPECT_EQ(0, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, FinishDoesNothingWithPlaybackRateZero)
+{
+    animation->setCurrentTimeInternal(10);
+    animation->setPlaybackRate(0);
+    animation->finish(exceptionState);
+    EXPECT_EQ(10, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, FinishRaisesException)
 {
     Timing timing;
-    timing.iterationDuration = 100;
-    timing.startDelay = 100;
-    timing.endDelay = 100;
-    timing.fillMode = Timing::FillModeNone;
-    RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player = document.timeline().play(animation.get());
-    double inf = std::numeric_limits<double>::infinity();
+    timing.iterationDuration = 1;
+    timing.iterationCount = std::numeric_limits<double>::infinity();
+    animation->setSource(KeyframeEffect::create(0, nullptr, timing).get());
+    animation->setCurrentTimeInternal(10);
 
-    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(inf, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(100);
-    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(199);
-    EXPECT_EQ(1, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(200);
-    // End-exclusive.
-    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(300);
-    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(100, animation->timeToReverseEffectChange());
+    animation->finish(exceptionState);
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    EXPECT_TRUE(exceptionState.hadException());
+    EXPECT_EQ(InvalidStateError, exceptionState.code());
 }
 
-TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
+
+TEST_F(AnimationAnimationTest, LimitingAtSourceEnd)
+{
+    simulateFrame(30);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    EXPECT_TRUE(animation->limited());
+    simulateFrame(40);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    EXPECT_FALSE(animation->paused());
+}
+
+TEST_F(AnimationAnimationTest, LimitingAtStart)
+{
+    simulateFrame(30);
+    animation->setPlaybackRate(-2);
+    simulateFrame(30);
+    simulateFrame(45);
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_TRUE(animation->limited());
+    simulateFrame(60);
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    EXPECT_FALSE(animation->paused());
+}
+
+TEST_F(AnimationAnimationTest, LimitingWithNoSource)
+{
+    animation->setSource(0);
+    EXPECT_TRUE(animation->limited());
+    simulateFrame(30);
+    EXPECT_EQ(0, animation->currentTimeInternal());
+}
+
+
+TEST_F(AnimationAnimationTest, SetPlaybackRate)
+{
+    animation->setPlaybackRate(2);
+    simulateFrame(0);
+    EXPECT_EQ(2, animation->playbackRate());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    simulateFrame(10);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, SetPlaybackRateBeforeTimelineStarted)
+{
+    setUpWithoutStartingTimeline();
+    animation->setPlaybackRate(2);
+    EXPECT_EQ(2, animation->playbackRate());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    startTimeline();
+    simulateFrame(10);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, SetPlaybackRateWhilePaused)
+{
+    simulateFrame(10);
+    animation->pause();
+    animation->setPlaybackRate(2);
+    simulateFrame(20);
+    animation->play();
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    simulateFrame(20);
+    simulateFrame(25);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, SetPlaybackRateWhileLimited)
+{
+    simulateFrame(40);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    animation->setPlaybackRate(2);
+    simulateFrame(50);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+    animation->setPlaybackRate(-2);
+    simulateFrame(50);
+    simulateFrame(60);
+    EXPECT_FALSE(animation->limited());
+    EXPECT_EQ(10, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, SetPlaybackRateZero)
+{
+    simulateFrame(0);
+    simulateFrame(10);
+    animation->setPlaybackRate(0);
+    simulateFrame(10);
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    simulateFrame(20);
+    EXPECT_EQ(10, animation->currentTimeInternal());
+    animation->setCurrentTimeInternal(20);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, SetPlaybackRateMax)
+{
+    animation->setPlaybackRate(std::numeric_limits<double>::max());
+    simulateFrame(0);
+    EXPECT_EQ(std::numeric_limits<double>::max(), animation->playbackRate());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    simulateFrame(1);
+    EXPECT_EQ(30, animation->currentTimeInternal());
+}
+
+
+TEST_F(AnimationAnimationTest, SetSource)
+{
+    animation = timeline->play(0);
+    animation->setStartTime(0);
+    RefPtrWillBeRawPtr<AnimationEffect> source1 = makeAnimation();
+    RefPtrWillBeRawPtr<AnimationEffect> source2 = makeAnimation();
+    animation->setSource(source1.get());
+    EXPECT_EQ(source1, animation->source());
+    EXPECT_EQ(0, animation->currentTimeInternal());
+    animation->setCurrentTimeInternal(15);
+    animation->setSource(source2.get());
+    EXPECT_EQ(15, animation->currentTimeInternal());
+    EXPECT_EQ(0, source1->animation());
+    EXPECT_EQ(animation.get(), source2->animation());
+    EXPECT_EQ(source2, animation->source());
+}
+
+TEST_F(AnimationAnimationTest, SetSourceLimitsAnimation)
+{
+    animation->setCurrentTimeInternal(20);
+    animation->setSource(makeAnimation(10).get());
+    EXPECT_EQ(20, animation->currentTimeInternal());
+    EXPECT_TRUE(animation->limited());
+    simulateFrame(10);
+    EXPECT_EQ(20, animation->currentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, SetSourceUnlimitsAnimation)
+{
+    animation->setCurrentTimeInternal(40);
+    animation->setSource(makeAnimation(60).get());
+    EXPECT_FALSE(animation->limited());
+    EXPECT_EQ(40, animation->currentTimeInternal());
+    simulateFrame(10);
+    EXPECT_EQ(50, animation->currentTimeInternal());
+}
+
+
+TEST_F(AnimationAnimationTest, EmptyAnimationsDontUpdateEffects)
+{
+    animation = timeline->play(0);
+    animation->update(TimingUpdateOnDemand);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
+
+    simulateFrame(1234);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
+}
+
+TEST_F(AnimationAnimationTest, AnimationsDisassociateFromSource)
+{
+    AnimationEffect* animationNode = animation->source();
+    Animation* animation2 = timeline->play(animationNode);
+    EXPECT_EQ(0, animation->source());
+    animation->setSource(animationNode);
+    EXPECT_EQ(0, animation2->source());
+}
+
+TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect)
 {
     Timing timing;
-    timing.iterationDuration = 100;
-    timing.startDelay = 100;
-    timing.endDelay = 100;
-    timing.playbackRate = 2;
-    timing.fillMode = Timing::FillModeNone;
-    RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player = document.timeline().play(animation.get());
-    double inf = std::numeric_limits<double>::infinity();
+    timing.startDelay = 1;
+    timing.iterationDuration = 1;
+    timing.endDelay = 1;
+    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(0, nullptr, timing);
+    animation = timeline->play(keyframeEffect.get());
+    animation->setStartTime(0);
 
-    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(inf, animation->timeToReverseEffectChange());
+    simulateFrame(0);
+    EXPECT_EQ(1, animation->timeToEffectChange());
 
-    player->setCurrentTimeInternal(100);
-    EXPECT_EQ(50, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+    simulateFrame(0.5);
+    EXPECT_EQ(0.5, animation->timeToEffectChange());
 
-    player->setCurrentTimeInternal(149);
-    EXPECT_EQ(1, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+    simulateFrame(1);
+    EXPECT_EQ(0, animation->timeToEffectChange());
 
-    player->setCurrentTimeInternal(150);
-    // End-exclusive.
-    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
+    simulateFrame(1.5);
+    EXPECT_EQ(0, animation->timeToEffectChange());
 
-    player->setCurrentTimeInternal(200);
-    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(50, animation->timeToReverseEffectChange());
+    simulateFrame(2);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
+
+    simulateFrame(3);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
+
+    animation->setCurrentTimeInternal(0);
+    simulateFrame(3);
+    EXPECT_EQ(1, animation->timeToEffectChange());
+
+    animation->setPlaybackRate(2);
+    simulateFrame(3);
+    EXPECT_EQ(0.5, animation->timeToEffectChange());
+
+    animation->setPlaybackRate(0);
+    animation->update(TimingUpdateOnDemand);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
+
+    animation->setCurrentTimeInternal(3);
+    animation->setPlaybackRate(-1);
+    animation->update(TimingUpdateOnDemand);
+    simulateFrame(3);
+    EXPECT_EQ(1, animation->timeToEffectChange());
+
+    animation->setPlaybackRate(-2);
+    animation->update(TimingUpdateOnDemand);
+    simulateFrame(3);
+    EXPECT_EQ(0.5, animation->timeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
+TEST_F(AnimationAnimationTest, TimeToNextEffectWhenPaused)
 {
-    Timing timing;
-    timing.iterationDuration = 100;
-    timing.startDelay = 100;
-    timing.endDelay = 100;
-    timing.playbackRate = -2;
-    timing.fillMode = Timing::FillModeNone;
-    RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player = document.timeline().play(animation.get());
-    double inf = std::numeric_limits<double>::infinity();
-
-    EXPECT_EQ(100, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(inf, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(100);
-    EXPECT_EQ(50, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(149);
-    EXPECT_EQ(1, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(150);
-    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(0, animation->timeToReverseEffectChange());
-
-    player->setCurrentTimeInternal(200);
-    EXPECT_EQ(inf, animation->timeToForwardsEffectChange());
-    EXPECT_EQ(50, animation->timeToReverseEffectChange());
+    EXPECT_EQ(0, animation->timeToEffectChange());
+    animation->pause();
+    animation->update(TimingUpdateOnDemand);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
+TEST_F(AnimationAnimationTest, TimeToNextEffectWhenCancelledBeforeStart)
 {
-    // This test expects incorrect behaviour should be removed once Element
-    // and Animation are moved to Oilpan. See crbug.com/362404 for context.
-    Timing timing;
-    timing.iterationDuration = 5;
-    RefPtrWillBeRawPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
-    EXPECT_EQ(element.get(), animation->target());
-    document.timeline().play(animation.get());
-    pageHolder.clear();
-    element.clear();
-#if !ENABLE(OILPAN)
-    EXPECT_EQ(0, animation->target());
-#endif
+    EXPECT_EQ(0, animation->timeToEffectChange());
+    animation->setCurrentTimeInternal(-8);
+    animation->setPlaybackRate(2);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    animation->cancel();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    animation->update(TimingUpdateOnDemand);
+    // This frame will fire the finish event event though no start time has been
+    // received from the compositor yet, as cancel() nukes start times.
+    simulateFrame(0);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
 }
 
-} // namespace blink
+TEST_F(AnimationAnimationTest, TimeToNextEffectWhenCancelledBeforeStartReverse)
+{
+    EXPECT_EQ(0, animation->timeToEffectChange());
+    animation->setCurrentTimeInternal(9);
+    animation->setPlaybackRate(-3);
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    animation->cancel();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    animation->update(TimingUpdateOnDemand);
+    // This frame will fire the finish event event though no start time has been
+    // received from the compositor yet, as cancel() nukes start times.
+    simulateFrame(0);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
+}
+
+TEST_F(AnimationAnimationTest, TimeToNextEffectSimpleCancelledBeforeStart)
+{
+    EXPECT_EQ(0, animation->timeToEffectChange());
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    animation->cancel();
+    animation->update(TimingUpdateOnDemand);
+    // This frame will fire the finish event event though no start time has been
+    // received from the compositor yet, as cancel() nukes start times.
+    simulateFrame(0);
+    EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
+}
+
+TEST_F(AnimationAnimationTest, AttachedAnimations)
+{
+    RefPtrWillBePersistent<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
+
+    Timing timing;
+    RefPtrWillBeRawPtr<KeyframeEffect> keyframeEffect = KeyframeEffect::create(element.get(), nullptr, timing);
+    RefPtrWillBeRawPtr<Animation> animation = timeline->play(keyframeEffect.get());
+    simulateFrame(0);
+    timeline->serviceAnimations(TimingUpdateForAnimationFrame);
+    EXPECT_EQ(1U, element->elementAnimations()->animations().find(animation.get())->value);
+
+    animation.release();
+    Heap::collectAllGarbage();
+    EXPECT_TRUE(element->elementAnimations()->animations().isEmpty());
+}
+
+TEST_F(AnimationAnimationTest, HasLowerPriority)
+{
+    RefPtrWillBeRawPtr<Animation> animation1 = timeline->play(0);
+    RefPtrWillBeRawPtr<Animation> animation2 = timeline->play(0);
+    EXPECT_TRUE(Animation::hasLowerPriority(animation1.get(), animation2.get()));
+}
+
+TEST_F(AnimationAnimationTest, PlayAfterCancel)
+{
+    animation->cancel();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    animation->play();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(0, animation->currentTime());
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(0, animation->currentTime());
+    EXPECT_EQ(10 * 1000, animation->startTime());
+}
+
+TEST_F(AnimationAnimationTest, PlayBackwardsAfterCancel)
+{
+    animation->setPlaybackRate(-1);
+    animation->setCurrentTime(15 * 1000);
+    simulateFrame(0);
+    animation->cancel();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    animation->play();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(30 * 1000, animation->currentTime());
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(30 * 1000, animation->currentTime());
+    EXPECT_EQ(40 * 1000, animation->startTime());
+}
+
+TEST_F(AnimationAnimationTest, ReverseAfterCancel)
+{
+    animation->cancel();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    animation->reverse();
+    EXPECT_EQ(Animation::Pending, animation->playStateInternal());
+    EXPECT_EQ(30 * 1000, animation->currentTime());
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    simulateFrame(10);
+    EXPECT_EQ(Animation::Running, animation->playStateInternal());
+    EXPECT_EQ(30 * 1000, animation->currentTime());
+    EXPECT_EQ(40 * 1000, animation->startTime());
+}
+
+TEST_F(AnimationAnimationTest, FinishAfterCancel)
+{
+    animation->cancel();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    animation->finish(exceptionState);
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+}
+
+TEST_F(AnimationAnimationTest, PauseAfterCancel)
+{
+    animation->cancel();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+    animation->pause();
+    EXPECT_EQ(Animation::Idle, animation->playStateInternal());
+    EXPECT_TRUE(std::isnan(animation->currentTime()));
+    EXPECT_TRUE(std::isnan(animation->startTime()));
+}
+
+}

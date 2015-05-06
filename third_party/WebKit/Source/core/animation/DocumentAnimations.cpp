@@ -60,7 +60,7 @@ void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& docume
 
 void DocumentAnimations::updateAnimationTimingIfNeeded(Document& document)
 {
-    if (needsOutdatedAnimationPlayerUpdate(document) || document.timeline().needsAnimationTimingUpdate())
+    if (needsOutdatedAnimationUpdate(document) || document.timeline().needsAnimationTimingUpdate())
         updateAnimationTiming(document, TimingUpdateOnDemand);
 }
 
@@ -78,9 +78,9 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
     }
 }
 
-bool DocumentAnimations::needsOutdatedAnimationPlayerUpdate(const Document& document)
+bool DocumentAnimations::needsOutdatedAnimationUpdate(const Document& document)
 {
-    return document.timeline().hasOutdatedAnimationPlayer();
+    return document.timeline().hasOutdatedAnimation();
 }
 
 void DocumentAnimations::updateCompositorAnimations(Document& document)

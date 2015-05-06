@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/animation/TimingInput.h"
 
-#include "bindings/core/v8/V8AnimationTimingProperties.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/animation/AnimationNodeTiming.h"
+#include "bindings/core/v8/V8KeyframeEffectOptions.h"
+#include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/AnimationTestHelper.h"
 #include <gtest/gtest.h>
 #include <v8.h>
@@ -26,8 +26,8 @@ protected:
     {
         v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsNumber(timingInput, timingProperty, timingPropertyValue);
-        AnimationTimingProperties timingInputDictionary;
-        V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
+        KeyframeEffectOptions timingInputDictionary;
+        V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
         return TimingInput::convert(timingInputDictionary);
     }
 
@@ -35,8 +35,8 @@ protected:
     {
         v8::Local<v8::Object> timingInput = v8::Object::New(m_isolate);
         setV8ObjectPropertyAsString(timingInput, timingProperty, timingPropertyValue);
-        AnimationTimingProperties timingInputDictionary;
-        V8AnimationTimingProperties::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
+        KeyframeEffectOptions timingInputDictionary;
+        V8KeyframeEffectOptions::toImpl(m_isolate, timingInput, timingInputDictionary, exceptionState);
         return TimingInput::convert(timingInputDictionary);
     }
 
@@ -167,7 +167,7 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction)
 TEST_F(AnimationTimingInputTest, TimingInputEmpty)
 {
     Timing controlTiming;
-    Timing updatedTiming = TimingInput::convert(AnimationTimingProperties());
+    Timing updatedTiming = TimingInput::convert(KeyframeEffectOptions());
 
     EXPECT_EQ(controlTiming.startDelay, updatedTiming.startDelay);
     EXPECT_EQ(controlTiming.fillMode, updatedTiming.fillMode);

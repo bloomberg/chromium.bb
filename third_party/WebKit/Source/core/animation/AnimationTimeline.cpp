@@ -47,9 +47,9 @@ namespace blink {
 
 namespace {
 
-bool compareAnimationPlayers(const RefPtrWillBeMember<AnimationPlayer>& left, const RefPtrWillBeMember<AnimationPlayer>& right)
+bool compareAnimations(const RefPtrWillBeMember<Animation>& left, const RefPtrWillBeMember<Animation>& right)
 {
-    return AnimationPlayer::hasLowerPriority(left.get(), right.get());
+    return Animation::hasLowerPriority(left.get(), right.get());
 }
 
 }
@@ -85,41 +85,41 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
 AnimationTimeline::~AnimationTimeline()
 {
 #if !ENABLE(OILPAN)
-    for (const auto& player : m_players)
-        player->detachFromTimeline();
+    for (const auto& animation : m_animations)
+        animation->detachFromTimeline();
 #endif
 }
 
-void AnimationTimeline::playerAttached(AnimationPlayer& player)
+void AnimationTimeline::animationAttached(Animation& animation)
 {
-    ASSERT(player.timeline() == this);
-    ASSERT(!m_players.contains(&player));
-    m_players.add(&player);
+    ASSERT(animation.timeline() == this);
+    ASSERT(!m_animations.contains(&animation));
+    m_animations.add(&animation);
 }
 
-AnimationPlayer* AnimationTimeline::play(AnimationNode* child)
+Animation* AnimationTimeline::play(AnimationEffect* child)
 {
     if (!m_document)
         return nullptr;
 
-    RefPtrWillBeRawPtr<AnimationPlayer> player = AnimationPlayer::create(child, this);
-    ASSERT(m_players.contains(player.get()));
+    RefPtrWillBeRawPtr<Animation> animation = Animation::create(child, this);
+    ASSERT(m_animations.contains(animation.get()));
 
-    player->play();
-    ASSERT(m_playersNeedingUpdate.contains(player));
+    animation->play();
+    ASSERT(m_animationsNeedingUpdate.contains(animation));
 
-    return player.get();
+    return animation.get();
 }
 
-WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> AnimationTimeline::getAnimationPlayers()
+WillBeHeapVector<RefPtrWillBeMember<Animation>> AnimationTimeline::getAnimations()
 {
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer>> animationPlayers;
-    for (const auto& player : m_players) {
-        if (player->source() && (player->source()->isCurrent() || player->source()->isInEffect()))
-            animationPlayers.append(player);
+    WillBeHeapVector<RefPtrWillBeMember<Animation>> animations;
+    for (const auto& animation : m_animations) {
+        if (animation->source() && (animation->source()->isCurrent() || animation->source()->isInEffect()))
+            animations.append(animation);
     }
-    std::sort(animationPlayers.begin(), animationPlayers.end(), compareAnimationPlayers);
-    return animationPlayers;
+    std::sort(animations.begin(), animations.end(), compareAnimations);
+    return animations;
 }
 
 void AnimationTimeline::wake()
@@ -135,28 +135,28 @@ void AnimationTimeline::serviceAnimations(TimingUpdateReason reason)
 
     m_timing->cancelWake();
 
-    WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer>> players;
-    players.reserveInitialCapacity(m_playersNeedingUpdate.size());
-    for (RefPtrWillBeMember<AnimationPlayer> player : m_playersNeedingUpdate)
-        players.append(player.get());
+    WillBeHeapVector<RawPtrWillBeMember<Animation>> animations;
+    animations.reserveInitialCapacity(m_animationsNeedingUpdate.size());
+    for (RefPtrWillBeMember<Animation> animation : m_animationsNeedingUpdate)
+        animations.append(animation.get());
 
-    std::sort(players.begin(), players.end(), AnimationPlayer::hasLowerPriority);
+    std::sort(animations.begin(), animations.end(), Animation::hasLowerPriority);
 
-    for (AnimationPlayer* player : players) {
-        if (!player->update(reason))
-            m_playersNeedingUpdate.remove(player);
+    for (Animation* animation : animations) {
+        if (!animation->update(reason))
+            m_animationsNeedingUpdate.remove(animation);
     }
 
-    ASSERT(!hasOutdatedAnimationPlayer());
+    ASSERT(!hasOutdatedAnimation());
 }
 
 void AnimationTimeline::scheduleNextService()
 {
-    ASSERT(!hasOutdatedAnimationPlayer());
+    ASSERT(!hasOutdatedAnimation());
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
-    for (const auto& player : m_playersNeedingUpdate) {
-        timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
+    for (const auto& animation : m_animationsNeedingUpdate) {
+        timeToNextEffect = std::min(timeToNextEffect, animation->timeToEffectChange());
     }
 
     if (timeToNextEffect < s_minimumDelay) {
@@ -240,12 +240,12 @@ void AnimationTimeline::setCurrentTimeInternal(double currentTime)
         : document()->animationClock().currentTime() - currentTime / m_playbackRate;
     m_zeroTimeInitialized = true;
 
-    for (const auto& player : m_players) {
+    for (const auto& animation : m_animations) {
         // The Player needs a timing update to pick up a new time.
-        player->setOutdated();
+        animation->setOutdated();
         // Any corresponding compositor animation will need to be restarted. Marking the
         // source changed forces this.
-        player->setCompositorPending(true);
+        animation->setCompositorPending(true);
     }
 }
 
@@ -257,15 +257,15 @@ double AnimationTimeline::effectiveTime()
 
 void AnimationTimeline::pauseAnimationsForTesting(double pauseTime)
 {
-    for (const auto& player : m_playersNeedingUpdate)
-        player->pauseForTesting(pauseTime);
+    for (const auto& animation : m_animationsNeedingUpdate)
+        animation->pauseForTesting(pauseTime);
     serviceAnimations(TimingUpdateOnDemand);
 }
 
-bool AnimationTimeline::hasOutdatedAnimationPlayer() const
+bool AnimationTimeline::hasOutdatedAnimation() const
 {
-    for (const auto& player : m_playersNeedingUpdate) {
-        if (player->outdated())
+    for (const auto& animation : m_animationsNeedingUpdate) {
+        if (animation->outdated())
             return true;
     }
     return false;
@@ -273,13 +273,13 @@ bool AnimationTimeline::hasOutdatedAnimationPlayer() const
 
 bool AnimationTimeline::needsAnimationTimingUpdate()
 {
-    return m_playersNeedingUpdate.size() && currentTimeInternal() != m_lastCurrentTimeInternal;
+    return m_animationsNeedingUpdate.size() && currentTimeInternal() != m_lastCurrentTimeInternal;
 }
 
-void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
+void AnimationTimeline::setOutdatedAnimation(Animation* animation)
 {
-    ASSERT(player->outdated());
-    m_playersNeedingUpdate.add(player);
+    ASSERT(animation->outdated());
+    m_animationsNeedingUpdate.add(animation);
     if (m_document && m_document->page() && !m_document->page()->animator().isServicingAnimations())
         m_timing->serviceOnNextFrame();
 }
@@ -295,10 +295,10 @@ void AnimationTimeline::setPlaybackRate(double playbackRate)
         : document()->animationClock().currentTime() - currentTime / playbackRate;
     m_zeroTimeInitialized = true;
 
-    for (const auto& player : m_players) {
+    for (const auto& animation : m_animations) {
         // Corresponding compositor animation may need to be restarted to pick up
         // the new playback rate. Marking the source changed forces this.
-        player->setCompositorPending(true);
+        animation->setCompositorPending(true);
     }
 }
 
@@ -320,8 +320,8 @@ DEFINE_TRACE(AnimationTimeline)
 #if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_timing);
-    visitor->trace(m_playersNeedingUpdate);
-    visitor->trace(m_players);
+    visitor->trace(m_animationsNeedingUpdate);
+    visitor->trace(m_animations);
 #endif
 }
 

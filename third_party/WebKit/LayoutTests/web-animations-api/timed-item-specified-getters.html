@@ -10,15 +10,15 @@
 var element = document.getElementById('e');
 var keyframes = [{opacity: '1', offset: 0}, {opacity: '0', offset: 1}];
 
-var animationBasic = new Animation(element, keyframes);
-var specifiedTimingBasic = animationBasic.timing;
+var keyframeEffectBasic = new KeyframeEffect(element, keyframes);
+var specifiedTimingBasic = keyframeEffectBasic.timing;
 
 var timingNumberDuration = {duration: 2};
-var animationNumberDuration = new Animation(element, keyframes, timingNumberDuration);
+var animationNumberDuration = new KeyframeEffect(element, keyframes, timingNumberDuration);
 var specifiedTimingNumberDuration = animationNumberDuration.timing;
 
 var timingNoDuration = {iterations: 3};
-var animationNoDuration = new Animation(element, keyframes, timingNoDuration);
+var animationNoDuration = new KeyframeEffect(element, keyframes, timingNoDuration);
 var specifiedTimingNoDuration = animationNoDuration.timing;
 
 var timingAllFields = {
@@ -32,11 +32,11 @@ var timingAllFields = {
     direction: 'reverse',
     easing: 'step-start'
 };
-var animationAllFields = new Animation(element, keyframes, timingAllFields);
+var animationAllFields = new KeyframeEffect(element, keyframes, timingAllFields);
 var specifiedTimingAllFields = animationAllFields.timing;
 
 test(function() {
-    assert_equals(specifiedTimingBasic.constructor, Timing);
+    assert_equals(specifiedTimingBasic.constructor, AnimationEffectTiming);
     assert_equals(specifiedTimingBasic.delay, 0);
     assert_equals(specifiedTimingBasic.endDelay, 0);
     assert_equals(specifiedTimingBasic.fill, 'auto');

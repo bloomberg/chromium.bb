@@ -6,7 +6,7 @@
 #include "core/animation/TimingInput.h"
 
 #include "core/animation/AnimationInputHelpers.h"
-#include "core/animation/AnimationTimingProperties.h"
+#include "core/animation/KeyframeEffectOptions.h"
 
 namespace blink {
 
@@ -94,7 +94,7 @@ void TimingInput::setTimingFunction(Timing& timing, const String& timingFunction
         timing.timingFunction = Timing::defaults().timingFunction;
 }
 
-Timing TimingInput::convert(const AnimationTimingProperties& timingInput)
+Timing TimingInput::convert(const KeyframeEffectOptions& timingInput)
 {
     Timing result;
 

@@ -1538,7 +1538,7 @@ bool Document::needsFullLayoutTreeUpdate() const
     // FIXME: The childNeedsDistributionRecalc bit means either self or children, we should fix that.
     if (childNeedsDistributionRecalc())
         return true;
-    if (DocumentAnimations::needsOutdatedAnimationPlayerUpdate(*this))
+    if (DocumentAnimations::needsOutdatedAnimationUpdate(*this))
         return true;
     return false;
 }
@@ -1758,7 +1758,7 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     if (m_focusedElement && !m_focusedElement->isFocusable())
         clearFocusedElementSoon();
 
-    ASSERT(!m_timeline->hasOutdatedAnimationPlayer());
+    ASSERT(!m_timeline->hasOutdatedAnimation());
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "elementCount", m_styleRecalcElementCounter);
     TRACE_EVENT_END1("blink", "Document::updateLayoutTree", "elementCount", m_styleRecalcElementCounter);

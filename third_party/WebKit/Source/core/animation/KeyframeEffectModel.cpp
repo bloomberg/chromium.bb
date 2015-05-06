@@ -32,7 +32,7 @@
 #include "core/animation/KeyframeEffectModel.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/animation/AnimationNode.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSPropertyEquality.h"
@@ -57,7 +57,7 @@ PropertyHandleSet KeyframeEffectModelBase::properties() const
 
 void KeyframeEffectModelBase::setFrames(KeyframeVector& keyframes)
 {
-    // TODO(samli): Should also notify/invalidate the player
+    // TODO(samli): Should also notify/invalidate the animation
     m_keyframes = keyframes;
     m_keyframeGroups = nullptr;
     m_interpolationEffect = nullptr;
@@ -210,7 +210,7 @@ bool KeyframeEffectModelBase::isReplaceOnly()
     ensureKeyframeGroups();
     for (const auto& entry : *m_keyframeGroups) {
         for (const auto& keyframe : entry.value->keyframes()) {
-            if (keyframe->composite() != AnimationEffect::CompositeReplace)
+            if (keyframe->composite() != EffectModel::CompositeReplace)
                 return false;
         }
     }
@@ -224,10 +224,10 @@ DEFINE_TRACE(KeyframeEffectModelBase)
     visitor->trace(m_keyframeGroups);
 #endif
     visitor->trace(m_interpolationEffect);
-    AnimationEffect::trace(visitor);
+    EffectModel::trace(visitor);
 }
 
-Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, AnimationEffect::CompositeOperation composite)
+Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, EffectModel::CompositeOperation composite)
     : m_offset(offset)
     , m_easing(easing)
     , m_composite(composite)

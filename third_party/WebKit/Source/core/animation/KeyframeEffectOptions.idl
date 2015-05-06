@@ -5,7 +5,7 @@
 // https://w3c.github.io/web-animations/#the-animationeffecttimingproperties-dictionary
 
 // TODO(dstockwell): Rename this to AnimationEffectTimingProperties.
-dictionary AnimationTimingProperties {
+dictionary KeyframeEffectOptions {
     double                             delay = 0;
     double                             endDelay = 0;
     // TODO(dstockwell): The fill type should be FillMode.

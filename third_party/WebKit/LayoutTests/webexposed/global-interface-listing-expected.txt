@@ -32,15 +32,33 @@ interface AnalyserNode
     setter maxDecibels
     setter minDecibels
     setter smoothingTimeConstant
-interface Animation
+interface AnimationEffectReadOnly
+    getter computedTiming
+    getter timing
     method constructor
+interface AnimationEffectTiming
+    getter delay
+    getter direction
+    getter duration
+    getter easing
+    getter endDelay
+    getter fill
+    getter iterationStart
+    getter iterations
+    getter playbackRate
+    method constructor
+    setter delay
+    setter direction
+    setter duration
+    setter easing
+    setter endDelay
+    setter fill
+    setter iterationStart
+    setter iterations
+    setter playbackRate
 interface AnimationEvent
     getter animationName
     getter elapsedTime
-    method constructor
-interface AnimationNode
-    getter computedTiming
-    getter timing
     method constructor
 interface AnimationPlayerEvent
     getter currentTime
@@ -50,7 +68,7 @@ interface AnimationTimeline
     getter currentTime
     getter playbackRate
     method constructor
-    method getAnimationPlayers
+    method getAnimations
     method play
     setter currentTime
     setter playbackRate
@@ -1297,7 +1315,7 @@ interface Element
     method constructor
     method createShadowRoot
     method focus
-    method getAnimationPlayers
+    method getAnimations
     method getAttribute
     method getAttributeNS
     method getAttributeNode
@@ -3097,6 +3115,8 @@ interface KeyboardEvent
     method constructor
     method getModifierState
     method initKeyboardEvent
+interface KeyframeEffect
+    method constructor
 interface LocalCredential
     getter formData
     getter password
@@ -5474,26 +5494,6 @@ interface TimeRanges
     method constructor
     method end
     method start
-interface Timing
-    getter delay
-    getter direction
-    getter duration
-    getter easing
-    getter endDelay
-    getter fill
-    getter iterationStart
-    getter iterations
-    getter playbackRate
-    method constructor
-    setter delay
-    setter direction
-    setter duration
-    setter easing
-    setter endDelay
-    setter fill
-    setter iterationStart
-    setter iterations
-    setter playbackRate
 interface Touch
     getter clientX
     getter clientY

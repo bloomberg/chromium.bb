@@ -42,7 +42,7 @@ namespace blink {
 
 class CSSAnimations;
 
-using AnimationPlayerCountedSet = WillBeHeapHashCountedSet<RawPtrWillBeWeakMember<AnimationPlayer>>;
+using AnimationCountedSet = WillBeHeapHashCountedSet<RawPtrWillBeWeakMember<Animation>>;
 
 class ElementAnimations : public NoBaseWillBeGarbageCollectedFinalized<ElementAnimations> {
     WTF_MAKE_NONCOPYABLE(ElementAnimations);
@@ -56,14 +56,14 @@ public:
     const AnimationStack& defaultStack() const { return m_defaultStack; }
     // Tracks the state of active CSS Animations and Transitions. The individual animations
     // will also be part of the default stack, but the mapping betwen animation name and
-    // player is kept here.
+    // animation is kept here.
     CSSAnimations& cssAnimations() { return m_cssAnimations; }
     const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
 
-    // AnimationPlayers which have animations targeting this element.
-    AnimationPlayerCountedSet& players() { return m_players; }
+    // Animations which have effects targeting this element.
+    AnimationCountedSet& animations() { return m_animations; }
 
-    bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty() && m_players.isEmpty(); }
+    bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty() && m_animations.isEmpty(); }
 
     void restartAnimationOnCompositor();
 
@@ -75,8 +75,8 @@ public:
     void clearBaseComputedStyle();
 
 #if !ENABLE(OILPAN)
-    void addAnimation(Animation* animation) { m_animations.append(animation); }
-    void notifyAnimationDestroyed(Animation* animation) { m_animations.remove(m_animations.find(animation)); }
+    void addEffect(KeyframeEffect* effect) { m_effects.append(effect); }
+    void notifyEffectDestroyed(KeyframeEffect* effect) { m_effects.remove(m_effects.find(effect)); }
 #endif
 
     DECLARE_TRACE();
@@ -86,14 +86,14 @@ private:
 
     AnimationStack m_defaultStack;
     CSSAnimations m_cssAnimations;
-    AnimationPlayerCountedSet m_players;
+    AnimationCountedSet m_animations;
     bool m_animationStyleChange;
     RefPtr<ComputedStyle> m_baseComputedStyle;
 
 #if !ENABLE(OILPAN)
     // FIXME: Oilpan: This is to avoid a reference cycle that keeps Elements alive
     // and won't be needed once the Node hierarchy becomes traceable.
-    Vector<Animation*> m_animations;
+    Vector<KeyframeEffect*> m_effects;
 #endif
 
     // CSSAnimations and DeferredLegacyStyleInterpolation checks if a style change is due to animation.
