@@ -140,6 +140,8 @@ PolicyBase::PolicyBase()
 }
 
 PolicyBase::~PolicyBase() {
+  ClearSharedHandles();
+
   TargetSet::iterator it;
   for (it = targets_.begin(); it != targets_.end(); ++it) {
     TargetProcess* target = (*it);
@@ -421,6 +423,37 @@ ResultCode PolicyBase::AddDllToUnload(const wchar_t* dll_name) {
 ResultCode PolicyBase::AddKernelObjectToClose(const base::char16* handle_type,
                                               const base::char16* handle_name) {
   return handle_closer_.AddHandle(handle_type, handle_name);
+}
+
+void* PolicyBase::AddHandleToShare(HANDLE handle) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return NULL;
+
+  if (!handle)
+    return NULL;
+
+  HANDLE duped_handle = NULL;
+  ::DuplicateHandle(::GetCurrentProcess(),
+                    handle,
+                    ::GetCurrentProcess(),
+                    &duped_handle,
+                    0,
+                    TRUE,
+                    DUPLICATE_SAME_ACCESS);
+  DCHECK(duped_handle);
+  handles_to_share_.push_back(duped_handle);
+  return duped_handle;
+}
+
+HandleList PolicyBase::GetHandlesBeingShared() {
+  return handles_to_share_;
+}
+
+void PolicyBase::ClearSharedHandles() {
+  for (auto handle : handles_to_share_) {
+    ::CloseHandle(handle);
+  }
+  handles_to_share_.clear();
 }
 
 // When an IPC is ready in any of the targets we get called. We manage an array

@@ -242,6 +242,12 @@ class TargetPolicy {
   // An empty string for handle_name indicates the handle is unnamed.
   virtual ResultCode AddKernelObjectToClose(const wchar_t* handle_type,
                                             const wchar_t* handle_name) = 0;
+
+  // Adds a handle that will be shared with the target process.
+  // Returns the handle which was actually shared with the target. This is
+  // achieved by duplicating the handle to ensure that it is inheritable by
+  // the target. The caller should treat this as an opaque value.
+  virtual void* AddHandleToShare(HANDLE handle) = 0;
 };
 
 }  // namespace sandbox

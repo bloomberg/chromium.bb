@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -293,6 +295,24 @@ int DispatchCall(int argc, wchar_t **argv) {
 
   if (0 == _wcsicmp(argv[3], L"ping"))
       return SBOX_TEST_PING_OK;
+
+  // If the caller shared a shared memory handle with us attempt to open it
+  // in read only mode and sleep infinitely if we succeed.
+  if (0 == _wcsicmp(argv[3], L"shared_memory_handle")) {
+    base::SharedMemoryHandle shared_handle = NULL;
+    base::StringToUint(
+        argv[4], reinterpret_cast<unsigned int*>(&shared_handle));
+    if (shared_handle == NULL)
+      return SBOX_TEST_INVALID_PARAMETER;
+    base::SharedMemory read_only_view(shared_handle, true);
+    if (!read_only_view.Map(0))
+      return SBOX_TEST_INVALID_PARAMETER;
+    std::string contents(reinterpret_cast<char*>(read_only_view.memory()));
+    if (contents != "Hello World")
+      return SBOX_TEST_INVALID_PARAMETER;
+    Sleep(INFINITE);
+    return SBOX_TEST_TIMED_OUT;
+  }
 
   SboxTestsState state = static_cast<SboxTestsState>(_wtoi(argv[2]));
   if ((state <= MIN_STATE) || (state >= MAX_STATE))

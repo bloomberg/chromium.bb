@@ -418,6 +418,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   }
 
   bool inherit_handles = false;
+
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     int attribute_count = 0;
     const AppContainerAttributes* app_container =
@@ -439,6 +440,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     // Handles in the list must be unique.
     if (stderr_handle != stdout_handle && stderr_handle != INVALID_HANDLE_VALUE)
       inherit_handle_list[inherit_handle_count++] = stderr_handle;
+
+    HandleList handle_list = policy_base->GetHandlesBeingShared();
+    for (auto handle : handle_list)
+      inherit_handle_list[inherit_handle_count++] = handle;
+
     if (inherit_handle_count)
       ++attribute_count;
 
@@ -492,6 +498,9 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   DWORD win_result = target->Create(exe_path, command_line, inherit_handles,
                                     policy_base->GetLowBoxSid() ? true : false,
                                     startup_info, &process_info);
+
+  policy_base->ClearSharedHandles();
+
   if (ERROR_SUCCESS != win_result) {
     SpawnCleanup(target, win_result);
     return SBOX_ERROR_CREATE_PROCESS;

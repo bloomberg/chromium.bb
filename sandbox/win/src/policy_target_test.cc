@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/shared_memory.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox.h"
@@ -342,6 +345,68 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   temp_policy = broker->CreatePolicy();
   temp_policy->DestroyAlternateDesktop();
   temp_policy->Release();
+}
+
+// Launches the app in the sandbox and share a handle with it. The app should
+// be able to use the handle.
+TEST(PolicyTargetTest, ShareHandleTest) {
+  // The way we share handles via STARTUPINFOEX does not work on XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+
+  BrokerServices* broker = GetBroker();
+  ASSERT_TRUE(broker != NULL);
+
+  base::StringPiece contents = "Hello World";
+  std::string name = "TestSharedMemory";
+  base::SharedMemoryCreateOptions options;
+  options.size = contents.size();
+  options.share_read_only = true;
+  options.name_deprecated = &name;
+  base::SharedMemory writable_shmem;
+  ASSERT_TRUE(writable_shmem.Create(options));
+  ASSERT_TRUE(writable_shmem.Map(options.size));
+  memcpy(writable_shmem.memory(), contents.data(), contents.size());
+
+  base::SharedMemory read_only_view;
+  ASSERT_TRUE(read_only_view.Open(name, true));
+
+  // Get the path to the sandboxed app.
+  wchar_t prog_name[MAX_PATH];
+  GetModuleFileNameW(NULL, prog_name, MAX_PATH);
+
+  TargetPolicy* policy = broker->CreatePolicy();
+  void* shared_handle = policy->AddHandleToShare(
+      read_only_view.handle());
+
+  base::string16 arguments(L"\"");
+  arguments += prog_name;
+  arguments += L"\" -child 0 shared_memory_handle ";
+  arguments += base::UintToString16(
+      reinterpret_cast<unsigned int>(shared_handle));
+
+  // Launch the app.
+  ResultCode result = SBOX_ALL_OK;
+  base::win::ScopedProcessInformation target;
+
+  policy->SetTokenLevel(USER_INTERACTIVE, USER_LOCKDOWN);
+  PROCESS_INFORMATION temp_process_info = {};
+  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
+                               &temp_process_info);
+  policy->Release();
+
+  EXPECT_EQ(SBOX_ALL_OK, result);
+  if (result == SBOX_ALL_OK)
+    target.Set(temp_process_info);
+
+  EXPECT_EQ(1, ::ResumeThread(target.thread_handle()));
+
+  EXPECT_EQ(WAIT_TIMEOUT,
+            ::WaitForSingleObject(target.process_handle(), 2000));
+
+  EXPECT_TRUE(::TerminateProcess(target.process_handle(), 0));
+
+  ::WaitForSingleObject(target.process_handle(), INFINITE);
 }
 
 }  // namespace sandbox

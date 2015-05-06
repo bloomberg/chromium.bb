@@ -28,6 +28,8 @@ class LowLevelPolicy;
 class TargetProcess;
 struct PolicyGlobal;
 
+typedef std::vector<HANDLE> HandleList;
+
 // We act as a policy dispatcher, implementing the handler for the "ping" IPC,
 // so we have to provide the appropriate handler on the OnMessageReady method.
 // There is a static_cast for the handler, and the compiler only performs the
@@ -67,6 +69,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   ResultCode AddDllToUnload(const wchar_t* dll_name) override;
   ResultCode AddKernelObjectToClose(const base::char16* handle_type,
                                     const base::char16* handle_name) override;
+  void* AddHandleToShare(HANDLE handle) override;
 
   // Dispatcher:
   Dispatcher* OnMessageReady(IPCParams* ipc,
@@ -98,6 +101,12 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
 
   HANDLE GetStdoutHandle();
   HANDLE GetStderrHandle();
+
+  // Returns the list of handles being shared with the target process.
+  HandleList GetHandlesBeingShared();
+
+  // Closes the handles being shared with the target and clears out the list.
+  void ClearSharedHandles();
 
  private:
   ~PolicyBase() override;
@@ -162,6 +171,11 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   static HDESK alternate_desktop_handle_;
   static HWINSTA alternate_winstation_handle_;
   static IntegrityLevel alternate_desktop_integrity_level_label_;
+
+  // Contains the list of handles being shared with the target process.
+  // This list contains handles other than the stderr/stdout handles which are
+  // shared with the target at times.
+  std::vector<HANDLE> handles_to_share_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBase);
 };
