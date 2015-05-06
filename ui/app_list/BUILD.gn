@@ -79,6 +79,7 @@ component("app_list") {
     "//third_party/icu",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/compositor",
     "//ui/events:events_base",
     "//ui/gfx",

@@ -18,6 +18,7 @@
         '../../components/components.gyp:keyed_service_core',
         '../../skia/skia.gyp:skia',
         '../base/ui_base.gyp:ui_base',
+        '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',
