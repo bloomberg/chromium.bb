@@ -13,6 +13,17 @@
 #include "sandbox/mac/dispatch_source_mach.h"
 #include "sandbox/mac/xpc.h"
 
+#if defined(MAC_OS_X_VERSION_10_7) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+// Redeclare methods that only exist on 10.7+ to suppress
+// -Wpartial-availability warnings.
+extern "C" {
+XPC_EXPORT XPC_MALLOC XPC_RETURNS_RETAINED XPC_WARN_RESULT XPC_NONNULL_ALL
+    xpc_object_t
+    xpc_dictionary_create_reply(xpc_object_t original);
+}  // extern "C"
+#endif
+
 namespace sandbox {
 
 XPCMessageServer::XPCMessageServer(MessageDemuxer* demuxer,

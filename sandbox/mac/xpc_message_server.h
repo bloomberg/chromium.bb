@@ -5,11 +5,25 @@
 #ifndef SANDBOX_MAC_XPC_MESSAGE_SERVER_H_
 #define SANDBOX_MAC_XPC_MESSAGE_SERVER_H_
 
+#include <AvailabilityMacros.h>
+
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
 #include "sandbox/mac/xpc.h"
 #include "sandbox/sandbox_export.h"
+
+#if defined(MAC_OS_X_VERSION_10_7) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+// Redeclare methods that only exist on 10.7+ to suppress
+// -Wpartial-availability warnings.
+extern "C" {
+XPC_EXPORT XPC_NONNULL1 XPC_NONNULL2 void
+xpc_dictionary_set_int64(xpc_object_t xdict, const char* key, int64_t value);
+
+XPC_EXPORT XPC_NONNULL1 void xpc_release(xpc_object_t object);
+}  // extern "C"
+#endif
 
 namespace sandbox {
 
