@@ -134,4 +134,6 @@ mojo_application_package("apptests") {
     "//mojo/platform_handle",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
   ]
+
+  data_deps = [ ":resource_provider" ]
 }
