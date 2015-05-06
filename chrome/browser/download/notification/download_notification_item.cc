@@ -78,6 +78,9 @@ DownloadNotificationItem::DownloadNotificationItem(content::DownloadItem* item,
       delegate_(delegate) {
   item->AddObserver(this);
 
+  // Notify that the instance is just created.
+  delegate_->OnCreated(this);
+
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
   message_center::RichNotificationData data;

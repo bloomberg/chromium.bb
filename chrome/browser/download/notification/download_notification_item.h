@@ -25,6 +25,7 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
  public:
   class Delegate {
    public:
+    virtual void OnCreated(DownloadNotificationItem* item) = 0;
     virtual void OnDownloadStarted(DownloadNotificationItem* item) = 0;
     virtual void OnDownloadStopped(DownloadNotificationItem* item) = 0;
     virtual void OnDownloadRemoved(DownloadNotificationItem* item) = 0;

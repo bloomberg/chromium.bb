@@ -34,6 +34,9 @@ class MockDownloadNotificationItemDelegate
         on_download_started_call_count_(0u),
         on_download_stopped_call_count_(0u) {}
 
+  void OnCreated(DownloadNotificationItem* item) override {
+  }
+
   void OnDownloadRemoved(DownloadNotificationItem* item) override {
     on_download_removed_call_count_++;
   }

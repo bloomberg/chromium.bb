@@ -23,25 +23,44 @@ DownloadNotificationManager::DownloadNotificationManager(Profile* profile)
 DownloadNotificationManager::~DownloadNotificationManager() {
 }
 
+void DownloadNotificationManager::OnCreated(DownloadNotificationItem* item) {
+  DCHECK(items_.find(item) == items_.end());
+  DCHECK(downloading_items_.find(item) == downloading_items_.end());
+
+  items_.insert(item);
+}
+
 void DownloadNotificationManager::OnDownloadStarted(
     DownloadNotificationItem* item) {
+  DCHECK(items_.find(item) != items_.end());
+  DCHECK(downloading_items_.find(item) == downloading_items_.end());
+
   downloading_items_.insert(item);
 }
 
 void DownloadNotificationManager::OnDownloadStopped(
     DownloadNotificationItem* item) {
+  DCHECK(items_.find(item) != items_.end());
+  DCHECK(downloading_items_.find(item) != downloading_items_.end());
+
   downloading_items_.erase(item);
 }
 
 void DownloadNotificationManager::OnDownloadRemoved(
     DownloadNotificationItem* item) {
-  downloading_items_.erase(item);
+  DCHECK(items_.find(item) != items_.end());
+
+  downloading_items_.erase(item);  // just in case.
   items_.erase(item);
+
+  delete item;
 }
 
 void DownloadNotificationManager::OnNewDownloadReady(
     content::DownloadItem* download) {
+  // |item| object will be inserted to |items_| by |OnCreated()| called in the
+  // constructor.
   DownloadNotificationItem* item =
       new DownloadNotificationItem(download, profile_, this);
-  items_.insert(item);
+  DCHECK(items_.find(item) != items_.end());
 }
