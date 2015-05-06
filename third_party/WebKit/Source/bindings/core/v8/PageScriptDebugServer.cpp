@@ -43,6 +43,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/inspector/PerIsolateDebuggerClient.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
@@ -62,7 +63,7 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> con
 PageScriptDebugServer* PageScriptDebugServer::s_instance = nullptr;
 
 PageScriptDebugServer::PageScriptDebugServer(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
-    : ScriptDebugServer(isolate)
+    : ScriptDebugServer(isolate, adoptPtr(new PerIsolateDebuggerClient(isolate)))
     , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
 {

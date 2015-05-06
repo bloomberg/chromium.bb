@@ -1687,6 +1687,8 @@
             'inspector/PageDebuggerAgent.h',
             'inspector/PageRuntimeAgent.cpp',
             'inspector/PageRuntimeAgent.h',
+            'inspector/PerIsolateDebuggerClient.cpp',
+            'inspector/PerIsolateDebuggerClient.h',
             'inspector/PromiseTracker.cpp',
             'inspector/PromiseTracker.h',
             'inspector/ScriptArguments.cpp',

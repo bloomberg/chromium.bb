@@ -32,15 +32,12 @@
 #include "bindings/core/v8/ScriptDebugServer.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8JavaScriptCallFrame.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "platform/JSONValues.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
 #include "wtf/Deque.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -84,8 +81,9 @@ v8::MaybeLocal<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* func
     return V8ScriptRunner::callInternalFunction(function, debuggerScript, argc, argv, m_isolate);
 }
 
-ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate)
+ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate, PassOwnPtr<Client> client)
     : m_isolate(isolate)
+    , m_client(client)
     , m_breakpointsActivated(true)
     , m_compiledScripts(isolate)
     , m_runningNestedMessageLoop(false)
@@ -684,13 +682,10 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
 
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
-    const WebData& debuggerScriptSourceResource = Platform::current()->loadResource("DebuggerScriptSource.js");
-    v8::Local<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));
-    v8::Local<v8::Value> value;
-    if (!V8ScriptRunner::compileAndRunInternalScript(source, m_isolate).ToLocal(&value))
+    v8::Local<v8::Object> value = m_client->compileDebuggerScript();
+    if (value.IsEmpty())
         return;
-    ASSERT(value->IsObject());
-    m_debuggerScript.Reset(m_isolate, v8::Local<v8::Object>::Cast(value));
+    m_debuggerScript.Reset(m_isolate, value);
 }
 
 v8::Local<v8::Object> ScriptDebugServer::debuggerScriptLocal() const

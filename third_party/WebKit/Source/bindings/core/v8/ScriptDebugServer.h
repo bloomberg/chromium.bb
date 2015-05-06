@@ -45,7 +45,6 @@ namespace blink {
 
 class ScriptState;
 class ScriptDebugListener;
-class ScriptSourceCode;
 class ScriptValue;
 class JavaScriptCallFrame;
 
@@ -54,6 +53,12 @@ class CORE_EXPORT ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinaliz
 public:
     virtual ~ScriptDebugServer();
     DECLARE_VIRTUAL_TRACE();
+
+    class Client {
+    public:
+        virtual ~Client() { }
+        virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
+    };
 
     void enable();
     void disable();
@@ -119,7 +124,7 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
 
 protected:
-    explicit ScriptDebugServer(v8::Isolate*);
+    ScriptDebugServer(v8::Isolate*, PassOwnPtr<Client>);
 
     virtual void clearCompiledScripts();
 
@@ -155,6 +160,7 @@ private:
     void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     v8::Isolate* m_isolate;
+    OwnPtr<Client> m_client;
     bool m_breakpointsActivated;
     V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;

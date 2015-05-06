@@ -32,6 +32,7 @@
 #include "bindings/core/v8/WorkerScriptDebugServer.h"
 
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "core/inspector/PerIsolateDebuggerClient.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -44,7 +45,7 @@ namespace blink {
 static const char* workerContextDebugId = "[worker]";
 
 WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope)
-    : ScriptDebugServer(v8::Isolate::GetCurrent())
+    : ScriptDebugServer(v8::Isolate::GetCurrent(), adoptPtr(new PerIsolateDebuggerClient(v8::Isolate::GetCurrent())))
     , m_listener(0)
     , m_workerGlobalScope(workerGlobalScope)
 {
