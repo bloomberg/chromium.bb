@@ -114,7 +114,7 @@ void ExternalExtensionWrapper::AddSearchProvider(
   if (!webframe)
     return;
 
-  GURL osdd_url(osdd_string);
+  GURL osdd_url = GURL(webframe->document().url()).Resolve(osdd_string);
   if (!osdd_url.is_empty() && osdd_url.is_valid()) {
     render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
         render_view->GetRoutingID(), webframe->document().url(), osdd_url,
@@ -142,7 +142,7 @@ void ExternalExtensionWrapper::IsSearchProviderInstalled(
     return;
 
   search_provider::InstallState install = search_provider::DENIED;
-  GURL inquiry_url = GURL(name);
+  GURL inquiry_url = GURL(webframe->document().url()).Resolve(name);
   if (!inquiry_url.is_empty()) {
       render_view->Send(new ChromeViewHostMsg_GetSearchProviderInstallState(
           render_view->GetRoutingID(),
