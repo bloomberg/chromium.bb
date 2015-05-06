@@ -16,6 +16,8 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, WebBluetoothError* we
 {
     OwnPtr<WebBluetoothError> webError = adoptPtr(webErrorRawPointer);
     switch (webError->errorType) {
+    case WebBluetoothError::NetworkError:
+        return DOMException::create(NetworkError, webError->message);
     case WebBluetoothError::SecurityError:
         return DOMException::create(SecurityError, webError->message);
     case WebBluetoothError::NotFoundError:

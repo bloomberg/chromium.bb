@@ -13,6 +13,7 @@ namespace blink {
 // DOMExceptions.
 struct WebBluetoothError {
     enum ErrorType {
+        NetworkError,
         NotFoundError,
         SecurityError
     };
