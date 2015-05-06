@@ -211,13 +211,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.disable_picture_quad_image_filtering =
       disable_picture_quad_image_filtering;
 
-  if (root_render_pass->copy_requests.empty()) {
-    // If we have any copy requests, we can't remove any quads for overlays,
-    // otherwise the framebuffer will be missing the overlay contents.
-    overlay_processor_->ProcessForOverlays(render_passes_in_draw_order,
-                                           &frame.overlay_list);
-  }
-
   EnsureBackbuffer();
 
   // Only reshape when we know we are going to draw. Otherwise, the reshape
@@ -226,6 +219,14 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   output_surface_->Reshape(device_viewport_rect.size(), device_scale_factor);
 
   BeginDrawingFrame(&frame);
+
+  // If we have any copy requests, we can't remove any quads for overlays,
+  // otherwise the framebuffer will be missing the overlay contents.
+  if (root_render_pass->copy_requests.empty()) {
+    overlay_processor_->ProcessForOverlays(render_passes_in_draw_order,
+                                           &frame.overlay_list);
+  }
+
   for (size_t i = 0; i < render_passes_in_draw_order->size(); ++i) {
     RenderPass* pass = render_passes_in_draw_order->at(i);
     DrawRenderPass(&frame, pass);
