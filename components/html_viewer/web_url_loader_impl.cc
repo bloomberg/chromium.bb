@@ -109,9 +109,6 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
   mojo::URLRequestPtr url_request = mojo::URLRequest::From(request);
   url_request->auto_follow_redirects = false;
   referrer_policy_ = request.referrerPolicy();
-  GURL referrer_url(
-      request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());
-  url_request->referrer = referrer_url.spec();
 
   if (request.extraData()) {
     WebURLRequestExtraData* extra_data =

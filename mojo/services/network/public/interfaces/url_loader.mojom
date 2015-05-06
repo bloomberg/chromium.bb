@@ -13,8 +13,10 @@ struct URLRequest {
   // The HTTP method if applicable.
   string method = "GET";
 
-  // Additional HTTP request headers.
-  array<string>? headers;
+  // Additional HTTP request headers stored as a dictionary mapping header name
+  // to header value. If a header name appears multiple times, the header values
+  // are merged in the dictionary and separated by a ",".
+  map<string, string>? headers;
 
   // The payload for the request body, represented as a concatenation of data
   // streams. For HTTP requests, the method must be set to "POST" or "PUT".
@@ -34,9 +36,6 @@ struct URLRequest {
   // servers to also not satisfy the request from their cache.  This has the
   // effect of forcing a full end-to-end fetch.
   bool bypass_cache = false;
-
-  // The referrer request header.
-  string? referrer;
 };
 
 struct URLResponse {

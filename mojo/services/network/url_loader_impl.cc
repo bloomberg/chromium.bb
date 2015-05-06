@@ -129,14 +129,20 @@ void URLLoaderImpl::Start(URLRequestPtr request,
   url_request_ = context_->url_request_context()->CreateRequest(
       GURL(request->url), net::DEFAULT_PRIORITY, this);
   url_request_->set_method(request->method);
-  url_request_->SetReferrer(request->referrer);
   // TODO(jam): need to specify this policy.
   url_request_->set_referrer_policy(
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
   if (request->headers) {
     net::HttpRequestHeaders headers;
-    for (size_t i = 0; i < request->headers.size(); ++i)
-      headers.AddHeaderFromString(request->headers[i].To<base::StringPiece>());
+    for (auto i = request->headers.begin(); i != request->headers.end(); ++i) {
+      base::StringPiece header = i.GetKey().To<base::StringPiece>();
+      base::StringPiece value = i.GetValue().To<base::StringPiece>();
+      if (header == net::HttpRequestHeaders::kReferer) {
+        url_request_->SetReferrer(value.as_string());
+      } else {
+        headers.SetHeader(header, value);
+      }
+    }
     url_request_->SetExtraRequestHeaders(headers);
   }
   if (request->body) {

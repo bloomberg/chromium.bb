@@ -23,29 +23,24 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
     const std::string& name_latin1 = name.latin1();
     const std::string& value_latin1 = value.latin1();
 
-    // Skip over referrer headers found in the header map because we already
-    // pulled it out as a separate parameter.
-    if (LowerCaseEqualsASCII(name_latin1, "referer"))
-      return;
-
     if (LowerCaseEqualsASCII(name_latin1, "accept"))
       has_accept_header_ = true;
 
-    buffer_.push_back(name_latin1 + ": " + value_latin1);
+    buffer_[name_latin1] = value_latin1;
   }
 
-  Array<String> GetBuffer() {
+  Map<String, String> GetBuffer() {
     // In some cases, WebKit doesn't add an Accept header, but not having the
     // header confuses some web servers.  See bug 808613.
     if (!has_accept_header_) {
-      buffer_.push_back("Accept: */*");
+      buffer_["Accept"] = "*/*";
       has_accept_header_ = true;
     }
     return buffer_.Pass();
   }
 
  private:
-  Array<String> buffer_;
+  Map<String, String> buffer_;
   bool has_accept_header_;
 };
 
