@@ -113,7 +113,8 @@ class _PaygenPayload(object):
       self.signer = signer_payloads_client.SignerPayloadsClientGoogleStorage(
           payload.tgt_image.channel,
           payload.tgt_image.board,
-          payload.tgt_image.version)
+          payload.tgt_image.version,
+          payload.tgt_image.bucket)
 
   def _MetadataUri(self, uri):
     """Given a payload uri, find the uri for the metadata signature."""
