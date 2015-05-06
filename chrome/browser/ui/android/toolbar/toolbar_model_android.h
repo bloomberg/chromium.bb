@@ -33,6 +33,7 @@ class ToolbarModelAndroid : public ToolbarModelDelegate {
   base::android::ScopedJavaLocalRef<jstring> GetCorpusChipText(
       JNIEnv* env,
       jobject obj);
+  jboolean WouldReplaceURL(JNIEnv* env, jobject obj);
 
   // ToolbarDelegate:
   content::WebContents* GetActiveWebContents() const override;

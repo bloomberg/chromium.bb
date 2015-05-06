@@ -58,6 +58,10 @@ ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetCorpusChipText(
       toolbar_model_->GetCorpusNameForMobile());
 }
 
+jboolean ToolbarModelAndroid::WouldReplaceURL(JNIEnv* env, jobject obj) {
+  return toolbar_model_->WouldReplaceURL();
+}
+
 content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jdelegate = weak_java_delegate_.get(env);

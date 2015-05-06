@@ -83,6 +83,12 @@ public class ToolbarModel {
         return nativeGetCorpusChipText(mNativeToolbarModelAndroid);
     }
 
+    /** @return Whether the URL is replaced by a search query. */
+    public boolean wouldReplaceURL() {
+        if (mNativeToolbarModelAndroid == 0) return false;
+        return nativeWouldReplaceURL(mNativeToolbarModelAndroid);
+    }
+
     private static native int nativeGetSecurityLevelForWebContents(WebContents webContents);
     private static native boolean nativeIsDeprecatedSHA1Present(WebContents webContents);
 
@@ -91,4 +97,5 @@ public class ToolbarModel {
     private native String nativeGetText(long nativeToolbarModelAndroid);
     private native String nativeGetQueryExtractionParam(long nativeToolbarModelAndroid);
     private native String nativeGetCorpusChipText(long nativeToolbarModelAndroid);
+    private native boolean nativeWouldReplaceURL(long nativeToolbarModelAndroid);
 }
