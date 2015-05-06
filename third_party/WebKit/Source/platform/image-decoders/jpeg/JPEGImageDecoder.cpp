@@ -677,10 +677,8 @@ void term_source(j_decompress_ptr jd)
     src->decoder->decoder()->jpegComplete();
 }
 
-JPEGImageDecoder::JPEGImageDecoder(ImageSource::AlphaOption alphaOption,
-    ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
-    size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
+JPEGImageDecoder::JPEGImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_hasColorProfile(false)
 {
 }

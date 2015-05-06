@@ -45,10 +45,8 @@ namespace blink {
 static const size_t sizeOfDirectory = 6;
 static const size_t sizeOfDirEntry = 16;
 
-ICOImageDecoder::ICOImageDecoder(ImageSource::AlphaOption alphaOption,
-    ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
-    size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes)
+ICOImageDecoder::ICOImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_decodedOffset(0)
 {
 }
