@@ -1459,6 +1459,8 @@
       'browser/ui/webui/media_router/media_cast_mode.h',
       'browser/ui/webui/media_router/media_sink_with_cast_modes.cc',
       'browser/ui/webui/media_router/media_sink_with_cast_modes.h',
+      'browser/ui/webui/media_router/media_router_dialog_controller.cc',
+      'browser/ui/webui/media_router/media_router_dialog_controller.h',
       'browser/ui/webui/media_router/media_router_localized_strings_provider.cc',
       'browser/ui/webui/media_router/media_router_localized_strings_provider.h',
       'browser/ui/webui/media_router/media_router_resources_provider.cc',
