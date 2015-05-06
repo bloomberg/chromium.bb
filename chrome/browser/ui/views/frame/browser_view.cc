@@ -1487,7 +1487,7 @@ void BrowserView::CutCopyPaste(int command_id) {
   // AcceleratorPressed().  Textfields override this to translate and execute
   // the provided accelerator.
   views::View* focused = GetFocusManager()->GetFocusedView();
-  if (focused->CanHandleAccelerators()) {
+  if (focused && focused->CanHandleAccelerators()) {
     ui::Accelerator accelerator;
     GetAccelerator(command_id, &accelerator);
     focused->AcceleratorPressed(accelerator);
