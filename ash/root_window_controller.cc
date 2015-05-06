@@ -866,6 +866,9 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_NonLockScreenContainersContainer,
       "NonLockScreenContainersContainer",
       root_window);
+  // Clip all windows inside this container, as half pixel of the window's
+  // texture may become visible when the screen is scaled. crbug.com/368591.
+  non_lock_screen_containers->layer()->SetMasksToBounds(true);
 
   aura::Window* lock_background_containers = CreateContainer(
       kShellWindowId_LockScreenBackgroundContainer,
