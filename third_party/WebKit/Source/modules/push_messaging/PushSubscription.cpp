@@ -55,7 +55,7 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState)
     WebPushProvider* webPushProvider = Platform::current()->pushProvider();
     ASSERT(webPushProvider);
 
-    webPushProvider->unregister(m_serviceWorkerRegistration->webRegistration(), new CallbackPromiseAdapter<bool, PushError>(resolver));
+    webPushProvider->unsubscribe(m_serviceWorkerRegistration->webRegistration(), new CallbackPromiseAdapter<bool, PushError>(resolver));
     return promise;
 }
 

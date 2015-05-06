@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class PushSubscriptionOptions;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerRegistration;
@@ -22,9 +23,9 @@ public:
         return new PushManager(registration);
     }
 
-    ScriptPromise subscribe(ScriptState*);
+    ScriptPromise subscribe(ScriptState*, const PushSubscriptionOptions&);
     ScriptPromise getSubscription(ScriptState*);
-    ScriptPromise permissionState(ScriptState*);
+    ScriptPromise permissionState(ScriptState*, const PushSubscriptionOptions&);
 
     DECLARE_TRACE();
 

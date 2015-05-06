@@ -6,7 +6,6 @@
 #define WebPushProvider_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebCommon.h"
 #include "public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
 namespace blink {
@@ -14,34 +13,31 @@ namespace blink {
 class WebServiceWorkerRegistration;
 struct WebPushError;
 struct WebPushSubscription;
+struct WebPushSubscriptionOptions;
 
 using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription, WebPushError>;
-// FIXME: Remove when no longer used by the embedder - https://crbug.com/446883.
-using WebPushRegistrationCallbacks = WebPushSubscriptionCallbacks;
 using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus, void>;
 using WebPushUnsubscribeCallbacks = WebCallbacks<bool, WebPushError>;
-// FIXME: Remove when no longer used by the embedder - https://crbug.com/446883.
-using WebPushUnregisterCallbacks = WebPushUnsubscribeCallbacks;
 
 class WebPushProvider {
 public:
     virtual ~WebPushProvider() { }
 
-    // Takes ownership of the WebPushRegistrationCallbacks.
+    // Takes ownership of the WebPushSubscriptionCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void registerPushMessaging(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void subscribe(WebServiceWorkerRegistration*, const WebPushSubscriptionOptions&, WebPushSubscriptionCallbacks*) = 0;
 
-    // Takes ownership of the WebPushRegistrationCallbacks.
+    // Takes ownership of the WebPushSubscriptionCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getRegistration(WebServiceWorkerRegistration*, WebPushRegistrationCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void getSubscription(WebServiceWorkerRegistration*, WebPushSubscriptionCallbacks*) = 0;
 
     // Takes ownership of the WebPushPermissionStatusCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getPermissionStatus(WebServiceWorkerRegistration*, WebPushPermissionStatusCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void getPermissionStatus(WebServiceWorkerRegistration*, const WebPushSubscriptionOptions&, WebPushPermissionStatusCallbacks*) = 0;
 
-    // Takes ownership if the WebPushUnregisterCallbacks.
+    // Takes ownership if the WebPushUnsubscribeCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unregister(WebServiceWorkerRegistration*, WebPushUnregisterCallbacks* callback) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void unsubscribe(WebServiceWorkerRegistration*, WebPushUnsubscribeCallbacks*) = 0;
 };
 
 } // namespace blink

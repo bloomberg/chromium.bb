@@ -18,10 +18,12 @@
 #include "modules/push_messaging/PushPermissionStatusCallbacks.h"
 #include "modules/push_messaging/PushSubscription.h"
 #include "modules/push_messaging/PushSubscriptionCallbacks.h"
+#include "modules/push_messaging/PushSubscriptionOptions.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/push_messaging/WebPushClient.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
+#include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -34,6 +36,14 @@ WebPushProvider* pushProvider()
     return webPushProvider;
 }
 
+WebPushSubscriptionOptions toWebPushSubscriptionOptions(const PushSubscriptionOptions& options)
+{
+    WebPushSubscriptionOptions webOptions;
+    webOptions.userVisibleOnly = options.userVisibleOnly();
+
+    return webOptions;
+}
+
 } // namespace
 
 PushManager::PushManager(ServiceWorkerRegistration* registration)
@@ -42,7 +52,7 @@ PushManager::PushManager(ServiceWorkerRegistration* registration)
     ASSERT(registration);
 }
 
-ScriptPromise PushManager::subscribe(ScriptState* scriptState)
+ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscriptionOptions& options)
 {
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Subscription failed - no active Service Worker"));
@@ -58,9 +68,9 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState)
         // FIXME: add test coverage for this condition - https://crbug.com/440431
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
-        PushController::clientFrom(document->frame()).registerPushMessaging(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
+        PushController::clientFrom(document->frame()).subscribe(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushSubscriptionCallbacks(resolver, m_registration));
     } else {
-        pushProvider()->registerPushMessaging(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
+        pushProvider()->subscribe(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushSubscriptionCallbacks(resolver, m_registration));
     }
 
     return promise;
@@ -71,11 +81,11 @@ ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    pushProvider()->getRegistration(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
+    pushProvider()->getSubscription(m_registration->webRegistration(), new PushSubscriptionCallbacks(resolver, m_registration));
     return promise;
 }
 
-ScriptPromise PushManager::permissionState(ScriptState* scriptState)
+ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushSubscriptionOptions& options)
 {
     if (scriptState->executionContext()->isDocument()) {
         Document* document = toDocument(scriptState->executionContext());
@@ -86,7 +96,8 @@ ScriptPromise PushManager::permissionState(ScriptState* scriptState)
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    pushProvider()->getPermissionStatus(m_registration->webRegistration(), new PushPermissionStatusCallbacks(resolver));
+
+    pushProvider()->getPermissionStatus(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushPermissionStatusCallbacks(resolver));
     return promise;
 }
 
