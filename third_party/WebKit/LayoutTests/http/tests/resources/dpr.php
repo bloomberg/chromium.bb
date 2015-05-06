@@ -16,6 +16,6 @@ if ($_SERVER['HTTP_IF_NONE_MATCH'] == 'dprimage') {
   exit;
 }
 
-header('DPR: '. $dpr);
+header('Content-DPR: '. $dpr);
 
 readfile($name);
