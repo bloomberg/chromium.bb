@@ -35,8 +35,7 @@ String TextResource::decodedText() const
     ASSERT(m_data);
 
     String text = m_decoder->decode(m_data->data(), encodedSize());
-    text = text + m_decoder->flush();
-
+    text.append(m_decoder->flush());
     return text;
 }
 
