@@ -13005,7 +13005,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
         </message>
         <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site wants to:' in a permissions request">
-          Send notifications
+          Show notifications
         </message>
         <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
           Allow
