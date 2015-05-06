@@ -92,6 +92,8 @@
         'cma/base/decoder_buffer_adapter.h',
         'cma/base/decoder_buffer_base.cc',
         'cma/base/decoder_buffer_base.h',
+        'cma/base/decoder_config_adapter.cc',
+        'cma/base/decoder_config_adapter.h',
         'cma/base/media_task_runner.cc',
         'cma/base/media_task_runner.h',
       ],

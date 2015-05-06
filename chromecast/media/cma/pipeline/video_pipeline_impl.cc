@@ -9,7 +9,9 @@
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
+#include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
+#include "chromecast/public/media/decoder_config.h"
 #include "media/base/video_decoder_config.h"
 
 namespace chromecast {
@@ -111,7 +113,8 @@ void VideoPipelineImpl::Initialize(
   if (frame_provider)
     SetCodedFrameProvider(frame_provider.Pass());
 
-  if (!video_device_->SetConfig(video_config) ||
+  if (!video_device_->SetConfig(
+          DecoderConfigAdapter::ToCastVideoConfig(video_config)) ||
       !av_pipeline_impl_->Initialize()) {
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
@@ -127,7 +130,8 @@ void VideoPipelineImpl::OnUpdateConfig(
     CMALOG(kLogControl) << "VideoPipelineImpl::OnUpdateConfig "
                         << video_config.AsHumanReadableString();
 
-    bool success = video_device_->SetConfig(video_config);
+    bool success = video_device_->SetConfig(
+        DecoderConfigAdapter::ToCastVideoConfig(video_config));
     if (!success &&
         !video_client_.av_pipeline_client.playback_error_cb.is_null()) {
       video_client_.av_pipeline_client.playback_error_cb.Run(

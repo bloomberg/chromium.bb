@@ -8,13 +8,10 @@
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/media_component_device.h"
 
-namespace media {
-class AudioDecoderConfig;
-}
-
 namespace chromecast {
 namespace media {
 class AudioPipelineDeviceClient;
+struct AudioConfig;
 
 class AudioPipelineDevice : public MediaComponentDevice {
  public:
@@ -25,7 +22,7 @@ class AudioPipelineDevice : public MediaComponentDevice {
   // Must be called before switching from |kStateUninitialized| to |kStateIdle|.
   // Afterwards, this can be invoked any time the configuration changes.
   // Returns true if the configuration is a supported configuration.
-  virtual bool SetConfig(const ::media::AudioDecoderConfig& config) = 0;
+  virtual bool SetConfig(const AudioConfig& config) = 0;
 
   // Sets the volume multiplier.
   // The multiplier must be in the range [0.0, 1.0].

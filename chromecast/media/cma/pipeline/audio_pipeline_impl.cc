@@ -9,7 +9,9 @@
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
+#include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
+#include "chromecast/public/media/decoder_config.h"
 #include "media/base/audio_decoder_config.h"
 
 namespace chromecast {
@@ -107,7 +109,8 @@ void AudioPipelineImpl::Initialize(
   if (frame_provider)
     SetCodedFrameProvider(frame_provider.Pass());
 
-  if (!audio_device_->SetConfig(audio_config) ||
+  if (!audio_device_->SetConfig(
+         DecoderConfigAdapter::ToCastAudioConfig(audio_config)) ||
       !av_pipeline_impl_->Initialize()) {
     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
@@ -127,7 +130,8 @@ void AudioPipelineImpl::OnUpdateConfig(
     CMALOG(kLogControl) << "AudioPipelineImpl::OnUpdateConfig "
                         << audio_config.AsHumanReadableString();
 
-    bool success = audio_device_->SetConfig(audio_config);
+    bool success = audio_device_->SetConfig(
+        DecoderConfigAdapter::ToCastAudioConfig(audio_config));
     if (!success && !audio_client_.playback_error_cb.is_null())
       audio_client_.playback_error_cb.Run(::media::PIPELINE_ERROR_DECODE);
   }

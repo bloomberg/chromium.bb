@@ -13,13 +13,10 @@ namespace gfx {
 class Size;
 }
 
-namespace media {
-class VideoDecoderConfig;
-}
-
 namespace chromecast {
 namespace media {
 class DecoderBufferBase;
+struct VideoConfig;
 
 // VideoPipelineDevice -
 //
@@ -51,7 +48,7 @@ class VideoPipelineDevice : public MediaComponentDevice {
   // Must be called before switching from |kStateUninitialized| to |kStateIdle|.
   // Afterwards, this can be invoked any time the configuration changes.
   // Returns true if the configuration is a supported configuration.
-  virtual bool SetConfig(const ::media::VideoDecoderConfig& config) = 0;
+  virtual bool SetConfig(const VideoConfig& config) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoPipelineDevice);

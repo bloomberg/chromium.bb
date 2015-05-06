@@ -1,0 +1,29 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMECAST_MEDIA_CMA_BASE_DECODER_CONFIG_ADAPTER_H_
+#define CHROMECAST_MEDIA_CMA_BASE_DECODER_CONFIG_ADAPTER_H_
+
+#include "chromecast/public/media/decoder_config.h"
+#include "media/base/audio_decoder_config.h"
+#include "media/base/video_decoder_config.h"
+
+namespace chromecast {
+namespace media {
+
+class DecoderConfigAdapter {
+ public:
+  // Converts ::media::AudioDecoderConfig to chromecast::media::AudioConfig.
+  static AudioConfig ToCastAudioConfig(
+      const ::media::AudioDecoderConfig& config);
+
+  // Converts ::media::VideoDecoderConfig to chromecast::media::VideoConfig.
+  static VideoConfig ToCastVideoConfig(
+      const ::media::VideoDecoderConfig& config);
+};
+
+}  // namespace media
+}  // namespace chromecast
+
+#endif  // CHROMECAST_MEDIA_CMA_BASE_DECODER_CONFIG_ADAPTER_H_
