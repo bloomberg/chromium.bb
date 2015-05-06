@@ -12,6 +12,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#endif
+
 using content::WebContents;
 
 namespace {
@@ -42,11 +47,28 @@ bool BrowserMatches(Browser* browser,
     return false;
   }
 
+  bool matches_profile = browser->profile() == profile;
+#if defined(OS_CHROMEOS)
+  // Get the profile on which the window is currently shown.
+  // MultiUserWindowManager might be NULL under test scenario.
+  chrome::MultiUserWindowManager* const window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  if (window_manager) {
+    const std::string& shown_user_id = window_manager->GetUserPresentingWindow(
+        browser->window()->GetNativeWindow());
+    Profile* shown_profile =
+        shown_user_id.empty()
+            ? nullptr
+            : multi_user_util::GetProfileFromUserID(shown_user_id);
+    matches_profile &= !shown_profile || shown_profile == profile;
+  }
+#endif
+
   if (match_types & kMatchOriginalProfile) {
     if (browser->profile()->GetOriginalProfile() !=
         profile->GetOriginalProfile())
       return false;
-  } else if (browser->profile() != profile) {
+  } else if (!matches_profile) {
     return false;
   }
 
