@@ -21,6 +21,7 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -129,8 +130,9 @@ std::string ExtensionUninstallDialog::GetHeadingText() {
 }
 
 bool ExtensionUninstallDialog::ShouldShowReportAbuseCheckbox() const {
-  return base::FieldTrialList::FindFullName("ExtensionUninstall.ReportAbuse") ==
-      "ShowCheckbox";
+  return ManifestURL::UpdatesFromGallery(extension_) &&
+      base::FieldTrialList::FindFullName("ExtensionUninstall.ReportAbuse") ==
+          "ShowCheckbox";
 }
 
 void ExtensionUninstallDialog::HandleReportAbuse() {
