@@ -38,6 +38,12 @@ function runTest() {
   if (!window.find('for', false, false, true)) fail('not found: for');
   if (!window.find('for', true, false, true)) fail('not found: for');
   if (window.find('FOR', true, false, true)) fail('found: FOR');
+  // WholeWord.
+  if (!window.find('for', false, false, true, true)) fail('whole word not found: for');
+  if (!window.find('find', false, false, true, true)) fail('whole word not found: find');
+  if (window.find('this', true, false, false, true)) fail('whole word found: this');
+  if (window.find('est', false, false, false, true)) fail('whole word found: est');
+  if (window.find('succ', false, false, false, true)) fail('whole word found: succ');
 
   if (window.testRunner)
     testRunner.notifyDone();

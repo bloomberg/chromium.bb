@@ -1141,12 +1141,6 @@ void Editor::computeAndSetTypingStyle(StylePropertySet* style, EditAction editin
     frame().selection().setTypingStyle(typingStyle);
 }
 
-bool Editor::findString(const String& target, bool forward, bool caseFlag, bool wrapFlag, bool startInSelection)
-{
-    FindOptions options = (forward ? 0 : Backwards) | (caseFlag ? 0 : CaseInsensitive) | (wrapFlag ? WrapAround : 0) | (startInSelection ? StartInSelection : 0);
-    return findString(target, options);
-}
-
 bool Editor::findString(const String& target, FindOptions options)
 {
     VisibleSelection selection = frame().selection().selection();

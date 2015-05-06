@@ -892,7 +892,7 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
     return String();
 }
 
-bool LocalDOMWindow::find(const String& string, bool caseSensitive, bool backwards, bool wrap, bool /*wholeWord*/, bool /*searchInFrames*/, bool /*showDialog*/) const
+bool LocalDOMWindow::find(const String& string, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool /*searchInFrames*/, bool /*showDialog*/) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return false;
@@ -901,8 +901,9 @@ bool LocalDOMWindow::find(const String& string, bool caseSensitive, bool backwar
     // |Document::updateLayout()|, e.g. event handler removes a frame.
     RefPtrWillBeRawPtr<LocalFrame> protectFrame(frame());
 
-    // FIXME (13016): Support wholeWord, searchInFrames and showDialog
-    return frame()->editor().findString(string, !backwards, caseSensitive, wrap, false);
+    // FIXME (13016): Support searchInFrames and showDialog
+    FindOptions options = (backwards ? Backwards : 0) | (caseSensitive ? 0 : CaseInsensitive) | (wrap ? WrapAround : 0) | (wholeWord ? WholeWord | AtWordStarts : 0);
+    return frame()->editor().findString(string, options);
 }
 
 bool LocalDOMWindow::offscreenBuffering() const
