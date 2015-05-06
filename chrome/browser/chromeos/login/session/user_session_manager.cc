@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -1019,7 +1020,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
     } else {
       // We need to post task so that OnProfileCreated() caller sends out
       // NOTIFICATION_PROFILE_CREATED which marks user profile as initialized.
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
@@ -1153,7 +1154,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   child_service->AddChildStatusReceivedCallback(
       base::Bind(&UserSessionManager::ChildAccountStatusReceivedCallback,
                  weak_factory_.GetWeakPtr(), profile));
-  base::MessageLoopProxy::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&UserSessionManager::StopChildStatusObserving,
                             weak_factory_.GetWeakPtr(), profile),
       base::TimeDelta::FromMilliseconds(kFlagsFetchingLoginTimeoutMs));

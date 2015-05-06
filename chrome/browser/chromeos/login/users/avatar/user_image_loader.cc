@@ -9,8 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "skia/ext/image_operations.h"
@@ -47,7 +48,7 @@ UserImageLoader::UserImageRequest::~UserImageRequest() {
 UserImageLoader::UserImageLoader(
     ImageDecoder::ImageCodec image_codec,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : foreground_task_runner_(base::MessageLoopProxy::current()),
+    : foreground_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       background_task_runner_(background_task_runner),
       image_codec_(image_codec) {
 }

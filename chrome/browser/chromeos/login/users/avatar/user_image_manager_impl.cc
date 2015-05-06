@@ -17,6 +17,7 @@
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -949,7 +950,7 @@ void UserImageManagerImpl::OnJobChangedUserImage() {
 
 void UserImageManagerImpl::OnJobDone() {
   if (job_.get())
-    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, job_.release());
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, job_.release());
   else
     NOTREACHED();
 

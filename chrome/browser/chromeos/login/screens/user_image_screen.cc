@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -149,8 +149,8 @@ bool UserImageScreen::IsWaitingForSync() const {
 void UserImageScreen::OnUserImagePolicyChanged(const base::Value* previous,
                                                const base::Value* current) {
   if (current) {
-    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE,
-                                                  policy_registrar_.release());
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, policy_registrar_.release());
     ExitScreen();
   }
 }
