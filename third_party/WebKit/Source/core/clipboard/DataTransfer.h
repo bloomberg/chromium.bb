@@ -84,9 +84,7 @@ public:
     IntPoint dragLocation() const { return m_dragLoc; }
     void setDragImage(Element*, int x, int y, ExceptionState&);
     void clearDragImage();
-    ImageResource* dragImageResource() const { return m_dragImage.get(); }
     void setDragImageResource(ImageResource*, const IntPoint&);
-    Node* dragImageElement() const { return m_dragImageElement.get(); }
     void setDragImageElement(Node*, const IntPoint&);
 
     PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation, LocalFrame*) const;
