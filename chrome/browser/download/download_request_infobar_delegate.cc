@@ -66,7 +66,7 @@ base::string16 DownloadRequestInfoBarDelegate::GetMessageText() const {
 base::string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_MULTI_DOWNLOAD_WARNING_ALLOW : IDS_MULTI_DOWNLOAD_WARNING_DENY);
+      IDS_MULTI_DOWNLOAD_WARNING_ALLOW : IDS_MULTI_DOWNLOAD_WARNING_BLOCK);
 }
 
 bool DownloadRequestInfoBarDelegate::Accept() {

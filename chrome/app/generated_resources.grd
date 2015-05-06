@@ -12464,8 +12464,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MULTI_DOWNLOAD_WARNING_ALLOW" desc="Text on the allow button in the IDS_MULTI_DOWNLOAD_WARNING dialog">
         Allow
       </message>
-      <message name="IDS_MULTI_DOWNLOAD_WARNING_DENY" desc="Text on the deny button in the IDS_MULTI_DOWNLOAD_WARNING dialog">
-        Deny
+      <message name="IDS_MULTI_DOWNLOAD_WARNING_BLOCK" desc="Text on the block button in the IDS_MULTI_DOWNLOAD_WARNING dialog">
+        Block
       </message>
 
       <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
@@ -13510,7 +13510,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Allow
       </message>
       <message name="IDS_MIDI_SYSEX_DENY_BUTTON" desc="A button in MIDI access infobar for denying full access to MIDI devices for a given domain.">
-        Deny
+        Block
       </message>
       <message name="IDS_MIDI_SYSEX_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use MIDI system exclusive messages.">
         This page has full control of MIDI devices.
@@ -13956,8 +13956,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MEDIA_CAPTURE_ALLOW" desc="Label for a button that grants access to a web page, so they can use a camera and/or a microphone.">
         Allow
       </message>
-      <message name="IDS_MEDIA_CAPTURE_DENY" desc="Label for a button that denies access to a web page, so they can use a camera and/or a microphone.">
-        Deny
+      <message name="IDS_MEDIA_CAPTURE_BLOCK" desc="Label for a button that blocks access to a web page, so they can't use a camera and/or a microphone.">
+        Block
       </message>
 
       <!-- Quota messages -->

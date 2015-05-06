@@ -110,7 +110,7 @@ base::string16 MediaStreamInfoBarDelegate::GetMessageText() const {
 base::string16 MediaStreamInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_MEDIA_CAPTURE_ALLOW : IDS_MEDIA_CAPTURE_DENY);
+      IDS_MEDIA_CAPTURE_ALLOW : IDS_MEDIA_CAPTURE_BLOCK);
 }
 
 bool MediaStreamInfoBarDelegate::Accept() {
