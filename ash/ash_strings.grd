@@ -319,9 +319,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME" desc="Label shown in tray for a display whose name is unknown.">
         Unknown Display
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_DRIVE_SYNCING" desc="The label in the tray to indicate onoing file sync operations.">
-        Syncing <ph name="count">$1<ex>3</ex></ph> file(s)
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_DRIVE" desc="The label used for Google Drive tray details header.">
         Google Drive
       </message>
