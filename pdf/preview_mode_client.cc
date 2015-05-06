@@ -5,7 +5,6 @@
 #include "pdf/preview_mode_client.h"
 
 #include "base/logging.h"
-#include "pdf/instance.h"
 
 namespace chrome_pdf {
 

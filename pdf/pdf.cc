@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "pdf/instance.h"
 #include "pdf/out_of_process_instance.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/cpp/private/internal_module.h"
@@ -51,9 +50,7 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
     g_sdk_initialized_via_pepper = true;
   }
 
-  if (pp::PDF::IsOutOfProcess(pp::InstanceHandle(instance)))
-    return new OutOfProcessInstance(instance);
-  return new Instance(instance);
+  return new OutOfProcessInstance(instance);
 }
 
 
