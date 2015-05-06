@@ -257,6 +257,28 @@ Press Ctrl+Alt+Z to disable.
         All available users have already been added to this session.
       </message>
 
+      <message name="IDS_ASH_STATUS_TRAY_CAST" desc="The label used as the header in the cast popup.">
+        Cast
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP" desc="The label used in the tray popup to tell the user we are casting the desktop.">
+        Casting desktop
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_TAB" desc="The title label used in the tray popup to tell the user we are casting a tab.">
+        Casting $1
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_DESKTOP" desc="The label used in the tray popup to notify that desktop may be cast.">
+        Cast desktop to
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_NO_DEVICE" desc="The label used in the tray popup to notify that no cast devices are available.">
+        No cast devices
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_OPTIONS" desc="The label used in the tray popup to manage cast options.">
+        Options
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_STOP" desc="The label used in the tray popup to stop casting.">
+        Stop
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth
       </message>
