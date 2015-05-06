@@ -156,6 +156,6 @@ Running: testEditSVGAttribute
         </svg>
 ==== after ====
 - <div id="testEditSVG">
-      <svg id="node-to-edit-svg-attribute" xlink="test" width="110">\n        </svg>
+      <svg id="node-to-edit-svg-attribute" xmlns:xlink="test" width="110">\n        </svg>
   </div>
 

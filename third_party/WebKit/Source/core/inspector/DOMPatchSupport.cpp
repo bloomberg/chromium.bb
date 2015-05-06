@@ -200,7 +200,7 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
 
         // FIXME: Create a function in Element for copying properties. cloneDataFromElement() is close but not enough for this case.
         for (auto& attribute : newElement->attributesWithoutUpdate()) {
-            if (!m_domEditor->setAttribute(oldElement, attribute.name().localName(), attribute.value(), exceptionState))
+            if (!m_domEditor->setAttribute(oldElement, attribute.name().toString(), attribute.value(), exceptionState))
                 return false;
         }
     }
