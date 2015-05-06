@@ -182,8 +182,6 @@ int WebEventModifiersToEventFlags(int modifiers) {
     flags |= ui::EF_CAPS_LOCK_DOWN;
   if (modifiers & blink::WebInputEvent::IsAutoRepeat)
     flags |= ui::EF_IS_REPEAT;
-  if (modifiers & blink::WebInputEvent::IsKeyPad)
-    flags |= ui::EF_NUMPAD_KEY;
 
   return flags;
 }

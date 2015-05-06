@@ -191,9 +191,6 @@ int GetEventFlagsFromXKeyEvent(XEvent* xevent) {
 
   return GetEventFlagsFromXState(xevent->xkey.state) |
       (xevent->xkey.send_event ? ui::EF_FINAL : 0) |
-      (IsKeypadKey(XLookupKeysym(&xevent->xkey, 0)) ? ui::EF_NUMPAD_KEY : 0) |
-      (IsFunctionKey(XLookupKeysym(&xevent->xkey, 0)) ?
-          ui::EF_FUNCTION_KEY : 0) |
       ime_fabricated_flag;
 }
 
@@ -203,11 +200,7 @@ int GetEventFlagsFromXGenericEvent(XEvent* xevent) {
   DCHECK((xievent->evtype == XI_KeyPress) ||
          (xievent->evtype == XI_KeyRelease));
   return GetEventFlagsFromXState(xievent->mods.effective) |
-         (xevent->xkey.send_event ? ui::EF_FINAL : 0) |
-         (IsKeypadKey(
-              XkbKeycodeToKeysym(xievent->display, xievent->detail, 0, 0))
-              ? ui::EF_NUMPAD_KEY
-              : 0);
+         (xevent->xkey.send_event ? ui::EF_FINAL : 0);
 }
 
 // Get the event flag for the button in XButtonEvent. During a ButtonPress
@@ -308,7 +301,6 @@ unsigned int UpdateX11EventFlags(int ui_flags, unsigned int old_x_flags) {
     {ui::EF_ALTGR_DOWN, Mod5Mask},
     {ui::EF_COMMAND_DOWN, Mod4Mask},
     {ui::EF_MOD3_DOWN, Mod3Mask},
-    {ui::EF_NUMPAD_KEY, Mod2Mask},
     {ui::EF_LEFT_MOUSE_BUTTON, Button1Mask},
     {ui::EF_MIDDLE_MOUSE_BUTTON, Button2Mask},
     {ui::EF_RIGHT_MOUSE_BUTTON, Button3Mask},

@@ -26,6 +26,8 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/wm/core/window_util.h"
 
@@ -287,6 +289,7 @@ void EventRewriter::BuildRewrittenKeyEvent(
         numpad_xevent.xkey.keycode = original_x11_keycode;
       rewritten_key_event->set_character(
           ui::GetCharacterFromXEvent(&numpad_xevent));
+      rewritten_key_event->native_event()->xkey.state |= Mod2Mask;
     }
   }
 #endif
@@ -707,26 +710,31 @@ void EventRewriter::RewriteNumPadKeys(const ui::KeyEvent& key_event,
                                       MutableKeyState* state) {
   DCHECK(key_event.type() == ui::ET_KEY_PRESSED ||
          key_event.type() == ui::ET_KEY_RELEASED);
-  if (!(state->flags & ui::EF_NUMPAD_KEY))
-    return;
   MutableKeyState incoming = *state;
-
-  static const KeyboardRemapping kNumPadRemappings[] = {
-      {ui::VKEY_INSERT, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD0, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_DELETE, ui::EF_NUMPAD_KEY, ui::VKEY_DECIMAL, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_END, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD1, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_DOWN, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD2, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_NEXT, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD3, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_LEFT, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD4, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_CLEAR, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD5, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_RIGHT, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD6, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_HOME, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD7, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_UP, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD8, ui::EF_NUMPAD_KEY},
-      {ui::VKEY_PRIOR, ui::EF_NUMPAD_KEY, ui::VKEY_NUMPAD9, ui::EF_NUMPAD_KEY},
+  static const struct NumPadRemapping {
+    ui::DomCode input_dom_code;
+    ui::KeyboardCode input_key_code;
+    ui::KeyboardCode output_key_code;
+  } kNumPadRemappings[] = {
+      {ui::DomCode::NUMPAD_DECIMAL, ui::VKEY_DELETE, ui::VKEY_DECIMAL},
+      {ui::DomCode::NUMPAD0, ui::VKEY_INSERT, ui::VKEY_NUMPAD0},
+      {ui::DomCode::NUMPAD1, ui::VKEY_END, ui::VKEY_NUMPAD1},
+      {ui::DomCode::NUMPAD2, ui::VKEY_DOWN, ui::VKEY_NUMPAD2},
+      {ui::DomCode::NUMPAD3, ui::VKEY_NEXT, ui::VKEY_NUMPAD3},
+      {ui::DomCode::NUMPAD4, ui::VKEY_LEFT, ui::VKEY_NUMPAD4},
+      {ui::DomCode::NUMPAD5, ui::VKEY_CLEAR, ui::VKEY_NUMPAD5},
+      {ui::DomCode::NUMPAD6, ui::VKEY_RIGHT, ui::VKEY_NUMPAD6},
+      {ui::DomCode::NUMPAD7, ui::VKEY_HOME, ui::VKEY_NUMPAD7},
+      {ui::DomCode::NUMPAD8, ui::VKEY_UP, ui::VKEY_NUMPAD8},
+      {ui::DomCode::NUMPAD9, ui::VKEY_PRIOR, ui::VKEY_NUMPAD9},
   };
-
-  RewriteWithKeyboardRemappingsByKeyCode(
-      kNumPadRemappings, arraysize(kNumPadRemappings), incoming, state);
+  for (const auto& map : kNumPadRemappings) {
+    if ((incoming.key_code == map.input_key_code) &&
+        (key_event.code() == map.input_dom_code)) {
+      state->key_code = map.output_key_code;
+      break;
+    }
+  }
 }
 
 void EventRewriter::RewriteExtendedKeys(const ui::KeyEvent& key_event,

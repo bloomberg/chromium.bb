@@ -52,6 +52,19 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
 
   webkit_event.timeStampSeconds = event.time_stamp().InSecondsF();
   webkit_event.modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
+  switch (ui::KeycodeConverter::DomCodeToLocation(event.code())) {
+    case ui::DomKeyLocation::LEFT:
+      webkit_event.modifiers |= blink::WebInputEvent::IsLeft;
+      break;
+    case ui::DomKeyLocation::RIGHT:
+      webkit_event.modifiers |= blink::WebInputEvent::IsRight;
+      break;
+    case ui::DomKeyLocation::NUMPAD:
+      webkit_event.modifiers |= blink::WebInputEvent::IsKeyPad;
+      break;
+    case ui::DomKeyLocation::STANDARD:
+      break;
+  }
 
   switch (event.type()) {
     case ui::ET_KEY_PRESSED:

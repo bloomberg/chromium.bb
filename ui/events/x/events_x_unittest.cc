@@ -47,6 +47,7 @@ void InitButtonEvent(XEvent* event,
   button_event->state = state;
 }
 
+#if !defined(OS_CHROMEOS)
 // Initializes the passed-in Xlib event.
 void InitKeyEvent(Display* display,
                   XEvent* event,
@@ -63,20 +64,7 @@ void InitKeyEvent(Display* display,
   key_event->keycode = keycode;
   key_event->state = state;
 }
-
-// Returns true if the keysym maps to a KeyEvent with the EF_FUNCTION_KEY
-// flag set, or the keysym maps to a zero key code.
-bool HasFunctionKeyFlagSetIfSupported(Display* display, int x_keysym) {
-  XEvent event;
-  int x_keycode = XKeysymToKeycode(display, x_keysym);
-  // Exclude keysyms for which the server has no corresponding keycode.
-  if (x_keycode) {
-    InitKeyEvent(display, &event, true, x_keycode, 0);
-    ui::KeyEvent ui_key_event(&event);
-    return (ui_key_event.flags() & ui::EF_FUNCTION_KEY);
-  }
-  return true;
-}
+#endif
 
 }  // namespace
 
@@ -375,162 +363,6 @@ TEST_F(EventsXTest, CopiedTouchEventNotRemovingFromNativeMapping) {
     // Exiting this scope should not cause a crash.
     ui::TouchEvent copy = urelease0;
   }
-}
-
-TEST_F(EventsXTest, NumpadKeyEvents) {
-  XEvent event;
-  Display* display = gfx::GetXDisplay();
-
-  struct {
-    bool is_numpad_key;
-    int x_keysym;
-  } keys[] = {
-    // XK_KP_Space and XK_KP_Equal are the extrema in the conventional
-    // keysymdef.h numbering.
-    { true,  XK_KP_Space },
-    { true,  XK_KP_Equal },
-    // Other numpad keysyms. (This is actually exhaustive in the current list.)
-    { true,  XK_KP_Tab },
-    { true,  XK_KP_Enter },
-    { true,  XK_KP_F1 },
-    { true,  XK_KP_F2 },
-    { true,  XK_KP_F3 },
-    { true,  XK_KP_F4 },
-    { true,  XK_KP_Home },
-    { true,  XK_KP_Left },
-    { true,  XK_KP_Up },
-    { true,  XK_KP_Right },
-    { true,  XK_KP_Down },
-    { true,  XK_KP_Prior },
-    { true,  XK_KP_Page_Up },
-    { true,  XK_KP_Next },
-    { true,  XK_KP_Page_Down },
-    { true,  XK_KP_End },
-    { true,  XK_KP_Begin },
-    { true,  XK_KP_Insert },
-    { true,  XK_KP_Delete },
-    { true,  XK_KP_Multiply },
-    { true,  XK_KP_Add },
-    { true,  XK_KP_Separator },
-    { true,  XK_KP_Subtract },
-    { true,  XK_KP_Decimal },
-    { true,  XK_KP_Divide },
-    { true,  XK_KP_0 },
-    { true,  XK_KP_1 },
-    { true,  XK_KP_2 },
-    { true,  XK_KP_3 },
-    { true,  XK_KP_4 },
-    { true,  XK_KP_5 },
-    { true,  XK_KP_6 },
-    { true,  XK_KP_7 },
-    { true,  XK_KP_8 },
-    { true,  XK_KP_9 },
-    // Largest keysym preceding XK_KP_Space.
-    { false, XK_Num_Lock },
-    // Smallest keysym following XK_KP_Equal.
-    { false, XK_F1 },
-    // Non-numpad analogues of numpad keysyms.
-    { false, XK_Tab },
-    { false, XK_Return },
-    { false, XK_F1 },
-    { false, XK_F2 },
-    { false, XK_F3 },
-    { false, XK_F4 },
-    { false, XK_Home },
-    { false, XK_Left },
-    { false, XK_Up },
-    { false, XK_Right },
-    { false, XK_Down },
-    { false, XK_Prior },
-    { false, XK_Page_Up },
-    { false, XK_Next },
-    { false, XK_Page_Down },
-    { false, XK_End },
-    { false, XK_Insert },
-    { false, XK_Delete },
-    { false, XK_multiply },
-    { false, XK_plus },
-    { false, XK_minus },
-    { false, XK_period },
-    { false, XK_slash },
-    { false, XK_0 },
-    { false, XK_1 },
-    { false, XK_2 },
-    { false, XK_3 },
-    { false, XK_4 },
-    { false, XK_5 },
-    { false, XK_6 },
-    { false, XK_7 },
-    { false, XK_8 },
-    { false, XK_9 },
-    // Miscellaneous other keysyms.
-    { false, XK_BackSpace },
-    { false, XK_Scroll_Lock },
-    { false, XK_Multi_key },
-    { false, XK_Select },
-    { false, XK_Num_Lock },
-    { false, XK_Shift_L },
-    { false, XK_space },
-    { false, XK_A },
-  };
-
-  for (size_t k = 0; k < arraysize(keys); ++k) {
-    int x_keycode = XKeysymToKeycode(display, keys[k].x_keysym);
-    // Exclude keysyms for which the server has no corresponding keycode.
-    if (x_keycode) {
-      InitKeyEvent(display, &event, true, x_keycode, 0);
-      // int keysym = XLookupKeysym(&event.xkey, 0);
-      // if (keysym) {
-      ui::KeyEvent ui_key_event(&event);
-      EXPECT_EQ(keys[k].is_numpad_key ? ui::EF_NUMPAD_KEY : 0,
-                ui_key_event.flags() & ui::EF_NUMPAD_KEY);
-    }
-  }
-}
-
-TEST_F(EventsXTest, FunctionKeyEvents) {
-  Display* display = gfx::GetXDisplay();
-
-  // Min  function key code minus 1.
-  EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F1 - 1));
-  // All function keys.
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F1));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F2));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F3));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F4));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F5));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F6));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F7));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F8));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F9));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F10));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F11));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F12));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F13));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F14));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F15));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F16));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F17));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F18));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F19));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F20));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F21));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F22));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F23));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F24));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F25));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F26));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F27));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F28));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F29));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F30));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F31));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F32));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F33));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F34));
-  EXPECT_TRUE(HasFunctionKeyFlagSetIfSupported(display, XK_F35));
-  // Max function key code plus 1.
-  EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F35 + 1));
 }
 
 // Verifies that the type of events from a disabled keyboard is ET_UNKNOWN, but

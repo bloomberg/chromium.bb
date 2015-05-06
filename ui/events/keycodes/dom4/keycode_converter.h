@@ -16,6 +16,8 @@ namespace ui {
 enum class DomCode;
 enum class DomKey;
 
+enum class DomKeyLocation { STANDARD, LEFT, RIGHT, NUMPAD };
+
 // This structure is used to define the keycode mapping table.
 // It is defined here because the unittests need access to it.
 typedef struct {
@@ -61,6 +63,11 @@ class KeycodeConverter {
 
   // Convert a DomCode into a UI Events |code| string value.
   static const char* DomCodeToCodeString(DomCode dom_code);
+
+  // Return the DomKeyLocation of a DomCode. The DomKeyLocation distinguishes
+  // keys with the same meaning, and therefore the same DomKey or KeyboardCode
+  // (VKEY), and corresponds to the DOM UI Events |KeyboardEvent.location|.
+  static DomKeyLocation DomCodeToLocation(DomCode dom_code);
 
   // Convert a UI Events |key| string value into a DomKey.
   static DomKey KeyStringToDomKey(const char* key);

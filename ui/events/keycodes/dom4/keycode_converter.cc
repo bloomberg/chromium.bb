@@ -139,6 +139,55 @@ const char* KeycodeConverter::DomCodeToCodeString(DomCode dom_code) {
 }
 
 // static
+DomKeyLocation KeycodeConverter::DomCodeToLocation(DomCode dom_code) {
+  static const struct {
+    DomCode code;
+    DomKeyLocation location;
+  } kLocations[] = {{DomCode::CONTROL_LEFT, DomKeyLocation::LEFT},
+                    {DomCode::SHIFT_LEFT, DomKeyLocation::LEFT},
+                    {DomCode::ALT_LEFT, DomKeyLocation::LEFT},
+                    {DomCode::OS_LEFT, DomKeyLocation::LEFT},
+                    {DomCode::CONTROL_RIGHT, DomKeyLocation::RIGHT},
+                    {DomCode::SHIFT_RIGHT, DomKeyLocation::RIGHT},
+                    {DomCode::ALT_RIGHT, DomKeyLocation::RIGHT},
+                    {DomCode::OS_RIGHT, DomKeyLocation::RIGHT},
+                    {DomCode::NUMPAD_DIVIDE, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_MULTIPLY, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_SUBTRACT, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_ADD, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_ENTER, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD1, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD2, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD3, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD4, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD5, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD6, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD7, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD8, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD9, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD0, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_DECIMAL, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_EQUAL, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_COMMA, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_PAREN_LEFT, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_PAREN_RIGHT, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_BACKSPACE, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_MEMORY_STORE, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_MEMORY_RECALL, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_MEMORY_CLEAR, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_MEMORY_ADD, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_MEMORY_SUBTRACT, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_SIGN_CHANGE, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_CLEAR, DomKeyLocation::NUMPAD},
+                    {DomCode::NUMPAD_CLEAR_ENTRY, DomKeyLocation::NUMPAD}};
+  for (const auto& key : kLocations) {
+    if (key.code == dom_code)
+      return key.location;
+  }
+  return DomKeyLocation::STANDARD;
+}
+
+// static
 DomKey KeycodeConverter::KeyStringToDomKey(const char* key) {
   if (!key || !*key)
     return DomKey::NONE;

@@ -177,8 +177,6 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::CapsLockOn;
   if (flags & EF_IS_REPEAT)
     modifiers |= blink::WebInputEvent::IsAutoRepeat;
-  if (flags & EF_NUMPAD_KEY)
-    modifiers |= blink::WebInputEvent::IsKeyPad;
 
   return modifiers;
 }
