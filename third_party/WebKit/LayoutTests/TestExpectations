@@ -1731,7 +1731,7 @@ crbug.com/418091 [ SnowLeopard Debug ] css2.1/t100801-c544-valgn-02-d-agi.html [
 crbug.com/418091 [ SnowLeopard Debug ] css2.1/t100801-c544-valgn-04-d-agi.html [ Pass Failure ]
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/aat-morx.html [ Failure ]
-crbug.com/418091 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/cg-fallback-bolding.html [ Failure ]
+crbug.com/418091 [ SnowLeopard ] virtual/antialiasedtext/fast/text/cg-fallback-bolding.html [ Failure ]
 crbug.com/418091 [ SnowLeopard Release ] virtual/antialiasedtext/fast/text/decorations-transformed.html [ Failure ]
 crbug.com/418091 [ SnowLeopard Release ] virtual/antialiasedtext/fast/text/emphasis-avoid-ruby.html [ Failure ]
 crbug.com/418091 [ SnowLeopard Release ] virtual/antialiasedtext/fast/text/fixed-pitch-control-characters.html [ Failure ]
@@ -2015,7 +2015,7 @@ crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-explicit
 crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/emphasis-overlap.html [ Failure ]
 crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/fake-italic.html [ Failure ]
 
-crbug.com/478109 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
+crbug.com/478109 [ SnowLeopard ] virtual/antialiasedtext/fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
 
 crbug.com/470549 inspector/tracing/worker-events.html [ Pass Crash Timeout ]
 
