@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
+namespace gcm {
+class GCMDriver;
+}  // namespace gcm
+
 namespace instance_id {
 
 // Encapsulates Instance ID functionalities that need to be implemented for
@@ -49,8 +53,10 @@ class InstanceID {
 
   // Creator.
   // |app_id|: identifies the application that uses the Instance ID.
-  // |callback|: to be called when the token refresh is needed.
-  static InstanceID* Create(const std::string& app_id);
+  // |gcm_driver|: driver to access the GCM functionalities needed to support
+  //               Instance ID.
+  static InstanceID* Create(const std::string& app_id,
+                            gcm::GCMDriver* gcm_driver);
 
   virtual ~InstanceID();
 

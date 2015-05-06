@@ -14,12 +14,16 @@
 #include "base/time/time.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 
+namespace gcm {
+class GCMDriver;
+}  // namespace gcm
+
 namespace instance_id {
 
 // InstanceID implementation for desktop and iOS.
 class InstanceIDImpl : public InstanceID {
  public:
-  explicit InstanceIDImpl(const std::string& app_id);
+  InstanceIDImpl(const std::string& app_id, gcm::GCMDriver* gcm_driver);
   ~InstanceIDImpl() override;
 
   // InstanceID:
@@ -35,6 +39,8 @@ class InstanceIDImpl : public InstanceID {
   void DeleteID(const DeleteIDCallback& callback) override;
 
  private:
+  gcm::GCMDriver* gcm_driver_;  // Not owned.
+
   void EnsureIDGenerated();
 
   // The generated Instance ID.

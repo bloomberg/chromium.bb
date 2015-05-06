@@ -770,7 +770,7 @@
         'components.gyp:history_core_browser',
         'components.gyp:history_core_common',
         'components.gyp:history_core_test_support',
-        'components.gyp:instance_id_driver',
+        'components.gyp:instance_id_test_support',
         'components.gyp:invalidation',
         'components.gyp:invalidation_test_support',
         'components.gyp:json_schema',

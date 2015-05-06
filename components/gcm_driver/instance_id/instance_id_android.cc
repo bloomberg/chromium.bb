@@ -9,7 +9,8 @@
 namespace instance_id {
 
 // static
-InstanceID* InstanceID::Create(const std::string& app_id) {
+InstanceID* InstanceID::Create(const std::string& app_id,
+                               gcm::GCMDriver* gcm_driver) {
   return new InstanceIDAndroid(app_id);
 }
 

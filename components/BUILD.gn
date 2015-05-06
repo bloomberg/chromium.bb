@@ -47,6 +47,7 @@ group("all_components") {
     "//components/favicon_base",
     "//components/feedback",
     "//components/gcm_driver",
+    "//components/gcm_driver/instance_id",
     "//components/google/core/browser",
     "//components/guest_view:guest_view",
     "//components/history/content/browser",
@@ -186,6 +187,7 @@ group("all_components") {
       "//components/favicon_base",  # Should work, needs checking.
       "//components/feedback",  # Blocked on content.
       "//components/gcm_driver",  # Should work, needs checking.
+      "//components/gcm_driver/instance_id",  # Should work, needs checking.
       "//components/google/core/browser",  # Should work, needs checking.
       "//components/history/core/browser",  # Should work, needs checking.
       "//components/history/core/common",  # Should work, needs checking.

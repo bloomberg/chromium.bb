@@ -8,8 +8,9 @@
 
 namespace instance_id {
 
-InstanceIDDriver::InstanceIDDriver()
-    : instance_id_map_deleter_(&instance_id_map_) {
+InstanceIDDriver::InstanceIDDriver(gcm::GCMDriver* gcm_driver)
+    : gcm_driver_(gcm_driver),
+      instance_id_map_deleter_(&instance_id_map_) {
 }
 
 InstanceIDDriver::~InstanceIDDriver() {
@@ -20,7 +21,7 @@ InstanceID* InstanceIDDriver::GetInstanceID(const std::string& app_id) {
   if (iter != instance_id_map_.end())
     return iter->second;
 
-  InstanceID* instance_id = InstanceID::Create(app_id);
+  InstanceID* instance_id = InstanceID::Create(app_id, gcm_driver_);
   instance_id_map_[app_id] = instance_id;
   return instance_id;
 }

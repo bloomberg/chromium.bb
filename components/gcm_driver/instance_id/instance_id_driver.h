@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 
+namespace gcm {
+class GCMDriver;
+}  // namespace gcm
+
 namespace instance_id {
 
 class InstanceID;
@@ -19,14 +23,15 @@ class InstanceID;
 // implementation.
 class InstanceIDDriver {
  public:
-  InstanceIDDriver();
-  ~InstanceIDDriver();
+  explicit InstanceIDDriver(gcm::GCMDriver* gcm_driver);
+  virtual ~InstanceIDDriver();
 
   // Returns the InstanceID that provides the Instance ID service for the given
   // application. The lifetime of InstanceID will be managed by this class.
   InstanceID* GetInstanceID(const std::string& app_id);
 
  private:
+  gcm::GCMDriver* gcm_driver_;  // Not owned.
   typedef std::map<std::string, InstanceID*> InstanceIDMap;
   InstanceIDMap instance_id_map_;
   STLValueDeleter<InstanceIDMap> instance_id_map_deleter_;

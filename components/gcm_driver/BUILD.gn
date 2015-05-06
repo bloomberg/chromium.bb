@@ -2,13 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-group("gn_instance_id_driver") {
-  testonly = true
-  deps = [
-    "//components/gcm_driver/instance_id:instance_id_driver",
-  ]
-}
-
 # GYP version: components/gcm_driver.gypi:gcm_driver
 static_library("gcm_driver") {
   sources = [

@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_SERVICES_GCM_INSTANCE_ID_INSTANCE_ID_PROFILE_SERVICE_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
 namespace instance_id {
+
+class InstanceIDDriver;
 
 // Providing Instance ID support, via InstanceIDDriver, to a profile.
 class InstanceIDProfileService : public KeyedService {
@@ -19,6 +22,8 @@ class InstanceIDProfileService : public KeyedService {
   ~InstanceIDProfileService() override;
 
  private:
+  scoped_ptr<InstanceIDDriver> driver_;
+
   DISALLOW_COPY_AND_ASSIGN(InstanceIDProfileService);
 };
 

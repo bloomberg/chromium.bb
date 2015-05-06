@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -52,6 +53,7 @@ class InstanceIDDriverTest : public testing::Test {
 
  private:
   base::MessageLoopForUI message_loop_;
+  scoped_ptr<gcm::FakeGCMDriver> gcm_driver_;
   scoped_ptr<InstanceIDDriver> driver_;
   InstanceID::Result delete_id_result_;
   base::Closure async_operation_completed_callback_;
@@ -67,7 +69,8 @@ InstanceIDDriverTest::~InstanceIDDriverTest() {
 }
 
 void InstanceIDDriverTest::SetUp() {
-  driver_.reset(new InstanceIDDriver());
+  gcm_driver_.reset(new gcm::FakeGCMDriver);
+  driver_.reset(new InstanceIDDriver(gcm_driver_.get()));
 }
 
 void InstanceIDDriverTest::WaitForAsyncOperation() {

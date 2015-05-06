@@ -95,6 +95,7 @@ source_set("test_support") {
     "//chrome/renderer:test_support",
     "//components/bookmarks/test",
     "//components/gcm_driver:test_support",
+    "//components/gcm_driver/instance_id:test_support",
     "//components/history/core/test:test",
     "//components/metrics:test_support",
     "//components/omnibox:test_support",

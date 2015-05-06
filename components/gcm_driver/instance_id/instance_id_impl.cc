@@ -9,17 +9,21 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "components/gcm_driver/gcm_driver_desktop.h"
 #include "crypto/random.h"
 
 namespace instance_id {
 
 // static
-InstanceID* InstanceID::Create(const std::string& app_id) {
-  return new InstanceIDImpl(app_id);
+InstanceID* InstanceID::Create(const std::string& app_id,
+                               gcm::GCMDriver* gcm_driver) {
+  return new InstanceIDImpl(app_id, gcm_driver);
 }
 
-InstanceIDImpl::InstanceIDImpl(const std::string& app_id)
-    : InstanceID(app_id) {
+InstanceIDImpl::InstanceIDImpl(const std::string& app_id,
+                               gcm::GCMDriver* gcm_driver)
+    : InstanceID(app_id),
+      gcm_driver_(gcm_driver) {
 }
 
 InstanceIDImpl::~InstanceIDImpl() {

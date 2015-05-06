@@ -1589,6 +1589,7 @@
         '../components/components.gyp:bookmarks_test_support',
         '../components/components.gyp:gcm_driver_test_support',
         '../components/components.gyp:history_core_test_support',
+        '../components/components.gyp:instance_id_test_support',
         '../components/components.gyp:invalidation',
         '../components/components.gyp:invalidation_test_support',
         '../components/components.gyp:metrics_test_support',
