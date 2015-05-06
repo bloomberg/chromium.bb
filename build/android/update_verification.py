@@ -4,132 +4,98 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs semi-automated update testing on a non-rooted device."""
+"""Runs semi-automated update testing on a non-rooted device.
+
+This script will help verify that app data is preserved during an update.
+To use this script first run it with the create_app_data option.
+
+./update_verification.py create_app_data --old-apk <path> --app-data <path>
+
+The script will then install the old apk, prompt you to create some app data
+(bookmarks, etc.), and then save the app data in the path you gave it.
+
+Next, once you have some app data saved, run this script with the test_update
+option.
+
+./update_verification.py test_update --old-apk <path> --new-apk <path>
+--app-data <path>
+
+This will install the old apk, load the saved app data, install the new apk,
+and ask the user to verify that all of the app data was preserved.
+"""
+
+import argparse
 import logging
-import optparse
 import os
-import shutil
 import sys
 import time
 
+from pylib import constants
 from pylib.device import device_utils
+from pylib.utils import apk_helper
+from pylib.utils import run_tests_helper
 
-def _SaveAppData(device, package_name, from_apk=None, data_dir=None):
-  def _BackupAppData(data_dir=None):
-    device.adb.Backup(package_name)
-    backup_file = os.path.join(os.getcwd(), 'backup.ab')
-    assert os.path.exists(backup_file), 'Backup failed.'
-    if data_dir:
-      if not os.path.isdir(data_dir):
-        os.makedirs(data_dir)
-      shutil.move(backup_file, data_dir)
-      backup_file = os.path.join(data_dir, 'backup.ab')
-    print 'Application data saved to %s' % backup_file
-
-  if from_apk:
-    logging.info('Installing %s...', from_apk)
-    output = device.Install(from_apk, reinstall=True)
-    if 'Success' not in output:
-      raise Exception('Unable to install %s. output: %s' % (from_apk, output))
-
+def CreateAppData(device, old_apk, app_data):
+  device.Install(old_apk)
   raw_input('Set the application state. Once ready, press enter and '
             'select "Backup my data" on the device.')
-  _BackupAppData(data_dir)
+  package_name = apk_helper.GetPackageName(old_apk)
+  device.adb.Backup(app_data, packages=[package_name])
+  logging.critical('Application data saved to %s' % app_data)
 
+def TestUpdate(device, old_apk, new_apk, app_data):
+  device.Install(old_apk)
+  device.adb.Restore(app_data)
+  # Restore command is not synchronous
+  raw_input('Select "Restore my data" on the device. Then press enter to '
+            'continue.')
 
-def _VerifyAppUpdate(device, to_apk, app_data, from_apk=None):
-  def _RestoreAppData():
-    assert os.path.exists(app_data), 'Backup file does not exist!'
-    device.adb.Restore(app_data)
-    # It seems restore command is not synchronous.
-    time.sleep(15)
+  package_name = apk_helper.GetPackageName(new_apk)
+  device_path = device.GetApplicationPath(package_name)
+  if not device_path:
+    raise Exception('Expected package %s to already be installed. '
+                    'Package name might have changed!' % package_name)
 
-  if from_apk:
-    logging.info('Installing %s...', from_apk)
-    output = device.Install(from_apk, reinstall=True)
-    if 'Success' not in output:
-      raise Exception('Unable to install %s. output: %s' % (from_apk, output))
-
-  logging.info('Restoring the application data...')
-  raw_input('Press enter and select "Restore my data" on the device.')
-  _RestoreAppData()
-
-  logging.info('Verifying that %s cannot be installed side-by-side...',
-               to_apk)
-  output = device.Install(to_apk)
-  if 'INSTALL_FAILED_ALREADY_EXISTS' not in output:
-    if 'Success' in output:
-      raise Exception('Package name has changed! output: %s' % output)
-    else:
-      raise Exception(output)
-
-  logging.info('Verifying that %s can be overinstalled...', to_apk)
-  output = device.adb.Install(to_apk, reinstall=True)
-  if 'Success' not in output:
-    raise Exception('Unable to install %s.\n output: %s' % (to_apk, output))
-  logging.info('Successfully updated to the new apk. Please verify that the '
-               'the application data is preserved.')
-
+  logging.info('Verifying that %s can be overinstalled.', new_apk)
+  device.adb.Install(new_apk, reinstall=True)
+  logging.critical('Successfully updated to the new apk. Please verify that '
+                   'the application data is preserved.')
 
 def main():
-  logger = logging.getLogger()
-  logger.setLevel(logging.DEBUG)
-  desc = (
-      'Performs semi-automated application update verification testing. '
-      'When given --save, it takes a snapshot of the application data '
-      'on the device. (A dialog on the device will prompt the user to grant '
-      'permission to backup the data.) Otherwise, it performs the update '
-      'testing as follows: '
-      '1. Installs the |from-apk| (optional). '
-      '2. Restores the previously stored snapshot of application data '
-      'given by |app-data| '
-      '(A dialog on the device will prompt the user to grant permission to '
-      'restore the data.) '
-      '3. Verifies that |to-apk| cannot be installed side-by-side. '
-      '4. Verifies that |to-apk| can replace |from-apk|.')
-  parser = optparse.OptionParser(description=desc)
-  parser.add_option('--package-name', help='Package name for the application.')
-  parser.add_option('--save', action='store_true',
-                    help=('Save a snapshot of application data. '
-                          'This will be saved as backup.db in the '
-                          'current directory if |app-data| directory '
-                          'is not specifid.'))
-  parser.add_option('--from-apk',
-                    help=('APK to update from. This is optional if you already '
-                          'have the app installed.'))
-  parser.add_option('--to-apk', help='APK to update to.')
-  parser.add_option('--app-data',
-                    help=('Path to the application data to be restored or the '
-                          'directory where the data should be saved.'))
-  (options, args) = parser.parse_args()
+  parser = argparse.ArgumentParser(
+      description="Script to do semi-automated upgrade testing.")
+  parser.add_argument('-v', '--verbose', action='count',
+                      help='Print verbose log information.')
+  command_parsers = parser.add_subparsers(dest='command')
 
-  if args:
-    parser.print_help(sys.stderr)
-    parser.error('Unknown arguments: %s.' % args)
+  subparser = command_parsers.add_parser('create_app_data')
+  subparser.add_argument('--old-apk', required=True,
+                      help='Path to apk to update from.')
+  subparser.add_argument('--app-data', required=True,
+                      help='Path to where the app data backup should be '
+                           'saved to.')
+
+  subparser = command_parsers.add_parser('test_update')
+  subparser.add_argument('--old-apk', required=True,
+                      help='Path to apk to update from.')
+  subparser.add_argument('--new-apk', required=True,
+                      help='Path to apk to update to.')
+  subparser.add_argument('--app-data', required=True,
+                      help='Path to where the app data backup is saved.')
+
+  args = parser.parse_args()
+  run_tests_helper.SetLogLevel(args.verbose)
 
   devices = device_utils.DeviceUtils.HealthyDevices()
-  if len(devices) != 1:
-    parser.error('Exactly 1 device must be attached.')
   device = devices[0]
+  logging.info('Using device %s for testing.' % str(device))
 
-  if options.from_apk:
-    assert os.path.isfile(options.from_apk)
-
-  if options.save:
-    if not options.package_name:
-      parser.print_help(sys.stderr)
-      parser.error('Missing --package-name.')
-    _SaveAppData(device, options.package_name, from_apk=options.from_apk,
-                 data_dir=options.app_data)
+  if args.command == 'create_app_data':
+    CreateAppData(device, args.old_apk, args.app_data)
+  elif args.command == 'test_update':
+    TestUpdate(device,  args.old_apk, args.new_apk, args.app_data)
   else:
-    if not options.to_apk or not options.app_data:
-      parser.print_help(sys.stderr)
-      parser.error('Missing --to-apk or --app-data.')
-    assert os.path.isfile(options.to_apk)
-    assert os.path.isfile(options.app_data)
-    _VerifyAppUpdate(device, options.to_apk, options.app_data,
-                     from_apk=options.from_apk)
-
+    raise Exception('Unknown test command: %s' % args.command)
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
