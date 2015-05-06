@@ -447,6 +447,21 @@ public class BookmarksBridge {
     }
 
     /**
+     * Fetches the number of bookmarks in the given folder.
+     *
+     * @param folderId The parent folder id.
+     * @return The number of bookmarks in the given folder or 0 if the bookmark model has not been
+     *         loaded.
+     */
+    public int getBookmarkCountForFolder(BookmarkId folderId) {
+        if (!mIsNativeBookmarkModelLoaded) {
+            return 0;
+        }
+
+        return nativeGetBookmarkCountForFolder(mNativeBookmarksBridge, folderId);
+    }
+
+    /**
      * Fetches the folder hierarchy of the given folder. Callback will be
      * synchronous if the bookmark model is already loaded and async if it is loaded in the
      * background.
@@ -721,6 +736,8 @@ public class BookmarksBridge {
     private native void nativeGetBookmarksForFolder(long nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
+    private native int nativeGetBookmarkCountForFolder(long nativeBookmarksBridge,
+            BookmarkId folderId);
     private native void nativeGetCurrentFolderHierarchy(long nativeBookmarksBridge,
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);

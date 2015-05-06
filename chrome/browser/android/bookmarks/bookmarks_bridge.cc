@@ -548,6 +548,21 @@ void BookmarksBridge::GetBookmarksForFolder(JNIEnv* env,
   }
 }
 
+jint BookmarksBridge::GetBookmarkCountForFolder(JNIEnv* env,
+                                                jobject obj,
+                                                jobject j_folder_id_obj) {
+  DCHECK(IsLoaded());
+  long folder_id = JavaBookmarkIdGetId(env, j_folder_id_obj);
+  int type = JavaBookmarkIdGetType(env, j_folder_id_obj);
+  const BookmarkNode* folder = GetNodeByID(folder_id, type);
+
+  if (!folder || !IsFolderAvailable(folder) || !folder->is_folder()
+      || !IsReachable(folder))
+    return 0;
+
+  return folder->child_count();
+}
+
 void BookmarksBridge::GetCurrentFolderHierarchy(JNIEnv* env,
                                                 jobject obj,
                                                 jobject j_folder_id_obj,

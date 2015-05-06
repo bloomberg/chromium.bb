@@ -397,4 +397,11 @@ public class EnhancedBookmarksModel {
     public void loadEmptyPartnerBookmarkShimForTesting() {
         mBookmarksBridge.loadEmptyPartnerBookmarkShimForTesting();
     }
+
+    /**
+     * @see BookmarksBridge#getBookmarkCountForFolder(BookmarkId)
+     */
+    public int getBookmarkCountForFolder(BookmarkId bookmarkId) {
+        return mBookmarksBridge.getBookmarkCountForFolder(bookmarkId);
+    }
 }

@@ -112,6 +112,10 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
                              jobject j_callback_obj,
                              jobject j_result_obj);
 
+  jint GetBookmarkCountForFolder(JNIEnv* env,
+                                 jobject obj,
+                                 jobject j_folder_id_obj);
+
   void GetCurrentFolderHierarchy(JNIEnv* env,
                                  jobject obj,
                                  jobject j_folder_id_obj,
