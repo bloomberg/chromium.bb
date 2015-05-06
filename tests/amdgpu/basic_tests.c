@@ -146,7 +146,7 @@ static void amdgpu_memory_alloc(void)
 	bo = gpu_mem_alloc(device_handle,
 			4096, 4096,
 			AMDGPU_GEM_DOMAIN_GTT,
-			AMDGPU_GEM_CREATE_CPU_GTT_WC,
+			AMDGPU_GEM_CREATE_CPU_GTT_USWC,
 			&bo_mc);
 
 	r = amdgpu_bo_free(bo);
@@ -345,8 +345,7 @@ static void amdgpu_command_submission_sdma_write_linear(void)
 	uint64_t bo_mc;
 	volatile uint32_t *bo_cpu;
 	int i, j, r, loop;
-	uint64_t gtt_flags[3] = {0, AMDGPU_GEM_CREATE_CPU_GTT_UC,
-				AMDGPU_GEM_CREATE_CPU_GTT_WC};
+	uint64_t gtt_flags[2] = {0, AMDGPU_GEM_CREATE_CPU_GTT_USWC};
 
 	pm4 = calloc(pm4_dw, sizeof(*pm4));
 	CU_ASSERT_NOT_EQUAL(pm4, NULL);
@@ -365,7 +364,7 @@ static void amdgpu_command_submission_sdma_write_linear(void)
 	CU_ASSERT_NOT_EQUAL(resources, NULL);
 
 	loop = 0;
-	while(loop < 3) {
+	while(loop < 2) {
 		/* allocate UC bo for sDMA use */
 		bo = gpu_mem_alloc(device_handle,
 				sdma_write_length * sizeof(uint32_t),
@@ -428,8 +427,7 @@ static void amdgpu_command_submission_sdma_const_fill(void)
 	uint64_t bo_mc;
 	volatile uint32_t *bo_cpu;
 	int i, j, r, loop;
-	uint64_t gtt_flags[3] = {0, AMDGPU_GEM_CREATE_CPU_GTT_UC,
-				AMDGPU_GEM_CREATE_CPU_GTT_WC};
+	uint64_t gtt_flags[2] = {0, AMDGPU_GEM_CREATE_CPU_GTT_USWC};
 
 	pm4 = calloc(pm4_dw, sizeof(*pm4));
 	CU_ASSERT_NOT_EQUAL(pm4, NULL);
@@ -448,7 +446,7 @@ static void amdgpu_command_submission_sdma_const_fill(void)
 	CU_ASSERT_NOT_EQUAL(resources, NULL);
 
 	loop = 0;
-	while(loop < 3) {
+	while(loop < 2) {
 		/* allocate UC bo for sDMA use */
 		bo = gpu_mem_alloc(device_handle,
 				sdma_write_length, 4096,
@@ -509,8 +507,7 @@ static void amdgpu_command_submission_sdma_copy_linear(void)
 	uint64_t bo1_mc, bo2_mc;
 	volatile unsigned char *bo1_cpu, *bo2_cpu;
 	int i, j, r, loop1, loop2;
-	uint64_t gtt_flags[3] = {0, AMDGPU_GEM_CREATE_CPU_GTT_UC,
-				AMDGPU_GEM_CREATE_CPU_GTT_WC};
+	uint64_t gtt_flags[2] = {0, AMDGPU_GEM_CREATE_CPU_GTT_USWC};
 
 	pm4 = calloc(pm4_dw, sizeof(*pm4));
 	CU_ASSERT_NOT_EQUAL(pm4, NULL);
@@ -530,8 +527,8 @@ static void amdgpu_command_submission_sdma_copy_linear(void)
 
 	loop1 = loop2 = 0;
 	/* run 9 circle to test all mapping combination */
-	while(loop1 < 3) {
-		while(loop2 < 3) {
+	while(loop1 < 2) {
+		while(loop2 < 2) {
 			/* allocate UC bo1for sDMA use */
 			bo1 = gpu_mem_alloc(device_handle,
 					sdma_write_length, 4096,
