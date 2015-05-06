@@ -42,48 +42,7 @@ string16 BuildString16(const wchar_t* s) {
 #endif
 }
 
-const wchar_t* const kConvertRoundtripCases[] = {
-  L"Google Video",
-  // "网页 图片 资讯更多 »"
-  L"\x7f51\x9875\x0020\x56fe\x7247\x0020\x8d44\x8baf\x66f4\x591a\x0020\x00bb",
-  //  "Παγκόσμιος Ιστός"
-  L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9"
-  L"\x03bf\x03c2\x0020\x0399\x03c3\x03c4\x03cc\x03c2",
-  // "Поиск страниц на русском"
-  L"\x041f\x043e\x0438\x0441\x043a\x0020\x0441\x0442"
-  L"\x0440\x0430\x043d\x0438\x0446\x0020\x043d\x0430"
-  L"\x0020\x0440\x0443\x0441\x0441\x043a\x043e\x043c",
-  // "전체서비스"
-  L"\xc804\xccb4\xc11c\xbe44\xc2a4",
-
-  // Test characters that take more than 16 bits. This will depend on whether
-  // wchar_t is 16 or 32 bits.
-#if defined(WCHAR_T_IS_UTF16)
-  L"\xd800\xdf00",
-  // ?????  (Mathematical Alphanumeric Symbols (U+011d40 - U+011d44 : A,B,C,D,E)
-  L"\xd807\xdd40\xd807\xdd41\xd807\xdd42\xd807\xdd43\xd807\xdd44",
-#elif defined(WCHAR_T_IS_UTF32)
-  L"\x10300",
-  // ?????  (Mathematical Alphanumeric Symbols (U+011d40 - U+011d44 : A,B,C,D,E)
-  L"\x11d40\x11d41\x11d42\x11d43\x11d44",
-#endif
-};
-
 }  // namespace
-
-TEST(ICUStringConversionsTest, ConvertCodepageUTF8) {
-  // Make sure WideToCodepage works like WideToUTF8.
-  for (size_t i = 0; i < arraysize(kConvertRoundtripCases); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %ls",
-                                    i, kConvertRoundtripCases[i]));
-
-    std::string expected(WideToUTF8(kConvertRoundtripCases[i]));
-    std::string utf8;
-    EXPECT_TRUE(WideToCodepage(kConvertRoundtripCases[i], kCodepageUTF8,
-                               OnStringConversionError::SKIP, &utf8));
-    EXPECT_EQ(expected, utf8);
-  }
-}
 
 // kConverterCodepageCases is not comprehensive. There are a number of cases
 // to add if we really want to have a comprehensive coverage of various
@@ -232,73 +191,6 @@ static const struct {
    L"\x0E04\x0E23\x0e31\x0E1A",
    NULL},
 };
-
-TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndWide) {
-  for (size_t i = 0; i < arraysize(kConvertCodepageCases); ++i) {
-    SCOPED_TRACE(base::StringPrintf(
-                     "Test[%" PRIuS "]: <encoded: %s> <codepage: %s>", i,
-                     kConvertCodepageCases[i].encoded,
-                     kConvertCodepageCases[i].codepage_name));
-
-    std::wstring wide;
-    bool success = CodepageToWide(kConvertCodepageCases[i].encoded,
-                                  kConvertCodepageCases[i].codepage_name,
-                                  kConvertCodepageCases[i].on_error,
-                                  &wide);
-    EXPECT_EQ(kConvertCodepageCases[i].success, success);
-    EXPECT_EQ(kConvertCodepageCases[i].wide, wide);
-
-    // When decoding was successful and nothing was skipped, we also check the
-    // reverse conversion. Not all conversions are round-trippable, but
-    // kConverterCodepageCases does not have any one-way conversion at the
-    // moment.
-    if (success &&
-        kConvertCodepageCases[i].on_error ==
-            OnStringConversionError::FAIL) {
-      std::string encoded;
-      success = WideToCodepage(wide, kConvertCodepageCases[i].codepage_name,
-                               kConvertCodepageCases[i].on_error, &encoded);
-      EXPECT_EQ(kConvertCodepageCases[i].success, success);
-      EXPECT_EQ(kConvertCodepageCases[i].encoded, encoded);
-    }
-  }
-
-  // The above cases handled codepage->wide errors, but not wide->codepage.
-  // Test that here.
-  std::string encoded("Temp data");  // Make sure the string gets cleared.
-
-  // First test going to an encoding that can not represent that character.
-  EXPECT_FALSE(WideToCodepage(L"Chinese\xff27", "iso-8859-1",
-                              OnStringConversionError::FAIL, &encoded));
-  EXPECT_TRUE(encoded.empty());
-  EXPECT_TRUE(WideToCodepage(L"Chinese\xff27", "iso-8859-1",
-                             OnStringConversionError::SKIP, &encoded));
-  EXPECT_STREQ("Chinese", encoded.c_str());
-  // From Unicode, SUBSTITUTE is the same as SKIP for now.
-  EXPECT_TRUE(WideToCodepage(L"Chinese\xff27", "iso-8859-1",
-                             OnStringConversionError::SUBSTITUTE,
-                             &encoded));
-  EXPECT_STREQ("Chinese", encoded.c_str());
-
-#if defined(WCHAR_T_IS_UTF16)
-  // When we're in UTF-16 mode, test an invalid UTF-16 character in the input.
-  EXPECT_FALSE(WideToCodepage(L"a\xd800z", "iso-8859-1",
-                              OnStringConversionError::FAIL, &encoded));
-  EXPECT_TRUE(encoded.empty());
-  EXPECT_TRUE(WideToCodepage(L"a\xd800z", "iso-8859-1",
-                             OnStringConversionError::SKIP, &encoded));
-  EXPECT_STREQ("az", encoded.c_str());
-#endif  // WCHAR_T_IS_UTF16
-
-  // Invalid characters should fail.
-  EXPECT_TRUE(WideToCodepage(L"a\xffffz", "iso-8859-1",
-                             OnStringConversionError::SKIP, &encoded));
-  EXPECT_STREQ("az", encoded.c_str());
-
-  // Invalid codepages should fail.
-  EXPECT_FALSE(WideToCodepage(L"Hello, world", "awesome-8571-2",
-                              OnStringConversionError::SKIP, &encoded));
-}
 
 TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndUTF16) {
   for (size_t i = 0; i < arraysize(kConvertCodepageCases); ++i) {

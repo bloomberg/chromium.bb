@@ -100,10 +100,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
   Mode mode = EXPLICIT;
 
   std::wstring data_string;
-  // TODO(jennb): cannot do UTF8ToWide(data, length, &data_string);
-  // until UTF8ToWide uses 0xFFFD Unicode replacement character.
-  base::CodepageToWide(std::string(data, length), base::kCodepageUTF8,
-                       base::OnStringConversionError::SUBSTITUTE, &data_string);
+  base::UTF8ToWide(data, length, &data_string);
   const wchar_t* p = data_string.c_str();
   const wchar_t* end = p + data_string.length();
 

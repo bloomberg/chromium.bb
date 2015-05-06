@@ -134,14 +134,6 @@ void SetUpErrorHandlerForToUChars(OnStringConversionError::Type on_error,
   }
 }
 
-inline UConverterType utf32_platform_endian() {
-#if U_IS_BIG_ENDIAN
-  return UCNV_UTF32_BigEndian;
-#else
-  return UCNV_UTF32_LittleEndian;
-#endif
-}
-
 }  // namespace
 
 // Codepage <-> Wide/UTF-16  ---------------------------------------------------
@@ -195,74 +187,6 @@ bool CodepageToUTF16(const std::string& encoded,
 
   utf16->assign(buffer.get(), actual_size);
   return true;
-}
-
-bool WideToCodepage(const std::wstring& wide,
-                    const char* codepage_name,
-                    OnStringConversionError::Type on_error,
-                    std::string* encoded) {
-#if defined(WCHAR_T_IS_UTF16)
-  return UTF16ToCodepage(wide, codepage_name, on_error, encoded);
-#elif defined(WCHAR_T_IS_UTF32)
-  encoded->clear();
-
-  UErrorCode status = U_ZERO_ERROR;
-  UConverter* converter = ucnv_open(codepage_name, &status);
-  if (!U_SUCCESS(status))
-    return false;
-
-  int utf16_len;
-  // When wchar_t is wider than UChar (16 bits), transform |wide| into a
-  // UChar* string.  Size the UChar* buffer to be large enough to hold twice
-  // as many UTF-16 code units (UChar's) as there are Unicode code points,
-  // in case each code points translates to a UTF-16 surrogate pair,
-  // and leave room for a NUL terminator.
-  std::vector<UChar> utf16(wide.length() * 2 + 1);
-  u_strFromUTF32(&utf16[0], utf16.size(), &utf16_len,
-                 reinterpret_cast<const UChar32*>(wide.c_str()),
-                 wide.length(), &status);
-  DCHECK(U_SUCCESS(status)) << "failed to convert wstring to UChar*";
-
-  return ConvertFromUTF16(converter, &utf16[0], utf16_len, on_error, encoded);
-#endif  // defined(WCHAR_T_IS_UTF32)
-}
-
-bool CodepageToWide(const std::string& encoded,
-                    const char* codepage_name,
-                    OnStringConversionError::Type on_error,
-                    std::wstring* wide) {
-#if defined(WCHAR_T_IS_UTF16)
-  return CodepageToUTF16(encoded, codepage_name, on_error, wide);
-#elif defined(WCHAR_T_IS_UTF32)
-  wide->clear();
-
-  UErrorCode status = U_ZERO_ERROR;
-  UConverter* converter = ucnv_open(codepage_name, &status);
-  if (!U_SUCCESS(status))
-    return false;
-
-  // The maximum length in 4 byte unit of UTF-32 output would be
-  // at most the same as the number of bytes in input. In the worst
-  // case of GB18030 (excluding escaped-based encodings like ISO-2022-JP),
-  // this can be 4 times larger than actually needed.
-  size_t wchar_max_length = encoded.length() + 1;
-
-  SetUpErrorHandlerForToUChars(on_error, converter, &status);
-  scoped_ptr<wchar_t[]> buffer(new wchar_t[wchar_max_length]);
-  int actual_size = ucnv_toAlgorithmic(utf32_platform_endian(), converter,
-      reinterpret_cast<char*>(buffer.get()),
-      static_cast<int>(wchar_max_length) * sizeof(wchar_t), encoded.data(),
-      static_cast<int>(encoded.length()), &status);
-  ucnv_close(converter);
-  if (!U_SUCCESS(status)) {
-    wide->clear();  // Make sure the output is empty on error.
-    return false;
-  }
-
-  // actual_size is # of bytes.
-  wide->assign(buffer.get(), actual_size / sizeof(wchar_t));
-  return true;
-#endif  // defined(WCHAR_T_IS_UTF32)
 }
 
 bool ConvertToUtf8AndNormalize(const std::string& text,

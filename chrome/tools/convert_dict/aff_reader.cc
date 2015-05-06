@@ -144,11 +144,11 @@ bool AffReader::Read() {
 
 bool AffReader::EncodingToUTF8(const std::string& encoded,
                                std::string* utf8) const {
-  std::wstring wide_word;
-  if (!base::CodepageToWide(encoded, encoding(),
-                            base::OnStringConversionError::FAIL, &wide_word))
+  base::string16 word;
+  if (!base::CodepageToUTF16(encoded, encoding(),
+                             base::OnStringConversionError::FAIL, &word))
     return false;
-  *utf8 = base::WideToUTF8(wide_word);
+  *utf8 = base::UTF16ToUTF8(word);
   return true;
 }
 
