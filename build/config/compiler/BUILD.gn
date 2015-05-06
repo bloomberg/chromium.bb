@@ -158,15 +158,15 @@ config("compiler") {
     ]
   }
 
-  if (is_clang && !is_win && !is_nacl) {
+  if (is_clang && !is_nacl) {
     # This is here so that all files get recompiled after a clang roll and
     # when turning clang on or off. (defines are passed via the command line,
     # and build system rebuild things when their commandline changes). Nothing
     # should ever read this define.
-    defines += [ "CR_CLANG_REVISION=" +
-                 exec_script("//tools/clang/scripts/posix-print-revision.py",
-                             [],
-                             "trim string") ]
+    defines +=
+        [ "CR_CLANG_REVISION=" + exec_script("//tools/clang/scripts/update.py",
+                                             [ "--print-revision" ],
+                                             "trim string") ]
   }
 
   # Mac-specific compiler flags setup.
