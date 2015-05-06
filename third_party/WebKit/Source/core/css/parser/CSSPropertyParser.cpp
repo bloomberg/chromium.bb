@@ -5289,6 +5289,8 @@ bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& c, bo
 {
     if (acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_NUMBER
         && value->fValue >= 0. && value->fValue < 1000000.) {
+        if (!value->isInt)
+            return false;
         String str = String::format("%06d", static_cast<int>((value->fValue+.5)));
         if (!fastParseColor(c, str, !acceptQuirkyColors))
             return false;
