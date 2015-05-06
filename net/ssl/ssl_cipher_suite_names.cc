@@ -248,13 +248,13 @@ const struct {
 };
 
 const struct {
-  char name[7];
+  char name[12];
 } kMacNames[5] = {
   {"NULL"},  // 0
-  {"MD5"},  // 1
-  {"SHA1"},  // 2
-  {"SHA256"},  // 3
-  {"SHA384"},  // 4
+  {"HMAC-MD5"},  // 1
+  {"HMAC-SHA1"},  // 2
+  {"HMAC-SHA256"},  // 3
+  {"HMAC-SHA384"},  // 4
   // 7 is reserved to indicate an AEAD cipher suite.
 };
 

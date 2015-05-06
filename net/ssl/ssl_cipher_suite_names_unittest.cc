@@ -18,7 +18,7 @@ TEST(CipherSuiteNamesTest, Basic) {
   SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0xc001);
   EXPECT_STREQ("ECDH_ECDSA", key_exchange);
   EXPECT_STREQ("NULL", cipher);
-  EXPECT_STREQ("SHA1", mac);
+  EXPECT_STREQ("HMAC-SHA1", mac);
   EXPECT_FALSE(is_aead);
 
   SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0x009f);
