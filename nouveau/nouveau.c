@@ -480,10 +480,20 @@ nouveau_bo_name_ref(struct nouveau_device *dev, uint32_t name,
 		    struct nouveau_bo **pbo)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(dev);
+	struct nouveau_bo_priv *nvbo;
 	struct drm_gem_open req = { .name = name };
 	int ret;
 
 	pthread_mutex_lock(&nvdev->lock);
+	DRMLISTFOREACHENTRY(nvbo, &nvdev->bo_list, head) {
+		if (nvbo->name == name) {
+			ret = nouveau_bo_wrap_locked(dev, nvbo->base.handle,
+						     pbo, name);
+			pthread_mutex_unlock(&nvdev->lock);
+			return ret;
+		}
+	}
+
 	ret = drmIoctl(dev->fd, DRM_IOCTL_GEM_OPEN, &req);
 	if (ret == 0) {
 		ret = nouveau_bo_wrap_locked(dev, req.handle, pbo, name);
