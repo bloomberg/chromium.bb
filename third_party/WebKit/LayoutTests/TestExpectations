@@ -2093,5 +2093,8 @@ crbug.com/477743 virtual/slimmingpaint/svg/repaint/paintorder-filtered.svg [ Fai
 crbug.com/477743 virtual/slimmingpaint/compositing/repaint/fixed-pos-with-abs-pos-child-scroll.html [ Failure ImageOnlyFailure ]
 #------------------------------------------
 
+crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
+crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
+
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
