@@ -43,6 +43,35 @@ namespace blink {
 
 using namespace HTMLNames;
 
+class FirstSummarySelectFilter final : public HTMLContentSelectFilter {
+public:
+    virtual ~FirstSummarySelectFilter() { }
+
+    static PassOwnPtrWillBeRawPtr<FirstSummarySelectFilter> create()
+    {
+        return adoptPtrWillBeNoop(new FirstSummarySelectFilter());
+    }
+
+    bool canSelectNode(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth) const override
+    {
+        if (!siblings[nth]->hasTagName(HTMLNames::summaryTag))
+            return false;
+        for (int i = nth - 1; i >= 0; --i) {
+            if (siblings[i]->hasTagName(HTMLNames::summaryTag))
+                return false;
+        }
+        return true;
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        HTMLContentSelectFilter::trace(visitor);
+    }
+
+private:
+    FirstSummarySelectFilter() { }
+};
+
 static DetailsEventSender& detailsToggleEventSender()
 {
     DEFINE_STATIC_LOCAL(DetailsEventSender, sharedToggleEventSender, (EventTypeNames::toggle));
@@ -82,14 +111,11 @@ LayoutObject* HTMLDetailsElement::createLayoutObject(const ComputedStyle&)
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
-
     RefPtrWillBeRawPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(document());
     defaultSummary->appendChild(Text::create(document(), locale().queryString(WebLocalizedString::DetailsLabel)));
 
-    RefPtrWillBeRawPtr<HTMLContentElement> summary = HTMLContentElement::create(document());
+    RefPtrWillBeRawPtr<HTMLContentElement> summary = HTMLContentElement::create(document(), FirstSummarySelectFilter::create());
     summary->setIdAttribute(ShadowElementNames::detailsSummary());
-    summary->setAttribute(selectAttr, summarySelector);
     summary->appendChild(defaultSummary);
     root.appendChild(summary.release());
 
