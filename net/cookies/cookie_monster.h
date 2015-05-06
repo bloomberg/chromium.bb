@@ -416,6 +416,17 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_TYPE_LAST_ENTRY
   };
 
+  // The strategy for fetching cookies. Controlled by Finch experiment.
+  enum FetchStrategy {
+    // Fetches all cookies only when they're needed.
+    kFetchWhenNecessary = 0,
+    // Fetches all cookies as soon as any cookie is needed.
+    // This is the default behavior.
+    kAlwaysFetch,
+    // The fetch strategy is not yet determined.
+    kUnknownFetch,
+  };
+
   // The number of days since last access that cookies will not be subject
   // to global garbage collection.
   static const int kSafeFromGlobalPurgeDays;
@@ -475,24 +486,21 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   bool HasCookiesForETLDP1(const std::string& etldp1);
 
-  // Called by all non-static functions to ensure that the cookies store has
-  // been initialized. This is not done during creating so it doesn't block
-  // the window showing.
-  // Note: this method should always be called with lock_ held.
-  void InitIfNecessary() {
-    if (!initialized_) {
-      if (store_.get()) {
-        InitStore();
-      } else {
-        loaded_ = true;
-      }
-      initialized_ = true;
-    }
-  }
+  // The first access to the cookie store initializes it. This method should be
+  // called before any access to the cookie store.
+  void MarkCookieStoreAsInitialized();
 
-  // Initializes the backing store and reads existing cookies from it.
-  // Should only be called by InitIfNecessary().
-  void InitStore();
+  // Fetches all cookies if the backing store exists and they're not already
+  // being fetched.
+  // Note: this method should always be called with lock_ held.
+  void FetchAllCookiesIfNecessary();
+
+  // Fetches all cookies from the backing store.
+  // Note: this method should always be called with lock_ held.
+  void FetchAllCookies();
+
+  // Whether all cookies should be fetched as soon as any is requested.
+  bool ShouldFetchAllCookiesWhenFetchingAnyCookie();
 
   // Stores cookies loaded from the backing store and invokes any deferred
   // calls. |beginning_time| should be the moment PersistentCookieStore::Load
@@ -669,13 +677,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   CookieMap cookies_;
 
-  // Indicates whether the cookie store has been initialized. This happens
-  // lazily in InitStoreIfNecessary().
+  // Indicates whether the cookie store has been initialized.
   bool initialized_;
 
-  // Indicates whether loading from the backend store is completed and
-  // calls may be immediately processed.
-  bool loaded_;
+  // Indicates whether the cookie store has started fetching all cookies.
+  bool started_fetching_all_cookies_;
+  // Indicates whether the cookie store has finished fetching all cookies.
+  bool finished_fetching_all_cookies_;
+  // The strategy to use for fetching cookies.
+  FetchStrategy fetch_strategy_;
 
   // List of domain keys that have been loaded from the DB.
   std::set<std::string> keys_loaded_;
@@ -785,6 +795,10 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   typedef base::Callback<void(const std::vector<CanonicalCookie*>&)>
       LoadedCallback;
 
+  // TODO(erikchen): Depending on the results of the cookie monster Finch
+  // experiment, update the name and description of this method. The behavior
+  // of this method doesn't change, but it has different semantics for the two
+  // different logic paths. See http://crbug.com/473483.
   // Initializes the store and retrieves the existing cookies. This will be
   // called only once at startup. The callback will return all the cookies
   // that are not yet returned to CookieMonster by previous priority loads.

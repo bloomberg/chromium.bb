@@ -451,8 +451,6 @@ bool InitTable(sql::Connection* db) {
 
 void SQLitePersistentCookieStore::Backend::Load(
     const LoadedCallback& loaded_callback) {
-  // This function should be called only once per instance.
-  DCHECK(!db_.get());
   PostBackgroundTask(FROM_HERE, base::Bind(
       &Backend::LoadAndNotifyInBackground, this,
       loaded_callback, base::Time::Now()));

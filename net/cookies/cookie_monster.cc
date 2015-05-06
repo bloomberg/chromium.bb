@@ -55,6 +55,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
@@ -69,12 +70,11 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 // In steady state, most cookie requests can be satisfied by the in memory
-// cookie monster store.  However, if a request comes in during the initial
-// cookie load, it must be delayed until that load completes. That is done by
-// queueing it on CookieMonster::tasks_pending_ and running it when notification
-// of cookie load completion is received via CookieMonster::OnLoaded. This
-// callback is passed to the persistent store from CookieMonster::InitStore(),
-// which is called on the first operation invoked on the CookieMonster.
+// cookie monster store. If the cookie request cannot be satisfied by the in
+// memory store, the relevant cookies must be fetched from the persistent
+// store. The task is queued in CookieMonster::tasks_pending_ if it requires
+// all cookies to be loaded from the backend, or tasks_pending_for_key_ if it
+// only requires all cookies associated with an eTLD+1.
 //
 // On the browser critical paths (e.g. for loading initial web pages in a
 // session restore) it may take too long to wait for the full load. If a cookie
@@ -91,6 +91,14 @@ using base::TimeTicks;
 // same eTLD+1.
 
 static const int kMinutesInTenYears = 10 * 365 * 24 * 60;
+
+namespace {
+
+const char kFetchWhenNecessaryName[] = "FetchWhenNecessary";
+const char kAlwaysFetchName[] = "AlwaysFetch";
+const char kCookieMonsterFetchStrategyName[] = "CookieMonsterFetchStrategy";
+
+}  // namespace
 
 namespace net {
 
@@ -328,7 +336,9 @@ void RunAsync(scoped_refptr<base::TaskRunner> proxy,
 CookieMonster::CookieMonster(PersistentCookieStore* store,
                              CookieMonsterDelegate* delegate)
     : initialized_(false),
-      loaded_(false),
+      started_fetching_all_cookies_(false),
+      finished_fetching_all_cookies_(false),
+      fetch_strategy_(kUnknownFetch),
       store_(store),
       last_access_threshold_(
           TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
@@ -344,7 +354,9 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
                              CookieMonsterDelegate* delegate,
                              int last_access_threshold_milliseconds)
     : initialized_(false),
-      loaded_(false),
+      started_fetching_all_cookies_(false),
+      finished_fetching_all_cookies_(false),
+      fetch_strategy_(kUnknownFetch),
       store_(store),
       last_access_threshold_(base::TimeDelta::FromMilliseconds(
           last_access_threshold_milliseconds)),
@@ -1086,8 +1098,9 @@ void CookieMonster::DoCookieTask(
     const scoped_refptr<CookieMonsterTask>& task_item) {
   {
     base::AutoLock autolock(lock_);
-    InitIfNecessary();
-    if (!loaded_) {
+    MarkCookieStoreAsInitialized();
+    FetchAllCookiesIfNecessary();
+    if (!finished_fetching_all_cookies_ && store_.get()) {
       tasks_pending_.push(task_item);
       return;
     }
@@ -1101,10 +1114,12 @@ void CookieMonster::DoCookieTaskForURL(
     const GURL& url) {
   {
     base::AutoLock autolock(lock_);
-    InitIfNecessary();
+    MarkCookieStoreAsInitialized();
+    if (ShouldFetchAllCookiesWhenFetchingAnyCookie())
+      FetchAllCookiesIfNecessary();
     // If cookies for the requested domain key (eTLD+1) have been loaded from DB
     // then run the task, otherwise load from DB.
-    if (!loaded_) {
+    if (!finished_fetching_all_cookies_ && store_.get()) {
       // Checks if the domain key has been loaded.
       std::string key(
           cookie_util::GetEffectiveDomain(url.scheme(), url.host()));
@@ -1162,7 +1177,9 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
 
 bool CookieMonster::ImportCookies(const CookieList& list) {
   base::AutoLock autolock(lock_);
-  InitIfNecessary();
+  MarkCookieStoreAsInitialized();
+  if (ShouldFetchAllCookiesWhenFetchingAnyCookie())
+    FetchAllCookiesIfNecessary();
   for (CookieList::const_iterator iter = list.begin(); iter != list.end();
        ++iter) {
     scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(*iter));
@@ -1487,13 +1504,47 @@ bool CookieMonster::SetCookieWithCreationTime(const GURL& url,
     return false;
   }
 
-  InitIfNecessary();
+  MarkCookieStoreAsInitialized();
+  if (ShouldFetchAllCookiesWhenFetchingAnyCookie())
+    FetchAllCookiesIfNecessary();
+
   return SetCookieWithCreationTimeAndOptions(url, cookie_line, creation_time,
                                              CookieOptions());
 }
 
-void CookieMonster::InitStore() {
+void CookieMonster::MarkCookieStoreAsInitialized() {
+  initialized_ = true;
+}
+
+void CookieMonster::FetchAllCookiesIfNecessary() {
+  if (store_.get() && !started_fetching_all_cookies_) {
+    started_fetching_all_cookies_ = true;
+    FetchAllCookies();
+  }
+}
+
+bool CookieMonster::ShouldFetchAllCookiesWhenFetchingAnyCookie() {
+  if (fetch_strategy_ == kUnknownFetch) {
+    const std::string group_name =
+        base::FieldTrialList::FindFullName(kCookieMonsterFetchStrategyName);
+    if (group_name == kFetchWhenNecessaryName) {
+      fetch_strategy_ = kFetchWhenNecessary;
+    } else if (group_name == kAlwaysFetchName) {
+      fetch_strategy_ = kAlwaysFetch;
+    } else {
+      // The logic in the conditional is redundant, but it makes trials of
+      // the Finch experiment more explicit.
+      fetch_strategy_ = kAlwaysFetch;
+    }
+  }
+
+  return fetch_strategy_ == kAlwaysFetch;
+}
+
+void CookieMonster::FetchAllCookies() {
   DCHECK(store_.get()) << "Store must exist to initialize";
+  DCHECK(!finished_fetching_all_cookies_)
+      << "All cookies have already been fetched.";
 
   // We bind in the current time so that we can report the wall-clock time for
   // loading cookies.
@@ -1614,7 +1665,7 @@ void CookieMonster::InvokeQueue() {
     {
       base::AutoLock autolock(lock_);
       if (tasks_pending_.empty()) {
-        loaded_ = true;
+        finished_fetching_all_cookies_ = true;
         creation_times_.clear();
         keys_loaded_.clear();
         break;
