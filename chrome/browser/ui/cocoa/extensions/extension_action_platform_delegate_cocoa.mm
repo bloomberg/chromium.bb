@@ -62,10 +62,6 @@ void ExtensionActionPlatformDelegateCocoa::RegisterCommand() {
 void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {
   registrar_.Add(
       this,
-      extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      content::Source<Profile>(controller_->browser()->profile()));
-  registrar_.Add(
-      this,
       GetNotificationTypeForAction(*controller_->extension_action()),
       content::Source<Profile>(controller_->browser()->profile()));
 }
@@ -119,16 +115,6 @@ void ExtensionActionPlatformDelegateCocoa::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
-      extensions::ExtensionHost* host =
-          content::Details<extensions::ExtensionHost>(details).ptr();
-      if (host->extension_id() == controller_->GetId()) {
-        ExtensionPopupController* popup = [ExtensionPopupController popup];
-        if (popup && ![popup isClosing] && [popup extensionViewHost] == host)
-          [popup close];
-      }
-      break;
-    }
     case extensions::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC:
     case extensions::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC: {
       DCHECK_EQ(type,

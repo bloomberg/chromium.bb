@@ -11,16 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "url/gurl.h"
-
+#include "content/public/browser/notification_registrar.h"
 
 class Browser;
-class DevtoolsNotificationBridge;
+class ExtensionPopupNotificationBridge;
 class ExtensionPopupContainer;
-
-namespace content {
-class NotificationRegistrar;
-}
 
 namespace extensions {
 class ExtensionViewHost;
@@ -45,8 +40,8 @@ class ExtensionViewHost;
   // The extension host object.
   scoped_ptr<extensions::ExtensionViewHost> host_;
 
-  scoped_ptr<content::NotificationRegistrar> registrar_;
-  scoped_ptr<DevtoolsNotificationBridge> notificationBridge_;
+  content::NotificationRegistrar registrar_;
+  scoped_ptr<ExtensionPopupNotificationBridge> notificationBridge_;
   scoped_ptr<ExtensionPopupContainer> container_;
 
   std::string extensionId_;
@@ -61,9 +56,6 @@ class ExtensionViewHost;
   // The size once the ExtensionView has loaded.
   NSSize pendingSize_;
 }
-
-// Returns the ExtensionViewHost object associated with this popup.
-- (extensions::ExtensionViewHost*)extensionViewHost;
 
 // Starts the process of showing the given popup URL. Instantiates an
 // ExtensionPopupController with the parent window retrieved from |browser|, a

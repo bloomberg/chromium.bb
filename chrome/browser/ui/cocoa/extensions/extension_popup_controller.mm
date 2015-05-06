@@ -7,22 +7,20 @@
 #include <algorithm>
 
 #include "base/callback.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "components/web_modal/popup_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/notification_types.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 using content::BrowserContext;
@@ -31,12 +29,13 @@ using content::WebContents;
 using extensions::ExtensionViewHost;
 
 namespace {
+
 // The duration for any animations that might be invoked by this controller.
 const NSTimeInterval kAnimationDuration = 0.2;
 
 // There should only be one extension popup showing at one time. Keep a
 // reference to it here.
-static ExtensionPopupController* gPopup;
+ExtensionPopupController* gPopup;
 
 // Given a value and a rage, clamp the value into the range.
 CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
@@ -89,18 +88,20 @@ class ExtensionPopupContainer : public ExtensionViewMac::Container {
   ExtensionPopupController* controller_; // Weak; owns this.
 };
 
-class DevtoolsNotificationBridge : public content::NotificationObserver {
+class ExtensionPopupNotificationBridge : public content::NotificationObserver {
  public:
-  explicit DevtoolsNotificationBridge(ExtensionPopupController* controller)
+  ExtensionPopupNotificationBridge(ExtensionPopupController* controller,
+                                   ExtensionViewHost* view_host)
     : controller_(controller),
-      web_contents_([controller_ extensionViewHost]->host_contents()),
+      view_host_(view_host),
+      web_contents_(view_host_->host_contents()),
       devtools_callback_(base::Bind(
-          &DevtoolsNotificationBridge::OnDevToolsStateChanged,
+          &ExtensionPopupNotificationBridge::OnDevToolsStateChanged,
           base::Unretained(this))) {
     content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
   }
 
-  ~DevtoolsNotificationBridge() override {
+  ~ExtensionPopupNotificationBridge() override {
     content::DevToolsAgentHost::RemoveAgentStateCallback(devtools_callback_);
   }
 
@@ -125,27 +126,34 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     switch (type) {
-      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD: {
-        if (content::Details<ExtensionViewHost>(
-                [controller_ extensionViewHost]) == details) {
+      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
+        if (content::Details<ExtensionViewHost>(view_host_) == details)
           [controller_ showDevTools];
+        break;
+      case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+        if (content::Details<ExtensionViewHost>(view_host_) == details &&
+            ![controller_ isClosing]) {
+          [controller_ close];
         }
         break;
-      }
-      default: {
+      default:
         NOTREACHED() << "Received unexpected notification";
         break;
-      }
-    };
+    }
   }
 
  private:
   ExtensionPopupController* controller_;
+
+  extensions::ExtensionViewHost* view_host_;
+
   // WebContents for controller. Hold onto this separately because we need to
   // know what it is for notifications, but our ExtensionViewHost may not be
   // valid.
   WebContents* web_contents_;
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPopupNotificationBridge);
 };
 
 @implementation ExtensionPopupController
@@ -292,14 +300,18 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                  name:NSViewFrameDidChangeNotification
                object:extensionView_];
 
-  notificationBridge_.reset(new DevtoolsNotificationBridge(self));
-  registrar_.reset(new content::NotificationRegistrar);
+  notificationBridge_.reset(
+      new ExtensionPopupNotificationBridge(self, host_.get()));
+  content::Source<BrowserContext> source_context(host_->browser_context());
+  registrar_.Add(notificationBridge_.get(),
+                extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+                source_context);
   if (beingInspected_) {
     // Listen for the extension to finish loading so the dev tools can be
     // opened.
-    registrar_->Add(notificationBridge_.get(),
-                    extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
-                    content::Source<BrowserContext>(host_->browser_context()));
+    registrar_.Add(notificationBridge_.get(),
+                   extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
+                   source_context);
   }
 }
 

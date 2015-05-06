@@ -81,7 +81,7 @@ class ExtensionActionViewController
   // exists. Returns true if |command| was populated.
   bool GetExtensionCommand(extensions::Command* command);
 
-  const extensions::Extension* extension() const { return extension_; }
+  const extensions::Extension* extension() const { return extension_.get(); }
   Browser* browser() { return browser_; }
   ExtensionAction* extension_action() { return extension_action_; }
   const ExtensionAction* extension_action() const { return extension_action_; }
@@ -136,7 +136,7 @@ class ExtensionActionViewController
   void OnPopupClosed();
 
   // The extension associated with the action we're displaying.
-  const extensions::Extension* extension_;
+  scoped_refptr<const extensions::Extension> extension_;
 
   // The corresponding browser.
   Browser* browser_;

@@ -211,7 +211,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
 
   if (extensions::ExtensionActionAPI::Get(browser_->profile())
           ->ExecuteExtensionAction(
-              extension_, browser_, grant_tab_permissions) ==
+              extension_.get(), browser_, grant_tab_permissions) ==
       ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(
         SessionTabHelper::IdForTab(view_delegate_->GetCurrentWebContents()));
