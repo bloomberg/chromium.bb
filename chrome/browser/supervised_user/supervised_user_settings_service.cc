@@ -106,8 +106,10 @@ bool SupervisedUserSettingsService::IsReady() {
 }
 
 void SupervisedUserSettingsService::Clear() {
-  store_->RemoveValue(kAtomicSettings);
-  store_->RemoveValue(kSplitSettings);
+  store_->RemoveValue(kAtomicSettings,
+                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  store_->RemoveValue(kSplitSettings,
+                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 // static
@@ -193,8 +195,10 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     base::DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
     dict->SetWithoutPathExpansion(name_suffix, value.release());
   }
-  store_->ReportValueChanged(kAtomicSettings);
-  store_->ReportValueChanged(kSplitSettings);
+  store_->ReportValueChanged(kAtomicSettings,
+                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  store_->ReportValueChanged(kSplitSettings,
+                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   InformSubscribers();
 
   // Upload all the queued up items (either with an ADD or an UPDATE action,
@@ -217,7 +221,8 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
   SyncMergeResult result(SUPERVISED_USER_SETTINGS);
   // Process all the accumulated changes from the queued items.
   if (change_list.size() > 0) {
-    store_->ReportValueChanged(kQueuedItems);
+    store_->ReportValueChanged(kQueuedItems,
+                               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     result.set_error(
         sync_processor_->ProcessSyncChanges(FROM_HERE, change_list));
   }
@@ -292,8 +297,10 @@ SyncError SupervisedUserSettingsService::ProcessSyncChanges(
       }
     }
   }
-  store_->ReportValueChanged(kAtomicSettings);
-  store_->ReportValueChanged(kSplitSettings);
+  store_->ReportValueChanged(kAtomicSettings,
+                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  store_->ReportValueChanged(kSplitSettings,
+                             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   InformSubscribers();
 
   SyncError error;
@@ -327,7 +334,7 @@ base::DictionaryValue* SupervisedUserSettingsService::GetOrCreateDictionary(
     DCHECK(success);
   } else {
     dict = new base::DictionaryValue;
-    store_->SetValue(key, dict);
+    store_->SetValue(key, dict, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 
   return dict;

@@ -182,13 +182,14 @@ void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
     SetPref(TestingPrefStore* pref_store,
             const std::string& path,
             base::Value* value) {
-  pref_store->SetValue(path, value);
+  pref_store->SetValue(path, value,
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
     RemovePref(TestingPrefStore* pref_store, const std::string& path) {
-  pref_store->RemoveValue(path);
+  pref_store->RemoveValue(path, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 #endif  // BASE_PREFS_TESTING_PREF_SERVICE_H_

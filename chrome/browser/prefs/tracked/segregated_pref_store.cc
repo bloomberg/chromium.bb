@@ -82,12 +82,14 @@ bool SegregatedPrefStore::GetValue(const std::string& key,
   return StoreForKey(key)->GetValue(key, result);
 }
 
-void SegregatedPrefStore::SetValue(const std::string& key, base::Value* value) {
-  StoreForKey(key)->SetValue(key, value);
+void SegregatedPrefStore::SetValue(const std::string& key,
+                                   base::Value* value,
+                                   uint32 flags) {
+  StoreForKey(key)->SetValue(key, value, flags);
 }
 
-void SegregatedPrefStore::RemoveValue(const std::string& key) {
-  StoreForKey(key)->RemoveValue(key);
+void SegregatedPrefStore::RemoveValue(const std::string& key, uint32 flags) {
+  StoreForKey(key)->RemoveValue(key, flags);
 }
 
 bool SegregatedPrefStore::GetMutableValue(const std::string& key,
@@ -95,13 +97,15 @@ bool SegregatedPrefStore::GetMutableValue(const std::string& key,
   return StoreForKey(key)->GetMutableValue(key, result);
 }
 
-void SegregatedPrefStore::ReportValueChanged(const std::string& key) {
-  StoreForKey(key)->ReportValueChanged(key);
+void SegregatedPrefStore::ReportValueChanged(const std::string& key,
+                                             uint32 flags) {
+  StoreForKey(key)->ReportValueChanged(key, flags);
 }
 
 void SegregatedPrefStore::SetValueSilently(const std::string& key,
-                                           base::Value* value) {
-  StoreForKey(key)->SetValueSilently(key, value);
+                                           base::Value* value,
+                                           uint32 flags) {
+  StoreForKey(key)->SetValueSilently(key, value, flags);
 }
 
 bool SegregatedPrefStore::ReadOnly() const {

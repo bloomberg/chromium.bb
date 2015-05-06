@@ -194,7 +194,8 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   EXPECT_EQ(base::FilePath::StringType(FILE_PATH_LITERAL("/usr/local/")), path);
   base::FilePath some_path(FILE_PATH_LITERAL("/usr/sbin/"));
 
-  pref_store->SetValue(kSomeDirectory, new StringValue(some_path.value()));
+  pref_store->SetValue(kSomeDirectory, new StringValue(some_path.value()),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kSomeDirectory, &actual));
   EXPECT_TRUE(actual->GetAsString(&path));
   EXPECT_EQ(some_path.value(), path);
@@ -205,7 +206,8 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   EXPECT_TRUE(actual->GetAsBoolean(&boolean));
   EXPECT_TRUE(boolean);
 
-  pref_store->SetValue(kNewWindowsInTabs, new FundamentalValue(false));
+  pref_store->SetValue(kNewWindowsInTabs, new FundamentalValue(false),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kNewWindowsInTabs, &actual));
   EXPECT_TRUE(actual->GetAsBoolean(&boolean));
   EXPECT_FALSE(boolean);
@@ -214,13 +216,15 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   int integer = 0;
   EXPECT_TRUE(actual->GetAsInteger(&integer));
   EXPECT_EQ(20, integer);
-  pref_store->SetValue(kMaxTabs, new FundamentalValue(10));
+  pref_store->SetValue(kMaxTabs, new FundamentalValue(10),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kMaxTabs, &actual));
   EXPECT_TRUE(actual->GetAsInteger(&integer));
   EXPECT_EQ(10, integer);
 
   pref_store->SetValue(kLongIntPref,
-                       new StringValue(base::Int64ToString(214748364842LL)));
+                       new StringValue(base::Int64ToString(214748364842LL)),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   EXPECT_TRUE(pref_store->GetValue(kLongIntPref, &actual));
   EXPECT_TRUE(actual->GetAsString(&string_value));
   int64 value;
@@ -310,8 +314,10 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
       pref_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
 
   // Set some keys with empty values.
-  pref_store->SetValue("list", new base::ListValue);
-  pref_store->SetValue("dict", new base::DictionaryValue);
+  pref_store->SetValue("list", new base::ListValue,
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  pref_store->SetValue("dict", new base::DictionaryValue,
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   // Write to file.
   pref_store->CommitPendingWrite();
@@ -341,9 +347,11 @@ TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
 
   base::DictionaryValue* dict = new base::DictionaryValue;
   dict->SetString("key", "value");
-  pref_store->SetValue("dict", dict);
+  pref_store->SetValue("dict", dict,
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
-  pref_store->RemoveValue("dict.key");
+  pref_store->RemoveValue("dict.key",
+                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   const base::Value* retrieved_dict = NULL;
   bool has_dict = pref_store->GetValue("dict", &retrieved_dict);

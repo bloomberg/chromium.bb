@@ -39,7 +39,8 @@ std::string ServiceProcessPrefs::GetString(
 
 void ServiceProcessPrefs::SetString(const std::string& key,
                                     const std::string& value) {
-  prefs_->SetValue(key, new base::StringValue(value));
+  prefs_->SetValue(key, new base::StringValue(value),
+                   WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 bool ServiceProcessPrefs::GetBoolean(const std::string& key,
@@ -53,7 +54,8 @@ bool ServiceProcessPrefs::GetBoolean(const std::string& key,
 }
 
 void ServiceProcessPrefs::SetBoolean(const std::string& key, bool value) {
-  prefs_->SetValue(key, new base::FundamentalValue(value));
+  prefs_->SetValue(key, new base::FundamentalValue(value),
+                   WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 int ServiceProcessPrefs::GetInt(const std::string& key,
@@ -67,7 +69,8 @@ int ServiceProcessPrefs::GetInt(const std::string& key,
 }
 
 void ServiceProcessPrefs::SetInt(const std::string& key, int value) {
-  prefs_->SetValue(key, new base::FundamentalValue(value));
+  prefs_->SetValue(key, new base::FundamentalValue(value),
+                   WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 const base::DictionaryValue* ServiceProcessPrefs::GetDictionary(
@@ -91,10 +94,10 @@ const base::ListValue* ServiceProcessPrefs::GetList(
 }
 
 void ServiceProcessPrefs::SetValue(const std::string& key, base::Value* value) {
-  prefs_->SetValue(key, value);
+  prefs_->SetValue(key, value, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void ServiceProcessPrefs::RemovePref(const std::string& key) {
-  prefs_->RemoveValue(key);
+  prefs_->RemoveValue(key, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 

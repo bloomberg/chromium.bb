@@ -39,15 +39,19 @@ class BASE_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
 
   // Methods of PersistentPrefStore.
   bool GetMutableValue(const std::string& key, base::Value** result) override;
-  void SetValue(const std::string& key, base::Value* value) override;
-  void SetValueSilently(const std::string& key, base::Value* value) override;
-  void RemoveValue(const std::string& key) override;
+  void SetValue(const std::string& key,
+                base::Value* value,
+                uint32 flags) override;
+  void SetValueSilently(const std::string& key,
+                        base::Value* value,
+                        uint32 flags) override;
+  void RemoveValue(const std::string& key, uint32 flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* delegate) override;
   void CommitPendingWrite() override;
-  void ReportValueChanged(const std::string& key) override;
+  void ReportValueChanged(const std::string& key, uint32 flags) override;
 
   // Methods of PrefStore::Observer.
   void OnPrefValueChanged(const std::string& key) override;

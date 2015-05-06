@@ -25,7 +25,8 @@ void ChromeStorageImpl::Put(const std::string& key, std::string* data) {
   scoped_ptr<base::StringValue> string_value(
       new base::StringValue(std::string()));
   string_value->GetString()->swap(*owned_data);
-  backing_store_->SetValue(key, string_value.release());
+  backing_store_->SetValue(key, string_value.release(),
+                           WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void ChromeStorageImpl::Get(const std::string& key,

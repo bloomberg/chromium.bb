@@ -82,9 +82,13 @@ class BASE_PREFS_EXPORT JsonPrefStore
 
   // PersistentPrefStore overrides:
   bool GetMutableValue(const std::string& key, base::Value** result) override;
-  void SetValue(const std::string& key, base::Value* value) override;
-  void SetValueSilently(const std::string& key, base::Value* value) override;
-  void RemoveValue(const std::string& key) override;
+  void SetValue(const std::string& key,
+                base::Value* value,
+                uint32 flags) override;
+  void SetValueSilently(const std::string& key,
+                        base::Value* value,
+                        uint32 flags) override;
+  void RemoveValue(const std::string& key, uint32 flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   // Note this method may be asynchronous if this instance has a |pref_filter_|
@@ -93,11 +97,11 @@ class BASE_PREFS_EXPORT JsonPrefStore
   PrefReadError ReadPrefs() override;
   void ReadPrefsAsync(ReadErrorDelegate* error_delegate) override;
   void CommitPendingWrite() override;
-  void ReportValueChanged(const std::string& key) override;
+  void ReportValueChanged(const std::string& key, uint32 flags) override;
 
   // Just like RemoveValue(), but doesn't notify observers. Used when doing some
   // cleanup that shouldn't otherwise alert observers.
-  void RemoveValueSilently(const std::string& key);
+  void RemoveValueSilently(const std::string& key, uint32 flags);
 
   // Registers |on_next_successful_write| to be called once, on the next
   // successful write event of |writer_|.

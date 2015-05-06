@@ -102,7 +102,8 @@ void InitializePrefStore(WriteablePrefStore* store) {
   empty_store->SetInteger(kVersionKey, kVersion);
   empty_store->Set(kDictionariesKey,
                    make_scoped_ptr(new base::DictionaryValue));
-  store->SetValue(kPreferenceName, empty_store);
+  store->SetValue(kPreferenceName, empty_store,
+                  WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 // A class to allow iteration over all dictionaries in the pref store, and
@@ -190,7 +191,10 @@ class ScopedPrefNotifier {
   // lifetime of this object.
   ScopedPrefNotifier(WriteablePrefStore* pref_store)
       : pref_store_(pref_store) {}
-  ~ScopedPrefNotifier() { pref_store_->ReportValueChanged(kPreferenceName); }
+  ~ScopedPrefNotifier() {
+    pref_store_->ReportValueChanged(
+        kPreferenceName, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  }
 
  private:
   WriteablePrefStore* pref_store_;

@@ -52,13 +52,17 @@ class SegregatedPrefStore : public PersistentPrefStore {
                 const base::Value** result) const override;
 
   // WriteablePrefStore implementation
-  void SetValue(const std::string& key, base::Value* value) override;
-  void RemoveValue(const std::string& key) override;
+  void SetValue(const std::string& key,
+                base::Value* value,
+                uint32 flags) override;
+  void RemoveValue(const std::string& key, uint32 flags) override;
 
   // PersistentPrefStore implementation
   bool GetMutableValue(const std::string& key, base::Value** result) override;
-  void ReportValueChanged(const std::string& key) override;
-  void SetValueSilently(const std::string& key, base::Value* value) override;
+  void ReportValueChanged(const std::string& key, uint32 flags) override;
+  void SetValueSilently(const std::string& key,
+                        base::Value* value,
+                        uint32 flags) override;
   bool ReadOnly() const override;
   PrefReadError GetReadError() const override;
   PrefReadError ReadPrefs() override;

@@ -22,6 +22,18 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
+namespace {
+
+void RemoveValueSilently(const base::WeakPtr<JsonPrefStore> pref_store,
+                         const std::string& key) {
+  if (pref_store) {
+    pref_store->RemoveValueSilently(
+        key, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  }
+}
+
+}  // namespace
+
 // TODO(erikwright): Enable this on Chrome OS and Android once MACs are moved
 // out of Local State. This will resolve a race condition on Android and a
 // privacy issue on ChromeOS. http://crbug.com/349158
@@ -144,22 +156,17 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
       protected_pref_hash_filter.Pass()));
 
   SetupTrackedPreferencesMigration(
-      unprotected_pref_names,
-      protected_pref_names,
-      base::Bind(&JsonPrefStore::RemoveValueSilently,
-                 unprotected_pref_store->AsWeakPtr()),
-      base::Bind(&JsonPrefStore::RemoveValueSilently,
-                 protected_pref_store->AsWeakPtr()),
+      unprotected_pref_names, protected_pref_names,
+      base::Bind(&RemoveValueSilently, unprotected_pref_store->AsWeakPtr()),
+      base::Bind(&RemoveValueSilently, protected_pref_store->AsWeakPtr()),
       base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
                  unprotected_pref_store->AsWeakPtr()),
       base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
                  protected_pref_store->AsWeakPtr()),
-      GetPrefHashStore(false),
-      GetPrefHashStore(true),
+      GetPrefHashStore(false), GetPrefHashStore(true),
       scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
           profile_path_.AsUTF8Unsafe(), local_state_)),
-      raw_unprotected_pref_hash_filter,
-      raw_protected_pref_hash_filter);
+      raw_unprotected_pref_hash_filter, raw_protected_pref_hash_filter);
 
   return new SegregatedPrefStore(unprotected_pref_store, protected_pref_store,
                                  protected_pref_names);

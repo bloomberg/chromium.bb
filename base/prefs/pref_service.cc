@@ -38,6 +38,17 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
   base::Callback<void(PersistentPrefStore::PrefReadError)> callback_;
 };
 
+// Returns the WriteablePrefStore::PrefWriteFlags for the pref with the given
+// |path|.
+uint32 GetWriteFlags(const PrefService* service, const std::string& path) {
+  const PrefService::Preference* pref = service->FindPreference(path);
+
+  uint32 write_flags = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
+  if (pref->registration_flags() & PrefRegistry::LOSSY_PREF)
+    write_flags &= WriteablePrefStore::LOSSY_PREF_WRITE_FLAG;
+  return write_flags;
+}
+
 }  // namespace
 
 PrefService::PrefService(
@@ -357,7 +368,7 @@ void PrefService::ClearPref(const std::string& path) {
     NOTREACHED() << "Trying to clear an unregistered pref: " << path;
     return;
   }
-  user_pref_store_->RemoveValue(path);
+  user_pref_store_->RemoveValue(path, GetWriteFlags(this, path));
 }
 
 void PrefService::Set(const std::string& path, const base::Value& value) {
@@ -454,14 +465,14 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
     } else {
       NOTREACHED();
     }
-    user_pref_store_->SetValueSilently(path, value);
+    user_pref_store_->SetValueSilently(path, value, GetWriteFlags(this, path));
   }
   return value;
 }
 
 void PrefService::ReportUserPrefChanged(const std::string& key) {
   DCHECK(CalledOnValidThread());
-  user_pref_store_->ReportValueChanged(key);
+  user_pref_store_->ReportValueChanged(key, GetWriteFlags(this, key));
 }
 
 void PrefService::SetUserPrefValue(const std::string& path,
@@ -481,7 +492,8 @@ void PrefService::SetUserPrefValue(const std::string& path,
     return;
   }
 
-  user_pref_store_->SetValue(path, owned_value.release());
+  user_pref_store_->SetValue(path, owned_value.release(),
+                             GetWriteFlags(this, path));
 }
 
 void PrefService::UpdateCommandLinePrefStore(PrefStore* command_line_store) {
@@ -496,6 +508,9 @@ PrefService::Preference::Preference(const PrefService* service,
                                     base::Value::Type type)
     : name_(name), type_(type), pref_service_(service) {
   DCHECK(service);
+  // Cache the registration flags at creation time to avoid multiple map lookups
+  // later.
+  registration_flags_ = service->pref_registry_->GetRegistrationFlags(name_);
 }
 
 const std::string PrefService::Preference::name() const {

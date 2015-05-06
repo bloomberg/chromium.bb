@@ -207,9 +207,12 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     pref_store->AddObserver(&registry_verifier_);
     PersistentPrefStore::PrefReadError error = pref_store->ReadPrefs();
     EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE, error);
-    pref_store->SetValue(kTrackedAtomic, new base::StringValue(kFoobar));
-    pref_store->SetValue(kProtectedAtomic, new base::StringValue(kHelloWorld));
-    pref_store->SetValue(kUnprotectedPref, new base::StringValue(kFoobar));
+    pref_store->SetValue(kTrackedAtomic, new base::StringValue(kFoobar),
+                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+    pref_store->SetValue(kProtectedAtomic, new base::StringValue(kHelloWorld),
+                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+    pref_store->SetValue(kUnprotectedPref, new base::StringValue(kFoobar),
+                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->RemoveObserver(&registry_verifier_);
     pref_store->CommitPendingWrite();
     base::RunLoop().RunUntilIdle();
@@ -573,7 +576,8 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
 
   // Trigger the logic that migrates it back to the unprotected preferences
   // file.
-  pref_store_->SetValue(kProtectedAtomic, new base::StringValue(kGoodbyeWorld));
+  pref_store_->SetValue(kProtectedAtomic, new base::StringValue(kGoodbyeWorld),
+                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   LoadExistingPrefs();
   ExpectStringValueEquals(kProtectedAtomic, kGoodbyeWorld);
   VerifyResetRecorded(false);

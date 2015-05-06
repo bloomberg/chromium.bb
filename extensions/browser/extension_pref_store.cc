@@ -26,9 +26,10 @@ void ExtensionPrefStore::OnPrefValueChanged(const std::string& key) {
                                                        incognito_pref_store_,
                                                        NULL);
   if (winner)
-    SetValue(key, winner->DeepCopy());
+    SetValue(key, winner->DeepCopy(),
+             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   else
-    RemoveValue(key);
+    RemoveValue(key, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 
 void ExtensionPrefStore::OnExtensionPrefValueMapDestruction() {

@@ -226,7 +226,9 @@ bool JsonPrefStore::GetMutableValue(const std::string& key,
   return prefs_->Get(key, result);
 }
 
-void JsonPrefStore::SetValue(const std::string& key, base::Value* value) {
+void JsonPrefStore::SetValue(const std::string& key,
+                             base::Value* value,
+                             uint32 flags) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(value);
@@ -235,12 +237,13 @@ void JsonPrefStore::SetValue(const std::string& key, base::Value* value) {
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, new_value.release());
-    ReportValueChanged(key);
+    ReportValueChanged(key, flags);
   }
 }
 
 void JsonPrefStore::SetValueSilently(const std::string& key,
-                                     base::Value* value) {
+                                     base::Value* value,
+                                     uint32 flags) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(value);
@@ -254,14 +257,14 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
   }
 }
 
-void JsonPrefStore::RemoveValue(const std::string& key) {
+void JsonPrefStore::RemoveValue(const std::string& key, uint32 flags) {
   DCHECK(CalledOnValidThread());
 
   if (prefs_->RemovePath(key, NULL))
-    ReportValueChanged(key);
+    ReportValueChanged(key, flags);
 }
 
-void JsonPrefStore::RemoveValueSilently(const std::string& key) {
+void JsonPrefStore::RemoveValueSilently(const std::string& key, uint32 flags) {
   DCHECK(CalledOnValidThread());
 
   prefs_->RemovePath(key, NULL);
@@ -310,7 +313,7 @@ void JsonPrefStore::CommitPendingWrite() {
     writer_.DoScheduledWrite();
 }
 
-void JsonPrefStore::ReportValueChanged(const std::string& key) {
+void JsonPrefStore::ReportValueChanged(const std::string& key, uint32 flags) {
   DCHECK(CalledOnValidThread());
 
   if (pref_filter_)

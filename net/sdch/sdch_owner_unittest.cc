@@ -774,7 +774,8 @@ TEST_F(SdchOwnerPersistenceTest, Empty) {
 
 // Test a persistence store with an empty dictionary.
 TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDict) {
-  pref_store_->SetValue("SDCH", new base::DictionaryValue());
+  pref_store_->SetValue("SDCH", new base::DictionaryValue(),
+                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   ResetOwner(false);
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
 }
@@ -783,7 +784,8 @@ TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDict) {
 TEST_F(SdchOwnerPersistenceTest, Persistent_BadVersion) {
   base::DictionaryValue* sdch_dict = new base::DictionaryValue();
   sdch_dict->SetInteger("version", 2);
-  pref_store_->SetValue("SDCH", sdch_dict);
+  pref_store_->SetValue("SDCH", sdch_dict,
+                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   ResetOwner(false);
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
@@ -795,7 +797,8 @@ TEST_F(SdchOwnerPersistenceTest, Persistent_EmptyDictList) {
   scoped_ptr<base::DictionaryValue> dicts(new base::DictionaryValue());
   sdch_dict->SetInteger("version", 1);
   sdch_dict->Set("dictionaries", dicts.Pass());
-  pref_store_->SetValue("SDCH", sdch_dict);
+  pref_store_->SetValue("SDCH", sdch_dict,
+                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 
   ResetOwner(false);
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());

@@ -98,15 +98,18 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
     if (command_line_->HasSwitch(string_switch_map_[i].switch_name)) {
       SetValue(string_switch_map_[i].preference_path,
                new base::StringValue(command_line_->GetSwitchValueASCII(
-                   string_switch_map_[i].switch_name)));
+                   string_switch_map_[i].switch_name)),
+               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
 
   for (size_t i = 0; i < arraysize(path_switch_map_); ++i) {
     if (command_line_->HasSwitch(path_switch_map_[i].switch_name)) {
       SetValue(path_switch_map_[i].preference_path,
-               new base::StringValue(command_line_->GetSwitchValuePath(
-                   path_switch_map_[i].switch_name).value()));
+               new base::StringValue(
+                   command_line_->GetSwitchValuePath(
+                                      path_switch_map_[i].switch_name).value()),
+               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
 
@@ -122,38 +125,41 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
         continue;
       }
       SetValue(integer_switch_map_[i].preference_path,
-               new base::FundamentalValue(int_value));
+               new base::FundamentalValue(int_value),
+               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
 
   for (size_t i = 0; i < arraysize(boolean_switch_map_); ++i) {
     if (command_line_->HasSwitch(boolean_switch_map_[i].switch_name)) {
       SetValue(boolean_switch_map_[i].preference_path,
-               new base::FundamentalValue(boolean_switch_map_[i].set_value));
+               new base::FundamentalValue(boolean_switch_map_[i].set_value),
+               WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     }
   }
 }
 
 void CommandLinePrefStore::ApplyProxyMode() {
   if (command_line_->HasSwitch(switches::kNoProxyServer)) {
-    SetValue(prefs::kProxy,
-             ProxyConfigDictionary::CreateDirect());
+    SetValue(prefs::kProxy, ProxyConfigDictionary::CreateDirect(),
+             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
     std::string pac_script_url =
         command_line_->GetSwitchValueASCII(switches::kProxyPacUrl);
     SetValue(prefs::kProxy,
-             ProxyConfigDictionary::CreatePacScript(pac_script_url, false));
+             ProxyConfigDictionary::CreatePacScript(pac_script_url, false),
+             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
-    SetValue(prefs::kProxy,
-             ProxyConfigDictionary::CreateAutoDetect());
+    SetValue(prefs::kProxy, ProxyConfigDictionary::CreateAutoDetect(),
+             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line_->HasSwitch(switches::kProxyServer)) {
     std::string proxy_server =
         command_line_->GetSwitchValueASCII(switches::kProxyServer);
     std::string bypass_list =
         command_line_->GetSwitchValueASCII(switches::kProxyBypassList);
-    SetValue(prefs::kProxy,
-             ProxyConfigDictionary::CreateFixedServers(proxy_server,
-                                                       bypass_list));
+    SetValue(prefs::kProxy, ProxyConfigDictionary::CreateFixedServers(
+                                proxy_server, bypass_list),
+             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 
@@ -168,11 +174,13 @@ void CommandLinePrefStore::ApplySSLSwitches() {
          it != cipher_strings.end(); ++it) {
       list_value->Append(new base::StringValue(*it));
     }
-    SetValue(prefs::kCipherSuiteBlacklist, list_value);
+    SetValue(prefs::kCipherSuiteBlacklist, list_value,
+             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 
 void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
   if (command_line_->HasSwitch(switches::kDisableExtensions))
-    SetValue(prefs::kBackgroundModeEnabled, new base::FundamentalValue(false));
+    SetValue(prefs::kBackgroundModeEnabled, new base::FundamentalValue(false),
+             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }

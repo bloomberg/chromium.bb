@@ -37,19 +37,23 @@ bool AwPrefStore::IsInitializationComplete() const {
   return true;
 }
 
-void AwPrefStore::SetValue(const std::string& key, base::Value* value) {
+void AwPrefStore::SetValue(const std::string& key,
+                           base::Value* value,
+                           uint32 flags) {
   DCHECK(value);
   if (prefs_.SetValue(key, value))
-      ReportValueChanged(key);
+    ReportValueChanged(key, flags);
 }
 
-void AwPrefStore::SetValueSilently(const std::string& key, base::Value* value) {
+void AwPrefStore::SetValueSilently(const std::string& key,
+                                   base::Value* value,
+                                   uint32 flags) {
   prefs_.SetValue(key, value);
 }
 
-void AwPrefStore::RemoveValue(const std::string& key) {
+void AwPrefStore::RemoveValue(const std::string& key, uint32 flags) {
   if (prefs_.RemoveValue(key))
-    ReportValueChanged(key);
+    ReportValueChanged(key, flags);
 }
 
 bool AwPrefStore::ReadOnly() const {
@@ -67,6 +71,6 @@ PersistentPrefStore::PrefReadError AwPrefStore::ReadPrefs() {
 void AwPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate_raw) {
 }
 
-void AwPrefStore::ReportValueChanged(const std::string& key) {
+void AwPrefStore::ReportValueChanged(const std::string& key, uint32 flags) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }

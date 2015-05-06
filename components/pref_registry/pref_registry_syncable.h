@@ -43,15 +43,15 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistrySimple {
   // should ever be specified.
   //
   // Note: These must NOT overlap with PrefRegistry::PrefRegistrationFlags.
-  enum PrefRegistrationFlags {
+  enum PrefRegistrationFlags : uint32 {
     // The pref will be synced.
-    SYNCABLE_PREF = 1 << 1,
+    SYNCABLE_PREF = 1 << 0,
 
     // The pref will be synced. The pref will never be encrypted and will be
     // synced before other datatypes. Because they're never encrypted, on first
     // sync, they can be synced down before the user is prompted for a
     // passphrase.
-    SYNCABLE_PRIORITY_PREF = 1 << 2,
+    SYNCABLE_PRIORITY_PREF = 1 << 1,
   };
 
   typedef base::Callback<void(const std::string& path, uint32 flags)>

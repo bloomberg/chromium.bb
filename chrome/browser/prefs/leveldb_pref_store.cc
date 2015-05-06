@@ -267,12 +267,15 @@ void LevelDBPrefStore::ScheduleWrite() {
   }
 }
 
-void LevelDBPrefStore::SetValue(const std::string& key, base::Value* value) {
+void LevelDBPrefStore::SetValue(const std::string& key,
+                                base::Value* value,
+                                uint32 flags) {
   SetValueInternal(key, value, true /*notify*/);
 }
 
 void LevelDBPrefStore::SetValueSilently(const std::string& key,
-                                        base::Value* value) {
+                                        base::Value* value,
+                                        uint32 flags) {
   SetValueInternal(key, value, false /*notify*/);
 }
 
@@ -301,7 +304,7 @@ void LevelDBPrefStore::SetValueInternal(const std::string& key,
   }
 }
 
-void LevelDBPrefStore::RemoveValue(const std::string& key) {
+void LevelDBPrefStore::RemoveValue(const std::string& key, uint32 flags) {
   DCHECK(initialized_);
   if (prefs_.RemoveValue(key)) {
     MarkForDeletion(key);
@@ -374,7 +377,8 @@ void LevelDBPrefStore::MarkForInsertion(const std::string& key,
   ScheduleWrite();
 }
 
-void LevelDBPrefStore::ReportValueChanged(const std::string& key) {
+void LevelDBPrefStore::ReportValueChanged(const std::string& key,
+                                          uint32 flags) {
   base::Value* new_value = NULL;
   bool contains_value = prefs_.GetValue(key, &new_value);
   DCHECK(contains_value);
