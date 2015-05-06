@@ -22,7 +22,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
@@ -401,70 +400,6 @@ public class VisualStateTest extends AwTestBase {
                 });
             }
         });
-
-        assertTrue(testFinishedSignal.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    /*
-    @Feature({"AndroidWebView"})
-    @SmallTest
-    http://crbug.com/472922
-    */
-    @DisabledTest
-    public void testVisualStateCallbackFromJavaDuringFullscreenTransitions() throws Throwable {
-        // This test checks that VisualStateCallbacks are delivered correctly during
-        // fullscreen transitions. It loads a page, clicks a button to enter fullscreen,
-        // then inserts a VisualStateCallback from onShowCustomView and verifies that when the
-        // callback is received the fullscreen contents are rendered correctly in the next draw.
-        final CountDownLatch readyToEnterFullscreenSignal = new CountDownLatch(1);
-        final CountDownLatch testFinishedSignal = new CountDownLatch(1);
-
-        final AtomicReference<AwContents> awContentsRef = new AtomicReference<>();
-        final FullScreenVideoTestAwContentsClient awContentsClient =
-                new FullScreenVideoTestAwContentsClient(
-                        getActivity(), isHardwareAcceleratedTest()) {
-            @Override
-            public void onPageFinished(String url) {
-                super.onPageFinished(url);
-                awContentsRef.get().insertVisualStateCallback(10, new VisualStateCallback() {
-                    @Override
-                    public void onComplete(long id) {
-                        Bitmap blueScreenshot =
-                                GraphicsTestUtils.drawAwContents(awContentsRef.get(), 100, 100);
-                        assertEquals(Color.BLUE, blueScreenshot.getPixel(50, 50));
-                        readyToEnterFullscreenSignal.countDown();
-                    }
-                });
-            }
-
-            @Override
-            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
-                super.onShowCustomView(view, callback);
-                awContentsRef.get().insertVisualStateCallback(20, new VisualStateCallback() {
-                    @Override
-                    public void onComplete(long id) {
-                        // NOTE: We cannot use drawAwContents here because the web contents are
-                        // rendered into the custom view while in fullscreen.
-                        Bitmap redScreenshot =
-                                GraphicsTestUtils.drawView(getCustomView(), 100, 100);
-                        assertEquals(Color.RED, redScreenshot.getPixel(50, 50));
-                        testFinishedSignal.countDown();
-                    }
-                });
-            }
-        };
-        final AwTestContainerView testView = createAwTestContainerViewOnMainSync(awContentsClient);
-        final AwContents awContents = testView.getAwContents();
-        awContentsRef.set(awContents);
-        final ContentViewCore contentViewCore = testView.getContentViewCore();
-        enableJavaScriptOnUiThread(awContents);
-        awContents.getSettings().setFullscreenSupported(true);
-
-        loadUrlSync(awContents, awContentsClient.getOnPageFinishedHelper(), FULLSCREEN_TEST_URL);
-
-        assertTrue(readyToEnterFullscreenSignal.await(
-                AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        DOMUtils.clickNode(VisualStateTest.this, contentViewCore, ENTER_FULLSCREEN_CONTROL_ID);
 
         assertTrue(testFinishedSignal.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
