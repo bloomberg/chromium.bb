@@ -1158,9 +1158,6 @@ crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ 
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
-crbug.com/477743 svg/W3C-SVG-1.1/masking-path-04-b.svg [ NeedsRebaseline ]
-crbug.com/477743 virtual/slimmingpaint/svg/W3C-SVG-1.1/masking-path-04-b.svg [ NeedsRebaseline ]
-
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/border-padding-pagination.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/column-rules-stacking.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/max-height-columns-block.html [ Skip ]
