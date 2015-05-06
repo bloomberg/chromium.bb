@@ -330,7 +330,7 @@
     'accessibility':['dmazzoni@chromium.org',
                      'aboxhall@chromium.org',
                      'nektar@chromium.org',
-                     'je_julie.kim@samsung.com'],
+                     'je_julie.kim@chromium.org'],
     'animations': ['alexis.menard@intel.com',
                    'dstockwell@chromium.org',
                    'ericwilligers@chromium.org',
