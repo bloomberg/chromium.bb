@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/InspectorTypeBuilder.h"
+#include "core/inspector/InjectedScriptHostClient.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -42,6 +43,7 @@
 namespace blink {
 
 class EventTarget;
+class InjectedScriptHostClient;
 class InspectorConsoleAgent;
 class InspectorDebuggerAgent;
 class InspectorInspectorAgent;
@@ -66,12 +68,13 @@ public:
 
     using InspectCallback = Function<void(PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>)>;
 
-    void init(InspectorConsoleAgent* consoleAgent, InspectorDebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, ScriptDebugServer* scriptDebugServer)
+    void init(InspectorConsoleAgent* consoleAgent, InspectorDebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, ScriptDebugServer* scriptDebugServer, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
     {
         m_consoleAgent = consoleAgent;
         m_debuggerAgent = debuggerAgent;
         m_inspectCallback = inspectCallback;
         m_scriptDebugServer = scriptDebugServer;
+        m_client = injectedScriptHostClient;
     }
 
     static Node* scriptValueAsNode(ScriptState*, ScriptValue);
@@ -100,6 +103,7 @@ public:
     void unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber);
 
     ScriptDebugServer& scriptDebugServer() { return *m_scriptDebugServer; }
+    InjectedScriptHostClient* client() { return m_client.get(); }
 
 private:
     InjectedScriptHost();
@@ -110,6 +114,7 @@ private:
     RawPtrWillBeMember<ScriptDebugServer> m_scriptDebugServer;
     Vector<OwnPtr<InspectableObject> > m_inspectedObjects;
     OwnPtr<InspectableObject> m_defaultInspectableObject;
+    OwnPtr<InjectedScriptHostClient> m_client;
 };
 
 } // namespace blink

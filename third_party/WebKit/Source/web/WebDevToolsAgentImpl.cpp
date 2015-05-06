@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
+#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/AsyncCallTracker.h"
@@ -228,6 +229,25 @@ private:
 };
 
 ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = nullptr;
+
+class PageInjectedScriptHostClient: public InjectedScriptHostClient {
+public:
+    PageInjectedScriptHostClient() { }
+
+    ~PageInjectedScriptHostClient() override { }
+
+    void muteWarningsAndDeprecations()
+    {
+        FrameConsole::mute();
+        UseCounter::muteForInspector();
+    }
+
+    void unmuteWarningsAndDeprecations()
+    {
+        FrameConsole::unmute();
+        UseCounter::unmuteForInspector();
+    }
+};
 
 class DebuggerTask : public PageScriptDebugServer::Task {
 public:
@@ -450,7 +470,8 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         m_pageConsoleAgent.get(),
         debuggerAgent,
         bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
-        scriptDebugServer);
+        scriptDebugServer,
+        adoptPtr(new PageInjectedScriptHostClient()));
 }
 
 void WebDevToolsAgentImpl::registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)

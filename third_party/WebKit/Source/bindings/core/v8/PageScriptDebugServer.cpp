@@ -205,16 +205,4 @@ void PageScriptDebugServer::quitMessageLoopOnPause()
     m_clientMessageLoop->quitNow();
 }
 
-void PageScriptDebugServer::muteWarningsAndDeprecations()
-{
-    FrameConsole::mute();
-    UseCounter::muteForInspector();
-}
-
-void PageScriptDebugServer::unmuteWarningsAndDeprecations()
-{
-    FrameConsole::unmute();
-    UseCounter::unmuteForInspector();
-}
-
 } // namespace blink

@@ -561,12 +561,11 @@ void V8InjectedScriptHost::callFunctionMethodCustom(const v8::FunctionCallbackIn
 void V8InjectedScriptHost::suppressWarningsAndCallFunctionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     InjectedScriptHost* host = V8InjectedScriptHost::toImpl(info.Holder());
-    ScriptDebugServer& debugServer = host->scriptDebugServer();
-    debugServer.muteWarningsAndDeprecations();
+    host->client()->muteWarningsAndDeprecations();
 
     callFunctionMethodCustom(info);
 
-    debugServer.unmuteWarningsAndDeprecations();
+    host->client()->unmuteWarningsAndDeprecations();
 }
 
 void V8InjectedScriptHost::setNonEnumPropertyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)

@@ -116,9 +116,6 @@ public:
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
 
-    virtual void muteWarningsAndDeprecations() { }
-    virtual void unmuteWarningsAndDeprecations() { }
-
     v8::Isolate* isolate() const { return m_isolate; }
 
 protected:

@@ -89,6 +89,13 @@ private:
 
 }
 
+class WorkerInjectedScriptHostClient: public InjectedScriptHostClient {
+public:
+    WorkerInjectedScriptHostClient() { }
+
+    ~WorkerInjectedScriptHostClient() override { }
+};
+
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
     , m_stateClient(adoptPtr(new WorkerStateClient(workerGlobalScope)))
@@ -117,7 +124,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
     m_agents.append(InspectorTimelineAgent::create());
 
-    m_injectedScriptManager->injectedScriptHost()->init(workerConsoleAgentPtr, m_workerDebuggerAgent, nullptr, m_debugServer.get());
+    m_injectedScriptManager->injectedScriptHost()->init(workerConsoleAgentPtr, m_workerDebuggerAgent, nullptr, m_debugServer.get(), adoptPtr(new WorkerInjectedScriptHostClient()));
 }
 
 WorkerInspectorController::~WorkerInspectorController()

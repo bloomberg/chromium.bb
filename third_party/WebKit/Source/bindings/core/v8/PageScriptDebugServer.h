@@ -67,9 +67,6 @@ public:
     void compileScript(ScriptState*, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
     void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
 
-    void muteWarningsAndDeprecations() override;
-    void unmuteWarningsAndDeprecations() override;
-
 private:
     ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
     void clearCompiledScripts() override;
