@@ -216,6 +216,7 @@ class BluetoothDetailedView : public TrayDetailsView,
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH));
     toggle_bluetooth_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH));
+    toggle_bluetooth_->EnableCanvasFlippingForRTLUI(false);
     footer()->AddButton(toggle_bluetooth_);
  }
 
