@@ -224,8 +224,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Sets all the displays into pre-suspend mode; usually this means
   // configure them for their resume state. This allows faster resume on
-  // machines where display configuration is slow.
-  void SuspendDisplays();
+  // machines where display configuration is slow. On completion of the display
+  // configuration |callback| is executed.
+  void SuspendDisplays(const ConfigurationCallback& callback);
 
   // Reprobes displays to handle changes made while the system was
   // suspended.

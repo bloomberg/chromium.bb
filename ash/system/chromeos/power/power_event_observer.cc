@@ -37,6 +37,11 @@ void ResumeRenderingRequests() {
     window->GetHost()->compositor()->SetVisible(true);
 }
 
+void OnSuspendDisplaysCompleted(const base::Closure& suspend_callback,
+                                bool status) {
+  suspend_callback.Run();
+}
+
 }  // namespace
 
 PowerEventObserver::PowerEventObserver()
@@ -113,7 +118,10 @@ void PowerEventObserver::SuspendImminent() {
   }
 
   ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
-  shell->display_configurator()->SuspendDisplays();
+  shell->display_configurator()->SuspendDisplays(base::Bind(
+      &OnSuspendDisplaysCompleted, chromeos::DBusThreadManager::Get()
+                                       ->GetPowerManagerClient()
+                                       ->GetSuspendReadinessCallback()));
 }
 
 void PowerEventObserver::SuspendDone(const base::TimeDelta& sleep_duration) {

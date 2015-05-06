@@ -659,7 +659,9 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   // was connected while suspended.
   const gfx::Size framebuffer_size = configurator_.framebuffer_size();
   DCHECK(!framebuffer_size.IsEmpty());
-  configurator_.SuspendDisplays();
+  configurator_.SuspendDisplays(base::Bind(
+      &DisplayConfiguratorTest::OnConfiguredCallback, base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(framebuffer_size.ToString(),
             configurator_.framebuffer_size().ToString());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
@@ -692,7 +694,9 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
           NULL),
       log_->GetActionsAndClear());
 
-  configurator_.SuspendDisplays();
+  configurator_.SuspendDisplays(base::Bind(
+      &DisplayConfiguratorTest::OnConfiguredCallback, base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -747,7 +751,9 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
                   NULL),
       log_->GetActionsAndClear());
 
-  configurator_.SuspendDisplays();
+  configurator_.SuspendDisplays(base::Bind(
+      &DisplayConfiguratorTest::OnConfiguredCallback, base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(JoinActions(kGrab, kUngrab, kSync, NULL),
             log_->GetActionsAndClear());
 
@@ -1020,7 +1026,9 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   // after the displays have been suspended.  This event should be ignored since
   // the DisplayConfigurator will force a probe and reconfiguration of displays
   // at resume time.
-  configurator_.SuspendDisplays();
+  configurator_.SuspendDisplays(base::Bind(
+      &DisplayConfiguratorTest::OnConfiguredCallback, base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // The configuration timer should not be started when the displays
@@ -1091,7 +1099,9 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   // If a configuration task is pending when the displays are suspended, that
   // task should not run either and the timer should be stopped.
   configurator_.OnConfigurationChanged();
-  configurator_.SuspendDisplays();
+  configurator_.SuspendDisplays(base::Bind(
+      &DisplayConfiguratorTest::OnConfiguredCallback, base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   EXPECT_FALSE(test_api_.TriggerConfigureTimeout());
@@ -1380,7 +1390,9 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
 
   // Suspend and resume the system. Resuming should post a task to restore the
   // previous power state, additionally forcing a probe.
-  configurator_.SuspendDisplays();
+  configurator_.SuspendDisplays(base::Bind(
+      &DisplayConfiguratorTest::OnConfiguredCallback, base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopCallbackResult());
   configurator_.ResumeDisplays();
 
   // Before the task runs, exit docked mode.
