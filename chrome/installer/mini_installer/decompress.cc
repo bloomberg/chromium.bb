@@ -190,13 +190,14 @@ bool InitializeFdi() {
       L"C:\\Windows\\system32\\cabinet.dll",
     };
 
-    wchar_t path[MAX_PATH] = {0};
-    for (int i = 0; i < arraysize(candidate_paths); ++i) {
+    static const DWORD kBufferSize = MAX_PATH;
+    wchar_t path[kBufferSize];
+    for (const wchar_t* candidate_path : candidate_paths) {
       path[0] = L'\0';
-      DWORD result = ::ExpandEnvironmentStringsW(candidate_paths[i],
-                                                 path, arraysize(path));
+      DWORD result = ::ExpandEnvironmentStringsW(candidate_path,
+                                                 path, kBufferSize);
 
-      if (result > 0 && result <= arraysize(path))
+      if (result > 0 && result <= kBufferSize)
         g_fdi = ::LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 
       if (g_fdi)
