@@ -170,22 +170,9 @@
   },
   "linux_chromium_gn_rel": {
     "additional_compile_targets": [
-      "accessibility_unittests",
-      "app_list_unittests",
-      "aura_unittests",
       "browser_tests",
-      "cacheinvalidation_unittests",
-      "cast_unittests",
-      "cc_unittests",
-      "chromedriver_unittests",
-      "components_browsertests",
-      "components_unittests",
       "content_browsertests",
       "content_unittests",
-      "crypto_unittests",
-      "dbus_unittests",
-      "device_unittests",
-      "display_unittests",
       "events_unittests",
       "extensions_browsertests",
       "extensions_unittests",
@@ -221,7 +208,46 @@
     ],
     "gtest_tests": [
       {
+        "test": "accessibility_unittests"
+      },
+      {
+        "test": "app_list_unittests"
+      },
+      {
+        "test": "aura_unittests"
+      },
+      {
         "test": "base_unittests"
+      },
+      {
+        "test": "cacheinvalidation_unittests"
+      },
+      {
+        "test": "cast_unittests"
+      },
+      {
+        "test": "cc_unittests"
+      },
+      {
+        "test": "chromedriver_unittests"
+      },
+      {
+        "test": "components_browsertests"
+      },
+      {
+        "test": "components_unittests"
+      },
+      {
+        "test": "crypto_unittests"
+      },
+      {
+        "test": "dbus_unittests"
+      },
+      {
+        "test": "device_unittests"
+      },
+      {
+        "test": "display_unittests"
       }
     ]
   }
