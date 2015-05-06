@@ -38,7 +38,8 @@ namespace {
 
 const char kTestBotJid[] = "remotingunittest@bot.talk.google.com";
 const char kHostId[] = "0";
-const char kTestJid[] = "user@gmail.com/chromoting123";
+const char kTestJid[] = "User@gmail.com/chromotingABC123";
+const char kTestJidNormalized[] = "user@gmail.com/chromotingABC123";
 const char kStanzaId[] = "123";
 const int kTestInterval = 123;
 const base::TimeDelta kTestTimeout = base::TimeDelta::FromSeconds(123);
@@ -362,8 +363,8 @@ void HeartbeatSenderTest::ValidateHeartbeatStanza(
 
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(kTestRsaKeyPair);
   ASSERT_TRUE(key_pair.get());
-  std::string expected_signature =
-      key_pair->SignMessage(std::string(kTestJid) + ' ' + expected_sequence_id);
+  std::string expected_signature = key_pair->SignMessage(
+      std::string(kTestJidNormalized) + ' ' + expected_sequence_id);
   EXPECT_EQ(expected_signature, signature->BodyText());
 }
 

@@ -195,6 +195,8 @@
       'protocol/video_stub.h',
       'signaling/iq_sender.cc',
       'signaling/iq_sender.h',
+      'signaling/jid_util.cc',
+      'signaling/jid_util.h',
       'signaling/jingle_info_request.cc',
       'signaling/jingle_info_request.h',
       'signaling/log_to_server.cc',

@@ -13,6 +13,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/host_config.h"
 #include "remoting/signaling/iq_sender.h"
+#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/libjingle/xmpp/constants.h"
@@ -98,7 +99,7 @@ scoped_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
   signature_tag->AddAttr(
       QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 
-  std::string message = jid + ' ' + time_str;
+  std::string message = NormalizeJid(jid) + ' ' + time_str;
   std::string signature(key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 

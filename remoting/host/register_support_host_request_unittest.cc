@@ -33,7 +33,8 @@ namespace remoting {
 
 namespace {
 const char kTestBotJid[] = "remotingunittest@bot.talk.google.com";
-const char kTestJid[] = "user@gmail.com/chromoting123";
+const char kTestJid[] = "User@gmail.com/chromotingABC123";
+const char kTestJidNormalized[] = "user@gmail.com/chromotingABC123";
 const char kSupportId[] = "AB4RF3";
 const char kSupportIdLifetime[] = "300";
 const char kStanzaId[] = "123";
@@ -122,7 +123,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   ASSERT_TRUE(key_pair.get());
 
   std::string expected_signature =
-      key_pair->SignMessage(std::string(kTestJid) + ' ' + time_str);
+      key_pair->SignMessage(std::string(kTestJidNormalized) + ' ' + time_str);
   EXPECT_EQ(expected_signature, signature->BodyText());
 
   // Generate response and verify that callback is called.

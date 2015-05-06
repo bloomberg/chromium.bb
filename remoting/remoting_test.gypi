@@ -252,6 +252,7 @@
         'protocol/third_party_authenticator_unittest.cc',
         'protocol/v2_authenticator_unittest.cc',
         'signaling/iq_sender_unittest.cc',
+        'signaling/jid_util_unittest.cc',
         'signaling/log_to_server_unittest.cc',
         'signaling/server_log_entry_unittest.cc',
         'signaling/server_log_entry_unittest.h',

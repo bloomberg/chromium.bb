@@ -17,6 +17,7 @@
 #include "remoting/base/logging.h"
 #include "remoting/host/server_log_entry_host.h"
 #include "remoting/signaling/iq_sender.h"
+#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -331,8 +332,8 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateSignature() {
   scoped_ptr<XmlElement> signature_tag(new XmlElement(
       QName(kChromotingXmlNamespace, kHeartbeatSignatureTag)));
 
-  std::string message = signal_strategy_->GetLocalJid() + ' ' +
-      base::IntToString(sequence_id_);
+  std::string message = NormalizeJid(signal_strategy_->GetLocalJid()) + ' ' +
+                        base::IntToString(sequence_id_);
   std::string signature(host_key_pair_->SignMessage(message));
   signature_tag->AddText(signature);
 
