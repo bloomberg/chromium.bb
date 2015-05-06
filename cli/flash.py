@@ -13,12 +13,14 @@ import tempfile
 import time
 
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper as ds_wrapper
+from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import project_sdk
 from chromite.lib import remote_access
@@ -265,10 +267,11 @@ class RemoteDeviceUpdater(object):
   DEVSERVER_FILENAME = 'devserver.py'
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
-  UPDATE_CHECK_INTERVAL = 10
   # Root working directory on the device. This directory is in the
   # stateful partition and thus has enough space to store the payloads.
   DEVICE_BASE_DIR = '/mnt/stateful_partition/cros-flash'
+  UPDATE_CHECK_INTERVAL_PROGRESSBAR = 0.5
+  UPDATE_CHECK_INTERVAL_NORMAL = 10
 
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
@@ -423,6 +426,15 @@ class RemoteDeviceUpdater(object):
              '-omaha_url=%s' % omaha_url]
       device.RunCommand(cmd)
 
+      # If we are using a progress bar, update it every 0.5s instead of 10s.
+      if command.UseProgressBar():
+        update_check_interval = self.UPDATE_CHECK_INTERVAL_PROGRESSBAR
+        oper = operation.ProgressBarOperation()
+      else:
+        update_check_interval = self.UPDATE_CHECK_INTERVAL_NORMAL
+        oper = None
+      end_message_not_printed = True
+
       # Loop until update is complete.
       while True:
         op, progress = self.GetUpdateStatus(device, ['CURRENT_OP', 'PROGRESS'])
@@ -430,13 +442,22 @@ class RemoteDeviceUpdater(object):
                      op, progress)
 
         if op == 'UPDATE_STATUS_UPDATED_NEED_REBOOT':
+          logging.notice('Update completed.')
           break
 
         if op == 'UPDATE_STATUS_IDLE':
           raise FlashError(
               'Update failed with unexpected update status: %s' % op)
 
-        time.sleep(self.UPDATE_CHECK_INTERVAL)
+        if oper is not None:
+          if op == 'UPDATE_STATUS_DOWNLOADING':
+            oper.ProgressBar(float(progress))
+          elif end_message_not_printed and op == 'UPDATE_STATUS_FINALIZING':
+            oper.Cleanup()
+            logging.notice('Finalizing image.')
+            end_message_not_printed = False
+
+        time.sleep(update_check_interval)
 
       ds.Stop()
     except Exception:
@@ -637,7 +658,7 @@ class RemoteDeviceUpdater(object):
           logging.info('Stateful update completed.')
 
         if self.reboot:
-          logging.info('Rebooting device..')
+          logging.notice('Rebooting device...')
           device.Reboot()
           if self.clobber_stateful:
             # --clobber-stateful wipes the stateful partition and the
@@ -646,7 +667,7 @@ class RemoteDeviceUpdater(object):
             device.BaseRunCommand(['mkdir', '-p', device.work_dir])
 
         if self.do_rootfs_update and self.reboot:
-          logging.info('Verifying that the device has been updated...')
+          logging.notice('Verifying that the device has been updated...')
           new_root_dev = self.GetRootDev(device)
           self.Verify(old_root_dev, new_root_dev)
 
@@ -662,7 +683,7 @@ class RemoteDeviceUpdater(object):
                      '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
       raise
     else:
-      logging.info('Update performed successfully.')
+      logging.notice('Update performed successfully.')
     finally:
       self.Cleanup()
 
@@ -759,7 +780,7 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
       hostname, port = device.hostname, device.port
     else:
       hostname, port = None, None
-    logging.info('Preparing to update the remote device %s', hostname)
+    logging.notice('Preparing to update the remote device %s', hostname)
     updater = RemoteDeviceUpdater(
         hostname,
         port,

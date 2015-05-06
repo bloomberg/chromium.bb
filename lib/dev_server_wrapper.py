@@ -18,6 +18,7 @@ import urllib2
 import urlparse
 
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -139,6 +140,12 @@ def GetImagePathWithXbuddy(path, board, version=None,
                     'does not exist: %s' % DEVSERVER_PKG_DIR)
   sys.path.append(DEVSERVER_PKG_DIR)
   import xbuddy
+  import cherrypy
+
+  # If we are using the progress bar, quiet the logging output of cherrypy.
+  if command.UseProgressBar():
+    cherrypy.log.access_log.setLevel(logging.NOTICE)
+    cherrypy.log.error_log.setLevel(logging.NOTICE)
 
   xb = xbuddy.XBuddy(static_dir=static_dir, board=board, version=version,
                      log_screen=False)
