@@ -37,7 +37,6 @@ from idl_types import IdlTypeBase
 import idl_types
 from idl_definitions import Exposure, IdlInterface
 from v8_globals import includes
-import v8_types
 
 ACRONYMS = [
     'CSSOM',  # must come *before* CSS to match full acronym
@@ -132,7 +131,7 @@ def scoped_name(interface, definition, base_name):
 
 
 def v8_class_name(interface):
-    return v8_types.v8_type(interface.name)
+    return 'V8' + interface.name
 
 
 def v8_class_name_or_partial(interface):
