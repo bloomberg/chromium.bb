@@ -48,11 +48,11 @@ class CUResourceThrottle : public content::ResourceThrottle,
 };
 
 CUResourceThrottle::CUResourceThrottle() : state_(NEW) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 CUResourceThrottle::~CUResourceThrottle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 void CUResourceThrottle::WillStartRequest(bool* defer) {
@@ -74,7 +74,7 @@ const char* CUResourceThrottle::GetNameForLogging() const {
 }
 
 void CUResourceThrottle::Unblock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_ == BLOCKED)
     controller()->Resume();
   state_ = UNBLOCKED;

@@ -203,7 +203,7 @@ void SimulateElevatedRecoveryHelper(PrefService* prefs) {
 }
 
 void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
   if (!version.IsValid()) {
     NOTREACHED();
@@ -221,13 +221,13 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
 }
 
 void RecoveryUpdateVersionHelper(const Version& version, PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   prefs->SetString(prefs::kRecoveryComponentVersion, version.GetString());
 }
 
 void SetPrefsForElevatedRecoveryInstall(const base::FilePath& unpack_path,
                                         PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   prefs->SetFilePath(prefs::kRecoveryComponentUnpackPath, unpack_path);
   prefs->SetBoolean(prefs::kRecoveryComponentNeedsElevation, true);
 }
@@ -394,7 +394,7 @@ void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry) {
 }
 
 void AcceptedElevatedRecoveryInstall(PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_WIN)
   ElevatedInstallRecoveryComponent(
@@ -404,7 +404,7 @@ void AcceptedElevatedRecoveryInstall(PrefService* prefs) {
 }
 
 void DeclinedElevatedRecoveryInstall(PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   prefs->SetBoolean(prefs::kRecoveryComponentNeedsElevation, false);
 }
 

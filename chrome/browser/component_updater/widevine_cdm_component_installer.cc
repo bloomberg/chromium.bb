@@ -206,7 +206,7 @@ void GetAdditionalParams(const base::DictionaryValue& manifest,
 void RegisterWidevineCdmWithChrome(const base::Version& cdm_version,
                                    const base::FilePath& adapter_install_path,
                                    scoped_ptr<base::DictionaryValue> manifest) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<base::string16> additional_param_names;
   std::vector<base::string16> additional_param_values;
   GetAdditionalParams(

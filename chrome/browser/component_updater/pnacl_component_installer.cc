@@ -301,7 +301,7 @@ void FinishPnaclUpdateRegistration(
     const Version& current_version,
     const std::string& current_fingerprint,
     const scoped_refptr<PnaclComponentInstaller>& pci) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   pci->set_current_version(current_version);
   CheckVersionCompatiblity(current_version);
   pci->set_current_fingerprint(current_fingerprint);
@@ -319,7 +319,7 @@ void FinishPnaclUpdateRegistration(
 // a hosted version is actually newer.
 void StartPnaclUpdateRegistration(
     const scoped_refptr<PnaclComponentInstaller>& pci) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath path = pci->GetPnaclBaseDirectory();
   if (!base::PathExists(path)) {
     if (!base::CreateDirectory(path)) {

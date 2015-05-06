@@ -307,7 +307,7 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
                       scoped_ptr<base::DictionaryValue> manifest) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ReportVersionWithUma(version);
 
     wcsncpy_s(version_dir_,

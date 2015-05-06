@@ -92,7 +92,7 @@ bool GetLatestSwiftShaderDirectory(base::FilePath* result,
 }
 
 void RegisterSwiftShaderWithChrome(const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GpuDataManager::GetInstance()->RegisterSwiftShaderPath(path);
 }
 
@@ -171,7 +171,7 @@ bool SwiftShaderComponentInstaller::Uninstall() {
 
 void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,
                                          const Version& version) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   update_client::CrxComponent swiftshader;
   swiftshader.name = "Swift Shader";
@@ -204,7 +204,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
       gpu_data_manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
       gpu_data_manager->ShouldUseSwiftShader()) {
     gpu_data_manager->RemoveObserver(this);
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     base::FilePath path = GetSwiftShaderBaseDirectory();
 
     Version version(kNullVersion);
@@ -222,7 +222,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
 // Check if there already is a version of swiftshader installed,
 // and if so register it.
 void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath path = GetSwiftShaderBaseDirectory();
   if (!base::PathExists(path)) {
     if (!base::CreateDirectory(path)) {
