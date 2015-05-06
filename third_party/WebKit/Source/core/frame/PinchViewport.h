@@ -62,14 +62,13 @@ class LocalFrame;
 // offset is set through the GraphicsLayer <-> CC sync mechanisms. Its contents is the page's
 // main FrameView, which corresponds to the outer viewport. The inner viewport is always contained
 // in the outer viewport and can pan within it.
-class CORE_EXPORT PinchViewport final : public NoBaseWillBeGarbageCollectedFinalized<PinchViewport>, public GraphicsLayerClient, public ScrollableArea {
+class CORE_EXPORT PinchViewport final : public GraphicsLayerClient, public ScrollableArea {
 public:
-    static PassOwnPtrWillBeRawPtr<PinchViewport> create(FrameHost& host)
+    static PassOwnPtr<PinchViewport> create(FrameHost& host)
     {
-        return adoptPtrWillBeNoop(new PinchViewport(host));
+        return adoptPtr(new PinchViewport(host));
     }
     virtual ~PinchViewport();
-    DECLARE_VIRTUAL_TRACE();
 
     void attachToLayerTree(GraphicsLayer*, GraphicsLayerFactory*);
     GraphicsLayer* rootGraphicsLayer()
@@ -204,11 +203,13 @@ private:
 
     FrameHost& frameHost() const
     {
-        ASSERT(m_frameHost);
-        return *m_frameHost;
+        return m_frameHost;
     }
 
-    RawPtrWillBeMember<FrameHost> m_frameHost;
+    // TODO(Oilpan): this back reference is safe, but not ideal.
+    // Turning it into a traced Member<> would require moving
+    // ScrollableArea to the heap.
+    FrameHost& m_frameHost;
     OwnPtr<GraphicsLayer> m_rootTransformLayer;
     OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
     OwnPtr<GraphicsLayer> m_overscrollElasticityLayer;

@@ -19,12 +19,6 @@ RootFrameViewport::RootFrameViewport(ScrollableArea& visualViewport, ScrollableA
 {
 }
 
-DEFINE_TRACE(RootFrameViewport)
-{
-    visitor->trace(m_visualViewport);
-    visitor->trace(m_layoutViewport);
-}
-
 void RootFrameViewport::updateScrollAnimator()
 {
     scrollAnimator()->setCurrentPosition(toFloatPoint(scrollOffsetFromScrollAnimators()));

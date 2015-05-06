@@ -80,11 +80,6 @@ PinchViewport::~PinchViewport()
 {
 }
 
-DEFINE_TRACE(PinchViewport)
-{
-    visitor->trace(m_frameHost);
-}
-
 void PinchViewport::setSize(const IntSize& size)
 {
     // When the main frame is remote, we won't have an associated frame.
