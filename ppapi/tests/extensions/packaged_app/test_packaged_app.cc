@@ -28,12 +28,13 @@ namespace {
 std::string g_last_error;
 pp::Instance* g_instance = NULL;
 
-// This should be the same as MessageAttachmentSet::kMaxDescriptorsPerMessage in
+// This should be larger than or equal to
+// MessageAttachmentSet::kMaxDescriptorsPerMessage in
 // ipc/ipc_message_attachment_set.h.
 const size_t kMaxDescriptorsPerMessage = 128;
 
 #if defined(__clang__)
-static_assert(kMaxDescriptorsPerMessage ==
+static_assert(kMaxDescriptorsPerMessage >=
               IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage,
               "kMaxDescriptorsPerMessage is not up to date");
 #endif

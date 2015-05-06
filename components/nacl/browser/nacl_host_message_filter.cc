@@ -27,8 +27,10 @@ namespace {
 
 // The maximum number of resource file handles NaClProcessMsg_Start message
 // can have. Currently IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage
-// is 128 and NaCl sends 5 handles for other purposes, hence 123.
-const size_t kMaxPreOpenResourceFiles = 123;
+// is 7 and NaCl sends 5 handles for other purposes, hence 2.
+// TODO(yusukes): Remove |kMaxPreOpenResourceFiles|. Instead, send an arbitrary
+// number of FDs to the NaCl loader process with separate IPC messages.
+const size_t kMaxPreOpenResourceFiles = 2;
 
 #if defined(OS_POSIX)
 static_assert(kMaxPreOpenResourceFiles ==
