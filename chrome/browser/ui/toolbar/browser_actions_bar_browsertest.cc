@@ -27,6 +27,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 namespace {
 
@@ -493,4 +494,21 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
             browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(second_controller_main->GetId(),
             browser_actions_bar()->GetExtensionId(1));
+}
+
+// Test that page action popups work with the toolbar redesign.
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+                       PageActionPopupsTest) {
+  ExtensionTestMessageListener listener("ready", false);
+  const extensions::Extension* page_action_extension =
+      LoadExtension(test_data_dir_.AppendASCII("trigger_actions").
+                        AppendASCII("page_action_popup"));
+  ASSERT_TRUE(page_action_extension);
+  listener.WaitUntilSatisfied();
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(page_action_extension->id(),
+            browser_actions_bar()->GetExtensionId(0));
+  browser_actions_bar()->Press(0);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(browser_actions_bar()->HasPopup());
 }

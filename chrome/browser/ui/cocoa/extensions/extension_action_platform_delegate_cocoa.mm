@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
 
 namespace {
 
@@ -97,15 +98,16 @@ NSPoint ExtensionActionPlatformDelegateCocoa::GetPopupPoint() const {
           controller_->browser()->window()->GetNativeWindow()];
   NSPoint popupPoint;
   if (controller_->extension_action()->action_type() ==
-          extensions::ActionInfo::TYPE_PAGE) {
-    popupPoint = [windowController locationBarBridge]->GetPageActionBubblePoint(
-        controller_->extension_action());
-  } else {
-    DCHECK_EQ(extensions::ActionInfo::TYPE_BROWSER,
-              controller_->extension_action()->action_type());
+          extensions::ActionInfo::TYPE_BROWSER ||
+      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     BrowserActionsController* actionsController =
         [[windowController toolbarController] browserActionsController];
     popupPoint = [actionsController popupPointForId:controller_->GetId()];
+  } else {
+    DCHECK_EQ(extensions::ActionInfo::TYPE_PAGE,
+              controller_->extension_action()->action_type());
+    popupPoint = [windowController locationBarBridge]->GetPageActionBubblePoint(
+        controller_->extension_action());
   }
   return popupPoint;
 }

@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 // Show the page action icon for all tabs.
-chrome.tabs.onCreated.addListener(function(tab) {
-  chrome.tabs.getAllInWindow(null, function(tabs) {
-    for (var i = 0, t; t = tabs[i]; i++) {
-      chrome.pageAction.show(t.id);
-    }
-  });
+chrome.tabs.getAllInWindow(null, function(tabs) {
+  for (var i = 0, t; t = tabs[i]; i++)
+    chrome.pageAction.show(t.id);
+  chrome.test.sendMessage('ready');
 });
