@@ -33,6 +33,8 @@ class RenderFrameImplTest : public RenderViewTest {
 
   void SetUp() override {
     RenderViewTest::SetUp();
+    EXPECT_FALSE(static_cast<RenderFrameImpl*>(view_->GetMainRenderFrame())
+                     ->is_subframe_);
 
     FrameMsg_NewFrame_WidgetParams widget_params;
     widget_params.routing_id = kSubframeWidgetRouteId;
@@ -55,6 +57,7 @@ class RenderFrameImplTest : public RenderViewTest {
                                  compositor_deps_.get(), widget_params);
 
     frame_ = RenderFrameImpl::FromRoutingID(kSubframeRouteId);
+    EXPECT_TRUE(frame_->is_subframe_);
   }
 
   // Loads the given HTML into the frame as a data: URL and blocks until

@@ -820,6 +820,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // case of the main frame, but not subframes).
   blink::WebLocalFrame* frame_;
 
+  // Boolean value indicating whether this RenderFrameImpl object is for a
+  // subframe or not. It remains accurate during destruction, even when |frame_|
+  // has been invalidated.
+  bool is_subframe_;
+
   // Frame is a local root if it is rendered in a process different than parent
   // or it is a main frame.
   bool is_local_root_;
@@ -827,6 +832,7 @@ class CONTENT_EXPORT RenderFrameImpl
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
   bool is_swapped_out_;
+
   // RenderFrameProxy exists only when is_swapped_out_ is true.
   // TODO(nasko): This can be removed once we don't have a swapped out state on
   // RenderFrame. See https://crbug.com/357747.

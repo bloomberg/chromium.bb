@@ -654,6 +654,7 @@ blink::WebSandboxFlags RenderFrameImpl::ContentToWebSandboxFlags(
 // RenderFrameImpl ----------------------------------------------------------
 RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : frame_(NULL),
+      is_subframe_(false),
       is_local_root_(false),
       render_view_(render_view->AsWeakPtr()),
       routing_id_(routing_id),
@@ -740,6 +741,7 @@ void RenderFrameImpl::SetWebFrame(blink::WebLocalFrame* web_frame) {
 }
 
 void RenderFrameImpl::Initialize() {
+  is_subframe_ = !!frame_->parent();
   is_local_root_ = !frame_->parent() || frame_->parent()->isWebRemoteFrame();
 
 #if defined(ENABLE_PLUGINS)
@@ -2183,8 +2185,6 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   CHECK(!is_detaching_);
   DCHECK(!frame_ || frame_ == frame);
 
-  bool is_subframe = !!frame->parent();
-
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameDetached());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameDetached(frame));
@@ -2204,7 +2204,7 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   CHECK_EQ(it->second, this);
   g_frame_map.Get().erase(it);
 
-  if (is_subframe) {
+  if (is_subframe_) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSitePerProcess) && render_widget_) {
       render_widget_->UnregisterRenderFrame(this);
@@ -2218,7 +2218,7 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   frame->close();
   frame_ = nullptr;
 
-  if (is_subframe) {
+  if (is_subframe_) {
     delete this;
     // Object is invalid after this point.
   }
@@ -4156,9 +4156,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  bool is_subframe = !!info.frame->parent();
-
-  if (command_line.HasSwitch(switches::kSitePerProcess) && is_subframe) {
+  if (command_line.HasSwitch(switches::kSitePerProcess) && is_subframe_) {
     // There's no reason to ignore navigations on subframes, since the swap out
     // logic no longer applies.
   } else {
