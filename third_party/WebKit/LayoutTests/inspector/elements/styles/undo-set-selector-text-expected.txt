@@ -6,11 +6,11 @@ element.style  { ()
 
 [expanded] 
 #inspected  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
-  color: green;
+    color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 === After selector modification ===
 [expanded] 
@@ -18,11 +18,11 @@ element.style  { ()
 
 [expanded] 
 #inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
-  color: green;
+    color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 === After undo ===
 [expanded] 
@@ -30,11 +30,11 @@ element.style  { ()
 
 [expanded] 
 #inspected  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:1)
-  color: green;
+    color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 === After redo ===
 [expanded] 
@@ -42,10 +42,10 @@ element.style  { ()
 
 [expanded] 
 #inspected, #other  { (undo-set-selector-text.html:4 -> undo-set-selector-text.html:4:13)
-  color: green;
+    color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 

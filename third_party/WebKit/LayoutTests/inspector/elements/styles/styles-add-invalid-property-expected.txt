@@ -4,19 +4,19 @@ Text
 Before append:
 [expanded] 
 element.style  { ()
-  font-size: 12px;
+    font-size: 12px;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 After append:
 [expanded] 
 element.style  { ()
-  font-size: 12px;
+    font-size: 12px;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 

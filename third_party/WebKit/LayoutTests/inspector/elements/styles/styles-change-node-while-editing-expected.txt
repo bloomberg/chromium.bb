@@ -3,14 +3,14 @@ Tests that changing selected node while editing style does update styles sidebar
 Text
 [expanded] 
 element.style  { ()
-  color: red;
+    color: red;
 
 [expanded] 
 element.style  { ()
-  color: blue;
+    color: blue;
 
 [expanded] 
 element.style  { ()
-  background: red;
+    background: red;
 
 

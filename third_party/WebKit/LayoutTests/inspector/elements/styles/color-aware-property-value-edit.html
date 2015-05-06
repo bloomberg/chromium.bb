@@ -29,8 +29,11 @@ function test()
 
         function editKeywordAsRGB(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.RGB, "border");
-            InspectorTest.selectNodeAndWaitForStyles("inspected2", next);
+            startEditingAndDumpValue(WebInspector.Color.Format.RGB, "border", onValueDumped);
+            function onValueDumped()
+            {
+                InspectorTest.selectNodeAndWaitForStyles("inspected2", next);
+            }
         },
 
         function editHexAsOriginal(next)
@@ -75,21 +78,24 @@ function test()
         }
     ]);
 
-    function setFormat(newFormat)
+    function setFormat(newFormat, callback)
     {
         WebInspector.settingForTest("colorFormat").set(newFormat);
-        WebInspector.panels.elements.sidebarPanes.styles._colorFormatSettingChanged();
+        WebInspector.panels.elements.sidebarPanes.styles.doUpdate(callback);
     }
 
     function startEditingAndDumpValue(format, propertyName, next)
     {
-        setFormat(format);
-        var treeElement = InspectorTest.getElementStylePropertyTreeItem(propertyName);
-        treeElement.startEditing(treeElement.valueElement);
-        InspectorTest.addResult(treeElement.valueElement.textContent);
-        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B"));
-        if (next)
+        setFormat(format, onFormatSet);
+
+        function onFormatSet()
+        {
+            var treeElement = InspectorTest.getElementStylePropertyTreeItem(propertyName);
+            treeElement.startEditing(treeElement.valueElement);
+            InspectorTest.addResult(treeElement.valueElement.textContent);
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B"));
             next();
+        }
     }
 }
 

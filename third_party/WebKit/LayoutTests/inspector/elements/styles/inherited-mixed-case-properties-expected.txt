@@ -8,15 +8,15 @@ element.style  { ()
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 ======== Inherited from div#container ========
 [expanded] 
 Style Attribute  { ()
-  CoLoR: blAck;
+    CoLoR: blAck;
 
 [expanded] 
 #container  { (inherited-mixed…perties.html:4 -> inherited-mixed-case-properties.html:4:1)
-  -webkit-FONT-smoothing: antialiased;
+    -webkit-FONT-smoothing: antialiased;
 
 

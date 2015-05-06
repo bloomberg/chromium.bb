@@ -7,15 +7,15 @@ element.style  { ()
 
 [expanded] 
 #testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
-  font-family: arial;
+    font-family: arial;
 
 [expanded] 
 #testDiv  { (style.css:1 -> style.css:1:1)
-  color: red;
+    color: red;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 Dump styles after editing:
 [expanded] 
@@ -26,15 +26,15 @@ element.style  { ()
 
 [expanded] 
 #testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
-  font-family: Helvetica;
+    font-family: Helvetica;
 
 [expanded] 
 #testDiv  { (style.css:1 -> style.css:1:1)
-  color: green;
+    color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 Opening front-end second time
 Dump styles after inspector was reopened:
@@ -46,14 +46,14 @@ element.style  { ()
 
 [expanded] 
 #testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
-  font-family: Helvetica;
+    font-family: Helvetica;
 
 [expanded] 
 #testDiv  { (style.css:1 -> style.css:1:1)
-  color: green;
+    color: green;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 

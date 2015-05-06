@@ -33,6 +33,6 @@ element.style  { ()
 
 [expanded] 
 button[Attributes Style]  { ()
-  display: none;
+    display: none;
 
 

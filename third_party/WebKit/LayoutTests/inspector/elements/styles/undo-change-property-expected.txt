@@ -6,11 +6,11 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
-  font-weight: bold;
+    font-weight: bold;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 After changing property
 [expanded] 
@@ -18,11 +18,11 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
-  font-weight: normal;
+    font-weight: normal;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 After undo
 [expanded] 
@@ -30,11 +30,11 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
-  font-weight: bold;
+    font-weight: bold;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 After redo
 [expanded] 
@@ -42,10 +42,10 @@ element.style  { ()
 
 [expanded] 
 .container  { (undo-change-property.html:7 -> undo-change-property.html:7:1)
-  font-weight: normal;
+    font-weight: normal;
 
 [expanded] 
 div  { (user agent stylesheet)
-  display: block;
+    display: block;
 
 
