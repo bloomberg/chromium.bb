@@ -63,6 +63,15 @@ def WriteStampFile(s):
     f.write(s)
 
 
+def PrintRevision():
+  """Print the current Clang revision."""
+  # TODO(hans): This needs an update when we move to prebuilt Clang binaries.
+  svn_info = subprocess.check_output(['svn', 'info', LLVM_DIR])
+  m = re.search(r'Revision: (\d+)', svn_info)
+  assert m
+  print m.group(1)
+
+
 def RmTree(dir):
   """Delete dir."""
   def ChmodAndRetry(func, path, _):
@@ -303,6 +312,20 @@ def main():
         [os.path.join(os.path.dirname(__file__), 'update.sh')] +  sys.argv[1:],
         stderr=os.fdopen(os.dup(sys.stdin.fileno())))
 
+  parser = argparse.ArgumentParser(description='Build Clang.')
+  parser.add_argument('--no-clobber', dest='clobber', action='store_false')
+  parser.add_argument('--tools', nargs='*', default=['plugins'])
+  # For now, this flag is only used for the non-Windows flow, but argparser gets
+  # mad if it sees a flag it doesn't recognize.
+  parser.add_argument('--if-needed', action='store_true')
+  parser.add_argument('--print-revision', action='store_true')
+
+  args = parser.parse_args()
+
+  if args.print_revision:
+    PrintRevision()
+    return 0
+
   if not re.search(r'\b(clang|asan)=1', os.environ.get('GYP_DEFINES', '')):
     print 'Skipping Clang update (clang=1 was not set in GYP_DEFINES).'
     return 0
@@ -311,13 +334,7 @@ def main():
     print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
     return 0
 
-  parser = argparse.ArgumentParser(description='Build Clang.')
-  parser.add_argument('--no-clobber', dest='clobber', action='store_false')
-  parser.add_argument('--tools', nargs='*', default=['plugins'])
-  # For now, this flag is only used for the non-Windows flow, but argparser gets
-  # mad if it sees a flag it doesn't recognize.
-  parser.add_argument('--if-needed', action='store_true')
-  return UpdateClang(parser.parse_args())
+  return UpdateClang(args)
 
 
 if __name__ == '__main__':
