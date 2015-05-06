@@ -24,12 +24,6 @@ class X509Certificate;
 // policies.
 class NET_EXPORT CertPolicyEnforcer {
  public:
-  // Set the parameters for this policy enforcer:
-  // |require_ct_for_ev| indicates whether Certificate Transparency presence
-  // is required for EV certificates.
-  explicit CertPolicyEnforcer(bool require_ct_for_ev);
-  virtual ~CertPolicyEnforcer();
-
   // Returns true if the collection of SCTs for the given certificate
   // conforms with the CT/EV policy. Conformance details are logged to
   // |net_log|.
@@ -40,9 +34,6 @@ class NET_EXPORT CertPolicyEnforcer {
                                const ct::EVCertsWhitelist* ev_whitelist,
                                const ct::CTVerifyResult& ct_result,
                                const BoundNetLog& net_log);
-
- private:
-  bool require_ct_for_ev_;
 };
 
 }  // namespace net

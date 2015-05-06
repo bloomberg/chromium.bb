@@ -309,17 +309,6 @@ bool IsStaleWhileRevalidateEnabled(const base::CommandLine& command_line) {
   return group_name == "Enabled";
 }
 
-bool IsCertificateTransparencyRequiredForEV(
-    const base::CommandLine& command_line) {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("CTRequiredForEVTrial");
-  if (command_line.HasSwitch(
-        switches::kDisableCertificateTransparencyRequirementForEV))
-    return false;
-
-  return group_name == "RequirementEnforced";
-}
-
 // Parse kUseSpdy command line flag options, which may contain the following:
 //
 //   "off"                      : Disables SPDY support entirely.
@@ -752,9 +741,7 @@ void IOThread::Init() {
   tracked_objects::ScopedTracker tracking_profile10(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::InitAsync::CertPolicyEnforcer"));
-  net::CertPolicyEnforcer* policy_enforcer = NULL;
-  policy_enforcer = new net::CertPolicyEnforcer(
-      IsCertificateTransparencyRequiredForEV(command_line));
+  net::CertPolicyEnforcer* policy_enforcer = new net::CertPolicyEnforcer;
   globals_->cert_policy_enforcer.reset(policy_enforcer);
 
   globals_->ssl_config_service = GetSSLConfigService();

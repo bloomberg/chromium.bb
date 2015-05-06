@@ -67,7 +67,6 @@ extern const char kDisableAsyncDns[];
 extern const char kDisableBackgroundNetworking[];
 extern const char kDisableBundledPpapiFlash[];
 extern const char kDisableCastStreamingHWEncoding[];
-extern const char kDisableCertificateTransparencyRequirementForEV[];
 extern const char kDisableChildAccountDetection[];
 extern const char kDisableClientSidePhishingDetection[];
 extern const char kDisableComponentExtensionsWithBackgroundPages[];

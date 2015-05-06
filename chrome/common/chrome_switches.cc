@@ -218,11 +218,6 @@ const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 const char kDisableCastStreamingHWEncoding[] =
     "disable-cast-streaming-hw-encoding";
 
-// Disable the requirement of Certificate Transparency presence for EV
-// certificate. This flag only affects the EV indicator.
-const char kDisableCertificateTransparencyRequirementForEV[] =
-  "disable-ct-for-ev";
-
 // Disables detection of child accounts.
 const char kDisableChildAccountDetection[] =
     "disable-child-account-detection";
