@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class HTMLContentSelectFilter : public NoBaseWillBeGarbageCollected<HTMLContentSelectFilter> {
+class HTMLContentSelectFilter : public NoBaseWillBeGarbageCollectedFinalized<HTMLContentSelectFilter> {
 public:
     virtual ~HTMLContentSelectFilter() { }
     virtual bool canSelectNode(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth) const = 0;
@@ -58,6 +58,8 @@ public:
 
     const CSSSelectorList& selectorList() const;
     bool isSelectValid() const;
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     HTMLContentElement(Document&, PassOwnPtrWillBeRawPtr<HTMLContentSelectFilter>);
