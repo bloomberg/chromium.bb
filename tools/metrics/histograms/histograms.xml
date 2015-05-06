@@ -27488,6 +27488,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Platform.TPM.AuthErrorCode" enum="TPMResultCodeEnum">
+  <owner>semenzato@chromium.org</owner>
+  <summary>
+    Each sample is the result code of a TPM authorized command issued through
+    tcsd.  Success is 0.  For the other error codes, see
+    /usr/include/tss/tpm_error.h.
+  </summary>
+</histogram>
+
 <histogram name="Platform.TPM.DictionaryAttackCounter">
   <owner>dkrahn@chromium.org</owner>
   <summary>
@@ -27502,6 +27511,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Each sample is the status of an hourly attempt to reset the TPM dictionary
     attack counter.
+  </summary>
+</histogram>
+
+<histogram name="Platform.TPM.ErrorCode" enum="TPMResultCodeEnum">
+  <owner>semenzato@chromium.org</owner>
+  <summary>
+    Each sample is the result code of a TPM command issued through tcsd. Success
+    is 0.  For the other error codes, see /usr/include/tss/tpm_error.h.
   </summary>
 </histogram>
 
@@ -63769,6 +63786,112 @@ To add a new entry, add it with any value and run test to compute valid value.
     The touchpad noise events (e.g. abrupt cursor jumps) caused by the noisy
     ground.
   </int>
+</enum>
+
+<enum name="TPMResultCodeEnum" type="int">
+  <int value="0" label="TPM_SUCCESS"/>
+  <int value="1" label="TPM_E_AUTHFAIL"/>
+  <int value="2" label="TPM_E_BADINDEX"/>
+  <int value="3" label="TPM_E_BAD_PARAMETER"/>
+  <int value="4" label="TPM_E_AUDITFAILURE"/>
+  <int value="5" label="TPM_E_CLEAR_DISABLED"/>
+  <int value="6" label="TPM_E_DEACTIVATED"/>
+  <int value="7" label="TPM_E_DISABLED"/>
+  <int value="8" label="TPM_E_DISABLED_CMD"/>
+  <int value="9" label="TPM_E_FAIL"/>
+  <int value="10" label="TPM_E_BAD_ORDINAL"/>
+  <int value="11" label="TPM_E_INSTALL_DISABLED"/>
+  <int value="12" label="TPM_E_INVALID_KEYHANDLE"/>
+  <int value="13" label="TPM_E_KEYNOTFOUND"/>
+  <int value="14" label="TPM_E_INAPPROPRIATE_ENC"/>
+  <int value="15" label="TPM_E_MIGRATEFAIL"/>
+  <int value="16" label="TPM_E_INVALID_PCR_INFO"/>
+  <int value="17" label="TPM_E_NOSPACE"/>
+  <int value="18" label="TPM_E_NOSRK"/>
+  <int value="19" label="TPM_E_NOTSEALED_BLOB"/>
+  <int value="20" label="TPM_E_OWNER_SET"/>
+  <int value="21" label="TPM_E_RESOURCES"/>
+  <int value="22" label="TPM_E_SHORTRANDOM"/>
+  <int value="23" label="TPM_E_SIZE"/>
+  <int value="24" label="TPM_E_WRONGPCRVAL"/>
+  <int value="25" label="TPM_E_BAD_PARAM_SIZE"/>
+  <int value="26" label="TPM_E_SHA_THREAD"/>
+  <int value="27" label="TPM_E_SHA_ERROR"/>
+  <int value="28" label="TPM_E_FAILEDSELFTEST"/>
+  <int value="29" label="TPM_E_AUTH2FAIL"/>
+  <int value="30" label="TPM_E_BADTAG"/>
+  <int value="31" label="TPM_E_IOERROR"/>
+  <int value="32" label="TPM_E_ENCRYPT_ERROR"/>
+  <int value="33" label="TPM_E_DECRYPT_ERROR"/>
+  <int value="34" label="TPM_E_INVALID_AUTHHANDLE"/>
+  <int value="35" label="TPM_E_NO_ENDORSEMENT"/>
+  <int value="36" label="TPM_E_INVALID_KEYUSAGE"/>
+  <int value="37" label="TPM_E_WRONG_ENTITYTYPE"/>
+  <int value="38" label="TPM_E_INVALID_POSTINIT"/>
+  <int value="39" label="TPM_E_INAPPROPRIATE_SIG"/>
+  <int value="40" label="TPM_E_BAD_KEY_PROPERTY"/>
+  <int value="41" label="TPM_E_BAD_MIGRATION"/>
+  <int value="42" label="TPM_E_BAD_SCHEME"/>
+  <int value="43" label="TPM_E_BAD_DATASIZE"/>
+  <int value="44" label="TPM_E_BAD_MODE"/>
+  <int value="45" label="TPM_E_BAD_PRESENCE"/>
+  <int value="46" label="TPM_E_BAD_VERSION"/>
+  <int value="47" label="TPM_E_NO_WRAP_TRANSPORT"/>
+  <int value="48" label="TPM_E_AUDITFAIL_UNSUCCESSFUL"/>
+  <int value="49" label="TPM_E_AUDITFAIL_SUCCESSFUL"/>
+  <int value="50" label="TPM_E_NOTRESETABLE"/>
+  <int value="51" label="TPM_E_NOTLOCAL"/>
+  <int value="52" label="TPM_E_BAD_TYPE"/>
+  <int value="53" label="TPM_E_INVALID_RESOURCE"/>
+  <int value="54" label="TPM_E_NOTFIPS"/>
+  <int value="55" label="TPM_E_INVALID_FAMILY"/>
+  <int value="56" label="TPM_E_NO_NV_PERMISSION"/>
+  <int value="57" label="TPM_E_REQUIRES_SIGN"/>
+  <int value="58" label="TPM_E_KEY_NOTSUPPORTED"/>
+  <int value="59" label="TPM_E_AUTH_CONFLICT"/>
+  <int value="60" label="TPM_E_AREA_LOCKED"/>
+  <int value="61" label="TPM_E_BAD_LOCALITY"/>
+  <int value="62" label="TPM_E_READ_ONLY"/>
+  <int value="63" label="TPM_E_PER_NOWRITE"/>
+  <int value="64" label="TPM_E_FAMILYCOUNT"/>
+  <int value="65" label="TPM_E_WRITE_LOCKED"/>
+  <int value="66" label="TPM_E_BAD_ATTRIBUTES"/>
+  <int value="67" label="TPM_E_INVALID_STRUCTURE"/>
+  <int value="68" label="TPM_E_KEY_OWNER_CONTROL"/>
+  <int value="69" label="TPM_E_BAD_COUNTER"/>
+  <int value="70" label="TPM_E_NOT_FULLWRITE"/>
+  <int value="71" label="TPM_E_CONTEXT_GAP"/>
+  <int value="72" label="TPM_E_MAXNVWRITES"/>
+  <int value="73" label="TPM_E_NOOPERATOR"/>
+  <int value="74" label="TPM_E_RESOURCEMISSING"/>
+  <int value="75" label="TPM_E_DELEGATE_LOCK"/>
+  <int value="76" label="TPM_E_DELEGATE_FAMILY"/>
+  <int value="77" label="TPM_E_DELEGATE_ADMIN"/>
+  <int value="78" label="TPM_E_TRANSPORT_NOTEXCLUSIVE"/>
+  <int value="79" label="TPM_E_OWNER_CONTROL"/>
+  <int value="80" label="TPM_E_DAA_RESOURCES"/>
+  <int value="81" label="TPM_E_DAA_INPUT_DATA0"/>
+  <int value="82" label="TPM_E_DAA_INPUT_DATA1"/>
+  <int value="83" label="TPM_E_DAA_ISSUER_SETTINGS"/>
+  <int value="84" label="TPM_E_DAA_TPM_SETTINGS"/>
+  <int value="85" label="TPM_E_DAA_STAGE"/>
+  <int value="86" label="TPM_E_DAA_ISSUER_VALIDITY"/>
+  <int value="87" label="TPM_E_DAA_WRONG_W"/>
+  <int value="88" label="TPM_E_BAD_HANDLE"/>
+  <int value="89" label="TPM_E_BAD_DELEGATE"/>
+  <int value="90" label="TPM_E_BADCONTEXT"/>
+  <int value="91" label="TPM_E_TOOMANYCONTEXTS"/>
+  <int value="92" label="TPM_E_MA_TICKET_SIGNATURE"/>
+  <int value="93" label="TPM_E_MA_DESTINATION"/>
+  <int value="94" label="TPM_E_MA_SOURCE"/>
+  <int value="95" label="TPM_E_MA_AUTHORITY"/>
+  <int value="97" label="TPM_E_PERMANENTEK"/>
+  <int value="98" label="TPM_E_BAD_SIGNATURE"/>
+  <int value="99" label="TPM_E_NOCONTEXTSPACE"/>
+  <int value="2048" label="TPM_E_RETRY"/>
+  <int value="2049" label="TPM_E_NEEDS_SELFTEST"/>
+  <int value="2050" label="TPM_E_DOING_SELFTEST"/>
+  <int value="2051" label="TPM_E_DEFEND_LOCK_RUNNING"/>
 </enum>
 
 <enum name="TrackedPreference" type="int">
