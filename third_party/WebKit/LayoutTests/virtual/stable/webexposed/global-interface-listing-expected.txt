@@ -4786,6 +4786,7 @@ interface ServiceWorkerRegistration
     getter pushManager
     getter scope
     method constructor
+    method getNotifications
     method showNotification
     method unregister
     setter onupdatefound
