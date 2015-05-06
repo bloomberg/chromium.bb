@@ -960,6 +960,18 @@ page_flip_handler(int fd, unsigned int frame,
 	}
 }
 
+static bool format_support(const drmModePlanePtr ovr, uint32_t fmt)
+{
+	unsigned int i;
+
+	for (i = 0; i < ovr->count_formats; ++i) {
+		if (ovr->formats[i] == fmt)
+			return true;
+	}
+
+	return false;
+}
+
 static int set_plane(struct device *dev, struct plane_arg *p)
 {
 	drmModePlane *ovr;
@@ -990,7 +1002,7 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 
 	for (i = 0; i < dev->resources->plane_res->count_planes && !plane_id; i++) {
 		ovr = dev->resources->planes[i].plane;
-		if (!ovr)
+		if (!ovr || !format_support(ovr, p->fourcc))
 			continue;
 
 		if ((ovr->possible_crtcs & (1 << pipe)) && !ovr->crtc_id)
