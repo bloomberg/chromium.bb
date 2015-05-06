@@ -26,14 +26,6 @@ WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
 }
 
 WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
-  base::WaitableEvent completion(false, false);
-  // We need to post the shutdown task on the scheduler's task queue or tasks
-  // posted on the worker scheduler may not get run when the thread is deleted.
-  TaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&WebThreadImplForWorkerScheduler::ShutDownOnThread,
-                            base::Unretained(this), &completion));
-  completion.Wait();
-
   thread_->Stop();
 }
 
@@ -47,16 +39,15 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
       worker_scheduler_.get(), worker_scheduler_->IdleTaskRunner(),
       worker_scheduler_->DefaultTaskRunner(),
       worker_scheduler_->DefaultTaskRunner()));
+  base::MessageLoop::current()->AddDestructionObserver(this);
   completion->Signal();
 }
 
-void WebThreadImplForWorkerScheduler::ShutDownOnThread(
-    base::WaitableEvent* completion) {
+void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
   task_runner_ = nullptr;
   idle_task_runner_ = nullptr;
   web_scheduler_.reset();
   worker_scheduler_.reset();
-  completion->Signal();
 }
 
 blink::PlatformThreadId WebThreadImplForWorkerScheduler::threadId() const {

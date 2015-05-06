@@ -31,6 +31,7 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
   ~WebSchedulerImpl() override;
 
   // blink::WebScheduler implementation:
+  virtual void shutdown();
   virtual bool shouldYieldForHighPriorityWork();
   virtual bool canExceedIdleDeadlineIfRequired();
   virtual void postIdleTask(const blink::WebTraceLocation& location,

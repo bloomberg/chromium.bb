@@ -46,6 +46,9 @@
       'sources': [
         '<@(scheduler_sources)',
       ],
+      'export_dependent_settings': [
+        '../../third_party/WebKit/public/blink.gyp:blink',
+      ],
     },
   ],
 }

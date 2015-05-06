@@ -25,6 +25,10 @@ WebSchedulerImpl::WebSchedulerImpl(
 WebSchedulerImpl::~WebSchedulerImpl() {
 }
 
+void WebSchedulerImpl::shutdown() {
+  child_scheduler_->Shutdown();
+}
+
 bool WebSchedulerImpl::shouldYieldForHighPriorityWork() {
   return child_scheduler_->ShouldYieldForHighPriorityWork();
 }

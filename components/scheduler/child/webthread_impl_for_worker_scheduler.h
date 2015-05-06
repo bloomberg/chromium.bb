@@ -21,7 +21,9 @@ class SingleThreadIdleTaskRunner;
 class WebSchedulerImpl;
 class WorkerScheduler;
 
-class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler : public WebThreadBase {
+class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
+    : public WebThreadBase,
+      public base::MessageLoop::DestructionObserver {
  public:
   explicit WebThreadImplForWorkerScheduler(const char* name);
   virtual ~WebThreadImplForWorkerScheduler();
@@ -34,6 +36,9 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler : public WebThreadBase {
   base::SingleThreadTaskRunner* TaskRunner() const override;
   scheduler::SingleThreadIdleTaskRunner* IdleTaskRunner() const override;
 
+  // base::MessageLoop::DestructionObserver implementation.
+  void WillDestroyCurrentMessageLoop() override;
+
  private:
   void AddTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
@@ -41,7 +46,6 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler : public WebThreadBase {
       base::MessageLoop::TaskObserver* observer) override;
 
   void InitOnThread(base::WaitableEvent* completion);
-  void ShutDownOnThread(base::WaitableEvent* completion);
 
   scoped_ptr<base::Thread> thread_;
   scoped_ptr<scheduler::WorkerScheduler> worker_scheduler_;

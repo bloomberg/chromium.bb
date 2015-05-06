@@ -5,6 +5,7 @@
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 
 #include "base/synchronization/waitable_event.h"
+#include "components/scheduler/child/web_scheduler_impl.h"
 #include "components/scheduler/child/worker_scheduler_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,6 +74,12 @@ void addTaskObserver(WebThreadImplForWorkerScheduler* thread,
 void removeTaskObserver(WebThreadImplForWorkerScheduler* thread,
                         TestObserver* observer) {
   thread->removeTaskObserver(observer);
+}
+
+void shutdownOnThread(WebThreadImplForWorkerScheduler* thread) {
+  WebSchedulerImpl* web_scheduler_impl =
+      static_cast<WebSchedulerImpl*>(thread->scheduler());
+  web_scheduler_impl->shutdown();
 }
 
 }  // namespace
@@ -165,6 +172,19 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
   // TestTask as well. This is not a bug, and we need to make sure the test
   // doesn't fail when that happens.
   EXPECT_THAT(calls, testing::HasSubstr("willProcessTask run didProcessTask"));
+}
+
+TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
+  scoped_ptr<MockTask> task(new MockTask());
+  scoped_ptr<MockTask> delayed_task(new MockTask());
+
+  EXPECT_CALL(*task, run()).Times(0);
+  EXPECT_CALL(*delayed_task, run()).Times(0);
+
+  RunOnWorkerThread(FROM_HERE, base::Bind(&shutdownOnThread, thread_.get()));
+  thread_->postTask(blink::WebTraceLocation(), task.release());
+  thread_->postDelayedTask(blink::WebTraceLocation(), task.release(), 50ul);
+  thread_.reset();
 }
 
 }  // namespace scheduler

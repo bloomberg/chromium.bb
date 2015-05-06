@@ -22,6 +22,10 @@ component("scheduler") {
     "//third_party/WebKit/public:blink",
     "//ui/gfx:gfx",
   ]
+
+  public_deps = [
+    "//third_party/WebKit/public:blink",
+  ]
 }
 
 # GYP version: components/scheduler.gypi:scheduler_common
