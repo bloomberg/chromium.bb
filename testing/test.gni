@@ -117,8 +117,8 @@ template("test") {
       unittests_dep = ":$library_name"
       apk_name = main_target_name
       if (defined(invoker.output_name)) {
-        test_output_name = invoker.output_name
-        unittests_binary = "lib${test_output_name}.so"
+        apk_name = invoker.output_name
+        unittests_binary = "lib${apk_name}.so"
       }
       deps = [
         ":$library_name",
