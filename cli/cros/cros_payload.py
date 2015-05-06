@@ -59,6 +59,8 @@ Example:
         help='The payload file that you want information from.')
     parser.add_argument('--list_ops', default=False, action='store_true',
                         help='List the install operations and their extents.')
+    parser.add_argument('--stats', default=False, action='store_true',
+                        help='Show information about overall input/output.')
 
   def _DisplayHeader(self):
     """Show information from the payload header."""
@@ -111,12 +113,57 @@ Example:
       if len(op.dst_extents):
         _DisplayExtents(op.dst_extents, 'Destination')
 
+  def _GetStats(self, manifest):
+    """Returns various statistics about a payload file.
+
+    Returns a dictionary containing the number of blocks read during payload
+    application, the number of blocks written, and the number of seeks done
+    when writing during operation application.
+    """
+    read_blocks = 0
+    written_blocks = 0
+    num_write_seeks = 0
+    for operations in (manifest.install_operations,
+                       manifest.kernel_install_operations):
+      last_ext = None
+      for curr_op in operations:
+        read_blocks += sum([ext.num_blocks for ext in curr_op.src_extents])
+        written_blocks += sum([ext.num_blocks for ext in curr_op.dst_extents])
+        for curr_ext in curr_op.dst_extents:
+          # See if the extent is contiguous with the last extent seen.
+          if last_ext and (curr_ext.start_block !=
+                           last_ext.start_block + last_ext.num_blocks):
+            num_write_seeks += 1
+          last_ext = curr_ext
+
+    if manifest.minor_version == 1:
+      # Rootfs and kernel are written during the filesystem copy in version 1.
+      written_blocks += manifest.old_rootfs_info.size / manifest.block_size
+      written_blocks += manifest.old_kernel_info.size / manifest.block_size
+    # Old and new rootfs and kernel are read once during verification
+    read_blocks += manifest.old_rootfs_info.size / manifest.block_size
+    read_blocks += manifest.old_kernel_info.size / manifest.block_size
+    read_blocks += manifest.new_rootfs_info.size / manifest.block_size
+    read_blocks += manifest.new_kernel_info.size / manifest.block_size
+    stats = {'read_blocks': read_blocks,
+             'written_blocks': written_blocks,
+             'num_write_seeks': num_write_seeks}
+    return stats
+
+  def _DisplayStats(self, manifest):
+    stats = self._GetStats(manifest)
+    DisplayValue('Blocks read', stats['read_blocks'])
+    DisplayValue('Blocks written', stats['written_blocks'])
+    DisplayValue('Seeks when writing', stats['num_write_seeks'])
+
   def Run(self):
     """Parse the update payload and display information from it."""
     self.payload = self._update_payload.Payload(self.options.payload_file)
     self.payload.Init()
     self._DisplayHeader()
     self._DisplayManifest()
+    if self.options.stats:
+      self._DisplayStats(self.payload.manifest)
     if self.options.list_ops:
       print()
       self._DisplayOps('Install operations',
