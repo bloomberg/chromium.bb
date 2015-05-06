@@ -145,29 +145,25 @@ PP_VideoFrame_Format PP_FromMediaVideoFormat(media::VideoFrame::Format format) {
 
 PP_VideoProfileDescription PP_FromVideoEncodeAcceleratorSupportedProfile(
     media::VideoEncodeAccelerator::SupportedProfile profile,
-    PP_HardwareAcceleration acceleration) {
+    PP_Bool hardware_accelerated) {
   PP_VideoProfileDescription pp_profile;
   pp_profile.profile = PP_FromMediaVideoProfile(profile.profile);
   pp_profile.max_resolution = PP_FromGfxSize(profile.max_resolution);
   pp_profile.max_framerate_numerator = profile.max_framerate_numerator;
   pp_profile.max_framerate_denominator = profile.max_framerate_denominator;
-  pp_profile.acceleration = acceleration;
+  pp_profile.hardware_accelerated = hardware_accelerated;
   return pp_profile;
 }
 
-bool PP_HardwareAccelerationCompatible(PP_HardwareAcceleration supply,
-                                       PP_HardwareAcceleration demand) {
-  // TODO(llandwerlin): Change API to use bool instead of
-  // PP_HardwareAcceleration
-  switch (supply) {
+bool PP_HardwareAccelerationCompatible(bool accelerated,
+                                       PP_HardwareAcceleration requested) {
+  switch (requested) {
     case PP_HARDWAREACCELERATION_ONLY:
-      return (demand == PP_HARDWAREACCELERATION_ONLY ||
-              demand == PP_HARDWAREACCELERATION_WITHFALLBACK);
+      return accelerated;
+    case PP_HARDWAREACCELERATION_NONE:
+      return !accelerated;
     case PP_HARDWAREACCELERATION_WITHFALLBACK:
       return true;
-    case PP_HARDWAREACCELERATION_NONE:
-      return (demand == PP_HARDWAREACCELERATION_WITHFALLBACK ||
-              demand == PP_HARDWAREACCELERATION_NONE);
     // No default case, to catch unhandled PP_HardwareAcceleration values.
   }
   return false;
@@ -456,8 +452,8 @@ void PepperVideoEncoderHost::GetSupportedProfiles(
     profiles = GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
         channel_->gpu_info().video_encode_accelerator_supported_profiles);
     for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
-      pp_profiles->push_back(PP_FromVideoEncodeAcceleratorSupportedProfile(
-          profile, PP_HARDWAREACCELERATION_ONLY));
+      pp_profiles->push_back(
+          PP_FromVideoEncodeAcceleratorSupportedProfile(profile, PP_TRUE));
     }
   }
 
@@ -465,8 +461,8 @@ void PepperVideoEncoderHost::GetSupportedProfiles(
   VideoEncoderShim software_encoder(this);
   profiles = software_encoder.GetSupportedProfiles();
   for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
-    pp_profiles->push_back(PP_FromVideoEncodeAcceleratorSupportedProfile(
-        profile, PP_HARDWAREACCELERATION_NONE));
+    pp_profiles->push_back(
+        PP_FromVideoEncodeAcceleratorSupportedProfile(profile, PP_FALSE));
   }
 #endif
 }
@@ -484,7 +480,8 @@ bool PepperVideoEncoderHost::IsInitializationValid(
     if (output_profile == profile.profile &&
         input_size.width <= profile.max_resolution.width &&
         input_size.height <= profile.max_resolution.height &&
-        PP_HardwareAccelerationCompatible(profile.acceleration, acceleration))
+        PP_HardwareAccelerationCompatible(
+            profile.hardware_accelerated == PP_TRUE, acceleration))
       return true;
   }
 

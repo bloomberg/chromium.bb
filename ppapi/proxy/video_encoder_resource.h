@@ -64,6 +64,9 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
   int32_t GetSupportedProfiles(
       const PP_ArrayOutput& output,
       const scoped_refptr<TrackedCallback>& callback) override;
+  int32_t GetSupportedProfiles0_1(
+      const PP_ArrayOutput& output,
+      const scoped_refptr<TrackedCallback>& callback) override;
   int32_t Initialize(PP_VideoFrame_Format input_format,
                      const PP_Size* input_visible_size,
                      PP_VideoProfile output_profile,
@@ -93,6 +96,7 @@ class PPAPI_PROXY_EXPORT VideoEncoderResource
   // Reply message handlers for operations that are done in the host.
   void OnPluginMsgGetSupportedProfilesReply(
       const PP_ArrayOutput& output,
+      bool version0_1,
       const ResourceMessageReplyParams& params,
       const std::vector<PP_VideoProfileDescription>& profiles);
   void OnPluginMsgInitializeReply(const ResourceMessageReplyParams& params,

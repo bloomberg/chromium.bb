@@ -450,7 +450,7 @@ IPC_STRUCT_TRAITS_MEMBER(profile)
 IPC_STRUCT_TRAITS_MEMBER(max_resolution)
 IPC_STRUCT_TRAITS_MEMBER(max_framerate_numerator)
 IPC_STRUCT_TRAITS_MEMBER(max_framerate_denominator)
-IPC_STRUCT_TRAITS_MEMBER(acceleration)
+IPC_STRUCT_TRAITS_MEMBER(hardware_accelerated)
 IPC_STRUCT_TRAITS_END()
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)

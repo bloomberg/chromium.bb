@@ -14,6 +14,7 @@ PROXIED_IFACE(PPB_COMPOSITORLAYER_INTERFACE_0_2, PPB_CompositorLayer_0_2)
 PROXIED_IFACE(PPB_UDPSOCKET_INTERFACE_1_2, PPB_UDPSocket_1_2)
 PROXIED_IFACE(PPB_VIDEODECODER_INTERFACE_0_1, PPB_VideoDecoder_0_1)
 PROXIED_IFACE(PPB_VIDEOENCODER_INTERFACE_0_1, PPB_VideoEncoder_0_1)
+PROXIED_IFACE(PPB_VIDEOENCODER_INTERFACE_0_2, PPB_VideoEncoder_0_2)
 
 // Note, PPB_TraceEvent is special. We don't want to actually make it stable,
 // but we want developers to be able to leverage it when running Chrome Dev or

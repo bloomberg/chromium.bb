@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_video_encoder.idl modified Thu Feb  5 10:33:32 2015.
+// From ppb_video_encoder.idl modified Fri Apr 17 10:38:38 2015.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -31,6 +31,17 @@ PP_Bool IsVideoEncoder(PP_Resource resource) {
   return PP_FromBool(enter.succeeded());
 }
 
+int32_t GetSupportedProfiles_0_1(PP_Resource video_encoder,
+                                 struct PP_ArrayOutput output,
+                                 struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_VideoEncoder::GetSupportedProfiles_0_1()";
+  EnterResource<PPB_VideoEncoder_API> enter(video_encoder, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(
+      enter.object()->GetSupportedProfiles0_1(output, enter.callback()));
+}
+
 int32_t GetSupportedProfiles(PP_Resource video_encoder,
                              struct PP_ArrayOutput output,
                              struct PP_CompletionCallback callback) {
@@ -53,9 +64,12 @@ int32_t Initialize(PP_Resource video_encoder,
   EnterResource<PPB_VideoEncoder_API> enter(video_encoder, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Initialize(
-      input_format, input_visible_size, output_profile, initial_bitrate,
-      acceleration, enter.callback()));
+  return enter.SetResult(enter.object()->Initialize(input_format,
+                                                    input_visible_size,
+                                                    output_profile,
+                                                    initial_bitrate,
+                                                    acceleration,
+                                                    enter.callback()));
 }
 
 int32_t GetFramesRequired(PP_Resource video_encoder) {
@@ -139,6 +153,20 @@ void Close(PP_Resource video_encoder) {
 const PPB_VideoEncoder_0_1 g_ppb_videoencoder_thunk_0_1 = {
     &Create,
     &IsVideoEncoder,
+    &GetSupportedProfiles_0_1,
+    &Initialize,
+    &GetFramesRequired,
+    &GetFrameCodedSize,
+    &GetVideoFrame,
+    &Encode,
+    &GetBitstreamBuffer,
+    &RecycleBitstreamBuffer,
+    &RequestEncodingParametersChange,
+    &Close};
+
+const PPB_VideoEncoder_0_2 g_ppb_videoencoder_thunk_0_2 = {
+    &Create,
+    &IsVideoEncoder,
     &GetSupportedProfiles,
     &Initialize,
     &GetFramesRequired,
@@ -154,6 +182,10 @@ const PPB_VideoEncoder_0_1 g_ppb_videoencoder_thunk_0_1 = {
 
 PPAPI_THUNK_EXPORT const PPB_VideoEncoder_0_1* GetPPB_VideoEncoder_0_1_Thunk() {
   return &g_ppb_videoencoder_thunk_0_1;
+}
+
+PPAPI_THUNK_EXPORT const PPB_VideoEncoder_0_2* GetPPB_VideoEncoder_0_2_Thunk() {
+  return &g_ppb_videoencoder_thunk_0_2;
 }
 
 }  // namespace thunk

@@ -10,7 +10,8 @@
 [generate_thunk]
 
 label Chrome {
-  [channel=dev] M42 = 0.1
+  [channel=dev] M42 = 0.1,
+  [channel=dev] M44 = 0.2
 };
 
 /**
@@ -66,6 +67,24 @@ interface PPB_VideoEncoder {
    * @param[in] video_encoder A <code>PP_Resource</code> identifying the video
    * encoder.
    * @param[in] output A <code>PP_ArrayOutput</code> to receive the supported
+   * <code>PP_VideoProfileDescription_0_1</code> structs.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return If >= 0, the number of supported profiles returned, otherwise an
+   * error code from <code>pp_errors.h</code>.
+   */
+  int32_t GetSupportedProfiles([in] PP_Resource video_encoder,
+                               [in] PP_ArrayOutput output,
+                               [in] PP_CompletionCallback callback);
+
+  /**
+   * Gets an array of supported video encoder profiles.
+   * These can be used to choose a profile before calling Initialize().
+   *
+   * @param[in] video_encoder A <code>PP_Resource</code> identifying the video
+   * encoder.
+   * @param[in] output A <code>PP_ArrayOutput</code> to receive the supported
    * <code>PP_VideoProfileDescription</code> structs.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion.
@@ -73,6 +92,7 @@ interface PPB_VideoEncoder {
    * @return If >= 0, the number of supported profiles returned, otherwise an
    * error code from <code>pp_errors.h</code>.
    */
+  [version = 0.2]
   int32_t GetSupportedProfiles([in] PP_Resource video_encoder,
                                [in] PP_ArrayOutput output,
                                [in] PP_CompletionCallback callback);

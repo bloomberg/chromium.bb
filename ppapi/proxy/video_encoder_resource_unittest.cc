@@ -58,11 +58,15 @@ class VideoEncoderResourceTest : public PluginProxyTest,
                                  public MediaStreamBufferManager::Delegate {
  public:
   VideoEncoderResourceTest()
-      : encoder_iface_(thunk::GetPPB_VideoEncoder_0_1_Thunk()),
+      : encoder_iface_(thunk::GetPPB_VideoEncoder_0_2_Thunk()),
+        encoder_iface_0_1_(thunk::GetPPB_VideoEncoder_0_1_Thunk()),
         video_frames_manager_(this) {}
   ~VideoEncoderResourceTest() override {}
 
-  const PPB_VideoEncoder_0_1* encoder_iface() const { return encoder_iface_; }
+  const PPB_VideoEncoder_0_2* encoder_iface() const { return encoder_iface_; }
+  const PPB_VideoEncoder_0_1* encoder_iface_0_1() const {
+    return encoder_iface_0_1_;
+  }
 
   const uint32_t kBitstreamBufferSize = 4000;
   const uint32_t kBitstreamBufferCount = 5;
@@ -412,7 +416,8 @@ class VideoEncoderResourceTest : public PluginProxyTest,
   // MediaStreamBufferManager::Delegate:
   void OnNewBufferEnqueued() override {}
 
-  const PPB_VideoEncoder_0_1* encoder_iface_;
+  const PPB_VideoEncoder_0_2* encoder_iface_;
+  const PPB_VideoEncoder_0_1* encoder_iface_0_1_;
 
   ScopedVector<base::SharedMemory> shared_memory_bitstreams_;
 
@@ -451,19 +456,75 @@ TEST_F(VideoEncoderResourceTest, GetSupportedProfiles) {
     profile.max_resolution.height = 1080;
     profile.max_framerate_numerator = 30;
     profile.max_framerate_denominator = 1;
-    profile.acceleration = PP_HARDWAREACCELERATION_ONLY;
+    profile.hardware_accelerated = PP_TRUE;
     profiles_response.push_back(profile);
     profile.profile = PP_VIDEOPROFILE_VP8_ANY;
     profile.max_resolution.width = 1920;
     profile.max_resolution.height = 1080;
     profile.max_framerate_numerator = 30;
     profile.max_framerate_denominator = 1;
-    profile.acceleration = PP_HARDWAREACCELERATION_NONE;
+    profile.hardware_accelerated = PP_FALSE;
     profiles_response.push_back(profile);
 
     SendGetSupportedProfilesReply(params, profiles_response);
     ASSERT_EQ(profiles_response.size(), static_cast<uint32_t>(cb.result()));
     ASSERT_EQ(0, memcmp(&profiles[0], &profiles_response[0], sizeof(profiles)));
+  }
+}
+
+TEST_F(VideoEncoderResourceTest, GetSupportedProfiles0_1) {
+  // Verifies that GetSupportedProfiles calls into the renderer and
+  // the we get the right results back.
+  {
+    LockingResourceReleaser encoder(CreateEncoder());
+    PP_VideoProfileDescription_0_1 profiles[2];
+    PP_ArrayOutput output;
+    output.user_data = &profiles[0];
+    output.GetDataBuffer = ForwardUserData;
+    ResourceMessageCallParams params;
+    MockCompletionCallback cb;
+    int32_t result = encoder_iface_0_1()->GetSupportedProfiles(
+        encoder.get(), output, PP_MakeOptionalCompletionCallback(
+                                   &MockCompletionCallback::Callback, &cb));
+    ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+    ASSERT_TRUE(CheckGetSupportedProfilesMsg(&params));
+
+    std::vector<PP_VideoProfileDescription> profiles_response;
+    PP_VideoProfileDescription profile;
+    profile.profile = PP_VIDEOPROFILE_H264MAIN;
+    profile.max_resolution.width = 1920;
+    profile.max_resolution.height = 1080;
+    profile.max_framerate_numerator = 30;
+    profile.max_framerate_denominator = 1;
+    profile.hardware_accelerated = PP_TRUE;
+    profiles_response.push_back(profile);
+    profile.profile = PP_VIDEOPROFILE_VP8_ANY;
+    profile.max_resolution.width = 1920;
+    profile.max_resolution.height = 1080;
+    profile.max_framerate_numerator = 30;
+    profile.max_framerate_denominator = 1;
+    profile.hardware_accelerated = PP_FALSE;
+    profiles_response.push_back(profile);
+
+    SendGetSupportedProfilesReply(params, profiles_response);
+
+    ASSERT_EQ(profiles_response.size(), static_cast<uint32_t>(cb.result()));
+
+    for (uint32 i = 0; i < profiles_response.size(); i++) {
+      ASSERT_EQ(profiles_response[i].profile, profiles[i].profile);
+      ASSERT_EQ(profiles_response[i].max_resolution.width,
+                profiles[i].max_resolution.width);
+      ASSERT_EQ(profiles_response[i].max_resolution.height,
+                profiles[i].max_resolution.height);
+      ASSERT_EQ(profiles_response[i].max_framerate_numerator,
+                profiles[i].max_framerate_numerator);
+      ASSERT_EQ(profiles_response[i].max_framerate_denominator,
+                profiles[i].max_framerate_denominator);
+      if (profiles_response[i].hardware_accelerated)
+        ASSERT_EQ(PP_HARDWAREACCELERATION_ONLY, profiles[i].acceleration);
+      else
+        ASSERT_EQ(PP_HARDWAREACCELERATION_NONE, profiles[i].acceleration);
+    }
   }
 }
 

@@ -22,6 +22,9 @@ class PPAPI_THUNK_EXPORT PPB_VideoEncoder_API {
   virtual int32_t GetSupportedProfiles(
       const PP_ArrayOutput& output,
       const scoped_refptr<TrackedCallback>& callback) = 0;
+  virtual int32_t GetSupportedProfiles0_1(
+      const PP_ArrayOutput& output,
+      const scoped_refptr<TrackedCallback>& callback) = 0;
   virtual int32_t Initialize(
       PP_VideoFrame_Format input_format,
       const PP_Size* input_visible_size,

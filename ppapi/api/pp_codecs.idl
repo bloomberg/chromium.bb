@@ -142,6 +142,37 @@ struct PP_VideoProfileDescription {
   uint32_t max_framerate_denominator;
 
   /**
+   * Whether the profile is hardware accelerated.
+   */
+  PP_Bool hardware_accelerated;
+};
+
+/**
+ * Supported video profile information. See the PPB_VideoEncoder function
+ * GetSupportedProfiles() for more details.
+ */
+struct PP_VideoProfileDescription_0_1 {
+  /**
+   * The codec profile.
+   */
+  PP_VideoProfile profile;
+
+  /**
+   * Dimensions of the maximum resolution of video frames, in pixels.
+   */
+  PP_Size max_resolution;
+
+  /**
+   * The numerator of the maximum frame rate.
+   */
+  uint32_t max_framerate_numerator;
+
+  /**
+   * The denominator of the maximum frame rate.
+   */
+  uint32_t max_framerate_denominator;
+
+  /**
    * A value indicating if the profile is available in hardware, software, or
    * both.
    */
@@ -167,4 +198,3 @@ struct PP_BitstreamBuffer {
    */
   PP_Bool key_frame;
 };
-

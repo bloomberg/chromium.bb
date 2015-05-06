@@ -31,6 +31,28 @@ void RunCallback(scoped_refptr<TrackedCallback>* callback, int32_t error) {
   temp->Run(error);
 }
 
+std::vector<PP_VideoProfileDescription_0_1> PP_VideoProfileDescriptionTo_0_1(
+    std::vector<PP_VideoProfileDescription> profiles) {
+  std::vector<PP_VideoProfileDescription_0_1> profiles_0_1;
+
+  for (uint32_t i = 0; i < profiles.size(); ++i) {
+    const PP_VideoProfileDescription& profile = profiles[i];
+    PP_VideoProfileDescription_0_1 profile_0_1;
+
+    profile_0_1.profile = profile.profile;
+    profile_0_1.max_resolution = profile.max_resolution;
+    profile_0_1.max_framerate_numerator = profile.max_framerate_numerator;
+    profile_0_1.max_framerate_denominator = profile.max_framerate_denominator;
+    profile_0_1.acceleration = profile.hardware_accelerated == PP_TRUE
+                                   ? PP_HARDWAREACCELERATION_ONLY
+                                   : PP_HARDWAREACCELERATION_NONE;
+
+    profiles_0_1.push_back(profile_0_1);
+  }
+
+  return profiles_0_1;
+}
+
 }  // namespace
 
 VideoEncoderResource::ShmBuffer::ShmBuffer(uint32_t id,
@@ -86,7 +108,21 @@ int32_t VideoEncoderResource::GetSupportedProfiles(
   Call<PpapiPluginMsg_VideoEncoder_GetSupportedProfilesReply>(
       RENDERER, PpapiHostMsg_VideoEncoder_GetSupportedProfiles(),
       base::Bind(&VideoEncoderResource::OnPluginMsgGetSupportedProfilesReply,
-                 this, output));
+                 this, output, false));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t VideoEncoderResource::GetSupportedProfiles0_1(
+    const PP_ArrayOutput& output,
+    const scoped_refptr<TrackedCallback>& callback) {
+  if (TrackedCallback::IsPending(get_supported_profiles_callback_))
+    return PP_ERROR_INPROGRESS;
+
+  get_supported_profiles_callback_ = callback;
+  Call<PpapiPluginMsg_VideoEncoder_GetSupportedProfilesReply>(
+      RENDERER, PpapiHostMsg_VideoEncoder_GetSupportedProfiles(),
+      base::Bind(&VideoEncoderResource::OnPluginMsgGetSupportedProfilesReply,
+                 this, output, true));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -248,6 +284,7 @@ void VideoEncoderResource::OnReplyReceived(
 
 void VideoEncoderResource::OnPluginMsgGetSupportedProfilesReply(
     const PP_ArrayOutput& output,
+    bool version0_1,
     const ResourceMessageReplyParams& params,
     const std::vector<PP_VideoProfileDescription>& profiles) {
   int32_t error = params.result();
@@ -262,7 +299,14 @@ void VideoEncoderResource::OnPluginMsgGetSupportedProfilesReply(
     return;
   }
 
-  if (!writer.StoreVector(profiles)) {
+  bool write_result;
+  if (version0_1)
+    write_result =
+        writer.StoreVector(PP_VideoProfileDescriptionTo_0_1(profiles));
+  else
+    write_result = writer.StoreVector(profiles);
+
+  if (!write_result) {
     RunCallback(&get_supported_profiles_callback_, PP_ERROR_FAILED);
     return;
   }
