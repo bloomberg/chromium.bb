@@ -5767,6 +5767,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DocumentScan.ConverterResult" enum="BooleanSuccess">
+  <owner>pstew@chromium.org</owner>
+  <summary>
+    Chrome OS document scan metric that tracks whether a document scan call to
+    the image conversion process suceeded.
+  </summary>
+</histogram>
+
+<histogram name="DocumentScan.ScanResult" enum="BooleanSuccess">
+  <owner>pstew@chromium.org</owner>
+  <summary>
+    Chrome OS document scan metric that tracks whether a document scan call to
+    the sane backend process suceeded.
+  </summary>
+</histogram>
+
 <histogram name="DomainBoundCerts.DBLoadedCount">
   <owner>mattm@chromium.org</owner>
   <summary>Number of certs loaded from domain bound cert database.</summary>
