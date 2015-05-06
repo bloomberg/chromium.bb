@@ -210,9 +210,7 @@ NET_EXPORT std::string CanonicalizeHost(const std::string& host,
 // rules based on RFC 1738 and tweaked to be compatible with the real world.
 // The rules are:
 //   * One or more components separated by '.'
-//   * Each component begins with an alphanumeric character or '-'
 //   * Each component contains only alphanumeric characters and '-' or '_'
-//   * Each component ends with an alphanumeric character or '-'
 //   * The last component begins with an alphanumeric character
 //   * Optional trailing dot after last component (means "treat as FQDN")
 //

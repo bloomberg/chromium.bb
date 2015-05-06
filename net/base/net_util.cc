@@ -258,27 +258,20 @@ bool IsCanonicalizedHostCompliant(const std::string& host) {
 
   bool in_component = false;
   bool most_recent_component_started_alphanumeric = false;
-  bool last_char_was_underscore = false;
 
   for (std::string::const_iterator i(host.begin()); i != host.end(); ++i) {
     const char c = *i;
     if (!in_component) {
       most_recent_component_started_alphanumeric = IsHostCharAlphanumeric(c);
-      if (!most_recent_component_started_alphanumeric && (c != '-'))
-        return false;
-      in_component = true;
-    } else {
-      if (c == '.') {
-        if (last_char_was_underscore)
-          return false;
-        in_component = false;
-      } else if (IsHostCharAlphanumeric(c) || (c == '-')) {
-        last_char_was_underscore = false;
-      } else if (c == '_') {
-        last_char_was_underscore = true;
-      } else {
+      if (!most_recent_component_started_alphanumeric && (c != '-') &&
+          (c != '_')) {
         return false;
       }
+      in_component = true;
+    } else if (c == '.') {
+      in_component = false;
+    } else if (!IsHostCharAlphanumeric(c) && (c != '-') && (c != '_')) {
+      return false;
     }
   }
 
