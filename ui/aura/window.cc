@@ -432,7 +432,6 @@ void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
                                const gfx::Display& dst_display) {
   Window* root = GetRootWindow();
   if (root) {
-    gfx::Point origin = new_bounds_in_screen.origin();
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root);
     screen_position_client->SetBounds(this, new_bounds_in_screen, dst_display);
