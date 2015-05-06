@@ -313,7 +313,7 @@ if (!is_mac) {
   # TODO(GYP): Can't link Blink binaries yet.
   test("heap_unittests") {
     visibility = []  # Allow re-assignment of list.
-    visibility = [ "//third_party/WebKit/*" ]
+    visibility = [ "*" ]
     output_name = "blink_heap_unittests"
 
     sources = rebase_path(heap_gypi.platform_heap_test_files, ".", "heap")
@@ -343,7 +343,7 @@ if (!is_mac) {
 
   test("platform_unittests") {
     visibility = []  # Allow re-assignment of list.
-    visibility = [ "//third_party/WebKit/*" ]
+    visibility = [ "*" ]
     output_name = "blink_platform_unittests"
 
     sources = platform_test_files
