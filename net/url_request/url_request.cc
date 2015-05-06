@@ -892,7 +892,7 @@ void URLRequest::OrphanJob() {
 int URLRequest::Redirect(const RedirectInfo& redirect_info) {
   // Matches call in NotifyReceivedRedirect.
   OnCallToDelegateComplete();
-  if (net_log_.GetCaptureMode().enabled()) {
+  if (net_log_.IsCapturing()) {
     net_log_.AddEvent(
         NetLog::TYPE_URL_REQUEST_REDIRECTED,
         NetLog::StringCallback("location",

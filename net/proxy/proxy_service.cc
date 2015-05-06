@@ -1380,7 +1380,7 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
       network_delegate->NotifyResolveProxy(url, load_flags, *this, result);
 
     // When logging all events is enabled, dump the proxy list.
-    if (net_log.GetCaptureMode().enabled()) {
+    if (net_log.IsCapturing()) {
       net_log.AddEvent(
           NetLog::TYPE_PROXY_SERVICE_RESOLVED_PROXY_LIST,
           base::Bind(&NetLogFinishedResolvingProxyCallback, result));

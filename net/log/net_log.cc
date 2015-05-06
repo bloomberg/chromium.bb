@@ -205,10 +205,7 @@ void NetLog::ThreadSafeObserver::OnAddEntryData(const EntryData& entry_data) {
   OnAddEntry(Entry(&entry_data, capture_mode()));
 }
 
-NetLog::NetLog()
-    : last_id_(0),
-      effective_capture_mode_int32_(
-          NetLogCaptureMode::None().ToInternalValue()) {
+NetLog::NetLog() : last_id_(0), is_capturing_(0) {
 }
 
 NetLog::~NetLog() {
@@ -230,36 +227,28 @@ uint32 NetLog::NextID() {
   return base::subtle::NoBarrier_AtomicIncrement(&last_id_, 1);
 }
 
-NetLogCaptureMode NetLog::GetCaptureMode() const {
-  base::subtle::Atomic32 capture_mode =
-      base::subtle::NoBarrier_Load(&effective_capture_mode_int32_);
-  return NetLogCaptureMode::FromInternalValue(capture_mode);
+bool NetLog::IsCapturing() const {
+  return base::subtle::NoBarrier_Load(&is_capturing_) != 0;
 }
 
 void NetLog::DeprecatedAddObserver(NetLog::ThreadSafeObserver* observer,
                                    NetLogCaptureMode capture_mode) {
-  DCHECK(capture_mode.enabled());
-
   base::AutoLock lock(lock_);
 
   DCHECK(!observer->net_log_);
-  DCHECK(!observer->capture_mode_.enabled());
   observers_.AddObserver(observer);
   observer->net_log_ = this;
   observer->capture_mode_ = capture_mode;
-  UpdateCaptureMode();
+  UpdateIsCapturing();
 }
 
 void NetLog::SetObserverCaptureMode(NetLog::ThreadSafeObserver* observer,
                                     NetLogCaptureMode capture_mode) {
-  DCHECK(capture_mode.enabled());
   base::AutoLock lock(lock_);
 
   DCHECK(observers_.HasObserver(observer));
   DCHECK_EQ(this, observer->net_log_);
-  DCHECK(observer->capture_mode_.enabled());
   observer->capture_mode_ = capture_mode;
-  UpdateCaptureMode();
 }
 
 void NetLog::DeprecatedRemoveObserver(NetLog::ThreadSafeObserver* observer) {
@@ -267,26 +256,16 @@ void NetLog::DeprecatedRemoveObserver(NetLog::ThreadSafeObserver* observer) {
 
   DCHECK(observers_.HasObserver(observer));
   DCHECK_EQ(this, observer->net_log_);
-  DCHECK(observer->capture_mode_.enabled());
   observers_.RemoveObserver(observer);
   observer->net_log_ = NULL;
   observer->capture_mode_ = NetLogCaptureMode();
-  UpdateCaptureMode();
+  UpdateIsCapturing();
 }
 
-void NetLog::UpdateCaptureMode() {
+void NetLog::UpdateIsCapturing() {
   lock_.AssertAcquired();
-
-  // Accumulate the capture mode of all the observers to find the maximum level.
-  NetLogCaptureMode new_capture_mode = NetLogCaptureMode::None();
-  ObserverListBase<ThreadSafeObserver>::Iterator it(&observers_);
-  ThreadSafeObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    new_capture_mode =
-        NetLogCaptureMode::Max(new_capture_mode, observer->capture_mode());
-  }
-  base::subtle::NoBarrier_Store(&effective_capture_mode_int32_,
-                                new_capture_mode.ToInternalValue());
+  base::subtle::NoBarrier_Store(&is_capturing_,
+                                observers_.might_have_observers() ? 1 : 0);
 }
 
 // static
@@ -390,7 +369,7 @@ void NetLog::AddEntry(EventType type,
                       const Source& source,
                       EventPhase phase,
                       const NetLog::ParametersCallback* parameters_callback) {
-  if (!GetCaptureMode().enabled())
+  if (!IsCapturing())
     return;
   EntryData entry_data(type, source, phase, base::TimeTicks::Now(),
                        parameters_callback);
@@ -480,12 +459,9 @@ void BoundNetLog::AddByteTransferEvent(NetLog::EventType event_type,
   AddEvent(event_type, base::Bind(BytesTransferredCallback, byte_count, bytes));
 }
 
-NetLogCaptureMode BoundNetLog::GetCaptureMode() const {
+bool BoundNetLog::IsCapturing() const {
   CrashIfInvalid();
-
-  if (net_log_)
-    return net_log_->GetCaptureMode();
-  return NetLogCaptureMode();
+  return net_log_ && net_log_->IsCapturing();
 }
 
 // static

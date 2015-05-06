@@ -329,7 +329,7 @@ class HttpNetworkTransactionTest
 
     TestCompletionCallback callback;
 
-    EXPECT_TRUE(log.bound().GetCaptureMode().enabled());
+    EXPECT_TRUE(log.bound().IsCapturing());
     int rv = trans->Start(&request, callback.callback(), log.bound());
     EXPECT_EQ(ERR_IO_PENDING, rv);
 

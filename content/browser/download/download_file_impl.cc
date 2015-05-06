@@ -337,7 +337,7 @@ void DownloadFileImpl::StreamActive() {
             &DownloadDestinationObserver::DestinationCompleted,
             observer_, hash));
   }
-  if (bound_net_log_.GetCaptureMode().enabled()) {
+  if (bound_net_log_.IsCapturing()) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_STREAM_DRAINED,
         base::Bind(&FileStreamDrainedNetLogCallback, total_incoming_data_size,

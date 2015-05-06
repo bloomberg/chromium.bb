@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/log/write_to_file_net_log_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -198,8 +199,8 @@ class NetLogTempFileTest : public ::testing::Test {
     EXPECT_EQ("LOGGING", GetStateString());
     EXPECT_EQ(expected_log_type, net_log_temp_file_->log_type());
     EXPECT_EQ(expected_log_type_string, GetLogTypeString());
-
-    EXPECT_EQ(expected_capture_mode, net_log_->GetCaptureMode());
+    EXPECT_EQ(expected_capture_mode,
+              net_log_temp_file_->write_to_file_observer_->capture_mode());
 
     // Check GetFilePath returns false when still writing to the file.
     base::FilePath net_export_file_path;

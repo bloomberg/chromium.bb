@@ -67,7 +67,6 @@ TEST_F(WriteToFileNetLogObserverTest, CaptureMode) {
   WriteToFileNetLogObserver logger;
   logger.StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
   EXPECT_EQ(NetLogCaptureMode::Default(), logger.capture_mode());
-  EXPECT_EQ(NetLogCaptureMode::Default(), net_log_.GetCaptureMode());
   logger.StopObserving(nullptr);
 
   file.reset(base::OpenFile(log_path_, "w"));
@@ -76,8 +75,6 @@ TEST_F(WriteToFileNetLogObserverTest, CaptureMode) {
   logger.StartObserving(&net_log_, file.Pass(), nullptr, nullptr);
   EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
             logger.capture_mode());
-  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
-            net_log_.GetCaptureMode());
   logger.StopObserving(nullptr);
 }
 

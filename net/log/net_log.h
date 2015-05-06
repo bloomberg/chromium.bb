@@ -207,9 +207,10 @@ class NET_EXPORT NetLog {
   // will be unique and greater than 0.
   uint32 NextID();
 
-  // Returns the capture mode for this NetLog. This is used to avoid computing
-  // and saving expensive log entries.
-  NetLogCaptureMode GetCaptureMode() const;
+  // Returns true if there are any observers attached to the NetLog. This can be
+  // used as an optimization to avoid emitting log entries when there is no
+  // chance that the data will be consumed.
+  bool IsCapturing() const;
 
   // Adds an observer and sets its log capture mode.  The observer must not be
   // watching any NetLog, including this one, when this is called.
@@ -294,9 +295,9 @@ class NET_EXPORT NetLog {
                 EventPhase phase,
                 const NetLog::ParametersCallback* parameters_callback);
 
-  // Called whenever an observer is added or removed, or has its log
-  // capture mode changed.  Must have acquired |lock_| prior to calling.
-  void UpdateCaptureMode();
+  // Called whenever an observer is added or removed, to update
+  // |has_observers_|. Must have acquired |lock_| prior to calling.
+  void UpdateIsCapturing();
 
   // |lock_| protects access to |observers_|.
   base::Lock lock_;
@@ -304,10 +305,10 @@ class NET_EXPORT NetLog {
   // Last assigned source ID.  Incremented to get the next one.
   base::subtle::Atomic32 last_id_;
 
-  // The current capture mode. Note that the capture mode is stored as an
-  // integer rather than a NetLogCaptureMode so that it can be easily
-  // read/written without a lock using Atomic32.
-  base::subtle::Atomic32 effective_capture_mode_int32_;
+  // |is_capturing_| will be 0 when there are no observers watching the NetLog,
+  // 1 otherwise. Note that this is stored as an Atomic32 rather than a boolean
+  // so it can be accessed without needing a lock.
+  base::subtle::Atomic32 is_capturing_;
 
   // |lock_| must be acquired whenever reading or writing to this.
   ObserverList<ThreadSafeObserver, true> observers_;
@@ -362,7 +363,7 @@ class NET_EXPORT BoundNetLog {
                             int byte_count,
                             const char* bytes) const;
 
-  NetLogCaptureMode GetCaptureMode() const;
+  bool IsCapturing() const;
 
   // Helper to create a BoundNetLog given a NetLog and a SourceType. Takes care
   // of creating a unique source ID, and handles the case of NULL net_log.

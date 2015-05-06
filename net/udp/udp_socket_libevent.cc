@@ -414,7 +414,7 @@ void UDPSocketLibevent::LogRead(int result,
     return;
   }
 
-  if (net_log_.GetCaptureMode().enabled()) {
+  if (net_log_.IsCapturing()) {
     DCHECK(addr_len > 0);
     DCHECK(addr);
 
@@ -451,7 +451,7 @@ void UDPSocketLibevent::LogWrite(int result,
     return;
   }
 
-  if (net_log_.GetCaptureMode().enabled()) {
+  if (net_log_.IsCapturing()) {
     net_log_.AddEvent(
         NetLog::TYPE_UDP_BYTES_SENT,
         CreateNetLogUDPDataTranferCallback(result, bytes, address));

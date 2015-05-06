@@ -19,42 +19,25 @@ class NET_EXPORT NetLogCaptureMode {
  public:
   // NOTE: Default assignment and copy constructor are OK.
 
-  // The default constructor creates an empty capture mode (equivalent to
-  // None()).
+  // The default constructor creates a capture mode equivalent to
+  // Default().
   NetLogCaptureMode();
 
-  // Constructs a capture mode which logs NOTHING.
-  //    enabled() --> false
-  //    include_cookies_and_credentials() --> false
-  //    include_socket_bytes() --> false
-  static NetLogCaptureMode None();
-
   // Constructs a capture mode which logs basic events and event parameters.
-  //    enabled() --> true
   //    include_cookies_and_credentials() --> false
   //    include_socket_bytes() --> false
   static NetLogCaptureMode Default();
 
   // Constructs a capture mode which logs basic events, and additionally makes
   // no effort to strip cookies and credentials.
-  //    enabled() --> true
   //    include_cookies_and_credentials() --> true
   //    include_socket_bytes() --> false
   static NetLogCaptureMode IncludeCookiesAndCredentials();
 
   // Constructs a capture mode which logs the data sent/received from sockets.
-  //    enabled() --> true
   //    include_cookies_and_credentials() --> true
   //    include_socket_bytes() --> true
   static NetLogCaptureMode IncludeSocketBytes();
-
-  // Returns a capture mode that contains the maximal set of capabilities
-  // between |mode1| and |mode2|.
-  static NetLogCaptureMode Max(NetLogCaptureMode mode1,
-                               NetLogCaptureMode mode2);
-
-  // If enabled() is true, then _something_ is being captured.
-  bool enabled() const;
 
   // If include_cookies_and_credentials() is true , then it is OK to log
   // events which contain cookies, credentials or other privacy sensitive data.
@@ -70,14 +53,7 @@ class NET_EXPORT NetLogCaptureMode {
   int32_t ToInternalValueForTesting() const;
 
  private:
-  // NetLog relies on the internal value of NetLogCaptureMode being an integer,
-  // so it can be read/written atomically across thread.
-  friend class NetLog;
-
   explicit NetLogCaptureMode(uint32_t value);
-
-  static NetLogCaptureMode FromInternalValue(int32_t value);
-  int32_t ToInternalValue() const;
 
   int32_t value_;
 };
