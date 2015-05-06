@@ -68,7 +68,7 @@ enum OperationalStatus {
 enum DefaultSettings {
   kDefaultAudioEncoderBitrate = 0,  // This means "auto," and may mean VBR.
   kDefaultAudioSamplingRate = 48000,
-  kDefaultMaxQp = 56,
+  kDefaultMaxQp = 63,
   kDefaultMinQp = 4,
   kDefaultMaxFrameRate = 30,
   kDefaultNumberOfVideoBuffers = 1,
