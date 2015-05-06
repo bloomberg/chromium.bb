@@ -31,9 +31,39 @@ _BRILLO_SDK_NO_UPDATE = 'BRILLO_SDK_NO_UPDATE'
 _BRILLO_SDK_LOCAL_MANIFEST_REPO = '.local_manifest_repo'
 
 
+def _GetSdkManifestUrl(version):
+  """Get the GS URL for the SDK |version| manifest."""
+  return os.path.join(constants.BRILLO_RELEASE_MANIFESTS_URL,
+                      '%s.xml' % version)
+
+
 def _ResolveLatest(gs_ctx):
   """Find the 'latest' SDK release."""
-  return gs_ctx.Cat(constants.BRILLO_LATEST_RELEASE_URL).strip()
+  return gs_ctx.Cat(constants.BRILLO_LATEST_RELEASE_URL,
+                    debug_level=logging.DEBUG).strip()
+
+
+def _SdkVersionExists(gs_ctx, bootstrap_path, version):
+  """Checks that |version| is a valid SDK version.
+
+  Valid SDK versions are "latest", "tot", anything already downloaded
+  to the bootstrap SDK directory, or anything that has a manifest
+  available from GS.
+
+  Args:
+    gs_ctx: GSContext object to use.
+    bootstrap_path: Bootstrap path to check for local SDK versions.
+    version: SDK version to check.
+
+  Returns:
+    True if |version| is a valid SDK version.
+  """
+  if not version:
+    return False
+  return (
+      version in ('latest', 'tot') or
+      os.path.exists(bootstrap_lib.ComputeSdkPath(bootstrap_path, version)) or
+      gs_ctx.Exists(_GetSdkManifestUrl(version), debug_level=logging.DEBUG))
 
 
 def _DownloadSdk(gs_ctx, sdk_dir, version):
@@ -64,9 +94,8 @@ def _DownloadSdk(gs_ctx, sdk_dir, version):
 
     with tempfile.NamedTemporaryFile() as manifest:
       # Fetch manifest into temp file.
-      manifest_url = os.path.join(constants.BRILLO_RELEASE_MANIFESTS_URL,
-                                  '%s.xml' % version)
-      gs_ctx.Copy(manifest_url, manifest.name)
+      gs_ctx.Copy(_GetSdkManifestUrl(version), manifest.name,
+                  debug_level=logging.DEBUG)
 
       manifest_git_dir = os.path.join(sdk_dir, _BRILLO_SDK_LOCAL_MANIFEST_REPO)
 
@@ -108,10 +137,11 @@ def _UpdateBootstrap(bootstrap_path):
   commandline.ReExec()
 
 
-def _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version):
+def _UpdateWorkspaceSdk(gs_ctx, bootstrap_path, workspace_path, version):
   """Install SDK |version| and attach it to a workspace.
 
   Args:
+    gs_ctx: GSContext object to use.
     bootstrap_path: Path to bootstrap location.
     workspace_path: Path to workspace location.
     version: Project SDK version to sync. Can be a version number, 'tot', or
@@ -121,9 +151,6 @@ def _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version):
   if not bootstrap_path:
     cros_build_lib.Die('You are bootstrapping chromite from a repo checkout.\n'
                        'You must use a git clone. (brbug.com/580: link docs)')
-
-  # We fetch versioned manifests from GS.
-  gs_ctx = gs.GSContext()
 
   # Resolve 'latest' into a concrete version.
   if version.lower() == 'latest':
@@ -157,7 +184,7 @@ def _PrintWorkspaceSdkVersion(workspace_path, to_stdout=False):
   if to_stdout:
     print(sdk_version)
   else:
-    logging.notice('Version: %s', sdk_version)
+    logging.notice('Workspace SDK version is %s.', sdk_version)
 
 
 @command.CommandDecorator('sdk')
@@ -185,7 +212,14 @@ class SdkCommand(command.CliCommand):
 
     # Perform the update.
     if self.options.update:
+      # Shared GSContext object to use.
+      gs_ctx = gs.GSContext()
+
       bootstrap_path = bootstrap_lib.FindBootstrapPath()
+
+      # Check this first so we don't do a bootstrap update then error out.
+      if not _SdkVersionExists(gs_ctx, bootstrap_path, self.options.update):
+        cros_build_lib.Die('Invalid SDK version "%s".' % self.options.update)
 
       logging.info('Update bootstrap...')
       _UpdateBootstrap(bootstrap_path)
@@ -196,7 +230,8 @@ class SdkCommand(command.CliCommand):
         cros_build_lib.Die('Environment verification failed.')
 
       logging.notice('Updating SDK...')
-      _UpdateWorkspaceSdk(bootstrap_path, workspace_path, self.options.update)
+      _UpdateWorkspaceSdk(gs_ctx, bootstrap_path, workspace_path,
+                          self.options.update)
 
     # The --version argument should print to stdout for consumption by scripts.
     _PrintWorkspaceSdkVersion(workspace_path, to_stdout=self.options.version)
