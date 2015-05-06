@@ -203,6 +203,7 @@ class APIPermission {
     kWebRequest,
     kWebRequestBlocking,
     kWebrtcAudioPrivate,
+    kWebrtcDesktopCapturePrivate,
     kWebrtcLoggingPrivate,
     kWebstorePrivate,
     kWebstoreWidgetPrivate,

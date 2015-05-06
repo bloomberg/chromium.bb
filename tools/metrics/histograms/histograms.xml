@@ -51602,6 +51602,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1029" label="SEARCHENGINESPRIVATE_OPTINTOHOTWORDING"/>
   <int value="1030" label="WEBSTOREWIDGETPRIVATE_INSTALLWEBSTOREITEM"/>
   <int value="1031" label="WEBSTOREWIDGETPRIVATE_GETSTRINGS"/>
+  <int value="1032" label="WEBRTCDESKTOPCAPTUREPRIVATE_CHOOSEDESKTOPMEDIA"/>
+  <int value="1033"
+      label="WEBRTCDESKTOPCAPTUREPRIVATE_CANCELCHOOSEDESKTOPMEDIA"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

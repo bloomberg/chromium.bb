@@ -728,6 +728,10 @@
     "dependencies": ["permission:webrtcAudioPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "webrtcDesktopCapturePrivate": {
+    "dependencies": ["permission:webrtcDesktopCapturePrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "webrtcLoggingPrivate": {
     "dependencies": ["permission:webrtcLoggingPrivate"],
     "contexts": ["blessed_extension"]

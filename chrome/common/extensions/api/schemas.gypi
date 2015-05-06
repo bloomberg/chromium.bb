@@ -83,6 +83,7 @@
       # WebRTC-specific bits and as such does not belong in
       # the enable_webrtc==0 section below.
       'webrtc_audio_private.idl',
+      'webrtc_desktop_capture_private.idl',
       'webrtc_logging_private.idl',
       'webstore_private.json',
       'webstore_widget_private.idl',
