@@ -694,6 +694,23 @@ public:
     void setHasPendingResourceUpdate(bool hasPendingResourceUpdate) { m_bitfields.setHasPendingResourceUpdate(hasPendingResourceUpdate); }
     bool hasPendingResourceUpdate() const { return m_bitfields.hasPendingResourceUpdate(); }
 
+    void handleSubtreeModifications();
+    virtual void subtreeDidChange() { }
+
+    // Flags used to mark if an object consumes subtree change notifications.
+    bool consumesSubtreeChangeNotification() const { return m_bitfields.consumesSubtreeChangeNotification(); }
+    void setConsumesSubtreeChangeNotification() { m_bitfields.setConsumesSubtreeChangeNotification(true); }
+
+    // Flags used to mark if a descendant subtree of this object has changed.
+    void notifyOfSubtreeChange();
+    void notifyAncestorsOfSubtreeChange();
+    bool wasNotifiedOfSubtreeChange() const { return m_bitfields.notifiedOfSubtreeChange(); }
+
+    // Flags used to signify that a layoutObject needs to be notified by its descendants that they have
+    // had their child subtree changed.
+    void registerSubtreeChangeListenerOnDescendants(bool);
+    bool hasSubtreeChangeListenerRegistered() const { return m_bitfields.subtreeChangeListenerRegistered(); }
+
     /* This function performs a layout only if one is needed. */
     void layoutIfNeeded()
     {
@@ -1307,6 +1324,9 @@ private:
             , m_layoutDidGetCalledSinceLastFrame(false)
             , m_hasPendingResourceUpdate(false)
             , m_isInsideFlowThread(false)
+            , m_subtreeChangeListenerRegistered(false)
+            , m_notifiedOfSubtreeChange(false)
+            , m_consumesSubtreeChangeNotification(false)
             , m_childrenInline(false)
             , m_hasColumns(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
@@ -1318,7 +1338,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 14 in the second.
+        // 32 bits have been used in the first word, and 17 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
@@ -1355,6 +1375,10 @@ private:
         ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
 
         ADD_BOOLEAN_BITFIELD(isInsideFlowThread, IsInsideFlowThread);
+
+        ADD_BOOLEAN_BITFIELD(subtreeChangeListenerRegistered, SubtreeChangeListenerRegistered);
+        ADD_BOOLEAN_BITFIELD(notifiedOfSubtreeChange, NotifiedOfSubtreeChange);
+        ADD_BOOLEAN_BITFIELD(consumesSubtreeChangeNotification, ConsumesSubtreeChangeNotification);
 
         // from LayoutBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);

@@ -1520,6 +1520,8 @@ bool Document::needsLayoutTreeUpdate() const
         return true;
     if (childNeedsStyleInvalidation())
         return true;
+    if (layoutView()->wasNotifiedOfSubtreeChange())
+        return true;
     return false;
 }
 
@@ -1749,6 +1751,8 @@ void Document::updateLayoutTree(StyleRecalcChange change)
 
     updateStyle(change);
 
+    notifyLayoutTreeOfSubtreeChanges();
+
     // As a result of the style recalculation, the currently hovered element might have been
     // detached (for example, by setting display:none in the :hover style), schedule another mouseMove event
     // to check if any other elements ended up under the mouse pointer due to re-layout.
@@ -1829,6 +1833,19 @@ void Document::updateStyle(StyleRecalcChange change)
     ASSERT(inStyleRecalc());
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
     TRACE_EVENT_END1("blink,blink_style", "Document::updateStyle", "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
+}
+
+void Document::notifyLayoutTreeOfSubtreeChanges()
+{
+    if (!layoutView()->wasNotifiedOfSubtreeChange())
+        return;
+
+    m_lifecycle.advanceTo(DocumentLifecycle::InLayoutSubtreeChange);
+
+    layoutView()->handleSubtreeModifications();
+    ASSERT(!layoutView()->wasNotifiedOfSubtreeChange());
+
+    m_lifecycle.advanceTo(DocumentLifecycle::LayoutSubtreeChangeClean);
 }
 
 void Document::updateLayoutTreeForNodeIfNeeded(Node* node)

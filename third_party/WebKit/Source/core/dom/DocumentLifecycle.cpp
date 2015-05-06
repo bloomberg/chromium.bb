@@ -86,12 +86,34 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
         // We can synchronously recalc style.
         if (state == InStyleRecalc)
             return true;
+        // We can notify layout objects that subtrees changed.
+        if (state == InLayoutSubtreeChange)
+            return true;
         // We can synchronously perform layout.
         if (state == InPreLayout)
             return true;
         if (state == InPerformLayout)
             return true;
         // We can redundant arrive in the style clean state.
+        if (state == StyleClean)
+            return true;
+        return false;
+    }
+    if (m_state == InLayoutSubtreeChange) {
+        if (state == LayoutSubtreeChangeClean)
+            return true;
+        return false;
+    }
+    if (m_state == LayoutSubtreeChangeClean) {
+        // We can synchronously recalc style.
+        if (state == InStyleRecalc)
+            return true;
+        // We can synchronously perform layout.
+        if (state == InPreLayout)
+            return true;
+        if (state == InPerformLayout)
+            return true;
+        // Can move back to style clean.
         if (state == StyleClean)
             return true;
         return false;
@@ -158,7 +180,7 @@ bool DocumentLifecycle::canRewindTo(State state) const
     // This transition is bogus, but we've whitelisted it anyway.
     if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && state == s_deprecatedTransitionStack->to())
         return true;
-    return m_state == StyleClean || m_state == AfterPerformLayout || m_state == LayoutClean || m_state == CompositingClean || m_state == PaintInvalidationClean;
+    return m_state == StyleClean || m_state == LayoutSubtreeChangeClean || m_state == AfterPerformLayout || m_state == LayoutClean || m_state == CompositingClean || m_state == PaintInvalidationClean;
 }
 
 #endif

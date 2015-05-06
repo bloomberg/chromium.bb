@@ -1112,6 +1112,7 @@ private:
 
     void updateLayoutTree(StyleRecalcChange);
     void updateStyle(StyleRecalcChange);
+    void notifyLayoutTreeOfSubtreeChanges();
 
     void detachParser();
 

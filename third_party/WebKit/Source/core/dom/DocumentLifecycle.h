@@ -51,6 +51,9 @@ public:
         InStyleRecalc,
         StyleClean,
 
+        InLayoutSubtreeChange,
+        LayoutSubtreeChangeClean,
+
         InPreLayout,
         InPerformLayout,
         AfterPerformLayout,
@@ -125,6 +128,7 @@ public:
     bool stateAllowsLayoutTreeMutations() const;
     bool stateAllowsDetach() const;
     bool stateAllowsLayoutInvalidation() const;
+    bool stateAllowsLayoutTreeNotifications() const;
 
     void advanceTo(State);
     void ensureStateAtMost(State);
@@ -157,7 +161,12 @@ inline bool DocumentLifecycle::stateAllowsTreeMutations() const
 
 inline bool DocumentLifecycle::stateAllowsLayoutTreeMutations() const
 {
-    return m_detachCount || m_state == InStyleRecalc;
+    return m_detachCount || m_state == InStyleRecalc || m_state == InLayoutSubtreeChange;
+}
+
+inline bool DocumentLifecycle::stateAllowsLayoutTreeNotifications() const
+{
+    return m_state == InLayoutSubtreeChange;
 }
 
 inline bool DocumentLifecycle::stateAllowsDetach() const
@@ -165,6 +174,7 @@ inline bool DocumentLifecycle::stateAllowsDetach() const
     return m_state == VisualUpdatePending
         || m_state == InStyleRecalc
         || m_state == StyleClean
+        || m_state == LayoutSubtreeChangeClean
         || m_state == InPreLayout
         || m_state == LayoutClean
         || m_state == CompositingClean

@@ -81,6 +81,9 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     if (!owner->documentBeingDestroyed() && oldChild->isSelectionBorder())
         owner->view()->clearSelection();
 
+    if (!owner->documentBeingDestroyed())
+        owner->notifyOfSubtreeChange();
+
     if (!owner->documentBeingDestroyed() && notifyLayoutObject)
         oldChild->willBeRemovedFromTree();
 
@@ -101,6 +104,8 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     oldChild->setPreviousSibling(0);
     oldChild->setNextSibling(0);
     oldChild->setParent(0);
+
+    oldChild->registerSubtreeChangeListenerOnDescendants(oldChild->consumesSubtreeChangeNotification());
 
     // layoutObjectRemovedFromTree walks the whole subtree. We can improve performance
     // by skipping this step when destroying the entire tree.
@@ -156,10 +161,23 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
         LayoutCounter::layoutObjectSubtreeAttached(newChild);
     }
 
+    // Propagate the need to notify ancestors down into any
+    // child nodes.
+    if (owner->hasSubtreeChangeListenerRegistered())
+        newChild->registerSubtreeChangeListenerOnDescendants(true);
+
+    // If the inserted node is currently marked as needing to notify children then
+    // we have to propagate that mark up the tree.
+    if (newChild->wasNotifiedOfSubtreeChange())
+        owner->notifyAncestorsOfSubtreeChange();
+
     newChild->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::AddedToLayout);
     newChild->setShouldDoFullPaintInvalidation(PaintInvalidationLayoutObjectInsertion);
     if (!owner->normalChildNeedsLayout())
         owner->setChildNeedsLayout(); // We may supply the static position for an absolute positioned child.
+
+    if (!owner->documentBeingDestroyed())
+        owner->notifyOfSubtreeChange();
 
     if (AXObjectCache* cache = owner->document().axObjectCache())
         cache->childrenChanged(owner);

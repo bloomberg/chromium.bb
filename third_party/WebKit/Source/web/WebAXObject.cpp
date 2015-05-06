@@ -67,7 +67,8 @@ static bool isLayoutClean(Document* document)
     if (!document || !document->view())
         return false;
     return document->lifecycle().state() >= DocumentLifecycle::LayoutClean
-        || (document->lifecycle().state() == DocumentLifecycle::StyleClean && !document->view()->needsLayout());
+        || ((document->lifecycle().state() == DocumentLifecycle::StyleClean || document->lifecycle().state() == DocumentLifecycle::LayoutSubtreeChangeClean)
+            && !document->view()->needsLayout());
 }
 #endif
 

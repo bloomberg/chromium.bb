@@ -38,6 +38,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -352,6 +353,62 @@ void LayoutObject::removeChild(LayoutObject* oldChild)
         return;
 
     children->removeChildNode(this, oldChild);
+}
+
+void LayoutObject::registerSubtreeChangeListenerOnDescendants(bool value)
+{
+    // If we're set to the same value then we're done as that means it's
+    // set down the tree that way already.
+    if (m_bitfields.subtreeChangeListenerRegistered() == value)
+        return;
+
+    m_bitfields.setSubtreeChangeListenerRegistered(value);
+
+    for (LayoutObject* curr = slowFirstChild(); curr; curr = curr->nextSibling())
+        curr->registerSubtreeChangeListenerOnDescendants(value);
+}
+
+void LayoutObject::notifyAncestorsOfSubtreeChange()
+{
+    if (m_bitfields.notifiedOfSubtreeChange())
+        return;
+
+    m_bitfields.setNotifiedOfSubtreeChange(true);
+    if (parent())
+        parent()->notifyAncestorsOfSubtreeChange();
+}
+
+void LayoutObject::notifyOfSubtreeChange()
+{
+    if (!m_bitfields.subtreeChangeListenerRegistered())
+        return;
+    if (m_bitfields.notifiedOfSubtreeChange())
+        return;
+
+    notifyAncestorsOfSubtreeChange();
+
+    // We can modify the layout tree during layout which means that we may
+    // try to schedule this during performLayout. This should no longer
+    // happen when crbug.com/370457 is fixed.
+    DeprecatedScheduleStyleRecalcDuringLayout marker(document().lifecycle());
+    document().scheduleLayoutTreeUpdateIfNeeded();
+}
+
+void LayoutObject::handleSubtreeModifications()
+{
+    ASSERT(wasNotifiedOfSubtreeChange());
+    ASSERT(document().lifecycle().stateAllowsLayoutTreeNotifications());
+
+    if (consumesSubtreeChangeNotification())
+        subtreeDidChange();
+
+    m_bitfields.setNotifiedOfSubtreeChange(false);
+
+    for (LayoutObject* object = nextInPreOrder(); object; object = object->nextInPreOrder(this)) {
+        if (!object->wasNotifiedOfSubtreeChange())
+            continue;
+        object->handleSubtreeModifications();
+    }
 }
 
 LayoutObject* LayoutObject::nextInPreOrder() const
