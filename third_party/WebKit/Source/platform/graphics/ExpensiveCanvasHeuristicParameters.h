@@ -53,6 +53,15 @@ enum {
     // management becomes measurably expensive.
     ExpensiveRecordingStackDepth = 50,
 
+    // GPU vs. display list heuristic parameters
+    //===========================================
+
+    // Pixel count beyond which we should always prefer to use display
+    // lists. Rationale: The allocation of large textures for canvas
+    // tends to starve the compositor, and increase the probability of
+    // failure of subsequent allocations required for double buffering.
+    PreferDisplayListOverGpuSizeThreshold = 4096 * 4096,
+
 }; // enum
 
 } // ExpensiveCanvasHeuristicParameters

@@ -50,6 +50,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
+#include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
@@ -541,16 +542,24 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (RuntimeEnabledFeatures::forceDisplayList2dCanvasEnabled())
         return false;
 
-    // Prefer display list over acceleration only if gpu rasterization is triggered
-    if (RuntimeEnabledFeatures::displayList2dCanvasEnabled() && document().viewportDescription().matchesHeuristicsForGpuRasterization())
-        return false;
-
     Settings* settings = document().settings();
     if (!settings || !settings->accelerated2dCanvasEnabled())
         return false;
 
+    int canvasPixelCount = size.width() * size.height();
+
+    if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
+        // If the compositor provides GPU acceleration to display list canvases, we
+        // prefer that over direct acceleration.
+        if (document().viewportDescription().matchesHeuristicsForGpuRasterization())
+            return false;
+        // If the GPU resources would be very expensive, prefer a display list.
+        if (canvasPixelCount > ExpensiveCanvasHeuristicParameters::PreferDisplayListOverGpuSizeThreshold)
+            return false;
+    }
+
     // Do not use acceleration for small canvas.
-    if (size.width() * size.height() < settings->minimumAccelerated2dCanvasSize())
+    if (canvasPixelCount < settings->minimumAccelerated2dCanvasSize())
         return false;
 
     if (!Platform::current()->canAccelerate2dCanvas())
