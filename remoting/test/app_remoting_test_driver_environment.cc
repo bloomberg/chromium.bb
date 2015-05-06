@@ -30,7 +30,8 @@ AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
       service_environment_(service_environment),
       test_access_token_fetcher_(nullptr),
       test_refresh_token_store_(nullptr),
-      test_remote_host_info_fetcher_(nullptr) {
+      test_remote_host_info_fetcher_(nullptr),
+      message_loop_(new base::MessageLoopForIO()) {
   DCHECK(!user_name_.empty());
   DCHECK(service_environment < kUnknownEnvironment);
 
@@ -98,13 +99,6 @@ bool AppRemotingTestDriverEnvironment::GetRemoteHostInfoForApplicationId(
     return false;
   }
 
-  scoped_ptr<base::MessageLoopForIO> message_loop;
-  if (!base::MessageLoop::current()) {
-    // Create a temporary message loop if the current thread does not already
-    // have one so we can use its task runner for our network request.
-    message_loop.reset(new base::MessageLoopForIO);
-  }
-
   base::RunLoop run_loop;
 
   RemoteHostInfoCallback remote_host_info_fetch_callback = base::Bind(
@@ -133,15 +127,12 @@ bool AppRemotingTestDriverEnvironment::GetRemoteHostInfoForApplicationId(
 
 void AppRemotingTestDriverEnvironment::ShowHostAvailability() {
   const char kHostAvailabilityFormatString[] = "%-25s%-35s%-10s";
-  std::vector<std::string>::const_iterator it = application_names_.begin();
 
   LOG(INFO) << base::StringPrintf(kHostAvailabilityFormatString,
                                   "Application Name", "Application ID",
                                   "Status");
 
-  while (it != application_names_.end()) {
-    std::string application_name = *it;
-
+  for (const auto& application_name : application_names_) {
     const RemoteApplicationDetails& application_details =
         GetDetailsFromAppName(application_name);
 
@@ -162,16 +153,14 @@ void AppRemotingTestDriverEnvironment::ShowHostAvailability() {
     LOG(INFO) << base::StringPrintf(
         kHostAvailabilityFormatString, application_name.c_str(),
         application_details.application_id.c_str(), status.c_str());
-
-    ++it;
   }
 }
 
 const RemoteApplicationDetails&
 AppRemotingTestDriverEnvironment::GetDetailsFromAppName(
     const std::string& application_name) {
-  std::map<std::string, RemoteApplicationDetails>::const_iterator
-      map_pair_iterator = application_details_map_.find(application_name);
+  const auto map_pair_iterator =
+      application_details_map_.find(application_name);
   DCHECK(map_pair_iterator != application_details_map_.end());
 
   return map_pair_iterator->second;
@@ -198,16 +187,17 @@ void AppRemotingTestDriverEnvironment::SetRemoteHostInfoFetcherForTest(
   test_remote_host_info_fetcher_ = remote_host_info_fetcher;
 }
 
+void AppRemotingTestDriverEnvironment::TearDown() {
+  // Letting the MessageLoop tear down during the test destructor results in
+  // errors after test completion, when the MessageLoop dtor touches the
+  // registered AtExitManager. The AtExitManager is torn down before the test
+  // destructor is executed, so we tear down the MessageLoop here, while it is
+  // still valid.
+  message_loop_.reset();
+}
+
 bool AppRemotingTestDriverEnvironment::RetrieveAccessToken(
     const std::string& auth_code) {
-  scoped_ptr<base::MessageLoopForIO> message_loop;
-
-  if (!base::MessageLoop::current()) {
-    // Create a temporary message loop if the current thread does not already
-    // have one so we can use its task runner for our network request.
-    message_loop.reset(new base::MessageLoopForIO);
-  }
-
   base::RunLoop run_loop;
 
   access_token_.clear();

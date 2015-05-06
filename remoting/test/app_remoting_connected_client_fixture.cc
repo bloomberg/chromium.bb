@@ -50,8 +50,6 @@ AppRemotingConnectedClientFixture::~AppRemotingConnectedClientFixture() {
 }
 
 void AppRemotingConnectedClientFixture::SetUp() {
-  message_loop_.reset(new base::MessageLoopForIO);
-
   client_.reset(new TestChromotingClient());
   client_->AddRemoteConnectionObserver(this);
 
@@ -64,14 +62,12 @@ void AppRemotingConnectedClientFixture::SetUp() {
 }
 
 void AppRemotingConnectedClientFixture::TearDown() {
-  // |client_| must be destroyed before |message_loop_| as some of its
-  // members are destroyed via DeleteSoon on the message loop's TaskRunner.
+  // |client_| destroys some of its members via DeleteSoon on the message loop's
+  // TaskRunner so we need to run the loop until it has no more work to do.
   client_->RemoveRemoteConnectionObserver(this);
   client_.reset();
 
   base::RunLoop().RunUntilIdle();
-
-  message_loop_.reset();
 }
 
 bool AppRemotingConnectedClientFixture::VerifyResponseForSimpleHostMessage(

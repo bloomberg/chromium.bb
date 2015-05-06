@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-class MessageLoopForIO;
 class RunLoop;
 class Timer;
 }
@@ -79,9 +78,6 @@ class AppRemotingConnectedClientFixture
   // True when a chromoting connection to the remote host has been established
   // and the main application window is visible.
   bool connection_is_ready_for_tests_;
-
-  // Used to post tasks by |client_| and tests.
-  scoped_ptr<base::MessageLoopForIO> message_loop_;
 
   // Used to run the thread's message loop.
   scoped_ptr<base::RunLoop> run_loop_;

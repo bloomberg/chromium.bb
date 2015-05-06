@@ -14,6 +14,10 @@
 #include "remoting/test/remote_host_info_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+class MessageLoopForIO;
+}
+
 namespace remoting {
 namespace test {
 
@@ -51,6 +55,9 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
       const std::string& application_name);
 
   // Used to set fake/mock objects for AppRemotingTestDriverEnvironment tests.
+  // The caller retains ownership of the supplied objects, and must ensure that
+  // they remain valid until the AppRemotingTestDriverEnvironment instance has
+  // been destroyed.
   void SetAccessTokenFetcherForTest(AccessTokenFetcher* access_token_fetcher);
   void SetRefreshTokenStoreForTest(RefreshTokenStore* refresh_token_store);
   void SetRemoteHostInfoFetcherForTest(
@@ -61,6 +68,9 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   const std::string& user_name() const { return user_name_; }
 
  private:
+  // testing::Environment interface.
+  void TearDown() override;
+
   // Used to retrieve an access token.  If |auth_code| is empty, then the stored
   // refresh_token will be used instead of |auth_code|.
   // Returns true if a new, valid access token has been retrieved.
@@ -108,10 +118,15 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   // RemoteHostInfoFetcher used by TestDriverEnvironment tests.
   remoting::test::RemoteHostInfoFetcher* test_remote_host_info_fetcher_;
 
+  // Used for running network request tasks.
+  scoped_ptr<base::MessageLoopForIO> message_loop_;
+
   // Contains the names of all supported remote applications.
+  // Once initialized, this vector is not modified.
   std::vector<std::string> application_names_;
 
   // Contains RemoteApplicationDetails for all supported remote applications.
+  // Once initialized, this map is not modified.
   std::map<std::string, RemoteApplicationDetails> application_details_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRemotingTestDriverEnvironment);

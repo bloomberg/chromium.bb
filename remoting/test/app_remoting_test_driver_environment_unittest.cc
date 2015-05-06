@@ -8,6 +8,7 @@
 #include "remoting/test/fake_remote_host_info_fetcher.h"
 #include "remoting/test/mock_access_token_fetcher.h"
 #include "remoting/test/refresh_token_store.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -27,414 +28,263 @@ using testing::_;
 class FakeRefreshTokenStore : public RefreshTokenStore {
  public:
   FakeRefreshTokenStore()
-      : refresh_token_value(kRefreshTokenValue),
-        refresh_token_write_succeeded(true),
-        refresh_token_write_attempted(false) {}
+      : refresh_token_value_(kRefreshTokenValue),
+        refresh_token_write_succeeded_(true),
+        refresh_token_write_attempted_(false) {}
   ~FakeRefreshTokenStore() override {}
 
-  std::string FetchRefreshToken() override { return refresh_token_value; };
+  std::string FetchRefreshToken() override { return refresh_token_value_; }
 
   bool StoreRefreshToken(const std::string& refresh_token) override {
     // Record the information passed to us to write.
-    refresh_token_write_attempted = true;
-    refresh_token_value_written = refresh_token;
+    refresh_token_write_attempted_ = true;
+    stored_refresh_token_value_ = refresh_token;
 
-    return refresh_token_write_succeeded;
-  };
+    return refresh_token_write_succeeded_;
+  }
 
-  // Control members used to return specific data to the caller.
-  std::string refresh_token_value;
-  bool refresh_token_write_succeeded;
+  bool refresh_token_write_attempted() const {
+    return refresh_token_write_attempted_;
+  }
 
-  // Verification members to observe the value of the data being written.
-  bool refresh_token_write_attempted;
-  std::string refresh_token_value_written;
+  const std::string& stored_refresh_token_value() const {
+    return stored_refresh_token_value_;
+  }
+
+  void set_refresh_token_value(const std::string& new_token_value) {
+    refresh_token_value_ = new_token_value;
+  }
+
+  void set_refresh_token_write_succeeded(bool write_succeeded) {
+    refresh_token_write_succeeded_ = write_succeeded;
+  }
 
  private:
+  // Control members used to return specific data to the caller.
+  std::string refresh_token_value_;
+  bool refresh_token_write_succeeded_;
+
+  // Verification members to observe the value of the data being written.
+  bool refresh_token_write_attempted_;
+  std::string stored_refresh_token_value_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeRefreshTokenStore);
 };
 
-TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithAuthCode) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
+class AppRemotingTestDriverEnvironmentTest : public ::testing::Test {
+ public:
+  AppRemotingTestDriverEnvironmentTest()
+      : fake_access_token_fetcher_(nullptr),
+        environment_object_(kUserNameValue, kDeveloperEnvironment) {}
+  ~AppRemotingTestDriverEnvironmentTest() override {}
 
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      make_scoped_ptr(new FakeAccessTokenFetcher()));
+  FakeAccessTokenFetcher* fake_access_token_fetcher() const {
+    return fake_access_token_fetcher_;
+  }
 
-  FakeRefreshTokenStore fake_token_store;
+ protected:
+  // testing::Test interface.
+  void SetUp() override {
+    scoped_ptr<FakeAccessTokenFetcher> fake_access_token_fetcher(
+      new FakeAccessTokenFetcher());
+    fake_access_token_fetcher_ = fake_access_token_fetcher.get();
+    mock_access_token_fetcher_.SetAccessTokenFetcher(
+        fake_access_token_fetcher.Pass());
 
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
-      .Times(1);
+    environment_object_.SetAccessTokenFetcherForTest(
+        &mock_access_token_fetcher_);
+    environment_object_.SetRefreshTokenStoreForTest(&fake_token_store_);
+    environment_object_.SetRemoteHostInfoFetcherForTest(
+        &fake_remote_host_info_fetcher_);
+  }
 
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
+  FakeRefreshTokenStore fake_token_store_;
+  FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher_;
+  FakeAccessTokenFetcher* fake_access_token_fetcher_;
+  MockAccessTokenFetcher mock_access_token_fetcher_;
+
+  AppRemotingTestDriverEnvironment environment_object_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppRemotingTestDriverEnvironmentTest);
+};
+
+TEST_F(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithAuthCode) {
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _));
+
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromRefreshToken(_, _))
       .Times(0);
 
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
-  bool init_result = environment_object.Initialize(kAuthCodeValue);
-
-  EXPECT_TRUE(init_result);
-  EXPECT_TRUE(fake_token_store.refresh_token_write_attempted);
-  EXPECT_EQ(fake_token_store.refresh_token_value_written.compare(
-                kFakeAccessTokenFetcherRefreshTokenValue),
-            0);
-  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
-  EXPECT_EQ(environment_object.access_token().compare(
-                kFakeAccessTokenFetcherAccessTokenValue),
-            0);
+  EXPECT_TRUE(environment_object_.Initialize(kAuthCodeValue));
+  EXPECT_TRUE(fake_token_store_.refresh_token_write_attempted());
+  EXPECT_EQ(fake_token_store_.stored_refresh_token_value(),
+            kFakeAccessTokenFetcherRefreshTokenValue);
+  EXPECT_EQ(environment_object_.user_name(), kUserNameValue);
+  EXPECT_EQ(environment_object_.access_token(),
+            kFakeAccessTokenFetcherAccessTokenValue);
 
   // Attempt to init again, we should not see any additional calls or errors.
-  init_result = environment_object.Initialize(kAuthCodeValue);
-  EXPECT_TRUE(init_result);
+  EXPECT_TRUE(environment_object_.Initialize(kAuthCodeValue));
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithAuthCodeFailed) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
+TEST_F(AppRemotingTestDriverEnvironmentTest,
+       InitializeObjectWithAuthCodeFailed) {
+  fake_access_token_fetcher()->set_fail_access_token_from_auth_code(true);
 
-  scoped_ptr<FakeAccessTokenFetcher> fake_access_token_fetcher(
-      new FakeAccessTokenFetcher());
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _));
 
-  fake_access_token_fetcher->set_fail_access_token_from_auth_code(true);
-
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      fake_access_token_fetcher.Pass());
-
-  FakeRefreshTokenStore fake_token_store;
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
-      .Times(1);
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromRefreshToken(_, _))
       .Times(0);
 
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
-  bool init_result = environment_object.Initialize(kAuthCodeValue);
-
-  EXPECT_FALSE(init_result);
-  EXPECT_FALSE(fake_token_store.refresh_token_write_attempted);
+  EXPECT_FALSE(environment_object_.Initialize(kAuthCodeValue));
+  EXPECT_FALSE(fake_token_store_.refresh_token_write_attempted());
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithRefreshToken) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
+TEST_F(AppRemotingTestDriverEnvironmentTest, InitializeObjectWithRefreshToken) {
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromRefreshToken(_, _));
 
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      make_scoped_ptr(new FakeAccessTokenFetcher()));
-
-  FakeRefreshTokenStore fake_token_store;
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
-      .Times(1);
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _))
       .Times(0);
-
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
 
   // Pass in an empty auth code since we are using a refresh token.
-  bool init_result = environment_object.Initialize(std::string());
-
-  EXPECT_TRUE(init_result);
+  EXPECT_TRUE(environment_object_.Initialize(std::string()));
 
   // We should not write the refresh token a second time if we read from the
   // disk originally.
-  EXPECT_FALSE(fake_token_store.refresh_token_write_attempted);
+  EXPECT_FALSE(fake_token_store_.refresh_token_write_attempted());
 
   // Verify the object was initialized correctly.
-  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
-  EXPECT_EQ(environment_object.access_token().compare(
-                kFakeAccessTokenFetcherAccessTokenValue),
-            0);
+  EXPECT_EQ(environment_object_.user_name(), kUserNameValue);
+  EXPECT_EQ(environment_object_.access_token(),
+            kFakeAccessTokenFetcherAccessTokenValue);
 
   // Attempt to init again, we should not see any additional calls or errors.
-  init_result = environment_object.Initialize(std::string());
-  EXPECT_TRUE(init_result);
+  EXPECT_TRUE(environment_object_.Initialize(std::string()));
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest,
-     InitializeObjectWithRefreshTokenFailed) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
+TEST_F(AppRemotingTestDriverEnvironmentTest,
+       InitializeObjectWithRefreshTokenFailed) {
+  fake_access_token_fetcher()->set_fail_access_token_from_refresh_token(true);
 
-  scoped_ptr<FakeAccessTokenFetcher> fake_access_token_fetcher(
-      new FakeAccessTokenFetcher());
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromRefreshToken(_, _));
 
-  fake_access_token_fetcher->set_fail_access_token_from_refresh_token(true);
-
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      fake_access_token_fetcher.Pass());
-
-  FakeRefreshTokenStore fake_token_store;
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
-      .Times(1);
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _))
       .Times(0);
-
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
 
   // Pass in an empty auth code since we are using a refresh token.
-  bool init_result = environment_object.Initialize(std::string());
-
-  EXPECT_FALSE(init_result);
-  EXPECT_FALSE(fake_token_store.refresh_token_write_attempted);
+  EXPECT_FALSE(environment_object_.Initialize(std::string()));
+  EXPECT_FALSE(fake_token_store_.refresh_token_write_attempted());
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest,
-     InitializeObjectNoAuthCodeOrRefreshToken) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
-
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      make_scoped_ptr(new FakeAccessTokenFetcher()));
-
-  FakeRefreshTokenStore fake_token_store;
-
+TEST_F(AppRemotingTestDriverEnvironmentTest,
+       InitializeObjectNoAuthCodeOrRefreshToken) {
   // Neither method should be called in this scenario.
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _))
       .Times(0);
 
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromRefreshToken(_, _))
       .Times(0);
-
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
 
   // Clear out the 'stored' refresh token value.
-  fake_token_store.refresh_token_value = "";
-
-  // Pass in an empty auth code.
-  bool init_result = environment_object.Initialize(std::string());
+  fake_token_store_.set_refresh_token_value(std::string());
 
   // With no auth code or refresh token, then the initialization should fail.
-  EXPECT_FALSE(init_result);
-  EXPECT_FALSE(fake_token_store.refresh_token_write_attempted);
+  EXPECT_FALSE(environment_object_.Initialize(std::string()));
+  EXPECT_FALSE(fake_token_store_.refresh_token_write_attempted());
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest,
-     InitializeObjectWithAuthCodeWriteFailed) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
+TEST_F(AppRemotingTestDriverEnvironmentTest,
+       InitializeObjectWithAuthCodeWriteFailed) {
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _));
 
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      make_scoped_ptr(new FakeAccessTokenFetcher()));
-
-  FakeRefreshTokenStore fake_token_store;
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
-      .Times(1);
-
-  EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
+  EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromRefreshToken(_, _))
       .Times(0);
 
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
   // Simulate a failure writing the token to the disk.
-  fake_token_store.refresh_token_write_succeeded = false;
+  fake_token_store_.set_refresh_token_write_succeeded(false);
 
-  bool init_result = environment_object.Initialize(kAuthCodeValue);
-
-  EXPECT_FALSE(init_result);
-  EXPECT_TRUE(fake_token_store.refresh_token_write_attempted);
+  EXPECT_FALSE(environment_object_.Initialize(kAuthCodeValue));
+  EXPECT_TRUE(fake_token_store_.refresh_token_write_attempted());
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest,
-     RefreshAccessTokenAfterUsingAuthCode) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
-
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      make_scoped_ptr(new FakeAccessTokenFetcher()));
-
-  FakeRefreshTokenStore fake_token_store;
-
+TEST_F(AppRemotingTestDriverEnvironmentTest,
+       RefreshAccessTokenAfterUsingAuthCode) {
   {
-    testing::Sequence call_sequence;
+    testing::InSequence call_sequence;
 
-    EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
-        .Times(1);
+    EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _));
 
-    EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
-        .Times(1);
+    EXPECT_CALL(mock_access_token_fetcher_,
+                GetAccessTokenFromRefreshToken(_, _));
   }
 
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
-  bool init_result = environment_object.Initialize(kAuthCodeValue);
-
-  EXPECT_TRUE(init_result);
-  EXPECT_TRUE(fake_token_store.refresh_token_write_attempted);
-  EXPECT_EQ(fake_token_store.refresh_token_value_written.compare(
-                kFakeAccessTokenFetcherRefreshTokenValue),
-            0);
-  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
-  EXPECT_EQ(environment_object.access_token().compare(
-                kFakeAccessTokenFetcherAccessTokenValue),
-            0);
+  EXPECT_TRUE(environment_object_.Initialize(kAuthCodeValue));
+  EXPECT_TRUE(fake_token_store_.refresh_token_write_attempted());
+  EXPECT_EQ(fake_token_store_.stored_refresh_token_value(),
+            kFakeAccessTokenFetcherRefreshTokenValue);
+  EXPECT_EQ(environment_object_.user_name(), kUserNameValue);
+  EXPECT_EQ(environment_object_.access_token(),
+            kFakeAccessTokenFetcherAccessTokenValue);
 
   // Attempt to init again, we should not see any additional calls or errors.
-  bool refresh_result = environment_object.RefreshAccessToken();
-  EXPECT_TRUE(refresh_result);
+  EXPECT_TRUE(environment_object_.RefreshAccessToken());
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest, RefreshAccessTokenFailure) {
-  MockAccessTokenFetcher mock_access_token_fetcher;
-
-  // Use a raw pointer as we want to adjust behavior after we've handed off the
-  // mock class.
-  FakeAccessTokenFetcher* fake_access_token_fetcher =
-      new FakeAccessTokenFetcher();
-  mock_access_token_fetcher.SetAccessTokenFetcher(
-      make_scoped_ptr(fake_access_token_fetcher));
-
-  FakeRefreshTokenStore fake_token_store;
-
+TEST_F(AppRemotingTestDriverEnvironmentTest, RefreshAccessTokenFailure) {
   {
-    testing::Sequence call_sequence;
+    testing::InSequence call_sequence;
 
     // Mock is set up for this call to succeed.
-    EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromAuthCode(_, _))
-        .Times(1);
+    EXPECT_CALL(mock_access_token_fetcher_, GetAccessTokenFromAuthCode(_, _));
 
     // Mock is set up for this call to fail.
-    EXPECT_CALL(mock_access_token_fetcher, GetAccessTokenFromRefreshToken(_, _))
-        .Times(1);
+    EXPECT_CALL(mock_access_token_fetcher_,
+                GetAccessTokenFromRefreshToken(_, _));
   }
 
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
+  EXPECT_TRUE(environment_object_.Initialize(kAuthCodeValue));
+  EXPECT_TRUE(fake_token_store_.refresh_token_write_attempted());
+  EXPECT_EQ(fake_token_store_.stored_refresh_token_value(),
+            kFakeAccessTokenFetcherRefreshTokenValue);
+  EXPECT_EQ(environment_object_.user_name(), kUserNameValue);
+  EXPECT_EQ(environment_object_.access_token(),
+            kFakeAccessTokenFetcherAccessTokenValue);
 
-  environment_object.SetAccessTokenFetcherForTest(&mock_access_token_fetcher);
-
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
-  bool init_result = environment_object.Initialize(kAuthCodeValue);
-
-  EXPECT_TRUE(init_result);
-  EXPECT_TRUE(fake_token_store.refresh_token_write_attempted);
-  EXPECT_EQ(fake_token_store.refresh_token_value_written.compare(
-                kFakeAccessTokenFetcherRefreshTokenValue),
-            0);
-  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
-  EXPECT_EQ(environment_object.access_token().compare(
-                kFakeAccessTokenFetcherAccessTokenValue),
-            0);
-
-  fake_access_token_fetcher->set_fail_access_token_from_refresh_token(true);
-
-  bool refresh_result = environment_object.RefreshAccessToken();
+  fake_access_token_fetcher()->set_fail_access_token_from_refresh_token(true);
 
   // We expect the refresh to have failed, the user name to remain valid,
   // and the access token to have been cleared.
-  EXPECT_FALSE(refresh_result);
-  EXPECT_TRUE(environment_object.access_token().empty());
-  EXPECT_EQ(environment_object.user_name().compare(kUserNameValue), 0);
+  EXPECT_FALSE(environment_object_.RefreshAccessToken());
+  EXPECT_TRUE(environment_object_.access_token().empty());
+  EXPECT_EQ(environment_object_.user_name(), kUserNameValue);
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest, GetRemoteHostInfoSuccess) {
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  FakeAccessTokenFetcher fake_access_token_fetcher;
-  environment_object.SetAccessTokenFetcherForTest(&fake_access_token_fetcher);
-
-  FakeRefreshTokenStore fake_token_store;
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
+TEST_F(AppRemotingTestDriverEnvironmentTest, GetRemoteHostInfoSuccess) {
   // Pass in an empty auth code since we are using a refresh token.
-  bool init_result = environment_object.Initialize(std::string());
-
-  EXPECT_TRUE(init_result);
-
-  FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher;
-  environment_object.SetRemoteHostInfoFetcherForTest(
-      &fake_remote_host_info_fetcher);
+  EXPECT_TRUE(environment_object_.Initialize(std::string()));
 
   RemoteHostInfo remote_host_info;
-  bool request_result = environment_object.GetRemoteHostInfoForApplicationId(
-      kTestApplicationId, &remote_host_info);
-
-  EXPECT_TRUE(request_result);
+  EXPECT_TRUE(environment_object_.GetRemoteHostInfoForApplicationId(
+      kTestApplicationId, &remote_host_info));
   EXPECT_TRUE(remote_host_info.IsReadyForConnection());
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest, GetRemoteHostInfoFailure) {
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  FakeAccessTokenFetcher fake_access_token_fetcher;
-  environment_object.SetAccessTokenFetcherForTest(&fake_access_token_fetcher);
-
-  FakeRefreshTokenStore fake_token_store;
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
+TEST_F(AppRemotingTestDriverEnvironmentTest, GetRemoteHostInfoFailure) {
   // Pass in an empty auth code since we are using a refresh token.
-  bool init_result = environment_object.Initialize(std::string());
+  EXPECT_TRUE(environment_object_.Initialize(std::string()));
 
-  EXPECT_TRUE(init_result);
-
-  FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher;
-  fake_remote_host_info_fetcher.set_fail_retrieve_remote_host_info(true);
-  environment_object.SetRemoteHostInfoFetcherForTest(
-      &fake_remote_host_info_fetcher);
+  fake_remote_host_info_fetcher_.set_fail_retrieve_remote_host_info(true);
 
   RemoteHostInfo remote_host_info;
-  bool request_result = environment_object.GetRemoteHostInfoForApplicationId(
-      kTestApplicationId, &remote_host_info);
-
-  EXPECT_FALSE(request_result);
+  EXPECT_FALSE(environment_object_.GetRemoteHostInfoForApplicationId(
+      kTestApplicationId, &remote_host_info));
 }
 
-TEST(AppRemotingTestDriverEnvironmentTest,
-     GetRemoteHostInfoWithoutInitializing) {
-  AppRemotingTestDriverEnvironment environment_object(kUserNameValue,
-                                                      kDeveloperEnvironment);
-
-  FakeAccessTokenFetcher fake_access_token_fetcher;
-  environment_object.SetAccessTokenFetcherForTest(&fake_access_token_fetcher);
-
-  FakeRefreshTokenStore fake_token_store;
-  environment_object.SetRefreshTokenStoreForTest(&fake_token_store);
-
-  FakeRemoteHostInfoFetcher fake_remote_host_info_fetcher;
-  environment_object.SetRemoteHostInfoFetcherForTest(
-      &fake_remote_host_info_fetcher);
-
+TEST_F(AppRemotingTestDriverEnvironmentTest,
+       GetRemoteHostInfoWithoutInitializing) {
   RemoteHostInfo remote_host_info;
-  bool request_result = environment_object.GetRemoteHostInfoForApplicationId(
-      kTestApplicationId, &remote_host_info);
-
-  EXPECT_FALSE(request_result);
+  EXPECT_FALSE(environment_object_.GetRemoteHostInfoForApplicationId(
+      kTestApplicationId, &remote_host_info));
 }
 
 }  // namespace test

@@ -64,7 +64,6 @@ class RemoteHostInfoFetcherTest : public ::testing::Test {
   // Used for result verification.
   RemoteHostInfo remote_host_info_;
 
- protected:
   std::string dev_service_environment_url_;
   std::string test_service_environment_url_;
 
@@ -84,11 +83,8 @@ void RemoteHostInfoFetcherTest::OnRemoteHostInfoRetrieved(
 }
 
 void RemoteHostInfoFetcherTest::SetUp() {
-  if (!base::MessageLoop::current()) {
-    // Create a temporary message loop if the current thread does not already
-    // have one so we can use its task runner to create a request object.
-    message_loop_.reset(new base::MessageLoopForIO);
-  }
+  DCHECK(!message_loop_);
+  message_loop_.reset(new base::MessageLoopForIO);
 
   dev_service_environment_url_ =
       base::StringPrintf(kDevServiceEnvironmentUrlFormat, kTestApplicationId);
