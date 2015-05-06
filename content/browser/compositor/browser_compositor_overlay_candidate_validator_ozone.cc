@@ -11,10 +11,11 @@ namespace content {
 static ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
     cc::ResourceFormat overlay_format) {
   switch (overlay_format) {
+    // TODO(dshwang): overlay video still uses RGBA_8888.
     case cc::RGBA_8888:
-      return ui::SurfaceFactoryOzone::RGBA_8888;
-    case cc::RGBA_4444:
     case cc::BGRA_8888:
+      return ui::SurfaceFactoryOzone::BGRA_8888;
+    case cc::RGBA_4444:
     case cc::ALPHA_8:
     case cc::LUMINANCE_8:
     case cc::RGB_565:

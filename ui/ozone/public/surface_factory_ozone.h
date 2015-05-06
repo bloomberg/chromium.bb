@@ -63,7 +63,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // formats once we know what sorts of content, video, etc. we can support.
   enum BufferFormat {
     UNKNOWN,
-    RGBA_8888,
+    BGRA_8888,
     RGBX_8888,
     RGB_888,
   };

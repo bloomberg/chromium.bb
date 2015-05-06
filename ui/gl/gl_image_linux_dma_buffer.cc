@@ -16,60 +16,37 @@
 namespace gfx {
 namespace {
 
-bool ValidFormat(unsigned internalformat, GpuMemoryBuffer::Format format) {
+bool ValidInternalFormat(unsigned internalformat) {
   switch (internalformat) {
-    case GL_ATC_RGB_AMD:
-      return format == GpuMemoryBuffer::ATC;
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-      return format == GpuMemoryBuffer::ATCIA;
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-      return format == GpuMemoryBuffer::DXT1;
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-      return format == GpuMemoryBuffer::DXT5;
-    case GL_ETC1_RGB8_OES:
-      return format == GpuMemoryBuffer::ETC1;
     case GL_RGB:
-      switch (format) {
-        case GpuMemoryBuffer::RGBX_8888:
-          return true;
-        case GpuMemoryBuffer::ATC:
-        case GpuMemoryBuffer::ATCIA:
-        case GpuMemoryBuffer::DXT1:
-        case GpuMemoryBuffer::DXT5:
-        case GpuMemoryBuffer::ETC1:
-        case GpuMemoryBuffer::R_8:
-        case GpuMemoryBuffer::RGBA_8888:
-        case GpuMemoryBuffer::BGRA_8888:
-        case GpuMemoryBuffer::YUV_420:
-          return false;
-      }
-      NOTREACHED();
-      return false;
-    case GL_RGBA:
-      switch (format) {
-        case GpuMemoryBuffer::BGRA_8888:
-          return true;
-        case GpuMemoryBuffer::ATC:
-        case GpuMemoryBuffer::ATCIA:
-        case GpuMemoryBuffer::DXT1:
-        case GpuMemoryBuffer::DXT5:
-        case GpuMemoryBuffer::ETC1:
-        case GpuMemoryBuffer::R_8:
-        case GpuMemoryBuffer::RGBX_8888:
-        case GpuMemoryBuffer::RGBA_8888:
-        case GpuMemoryBuffer::YUV_420:
-          return false;
-      }
-      NOTREACHED();
-      return false;
-    case GL_R8:
-      return false;
+    case GL_BGRA_EXT:
+      return true;
     default:
       return false;
   }
 }
 
-EGLint FourCC(GpuMemoryBuffer::Format format) {
+bool ValidFormat(gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      return true;
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+    case gfx::GpuMemoryBuffer::DXT1:
+    case gfx::GpuMemoryBuffer::DXT5:
+    case gfx::GpuMemoryBuffer::ETC1:
+    case gfx::GpuMemoryBuffer::R_8:
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::YUV_420:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+EGLint FourCC(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case GpuMemoryBuffer::BGRA_8888:
       return DRM_FORMAT_ARGB8888;
@@ -108,8 +85,13 @@ GLImageLinuxDMABuffer::~GLImageLinuxDMABuffer() {
 bool GLImageLinuxDMABuffer::Initialize(const base::FileDescriptor& handle,
                                        GpuMemoryBuffer::Format format,
                                        int pitch) {
-  if (!ValidFormat(internalformat_, format)) {
-    LOG(ERROR) << "Invalid format: " << internalformat_;
+  if (!ValidInternalFormat(internalformat_)) {
+    LOG(ERROR) << "Invalid internalformat: " << internalformat_;
+    return false;
+  }
+
+  if (!ValidFormat(format)) {
+    LOG(ERROR) << "Invalid format: " << format;
     return false;
   }
 

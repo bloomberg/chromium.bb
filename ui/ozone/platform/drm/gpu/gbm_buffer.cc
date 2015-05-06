@@ -19,7 +19,7 @@ namespace {
 
 int GetGbmFormatFromBufferFormat(SurfaceFactoryOzone::BufferFormat fmt) {
   switch (fmt) {
-    case SurfaceFactoryOzone::RGBA_8888:
+    case SurfaceFactoryOzone::BGRA_8888:
       return GBM_BO_FORMAT_ARGB8888;
     case SurfaceFactoryOzone::RGBX_8888:
       return GBM_BO_FORMAT_XRGB8888;

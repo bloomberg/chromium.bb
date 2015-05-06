@@ -579,11 +579,12 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
   for (size_t i = 0; i < arraysize(textures_); i++) {
     scoped_refptr<ui::NativePixmap> pixmap =
         ui::SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
-            widget_, GetSize(), ui::SurfaceFactoryOzone::RGBA_8888,
+            widget_, GetSize(), ui::SurfaceFactoryOzone::BGRA_8888,
             ui::SurfaceFactoryOzone::SCANOUT);
     if (!pixmap)
       return false;
-    scoped_refptr<SurfaceImage> image = new SurfaceImage(GetSize(), GL_RGBA);
+    scoped_refptr<SurfaceImage> image =
+        new SurfaceImage(GetSize(), GL_BGRA_EXT);
     if (!image->Initialize(pixmap, gfx::GpuMemoryBuffer::Format::BGRA_8888))
       return false;
     images_[i] = image;
