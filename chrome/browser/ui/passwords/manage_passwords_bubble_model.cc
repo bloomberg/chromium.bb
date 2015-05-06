@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -19,6 +20,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -303,11 +305,17 @@ int ManagePasswordsBubbleModel::PasswordFieldWidth() {
 base::string16
 ManagePasswordsBubbleModel::PendingStateTitleBasedOnSavePasswordPref() const {
   int message_id = 0;
-  if (never_save_passwords_)
+  if (never_save_passwords_) {
     message_id = IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE;
-  else if (IsNewUIActive())
-    message_id = IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_PROMPT;
-  else
+  } else if (IsNewUIActive()) {
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(GetProfile());
+    if (signin && signin->IsAuthenticated())
+      message_id = IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_PROMPT;
+    else
+      message_id = IDS_SAVE_PASSWORD;
+  } else {
     message_id = IDS_SAVE_PASSWORD;
+  }
   return l10n_util::GetStringUTF16(message_id);
 }
