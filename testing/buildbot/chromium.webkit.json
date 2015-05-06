@@ -1,16 +1,4 @@
 {
-  "Android GN": {
-    "additional_compile_targets": [
-      "chrome_shell_apk"
-    ],
-    "gtest_tests": []
-  },
-  "Android GN (dbg)": {
-    "additional_compile_targets": [
-      "chrome_shell_apk"
-    ],
-    "gtest_tests": []
-  },
   "Linux ChromiumOS Tests (1)": {
     "gtest_tests": [
       {

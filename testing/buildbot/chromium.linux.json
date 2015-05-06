@@ -2,8 +2,12 @@
   "Android GN": {
     "additional_compile_targets": [
       "chrome_shell_apk"
-    ],
-    "gtest_tests": []
+    ]
+  },
+  "Android GN (dbg)": {
+    "additional_compile_targets": [
+      "chrome_shell_apk"
+    ]
   },
   "Android Tests": {
     "scripts": [
@@ -249,6 +253,11 @@
       {
         "test": "base_unittests"
       }
+    ]
+  },
+  "Linux GN Clobber": {
+    "additional_compile_targets": [
+      "all"
     ]
   },
   "Linux Tests": {
