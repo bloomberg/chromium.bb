@@ -53,16 +53,16 @@ SurfaceAggregator::~SurfaceAggregator() {}
 SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
     const ClipData& surface_clip,
     const ClipData& quad_clip,
-    const gfx::Transform& content_to_target_transform) {
+    const gfx::Transform& target_transform) {
   ClipData out_clip;
   if (surface_clip.is_clipped)
     out_clip = surface_clip;
 
   if (quad_clip.is_clipped) {
-    // TODO(jamesr): This only works if content_to_target_transform maps integer
+    // TODO(jamesr): This only works if target_transform maps integer
     // rects to integer rects.
-    gfx::Rect final_clip = MathUtil::MapEnclosingClippedRect(
-        content_to_target_transform, quad_clip.rect);
+    gfx::Rect final_clip =
+        MathUtil::MapEnclosingClippedRect(target_transform, quad_clip.rect);
     if (out_clip.is_clipped)
       out_clip.rect.Intersect(final_clip);
     else
@@ -211,7 +211,7 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(const Surface* surface,
 
 void SurfaceAggregator::HandleSurfaceQuad(
     const SurfaceDrawQuad* surface_quad,
-    const gfx::Transform& content_to_target_transform,
+    const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_pass) {
   SurfaceId surface_id = surface_quad->surface_id;
@@ -281,8 +281,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
     // the root surface.
     copy_pass->transform_to_root_target.ConcatTransform(
         surface_quad->quadTransform());
-    copy_pass->transform_to_root_target.ConcatTransform(
-        content_to_target_transform);
+    copy_pass->transform_to_root_target.ConcatTransform(target_transform);
     copy_pass->transform_to_root_target.ConcatTransform(
         dest_pass->transform_to_root_target);
 
@@ -301,7 +300,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
     const QuadList& quads = last_pass.quad_list;
 
     gfx::Transform surface_transform = surface_quad->quadTransform();
-    surface_transform.ConcatTransform(content_to_target_transform);
+    surface_transform.ConcatTransform(target_transform);
 
     // Intersect the transformed visible rect and the clip rect to create a
     // smaller cliprect for the quad.
@@ -311,16 +310,16 @@ void SurfaceAggregator::HandleSurfaceQuad(
     if (surface_quad->isClipped())
       surface_quad_clip_rect.rect.Intersect(surface_quad->clipRect());
 
-    ClipData quads_clip = CalculateClipRect(clip_rect, surface_quad_clip_rect,
-                                            content_to_target_transform);
+    ClipData quads_clip =
+        CalculateClipRect(clip_rect, surface_quad_clip_rect, target_transform);
 
     CopyQuadsToPass(quads, last_pass.shared_quad_state_list, remap,
                     surface_transform, quads_clip, dest_pass, surface_id);
   } else {
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
 
-    CopySharedQuadState(surface_quad->shared_quad_state,
-                        content_to_target_transform, clip_rect, dest_pass);
+    CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
+                        clip_rect, dest_pass);
 
     SharedQuadState* shared_quad_state =
         dest_pass->shared_quad_state_list.back();
@@ -347,24 +346,24 @@ void SurfaceAggregator::HandleSurfaceQuad(
 
 void SurfaceAggregator::CopySharedQuadState(
     const SharedQuadState* source_sqs,
-    const gfx::Transform& content_to_target_transform,
+    const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_render_pass) {
   SharedQuadState* copy_shared_quad_state =
       dest_render_pass->CreateAndAppendSharedQuadState();
   copy_shared_quad_state->CopyFrom(source_sqs);
-  // content_to_target_transform contains any transformation that may exist
+  // target_transform contains any transformation that may exist
   // between the context that these quads are being copied from (i.e. the
   // surface's draw transform when aggregated from within a surface) to the
   // target space of the pass. This will be identity except when copying the
   // root draw pass from a surface into a pass when the surface draw quad's
   // transform is not identity.
   copy_shared_quad_state->content_to_target_transform.ConcatTransform(
-      content_to_target_transform);
+      target_transform);
 
   ClipData new_clip_rect = CalculateClipRect(
       clip_rect, ClipData(source_sqs->is_clipped, source_sqs->clip_rect),
-      content_to_target_transform);
+      target_transform);
   copy_shared_quad_state->is_clipped = new_clip_rect.is_clipped;
   copy_shared_quad_state->clip_rect = new_clip_rect.rect;
 }
@@ -373,7 +372,7 @@ void SurfaceAggregator::CopyQuadsToPass(
     const QuadList& source_quad_list,
     const SharedQuadStateList& source_shared_quad_state_list,
     const DrawQuad::ResourceIteratorCallback& remap,
-    const gfx::Transform& content_to_target_transform,
+    const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_pass,
     SurfaceId surface_id) {
@@ -390,12 +389,11 @@ void SurfaceAggregator::CopyQuadsToPass(
 
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
-      HandleSurfaceQuad(surface_quad, content_to_target_transform, clip_rect,
-                        dest_pass);
+      HandleSurfaceQuad(surface_quad, target_transform, clip_rect, dest_pass);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
-        CopySharedQuadState(quad->shared_quad_state,
-                            content_to_target_transform, clip_rect, dest_pass);
+        CopySharedQuadState(quad->shared_quad_state, target_transform,
+                            clip_rect, dest_pass);
         last_copied_source_shared_quad_state = quad->shared_quad_state;
       }
       DrawQuad* dest_quad;

@@ -51,23 +51,23 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
-                             const gfx::Transform& content_to_target_transform);
+                             const gfx::Transform& target_transform);
 
   RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
                            SurfaceId surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
-                         const gfx::Transform& content_to_target_transform,
+                         const gfx::Transform& target_transform,
                          const ClipData& clip_rect,
                          RenderPass* dest_pass);
   void CopySharedQuadState(const SharedQuadState* source_sqs,
-                           const gfx::Transform& content_to_target_transform,
+                           const gfx::Transform& target_transform,
                            const ClipData& clip_rect,
                            RenderPass* dest_render_pass);
   void CopyQuadsToPass(const QuadList& source_quad_list,
                        const SharedQuadStateList& source_shared_quad_state_list,
                        const DrawQuad::ResourceIteratorCallback& remap,
-                       const gfx::Transform& content_to_target_transform,
+                       const gfx::Transform& target_transform,
                        const ClipData& clip_rect,
                        RenderPass* dest_pass,
                        SurfaceId surface_id);
