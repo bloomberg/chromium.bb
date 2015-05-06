@@ -11,21 +11,22 @@ namespace cc {
 
 // static
 scoped_ptr<RasterTilePriorityQueue> RasterTilePriorityQueue::Create(
-    const std::vector<PictureLayerImpl::Pair>& paired_layers,
+    const std::vector<PictureLayerImpl*>& active_layers,
+    const std::vector<PictureLayerImpl*>& pending_layers,
     TreePriority tree_priority,
     Type type) {
   switch (type) {
     case Type::ALL: {
       scoped_ptr<RasterTilePriorityQueueAll> queue(
           new RasterTilePriorityQueueAll);
-      queue->Build(paired_layers, tree_priority);
+      queue->Build(active_layers, pending_layers, tree_priority);
       return queue.Pass();
     }
     case Type::REQUIRED_FOR_ACTIVATION:
     case Type::REQUIRED_FOR_DRAW: {
       scoped_ptr<RasterTilePriorityQueueRequired> queue(
           new RasterTilePriorityQueueRequired);
-      queue->Build(paired_layers, type);
+      queue->Build(active_layers, pending_layers, type);
       return queue.Pass();
     }
   }

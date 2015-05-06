@@ -18,28 +18,11 @@ namespace cc {
 
 class CC_EXPORT EvictionTilePriorityQueue {
  public:
-  struct PairedTilingSetQueue {
-    PairedTilingSetQueue();
-    explicit PairedTilingSetQueue(const PictureLayerImpl::Pair& layer_pair);
-    ~PairedTilingSetQueue();
-
-    bool IsEmpty() const;
-    Tile* Top();
-    void Pop();
-
-    WhichTree NextTileIteratorTree() const;
-
-    scoped_ptr<TilingSetEvictionQueue> active_queue;
-    scoped_ptr<TilingSetEvictionQueue> pending_queue;
-
-    // Set of returned tiles (excluding the current one) for DCHECKing.
-    std::set<const Tile*> returned_tiles_for_debug;
-  };
-
   EvictionTilePriorityQueue();
   ~EvictionTilePriorityQueue();
 
-  void Build(const std::vector<PictureLayerImpl::Pair>& paired_layers,
+  void Build(const std::vector<PictureLayerImpl*>& active_layers,
+             const std::vector<PictureLayerImpl*>& pending_layers,
              TreePriority tree_priority);
 
   bool IsEmpty() const;
@@ -47,10 +30,10 @@ class CC_EXPORT EvictionTilePriorityQueue {
   void Pop();
 
  private:
-  // TODO(vmpstr): This is potentially unnecessary if it becomes the case that
-  // PairedTilingSetQueue is fast enough to copy. In that case, we can use
-  // objects directly (ie std::vector<PairedTilingSetQueue>).
-  ScopedPtrVector<PairedTilingSetQueue> paired_queues_;
+  ScopedPtrVector<TilingSetEvictionQueue>& GetNextQueues();
+
+  ScopedPtrVector<TilingSetEvictionQueue> active_queues_;
+  ScopedPtrVector<TilingSetEvictionQueue> pending_queues_;
   TreePriority tree_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(EvictionTilePriorityQueue);

@@ -29,15 +29,6 @@ class CC_EXPORT PictureLayerImpl
     : public LayerImpl,
       NON_EXPORTED_BASE(public PictureLayerTilingClient) {
  public:
-  struct CC_EXPORT Pair {
-    Pair();
-    Pair(PictureLayerImpl* active_layer, PictureLayerImpl* pending_layer);
-    ~Pair();
-
-    PictureLayerImpl* active;
-    PictureLayerImpl* pending;
-  };
-
   static scoped_ptr<PictureLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id,

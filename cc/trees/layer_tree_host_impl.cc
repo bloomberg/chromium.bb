@@ -1219,36 +1219,18 @@ void LayerTreeHostImpl::DidModifyTilePriorities() {
   client_->SetNeedsPrepareTilesOnImplThread();
 }
 
-void LayerTreeHostImpl::GetPictureLayerImplPairs(
-    std::vector<PictureLayerImpl::Pair>* layer_pairs,
-    bool need_valid_tile_priorities) const {
-  DCHECK(layer_pairs->empty());
+void LayerTreeHostImpl::GetValidTilePrioritiesPictureLayerImpls(
+    const LayerTreeImpl* tree,
+    std::vector<PictureLayerImpl*>* layers) const {
+  DCHECK(layers->empty());
 
-  for (auto& layer : active_tree_->picture_layers()) {
-    if (need_valid_tile_priorities && !layer->HasValidTilePriorities())
-      continue;
-    PictureLayerImpl* twin_layer = layer->GetPendingOrActiveTwinLayer();
-    // Ignore the twin layer when tile priorities are invalid.
-    if (need_valid_tile_priorities && twin_layer &&
-        !twin_layer->HasValidTilePriorities()) {
-      twin_layer = nullptr;
-    }
-    layer_pairs->push_back(PictureLayerImpl::Pair(layer, twin_layer));
-  }
+  if (!tree)
+    return;
 
-  if (pending_tree_) {
-    for (auto& layer : pending_tree_->picture_layers()) {
-      if (need_valid_tile_priorities && !layer->HasValidTilePriorities())
-        continue;
-      if (PictureLayerImpl* twin_layer = layer->GetPendingOrActiveTwinLayer()) {
-        if (!need_valid_tile_priorities ||
-            twin_layer->HasValidTilePriorities()) {
-          // Already captured from the active tree.
-          continue;
-        }
-      }
-      layer_pairs->push_back(PictureLayerImpl::Pair(nullptr, layer));
-    }
+  layers->reserve(tree->picture_layers().size());
+  for (auto& layer : tree->picture_layers()) {
+    if (layer->HasValidTilePriorities())
+      layers->push_back(layer);
   }
 }
 
@@ -1256,19 +1238,24 @@ scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
     TreePriority tree_priority,
     RasterTilePriorityQueue::Type type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildRasterQueue");
-  picture_layer_pairs_.clear();
-  GetPictureLayerImplPairs(&picture_layer_pairs_, true);
-  return RasterTilePriorityQueue::Create(picture_layer_pairs_, tree_priority,
-                                         type);
+
+  std::vector<PictureLayerImpl*> active_layers;
+  std::vector<PictureLayerImpl*> pending_layers;
+  GetValidTilePrioritiesPictureLayerImpls(active_tree_.get(), &active_layers);
+  GetValidTilePrioritiesPictureLayerImpls(pending_tree_.get(), &pending_layers);
+  return RasterTilePriorityQueue::Create(active_layers, pending_layers,
+                                         tree_priority, type);
 }
 
 scoped_ptr<EvictionTilePriorityQueue> LayerTreeHostImpl::BuildEvictionQueue(
     TreePriority tree_priority) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildEvictionQueue");
+
   scoped_ptr<EvictionTilePriorityQueue> queue(new EvictionTilePriorityQueue);
-  picture_layer_pairs_.clear();
-  GetPictureLayerImplPairs(&picture_layer_pairs_, false);
-  queue->Build(picture_layer_pairs_, tree_priority);
+  queue->Build(active_tree_->picture_layers(),
+               pending_tree_ ? pending_tree_->picture_layers()
+                             : std::vector<PictureLayerImpl*>(),
+               tree_priority);
   return queue;
 }
 

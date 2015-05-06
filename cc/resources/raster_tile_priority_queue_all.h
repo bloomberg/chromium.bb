@@ -19,37 +19,6 @@ namespace cc {
 
 class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
  public:
-  class PairedTilingSetQueue {
-   public:
-    PairedTilingSetQueue();
-    PairedTilingSetQueue(const PictureLayerImpl::Pair& layer_pair,
-                         TreePriority tree_priority);
-    ~PairedTilingSetQueue();
-
-    bool IsEmpty() const;
-    Tile* Top(TreePriority tree_priority);
-    void Pop(TreePriority tree_priority);
-
-    WhichTree NextTileIteratorTree(TreePriority tree_priority) const;
-
-    scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
-        const;
-
-    const TilingSetRasterQueueAll* active_queue() const {
-      return active_queue_.get();
-    }
-    const TilingSetRasterQueueAll* pending_queue() const {
-      return pending_queue_.get();
-    }
-
-   private:
-    scoped_ptr<TilingSetRasterQueueAll> active_queue_;
-    scoped_ptr<TilingSetRasterQueueAll> pending_queue_;
-
-    // Set of returned tiles (excluding the current one) for DCHECKing.
-    std::set<const Tile*> returned_tiles_for_debug_;
-  };
-
   RasterTilePriorityQueueAll();
   ~RasterTilePriorityQueueAll() override;
 
@@ -60,13 +29,14 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
  private:
   friend class RasterTilePriorityQueue;
 
-  void Build(const std::vector<PictureLayerImpl::Pair>& paired_layers,
+  void Build(const std::vector<PictureLayerImpl*>& active_layers,
+             const std::vector<PictureLayerImpl*>& pending_layers,
              TreePriority tree_priority);
 
-  // TODO(vmpstr): This is potentially unnecessary if it becomes the case that
-  // PairedTilingSetQueue is fast enough to copy. In that case, we can use
-  // objects directly (ie std::vector<PairedTilingSetQueue>.
-  ScopedPtrVector<PairedTilingSetQueue> paired_queues_;
+  ScopedPtrVector<TilingSetRasterQueueAll>& GetNextQueues();
+
+  ScopedPtrVector<TilingSetRasterQueueAll> active_queues_;
+  ScopedPtrVector<TilingSetRasterQueueAll> pending_queues_;
   TreePriority tree_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTilePriorityQueueAll);

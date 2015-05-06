@@ -18,9 +18,9 @@ class CC_EXPORT RasterTilePriorityQueue {
  public:
   enum class Type { ALL, REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW };
 
-  // TODO(vmpstr): Make this work with PictureLayerTilingSet pairs instead.
   static scoped_ptr<RasterTilePriorityQueue> Create(
-      const std::vector<PictureLayerImpl::Pair>& paired_layers,
+      const std::vector<PictureLayerImpl*>& active_layers,
+      const std::vector<PictureLayerImpl*>& pending_layers,
       TreePriority tree_priority,
       Type type);
 
