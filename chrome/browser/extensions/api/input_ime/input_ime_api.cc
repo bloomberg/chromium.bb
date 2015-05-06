@@ -94,6 +94,8 @@ static void DispatchEventToExtension(const std::string& extension_id,
       const extensions::Extension* extension =
           extension_system->extension_service()->GetExtensionById(
               extension_id, false /* include_disabled */);
+      if (!extension)
+        return;
       extensions::ProcessManager* process_manager =
           extensions::ProcessManager::Get(profile);
       if (extensions::BackgroundInfo::HasBackgroundPage(extension) &&
