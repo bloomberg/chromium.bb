@@ -12,18 +12,12 @@ class UtilCCHelper(object):
   def __init__(self, type_manager):
     self._type_manager = type_manager
 
-  def PopulateArrayFromList(self, src, dst, optional):
-    """Generates code to get an array from src into dst.
-
-    src: ListValue*
-    dst: std::vector or scoped_ptr<std::vector>
+  def PopulateArrayFromListFunction(self, optional):
+    """Returns the function to turn a list into a vector.
     """
     populate_list_fn = ('PopulateOptionalArrayFromList' if optional
                             else 'PopulateArrayFromList')
-    return ('%s::%s(*%s, &%s)') % (_API_UTIL_NAMESPACE,
-                                   populate_list_fn,
-                                   src,
-                                   dst)
+    return ('%s::%s') % (_API_UTIL_NAMESPACE, populate_list_fn)
 
   def CreateValueFromArray(self, src, optional):
     """Generates code to create a scoped_pt<Value> from the array at src.

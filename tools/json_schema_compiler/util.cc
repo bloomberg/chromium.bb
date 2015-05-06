@@ -5,6 +5,7 @@
 #include "tools/json_schema_compiler/util.h"
 
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace json_schema_compiler {
@@ -14,16 +15,66 @@ bool PopulateItem(const base::Value& from, int* out) {
   return from.GetAsInteger(out);
 }
 
+bool PopulateItem(const base::Value& from, int* out, base::string16* error) {
+  if (!from.GetAsInteger(out)) {
+    if (error->length()) {
+      error->append(base::UTF8ToUTF16("; "));
+    }
+    error->append(base::UTF8ToUTF16("expected integer, got " +
+                                    ValueTypeToString(from.GetType())));
+    return false;
+  }
+  return true;
+}
+
 bool PopulateItem(const base::Value& from, bool* out) {
   return from.GetAsBoolean(out);
+}
+
+bool PopulateItem(const base::Value& from, bool* out, base::string16* error) {
+  if (!from.GetAsBoolean(out)) {
+    if (error->length()) {
+      error->append(base::UTF8ToUTF16("; "));
+    }
+    error->append(base::UTF8ToUTF16("expected boolean, got " +
+                                    ValueTypeToString(from.GetType())));
+    return false;
+  }
+  return true;
 }
 
 bool PopulateItem(const base::Value& from, double* out) {
   return from.GetAsDouble(out);
 }
 
+bool PopulateItem(const base::Value& from, double* out, base::string16* error) {
+  if (!from.GetAsDouble(out)) {
+    if (error->length()) {
+      error->append(base::UTF8ToUTF16("; "));
+    }
+    error->append(base::UTF8ToUTF16("expected double, got " +
+                                    ValueTypeToString(from.GetType())));
+    return false;
+  }
+  return true;
+}
+
 bool PopulateItem(const base::Value& from, std::string* out) {
   return from.GetAsString(out);
+}
+
+bool PopulateItem(const base::Value& from,
+                  std::string* out,
+                  base::string16* error) {
+  if (!from.GetAsString(out)) {
+    if (error->length()) {
+      error->append(base::UTF8ToUTF16("; "));
+    }
+    error->append(base::UTF8ToUTF16("expected string, got " +
+                                    ValueTypeToString(from.GetType())));
+    return false;
+  }
+  return true;
 }
 
 bool PopulateItem(const base::Value& from, std::vector<char>* out) {
@@ -34,7 +85,30 @@ bool PopulateItem(const base::Value& from, std::vector<char>* out) {
   return true;
 }
 
+bool PopulateItem(const base::Value& from,
+                  std::vector<char>* out,
+                  base::string16* error) {
+  const base::BinaryValue* binary = nullptr;
+  if (!from.GetAsBinary(&binary)) {
+    if (error->length()) {
+      error->append(base::UTF8ToUTF16("; "));
+    }
+    error->append(base::UTF8ToUTF16("expected binary, got " +
+                                    ValueTypeToString(from.GetType())));
+    return false;
+  }
+  out->assign(binary->GetBuffer(), binary->GetBuffer() + binary->GetSize());
+  return true;
+}
+
 bool PopulateItem(const base::Value& from, linked_ptr<base::Value>* out) {
+  *out = make_linked_ptr(from.DeepCopy());
+  return true;
+}
+
+bool PopulateItem(const base::Value& from,
+                  linked_ptr<base::Value>* out,
+                  base::string16* error) {
   *out = make_linked_ptr(from.DeepCopy());
   return true;
 }
@@ -44,6 +118,22 @@ bool PopulateItem(const base::Value& from,
   const base::DictionaryValue* dict = nullptr;
   if (!from.GetAsDictionary(&dict))
     return false;
+  *out = make_linked_ptr(dict->DeepCopy());
+  return true;
+}
+
+bool PopulateItem(const base::Value& from,
+                  linked_ptr<base::DictionaryValue>* out,
+                  base::string16* error) {
+  const base::DictionaryValue* dict = nullptr;
+  if (!from.GetAsDictionary(&dict)) {
+    if (error->length()) {
+      error->append(base::UTF8ToUTF16("; "));
+    }
+    error->append(base::UTF8ToUTF16("expected dictionary, got " +
+                                    ValueTypeToString(from.GetType())));
+    return false;
+  }
   *out = make_linked_ptr(dict->DeepCopy());
   return true;
 }
