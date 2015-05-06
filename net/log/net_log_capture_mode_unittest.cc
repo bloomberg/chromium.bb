@@ -23,8 +23,6 @@ TEST(NetLogCaptureMode, Default) {
   EXPECT_EQ(mode, NetLogCaptureMode::Default());
   EXPECT_NE(mode, NetLogCaptureMode::IncludeCookiesAndCredentials());
   EXPECT_NE(mode, NetLogCaptureMode::IncludeSocketBytes());
-  EXPECT_EQ(mode.ToInternalValueForTesting(),
-            NetLogCaptureMode::Default().ToInternalValueForTesting());
 }
 
 TEST(NetLogCaptureMode, IncludeCookiesAndCredentials) {
@@ -36,9 +34,6 @@ TEST(NetLogCaptureMode, IncludeCookiesAndCredentials) {
   EXPECT_NE(mode, NetLogCaptureMode::Default());
   EXPECT_EQ(mode, NetLogCaptureMode::IncludeCookiesAndCredentials());
   EXPECT_NE(mode, NetLogCaptureMode::IncludeSocketBytes());
-  EXPECT_EQ(mode.ToInternalValueForTesting(),
-            NetLogCaptureMode::IncludeCookiesAndCredentials()
-                .ToInternalValueForTesting());
 }
 
 TEST(NetLogCaptureMode, IncludeSocketBytes) {
@@ -50,9 +45,6 @@ TEST(NetLogCaptureMode, IncludeSocketBytes) {
   EXPECT_NE(mode, NetLogCaptureMode::Default());
   EXPECT_NE(mode, NetLogCaptureMode::IncludeCookiesAndCredentials());
   EXPECT_EQ(mode, NetLogCaptureMode::IncludeSocketBytes());
-  EXPECT_EQ(
-      mode.ToInternalValueForTesting(),
-      NetLogCaptureMode::IncludeSocketBytes().ToInternalValueForTesting());
 }
 
 }  // namespace

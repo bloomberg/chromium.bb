@@ -21,8 +21,23 @@ namespace {
 const int kThreads = 10;
 const int kEvents = 100;
 
+// Under the hood a NetLogCaptureMode is simply an int. But for layering reasons
+// this internal value is not exposed. These tests need to serialize a
+// NetLogCaptureMode to a base::Value, so create our own private mapping.
+int CaptureModeToInt(NetLogCaptureMode capture_mode) {
+  if (capture_mode == NetLogCaptureMode::Default())
+    return 0;
+  if (capture_mode == NetLogCaptureMode::IncludeCookiesAndCredentials())
+    return 1;
+  if (capture_mode == NetLogCaptureMode::IncludeSocketBytes())
+    return 2;
+
+  ADD_FAILURE() << "Unknown capture mode";
+  return -1;
+}
+
 base::Value* CaptureModeToValue(NetLogCaptureMode capture_mode) {
-  return new base::FundamentalValue(capture_mode.ToInternalValueForTesting());
+  return new base::FundamentalValue(CaptureModeToInt(capture_mode));
 }
 
 base::Value* NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
@@ -79,7 +94,7 @@ TEST(NetLogTest, CaptureModes) {
     int logged_capture_mode;
     ASSERT_TRUE(
         entries[0].GetIntegerValue("capture_mode", &logged_capture_mode));
-    EXPECT_EQ(mode.ToInternalValueForTesting(), logged_capture_mode);
+    EXPECT_EQ(CaptureModeToInt(mode), logged_capture_mode);
 
     net_log.Clear();
   }
@@ -335,10 +350,10 @@ TEST(NetLogTest, NetLogTwoObservers) {
   AddEvent(&net_log);
   ASSERT_EQ(1U, observer[0].GetNumValues());
   ASSERT_TRUE(observer[0].GetValue(0)->GetInteger("params", &param));
-  EXPECT_EQ(observer[0].capture_mode().ToInternalValueForTesting(), param);
+  EXPECT_EQ(CaptureModeToInt(observer[0].capture_mode()), param);
   ASSERT_EQ(1U, observer[1].GetNumValues());
   ASSERT_TRUE(observer[1].GetValue(0)->GetInteger("params", &param));
-  EXPECT_EQ(observer[1].capture_mode().ToInternalValueForTesting(), param);
+  EXPECT_EQ(CaptureModeToInt(observer[1].capture_mode()), param);
 
   // Remove second observer.
   net_log.DeprecatedRemoveObserver(&observer[1]);

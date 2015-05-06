@@ -50,8 +50,6 @@ class NET_EXPORT NetLogCaptureMode {
   bool operator==(NetLogCaptureMode mode) const;
   bool operator!=(NetLogCaptureMode mode) const;
 
-  int32_t ToInternalValueForTesting() const;
-
  private:
   explicit NetLogCaptureMode(uint32_t value);
 

@@ -11,8 +11,8 @@ namespace net {
 namespace {
 
 // Integer representation for the capture mode. The numeric value is depended on
-// for method of NetLogCaptureMode, which expect that higher values imply more
-// capabilities.
+// for methods of NetLogCaptureMode, which expect that higher values represent a
+// strict superset of the capabilities of lower values.
 enum InternalValue {
   // Log all events, but do not include the actual transferred bytes and
   // remove cookies and HTTP credentials.
@@ -58,10 +58,6 @@ bool NetLogCaptureMode::operator==(NetLogCaptureMode mode) const {
 
 bool NetLogCaptureMode::operator!=(NetLogCaptureMode mode) const {
   return !(*this == mode);
-}
-
-int32_t NetLogCaptureMode::ToInternalValueForTesting() const {
-  return value_;
 }
 
 NetLogCaptureMode::NetLogCaptureMode(uint32_t value) : value_(value) {
