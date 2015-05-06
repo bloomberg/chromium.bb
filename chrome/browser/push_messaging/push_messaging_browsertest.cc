@@ -150,6 +150,10 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   void TryToSubscribeSuccessfully(
       const std::string& expected_push_subscription_id);
 
+  std::string GetEndpointForSubscriptionId(const std::string& subscription_id) {
+    return std::string(kPushMessagingEndpoint) + "/" + subscription_id;
+  }
+
   PushMessagingApplicationId GetServiceWorkerAppId(
       int64 service_worker_registration_id);
 
@@ -223,9 +227,8 @@ void PushMessagingBrowserTest::TryToSubscribeSuccessfully(
   EXPECT_EQ("permission status - granted", script_result);
 
   EXPECT_TRUE(RunScript("subscribePush()", &script_result));
-
-  // TODO(peter): Add an EXPECT for the given endpoint after the value change
-  // has gone through.
+  EXPECT_EQ(GetEndpointForSubscriptionId(expected_push_subscription_id),
+            script_result);
 }
 
 PushMessagingApplicationId PushMessagingBrowserTest::GetServiceWorkerAppId(
@@ -264,9 +267,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   InfoBarResponder accepting_responder(GetInfoBarService(), true);
   ASSERT_TRUE(RunScript("subscribePush()", &script_result));
-
-  // TODO(peter): Add an EXPECT for the given endpoint after the value change
-  // has gone through.
+  EXPECT_EQ(GetEndpointForSubscriptionId("1-0"),
+            script_result);
 
   PushMessagingApplicationId app_id = GetServiceWorkerAppId(0LL);
   EXPECT_EQ(app_id.app_id_guid(), gcm_service()->last_registered_app_id());
@@ -590,9 +592,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PermissionStateSaysGranted) {
   EXPECT_EQ("permission status - granted", script_result);
 
   ASSERT_TRUE(RunScript("subscribePush()", &script_result));
-
-  // TODO(peter): Add an EXPECT for the given endpoint after the value change
-  // has gone through.
+  EXPECT_EQ(GetEndpointForSubscriptionId("1-0"),
+            script_result);
 
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);

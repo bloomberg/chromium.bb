@@ -97,8 +97,7 @@ function subscribePush() {
     return swRegistration.pushManager.subscribe()
         .then(function(subscription) {
           pushSubscription = subscription;
-          sendResultToTest(
-              subscription.endpoint + ' - ' + subscription.subscriptionId);
+          sendResultToTest(subscription.endpoint);
         });
   }).catch(sendErrorToTest);
 }
