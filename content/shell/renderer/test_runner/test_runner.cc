@@ -288,6 +288,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                         const std::string& password);
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
+  void LayoutAndPaintAsync();
+  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
   void DisplayAsync();
   void DisplayAsyncThen(v8::Local<v8::Function> callback);
   void GetManifestThen(v8::Local<v8::Function> callback);
@@ -533,6 +535,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
+      .SetMethod("layoutAndPaintAsync",
+                 &TestRunnerBindings::LayoutAndPaintAsync)
+      .SetMethod("layoutAndPaintAsyncThen",
+                 &TestRunnerBindings::LayoutAndPaintAsyncThen)
       .SetMethod("displayAsync", &TestRunnerBindings::DisplayAsync)
       .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
       .SetMethod("getManifestThen", &TestRunnerBindings::GetManifestThen)
@@ -1357,12 +1363,24 @@ void TestRunnerBindings::RemoveWebPageOverlay() {
     runner_->RemoveWebPageOverlay();
 }
 
+void TestRunnerBindings::LayoutAndPaintAsync() {
+  if (runner_)
+    runner_->LayoutAndPaintAsync();
+}
+
+void TestRunnerBindings::LayoutAndPaintAsyncThen(
+    v8::Local<v8::Function> callback) {
+  if (runner_)
+    runner_->LayoutAndPaintAsyncThen(callback);
+}
+
 void TestRunnerBindings::DisplayAsync() {
   if (runner_)
     runner_->DisplayAsync();
 }
 
-void TestRunnerBindings::DisplayAsyncThen(v8::Local<v8::Function> callback) {
+void TestRunnerBindings::DisplayAsyncThen(
+    v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->DisplayAsyncThen(callback);
 }
@@ -2845,6 +2863,18 @@ void TestRunner::RemoveWebPageOverlay() {
     delete page_overlay_;
     page_overlay_ = nullptr;
   }
+}
+
+void TestRunner::LayoutAndPaintAsync() {
+  proxy_->LayoutAndPaintAsyncThen(base::Closure());
+}
+
+void TestRunner::LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback) {
+  scoped_ptr<InvokeCallbackTask> task(
+      new InvokeCallbackTask(this, callback));
+  proxy_->LayoutAndPaintAsyncThen(base::Bind(&TestRunner::InvokeCallback,
+                                             weak_factory_.GetWeakPtr(),
+                                             base::Passed(&task)));
 }
 
 void TestRunner::DisplayAsync() {

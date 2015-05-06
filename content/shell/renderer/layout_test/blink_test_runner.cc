@@ -700,6 +700,15 @@ void BlinkTestRunner::CaptureDump() {
     }
   }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSlimmingPaint)) {
+      // Force a layout/paint by the end of the test to ensure test coverage of
+      // incremental painting in slimming paint mode.
+      proxy()->LayoutAndPaintAsyncThen(base::Bind(
+          &BlinkTestRunner::CaptureDumpComplete, base::Unretained(this)));
+      return;
+  }
+
   CaptureDumpComplete();
 }
 

@@ -122,6 +122,7 @@ class WebTestProxyBase {
   void DidCloseChooser();
   bool IsChooserShown();
 
+  void LayoutAndPaintAsyncThen(const base::Closure& callback);
   void DisplayAsyncThen(const base::Closure& callback);
 
   void GetScreenOrientationForTesting(blink::WebScreenInfo&);
@@ -241,7 +242,9 @@ class WebTestProxyBase {
   void CheckDone(blink::WebLocalFrame* frame, CheckDoneReason reason);
   void AnimateNow();
   void DrawSelectionRect(SkCanvas* canvas);
-  void DidCapturePixelsAsync(const base::Callback<void(const SkBitmap&)>& callback, const SkBitmap& bitmap);
+  void DidCapturePixelsAsync(
+      const base::Callback<void(const SkBitmap&)>& callback,
+      const SkBitmap& bitmap);
   void DidDisplayAsync(const base::Closure& callback, const SkBitmap& bitmap);
 
   blink::WebWidget* web_widget() const { return web_widget_; }

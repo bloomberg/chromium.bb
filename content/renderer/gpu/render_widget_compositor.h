@@ -105,6 +105,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual void setNeedsAnimate();
   virtual bool commitRequested() const;
   virtual void didStopFlinging();
+  virtual void layoutAndPaintAsync(
+      blink::WebLayoutAndPaintAsyncCallback* callback);
   virtual void compositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback);
   virtual void finishAllRendering();
@@ -173,11 +175,16 @@ class CONTENT_EXPORT RenderWidgetCompositor
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:
+  void ScheduleCommit();
+  void DidLayoutAndPaintAsync();
+  bool CommitIsSynchronous() const;
+
   int num_failed_recreate_attempts_;
   RenderWidget* widget_;
   CompositorDependencies* compositor_deps_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 
+  blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
   scoped_ptr<cc::CopyOutputRequest> temporary_copy_output_request_;
 
   base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;

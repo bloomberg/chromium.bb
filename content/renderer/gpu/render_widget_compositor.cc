@@ -37,6 +37,7 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
+#include "third_party/WebKit/public/platform/WebLayoutAndPaintAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -207,6 +208,7 @@ RenderWidgetCompositor::RenderWidgetCompositor(
     : num_failed_recreate_attempts_(0),
       widget_(widget),
       compositor_deps_(compositor_deps),
+      layout_and_paint_async_callback_(nullptr),
       weak_factory_(this) {
 }
 
@@ -719,18 +721,32 @@ void CompositeAndReadbackAsyncCallback(
   }
 }
 
+void RenderWidgetCompositor::layoutAndPaintAsync(
+    blink::WebLayoutAndPaintAsyncCallback* callback) {
+  DCHECK(!temporary_copy_output_request_ && !layout_and_paint_async_callback_);
+  layout_and_paint_async_callback_ = callback;
+  ScheduleCommit();
+}
+
 void RenderWidgetCompositor::compositeAndReadbackAsync(
     blink::WebCompositeAndReadbackAsyncCallback* callback) {
-  DCHECK(!temporary_copy_output_request_);
+  DCHECK(!temporary_copy_output_request_ && !layout_and_paint_async_callback_);
   temporary_copy_output_request_ =
       cc::CopyOutputRequest::CreateBitmapRequest(
           base::Bind(&CompositeAndReadbackAsyncCallback, callback));
   // Force a commit to happen. The temporary copy output request will
   // be installed after layout which will happen as a part of the commit, for
   // widgets that delay the creation of their output surface.
-  bool threaded = !!compositor_deps_->GetCompositorImplThreadTaskRunner().get();
-  if (!threaded &&
-      !layer_tree_host_->settings().single_thread_proxy_scheduler) {
+  ScheduleCommit();
+}
+
+bool RenderWidgetCompositor::CommitIsSynchronous() const {
+  return !compositor_deps_->GetCompositorImplThreadTaskRunner().get() &&
+         !layer_tree_host_->settings().single_thread_proxy_scheduler;
+}
+
+void RenderWidgetCompositor::ScheduleCommit() {
+  if (CommitIsSynchronous()) {
     layer_tree_host_->Composite(gfx::FrameTime::Now());
   } else {
     layer_tree_host_->SetNeedsCommit();
@@ -900,6 +916,24 @@ void RenderWidgetCompositor::DidFailToInitializeOutputSurface() {
 }
 
 void RenderWidgetCompositor::WillCommit() {
+  if (!layout_and_paint_async_callback_)
+    return;
+
+  if (CommitIsSynchronous()) {
+    // The caller expects the callback to be called asynchronously.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&RenderWidgetCompositor::DidLayoutAndPaintAsync,
+                              weak_factory_.GetWeakPtr()));
+  } else {
+    DidLayoutAndPaintAsync();
+  }
+}
+
+void RenderWidgetCompositor::DidLayoutAndPaintAsync() {
+  if (!layout_and_paint_async_callback_)
+    return;
+  layout_and_paint_async_callback_->didLayoutAndPaint();
+  layout_and_paint_async_callback_ = nullptr;
 }
 
 void RenderWidgetCompositor::DidCommit() {

@@ -570,10 +570,14 @@ class TestRunner : public WebTestRunner,
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
 
+  void LayoutAndPaintAsync();
+  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
+  // TODO(wangxianzhu): Remove the following two methods after all blink
+  // layout tests are modified to use the above two new functions.
   void DisplayAsync();
   void DisplayAsyncThen(v8::Local<v8::Function> callback);
 
-  // Similar to DisplayAsyncThen(), but pass parameters of the captured
+  // Similar to LayoutAndPaintAsyncThen(), but pass parameters of the captured
   // snapshot (width, height, snapshot) to the callback. The snapshot is in
   // uint8 RGBA format.
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
