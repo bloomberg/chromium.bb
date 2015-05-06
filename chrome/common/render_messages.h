@@ -453,6 +453,15 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_AppBannerPromptRequest,
                     int /* request_id */,
                     std::string /* platform */)
 
+// Tells the renderer that a banner has been accepted.
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_AppBannerAccepted,
+                    int32_t /* request_id */,
+                    std::string /* platform */)
+
+// Tells the renderer that a banner has been dismissed.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_AppBannerDismissed,
+                    int32_t /* request_id */)
+
 // Notification that the page has an OpenSearch description document
 // associated with it.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,

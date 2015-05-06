@@ -27,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/renderer_resources.h"
+#include "chrome/renderer/banners/app_banner_client.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
@@ -1646,4 +1647,11 @@ void ChromeContentRendererClient::RecordRappor(const std::string& metric,
 void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
                                                   const GURL& url) {
   RenderThread::Get()->Send(new ChromeViewHostMsg_RecordRapporURL(metric, url));
+}
+
+scoped_ptr<blink::WebAppBannerClient>
+ChromeContentRendererClient::CreateAppBannerClient(
+    content::RenderFrame* render_frame) {
+  return scoped_ptr<blink::WebAppBannerClient>(
+      new AppBannerClient(render_frame));
 }

@@ -150,6 +150,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void RecordRappor(const std::string& metric,
                     const std::string& sample) override;
   void RecordRapporURL(const std::string& metric, const GURL& url) override;
+  scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient(
+      content::RenderFrame* render_frame) override;
 
 #if defined(ENABLE_EXTENSIONS)
   // Takes ownership.

@@ -196,11 +196,14 @@ void ChromeRenderFrameObserver::DidFinishDocumentLoad() {
 
 void ChromeRenderFrameObserver::OnAppBannerPromptRequest(
     int request_id, const std::string& platform) {
+  // App banner prompt requests are handled in the general chrome render frame
+  // observer, not the AppBannerClient, as the AppBannerClient is created lazily
+  // by blink and may not exist when the request is sent.
   blink::WebAppBannerPromptReply reply = blink::WebAppBannerPromptReply::None;
   blink::WebString web_platform(base::UTF8ToUTF16(platform));
   blink::WebVector<blink::WebString> web_platforms(&web_platform, 1);
   render_frame()->GetWebFrame()->willShowInstallBannerPrompt(
-      web_platforms, &reply);
+      request_id, web_platforms, &reply);
 
   Send(new ChromeViewHostMsg_AppBannerPromptReply(
       routing_id(), request_id, reply));

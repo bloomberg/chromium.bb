@@ -123,6 +123,7 @@ enum IPCMessageStart {
   CastChannelMsgStart,
   DataReductionProxyStart,
   ContentSettingsMsgStart,
+  ChromeAppBannerMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

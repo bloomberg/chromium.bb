@@ -71,7 +71,8 @@ AppBannerDataFetcher::AppBannerDataFetcher(
     : WebContentsObserver(web_contents),
       ideal_icon_size_(ideal_icon_size),
       weak_delegate_(delegate),
-      is_active_(false) {
+      is_active_(false),
+      event_request_id_(-1) {
 }
 
 void AppBannerDataFetcher::Start(const GURL& validated_url) {
@@ -139,15 +140,13 @@ void AppBannerDataFetcher::OnBannerPromptReply(
     int request_id,
     blink::WebAppBannerPromptReply reply) {
   content::WebContents* web_contents = GetWebContents();
-  if (!is_active_ || !web_contents || request_id != gCurrentRequestID) {
+  if (!is_active_ || !web_contents || request_id != event_request_id_) {
     Cancel();
     return;
   }
 
   // The renderer might have requested the prompt to be canceled.
   if (reply == blink::WebAppBannerPromptReply::Cancel) {
-    // TODO(mlamouri,benwells): we should probably record that to behave
-    // differently with regard to showing the banner.
     Cancel();
     return;
   }
@@ -320,10 +319,11 @@ void AppBannerDataFetcher::ShowBanner(const SkBitmap* icon) {
   }
 
   app_icon_.reset(new SkBitmap(*icon));
+  event_request_id_ = ++gCurrentRequestID;
   web_contents->GetMainFrame()->Send(
       new ChromeViewMsg_AppBannerPromptRequest(
           web_contents->GetMainFrame()->GetRoutingID(),
-          ++gCurrentRequestID,
+          event_request_id_,
           GetBannerType()));
 }
 

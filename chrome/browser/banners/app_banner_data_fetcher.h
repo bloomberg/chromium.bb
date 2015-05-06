@@ -108,6 +108,7 @@ class AppBannerDataFetcher
   virtual std::string GetAppIdentifier();
   const content::Manifest& web_app_data() { return web_app_data_; }
   void set_app_title(const base::string16& title) { app_title_ = title; }
+  int event_request_id() { return event_request_id_; }
 
   // Fetches the icon at the given URL asynchronously, returning |false| if a
   // load could not be started.
@@ -145,6 +146,7 @@ class AppBannerDataFetcher
   const base::WeakPtr<Delegate> weak_delegate_;
   ObserverList<Observer> observer_list_;
   bool is_active_;
+  int event_request_id_;
   scoped_ptr<chrome::BitmapFetcher> bitmap_fetcher_;
   scoped_ptr<SkBitmap> app_icon_;
 

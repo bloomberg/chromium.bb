@@ -12,6 +12,10 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace infobars {
 class InfoBarManager;
 }  // namespace infobars
@@ -25,12 +29,14 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Delegate for promoting a web app.
   AppBannerInfoBarDelegate(
+      int event_request_id,
       const base::string16& app_title,
       SkBitmap* app_icon,
       const content::Manifest& web_app_data);
 
   // Delegate for promoting an Android app.
   AppBannerInfoBarDelegate(
+      int event_request_id,
       const base::string16& app_title,
       SkBitmap* app_icon,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
@@ -54,6 +60,8 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   void CreateJavaDelegate();
+  void SendBannerAccepted(content::WebContents* web_contents,
+                          const std::string& platform);
 
   // ConfirmInfoBarDelegate:
   gfx::Image GetIcon() const override;
@@ -68,6 +76,7 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 app_title_;
   scoped_ptr<SkBitmap> app_icon_;
 
+  int event_request_id_;
   content::Manifest web_app_data_;
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;

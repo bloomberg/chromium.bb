@@ -3769,6 +3769,15 @@ blink::WebPermissionClient* RenderFrameImpl::permissionClient() {
   return permission_client_.get();
 }
 
+blink::WebAppBannerClient* RenderFrameImpl::appBannerClient() {
+  if (!app_banner_client_) {
+    app_banner_client_ =
+        GetContentClient()->renderer()->CreateAppBannerClient(this);
+  }
+
+  return app_banner_client_.get();
+}
+
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {
   Send(new FrameHostMsg_MediaPlayingNotification(
       routing_id_, reinterpret_cast<int64>(player), player->hasVideo(),

@@ -25,6 +25,7 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "media/blink/webmediaplayer_delegate.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -533,6 +534,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool enterFullscreen();
   virtual bool exitFullscreen();
   virtual blink::WebPermissionClient* permissionClient();
+  virtual blink::WebAppBannerClient* appBannerClient();
 
   // WebMediaPlayerDelegate implementation:
   void DidPlay(blink::WebMediaPlayer* player) override;
@@ -969,6 +971,8 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererAccessibility* renderer_accessibility_;
 
   scoped_ptr<PermissionDispatcher> permission_client_;
+
+  scoped_ptr<blink::WebAppBannerClient> app_banner_client_;
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // The external popup for the currently showing select popup.

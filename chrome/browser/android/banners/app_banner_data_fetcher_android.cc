@@ -50,7 +50,8 @@ infobars::InfoBar* AppBannerDataFetcherAndroid::CreateBanner(
   infobars::InfoBar* infobar = nullptr;
   if (native_app_data_.is_null()) {
     scoped_ptr<AppBannerInfoBarDelegate> delegate(
-        new AppBannerInfoBarDelegate(title,
+        new AppBannerInfoBarDelegate(event_request_id(),
+                                     title,
                                      new SkBitmap(*icon),
                                      web_app_data()));
 
@@ -59,7 +60,8 @@ infobars::InfoBar* AppBannerDataFetcherAndroid::CreateBanner(
       RecordDidShowBanner("AppBanner.WebApp.Shown");
   } else {
     scoped_ptr<AppBannerInfoBarDelegate> delegate(
-        new AppBannerInfoBarDelegate(title,
+        new AppBannerInfoBarDelegate(event_request_id(),
+                                     title,
                                      new SkBitmap(*icon),
                                      native_app_data_,
                                      native_app_package_));

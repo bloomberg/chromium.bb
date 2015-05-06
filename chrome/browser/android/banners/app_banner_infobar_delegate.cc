@@ -18,9 +18,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
 #include "jni/AppBannerInfoBarDelegate_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -33,23 +36,27 @@ using base::android::ConvertUTF16ToJavaString;
 namespace banners {
 
 AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
+    int event_request_id,
     const base::string16& app_title,
     SkBitmap* app_icon,
     const content::Manifest& web_app_data)
     : app_title_(app_title),
       app_icon_(app_icon),
+      event_request_id_(event_request_id),
       web_app_data_(web_app_data) {
   DCHECK(!web_app_data.IsEmpty());
   CreateJavaDelegate();
 }
 
 AppBannerInfoBarDelegate::AppBannerInfoBarDelegate(
+    int event_request_id,
     const base::string16& app_title,
     SkBitmap* app_icon,
     const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
     const std::string& native_app_package)
     : app_title_(app_title),
       app_icon_(app_icon),
+      event_request_id_(event_request_id),
       native_app_data_(native_app_data),
       native_app_package_(native_app_package) {
   DCHECK(!native_app_data_.is_null());
@@ -126,6 +133,16 @@ void AppBannerInfoBarDelegate::CreateJavaDelegate() {
       reinterpret_cast<intptr_t>(this)));
 }
 
+void AppBannerInfoBarDelegate::SendBannerAccepted(
+    content::WebContents* web_contents,
+    const std::string& platform) {
+  web_contents->GetMainFrame()->Send(
+      new ChromeViewMsg_AppBannerAccepted(
+          web_contents->GetMainFrame()->GetRoutingID(),
+          event_request_id_,
+          platform));
+}
+
 gfx::Image AppBannerInfoBarDelegate::GetIcon() const {
   return gfx::Image::CreateFrom1xBitmap(*app_icon_.get());
 }
@@ -137,6 +154,11 @@ void AppBannerInfoBarDelegate::InfoBarDismissed() {
     return;
 
   TrackDismissEvent(DISMISS_EVENT_CLOSE_BUTTON);
+
+  web_contents->GetMainFrame()->Send(
+      new ChromeViewMsg_AppBannerDismissed(
+          web_contents->GetMainFrame()->GetRoutingID(),
+          event_request_id_));
 
   if (!native_app_data_.is_null()) {
     AppBannerSettingsHelper::RecordBannerEvent(
@@ -197,6 +219,7 @@ bool AppBannerInfoBarDelegate::Accept() {
     } else {
       TrackInstallEvent(INSTALL_EVENT_NATIVE_APP_INSTALL_TRIGGERED);
     }
+    SendBannerAccepted(web_contents, "play");
     return was_opened;
   } else if (!web_app_data_.IsEmpty()) {
     AppBannerSettingsHelper::RecordBannerEvent(
@@ -215,6 +238,7 @@ bool AppBannerInfoBarDelegate::Accept() {
                    *app_icon_.get()));
 
     TrackInstallEvent(INSTALL_EVENT_WEB_APP_INSTALLED);
+    SendBannerAccepted(web_contents, "web");
     rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                             "AppBanner.WebApp.Installed",
                                             web_contents->GetURL());

@@ -5,6 +5,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 #include "media/base/renderer_factory.h"
+#include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebPluginPlaceholder.h"
 
 namespace content {
@@ -218,6 +219,11 @@ BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
 
 std::string ContentRendererClient::GetUserAgentOverrideForURL(const GURL& url) {
   return std::string();
+}
+
+scoped_ptr<blink::WebAppBannerClient>
+ContentRendererClient::CreateAppBannerClient(RenderFrame* render_frame) {
+  return nullptr;
 }
 
 }  // namespace content
