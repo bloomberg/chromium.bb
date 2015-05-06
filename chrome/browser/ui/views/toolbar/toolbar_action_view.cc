@@ -40,7 +40,7 @@ const int kBorderInset = 4;
 // The ToolbarActionView which is currently showing its context menu, if any.
 // Since only one context menu can be shown (even across browser windows), it's
 // safe to have this be a global singleton.
-ToolbarActionView* context_menu_owner = NULL;
+ToolbarActionView* context_menu_owner = nullptr;
 
 }  // namespace
 
@@ -51,7 +51,7 @@ ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     Profile* profile,
     ToolbarActionView::Delegate* delegate)
-    : MenuButton(this, base::string16(), NULL, false),
+    : MenuButton(this, base::string16(), nullptr, false),
       view_controller_(view_controller),
       profile_(profile),
       delegate_(delegate),
@@ -81,6 +81,8 @@ ToolbarActionView::ToolbarActionView(
 }
 
 ToolbarActionView::~ToolbarActionView() {
+  if (context_menu_owner == this)
+    context_menu_owner = nullptr;
   view_controller_->SetDelegate(nullptr);
 }
 
@@ -349,7 +351,7 @@ void ToolbarActionView::DoShowContextMenu(
     return;
   }
 
-  context_menu_owner = NULL;
+  context_menu_owner = nullptr;
   menu_runner_.reset();
   view_controller_->OnContextMenuClosed();
 
