@@ -6,6 +6,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 
 #include "core/frame/FrameView.h"
+#include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "platform/TracedValue.h"
@@ -25,6 +26,30 @@ LayoutAnalyzer::Scope::~Scope()
 {
     if (m_analyzer)
         m_analyzer->pop(m_layoutObject);
+}
+
+LayoutAnalyzer::BlockScope::BlockScope(const LayoutBlock& block)
+    : m_block(block)
+    , m_width(block.frameRect().width())
+    , m_height(block.frameRect().height())
+{
+}
+
+LayoutAnalyzer::BlockScope::~BlockScope()
+{
+    LayoutAnalyzer* analyzer = m_block.frameView()->layoutAnalyzer();
+    if (!analyzer)
+        return;
+    bool changed = false;
+    if (m_width != m_block.frameRect().width()) {
+        analyzer->increment(LayoutBlockWidthChanged);
+        changed = true;
+    }
+    if (m_height != m_block.frameRect().height()) {
+        analyzer->increment(LayoutBlockHeightChanged);
+        changed = true;
+    }
+    analyzer->increment(changed ? LayoutBlockSizeChanged : LayoutBlockSizeDidNotChange);
 }
 
 void LayoutAnalyzer::reset()
@@ -118,8 +143,10 @@ PassRefPtr<TracedValue> LayoutAnalyzer::toTracedValue()
 const char* LayoutAnalyzer::nameForCounter(Counter counter) const
 {
     switch (counter) {
-    case LayoutBlockRectangleChanged: return "LayoutBlockRectangleChanged";
-    case LayoutBlockRectangleDidNotChange: return "LayoutBlockRectangleDidNotChange";
+    case LayoutBlockWidthChanged: return "LayoutBlockWidthChanged";
+    case LayoutBlockHeightChanged: return "LayoutBlockHeightChanged";
+    case LayoutBlockSizeChanged: return "LayoutBlockSizeChanged";
+    case LayoutBlockSizeDidNotChange: return "LayoutBlockSizeDidNotChange";
     case LayoutObjectsThatSpecifyColumns: return "LayoutObjectsThatSpecifyColumns";
     case LayoutAnalyzerStackMaximumDepth: return "LayoutAnalyzerStackMaximumDepth";
     case LayoutObjectsThatAreFloating: return "LayoutObjectsThatAreFloating";
