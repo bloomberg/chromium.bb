@@ -1034,9 +1034,10 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       pending_entry_->GetPageID() == -1 &&
       existing_entry == GetLastCommittedEntry() &&
       !params.was_within_same_page &&
-      (params.url == existing_entry->GetURL() ||
+      params.url == existing_entry->GetURL() &&
+      (params.url == pending_entry_->GetURL() ||
        (params.redirects.size() &&
-        params.redirects[0] == existing_entry->GetURL()))) {
+        params.redirects[0] == pending_entry_->GetURL()))) {
     // In this case, we have a pending entry for a URL but Blink didn't do a new
     // navigation. This happens when you press enter in the URL bar to reload.
     // We will create a pending entry, but Blink will convert it to a reload

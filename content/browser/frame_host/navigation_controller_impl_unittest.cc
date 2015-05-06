@@ -1940,6 +1940,58 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   EXPECT_FALSE(controller.CanGoForward());
 }
 
+// If something is pumping the event loop in the browser process and is loading
+// pages rapidly one after the other, there can be a race with two closely-
+// spaced load requests. Once the first load request is sent, will the renderer
+// be fast enough to get the load committed, send a DidCommitProvisionalLoad
+// IPC, and have the browser process handle that IPC before the caller makes
+// another load request, replacing the pending entry of the first request?
+//
+// This test is about what happens in such a race when that pending entry
+// replacement happens. If it happens, and the first load had the same URL as
+// the page before it, we must make sure that the replacement of the pending
+// entry correctly turns a SAME_PAGE classification into an EXISTING_PAGE one.
+//
+// (This is a unit test rather than a browser test because it's not currently
+// possible to force this sequence of events with a browser test.)
+TEST_F(NavigationControllerTest,
+       NavigationTypeClassification_ExistingPageRace) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  // Start with a loaded page.
+  main_test_rfh()->NavigateAndCommitRendererInitiated(0, url1);
+  EXPECT_EQ(nullptr, controller_impl().GetPendingEntry());
+
+  // Start a load of the same page again.
+  controller.LoadURL(
+      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  NavigationEntry* pending1 = controller.GetPendingEntry();
+  EXPECT_NE(nullptr, pending1);
+
+  // Immediately start loading a different page...
+  controller.LoadURL(
+      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  NavigationEntry* pending2 = controller.GetPendingEntry();
+  EXPECT_NE(nullptr, pending2);
+  EXPECT_NE(pending1, pending2);
+
+  // ... and now the renderer sends a commit for the first navigation.
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = 0;
+  params.url = url1;
+  params.transition = ui::PAGE_TRANSITION_TYPED;
+  params.page_state = PageState::CreateFromURL(url1);
+
+  LoadCommittedDetails details;
+
+  main_test_rfh()->PrepareForCommit();
+  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
+                                             &details));
+  EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, details.type);
+}
+
 // Tests navigation via link click within a subframe. A new navigation entry
 // should be created.
 TEST_F(NavigationControllerTest, NewSubframe) {
