@@ -133,17 +133,10 @@ scoped_ptr<SessionConfig> SessionConfig::WithLegacyIceForTest() {
 SessionConfig::SessionConfig() {
 }
 
-
 CandidateSessionConfig::CandidateSessionConfig() { }
 
 CandidateSessionConfig::CandidateSessionConfig(
-    const CandidateSessionConfig& config)
-    : standard_ice_(true),
-      control_configs_(config.control_configs_),
-      event_configs_(config.event_configs_),
-      video_configs_(config.video_configs_),
-      audio_configs_(config.audio_configs_) {
-}
+    const CandidateSessionConfig& config) = default;
 
 CandidateSessionConfig::~CandidateSessionConfig() { }
 
