@@ -1,6 +1,6 @@
 Name: libsrtp
 URL: https://github.com/cisco/libsrtp
-Version: 1.5.1
+Version: 1.5.2
 License: 3-clause BSD
 License File: srtp/LICENSE
 Security Critical: Yes
@@ -19,9 +19,3 @@ Added gyp support to __arm64__
 
 Use '_byteswap_*' functions to convert between host and network byte order on
 Windows.
-
-AES-192 is disabled when compiled against BoringSSL. This is no longer necessary
-when updating to libsrtp 1.5.2 or newer.
-
-Always expose API to convert big endian integers to CPU byte order (WebRTC
-calls "be64_to_cpu" from "srtpfilter.cc").
