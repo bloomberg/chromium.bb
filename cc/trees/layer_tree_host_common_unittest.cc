@@ -7702,15 +7702,19 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
   // + root
   //   + render_surface
   //     + fixed
+  //       + child
   //
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<LayerWithForcedDrawsContent> render_surface =
       make_scoped_refptr(new LayerWithForcedDrawsContent());
   scoped_refptr<LayerWithForcedDrawsContent> fixed =
       make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
 
   root->AddChild(render_surface);
   render_surface->AddChild(fixed);
+  fixed->AddChild(child);
 
   root->SetIsContainerForFixedPositionLayers(true);
   render_surface->SetForceRenderSurface(true);
@@ -7727,19 +7731,32 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
   SetLayerPropertiesForTesting(fixed.get(), gfx::Transform(), gfx::Point3F(),
                                gfx::PointF(10.f, 15.f), gfx::Size(50, 50), true,
                                false);
+  SetLayerPropertiesForTesting(child.get(), gfx::Transform(), gfx::Point3F(),
+                               gfx::PointF(1.f, 2.f), gfx::Size(50, 50), true,
+                               false);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
   host->SetRootLayer(root);
 
   ExecuteCalculateDrawProperties(root.get());
 
-  gfx::Transform expected_draw_transform;
-  expected_draw_transform.Translate(10.f, 15.f);
-  EXPECT_EQ(expected_draw_transform, fixed->draw_transform());
+  gfx::Transform expected_fixed_draw_transform;
+  expected_fixed_draw_transform.Translate(10.f, 15.f);
+  EXPECT_EQ(expected_fixed_draw_transform, fixed->draw_transform());
 
-  gfx::Transform expected_screen_space_transform;
-  expected_screen_space_transform.Translate(17.f, 24.f);
-  EXPECT_EQ(expected_screen_space_transform, fixed->screen_space_transform());
+  gfx::Transform expected_fixed_screen_space_transform;
+  expected_fixed_screen_space_transform.Translate(17.f, 24.f);
+  EXPECT_EQ(expected_fixed_screen_space_transform,
+            fixed->screen_space_transform());
+
+  gfx::Transform expected_child_draw_transform;
+  expected_child_draw_transform.Translate(11.f, 17.f);
+  EXPECT_EQ(expected_child_draw_transform, child->draw_transform());
+
+  gfx::Transform expected_child_screen_space_transform;
+  expected_child_screen_space_transform.Translate(18.f, 26.f);
+  EXPECT_EQ(expected_child_screen_space_transform,
+            child->screen_space_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {

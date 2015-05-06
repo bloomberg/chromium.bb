@@ -168,7 +168,13 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
   // Computes the change of basis transform from node |source_id| to |dest_id|.
   // The function returns false iff the inverse of a singular transform was
-  // used (and the result should, therefore, not be trusted).
+  // used (and the result should, therefore, not be trusted). Transforms may
+  // be computed between any pair of nodes that have an ancestor/descendant
+  // relationship. Transforms between other pairs of nodes may only be computed
+  // if the following condition holds: let id1 the larger id and let id2 be the
+  // other id; then the nearest ancestor of node id1 whose id is smaller than
+  // id2 is the lowest common ancestor of the pair of nodes, and the transform
+  // from this lowest common ancestor to node id2 is only a 2d translation.
   bool ComputeTransform(int source_id,
                         int dest_id,
                         gfx::Transform* transform) const;

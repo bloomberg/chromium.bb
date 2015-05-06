@@ -181,7 +181,7 @@ bool AddTransformNodeIfNeeded(
 
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_potentially_animated_transform || has_surface ||
-                       is_page_scale_application_layer;
+                       is_fixed || is_page_scale_application_layer;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
 

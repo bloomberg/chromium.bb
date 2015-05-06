@@ -94,11 +94,9 @@ bool TransformTree::ComputeTransform(int source_id,
     return true;
 
   if (source_id > dest_id) {
-    DCHECK(IsDescendant(source_id, dest_id));
     return CombineTransformsBetween(source_id, dest_id, transform);
   }
 
-  DCHECK(IsDescendant(dest_id, source_id));
   return CombineInversesBetween(source_id, dest_id, transform);
 }
 
@@ -164,6 +162,7 @@ bool TransformTree::IsDescendant(int desc_id, int source_id) const {
 bool TransformTree::CombineTransformsBetween(int source_id,
                                              int dest_id,
                                              gfx::Transform* transform) const {
+  DCHECK(source_id > dest_id);
   const TransformNode* current = Node(source_id);
   const TransformNode* dest = Node(dest_id);
   // Combine transforms to and from the screen when possible. Since flattening
@@ -207,6 +206,28 @@ bool TransformTree::CombineTransformsBetween(int source_id,
     // need the unscaled transform.
     combined_transform.Scale(1.0f / dest->data.sublayer_scale.x(),
                              1.0f / dest->data.sublayer_scale.y());
+  } else if (current->id < dest_id) {
+    // We have reached the lowest common ancestor of the source and destination
+    // nodes. This case can occur when we are transforming between a node
+    // corresponding to a fixed-position layer (or its descendant) and the node
+    // corresponding to the layer's render target. For example, consider the
+    // layer tree R->T->S->F where F is fixed-position, S owns a render surface,
+    // and T has a significant transform. This will yield the following
+    // transform tree:
+    //    R
+    //    |
+    //    T
+    //   /|
+    //  S F
+    // In this example, T will have id 2, S will have id 3, and F will have id
+    // 4. When walking up the ancestor chain from F, the first node with a
+    // smaller id than S will be T, the lowest common ancestor of these nodes.
+    // We compute the transform from T to S here, and then from F to T in the
+    // loop below.
+    DCHECK(IsDescendant(dest_id, current->id));
+    CombineInversesBetween(current->id, dest_id, &combined_transform);
+    DCHECK(combined_transform.IsApproximatelyIdentityOrTranslation(
+        SkDoubleToMScalar(1e-4)));
   }
 
   for (int i = source_to_destination.size() - 1; i >= 0; i--) {
@@ -223,6 +244,7 @@ bool TransformTree::CombineTransformsBetween(int source_id,
 bool TransformTree::CombineInversesBetween(int source_id,
                                            int dest_id,
                                            gfx::Transform* transform) const {
+  DCHECK(source_id < dest_id);
   const TransformNode* current = Node(dest_id);
   const TransformNode* dest = Node(source_id);
   // Just as in CombineTransformsBetween, we can use screen space transforms in
