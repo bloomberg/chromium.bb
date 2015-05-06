@@ -170,10 +170,12 @@ class MEDIA_EXPORT Vp8Parser {
   bool ParseLoopFilterHeader(bool keyframe);
   bool ParseQuantizationHeader(Vp8QuantizationHeader* qhdr);
   bool ParseTokenProbs(Vp8EntropyHeader* ehdr, bool update_curr_probs);
-  bool ParseIntraProbs(Vp8EntropyHeader* ehdr, bool update_curr_probs);
+  bool ParseIntraProbs(Vp8EntropyHeader* ehdr,
+                       bool update_curr_probs,
+                       bool keyframe);
   bool ParseMVProbs(Vp8EntropyHeader* ehdr, bool update_curr_probs);
   bool ParsePartitions(Vp8FrameHeader* fhdr);
-  void ResetProbs(Vp8EntropyHeader* ehdr);
+  void ResetProbs();
 
   // These persist across calls to ParseFrame() and may be used and/or updated
   // for subsequent frames if the stream instructs us to do so.
