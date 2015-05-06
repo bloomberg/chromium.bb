@@ -176,12 +176,10 @@ def AddCMakeToPath():
     if e.errno != os.errno.ENOENT:
       raise
 
-  cmake_locations = ['C:\\Program Files (x86)\\CMake\\bin',
-                     'C:\\Program Files (x86)\\CMake 2.8\\bin']
-  for d in cmake_locations:
-    if os.path.isdir(d):
-      os.environ['PATH'] = os.environ.get('PATH', '') + os.pathsep + d
-      return
+  cmake_dir = 'C:\\Program Files (x86)\\CMake\\bin'
+  if os.path.isdir(cmake_dir):
+    os.environ['PATH'] = os.environ.get('PATH', '') + os.pathsep + cmake_dir
+    return
   print 'Failed to find CMake!'
   sys.exit(1)
 
