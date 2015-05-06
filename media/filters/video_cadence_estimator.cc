@@ -7,11 +7,21 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/metrics/histogram_macros.h"
+
 namespace media {
 
 // To prevent oscillation in and out of cadence or between cadence values, we
 // require some time to elapse before a cadence switch is accepted.
 const int kMinimumCadenceDurationMs = 100;
+
+// Records the number of cadence changes to UMA.
+static void HistogramCadenceChangeCount(int cadence_changes) {
+  const int kCadenceChangeMax = 10;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Media.VideoRenderer.CadenceChanges",
+                              cadence_changes, 0, kCadenceChangeMax,
+                              kCadenceChangeMax);
+}
 
 VideoCadenceEstimator::VideoCadenceEstimator(
     base::TimeDelta minimum_time_until_glitch)
@@ -27,7 +37,8 @@ VideoCadenceEstimator::~VideoCadenceEstimator() {
 void VideoCadenceEstimator::Reset() {
   cadence_ = fractional_cadence_ = 0;
   pending_cadence_ = pending_fractional_cadence_ = 0;
-  render_intervals_cadence_held_ = 0;
+  cadence_changes_ = render_intervals_cadence_held_ = 0;
+  first_update_call_ = true;
 }
 
 bool VideoCadenceEstimator::UpdateCadenceEstimate(
@@ -53,6 +64,15 @@ bool VideoCadenceEstimator::UpdateCadenceEstimate(
     DCHECK(new_fractional_cadence);
   }
 
+  // If this is the first time UpdateCadenceEstimate() has been called,
+  // initialize the histogram with a zero count for cadence changes; this
+  // allows us to track the number of playbacks which have cadence at all.
+  if (first_update_call_) {
+    DCHECK_EQ(cadence_changes_, 0);
+    first_update_call_ = false;
+    HistogramCadenceChangeCount(0);
+  }
+
   // Nothing changed, so do nothing.
   if (new_cadence == cadence_ &&
       new_fractional_cadence == fractional_cadence_) {
@@ -76,6 +96,10 @@ bool VideoCadenceEstimator::UpdateCadenceEstimate(
 
       cadence_ = new_cadence;
       fractional_cadence_ = new_fractional_cadence;
+
+      // Note: Because this class is transitively owned by a garbage collected
+      // object, WebMediaPlayer, we log cadence changes as they are encountered.
+      HistogramCadenceChangeCount(++cadence_changes_);
       return true;
     }
 

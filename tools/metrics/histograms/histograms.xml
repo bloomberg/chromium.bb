@@ -14901,6 +14901,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Pixel format used in HTML5 video. Emitted on video load.</summary>
 </histogram>
 
+<histogram name="Media.VideoRenderer.CadenceChanges" units="changes">
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    Indicates how many cadence changes have occurred during playback, a zero
+    value is emitted at the beginning of playback. Subsequent values are emitted
+    during video rendering for each cadence change (up to a maximum of 10).
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoRotation" enum="VideoRotation">
   <owner>suderman@chromium.org</owner>
   <summary>Metadata rotation in mp4 videos. Emitted during demuxing.</summary>

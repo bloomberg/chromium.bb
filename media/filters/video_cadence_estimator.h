@@ -142,6 +142,11 @@ class MEDIA_EXPORT VideoCadenceEstimator {
   int render_intervals_cadence_held_;
   base::TimeDelta cadence_hysteresis_threshold_;
 
+  // Tracks how many times cadence has switched during a given playback, used to
+  // histogram the number of cadence changes in a playback.
+  bool first_update_call_;
+  int cadence_changes_;
+
   // The minimum amount of time allowed before a glitch occurs before confirming
   // cadence for a given render interval and frame duration.
   const base::TimeDelta minimum_time_until_glitch_;
