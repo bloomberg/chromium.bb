@@ -4125,7 +4125,20 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->global =
 		wl_global_create(c->wl_display, &wl_output_interface, 2,
 				 output, bind_output);
-	wl_signal_emit(&c->output_created_signal, output);
+}
+
+/** Adds an output to the compositor's output list and
+ *  send the compositor's output_created signal.
+ *
+ * \param compositor The compositor instance.
+ * \param output The output to be added.
+ */
+WL_EXPORT void
+weston_compositor_add_output(struct weston_compositor *compositor,
+                             struct weston_output *output)
+{
+	wl_list_insert(compositor->output_list.prev, &output->link);
+	wl_signal_emit(&compositor->output_created_signal, output);
 }
 
 WL_EXPORT void

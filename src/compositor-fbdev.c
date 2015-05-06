@@ -581,7 +581,7 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	wl_list_insert(compositor->base.output_list.prev, &output->base.link);
+	weston_compositor_add_output(&compositor->base, &output->base);
 
 	weston_log("fbdev output %d×%d px\n",
 	           output->mode.width, output->mode.height);

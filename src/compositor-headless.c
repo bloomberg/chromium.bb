@@ -169,7 +169,7 @@ headless_compositor_create_output(struct headless_compositor *c,
 						  output->image);
 	}
 
-	wl_list_insert(c->base.output_list.prev, &output->base.link);
+	weston_compositor_add_output(&c->base, &output->base);
 
 	return 0;
 }

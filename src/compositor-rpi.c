@@ -357,7 +357,7 @@ rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 	if (rpi_renderer_output_create(&output->base, output->display) < 0)
 		goto out_output;
 
-	wl_list_insert(compositor->base.output_list.prev, &output->base.link);
+	weston_compositor_add_output(&compositor->base, &output->base);
 
 	weston_log("Raspberry Pi HDMI output %dx%d px\n",
 		   output->mode.width, output->mode.height);

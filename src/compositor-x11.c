@@ -915,7 +915,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	wl_list_insert(c->base.output_list.prev, &output->base.link);
+	weston_compositor_add_output(&c->base, &output->base);
 
 	weston_log("x11 output %dx%d, window id %d\n",
 		   width, height, output->window);

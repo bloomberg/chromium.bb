@@ -488,7 +488,7 @@ rdp_compositor_create_output(struct rdp_compositor *c, int width, int height)
 	output->base.switch_mode = rdp_switch_mode;
 	c->output = output;
 
-	wl_list_insert(c->base.output_list.prev, &output->base.link);
+	weston_compositor_add_output(&c->base, &output->base);
 	return 0;
 
 out_shadow_surface:

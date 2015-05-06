@@ -1057,7 +1057,7 @@ wayland_output_create(struct wayland_compositor *c, int x, int y,
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = wayland_output_switch_mode;
 
-	wl_list_insert(c->base.output_list.prev, &output->base.link);
+	weston_compositor_add_output(&c->base, &output->base);
 
 	return output;
 

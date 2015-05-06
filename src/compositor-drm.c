@@ -2125,7 +2125,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		weston_log("Failed to initialize backlight\n");
 	}
 
-	wl_list_insert(ec->base.output_list.prev, &output->base.link);
+	weston_compositor_add_output(&ec->base, &output->base);
 
 	find_and_parse_output_edid(ec, output, connector);
 	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS)

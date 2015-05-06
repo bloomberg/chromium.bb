@@ -1374,6 +1374,9 @@ void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
 		   int x, int y, int width, int height, uint32_t transform, int32_t scale);
 void
+weston_compositor_add_output(struct weston_compositor *compositor,
+                             struct weston_output *output);
+void
 weston_output_destroy(struct weston_output *output);
 void
 weston_output_transform_coordinate(struct weston_output *output,
