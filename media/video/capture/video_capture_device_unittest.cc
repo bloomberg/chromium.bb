@@ -44,8 +44,6 @@
 // On Android, native camera (JAVA) delivers frames on UI thread which is the
 // main thread for tests. This results in no frame received by
 // VideoCaptureAndroid.
-#define CaptureVGA DISABLED_CaptureVGA
-#define Capture720p DISABLED_Capture720p
 #define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
 #define ReAllocateCamera DISABLED_ReAllocateCamera
 #define DeAllocateCameraWhileRunning DISABLED_DeAllocateCameraWhileRunning
@@ -62,6 +60,11 @@ using ::testing::SaveArg;
 namespace media {
 
 namespace {
+
+static const gfx::Size kCaptureSizes[] = {
+    gfx::Size(640, 480),
+    gfx::Size(1280, 720)
+};
 
 class MockClient : public VideoCaptureDevice::Client {
  public:
@@ -133,7 +136,8 @@ class DeviceEnumerationListener :
 
 }  // namespace
 
-class VideoCaptureDeviceTest : public testing::Test {
+class VideoCaptureDeviceTest :
+    public testing::TestWithParam<gfx::Size> {
  protected:
   typedef VideoCaptureDevice::Client Client;
 
@@ -212,6 +216,23 @@ class VideoCaptureDeviceTest : public testing::Test {
     return scoped_ptr<VideoCaptureDevice::Name>();
   }
 
+  bool IsCaptureSizeSupported(const VideoCaptureDevice::Name& device,
+                              const gfx::Size& size) {
+    VideoCaptureFormats supported_formats;
+    video_capture_device_factory_->GetDeviceSupportedFormats(
+        device, &supported_formats);
+    const auto it =
+        std::find_if(supported_formats.begin(), supported_formats.end(),
+                     [&size](VideoCaptureFormat const& f) {
+                       return f.frame_size == size;
+                     });
+    if (it == supported_formats.end()) {
+      DVLOG(1) << "Size " << size.ToString() << " is not supported.";
+      return false;
+    }
+    return true;
+  }
+
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer initialize_com_;
 #endif
@@ -268,12 +289,18 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
 #endif
 }
 
-TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
+TEST_P(VideoCaptureDeviceTest, CaptureWithSize) {
   names_ = EnumerateDevices();
   if (names_->empty()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
+
+  const gfx::Size& size = GetParam();
+  if (!IsCaptureSizeSupported(names_->front(), size))
+    return;
+  const int width = size.width();
+  const int height = size.height();
 
   scoped_ptr<VideoCaptureDevice> device(
       video_capture_device_factory_->Create(names_->front()));
@@ -283,45 +310,25 @@ TEST_F(VideoCaptureDeviceTest, CaptureVGA) {
   EXPECT_CALL(*client_, OnError(_)).Times(0);
 
   VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(640, 480);
-  capture_params.requested_format.frame_rate = 30;
+  capture_params.requested_format.frame_size.SetSize(width, height);
+  capture_params.requested_format.frame_rate = 30.0f;
   capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
   device->AllocateAndStart(capture_params, client_.Pass());
   // Get captured video frames.
   WaitForCapturedFrame();
-  EXPECT_EQ(last_format().frame_size.width(), 640);
-  EXPECT_EQ(last_format().frame_size.height(), 480);
-  EXPECT_EQ(static_cast<size_t>(640 * 480 * 3 / 2),
-            last_format().ImageAllocationSize());
+  EXPECT_EQ(last_format().frame_size.width(), width);
+  EXPECT_EQ(last_format().frame_size.height(), height);
+  if (last_format().pixel_format != PIXEL_FORMAT_MJPEG)
+    EXPECT_LE(static_cast<size_t>(width * height * 3 / 2),
+              last_format().ImageAllocationSize());
   device->StopAndDeAllocate();
 }
 
-TEST_F(VideoCaptureDeviceTest, Capture720p) {
-  names_ = EnumerateDevices();
-  if (names_->empty()) {
-    DVLOG(1) << "No camera available. Exiting test.";
-    return;
-  }
-
-  scoped_ptr<VideoCaptureDevice> device(
-      video_capture_device_factory_->Create(names_->front()));
-  ASSERT_TRUE(device);
-
-  EXPECT_CALL(*client_, OnError(_)).Times(0);
-
-  VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(1280, 720);
-  capture_params.requested_format.frame_rate = 30;
-  capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  device->AllocateAndStart(capture_params, client_.Pass());
-  // Get captured video frames.
-  WaitForCapturedFrame();
-  EXPECT_EQ(last_format().frame_size.width(), 1280);
-  EXPECT_EQ(last_format().frame_size.height(), 720);
-  EXPECT_EQ(static_cast<size_t>(1280 * 720 * 3 / 2),
-            last_format().ImageAllocationSize());
-  device->StopAndDeAllocate();
-}
+#if !defined(OS_ANDROID)
+INSTANTIATE_TEST_CASE_P(MAYBE_VideoCaptureDeviceTests,
+                        VideoCaptureDeviceTest,
+                        testing::ValuesIn(kCaptureSizes));
+#endif
 
 TEST_F(VideoCaptureDeviceTest, MAYBE_AllocateBadSize) {
   names_ = EnumerateDevices();
