@@ -26,8 +26,8 @@ async_test(function(test) {
 
 async_test(function(test) {
     navigator.permissions.query({name:'geolocation'}).then(function(result) {
-        // TODO(mlamouri): test values when some instrumentation are available.
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.status, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying geolocation permission should not fail.')
@@ -50,8 +50,8 @@ async_test(function(test) {
         // Test for sysex=true.
         return navigator.permissions.query({name:'midi', sysex: true});
     }).then(function(result) {
-        // TODO(mlamouri): test values when some instrumentation are available.
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.status, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying midi permission should not fail.')
@@ -60,8 +60,8 @@ async_test(function(test) {
 
 async_test(function(test) {
     navigator.permissions.query({name:'notifications'}).then(function(result) {
-        // TODO(mlamouri): test values when some instrumentation are available.
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.status, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying notifications permission should not fail.')
@@ -84,8 +84,8 @@ async_test(function(test) {
         // Test for userVisible=true.
         return navigator.permissions.query({name:'push', userVisible: true});
     }).then(function(result) {
-        // TODO(mlamouri): test values when some instrumentation are available.
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.status, 'denied');
         test.done();
     }).catch(function() {
         assert_unreached('querying push permission should not fail.')

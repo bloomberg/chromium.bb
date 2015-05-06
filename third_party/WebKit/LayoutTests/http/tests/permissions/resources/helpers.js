@@ -38,5 +38,5 @@ function run_test() {
     // Run the tests on {Dedicated,Shared,Service}Worker.
     fetch_tests_from_worker(new Worker(script_href));
     fetch_tests_from_worker(new SharedWorker(script_href));
-    window.service_worker_test(script_href);
+    service_worker_test(script_href);
 }
