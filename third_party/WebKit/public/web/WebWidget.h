@@ -47,6 +47,7 @@ namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
 class WebInputEvent;
+class WebLayoutAndPaintAsyncCallback;
 class WebPagePopup;
 class WebString;
 struct WebPoint;
@@ -110,6 +111,11 @@ public:
     virtual void paint(WebCanvas*, const WebRect& viewPort) { }
 
     virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) { }
+
+    // Run layout and paint of all pending document changes asynchronously.
+    // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback
+    // object alive until it is called.
+    virtual void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) { }
 
     // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
     // object alive until it is called. This should only be called when

@@ -41,6 +41,7 @@ namespace blink {
 class WebCompositeAndReadbackAsyncCallback;
 class WebCompositorAnimationTimeline;
 class WebLayer;
+class WebLayoutAndPaintAsyncCallback;
 struct WebPoint;
 struct WebSelectionBound;
 class WebSelection;
@@ -109,6 +110,11 @@ public:
 
     // Relays the end of a fling animation.
     virtual void didStopFlinging() { }
+
+    // Run layout and paint of all pending document changes asynchronously.
+    // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback object
+    // alive until it is called.
+    virtual void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) { }
 
     // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
     // object alive until it is called.

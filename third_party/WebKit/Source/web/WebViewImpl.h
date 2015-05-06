@@ -115,6 +115,7 @@ public:
 #if OS(ANDROID)
     virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) override;
 #endif
+    virtual void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
     virtual bool isTrackingRepaints() const override;
     virtual void themeChanged() override;
