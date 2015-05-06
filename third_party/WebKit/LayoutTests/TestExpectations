@@ -2095,7 +2095,3 @@ crbug.com/477743 virtual/slimmingpaint/compositing/repaint/fixed-pos-with-abs-po
 
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
-
-# temporary until the push Api permission enum is renamed
-crbug.com/479246 http/tests/push_messaging/permission-state-default-in-document.html [ Skip ]
-crbug.com/479246 http/tests/push_messaging/permission-state-default-in-service-worker.html [ Skip ]

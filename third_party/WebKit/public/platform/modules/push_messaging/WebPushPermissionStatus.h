@@ -10,9 +10,6 @@ namespace blink {
 enum WebPushPermissionStatus {
     WebPushPermissionStatusGranted = 0,
     WebPushPermissionStatusDenied,
-
-    // FIXME: Remove this value once chrome tests use WebPushPermissionStatusPrompt
-    WebPushPermissionStatusDefault,
     WebPushPermissionStatusPrompt,
 
     // Used for IPC message range checks.

@@ -38,8 +38,6 @@ String PushPermissionStatusCallbacks::permissionString(WebPushPermissionStatus s
         return "granted";
     case WebPushPermissionStatusDenied:
         return "denied";
-    case WebPushPermissionStatusDefault:
-        return "default";
     case WebPushPermissionStatusPrompt:
         return "prompt";
     }
