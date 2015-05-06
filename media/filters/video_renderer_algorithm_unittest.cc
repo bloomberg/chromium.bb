@@ -225,7 +225,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
       } else if (is_using_cadence() && !IsUsingFractionalCadence()) {
         // If there was no glitch in the last render, the two queue sizes should
         // be off by exactly one frame; i.e., the current frame doesn't count.
-        if (!last_render_had_glitch())
+        if (!last_render_had_glitch() && fresh_algorithm)
           ASSERT_EQ(frames_queued() - 1, algorithm_.EffectiveFramesQueued());
       } else if (IsUsingFractionalCadence()) {
         // The frame estimate should be off by at most one frame.
@@ -691,7 +691,7 @@ TEST_F(VideoRendererAlgorithmTest, BestFrameByCadenceOverdisplayed) {
   algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(1)));
 
   // Render frames until we've exhausted available frames and the last frame is
-  // forced to be overdisplayed.
+  // forced to be over displayed.
   for (int i = 0; i < 5; ++i) {
     size_t frames_dropped = 0;
     scoped_refptr<VideoFrame> frame =
@@ -709,18 +709,26 @@ TEST_F(VideoRendererAlgorithmTest, BestFrameByCadenceOverdisplayed) {
   algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(3)));
 
   // The next frame should only be displayed once, since the previous one was
-  // overdisplayed by one frame.
+  // over displayed by one frame.
   size_t frames_dropped = 0;
   scoped_refptr<VideoFrame> frame = RenderAndStep(&display_tg, &frames_dropped);
   ASSERT_TRUE(frame);
   EXPECT_EQ(frame_tg.interval(2), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
-  ASSERT_EQ(1, GetCurrentFrameIdealDisplayCount());
+
+  // Enqueuing a new frame should keep the correct cadence values.
+  algorithm_.EnqueueFrame(CreateFrame(frame_tg.interval(4)));
+
+  ASSERT_EQ(2, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(1, GetCurrentFrameDropCount());
+  ASSERT_EQ(2, GetCurrentFrameIdealDisplayCount());
 
   frame = RenderAndStep(&display_tg, &frames_dropped);
   ASSERT_TRUE(frame);
   EXPECT_EQ(frame_tg.interval(3), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
+  ASSERT_EQ(1, GetCurrentFrameDisplayCount());
+  ASSERT_EQ(0, GetCurrentFrameDropCount());
   ASSERT_EQ(2, GetCurrentFrameIdealDisplayCount());
 }
 

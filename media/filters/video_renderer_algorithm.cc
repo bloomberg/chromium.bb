@@ -460,29 +460,33 @@ int VideoRendererAlgorithm::FindBestFrameByCadence() {
   if (!cadence_estimator_.has_cadence())
     return -1;
 
-  int new_ideal_render_count = 0;
+  int remaining_overage = 0;
   const int best_frame =
-      FindBestFrameByCadenceInternal(&new_ideal_render_count);
+      FindBestFrameByCadenceInternal(&remaining_overage);
   if (best_frame < 0)
     return -1;
 
-  DCHECK_GT(new_ideal_render_count, 0);
-  frame_queue_[best_frame].ideal_render_count = new_ideal_render_count;
+  DCHECK_GE(remaining_overage, 0);
+
+  // Overage is treated as having been displayed and dropped for each count.
+  frame_queue_[best_frame].render_count += remaining_overage;
+  frame_queue_[best_frame].drop_count += remaining_overage;
   return best_frame;
 }
 
 int VideoRendererAlgorithm::FindBestFrameByCadenceInternal(
-    int* adjusted_ideal_render_count) const {
+    int* remaining_overage) const {
   DCHECK(!frame_queue_.empty());
   DCHECK(cadence_estimator_.has_cadence());
   const ReadyFrame& current_frame = frame_queue_[last_frame_index_];
 
-  // If the current frame is below cadence, we should prefer it.
-  if (current_frame.render_count < current_frame.ideal_render_count) {
-    if (adjusted_ideal_render_count)
-      *adjusted_ideal_render_count = current_frame.ideal_render_count;
-    return last_frame_index_;
+  if (remaining_overage) {
+    DCHECK_EQ(*remaining_overage, 0);
   }
+
+  // If the current frame is below cadence, we should prefer it.
+  if (current_frame.render_count < current_frame.ideal_render_count)
+    return last_frame_index_;
 
   // For over-rendered frames we need to ensure we skip frames and subtract
   // each skipped frame's ideal cadence from the over-render count until we
@@ -495,10 +499,8 @@ int VideoRendererAlgorithm::FindBestFrameByCadenceInternal(
   for (size_t i = last_frame_index_ + 1; i < frame_queue_.size(); ++i) {
     const ReadyFrame& frame = frame_queue_[i];
     if (frame.ideal_render_count > render_count_overage) {
-      if (adjusted_ideal_render_count) {
-        *adjusted_ideal_render_count =
-            frame.ideal_render_count - render_count_overage;
-      }
+      if (remaining_overage)
+        *remaining_overage = render_count_overage;
       return i;
     } else {
       // The ideal render count should always be zero or smaller than the

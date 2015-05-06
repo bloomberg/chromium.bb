@@ -194,10 +194,14 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   int FindBestFrameByCadence();
 
   // Similar to FindBestFrameByCadence(), but instead of adjusting the last
-  // rendered frame's ideal render count in the case of over selection,
-  // optionally returns the new ideal render count via
-  // |adjusted_ideal_render_count|.
-  int FindBestFrameByCadenceInternal(int* adjusted_ideal_render_count) const;
+  // rendered frame's ideal render count in the case of over selection.
+  // Optionally returns the number of times a prior frame was over displayed and
+  // ate into the returned frames ideal render count via |remaining_overage|.
+  //
+  // For example, if we have 2 frames and each has an ideal display count of 3,
+  // but the first was displayed 4 times, the best frame is the second one, but
+  // it should only be displayed twice instead of thrice, so it's overage is 1.
+  int FindBestFrameByCadenceInternal(int* remaining_overage) const;
 
   // Iterates over |frame_queue_| and finds the frame which covers the most of
   // the deadline interval.  If multiple frames have coverage of the interval,
