@@ -40389,6 +40389,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Enumeration of types of bookmark configuration failures.</summary>
 </histogram>
 
+<histogram name="Sync.BookmarksDuplicationsAtAssociation">
+  <owner>stanisc@chromium.org</owner>
+  <summary>
+    Estimated number of bookmark duplications after bookmark association.
+  </summary>
+</histogram>
+
+<histogram name="Sync.BookmarksNewDuplicationsAtAssociation">
+  <owner>stanisc@chromium.org</owner>
+  <summary>
+    Estimated number of new bookmark duplications after bookmark association.
+  </summary>
+</histogram>
+
 <histogram name="Sync.BookmarksStartFailure" enum="SyncStartResult">
   <obsolete>
     Replaced by BookmarksConfigureFailure. See crbug.com/478226.

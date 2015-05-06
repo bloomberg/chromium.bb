@@ -207,7 +207,8 @@ BookmarkModelAssociator::Context::Context(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result)
     : local_merge_result_(local_merge_result),
-      syncer_merge_result_(syncer_merge_result) {
+      syncer_merge_result_(syncer_merge_result),
+      duplicate_count_(0) {
 }
 
 BookmarkModelAssociator::Context::~Context() {
@@ -266,6 +267,22 @@ void BookmarkModelAssociator::Context::IncrementLocalItemsModified() {
 void BookmarkModelAssociator::Context::IncrementSyncItemsAdded() {
   syncer_merge_result_->set_num_items_added(
       syncer_merge_result_->num_items_added() + 1);
+}
+
+void BookmarkModelAssociator::Context::UpdateDuplicateCount(
+    const base::string16& title,
+    const GURL& url) {
+  // base::Hash is defined for 8-byte strings only so have to
+  // cast the title data to char* and double the length in order to
+  // compute its hash.
+  size_t bookmark_hash = base::Hash(reinterpret_cast<const char*>(title.data()),
+                                    title.length() * 2) ^
+                         base::Hash(url.spec());
+
+  if (!hashes_.insert(bookmark_hash).second) {
+    // This hash code already exists in the set.
+    ++duplicate_count_;
+  }
 }
 
 BookmarkModelAssociator::BookmarkModelAssociator(
@@ -507,7 +524,26 @@ void BookmarkModelAssociator::SetNumItemsBeforeAssociation(
     syncer_num = bm_root.GetTotalNodeCount();
   }
   context->SetNumItemsBeforeAssociation(
-      bookmark_model_->root_node()->GetTotalNodeCount(), syncer_num);
+      GetTotalBookmarkCountAndRecordDuplicates(bookmark_model_->root_node(),
+                                               context),
+      syncer_num);
+}
+
+int BookmarkModelAssociator::GetTotalBookmarkCountAndRecordDuplicates(
+    const bookmarks::BookmarkNode* node,
+    Context* context) const {
+  int count = 1;  // Start with one to include the node itself.
+
+  if (!node->is_root()) {
+    context->UpdateDuplicateCount(node->GetTitle(), node->url());
+  }
+
+  for (int i = 0; i < node->child_count(); ++i) {
+    count +=
+        GetTotalBookmarkCountAndRecordDuplicates(node->GetChild(i), context);
+  }
+
+  return count;
 }
 
 void BookmarkModelAssociator::SetNumItemsAfterAssociation(
@@ -532,6 +568,8 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(Context* context) {
     return error;
 
   SetNumItemsBeforeAssociation(&trans, context);
+
+  int initial_duplicate_count = context->duplicate_count();
 
   // Remove obsolete bookmarks according to sync delete journal.
   // TODO(stanisc): crbug.com/456876: rewrite this to avoid a separate
@@ -581,6 +619,11 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(Context* context) {
 
   SetNumItemsAfterAssociation(&trans, context);
 
+  UMA_HISTOGRAM_COUNTS("Sync.BookmarksDuplicationsAtAssociation",
+                       context->duplicate_count());
+  UMA_HISTOGRAM_COUNTS("Sync.BookmarksNewDuplicationsAtAssociation",
+                       context->duplicate_count() - initial_duplicate_count);
+
   return syncer::SyncError();
 }
 
@@ -616,8 +659,11 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
       context->IncrementLocalItemsModified();
     } else {
       DCHECK_LE(index, parent_node->child_count());
+
+      base::string16 title = base::UTF8ToUTF16(sync_child_node.GetTitle());
       child_node = BookmarkChangeProcessor::CreateBookmarkNode(
-          &sync_child_node, parent_node, bookmark_model_, profile_, index);
+          title, url, &sync_child_node, parent_node, bookmark_model_, profile_,
+          index);
       if (!child_node) {
         return unrecoverable_error_handler_->CreateAndUploadError(
             FROM_HERE, "Failed to create bookmark node with title " +
@@ -625,6 +671,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
                            url.possibly_invalid_spec(),
             model_type());
       }
+      context->UpdateDuplicateCount(title, url);
       context->IncrementLocalItemsAdded();
     }
 

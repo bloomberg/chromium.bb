@@ -774,15 +774,28 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     BookmarkModel* model,
     Profile* profile,
     int index) {
+  return CreateBookmarkNode(base::UTF8ToUTF16(sync_node->GetTitle()),
+                            GURL(sync_node->GetBookmarkSpecifics().url()),
+                            sync_node, parent, model, profile, index);
+}
+
+// static
+// Creates a bookmark node under the given parent node from the given sync
+// node. Returns the newly created node.
+const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
+    const base::string16& title,
+    const GURL& url,
+    syncer::BaseNode* sync_node,
+    const BookmarkNode* parent,
+    BookmarkModel* model,
+    Profile* profile,
+    int index) {
   DCHECK(parent);
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node =
-        model->AddFolderWithMetaInfo(parent,
-                                     index,
-                                     base::UTF8ToUTF16(sync_node->GetTitle()),
-                                     GetBookmarkMetaInfo(sync_node).get());
+    node = model->AddFolderWithMetaInfo(parent, index, title,
+                                        GetBookmarkMetaInfo(sync_node).get());
   } else {
     // 'creation_time_us' was added in m24. Assume a time of 0 means now.
     const sync_pb::BookmarkSpecifics& specifics =
@@ -791,11 +804,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     base::Time create_time = (create_time_internal == 0) ?
         base::Time::Now() : base::Time::FromInternalValue(create_time_internal);
     node = model->AddURLWithCreationTimeAndMetaInfo(
-        parent,
-        index,
-        base::UTF8ToUTF16(sync_node->GetTitle()),
-        GURL(specifics.url()),
-        create_time,
+        parent, index, title, url, create_time,
         GetBookmarkMetaInfo(sync_node).get());
     if (node)
       SetBookmarkFavicon(sync_node, node, model, profile);

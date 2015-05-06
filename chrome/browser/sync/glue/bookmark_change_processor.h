@@ -97,6 +97,17 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
       Profile* profile,
       int index);
 
+  // Overload of CreateBookmarkNode function above that helps to avoid
+  // converting / parsing the bookmark title and URL multiple times.
+  static const bookmarks::BookmarkNode* CreateBookmarkNode(
+      const base::string16& title,
+      const GURL& url,
+      syncer::BaseNode* sync_node,
+      const bookmarks::BookmarkNode* parent,
+      bookmarks::BookmarkModel* model,
+      Profile* profile,
+      int index);
+
   // Sets the favicon of the given bookmark node from the given sync node.
   // Returns whether the favicon was set in the bookmark node.
   // |profile| is the profile that contains the HistoryService and BookmarkModel

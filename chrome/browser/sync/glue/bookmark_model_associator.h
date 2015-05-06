@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/hash.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
@@ -19,6 +20,7 @@
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
 class Profile;
+class GURL;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -144,12 +146,23 @@ class BookmarkModelAssociator
     void IncrementLocalItemsModified();
     void IncrementSyncItemsAdded();
 
+    void UpdateDuplicateCount(const base::string16& title, const GURL& url);
+
+    int duplicate_count() const { return duplicate_count_; }
+
    private:
     // DFS stack of sync nodes traversed during association.
     std::stack<int64> dfs_stack_;
     // Local and merge results are not owned.
     syncer::SyncMergeResult* local_merge_result_;
     syncer::SyncMergeResult* syncer_merge_result_;
+    // |hashes_| contains hash codes of all native bookmarks
+    // for the purpose of detecting duplicates. A small number of
+    // false positives due to hash collisions is OK because this
+    // data is used for reporting purposes only.
+    base::hash_set<size_t> hashes_;
+    // Overall number of bookmark collisions from RecordDuplicates call.
+    int duplicate_count_;
 
     DISALLOW_COPY_AND_ASSIGN(Context);
   };
@@ -164,6 +177,13 @@ class BookmarkModelAssociator
                                     Context* context);
   void SetNumItemsAfterAssociation(syncer::BaseTransaction* trans,
                                    Context* context);
+
+  // Used by SetNumItemsBeforeAssociation.
+  // Similar to BookmarkNode::GetTotalNodeCount but also scans the native
+  // model for duplicates and records them in |context|.
+  int GetTotalBookmarkCountAndRecordDuplicates(
+      const bookmarks::BookmarkNode* node,
+      Context* context) const;
 
   // Helper function that associates all tagged permanent folders and primes
   // the provided context with sync IDs of those folders.
