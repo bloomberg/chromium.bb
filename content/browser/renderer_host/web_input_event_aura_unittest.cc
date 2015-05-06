@@ -199,6 +199,8 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventKeyPadKeyCode) {
     XEvent* xevent = xev;
     xevent->xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(), test_case.x_keysym);
+    if (!xevent->xkey.keycode)
+      continue;
     ui::KeyEvent event(xev);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(event);
     EXPECT_EQ(test_case.expected_result,
