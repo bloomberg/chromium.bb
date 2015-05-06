@@ -166,7 +166,12 @@ class USBImager(object):
 
     cmd = '%s %s | dd of=%s bs=4M iflag=fullblock oflag=sync' % (
         cmd_base, image, device)
-    cros_build_lib.SudoRunCommand(cmd, shell=True)
+
+    # We want to display the output at logging level NOTICE or less but we only
+    # want to print the command at logging levels INFO and DEBUG.
+    cros_build_lib.SudoRunCommand(
+        cmd, shell=True, debug_level=logging.NOTICE,
+        print_cmd=logging.getLogger().getEffectiveLevel() < logging.NOTICE)
     cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
 
 
