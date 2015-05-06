@@ -182,7 +182,7 @@
         "test": "events_unittests"
       },
       {
-        "test": "extensions_unittests"
+        "test": "extensions_browsertests"
       },
       {
         "test": "extensions_unittests"
