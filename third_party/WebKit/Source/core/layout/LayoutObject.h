@@ -542,7 +542,6 @@ public:
     bool hasBoxDecorationBackground() const { return m_bitfields.boxDecorationBackgroundState() != NoBoxDecorationBackground; }
     bool boxDecorationBackgroundIsKnownToBeObscured();
     bool canRenderBorderImage() const;
-    bool mustInvalidateBackgroundOrBorderPaintOnWidthChange() const;
     bool mustInvalidateFillLayersPaintOnHeightChange(const FillLayer&) const;
     bool hasBackground() const { return style()->hasBackground(); }
     bool hasEntirelyFixedBackground() const;
@@ -1216,8 +1215,6 @@ private:
     void updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers);
 
     void setNeedsOverflowRecalcAfterStyleChange();
-
-    inline bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
 
     // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make LayoutBox
     // recomputeOverflow-capable. crbug.com/437012 and crbug.com/434700.

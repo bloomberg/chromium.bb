@@ -4683,6 +4683,62 @@ void LayoutBox::logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& newLogi
     setMarginRight(oldMarginRight);
 }
 
+inline bool LayoutBox::mustInvalidateFillLayersPaintOnWidthChange(const FillLayer& layer) const
+{
+    // Nobody will use multiple layers without wanting fancy positioning.
+    if (layer.next())
+        return true;
+
+    // Make sure we have a valid image.
+    StyleImage* img = layer.image();
+    if (!img || !img->canRender(*this, style()->effectiveZoom()))
+        return false;
+
+    if (layer.repeatX() != RepeatFill && layer.repeatX() != NoRepeatFill)
+        return true;
+
+    if (layer.xPosition().isPercent() && !layer.xPosition().isZero())
+        return true;
+
+    if (layer.backgroundXOrigin() != LeftEdge)
+        return true;
+
+    EFillSizeType sizeType = layer.sizeType();
+
+    if (sizeType == Contain || sizeType == Cover)
+        return true;
+
+    if (sizeType == SizeLength) {
+        if (layer.sizeLength().width().isPercent() && !layer.sizeLength().width().isZero())
+            return true;
+        if (img->isGeneratedImage() && layer.sizeLength().width().isAuto())
+            return true;
+    } else if (img->usesImageContainerSize()) {
+        return true;
+    }
+
+    return false;
+}
+
+bool LayoutBox::mustInvalidateBackgroundOrBorderPaintOnWidthChange() const
+{
+    if (hasMask() && mustInvalidateFillLayersPaintOnWidthChange(style()->maskLayers()))
+        return true;
+
+    // If we don't have a background/border/mask, then nothing to do.
+    if (!hasBoxDecorationBackground())
+        return false;
+
+    if (mustInvalidateFillLayersPaintOnWidthChange(style()->backgroundLayers()))
+        return true;
+
+    // Our fill layers are ok. Let's check border.
+    if (style()->hasBorder() && canRenderBorderImage())
+        return true;
+
+    return false;
+}
+
 bool LayoutBox::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
 {
     if (hasMask() && mustInvalidateFillLayersPaintOnHeightChange(style()->maskLayers()))
