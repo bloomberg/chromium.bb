@@ -10182,19 +10182,17 @@ I don't think this site should be blocked!
       </message>
 
       <!-- Killed Tab Strings -->
-      <!-- TODO(gspencer): These are temporary values until real
-           values are supplied by UI team. See http://crosbug.com/10711 -->
       <message name="IDS_KILLED_TAB_TITLE" desc="The title of the killed tab page that is shown when a tab is killed by the OS. This is intended to be a humorous exclamation of dismay.">
         He's dead, Jim!
       </message>
       <message name="IDS_KILLED_TAB_MESSAGE" desc="The message displayed on the killed tab page.">
-        Either Chrome ran out of memory or the process for the webpage was terminated for some other reason.  To continue, reload or go to another page.
+        The webpage was terminated unexpectedly. To continue, reload or go to another page.
       </message>
       <message name="IDS_KILLED_TAB_FEEDBACK_LINK" desc="The text for the feedback link on the killed tab page.">
         Send feedback to help improve Chrome
       </message>
       <message name="IDS_KILLED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with.">
-Chrome ran out of memory.
+Dead Jim feedback.
 '''
       </message>
 
