@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "content/shell/browser/webkit_test_controller.h"
+#include "content/shell/browser/blink_test_controller.h"
 #include "net/base/filename_util.h"
 
 #if defined(OS_WIN)
@@ -34,9 +34,9 @@ LayoutTestDownloadManagerDelegate::~LayoutTestDownloadManagerDelegate(){
 bool LayoutTestDownloadManagerDelegate::ShouldOpenDownload(
       DownloadItem* item,
       const DownloadOpenDelayedCallback& callback) {
-  if (WebKitTestController::Get()->IsMainWindow(item->GetWebContents()) &&
+  if (BlinkTestController::Get()->IsMainWindow(item->GetWebContents()) &&
       item->GetMimeType() == "text/html") {
-    WebKitTestController::Get()->OpenURL(
+    BlinkTestController::Get()->OpenURL(
         net::FilePathToFileURL(item->GetFullPath()));
   }
   return true;

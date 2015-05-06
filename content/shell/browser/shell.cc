@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/layout_test/layout_test_devtools_frontend.h"
 #include "content/shell/browser/layout_test/layout_test_javascript_dialog_manager.h"
 #include "content/shell/browser/notify_done_forwarder.h"
@@ -25,7 +26,6 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 
@@ -369,7 +369,7 @@ void Shell::RendererUnresponsive(WebContents* source) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRunLayoutTest))
     return;
-  WebKitTestController::Get()->RendererUnresponsive();
+  BlinkTestController::Get()->RendererUnresponsive();
 }
 
 void Shell::ActivateContents(WebContents* contents) {
@@ -384,7 +384,7 @@ void Shell::WorkerCrashed(WebContents* source) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRunLayoutTest))
     return;
-  WebKitTestController::Get()->WorkerCrashed();
+  BlinkTestController::Get()->WorkerCrashed();
 }
 
 bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {

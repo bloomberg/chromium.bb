@@ -18,8 +18,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/url_constants.h"
+#include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/shell.h"
-#include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "net/base/filename_util.h"
@@ -120,7 +120,7 @@ bool RunOneTest(const std::string& test_string,
   base::FilePath cwd;
   GURL test_url =
       GetURLForLayoutTest(test_string, &cwd, &enable_pixel_dumps, &pixel_hash);
-  if (!content::WebKitTestController::Get()->PrepareForLayoutTest(
+  if (!content::BlinkTestController::Get()->PrepareForLayoutTest(
           test_url, cwd, enable_pixel_dumps, pixel_hash)) {
     return false;
   }
@@ -136,7 +136,7 @@ bool RunOneTest(const std::string& test_string,
   main_runner->Run();
 #endif
 
-  if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
+  if (!content::BlinkTestController::Get()->ResetAfterLayoutTest())
     return false;
 
 #if defined(OS_ANDROID)
@@ -148,7 +148,7 @@ bool RunOneTest(const std::string& test_string,
 }
 
 int RunTests(const scoped_ptr<content::BrowserMainRunner>& main_runner) {
-  content::WebKitTestController test_controller;
+  content::BlinkTestController test_controller;
   {
     // We're outside of the message loop here, and this is a test.
     base::ThreadRestrictions::ScopedAllowIO allow_io;

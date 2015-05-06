@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/webkit_test_controller.h"
+#include "content/shell/browser/blink_test_controller.h"
 
 #include <iostream>
 
@@ -41,10 +41,10 @@ namespace content {
 const int kTestSVGWindowWidthDip = 480;
 const int kTestSVGWindowHeightDip = 360;
 
-// WebKitTestResultPrinter ----------------------------------------------------
+// BlinkTestResultPrinter ----------------------------------------------------
 
-WebKitTestResultPrinter::WebKitTestResultPrinter(
-    std::ostream* output, std::ostream* error)
+BlinkTestResultPrinter::BlinkTestResultPrinter(std::ostream* output,
+                                               std::ostream* error)
     : state_(DURING_TEST),
       capture_text_only_(false),
       encode_binary_data_(false),
@@ -52,10 +52,10 @@ WebKitTestResultPrinter::WebKitTestResultPrinter(
       error_(error) {
 }
 
-WebKitTestResultPrinter::~WebKitTestResultPrinter() {
+BlinkTestResultPrinter::~BlinkTestResultPrinter() {
 }
 
-void WebKitTestResultPrinter::PrintTextHeader() {
+void BlinkTestResultPrinter::PrintTextHeader() {
   if (state_ != DURING_TEST)
     return;
   if (!capture_text_only_)
@@ -63,13 +63,13 @@ void WebKitTestResultPrinter::PrintTextHeader() {
   state_ = IN_TEXT_BLOCK;
 }
 
-void WebKitTestResultPrinter::PrintTextBlock(const std::string& block) {
+void BlinkTestResultPrinter::PrintTextBlock(const std::string& block) {
   if (state_ != IN_TEXT_BLOCK)
     return;
   *output_ << block;
 }
 
-void WebKitTestResultPrinter::PrintTextFooter() {
+void BlinkTestResultPrinter::PrintTextFooter() {
   if (state_ != IN_TEXT_BLOCK)
     return;
   if (!capture_text_only_) {
@@ -79,7 +79,7 @@ void WebKitTestResultPrinter::PrintTextFooter() {
   state_ = IN_IMAGE_BLOCK;
 }
 
-void WebKitTestResultPrinter::PrintImageHeader(
+void BlinkTestResultPrinter::PrintImageHeader(
     const std::string& actual_hash,
     const std::string& expected_hash) {
   if (state_ != IN_IMAGE_BLOCK || capture_text_only_)
@@ -89,7 +89,7 @@ void WebKitTestResultPrinter::PrintImageHeader(
     *output_ << "\nExpectedHash: " << expected_hash << "\n";
 }
 
-void WebKitTestResultPrinter::PrintImageBlock(
+void BlinkTestResultPrinter::PrintImageBlock(
     const std::vector<unsigned char>& png_image) {
   if (state_ != IN_IMAGE_BLOCK || capture_text_only_)
     return;
@@ -104,7 +104,7 @@ void WebKitTestResultPrinter::PrintImageBlock(
       reinterpret_cast<const char*>(&png_image[0]), png_image.size());
 }
 
-void WebKitTestResultPrinter::PrintImageFooter() {
+void BlinkTestResultPrinter::PrintImageFooter() {
   if (state_ != IN_IMAGE_BLOCK)
     return;
   if (!capture_text_only_) {
@@ -114,14 +114,14 @@ void WebKitTestResultPrinter::PrintImageFooter() {
   state_ = AFTER_TEST;
 }
 
-void WebKitTestResultPrinter::PrintAudioHeader() {
+void BlinkTestResultPrinter::PrintAudioHeader() {
   DCHECK_EQ(state_, DURING_TEST);
   if (!capture_text_only_)
     *output_ << "Content-Type: audio/wav\n";
   state_ = IN_AUDIO_BLOCK;
 }
 
-void WebKitTestResultPrinter::PrintAudioBlock(
+void BlinkTestResultPrinter::PrintAudioBlock(
     const std::vector<unsigned char>& audio_data) {
   if (state_ != IN_AUDIO_BLOCK || capture_text_only_)
     return;
@@ -135,7 +135,7 @@ void WebKitTestResultPrinter::PrintAudioBlock(
       reinterpret_cast<const char*>(&audio_data[0]), audio_data.size());
 }
 
-void WebKitTestResultPrinter::PrintAudioFooter() {
+void BlinkTestResultPrinter::PrintAudioFooter() {
   if (state_ != IN_AUDIO_BLOCK)
     return;
   if (!capture_text_only_) {
@@ -145,17 +145,17 @@ void WebKitTestResultPrinter::PrintAudioFooter() {
   state_ = IN_IMAGE_BLOCK;
 }
 
-void WebKitTestResultPrinter::AddMessage(const std::string& message) {
+void BlinkTestResultPrinter::AddMessage(const std::string& message) {
   AddMessageRaw(message + "\n");
 }
 
-void WebKitTestResultPrinter::AddMessageRaw(const std::string& message) {
+void BlinkTestResultPrinter::AddMessageRaw(const std::string& message) {
   if (state_ != DURING_TEST)
     return;
   *output_ << message;
 }
 
-void WebKitTestResultPrinter::AddErrorMessage(const std::string& message) {
+void BlinkTestResultPrinter::AddErrorMessage(const std::string& message) {
   if (!capture_text_only_)
     *error_ << message << "\n";
   if (state_ != DURING_TEST)
@@ -166,7 +166,7 @@ void WebKitTestResultPrinter::AddErrorMessage(const std::string& message) {
   PrintImageFooter();
 }
 
-void WebKitTestResultPrinter::PrintEncodedBinaryData(
+void BlinkTestResultPrinter::PrintEncodedBinaryData(
     const std::vector<unsigned char>& data) {
   *output_ << "Content-Transfer-Encoding: base64\n";
 
@@ -179,7 +179,7 @@ void WebKitTestResultPrinter::PrintEncodedBinaryData(
   output_->write(data_base64.c_str(), data_base64.length());
 }
 
-void WebKitTestResultPrinter::CloseStderr() {
+void BlinkTestResultPrinter::CloseStderr() {
   if (state_ != AFTER_TEST)
     return;
   if (!capture_text_only_) {
@@ -188,18 +188,17 @@ void WebKitTestResultPrinter::CloseStderr() {
   }
 }
 
+// BlinkTestController -------------------------------------------------------
 
-// WebKitTestController -------------------------------------------------------
-
-WebKitTestController* WebKitTestController::instance_ = NULL;
+BlinkTestController* BlinkTestController::instance_ = NULL;
 
 // static
-WebKitTestController* WebKitTestController::Get() {
+BlinkTestController* BlinkTestController::Get() {
   DCHECK(instance_);
   return instance_;
 }
 
-WebKitTestController::WebKitTestController()
+BlinkTestController::BlinkTestController()
     : main_window_(NULL),
       test_phase_(BETWEEN_TESTS),
       is_leak_detection_enabled_(
@@ -217,7 +216,7 @@ WebKitTestController::WebKitTestController()
     crash_when_leak_found_ = switchValue == switches::kCrashOnFailure;
   }
 
-  printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
+  printer_.reset(new BlinkTestResultPrinter(&std::cout, &std::cerr));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEncodeBinary))
     printer_->set_encode_binary_data(true);
@@ -228,7 +227,7 @@ WebKitTestController::WebKitTestController()
   ResetAfterLayoutTest();
 }
 
-WebKitTestController::~WebKitTestController() {
+BlinkTestController::~BlinkTestController() {
   DCHECK(CalledOnValidThread());
   CHECK(instance_ == this);
   CHECK(test_phase_ == BETWEEN_TESTS);
@@ -237,7 +236,7 @@ WebKitTestController::~WebKitTestController() {
   instance_ = NULL;
 }
 
-bool WebKitTestController::PrepareForLayoutTest(
+bool BlinkTestController::PrepareForLayoutTest(
     const GURL& test_url,
     const base::FilePath& current_working_directory,
     bool enable_pixel_dumping,
@@ -294,7 +293,7 @@ bool WebKitTestController::PrepareForLayoutTest(
   return true;
 }
 
-bool WebKitTestController::ResetAfterLayoutTest() {
+bool BlinkTestController::ResetAfterLayoutTest() {
   DCHECK(CalledOnValidThread());
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
@@ -316,22 +315,22 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   return true;
 }
 
-void WebKitTestController::SetTempPath(const base::FilePath& temp_path) {
+void BlinkTestController::SetTempPath(const base::FilePath& temp_path) {
   temp_path_ = temp_path;
 }
 
-void WebKitTestController::RendererUnresponsive() {
+void BlinkTestController::RendererUnresponsive() {
   DCHECK(CalledOnValidThread());
   LOG(WARNING) << "renderer unresponsive";
 }
 
-void WebKitTestController::WorkerCrashed() {
+void BlinkTestController::WorkerCrashed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("#CRASHED - worker");
   DiscardMainWindow();
 }
 
-void WebKitTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
+void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   if (should_override_prefs_) {
     *prefs = prefs_;
   } else {
@@ -345,7 +344,7 @@ void WebKitTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   }
 }
 
-void WebKitTestController::OpenURL(const GURL& url) {
+void BlinkTestController::OpenURL(const GURL& url) {
   if (test_phase_ != DURING_TEST)
     return;
 
@@ -355,21 +354,21 @@ void WebKitTestController::OpenURL(const GURL& url) {
                          gfx::Size());
 }
 
-void WebKitTestController::TestFinishedInSecondaryWindow() {
+void BlinkTestController::TestFinishedInSecondaryWindow() {
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
   render_view_host->Send(
       new ShellViewMsg_NotifyDone(render_view_host->GetRoutingID()));
 }
 
-bool WebKitTestController::IsMainWindow(WebContents* web_contents) const {
+bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {
   return main_window_ && web_contents == main_window_->web_contents();
 }
 
-bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
+bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WebKitTestController, message)
+  IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_PrintMessage, OnPrintMessage)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_TextDump, OnTextDump)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ImageDump, OnImageDump)
@@ -396,18 +395,18 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void WebKitTestController::PluginCrashed(const base::FilePath& plugin_path,
-                                         base::ProcessId plugin_pid) {
+void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
+                                        base::ProcessId plugin_pid) {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage(
       base::StringPrintf("#CRASHED - plugin (pid %d)", plugin_pid));
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&WebKitTestController::DiscardMainWindow),
+      base::Bind(base::IgnoreResult(&BlinkTestController::DiscardMainWindow),
                  base::Unretained(this)));
 }
 
-void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
+void BlinkTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   DCHECK(CalledOnValidThread());
   // Might be kNullProcessHandle, in which case we will receive a notification
   // later when the RenderProcessHost was created.
@@ -419,7 +418,7 @@ void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   SendTestConfiguration();
 }
 
-void WebKitTestController::RenderProcessGone(base::TerminationStatus status) {
+void BlinkTestController::RenderProcessGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
   if (current_pid_ != base::kNullProcessId) {
     printer_->AddErrorMessage(std::string("#CRASHED - renderer (pid ") +
@@ -430,7 +429,7 @@ void WebKitTestController::RenderProcessGone(base::TerminationStatus status) {
   DiscardMainWindow();
 }
 
-void WebKitTestController::DevToolsProcessCrashed() {
+void BlinkTestController::DevToolsProcessCrashed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("#CRASHED - devtools");
   if (devtools_frontend_)
@@ -438,15 +437,15 @@ void WebKitTestController::DevToolsProcessCrashed() {
   devtools_frontend_ = NULL;
 }
 
-void WebKitTestController::WebContentsDestroyed() {
+void BlinkTestController::WebContentsDestroyed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("FAIL: main window was destroyed");
   DiscardMainWindow();
 }
 
-void WebKitTestController::Observe(int type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
+void BlinkTestController::Observe(int type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
   DCHECK(CalledOnValidThread());
   switch (type) {
     case NOTIFICATION_RENDERER_PROCESS_CREATED: {
@@ -468,14 +467,14 @@ void WebKitTestController::Observe(int type,
   }
 }
 
-void WebKitTestController::OnGpuProcessCrashed(
+void BlinkTestController::OnGpuProcessCrashed(
     base::TerminationStatus exit_code) {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("#CRASHED - gpu");
   DiscardMainWindow();
 }
 
-void WebKitTestController::DiscardMainWindow() {
+void BlinkTestController::DiscardMainWindow() {
   // If we're running a test, we need to close all windows and exit the message
   // loop. Otherwise, we're already outside of the message loop, and we just
   // discard the main window.
@@ -492,7 +491,7 @@ void WebKitTestController::DiscardMainWindow() {
   current_pid_ = base::kNullProcessId;
 }
 
-void WebKitTestController::SendTestConfiguration() {
+void BlinkTestController::SendTestConfiguration() {
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
   ShellTestConfiguration params;
@@ -509,7 +508,7 @@ void WebKitTestController::SendTestConfiguration() {
       render_view_host->GetRoutingID(), params));
 }
 
-void WebKitTestController::OnTestFinished() {
+void BlinkTestController::OnTestFinished() {
   test_phase_ = CLEAN_UP;
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
@@ -518,14 +517,13 @@ void WebKitTestController::OnTestFinished() {
   main_window_->web_contents()->ExitFullscreen();
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&WebKitTestController::Send),
+      base::Bind(base::IgnoreResult(&BlinkTestController::Send),
                  base::Unretained(this),
                  new ShellViewMsg_Reset(render_view_host->GetRoutingID())));
 }
 
-void WebKitTestController::OnImageDump(
-    const std::string& actual_pixel_hash,
-    const SkBitmap& image) {
+void BlinkTestController::OnImageDump(const std::string& actual_pixel_hash,
+                                      const SkBitmap& image) {
   SkAutoLockPixels image_lock(image);
 
   printer_->PrintImageHeader(actual_pixel_hash, expected_pixel_hash_);
@@ -556,28 +554,28 @@ void WebKitTestController::OnImageDump(
   printer_->PrintImageFooter();
 }
 
-void WebKitTestController::OnAudioDump(const std::vector<unsigned char>& dump) {
+void BlinkTestController::OnAudioDump(const std::vector<unsigned char>& dump) {
   printer_->PrintAudioHeader();
   printer_->PrintAudioBlock(dump);
   printer_->PrintAudioFooter();
 }
 
-void WebKitTestController::OnTextDump(const std::string& dump) {
+void BlinkTestController::OnTextDump(const std::string& dump) {
   printer_->PrintTextHeader();
   printer_->PrintTextBlock(dump);
   printer_->PrintTextFooter();
 }
 
-void WebKitTestController::OnPrintMessage(const std::string& message) {
+void BlinkTestController::OnPrintMessage(const std::string& message) {
   printer_->AddMessageRaw(message);
 }
 
-void WebKitTestController::OnOverridePreferences(const WebPreferences& prefs) {
+void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
 }
 
-void WebKitTestController::OnClearDevToolsLocalStorage() {
+void BlinkTestController::OnClearDevToolsLocalStorage() {
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   StoragePartition* storage_partition =
@@ -587,8 +585,8 @@ void WebKitTestController::OnClearDevToolsLocalStorage() {
           .GetOrigin());
 }
 
-void WebKitTestController::OnShowDevTools(const std::string& settings,
-                                          const std::string& frontend_url) {
+void BlinkTestController::OnShowDevTools(const std::string& settings,
+                                         const std::string& frontend_url) {
   if (!devtools_frontend_) {
     devtools_frontend_ = LayoutTestDevToolsFrontend::Show(
         main_window_->web_contents(), settings, frontend_url);
@@ -599,25 +597,25 @@ void WebKitTestController::OnShowDevTools(const std::string& settings,
   devtools_frontend_->Focus();
 }
 
-void WebKitTestController::OnCloseDevTools() {
+void BlinkTestController::OnCloseDevTools() {
   if (devtools_frontend_)
     devtools_frontend_->DisconnectFromTarget();
 }
 
-void WebKitTestController::OnGoToOffset(int offset) {
+void BlinkTestController::OnGoToOffset(int offset) {
   main_window_->GoBackOrForward(offset);
 }
 
-void WebKitTestController::OnReload() {
+void BlinkTestController::OnReload() {
   main_window_->Reload();
 }
 
-void WebKitTestController::OnLoadURLForFrame(const GURL& url,
-                                             const std::string& frame_name) {
+void BlinkTestController::OnLoadURLForFrame(const GURL& url,
+                                            const std::string& frame_name) {
   main_window_->LoadURLForFrame(url, frame_name);
 }
 
-void WebKitTestController::OnCaptureSessionHistory() {
+void BlinkTestController::OnCaptureSessionHistory() {
   std::vector<int> routing_ids;
   std::vector<std::vector<PageState> > session_histories;
   std::vector<unsigned> current_entry_indexes;
@@ -659,7 +657,7 @@ void WebKitTestController::OnCaptureSessionHistory() {
                                        current_entry_indexes));
 }
 
-void WebKitTestController::OnCloseRemainingWindows() {
+void BlinkTestController::OnCloseRemainingWindows() {
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(Shell::windows());
   Shell* devtools_shell = devtools_frontend_ ?
@@ -671,7 +669,7 @@ void WebKitTestController::OnCloseRemainingWindows() {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
-void WebKitTestController::OnResetDone() {
+void BlinkTestController::OnResetDone() {
   if (is_leak_detection_enabled_) {
     if (main_window_ && main_window_->web_contents()) {
       RenderViewHost* render_view_host =
@@ -686,7 +684,7 @@ void WebKitTestController::OnResetDone() {
                                          base::MessageLoop::QuitClosure());
 }
 
-void WebKitTestController::OnLeakDetectionDone(
+void BlinkTestController::OnLeakDetectionDone(
     const LeakDetectionResult& result) {
   if (!result.leaked) {
     base::MessageLoop::current()->PostTask(FROM_HERE,

@@ -4,7 +4,7 @@
 
 #include "content/shell/browser/notify_done_forwarder.h"
 
-#include "content/shell/browser/webkit_test_controller.h"
+#include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/common/shell_messages.h"
 
 namespace content {
@@ -27,7 +27,7 @@ bool NotifyDoneForwarder::OnMessageReceived(const IPC::Message& message) {
 }
 
 void NotifyDoneForwarder::OnTestFinishedInSecondaryWindow() {
-  WebKitTestController::Get()->TestFinishedInSecondaryWindow();
+  BlinkTestController::Get()->TestFinishedInSecondaryWindow();
 }
 
 }  // namespace content

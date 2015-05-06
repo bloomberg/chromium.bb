@@ -18,6 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "content/shell/browser/blink_test_controller.h"
 #include "content/shell/browser/ipc_echo_message_filter.h"
 #include "content/shell/browser/layout_test/layout_test_browser_main_parts.h"
 #include "content/shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h"
@@ -30,7 +31,6 @@
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
-#include "content/shell/browser/webkit_test_controller.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
@@ -267,7 +267,7 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRunLayoutTest))
     return;
-  WebKitTestController::Get()->OverrideWebkitPrefs(prefs);
+  BlinkTestController::Get()->OverrideWebkitPrefs(prefs);
 }
 
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {

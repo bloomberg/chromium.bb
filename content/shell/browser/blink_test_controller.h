@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_BROWSER_WEBKIT_TEST_CONTROLLER_H_
-#define CONTENT_SHELL_BROWSER_WEBKIT_TEST_CONTROLLER_H_
+#ifndef CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
+#define CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
 
 #include <ostream>
 #include <string>
@@ -42,10 +42,10 @@ class ScopedAllowWaitForAndroidLayoutTests {
 };
 #endif
 
-class WebKitTestResultPrinter {
+class BlinkTestResultPrinter {
  public:
-  WebKitTestResultPrinter(std::ostream* output, std::ostream* error);
-  ~WebKitTestResultPrinter();
+  BlinkTestResultPrinter(std::ostream* output, std::ostream* error);
+  ~BlinkTestResultPrinter();
 
   void reset() {
     state_ = DURING_TEST;
@@ -96,18 +96,18 @@ class WebKitTestResultPrinter {
   std::ostream* output_;
   std::ostream* error_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebKitTestResultPrinter);
+  DISALLOW_COPY_AND_ASSIGN(BlinkTestResultPrinter);
 };
 
-class WebKitTestController : public base::NonThreadSafe,
-                             public WebContentsObserver,
-                             public NotificationObserver,
-                             public GpuDataManagerObserver {
+class BlinkTestController : public base::NonThreadSafe,
+                            public WebContentsObserver,
+                            public NotificationObserver,
+                            public GpuDataManagerObserver {
  public:
-  static WebKitTestController* Get();
+  static BlinkTestController* Get();
 
-  WebKitTestController();
-  ~WebKitTestController() override;
+  BlinkTestController();
+  ~BlinkTestController() override;
 
   // True if the controller is ready for testing.
   bool PrepareForLayoutTest(const GURL& test_url,
@@ -125,10 +125,8 @@ class WebKitTestController : public base::NonThreadSafe,
   void TestFinishedInSecondaryWindow();
   bool IsMainWindow(WebContents* web_contents) const;
 
-  WebKitTestResultPrinter* printer() { return printer_.get(); }
-  void set_printer(WebKitTestResultPrinter* printer) {
-    printer_.reset(printer);
-  }
+  BlinkTestResultPrinter* printer() { return printer_.get(); }
+  void set_printer(BlinkTestResultPrinter* printer) { printer_.reset(printer); }
 
   void DevToolsProcessCrashed();
 
@@ -155,7 +153,7 @@ class WebKitTestController : public base::NonThreadSafe,
     CLEAN_UP
   };
 
-  static WebKitTestController* instance_;
+  static BlinkTestController* instance_;
 
   void DiscardMainWindow();
   void SendTestConfiguration();
@@ -179,7 +177,7 @@ class WebKitTestController : public base::NonThreadSafe,
   void OnResetDone();
   void OnLeakDetectionDone(const content::LeakDetectionResult& result);
 
-  scoped_ptr<WebKitTestResultPrinter> printer_;
+  scoped_ptr<BlinkTestResultPrinter> printer_;
 
   base::FilePath current_working_directory_;
   base::FilePath temp_path_;
@@ -223,9 +221,9 @@ class WebKitTestController : public base::NonThreadSafe,
   ScopedAllowWaitForAndroidLayoutTests reduced_restrictions_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(WebKitTestController);
+  DISALLOW_COPY_AND_ASSIGN(BlinkTestController);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_BROWSER_WEBKIT_TEST_CONTROLLER_H_
+#endif  // CONTENT_SHELL_BROWSER_BLINK_TEST_CONTROLLER_H_
