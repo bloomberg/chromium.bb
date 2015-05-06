@@ -11,8 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -28,12 +26,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.content.browser.DownloadController;
 import org.chromium.content.browser.DownloadInfo;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,7 +47,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private static final String DOWNLOAD_NOTIFICATION_IDS = "DownloadNotificationIds";
     private static final String DOWNLOAD_DIRECTORY = "Download";
     protected static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
-    private static final String PDF_VIEWER = "com.google.android.apps.docs";
     private static final long UPDATE_DELAY_MILLIS = 1000;
 
     private static DownloadManagerService sDownloadManagerService;
@@ -740,41 +737,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @return true if an Intent is launched, or false otherwise.
      */
     public static boolean openIntent(Context context, Intent intent, boolean allowSelfOpen) {
-        boolean activityResolved = false;
-        ResolveInfo info = context.getPackageManager().resolveActivity(intent,
-                PackageManager.MATCH_DEFAULT_ONLY);
-        if (info != null) {
-            final String packageName = context.getPackageName();
-            if (info.match != 0) {
-                if (allowSelfOpen || !packageName.equals(info.activityInfo.packageName)) {
-                    activityResolved = true;
-                }
-            } else {
-                // If we resolved to ResolverActivity, we should check if Chrome can be one of
-                // options. If so, we don't want to show an intent picker in case |allowSelfOpen|
-                // is false, unless plaform pdf viewer is one of the option.
-                List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
-                        intent, PackageManager.MATCH_DEFAULT_ONLY);
-                if (handlers != null && !handlers.isEmpty()) {
-                    activityResolved = true;
-                    boolean canSelfOpen = false;
-                    boolean hasPdfViewer = false;
-                    for (ResolveInfo resolveInfo : handlers) {
-                        String pName = resolveInfo.activityInfo.packageName;
-                        if (packageName.equals(pName)) {
-                            canSelfOpen = true;
-                        } else if (PDF_VIEWER.equals(pName)) {
-                            intent.setClassName(pName, resolveInfo.activityInfo.name);
-                            hasPdfViewer = true;
-                            break;
-                        }
-                    }
-                    if ((canSelfOpen && !allowSelfOpen) && !hasPdfViewer) {
-                        activityResolved = false;
-                    }
-                }
-            }
-        }
+        boolean activityResolved = ExternalNavigationDelegateImpl.resolveIntent(
+                context, intent, allowSelfOpen);
         if (activityResolved) {
             try {
                 context.startActivity(intent);
