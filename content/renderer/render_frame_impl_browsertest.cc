@@ -53,7 +53,8 @@ class RenderFrameImplTest : public RenderViewTest {
         ->OnSwapOut(kFrameProxyRouteId, false, FrameReplicationState());
 
     RenderFrameImpl::CreateFrame(kSubframeRouteId, kFrameProxyRouteId,
-                                 MSG_ROUTING_NONE, FrameReplicationState(),
+                                 MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                                 FrameReplicationState(),
                                  compositor_deps_.get(), widget_params);
 
     frame_ = RenderFrameImpl::FromRoutingID(kSubframeRouteId);

@@ -35,6 +35,32 @@
 
 namespace content {
 
+namespace {
+
+// Helper function to send a postMessage and wait for a reply message.  The
+// |post_message_script| is executed on the |sender_ftn| frame, and the sender
+// frame is expected to post |reply_status| from the DOMAutomationController
+// when it receives a reply.
+void PostMessageAndWaitForReply(FrameTreeNode* sender_ftn,
+                                const std::string& post_message_script,
+                                const std::string& reply_status) {
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      sender_ftn->current_frame_host(),
+      "window.domAutomationController.send(" + post_message_script + ");",
+      &success));
+  EXPECT_TRUE(success);
+
+  content::DOMMessageQueue msg_queue;
+  std::string status;
+  while (msg_queue.WaitForMessage(&status)) {
+    if (status == reply_status)
+      break;
+  }
+}
+
+}  // anonymous namespace
+
 class RedirectNotificationObserver : public NotificationObserver {
  public:
   // Register to listen for notifications of the given type from either a
@@ -839,6 +865,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate the second subframe to b.com to recreate the b.com process.
   GURL b_url = embedded_test_server()->GetURL("b.com", "/post_message.html");
   NavigateFrameToURL(root->child_at(1), b_url);
+  // TODO(alexmos): This can be removed once TestFrameNavigationObserver is
+  // fixed to use DidFinishLoad.
   EXPECT_TRUE(
       WaitForRenderFrameReady(root->child_at(1)->current_frame_host()));
   EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -855,23 +883,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       DepictFrameTree(root));
 
   // Check that third subframe's proxy is available in the b.com process by
-  // sending it a postMessage from second subframe.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      root->child_at(1)->current_frame_host(),
-      "window.domAutomationController.send("
-      "    postToSibling('subframe-msg','frame3'));",
-      &success));
-  EXPECT_TRUE(success);
-
-  // Wait to receive a reply from third subframe.  Second subframe sends
-  // "done-frame2" from the DOMAutomationController when the reply arrives.
-  content::DOMMessageQueue msg_queue;
-  std::string status;
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"done-frame2\"")
-      break;
-  }
+  // sending it a postMessage from second subframe, and waiting for a reply.
+  PostMessageAndWaitForReply(root->child_at(1),
+                             "postToSibling('subframe-msg','frame3')",
+                             "\"done-frame2\"");
 }
 
 // In A-embed-B-embed-C scenario, verify that killing process B clears proxies
@@ -2193,47 +2208,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
 
   // Send a message from first, same-site frame to second, cross-site frame.
   // Expect the second frame to reply back to the first frame.
-  //
-  // TODO(alexmos): Also try sending from second to first frame.  Currently,
-  // this fails due to https://crbug.com/473518, which prevents
-  // parent.frames[x] from working when "parent" is a remote frame.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      root->child_at(0)->current_frame_host(),
-      "window.domAutomationController.send("
-      "    postToSibling('subframe-msg','subframe2'));",
-      &success));
-  EXPECT_TRUE(success);
-
-  // Wait for first frame to receive a reply from the second frame. It will
-  // send "done-subframe1" from the DOMAutomationController when the reply
-  // arrives.
-  content::DOMMessageQueue msg_queue;
-  std::string status;
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"done-subframe1\"")
-      break;
-  }
+  PostMessageAndWaitForReply(root->child_at(0),
+                             "postToSibling('subframe-msg','subframe2')",
+                             "\"done-subframe1\"");
 
   // Send a postMessage from second, cross-site frame to its parent.  Expect
   // parent to send a reply to the frame.
   base::string16 expected_title(base::ASCIIToUTF16("subframe-msg"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      root->child_at(1)->current_frame_host(),
-      "window.domAutomationController.send(postToParent('subframe-msg'));",
-      &success));
-  EXPECT_TRUE(success);
+  PostMessageAndWaitForReply(root->child_at(1), "postToParent('subframe-msg')",
+                             "\"done-subframe2\"");
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-
-  // Wait for second frame to receive a reply from the parent. The frame will
-  // return "done-subframe2" from the DOMAutomationController when the reply
-  // arrives.
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"done-subframe2\"")
-      break;
-  }
 
   // Verify the total number of received messages for each subframe.  First
   // frame should have one message (reply from second frame), and second frame
@@ -2250,6 +2235,104 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
       "window.domAutomationController.send(window.receivedMessages);",
       &subframe2_received_messages));
   EXPECT_EQ(2, subframe2_received_messages);
+}
+
+// Check that parent.frames[num] references correct sibling frames when the
+// parent is remote.  See https://crbug.com/478792.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
+  // Start on a page with three same-site subframes.
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(3U, root->child_count());
+  FrameTreeNode* child0 = root->child_at(0);
+  FrameTreeNode* child1 = root->child_at(1);
+  FrameTreeNode* child2 = root->child_at(2);
+
+  // Send each of the frames to a different site.  Each new renderer will first
+  // create proxies for the parent and two sibling subframes and then create
+  // and insert the new RenderFrame into the frame tree.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/post_message.html"));
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/post_message.html"));
+  GURL d_url(embedded_test_server()->GetURL("d.com", "/post_message.html"));
+  NavigateFrameToURL(child0, b_url);
+  // TODO(alexmos): The calls to WaitForRenderFrameReady can be removed once
+  // TestFrameNavigationObserver is fixed to use DidFinishLoad.
+  EXPECT_TRUE(WaitForRenderFrameReady(child0->current_frame_host()));
+  NavigateFrameToURL(child1, c_url);
+  EXPECT_TRUE(WaitForRenderFrameReady(child1->current_frame_host()));
+  NavigateFrameToURL(child2, d_url);
+  EXPECT_TRUE(WaitForRenderFrameReady(child2->current_frame_host()));
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C D\n"
+      "   |--Site B ------- proxies for A C D\n"
+      "   |--Site C ------- proxies for A B D\n"
+      "   +--Site D ------- proxies for A B C\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/\n"
+      "      D = http://d.com/",
+      DepictFrameTree(root));
+
+  // Check that each subframe sees itself at correct index in parent.frames.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child0->current_frame_host(),
+      "window.domAutomationController.send(window === parent.frames[0]);",
+      &success));
+  EXPECT_TRUE(success);
+
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child1->current_frame_host(),
+      "window.domAutomationController.send(window === parent.frames[1]);",
+      &success));
+  EXPECT_TRUE(success);
+
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      child2->current_frame_host(),
+      "window.domAutomationController.send(window === parent.frames[2]);",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Send a postMessage from B to parent.frames[1], which should go to C, and
+  // wait for reply.
+  PostMessageAndWaitForReply(child0, "postToSibling('subframe-msg', 1)",
+                             "\"done-1-1-name\"");
+
+  // Send a postMessage from C to parent.frames[2], which should go to D, and
+  // wait for reply.
+  PostMessageAndWaitForReply(child1, "postToSibling('subframe-msg', 2)",
+                             "\"done-1-2-name\"");
+
+  // Verify the total number of received messages for each subframe.
+  int child0_received_messages = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child0->current_frame_host(),
+      "window.domAutomationController.send(window.receivedMessages);",
+      &child0_received_messages));
+  EXPECT_EQ(1, child0_received_messages);
+
+  int child1_received_messages = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child1->current_frame_host(),
+      "window.domAutomationController.send(window.receivedMessages);",
+      &child1_received_messages));
+  EXPECT_EQ(2, child1_received_messages);
+
+  int child2_received_messages = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child2->current_frame_host(),
+      "window.domAutomationController.send(window.receivedMessages);",
+      &child2_received_messages));
+  EXPECT_EQ(1, child2_received_messages);
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {

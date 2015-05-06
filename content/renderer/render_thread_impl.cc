@@ -1563,15 +1563,12 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void RenderThreadImpl::OnCreateNewFrame(
-    int routing_id,
-    int parent_routing_id,
-    int proxy_routing_id,
-    const FrameReplicationState& replicated_state,
-    FrameMsg_NewFrame_WidgetParams params) {
+void RenderThreadImpl::OnCreateNewFrame(FrameMsg_NewFrame_Params params) {
   CompositorDependencies* compositor_deps = this;
-  RenderFrameImpl::CreateFrame(routing_id, parent_routing_id, proxy_routing_id,
-                               replicated_state, compositor_deps, params);
+  RenderFrameImpl::CreateFrame(
+      params.routing_id, params.parent_routing_id,
+      params.previous_sibling_routing_id, params.proxy_routing_id,
+      params.replication_state, compositor_deps, params.widget_params);
 }
 
 void RenderThreadImpl::OnCreateNewFrameProxy(

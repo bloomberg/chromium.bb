@@ -565,6 +565,7 @@ RenderFrameImpl* RenderFrameImpl::FromRoutingID(int32 routing_id) {
 void RenderFrameImpl::CreateFrame(
     int routing_id,
     int parent_routing_id,
+    int previous_sibling_routing_id,
     int proxy_routing_id,
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
@@ -584,12 +585,19 @@ void RenderFrameImpl::CreateFrame(
     CHECK(parent_proxy);
     blink::WebRemoteFrame* parent_web_frame = parent_proxy->web_frame();
 
+    blink::WebFrame* previous_sibling_web_frame = nullptr;
+    RenderFrameProxy* previous_sibling_proxy =
+        RenderFrameProxy::FromRoutingID(previous_sibling_routing_id);
+    if (previous_sibling_proxy)
+      previous_sibling_web_frame = previous_sibling_proxy->web_frame();
+
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame =
         RenderFrameImpl::Create(parent_proxy->render_view(), routing_id);
     web_frame = parent_web_frame->createLocalChild(
         WebString::fromUTF8(replicated_state.name),
-        ContentToWebSandboxFlags(replicated_state.sandbox_flags), render_frame);
+        ContentToWebSandboxFlags(replicated_state.sandbox_flags), render_frame,
+        previous_sibling_web_frame);
   } else {
     RenderFrameProxy* proxy =
         RenderFrameProxy::FromRoutingID(proxy_routing_id);
