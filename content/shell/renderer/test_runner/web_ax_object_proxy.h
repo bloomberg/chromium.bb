@@ -136,6 +136,8 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   void ScrollToGlobalPoint(int x, int y);
   int WordStart(int character_index);
   int WordEnd(int character_index);
+  v8::Local<v8::Object> NextOnLine();
+  v8::Local<v8::Object> PreviousOnLine();
 
   // DEPRECATED accessible name and description accessors
   std::string DeprecatedTitle();

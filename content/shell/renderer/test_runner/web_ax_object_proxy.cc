@@ -565,6 +565,8 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("scrollToGlobalPoint", &WebAXObjectProxy::ScrollToGlobalPoint)
       .SetMethod("wordStart", &WebAXObjectProxy::WordStart)
       .SetMethod("wordEnd", &WebAXObjectProxy::WordEnd)
+      .SetMethod("nextOnLine", &WebAXObjectProxy::NextOnLine)
+      .SetMethod("previousOnLine", &WebAXObjectProxy::PreviousOnLine)
       // TODO(hajimehoshi): This is for backward compatibility. Remove them.
       .SetMethod("addNotificationListener",
                  &WebAXObjectProxy::SetNotificationListener)
@@ -1171,6 +1173,24 @@ int WebAXObjectProxy::WordEnd(int character_index) {
   GetBoundariesForOneWord(accessibility_object_, character_index,
                           word_start, word_end);
   return word_end;
+}
+
+v8::Local<v8::Object> WebAXObjectProxy::NextOnLine() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebAXObject obj = accessibility_object_.nextOnLine();
+  if (obj.isNull())
+    return v8::Local<v8::Object>();
+
+  return factory_->GetOrCreate(obj);
+}
+
+v8::Local<v8::Object> WebAXObjectProxy::PreviousOnLine() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebAXObject obj = accessibility_object_.previousOnLine();
+  if (obj.isNull())
+    return v8::Local<v8::Object>();
+
+  return factory_->GetOrCreate(obj);
 }
 
 std::string WebAXObjectProxy::Name() {
