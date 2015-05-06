@@ -7932,7 +7932,8 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
                       stride,
                       stride != 0 ? stride : component_size * size,
                       offset);
-  if (type != GL_FIXED) {
+  // We support GL_FIXED natively on EGL/GLES2 implementations
+  if (type != GL_FIXED || feature_info_->gl_version_info().is_es) {
     glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
   }
   return error::kNoError;

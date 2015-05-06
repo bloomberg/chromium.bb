@@ -83,7 +83,6 @@
 408251 WIN : GL2FixedTests_depth_buffer_clear_input_run = FAIL
 408251 WIN : GL2FixedTests_stencil_plane_clear_input_run = FAIL
 408251 WIN : GL2FixedTests_user_clip_planes_input_run = FAIL
-408251 WIN : GL2Tests_fixed_data_type_input_run = FAIL
 
 ////////////////////////////////////////////////////////////////////////////////
 //
