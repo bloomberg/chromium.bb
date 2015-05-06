@@ -66,10 +66,6 @@ class Task {
   // view host that this task represents (if this task represents a renderer).
   virtual base::string16 GetProfileName() const;
 
-  // If this task represents a renderer process, this would the return the
-  // routing ID of the RenderViewHost, otherwise it will return 0.
-  virtual int GetRoutingID() const;
-
   // Getting the Sqlite used memory (in bytes). Not all tasks reports Sqlite
   // memory, in this case a default invalid value of -1 will be returned.
   // Check for whether the task reports it or not first.

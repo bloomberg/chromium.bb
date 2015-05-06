@@ -72,7 +72,6 @@ TEST_F(BrowserProcessTaskProviderTest, TestProvidedTask) {
             provided_task_->title());
   EXPECT_EQ(Task::BROWSER, provided_task_->GetType());
   EXPECT_EQ(0, provided_task_->GetChildProcessUniqueID());
-  EXPECT_EQ(0, provided_task_->GetRoutingID());
   const int received_bytes = 1024;
   EXPECT_FALSE(provided_task_->ReportsNetworkUsage());
   EXPECT_EQ(-1, provided_task_->network_usage());

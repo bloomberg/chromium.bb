@@ -128,7 +128,6 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   EXPECT_EQ(Task::PLUGIN, task->GetType());
   EXPECT_EQ(unique_id, task->GetChildProcessUniqueID());
   EXPECT_EQ(base::string16(), task->GetProfileName());
-  EXPECT_EQ(0, task->GetRoutingID());
   EXPECT_FALSE(task->ReportsSqliteMemory());
   EXPECT_FALSE(task->ReportsV8Memory());
   EXPECT_FALSE(task->ReportsWebCacheStats());

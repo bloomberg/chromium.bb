@@ -54,10 +54,6 @@ base::string16 Task::GetProfileName() const {
   return base::string16();
 }
 
-int Task::GetRoutingID() const {
-  return 0;
-}
-
 bool Task::ReportsSqliteMemory() const {
   return GetSqliteMemoryUsed() != -1;
 }
