@@ -610,6 +610,9 @@
           ['shared_resources == 1', {
             'process_resources_options+': ['--shared-resources']
           }],
+          ['R_package != ""', {
+            'process_resources_options+': ['--custom-package', '<(R_package)']
+          }],
         ],
       },
       'inputs': [
