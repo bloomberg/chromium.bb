@@ -906,8 +906,6 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
             orderedChildren.append(child);
             continue;
         }
-        if (!orderedChildren.isEmpty() && isMultiline() && child->styleRef().pageBreakBefore() == PBALWAYS)
-            break;
 
         LayoutUnit childMainAxisExtent = preferredMainAxisContentExtentForChild(*child, relayoutChildren);
         LayoutUnit childMainAxisMarginBorderPadding = mainAxisBorderAndPaddingExtentForChild(*child)
@@ -925,11 +923,6 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
         totalFlexGrow += child->style()->flexGrow();
         totalWeightedFlexShrink += child->style()->flexShrink() * childMainAxisExtent;
         sumHypotheticalMainSize += childHypotheticalMainSize;
-
-        if (isMultiline() && child->styleRef().pageBreakAfter() == PBALWAYS) {
-            m_orderIterator.next();
-            break;
-        }
     }
     return true;
 }
