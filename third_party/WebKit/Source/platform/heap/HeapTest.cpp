@@ -244,7 +244,6 @@ public:
         : Visitor(Visitor::ThreadLocalMarking)
         , m_count(0)
     {
-        StackFrameDepth::configureStackLimit();
     }
 
     virtual void mark(const void* object, TraceCallback) override
@@ -282,6 +281,7 @@ public:
     void reset() { m_count = 0; }
 
 private:
+    StackFrameDepthScope m_scope;
     size_t m_count;
 };
 
@@ -5145,7 +5145,9 @@ public:
 
 private:
 
-    static HeapHashSet<WeakMember<IntWrapper>>* allocateCollection()
+    using WeakCollectionType = HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>>;
+
+    static WeakCollectionType* allocateCollection()
     {
         // Create a weak collection that is kept alive by a persistent
         // and keep the contents alive with a persistents as
@@ -5156,13 +5158,13 @@ private:
         Persistent<IntWrapper> wrapper4 = IntWrapper::create(32);
         Persistent<IntWrapper> wrapper5 = IntWrapper::create(32);
         Persistent<IntWrapper> wrapper6 = IntWrapper::create(32);
-        Persistent<HeapHashSet<WeakMember<IntWrapper>>> weakCollection = new HeapHashSet<WeakMember<IntWrapper>>;
-        weakCollection->add(wrapper1);
-        weakCollection->add(wrapper2);
-        weakCollection->add(wrapper3);
-        weakCollection->add(wrapper4);
-        weakCollection->add(wrapper5);
-        weakCollection->add(wrapper6);
+        Persistent<WeakCollectionType> weakCollection = new WeakCollectionType;
+        weakCollection->add(wrapper1, wrapper1);
+        weakCollection->add(wrapper2, wrapper2);
+        weakCollection->add(wrapper3, wrapper3);
+        weakCollection->add(wrapper4, wrapper4);
+        weakCollection->add(wrapper5, wrapper5);
+        weakCollection->add(wrapper6, wrapper6);
 
         // Signal the main thread that the worker is done with its allocation.
         wakeMainThread();
@@ -5188,15 +5190,15 @@ private:
         ThreadState::attach();
 
         {
-            Persistent<HeapHashSet<WeakMember<IntWrapper>>> collection = allocateCollection();
+            Persistent<WeakCollectionType> collection = allocateCollection();
             {
                 // Prevent weak processing with an iterator and GC.
-                HeapHashSet<WeakMember<IntWrapper>>::iterator it = collection->begin();
+                WeakCollectionType::iterator it = collection->begin();
                 Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
 
                 // The backing should be strongified because of the iterator.
                 EXPECT_EQ(6u, collection->size());
-                EXPECT_EQ(32, (*it)->value());
+                EXPECT_EQ(32, it->value->value());
             }
 
             // Disregarding the iterator but keeping the collection alive

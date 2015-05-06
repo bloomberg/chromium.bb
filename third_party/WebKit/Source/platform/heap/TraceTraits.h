@@ -56,7 +56,7 @@ public:
             // enabled so as to avoid testing against a much lower & too low,
             // stack depth threshold.
 #if !defined(ADDRESS_SANITIZER)
-            ASSERT(StackFrameDepth::isSafeToRecurse());
+            ASSERT(!StackFrameDepth::isEnabled() || StackFrameDepth::isSafeToRecurse());
 #endif
             if (LIKELY(StackFrameDepth::isSafeToRecurse())) {
                 if (visitor->ensureMarked(t)) {

@@ -18,7 +18,7 @@ class PLATFORM_EXPORT StackFrameDepth final {
 public:
     inline static bool isSafeToRecurse()
     {
-        ASSERT(s_stackFrameLimit);
+        ASSERT(s_stackFrameLimit || !s_isEnabled);
 
         // Asssume that the stack grows towards lower addresses, which
         // all the ABIs currently supported do.
@@ -27,7 +27,20 @@ public:
         // (HeapTest.StackGrowthDirection.)
         return currentStackFrame() > s_stackFrameLimit;
     }
-    static void configureStackLimit();
+
+    static void enableStackLimit();
+    static void disableStackLimit()
+    {
+        s_stackFrameLimit = 0;
+#if ENABLE(ASSERT)
+        s_isEnabled = false;
+#endif
+    }
+
+#if ENABLE(ASSERT)
+    inline static bool isEnabled() { return s_isEnabled; }
+#endif
+
     static size_t getUnderestimatedStackSize();
     static void* getStackStart();
 
@@ -58,6 +71,23 @@ private:
     static const int kSafeStackFrameSize = 32 * 1024;
 
     static uintptr_t s_stackFrameLimit;
+#if ENABLE(ASSERT)
+    static bool s_isEnabled;
+#endif
+};
+
+class StackFrameDepthScope {
+public:
+    StackFrameDepthScope()
+    {
+        StackFrameDepth::enableStackLimit();
+        ASSERT(StackFrameDepth::isSafeToRecurse());
+    }
+
+    ~StackFrameDepthScope()
+    {
+        StackFrameDepth::disableStackLimit();
+    }
 };
 
 } // namespace blink

@@ -20,6 +20,9 @@ namespace blink {
 static const char* s_avoidOptimization = nullptr;
 
 uintptr_t StackFrameDepth::s_stackFrameLimit = 0;
+#if ENABLE(ASSERT)
+bool StackFrameDepth::s_isEnabled = false;
+#endif
 
 // NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized away,
 // and the stack frame base register is adjusted |kSafeStackFrameSize|.
@@ -29,8 +32,12 @@ NEVER_INLINE static uintptr_t currentStackFrameBaseOnCallee(const char* dummy)
     return StackFrameDepth::currentStackFrame();
 }
 
-void StackFrameDepth::configureStackLimit()
+void StackFrameDepth::enableStackLimit()
 {
+#if ENABLE(ASSERT)
+    s_isEnabled = true;
+#endif
+
     static const int kStackRoomSize = 1024;
 
     size_t stackSize = getUnderestimatedStackSize();
