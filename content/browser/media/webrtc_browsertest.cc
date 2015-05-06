@@ -183,8 +183,14 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(kJavascript);
 }
 
+#if defined(OS_MACOSX)
+// Flaky on Mac-10.9: https://crbug.com/484826
+#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio DISABLED_CanMakeVideoCallAndThenRenegotiateToAudio
+#else
+#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio CanMakeVideoCallAndThenRenegotiateToAudio
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       CanMakeVideoCallAndThenRenegotiateToAudio) {
+                       MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio) {
   MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
       "callAndRenegotiateToAudio("
       "    %s, {audio: true, video:true}, {audio: true});",
