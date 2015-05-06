@@ -78,6 +78,7 @@ public:
     void setFilterQuality(SkFilterQuality);
     void setIsHidden(bool);
     void setImageBuffer(ImageBuffer* imageBuffer) { m_imageBuffer = imageBuffer; }
+    void didDraw();
 
     // Methods used by Canvas2DLayerManager
     virtual size_t freeMemoryIfPossible(size_t); // virtual for mocking

@@ -500,10 +500,14 @@ WebLayer* Canvas2DLayerBridge::layer() const
     return m_layer->layer();
 }
 
+void Canvas2DLayerBridge::didDraw()
+{
+    Canvas2DLayerManager::get().layerDidDraw(this);
+}
+
 void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
 {
     ASSERT(!m_destructionInProgress);
-    Canvas2DLayerManager::get().layerDidDraw(this);
     m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
     m_didRecordDrawCommand = true;
 }
