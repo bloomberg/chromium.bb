@@ -168,32 +168,6 @@ void DeathData::RecordDeath(const int32 queue_duration,
   }
 }
 
-int DeathData::count() const { return count_; }
-
-int32 DeathData::run_duration_sum() const { return run_duration_sum_; }
-
-int32 DeathData::run_duration_max() const { return run_duration_max_; }
-
-int32 DeathData::run_duration_sample() const {
-  return run_duration_sample_;
-}
-
-int32 DeathData::queue_duration_sum() const {
-  return queue_duration_sum_;
-}
-
-int32 DeathData::queue_duration_max() const {
-  return queue_duration_max_;
-}
-
-int32 DeathData::queue_duration_sample() const {
-  return queue_duration_sample_;
-}
-
-const DeathDataPhaseSnapshot* DeathData::last_phase_snapshot() const {
-  return last_phase_snapshot_;
-}
-
 void DeathData::OnProfilingPhaseCompleted(int profiling_phase) {
   // Snapshotting and storing current state.
   last_phase_snapshot_ = new DeathDataPhaseSnapshot(
