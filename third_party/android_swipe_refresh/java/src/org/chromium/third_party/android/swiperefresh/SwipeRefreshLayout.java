@@ -441,13 +441,30 @@ public class SwipeRefreshLayout extends ViewGroup {
     }
 
     /**
+     * @deprecated Use {@link #setProgressBackgroundColorSchemeResource(int)}
+     */
+    @Deprecated
+    public void setProgressBackgroundColor(int colorRes) {
+        setProgressBackgroundColorSchemeResource(colorRes);
+    }
+
+    /**
      * Set the background color of the progress spinner disc.
      *
      * @param colorRes Resource id of the color.
      */
-    public void setProgressBackgroundColor(int colorRes) {
-        mCircleView.setBackgroundColor(colorRes);
-        mProgress.setBackgroundColor(getResources().getColor(colorRes));
+    public void setProgressBackgroundColorSchemeResource(int colorRes) {
+        setProgressBackgroundColorSchemeColor(getResources().getColor(colorRes));
+    }
+
+    /**
+     * Set the background color of the progress spinner disc.
+     *
+     * @param color
+     */
+    public void setProgressBackgroundColorSchemeColor(int color) {
+        mCircleView.setBackgroundColor(color);
+        mProgress.setBackgroundColor(color);
     }
 
     /**
@@ -596,7 +613,7 @@ public class SwipeRefreshLayout extends ViewGroup {
                 setAnimationProgress(overscrollTop / mTotalDragDistance);
             }
         }
-        float strokeStart = (float) (adjustedPercent * .8f);
+        float strokeStart = adjustedPercent * .8f;
         mProgress.setStartEndTrim(0f, Math.min(MAX_PROGRESS_ANGLE, strokeStart));
         mProgress.setArrowScale(Math.min(1f, adjustedPercent));
 
@@ -719,6 +736,7 @@ public class SwipeRefreshLayout extends ViewGroup {
             targetTop = (mFrom + (int) ((endTarget - mFrom) * interpolatedTime));
             int offset = targetTop - mCircleView.getTop();
             setTargetOffsetTopAndBottom(offset, false /* requires update */);
+            mProgress.setArrowScale(1 - interpolatedTime);
         }
     };
 

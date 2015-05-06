@@ -7,6 +7,9 @@
     {
       'target_name': 'android_swipe_refresh_java',
       'type': 'none',
+      'dependencies': [
+        '../android_tools/android_tools.gyp:android_support_v13_javalib',
+      ],
       'variables': {
         'java_in_dir': 'java',
       },
