@@ -100,7 +100,6 @@ class SynchronousCompositorImpl
 
   void SetClient(SynchronousCompositorClient* compositor_client);
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
-  void NotifyDidDestroyCompositorToClient();
   void DidActivatePendingTree();
   void DeliverMessages();
   bool CalledOnValidThread() const;
