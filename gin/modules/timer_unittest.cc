@@ -64,9 +64,10 @@ struct TestHelper {
                           result->GetWrapper(isolate));
   }
 
-  void QuitSoon() {
-    loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-                         base::TimeDelta::FromMilliseconds(0));
+  void QuitSoon(base::MessageLoop* message_loop) {
+    message_loop->PostDelayedTask(FROM_HERE,
+                                  base::MessageLoop::QuitWhenIdleClosure(),
+                                  base::TimeDelta::FromMilliseconds(0));
   }
 
   ShellRunnerDelegate delegate;
@@ -74,7 +75,6 @@ struct TestHelper {
   Runner::Scope scope;
   Handle<TimerModule> timer_module;
   Handle<Result> result;
-  base::MessageLoop loop;
 };
 
 }  // namespace
@@ -91,8 +91,8 @@ TEST_F(TimerUnittest, OneShot) {
   helper.runner->Run(source, "script");
   EXPECT_EQ(0, helper.result->count());
 
-  helper.QuitSoon();
-  helper.loop.Run();
+  helper.QuitSoon(&message_loop_);
+  message_loop_.Run();
   EXPECT_EQ(1, helper.result->count());
 }
 
@@ -107,8 +107,8 @@ TEST_F(TimerUnittest, OneShotCancel) {
   helper.runner->Run(source, "script");
   EXPECT_EQ(0, helper.result->count());
 
-  helper.QuitSoon();
-  helper.loop.Run();
+  helper.QuitSoon(&message_loop_);
+  message_loop_.Run();
   EXPECT_EQ(0, helper.result->count());
 }
 
@@ -128,7 +128,7 @@ TEST_F(TimerUnittest, Repeating) {
   helper.runner->Run(source, "script");
   EXPECT_EQ(0, helper.result->count());
 
-  helper.loop.Run();
+  message_loop_.Run();
   EXPECT_EQ(3, helper.result->count());
 }
 
@@ -143,9 +143,9 @@ TEST_F(TimerUnittest, TimerCallbackToDestroyedRunner) {
   EXPECT_EQ(0, helper.result->count());
 
   // Destroy runner, which should destroy the timer object we created.
-  helper.QuitSoon();
+  helper.QuitSoon(&message_loop_);
   helper.runner.reset(NULL);
-  helper.loop.Run();
+  message_loop_.Run();
 
   // Timer should not have run because it was deleted.
   EXPECT_EQ(0, helper.result->count());

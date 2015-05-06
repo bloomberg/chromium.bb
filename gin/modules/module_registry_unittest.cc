@@ -5,7 +5,6 @@
 #include "gin/modules/module_registry.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "gin/modules/module_registry_observer.h"
 #include "gin/modules/module_runner_delegate.h"
 #include "gin/public/context_holder.h"
@@ -25,7 +24,6 @@ struct TestHelper {
         scope(runner.get()) {
   }
 
-  base::MessageLoop message_loop;
   ModuleRunnerDelegate delegate;
   scoped_ptr<ShellRunner> runner;
   Runner::Scope scope;
