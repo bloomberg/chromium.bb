@@ -25,11 +25,6 @@ class SuggestionsService;
 class MostVisitedSites : public sync_driver::SyncServiceObserver,
                          public history::TopSitesObserver {
  public:
-  typedef base::Callback<
-      void(base::android::ScopedJavaGlobalRef<jobject>* bitmap,
-           base::android::ScopedJavaGlobalRef<jobject>* j_callback)>
-      LookupSuccessCallback;
-
   explicit MostVisitedSites(Profile* profile);
   void Destroy(JNIEnv* env, jobject obj);
   void OnLoadingComplete(JNIEnv* env, jobject obj);
@@ -41,6 +36,7 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
                        jobject obj,
                        jstring url,
                        jobject j_callback);
+
   void BlacklistUrl(JNIEnv* env, jobject obj, jstring j_url);
   void RecordOpenedMostVisitedItem(JNIEnv* env, jobject obj, jint index);
 
@@ -66,29 +62,27 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
 
   // Callback for when data is available from TopSites.
   void OnMostVisitedURLsAvailable(
-      base::android::ScopedJavaGlobalRef<jobject>* j_observer,
-      int num_sites,
       const history::MostVisitedURLList& visited_list);
 
   // Callback for when data is available from the SuggestionsService.
   void OnSuggestionsProfileAvailable(
-      base::android::ScopedJavaGlobalRef<jobject>* j_observer,
       const suggestions::SuggestionsProfile& suggestions_profile);
 
-  // Callback for when the local thumbnail lookup is complete.
+  // Notify the Java side observer about the availability of Most Visited Urls.
+  void NotifyMostVisitedURLsObserver(const std::vector<base::string16>& titles,
+                                     const std::vector<std::string>& urls);
+
+  // Runs on the UI Thread.
+  void OnLocalThumbnailFetched(
+      const GURL& url,
+      scoped_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
+      scoped_ptr<SkBitmap> bitmap);
+
+  // Callback for when the thumbnail lookup is complete.
+  // Runs on the UI Thread.
   void OnObtainedThumbnail(
-      base::android::ScopedJavaGlobalRef<jobject>* bitmap,
-      base::android::ScopedJavaGlobalRef<jobject>* j_callback);
-
-  // Requests a server thumbnail from the |suggestions_service|.
-  void GetSuggestionsThumbnailOnUIThread(
-      suggestions::SuggestionsService* suggestions_service,
-      const std::string& url_string,
-      base::android::ScopedJavaGlobalRef<jobject>* j_callback);
-
-  // Callback from the SuggestionsServer regarding the server thumbnail lookup.
-  void OnSuggestionsThumbnailAvailable(
-      base::android::ScopedJavaGlobalRef<jobject>* j_callback,
+      bool is_local_thumbnail,
+      scoped_ptr<base::android::ScopedJavaGlobalRef<jobject>> j_callback,
       const GURL& url,
       const SkBitmap* bitmap);
 
@@ -117,8 +111,8 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   int num_local_thumbs_;
   // Number of tiles for which a server thumbnail is provided.
   int num_server_thumbs_;
-  // Number of tiles for which no thumbnail is found/specified and a gray tile
-  // is used as the main tile.
+  // Number of tiles for which no thumbnail is found/specified.
+  // In this case a gray tile is used as the main tile.
   int num_empty_thumbs_;
 
   // Copy of the server suggestions (if enabled). Used for logging.
