@@ -5,11 +5,14 @@
 #include "config.h"
 #include "modules/cachestorage/Cache.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/V8Response.h"
+#include "core/dom/DOMException.h"
+#include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"
@@ -38,7 +41,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
-            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
@@ -64,34 +67,11 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) override
     {
-        m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+        m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
 protected:
-    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
-};
-
-// FIXME: Consider using CallbackPromiseAdapter.
-class CachePutCallbacks : public WebServiceWorkerCache::CacheBatchCallbacks {
-    WTF_MAKE_NONCOPYABLE(CachePutCallbacks);
-public:
-    CachePutCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
-        : m_resolver(resolver) { }
-
-    void onSuccess() override
-    {
-        m_resolver->resolve();
-        m_resolver.clear();
-    }
-
-    void onError(WebServiceWorkerCacheError* reason) override
-    {
-        m_resolver->reject(Cache::domExceptionForCacheError(*reason));
-        m_resolver.clear();
-    }
-
-private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
@@ -113,7 +93,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
-            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
@@ -139,7 +119,7 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) override
     {
-        m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+        m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
@@ -205,7 +185,7 @@ public:
         batchOperations[0].request = m_webRequest;
         batchOperations[0].response = m_webResponse;
         batchOperations[0].response.setBlobDataHandle(handle);
-        m_cache->webCache()->dispatchBatch(new CachePutCallbacks(m_resolver.get()), batchOperations);
+        m_cache->webCache()->dispatchBatch(new CallbackPromiseAdapter<void, CacheStorageError>(m_resolver.get()), batchOperations);
         cleanup();
     }
     void didFail(DOMException* exception) override
@@ -380,21 +360,6 @@ ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const Vector<Request*>
     return fetchPromise.then(FetchResolvedForAdd::create(scriptState, this, requests[0]));
 }
 
-DOMException* Cache::domExceptionForCacheError(WebServiceWorkerCacheError reason)
-{
-    switch (reason) {
-    case WebServiceWorkerCacheErrorNotImplemented:
-        return DOMException::create(NotSupportedError, "Method is not implemented.");
-    case WebServiceWorkerCacheErrorNotFound:
-        return DOMException::create(NotFoundError, "Entry was not found.");
-    case WebServiceWorkerCacheErrorExists:
-        return DOMException::create(InvalidAccessError, "Entry already exists.");
-    default:
-        ASSERT_NOT_REACHED();
-        return DOMException::create(NotSupportedError, "Unknown error.");
-    }
-}
-
 ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request, const CacheQueryOptions& options)
 {
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));
@@ -440,7 +405,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
     request->populateWebServiceWorkerRequest(batchOperations[0].request);
     response->populateWebServiceWorkerResponse(batchOperations[0].response);
 
-    m_webCache->dispatchBatch(new CachePutCallbacks(resolver), batchOperations);
+    m_webCache->dispatchBatch(new CallbackPromiseAdapter<void, CacheStorageError>(resolver), batchOperations);
     return promise;
 }
 

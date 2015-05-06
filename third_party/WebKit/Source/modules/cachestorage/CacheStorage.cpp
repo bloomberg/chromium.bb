@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
@@ -44,7 +45,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
-            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
@@ -78,7 +79,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
-            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
@@ -106,7 +107,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
-            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
@@ -135,7 +136,7 @@ public:
         if (*reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
-            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+            m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 
@@ -164,7 +165,7 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) override
     {
-        m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+        m_resolver->reject(CacheStorageError::createException(*reason));
         m_resolver.clear();
     }
 

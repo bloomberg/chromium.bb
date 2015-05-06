@@ -618,6 +618,8 @@
       'cachestorage/Cache.h',
       'cachestorage/CacheStorage.cpp',
       'cachestorage/CacheStorage.h',
+      'cachestorage/CacheStorageError.cpp',
+      'cachestorage/CacheStorageError.h',
       'cachestorage/GlobalCacheStorage.cpp',
       'cachestorage/GlobalCacheStorage.h',
       'cachestorage/InspectorCacheStorageAgent.cpp',
