@@ -133,7 +133,7 @@ int amdgpu_device_initialize(int fd,
 	int r;
 	int flag_auth = 0;
 	int flag_authexist=0;
-	uint32_t accel_working;
+	uint32_t accel_working = 0;
 
 	*device_handle = NULL;
 
