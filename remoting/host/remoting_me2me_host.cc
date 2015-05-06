@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -19,9 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "crypto/nss_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
@@ -46,12 +43,13 @@
 #include "remoting/host/config_watcher.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/dns_blackhole_checker.h"
+#include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_change_notification_listener.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
-#include "remoting/host/host_signaling_manager.h"
 #include "remoting/host/host_status_logger.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
@@ -160,7 +158,6 @@ const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
 namespace remoting {
 
 class HostProcess : public ConfigWatcher::Delegate,
-                    public HostSignalingManager::Listener,
                     public HostChangeNotificationListener::Listener,
                     public IPC::Listener,
                     public base::RefCountedThreadSafe<HostProcess> {
@@ -273,15 +270,17 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnPairingPolicyUpdate(base::DictionaryValue* policies);
   bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
 
-  scoped_ptr<HostSignalingManager> CreateHostSignalingManager();
+  void InitializeSignaling();
 
   void StartHostIfReady();
   void StartHost();
 
-  // Overrides for HostSignalingManager::Listener interface.
-  void OnHeartbeatSuccessful() override;
-  void OnUnknownHostIdError() override;
-  void OnAuthFailed() override;
+  // Error handler for HeartbeatSender.
+  void OnHeartbeatSuccessful();
+  void OnUnknownHostIdError();
+
+  // Error handler for SignalingConnector.
+  void OnAuthFailed();
 
   void RestartHost(const std::string& host_offline_reason);
   void ShutdownHost(HostExitCodes exit_code);
@@ -356,9 +355,12 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_;
 
-  // Used to send heartbeats while running, and the reason for going offline
-  // when shutting down.
-  scoped_ptr<HostSignalingManager> host_signaling_manager_;
+  // |heartbeat_sender_| and |signaling_connector_| have to be destroyed before
+  // |signal_strategy_| because their destructors need to call
+  // signal_strategy_->RemoveListener(this)
+  scoped_ptr<SignalStrategy> signal_strategy_;
+  scoped_ptr<SignalingConnector> signaling_connector_;
+  scoped_ptr<HeartbeatSender> heartbeat_sender_;
 
   scoped_ptr<HostChangeNotificationListener> host_change_notification_listener_;
   scoped_ptr<HostStatusLogger> host_status_logger_;
@@ -1296,18 +1298,35 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-scoped_ptr<HostSignalingManager> HostProcess::CreateHostSignalingManager() {
+void HostProcess::InitializeSignaling() {
   DCHECK(!host_id_.empty());  // |ApplyConfig| should already have been run.
+  DCHECK(!signal_strategy_);
 
+  // Create SignalStrategy.
+  XmppSignalStrategy* xmpp_signal_strategy = new XmppSignalStrategy(
+      net::ClientSocketFactory::GetDefaultFactory(),
+      context_->url_request_context_getter(), xmpp_server_config_);
+  signal_strategy_.reset(xmpp_signal_strategy);
+
+  // Create SignalingConnector.
+  scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(new DnsBlackholeChecker(
+      context_->url_request_context_getter(), talkgadget_prefix_));
   scoped_ptr<OAuthTokenGetter::OAuthCredentials> oauth_credentials(
       new OAuthTokenGetter::OAuthCredentials(xmpp_server_config_.username,
                                              oauth_refresh_token_,
                                              use_service_account_));
+  scoped_ptr<OAuthTokenGetter> oauth_token_getter(new OAuthTokenGetter(
+      oauth_credentials.Pass(), context_->url_request_context_getter(), false));
+  signaling_connector_.reset(new SignalingConnector(
+      xmpp_signal_strategy, dns_blackhole_checker.Pass(),
+      oauth_token_getter.Pass(),
+      base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
 
-  return HostSignalingManager::Create(
-      this, context_->url_request_context_getter(), xmpp_server_config_,
-      talkgadget_prefix_, host_id_, key_pair_, directory_bot_jid_,
-      oauth_credentials.Pass());
+  // Create HeartbeatSender.
+  heartbeat_sender_.reset(new HeartbeatSender(
+      base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
+      base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
+      host_id_, xmpp_signal_strategy, key_pair_, directory_bot_jid_));
 }
 
 void HostProcess::StartHostIfReady() {
@@ -1327,11 +1346,10 @@ void HostProcess::StartHostIfReady() {
 void HostProcess::StartHost() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(!host_);
-  DCHECK(!host_signaling_manager_);
 
   SetState(HOST_STARTED);
 
-  host_signaling_manager_ = CreateHostSignalingManager();
+  InitializeSignaling();
 
   uint32 network_flags = 0;
   if (allow_nat_traversal_) {
@@ -1354,10 +1372,8 @@ void HostProcess::StartHost() {
   }
 
   host_.reset(new ChromotingHost(
-      host_signaling_manager_->signal_strategy(),
-      desktop_environment_factory_.get(),
-      CreateHostSessionManager(host_signaling_manager_->signal_strategy(),
-                               network_settings,
+      signal_strategy_.get(), desktop_environment_factory_.get(),
+      CreateHostSessionManager(signal_strategy_.get(), network_settings,
                                context_->url_request_context_getter()),
       context_->audio_task_runner(), context_->input_task_runner(),
       context_->video_capture_task_runner(),
@@ -1384,12 +1400,11 @@ void HostProcess::StartHost() {
 #endif
 
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
-      this, host_id_, host_signaling_manager_->signal_strategy(),
-      directory_bot_jid_));
+      this, host_id_, signal_strategy_.get(), directory_bot_jid_));
 
-  host_status_logger_.reset(new HostStatusLogger(
-      host_->AsWeakPtr(), ServerLogEntry::ME2ME,
-      host_signaling_manager_->signal_strategy(), directory_bot_jid_));
+  host_status_logger_.reset(
+      new HostStatusLogger(host_->AsWeakPtr(), ServerLogEntry::ME2ME,
+                           signal_strategy_.get(), directory_bot_jid_));
 
   // Set up reporting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)
@@ -1459,11 +1474,11 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
   // Before shutting down HostSignalingManager, send the |host_offline_reason|
   // if possible (i.e. if we have the config).
   if (!serialized_config_.empty()) {
-    if (!host_signaling_manager_) {
-      host_signaling_manager_ = CreateHostSignalingManager();
-    }
+    if (!signal_strategy_)
+      InitializeSignaling();
 
-    host_signaling_manager_->SendHostOfflineReason(
+    HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
+    heartbeat_sender_->SetHostOfflineReason(
         host_offline_reason,
         base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
         base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
@@ -1481,7 +1496,9 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   DCHECK(!host_);  // Assert that the host is really offline at this point.
 
   HOST_LOG << "SendHostOfflineReason " << (success ? "succeeded." : "failed.");
-  host_signaling_manager_.reset();
+  heartbeat_sender_.reset();
+  signaling_connector_.reset();
+  signal_strategy_.reset();
 
   if (state_ == HOST_GOING_OFFLINE_TO_RESTART) {
     SetState(HOST_STARTING);
