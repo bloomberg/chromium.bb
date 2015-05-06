@@ -8,11 +8,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/basictypes.h"
-#include "base/task/cancelable_task_tracker.h"
+#include "chrome/browser/android/shortcut_data_fetcher.h"
 #include "chrome/browser/android/shortcut_info.h"
-#include "chrome/common/web_application_info.h"
-#include "components/favicon_base/favicon_types.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
 
 namespace content {
@@ -27,102 +24,50 @@ class GURL;
 
 // ShortcutHelper is the C++ counterpart of org.chromium.chrome.browser's
 // ShortcutHelper in Java. The object is owned by the Java object. It is created
-// from there via a JNI (Initialize) call and can be destroyed from Java too
-// using TearDown. When the Java implementations calls AddShortcut, it gives up
-// the ownership of the object. The instance will then destroy itself when done.
-class ShortcutHelper : public content::WebContentsObserver {
+// from there via a JNI (Initialize) call and MUST BE DESTROYED via Destroy().
+class ShortcutHelper : public ShortcutDataFetcher::Observer {
  public:
   ShortcutHelper(JNIEnv* env,
                  jobject obj,
                  content::WebContents* web_contents);
 
-  // Initialize the helper by requesting the information about the page to the
-  // renderer process. The initialization is asynchronous and
-  // OnDidRetrieveWebappInformation is expected to be called when finished.
-  void Initialize();
-
-  // Called by the Java counter part to let the object knows that it can destroy
-  // itself.
-  void TearDown(JNIEnv* env, jobject obj);
-
-  // IPC message received when the initialization is finished.
-  void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
-
-  // Callback run when the Manifest is ready to be used.
-  void OnDidGetManifest(const content::Manifest& manifest);
-
-  // Adds a shortcut to the current URL to the Android home screen.
-  void AddShortcut(JNIEnv* env,
-                   jobject obj,
-                   jstring title,
-                   jint launcher_large_icon_size);
-
-  // Callback run when the requested Manifest icon is ready to be used.
-  void OnDidDownloadIcon(int id,
-                         int http_status_code,
-                         const GURL& url,
-                         const std::vector<SkBitmap>& bitmaps,
-                         const std::vector<gfx::Size>& sizes);
-
-  // Called after AddShortcut() and OnDidDownloadIcon() are run if
-  // OnDidDownloadIcon has a valid icon.
-  void AddShortcutUsingManifestIcon();
-
-  // Use FaviconService to get the best available favicon and create the
-  // shortcut using it. This is used when no Manifest icons are available or
-  // appropriate.
-  void AddShortcutUsingFavicon();
-
-  // Callback run when a favicon is received from GetFavicon() call.
-  void OnDidGetFavicon(
-      const favicon_base::FaviconRawBitmapResult& bitmap_result);
-
-  // WebContentsObserver
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void WebContentsDestroyed() override;
-
-  // Adds a shortcut to the launcher using a FaviconRawBitmapResult.
-  // Must be called from a WorkerPool task.
-  static void AddShortcutInBackgroundWithRawBitmap(
-      const ShortcutInfo& info,
-      const favicon_base::FaviconRawBitmapResult& bitmap_result);
-
-  // Adds a shortcut to the launcher using a SkBitmap.
-  // Must be called from a WorkerPool task.
-  static void AddShortcutInBackgroundWithSkBitmap(
-      const ShortcutInfo& info,
-      const SkBitmap& icon_bitmap,
-      const bool return_to_homescreen);
+  // Called by the Java counterpart to destroy its native half.
+  void Destroy(JNIEnv* env, jobject obj);
 
   // Registers JNI hooks.
   static bool RegisterShortcutHelper(JNIEnv* env);
 
+  // Adds a shortcut to the current URL to the Android home screen.
+  void AddShortcut(JNIEnv* env, jobject obj, jstring title);
+
+  // Adds a shortcut to the launcher using a SkBitmap.
+  // Must be called on the IO thread.
+  static void AddShortcutInBackgroundWithSkBitmap(const ShortcutInfo& info,
+                                                  const SkBitmap& icon_bitmap);
+
+  // ShortcutDataFetcher::Observer
+  void OnTitleAvailable(const base::string16& title) override;
+  void OnDataAvailable(const ShortcutInfo& info, const SkBitmap& icon) override;
+  SkBitmap FinalizeLauncherIcon(const SkBitmap& icon, const GURL& url) override;
+
  private:
-  enum ManifestIconStatus {
-    MANIFEST_ICON_STATUS_NONE,
-    MANIFEST_ICON_STATUS_FETCHING,
-    MANIFEST_ICON_STATUS_DONE
-  };
+  virtual ~ShortcutHelper();
 
-  ~ShortcutHelper() override;
-
-  void Destroy();
+  // Called only when the ShortcutDataFetcher has retrieved all of the
+  // data needed to add the shortcut.
+  void AddShortcut(const ShortcutInfo& info, const SkBitmap& icon);
 
   void RecordAddToHomescreen();
 
-  JavaObjectWeakGlobalRef java_ref_;
+  // Points to the Java object.
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
-  ShortcutInfo shortcut_info_;
-  SkBitmap manifest_icon_;
-  base::CancelableTaskTracker cancelable_task_tracker_;
+  // Whether the user has requested that a shortcut be added while a fetch was
+  // in progress.
+  bool add_shortcut_pending_;
 
-  bool add_shortcut_requested_;
-
-  ManifestIconStatus manifest_icon_status_;
-  const int preferred_icon_size_in_px_;
-  static const int kPreferredIconSizeInDp;
-
-  base::WeakPtrFactory<ShortcutHelper> weak_ptr_factory_;
+  // Fetches data required to add a shortcut.
+  scoped_refptr<ShortcutDataFetcher> data_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ShortcutHelper);
 };

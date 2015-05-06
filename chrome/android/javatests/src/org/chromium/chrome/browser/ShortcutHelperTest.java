@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.shell.ChromeShellActivity;
@@ -17,6 +19,8 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+
+import java.util.concurrent.Callable;
 
 /**
  * Tests org.chromium.chrome.browser.ShortcutHelper and it's C++ counterpart.
@@ -82,6 +86,7 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
 
         ShortcutHelper.setFullScreenAction(WEBAPP_ACTION_NAME);
         mActivity = launchChromeShellWithBlankPage();
+        waitForActiveShellToBeDoneLoading();
 
         // Set up the observer.
         mTestObserver = new TestObserver();
@@ -172,20 +177,26 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(observer));
 
         // Add the shortcut.
-        getInstrumentation().runOnMainSync(new Runnable() {
+        Callable<ShortcutHelper> callable = new Callable<ShortcutHelper>() {
             @Override
-            public void run() {
-                final ShortcutHelper shortcutHelper = new ShortcutHelper(
+            public ShortcutHelper call() {
+                final ShortcutHelper helper = new ShortcutHelper(
                         mActivity.getApplicationContext(), mActivity.getActiveTab());
                 // Calling initialize() isn't strictly required but it is testing this code path.
-                shortcutHelper.initialize(new ShortcutHelper.OnInitialized() {
+                helper.initialize(new ShortcutHelper.ShortcutHelperObserver() {
                     @Override
-                    public void onInitialized(String t) {
-                        shortcutHelper.addShortcut(title);
+                    public void onTitleAvailable(String t) {
+                    }
+
+                    @Override
+                    public void onIconAvailable(Bitmap icon) {
+                        helper.addShortcut(title);
                     }
                 });
+                return helper;
             }
-        });
+        };
+        final ShortcutHelper helper = ThreadUtils.runOnUiThreadBlockingNoException(callable);
 
         // Make sure that the shortcut was added.
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
@@ -194,5 +205,12 @@ public class ShortcutHelperTest extends ChromeShellTestBase {
                 return mTestObserver.mFiredIntent != null;
             }
         }));
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                helper.destroy();
+            }
+        });
     }
 }

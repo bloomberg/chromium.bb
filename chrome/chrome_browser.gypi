@@ -161,6 +161,8 @@
       'browser/android/resource_mapper.h',
       'browser/android/seccomp_support_detector.cc',
       'browser/android/seccomp_support_detector.h',
+      'browser/android/shortcut_data_fetcher.cc',
+      'browser/android/shortcut_data_fetcher.h',
       'browser/android/shortcut_helper.cc',
       'browser/android/shortcut_helper.h',
       'browser/android/shortcut_info.cc',

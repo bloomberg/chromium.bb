@@ -6,14 +6,14 @@ package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.os.Handler;
+import android.graphics.Bitmap;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -39,7 +39,7 @@ public class AddToHomescreenDialog {
      */
     public static void show(final Activity activity, final Tab currentTab) {
         View view = activity.getLayoutInflater().inflate(
-                R.layout.single_line_edit_dialog, null);
+                R.layout.add_to_homescreen_dialog, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
                 .setTitle(R.string.menu_add_to_homescreen)
                 .setNegativeButton(R.string.cancel,
@@ -54,9 +54,9 @@ public class AddToHomescreenDialog {
         // On click of the menu item for "add to homescreen", an alert dialog pops asking the user
         // if the title needs to be edited. On click of "Add", shortcut is created. Default
         // title is the title of the page. OK button is disabled if the title text is empty.
-        TextView titleLabel = (TextView) view.findViewById(R.id.title);
+        final View progressBarView = (View) view.findViewById(R.id.spinny);
+        final ImageView iconView = (ImageView) view.findViewById(R.id.icon);
         final EditText input = (EditText) view.findViewById(R.id.text);
-        titleLabel.setText(R.string.add_to_homescreen_title);
         input.setEnabled(false);
 
         final ShortcutHelper shortcutHelper =
@@ -67,13 +67,19 @@ public class AddToHomescreenDialog {
         // They will be enabled and pre-filled as soon as the onInitialized
         // callback will be run. The user will still be able to cancel the
         // operation.
-        shortcutHelper.initialize(new ShortcutHelper.OnInitialized() {
+        shortcutHelper.initialize(new ShortcutHelper.ShortcutHelperObserver() {
             @Override
-            public void onInitialized(String title) {
-                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
-
+            public void onTitleAvailable(String title) {
                 input.setEnabled(true);
                 input.setText(title);
+            }
+
+            @Override
+            public void onIconAvailable(Bitmap icon) {
+                progressBarView.setVisibility(View.GONE);
+                iconView.setVisibility(View.VISIBLE);
+                iconView.setImageBitmap(icon);
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
             }
         });
 
@@ -102,45 +108,17 @@ public class AddToHomescreenDialog {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                shortcutHelper.addShortcut(input.getText().toString());
-                                // No need to call tearDown() in that case,
-                                // |shortcutHelper| is expected to tear down itself
-                                // after that call.
-                            }
-                        }, 100);
-                        // We are adding arbitrary delay here to try and yield for main activity to
-                        // be focused before we create shortcut. Yielding helps clear this dialog
-                        // box from screenshot that Android's recents activity module shows.
-                        // I tried a bunch of solutions suggested in code review, but root cause
-                        // seems be that parent view/activity doesn't get chance to redraw itself
-                        // completely and Recent Activities seem to have old snapshot. Clean way
-                        // would be to let parent activity/view draw itself before we add the
-                        // shortcut, but that would require complete redrawing including rendered
-                        // page.
+                        shortcutHelper.addShortcut(input.getText().toString());
                     }
                 });
-
-        // The dialog is being cancel by clicking away or clicking the "cancel"
-        // button. |shortcutHelper| need to be tear down in that case to release
-        // all the objects, including the C++ ShortcutHelper.
-        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                shortcutHelper.tearDown();
-            }
-        });
 
         // The "OK" button should only be shown when |shortcutHelper| is
         // initialized, it should be kept disabled until then.
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface d) {
-                if (!shortcutHelper.isInitialized()) {
-                    dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
-                }
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(
+                        shortcutHelper.isInitialized());
             }
         });
 
@@ -150,6 +128,7 @@ public class AddToHomescreenDialog {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 sCurrentDialog = null;
+                shortcutHelper.destroy();
             }
         });
 

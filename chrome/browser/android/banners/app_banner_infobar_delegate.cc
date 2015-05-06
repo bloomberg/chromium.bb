@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/worker_pool.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/rappor/rappor_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/manifest.h"
 #include "jni/AppBannerInfoBarDelegate_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -207,13 +207,12 @@ bool AppBannerInfoBarDelegate::Accept() {
 
     ShortcutInfo info;
     info.UpdateFromManifest(web_app_data_);
-    base::WorkerPool::PostTask(
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
         FROM_HERE,
         base::Bind(&ShortcutHelper::AddShortcutInBackgroundWithSkBitmap,
                    info,
-                   *app_icon_.get(),
-                   false),
-        true);
+                   *app_icon_.get()));
 
     TrackInstallEvent(INSTALL_EVENT_WEB_APP_INSTALLED);
     rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),

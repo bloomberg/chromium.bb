@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -35,6 +34,15 @@ public class ShortcutHelper {
     public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
     public static final String EXTRA_ORIENTATION = ScreenOrientationConstants.EXTRA_ORIENTATION;
 
+    /** Observes the data fetching pipeline. */
+    public interface ShortcutHelperObserver {
+        /** Called when the title of the page is available. */
+        void onTitleAvailable(String title);
+
+        /** Called when the icon to use in the launcher is available. */
+        void onIconAvailable(Bitmap icon);
+    }
+
     private static String sFullScreenAction;
 
     /**
@@ -45,17 +53,10 @@ public class ShortcutHelper {
         sFullScreenAction = fullScreenAction;
     }
 
-    /**
-     * Callback to be passed to the initialized() method.
-     */
-    public interface OnInitialized {
-        public void onInitialized(String title);
-    }
-
     private final Context mAppContext;
     private final Tab mTab;
 
-    private OnInitialized mCallback;
+    private ShortcutHelperObserver mObserver;
     private boolean mIsInitialized;
     private long mNativeShortcutHelper;
 
@@ -65,12 +66,12 @@ public class ShortcutHelper {
     }
 
     /**
-     * Gets all the information required to initialize the UI, the passed
-     * callback will be run when those information will be available.
-     * @param callback Callback to be run when initialized.
+     * Gets all the information required to initialize the UI.  The observer will be notified as
+     * information required for the shortcut become available.
+     * @param observer Observer to notify.
      */
-    public void initialize(OnInitialized callback) {
-        mCallback = callback;
+    public void initialize(ShortcutHelperObserver observer) {
+        mObserver = observer;
         mNativeShortcutHelper = nativeInitialize(mTab.getWebContents());
     }
 
@@ -84,22 +85,24 @@ public class ShortcutHelper {
     /**
      * Puts the object in a state where it is safe to be destroyed.
      */
-    public void tearDown() {
-        nativeTearDown(mNativeShortcutHelper);
+    public void destroy() {
+        nativeDestroy(mNativeShortcutHelper);
 
         // Make sure the callback isn't run if the tear down happens before
         // onInitialized() is called.
-        mCallback = null;
+        mObserver = null;
         mNativeShortcutHelper = 0;
     }
 
     @CalledByNative
-    private void onInitialized(String title) {
-        mIsInitialized = true;
+    private void onTitleAvailable(String title) {
+        mObserver.onTitleAvailable(title);
+    }
 
-        if (mCallback != null) {
-            mCallback.onInitialized(title);
-        }
+    @CalledByNative
+    private void onIconAvailable(Bitmap icon) {
+        mObserver.onIconAvailable(icon);
+        mIsInitialized = true;
     }
 
     /**
@@ -111,13 +114,18 @@ public class ShortcutHelper {
             Log.e("ShortcutHelper", "ShortcutHelper is uninitialized.  Aborting.");
             return;
         }
-        ActivityManager am = (ActivityManager) mAppContext.getSystemService(
-                Context.ACTIVITY_SERVICE);
-        nativeAddShortcut(mNativeShortcutHelper, userRequestedTitle, am.getLauncherLargeIconSize());
 
-        // The C++ instance is no longer owned by the Java object.
-        mCallback = null;
-        mNativeShortcutHelper = 0;
+        nativeAddShortcut(mNativeShortcutHelper, userRequestedTitle);
+    }
+
+    /**
+     * Creates an icon that is acceptable to show on the launcher.
+     */
+    @CalledByNative
+    private static Bitmap finalizeLauncherIcon(
+            String url, Bitmap icon, int red, int green, int blue) {
+        return BookmarkUtils.createLauncherIcon(
+                ApplicationStatus.getApplicationContext(), icon, url, red, green, blue);
     }
 
     /**
@@ -129,8 +137,7 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(Context context, String url, String title, Bitmap icon,
-            int red, int green, int blue, boolean isWebappCapable, int orientation,
-            boolean returnToHomescreen) {
+            boolean isWebappCapable, int orientation) {
         assert sFullScreenAction != null;
 
         Intent shortcutIntent;
@@ -159,30 +166,22 @@ public class ShortcutHelper {
         }
 
         shortcutIntent.setPackage(context.getPackageName());
-        Bitmap launchIcon = BookmarkUtils.createLauncherIcon(context, icon, url, red, green, blue);
-        context.sendBroadcast(BookmarkUtils.createAddToHomeIntent(shortcutIntent, title,
-                launchIcon, url));
+        context.sendBroadcast(
+                BookmarkUtils.createAddToHomeIntent(shortcutIntent, title, icon, url));
 
         // Alert the user about adding the shortcut.
-        if (returnToHomescreen) {
-            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-            homeIntent.addCategory(Intent.CATEGORY_HOME);
-            homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(homeIntent);
-        } else {
-            final String shortUrl = UrlUtilities.getDomainAndRegistry(url, true);
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Context applicationContext = ApplicationStatus.getApplicationContext();
-                    String toastText =
-                            applicationContext.getString(R.string.added_to_homescreen, shortUrl);
-                    Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            });
-        }
+        final String shortUrl = UrlUtilities.getDomainAndRegistry(url, true);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Context applicationContext = ApplicationStatus.getApplicationContext();
+                String toastText =
+                        applicationContext.getString(R.string.added_to_homescreen, shortUrl);
+                Toast toast = Toast.makeText(applicationContext, toastText, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
     }
 
     /**
@@ -197,7 +196,6 @@ public class ShortcutHelper {
     }
 
     private native long nativeInitialize(WebContents webContents);
-    private native void nativeAddShortcut(long nativeShortcutHelper, String userRequestedTitle,
-            int launcherLargeIconSize);
-    private native void nativeTearDown(long nativeShortcutHelper);
+    private native void nativeAddShortcut(long nativeShortcutHelper, String userRequestedTitle);
+    private native void nativeDestroy(long nativeShortcutHelper);
 }

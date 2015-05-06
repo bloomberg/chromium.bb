@@ -47,7 +47,8 @@ public class AddToHomescreenDialogTest extends ChromeShellTestBase {
 
                 assertTrue(dialog.isShowing());
 
-                assertNotNull(dialog.findViewById(R.id.title));
+                assertNotNull(dialog.findViewById(R.id.spinny));
+                assertNotNull(dialog.findViewById(R.id.icon));
                 assertNotNull(dialog.findViewById(R.id.text));
                 assertNotNull(dialog.getButton(DialogInterface.BUTTON_POSITIVE));
                 assertNotNull(dialog.getButton(DialogInterface.BUTTON_NEGATIVE));
