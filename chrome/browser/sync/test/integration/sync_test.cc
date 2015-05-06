@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -548,6 +549,16 @@ bool SyncTest::SetupSync() {
   if (server_type_ == EXTERNAL_LIVE_SERVER) {
     for (int i = 0; i < num_clients_; ++i) {
       sync_refreshers_[i] = new P2PSyncRefresher(clients_[i]->service());
+    }
+
+    // OneClickSigninSyncStarter observer is created with a real user sign in.
+    // It is deleted on certain conditions which are not satisfied by our tests,
+    // and this causes the SigninTracker observer to stay hanging at shutdown.
+    // Calling LoginUIService::SyncConfirmationUIClosed forces the observer to
+    // be removed. http://crbug.com/484388
+    for (int i = 0; i < num_clients_; ++i) {
+      LoginUIServiceFactory::GetForProfile(GetProfile(i))->
+          SyncConfirmationUIClosed(false /* configure_sync_first */);
     }
   }
 
