@@ -95,9 +95,8 @@ var WEB_VIEW_API_METHODS = [
 // -----------------------------------------------------------------------------
 // Custom API method implementations.
 
-WebViewImpl.prototype.addContentScripts = function() {
-  var args = $Array.concat([this.viewInstanceId], $Array.slice(arguments));
-  return $Function.apply(WebViewInternal.addContentScripts, null, args);
+WebViewImpl.prototype.addContentScripts = function(rules) {
+  return WebViewInternal.addContentScripts(this.viewInstanceId, rules);
 };
 
 WebViewImpl.prototype.back = function(callback) {
@@ -159,9 +158,8 @@ WebViewImpl.prototype.print = function() {
   return this.executeScript({code: 'window.print();'});
 };
 
-WebViewImpl.prototype.removeContentScripts = function(var_args) {
-  var args = $Array.concat([this.viewInstanceId], $Array.slice(arguments));
-  return $Function.apply(WebViewInternal.removeContentScripts, null, args);
+WebViewImpl.prototype.removeContentScripts = function(names) {
+  return WebViewInternal.removeContentScripts(this.viewInstanceId, names);
 };
 
 WebViewImpl.prototype.setUserAgentOverride = function(userAgentOverride) {

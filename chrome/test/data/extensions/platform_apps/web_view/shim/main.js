@@ -766,10 +766,12 @@ function testAddContentScript() {
 
   console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
-      [{"name": 'myrule',
-        "matches": ['http://*/extensions/*'],
-        "js": ['inject_comm_channel.js'],
-        "run_at": 'document_start'}]);
+      [{name: 'myrule',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['inject_comm_channel.js']
+        },
+        run_at: 'document_start'}]);
 
   webview.addEventListener('loadstop', function() {
     var msg = [request_to_comm_channel_1];
@@ -800,14 +802,18 @@ function testAddMultipleContentScripts() {
 
   console.log('Step 1: call <webview>.addContentScripts(myrule1 & myrule2)');
   webview.addContentScripts(
-      [{"name": 'myrule1',
-        "matches": ['http://*/extensions/*'],
-        "js": ['inject_comm_channel.js'],
-        "run_at": 'document_start'},
-       {"name": 'myrule2',
-        "matches": ['http://*/extensions/*'],
-        "js": ['inject_comm_channel_2.js'],
-        "run_at": 'document_start'}]);
+      [{name: 'myrule1',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['inject_comm_channel.js']
+        },
+        run_at: 'document_start'},
+       {name: 'myrule2',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['inject_comm_channel_2.js']
+        },
+        run_at: 'document_start'}]);
 
   webview.addEventListener('loadstop', function() {
     var msg1 = [request_to_comm_channel_1];
@@ -853,10 +859,12 @@ function testAddContentScriptWithSameNameShouldOverwriteTheExistingOne() {
 
   console.log('Step 1: call <webview>.addContentScripts(myrule1)');
   webview.addContentScripts(
-      [{"name": 'myrule1',
-        "matches": ['http://*/extensions/*'],
-        "js": ['inject_comm_channel.js'],
-        "run_at": 'document_start'}]);
+      [{name: 'myrule1',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['inject_comm_channel.js']
+        },
+        run_at: 'document_start'}]);
   var connect_script_1 = true;
   var connect_script_2 = false;
 
@@ -882,10 +890,12 @@ function testAddContentScriptWithSameNameShouldOverwriteTheExistingOne() {
             'Step 2: A communication channel has been established with webview.'
             );
         webview.addContentScripts(
-            [{"name": 'myrule1',
-              "matches": ['http://*/extensions/*'],
-              "js": ['inject_comm_channel_2.js'],
-              "run_at": 'document_start'}]);
+            [{name: 'myrule1',
+              matches: ['http://*/extensions/*'],
+              js: {
+                files: ['inject_comm_channel_2.js']
+              },
+              run_at: 'document_start'}]);
         connect_script_2 = true;
         should_get_response_from_script_1 = false;
         webview.src = embedder.emptyGuestURL;
@@ -919,10 +929,12 @@ function testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView() {
 
   console.log('Step 1: call <webview1>.addContentScripts.');
   webview1.addContentScripts(
-      [{"name": 'myrule',
-        "matches": ['http://*/extensions/*'],
-        "js": ['inject_comm_channel.js'],
-        "run_at": 'document_start'}]);
+      [{name: 'myrule',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['inject_comm_channel.js']
+        },
+        run_at: 'document_start'}]);
 
   webview2.addEventListener('loadstop', function() {
     console.log('Step 2: webview2 requests to build communication channel.');
@@ -960,10 +972,12 @@ function testAddAndRemoveContentScripts() {
 
   console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
-      [{"name": 'myrule',
-        "matches": ['http://*/extensions/*'],
-        "js": ['inject_comm_channel.js'],
-        "run_at": 'document_start'}]);
+      [{name: 'myrule',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['inject_comm_channel.js']
+        },
+        run_at: 'document_start'}]);
 
   var count = 0;
   webview.addEventListener('loadstop', function() {
@@ -1023,10 +1037,12 @@ function testAddContentScriptsWithNewWindowAPI() {
 
     console.log('Step 2: call newwebview.addContentScripts.');
     newwebview.addContentScripts(
-        [{"name": 'myrule',
-          "matches": ['http://*/extensions/*'],
-          "js": ['inject_comm_channel.js'],
-          "run_at": 'document_start'}]);
+        [{name: 'myrule',
+          matches: ['http://*/extensions/*'],
+          js: {
+            files: ['inject_comm_channel.js']
+          },
+          run_at: 'document_start'}]);
 
     newwebview.addEventListener('loadstop', function(evt) {
       var msg = [request_to_comm_channel_1];
@@ -1069,10 +1085,12 @@ function testContentScriptIsInjectedAfterTerminateAndReloadWebView() {
 
   console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
-      [{"name": 'myrule',
-        "matches": ['http://*/extensions/*'],
-        "js": ['inject_comm_channel.js'],
-        "run_at": 'document_start'}]);
+      [{name: 'myrule',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['inject_comm_channel.js']
+        },
+        run_at: 'document_start'}]);
 
   var count = 0;
   webview.addEventListener('loadstop', function() {
@@ -1117,10 +1135,12 @@ function testContentScriptExistsAsLongAsWebViewTagExists() {
 
   console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
-      [{"name": 'myrule',
-        "matches": ['http://*/extensions/*'],
-        "js": ['simple_script.js'],
-        "run_at": 'document_end'}]);
+      [{name: 'myrule',
+        matches: ['http://*/extensions/*'],
+        js: {
+          files: ['simple_script.js']
+        },
+        run_at: 'document_end'}]);
 
   var count = 0;
   webview.addEventListener('loadstop', function() {
@@ -1161,10 +1181,12 @@ function testAddContentScriptWithCode() {
 
   console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
-      [{"name": 'myrule',
-        "matches": ['http://*/extensions/*'],
-        "code": 'document.body.style.backgroundColor = \'red\';',
-        "run_at": 'document_end'}]);
+      [{name: 'myrule',
+        matches: ['http://*/extensions/*'],
+        js: {
+          code: 'document.body.style.backgroundColor = \'red\';'
+        },
+        run_at: 'document_end'}]);
 
   webview.addEventListener('loadstop', function() {
     console.log('Step 2: call webview.executeScript() to check result.')

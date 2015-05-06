@@ -25,6 +25,7 @@
 using content::WebContents;
 using extensions::ExtensionResource;
 using extensions::core_api::web_view_internal::ContentScriptDetails;
+using extensions::core_api::web_view_internal::InjectionItems;
 using extensions::core_api::web_view_internal::SetPermission::Params;
 using extensions::core_api::extension_types::InjectDetails;
 using extensions::UserScript;
@@ -77,6 +78,35 @@ HostID GenerateHostIDFromEmbedder(const extensions::Extension* extension,
   }
   NOTREACHED();
   return HostID();
+}
+
+// Creates content script files when parsing InjectionItems of "js" or "css"
+// proterties, and stores them in the |result|.
+void AddScriptFiles(const GURL& owner_base_url,
+                    const extensions::Extension* extension,
+                    const InjectionItems& items,
+                    UserScript::FileList* result) {
+  // files:
+  if (items.files) {
+    for (const std::string& relative : *items.files) {
+      GURL url = owner_base_url.Resolve(relative);
+      if (extension) {
+        ExtensionResource resource = extension->GetResource(relative);
+        result->push_back(UserScript::File(resource.extension_root(),
+                                           resource.relative_path(), url));
+      } else {
+        result->push_back(extensions::UserScript::File(base::FilePath(),
+                                                       base::FilePath(), url));
+      }
+    }
+  }
+  // code:
+  if (items.code) {
+    extensions::UserScript::File file((base::FilePath()), (base::FilePath()),
+                                      GURL());
+    file.set_content(*items.code);
+    result->push_back(file);
+  }
 }
 
 // Parses the values stored in ContentScriptDetails, and constructs a
@@ -146,55 +176,29 @@ bool ParseContentScript(const ContentScriptDetails& script_value,
 
   // css:
   if (script_value.css) {
-    for (const std::string& relative : *(script_value.css.get())) {
-      GURL url = owner_base_url.Resolve(relative);
-      if (extension) {
-        ExtensionResource resource = extension->GetResource(relative);
-        script->css_scripts().push_back(UserScript::File(
-            resource.extension_root(), resource.relative_path(), url));
-      } else {
-        script->css_scripts().push_back(extensions::UserScript::File(
-            base::FilePath(), base::FilePath(), url));
-      }
-    }
+    AddScriptFiles(owner_base_url, extension, *script_value.css,
+                   &script->css_scripts());
   }
 
   // js:
   if (script_value.js) {
-    for (const std::string& relative : *(script_value.js.get())) {
-      GURL url = owner_base_url.Resolve(relative);
-      if (extension) {
-        ExtensionResource resource = extension->GetResource(relative);
-        script->js_scripts().push_back(UserScript::File(
-            resource.extension_root(), resource.relative_path(), url));
-      } else {
-        script->js_scripts().push_back(extensions::UserScript::File(
-            base::FilePath(), base::FilePath(), url));
-      }
-    }
-  }
-
-  // code:
-  if (script_value.code) {
-    extensions::UserScript::File file((base::FilePath()), (base::FilePath()),
-                                      GURL());
-    file.set_content(*(script_value.code.get()));
-    script->js_scripts().push_back(file);
+    AddScriptFiles(owner_base_url, extension, *script_value.js,
+                   &script->js_scripts());
   }
 
   // all_frames:
   if (script_value.all_frames)
-    script->set_match_all_frames(*(script_value.all_frames));
+    script->set_match_all_frames(*script_value.all_frames);
 
   // include_globs:
   if (script_value.include_globs) {
-    for (const std::string& glob : *(script_value.include_globs.get()))
+    for (const std::string& glob : *script_value.include_globs)
       script->add_glob(glob);
   }
 
   // exclude_globs:
   if (script_value.exclude_globs) {
-    for (const std::string& glob : *(script_value.exclude_globs.get()))
+    for (const std::string& glob : *script_value.exclude_globs)
       script->add_exclude_glob(glob);
   }
 

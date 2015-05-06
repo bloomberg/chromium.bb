@@ -158,11 +158,13 @@ cr.define('cr.login', function() {
         ['blocking', 'responseHeaders']);
 
     this.webview_.addContentScripts([{
-      'name': 'samlInjected',
-      'matches': ['http://*/*', 'https://*/*'],
-      'code': injectedJs,
-      'all_frames': true,
-      'run_at': 'document_start'
+      name: 'samlInjected',
+      matches: ['http://*/*', 'https://*/*'],
+      js: {
+        code: injectedJs
+      },
+      all_frames: true,
+      run_at: 'document_start'
     }]);
 
     PostMessageChannel.runAsDaemon(this.onConnected_.bind(this));
