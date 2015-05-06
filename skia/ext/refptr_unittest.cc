@@ -44,7 +44,7 @@ TEST(RefPtrTest, ReferenceCounting) {
       EXPECT_FALSE(ref->unique());
 
       EXPECT_FALSE(refptr2);
-      EXPECT_EQ(NULL, refptr2.get());
+      EXPECT_EQ(nullptr, refptr2.get());
 
       EXPECT_TRUE(refptr3);
       EXPECT_FALSE(refptr3->unique());
@@ -203,6 +203,24 @@ TEST(RefPtrTest, PassIntoSelf) {
   object = object.Pass();
   ASSERT_FALSE(is_destroyed);
   EXPECT_TRUE(object->unique());
+}
+
+TEST(RefPtrTest, Nullptr) {
+  RefPtr<SkRefCnt> null(nullptr);
+  EXPECT_FALSE(null);
+
+  bool is_destroyed = false;
+  RefPtr<DestructionNotifier> destroy_me =
+      skia::AdoptRef(new DestructionNotifier(&is_destroyed));
+  destroy_me = nullptr;
+  EXPECT_TRUE(is_destroyed);
+  EXPECT_FALSE(destroy_me);
+
+  // Check that returning nullptr from a function correctly causes an implicit
+  // conversion.
+  auto lambda = []() -> RefPtr<SkRefCnt> { return nullptr; };
+  RefPtr<SkRefCnt> returned = lambda();
+  EXPECT_FALSE(returned);
 }
 
 }  // namespace

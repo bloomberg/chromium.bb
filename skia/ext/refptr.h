@@ -54,7 +54,9 @@ template<typename T>
 class RefPtr {
   TYPE_WITH_MOVE_CONSTRUCTOR_FOR_CPP_03(RefPtr)
  public:
-  RefPtr() : ptr_(NULL) {}
+  RefPtr() : ptr_(nullptr) {}
+
+  RefPtr(decltype(nullptr)) : ptr_(nullptr) {}
 
   RefPtr(const RefPtr& other)
       : ptr_(other.get()) {
@@ -77,6 +79,11 @@ class RefPtr {
     clear();
   }
 
+  RefPtr& operator=(decltype(nullptr)) {
+    clear();
+    return *this;
+  }
+
   RefPtr& operator=(const RefPtr& other) {
     SkRefCnt_SafeAssign(ptr_, other.get());
     return *this;
@@ -97,7 +104,7 @@ class RefPtr {
 
   void clear() {
     T* to_unref = ptr_;
-    ptr_ = NULL;
+    ptr_ = nullptr;
     SkSafeUnref(to_unref);
   }
 
@@ -107,7 +114,7 @@ class RefPtr {
 
   typedef T* RefPtr::*unspecified_bool_type;
   operator unspecified_bool_type() const {
-    return ptr_ ? &RefPtr::ptr_ : NULL;
+    return ptr_ ? &RefPtr::ptr_ : nullptr;
   }
 
  private:
