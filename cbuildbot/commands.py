@@ -906,11 +906,11 @@ def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
                            suite_min_duts=0):
   """Create a proxied run_suite command for the given arguments.
 
-   Args:
-     See RunHWTestSuite.
+  Args:
+    See RunHWTestSuite.
 
-   Returns:
-     Proxied run_suite command.
+  Returns:
+    Proxied run_suite command.
   """
   cmd = [_AUTOTEST_RPC_CLIENT,
          _AUTOTEST_RPC_HOSTNAME,
@@ -2112,10 +2112,10 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
 def PatchChrome(chrome_root, patch, subdir):
   """Apply a patch to Chrome.
 
-   Args:
-     chrome_root: The directory where chrome is stored.
-     patch: Rietveld issue number to apply.
-     subdir: Subdirectory to apply patch in.
+  Args:
+    chrome_root: The directory where chrome is stored.
+    patch: Rietveld issue number to apply.
+    subdir: Subdirectory to apply patch in.
   """
   cmd = ['apply_issue', '-i', patch]
   cros_build_lib.RunCommand(cmd, cwd=os.path.join(chrome_root, subdir))

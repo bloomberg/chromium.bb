@@ -521,7 +521,7 @@ class _PaygenPayload(object):
 
     Returns:
       List of payload signatures, List of metadata signatures.
-      """
+    """
     # Create hashes to sign.
     payload_hash = self._GenPayloadHash()
     metadata_hash = self._GenMetadataHash()

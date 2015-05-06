@@ -467,7 +467,7 @@ class ReportStage(generic_stages.BuilderStage,
                         sync_instance=None, completion_instance=None):
     """Generate ReportStage metadata.
 
-   Args:
+    Args:
       config: The build config for this run.  Defaults to self._run.config.
       stage: The stage name that this metadata file is being uploaded for.
       final_status: Whether the build passed or failed. If None, the build

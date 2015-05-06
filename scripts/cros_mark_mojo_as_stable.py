@@ -44,10 +44,10 @@ def GetStableEBuilds(ebuild_dir):
   """Gets all stable ebuilds from the given directory.
 
   Args:
-     ebuild_dir: Path to the directory to look in.
+    ebuild_dir: Path to the directory to look in.
 
   Returns:
-     An array of ebuilds in the given directory.
+    An array of ebuilds in the given directory.
   """
   return [x for x in os.listdir(ebuild_dir)
           if x.endswith('.ebuild') and not

@@ -264,7 +264,7 @@ class PackageIndex(object):
     """Write pkgindex to a temporary file.
 
     Args:
-     pkgindex: The PackageIndex object.
+      pkgindex: The PackageIndex object.
 
     Returns:
       A temporary file containing the packages from pkgindex.

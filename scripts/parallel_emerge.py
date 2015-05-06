@@ -534,8 +534,8 @@ class DepGraphGenerator(object):
     """Print the deps we have seen in the emerge output.
 
     Args:
-     deps: Dependency tree structure.
-     depth: Allows printing the tree recursively, with indentation.
+      deps: Dependency tree structure.
+      depth: Allows printing the tree recursively, with indentation.
     """
     for entry in sorted(deps):
       action = deps[entry]["action"]

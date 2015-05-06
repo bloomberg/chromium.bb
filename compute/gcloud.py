@@ -215,15 +215,15 @@ class GCContext(object):
     identify the the image used to create the instance.
 
     Args:
-       instance: The name of the instance to create.
-       image: The source image to create |instance| from.
-       machine_type: The machine type to use.
-       address: The external IP address to assign to |instance|.
-       wait_until_sshable: After creating |instance|, wait until
-         we can ssh into |instance|.
-       scopes: The list (or tuple) of service account scopes.
-       tags: List of tags to be assigned to the instance.
-       kwargs: See DoZoneSpecificCommand.
+      instance: The name of the instance to create.
+      image: The source image to create |instance| from.
+      machine_type: The machine type to use.
+      address: The external IP address to assign to |instance|.
+      wait_until_sshable: After creating |instance|, wait until
+        we can ssh into |instance|.
+      scopes: The list (or tuple) of service account scopes.
+      tags: List of tags to be assigned to the instance.
+      kwargs: See DoZoneSpecificCommand.
     """
     cmd = ['instances', 'create', instance]
     if image:

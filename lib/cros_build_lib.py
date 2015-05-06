@@ -2056,7 +2056,7 @@ def PrintDetailedTraceback(exc_info=None, file=None):
   Args:
     exc_info: The exception tuple to format; defaults to sys.exc_info().
       See the help on that function for details on the type.
-   file: The file object to write the details to; defaults to sys.stderr.
+    file: The file object to write the details to; defaults to sys.stderr.
   """
   # We use |file| to match the existing traceback API.
   # pylint: disable=redefined-builtin

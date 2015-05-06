@@ -56,6 +56,7 @@ class DocStringChecker(BaseChecker):
   class _MessageCP012(object): pass
   class _MessageCP013(object): pass
   class _MessageCP014(object): pass
+  class _MessageCP015(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
   name = 'doc_string_checker'
@@ -94,6 +95,8 @@ class DocStringChecker(BaseChecker):
                 ('docstring-too-many-newlines'), _MessageCP013),
       'C9014': ('Second line should be blank',
                 ('docstring-second-line-blank'), _MessageCP014),
+      'C9015': ('Section indentation is incorrect: %s' % MSG_ARGS,
+                ('docstring-section-indent'), _MessageCP015),
   }
   options = ()
 
@@ -251,6 +254,20 @@ class DocStringChecker(BaseChecker):
     lineno_sections = filter(valid_lineno, lineno_sections)
     if lineno_sections != sorted(lineno_sections):
       self.add_message('C9008', node=node, line=node.fromlineno)
+
+    # Check the indentation level on all the sections.
+    # The -1 line holds the trailing """ itself and that should be indented to
+    # the correct number of spaces.  All checks below are relative to this.  If
+    # it is off, then these checks might report weird errors, but that's ok as
+    # ultimately the docstring is still wrong :).
+    indent_len = len(lines[-1])
+    for lineno in lineno_sections:
+      # First the section header (e.g. Args:).
+      lineno += 1
+      line = lines[lineno]
+      if len(line) - len(line.lstrip(' ')) != indent_len:
+        margs = {'offset': lineno, 'line': line}
+        self.add_message('C9015', node=node, line=node.fromlineno, args=margs)
 
   def _check_all_args_in_doc(self, node, lines):
     """All function arguments are mentioned in doc"""

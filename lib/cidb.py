@@ -355,7 +355,7 @@ class SchemaVersionedMySQLConnection(object):
 
     Raises:
       DBException if the table does not have a single column primary key.
-   """
+    """
     self._ReflectToMetadata()
     t = self._meta.tables[table]
 

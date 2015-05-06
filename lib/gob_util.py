@@ -519,8 +519,8 @@ def GetCommitDate(git_url, commit):
   information - you should assume UTC.
 
   Args:
-     git_url: URL for the repository to get the commit date from.
-     commit: A git commit identifier (e.g. a sha1).
+    git_url: URL for the repository to get the commit date from.
+    commit: A git commit identifier (e.g. a sha1).
 
   Returns:
      A datetime object.

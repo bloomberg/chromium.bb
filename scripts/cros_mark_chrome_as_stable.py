@@ -61,7 +61,7 @@ def _GetVersionContents(chrome_version_info):
   """Returns the current Chromium version, from the contents of a VERSION file.
 
   Args:
-     chrome_version_info: The contents of a chromium VERSION file.
+    chrome_version_info: The contents of a chromium VERSION file.
   """
   chrome_version_array = []
   for line in chrome_version_info.splitlines():
@@ -74,10 +74,10 @@ def _GetSpecificVersionUrl(git_url, revision, time_to_wait=600):
   """Returns the Chromium version, from a repository URL and version.
 
   Args:
-     git_url: Repository URL for chromium.
-     revision: the git revision we want to use.
-     time_to_wait: the minimum period before abandoning our wait for the
-         desired revision to be present.
+    git_url: Repository URL for chromium.
+    revision: the git revision we want to use.
+    time_to_wait: the minimum period before abandoning our wait for the
+      desired revision to be present.
   """
   parsed_url = urlparse.urlparse(git_url)
   host = parsed_url[1]
@@ -106,7 +106,7 @@ def _GetTipOfTrunkVersionFile(root):
   """Returns the current Chromium version, from a file in a checkout.
 
   Args:
-     root: path to the root of the chromium checkout.
+    root: path to the root of the chromium checkout.
   """
   version_file = os.path.join(root, 'src', 'chrome', 'VERSION')
   chrome_version_info = cros_build_lib.RunCommand(

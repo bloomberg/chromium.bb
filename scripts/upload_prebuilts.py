@@ -263,12 +263,12 @@ def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
 def GetBoardOverlay(build_path, target):
   """Get the path to the board variant.
 
-   Args:
-     build_path: The path to the root of the build directory
-     target: The target board as a BuildTarget object.
+  Args:
+    build_path: The path to the root of the build directory
+    target: The target board as a BuildTarget object.
 
-   Returns:
-     The last overlay configured for the given board as a string.
+  Returns:
+    The last overlay configured for the given board as a string.
   """
   board = target.board_variant
   overlays = portage_util.FindOverlays(constants.BOTH_OVERLAYS, board,

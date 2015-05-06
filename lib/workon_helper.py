@@ -486,7 +486,7 @@ class WorkonHelper(object):
       use_workon_only: True iff we should ignore the package list, and instead
           consider all possible atoms for the system in question that define
           only the -9999 ebuild.
-      """
+    """
     if use_all or use_workon_only:
       ebuilds = self._GetWorkonEbuilds(filter_workon=use_workon_only)
       atoms = [portage_util.EbuildToCP(ebuild) for ebuild in ebuilds]

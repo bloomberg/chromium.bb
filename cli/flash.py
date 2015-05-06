@@ -495,8 +495,8 @@ class RemoteDeviceUpdater(object):
     for base images.
 
     Args:
-       device: A ChromiumOSDevice object.
-       tempdir: A temporary directory to store files.
+      device: A ChromiumOSDevice object.
+      tempdir: A temporary directory to store files.
 
     Returns:
       True if we can start devserver; False otherwise.

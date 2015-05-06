@@ -149,6 +149,11 @@ class DocStringCheckerTest(CheckerTestCase):
 
       @returns None
       """,
+      """the indentation is incorrect
+
+        Args:
+          some: day
+      """,
   )
 
   # The current linter isn't good enough yet to detect these.
@@ -159,11 +164,6 @@ class DocStringCheckerTest(CheckerTestCase):
         bloop: de
 
       returns something
-      """,
-      """the indentation is incorrect
-
-        Args:
-          some: day
       """,
   )
 
