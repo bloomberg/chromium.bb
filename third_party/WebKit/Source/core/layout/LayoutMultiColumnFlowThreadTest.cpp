@@ -110,7 +110,7 @@ TEST_F(MultiColumnRenderingTest, OneBlock)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "c");
     LayoutMultiColumnSet* columnSet = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("block")->layoutObject()), columnSet);
 }
 
 TEST_F(MultiColumnRenderingTest, TwoBlocks)
@@ -120,8 +120,8 @@ TEST_F(MultiColumnRenderingTest, TwoBlocks)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "c");
     LayoutMultiColumnSet* columnSet = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block1")->layoutObject()), columnSet);
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block2")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("block1")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("block2")->layoutObject()), columnSet);
 }
 
 TEST_F(MultiColumnRenderingTest, Spanner)
@@ -143,7 +143,7 @@ TEST_F(MultiColumnRenderingTest, ContentThenSpanner)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "cs");
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContent")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("columnContent")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->layoutObject()), nullptr);
@@ -158,7 +158,7 @@ TEST_F(MultiColumnRenderingTest, SpannerThenContent)
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContent")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("columnContent")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->layoutObject()), nullptr);
 }
 
@@ -170,12 +170,12 @@ TEST_F(MultiColumnRenderingTest, ContentThenSpannerThenContent)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "csc");
     LayoutBox* columnBox = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContentBefore")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("columnContentBefore")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContentBefore")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContentAfter")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("columnContentAfter")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContentAfter")->layoutObject()), nullptr);
 }
 
@@ -206,7 +206,7 @@ TEST_F(MultiColumnRenderingTest, SpannerThenContentThenSpanner)
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(columnBox, columnSet);
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContent")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("columnContent")->layoutObject()), columnSet);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner2")->layoutObject()), columnBox);
@@ -232,8 +232,8 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpanner)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "csc");
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("outer")->layoutObject()), columnBox);
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block1")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("outer")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("block1")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     EXPECT_EQ(document().getElementById("spanner")->layoutObject()->spannerPlaceholder(), columnBox);
@@ -242,7 +242,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpanner)
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("block1")->layoutObject()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("block2")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block2")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("block2")->layoutObject()), columnBox);
 }
 
 TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner)
@@ -255,7 +255,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner)
     EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner1")->layoutObject());
     EXPECT_EQ(document().getElementById("spanner1")->layoutObject()->spannerPlaceholder(), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("outer")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("outer")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner2")->layoutObject()), columnBox);
     EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner2")->layoutObject());
@@ -263,7 +263,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner)
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("outer")->layoutObject()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("after")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("after")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("after")->layoutObject()), columnBox);
 }
 
 TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner)
@@ -272,7 +272,7 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "cscs");
     LayoutBox* columnBox = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("outer")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->mapDescendantToColumnSet(document().getElementById("outer")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->layoutObject()), columnBox);
     EXPECT_EQ(document().getElementById("spanner1")->layoutObject()->spannerPlaceholder(), columnBox);

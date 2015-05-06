@@ -95,7 +95,7 @@ static LayoutObject* lastLayoutObjectInSet(LayoutMultiColumnSet* multicolSet)
     return toLayoutMultiColumnSpannerPlaceholder(sibling)->layoutObjectInFlowThread()->previousInPreOrder(multicolSet->flowThread());
 }
 
-LayoutMultiColumnSet* LayoutMultiColumnFlowThread::findSetLayoutObjects(LayoutObject* layoutObject) const
+LayoutMultiColumnSet* LayoutMultiColumnFlowThread::mapDescendantToColumnSet(LayoutObject* layoutObject) const
 {
     ASSERT(!containingColumnSpannerPlaceholder(layoutObject)); // should not be used for spanners or content inside them.
     ASSERT(layoutObject != this);
@@ -515,8 +515,8 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
                         // We're inside regular column content with both feet. Find out which column
                         // set this is. It needs to be split it into two sets, so that we can insert
                         // a new spanner placeholder between them.
-                        setToSplit = findSetLayoutObjects(previousLayoutObject);
-                        ASSERT(setToSplit == findSetLayoutObjects(objectAfterSubtree));
+                        setToSplit = mapDescendantToColumnSet(previousLayoutObject);
+                        ASSERT(setToSplit == mapDescendantToColumnSet(objectAfterSubtree));
                         setToSplit->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
                         insertBefore = setToSplit->nextSiblingMultiColumnBox();
                         // We've found out which set that needs to be split. Now proceed to
@@ -555,8 +555,8 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
             } else {
                 // Otherwise, since |objectAfterSubtree| isn't a spanner, it has to mean that there's
                 // already a set for that content. We can use it for this layoutObject too.
-                ASSERT(findSetLayoutObjects(objectAfterSubtree));
-                ASSERT(findSetLayoutObjects(layoutObject) == findSetLayoutObjects(objectAfterSubtree));
+                ASSERT(mapDescendantToColumnSet(objectAfterSubtree));
+                ASSERT(mapDescendantToColumnSet(layoutObject) == mapDescendantToColumnSet(objectAfterSubtree));
             }
         } else {
             // Inserting at the end. Then we just need to make sure that there's a column set at the end.
@@ -622,8 +622,9 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
             return; // Followed by column content. Set still needed.
     }
     // We have now determined that, with the removal of |descendant|, we should remove a column
-    // set. Locate it and remove it. Do it without involving findSetLayoutObjects(), as that might be
-    // very slow. Deduce the right set from the spanner placeholders that we've already found.
+    // set. Locate it and remove it. Do it without involving mapDescendantToColumnSet(), as that
+    // might be very slow. Deduce the right set from the spanner placeholders that we've already
+    // found.
     LayoutMultiColumnSet* columnSetToRemove;
     if (adjacentNextSpannerPlaceholder) {
         columnSetToRemove = toLayoutMultiColumnSet(adjacentNextSpannerPlaceholder->previousSiblingMultiColumnBox());

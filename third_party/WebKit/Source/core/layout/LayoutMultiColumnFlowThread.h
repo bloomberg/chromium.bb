@@ -142,8 +142,8 @@ public:
         return lastSiblingBox != this ? lastSiblingBox : 0;
     }
 
-    // Find the first set inside which the specified layoutObject would be rendered.
-    LayoutMultiColumnSet* findSetLayoutObjects(LayoutObject*) const;
+    // Find the first set inside which the specified layoutObject (which is a flowthread descendant) would be rendered.
+    LayoutMultiColumnSet* mapDescendantToColumnSet(LayoutObject*) const;
 
     // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
     // any. This includes the layoutObject for the element that actually establishes the spanner too.
