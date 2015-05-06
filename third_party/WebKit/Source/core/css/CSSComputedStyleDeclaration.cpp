@@ -452,8 +452,6 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* sty
     // FIXME: Some of these cases could be narrowed down or optimized better.
     switch (propertyID) {
     case CSSPropertyBottom:
-    case CSSPropertyGridTemplateColumns:
-    case CSSPropertyGridTemplateRows:
     case CSSPropertyHeight:
     case CSSPropertyLeft:
     case CSSPropertyRight:
@@ -495,6 +493,11 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* sty
         return layoutObject && layoutObject->isBox() && (!style || !style->paddingRight().isFixed());
     case CSSPropertyPaddingTop:
         return layoutObject && layoutObject->isBox() && (!style || !style->paddingTop().isFixed());
+    case CSSPropertyGridTemplateColumns:
+    case CSSPropertyGridTemplateRows:
+    case CSSPropertyGridTemplate:
+    case CSSPropertyGrid:
+        return layoutObject && layoutObject->isLayoutGrid();
     default:
         return false;
     }
