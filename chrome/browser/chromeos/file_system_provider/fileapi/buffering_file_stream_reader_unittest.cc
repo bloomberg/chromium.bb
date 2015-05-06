@@ -7,8 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/buffering_file_stream_reader.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -50,7 +50,7 @@ class FakeFileStreamReader : public storage::FileStreamReader {
     log_->push_back(buf_len);
 
     if (return_error_ != net::OK) {
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, return_error_));
       return net::ERR_IO_PENDING;
     }
@@ -58,14 +58,14 @@ class FakeFileStreamReader : public storage::FileStreamReader {
     const std::string fake_data('X', buf_len);
     memcpy(buf->data(), fake_data.c_str(), buf_len);
 
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                                base::Bind(callback, buf_len));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, buf_len));
     return net::ERR_IO_PENDING;
   }
 
   int64 GetLength(const net::Int64CompletionCallback& callback) override {
     DCHECK_EQ(net::OK, return_error_);
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, kFileSize));
     return net::ERR_IO_PENDING;
   }

@@ -17,12 +17,12 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_path_override.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -103,10 +103,8 @@ class KioskAppUpdateServiceTest
     // |SequenceToken| and waiting for it to finish.
     worker_pool->PostSequencedWorkerTask(
         worker_pool->GetNamedSequenceToken("automatic-reboot-manager"),
-        FROM_HERE,
-        base::Bind(&RunCallback,
-                   base::MessageLoopProxy::current(),
-                   run_loop.QuitClosure()));
+        FROM_HERE, base::Bind(&RunCallback, base::ThreadTaskRunnerHandle::Get(),
+                              run_loop.QuitClosure()));
     run_loop.Run();
     // Ensure that the |automatic_reboot_manager_| has had a chance to fully
     // process the result of the task posted to the blocking pool.
