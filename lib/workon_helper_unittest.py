@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import os
 
 from chromite.lib import cros_test_lib
@@ -30,6 +31,10 @@ MASKED_PATTERN = '<%s-9999'
 OVERLAY_ROOT_DIR = 'overlays'
 BOARD_OVERLAY_DIR = 'overlay-' + BOARD
 HOST_OVERLAY_DIR = 'overlay-host'
+
+
+InstalledPackageMock = collections.namedtuple('InstalledPackage',
+                                              ('category', 'package'))
 
 
 class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
@@ -106,6 +111,11 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
     # Patch the modules interfaces to the rest of the world.
     self.PatchObject(portage_util, 'FindEbuildForPackage',
                      self._MockFindEbuildForPackage)
+
+    # Assume only versioned-packages is installed.
+    self.PatchObject(
+        portage_util.PortageDB, 'InstalledPackages',
+        return_value=[InstalledPackageMock('sys-apps', 'versioned-package')])
     # This basically turns off behavior related to adding repositories to
     # minilayouts.
     self.PatchObject(git.ManifestCheckout, 'IsFullManifest', return_value=True)
@@ -305,3 +315,9 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
     self.assertNotExists(file_path)
     helper.RunCommandInPackages([WORKON_ONLY_ATOM], 'touch %s' % file_name)
     self.assertExists(file_path)
+
+  def testInstalledWorkonAtoms(self):
+    """Test that we can list all the cros workon atoms that are installed."""
+    helper = self.CreateHelper()
+    self.assertEqual(set([VERSIONED_WORKON_ATOM]),
+                     helper.InstalledWorkonAtoms())

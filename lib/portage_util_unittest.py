@@ -45,6 +45,26 @@ class _DummyCommandResult(object):
 
 class EBuildTest(cros_test_lib.MoxTestCase):
   """Ebuild related tests."""
+  _MULTILINE_WITH_TEST = """
+hello
+src_test() {
+}"""
+
+  _MULTILINE_NO_TEST = """
+hello
+src_compile() {
+}"""
+
+  _MULTILINE_COMMENTED = """
+#src_test() {
+# notactive
+# }"""
+
+  _MULTILINE_PLATFORM = """
+platform_pkg_test() {
+}"""
+
+  _SINGLE_LINE_TEST = 'src_test() { echo "foo" }'
 
   def _makeFakeEbuild(self, fake_ebuild_path, fake_ebuild_content=''):
     self.mox.StubOutWithMock(fileinput, 'input')
@@ -141,6 +161,21 @@ class EBuildTest(cros_test_lib.MoxTestCase):
     fake_ebuild = self._makeFakeEbuild(
         fake_ebuild_path, fake_ebuild_content=['CROS_WORKON_BLACKLIST="1"\n'])
     self.assertEquals(fake_ebuild.is_blacklisted, True)
+
+  def testHasTest(self):
+    """Tests that we detect test stanzas correctly."""
+    def run_case(content, expected):
+      with osutils.TempDir() as temp:
+        ebuild = os.path.join(temp, 'overlay', 'app-misc',
+                              'foo-0.0.1-r1.ebuild')
+        osutils.WriteFile(ebuild, content, makedirs=True)
+        self.assertEqual(expected, portage_util.EBuild(ebuild).has_test)
+
+    run_case(self._MULTILINE_WITH_TEST, True)
+    run_case(self._MULTILINE_NO_TEST, False)
+    run_case(self._MULTILINE_COMMENTED, False)
+    run_case(self._MULTILINE_PLATFORM, True)
+    run_case(self._SINGLE_LINE_TEST, True)
 
 
 class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):

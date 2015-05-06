@@ -691,3 +691,11 @@ class WorkonHelper(object):
       atoms = self._GetCanonicalAtoms(packages)
     for atom in atoms:
       self.RunCommandInAtomSourceDirectory(atom, command)
+
+  def InstalledWorkonAtoms(self):
+    """Returns the set of installed cros_workon packages."""
+    installed_cp = set()
+    for pkg in portage_util.PortageDB(self._sysroot).InstalledPackages():
+      installed_cp.add('%s/%s' % (pkg.category, pkg.package))
+
+    return set(a for a in self.ListAtoms(use_all=True) if a in installed_cp)

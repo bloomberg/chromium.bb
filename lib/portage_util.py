@@ -23,6 +23,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import parallel
 
 
 # The parsed output of running `ebuild <ebuild path> info`.
@@ -54,6 +55,10 @@ _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
 
 WORKON_EBUILD_VERSION = '9999'
 WORKON_EBUILD_SUFFIX = '-%s.ebuild' % WORKON_EBUILD_VERSION
+
+UNITTEST_PACKAGE_BLACKLIST = set((
+    'sys-devel/binutils',
+))
 
 
 class MissingOverlayException(Exception):
@@ -459,6 +464,7 @@ class EBuild(object):
     self.is_workon = False
     self.is_stable = False
     self.is_blacklisted = False
+    self.has_test = False
     self._ReadEBuild(path)
 
   @staticmethod
@@ -473,6 +479,7 @@ class EBuild(object):
     is_workon = False
     is_stable = False
     is_blacklisted = False
+    has_test = False
     for line in fileinput.input(ebuild_path):
       if line.startswith('inherit ') and 'cros-workon' in line:
         is_workon = True
@@ -482,15 +489,19 @@ class EBuild(object):
             is_stable = True
       elif line.startswith('CROS_WORKON_BLACKLIST='):
         is_blacklisted = True
+      elif (line.startswith('src_test()') or
+            line.startswith('platform_pkg_test()')):
+        has_test = True
     fileinput.close()
-    return is_workon, is_stable, is_blacklisted
+    return is_workon, is_stable, is_blacklisted, has_test
 
   def _ReadEBuild(self, path):
     """Determine the settings of `is_workon`, `is_stable` and is_blacklisted
 
     These are determined using the static Classify function.
     """
-    self.is_workon, self.is_stable, self.is_blacklisted = EBuild.Classify(path)
+    (self.is_workon, self.is_stable,
+     self.is_blacklisted, self.has_test) = EBuild.Classify(path)
 
   @staticmethod
   def GetCrosWorkonVars(ebuild_path, pkg_name):
@@ -1597,3 +1608,36 @@ def CleanOutdatedBinaryPackages(sysroot):
   """Cleans outdated binary packages from |sysroot|."""
   return cros_build_lib.RunCommand(
       [cros_build_lib.GetSysrootToolPath(sysroot, 'eclean'), '-d', 'packages'])
+
+
+def _CheckHasTest(cp, sysroot):
+  """Checks if the ebuild for |cp| has tests.
+
+  Args:
+    cp: A portage package in the form category/package_name.
+    sysroot: Path to the sysroot.
+
+  Returns:
+    |cp| if the ebuild for |cp| defines a test stanza, None otherwise.
+  """
+  ebuild = EBuild(FindEbuildForPackage(cp, sysroot))
+  return cp if ebuild.has_test else None
+
+
+def PackagesWithTest(sysroot, packages):
+  """Returns the subset of |packages| that have unit tests.
+
+  Args:
+    sysroot: Path to the sysroot.
+    packages: List of packages to filter.
+
+  Returns:
+    The subset of |packages| that defines unit tests.
+  """
+  inputs = [(cp, sysroot) for cp in packages]
+  pkg_with_test = set(parallel.RunTasksInProcessPool(_CheckHasTest, inputs))
+
+  # CheckHasTest will return None for packages that do not have tests. We can
+  # discard that value.
+  pkg_with_test.discard(None)
+  return pkg_with_test

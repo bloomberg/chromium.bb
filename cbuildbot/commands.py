@@ -604,7 +604,8 @@ def RunUnitTests(buildroot, board, full, blacklist=None, extra_env=None):
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]
 
-  RunBuildScript(buildroot, cmd, enter_chroot=True, extra_env=extra_env or {})
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True,
+                 extra_env=extra_env or {})
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
