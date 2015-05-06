@@ -267,7 +267,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->Put(
         CopyFetchRequest(request), CopyFetchResponse(response),
-        base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
+        base::Bind(&CacheStorageCacheTest::ErrorTypeCallback,
                    base::Unretained(this), base::Unretained(loop.get())));
     // TODO(jkarlin): These functions should use base::RunLoop().RunUntilIdle()
     // once the cache uses a passed in MessageLoopProxy instead of the CACHE
@@ -337,6 +337,16 @@ class CacheStorageCacheTest : public testing::Test {
 
   void ErrorTypeCallback(base::RunLoop* run_loop,
                          CacheStorageCache::ErrorType error) {
+    callback_error_ = error;
+    if (run_loop)
+      run_loop->Quit();
+  }
+
+  void SequenceCallback(int sequence,
+                        int* sequence_out,
+                        base::RunLoop* run_loop,
+                        CacheStorageCache::ErrorType error) {
+    *sequence_out = sequence;
     callback_error_ = error;
     if (run_loop)
       run_loop->Quit();
@@ -443,26 +453,10 @@ class CacheStorageCacheMemoryOnlyTest
 
 TEST_P(CacheStorageCacheTestP, PutNoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
-  EXPECT_TRUE(callback_response_);
-  EXPECT_STREQ(no_body_response_.url.spec().c_str(),
-               callback_response_->url.spec().c_str());
-  EXPECT_FALSE(callback_response_data_);
-  EXPECT_STREQ("", callback_response_->blob_uuid.c_str());
-  EXPECT_EQ(0u, callback_response_->blob_size);
 }
 
 TEST_P(CacheStorageCacheTestP, PutBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
-  EXPECT_TRUE(callback_response_);
-  EXPECT_STREQ(body_response_.url.spec().c_str(),
-               callback_response_->url.spec().c_str());
-  EXPECT_TRUE(callback_response_data_);
-  EXPECT_STRNE("", callback_response_->blob_uuid.c_str());
-  EXPECT_EQ(expected_blob_data_.size(), callback_response_->blob_size);
-
-  std::string response_body;
-  CopyBody(callback_response_data_.get(), &response_body);
-  EXPECT_STREQ(expected_blob_data_.c_str(), response_body.c_str());
 }
 
 TEST_P(CacheStorageCacheTestP, ResponseURLDiffersFromRequestURL) {
@@ -487,7 +481,7 @@ TEST_F(CacheStorageCacheTest, PutBodyDropBlobRef) {
   scoped_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->Put(CopyFetchRequest(body_request_),
               CopyFetchResponse(body_response_),
-              base::Bind(&CacheStorageCacheTestP::ResponseAndErrorCallback,
+              base::Bind(&CacheStorageCacheTestP::ErrorTypeCallback,
                          base::Unretained(this), base::Unretained(loop.get())));
   // The handle should be held by the cache now so the deref here should be
   // okay.
@@ -768,14 +762,15 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
   delayable_backend->set_delay_open(true);
 
+  int sequence_out = -1;
+
   scoped_ptr<ServiceWorkerResponse> response1 =
       CopyFetchResponse(body_response_);
-  response1->status_code = 1;
-
   scoped_ptr<base::RunLoop> close_loop1(new base::RunLoop());
-  cache_->Put(CopyFetchRequest(body_request_), response1.Pass(),
-              base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
-                         base::Unretained(this), close_loop1.get()));
+  cache_->Put(
+      CopyFetchRequest(body_request_), response1.Pass(),
+      base::Bind(&CacheStorageCacheTest::SequenceCallback,
+                 base::Unretained(this), 1, &sequence_out, close_loop1.get()));
 
   // Blocks on opening the cache entry.
   base::RunLoop().RunUntilIdle();
@@ -783,11 +778,11 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   delayable_backend->set_delay_open(false);
   scoped_ptr<ServiceWorkerResponse> response2 =
       CopyFetchResponse(body_response_);
-  response2->status_code = 2;
   scoped_ptr<base::RunLoop> close_loop2(new base::RunLoop());
-  cache_->Put(CopyFetchRequest(body_request_), response2.Pass(),
-              base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
-                         base::Unretained(this), close_loop2.get()));
+  cache_->Put(
+      CopyFetchRequest(body_request_), response2.Pass(),
+      base::Bind(&CacheStorageCacheTest::SequenceCallback,
+                 base::Unretained(this), 2, &sequence_out, close_loop2.get()));
 
   // The second put operation should wait for the first to complete.
   base::RunLoop().RunUntilIdle();
@@ -795,9 +790,9 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
 
   delayable_backend->OpenEntryContinue();
   close_loop1->Run();
-  EXPECT_EQ(1, callback_response_->status_code);
+  EXPECT_EQ(1, sequence_out);
   close_loop2->Run();
-  EXPECT_EQ(2, callback_response_->status_code);
+  EXPECT_EQ(2, sequence_out);
 }
 
 INSTANTIATE_TEST_CASE_P(CacheStorageCacheTest,

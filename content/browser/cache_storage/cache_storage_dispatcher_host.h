@@ -130,9 +130,7 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
   void OnCachePutCallback(int thread_id,
                           int request_id,
                           const scoped_refptr<CacheStorageCache>& cache,
-                          CacheStorageCache::ErrorType error,
-                          scoped_ptr<ServiceWorkerResponse> response,
-                          scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+                          CacheStorageCache::ErrorType error);
 
   // Hangs onto a scoped_refptr for the cache if it isn't already doing so.
   // Returns a unique cache_id. Call DropCacheReference when the client is done

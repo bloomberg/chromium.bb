@@ -79,7 +79,7 @@ class CONTENT_EXPORT CacheStorageCache
   // ERROR_TYPE_OK on success.
   void Put(scoped_ptr<ServiceWorkerFetchRequest> request,
            scoped_ptr<ServiceWorkerResponse> response,
-           const ResponseCallback& callback);
+           const ErrorCallback& callback);
 
   // Returns ErrorNotFound if not found. Otherwise deletes and returns
   // ERROR_TYPE_OK.

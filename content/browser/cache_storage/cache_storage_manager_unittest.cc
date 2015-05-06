@@ -91,9 +91,7 @@ class CacheStorageManagerTest : public testing::Test {
   }
 
   void CachePutCallback(base::RunLoop* run_loop,
-                        CacheStorageCache::ErrorType error,
-                        scoped_ptr<ServiceWorkerResponse> response,
-                        scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+                        CacheStorageCache::ErrorType error) {
     callback_cache_error_ = error;
     run_loop->Quit();
   }

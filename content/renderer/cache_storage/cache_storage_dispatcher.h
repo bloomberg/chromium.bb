@@ -84,8 +84,7 @@ class CacheStorageDispatcher : public WorkerTaskRunner::Observer {
       int request_id,
       const std::vector<ServiceWorkerFetchRequest>& response);
   void OnCacheBatchSuccess(int thread_id,
-                           int request_id,
-                           const std::vector<ServiceWorkerResponse>& response);
+                           int request_id);
 
   void OnCacheMatchError(int thread_id,
                          int request_id,

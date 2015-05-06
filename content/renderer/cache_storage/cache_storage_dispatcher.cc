@@ -461,11 +461,8 @@ void CacheStorageDispatcher::OnCacheKeysSuccess(
 
 void CacheStorageDispatcher::OnCacheBatchSuccess(
     int thread_id,
-    int request_id,
-    const std::vector<ServiceWorkerResponse>& responses) {
+    int request_id) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
-  blink::WebVector<blink::WebServiceWorkerResponse> web_responses =
-      WebResponsesFromResponses(responses);
 
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Batch",
                       TimeTicks::Now() - cache_batch_times_[request_id]);

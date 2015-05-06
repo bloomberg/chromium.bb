@@ -174,10 +174,9 @@ IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheKeysSuccess,
                      int /* thread_id */,
                      int /* request_id */,
                      std::vector<content::ServiceWorkerFetchRequest>)
-IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheBatchSuccess,
+IPC_MESSAGE_CONTROL2(CacheStorageMsg_CacheBatchSuccess,
                      int /* thread_id */,
-                     int /* request_id */,
-                     std::vector<content::ServiceWorkerResponse>)
+                     int /* request_id */)
 
 // Sent at erroneous completion of CacheStorage operations.
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchError,

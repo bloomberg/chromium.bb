@@ -453,29 +453,21 @@ void CacheStorageDispatcherHost::OnCacheDeleteCallback(
     return;
   }
 
-  Send(new CacheStorageMsg_CacheBatchSuccess(
-      thread_id, request_id, std::vector<ServiceWorkerResponse>()));
+  Send(new CacheStorageMsg_CacheBatchSuccess(thread_id, request_id));
 }
 
 void CacheStorageDispatcherHost::OnCachePutCallback(
     int thread_id,
     int request_id,
     const scoped_refptr<CacheStorageCache>& cache,
-    CacheStorageCache::ErrorType error,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+    CacheStorageCache::ErrorType error) {
   if (error != CacheStorageCache::ERROR_TYPE_OK) {
     Send(new CacheStorageMsg_CacheBatchError(
         thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
   }
 
-  if (blob_data_handle)
-    StoreBlobDataHandle(blob_data_handle.Pass());
-
-  std::vector<ServiceWorkerResponse> responses;
-  responses.push_back(*response);
-  Send(new CacheStorageMsg_CacheBatchSuccess(thread_id, request_id, responses));
+  Send(new CacheStorageMsg_CacheBatchSuccess(thread_id, request_id));
 }
 
 CacheStorageDispatcherHost::CacheID
