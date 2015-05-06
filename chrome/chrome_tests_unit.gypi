@@ -205,6 +205,8 @@
       'browser/profiles/profile_info_cache_unittest.h',
       'browser/profiles/profile_manager_unittest.cc',
       'browser/profiles/profile_shortcut_manager_unittest_win.cc',
+      'browser/push_messaging/push_messaging_application_id_unittest.cc',
+      'browser/push_messaging/push_messaging_permission_context_unittest.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm',
