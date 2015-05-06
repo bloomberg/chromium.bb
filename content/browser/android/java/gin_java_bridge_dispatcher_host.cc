@@ -191,13 +191,16 @@ GinJavaBridgeDispatcherHost::RemoveHolderAndAdvanceLocked(
   objects_lock_.AssertAcquired();
   JavaObjectWeakGlobalRef result;
   scoped_refptr<GinJavaBoundObject> object((*iter_ptr)->second);
+  bool object_erased = false;
   if (!object->IsNamed()) {
     object->RemoveHolder(holder);
     if (!object->HasHolders()) {
       result = object->GetWeakRef();
       objects_.erase((*iter_ptr)++);
+      object_erased = true;
     }
-  } else {
+  }
+  if (!object_erased) {
     ++(*iter_ptr);
   }
   return result;
