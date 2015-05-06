@@ -1161,6 +1161,9 @@ crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ 
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
+crbug.com/477743 svg/W3C-SVG-1.1/masking-path-04-b.svg [ NeedsRebaseline ]
+crbug.com/477743 virtual/slimmingpaint/svg/W3C-SVG-1.1/masking-path-04-b.svg [ NeedsRebaseline ]
+
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/border-padding-pagination.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/column-rules-stacking.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/max-height-columns-block.html [ Skip ]
@@ -2093,7 +2096,6 @@ crbug.com/477743 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout C
 crbug.com/477743 virtual/slimmingpaint/svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/marker-zero-length-linecaps.svg [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/custom/use-disappears-after-style-update.svg [ Failure ]
-crbug.com/477743 virtual/slimmingpaint/svg/custom/viewport-resource-inval.svg [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/dom/filter-reference-in-shadow-tree.html [ Failure ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/dom/references-in-shadow-trees.html [ Crash ImageOnlyFailure ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/filter-child-repaint.svg [ Failure ]

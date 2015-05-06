@@ -418,11 +418,10 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
     TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
 #endif
 
-    LayoutObject* layoutObject = this->layoutObject();
-    if (layoutObject && selfHasRelativeLengths()) {
-        if (layoutObject->isSVGResourceContainer())
+    if (LayoutObject* layoutObject = this->layoutObject()) {
+        if (hasRelativeLengths() && layoutObject->isSVGResourceContainer())
             toLayoutSVGResourceContainer(layoutObject)->invalidateCacheAndMarkForLayout(layoutScope);
-        else
+        else if (selfHasRelativeLengths())
             layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown, MarkContainerChain, layoutScope);
     }
 
