@@ -94,6 +94,8 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
     delegate_.reset(new TestCardUnmaskDelegate());
   }
 
+  void FreeDelegate() { delegate_.reset(); }
+
   TestCardUnmaskPromptController* controller() { return controller_.get(); }
   TestCardUnmaskDelegate* delegate() { return delegate_.get(); }
 
@@ -137,6 +139,20 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
   runner_->Run();
 }
 #endif
+
+// Makes sure the tab can be closed while the dialog is showing.
+// https://crbug.com/484376
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
+                       CloseTabWhileDialogShowing) {
+  controller()->ShowPrompt(test::GetMaskedServerCard(),
+                           delegate()->GetWeakPtr());
+  // Simulate AutofillManager (the delegate in production code) being destroyed
+  // before CardUnmaskPromptViewBridge::OnConstrainedWindowClosed() is called.
+  FreeDelegate();
+  browser()->tab_strip_model()->GetActiveWebContents()->Close();
+
+  content::RunAllPendingInMessageLoop();
+}
 
 }  // namespace
 
