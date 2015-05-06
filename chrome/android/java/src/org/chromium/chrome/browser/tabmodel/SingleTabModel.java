@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -40,6 +42,12 @@ public class SingleTabModel implements TabModel {
 
         for (TabModelObserver observer : mObservers) {
             observer.didAddTab(tab, TabLaunchType.FROM_LINK);
+        }
+
+        int state = ApplicationStatus.getStateForActivity(mActivity);
+        if (state == ActivityState.CREATED || state == ActivityState.STARTED
+                || state == ActivityState.RESUMED) {
+            mTab.show(TabSelectionType.FROM_USER);
         }
     }
 
