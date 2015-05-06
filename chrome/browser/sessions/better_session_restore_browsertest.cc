@@ -214,14 +214,6 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   }
 
   void CheckReloadedPageNotRestored() {
-    // If only active tabs are loaded, force loading of the tabs.
-    if (SessionRestore::WillLoadActiveTabsOnly()) {
-      for (int i = 0; i < browser()->tab_strip_model()->count(); i++) {
-        content::WebContents* web_contents =
-            browser()->tab_strip_model()->GetWebContentsAt(i);
-        web_contents->GetController().LoadIfNecessary();
-      }
-    }
     CheckReloadedPageNotRestored(browser());
   }
 

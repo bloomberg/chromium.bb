@@ -299,9 +299,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     if (succeeded) {
       // Start Loading tabs.
-      bool active_only = SessionRestore::WillLoadActiveTabsOnly();
-      SessionRestoreDelegate::RestoreTabs(contents_created, restore_started_,
-                                          active_only);
+      SessionRestoreDelegate::RestoreTabs(contents_created, restore_started_);
     }
 
     if (!synchronous_) {
@@ -818,15 +816,6 @@ SessionRestore::CallbackSubscription
     SessionRestore::RegisterOnSessionRestoredCallback(
         const base::Callback<void(int)>& callback) {
   return on_session_restored_callbacks()->Add(callback);
-}
-
-// static
-bool SessionRestore::WillLoadActiveTabsOnly() {
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find("SessionRestoreBackgroundLoading");
-  if (!trial || trial->group_name() == "Restore")
-    return false;
-  return true;
 }
 
 // static

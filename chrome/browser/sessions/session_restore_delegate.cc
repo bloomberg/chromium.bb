@@ -10,21 +10,9 @@
 #include "components/favicon/content/content_favicon_driver.h"
 
 // static
-void SessionRestoreDelegate::RestoreTabs(const std::vector<RestoredTab>& tabs,
-                                         const base::TimeTicks& restore_started,
-                                         bool active_only) {
-  SessionRestoreStatsCollector::TrackTabs(tabs, restore_started, active_only);
-  if (!active_only) {
-    TabLoader::RestoreTabs(tabs, restore_started);
-  } else {
-    // If we are not loading inactive tabs, restore their favicons (title has
-    // already been set by now).
-    for (auto& tab : tabs) {
-      if (!tab.is_active) {
-        favicon::ContentFaviconDriver* favicon_driver =
-            favicon::ContentFaviconDriver::FromWebContents(tab.contents);
-        favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
-      }
-    }
-  }
+void SessionRestoreDelegate::RestoreTabs(
+    const std::vector<RestoredTab>& tabs,
+    const base::TimeTicks& restore_started) {
+  SessionRestoreStatsCollector::TrackTabs(tabs, restore_started);
+  TabLoader::RestoreTabs(tabs, restore_started);
 }
