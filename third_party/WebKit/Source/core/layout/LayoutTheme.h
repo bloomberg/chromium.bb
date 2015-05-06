@@ -90,9 +90,10 @@ public:
     // the theme needs to communicate this inflated rect to the engine so that it can invalidate the whole control.
     virtual void adjustPaintInvalidationRect(const LayoutObject*, IntRect&);
 
-    // This method is called whenever a relevant state changes on a particular themed object, e.g., the mouse becomes pressed
-    // or a control becomes disabled.
-    virtual bool stateChanged(LayoutObject*, ControlState) const;
+    // This method is called whenever a control state changes on a particular themed object, e.g., the mouse becomes pressed
+    // or a control becomes disabled. The ControlState parameter indicates which state has changed (from having to not having,
+    // or vice versa).
+    bool controlStateChanged(LayoutObject&, ControlState) const;
 
     bool shouldDrawDefaultFocusRing(LayoutObject*) const;
 

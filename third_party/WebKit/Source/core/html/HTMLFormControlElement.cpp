@@ -159,8 +159,8 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
         if (wasReadOnly != m_isReadOnly) {
             setNeedsWillValidateCheck();
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
-            if (layoutObject() && layoutObject()->style()->hasAppearance())
-                LayoutTheme::theme().stateChanged(layoutObject(), ReadOnlyControlState);
+            if (layoutObject())
+                LayoutTheme::theme().controlStateChanged(*layoutObject(), ReadOnlyControlState);
         }
     } else if (name == requiredAttr) {
         bool wasRequired = m_isRequired;
@@ -180,8 +180,8 @@ void HTMLFormControlElement::disabledAttributeChanged()
     setNeedsWillValidateCheck();
     pseudoStateChanged(CSSSelector::PseudoDisabled);
     pseudoStateChanged(CSSSelector::PseudoEnabled);
-    if (layoutObject() && layoutObject()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(layoutObject(), EnabledControlState);
+    if (layoutObject())
+        LayoutTheme::theme().controlStateChanged(*layoutObject(), EnabledControlState);
     if (isDisabledFormControl() && treeScope().adjustedFocusedElement() == this) {
         // We might want to call blur(), but it's dangerous to dispatch events
         // here.
@@ -389,6 +389,7 @@ void HTMLFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, WebF
 {
     if (type != WebFocusTypePage)
         m_wasFocusedByMouse = type == WebFocusTypeMouse;
+    // ContainerNode::handleStyleChangeOnFocusStateChange() will inform LayoutTheme about the focus state change.
     HTMLElement::dispatchFocusEvent(oldFocusedElement, type);
 }
 
@@ -398,9 +399,14 @@ void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
         return;
     if (!event.isKeyboardEvent() || event.type() != EventTypeNames::keydown)
         return;
+
+    bool oldShouldHaveFocusAppearance = shouldHaveFocusAppearance();
     m_wasFocusedByMouse = false;
-    if (layoutObject())
-        layoutObject()->setShouldDoFullPaintInvalidation();
+
+    // Change of m_wasFocusByMouse may affect shouldHaveFocusAppearance() and LayoutTheme::isFocused().
+    // Inform LayoutTheme if shouldHaveFocusAppearance() changes.
+    if (oldShouldHaveFocusAppearance != shouldHaveFocusAppearance() && layoutObject())
+        LayoutTheme::theme().controlStateChanged(*layoutObject(), FocusControlState);
 }
 
 short HTMLFormControlElement::tabIndex() const

@@ -204,8 +204,8 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (oldDisabled != m_disabled) {
             pseudoStateChanged(CSSSelector::PseudoDisabled);
             pseudoStateChanged(CSSSelector::PseudoEnabled);
-            if (layoutObject() && layoutObject()->style()->hasAppearance())
-                LayoutTheme::theme().stateChanged(layoutObject(), EnabledControlState);
+            if (layoutObject())
+                LayoutTheme::theme().controlStateChanged(*layoutObject(), EnabledControlState);
         }
     } else if (name == selectedAttr) {
         if (bool willBeSelected = !value.isNull())

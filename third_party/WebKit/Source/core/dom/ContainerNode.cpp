@@ -1068,8 +1068,7 @@ void ContainerNode::handleStyleChangeOnFocusStateChange()
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
 
-    if (layoutObject()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(layoutObject(), FocusControlState);
+    LayoutTheme::theme().controlStateChanged(*layoutObject(), FocusControlState);
 }
 
 void ContainerNode::setFocus(bool received)
@@ -1119,8 +1118,7 @@ void ContainerNode::setActive(bool down)
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
         }
 
-        if (computedStyle()->hasAppearance())
-            LayoutTheme::theme().stateChanged(layoutObject(), PressedControlState);
+        LayoutTheme::theme().controlStateChanged(*layoutObject(), PressedControlState);
     }
 }
 
@@ -1151,8 +1149,7 @@ void ContainerNode::setHovered(bool over)
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
     }
 
-    if (layoutObject()->style()->hasAppearance())
-        LayoutTheme::theme().stateChanged(layoutObject(), HoverControlState);
+    LayoutTheme::theme().controlStateChanged(*layoutObject(), HoverControlState);
 }
 
 PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::children()

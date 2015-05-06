@@ -425,17 +425,22 @@ bool LayoutTheme::supportsFocusRing(const ComputedStyle& style) const
     return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart);
 }
 
-bool LayoutTheme::stateChanged(LayoutObject* o, ControlState state) const
+bool LayoutTheme::controlStateChanged(LayoutObject& o, ControlState state) const
 {
+    if (!o.styleRef().hasAppearance())
+        return false;
+
     // Default implementation assumes the controls don't respond to changes in :hover state
-    if (state == HoverControlState && !supportsHover(o->styleRef()))
+    if (state == HoverControlState && !supportsHover(o.styleRef()))
         return false;
 
     // Assume pressed state is only responded to if the control is enabled.
-    if (state == PressedControlState && !isEnabled(o))
+    if (state == PressedControlState && !isEnabled(&o))
         return false;
 
-    o->setShouldDoFullPaintInvalidation();
+    o.setShouldDoFullPaintInvalidation();
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        o.invalidateDisplayItemClientForNonCompositingDescendants();
     return true;
 }
 
