@@ -26,6 +26,7 @@
     'gn_release_trybot': ['gn', 'release_trybot'],
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
     'gn_debug_bot': ['gn', 'debug_bot'],
+    'gn_debug_bot_x86': ['gn', 'debug_bot', 'x86'],
     'gn_debug_static_bot': ['gn', 'debug_static_bot'],
     'gn_debug_static_bot_x86': ['gn', 'debug_static_bot', 'x86'],
     'gyp_release_bot': ['gyp', 'release_bot'],
@@ -154,9 +155,9 @@
     },
     'chromium.win': {
       'Win x64 GN': 'gn_release_bot',
-      'Win x64 GN (dbg)': 'gn_debug_static_bot',
+      'Win x64 GN (dbg)': 'gn_debug_bot',
       'Win8 GN': 'gn_release_bot_x86',
-      'Win8 GN (dbg)': 'gn_debug_static_bot_x86',
+      'Win8 GN (dbg)': 'gn_debug_bot_x86',
     },
     'chromium.webkit': {
       'Android GN': 'android_gn_release_bot',
