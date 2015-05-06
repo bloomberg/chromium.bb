@@ -1848,7 +1848,8 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
 }
 
 void WebMediaPlayerAndroid::enterFullscreen() {
-  player_manager_->EnterFullscreen(player_id_);
+  if (is_player_initialized_)
+    player_manager_->EnterFullscreen(player_id_);
   SetNeedsEstablishPeer(false);
   is_fullscreen_ = true;
 }
