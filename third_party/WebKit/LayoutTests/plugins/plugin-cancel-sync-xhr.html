@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<embed id="testPlugin" logfirstsetwindow="true" type="application/x-webkit-test-netscape">
+<script>
+description("Verify that sync XHRs cancelled by sync NPN message does not crash.");
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function runTest()
+{
+    var plugin = document.getElementById("testPlugin");
+    var x = new XMLHttpRequest();
+    x.open('GET', '/resources/not-there', false);
+    // Injecting a call to Evaluate() here will cause the message
+    // corresponding to logfirstsetwindow's "testRunner.notifyDone()",
+    // to be synchronously handled during the sync XHR. Which in turn
+    // triggers the cancellation of the load.
+    plugin.testEvaluate("1+2;");
+    x.send(null);
+}
+setTimeout(runTest, 1);
+</script>

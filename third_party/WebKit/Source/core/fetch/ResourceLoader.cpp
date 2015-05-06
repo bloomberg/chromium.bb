@@ -513,6 +513,12 @@ void ResourceLoader::requestSynchronously()
     WebData dataOut;
     loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);
     if (errorOut.reason) {
+        if (m_state == Terminated) {
+            // A message dispatched while synchronously fetching the resource
+            // can bring about the cancellation of this load.
+            ASSERT(!m_resource);
+            return;
+        }
         didFail(0, errorOut);
         return;
     }
