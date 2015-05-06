@@ -29,7 +29,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientE2ETest, E2E_ONLY(SanitySetup)) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientE2ETest, E2E_ONLY(OneClientAddsBookmark)) {
-  DisableVerifier();
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // All profiles should sync same bookmarks.
   ASSERT_TRUE(AwaitAllModelsMatch()) <<
@@ -53,7 +52,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientE2ETest, E2E_ONLY(OneClientAddsBookmark)) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientE2ETest, E2E_ONLY(TwoClientsAddBookmarks)) {
-  DisableVerifier();
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // ALl profiles should sync same bookmarks.
   ASSERT_TRUE(AwaitAllModelsMatch()) <<

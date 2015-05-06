@@ -378,6 +378,8 @@ std::vector<ProfileSyncService*> SyncTest::GetSyncServices() {
 }
 
 Profile* SyncTest::verifier() {
+  if (!use_verifier_)
+    LOG(FATAL) << "Verifier account is disabled.";
   if (verifier_ == NULL)
     LOG(FATAL) << "SetupClients() has not yet been called.";
   return verifier_;
@@ -404,15 +406,24 @@ bool SyncTest::SetupClients() {
     InitializeInstance(i);
   }
 
+  // Verifier account is not useful when running against external servers.
+  if (UsingExternalServers())
+    DisableVerifier();
+
   // Create the verifier profile.
-  verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
-  bookmarks::test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(verifier()));
-  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      verifier(), ServiceAccessType::EXPLICIT_ACCESS));
-  ui_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(verifier()));
-  return (verifier_ != NULL);
+  if (use_verifier_) {
+    verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
+    bookmarks::test::WaitForBookmarkModelToLoad(
+        BookmarkModelFactory::GetForProfile(verifier()));
+    ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+        verifier(), ServiceAccessType::EXPLICIT_ACCESS));
+    ui_test_utils::WaitForTemplateURLServiceToLoad(
+        TemplateURLServiceFactory::GetForProfile(verifier()));
+  }
+  // Error cases are all handled by LOG(FATAL) messages. So there is not really
+  // a case that returns false.  In case we failed to create a verifier profile,
+  // any call to the verifier() would fail.
+  return true;
 }
 
 void SyncTest::InitializeInstance(int index) {
@@ -420,7 +431,7 @@ void SyncTest::InitializeInstance(int index) {
       base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), index);
   // If running against an EXTERNAL_LIVE_SERVER, we need to signin profiles
   // using real GAIA server. This requires creating profiles with no test hooks.
-  if (server_type_ == EXTERNAL_LIVE_SERVER) {
+  if (UsingExternalServers()) {
     profiles_[index] = MakeProfileForUISignin(profile_name);
   } else {
     // Without need of real GAIA authentication, we create new test profiles.
@@ -452,8 +463,7 @@ void SyncTest::InitializeInstance(int index) {
             new fake_server::FakeServerNetworkResources(fake_server_.get())));
   }
 
-  ProfileSyncServiceHarness::SigninType singin_type =
-      (server_type_ == EXTERNAL_LIVE_SERVER)
+  ProfileSyncServiceHarness::SigninType singin_type = UsingExternalServers()
           ? ProfileSyncServiceHarness::SigninType::UI_SIGNIN
           : ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN;
 
@@ -475,7 +485,11 @@ void SyncTest::InitializeInstance(int index) {
 }
 
 void SyncTest::InitializeInvalidations(int index) {
-  if (server_type_ == IN_PROCESS_FAKE_SERVER) {
+  if (UsingExternalServers()) {
+    // DO NOTHING. External live sync servers use GCM to notify profiles of any
+    // invalidations in sync'ed data. In this case, to notify other profiles of
+    // invalidations, we use sync refresh notifications instead.
+  } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     CHECK(fake_server_.get());
     fake_server::FakeServerInvalidationService* invalidation_service =
         static_cast<fake_server::FakeServerInvalidationService*>(
@@ -492,10 +506,6 @@ void SyncTest::InitializeInvalidations(int index) {
       invalidation_service->DisableSelfNotifications();
     }
     fake_server_invalidation_services_[index] = invalidation_service;
-  } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
-    // DO NOTHING. External live sync servers use GCM to notify profiles of any
-    // invalidations in sync'ed data. In this case, to notify other profiles of
-    // invalidations, we use sync refresh notifications instead.
   } else {
     invalidation::P2PInvalidationService* p2p_invalidation_service =
         static_cast<invalidation::P2PInvalidationService*>(
@@ -546,7 +556,7 @@ bool SyncTest::SetupSync() {
   // automatically after signing in. To avoid misleading sync commit
   // notifications at start up, we start the SyncRefresher observers post
   // client set up.
-  if (server_type_ == EXTERNAL_LIVE_SERVER) {
+  if (UsingExternalServers()) {
     for (int i = 0; i < num_clients_; ++i) {
       sync_refreshers_[i] = new P2PSyncRefresher(clients_[i]->service());
     }
@@ -753,7 +763,9 @@ void SyncTest::DecideServerType() {
 // Start up a local sync server based on the value of server_type_, which
 // was determined from the command line parameters.
 void SyncTest::SetUpTestServerIfRequired() {
-  if (server_type_ == LOCAL_PYTHON_SERVER) {
+  if (UsingExternalServers()) {
+    // Nothing to do; we'll just talk to the URL we were given.
+  } else if (server_type_ == LOCAL_PYTHON_SERVER) {
     if (!SetUpLocalPythonTestServer())
       LOG(FATAL) << "Failed to set up local python sync and XMPP servers";
     SetupMockGaiaResponses();
@@ -766,8 +778,6 @@ void SyncTest::SetUpTestServerIfRequired() {
   } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     fake_server_.reset(new fake_server::FakeServer());
     SetupMockGaiaResponses();
-  } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
-    // Nothing to do; we'll just talk to the URL we were given.
   } else {
     LOG(FATAL) << "Don't know which server environment to run test in.";
   }
@@ -917,6 +927,10 @@ bool SyncTest::AwaitEncryptionComplete(int index) {
 
 bool SyncTest::AwaitQuiescence() {
   return ProfileSyncServiceHarness::AwaitQuiescence(clients());
+}
+
+bool SyncTest::UsingExternalServers() {
+  return server_type_ == EXTERNAL_LIVE_SERVER;
 }
 
 bool SyncTest::ServerSupportsNotificationControl() const {

@@ -177,6 +177,9 @@ class SyncTest : public InProcessBrowserTest {
   // Returns true if a quiescent state was successfully reached.
   bool AwaitQuiescence();
 
+  // Returns true if we are running tests against external servers.
+  bool UsingExternalServers();
+
   // Returns true if the server being used supports controlling
   // notifications.
   bool ServerSupportsNotificationControl() const;
