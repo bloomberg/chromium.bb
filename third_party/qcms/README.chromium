@@ -63,5 +63,7 @@ google.patch contains the following modifications. Apply with
    - https://code.google.com/p/chromium/issues/detail?id=458024
  - Add vcgt tag reader and API to read its RGB gamma data
    - https://code.google.com/p/chromium/issues/detail?id=471749
+ - Consolidate loop over channels and elements in VCGT parser
+   - https://code.google.com/p/chromium/issues/detail?id=471749
 To regenerate google.patch:
   git diff b8456f38 src > google.patch

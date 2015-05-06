@@ -371,7 +371,7 @@ qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struc
 	uint16_t elements = read_u16(src, tag_offset + 14);
 	uint16_t byte_depth = read_u16(src, tag_offset + 16);
 	size_t table_offset = tag_offset + 18;
-	int c, i;
+	uint32_t i;
 	uint16_t *dest;
 
 	if (!src->valid || tag_type != VCGT_TYPE)
@@ -398,19 +398,17 @@ qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struc
 
 	dest = profile->vcgt.data;
 
-	for (c = 0; c < 3; c++) {
-		for (i = 0; i < elements; i++) {
-			if (byte_depth == 1) {
-				*dest++ = read_u8(src, table_offset) * 256;
-			} else {
-				*dest++ = read_u16(src, table_offset);
-			}
-
-			table_offset += byte_depth;
-
-			if (!src->valid)
-				goto invalid_vcgt_tag;
+	for (i = 0; i < 3 * elements; ++i) {
+		if (byte_depth == 1) {
+			*dest++ = read_u8(src, table_offset) * 256;
+		} else {
+			*dest++ = read_u16(src, table_offset);
 		}
+
+		table_offset += byte_depth;
+
+		if (!src->valid)
+			goto invalid_vcgt_tag;
 	}
 
 	return true;
