@@ -302,7 +302,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   }
 
   [NSAnimationContext beginGrouping];
-  // Don't use the GTM additon for the "Steve" slowdown because this can happen
+  // Don't use the GTM addition for the "Steve" slowdown because this can happen
   // async from user actions and the effects could be a surprise.
   [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
   [[popup_ animator] setFrame:popup_frame display:YES];

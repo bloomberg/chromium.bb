@@ -181,7 +181,7 @@ void OmniboxViewMac::SaveStateToTab(WebContents* tab) {
   if (hasFocus) {
     range = GetSelectedRange();
   } else {
-    // If we are not focussed, there is no selection.  Manufacture
+    // If we are not focused, there is no selection.  Manufacture
     // something reasonable in case it starts to matter in the future.
     range = NSMakeRange(0, GetTextLength());
   }
@@ -587,7 +587,7 @@ bool OmniboxViewMac::IsFirstResponder() const {
 }
 
 void OmniboxViewMac::OnBeforePossibleChange() {
-  // We should only arrive here when the field is focussed.
+  // We should only arrive here when the field is focused.
   DCHECK(IsFirstResponder());
 
   selection_before_change_ = GetSelectedRange();
@@ -596,7 +596,7 @@ void OmniboxViewMac::OnBeforePossibleChange() {
 }
 
 bool OmniboxViewMac::OnAfterPossibleChange() {
-  // We should only arrive here when the field is focussed.
+  // We should only arrive here when the field is focused.
   DCHECK(IsFirstResponder());
 
   const NSRange new_selection(GetSelectedRange());
@@ -618,7 +618,7 @@ bool OmniboxViewMac::OnAfterPossibleChange() {
   // selection point will have moved towards the end of the text.
   // TODO(shess): In our implementation, we can catch -deleteBackward:
   // and other methods to provide positive knowledge that a delete
-  // occured, rather than intuiting it from context.  Consider whether
+  // occurred, rather than intuiting it from context.  Consider whether
   // that would be a stronger approach.
   const bool just_deleted_text =
       (length < text_before_change_.length() &&
@@ -684,7 +684,7 @@ bool OmniboxViewMac::IsImeComposing() const {
 }
 
 void OmniboxViewMac::OnDidBeginEditing() {
-  // We should only arrive here when the field is focussed.
+  // We should only arrive here when the field is focused.
   DCHECK([field_ currentEditor]);
 }
 
@@ -885,7 +885,7 @@ void OmniboxViewMac::ShowURL() {
 }
 
 void OmniboxViewMac::OnPaste() {
-  // This code currently expects |field_| to be focussed.
+  // This code currently expects |field_| to be focused.
   DCHECK([field_ currentEditor]);
 
   base::string16 text = GetClipboardText();

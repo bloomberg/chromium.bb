@@ -318,7 +318,7 @@ NSAttributedString* CreateClassifiedAttributedString(
     // the prefix should be rendered at |contentsOffset_|. If that is not
     // sufficient to render the widest suggestion, we increase it to
     // |maxMatchContentsWidth_|.  If |remainingWidth| is not sufficient to
-    // accomodate that, we reduce the offset so that the prefix gets rendered.
+    // accommodate that, we reduce the offset so that the prefix gets rendered.
     prefixOffset = std::min(
         remainingWidth - prefixWidth, std::max(contentsOffset_,
                                                maxMatchContentsWidth_));

@@ -36,7 +36,7 @@ class OmniboxPopupViewMac;
   // The width of widest match contents in a set of infinite suggestions.
   CGFloat maxMatchContentsWidth_;
 
-  // The offset at which the infinite suggesiton contents should be displayed.
+  // The offset at which the infinite suggestion contents should be displayed.
   CGFloat contentsOffset_;
 }
 
