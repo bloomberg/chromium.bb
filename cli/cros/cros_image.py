@@ -171,11 +171,7 @@ class ImageCommand(command.CliCommand):
 
     if self.options.blueprint:
       blueprint = blueprint_lib.Blueprint(self.options.blueprint)
-      packages = []
-      for b in blueprint.GetBricks():
-        packages.extend(brick_lib.Brick(b).MainPackages())
-      if blueprint.GetBSP():
-        packages.extend(brick_lib.Brick(blueprint.GetBSP()).MainPackages())
+      packages = blueprint.GetPackages(with_implicit=False)
 
       cmd.append('--extra_packages=%s' % ' '.join(packages))
       #TODO(stevefung): Support multiple sysroots (brbug.com/676)

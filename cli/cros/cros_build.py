@@ -60,10 +60,7 @@ To just build a single package:
       self.blueprint = blueprint_lib.Blueprint(self.options.blueprint)
 
       if not self.build_pkgs:
-        self.build_pkgs = []
-        for locator in (self.blueprint.GetBricks()[0], self.blueprint.GetBSP()):
-          for brick in brick_lib.Brick(locator).BrickStack():
-            self.build_pkgs.extend(brick.MainPackages())
+        self.build_pkgs = self.blueprint.GetPackages()
     elif self.options.brick or self.curr_brick_locator:
       self.brick = brick_lib.Brick(self.options.brick
                                    or self.curr_brick_locator)

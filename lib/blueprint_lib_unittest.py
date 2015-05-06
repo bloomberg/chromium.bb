@@ -63,6 +63,30 @@ class BlueprintLibTest(cros_test_lib.WorkspaceTestCase):
                                                         brick_b.brick_locator])
     self.assertEqual(3, len(blueprint.GetUsedBricks()))
 
+  def testGetPackages(self):
+    """Tests that we can get the needed packages for a given blueprint."""
+    self.CreateBrick('foo', main_package='app-misc/foopkg')
+    self.CreateBrick('bar', main_package='app-misc/barpkg')
+    self.CreateBrick('foobar', main_package='app-misc/foobarpkg',
+                     dependencies=['//foo', '//bar'])
+
+    self.CreateBrick('hello', main_package='app-misc/hello')
+
+    self.CreateBrick('mybsp', main_package='app-misc/bspbonjour')
+
+    blueprint = self.CreateBlueprint(name='//myblueprint',
+                                     bricks=['//hello', '//foobar'],
+                                     bsp='//mybsp')
+    packages = blueprint.GetPackages(with_implicit=False)
+    self.assertEqual(
+        set(('app-misc/foobarpkg', 'app-misc/hello', 'app-misc/bspbonjour')),
+        set(packages))
+
+    packages = blueprint.GetPackages(with_implicit=True)
+    self.assertTrue('virtual/target-os' in packages)
+    self.assertTrue('virtual/target-os-dev' in packages)
+    self.assertTrue('virtual/target-os-test' in packages)
+
   def testBlueprintAlreadyExists(self):
     """Tests creating a blueprint where one already exists."""
     self.CreateBrick('//foo')

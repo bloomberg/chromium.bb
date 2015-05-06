@@ -85,7 +85,8 @@ def main(argv):
     sysroot.CreateAllWrappers(opts.friendlyname)
   elif opts.command == 'generate-config':
     if opts.brick:
-      config = sysroot.GenerateBrickConfig(brick_lib.Brick(opts.brick))
+      config = sysroot.GenerateBrickConfig(
+          brick_lib.Brick(opts.brick).BrickStack())
     else:
       config = sysroot.GenerateBoardConfig(opts.board)
 

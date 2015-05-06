@@ -16,6 +16,16 @@ from chromite.lib import workspace_lib
 BRICKS_FIELD = 'bricks'
 BSP_FIELD = 'bsp'
 
+# Those packages are implicitly built for all blueprints.
+# - target-os is needed to build any image.
+# - target-os-dev and target-os-test are needed to build a developer friendly
+#   image. They should not be included in any production images.
+_IMPLICIT_PACKAGES = (
+    'virtual/target-os',
+    'virtual/target-os-dev',
+    'virtual/target-os-test',
+)
+
 
 class BlueprintNotFoundError(Exception):
   """The blueprint does not exist."""
@@ -122,3 +132,22 @@ class Blueprint(object):
         brick_map[b.brick_locator] = b
 
     return brick_map.values()
+
+  def GetPackages(self, with_implicit=True):
+    """Returns the list of packages needed by this blueprint.
+
+    This includes the main packages for the bricks and the bsp of this
+    blueprint. We don't add the main packages of the bricks dependencies to
+    allow inheriting a brick without inheriting its required packages.
+
+    Args:
+      with_implicit: If True, include packages that are implicitly required by
+        the core system.
+    """
+    packages = []
+    for locator in self.GetBricks() + [self.GetBSP()]:
+      packages.extend(brick_lib.Brick(locator).MainPackages())
+
+    if with_implicit:
+      packages.extend(_IMPLICIT_PACKAGES)
+    return packages

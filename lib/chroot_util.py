@@ -155,7 +155,13 @@ def InitializeSysroots(blueprint):
     blueprint: a blueprint_lib.Blueprint object.
   """
   bsp = brick_lib.Brick(blueprint.GetBSP())
-  bricks = [brick_lib.Brick(b) for b in blueprint.GetBricks()]
+
+  # Create the brick stack.
+  # Removing duplicates while preserving a sane behaviour is hard:
+  # brbug.com/1029.
+  brick_stack = []
+  for brick_locator in blueprint.GetBricks():
+    brick_stack.extend(brick_lib.Brick(brick_locator).BrickStack())
 
   # Regenerate the portage configuration for all bricks used by this blueprint.
   for b in blueprint.GetUsedBricks():
@@ -165,7 +171,6 @@ def InitializeSysroots(blueprint):
 
   sysroot = sysroot_lib.Sysroot(sysroot_path)
   sysroot.CreateSkeleton()
-  # TODO(bsimonnet): Add support for multiple bricks. brbug.com/803
-  sysroot.WriteConfig(sysroot.GenerateBrickConfig(bricks[0], bsp))
+  sysroot.WriteConfig(sysroot.GenerateBrickConfig(brick_stack, bsp))
   sysroot.GeneratePortageConfig()
   sysroot.UpdateToolchain()
