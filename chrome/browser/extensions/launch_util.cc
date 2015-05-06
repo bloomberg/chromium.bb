@@ -144,4 +144,10 @@ bool HasPreferredLaunchContainer(const ExtensionPrefs* prefs,
       prefs->ReadPrefAsInteger(extension->id(), kPrefLaunchType, &value);
 }
 
+bool LaunchesInWindow(content::BrowserContext* context,
+                      const Extension* extension) {
+  return GetLaunchType(ExtensionPrefs::Get(context), extension) ==
+         LAUNCH_TYPE_WINDOW;
+}
+
 }  // namespace extensions

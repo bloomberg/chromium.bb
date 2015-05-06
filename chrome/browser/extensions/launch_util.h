@@ -56,6 +56,10 @@ LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,
 bool HasPreferredLaunchContainer(const ExtensionPrefs* prefs,
                                  const Extension* extension);
 
+// Whether |extension| will launch in a window.
+bool LaunchesInWindow(content::BrowserContext* context,
+                      const Extension* extension);
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_LAUNCH_UTIL_H_

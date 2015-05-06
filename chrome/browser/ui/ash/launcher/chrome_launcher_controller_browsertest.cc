@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -2173,4 +2175,104 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
 
   // TODO(stevenjb): Test multiprofile on Chrome OS when test support is addded.
   // crbug.com/230464.
+}
+
+// Check that tabbed hosted and bookmark apps have correct shelf presence.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
+  // Load and pin a hosted app.
+  const Extension* hosted_app =
+      LoadExtension(test_data_dir_.AppendASCII("app1/"));
+  ASSERT_TRUE(hosted_app);
+  controller_->PinAppWithID(hosted_app->id());
+  const ash::ShelfID hosted_app_shelf_id =
+      controller_->GetShelfIDForAppID(hosted_app->id());
+
+  // Load and pin a bookmark app.
+  const Extension* bookmark_app = InstallExtensionWithSourceAndFlags(
+      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
+      extensions::Extension::FROM_BOOKMARK);
+  ASSERT_TRUE(bookmark_app);
+  controller_->PinAppWithID(bookmark_app->id());
+  const ash::ShelfID bookmark_app_shelf_id =
+      controller_->GetShelfIDForAppID(bookmark_app->id());
+
+  // The apps should be closed.
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(hosted_app_shelf_id)->status);
+  EXPECT_EQ(ash::STATUS_CLOSED,
+            model_->ItemByID(bookmark_app_shelf_id)->status);
+
+  // Navigate to the app's launch URLs in two tabs.
+  ui_test_utils::NavigateToURL(
+      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(hosted_app));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(bookmark_app),
+      NEW_FOREGROUND_TAB, 0);
+
+  // The apps should now be running, with the last opened app active.
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(hosted_app_shelf_id)->status);
+  EXPECT_EQ(ash::STATUS_ACTIVE,
+            model_->ItemByID(bookmark_app_shelf_id)->status);
+
+  // Now use the launcher controller to activate the apps.
+  controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
+  controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
+
+  // There should be no new browsers or tabs as both apps were already open.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCountForProfile(browser()->profile()));
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+}
+
+// Check that windowed hosted and bookmark apps have correct shelf presence.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
+  // Load and pin a hosted app.
+  const Extension* hosted_app =
+      LoadExtension(test_data_dir_.AppendASCII("app1/"));
+  ASSERT_TRUE(hosted_app);
+  controller_->PinAppWithID(hosted_app->id());
+  const ash::ShelfID hosted_app_shelf_id =
+      controller_->GetShelfIDForAppID(hosted_app->id());
+
+  // Load and pin a bookmark app.
+  const Extension* bookmark_app = InstallExtensionWithSourceAndFlags(
+      test_data_dir_.AppendASCII("app2/"), 1, extensions::Manifest::INTERNAL,
+      extensions::Extension::FROM_BOOKMARK);
+  ASSERT_TRUE(bookmark_app);
+  controller_->PinAppWithID(bookmark_app->id());
+  const ash::ShelfID bookmark_app_shelf_id =
+      controller_->GetShelfIDForAppID(bookmark_app->id());
+
+  // Set both apps to open in windows.
+  extensions::SetLaunchType(browser()->profile(), hosted_app->id(),
+                            extensions::LAUNCH_TYPE_WINDOW);
+  extensions::SetLaunchType(browser()->profile(), bookmark_app->id(),
+                            extensions::LAUNCH_TYPE_WINDOW);
+
+  // The apps should be closed.
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(hosted_app_shelf_id)->status);
+  EXPECT_EQ(ash::STATUS_CLOSED,
+            model_->ItemByID(bookmark_app_shelf_id)->status);
+
+  // Navigate to the app's launch URLs in two tabs.
+  ui_test_utils::NavigateToURL(
+      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(hosted_app));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), extensions::AppLaunchInfo::GetLaunchWebURL(bookmark_app),
+      NEW_FOREGROUND_TAB, 0);
+
+  // The apps should still be closed.
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(hosted_app_shelf_id)->status);
+  EXPECT_EQ(ash::STATUS_CLOSED,
+            model_->ItemByID(bookmark_app_shelf_id)->status);
+
+  // Now use the launcher controller to activate the apps.
+  controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
+  controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
+
+  // There should be two new browsers.
+  EXPECT_EQ(3u, chrome::GetTotalBrowserCountForProfile(browser()->profile()));
+
+  // The apps should now be running, with the last opened app active.
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(hosted_app_shelf_id)->status);
+  EXPECT_EQ(ash::STATUS_ACTIVE,
+            model_->ItemByID(bookmark_app_shelf_id)->status);
 }

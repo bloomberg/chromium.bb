@@ -7,6 +7,7 @@
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -286,7 +287,8 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
     const URLPattern& refocus_pattern,
     content::WebContents* web_contents,
     Browser* browser) {
-  // If the browser is an app window and the app name matches the extension.
+  // If the browser is an app window, and the app name matches the extension,
+  // then the contents match the app.
   if (browser->is_app()) {
     const extensions::Extension* browser_extension =
         ExtensionRegistry::Get(browser->profile())->GetExtensionById(
@@ -294,6 +296,11 @@ bool AppShortcutLauncherItemController::WebContentMatchesApp(
             ExtensionRegistry::EVERYTHING);
     return browser_extension == extension;
   }
+
+  // Apps set to launch in app windows should not match contents running in
+  // tabs.
+  if (extensions::LaunchesInWindow(browser->profile(), extension))
+    return false;
 
   // There are three ways to identify the association of a URL with this
   // extension:

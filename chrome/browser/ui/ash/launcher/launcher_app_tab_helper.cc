@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -48,7 +49,7 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   const GURL url = tab->GetURL();
   const extensions::ExtensionSet& extensions = registry->enabled_extensions();
   const extensions::Extension* extension = extensions.GetAppByURL(url);
-  if (extension)
+  if (extension && !extensions::LaunchesInWindow(profile, extension))
     return extension;
 
   // Bookmark app windows should match their launch url extension despite
@@ -57,7 +58,8 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
     for (extensions::ExtensionSet::const_iterator it = extensions.begin();
          it != extensions.end(); ++it) {
       if (it->get()->from_bookmark() &&
-          extensions::AppLaunchInfo::GetLaunchWebURL(it->get()) == url) {
+          extensions::AppLaunchInfo::GetLaunchWebURL(it->get()) == url &&
+          !extensions::LaunchesInWindow(profile, it->get())) {
         return it->get();
       }
     }
