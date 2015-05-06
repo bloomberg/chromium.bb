@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
@@ -35,8 +35,8 @@ class CC_EXPORT PictureLayerTilingClient {
  public:
   // Create a tile at the given content_rect (in the contents scale of the
   // tiling) This might return null if the client cannot create such a tile.
-  virtual scoped_refptr<Tile> CreateTile(float contents_scale,
-                                         const gfx::Rect& content_rect) = 0;
+  virtual ScopedTilePtr CreateTile(float contents_scale,
+                                   const gfx::Rect& content_rect) = 0;
   virtual gfx::Size CalculateTileSize(
     const gfx::Size& content_bounds) const = 0;
   // This invalidation region defines the area (if any, it can by null) that
@@ -97,7 +97,7 @@ class CC_EXPORT PictureLayerTiling {
 
   Tile* TileAt(int i, int j) const {
     TileMap::const_iterator iter = tiles_.find(TileMapKey(i, j));
-    return iter == tiles_.end() ? nullptr : iter->second.get();
+    return iter == tiles_.end() ? nullptr : iter->second;
   }
 
   bool has_tiles() const { return !tiles_.empty(); }
@@ -110,18 +110,12 @@ class CC_EXPORT PictureLayerTiling {
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> all_tiles;
     for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-      all_tiles.push_back(it->second.get());
+      all_tiles.push_back(it->second);
     return all_tiles;
   }
   void UpdateAllTilePrioritiesForTesting() {
     for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-      UpdateTilePriority(it->second.get());
-  }
-  std::vector<scoped_refptr<Tile>> AllRefTilesForTesting() const {
-    std::vector<scoped_refptr<Tile>> all_tiles;
-    for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
-      all_tiles.push_back(it->second);
-    return all_tiles;
+      UpdateTilePriority(it->second);
   }
   void SetAllTilesOccludedForTesting() {
     gfx::Rect viewport_in_layer_space =
@@ -215,8 +209,8 @@ class CC_EXPORT PictureLayerTiling {
   friend class TilingSetRasterQueueRequired;
   friend class TilingSetEvictionQueue;
 
-  typedef std::pair<int, int> TileMapKey;
-  typedef base::hash_map<TileMapKey, scoped_refptr<Tile>> TileMap;
+  using TileMapKey = std::pair<int, int>;
+  using TileMap = base::ScopedPtrHashMap<TileMapKey, ScopedTilePtr>;
 
   struct FrameVisibleRect {
     gfx::Rect visible_rect_in_content_space;

@@ -618,9 +618,8 @@ Region PictureLayerImpl::GetInvalidationRegion() {
   return IntersectRegions(invalidation_, update_rect());
 }
 
-scoped_refptr<Tile> PictureLayerImpl::CreateTile(
-    float contents_scale,
-    const gfx::Rect& content_rect) {
+ScopedTilePtr PictureLayerImpl::CreateTile(float contents_scale,
+                                           const gfx::Rect& content_rect) {
   int flags = 0;
 
   // We don't handle solid color masks, so we shouldn't bother analyzing those.

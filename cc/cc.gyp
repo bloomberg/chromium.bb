@@ -73,7 +73,6 @@
         'base/invalidation_region.h',
         'base/math_util.cc',
         'base/math_util.h',
-        'base/ref_counted_managed.h',
         'base/region.cc',
         'base/region.h',
         'base/rolling_time_delta_history.cc',

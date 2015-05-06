@@ -106,10 +106,11 @@ Tile* PictureLayerTiling::CreateTile(int i, int j) {
   if (!raster_source_->CoversRect(tile_rect, contents_scale_))
     return nullptr;
 
-  scoped_refptr<Tile> tile = client_->CreateTile(contents_scale_, tile_rect);
+  ScopedTilePtr tile = client_->CreateTile(contents_scale_, tile_rect);
+  Tile* raw_ptr = tile.get();
   tile->set_tiling_index(i, j);
-  tiles_[key] = tile;
-  return tile.get();
+  tiles_.add(key, tile.Pass());
+  return raw_ptr;
 }
 
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
@@ -148,16 +149,16 @@ void PictureLayerTiling::TakeTilesAndPropertiesFrom(
     SetLiveTilesRect(pending_twin->live_tiles_rect());
   }
 
-  if (tiles_.size() < pending_twin->tiles_.size()) {
+  if (tiles_.empty()) {
     tiles_.swap(pending_twin->tiles_);
-    tiles_.insert(pending_twin->tiles_.begin(), pending_twin->tiles_.end());
   } else {
-    for (TileMap::value_type& tile_pair : pending_twin->tiles_) {
-      tiles_[tile_pair.first].swap(tile_pair.second);
-      DCHECK(tiles_[tile_pair.first]->raster_source() == raster_source_.get());
+    while (!pending_twin->tiles_.empty()) {
+      TileMapKey key = pending_twin->tiles_.begin()->first;
+      tiles_.set(key, pending_twin->tiles_.take_and_erase(key));
+      DCHECK(tiles_.get(key)->raster_source() == raster_source_.get());
     }
   }
-  pending_twin->tiles_.clear();
+  DCHECK(pending_twin->tiles_.empty());
 
   if (create_missing_tiles)
     CreateMissingTilesInLiveTilesRect();
@@ -678,7 +679,7 @@ void PictureLayerTiling::SetLiveTilesRect(
 void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {
 #if DCHECK_IS_ON()
   for (auto it = tiles_.begin(); it != tiles_.end(); ++it) {
-    if (!it->second.get())
+    if (!it->second)
       continue;
     DCHECK(it->first.first < tiling_data_.num_tiles_x())
         << this << " " << it->first.first << "," << it->first.second
@@ -861,7 +862,7 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
 void PictureLayerTiling::GetAllTilesAndPrioritiesForTracing(
     std::map<const Tile*, TilePriority>* tile_map) const {
   for (const auto& tile_pair : tiles_) {
-    const Tile* tile = tile_pair.second.get();
+    const Tile* tile = tile_pair.second;
     const TilePriority& priority = ComputePriorityForTile(tile);
     // Store combined priority.
     (*tile_map)[tile] = priority;
@@ -883,7 +884,7 @@ void PictureLayerTiling::AsValueInto(
 size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
   size_t amount = 0;
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    const Tile* tile = it->second.get();
+    const Tile* tile = it->second;
     amount += tile->GPUMemoryUsageInBytes();
   }
   return amount;
