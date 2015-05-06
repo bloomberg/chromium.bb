@@ -493,10 +493,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (goog_beamforming) {
     ConfigureBeamforming(&config);
   }
-  if (audio_proc_48kHz_support_) {
-    config.Set<webrtc::AudioProcessing48kHzSupport>(
-        new webrtc::AudioProcessing48kHzSupport(true));
-  }
+  config.Set<webrtc::AudioProcessing48kHzSupport>(
+      new webrtc::AudioProcessing48kHzSupport(audio_proc_48kHz_support_));
 
   // Create and configure the webrtc::AudioProcessing.
   audio_processing_.reset(webrtc::AudioProcessing::Create(config));
