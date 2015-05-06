@@ -21,7 +21,7 @@ namespace cc {
 // - if the frame is too slow, then there is probably not animating content, so
 // we should not pollute the average.
 static const double kFrameTooFast = 1.0 / 70.0;
-static const double kFrameTooSlow = 1.0 / 4.0;
+static const double kFrameTooSlow = 1.5;
 
 // If a frame takes longer than this threshold (measured in seconds) then we
 // (naively) assume that it missed a screen refresh; that is, we dropped a
