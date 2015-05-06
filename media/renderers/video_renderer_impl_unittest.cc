@@ -54,10 +54,8 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
 
-    // Since the Underflow test needs a render interval shorter than the frame
-    // duration, use 120Hz (which makes each interval is < 10ms; ~9.9ms).
     null_video_sink_.reset(new NullVideoSink(
-        false, base::TimeDelta::FromSecondsD(1.0 / 120),
+        false, base::TimeDelta::FromSecondsD(1.0 / 60),
         base::Bind(&MockCB::FrameReceived, base::Unretained(&mock_cb_)),
         message_loop_.task_runner()));
 
@@ -525,7 +523,7 @@ TEST_P(VideoRendererImplTest, VideoDecoder_InitFailure) {
 
 TEST_P(VideoRendererImplTest, Underflow) {
   Initialize();
-  QueueFrames("0 10 20 30");
+  QueueFrames("0 30 60 90");
 
   {
     WaitableMessageLoopEvent event;
@@ -544,13 +542,15 @@ TEST_P(VideoRendererImplTest, Underflow) {
   {
     SCOPED_TRACE("Waiting for frame drops");
     WaitableMessageLoopEvent event;
-    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(10)))
-        .Times(0);
-    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(20)))
-        .Times(0);
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(30)))
+        .Times(0);
+    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(60)))
+        .Times(0);
+    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(90)))
         .WillOnce(RunClosure(event.GetClosure()));
-    AdvanceTimeInMs(31);
+    AdvanceWallclockTimeInMs(91);
+    AdvanceTimeInMs(91);
+
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
   }
@@ -562,7 +562,7 @@ TEST_P(VideoRendererImplTest, Underflow) {
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
-    AdvanceWallclockTimeInMs(9);
+    AdvanceWallclockTimeInMs(29);
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
   }
@@ -635,11 +635,12 @@ TEST_P(VideoRendererImplTest, RenderingStopsAfterOneFrameWithEOS) {
 
     EXPECT_TRUE(IsReadPending());
     SatisfyPendingReadWithEndOfStream();
+    WaitForEnded();
 
+    renderer_->OnTimeStateChanged(false);
     event.RunAndWait();
   }
 
-  WaitForEnded();
   Destroy();
 }
 
@@ -651,7 +652,7 @@ TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
     return;
 
   Initialize();
-  QueueFrames("0 10 20 30");
+  QueueFrames("0 30 60 90");
 
   // Start the sink and wait for the first callback.  Set statistics to a non
   // zero value, once we have some decoded frames they should be overwritten.
@@ -673,8 +674,9 @@ TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
   // because this is a background render, we won't underflow by waiting until
   // a pending read is ready.
   null_video_sink_->set_background_render(true);
-  AdvanceTimeInMs(41);
-  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(30)));
+  AdvanceWallclockTimeInMs(91);
+  AdvanceTimeInMs(91);
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(90)));
   WaitForPendingRead();
   SatisfyPendingReadWithEndOfStream();
 

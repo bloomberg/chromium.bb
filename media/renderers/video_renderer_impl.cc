@@ -52,6 +52,7 @@ VideoRendererImpl::VideoRendererImpl(
       was_background_rendering_(false),
       time_progressing_(false),
       render_first_frame_and_stop_(false),
+      posted_maybe_stop_after_first_paint_(false),
       weak_factory_(this) {
 }
 
@@ -142,6 +143,7 @@ void VideoRendererImpl::Initialize(
   DCHECK(!wall_clock_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
   DCHECK(!render_first_frame_and_stop_);
+  DCHECK(!posted_maybe_stop_after_first_paint_);
   DCHECK(!was_background_rendering_);
   DCHECK(!time_progressing_);
 
@@ -208,20 +210,28 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
   UpdateStatsAndWait_Locked(base::TimeDelta());
   was_background_rendering_ = background_rendering;
 
-  // After painting the first frame, if playback hasn't started, we request that
-  // the sink be stopped.  OnTimeStateChanged() will clear this flag if time
-  // starts before we get here and MaybeStopSinkAfterFirstPaint() will ignore
-  // this request if time starts before the call executes.
-  if (render_first_frame_and_stop_) {
-    task_runner_->PostTask(
+  // After painting the first frame, if playback hasn't started, we post a
+  // delayed task to request that the sink be stopped.  The task is delayed to
+  // give videos with autoplay time to start.
+  //
+  // OnTimeStateChanged() will clear this flag if time starts before we get here
+  // and MaybeStopSinkAfterFirstPaint() will ignore this request if time starts
+  // before the call executes.
+  if (render_first_frame_and_stop_ && !posted_maybe_stop_after_first_paint_) {
+    posted_maybe_stop_after_first_paint_ = true;
+    task_runner_->PostDelayedTask(
         FROM_HERE, base::Bind(&VideoRendererImpl::MaybeStopSinkAfterFirstPaint,
-                              weak_factory_.GetWeakPtr()));
+                              weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(250));
   }
 
-  // Always post this task, it will acquire new frames if necessary, reset the
-  // background rendering timer, and more.
-  task_runner_->PostTask(FROM_HERE, base::Bind(&VideoRendererImpl::AttemptRead,
-                                               weak_factory_.GetWeakPtr()));
+  // To avoid unnecessary work, only post this task if there is a chance of work
+  // to be done.  AttemptRead() may still ignore this call for other reasons.
+  if (!rendered_end_of_stream_ && !HaveReachedBufferingCap(effective_frames)) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&VideoRendererImpl::AttemptRead,
+                                      weak_factory_.GetWeakPtr()));
+  }
 
   return result;
 }
@@ -460,13 +470,9 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
       DCHECK(!received_end_of_stream_);
       received_end_of_stream_ = true;
 
-      // See if we can fire EOS immediately instead of waiting for Render() or
-      // to tick.  We also want to fire EOS if we have no frames and received
-      // EOS.
-      if (use_new_video_renderering_path_ &&
-          (time_progressing_ || !algorithm_->frames_queued())) {
+      // See if we can fire EOS immediately instead of waiting for Render().
+      if (use_new_video_renderering_path_)
         MaybeFireEndedCallback();
-      }
     } else {
       // Maintain the latest frame decoded so the correct frame is displayed
       // after prerolling has completed.
@@ -486,6 +492,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
           !rendered_end_of_stream_) {
         start_sink = true;
         render_first_frame_and_stop_ = true;
+        posted_maybe_stop_after_first_paint_ = false;
       }
     }
 
@@ -660,12 +667,17 @@ void VideoRendererImpl::MaybeStopSinkAfterFirstPaint() {
 
 bool VideoRendererImpl::HaveReachedBufferingCap() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  return HaveReachedBufferingCap(use_new_video_renderering_path_
+                                     ? algorithm_->EffectiveFramesQueued()
+                                     : 0);
+}
+
+bool VideoRendererImpl::HaveReachedBufferingCap(size_t effective_frames) {
   if (use_new_video_renderering_path_) {
     // When the display rate is less than the frame rate, the effective frames
     // queued may be much smaller than the actual number of frames queued.  Here
     // we ensure that frames_queued() doesn't get excessive.
-    return algorithm_->EffectiveFramesQueued() >=
-               static_cast<size_t>(limits::kMaxVideoFrames) ||
+    return effective_frames >= static_cast<size_t>(limits::kMaxVideoFrames) ||
            algorithm_->frames_queued() >=
                static_cast<size_t>(3 * limits::kMaxVideoFrames);
   }
@@ -694,10 +706,18 @@ size_t VideoRendererImpl::MaybeFireEndedCallback() {
   // to a single frame.
   const size_t effective_frames = algorithm_->EffectiveFramesQueued();
 
-  if ((!effective_frames ||
-       (algorithm_->frames_queued() == 1u &&
-        algorithm_->average_frame_duration() == base::TimeDelta())) &&
-      received_end_of_stream_ && !rendered_end_of_stream_) {
+  // Don't fire ended if we haven't received EOS or have already done so.
+  if (!received_end_of_stream_ || rendered_end_of_stream_)
+    return effective_frames;
+
+  // Don't fire ended if time isn't moving and we have frames.
+  if (!time_progressing_ && algorithm_->frames_queued())
+    return effective_frames;
+
+  // Fire ended if we have no more effective frames or only ever had one frame.
+  if (!effective_frames ||
+      (algorithm_->frames_queued() == 1u &&
+       algorithm_->average_frame_duration() == base::TimeDelta())) {
     rendered_end_of_stream_ = true;
     task_runner_->PostTask(FROM_HERE, ended_cb_);
   }

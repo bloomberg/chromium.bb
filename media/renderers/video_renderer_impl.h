@@ -135,8 +135,11 @@ class MEDIA_EXPORT VideoRendererImpl
   // false it Stop() on |sink_|.
   void MaybeStopSinkAfterFirstPaint();
 
-  // Returns true if there is no more room for additional buffered frames.
+  // Returns true if there is no more room for additional buffered frames.  The
+  // overloaded method is the same, but allows skipping an internal call to
+  // EffectiveFramesQueued() if that value is already known.
   bool HaveReachedBufferingCap();
+  bool HaveReachedBufferingCap(size_t effective_frames);
 
   // Starts or stops |sink_| respectively. Do not call while |lock_| is held.
   void StartSink();
@@ -266,8 +269,10 @@ class MEDIA_EXPORT VideoRendererImpl
   bool time_progressing_;
 
   // Indicates that Render() should only render the first frame and then request
-  // that the sink be stopped.
+  // that the sink be stopped.  |posted_maybe_stop_after_first_paint_| is used
+  // to avoid repeated task posts.
   bool render_first_frame_and_stop_;
+  bool posted_maybe_stop_after_first_paint_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
