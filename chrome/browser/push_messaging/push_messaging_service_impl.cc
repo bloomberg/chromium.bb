@@ -83,7 +83,7 @@ blink::WebPushPermissionStatus ToPushPermission(ContentSetting setting) {
     case CONTENT_SETTING_BLOCK:
       return blink::WebPushPermissionStatusDenied;
     case CONTENT_SETTING_ASK:
-      return blink::WebPushPermissionStatusDefault;
+      return blink::WebPushPermissionStatusPrompt;
     default:
       NOTREACHED();
       return blink::WebPushPermissionStatusDenied;

@@ -23,7 +23,7 @@ blink::WebPushPermissionStatus ToWebPushPermissionStatus(
     case PERMISSION_STATUS_DENIED:
       return blink::WebPushPermissionStatusDenied;
     case PERMISSION_STATUS_ASK:
-      return blink::WebPushPermissionStatusDefault;
+      return blink::WebPushPermissionStatusPrompt;
   }
 
   NOTREACHED();

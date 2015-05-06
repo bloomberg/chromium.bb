@@ -782,8 +782,8 @@ void PushMessagingMessageFilter::Core::GetPermissionStatusOnUI(
                                                           embedding_origin,
                                                           user_visible);
   } else if (is_incognito()) {
-    // Return default, so the website can't detect incognito mode.
-    permission_status = blink::WebPushPermissionStatusDefault;
+    // Return prompt, so the website can't detect incognito mode.
+    permission_status = blink::WebPushPermissionStatusPrompt;
   } else {
     Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
     return;

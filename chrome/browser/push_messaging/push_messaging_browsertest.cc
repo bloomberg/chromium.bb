@@ -569,14 +569,14 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PermissionStateSaysDefault) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PermissionStateSaysPrompt) {
   std::string script_result;
 
   ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
   ASSERT_EQ("ok - service worker registered", script_result);
 
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
-  ASSERT_EQ("permission status - default", script_result);
+  ASSERT_EQ("permission status - prompt", script_result);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PermissionStateSaysGranted) {
@@ -681,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
-  EXPECT_EQ("permission status - default", script_result);
+  EXPECT_EQ("permission status - prompt", script_result);
 
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   EXPECT_EQ("false - not subscribed", script_result);
@@ -715,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
-  EXPECT_EQ("permission status - default", script_result);
+  EXPECT_EQ("permission status - prompt", script_result);
 
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   EXPECT_EQ("false - not subscribed", script_result);
@@ -778,7 +778,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
-  EXPECT_EQ("permission status - default", script_result);
+  EXPECT_EQ("permission status - prompt", script_result);
 
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   EXPECT_EQ("false - not subscribed", script_result);
@@ -812,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("permissionState()", &script_result));
-  EXPECT_EQ("permission status - default", script_result);
+  EXPECT_EQ("permission status - prompt", script_result);
 
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   EXPECT_EQ("false - not subscribed", script_result);
