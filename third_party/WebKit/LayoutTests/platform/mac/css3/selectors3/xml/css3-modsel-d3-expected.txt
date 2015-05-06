@@ -16,4 +16,4 @@ layer at (0,0) size 800x82
         LayoutInline {t} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {t} at (0,34) size 800x32 [bgcolor=#FF0000]
+      LayoutBlockFlow {t} at (0,34) size 800x32 [bgcolor=#00FF00]

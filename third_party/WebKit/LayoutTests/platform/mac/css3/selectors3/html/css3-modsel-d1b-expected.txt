@@ -8,4 +8,4 @@ layer at (0,0) size 800x146
           LayoutText {#text} at (0,0) size 260x18
             text run at (0,0) width 260: "The following two bars should be green."
         LayoutBlockFlow {DIV} at (16,34) size 752x32 [bgcolor=#00FF00]
-        LayoutBlockFlow {DIV} at (16,82) size 752x32 [bgcolor=#FF0000]
+        LayoutBlockFlow {DIV} at (16,82) size 752x32 [bgcolor=#00FF00]
