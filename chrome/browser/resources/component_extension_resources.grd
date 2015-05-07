@@ -193,9 +193,6 @@
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_CSS" file="pdf/elements/viewer-page-selector/viewer-page-selector.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_HTML" file="pdf/elements/viewer-page-selector/viewer-page-selector.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PAGE_SELECTOR_JS" file="pdf/elements/viewer-page-selector/viewer-page-selector.js" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_PANE_CSS" file="pdf/elements/viewer-pane/viewer-pane.css" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_PANE_HTML" file="pdf/elements/viewer-pane/viewer-pane.html" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_PANE_JS" file="pdf/elements/viewer-pane/viewer-pane.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_CSS" file="pdf/elements/viewer-password-screen/viewer-password-screen.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_HTML" file="pdf/elements/viewer-password-screen/viewer-password-screen.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_PASSWORD_SCREEN_JS" file="pdf/elements/viewer-password-screen/viewer-password-screen.js" type="BINDATA" />
@@ -215,9 +212,6 @@
         <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_CSS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-selector.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_HTML" file="pdf/elements/viewer-zoom-selector/viewer-zoom-selector.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_JS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-selector.js" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_SLIDER_CSS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-slider.css" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_SLIDER_HTML" file="pdf/elements/viewer-zoom-selector/viewer-zoom-slider.html" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_SLIDER_JS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-slider.js" type="BINDATA" />
 
         <!-- Button images. -->
         <include name="IDR_PDF_BUTTON_LOW_1" file="pdf/elements/viewer-button/img/lowDPI/button_fit_page.png" type="BINDATA" />

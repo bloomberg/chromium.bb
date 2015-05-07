@@ -2,20 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 (function() {
-  /**
-   * @type {Object}
-   * core-meta object used to determine type of transition used.
-   */
-  var meta = document.createElement('core-meta');
-  meta.type = 'transition';
-
-  /**
-   * @type {Object}
-   * Sets up, starts and destroys the transition used.
-   * This has no state and therefore is OK to make global.
-   */
-  var transition;
-
   Polymer('viewer-pdf-toolbar', {
     /**
      * @type {string}
@@ -48,15 +34,10 @@
     docLength: 1,
 
     ready: function() {
-      // We cannot initialise transition before ensuring that core-meta has been
-      // imported.
-      if (transition === undefined)
-        transition = meta.byId('core-transition-top');
-      transition.setup(this.$.animatable);
-
       /**
        * @type {Object}
        * Used in core-transition to determine whether the animatable is open.
+       * TODO(tsergeant): Add core-transition back in once it is in Polymer 0.8.
        */
       this.state_ = { opened: false };
       this.show();
@@ -82,7 +63,6 @@
 
     toggleVisibility: function() {
       this.state_.opened = !this.state_.opened;
-      transition.go(this.$.animatable, this.state_);
     },
 
     selectPageNumber: function() {

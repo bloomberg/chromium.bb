@@ -6,7 +6,6 @@
   <link rel="import" href="elements/viewer-button/viewer-button.html">
   <link rel="import" href="elements/viewer-error-screen/viewer-error-screen.html">
   <link rel="import" href="elements/viewer-page-selector/viewer-page-selector.html">
-  <link rel="import" href="elements/viewer-pane/viewer-pane.html">
   <link rel="import" href="elements/viewer-password-screen/viewer-password-screen.html">
   <link rel="import" href="elements/viewer-pdf-toolbar/viewer-pdf-toolbar.html">
   <link rel="import" href="elements/viewer-zoom-selector/viewer-zoom-selector.html">
@@ -18,9 +17,7 @@
 
 <viewer-pdf-toolbar id="material-toolbar"></viewer-pdf-toolbar>
 
-<viewer-pane id="bookmarks-pane" heading="Bookmarks">
-  <viewer-bookmarks-content id="bookmarks-container"></viewer-bookmarks-content>
-</viewer-pane>
+<viewer-bookmarks-content id="bookmarks-container" hidden></viewer-bookmarks-content>
 
 <div id="sizer"></div>
 <viewer-password-screen id="password-screen"></viewer-password-screen>

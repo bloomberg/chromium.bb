@@ -148,8 +148,6 @@ function PDFViewer(browserApi) {
   }
 
   if (this.isMaterial_) {
-    this.bookmarksPane_ = $('bookmarks-pane');
-
     this.zoomSelector_ = $('zoom-selector');
     this.zoomSelector_.zoomMin = Viewport.ZOOM_FACTOR_RANGE.min * 100;
     this.zoomSelector_.zoomMax = Viewport.ZOOM_FACTOR_RANGE.max * 100;
@@ -167,16 +165,13 @@ function PDFViewer(browserApi) {
     this.materialToolbar_.addEventListener('print', this.print_.bind(this));
     this.materialToolbar_.addEventListener('rotate-right',
         this.rotateClockwise_.bind(this));
-    this.materialToolbar_.addEventListener('toggle-bookmarks', function() {
-      this.bookmarksPane_.buttonToggle();
-    }.bind(this));
 
     document.body.addEventListener('change-page', function(e) {
       this.viewport_.goToPage(e.detail.page);
     }.bind(this));
 
-    this.uiManager_ = new UiManager(window, this.materialToolbar_,
-                                    [this.bookmarksPane_]);
+    this.uiManager_ =
+        new UiManager(window, this.materialToolbar_, this.zoomSelector_);
   }
 
   // Set up the ZoomManager.

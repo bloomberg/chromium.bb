@@ -7,16 +7,16 @@
 var HIDE_TIMEOUT = 2000;
 
 /**
- * Creates a UI Manager to handle transitioning of toolbars and panes.
+ * Creates a UI Manager to handle transitioning of toolbars.
  * @constructor
  * @param {Object} window The window containing the UI.
- * @param {Object} toolbar The toolbar element.
- * @param {Array} panes The panes that may be pulled in.
+ * @param {Object} toolbar The top toolbar element.
+ * @param {Object} zoomToolbar The zoom toolbar element.
  */
-function UiManager(window, toolbar, panes) {
+function UiManager(window, toolbar, zoomToolbar) {
   this.window_ = window;
   this.toolbar_ = toolbar;
-  this.panes_ = panes;
+  this.zoomToolbar_ = zoomToolbar;
 
   this.uiTimeout_ = null;
 
@@ -32,8 +32,7 @@ UiManager.prototype = {
    */
   showUi_: function() {
     this.toolbar_.show();
-    for (var i = 0; i < this.panes_.length; i++)
-      this.panes_[i].showIfOpenedByUser();
+    this.zoomToolbar_.show();
 
     this.hideUiAfterTimeout();
   },
@@ -44,8 +43,7 @@ UiManager.prototype = {
    */
   hideUi_: function() {
     this.toolbar_.hide();
-    for (var i = 0; i < this.panes_.length; i++)
-      this.panes_[i].hideIfOpenedByUser();
+    this.zoomToolbar_.hide();
   },
 
   /**

@@ -8,10 +8,6 @@ var transitionCenterMixin = {
   ready: function() {
     this.super();
     this.state_ = { opened: false };
-    var meta = document.createElement('core-meta');
-    meta.type = 'transition';
-    this.transition = meta.byId('core-transition-center');
-    this.transition.setup(this);
   },
 
   show: function(delay) {
@@ -27,8 +23,5 @@ var transitionCenterMixin = {
   toggle_: function(delay) {
     delay = delay || 0;
     this.state_.opened = !this.state_.opened;
-    setTimeout(function() {
-      this.transition.go(this, this.state_);
-    }.bind(this), delay);
   }
 };

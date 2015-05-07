@@ -48,14 +48,12 @@ Polymer('viewer-zoom-selector', {
       this.visible_ = true;
       this.$['fit-to-width-button'].show();
       this.$['fit-to-page-button'].show(ANIMATION_INTERVAL);
-      this.$.slider.show();
     }
   },
 
   hide: function() {
     if (this.visible) {
       this.visible_ = false;
-      this.$.slider.hide();
       this.$['fit-to-page-button'].hide();
       this.$['fit-to-width-button'].hide(ANIMATION_INTERVAL);
     }

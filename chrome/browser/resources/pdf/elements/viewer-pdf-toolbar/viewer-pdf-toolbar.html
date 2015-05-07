@@ -2,9 +2,7 @@
 <link rel="import" href="../viewer-page-selector/viewer-page-selector.html">
 <link rel="import" href="chrome://resources/polymer/core-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/core-toolbar/core-toolbar.html">
-<link rel="import" href="chrome://resources/polymer/core-transition/core-transition-css.html">
 <link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
 
 <polymer-element name="viewer-pdf-toolbar">
@@ -12,7 +10,11 @@
   <link rel="stylesheet" href="viewer-pdf-toolbar.css">
   <div id="animatable">
     <paper-shadow fit></paper-shadow>
-    <paper-progress value="{{loadProgress}}"></paper-progress>
+
+    <!-- TODO(tsergeant): Re-enable once paper-progress is available in Polymer
+      0.8 -->
+    <!--<paper-progress value="{{loadProgress}}"></paper-progress>-->
+
     <core-toolbar class="core-narrow">
       <div id="aligner" horizontal layout center>
         <span id="title" class="invisible" title="{{docTitle}}" flex five>
@@ -30,7 +32,7 @@
               on-click="{{rotateRight}}"></paper-icon-button>
           <template if="{{hasBookmarks}}">
             <paper-icon-button icon="bookmark-outline"
-                on-click="{{toggleBookmarks}}"></paper-icon-button>
+                on-click="{{toggleBookmarks}}" hidden></paper-icon-button>
           </template>
           <paper-icon-button icon="save"
               on-click="{{save}}"></paper-icon-button>
