@@ -12,8 +12,8 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/display.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/drm/host/display_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
+#include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -26,7 +26,7 @@ DrmWindowHost::DrmWindowHost(PlatformWindowDelegate* delegate,
                              EventFactoryEvdev* event_factory,
                              DrmCursor* cursor,
                              DrmWindowHostManager* window_manager,
-                             DisplayManager* display_manager)
+                             DrmDisplayHostManager* display_manager)
     : delegate_(delegate),
       sender_(sender),
       event_factory_(event_factory),

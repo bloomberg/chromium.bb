@@ -15,7 +15,7 @@
 
 namespace ui {
 
-class DisplayManager;
+class DrmDisplayHostManager;
 class DrmCursor;
 class DrmGpuPlatformSupportHost;
 class DrmGpuWindow;
@@ -42,7 +42,7 @@ class DrmWindowHost : public PlatformWindow,
                 EventFactoryEvdev* event_factory,
                 DrmCursor* cursor,
                 DrmWindowHostManager* window_manager,
-                DisplayManager* display_manager);
+                DrmDisplayHostManager* display_manager);
   ~DrmWindowHost() override;
 
   void Initialize();
@@ -78,12 +78,12 @@ class DrmWindowHost : public PlatformWindow,
  private:
   void SendBoundsChange();
 
-  PlatformWindowDelegate* delegate_;      // Not owned.
-  DrmGpuPlatformSupportHost* sender_;     // Not owned.
-  EventFactoryEvdev* event_factory_;      // Not owned.
-  DrmCursor* cursor_;                     // Not owned.
-  DrmWindowHostManager* window_manager_;  // Not owned.
-  DisplayManager* display_manager_;       // Not owned.
+  PlatformWindowDelegate* delegate_;        // Not owned.
+  DrmGpuPlatformSupportHost* sender_;       // Not owned.
+  EventFactoryEvdev* event_factory_;        // Not owned.
+  DrmCursor* cursor_;                       // Not owned.
+  DrmWindowHostManager* window_manager_;    // Not owned.
+  DrmDisplayHostManager* display_manager_;  // Not owned.
 
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;

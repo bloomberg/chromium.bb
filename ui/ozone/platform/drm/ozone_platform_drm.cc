@@ -22,8 +22,8 @@
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gpu_lock.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
-#include "ui/ozone/platform/drm/host/display_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
+#include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
@@ -84,9 +84,8 @@ class OzonePlatformDrm : public OzonePlatform {
     return platform_window.Pass();
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return make_scoped_ptr(new DrmNativeDisplayDelegate(
-        gpu_platform_support_host_.get(), device_manager_.get(),
-        display_manager_.get(), GetPrimaryDisplayCardPath()));
+    return make_scoped_ptr(
+        new DrmNativeDisplayDelegate(display_manager_.get()));
   }
   void InitializeUI() override {
 #if defined(OS_CHROMEOS)
@@ -94,7 +93,6 @@ class OzonePlatformDrm : public OzonePlatform {
 #endif
     drm_device_manager_.reset(new DrmDeviceManager(
         scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
-    display_manager_.reset(new DisplayManager());
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
     surface_factory_ozone_.reset(new DrmSurfaceFactory(screen_manager_.get()));
@@ -104,6 +102,9 @@ class OzonePlatformDrm : public OzonePlatform {
         drm_device_manager_.get(), screen_manager_.get(), ndd.Pass()));
     gpu_platform_support_host_.reset(
         new DrmGpuPlatformSupportHost(cursor_.get()));
+    display_manager_.reset(new DrmDisplayHostManager(
+        gpu_platform_support_host_.get(), device_manager_.get(),
+        GetPrimaryDisplayCardPath()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
@@ -137,8 +138,8 @@ class OzonePlatformDrm : public OzonePlatform {
   scoped_ptr<DrmWindowHostManager> window_manager_;
   scoped_ptr<DrmCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
-  scoped_ptr<DisplayManager> display_manager_;
   scoped_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
+  scoped_ptr<DrmDisplayHostManager> display_manager_;
 
 #if defined(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

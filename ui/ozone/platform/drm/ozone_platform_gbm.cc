@@ -27,8 +27,8 @@
 #include "ui/ozone/platform/drm/gpu/gpu_lock.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
-#include "ui/ozone/platform/drm/host/display_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
+#include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
@@ -141,12 +141,10 @@ class OzonePlatformGbm : public OzonePlatform {
     return platform_window.Pass();
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return make_scoped_ptr(new DrmNativeDisplayDelegate(
-        gpu_platform_support_host_.get(), device_manager_.get(),
-        display_manager_.get(), GetPrimaryDisplayCardPath()));
+    return make_scoped_ptr(
+        new DrmNativeDisplayDelegate(display_manager_.get()));
   }
   void InitializeUI() override {
-    display_manager_.reset(new DisplayManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
     if (!surface_factory_ozone_)
@@ -156,6 +154,9 @@ class OzonePlatformGbm : public OzonePlatform {
     cursor_.reset(new DrmCursor(window_manager_.get()));
     gpu_platform_support_host_.reset(
         new DrmGpuPlatformSupportHost(cursor_.get()));
+    display_manager_.reset(new DrmDisplayHostManager(
+        gpu_platform_support_host_.get(), device_manager_.get(),
+        GetPrimaryDisplayCardPath()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
@@ -209,7 +210,7 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<DrmCursor> cursor_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
   scoped_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
-  scoped_ptr<DisplayManager> display_manager_;
+  scoped_ptr<DrmDisplayHostManager> display_manager_;
 
 #if defined(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

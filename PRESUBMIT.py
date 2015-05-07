@@ -175,7 +175,7 @@ _BANNED_CPP_FUNCTIONS = (
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
         r"^ui[\\\/]ozone[\\\/]platform[\\\/]drm[\\\/]host[\\\/]"
-            "drm_native_display_delegate\.cc$",
+            "drm_display_host_manager\.cc$",
       ),
     ),
     (
