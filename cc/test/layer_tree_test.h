@@ -184,7 +184,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
                        bool impl_side_painting);
   virtual void RunTestWithImplSidePainting();
 
-  bool HasImplThread() { return proxy() ? proxy()->HasImplThread() : false; }
+  bool HasImplThread() { return !!impl_thread_; }
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
     DCHECK(proxy());
     return proxy()->ImplThreadTaskRunner() ? proxy()->ImplThreadTaskRunner()

@@ -86,6 +86,31 @@ class LayerTreeHostTest : public LayerTreeTest {
   PrioritizedResourceManager* contents_texture_manager_;
 };
 
+class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestHasImplThreadTest() : threaded_(false) {}
+
+  void RunTest(bool threaded,
+               bool delegating_renderer,
+               bool impl_side_painting) override {
+    threaded_ = threaded;
+    LayerTreeHostTest::RunTest(threaded, delegating_renderer,
+                               impl_side_painting);
+  }
+
+  void BeginTest() override {
+    EXPECT_EQ(threaded_, HasImplThread());
+    EndTest();
+  }
+
+  void AfterTest() override { EXPECT_EQ(threaded_, HasImplThread()); }
+
+ private:
+  bool threaded_;
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestHasImplThreadTest);
+
 class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
