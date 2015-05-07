@@ -127,6 +127,7 @@ mojo_application_package("apptests") {
   deps = [
     "//base",
     "//base/test:test_config",
+    "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
     "//mojo/application",
     "//mojo/application:test_support",

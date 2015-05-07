@@ -8,6 +8,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file.h"
 #include "base/run_loop.h"
+#include "components/resource_provider/public/cpp/resource_loader.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/application/application_test_base_chromium.h"
 #include "mojo/common/common_type_converters.h"
@@ -30,79 +31,19 @@ std::string ReadFile(base::File* file) {
   return std::string(buffer.get(), read);
 }
 
-std::vector<std::string> VectorWithString(const std::string& contents) {
-  std::vector<std::string> result;
-  result.push_back(contents);
+std::set<std::string> SetWithString(const std::string& contents) {
+  std::set<std::string> result;
+  result.insert(contents);
   return result;
 }
 
-std::vector<std::string> VectorWithStrings(const std::string& contents1,
-                                           const std::string& contents2) {
-  std::vector<std::string> result;
-  result.push_back(contents1);
-  result.push_back(contents2);
+std::set<std::string> SetWithStrings(const std::string& contents1,
+                                     const std::string& contents2) {
+  std::set<std::string> result;
+  result.insert(contents1);
+  result.insert(contents2);
   return result;
 }
-
-// ResourceFetcher fetches resources from a ResourceProvider, storing the
-// results as well as running
-// a message loop until the resource has been obtained.
-class ResourceFetcher {
- public:
-  using ResourceMap = std::map<std::string, std::string>;
-
-  explicit ResourceFetcher(ResourceProvider* provider)
-      : provider_(provider), waiting_count_(0u) {}
-  ~ResourceFetcher() {}
-
-  ResourceMap* resources() { return &resources_; }
-
-  void WaitForResults() {
-    ASSERT_NE(0u, waiting_count_);
-    run_loop_.Run();
-  }
-
-  void GetResources(const std::vector<std::string>& paths) {
-    waiting_count_++;
-    provider_->GetResources(mojo::Array<mojo::String>::From(paths),
-                            base::Bind(&ResourceFetcher::OnGotResources,
-                                       base::Unretained(this), paths));
-  }
-
- private:
-  // Callback when a resource has been fetched.
-  void OnGotResources(const std::vector<std::string>& paths,
-                      mojo::Array<mojo::ScopedHandle> resources) {
-    ASSERT_FALSE(resources.is_null());
-    ASSERT_EQ(paths.size(), resources.size());
-    for (size_t i = 0; i < paths.size(); ++i) {
-      std::string contents;
-      if (resources[i].is_valid()) {
-        MojoPlatformHandle platform_handle;
-        ASSERT_EQ(MOJO_RESULT_OK,
-                  MojoExtractPlatformHandle(resources[i].release().value(),
-                                            &platform_handle));
-        base::File file(platform_handle);
-        contents = ReadFile(&file);
-      }
-      resources_[paths[i]] = contents;
-    }
-
-    if (waiting_count_ > 0) {
-      waiting_count_--;
-      if (waiting_count_ == 0)
-        run_loop_.Quit();
-    }
-  }
-
-  ResourceProvider* provider_;
-  ResourceMap resources_;
-  // Number of resources we're waiting on.
-  size_t waiting_count_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceFetcher);
-};
 
 class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
  public:
@@ -110,36 +51,55 @@ class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
   ~ResourceProviderApplicationTest() override {}
 
  protected:
+  using ResourceContentsMap = std::map<std::string, std::string>;
+
+  // Queries ResourceProvider for the specified resources, blocking until the
+  // resources are returned. The return map maps from the path to the contents
+  // of the file at the specified path.
+  ResourceContentsMap GetResources(const std::set<std::string>& paths) {
+    ResourceContentsMap results;
+    base::RunLoop run_loop;
+    ResourceLoader loader(
+        application_impl()->shell(), paths,
+        base::Bind(&ResourceProviderApplicationTest::OnGotResources,
+                   base::Unretained(this), &run_loop, &results));
+    run_loop.Run();
+    return results;
+  }
+
   // ApplicationTestBase:
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    application_impl()->ConnectToService("mojo:resource_provider",
-                                         &resource_provider_);
   }
 
-  ResourceProviderPtr resource_provider_;
-
  private:
+  void OnGotResources(base::RunLoop* run_loop,
+                      ResourceContentsMap* contents_map,
+                      const ResourceLoader::ResourceMap& map) {
+    run_loop->Quit();
+    for (auto& pair : map) {
+      base::File file(pair.second);
+      (*contents_map)[pair.first] = ReadFile(&file);
+    }
+  }
+
   MOJO_DISALLOW_COPY_AND_ASSIGN(ResourceProviderApplicationTest);
 };
 
 TEST_F(ResourceProviderApplicationTest, FetchOneResource) {
-  ResourceFetcher fetcher(resource_provider_.get());
-  fetcher.GetResources(VectorWithString("sample"));
-  fetcher.WaitForResults();
-  ASSERT_TRUE(fetcher.resources()->count("sample") > 0u);
-  EXPECT_EQ("test data\n", (*fetcher.resources())["sample"]);
+  ResourceContentsMap results(GetResources(SetWithString("sample")));
+  ASSERT_TRUE(results.count("sample") > 0u);
+  EXPECT_EQ("test data\n", results["sample"]);
 }
 
 TEST_F(ResourceProviderApplicationTest, FetchTwoResources) {
-  ResourceFetcher fetcher(resource_provider_.get());
-  fetcher.GetResources(VectorWithStrings("sample", "dir/sample2"));
-  fetcher.WaitForResults();
-  ASSERT_TRUE(fetcher.resources()->count("sample") > 0u);
-  EXPECT_EQ("test data\n", (*fetcher.resources())["sample"]);
+  ResourceContentsMap results(
+      GetResources(SetWithStrings("sample", "dir/sample2")));
+  ASSERT_TRUE(results.count("sample") > 0u);
+  EXPECT_EQ("test data\n", results["sample"]);
 
-  ASSERT_TRUE(fetcher.resources()->count("dir/sample2") > 0u);
-  EXPECT_EQ("xxyy\n", (*fetcher.resources())["dir/sample2"]);
+  ASSERT_TRUE(results.count("dir/sample2") > 0u);
+  EXPECT_EQ("xxyy\n", results["dir/sample2"]);
 }
 
 }  // namespace
