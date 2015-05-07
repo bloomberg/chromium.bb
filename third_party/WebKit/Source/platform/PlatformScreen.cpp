@@ -80,12 +80,9 @@ IntRect screenRect(Widget* widget)
     return IntRect(hostWindow->screenInfo().rect);
 }
 
-IntRect screenAvailableRect(Widget* widget)
+IntRect screenAvailableRect(const HostWindow& hostWindow)
 {
-    HostWindow* hostWindow = toHostWindow(widget);
-    if (!hostWindow)
-        return IntRect();
-    return IntRect(hostWindow->screenInfo().availableRect);
+    return IntRect(hostWindow.screenInfo().availableRect);
 }
 
 uint16_t screenOrientationAngle(Widget* widget)
