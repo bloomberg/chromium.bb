@@ -1767,12 +1767,6 @@ chrome_pfq.add_config('alex-chrome-pfq',
   _base_configs['x86-alex'],
 )
 
-# Disable VMTests on x86-alex_freon PFQ (crbug.com/484307)
-chrome_pfq.add_config('x86-alex_freon-chrome-pfq',
-  _base_configs['x86-alex_freon'],
-  vm_tests=[],
-)
-
 chrome_pfq.add_config('lumpy-chrome-pfq',
   _base_configs['lumpy'],
   afdo_generate=True,
