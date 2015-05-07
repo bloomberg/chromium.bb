@@ -140,9 +140,9 @@ TEST_F(WebDragDestTest, URL) {
       &result_url, &result_title, pboard, NO));
   EXPECT_TRUE(ui::PopulateURLAndTitleFromPasteboard(
       &result_url, &result_title, pboard, YES));
-  EXPECT_EQ(base::mac::IsOSYosemiteOrLater() ? "file:///bin/sh"
-                                             : "file://localhost/bin/sh",
-            result_url.spec());
+  base::scoped_nsobject<NSURL> expected_output(
+      [[NSURL alloc] initFileURLWithPath:url isDirectory:NO]);
+  EXPECT_EQ([[expected_output absoluteString] UTF8String], result_url.spec());
 
   EXPECT_EQ("sh", base::UTF16ToUTF8(result_title));
   [pboard releaseGlobally];
