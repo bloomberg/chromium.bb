@@ -96,7 +96,7 @@ bool UsbDeviceFilter::Matches(scoped_refptr<UsbDevice> device) const {
   return true;
 }
 
-base::Value* UsbDeviceFilter::ToValue() const {
+scoped_ptr<base::Value> UsbDeviceFilter::ToValue() const {
   scoped_ptr<base::DictionaryValue> obj(new base::DictionaryValue());
 
   if (vendor_id_set_) {
@@ -116,7 +116,7 @@ base::Value* UsbDeviceFilter::ToValue() const {
     }
   }
 
-  return obj.release();
+  return obj.Pass();
 }
 
 // static

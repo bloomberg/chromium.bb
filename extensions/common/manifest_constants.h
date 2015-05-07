@@ -175,6 +175,7 @@ extern const char kUIOverride[];
 extern const char kUpdateURL[];
 extern const char kUrlHandlers[];
 extern const char kUrlHandlerTitle[];
+extern const char kUsbPrinters[];
 extern const char kVersion[];
 extern const char kVersionName[];
 extern const char kWebAccessibleResources[];

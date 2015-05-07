@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class Value;
@@ -29,7 +30,7 @@ class UsbDeviceFilter {
   void SetInterfaceProtocol(uint8 interface_protocol);
 
   bool Matches(scoped_refptr<UsbDevice> device) const;
-  base::Value* ToValue() const;
+  scoped_ptr<base::Value> ToValue() const;
 
   static bool MatchesAny(scoped_refptr<UsbDevice> device,
                          const std::vector<UsbDeviceFilter>& filters);

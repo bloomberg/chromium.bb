@@ -167,6 +167,46 @@
             "optional": true
           }
         }
+      },
+      {
+        "id": "UsbPrinters",
+        "type": "object",
+        "description": "The <code>usb_printers</code> manifest property lists the USB printers supported by an app implementing the $(ref:printerProvider) API.",
+        "properties": {
+          "filters": {
+            "description": "A list of $(ref:usb.DeviceFilter USB device filters) matching supported devices. A device only needs to match one of the provided filters. A <code>vendorId</code> is required and only one of <code>productId</code> or <code>interfaceClass</code> may be provided.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "vendorId": {
+                  "description": "USB vendor ID of matching devices",
+                  "type": "integer"
+                },
+                "productId": {
+                  "description": "USB product ID of matching devices",
+                  "type": "integer",
+                  "optional": true
+                },
+                "interfaceClass": {
+                  "description": "USB interface class implemented by any interface of a matching device.",
+                  "type": "integer",
+                  "optional": true
+                },
+                "interfaceSubclass": {
+                  "description": "USB interface sub-class implemented by the interface matching $(ref:interfaceClass).",
+                  "type": "integer",
+                  "optional": true
+                },
+                "interfaceProtocol": {
+                  "description": "USB interface protocol implemented by the interface matching $(ref:interfaceClass) and $(ref:interfaceSubclass).",
+                  "type": "integer",
+                  "optional": true
+                }
+              }
+            }
+          }
+        }
       }
     ]
   }

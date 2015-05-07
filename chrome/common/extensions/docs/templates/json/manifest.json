@@ -214,6 +214,12 @@
     "documentation": "manifest/url_handlers",
     "example": {}
   },
+  "usb_printers": {
+    "documentation": "manifest/usb_printers",
+    "example": {
+      "filters": []
+    }
+  },
   "version": {
     "documentation": "manifest/version",
     "example": "versionString",
