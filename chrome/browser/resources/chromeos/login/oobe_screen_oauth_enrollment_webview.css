@@ -138,11 +138,11 @@
 
 #oauth-enroll-cancel-button {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
-  right: 0;
+  right: 10px;
 }
 
 html[dir=rtl] #oauth-enroll-cancel-button {
-  left: 0;
+  left: 10px;
   right: auto;
 }
 
@@ -150,27 +150,19 @@ html[dir=rtl] #oauth-enroll-cancel-button {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE);
 }
 
-#oauth-enroll-cancel-button:hover {
-  cursor: pointer;
-}
-
 #oauth-enroll-back-button {
   background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON);
-  left: 0;
+  left: 10px;
 }
 
 html[dir=rtl] #oauth-enroll-back-button {
   -webkit-transform: scaleX(-1);
   left: auto;
-  right: 0;
+  right: 10px;
 }
 
 #oauth-enrollment.saml #oauth-enroll-back-button {
   display: none;
-}
-
-#oauth-enroll-back-button:hover {
-  cursor: pointer;
 }
 
 .oauth-enroll-textbox {

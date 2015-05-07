@@ -69,20 +69,44 @@ throbber-notice {
   background: transparent none;
   background-position: center;
   background-repeat: no-repeat;
-  height: 34px;
+  border-radius: 50%;
+  height: 24px;
   position: absolute;
-  top: 0;
-  width: 34px;
+  top: 10px;
+  width: 24px;
   z-index: 1;
+}
+
+.custom-gaia-button:hover {
+  cursor: pointer;
+}
+
+.custom-gaia-button:focus {
+  background: rgba(0,0,0,.16);
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.75;
+}
+
+ /* Even more specificity than button.custom-appearance:focus:focus */
+.custom-gaia-button:focus:focus:focus {
+   border-color: transparent;
+}
+
+.custom-gaia-button:active {
+  background: rgba(0,0,0,.12);
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1.0;
 }
 
 #close-button-item {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
-  right: 0;
+  right: 10px;
 }
 
 html[dir=rtl] #close-button-item {
-  left: 0;
+  left: 10px;
   right: auto;
 }
 
@@ -99,19 +123,15 @@ html[dir=rtl] #close-button-item {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_MASKED);
 }
 
-#close-button-item:hover {
-  cursor: pointer;
-}
-
 #back-button-item {
   background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON);
-  left: 0;
+  left: 10px;
 }
 
 html[dir=rtl] #back-button-item {
   -webkit-transform: scaleX(-1);
   left: auto;
-  right: 0;
+  right: 10px;
 }
 
 .new-gaia-flow .full-width #back-button-item {
@@ -120,10 +140,6 @@ html[dir=rtl] #back-button-item {
 
 #back-button-item:disabled {
   background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON_MASKED);
-}
-
-#back-button-item:hover {
-  cursor: pointer;
 }
 
 .signin-text {
