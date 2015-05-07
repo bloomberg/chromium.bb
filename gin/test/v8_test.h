@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -26,6 +27,7 @@ class V8Test : public testing::Test {
   void TearDown() override;
 
  protected:
+  base::MessageLoop message_loop_;
   scoped_ptr<IsolateHolder> instance_;
   v8::Persistent<v8::Context> context_;
 

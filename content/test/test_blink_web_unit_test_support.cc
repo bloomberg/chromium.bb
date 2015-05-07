@@ -8,7 +8,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/threading/platform_thread.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "content/test/mock_webclipboard_impl.h"
@@ -41,6 +44,40 @@
 #include "gin/v8_initializer.h"
 #endif
 
+namespace {
+
+class DummyTaskRunner : public base::SingleThreadTaskRunner {
+ public:
+  DummyTaskRunner() : thread_id_(base::PlatformThread::CurrentId()) {}
+
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override {
+    NOTREACHED();
+    return false;
+  }
+
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override {
+    NOTREACHED();
+    return false;
+  }
+
+  bool RunsTasksOnCurrentThread() const override {
+    return thread_id_ == base::PlatformThread::CurrentId();
+  }
+
+ protected:
+  ~DummyTaskRunner() override {}
+
+  base::PlatformThreadId thread_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DummyTaskRunner);
+};
+
+}  // namespace
+
 namespace content {
 
 TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
@@ -55,10 +92,23 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   gin::V8Initializer::LoadV8Snapshot();
 #endif
 
+  scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
+  scoped_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
   if (base::MessageLoopProxy::current()) {
     renderer_scheduler_ = scheduler::RendererScheduler::Create();
     web_thread_.reset(new scheduler::WebThreadImplForRendererScheduler(
         renderer_scheduler_.get()));
+  } else {
+    // Dummy task runner is initialized here because the blink::initialize
+    // creates IsolateHolder which needs the current task runner handle. There
+    // should be no task posted to this task runner. The message loop is not
+    // created before this initialization because some tests need specific kinds
+    // of message loops, and their types are not known upfront. Some tests also
+    // create their own thread bundles or message loops, and doing the same in
+    // TestBlinkWebUnitTestSupport would introduce a conflict.
+    dummy_task_runner = make_scoped_refptr(new DummyTaskRunner());
+    dummy_task_runner_handle.reset(
+        new base::ThreadTaskRunnerHandle(dummy_task_runner));
   }
 
   blink::initialize(this);

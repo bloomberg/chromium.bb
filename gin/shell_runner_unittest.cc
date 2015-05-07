@@ -5,6 +5,7 @@
 #include "gin/shell_runner.h"
 
 #include "base/compiler_specific.h"
+#include "base/message_loop/message_loop.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/public/isolate_holder.h"
@@ -23,6 +24,7 @@ using v8::String;
 namespace gin {
 
 TEST(RunnerTest, Run) {
+  base::MessageLoop message_loop;
   std::string source = "this.result = 'PASS';\n";
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA

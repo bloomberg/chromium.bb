@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
+namespace gin {
+
 using v8::Array;
 using v8::Boolean;
 using v8::HandleScope;
@@ -25,8 +27,6 @@ using v8::Object;
 using v8::String;
 using v8::Undefined;
 using v8::Value;
-
-namespace gin {
 
 typedef V8Test ConverterTest;
 
