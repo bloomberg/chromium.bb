@@ -109,7 +109,8 @@ class StartPageView::StartPageTilesContainer
     : public SearchResultContainerView {
  public:
   StartPageTilesContainer(ContentsView* contents_view,
-                          AllAppsTileItemView* all_apps_button);
+                          AllAppsTileItemView* all_apps_button,
+                          AppListViewDelegate* view_delegate);
   ~StartPageTilesContainer() override;
 
   TileItemView* GetTileItemView(int index);
@@ -137,7 +138,8 @@ class StartPageView::StartPageTilesContainer
 
 StartPageView::StartPageTilesContainer::StartPageTilesContainer(
     ContentsView* contents_view,
-    AllAppsTileItemView* all_apps_button)
+    AllAppsTileItemView* all_apps_button,
+    AppListViewDelegate* view_delegate)
     : contents_view_(contents_view), all_apps_button_(all_apps_button) {
   views::BoxLayout* tiles_layout_manager =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kTileSpacing);
@@ -149,7 +151,8 @@ StartPageView::StartPageTilesContainer::StartPageTilesContainer(
 
   // Add SearchResultTileItemViews to the container.
   for (size_t i = 0; i < kNumStartPageTiles; ++i) {
-    SearchResultTileItemView* tile_item = new SearchResultTileItemView(this);
+    SearchResultTileItemView* tile_item =
+        new SearchResultTileItemView(this, view_delegate);
     AddChildView(tile_item);
     tile_item->SetParentBackgroundColor(kLabelBackgroundColor);
     search_result_tile_views_.push_back(tile_item);
@@ -232,7 +235,8 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
           app_list_main_view->contents_view(),
           new AllAppsTileItemView(
               app_list_main_view_->contents_view(),
-              view_delegate_->GetModel()->top_level_item_list()))) {
+              view_delegate_->GetModel()->top_level_item_list()),
+          view_delegate)) {
   // The view containing the start page WebContents and SearchBoxSpacerView.
   InitInstantContainer();
   AddChildView(instant_container_);

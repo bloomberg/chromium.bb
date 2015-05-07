@@ -16,13 +16,15 @@ class Textfield;
 
 namespace app_list {
 
+class AppListViewDelegate;
 class SearchResultTileItemView;
 
 // Displays a list of SearchResultTileItemView.
 class APP_LIST_EXPORT SearchResultTileItemListView
     : public SearchResultContainerView {
  public:
-  explicit SearchResultTileItemListView(views::Textfield* search_box);
+  explicit SearchResultTileItemListView(views::Textfield* search_box,
+                                        AppListViewDelegate* view_delegate);
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:

@@ -139,9 +139,6 @@ class APP_LIST_EXPORT SearchResult {
   // SearchResult. Ideally, SearchResult will be copyable.
   virtual scoped_ptr<SearchResult> Duplicate() const = 0;
 
-  // Opens the result.
-  virtual void Open(int event_flags);
-
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
 
@@ -155,6 +152,11 @@ class APP_LIST_EXPORT SearchResult {
   void set_voice_result(bool voice_result) { voice_result_ = voice_result; }
 
  private:
+  friend class SearchController;
+
+  // Opens the result. Clients should use AppListViewDelegate::OpenSearchResult.
+  virtual void Open(int event_flags);
+
   gfx::ImageSkia icon_;
 
   base::string16 title_;

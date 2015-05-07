@@ -4,6 +4,7 @@
 
 #include "ui/app_list/views/search_result_tile_item_view.h"
 
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_container_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -11,8 +12,11 @@
 namespace app_list {
 
 SearchResultTileItemView::SearchResultTileItemView(
-    SearchResultContainerView* result_container)
-    : result_container_(result_container), item_(NULL) {
+    SearchResultContainerView* result_container,
+    AppListViewDelegate* view_delegate)
+    : result_container_(result_container),
+      item_(nullptr),
+      view_delegate_(view_delegate) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
@@ -55,12 +59,12 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
-  item_->Open(event.flags());
+  view_delegate_->OpenSearchResult(item_, false, event.flags());
 }
 
 bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_RETURN) {
-    item_->Open(event.flags());
+    view_delegate_->OpenSearchResult(item_, false, event.flags());
     return true;
   }
 

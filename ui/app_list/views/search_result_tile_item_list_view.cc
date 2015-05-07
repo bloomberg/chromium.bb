@@ -26,12 +26,14 @@ const int kTopBottomPadding = 8;
 namespace app_list {
 
 SearchResultTileItemListView::SearchResultTileItemListView(
-    views::Textfield* search_box)
+    views::Textfield* search_box,
+    AppListViewDelegate* view_delegate)
     : search_box_(search_box) {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kTileSpacing));
   for (size_t i = 0; i < kNumSearchResultTiles; ++i) {
-    SearchResultTileItemView* tile_item = new SearchResultTileItemView(this);
+    SearchResultTileItemView* tile_item =
+        new SearchResultTileItemView(this, view_delegate);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
     tile_item->SetBorder(views::Border::CreateEmptyBorder(
         kTopBottomPadding, 0, kTopBottomPadding, 0));

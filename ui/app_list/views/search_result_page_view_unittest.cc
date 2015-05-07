@@ -38,7 +38,8 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
     list_view_ = new SearchResultListView(this, &view_delegate_);
     view_->AddSearchResultContainerView(GetResults(), list_view_);
     textfield_.reset(new views::Textfield());
-    tile_list_view_ = new SearchResultTileItemListView(textfield_.get());
+    tile_list_view_ =
+        new SearchResultTileItemListView(textfield_.get(), &view_delegate_);
     view_->AddSearchResultContainerView(GetResults(), tile_list_view_);
   }
 

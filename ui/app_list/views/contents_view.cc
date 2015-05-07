@@ -75,8 +75,8 @@ void ContentsView::Init(AppListModel* model) {
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     search_results_page_view_->AddSearchResultContainerView(
-        results,
-        new SearchResultTileItemListView(GetSearchBoxView()->search_box()));
+        results, new SearchResultTileItemListView(
+                     GetSearchBoxView()->search_box(), view_delegate));
   }
   AddLauncherPage(search_results_page_view_,
                   AppListModel::STATE_SEARCH_RESULTS);
