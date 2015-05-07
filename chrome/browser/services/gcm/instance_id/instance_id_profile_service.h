@@ -18,8 +18,13 @@ class InstanceIDDriver;
 // Providing Instance ID support, via InstanceIDDriver, to a profile.
 class InstanceIDProfileService : public KeyedService {
  public:
+  // Returns whether InstanceID is enabled for |profile|.
+  static bool IsInstanceIDEnabled(Profile* profile);
+
   explicit InstanceIDProfileService(Profile* profile);
   ~InstanceIDProfileService() override;
+
+  InstanceIDDriver* driver() const { return driver_.get(); }
 
  private:
   scoped_ptr<InstanceIDDriver> driver_;

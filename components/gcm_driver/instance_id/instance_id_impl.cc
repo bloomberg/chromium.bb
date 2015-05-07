@@ -59,7 +59,7 @@ void InstanceIDImpl::DeleteID(const DeleteIDCallback& callback) {
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, this, InstanceID::SUCCESS));
+      base::Bind(callback, InstanceID::SUCCESS));
 }
 
 void InstanceIDImpl::EnsureIDGenerated() {

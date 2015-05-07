@@ -19,7 +19,7 @@ void InstanceID::SetTokenRefreshCallback(const TokenRefreshCallback& callback) {
 
 void InstanceID::NotifyTokenRefresh(bool update_id) {
   if (!token_refresh_callback_.is_null())
-    token_refresh_callback_.Run(this, update_id);
+    token_refresh_callback_.Run(app_id_, update_id);
 }
 
 }  // namespace instance_id

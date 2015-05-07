@@ -23,6 +23,9 @@ class InstanceID;
 // implementation.
 class InstanceIDDriver {
  public:
+  // Returns whether InstanceID is enabled.
+  static bool IsInstanceIDEnabled();
+
   explicit InstanceIDDriver(gcm::GCMDriver* gcm_driver);
   virtual ~InstanceIDDriver();
 

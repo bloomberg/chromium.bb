@@ -39,15 +39,12 @@ class InstanceID {
   };
 
   // Asynchronous callbacks.
-  typedef base::Callback<void(InstanceID* instance_id,
+  typedef base::Callback<void(const std::string& app_id,
                               bool update_id)> TokenRefreshCallback;
-  typedef base::Callback<void(InstanceID* instance_id,
-                              const std::string& token,
+  typedef base::Callback<void(const std::string& token,
                               Result result)> GetTokenCallback;
-  typedef base::Callback<void(InstanceID* instance_id,
-                              Result result)> DeleteTokenCallback;
-  typedef base::Callback<void(InstanceID* instance_id,
-                              Result result)> DeleteIDCallback;
+  typedef base::Callback<void(Result result)> DeleteTokenCallback;
+  typedef base::Callback<void(Result result)> DeleteIDCallback;
 
   static const int kInstanceIDByteLength = 8;
 

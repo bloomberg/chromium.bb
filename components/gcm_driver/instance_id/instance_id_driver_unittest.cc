@@ -46,7 +46,7 @@ class InstanceIDDriverTest : public testing::Test {
 
   void WaitForAsyncOperation();
 
-  void DeleteIDCompleted(InstanceID* instance_id, InstanceID::Result result);
+  void DeleteIDCompleted(InstanceID::Result result);
 
   InstanceIDDriver* driver() const { return driver_.get(); }
   InstanceID::Result delete_id_result() const { return delete_id_result_; }
@@ -79,8 +79,7 @@ void InstanceIDDriverTest::WaitForAsyncOperation() {
   run_loop.Run();
 }
 
-void InstanceIDDriverTest::DeleteIDCompleted(InstanceID* instance_id,
-                                             InstanceID::Result result) {
+void InstanceIDDriverTest::DeleteIDCompleted(InstanceID::Result result) {
   delete_id_result_ = result;
   if (!async_operation_completed_callback_.is_null())
     async_operation_completed_callback_.Run();

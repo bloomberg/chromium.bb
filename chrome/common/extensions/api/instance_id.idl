@@ -33,7 +33,7 @@ namespace instanceID {
 
   // |creationTime| : The time when the Instance ID has been generated,
   //     represented in milliseconds since the epoch.
-  callback GetCreationTimeCallback = void(long creationTime);
+  callback GetCreationTimeCallback = void(double creationTime);
 
   // |token| : The token assigned by the requested service.
   callback GetTokenCallback = void(DOMString token);

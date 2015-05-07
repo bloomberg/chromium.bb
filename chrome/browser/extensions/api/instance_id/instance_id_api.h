@@ -5,13 +5,36 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_INSTANCE_ID_INSTANCE_ID_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_INSTANCE_ID_INSTANCE_ID_API_H_
 
+#include "base/macros.h"
+#include "components/gcm_driver/instance_id/instance_id.h"
 #include "extensions/browser/extension_function.h"
 
 class Profile;
 
 namespace extensions {
 
-class InstanceIDGetIDFunction : public UIThreadExtensionFunction {
+class InstanceIDApiFunction : public UIThreadExtensionFunction {
+ public:
+  InstanceIDApiFunction();
+
+ protected:
+  ~InstanceIDApiFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  // Actual implementation of specific functions.
+  virtual ResponseAction DoWork() = 0;
+
+  // Checks whether the InstanceID API is enabled.
+  bool IsEnabled() const;
+
+  instance_id::InstanceID* GetInstanceID() const;
+
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDApiFunction);
+};
+
+class InstanceIDGetIDFunction : public InstanceIDApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("instanceID.getID", INSTANCEID_GETID);
 
@@ -20,11 +43,14 @@ class InstanceIDGetIDFunction : public UIThreadExtensionFunction {
  protected:
   ~InstanceIDGetIDFunction() override;
 
-  // ExtensionFunction:
-  ResponseAction Run() override;
+  // InstanceIDApiFunction:
+  ResponseAction DoWork() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDGetIDFunction);
 };
 
-class InstanceIDGetCreationTimeFunction : public UIThreadExtensionFunction {
+class InstanceIDGetCreationTimeFunction : public InstanceIDApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("instanceID.getCreationTime",
                              INSTANCEID_GETCREATIONTIME);
@@ -34,11 +60,14 @@ class InstanceIDGetCreationTimeFunction : public UIThreadExtensionFunction {
  protected:
   ~InstanceIDGetCreationTimeFunction() override;
 
-  // ExtensionFunction:
-  ResponseAction Run() override;
+  // InstanceIDApiFunction:
+  ResponseAction DoWork() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDGetCreationTimeFunction);
 };
 
-class InstanceIDGetTokenFunction : public UIThreadExtensionFunction {
+class InstanceIDGetTokenFunction : public InstanceIDApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("instanceID.getToken", INSTANCEID_GETTOKEN);
 
@@ -47,11 +76,17 @@ class InstanceIDGetTokenFunction : public UIThreadExtensionFunction {
  protected:
   ~InstanceIDGetTokenFunction() override;
 
-  // ExtensionFunction:
-  ResponseAction Run() override;
+  // InstanceIDApiFunction:
+  ResponseAction DoWork() override;
+
+ private:
+  void GetTokenCompleted(const std::string& token,
+                         instance_id::InstanceID::Result result);
+
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDGetTokenFunction);
 };
 
-class InstanceIDDeleteTokenFunction : public UIThreadExtensionFunction {
+class InstanceIDDeleteTokenFunction : public InstanceIDApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("instanceID.DeleteToken", INSTANCEID_DELETETOKEN);
 
@@ -60,11 +95,16 @@ class InstanceIDDeleteTokenFunction : public UIThreadExtensionFunction {
  protected:
   ~InstanceIDDeleteTokenFunction() override;
 
-  // ExtensionFunction:
-  ResponseAction Run() override;
+  // InstanceIDApiFunction:
+  ResponseAction DoWork() override;
+
+ private:
+  void DeleteTokenCompleted(instance_id::InstanceID::Result result);
+
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDDeleteTokenFunction);
 };
 
-class InstanceIDDeleteIDFunction : public UIThreadExtensionFunction {
+class InstanceIDDeleteIDFunction : public InstanceIDApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("instanceID.deleteID",
                              INSTANCEID_DELETEID);
@@ -74,8 +114,13 @@ class InstanceIDDeleteIDFunction : public UIThreadExtensionFunction {
  protected:
   ~InstanceIDDeleteIDFunction() override;
 
-  // ExtensionFunction:
-  ResponseAction Run() override;
+  // InstanceIDApiFunction:
+  ResponseAction DoWork() override;
+
+ private:
+  void DeleteIDCompleted(instance_id::InstanceID::Result result);
+
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDDeleteIDFunction);
 };
 
 }  // namespace extensions
