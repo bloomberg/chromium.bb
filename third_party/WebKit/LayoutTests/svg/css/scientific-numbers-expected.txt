@@ -96,9 +96,9 @@ PASS text.style.baselineShift is "50px"
 
 Test behavior on overflow
 PASS text.style.baselineShift is "baseline"
-PASS text.style.baselineShift is "0px"
 PASS text.style.baselineShift is "baseline"
-PASS text.style.baselineShift is "0px"
+PASS text.style.baselineShift is "baseline"
+PASS text.style.baselineShift is "baseline"
 
 Invalid values
 PASS text.style.baselineShift is "baseline"

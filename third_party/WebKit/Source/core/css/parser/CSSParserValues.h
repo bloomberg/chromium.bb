@@ -268,11 +268,8 @@ inline void CSSParserValue::setFromNumber(double value, int unit)
 {
     id = CSSValueInvalid;
     isInt = false;
-    if (std::isfinite(value))
-        fValue = value;
-    else
-        fValue = 0;
-    this->unit = unit;
+    fValue = value;
+    this->unit = std::isfinite(value) ? unit : CSSPrimitiveValue::CSS_UNKNOWN;
 }
 
 inline void CSSParserValue::setFromOperator(UChar c)
