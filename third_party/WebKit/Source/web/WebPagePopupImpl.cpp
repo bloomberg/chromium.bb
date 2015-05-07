@@ -490,6 +490,11 @@ LocalDOMWindow* WebPagePopupImpl::window()
     return m_page->deprecatedLocalMainFrame()->localDOMWindow();
 }
 
+void WebPagePopupImpl::layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback* callback)
+{
+    m_layerTreeView->layoutAndPaintAsync(callback);
+}
+
 void WebPagePopupImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
 {
     ASSERT(isAcceleratedCompositingActive());

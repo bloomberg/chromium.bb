@@ -65,6 +65,7 @@ public:
     WebWidgetClient* widgetClient() const { return m_widgetClient; }
     bool hasSamePopupClient(WebPagePopupImpl* other) { return other && m_popupClient == other->m_popupClient; }
     LocalDOMWindow* window();
+    virtual void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
     virtual WebPoint positionRelativeToOwner() override;
     virtual void postMessage(const String& message) override;

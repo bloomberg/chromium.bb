@@ -78,6 +78,7 @@ public:
     void beginFrame(const WebBeginFrameArgs&) override;
     void layout() override;
     void paint(WebCanvas*, const WebRect&) override;
+    void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
     void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
     bool isTrackingRepaints() const override;
     void themeChanged() override;

@@ -292,6 +292,11 @@ bool WebFrameWidgetImpl::isTransparent() const
     return false;
 }
 
+void WebFrameWidgetImpl::layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback* callback)
+{
+    m_layerTreeView->layoutAndPaintAsync(callback);
+}
+
 void WebFrameWidgetImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
 {
     m_layerTreeView->compositeAndReadbackAsync(callback);
