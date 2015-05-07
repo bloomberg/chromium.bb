@@ -123,11 +123,11 @@ class MemoryProgramCacheTest : public GpuServiceTest {
     fragment_shader_->set_source("bbbal   sldkdkdkas 134 ad");
 
     TestHelper::SetShaderStates(
-        gl_.get(), vertex_shader_, true, NULL, NULL,
+        gl_.get(), vertex_shader_, true, NULL, NULL, NULL,
         &vertex_attrib_map, &vertex_uniform_map, &vertex_varying_map,
         NULL);
     TestHelper::SetShaderStates(
-        gl_.get(), fragment_shader_, true, NULL, NULL,
+        gl_.get(), fragment_shader_, true, NULL, NULL, NULL,
         &fragment_attrib_map, &fragment_uniform_map, &fragment_varying_map,
         NULL);
   }

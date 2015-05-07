@@ -558,6 +558,10 @@ bool Program::Link(ShaderManager* manager,
       set_log_info("invalid shaders");
       return false;
     }
+    if (DetectShaderVersionMismatch()) {
+      set_log_info("Versions of linked shaders have to match.");
+      return false;
+    }
     if (DetectAttribLocationBindingConflicts()) {
       set_log_info("glBindAttribLocation() conflicts");
       return false;
@@ -1032,6 +1036,22 @@ bool Program::CanLink() const {
     }
   }
   return true;
+}
+
+bool Program::DetectShaderVersionMismatch() const {
+  int version = Shader::kUndefinedShaderVersion;
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    Shader* shader = attached_shaders_[ii].get();
+    if (shader) {
+      if (version != Shader::kUndefinedShaderVersion &&
+          shader->shader_version() != version) {
+        return true;
+      }
+      version = shader->shader_version();
+      DCHECK(version != Shader::kUndefinedShaderVersion);
+    }
+  }
+  return false;
 }
 
 bool Program::DetectAttribLocationBindingConflicts() const {

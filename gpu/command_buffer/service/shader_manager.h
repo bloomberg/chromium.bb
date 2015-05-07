@@ -35,6 +35,8 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
     kShaderStateCompiled, // Signifies compile happened, not valid compile.
   };
 
+  static const int kUndefinedShaderVersion = -1;
+
   void RequestCompile(scoped_refptr<ShaderTranslatorInterface> translator,
                       TranslatedShaderSourceType type);
 
@@ -50,6 +52,10 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   GLenum shader_type() const {
     return shader_type_;
+  }
+
+  int shader_version() const {
+    return shader_version_;
   }
 
   const std::string& source() const {
@@ -167,6 +173,10 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
 
   // Type of shader - GL_VERTEX_SHADER or GL_FRAGMENT_SHADER.
   GLenum shader_type_;
+
+  // Version of the shader. Can be kUndefinedShaderVersion or version returned
+  // by ANGLE.
+  int shader_version_;
 
   // Translated source type when shader was last requested to be compiled.
   TranslatedShaderSourceType source_type_;

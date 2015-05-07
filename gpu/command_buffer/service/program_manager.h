@@ -213,6 +213,9 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // returns false if error.
   bool SetUniformLocationBinding(const std::string& name, GLint location);
 
+  // Detects if the shader version combination is not valid.
+  bool DetectShaderVersionMismatch() const;
+
   // Detects if there are attribute location conflicts from
   // glBindAttribLocation() calls.
   // We only consider the declared attributes in the program.

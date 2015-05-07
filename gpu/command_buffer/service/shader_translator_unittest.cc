@@ -53,6 +53,7 @@ TEST_F(ShaderTranslatorTest, ValidVertexShader) {
 
   // A valid shader should be successfully translated.
   std::string info_log, translated_source;
+  int shader_version;
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
@@ -60,6 +61,7 @@ TEST_F(ShaderTranslatorTest, ValidVertexShader) {
   EXPECT_TRUE(vertex_translator_->Translate(shader,
                                             &info_log,
                                             &translated_source,
+                                            &shader_version,
                                             &attrib_map,
                                             &uniform_map,
                                             &varying_map,
@@ -86,6 +88,7 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
 
   // An invalid shader should fail.
   std::string info_log, translated_source;
+  int shader_version;
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
@@ -93,6 +96,7 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
   EXPECT_FALSE(vertex_translator_->Translate(bad_shader,
                                              &info_log,
                                              &translated_source,
+                                             &shader_version,
                                              &attrib_map,
                                              &uniform_map,
                                              &varying_map,
@@ -112,6 +116,7 @@ TEST_F(ShaderTranslatorTest, InvalidVertexShader) {
   EXPECT_TRUE(vertex_translator_->Translate(good_shader,
                                             &info_log,
                                             &translated_source,
+                                            &shader_version,
                                             &attrib_map,
                                             &uniform_map,
                                             &varying_map,
@@ -128,6 +133,7 @@ TEST_F(ShaderTranslatorTest, ValidFragmentShader) {
 
   // A valid shader should be successfully translated.
   std::string info_log, translated_source;
+  int shader_version;
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
@@ -135,6 +141,7 @@ TEST_F(ShaderTranslatorTest, ValidFragmentShader) {
   EXPECT_TRUE(fragment_translator_->Translate(shader,
                                               &info_log,
                                               &translated_source,
+                                              &shader_version,
                                               &attrib_map,
                                               &uniform_map,
                                               &varying_map,
@@ -154,6 +161,7 @@ TEST_F(ShaderTranslatorTest, InvalidFragmentShader) {
   const char* shader = "foo-bar";
 
   std::string info_log, translated_source;
+  int shader_version;
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
@@ -162,6 +170,7 @@ TEST_F(ShaderTranslatorTest, InvalidFragmentShader) {
   EXPECT_FALSE(fragment_translator_->Translate(shader,
                                                &info_log,
                                                &translated_source,
+                                               &shader_version,
                                                &attrib_map,
                                                &uniform_map,
                                                &varying_map,
@@ -185,6 +194,7 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
       "}";
 
   std::string info_log, translated_source;
+  int shader_version;
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
@@ -192,6 +202,7 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
   EXPECT_TRUE(vertex_translator_->Translate(shader,
                                             &info_log,
                                             &translated_source,
+                                            &shader_version,
                                             &attrib_map,
                                             &uniform_map,
                                             &varying_map,
@@ -227,6 +238,7 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
       "}";
 
   std::string info_log, translated_source;
+  int shader_version;
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
@@ -234,6 +246,7 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   EXPECT_TRUE(fragment_translator_->Translate(shader,
                                               &info_log,
                                               &translated_source,
+                                              &shader_version,
                                               &attrib_map,
                                               &uniform_map,
                                               &varying_map,
@@ -280,6 +293,7 @@ TEST_F(ShaderTranslatorTest, BuiltInFunctionEmulation) {
       "}";
 
   std::string info_log, translated_source;
+  int shader_version;
   AttributeMap attrib_map;
   UniformMap uniform_map;
   VaryingMap varying_map;
@@ -287,6 +301,7 @@ TEST_F(ShaderTranslatorTest, BuiltInFunctionEmulation) {
   EXPECT_TRUE(vertex_translator_->Translate(shader,
                                             &info_log,
                                             &translated_source,
+                                            &shader_version,
                                             &attrib_map,
                                             &uniform_map,
                                             &varying_map,

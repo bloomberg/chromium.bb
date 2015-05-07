@@ -30,6 +30,7 @@ Shader::Shader(GLuint service_id, GLenum shader_type)
         marked_for_deletion_(false),
         service_id_(service_id),
         shader_type_(shader_type),
+        shader_version_(kUndefinedShaderVersion),
         source_type_(kANGLE),
         valid_(false) {
 }
@@ -71,6 +72,7 @@ void Shader::DoCompile() {
     bool success = translator->Translate(last_compiled_source_,
                                          &log_info_,
                                          &translated_source_,
+                                         &shader_version_,
                                          &attrib_map_,
                                          &uniform_map_,
                                          &varying_map_,

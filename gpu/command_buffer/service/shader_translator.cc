@@ -160,6 +160,7 @@ int ShaderTranslator::GetCompileOptions() const {
 bool ShaderTranslator::Translate(const std::string& shader_source,
                                  std::string* info_log,
                                  std::string* translated_source,
+                                 int* shader_version,
                                  AttributeMap* attrib_map,
                                  UniformMap* uniform_map,
                                  VaryingMap* varying_map,
@@ -179,6 +180,8 @@ bool ShaderTranslator::Translate(const std::string& shader_source,
     if (translated_source) {
       *translated_source = ShGetObjectCode(compiler_);
     }
+    // Get shader version.
+    *shader_version = ShGetShaderVersion(compiler_);
     // Get info for attribs, uniforms, and varyings.
     GetAttributes(compiler_, attrib_map);
     GetUniforms(compiler_, uniform_map);

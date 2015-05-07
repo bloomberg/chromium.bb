@@ -95,10 +95,11 @@ class MockShaderTranslator : public ShaderTranslatorInterface {
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
       ShCompileOptions driver_bug_workarounds));
-  MOCK_CONST_METHOD7(Translate, bool(
+  MOCK_CONST_METHOD8(Translate, bool(
       const std::string& shader_source,
       std::string* info_log,
       std::string* translated_source,
+      int* shader_version,
       AttributeMap* attrib_map,
       UniformMap* uniform_map,
       VaryingMap* varying_map,

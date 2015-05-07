@@ -774,6 +774,7 @@ void TestHelper::SetShaderStates(
       bool expected_valid,
       const std::string* const expected_log_info,
       const std::string* const expected_translated_source,
+      const int* const expected_shader_version,
       const AttributeMap* const expected_attrib_map,
       const UniformMap* const expected_uniform_map,
       const VaryingMap* const expected_varying_map,
@@ -785,6 +786,9 @@ void TestHelper::SetShaderStates(
   const std::string* translated_source =
       (expected_translated_source && expected_valid) ?
           expected_translated_source : &empty_translated_source;
+  int default_shader_version = 100;
+  const int* shader_version = (expected_shader_version && expected_valid) ?
+      expected_shader_version : &default_shader_version;
   const AttributeMap empty_attrib_map;
   const AttributeMap* attrib_map = (expected_attrib_map && expected_valid) ?
       expected_attrib_map : &empty_attrib_map;
@@ -803,16 +807,18 @@ void TestHelper::SetShaderStates(
   EXPECT_CALL(*mock_translator, Translate(_,
                                           NotNull(),  // log_info
                                           NotNull(),  // translated_source
+                                          NotNull(),  // shader_version
                                           NotNull(),  // attrib_map
                                           NotNull(),  // uniform_map
                                           NotNull(),  // varying_map
                                           NotNull()))  // name_map
       .WillOnce(DoAll(SetArgumentPointee<1>(*log_info),
                       SetArgumentPointee<2>(*translated_source),
-                      SetArgumentPointee<3>(*attrib_map),
-                      SetArgumentPointee<4>(*uniform_map),
-                      SetArgumentPointee<5>(*varying_map),
-                      SetArgumentPointee<6>(*name_map),
+                      SetArgumentPointee<3>(*shader_version),
+                      SetArgumentPointee<4>(*attrib_map),
+                      SetArgumentPointee<5>(*uniform_map),
+                      SetArgumentPointee<6>(*varying_map),
+                      SetArgumentPointee<7>(*name_map),
                       Return(expected_valid)))
       .RetiresOnSaturation();
   if (expected_valid) {
@@ -835,7 +841,7 @@ void TestHelper::SetShaderStates(
 // static
 void TestHelper::SetShaderStates(
       ::gfx::MockGLInterface* gl, Shader* shader, bool valid) {
-  SetShaderStates(gl, shader, valid, NULL, NULL, NULL, NULL, NULL, NULL);
+  SetShaderStates(gl, shader, valid, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 // static

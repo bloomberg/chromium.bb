@@ -119,6 +119,7 @@ class TestHelper {
       bool expected_valid,
       const std::string* const expected_log_info,
       const std::string* const expected_translated_source,
+      const int* const expected_shader_version,
       const AttributeMap* const expected_attrib_map,
       const UniformMap* const expected_uniform_map,
       const VaryingMap* const expected_varying_map,
