@@ -818,7 +818,7 @@ void AXObjectCacheImpl::handleAriaSelectedChanged(Node* node)
     postNotification(obj, AXCheckedStateChanged);
 
     AXObject* listbox = obj->parentObjectUnignored();
-    if (listbox->roleValue() == ListBoxRole)
+    if (listbox && listbox->roleValue() == ListBoxRole)
         postNotification(listbox, AXSelectedChildrenChanged);
 }
 
