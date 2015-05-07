@@ -81,6 +81,11 @@ class ThreadProxyForTest : public ThreadProxy {
  private:
   TestHooks* test_hooks_;
 
+  void WillBeginImplFrame(const BeginFrameArgs& args) override {
+    ThreadProxy::WillBeginImplFrame(args);
+    test_hooks_->WillBeginImplFrame(args);
+  }
+
   void ScheduledActionSendBeginMainFrame() override {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
     ThreadProxy::ScheduledActionSendBeginMainFrame();
@@ -118,11 +123,6 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->ScheduledActionInvalidateOutputSurface();
   }
 
-  void SendBeginMainFrameNotExpectedSoon() override {
-    ThreadProxy::SendBeginMainFrameNotExpectedSoon();
-    test_hooks_->SendBeginMainFrameNotExpectedSoon();
-  }
-
   ThreadProxyForTest(
       TestHooks* test_hooks,
       LayerTreeHost* host,
@@ -153,6 +153,11 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
 
  private:
   TestHooks* test_hooks_;
+
+  void WillBeginImplFrame(const BeginFrameArgs& args) override {
+    SingleThreadProxy::WillBeginImplFrame(args);
+    test_hooks_->WillBeginImplFrame(args);
+  }
 
   void ScheduledActionSendBeginMainFrame() override {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
@@ -185,16 +190,6 @@ class SingleThreadProxyForTest : public SingleThreadProxy {
   void ScheduledActionPrepareTiles() override {
     SingleThreadProxy::ScheduledActionPrepareTiles();
     test_hooks_->ScheduledActionPrepareTiles();
-  }
-
-  void ScheduledActionInvalidateOutputSurface() override {
-    SingleThreadProxy::ScheduledActionInvalidateOutputSurface();
-    test_hooks_->ScheduledActionInvalidateOutputSurface();
-  }
-
-  void SendBeginMainFrameNotExpectedSoon() override {
-    SingleThreadProxy::SendBeginMainFrameNotExpectedSoon();
-    test_hooks_->SendBeginMainFrameNotExpectedSoon();
   }
 
   SingleThreadProxyForTest(
@@ -258,11 +253,6 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void WillBeginImplFrame(const BeginFrameArgs& args) override {
     LayerTreeHostImpl::WillBeginImplFrame(args);
     test_hooks_->WillBeginImplFrameOnThread(this, args);
-  }
-
-  void DidFinishImplFrame() override {
-    LayerTreeHostImpl::DidFinishImplFrame();
-    test_hooks_->DidFinishImplFrameOnThread(this);
   }
 
   void BeginMainFrameAborted(CommitEarlyOutReason reason) override {
@@ -722,7 +712,6 @@ void LayerTreeTest::Timeout() {
 }
 
 void LayerTreeTest::RealEndTest() {
-  // TODO(mithro): Make this method only end when not inside an impl frame.
   if (layer_tree_host_ && !timed_out_ &&
       proxy()->MainFrameWillHappenForTesting()) {
     main_task_runner_->PostTask(

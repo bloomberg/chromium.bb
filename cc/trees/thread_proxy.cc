@@ -1162,8 +1162,8 @@ base::TimeDelta ThreadProxy::CommitToActivateDurationEstimate() {
   return impl().timing_history.CommitToActivateDurationEstimate();
 }
 
-void ThreadProxy::DidFinishImplFrame() {
-  impl().layer_tree_host_impl->DidFinishImplFrame();
+void ThreadProxy::DidBeginImplFrameDeadline() {
+  impl().layer_tree_host_impl->ResetCurrentBeginFrameArgsForNextFrame();
 }
 
 void ThreadProxy::SendBeginFramesToChildren(const BeginFrameArgs& args) {

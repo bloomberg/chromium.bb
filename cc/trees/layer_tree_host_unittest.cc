@@ -2308,8 +2308,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
-  void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
+  void WillBeginImplFrame(const BeginFrameArgs& args) override {
     num_will_begin_impl_frame_++;
     switch (num_will_begin_impl_frame_) {
       case 1:
@@ -5512,61 +5511,6 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousPainting);
-
-class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
-    : public LayerTreeHostTest {
- public:
-  enum { kExpectedNumImplFrames = 10 };
-
-  LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame()
-      : will_begin_impl_frame_count_(0), did_finish_impl_frame_count_(0) {}
-
-  void BeginTest() override {
-    // Kick off the test with a commit.
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const BeginFrameArgs& args) override {
-    EXPECT_EQ(will_begin_impl_frame_count_, did_finish_impl_frame_count_);
-    EXPECT_FALSE(TestEnded());
-    will_begin_impl_frame_count_++;
-  }
-
-  void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) override {
-    did_finish_impl_frame_count_++;
-    EXPECT_EQ(will_begin_impl_frame_count_, did_finish_impl_frame_count_);
-
-    // Request a number of commits to cause multiple impl frames. We expect to
-    // get one more impl frames than the number of commits requested because
-    // after a commit it takes one frame to become idle.
-    if (did_finish_impl_frame_count_ < kExpectedNumImplFrames - 1)
-      PostSetNeedsCommitToMainThread();
-  }
-
-  void SendBeginMainFrameNotExpectedSoon() override { EndTest(); }
-
-  void AfterTest() override {
-    EXPECT_GT(will_begin_impl_frame_count_, 0);
-    EXPECT_GT(did_finish_impl_frame_count_, 0);
-    EXPECT_EQ(will_begin_impl_frame_count_, did_finish_impl_frame_count_);
-
-    // TODO(mithro): Figure out why the multithread version of this test
-    // sometimes has one more frame then expected. Possibly related to
-    // http://crbug.com/443185
-    if (!HasImplThread()) {
-      EXPECT_EQ(will_begin_impl_frame_count_, kExpectedNumImplFrames);
-      EXPECT_EQ(did_finish_impl_frame_count_, kExpectedNumImplFrames);
-    }
-  }
-
- private:
-  int will_begin_impl_frame_count_;
-  int did_finish_impl_frame_count_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame);
 
 class LayerTreeHostTestSendBeginFramesToChildren : public LayerTreeHostTest {
  public:

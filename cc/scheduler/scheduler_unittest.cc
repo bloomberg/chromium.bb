@@ -105,8 +105,6 @@ class FakeSchedulerClient : public SchedulerClient {
   void WillBeginImplFrame(const BeginFrameArgs& args) override {
     PushAction("WillBeginImplFrame");
   }
-  void DidFinishImplFrame() override {}
-
   void ScheduledActionSendBeginMainFrame() override {
     PushAction("ScheduledActionSendBeginMainFrame");
   }
@@ -157,6 +155,8 @@ class FakeSchedulerClient : public SchedulerClient {
   base::TimeDelta CommitToActivateDurationEstimate() override {
     return base::TimeDelta();
   }
+
+  void DidBeginImplFrameDeadline() override {}
 
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override {
     begin_frame_args_sent_to_children_ = args;
