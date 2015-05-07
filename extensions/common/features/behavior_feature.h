@@ -19,6 +19,7 @@ namespace extensions {
 class BehaviorFeature : public SimpleFeature {
  public:
   // Constants corresponding to keys in _behavior_features.json.
+  static const char* kBluetoothPeripheral;
   static const char* kWhitelistedForIncognito;
 };
 

@@ -329,6 +329,50 @@ class BluetoothLowEnergyWriteDescriptorValueFunction
   std::string instance_id_;
 };
 
+class BluetoothLowEnergyRegisterAdvertisementFunction
+    : public BluetoothLowEnergyExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.registerAdvertisement",
+                             BLUETOOTHLOWENERGY_REGISTERADVERTISEMENT);
+
+ protected:
+  ~BluetoothLowEnergyRegisterAdvertisementFunction() override {}
+
+  // BluetoothLowEnergyExtensionFunction override.
+  bool DoWork() override;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::WriteDescriptorValue.
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+
+  // The instance ID of the requested descriptor.
+  std::string instance_id_;
+};
+
+class BluetoothLowEnergyUnregisterAdvertisementFunction
+    : public BluetoothLowEnergyExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.unregisterAdvertisement",
+                             BLUETOOTHLOWENERGY_UNREGISTERADVERTISEMENT);
+
+ protected:
+  ~BluetoothLowEnergyUnregisterAdvertisementFunction() override {}
+
+  // BluetoothLowEnergyExtensionFunction override.
+  bool DoWork() override;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::WriteDescriptorValue.
+  void SuccessCallback();
+  void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+
+  // The instance ID of the requested descriptor.
+  std::string instance_id_;
+};
+
 }  // namespace core_api
 }  // namespace extensions
 

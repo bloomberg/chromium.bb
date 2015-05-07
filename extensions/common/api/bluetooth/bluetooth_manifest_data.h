@@ -34,6 +34,7 @@ class BluetoothManifestData : public Extension::ManifestData {
 
   static bool CheckSocketPermitted(const Extension* extension);
   static bool CheckLowEnergyPermitted(const Extension* extension);
+  static bool CheckPeripheralPermitted(const Extension* extension);
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.

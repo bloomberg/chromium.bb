@@ -12,6 +12,8 @@
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/features/behavior_feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/extensions_strings.h"
 #include "ipc/ipc_message.h"
@@ -56,8 +58,8 @@ bool ParseUuidArray(BluetoothManifestPermission* permission,
 }  // namespace
 
 BluetoothManifestPermission::BluetoothManifestPermission()
-  : socket_(false),
-    low_energy_(false) {}
+    : socket_(false), low_energy_(false), peripheral_(false) {
+}
 
 BluetoothManifestPermission::~BluetoothManifestPermission() {}
 
@@ -82,6 +84,9 @@ scoped_ptr<BluetoothManifestPermission> BluetoothManifestPermission::FromValue(
   }
   if (bluetooth->low_energy) {
     result->low_energy_ = *(bluetooth->low_energy);
+  }
+  if (bluetooth->peripheral) {
+    result->peripheral_ = *(bluetooth->peripheral);
   }
   return result.Pass();
 }
@@ -109,6 +114,16 @@ bool BluetoothManifestPermission::CheckSocketPermitted(
 bool BluetoothManifestPermission::CheckLowEnergyPermitted(
     const Extension* extension) const {
   return low_energy_;
+}
+
+bool BluetoothManifestPermission::CheckPeripheralPermitted(
+    const Extension* extension) const {
+  if (!FeatureProvider::GetBehaviorFeature(
+           BehaviorFeature::kBluetoothPeripheral)
+           ->IsAvailableToExtension(extension)
+           .is_available())
+    return false;
+  return peripheral_;
 }
 
 std::string BluetoothManifestPermission::name() const {

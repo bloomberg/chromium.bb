@@ -160,6 +160,11 @@
             "type": "boolean",
             "description": "If <code>true</code>, gives permission to an app to use the $(ref:bluetoothLowEnergy) API",
             "optional": true
+          },
+          "peripheral": {
+            "type": "boolean",
+            "description": "If <code>true</code>, gives permission to an app to use the advertisement functions in the $(ref:bluetoothLowEnergy) API",
+            "optional": true
           }
         }
       }

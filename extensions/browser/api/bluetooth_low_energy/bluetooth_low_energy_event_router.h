@@ -70,6 +70,7 @@ class BluetoothLowEnergyEventRouter
     kStatusErrorPermissionDenied,
     kStatusErrorTimeout,
     kStatusErrorUnsupportedDevice,
+    kStatusErrorInvalidArguments,
   };
 
   // Error callback is used by asynchronous methods to report failures.

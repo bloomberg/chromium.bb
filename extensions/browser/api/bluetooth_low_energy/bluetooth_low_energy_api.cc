@@ -793,5 +793,63 @@ void BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback(
   SendResponse(false);
 }
 
+// RegisterAdvertisement:
+
+bool BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!BluetoothManifestData::CheckPeripheralPermitted(extension())) {
+    error_ = kErrorPermissionDenied;
+    SendResponse(false);
+    return false;
+  }
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::RegisterAdvertisement::Params> params(
+      apibtle::RegisterAdvertisement::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  // TODO(rkc): Implement this function.
+
+  return true;
+}
+
+// UnregisterAdvertisement:
+
+bool BluetoothLowEnergyUnregisterAdvertisementFunction::DoWork() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!BluetoothManifestData::CheckPeripheralPermitted(extension())) {
+    error_ = kErrorPermissionDenied;
+    SendResponse(false);
+    return false;
+  }
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // If we don't have an initialized adapter, unregistering is a no-op.
+  if (!event_router->HasAdapter())
+    return true;
+
+  scoped_ptr<apibtle::UnregisterAdvertisement::Params> params(
+      apibtle::UnregisterAdvertisement::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  // TODO(rkc): Implement this function.
+
+  return true;
+}
+
 }  // namespace core_api
 }  // namespace extensions

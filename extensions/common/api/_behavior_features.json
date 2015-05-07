@@ -18,6 +18,15 @@
 // hashes back to ids.
 
 {
+  "bluetooth.peripheral": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "307E96539209F95A1A8740C713E6998A73657D96",  // http://crbug.com/485292
+      "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/485292
+    ]
+  },
   "whitelisted_for_incognito": {
     "channel": "stable",
     "extension_types": "all",

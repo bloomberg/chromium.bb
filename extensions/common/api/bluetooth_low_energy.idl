@@ -13,6 +13,11 @@ namespace bluetoothLowEnergy {
                                extendedProperties, reliableWrite,
                                writableAuxiliaries};
 
+  // Type of advertisement. If 'broadcast' is chosen, the sent advertisement
+  // type will be ADV_NONCONN_IND. If set to 'peripheral', the advertisement
+  // type will be ADV_IND or ADV_SCAN_IND.
+  [nodoc] enum AdvertisementType {broadcast, peripheral};
+
   // Represents a peripheral's Bluetooth GATT Service, a collection of
   // characteristics and relationships to other services that encapsulate
   // the behavior of part of a device.
@@ -114,6 +119,42 @@ namespace bluetoothLowEnergy {
     boolean persistent;
   };
 
+  // Represents an entry of the "Manufacturer Specific Data" field of Bluetooth
+  // LE advertisement data.
+  [nodoc] dictionary ManufacturerData {
+    long id;
+    long[] data;
+  };
+
+  // Represents an entry of the "Service Data" field of Bluetooth LE advertisement
+  // data.
+  [nodoc] dictionary ServiceData {
+    DOMString uuid;
+    long[] data;
+  };
+
+  // Represents a Bluetooth LE advertisement instance.
+  [nodoc] dictionary Advertisement {
+    // Type of advertisement.
+    AdvertisementType type;
+
+    // List of UUIDs to include in the "Service UUIDs" field of the Advertising
+    // Data. These UUIDs can be of the 16bit, 32bit or 128 formats.
+    DOMString[]? serviceUuids;
+
+    // List of manufacturer specific data to be included in "Manufacturer Specific
+    // Data" fields of the advertising data.
+    ManufacturerData[]? manufacturerData;
+
+    // List of UUIDs to include in the "Solicit UUIDs" field of the Advertising
+    // Data. These UUIDs can be of the 16bit, 32bit or 128 formats.
+    DOMString[]? solicitUuids;
+
+    // List of service data to be included in "Service Data" fields of the advertising
+    // data.
+    ServiceData[]? serviceData;
+  };
+
   callback CharacteristicCallback = void(Characteristic result);
   callback CharacteristicsCallback = void(Characteristic[] result);
   callback DescriptorCallback = void(Descriptor result);
@@ -121,6 +162,7 @@ namespace bluetoothLowEnergy {
   callback ResultCallback = void();
   callback ServiceCallback = void(Service result);
   callback ServicesCallback = void(Service[] result);
+  callback RegisterAdvertisementCallback = void (long advertisementId);
 
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
@@ -262,6 +304,30 @@ namespace bluetoothLowEnergy {
     static void writeDescriptorValue(DOMString descriptorId,
                                      ArrayBuffer value,
                                      ResultCallback callback);
+
+    // Create an advertisement and register it for advertising. To call this
+    // function, the app must have the bluetooth:low_energy and
+    // bluetooth:peripheral permissions set to true.
+    // See https://developer.chrome.com/apps/manifest/bluetooth
+    // Note: On some hardware central and peripheral modes at the same time is
+    // supported but on hardware that doesn't support this, making this call
+    // will switch the device to peripheral mode. In the case of hardware which
+    // does not support both central and peripheral mode, attempting to use the
+    // device in both modes will lead to undefined behavior or prevent other
+    // central-role applications from behaving correctly (including the
+    // discovery of Bluetooth Low Energy devices).
+    // |advertisement| : The advertisement to advertise.
+    // |callback| : Called once the registeration is done and we've started
+    // advertising. Returns the id of the created advertisement.
+    [nodoc] static void registerAdvertisement(
+        Advertisement advertisement, RegisterAdvertisementCallback callback);
+
+    // Unregisters an advertisement and stops its advertising.
+    // |advertisementId| : Id of the advertisement to unregister.
+    // |callback| : Called once the advertisement is unregistered and is no
+    // longer being advertised.
+    [nodoc] static void unregisterAdvertisement(long advertisementId,
+                                                ResultCallback callback);
   };
 
   interface Events {
