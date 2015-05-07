@@ -747,10 +747,17 @@ bool RenderWidgetCompositor::CommitIsSynchronous() const {
 
 void RenderWidgetCompositor::ScheduleCommit() {
   if (CommitIsSynchronous()) {
-    layer_tree_host_->Composite(gfx::FrameTime::Now());
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronousCommit,
+                              weak_factory_.GetWeakPtr()));
   } else {
     layer_tree_host_->SetNeedsCommit();
   }
+}
+
+void RenderWidgetCompositor::SynchronousCommit() {
+  DCHECK(CommitIsSynchronous());
+  layer_tree_host_->Composite(gfx::FrameTime::Now());
 }
 
 void RenderWidgetCompositor::finishAllRendering() {
@@ -916,20 +923,6 @@ void RenderWidgetCompositor::DidFailToInitializeOutputSurface() {
 }
 
 void RenderWidgetCompositor::WillCommit() {
-  if (!layout_and_paint_async_callback_)
-    return;
-
-  if (CommitIsSynchronous()) {
-    // The caller expects the callback to be called asynchronously.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&RenderWidgetCompositor::DidLayoutAndPaintAsync,
-                              weak_factory_.GetWeakPtr()));
-  } else {
-    DidLayoutAndPaintAsync();
-  }
-}
-
-void RenderWidgetCompositor::DidLayoutAndPaintAsync() {
   if (!layout_and_paint_async_callback_)
     return;
   layout_and_paint_async_callback_->didLayoutAndPaint();

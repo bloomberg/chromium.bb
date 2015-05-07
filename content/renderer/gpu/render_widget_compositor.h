@@ -176,8 +176,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
  private:
   void ScheduleCommit();
-  void DidLayoutAndPaintAsync();
   bool CommitIsSynchronous() const;
+  void SynchronousCommit();
 
   int num_failed_recreate_attempts_;
   RenderWidget* widget_;
