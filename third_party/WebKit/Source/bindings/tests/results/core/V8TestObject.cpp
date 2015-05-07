@@ -2441,6 +2441,7 @@ static void callWithScriptStateAnyAttributeAttributeSetter(v8::Local<v8::Value> 
     v8::Local<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
     ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     impl->setCallWithScriptStateAnyAttribute(scriptState, cppValue);
 }
 
@@ -2474,6 +2475,7 @@ static void callWithExecutionContextAndScriptStateAnyAttributeAttributeSetter(v8
     TestObject* impl = V8TestObject::toImpl(holder);
     ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     impl->setCallWithExecutionContextAndScriptStateAnyAttribute(scriptState, executionContext, cppValue);
 }
 
