@@ -322,7 +322,6 @@ bool WEBPImageDecoder::updateDemuxer()
             m_frameBufferCache[i].setPremultiplyAlpha(m_premultiplyAlpha);
             if (!(m_formatFlags & ANIMATION_FLAG)) {
                 ASSERT(!i);
-                m_frameBufferCache[i].setRequiredPreviousFrameIndex(kNotFound);
                 continue;
             }
             WebPIterator animatedFrame;

@@ -176,7 +176,6 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRect
     // disposal method.
     size_t prevFrame = frameIndex - 1;
     const ImageFrame* prevBuffer = &m_frameBufferCache[prevFrame];
-    ASSERT(prevBuffer->requiredPreviousFrameIndexValid());
 
     switch (prevBuffer->disposalMethod()) {
     case ImageFrame::DisposeNotSpecified:

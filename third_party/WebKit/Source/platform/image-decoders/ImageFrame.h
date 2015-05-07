@@ -127,15 +127,7 @@ public:
     const SkBitmap& getSkBitmap() const { return m_bitmap; }
     // Returns true if the pixels changed, but the bitmap has not yet been notified.
     bool pixelsChanged() const { return m_pixelsChanged; }
-
-    size_t requiredPreviousFrameIndex() const
-    {
-        ASSERT(m_requiredPreviousFrameIndexValid);
-        return m_requiredPreviousFrameIndex;
-    }
-#if ENABLE(ASSERT)
-    bool requiredPreviousFrameIndexValid() const { return m_requiredPreviousFrameIndexValid; }
-#endif
+    size_t requiredPreviousFrameIndex() const { return m_requiredPreviousFrameIndex; }
     void setHasAlpha(bool alpha);
     void setOriginalFrameRect(const IntRect& r) { m_originalFrameRect = r; }
     void setStatus(Status);
@@ -147,14 +139,7 @@ public:
     // The pixelsChanged flag needs to be set when the raw pixel data was directly modified
     // (e.g. through a pointer or setRGBA). The flag is usually set after a batch of changes was made.
     void setPixelsChanged(bool pixelsChanged) { m_pixelsChanged = pixelsChanged; }
-
-    void setRequiredPreviousFrameIndex(size_t previousFrameIndex)
-    {
-        m_requiredPreviousFrameIndex = previousFrameIndex;
-#if ENABLE(ASSERT)
-        m_requiredPreviousFrameIndexValid = true;
-#endif
-    }
+    void setRequiredPreviousFrameIndex(size_t previousFrameIndex) { m_requiredPreviousFrameIndex = previousFrameIndex; }
 
     inline PixelData* getAddr(int x, int y)
     {
@@ -231,9 +216,6 @@ private:
     // This is used by ImageDecoder::clearCacheExceptFrame(), and will never
     // be read for image formats that do not have multiple frames.
     size_t m_requiredPreviousFrameIndex;
-#if ENABLE(ASSERT)
-    bool m_requiredPreviousFrameIndexValid;
-#endif
 };
 
 } // namespace blink
