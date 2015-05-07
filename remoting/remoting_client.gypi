@@ -49,12 +49,11 @@
     },  # end of target 'remoting_client'
 
     {
-      # GN version: //remoting/webapp:html
+      # GN version: See remoting/webapp/build_template.gni
       'target_name': 'remoting_webapp_html',
       'type': 'none',
       'actions': [
         {
-          # GN version: //remoting/webapp:main_html
           'action_name': 'Build Remoting Webapp main.html',
           'inputs': [
             'webapp/build-html.py',
@@ -75,7 +74,6 @@
           ],
         },
         {
-          # GN version: //remoting/webapp:wcs_sandbox_html
           'action_name': 'Build Remoting Webapp wcs_sandbox.html',
           'inputs': [
             'webapp/build-html.py',
@@ -92,7 +90,6 @@
           ],
         },
         {
-          # GN version: //remoting/webapp:background_html
           'action_name': 'Build Remoting Webapp background.html',
           'inputs': [
             'webapp/build-html.py',
@@ -128,6 +125,7 @@
     },  # end of target 'remoting_webapp_html'
 
     {
+      # GN version: //remoting/webapp:webapp
       'target_name': 'remoting_webapp',
       'type': 'none',
       'dependencies': [
@@ -143,6 +141,7 @@
     },  # end of target 'remoting_webapp'
 
     {
+      # GN version: //remoting/webapp:webapp_v1
       'target_name': 'remoting_webapp_v1',
       'type': 'none',
       'variables': {
@@ -158,6 +157,7 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
+          # GN version: //remoting/webapp:webapp_v1
           'target_name': 'remoting_webapp_v2',
           'type': 'none',
           'variables': {
