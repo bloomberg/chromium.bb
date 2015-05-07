@@ -13,6 +13,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/data_reduction_proxy/core/browser",
   "+components/devtools_http_handler",
+  "+components/external_video_surface",
   "+components/navigation_interception",
   "+components/user_prefs",
   "+components/web_contents_delegate_android",

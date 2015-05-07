@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/native/external_video_surface_container_impl.h"
+#include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 
 #include "base/android/jni_android.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -12,7 +12,12 @@
 using base::android::AttachCurrentThread;
 using content::ContentViewCore;
 
-namespace android_webview {
+namespace external_video_surface {
+
+// static
+bool ExternalVideoSurfaceContainerImpl::RegisterJni(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
 
 // static
 ExternalVideoSurfaceContainerImpl* ExternalVideoSurfaceContainerImpl::Create(
@@ -105,8 +110,4 @@ void ExternalVideoSurfaceContainerImpl::SurfaceDestroyed(
     surface_destroyed_cb_.Run(static_cast<int>(player_id));
 }
 
-bool RegisterExternalVideoSurfaceContainer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-}  // namespace android_webview
+}  // namespace external_video_surface

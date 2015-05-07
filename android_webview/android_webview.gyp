@@ -352,6 +352,7 @@
       'target_name': 'android_webview_java',
       'type': 'none',
       'dependencies': [
+        '../components/components.gyp:external_video_surface_java',
         '../components/components.gyp:navigation_interception_java',
         '../components/components.gyp:web_contents_delegate_android_java',
         '../content/content.gyp:content_java',

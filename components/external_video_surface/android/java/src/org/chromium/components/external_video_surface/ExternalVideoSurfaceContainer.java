@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chromecast.shell;
+package org.chromium.components.external_video_surface;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -20,7 +20,6 @@ import org.chromium.content.browser.RenderCoordinates;
 
 import java.lang.ref.WeakReference;
 
-//TODO(gunsch): componentize this class.
 /**
  * This is a container for external video surfaces.
  * The object is owned by the native peer and it is owned by WebContents.
@@ -38,14 +37,8 @@ import java.lang.ref.WeakReference;
  *
  * Please contact ycheo@chromium.org or wonsik@chromium.org if you have any
  * questions or issues for this class.
- *
- * Note(gunsch): This class was copied wholesale from android_webview/native
- * for the use of chromecast/. Owners of content/ have expressed not wanting
- * this code in content/ to discourage usage, since they don't plan to support
- * hole-punching long term. In the meantime, this copy is a workaround to avoid
- * a dependency on android_webview.
  */
-@JNINamespace("chromecast::shell")
+@JNINamespace("external_video_surface")
 public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     protected static final int INVALID_PLAYER_ID = -1;
 
@@ -316,3 +309,4 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     private native void nativeSurfaceDestroyed(
             long nativeExternalVideoSurfaceContainerImpl, int playerId);
 }
+

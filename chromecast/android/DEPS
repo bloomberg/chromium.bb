@@ -3,4 +3,5 @@ include_rules = [
   "+chromecast/android",
   "+chromecast/browser/android",
   "+chromecast/crash/android",
+  "+components/external_video_surface",
 ]

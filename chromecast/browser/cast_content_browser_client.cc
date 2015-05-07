@@ -44,8 +44,8 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
-#include "chromecast/browser/android/external_video_surface_container_impl.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
+#include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 #endif  // defined(OS_ANDROID)
 
 namespace chromecast {
@@ -375,7 +375,8 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 content::ExternalVideoSurfaceContainer*
 CastContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
     content::WebContents* web_contents) {
-  return ExternalVideoSurfaceContainerImpl::Create(web_contents);
+  return external_video_surface::ExternalVideoSurfaceContainerImpl::Create(
+      web_contents);
 }
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
 

@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/bind.h"
+#include "components/external_video_surface/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 #include "content/public/app/content_jni_onload.h"
@@ -21,6 +22,10 @@ namespace {
 
 static base::android::RegistrationMethod
     kWebViewDependencyRegisteredMethods[] = {
+#if defined(VIDEO_HOLE)
+    { "ExternalVideoSurfaceContainer",
+        external_video_surface::RegisterExternalVideoSurfaceJni },
+#endif
     { "NavigationInterception",
         navigation_interception::RegisterNavigationInterceptionJni },
     { "WebContentsDelegateAndroid",

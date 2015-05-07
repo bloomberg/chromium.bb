@@ -8,10 +8,10 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.android_webview.ExternalVideoSurfaceContainer;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.components.external_video_surface.ExternalVideoSurfaceContainer;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 

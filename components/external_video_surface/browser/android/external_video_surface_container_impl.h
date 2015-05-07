@@ -2,28 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_EXTERNAL_VIDEO_SURFACE_CONTAINER_IMPL_H_
-#define ANDROID_WEBVIEW_NATIVE_EXTERNAL_VIDEO_SURFACE_CONTAINER_IMPL_H_
+#ifndef COMPONENTS_EXTERNAL_VIDEO_SURFACE_EXTERNAL_VIDEO_SURFACE_CONTAINER_IMPL_H_
+#define COMPONENTS_EXTERNAL_VIDEO_SURFACE_EXTERNAL_VIDEO_SURFACE_CONTAINER_IMPL_H_
 
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "content/public/browser/android/external_video_surface_container.h"
 
-namespace android_webview {
+namespace external_video_surface {
 
 class ExternalVideoSurfaceContainerImpl
     : public content::ExternalVideoSurfaceContainer {
  public:
+  static bool RegisterJni(JNIEnv* env);
+
   typedef base::Callback<void(int, jobject)> SurfaceCreatedCB;
   typedef base::Callback<void(int)> SurfaceDestroyedCB;
 
   static ExternalVideoSurfaceContainerImpl* Create(
       content::WebContents* web_contents);
 
-  // ExternalVideoSurfaceContainer implementation.
+  // content::ExternalVideoSurfaceContainer implementation.
   void RequestExternalVideoSurface(
       int player_id,
       const SurfaceCreatedCB& surface_created_cb,
@@ -49,11 +52,9 @@ class ExternalVideoSurfaceContainerImpl
   SurfaceCreatedCB surface_created_cb_;
   SurfaceDestroyedCB surface_destroyed_cb_;
 
- DISALLOW_COPY_AND_ASSIGN(ExternalVideoSurfaceContainerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ExternalVideoSurfaceContainerImpl);
 };
 
-bool RegisterExternalVideoSurfaceContainer(JNIEnv* env);
+}  // namespace external_video_surface
 
-}  // namespace android_webview
-
-#endif  // ANDROID_WEBVIEW_NATIVE_EXTERNAL_VIDEO_SURFACE_CONTAINER_IMPL_H_
+#endif  // COMPONENTS_EXTERNAL_VIDEO_SURFACE_EXTERNAL_VIDEO_SURFACE_CONTAINER_IMPL_H_

@@ -9,8 +9,8 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.android_webview.ExternalVideoSurfaceContainer.NoPunchingSurfaceView;
 import org.chromium.android_webview.test.AwTestBase;
+import org.chromium.components.external_video_surface.ExternalVideoSurfaceContainer.NoPunchingSurfaceView;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;

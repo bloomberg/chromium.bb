@@ -91,6 +91,9 @@ per-file enhanced_bookmarks*=sky@chromium.org
 per-file error_page*=mmenke@chromium.org
 per-file error_page*=ttuttle@chromium.org
 
+per-file external_video_surface.gypi=boliu@chromium.org
+per-file external_video_surface.gypi=qinmin@chromium.org
+
 per-file favicon*=pkotwicz@chromium.org
 per-file favicon*=sky@chromium.org
 per-file favicon*=stevenjb@chromium.org

@@ -103,9 +103,8 @@
       ],
       'conditions': [
         ['video_hole==1', {
-          'sources': [
-            'external_video_surface_container_impl.cc',
-            'external_video_surface_container_impl.h',
+          'dependencies': [
+            '../../components/components.gyp:external_video_surface',
           ],
         }],
       ],
@@ -142,7 +141,6 @@
           '../java/src/org/chromium/android_webview/AwSettings.java',
           '../java/src/org/chromium/android_webview/AwWebContentsDelegate.java',
           '../java/src/org/chromium/android_webview/AwWebResourceResponse.java',
-          '../java/src/org/chromium/android_webview/ExternalVideoSurfaceContainer.java',
           '../java/src/org/chromium/android_webview/InputStreamUtil.java',
           '../java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java',
           '../java/src/org/chromium/android_webview/permission/AwPermissionRequest.java',

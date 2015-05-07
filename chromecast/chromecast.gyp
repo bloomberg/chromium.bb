@@ -425,6 +425,7 @@
             '../breakpad/breakpad.gyp:breakpad_client',
             '../components/components.gyp:breakpad_host',
             '../components/components.gyp:crash_component',
+            '../components/components.gyp:external_video_surface',
             '../content/content.gyp:content',
             '../skia/skia.gyp:skia',
             '../ui/gfx/gfx.gyp:gfx',
@@ -444,8 +445,6 @@
             'browser/android/cast_window_android.h',
             'browser/android/cast_window_manager.cc',
             'browser/android/cast_window_manager.h',
-            'browser/android/external_video_surface_container_impl.cc',
-            'browser/android/external_video_surface_container_impl.h',
             'crash/android/cast_crash_reporter_client_android.cc',
             'crash/android/cast_crash_reporter_client_android.h',
             'crash/android/crash_handler.cc',
@@ -524,7 +523,6 @@
             'browser/android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastWindowAndroid.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastWindowManager.java',
-            'browser/android/apk/src/org/chromium/chromecast/shell/ExternalVideoSurfaceContainer.java',
           ],
           'direct_dependent_settings': {
             'include_dirs': [

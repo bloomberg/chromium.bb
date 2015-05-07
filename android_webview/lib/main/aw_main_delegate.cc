@@ -14,7 +14,6 @@
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/native/aw_web_preferences_populater_impl.h"
-#include "android_webview/native/external_video_surface_container_impl.h"
 #include "android_webview/native/public/aw_assets.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/command_line.h"
@@ -25,6 +24,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
 #include "content/public/browser/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
@@ -195,7 +195,8 @@ AwMessagePortService* AwMainDelegate::CreateAwMessagePortService() {
 content::ExternalVideoSurfaceContainer*
 AwMainDelegate::CreateExternalVideoSurfaceContainer(
     content::WebContents* web_contents) {
-  return ExternalVideoSurfaceContainerImpl::Create(web_contents);
+  return external_video_surface::ExternalVideoSurfaceContainerImpl::Create(
+      web_contents);
 }
 #endif
 
