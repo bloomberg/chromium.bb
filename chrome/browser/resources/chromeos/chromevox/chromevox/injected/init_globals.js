@@ -17,7 +17,6 @@ goog.require('cvox.ConsoleTts');
 goog.require('cvox.HostFactory');
 goog.require('cvox.NavigationManager');
 goog.require('cvox.Serializer');
-goog.require('cvox.SpokenMessages');
 
 
 

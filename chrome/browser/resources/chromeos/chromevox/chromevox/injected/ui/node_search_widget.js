@@ -12,7 +12,6 @@ goog.provide('cvox.NodeSearchWidget');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.DomUtil');
 goog.require('cvox.SearchWidget');
-goog.require('cvox.SpokenMessages');
 
 
 /**

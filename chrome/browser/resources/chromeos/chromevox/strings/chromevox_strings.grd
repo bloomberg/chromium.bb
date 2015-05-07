@@ -1043,12 +1043,6 @@
       <message desc="Braille of element with the ARIA role link." name="IDS_CHROMEVOX_ARIA_ROLE_LINK_BRL">
         lnk
       </message>
-      <message desc="Describes a single element with the ARIA role link with count." name="IDS_CHROMEVOX_ARIA_ROLE_LINK_SINGULAR">
-        1 link
-      </message>
-      <message desc="Describes multiple elements with the ARIA role link." name="IDS_CHROMEVOX_ARIA_ROLE_LINK_PLURAL">
-        <ph name="num">$1</ph> links
-      </message>
       <message desc="Describes an element with the ARIA role listbox." name="IDS_CHROMEVOX_ARIA_ROLE_LISTBOX">
         List box
       </message>
@@ -1264,12 +1258,6 @@
       </message>
       <message desc="Braille of element with the ARIA role form." name="IDS_CHROMEVOX_ARIA_ROLE_FORM_BRL">
         form
-      </message>
-      <message desc="Describes a single element with the ARIA role form with count." name="IDS_CHROMEVOX_ARIA_ROLE_FORM_SINGULAR">
-        1 form
-      </message>
-      <message desc="Describes multiple elements with the ARIA role form." name="IDS_CHROMEVOX_ARIA_ROLE_FORM_PLURAL">
-        <ph name="num">$1</ph> forms
       </message>
       <message desc="Describes an element with the ARIA role group." name="IDS_CHROMEVOX_ARIA_ROLE_GROUP">
         Group
@@ -1841,9 +1829,6 @@
       <message desc="The indicator of a pause to tts." name="IDS_CHROMEVOX_PAUSE">
         , '''
       </message>
-      <message desc="The indicator of a end to tts." name="IDS_CHROMEVOX_END">
-        . '''
-      </message>
       <message desc="Description of the previous different element command displayed in the options page." name="IDS_CHROMEVOX_PREVIOUS_DIFFERENT_ELEMENT">
         Previous different element.
       </message>
@@ -1861,9 +1846,6 @@
       </message>
       <message desc="Verbal indication of no more different elements." name="IDS_CHROMEVOX_NO_MORE_DIFFERENT_ELEMENTS">
         No more different elements.
-      </message>
-      <message desc="Describes an element with the ARIA role link." name="IDS_CHROMEVOX_INDEX_TOTAL">
-        <ph name="index">$1</ph> of <ph name="total">$2</ph>
       </message>
       <message desc="Description of the enter group exploration user command. Displayed in the Options page." name="IDS_CHROMEVOX_ENTER_CSS_SPACE">
         Enter group exploration
@@ -2251,12 +2233,6 @@
       </message>
       <message desc='Used as a phonetic word hint for a particular letter. The word is used to clarify similarly sounding letters like m and n.  This mapping is taken directly from the NATO phonetic standard: https://en.wikipedia.org/wiki/NATO_phonetic_alphabet Please retain the structure of this string.  The structure is of the form {"letter": "phonetic word equivalent", ..., "letter": "phonetic word equivalent"}.  The first part of the mapping (letter) should be all letters of the localization in lower case. The second part (phonetic word equivalent) should be the word that describes the letter.' name="IDS_CHROMEVOX_PHONETIC_MAP">
         {"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}
-      </message>
-      <message desc="Announces that the current page has 1 alert." name="IDS_CHROMEVOX_PAGE_HAS_ONE_ALERT_SINGULAR">
-        This page has 1 alert
-      </message>
-      <message desc="Announces that the current page has multiple alerts." name="IDS_CHROMEVOX_PAGE_HAS_ALERTS_PLURAL">
-        This page has <ph name="num">$1</ph> alerts
       </message>
       <message desc="Describes a key sequence that will let the user review (examine and make a decision on) all of the alerts on the page." name="IDS_CHROMEVOX_REVIEW_ALERTS">
         Press Alt+Shift+A to review alerts

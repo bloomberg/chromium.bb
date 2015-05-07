@@ -14,6 +14,7 @@ goog.require('cvox.ApiImplementation');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.CursorSelection');
 goog.require('cvox.NavigationManager');
+goog.require('cvox.SpokenMessages');
 goog.require('cvox.Widget');
 
 

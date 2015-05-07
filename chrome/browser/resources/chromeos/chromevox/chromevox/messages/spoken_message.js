@@ -13,15 +13,6 @@ goog.provide('cvox.SpokenMessage');
  * @constructor
  */
 cvox.SpokenMessage = function() {
-  /** @type {?number} */
-  this.count = null;
-
   /** @type {Array} */
   this.id = null;
-
-  /**
-   * A message that has been already localized and should be sent to tts raw.
-   * @type {?string}
-   */
-  this.raw = null;
 };
