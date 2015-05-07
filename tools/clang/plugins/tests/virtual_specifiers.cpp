@@ -5,6 +5,7 @@
 // Tests for chromium style checks for virtual/override/final specifiers on
 // virtual methods.
 
+// Note: This is not actual windows.h but the stub file in system/windows.h
 #include <windows.h>
 
 // Purposely use macros to test that the FixIt hints don't try to remove the
@@ -115,4 +116,17 @@ class MyNotTest : public testing::NotTest {
  public:
   virtual ~MyNotTest();
   virtual void SetUp() override;
+};
+
+class MacroBase {
+ public:
+  virtual void AddRef() = 0;
+  virtual void Virtual() {}
+};
+
+class Sub : public MacroBase {
+  // Shouldn't warn.
+  END_COM_MAP()
+  SYSTEM_REDUNDANT1;
+  SYSTEM_REDUNDANT2;
 };

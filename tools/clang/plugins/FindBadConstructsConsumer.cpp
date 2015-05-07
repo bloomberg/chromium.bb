@@ -471,22 +471,30 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
         }
       }
     }
+    // Again, only emit the warning if it doesn't originate from a macro in
+    // a system header.
     if (loc.isValid()) {
-      diagnostic().Report(loc, diag_method_requires_override_)
-          << FixItHint::CreateInsertion(loc, " override");
+      if (!InBannedDirectory(manager.getSpellingLoc(loc))) {
+        diagnostic().Report(loc, diag_method_requires_override_)
+            << FixItHint::CreateInsertion(loc, " override");
+      }
     } else {
-      diagnostic().Report(range.getBegin(), diag_method_requires_override_);
+      if (!InBannedDirectory(manager.getSpellingLoc(range.getBegin())))
+        diagnostic().Report(range.getBegin(), diag_method_requires_override_);
     }
   }
 
-  if (final_attr && override_attr) {
+  if (final_attr && override_attr &&
+      !InBannedDirectory(
+          manager.getSpellingLoc(override_attr->getLocation()))) {
     diagnostic().Report(override_attr->getLocation(),
                         diag_redundant_virtual_specifier_)
         << override_attr << final_attr
         << FixItHint::CreateRemoval(override_attr->getRange());
   }
 
-  if (final_attr && !is_override) {
+  if (final_attr && !is_override &&
+      !InBannedDirectory(manager.getSpellingLoc(method->getLocStart()))) {
     diagnostic().Report(method->getLocStart(),
                         diag_base_method_virtual_and_final_)
         << FixItRemovalForVirtual(manager, method)

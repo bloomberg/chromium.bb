@@ -7,4 +7,9 @@
 
 #define STDMETHOD(x) virtual void x
 
+#define END_COM_MAP() virtual void AddRef() = 0;
+
+#define SYSTEM_REDUNDANT1 virtual void NonVirtualFinal() final
+#define SYSTEM_REDUNDANT2 virtual void Virtual() override final
+
 #endif  // TOOLS_CLANG_PLUGINS_TESTS_SYSTEM_WINDOWS_H_
