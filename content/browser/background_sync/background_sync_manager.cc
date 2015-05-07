@@ -106,7 +106,7 @@ void BackgroundSyncManager::Unregister(
 
 void BackgroundSyncManager::GetRegistration(
     int64 sw_registration_id,
-    const std::string sync_registration_tag,
+    const std::string& sync_registration_tag,
     SyncPeriodicity periodicity,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -124,6 +124,25 @@ void BackgroundSyncManager::GetRegistration(
       &BackgroundSyncManager::GetRegistrationImpl,
       weak_ptr_factory_.GetWeakPtr(), sw_registration_id, registration_key,
       MakeStatusAndRegistrationCompletion(callback)));
+}
+
+void BackgroundSyncManager::GetRegistrations(
+    int64 sw_registration_id,
+    SyncPeriodicity periodicity,
+    const StatusAndRegistrationsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE,
+                              std::vector<BackgroundSyncRegistration>()));
+    return;
+  }
+
+  op_scheduler_.ScheduleOperation(
+      base::Bind(&BackgroundSyncManager::GetRegistrationsImpl,
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                 periodicity, MakeStatusAndRegistrationsCompletion(callback)));
 }
 
 void BackgroundSyncManager::OnRegistrationDeleted(int64 registration_id,
@@ -576,6 +595,37 @@ void BackgroundSyncManager::GetRegistrationImpl(
       FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, *out_registration));
 }
 
+void BackgroundSyncManager::GetRegistrationsImpl(
+    int64 sw_registration_id,
+    SyncPeriodicity periodicity,
+    const StatusAndRegistrationsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::vector<BackgroundSyncRegistration> out_registrations;
+
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE, out_registrations));
+    return;
+  }
+
+  SWIdToRegistrationsMap::iterator it =
+      sw_to_registrations_map_.find(sw_registration_id);
+
+  if (it != sw_to_registrations_map_.end()) {
+    const BackgroundSyncRegistrations& registrations = it->second;
+    for (const auto& tag_and_registration : registrations.registration_map) {
+      const BackgroundSyncRegistration& registration =
+          tag_and_registration.second;
+      if (registration.periodicity == periodicity)
+        out_registrations.push_back(registration);
+    }
+  }
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, out_registrations));
+}
+
 bool BackgroundSyncManager::IsRegistrationReadyToFire(
     const BackgroundSyncRegistration& registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -792,6 +842,17 @@ void BackgroundSyncManager::PendingStatusAndRegistrationCallback(
     op_scheduler_.CompleteOperationAndRunNext();
 }
 
+void BackgroundSyncManager::PendingStatusAndRegistrationsCallback(
+    const StatusAndRegistrationsCallback& callback,
+    ErrorType error,
+    const std::vector<BackgroundSyncRegistration>& sync_registrations) {
+  // The callback might delete this object, so hang onto a weak ptr to find out.
+  base::WeakPtr<BackgroundSyncManager> manager = weak_ptr_factory_.GetWeakPtr();
+  callback.Run(error, sync_registrations);
+  if (manager)
+    op_scheduler_.CompleteOperationAndRunNext();
+}
+
 void BackgroundSyncManager::PendingStatusCallback(
     const StatusCallback& callback,
     ErrorType error) {
@@ -829,6 +890,14 @@ BackgroundSyncManager::MakeStatusAndRegistrationCompletion(
 
   return base::Bind(
       &BackgroundSyncManager::PendingStatusAndRegistrationCallback,
+      weak_ptr_factory_.GetWeakPtr(), callback);
+}
+
+BackgroundSyncManager::StatusAndRegistrationsCallback
+BackgroundSyncManager::MakeStatusAndRegistrationsCompletion(
+    const StatusAndRegistrationsCallback& callback) {
+  return base::Bind(
+      &BackgroundSyncManager::PendingStatusAndRegistrationsCallback,
       weak_ptr_factory_.GetWeakPtr(), callback);
 }
 

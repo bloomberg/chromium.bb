@@ -5,8 +5,8 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_MANAGER_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_MANAGER_H_
 
-#include <list>
 #include <map>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
@@ -79,6 +79,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   using StatusCallback = base::Callback<void(ErrorType)>;
   using StatusAndRegistrationCallback =
       base::Callback<void(ErrorType, const BackgroundSyncRegistration&)>;
+  using StatusAndRegistrationsCallback =
+      base::Callback<void(ErrorType,
+                          const std::vector<BackgroundSyncRegistration>&)>;
 
   static scoped_ptr<BackgroundSyncManager> Create(
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
@@ -110,9 +113,13 @@ class CONTENT_EXPORT BackgroundSyncManager
   // |callback| with ErrorTypeNotFound if it doesn't exist. Calls |callback|
   // with ErrorTypeOK on success.
   void GetRegistration(int64 sw_registration_id,
-                       const std::string sync_registration_tag,
+                       const std::string& sync_registration_tag,
                        SyncPeriodicity periodicity,
                        const StatusAndRegistrationCallback& callback);
+
+  void GetRegistrations(int64 sw_registration_id,
+                        SyncPeriodicity periodicity,
+                        const StatusAndRegistrationsCallback& callback);
 
   // ServiceWorkerContextObserver overrides.
   void OnRegistrationDeleted(int64 registration_id,
@@ -235,6 +242,11 @@ class CONTENT_EXPORT BackgroundSyncManager
                            const RegistrationKey& registration_key,
                            const StatusAndRegistrationCallback& callback);
 
+  // GetRegistrations callbacks
+  void GetRegistrationsImpl(int64 sw_registration_id,
+                            SyncPeriodicity periodicity,
+                            const StatusAndRegistrationsCallback& callback);
+
   bool IsRegistrationReadyToFire(
       const BackgroundSyncRegistration& registration);
 
@@ -281,11 +293,17 @@ class CONTENT_EXPORT BackgroundSyncManager
       const StatusAndRegistrationCallback& callback,
       ErrorType error,
       const BackgroundSyncRegistration& sync_registration);
+  void PendingStatusAndRegistrationsCallback(
+      const StatusAndRegistrationsCallback& callback,
+      ErrorType error,
+      const std::vector<BackgroundSyncRegistration>& sync_registrations);
   void PendingStatusCallback(const StatusCallback& callback, ErrorType error);
   void PendingClosure(const base::Closure& closure);
 
   StatusAndRegistrationCallback MakeStatusAndRegistrationCompletion(
       const StatusAndRegistrationCallback& callback);
+  StatusAndRegistrationsCallback MakeStatusAndRegistrationsCompletion(
+      const StatusAndRegistrationsCallback& callback);
   BackgroundSyncManager::StatusCallback MakeStatusCompletion(
       const StatusCallback& callback);
   base::Closure MakeEmptyCompletion();

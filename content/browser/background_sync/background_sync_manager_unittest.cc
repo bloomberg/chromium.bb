@@ -265,6 +265,16 @@ class BackgroundSyncManagerTest : public testing::Test {
     callback_registration_ = registration;
   }
 
+  void StatusAndRegistrationsCallback(
+      bool* was_called,
+      BackgroundSyncManager::ErrorType error,
+      const std::vector<BackgroundSyncManager::BackgroundSyncRegistration>&
+          registrations) {
+    *was_called = true;
+    callback_error_ = error;
+    callback_registrations_ = registrations;
+  }
+
   void StatusCallback(bool* was_called,
                       BackgroundSyncManager::ErrorType error) {
     *was_called = true;
@@ -347,6 +357,24 @@ class BackgroundSyncManagerTest : public testing::Test {
     return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
   }
 
+  bool GetRegistrations(SyncPeriodicity periodicity) {
+    return GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
+                                              periodicity);
+  }
+
+  bool GetRegistrationWithServiceWorkerId(int64 sw_registration_id,
+                                          SyncPeriodicity periodicity) {
+    bool was_called = false;
+    background_sync_manager_->GetRegistrations(
+        sw_registration_id, periodicity,
+        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
+                   base::Unretained(this), &was_called));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
+
+    return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
+  }
+
   void StorageRegistrationCallback(ServiceWorkerStatusCode result) {
     callback_sw_status_code_ = result;
   }
@@ -417,6 +445,8 @@ class BackgroundSyncManagerTest : public testing::Test {
   // Callback values.
   BackgroundSyncManager::ErrorType callback_error_;
   BackgroundSyncManager::BackgroundSyncRegistration callback_registration_;
+  std::vector<BackgroundSyncManager::BackgroundSyncRegistration>
+      callback_registrations_;
   ServiceWorkerStatusCode callback_sw_status_code_;
   int sync_events_called_;
   ServiceWorkerVersion::StatusCallback sync_fired_callback_;
@@ -518,6 +548,59 @@ TEST_F(BackgroundSyncManagerTest, GetRegistrationBadBackend) {
   EXPECT_FALSE(GetRegistration(sync_reg_1_));
   test_background_sync_manager_->set_corrupt_backend(false);
   EXPECT_FALSE(GetRegistration(sync_reg_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, GetRegistrationsZero) {
+  EXPECT_TRUE(GetRegistrations(SYNC_ONE_SHOT));
+  EXPECT_EQ(0u, callback_registrations_.size());
+}
+
+TEST_F(BackgroundSyncManagerTest, GetRegistrationsOne) {
+  EXPECT_TRUE(Register(sync_reg_1_));
+  EXPECT_TRUE(GetRegistrations(sync_reg_1_.periodicity));
+
+  EXPECT_EQ(1u, callback_registrations_.size());
+  sync_reg_1_.Equals(callback_registrations_[0]);
+}
+
+TEST_F(BackgroundSyncManagerTest, GetRegistrationsTwo) {
+  EXPECT_EQ(sync_reg_1_.periodicity, sync_reg_2_.periodicity);
+
+  EXPECT_TRUE(Register(sync_reg_1_));
+  EXPECT_TRUE(Register(sync_reg_2_));
+  EXPECT_TRUE(GetRegistrations(sync_reg_1_.periodicity));
+
+  EXPECT_EQ(2u, callback_registrations_.size());
+  sync_reg_1_.Equals(callback_registrations_[0]);
+  sync_reg_2_.Equals(callback_registrations_[1]);
+}
+
+TEST_F(BackgroundSyncManagerTest, GetRegistrationsPeriodicity) {
+  sync_reg_1_.periodicity = SYNC_ONE_SHOT;
+  sync_reg_2_.periodicity = SYNC_PERIODIC;
+  EXPECT_TRUE(Register(sync_reg_1_));
+  EXPECT_TRUE(Register(sync_reg_2_));
+
+  EXPECT_TRUE(GetRegistrations(SYNC_ONE_SHOT));
+  EXPECT_EQ(1u, callback_registrations_.size());
+  sync_reg_1_.Equals(callback_registrations_[0]);
+
+  EXPECT_TRUE(GetRegistrations(SYNC_PERIODIC));
+  EXPECT_EQ(1u, callback_registrations_.size());
+  sync_reg_2_.Equals(callback_registrations_[0]);
+}
+
+TEST_F(BackgroundSyncManagerTest, GetRegistrationsBadBackend) {
+  UseTestBackgroundSyncManager();
+  EXPECT_TRUE(Register(sync_reg_1_));
+  test_background_sync_manager_->set_corrupt_backend(true);
+  EXPECT_TRUE(GetRegistrations(sync_reg_1_.periodicity));
+  EXPECT_FALSE(Register(sync_reg_2_));
+  // Registration should have discovered the bad backend and disabled the
+  // BackgroundSyncManager.
+  EXPECT_FALSE(GetRegistrations(sync_reg_1_.periodicity));
+  test_background_sync_manager_->set_corrupt_backend(false);
+  EXPECT_FALSE(GetRegistrations(sync_reg_1_.periodicity));
 }
 
 TEST_F(BackgroundSyncManagerTest, Unregister) {
