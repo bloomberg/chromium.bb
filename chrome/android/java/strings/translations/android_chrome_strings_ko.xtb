@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Chrome 설정</translation>
 <translation id="6448273550210938826">추천 검색어 및 추천 URL</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
-<translation id="8425213833346101688">변경</translation>
 <translation id="4996978546172906250">공유 방법</translation>
 <translation id="8607727265103077134">출처: Google 월렛</translation>
 <translation id="6292937202013477045">공격자가 내 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 <ph name="DOMAIN_NAME"/>에서 도용하려고 시도하는 중일 수 있습니다.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">검색엔진</translation>
 <translation id="346339498574870680">이미지 URL 복사</translation>
 <translation id="5063480226653192405">사용</translation>
-<translation id="6657585470893396449">비밀번호</translation>
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE"/>에서 이 이미지 검색</translation>
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="4816465935029283692">데이터 유형</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="9060538597317784206">Play 스토어에서 <ph name="APP_NAME"/> 앱을 봅니다.  등급은 <ph name="APP_RATING"/>입니다.</translation>
 <translation id="5317780077021120954">저장</translation>
-<translation id="1151972924205500581">비밀번호를 입력해야 합니다.</translation>
 <translation id="2870560284913253234">사이트</translation>
-<translation id="3101226206443094477">Google 계정으로 로그인:</translation>
 <translation id="2718352093833049315">Wi-Fi 연결 시</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="5487729733663684359">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
-<translation id="1201402288615127009">다음</translation>
 <translation id="2414886740292270097">어두운</translation>
 <translation id="2487368562788861256">Google을 사용해 <ph name="BEGIN_LINK"/>방문하는 페이지를 최적화<ph name="END_LINK"/>하여 데이터 사용량을 줄이세요.</translation>
 <translation id="5911030830365207728">Google 번역</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">업데이트</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME"/>님, 안녕하세요.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
-<translation id="6317463785365643240">암호화 안함</translation>
 <translation id="8627706565932943526">동기화 오류</translation>
 <translation id="1807246157184219062">밝게</translation>
 <translation id="9219103736887031265">이미지</translation>
@@ -254,7 +248,6 @@
 <translation id="5324858694974489420">자녀 보호 설정</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/>(<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
-<translation id="4065916988127915326">모든 사이트 차단</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
 <translation id="5424715742813396254">저장된 이름/비밀번호 또는 예외 수정</translation>
 <translation id="6978479750597523876">번역 설정 재설정</translation>
@@ -266,7 +259,6 @@
 <translation id="2526148617758225454">데이터 세이버를 사용하도록 설정했습니다. 설정에서 관리하세요.</translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="3102119246920354026">캐시</translation>
-<translation id="651048280540227067">메뉴 닫기</translation>
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="5899349522111170522">새 파일 만들기</translation>
@@ -283,7 +275,6 @@
 <translation id="7977858705483383621">세이프서치</translation>
 <translation id="8909135823018751308">공유…</translation>
 <translation id="1056898198331236512">경고</translation>
-<translation id="3338301885994755905">차단(권장)</translation>
 <translation id="6575643671698722332">재설정하지 못했습니다. 온라인 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="8987061207681586800">나만의 Chrome 만들기</translation>
 <translation id="654446541061731451">공유할 탭을 선택하세요.</translation>
@@ -342,13 +333,9 @@
 <translation id="5138299137310274655">이 페이지는 <ph name="SOURCE_LANGUAGE"/>로 되어 있습니다. <ph name="TARGET_LANGUAGE"/>로 번역할까요?</translation>
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME"/>님이 관리하는 계정입니다.</translation>
-<translation id="7649070708921625228">도움말</translation>
 <translation id="1373696734384179344">선택한 콘텐츠를 다운로드할 공간이 부족합니다.</translation>
 <translation id="969096075394517431">언어 변경</translation>
 <translation id="5085880389019676122">USB 저장소를 사용할 수 없음</translation>
-<translation id="1614564776292091138">'보호된 콘텐츠' 기능을 사용하면 프리미엄 콘텐츠나 보호된 동영상을 재생할 수 있도록 웹사이트에서 사용자의 기기를 인증할 수 있습니다.
-
-사용 중지된 경우 기기에서 프리미엄 동영상을 재생할 수 없습니다.</translation>
 <translation id="8928220460877261598">현재 Chrome에 로그인되어 있습니다.</translation>
 <translation id="7811044698839470685">암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않으면 동기화를 재설정해야 합니다.</translation>
 <translation id="8547287415299944404">어린이용 계정으로는 인터넷 사용 기록을 삭제할 수 없습니다.</translation>
@@ -397,7 +384,6 @@
 <translation id="6965382102122355670">확인</translation>
 <translation id="4440256989292146959">더 많은 항목을 간편하게 탐색</translation>
 <translation id="4023950129927433024">암호을 잊어버린 경우 <ph name="BEGIN_LINK"/>Google 대시보드<ph name="END_LINK"/>에서 동기화를 중지하고 재설정하세요.</translation>
-<translation id="6375900123462779979">마이크 및 카메라에 액세스</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="5127805178023152808">동기화 사용 안함</translation>

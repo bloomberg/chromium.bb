@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="149347756975725155">Kan extensiepictogram '<ph name="ICON"/>' niet laden.</translation>
 <translation id="8825366169884721447">Deze extensie heeft de koptekst voor het verzoek '<ph name="HEADER_NAME"/>' van een netwerkverzoek niet kunnen aanpassen, omdat de aanpassing zorgde voor een conflict met een andere extensie (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Product <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB-apparaten selecteren</translation>
 <translation id="6731255991101203740">Kan geen directory maken voor het uitpakken van: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">De informatiepagina '<ph name="ABOUT_PAGE"/>' kan niet worden geladen.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">De app '<ph name="APP_NAME"/>' vereist toegang tot een of meer van je apparaten.</translation>
 <translation id="6698810901424468597">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1"/> en <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Kan afbeelding niet decoderen: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">Leverancier <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Toegang tot je netwerkverkeer</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="5972529113578162692">De beheerder van deze machine vereist dat <ph name="EXTENSION_NAME"/> wordt geïnstalleerd. Deze kan niet worden verwijderd.</translation>

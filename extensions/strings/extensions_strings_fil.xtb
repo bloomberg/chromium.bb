@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Pang-unpack ng Extension</translation>
 <translation id="149347756975725155">Maaaring hindi mai-load ang icon ng extension '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Nabigo ang extension na ito na baguhin ang header ng kahilingan na &quot;<ph name="HEADER_NAME"/>&quot; ng isang kahilingan sa network dahil sumalungat ang pagbabago sa isa pang extension (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234"><ph name="PRODUCT_ID"/> ng Produkto</translation>
 <translation id="4776856853352853275">Pumili ng mga USB device</translation>
 <translation id="6731255991101203740">Hindi malikha ang direktoryo para sa pag-unzip: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Hindi ma-load ang page na tungkol dito na '<ph name="ABOUT_PAGE"/>'.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Humihiling ang application na &quot;<ph name="APP_NAME"/>&quot; ng access sa isa o higit pa sa iyong mga device.</translation>
 <translation id="6698810901424468597">Basahin at baguhin ang iyong data sa <ph name="WEBSITE_1"/> at <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Hindi ma-decode ang larawan: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012"><ph name="VENDOR_ID"/> ng Vendor</translation>
 <translation id="2048182445208425546">I-access ang trapiko ng iyong network</translation>
 <translation id="1256619696651732561">Pang-parse ng Manifest ng Extension</translation>
 <translation id="5972529113578162692">Kinakailangan ng administrator ng machine na ito na naka-install ang <ph name="EXTENSION_NAME"/>. Hindi ito maaaring i-uninstall.</translation>

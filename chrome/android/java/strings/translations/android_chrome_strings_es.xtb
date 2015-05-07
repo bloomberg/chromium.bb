@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Configurar Chrome</translation>
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
 <translation id="7998918019931843664">Volver a abrir pestaña cerrada</translation>
-<translation id="8425213833346101688">Cambiar</translation>
 <translation id="4996978546172906250">Compartir a través de</translation>
 <translation id="8607727265103077134">De Google Wallet</translation>
 <translation id="6292937202013477045">Es posible que un atacante intente robar tu información (como fotos, contraseñas, mensajes y tarjetas de crédito) de <ph name="DOMAIN_NAME"/>.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">Motor de búsqueda</translation>
 <translation id="346339498574870680">Copiar URL de imagen</translation>
 <translation id="5063480226653192405">Uso</translation>
-<translation id="6657585470893396449">Contraseña</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Añadir dirección</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
@@ -133,14 +131,11 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="9060538597317784206">Ver la aplicación <ph name="APP_NAME"/> en Play Store. Valoración: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Guardar</translation>
-<translation id="1151972924205500581">Contraseña obligatoria</translation>
 <translation id="2870560284913253234">Sitio</translation>
-<translation id="3101226206443094477">Inicia sesión con tu cuenta de Google:</translation>
 <translation id="2718352093833049315">Solo en Wi-Fi</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="5487729733663684359">Ya no se admiten actualizaciones de Chrome para esta versión de Android.</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
-<translation id="1201402288615127009">Siguiente</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2487368562788861256">Reduce el uso de datos utilizando Google para <ph name="BEGIN_LINK"/>optimizar las páginas que visitas<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Traductor de Google</translation>
@@ -153,7 +148,6 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="138361230106469022">Hola, <ph name="FULL_NAME"/>:</translation>
 <translation id="6600954340915313787">Copiada a Chrome</translation>
-<translation id="6317463785365643240">No cifrar</translation>
 <translation id="8627706565932943526">Error de sincronización</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="9219103736887031265">Imágenes</translation>
@@ -254,7 +248,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="5324858694974489420">Configuración parental</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Bloquear todos los sitios</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="5424715742813396254">Editar nombre/contraseña o excepción guardados</translation>
 <translation id="6978479750597523876">Restablecer ajustes de traducción</translation>
@@ -266,7 +259,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="2526148617758225454">El Economizador de datos está activado. Puedes administrarlo en la configuración.</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="3102119246920354026">Caché</translation>
-<translation id="651048280540227067">Ignorar el menú</translation>
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
 <translation id="5899349522111170522">Crear archivo nuevo</translation>
@@ -283,7 +275,6 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="1056898198331236512">Advertencia</translation>
-<translation id="3338301885994755905">Bloquear (recomendado)</translation>
 <translation id="6575643671698722332">Error al restablecer. Comprueba la conexión y vuelve a intentarlo.</translation>
 <translation id="8987061207681586800">Personaliza Chrome</translation>
 <translation id="654446541061731451">Selecciona una pestaña para compartir</translation>
@@ -342,13 +333,9 @@ Pulsa el botón de retroceso para salir.</translation>
 <translation id="5138299137310274655">Esta página está escrita en <ph name="SOURCE_LANGUAGE"/>. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Permitir que los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="5512137114520586844">Esta cuenta está administrada por <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">Ayuda</translation>
 <translation id="1373696734384179344">No hay memoria suficiente para descargar el contenido seleccionado.</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>
 <translation id="5085880389019676122">USB no disponible</translation>
-<translation id="1614564776292091138">Si se activa la protección de contenido, los sitios web podrán autenticar el dispositivo para garantizar que pueda reproducir vídeos premium y protegidos.
-
-Si se desactiva, es posible que no puedas reproducir vídeos premium en este dispositivo.</translation>
 <translation id="8928220460877261598">Has iniciado sesión en Chrome.</translation>
 <translation id="7811044698839470685">Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. Google no envía ni almacena la frase de contraseña; si la olvidas, deberás restablecer la sincronización.</translation>
 <translation id="8547287415299944404">El historial de navegación no se puede borrar con cuentas infantiles</translation>
@@ -397,7 +384,6 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="4440256989292146959">Navega más por menos</translation>
 <translation id="4023950129927433024">Si has olvidado tu frase de contraseña, detén y reinicia la sincronización a través del <ph name="BEGIN_LINK"/>panel de control de Google<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">Acceder a micrófono y cámara</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>
 <translation id="1178581264944972037">Detener</translation>
 <translation id="5127805178023152808">La sincronización está desactivada</translation>

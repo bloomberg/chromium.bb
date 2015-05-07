@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2248649616066688669">Wenn Ihr Chromebook mit einem externen Bildschirm verbunden ist, können Sie es weiterhin verwenden – sogar, wenn es zugeklappt ist.</translation>
 <translation id="2946640296642327832">Bluetooth aktivieren</translation>
+<translation id="5537725057119320332">Übertragen</translation>
 <translation id="6459472438155181876">Bildschirm wird auf <ph name="DISPLAY_NAME"/> erweitert...</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-Adresse</translation>
@@ -166,7 +167,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
 <translation id="7573962313813535744">Docking-Modus</translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
-<translation id="8660803626959853127"><ph name="COUNT"/> Datei(en) wird bzw. werden synchronisiert.</translation>
 <translation id="5958529069007801266">Betreuter Nutzer</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">Feststelltaste Aus</translation>
@@ -186,6 +186,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS"/> wiederhergestellt.</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
+<translation id="6550675742724504774">Optionen</translation>
 <translation id="6406704438230478924">AltGr</translation>
 <translation id="3573179567135747900">Zurücksetzen auf &quot;<ph name="FROM_LOCALE"/>&quot; (Neustart erforderlich)</translation>
 <translation id="8103386449138765447">SMS: <ph name="MESSAGE_COUNT"/></translation>

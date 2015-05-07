@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">设置 Chrome</translation>
 <translation id="6448273550210938826">搜索和网址建议</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
-<translation id="8425213833346101688">更改</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="8607727265103077134">来自 Google 电子钱包</translation>
 <translation id="6292937202013477045">攻击者可能会试图从 <ph name="DOMAIN_NAME"/> 窃取您的信息（例如：照片、密码、邮件或信用卡信息）。</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">搜索引擎</translation>
 <translation id="346339498574870680">复制图片网址</translation>
 <translation id="5063480226653192405">使用情况</translation>
-<translation id="6657585470893396449">密码</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE"/>中搜索此图片</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="4816465935029283692">数据类型</translation>
@@ -69,7 +67,7 @@
 <translation id="9019902583201351841">由您父母管理</translation>
 <translation id="4333969446981951071">使用此应用即表示您同意 Chrome 的<ph name="BEGIN_LINK1"/>服务条款<ph name="END_LINK1"/>和<ph name="BEGIN_LINK2"/>隐私权声明<ph name="END_LINK2"/>。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
-<translation id="257931822824936280">已展开 - 点击此处即可收起</translation>
+<translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
 <translation id="4773299976671772492">已停止</translation>
 <translation id="5118309162436926908">登录后可获取您所有设备上目前打开的标签页、保存的书签、历史记录和其他设置</translation>
 <translation id="7596558890252710462">操作系统</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="9060538597317784206">在 Play 商店中查看“<ph name="APP_NAME"/>”应用。评分：<ph name="APP_RATING"/>。</translation>
 <translation id="5317780077021120954">保存</translation>
-<translation id="1151972924205500581">需要密码</translation>
 <translation id="2870560284913253234">网站</translation>
-<translation id="3101226206443094477">使用您的 Google 帐户登录：</translation>
 <translation id="2718352093833049315">仅限 Wi-Fi</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
-<translation id="5100237604440890931">已收起 - 点击此处即可展开</translation>
-<translation id="1201402288615127009">下一步</translation>
+<translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2487368562788861256">Google 可<ph name="BEGIN_LINK"/>优化您访问的网页<ph name="END_LINK"/>，从而减少您的数据流量消耗。</translation>
 <translation id="5911030830365207728">Google 翻译</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">更新</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME"/>，您好！</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
-<translation id="6317463785365643240">不加密</translation>
 <translation id="8627706565932943526">同步错误</translation>
 <translation id="1807246157184219062">浅色调</translation>
 <translation id="9219103736887031265">图片</translation>
@@ -254,7 +248,6 @@
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">屏蔽所有网站</translation>
 <translation id="8168435359814927499">内容</translation>
 <translation id="5424715742813396254">修改已保存的名称/密码或例外情况</translation>
 <translation id="6978479750597523876">重置翻译设置</translation>
@@ -266,7 +259,6 @@
 <translation id="2526148617758225454">流量节省程序已启用。您可以在“设置”中对其进行管理。</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="3102119246920354026">缓存</translation>
-<translation id="651048280540227067">关闭此菜单</translation>
 <translation id="748127970106343339">确认删除设备凭据</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="5899349522111170522">创建新文件</translation>
@@ -283,7 +275,6 @@
 <translation id="7977858705483383621">安全搜索</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="1056898198331236512">警告</translation>
-<translation id="3338301885994755905">屏蔽（推荐）</translation>
 <translation id="6575643671698722332">重置失败。请确保您的设备已联网，然后重试。</translation>
 <translation id="8987061207681586800">定制自己专属的 Chrome</translation>
 <translation id="654446541061731451">选择要传输的标签页</translation>
@@ -342,13 +333,9 @@
 <translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE"/>网页，要将其翻译成<ph name="TARGET_LANGUAGE"/>吗？</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="5512137114520586844">该帐户由 <ph name="PARENT_NAME"/> 管理。</translation>
-<translation id="7649070708921625228">帮助</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
 <translation id="969096075394517431">更改语言</translation>
 <translation id="5085880389019676122">USB 存储设备不可用</translation>
-<translation id="1614564776292091138">当“受保护的内容”处于“开启”状态时，网站将能够对您的设备进行验证，以确保它有权播放受保护的付费视频。
-
-当“受保护的内容”处于“关闭”状态时，您将无法在此设备上播放付费视频。</translation>
 <translation id="8928220460877261598">现在，您已登录 Chrome。</translation>
 <translation id="7811044698839470685">只有知道您密码的人才能读取您已加密的数据；系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了自己的密码，则需要重置同步设置。</translation>
 <translation id="8547287415299944404">未成年人帐户无法清除浏览记录</translation>
@@ -397,7 +384,6 @@
 <translation id="6965382102122355670">确定</translation>
 <translation id="4440256989292146959">加载更快，流量更省</translation>
 <translation id="4023950129927433024">如果您忘记了密码，请通过 <ph name="BEGIN_LINK"/>Google 信息中心<ph name="END_LINK"/>停止并重置同步设置。</translation>
-<translation id="6375900123462779979">使用您的麦克风和摄像头</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>

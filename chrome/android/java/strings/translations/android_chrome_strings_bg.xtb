@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Настройване на Chrome</translation>
 <translation id="6448273550210938826">Предложения за търсене и за URL адреси</translation>
 <translation id="7998918019931843664">Повторно отваряне на затворения раздел</translation>
-<translation id="8425213833346101688">Промяна</translation>
 <translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="8607727265103077134">От Google Wallet</translation>
 <translation id="6292937202013477045">Извършители на атаки може да опитат да откраднат информацията ви (например снимки, пароли, съобщения и номера на кредитни карти) от <ph name="DOMAIN_NAME"/>.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">Търсеща машина</translation>
 <translation id="346339498574870680">URL адр. на изображ.: Копиране</translation>
 <translation id="5063480226653192405">Употреба</translation>
-<translation id="6657585470893396449">Парола</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Добавяне на адрес</translation>
 <translation id="4816465935029283692">Типове данни</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">Отваряне в нов раздел</translation>
 <translation id="9060538597317784206">Преглед на приложението „<ph name="APP_NAME"/>“ в Google Play Магазин. Оценка: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Запазване</translation>
-<translation id="1151972924205500581">Изисква се парола</translation>
 <translation id="2870560284913253234">Сайт</translation>
-<translation id="3101226206443094477">Влезте с профила си в Google:</translation>
 <translation id="2718352093833049315">Само при Wi-Fi</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="5487729733663684359">Актуализациите на Chrome вече не се поддържат за тази версия на Android.</translation>
 <translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
-<translation id="1201402288615127009">Напред</translation>
 <translation id="2414886740292270097">Тъмно</translation>
 <translation id="2487368562788861256">Намалете разходите за данни, като използвате Google за <ph name="BEGIN_LINK"/>оптимизиране на посещаваните от вас страници<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Преводач</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="138361230106469022">Здравейте, <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
-<translation id="6317463785365643240">Без шифроване</translation>
 <translation id="8627706565932943526">Грешка при синхронизирането</translation>
 <translation id="1807246157184219062">Светло</translation>
 <translation id="9219103736887031265">Изображения</translation>
@@ -254,7 +248,6 @@
 <translation id="5324858694974489420">Родителски настройки</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">Javascript</translation>
-<translation id="4065916988127915326">Блокиране на всички сайтове</translation>
 <translation id="8168435359814927499">Съдържание</translation>
 <translation id="5424715742813396254">Редактиране на запазено име/парола или изключение</translation>
 <translation id="6978479750597523876">Нулиране на настройките за превод</translation>
@@ -266,7 +259,6 @@
 <translation id="2526148617758225454">Разширението Икономия на данни е включено. Управлявайте го от „Настройки“.</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="3102119246920354026">Кеш</translation>
-<translation id="651048280540227067">Отхвърляне на менюто</translation>
 <translation id="748127970106343339">Потвърждаване на изтриването на идентификационните данни на устройството</translation>
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
 <translation id="5899349522111170522">Създаване на нов файл</translation>
@@ -283,7 +275,6 @@
 <translation id="7977858705483383621">Безопасно търсене</translation>
 <translation id="8909135823018751308">Споделяне…</translation>
 <translation id="1056898198331236512">Предупреждение</translation>
-<translation id="3338301885994755905">Блокиране (препоръчително)</translation>
 <translation id="6575643671698722332">Нулирането не бе успешно. Уверете се, че устройството е онлайн, и опитайте пак.</translation>
 <translation id="8987061207681586800">Персонализирайте Chrome</translation>
 <translation id="654446541061731451">Изберете раздел за излъчване</translation>
@@ -342,13 +333,9 @@
 <translation id="5138299137310274655">Тази страница е на <ph name="SOURCE_LANGUAGE"/>. Да се преведе ли на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Разрешаване на сайтовете да запазват „бисквитки“ и да четат данни от такива (препоръчително)</translation>
 <translation id="5512137114520586844">Този профил се управлява от <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">Помощ</translation>
 <translation id="1373696734384179344">Недостатъчно памет за изтегляне на избраното съдържание.</translation>
 <translation id="969096075394517431">Промяна на езиците</translation>
 <translation id="5085880389019676122">Няма достъп до USB хран.</translation>
-<translation id="1614564776292091138">Когато защитеното съдържание е включено, уебсайтовете ще могат да удостоверят устройството ви, за да се уверят, че е упълномощено да възпроизвежда платени и защитени видеоклипове.
-
-Ако съдържанието е изключено, може да не сте в състояние да гледате платени клипове на това устройство.</translation>
 <translation id="8928220460877261598">Вече влязохте в Chrome.</translation>
 <translation id="7811044698839470685">Само някой с пропуска ви може да прочете шифрованите ви данни. Пропускът не се изпраща до Google, нито се съхранява от нас. Ако го забравите, ще трябва да нулирате синхронизирането.</translation>
 <translation id="8547287415299944404">Историята на сърфирането не може да се изчиства от профили за деца</translation>
@@ -397,7 +384,6 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="4440256989292146959">Сърфирайте повече за по-малко</translation>
 <translation id="4023950129927433024">Ако сте забравили пропуска си, спрете и нулирайте синхронизирането посредством <ph name="BEGIN_LINK"/>Google Табло за управление<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">Достъп до микрофона и камерата</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>

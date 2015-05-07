@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Erweiterungsentpacker</translation>
 <translation id="149347756975725155">Erweiterungssymbol &quot;<ph name="ICON"/>&quot; kann nicht geladen werden.</translation>
 <translation id="8825366169884721447">Die Erweiterung konnte den Anfrage-Header &quot;<ph name="HEADER_NAME"/>&quot; einer Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung (<ph name="EXTENSION_NAME"/>) verursacht.</translation>
-<translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB-Geräte auswählen</translation>
 <translation id="6731255991101203740">Fehler beim Erstellen von Verzeichnis zum Entpacken: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Infoseite &quot;<ph name="ABOUT_PAGE"/>&quot; konnte nicht geladen werden.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines oder mehrere Ihrer Geräte an.</translation>
 <translation id="6698810901424468597">Eigene Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen und ändern</translation>
 <translation id="2159915644201199628">Bild konnte nicht decodiert werden: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="5544884907028850012">Anbieter <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Auf Ihren Netzwerkverkehr zugreifen</translation>
 <translation id="1256619696651732561">Erweiterungsmanifest-Parser</translation>
 <translation id="5972529113578162692">Der Administrator dieses Computers hat die Installation von <ph name="EXTENSION_NAME"/> vorgegeben. Eine Deinstallation ist daher nicht möglich.</translation>

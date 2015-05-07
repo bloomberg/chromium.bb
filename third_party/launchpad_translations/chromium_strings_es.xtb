@@ -78,7 +78,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3068515742935458733">Ayudar a mejorar Chromium enviando informes sobre fallos y <ph name="UMA_LINK"/> a Google</translation>
 <translation id="734373864078049451">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chromium.</translation>
 <translation id="3197823471738295152">El dispositivo está actualizado.</translation>
-<translation id="3065280201209294872">La configuración de seguridad que utiliza el sitio está obsoleta, por lo que es posible que las versiones futuras de Chromium no puedan acceder a él de forma segura.</translation>
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="8353224596138547809">¿Quieres que Chromium guarde tu contraseña para este sitio?</translation>
 <translation id="8738058698779197622">Para establecer una conexión segura, tu reloj debe estar correctamente configurado. Esto se debe a que los certificados utilizados por los sitios web para identificarse son solo válidos durante períodos específicos de tiempo. Dado que la hora de tu dispositivo no es correcta, Chromium no puede verificar estos certificados.</translation>

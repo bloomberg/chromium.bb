@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Настройка Chrome</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
-<translation id="8425213833346101688">Изменить</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
 <translation id="8607727265103077134">Из Google Кошелька</translation>
 <translation id="6292937202013477045">Злоумышленники могут пытаться похитить ваши данные (например, пароли, сообщения или номера банковских карт) с сайтов домена <ph name="DOMAIN_NAME"/>.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="346339498574870680">Скопировать URL изображения</translation>
 <translation id="5063480226653192405">Использование</translation>
-<translation id="6657585470893396449">Пароль</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="4816465935029283692">Типы данных</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
 <translation id="9060538597317784206">Перейти к приложению &quot;<ph name="APP_NAME"/>&quot; в Play Маркете. Рейтинг: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Сохранить</translation>
-<translation id="1151972924205500581">Необходимо ввести пароль</translation>
 <translation id="2870560284913253234">Сайт</translation>
-<translation id="3101226206443094477">Войдите в аккаунт Google:</translation>
 <translation id="2718352093833049315">Только Wi-Fi</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="5487729733663684359">Невозможно обновить Chrome в текущей версии Android.</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
-<translation id="1201402288615127009">Далее</translation>
 <translation id="2414886740292270097">Темный</translation>
 <translation id="2487368562788861256">Экономьте трафик – разрешите Google <ph name="BEGIN_LINK"/>оптимизировать посещаемые страницы<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Переводчик</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">Обновление</translation>
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME"/>!</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
-<translation id="6317463785365643240">Не шифровать</translation>
 <translation id="8627706565932943526">Ошибка синхронизации</translation>
 <translation id="1807246157184219062">Светлый</translation>
 <translation id="9219103736887031265">Картинки</translation>
@@ -254,7 +248,6 @@
 <translation id="5324858694974489420">Родительские настройки</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Блокировать все сайты</translation>
 <translation id="8168435359814927499">Контент</translation>
 <translation id="5424715742813396254">Изменение имени, пароля или исключения</translation>
 <translation id="6978479750597523876">Сбросить настройки перевода</translation>
@@ -266,7 +259,6 @@
 <translation id="2526148617758225454">Экономия трафика включена. Управление доступно в настройках.</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="3102119246920354026">Кеш</translation>
-<translation id="651048280540227067">Закрыть меню</translation>
 <translation id="748127970106343339">Подтвердите удаление учетных данных устройства</translation>
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="5899349522111170522">Новый файл</translation>
@@ -283,7 +275,6 @@
 <translation id="7977858705483383621">Безопасный поиск</translation>
 <translation id="8909135823018751308">Поделиться...</translation>
 <translation id="1056898198331236512">Внимание</translation>
-<translation id="3338301885994755905">Заблокировать (рекомендуется)</translation>
 <translation id="6575643671698722332">Ошибка сброса. Подключитесь к Интернету и повторите попытку.</translation>
 <translation id="8987061207681586800">Ваш персональный Chrome</translation>
 <translation id="654446541061731451">Выберите вкладку для передачи</translation>
@@ -342,13 +333,9 @@
 <translation id="5138299137310274655">Язык этой страницы – <ph name="SOURCE_LANGUAGE"/>. Перевести ее на <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="5512137114520586844">Этим аккаунтом управляет <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">Справка</translation>
 <translation id="1373696734384179344">Недостаточно памяти для скачивания выбранного контента.</translation>
 <translation id="969096075394517431">Изменить языки</translation>
 <translation id="5085880389019676122">USB-накопитель недоступен</translation>
-<translation id="1614564776292091138">Если функция защиты контента включена, сайты могут выполнять аутентификацию вашего устройства и проверять разрешение на воспроизведение защищенного платного видео.
-
-Если отключить эту функцию, воспроизведение защищенного видео на этом устройстве может быть запрещено.</translation>
 <translation id="8928220460877261598">Вы вошли в Chrome.</translation>
 <translation id="7811044698839470685">Ваши зашифрованные данные может прочитать только тот, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете эту фразу, вам придется сбросить параметры синхронизации.</translation>
 <translation id="8547287415299944404">Историю просмотров нельзя очистить из управляемого аккаунта</translation>
@@ -397,7 +384,6 @@
 <translation id="6965382102122355670">ОК</translation>
 <translation id="4440256989292146959">Разумная экономия</translation>
 <translation id="4023950129927433024">Если вы забыли кодовую фразу, остановите синхронизацию и сбросьте ее настройки в <ph name="BEGIN_LINK"/>Личном кабинете<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">Доступ к микрофону и камере</translation>
 <translation id="7437998757836447326">Выход из Chrome</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>

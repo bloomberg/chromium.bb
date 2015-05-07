@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Statusbakke</translation>
 <translation id="2248649616066688669">Du kan fortsætte med at bruge din Chromebook, mens den er sluttet til en ekstern skærm, også selvom låget er klappet ned.</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
@@ -166,7 +167,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="112308213915226829">Skjul hylde automatisk</translation>
 <translation id="7573962313813535744">Tilstanden Tilsluttet dockingstation</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
-<translation id="8660803626959853127">Synkroniserer <ph name="COUNT"/> fil(er)</translation>
 <translation id="5958529069007801266">Overvåget bruger</translation>
 <translation id="3709443003275901162">9 eller flere</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
@@ -186,6 +186,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS"/> sekunder.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
+<translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
 <translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT"/></translation>

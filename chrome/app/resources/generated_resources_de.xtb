@@ -144,7 +144,6 @@
 <translation id="7974566588408714340">Über <ph name="EXTENSIONNAME"/> erneut versuchen</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="5895138241574237353">Neu starten</translation>
-<translation id="7012312584667795941">Die Identität von <ph name="ORGANIZATION"/> am Standort <ph name="LOCALITY"/> wurde von <ph name="ISSUER"/> bestätigt, ein öffentlicher Eintrag konnte jedoch nicht bestätigt werden.</translation>
 <translation id="7113502843173351041">Zugriff auf E-Mail-Adresse zulassen</translation>
 <translation id="3726463242007121105">Dieses Gerät kann nicht geöffnet werden, da das zugehörige Dateisystem nicht unterstützt wird.</translation>
 <translation id="5606674617204776232">Das Plug-in <ph name="PEPPER_PLUGIN_NAME"/> auf <ph name="PEPPER_PLUGIN_DOMAIN"/> möchte auf Ihr Gerät zugreifen.</translation>
@@ -313,7 +312,6 @@
 <translation id="5748743223699164725">Experimentelle Webplattformfunktionen aktivieren, die sich im Entwicklungsstadium befinden</translation>
 <translation id="8110513421455578152">Hiermit kann die Standardhöhe der Kacheln angegeben werden.</translation>
 <translation id="7002454948392136538">Manager für diesen betreuten Nutzer auswählen</translation>
-<translation id="9091975085874311841">Ihre Verbindung zu <ph name="DOMAIN"/> ist durch moderne Kryptografie verschlüsselt.</translation>
 <translation id="4640525840053037973">Mit Ihrem Google-Konto anmelden</translation>
 <translation id="4923279099980110923">Ja, ich möchte helfen.</translation>
 <translation id="6922128026973287222">Mit der Google Datenkomprimierung verbrauchen Sie weniger Daten und surfen schneller. Klicken Sie hier, um mehr zu erfahren.</translation>
@@ -642,7 +640,6 @@
 <translation id="2887525882758501333">PDF-Dokument</translation>
 <translation id="289426338439836048">Anderes Mobilfunknetz...</translation>
 <translation id="5953576419932384180">Haben Sie Ihr altes Passwort vergessen?</translation>
-<translation id="100869152053188797">Die Identität dieser Website wurde von <ph name="ISSUER"/> bestätigt. Die angegebene öffentliche Eintragung kann jedoch nicht bestätigt werden.</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">Alle Ihre Eingaben lesen und ändern, einschließlich der Tasten zum Aufgabenwechsel wie CMD+TAB</translation>
 <translation id="8214962590150211830">Diese Person entfernen</translation>
@@ -1119,7 +1116,6 @@ Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="6954850746343724854">Aktiviert Native Client für alle Web-Apps, auch für diejenigen, die nicht über den Chrome Web Store installiert wurden</translation>
 <translation id="9043242398268815112">Kennt den Gerätestandort</translation>
 <translation id="9068931793451030927">Pfad:</translation>
-<translation id="667314332843412173">Benachrichtigungen senden</translation>
 <translation id="4289540628985791613">Übersicht</translation>
 <translation id="283278805979278081">Bild aufnehmen</translation>
 <translation id="6111974609785983504">Standardmäßig zugelassen</translation>
@@ -1211,7 +1207,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="3798449238516105146">Version</translation>
 <translation id="3608576286259426129">Vorschau für Nutzerbild</translation>
 <translation id="5764483294734785780">Audio &amp;speichern unter...</translation>
-<translation id="4511834652944195516">Aktiviert die MTP-Schreibunterstützung im Dateimanager. Einige Vorgänge, wie das Bearbeiten von Bildern auf dem MTP-Volume, werden noch nicht unterstützt.</translation>
 <translation id="313205617302240621">Passwort vergessen?</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -1366,6 +1361,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="3828440302402348524">Angemeldet als <ph name="USER_NAME"/>...</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="3522159121915794564">Hiermit können Nutzer die Erfassung ungültiger TLS/SSL-Zertifikatketten aktivieren.</translation>
+<translation id="6978121630131642226">Suchmaschinen</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK"/>Melden Sie sich an<ph name="END_SIGN_IN_LINK"/>, um die von dieser Person besuchten Websites einzusehen.</translation>
 <translation id="8965697826696209160">Nicht genügend Speicherplatz.</translation>
 <translation id="329838636886466101">Reparieren</translation>
@@ -1409,7 +1405,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="8656946437567854031">Durch Klicken auf &quot;Weiter&quot; stimmen Sie den <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, <ph name="LEGAL_DOC_LINK_TEXT_5"/> und der <ph name="LEGAL_DOC_LINK_TEXT_6"/> zu.</translation>
 <translation id="830598693585544337">Wenn diese Option aktiviert ist, können Websites nicht auf die WebAudio API zugreifen.</translation>
 <translation id="3574777678278664892">Bei Aktivierung bietet der Passwortmanager nicht an, die Anmeldedaten für die Synchronisierung zu speichern.</translation>
-<translation id="1914436586714907696">Chrome verfügt nicht mehr über genügend Arbeitsspeicher.</translation>
 <translation id="5747785204778348146">Entwickler – instabil</translation>
 <translation id="3590194807845837023">Profil entsperren und Chrome neu starten</translation>
 <translation id="6644756108386233011">Geänderte <ph name="IDS_SHORT_PRODUCT_NAME"/>-Einstellungen zurücksetzen?</translation>
@@ -1447,7 +1442,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="7547811415869834682">Niederländisch</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/> Person wechseln</translation>
 <translation id="1587275751631642843">&amp;JavaScript-Konsole</translation>
-<translation id="2348797501425402112">MTP-Schreibunterstützung aktivieren</translation>
 <translation id="8460696843433742627">Beim Versuch, <ph name="URL"/> zu laden, wurde eine ungültige Antwort empfangen.
         Möglicherweise wird der Server gewartet oder er ist falsch konfiguriert.</translation>
 <translation id="297870353673992530">DNS-Server:</translation>
@@ -2383,7 +2377,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="4807098396393229769">Name auf Karte</translation>
 <translation id="4131410914670010031">Schwarz-Weiß</translation>
 <translation id="3800503346337426623">Anmeldung überspringen und als Gast nutzen</translation>
-<translation id="2615413226240911668">Diese Seite enthält jedoch andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Layout der Seite verändern.</translation>
 <translation id="1416136326154112077">Der Manager kann Einstellungen und den Browserverlauf des betreuten Nutzers möglicherweise weiterhin unter <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/> einsehen.</translation>
 <translation id="2436733981438712345">In Bearbeitung...</translation>
 <translation id="197288927597451399">Behalten</translation>
@@ -2426,7 +2419,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3774278775728862009">Thai-Eingabemethode (TIS-820.2538-Tastatur)</translation>
 <translation id="9115675100829699941">&amp;Lesezeichen</translation>
 <translation id="7570496663860904543">Wenn eine Seite nicht geladen werden kann und eine veraltete Kopie der Seite im Browser-Cache vorhanden ist, erscheint eine Schaltfläche, über die der Nutzer diese veraltete Kopie laden kann. Mit der Option &quot;Primär&quot; erscheint die Schaltfläche an der auffälligsten Stelle der Fehlerseite. Mit der Option &quot;Sekundär&quot; erscheint sie zweitrangig nach der Schaltfläche zum erneuten Laden.</translation>
-<translation id="7191877888075697060">Ihre Verbindung zu <ph name="DOMAIN"/> ist durch veraltete Kryptografie verschlüsselt.</translation>
 <translation id="1731589410171062430">Gesamt: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Anheften</translation>
 <translation id="5298363578196989456">Die Erweiterung &quot;<ph name="IMPORT_NAME"/>&quot; konnte nicht importiert werden, da es sich nicht um ein freigegebenes Modul handelt.</translation>
@@ -2597,7 +2589,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN"/> wird nun im Vollbildmodus angezeigt und möchte Ihren Mauszeiger deaktivieren.</translation>
 <translation id="1497522201463361063">&quot;<ph name="FILE_NAME"/>&quot; kann nicht umbenannt werden. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Hier ist das zufällig generierte TPM-Passwort, das Ihrem Computer zugewiesen wurde:</translation>
-<translation id="5636000737234849121">Aktiviert die Bewegungseingabe für die Bildschirmtastatur</translation>
 <translation id="5010043101506446253">Zertifizierungsstelle</translation>
 <translation id="5287425679749926365">Meine Konten</translation>
 <translation id="4249373718504745892">Diese Seite darf nicht auf die Kamera und das Mikrofon zugreifen.</translation>
@@ -2686,7 +2677,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="8870318296973696995">Startseite</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="8283475148136688298">Beim Herstellen der Verbindung zu &quot;<ph name="DEVICE_NAME"/>&quot; wurde der Authentifizierungscode zurückgewiesen.</translation>
-<translation id="3491170932824591984">Die Identität dieser Website wurde von <ph name="ISSUER"/> bestätigt, ein öffentlicher Eintrag konnte jedoch nicht bestätigt werden.</translation>
 <translation id="6575134580692778371">Nicht konfiguriert</translation>
 <translation id="4624768044135598934">Vorgang abgeschlossen!</translation>
 <translation id="7518150891539970662">WebRTC-Protokolle (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
@@ -2933,7 +2923,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="8800420788467349919">Lautstärke: <ph name="PRECENTAGE"/> %</translation>
 <translation id="1697068104427956555">Quadratischen Abschnitt im Bild auswählen</translation>
 <translation id="29232676912973978">Verbindungen verwalten...</translation>
-<translation id="6225644908173488565">Aktiviert das Löschen durch Bewegung für die Bildschirmtastatur</translation>
 <translation id="4090103403438682346">Bestätigten Zugriff aktivieren</translation>
 <translation id="570197343572598071">Anzuzeigende Ereignisse</translation>
 <translation id="1628736721748648976">Codierung</translation>
@@ -2947,7 +2936,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="8420728540268437431">Diese Seite wird gerade übersetzt...</translation>
 <translation id="736515969993332243">Suche nach Netzwerken läuft...</translation>
 <translation id="7806513705704909664">AutoFill aktivieren, um Webformulare mit nur einem Klick ausfüllen zu können</translation>
-<translation id="6856069154773169210">Aktiviert das Auswählen durch Bewegung für die Bildschirmtastatur</translation>
 <translation id="9063302675152872196">Ermöglicht Hole Punching in der Chrome OS-Firewall für Chrome-Apps, über die ein TCP/IP-Serversocket oder UDP-Socket geöffnet wird</translation>
 <translation id="5430298929874300616">Lesezeichen löschen</translation>
 <translation id="3150994199788134383">Eine Erweiterung hat die Kontrolle über Ihre Proxyeinstellungen übernommen. Das bedeutet, dass diese Erweiterung sämtliche Onlineaktivitäten ändern, abbrechen oder überwachen kann. Wenn Sie nicht sicher sind, wie es zu dieser Änderung gekommen ist, war sie wahrscheinlich nicht beabsichtigt.</translation>
@@ -3060,7 +3048,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="1436784010935106834">Entfernt</translation>
 <translation id="3730639321086573427">Lokale Ziele</translation>
 <translation id="399856887277429830">Tool zum Entfernen schädlicher Software ausführen</translation>
-<translation id="2734167549439405382">Die Identität dieser Website wurde von <ph name="ISSUER"/> bestätigt, ein öffentlicher Eintrag liegt jedoch nicht vor.</translation>
 <translation id="7918257978052780342">Anmelden</translation>
 <translation id="2863937263901630331">Die Rohdaten sind über NetLog verfügbar. Weitere Informationen finden Sie in der Hilfe.</translation>
 <translation id="4195814663415092787">Zuletzt angesehene Seiten öffnen</translation>
@@ -3241,7 +3228,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="878431691778285679">Offenbar verwalten Sie bereits einen Nutzer dieses Namens.<ph name="LINE_BREAK"/>Möchten Sie <ph name="BEGIN_LINK"/><ph name="PROFILE_NAME"/> auf dieses Gerät importieren<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> möchte Ihr Mikrofon verwenden.</translation>
 <translation id="2805756323405976993">Apps</translation>
-<translation id="5151511998946489774">Die Identität dieser Website wurde von <ph name="ISSUER"/> überprüft und ist öffentlich überprüfbar.</translation>
 <translation id="7235421518178823985">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN"/> ist. Sein Sicherheitszertifikat stammt angeblich von <ph name="DAYS"/> Tag(en) in der Zukunft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1608626060424371292">Diesen Nutzer entfernen</translation>
 <translation id="2779552785085366231">Diese Seite kann zum App Launcher hinzugefügt werden.</translation>
@@ -3461,7 +3447,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
     Nicht genügend Speicherplatz auf Gerät
     <ph name="LINE_BREAK2"/>
     Versuchen Sie, einige Fotos auszuwählen, um zu starten.</translation>
-<translation id="3700834376805760154">Die Identität von <ph name="ORGANIZATION"/> in <ph name="LOCALITY"/> wurde von <ph name="ISSUER"/> überprüft und ist öffentlich überprüfbar.</translation>
 <translation id="4416628180566102937">Registrieren und Gerät neu starten</translation>
 <translation id="4623537843784569564">Diese Erweiterung wurde möglicherweise fehlerhaft aktualisiert. Versuchen Sie, sie neu zu installieren.</translation>
 <translation id="4342311272543222243">TPM-Fehler</translation>
@@ -3936,7 +3921,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="7748144333872478614">Fensterrahmen in TouchView deaktivieren</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Über NaCl</translation>
-<translation id="3084771660770137092">Entweder verfügt Google Chrome nicht mehr über genügend Arbeitsspeicher oder der Prozess für die Webseite wurde aus einem anderen Grund beendet. Aktualisieren Sie die Seite oder rufen Sie eine andere Seite auf.</translation>
 <translation id="1114901192629963971">Ihr Passwort kann im aktuellen Netzwerk nicht bestätigt werden. Wählen Sie ein anderes Netzwerk aus.</translation>
 <translation id="6430814529589430811">Base64-codierter ASCII-Code, Einzelzertifikat</translation>
 <translation id="3305661444342691068">PDF-Vorschau</translation>
@@ -4756,7 +4740,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="4350711002179453268">Es kann keine sichere Verbindung zum Server hergestellt werden. Möglicherweise liegt ein Problem mit dem Server vor oder es ist ein Client-Authentifizierungszertifikat erforderlich, das Sie nicht haben.</translation>
 <translation id="4731422630970790516">Ablageartikel 3</translation>
 <translation id="750509436279396091">Downloadordner öffnen</translation>
-<translation id="4417463059397999181">Keine Angabe</translation>
 <translation id="4125496372515105318">Neueste stabile JavaScript-Funktionen deaktivieren</translation>
 <translation id="5963026469094486319">Designs abrufen</translation>
 <translation id="7586312264284919041">Möchten Sie diese Seite übersetzen?</translation>
@@ -4793,7 +4776,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="6449285849137521213">Die App &quot;<ph name="EXTENSION_NAME"/>&quot; wurde hinzugefügt.</translation>
 <translation id="6516193643535292276">Verbindung zum Internet konnte nicht hergestellt werden.</translation>
 <translation id="5125751979347152379">Ungültige URL</translation>
-<translation id="4467801982834340084">Die Identität von <ph name="ORGANIZATION"/> am Standort <ph name="LOCALITY"/> wurde von <ph name="ISSUER"/> bestätigt. Es liegt jedoch kein öffentlicher Eintrag vor.</translation>
 <translation id="752397454622786805">Registrierung aufgehoben</translation>
 <translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -4988,7 +4970,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="5158593464696388225">Bild konnte nicht gespeichert werden.</translation>
 <translation id="3296763833017966289">Georgisch</translation>
 <translation id="2242687258748107519">Dateiinformationen</translation>
-<translation id="1152775729948968688">Diese Seite enthält jedoch andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Layout der Seite verändern.</translation>
 <translation id="604124094241169006">Automatisch</translation>
 <translation id="862542460444371744">&amp;Erweiterungen</translation>
 <translation id="2539110682392681234">Die Proxy-Einstellungen werden durch Ihren Administrator erzwungen.</translation>
@@ -5336,7 +5317,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="340771324714262530">Spiegelung beenden</translation>
 <translation id="3303260552072730022">Eine Erweiterung hat den Vollbildmodus ausgelöst.</translation>
 <translation id="3348459612390503954">Glückwunsch</translation>
-<translation id="5845521171017703245">ID: <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">Umwandlung auf der Grundlage der vorherigen Eingaben anpassen</translation>
 <translation id="8675377193764357545">Synchronisiert als <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="7265986070661382626"><ph name="SITE"/> kann zurzeit nicht aufgerufen werden, weil die Website das <ph name="BEGIN_LINK"/>Zertifikats-Pinning<ph name="END_LINK"/> nutzt. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite später wahrscheinlich wieder funktioniert.</translation>
@@ -5355,7 +5335,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME"/> starten?</translation>
 <translation id="4047112090469382184">Warum ist das sicher?</translation>
 <translation id="5461512418490148136">Bitte haben Sie etwas Geduld. Ihre Dateien werden geladen.</translation>
 <translation id="4268574628540273656">URL:</translation>
-<translation id="2766585356456507052">Die Identität von <ph name="ORGANIZATION"/> am Standort <ph name="LOCALITY"/> wurde von <ph name="ISSUER"/> bestätigt. Der angegebene öffentliche Eintrag kann jedoch nicht bestätigt werden.</translation>
 <translation id="6690455781383741953">Energiesparmodus für Plug-in-Inhalte aktivieren</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME"/> starten</translation>

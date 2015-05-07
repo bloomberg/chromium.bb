@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Penyahpadat Sambungan</translation>
 <translation id="149347756975725155">Tidak dapat memuatkan ikon sambungan '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Sambungan ini gagal mengubah suai pengatas permintaan &quot;<ph name="HEADER_NAME"/>&quot; untuk permintaan rangkaian kerana ubah suai tersebut bercanggah dengan sambungan lain (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produk <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Pilih peranti USB</translation>
 <translation id="6731255991101203740">Tidak dapat mencipta direktori untuk menyahzip: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Tidak dapat memuatkan halaman perihal '<ph name="ABOUT_PAGE"/>'.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Aplikasi &quot;<ph name="APP_NAME"/>&quot; meminta akses kepada satu atau lebih peranti anda.</translation>
 <translation id="6698810901424468597">Baca dan tukar data anda di <ph name="WEBSITE_1"/> dan <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Tidak dapat menyahkod imej: ' <ph name="IMAGE_NAME"/> '</translation>
-<translation id="5544884907028850012">Penjual <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Akses trafik rangkaian anda</translation>
 <translation id="1256619696651732561">Penghurai Manifes Sambungan</translation>
 <translation id="5972529113578162692">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME"/> dipasang. Sambungan ini tidak boleh dinyahpasang.</translation>

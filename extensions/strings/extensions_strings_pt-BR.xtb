@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Descompactador de extensão</translation>
 <translation id="149347756975725155">Não foi possível carregar o ícone de extensão &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Esta extensão falhou ao modificar o cabeçalho da solicitação de rede &quot;<ph name="HEADER_NAME"/>&quot; porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produto <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Selecionar dispositivos USB</translation>
 <translation id="6731255991101203740">Não foi possível criar um diretório para descompactação: ​​'<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Não foi possível carregar a página &quot;Sobre&quot; '<ph name="ABOUT_PAGE"/>'.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">O aplicativo &quot;<ph name="APP_NAME"/>&quot; está solicitando acesso a um ou mais dos seus dispositivos.</translation>
 <translation id="6698810901424468597">Ler e alterar seus dados em <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Não foi possível decodificar a imagem: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">Fornecedor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Acesse seu tráfego de rede</translation>
 <translation id="1256619696651732561">Analisador de manifesto de extensão</translation>
 <translation id="5972529113578162692">O administrador desta máquina requer a instalação da extensão <ph name="EXTENSION_NAME"/>. Ela não pode ser desinstalada.</translation>

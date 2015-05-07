@@ -32,7 +32,6 @@
 <translation id="8712265948125780616">எக்ஸ்டன்ஷன் அன்பேக்கர்</translation>
 <translation id="149347756975725155">நீட்டிப்புப் படவுரு '<ph name="ICON"/>' ஐ ஏற்ற முடியவில்லை.</translation>
 <translation id="8825366169884721447">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்புடன் ஏற்பட்ட திருத்த முரண்பாட்டால் &quot;<ph name="HEADER_NAME"/>&quot; கோரிக்கை மேற்தலைப்பைத் திருத்துவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
-<translation id="7495493006406536234"><ph name="PRODUCT_ID"/> தயாரிப்பு</translation>
 <translation id="4776856853352853275">USB சாதனங்களைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="6731255991101203740">இதன் ஜிப்பை திறப்பதற்குக் கோப்பகத்தை உருவாக்க முடியவில்லை: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' பக்கத்தை ஏற்ற முடியவில்லை.</translation>
@@ -77,7 +76,6 @@
 <translation id="2677911863018634147">உங்கள் சாதனங்களின் ஒன்று அல்லது அதற்கு மேற்பட்டவற்றின் அணுகலை &quot;<ph name="APP_NAME"/>&quot; கோருகிறது.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> மற்றும் <ph name="WEBSITE_2"/> இல் உள்ள உங்கள் தரவைப் படித்தல் மற்றும் திருத்துதல்</translation>
 <translation id="2159915644201199628">இந்தப் படத்தை குறிநீக்க முடியவில்லை: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012"><ph name="VENDOR_ID"/> விற்பனையாளர்</translation>
 <translation id="2048182445208425546">உங்கள் நெட்வொர்க் ட்ராஃபிக்கை அணுகுதல்</translation>
 <translation id="1256619696651732561">எக்ஸ்டன்ஷன் மேனிஃபெஸ்ட் பார்சர்</translation>
 <translation id="5972529113578162692">இந்தக் கணினியின் நிர்வாகிக்கு <ph name="EXTENSION_NAME"/> நிறுவப்பட வேண்டும். இதை நிறுவல் நீக்க முடியாது.</translation>

@@ -144,7 +144,6 @@
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME"/> uzantısını kullanmayı yeniden dene</translation>
 <translation id="2972581237482394796">&amp;Yinele</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
-<translation id="7012312584667795941"><ph name="LOCALITY"/> bölgesindeki <ph name="ORGANIZATION"/> kuruluşunun kimliği <ph name="ISSUER"/> tarafından doğrulandı, ancak herkese açık şekilde denetlenebilme kayıtları doğrulanamadı.</translation>
 <translation id="7113502843173351041">E-posta adresinizi bilme</translation>
 <translation id="3726463242007121105">Bu cihaz, dosya sistemi desteklenmediğinden açılamıyor.</translation>
 <translation id="5606674617204776232"><ph name="PEPPER_PLUGIN_DOMAIN"/> alanındaki <ph name="PEPPER_PLUGIN_NAME"/> eklentisi cihazınıza erişmek istiyor.</translation>
@@ -317,7 +316,6 @@
 <translation id="5748743223699164725">Geliştirme aşamasındaki deneysel Web Platformu özelliklerini etkinleştirin.</translation>
 <translation id="8110513421455578152">Varsayılan karo yüksekliğini belirtin.</translation>
 <translation id="7002454948392136538">Bu denetlenen kullanıcı için yönetici seçin</translation>
-<translation id="9091975085874311841"><ph name="DOMAIN"/> bağlantınız modern şifreleme yöntemiyle şifrelendi.</translation>
 <translation id="4640525840053037973">Google Hesabınızla oturum açın</translation>
 <translation id="4923279099980110923">Evet, yardımcı olmak istiyorum</translation>
 <translation id="6922128026973287222">Google Veri Tasarrufu'nu kullanarak verileri kaydedin ve daha hızlı göz atın. Daha fazla bilgi edinmek için tıklayın.</translation>
@@ -647,7 +645,6 @@
 <translation id="2887525882758501333">PDF dokümanı</translation>
 <translation id="289426338439836048">Diğer mobil ağlar...</translation>
 <translation id="5953576419932384180">Eski şifreyi hatırlamıyor musunuz?</translation>
-<translation id="100869152053188797">Bu web sitesinin kimliği <ph name="ISSUER"/> tarafından doğrulandı. Web sitesi herkese açık şekilde denetlenebilirlik kayıtlarına sahip olduğunu iddia ediyor, ancak kayıtlar doğrulanamıyor.</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">CMD+SEKME gibi görev değiştirme tuşları da dahil olmak üzere yazdığınız her şeyi okuyun ve değiştirin</translation>
 <translation id="8214962590150211830">Bu kişiyi kaldır</translation>
@@ -1128,7 +1125,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="6954850746343724854">Chrome Web Mağazası'ndan yüklenmiş olmasa bile, tüm web uygulamaları için Native Client'ı etkinleştir.</translation>
 <translation id="9043242398268815112">Cihazın konumunu bilir</translation>
 <translation id="9068931793451030927">Yol:</translation>
-<translation id="667314332843412173">Bildirimleri gönder</translation>
 <translation id="4289540628985791613">Genel bakış</translation>
 <translation id="283278805979278081">Fotoğraf çek.</translation>
 <translation id="6111974609785983504">Varsayılan olarak izin verilir</translation>
@@ -1220,7 +1216,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY"/> kullanışlı
 <translation id="3798449238516105146">Sürüm</translation>
 <translation id="3608576286259426129">Kullanıcı resmi önizlemesi</translation>
 <translation id="5764483294734785780">Sesi farklı kay&amp;det...</translation>
-<translation id="4511834652944195516">Dosya yöneticisinde MTP yazma desteğini etkinleştirin. Bazı işlemler (MTP biriminde bir resmi düzenleme) henüz desteklenmemektedir.</translation>
 <translation id="313205617302240621">Şifrenizi mi unuttunuz?</translation>
 <translation id="5252456968953390977">Dolaşım</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -1376,6 +1371,7 @@ Kalan süre hesaplanıyor</translation>
 <translation id="3828440302402348524"><ph name="USER_NAME"/> olarak oturum açıldı...</translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="3522159121915794564">Kullanıcıların geçersiz TLS/SSL sertifika zincirleri koleksiyonunu etkinleştirmesine olanak tanır.</translation>
+<translation id="6978121630131642226">Arama Motorları</translation>
 <translation id="1097507499312291972">Bu kişinin ziyaret ettiği web sitelerini kontrol etmek ve görüntülemek için <ph name="BEGIN_SIGN_IN_LINK"/>oturum açın<ph name="END_SIGN_IN_LINK"/>.</translation>
 <translation id="8965697826696209160">Yeterli alan yok.</translation>
 <translation id="329838636886466101">Onar</translation>
@@ -1419,7 +1415,6 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8656946437567854031">Devam Et'i tıklayarak şunları kabul etmiş olursunuz: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, <ph name="LEGAL_DOC_LINK_TEXT_5"/> ve <ph name="LEGAL_DOC_LINK_TEXT_6"/>.</translation>
 <translation id="830598693585544337">Bu seçeneğin etkinleştirilmesi web sitelerinin WebAudio API'sına erişmesini engeller.</translation>
 <translation id="3574777678278664892">Etkinleştirildiyse, şifre yöneticisi senkronizasyon için kullanılan kimlik bilgilerini kaydetmeyi teklif etmez.</translation>
-<translation id="1914436586714907696">Chrome'da bellek kalmadı.</translation>
 <translation id="5747785204778348146">Geliştirici - kararsız</translation>
 <translation id="3590194807845837023">Profilin Kilidini Aç ve Tekrar Başlat</translation>
 <translation id="6644756108386233011">Değiştirilmiş <ph name="IDS_SHORT_PRODUCT_NAME"/> ayarları sıfırlansın mı?</translation>
@@ -1457,7 +1452,6 @@ Kalan süre hesaplanıyor</translation>
 <translation id="7547811415869834682">Felemenkçe</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/> Kişi Değiştir</translation>
 <translation id="1587275751631642843">&amp;JavaScript konsolu</translation>
-<translation id="2348797501425402112">MTP yazma desteğini etkinleştir</translation>
 <translation id="8460696843433742627"><ph name="URL"/> yüklenmeye çalışılırken geçersiz bir yanıt alındı.
         Sunucu bakım için kapatılmış veya yanlış yapılandırılmış olabilir.</translation>
 <translation id="297870353673992530">DNS sunucusu:</translation>
@@ -2404,7 +2398,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="4807098396393229769">Kartın üzerindeki ad</translation>
 <translation id="4131410914670010031">Siyah beyaz</translation>
 <translation id="3800503346337426623">Oturum açmayı atla ve Misafir olarak göz at</translation>
-<translation id="2615413226240911668">Bununla birlikte, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın görünümünü değiştirmek üzere kullanılabilir.</translation>
 <translation id="1416136326154112077">Bu denetlenen kullanıcıya ilişkin ayarlar ve göz atma geçmişi yine de <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/> adresinden yönetici tarafından görülebilir.</translation>
 <translation id="2436733981438712345">İşleniyor...</translation>
 <translation id="197288927597451399">Sakla</translation>
@@ -2447,7 +2440,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="3774278775728862009">Tayca giriş yöntemi (TIS-820.2538 klavye)</translation>
 <translation id="9115675100829699941">&amp;Yer İşaretleri</translation>
 <translation id="7570496663860904543">Bir sayfanın yüklemesi başarısız olduğunda, sayfanın eski bir kopyası tarayıcıda bulunuyorsa kullanıcının bu eski kopyayı yüklemesine olanak sağlamak üzere bir düğme sunulur. Birincil etkinleştirme seçeneği, düğmeyi hata sayfasında en belirgin konuma yerleştirir; ikincil etkinleştirme seçeneği yeniden yükleme düğmesine göre ikincil konuma koyar.</translation>
-<translation id="7191877888075697060"><ph name="DOMAIN"/> bağlantınız artık kullanılmayan şifreleme yöntemiyle şifrelendi.</translation>
 <translation id="1731589410171062430">Toplam: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Sabitle</translation>
 <translation id="5298363578196989456">Paylaşılan bir modül olmadığından &quot;<ph name="IMPORT_NAME"/>&quot; uzantısı içe aktarılamıyor.</translation>
@@ -2618,7 +2610,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN"/> artık tam ekran görüntüleniyor ve fare imlecinizi devre dışı bırakmak istiyor.</translation>
 <translation id="1497522201463361063">&quot;<ph name="FILE_NAME"/>&quot; yeniden adlandırılamıyor. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Aşağıda bilgisayarınıza atanmış ve rastgele oluşturulmuş TPM şifresini görebilirsiniz:</translation>
-<translation id="5636000737234849121">Sanal klavye için hareketle yazmayı etkinleştirin.</translation>
 <translation id="5010043101506446253">Sertifika yetkilisi</translation>
 <translation id="5287425679749926365">Hesaplarınız</translation>
 <translation id="4249373718504745892">Bu sayfanın kamera ve mikrofonunuza erişimi engellenmiştir.</translation>
@@ -2706,7 +2697,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="8870318296973696995">Ana sayfa</translation>
 <translation id="6659594942844771486">Sekme</translation>
 <translation id="8283475148136688298">&quot;<ph name="DEVICE_NAME"/>&quot; cihazına bağlanırken kimlik doğrulaması kodu reddedildi.</translation>
-<translation id="3491170932824591984">Bu web sitesinin kimliği <ph name="ISSUER"/> tarafından doğrulandı, ancak herkese açık şekilde denetlenebilme kayıtları doğrulanamadı.</translation>
 <translation id="6575134580692778371">Yapılandırılmadı</translation>
 <translation id="4624768044135598934">Başarılı!</translation>
 <translation id="7518150891539970662">WebRTC günlükleri (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
@@ -2967,7 +2957,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="8800420788467349919">Ses Düzeyi: %<ph name="PRECENTAGE"/></translation>
 <translation id="1697068104427956555">Resimde kare şeklinde bir alan seçin.</translation>
 <translation id="29232676912973978">Bağlantıları yönet...</translation>
-<translation id="6225644908173488565">Sanal klavye için hareketle silmeyi etkinleştirin.</translation>
 <translation id="4090103403438682346">Doğrulanmış Erişimi Etkinleştir</translation>
 <translation id="570197343572598071">Görüntülenecek Etkinlikler</translation>
 <translation id="1628736721748648976">Kodlama</translation>
@@ -2981,7 +2970,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="8420728540268437431">Bu sayfa çevriliyor...</translation>
 <translation id="736515969993332243">Ağlar taranıyor.</translation>
 <translation id="7806513705704909664">Web formlarını tek bir tıklamayla doldurmak için Otomatik Doldur özelliğini etkinleştir.</translation>
-<translation id="6856069154773169210">Sanal klavye için hareketle seçmeyi etkinleştirin.</translation>
 <translation id="9063302675152872196">Bir TCP/IP sunucu soketi veya UDP soketi açan Chrome Uygulamaları için Chrome OS güvenlik duvarında deliklerin açılmasını etkinleştirin.</translation>
 <translation id="5430298929874300616">Yer işaretini kaldır</translation>
 <translation id="3150994199788134383">Bir uzantı proxy ayarlarınızın denetimini ele geçirdi. Bu, uzantının çevrimiçinde yaptıklarınızı değiştirebileceği, kesebileceği veya dinleyebileceği anlamına gelir. Bu değişikliğin neden gerçekleştiğinden emin değilseniz muhtemelen bu değişikliği yapmayı istememişsinizdir.</translation>
@@ -3094,7 +3082,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="1436784010935106834">Kaldırıldı</translation>
 <translation id="3730639321086573427">Yerel Hedefler</translation>
 <translation id="399856887277429830">Yazılım Kaldırma Aracını çalıştır</translation>
-<translation id="2734167549439405382">Bu web sitesinin kimliği <ph name="ISSUER"/> tarafından doğrulandı, ancak herkese açık şekilde denetlenebilirlik kayıtları yok.</translation>
 <translation id="7918257978052780342">Kaydol</translation>
 <translation id="2863937263901630331">NetLog üzerinden kullanılabilen ham veri. Daha fazla ayrıntı için yardıma bakın.</translation>
 <translation id="4195814663415092787">Kaldığım yerden devam et</translation>
@@ -3278,7 +3265,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="878431691778285679">Bu ada sahip bir kullanıcıyı zaten yönettiğiniz anlaşılıyor.<ph name="LINE_BREAK"/><ph name="BEGIN_LINK"/><ph name="PROFILE_NAME"/> adlı kullanıcıyı bu cihaza aktarmak<ph name="END_LINK"/> mı istediniz?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/>, mikrofonunuzu kullanmak istiyor.</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
-<translation id="5151511998946489774">Bu web sitesinin kimliği <ph name="ISSUER"/> tarafından doğrulandı ve herkese açık şekilde denetlenebilir.</translation>
 <translation id="7235421518178823985">Bu sunucu <ph name="DOMAIN"/> olduğunu kanıtlayamadı. Güvenlik sertifikası <ph name="DAYS"/> gün ileriden geliyor gibi görünüyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="1608626060424371292">Bu kullanıcıyı kaldır</translation>
 <translation id="2779552785085366231">Bu sayfa Uygulama Başlatıcı'ya eklenebilir</translation>
@@ -3499,7 +3485,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
     Cihazda yeterli alan yok.
     <ph name="LINE_BREAK2"/>
     Başlamak için birkaç fotoğraf seçmeyi deneyin.</translation>
-<translation id="3700834376805760154"><ph name="LOCALITY"/> bölgesindeki <ph name="ORGANIZATION"/> kuruluşunun kimliği <ph name="ISSUER"/> tarafından doğrulandı ve herkese açık şekilde denetlenebilir.</translation>
 <translation id="4416628180566102937">Kaydet ve yeniden başlat</translation>
 <translation id="4623537843784569564">Bu uzantı hatalı güncellenmiş olabilir. Yeniden yüklemeyi deneyin.</translation>
 <translation id="4342311272543222243">Hata! TPM hatası.</translation>
@@ -3979,7 +3964,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="7748144333872478614">TouchView'da pencere arka planlarını devre dışı bırak</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">NaCl hakkında</translation>
-<translation id="3084771660770137092">Ya Chrome'da bellek kalmadı ya da web sayfasına ait işlem başka bir nedenden dolayı sonlandırıldı. Devam etmek için yeniden yükleyin veya başka bir sayfaya gidin.</translation>
 <translation id="1114901192629963971">Şifreniz bu mevcut ağda doğrulanamıyor. Lütfen başka bir ağ seçin.</translation>
 <translation id="6430814529589430811">Base64 kodlu ASCII, tek sertifika</translation>
 <translation id="3305661444342691068">PDF'yi Önizlemede Aç</translation>
@@ -4800,7 +4784,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="4350711002179453268">Sunucu ile güvenli bağlantı kurulamıyor. Bu durum sunucuyla ilgili bir sorundan kaynaklanabilir veya sahip olmadığınız bir istemci kimlik doğrulaması sertifikası gerekiyor olabilir.</translation>
 <translation id="4731422630970790516">Raf öğesi 3</translation>
 <translation id="750509436279396091">İndirilenler klasörünü aç</translation>
-<translation id="4417463059397999181">Hiçbir değer belirtilmedi</translation>
 <translation id="4125496372515105318">En son dengeli JavaScript özelliklerini devre dışı bırakın</translation>
 <translation id="5963026469094486319">Tema al</translation>
 <translation id="7586312264284919041">Bu sayfayı çevirmek ister misiniz?</translation>
@@ -4837,7 +4820,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="6449285849137521213">&quot;<ph name="EXTENSION_NAME"/>&quot; uygulaması eklendi.</translation>
 <translation id="6516193643535292276">İnternet'e bağlanılamıyor</translation>
 <translation id="5125751979347152379">Geçersiz URL.</translation>
-<translation id="4467801982834340084"><ph name="LOCALITY"/> bölgesindeki <ph name="ORGANIZATION"/> kuruluşunun kimliği <ph name="ISSUER"/> tarafından doğrulandı ancak herkese açık şekilde denetlenebilirlik kayıtları yok.</translation>
 <translation id="752397454622786805">Kayıt iptal edildi</translation>
 <translation id="8206354486702514201">Bu seçenek, yöneticiniz tarafınızdan denetleniyor.</translation>
 <translation id="6040143037577758943">Kapat</translation>
@@ -5032,7 +5014,6 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="5158593464696388225">Resim kaydedilemedi.</translation>
 <translation id="3296763833017966289">Gürcüce</translation>
 <translation id="2242687258748107519">Dosya Bilgileri</translation>
-<translation id="1152775729948968688">Bununla birlikte, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın davranışını değiştirmek üzere kullanılabilir.</translation>
 <translation id="604124094241169006">Otomatik</translation>
 <translation id="862542460444371744">&amp;Uzantılar</translation>
 <translation id="2539110682392681234">Proxy, yöneticiniz tarafından zorunlu tutuluyor.</translation>
@@ -5382,7 +5363,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="340771324714262530">Yansıtmayı durdur</translation>
 <translation id="3303260552072730022">Bir uzantı tam ekranı etkinleştirdi.</translation>
 <translation id="3348459612390503954">Tebrikler</translation>
-<translation id="5845521171017703245">Kimlik: <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">Dönüşümü önceki girişe göre ayarla</translation>
 <translation id="8675377193764357545"><ph name="USER_EMAIL_ADDRESS"/> olarak senkronize edildi</translation>
 <translation id="7265986070661382626"><ph name="SITE"/> web sitesi <ph name="BEGIN_LINK"/>sertifika sabitleme yöntemini kullandığı<ph name="END_LINK"/> için web sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
@@ -5401,7 +5381,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="4047112090469382184">Güvenliği nasıl sağlanır?</translation>
 <translation id="5461512418490148136">Bizden ayrılmayın. Dosyalarınızı getiriyoruz.</translation>
 <translation id="4268574628540273656">URL:</translation>
-<translation id="2766585356456507052"><ph name="LOCALITY"/> bölgesindeki <ph name="ORGANIZATION"/> kuruluşunun kimliği <ph name="ISSUER"/> tarafından doğrulandı. Kuruluş herkese açık şekilde denetlenebilirlik kayıtları olduğunu iddia ediyor, ancak kayıtlar doğrulanamıyor.</translation>
 <translation id="6690455781383741953">Eklenti Güç Tasarrufu'nu etkinleştir</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME"/> uygulamasını başlat</translation>

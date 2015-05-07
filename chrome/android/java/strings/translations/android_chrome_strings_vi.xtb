@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Thiết lập Chrome</translation>
 <translation id="6448273550210938826">Đề xuất tìm kiếm và URL</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
-<translation id="8425213833346101688">Thay đổi</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="8607727265103077134">Từ Google Wallet</translation>
 <translation id="6292937202013477045">Những kẻ tấn công có thể tìm cách lấy cắp thông tin của bạn (ví dụ như ảnh, mật khẩu, tin nhắn và thẻ tín dụng) từ <ph name="DOMAIN_NAME"/>.</translation>
@@ -17,10 +16,12 @@
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
 <translation id="346339498574870680">Sao chép URL hình ảnh</translation>
 <translation id="5063480226653192405">Sử dụng</translation>
-<translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="4816465935029283692">Loại dữ liệu</translation>
+<translation id="5098185943924922330">Giúp chúng tôi ưu tiên các tính năng và cải tiến mà chúng tôi nên giải quyết bằng cách gửi cho Google thông tin về các tệp, ứng dụng và dịch vụ đang chạy bất cứ khi nào bạn gặp sự cố.
+
+        Số liệu thống kê sử dụng bao gồm thông tin như tùy chọn, lần nhấp nút và mức sử dụng bộ nhớ. Số liệu này không bao gồm URL trang web hoặc bất kỳ thông tin cá nhân nào. Báo cáo sự cố chứa thông tin hệ thống tại thời điểm xảy ra sự cố và có thể bao gồm URL của trang web hoặc thông tin cá nhân, tùy thuộc vào hiện tượng tại thời điểm xảy ra sự cố.</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
 <translation id="8237438615979997762">Dữ liệu đã lưu trên thiết bị này cũng như dữ liệu đã lưu trong tài khoản Google của bạn sẽ vẫn ở cả hai vị trí. Tuy nhiên, dữ liệu mới hoặc các thay đổi mà bạn thực hiện đối với dữ liệu sẽ không được đồng bộ hóa giữa hai vị trí.</translation>
 <translation id="6831043979455480757">Dịch</translation>
@@ -133,14 +134,11 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="9060538597317784206">Xem ứng dụng <ph name="APP_NAME"/> trên Cửa hàng Play. Xếp hạng: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Lưu</translation>
-<translation id="1151972924205500581">Mật khẩu bắt buộc</translation>
 <translation id="2870560284913253234">Trang web</translation>
-<translation id="3101226206443094477">Đăng nhập bằng Tài khoản Google của bạn:</translation>
 <translation id="2718352093833049315">Chỉ trên Wi-Fi</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="5487729733663684359">Bản cập nhật Chrome không còn được hỗ trợ cho phiên bản Android này.</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
-<translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="2414886740292270097">Tối</translation>
 <translation id="2487368562788861256">Dùng ít dữ liệu hơn bằng cách dùng Google để <ph name="BEGIN_LINK"/>tối ưu hóa các trang bạn truy cập<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
@@ -153,7 +151,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="138361230106469022">Xin chào <ph name="FULL_NAME"/>!</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
-<translation id="6317463785365643240">Không mã hóa</translation>
 <translation id="8627706565932943526">Lỗi đồng bộ hóa</translation>
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
@@ -254,7 +251,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="5324858694974489420">Cài đặt của phụ huynh</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Chặn tất cả trang web</translation>
 <translation id="8168435359814927499">Nội dung</translation>
 <translation id="5424715742813396254">Chỉnh sửa tên/mật khẩu hoặc ngoại lệ đã lưu</translation>
 <translation id="6978479750597523876">Đặt lại cài đặt dịch</translation>
@@ -266,7 +262,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="2526148617758225454">Trình tiết kiệm dữ liệu đang bật. Quản lý tiện ích này trong Cài đặt.</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="3102119246920354026">Bộ nhớ cache</translation>
-<translation id="651048280540227067">Loại bỏ trình đơn</translation>
 <translation id="748127970106343339">Xác nhận xóa thông tin đăng nhập thiết bị</translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="5899349522111170522">Tạo tệp mới</translation>
@@ -283,7 +278,6 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="7977858705483383621">Tìm kiếm an toàn</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="1056898198331236512">Cảnh báo</translation>
-<translation id="3338301885994755905">Chặn (được đề xuất)</translation>
 <translation id="6575643671698722332">Không đặt lại được. Hãy đảm bảo thiết bị ở chế độ trực tuyến và thử lại.</translation>
 <translation id="8987061207681586800">Tùy chỉnh riêng Chrome</translation>
 <translation id="654446541061731451">Chọn một tab để chiếu</translation>
@@ -342,13 +336,9 @@ Nhấn nút quay lại để thoát.</translation>
 <translation id="5138299137310274655">Trang này bằng <ph name="SOURCE_LANGUAGE"/>. Dịch sang <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Cho phép trang web lưu và đọc dữ liệu cookie (được đề xuất)</translation>
 <translation id="5512137114520586844">Tài khoản này do <ph name="PARENT_NAME"/> quản lý.</translation>
-<translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="1373696734384179344">Không đủ bộ nhớ để tải xuống nội dung được chọn.</translation>
 <translation id="969096075394517431">Thay đổi ngôn ngữ</translation>
 <translation id="5085880389019676122">Bộ nhớ USB không khả dụng</translation>
-<translation id="1614564776292091138">Khi nội dung được bảo vệ ở trạng thái BẬT, trang web có thể xác thực thiết bị của bạn để đảm bảo thiết bị được phép phát video cao cấp, được bảo vệ.
-
-Nếu ở trạng thái TẮT, bạn không thể phát video cao cấp trên thiết bị này.</translation>
 <translation id="8928220460877261598">Bạn hiện đã đăng nhập vào Chrome.</translation>
 <translation id="7811044698839470685">Chỉ những người có cụm mật khẩu mới có thể đọc dữ liệu được mã hóa của bạn. Cụm mật khẩu này không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu, bạn cần đặt lại đồng bộ hóa.</translation>
 <translation id="8547287415299944404">Không thể xóa lịch sử duyệt web bằng tài khoản cho trẻ em</translation>
@@ -397,7 +387,6 @@ Nếu ở trạng thái TẮT, bạn không thể phát video cao cấp trên th
 <translation id="6965382102122355670">OK</translation>
 <translation id="4440256989292146959">Duyệt nhiều hơn với ít chi phí hơn</translation>
 <translation id="4023950129927433024">Nếu bạn đã quên cụm mật khẩu của mình, hãy dừng lại và đặt lại Đồng bộ hóa qua <ph name="BEGIN_LINK"/>Trang tổng quan của Google<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">Truy cập micrô và máy ảnh của bạn</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>

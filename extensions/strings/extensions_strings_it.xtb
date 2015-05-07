@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="149347756975725155">Impossibile caricare l'icona estensione &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Questa estensione non è riuscita a modificare l'intestazione della richiesta &quot;<ph name="HEADER_NAME"/>&quot; di una richiesta di rete perché la modifica era in conflitto con un'altra estensione (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Prodotto <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Seleziona dispositivi USB</translation>
 <translation id="6731255991101203740">Impossibile creare la directory per la decompressione: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Impossibile caricare la pagina di informazioni &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">L'applicazione &quot;<ph name="APP_NAME"/>&quot; richiede accesso a uno o più dispositivi.</translation>
 <translation id="6698810901424468597">Leggere e modificare i tuoi dati su <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Impossibile decodificare l'immagine: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="5544884907028850012">Fornitore <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Accesso al traffico di rete</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="5972529113578162692">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME"/> sia installata. Non è possibile disinstallarla.</translation>

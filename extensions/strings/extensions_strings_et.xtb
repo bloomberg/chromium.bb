@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Laienduse lahtipakkija</translation>
 <translation id="149347756975725155">Laienduse ikooni <ph name="ICON"/> ei õnnestunud laadida.</translation>
 <translation id="8825366169884721447">Laiendusel ei õnnestunud muuta võrgutaotluse päist „<ph name="HEADER_NAME"/>”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Toode <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB-seadmete valimine</translation>
 <translation id="6731255991101203740">Lahtipakkimiseks ei saanud kataloogi luua: „<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">Teabelehte „<ph name="ABOUT_PAGE"/>” ei õnnestunud laadida.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Rakendus „<ph name="APP_NAME"/>” taotleb juurdepääsu ühele või mitmele teie seadmele.</translation>
 <translation id="6698810901424468597">Andmete lugemine ja muutmine veebisaidil <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Ei saanud pilti dekodeerida: „<ph name="IMAGE_NAME"/>”</translation>
-<translation id="5544884907028850012">Teenusepakkuja <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Juurdepääs võrguliiklusele</translation>
 <translation id="1256619696651732561">Laienduse manifesti parser</translation>
 <translation id="5972529113578162692">Selle seadme administraator nõuab laienduse <ph name="EXTENSION_NAME"/> installimist. Seda ei saa desinstallida.</translation>

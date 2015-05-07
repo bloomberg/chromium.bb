@@ -62,7 +62,6 @@
 <translation id="3068515742935458733">将崩溃报告和<ph name="UMA_LINK"/>发送给Google，帮助我们完善Chromium。</translation>
 <translation id="734373864078049451">您的上网记录、书签和其他Chromium内容都保存在此处。</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
-<translation id="3065280201209294872">该网站使用的安全设置已过期，这可能会导致日后的 Chromium 版本无法安全访问该网站。</translation>
 <translation id="8551886023433311834">即将更新到最新版本！请重新启动您的设备，以完成更新。</translation>
 <translation id="8353224596138547809">您希望 Chromium 保存您在此网站上使用的密码吗？</translation>
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>

@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Палета статуса</translation>
 <translation id="2248649616066688669">Можете да наставите да користите Chromebook док је повезан са спољним екраном чак и ако је поклопац затворен.</translation>
 <translation id="2946640296642327832">Омогући Bluetooth</translation>
+<translation id="5537725057119320332">Пребацуј</translation>
 <translation id="6459472438155181876">Проширивање екрана у <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Мобилни уређај</translation>
 <translation id="6596816719288285829">IP адреса</translation>
@@ -166,7 +167,6 @@
 <translation id="112308213915226829">Аутоматски сакриј полицу</translation>
 <translation id="7573962313813535744">Режим са базном станицом</translation>
 <translation id="2792498699870441125">Alt + тастер за претрагу</translation>
-<translation id="8660803626959853127">Синхронизовање <ph name="COUNT"/> датотеке(а)</translation>
 <translation id="5958529069007801266">Корисник под надзором</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK је искључен</translation>
@@ -186,6 +186,7 @@
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Камера и микрофон се користе.</translation>
+<translation id="6550675742724504774">Опције</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE"/>“ (потребно је поновно покретање)</translation>
 <translation id="8103386449138765447">SMS поруке: <ph name="MESSAGE_COUNT"/></translation>

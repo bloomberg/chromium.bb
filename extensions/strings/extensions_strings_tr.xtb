@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Uzantı Açıcı</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' uzantı simgesi yüklenemedi.</translation>
 <translation id="8825366169884721447">Bu uzantı bir ağ isteğinin &quot;<ph name="HEADER_NAME"/>&quot; adlı istek başlığını değiştiremedi, çünkü söz konusu değişiklik başka bir uzantı (<ph name="EXTENSION_NAME"/>) ile çakışıyordu.</translation>
-<translation id="7495493006406536234">Ürün <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB cihazları seçin</translation>
 <translation id="6731255991101203740">Açma dizini oluşturulamadı: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Hakkında sayfası (&quot;<ph name="ABOUT_PAGE"/>&quot;) yüklenemedi.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; uygulaması, cihazlarınızın birine veya birkaçına erişim izni istiyor.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> ve <ph name="WEBSITE_2"/> web sitelerinde verilerinizi okuma ve değiştirme</translation>
 <translation id="2159915644201199628">Resmin kodu çözülemedi: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">Satıcı <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Ağ trafiğinize erişme</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="5972529113578162692">Bu makinenin yöneticisi <ph name="EXTENSION_NAME"/> adlı uzantının yüklenmesini şart koşuyor. Uzantı kaldırılamaz.</translation>

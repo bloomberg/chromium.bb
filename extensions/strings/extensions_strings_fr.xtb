@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Décompression d'extensions</translation>
 <translation id="149347756975725155">Impossible de charger l'icône de l'extension &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Le titre de demande d'une requête réseau (&quot;<ph name="HEADER_NAME"/>&quot;) n'a pas pu être modifié à partir de cette extension, car la modification demandée était en conflit avec une autre extension (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produit <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Sélectionner des appareils USB</translation>
 <translation id="6731255991101203740">Impossible de créer le répertoire de décompression : &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Impossible de charger la page &quot;À propos&quot; <ph name="ABOUT_PAGE"/>.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">L'application &quot;<ph name="APP_NAME"/>&quot; demande l'accès à un ou plusieurs de vos appareils.</translation>
 <translation id="6698810901424468597">Accéder aux données des sites <ph name="WEBSITE_1"/> et <ph name="WEBSITE_2"/>, et les modifier</translation>
 <translation id="2159915644201199628">Impossible de décoder l'image : &quot;<ph name="IMAGE_NAME"/>&quot;.</translation>
-<translation id="5544884907028850012">Fournisseur <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Accéder au trafic de votre réseau</translation>
 <translation id="1256619696651732561">Analyse des fichiers manifestes des extensions</translation>
 <translation id="5972529113578162692">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME"/> soit installée. Cette extension ne pourra pas être désinstallée.</translation>

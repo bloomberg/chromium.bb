@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Plėtinių išskleidimo priemonė</translation>
 <translation id="149347756975725155">Nepavyko įkelti „<ph name="ICON"/>“ plėtinio piktogramos.</translation>
 <translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME"/>“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME"/>“).</translation>
-<translation id="7495493006406536234"><ph name="PRODUCT_ID"/> produktas</translation>
 <translation id="4776856853352853275">Pasirinkite USB įrenginius</translation>
 <translation id="6731255991101203740">Nepavyko sukurti išarchyvavimo katalogo: „<ph name="DIRECTORY_PATH"/>“</translation>
 <translation id="4233778200880751280">Nepavyko įkelti informacijos puslapio „<ph name="ABOUT_PAGE"/>“.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Programa „<ph name="APP_NAME"/>“ prašo leidimo pasiekti vieną ar daugiau iš jūsų įrenginių.</translation>
 <translation id="6698810901424468597">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nepavyko iššifruoti vaizdo: „<ph name="IMAGE_NAME"/>“</translation>
-<translation id="5544884907028850012"><ph name="VENDOR_ID"/> pardavėjas</translation>
 <translation id="2048182445208425546">Pasiekti tinklo srautą</translation>
 <translation id="1256619696651732561">Plėtinio aprašo analizavimo įrankis</translation>
 <translation id="5972529113578162692">Šio įrenginio administratorius reikalauja, kad „<ph name="EXTENSION_NAME"/>“ plėtinys būtų įdiegtas. Jo negalima pašalinti.</translation>

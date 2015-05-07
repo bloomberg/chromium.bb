@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">‏راه‌اندازی Chrome</translation>
 <translation id="6448273550210938826">پیشنهادات جستجو و نشانی اینترنتی</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
-<translation id="8425213833346101688">تغییر</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="8607727265103077134">‏از Google Wallet</translation>
 <translation id="6292937202013477045">ممکن است حمله‌کننده‌ها در تلاش باشند اطلاعات شما (مثلاً گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) را از <ph name="DOMAIN_NAME"/> سرقت کنند.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">موتور جستجو</translation>
 <translation id="346339498574870680">کپی کردن نشانی اینترنتی تصویر</translation>
 <translation id="5063480226653192405">کاربر </translation>
-<translation id="6657585470893396449">گذرواژه</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE"/> برای این تصویر</translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
 <translation id="4816465935029283692">انواع داده</translation>
@@ -131,14 +129,11 @@
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="9060538597317784206">‏مشاهده برنامه <ph name="APP_NAME"/> در فروشگاه Play.  رتبه‌بندی: <ph name="APP_RATING"/></translation>
 <translation id="5317780077021120954">ذخیره</translation>
-<translation id="1151972924205500581">گذرواژه ضروری است</translation>
 <translation id="2870560284913253234">سایت</translation>
-<translation id="3101226206443094477">‏با حساب Google وارد سیستم شوید:</translation>
 <translation id="2718352093833049315">‏فقط در Wi-Fi</translation>
 <translation id="7029809446516969842">رمزهای ورود</translation>
 <translation id="5487729733663684359">‏به‌روزرسانی‌های Chrome دیگر در این نسخه Android پشتیبانی نمی‌شود.</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
-<translation id="1201402288615127009">بعدی</translation>
 <translation id="2414886740292270097">تاریک</translation>
 <translation id="2487368562788861256">‏با استفاده از Google برای <ph name="BEGIN_LINK"/>بهینه‌سازی صفحاتی که بازدید می‌کنید<ph name="END_LINK"/>، هزینه مصرف داده‌ را کاهش دهید.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -151,7 +146,6 @@
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="138361230106469022">سلام، <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
-<translation id="6317463785365643240">رمزگذاری نشود</translation>
 <translation id="8627706565932943526">خطای همگام‌سازی</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="9219103736887031265">تصاویر</translation>
@@ -252,7 +246,6 @@
 <translation id="5324858694974489420">تنظیمات والدین</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
-<translation id="4065916988127915326">مسدود کردن همه سایت‌ها</translation>
 <translation id="8168435359814927499">محتوا</translation>
 <translation id="5424715742813396254">ویرایش نام/گذرواژه ذخیره شده یا مورد استثنا</translation>
 <translation id="6978479750597523876">بازنشانی تنظیمات ترجمه</translation>
@@ -264,7 +257,6 @@
 <translation id="2526148617758225454">«صرفه‌جویی در مصرف داده» روشن است. آن را در تنظیمات مدیریت کنید.</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="3102119246920354026">حافظه پنهان</translation>
-<translation id="651048280540227067">نادیده گرفتن منو</translation>
 <translation id="748127970106343339">تأیید حذف اعتبارنامه دستگاه</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
 <translation id="5899349522111170522">ایجاد فایل جدید</translation>
@@ -281,7 +273,6 @@
 <translation id="7977858705483383621">جستجوی ایمن</translation>
 <translation id="8909135823018751308">اشتراک‌گذاری‌...</translation>
 <translation id="1056898198331236512">اخطار</translation>
-<translation id="3338301885994755905">مسدود کردن (توصیه می‌شود)</translation>
 <translation id="6575643671698722332">بازنشانی انجام نشد. مطمئن شوید دستگاهتان آنلاین است و دوباره امتحان کنید.</translation>
 <translation id="8987061207681586800">‏Chrome را برای خود اختصاصی کنید</translation>
 <translation id="654446541061731451">برگه‌ای برای انتقال با پرتو انتخاب کنید</translation>
@@ -340,13 +331,9 @@
 <translation id="5138299137310274655">این صفحه به زبان <ph name="SOURCE_LANGUAGE"/> است. به <ph name="TARGET_LANGUAGE"/> ترجمه شود؟</translation>
 <translation id="2913331724188855103">سایت‌ها مجاز به ذخیره و خواندن داده‌های کوکی باشند (توصیه می‌شود)</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME"/> این حساب را مدیریت می‌کند.</translation>
-<translation id="7649070708921625228">راهنما</translation>
 <translation id="1373696734384179344">حافظه برای دانلود محتوای انتخابی کافی نیست.</translation>
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
 <translation id="5085880389019676122">‏حافظهٔ USB در دسترس نیست</translation>
-<translation id="1614564776292091138">وقتی محتوای محافظت شده روشن است، وب‌سایت‌ها می‌توانند دستگاهتان را احراز هویت کنند تا مطمئن شوند پخش ویدیوهای محافظت شده غیر رایگان در آن مجاز است.
-
-اگر این مورد خاموش باشد، شاید نتوانید ویدیوهای غیر رایگان را در این دستگاه پخش کنید.</translation>
 <translation id="8928220460877261598">‏اکنون وارد سیستم Chrome شدید.</translation>
 <translation id="7811044698839470685">‏فقط با عبارت عبور شما می‌توان داده‌های رمزگذاری‌شده شما را خواند. این عبارت عبور توسط Google دریافت یا ذخیره نمی‌شود. اگر عبارت عبورتان را فراموش کنید، باید همگام‌سازی را بازنشانی کنید.</translation>
 <translation id="8547287415299944404">با حساب کودکان نمی‌توان سابقه مرور را پاک کرد</translation>
@@ -395,7 +382,6 @@
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="4440256989292146959">مرور بیشتر با مصرف داده کمتر</translation>
 <translation id="4023950129927433024">‏اگر عبارت عبورتان را فراموش کرده‌اید، همگام‌سازی را در <ph name="BEGIN_LINK"/>داشبورد Google<ph name="END_LINK"/> متوقف کرده و بازنشانی کنید.</translation>
-<translation id="6375900123462779979">دسترسی به دوربین و میکروفن</translation>
 <translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>
 <translation id="1178581264944972037">توقف موقت</translation>
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>

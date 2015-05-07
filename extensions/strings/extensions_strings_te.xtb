@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">ఎక్స్‌టెన్షన్ అన్‌ప్యాకర్</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' పొడిగింపు చిహ్నాన్ని లోడ్ చేయలేకపోయింది.</translation>
 <translation id="8825366169884721447">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క &quot;<ph name="HEADER_NAME"/>&quot; అభ్యర్థన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
-<translation id="7495493006406536234">ఉత్పత్తి <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB పరికరాలను ఎంచుకోండి</translation>
 <translation id="6731255991101203740">దీనిలో అన్‌జిప్ చేయడానికి  డైరెక్టరీ సృష్టించబడదు: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' పరిచయ పేజీని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ ఒకటి లేదా అంతకంటే ఎక్కువ పరికరాలకు ప్రాప్యతను అభ్యర్థిస్తోంది.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> మరియు <ph name="WEBSITE_2"/>లో ఉన్న మీ డేటాను చదవడం మరియు మార్చడం</translation>
 <translation id="2159915644201199628">ఈ చిత్రం డీకోడ్ చేయబడదు: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">విక్రేత <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">మీ నెట్‌వర్క్ ట్రాఫిక్‌ను ప్రాప్యత చేయండి</translation>
 <translation id="1256619696651732561">ఎక్స్‌టెన్షన్ మానిఫెస్ట్ పార్సర్</translation>
 <translation id="5972529113578162692"><ph name="EXTENSION_NAME"/>ని ఇన్‌స్టాల్ చేయడం ఈ మెషీన్ నిర్వాహకుడికి అవసరం. ఇది అన్ఇన్‌స్టాల్ చేయబడదు.</translation>

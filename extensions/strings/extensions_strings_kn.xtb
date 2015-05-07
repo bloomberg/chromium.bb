@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">ವಿಸ್ತರಣೆ ಅನ್‌ಪ್ಯಾಕರ್‌‌</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' ಎಕ್ಸ್‌ಟೆನ್ಷನ್ ಐಕಾನ್  ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="8825366169884721447">ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME"/>) ಯೊಂದಿಗೆ ಮಾರ್ಪಡಿಸುವಿಕೆಯು ಸಂಘರ್ಷಗೊಂಡಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯ  ವಿನಂತಿಯ ಶಿರೋನಾಮೆ &quot;<ph name="HEADER_NAME"/>&quot; ಯನ್ನು ಮಾರ್ಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
-<translation id="7495493006406536234">ಉತ್ಪನ್ನ <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6731255991101203740">ಅನ್ ಜಿಪ್ ಮಾಡುವುದಕ್ಕಾಗಿ ಡೈರೆಕ್ಟರಿ ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' ಪುಟದ ಕುರಿತು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; ಅಪ್ಲಿಕೇಶನ್ ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ ಒಂದು ಅಥವಾ ಹೆಚ್ಚಿನ ಸಾಧನಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> ಮತ್ತು <ph name="WEBSITE_2"/> ನಲ್ಲಿ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="2159915644201199628">ಚಿತ್ರವನ್ನು ಡಿಕೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">ಮಾರಾಟಗಾರರು <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">ನಿಮ್ಮ ನೆಟ್‌ವರ್ಕ್ ಟ್ರ್ಯಾಫಿಕ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1256619696651732561">ವಿಸ್ತರಣೆ ಮ್ಯಾನಿಫೆಸ್ಟ್ ವಿಶ್ಲೇಷಕ</translation>
 <translation id="5972529113578162692">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME"/> ಸ್ಥಾಪಿಸಲು ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ಅಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>

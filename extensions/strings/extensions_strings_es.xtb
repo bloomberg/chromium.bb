@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Descompresor de extensiones</translation>
 <translation id="149347756975725155">No se ha podido cargar el icono de la extensión &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Esta extensión no ha podido modificar el encabezado de solicitud &quot;<ph name="HEADER_NAME"/>&quot; de una solicitud de red porque la modificación ha entrado en conflicto con otra extensión (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Producto <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Seleccionar dispositivos USB</translation>
 <translation id="6731255991101203740">No se ha podido crear un directorio para descomprimir <ph name="DIRECTORY_PATH"/>.</translation>
 <translation id="4233778200880751280">No se ha podido cargar la página de información (<ph name="ABOUT_PAGE"/>).</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">La aplicación <ph name="APP_NAME"/> está solicitando acceso a uno o a varios de tus dispositivos.</translation>
 <translation id="6698810901424468597">Leer y modificar tus datos en <ph name="WEBSITE_1"/> y <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">No se ha podido decodificar la imagen <ph name="IMAGE_NAME"/>.</translation>
-<translation id="5544884907028850012">Proveedor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Acceder a tu tráfico de red</translation>
 <translation id="1256619696651732561">Analizador de archivos de manifiesto de extensiones</translation>
 <translation id="5972529113578162692"><ph name="EXTENSION_NAME"/> no se puede desinstalar porque el administrador de este ordenador requiere que esté instalado.</translation>

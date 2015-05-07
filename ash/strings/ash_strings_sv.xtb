@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Statusfält</translation>
 <translation id="2248649616066688669">Du kan fortsätta att använda Chromebook medan den är ansluten till en extern skärm, t.o.m. när locket är stängt.</translation>
 <translation id="2946640296642327832">Aktivera Bluetooth</translation>
+<translation id="5537725057119320332">Casta</translation>
 <translation id="6459472438155181876">Utökar skärmen till <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adress</translation>
@@ -166,7 +167,6 @@
 <translation id="112308213915226829">Dölj hyllan automatiskt</translation>
 <translation id="7573962313813535744">Dockat läge</translation>
 <translation id="2792498699870441125">Alt + Sök</translation>
-<translation id="8660803626959853127">Synkroniserar <ph name="COUNT"/> filer</translation>
 <translation id="5958529069007801266">Övervakad användare</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK är av</translation>
@@ -185,6 +185,7 @@
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Kameran och mikrofonen används.</translation>
+<translation id="6550675742724504774">Alternativ</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Byt tillbaka till &quot;<ph name="FROM_LOCALE"/>&quot; (kräver omstart)</translation>
 <translation id="8103386449138765447">SMS-meddelanden: <ph name="MESSAGE_COUNT"/></translation>

@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">ถาดสถานะ</translation>
 <translation id="2248649616066688669">คุณสามารถใช้ Chromebook ต่อไปในขณะที่เชื่อมต่อกับจอแสดงผลภายนอก แม้ฝาจะปิดอยู่ก็ตาม</translation>
 <translation id="2946640296642327832">เปิดใช้งานบลูทูธ</translation>
+<translation id="5537725057119320332">ส่ง</translation>
 <translation id="6459472438155181876">ขยายหน้าจอไปยัง <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
 <translation id="6596816719288285829">ที่อยู่ IP</translation>
@@ -166,7 +167,6 @@
 <translation id="112308213915226829">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
 <translation id="7573962313813535744">โหมดเชื่อมต่อแท่นชาร์จ</translation>
 <translation id="2792498699870441125">Alt+ค้นหา</translation>
-<translation id="8660803626959853127">กำลังซิงค์ <ph name="COUNT"/> ไฟล์</translation>
 <translation id="5958529069007801266">ผู้ใช้ภายใต้การดูแล</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>
@@ -186,6 +186,7 @@
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">ใช้กล้องถ่ายรูปและไมโครโฟนอยู่</translation>
+<translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น &quot;<ph name="FROM_LOCALE"/>&quot; (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="8103386449138765447">ข้อความ SMS: <ph name="MESSAGE_COUNT"/></translation>

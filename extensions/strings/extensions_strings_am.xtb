@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">ቅጥያ ማራገፊያ</translation>
 <translation id="149347756975725155">የቅጥያ አዶ «<ph name="ICON"/>»ን መጫን አልተቻለም።</translation>
 <translation id="8825366169884721447">ይህ ቅጥያ የጥያቄው ርዕስ «<ph name="HEADER_NAME"/>»ን መቀየር አልተሳካለትም ምክንያቱም ለውጡ ከሌላ ቅጥያ (<ph name="EXTENSION_NAME"/>) ጋር ስለተጋጨ።</translation>
-<translation id="7495493006406536234">ምርት <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">የዩኤስቢ መሣሪያዎችን ይምረጡ</translation>
 <translation id="6731255991101203740">ይሄ የሚበተንበት አቃፊ መፍጠር አልተቻለም፦ «<ph name="DIRECTORY_PATH"/>»</translation>
 <translation id="4233778200880751280">የስለ ገጹ «<ph name="ABOUT_PAGE"/>» መጫን አልተቻለም።</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">መተግበሪያ «<ph name="APP_NAME"/>» የአንድ ወይም ተጨማሪ መሣሪያዎችዎ መዳረሻ እየጠየቁ ነው።</translation>
 <translation id="6698810901424468597">ውሂብዎን በ<ph name="WEBSITE_1"/> እና <ph name="WEBSITE_2"/> ላይ ያነብባል እና ይቀይራል</translation>
 <translation id="2159915644201199628">የዚህ ምስል ስውሩን መግለጥ አልተቻለም፦ «<ph name="IMAGE_NAME"/>»</translation>
-<translation id="5544884907028850012">የተፈቀደለት ሻጭ <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">የእርስዎን የአውታረ መረብ ትራፊክ ይድረስበት</translation>
 <translation id="1256619696651732561">ቅጥያ ገልጦ ማሳያ ተንታኝ</translation>
 <translation id="5972529113578162692">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME"/> እንዲጫን ይፈልጋል። ከተጫነ በኋላ ሊራገፍ አይችልም።</translation>

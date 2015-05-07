@@ -78,7 +78,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3068515742935458733">Hjälp oss att göra Chromium bättre genom att skicka felrapporter och <ph name="UMA_LINK"/> till Google</translation>
 <translation id="734373864078049451">Här finns webben, bokmärken och allt annat du använder Chromium till.</translation>
 <translation id="3197823471738295152">Enheten är uppdaterad.</translation>
-<translation id="3065280201209294872">På den här webbplatsen används föråldrade säkerhetsinställningar som kan förhindra att framtida versioner av Chromium öppnar den säkert.</translation>
 <translation id="8551886023433311834">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
 <translation id="8353224596138547809">Vill du att Chromium sparar lösenordet för den här webbplatsen?</translation>
 <translation id="8738058698779197622">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig endast är giltiga under vissa tidsperioder. Chromium kan inte verifiera certifikaten eftersom klockan på enheten inte stämmer.</translation>

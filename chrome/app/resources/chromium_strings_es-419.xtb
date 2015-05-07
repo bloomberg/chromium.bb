@@ -76,7 +76,6 @@
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK"/> para ayudar a mejorar Chromium.</translation>
 <translation id="734373864078049451">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chromium.</translation>
 <translation id="3197823471738295152">El dispositivo está actualizado.</translation>
-<translation id="3065280201209294872">La configuración de seguridad que utiliza el sitio está desactualizada, por lo que es posible que las versiones futuras de Chromium no puedan acceder a él de forma segura.</translation>
 <translation id="8551886023433311834">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="8353224596138547809">¿Quieres que Chromium guarde tu contraseña para este sitio?</translation>
 <translation id="8738058698779197622">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Chromium no puede verificar estos certificados.</translation>
@@ -197,7 +196,7 @@
 <translation id="130631256467250065">Los cambios se aplicarán la próxima vez que reinicies el dispositivo.</translation>
 <translation id="3244477511402911926">Centro de notificaciones de Chromium</translation>
 <translation id="9197815481970649201">Accediste a Chromium</translation>
-<translation id="7162152143154757523">Google Chrome puede proporcionar una corrección ortográfica más inteligente al enviar lo que escribes en el navegador a los servidores de Google. Esto te permite usar la misma tecnología de corrección ortográfica que usa la búsqueda de Google.</translation>
+<translation id="7162152143154757523">Chromium puede proporcionar una corrección ortográfica más inteligente al enviar lo que escribes en el navegador a los servidores de Google. Esto te permite usar la misma tecnología de corrección ortográfica que usa la Búsqueda de Google.</translation>
 <translation id="1929939181775079593">Chromium no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="1414495520565016063">Accediste a Chromium.</translation>
 <translation id="2158734852934720349">Licencias de código abierto del Sistema operativo Chromium</translation>

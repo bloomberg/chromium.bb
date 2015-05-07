@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">設定 Chrome</translation>
 <translation id="6448273550210938826">搜尋與網址建議</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
-<translation id="8425213833346101688">變更</translation>
 <translation id="4996978546172906250">分享方式：</translation>
 <translation id="8607727265103077134">來自 Google 電子錢包</translation>
 <translation id="6292937202013477045">攻擊者可能會嘗試從 <ph name="DOMAIN_NAME"/> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">搜尋引擎</translation>
 <translation id="346339498574870680">複製圖片網址</translation>
 <translation id="5063480226653192405">用量</translation>
-<translation id="6657585470893396449">密碼</translation>
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE"/> 搜尋這張圖片</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="4816465935029283692">資料類型</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="9060538597317784206">前往 Play 商店查看「<ph name="APP_NAME"/>」應用程式。評分：<ph name="APP_RATING"/>。</translation>
 <translation id="5317780077021120954">儲存</translation>
-<translation id="1151972924205500581">請輸入密碼</translation>
 <translation id="2870560284913253234">網站</translation>
-<translation id="3101226206443094477">使用您的 Google 帳戶登入：</translation>
 <translation id="2718352093833049315">僅限連上 Wi-Fi 網路時</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="5487729733663684359">這個 Android 版本已停止支援 Chrome 更新。</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
-<translation id="1201402288615127009">下一步</translation>
 <translation id="2414886740292270097">深色</translation>
 <translation id="2487368562788861256">使用 Google 的<ph name="BEGIN_LINK"/>最佳化網頁處理技術<ph name="END_LINK"/>減少網頁瀏覽的數據用量。</translation>
 <translation id="5911030830365207728">Google 翻譯</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">更新</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME"/>，您好：</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
-<translation id="6317463785365643240">不加密</translation>
 <translation id="8627706565932943526">同步處理發生錯誤</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="9219103736887031265">圖片</translation>
@@ -254,7 +248,6 @@
 <translation id="5324858694974489420">家長設定</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">封鎖所有網站</translation>
 <translation id="8168435359814927499">內容</translation>
 <translation id="5424715742813396254">編輯已儲存的名稱/密碼或例外</translation>
 <translation id="6978479750597523876">重設翻譯設定</translation>
@@ -266,7 +259,6 @@
 <translation id="2526148617758225454">Data Saver 已開啟，您可以在 [設定] 中管理這項擴充功能。</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="3102119246920354026">快取</translation>
-<translation id="651048280540227067">關閉選單</translation>
 <translation id="748127970106343339">確認刪除裝置憑證</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="5899349522111170522">建立新檔案</translation>
@@ -283,7 +275,6 @@
 <translation id="7977858705483383621">安全搜尋</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="1056898198331236512">警告</translation>
-<translation id="3338301885994755905">封鎖 (建議)</translation>
 <translation id="6575643671698722332">重設失敗。請確認裝置已連上網路，然後再試一次。</translation>
 <translation id="8987061207681586800">自訂您專屬的 Chrome</translation>
 <translation id="654446541061731451">選取要傳輸的分頁</translation>
@@ -342,13 +333,9 @@
 <translation id="5138299137310274655">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME"/> 管理。</translation>
-<translation id="7649070708921625228">說明</translation>
 <translation id="1373696734384179344">記憶體不足，無法下載您選取的這項內容。</translation>
 <translation id="969096075394517431">變更語言</translation>
 <translation id="5085880389019676122">無法使用 USB 儲存裝置</translation>
-<translation id="1614564776292091138">如果受保護內容為「開啟」狀態，提供內容的網站將可驗證您的裝置，藉此確認裝置有權播放受保護的付費影片。
-
-如果是「關閉」狀態，您將無法在這個裝置上播放付費影片。</translation>
 <translation id="8928220460877261598">您現在已登入 Chrome。</translation>
 <translation id="7811044698839470685">只有知道您通關密語的使用者，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果您忘記自己的通關密語，則必須重設同步功能。</translation>
 <translation id="8547287415299944404">無法清除兒童專用帳戶的瀏覽紀錄</translation>
@@ -397,7 +384,6 @@
 <translation id="6965382102122355670">確定</translation>
 <translation id="4440256989292146959">在節省數據用量的情況下瀏覽更多網頁</translation>
 <translation id="4023950129927433024">如果您忘記通關密語，請透過 <ph name="BEGIN_LINK"/>Google 資訊主頁<ph name="END_LINK"/>停止並重設同步功能。</translation>
-<translation id="6375900123462779979">存取您的麥克風和攝影機</translation>
 <translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="5127805178023152808">同步功能已停用</translation>

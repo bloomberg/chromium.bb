@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">拡張機能の解凍機能</translation>
 <translation id="149347756975725155">拡張機能アイコン「<ph name="ICON"/>」を読み込むことができませんでした。</translation>
 <translation id="8825366169884721447">ネットワーク リクエストのリクエスト ヘッダー「<ph name="HEADER_NAME"/>」への変更内容が別の拡張機能（<ph name="EXTENSION_NAME"/>）と競合したため、この拡張機能はヘッダーを変更できませんでした。</translation>
-<translation id="7495493006406536234">商品 <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB デバイスの選択</translation>
 <translation id="6731255991101203740">解凍用のディレクトリを作成できませんでした: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">情報ページ「<ph name="ABOUT_PAGE"/>」を読み込めませんでした。</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">アプリケーション「<ph name="APP_NAME"/>」がデバイスへのアクセスをリクエストしています。</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/> 上にある自分のデータの読み取りと変更</translation>
 <translation id="2159915644201199628">画像をデコードできませんでした: <ph name="IMAGE_NAME"/></translation>
-<translation id="5544884907028850012">ベンダー <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">ユーザーのネットワーク トラフィックへのアクセス</translation>
 <translation id="1256619696651732561">拡張機能マニフェストのパーサー</translation>
 <translation id="5972529113578162692">このパソコンの管理者により、<ph name="EXTENSION_NAME"/> をインストールすることが要件として指定されています。この拡張機能はアンインストールできません。</translation>

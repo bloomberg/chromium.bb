@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Chrome einrichten</translation>
 <translation id="6448273550210938826">Such- und URL-Vorschläge</translation>
 <translation id="7998918019931843664">Geschlossenen Tab wieder öffnen</translation>
-<translation id="8425213833346101688">Ändern</translation>
 <translation id="4996978546172906250">Teilen über</translation>
 <translation id="8607727265103077134">Aus Google Wallet</translation>
 <translation id="6292937202013477045">Unbefugte Dritte könnten versuchen, Ihre Informationen von <ph name="DOMAIN_NAME"/> zu stehlen, etwa Fotos, Passwörter, Nachrichten oder Kreditkartendaten.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">Suchmaschine</translation>
 <translation id="346339498574870680">Bild-URL kopieren</translation>
 <translation id="5063480226653192405">Verwendung</translation>
-<translation id="6657585470893396449">Passwort</translation>
 <translation id="5578795271662203820">In <ph name="SEARCH_ENGINE"/> nach dem Bild suchen</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="4816465935029283692">Datentypen</translation>
@@ -133,14 +131,11 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="9060538597317784206">App <ph name="APP_NAME"/> im Play Store anzeigen. Bewertung: <ph name="APP_RATING"/></translation>
 <translation id="5317780077021120954">Speichern</translation>
-<translation id="1151972924205500581">Passwort erforderlich</translation>
 <translation id="2870560284913253234">Website</translation>
-<translation id="3101226206443094477">Melden Sie sich mit Ihrem Google-Konto an:</translation>
 <translation id="2718352093833049315">Nur bei WLAN</translation>
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="5487729733663684359">Chrome-Updates werden für diese Version von Android nicht mehr unterstützt.</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
-<translation id="1201402288615127009">Weiter</translation>
 <translation id="2414886740292270097">Dunkel</translation>
 <translation id="2487368562788861256">Mit Google <ph name="BEGIN_LINK"/>besuchte Seiten optimieren<ph name="END_LINK"/> und so den Datenverbrauch verringern</translation>
 <translation id="5911030830365207728">Google Übersetzer</translation>
@@ -153,7 +148,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="138361230106469022">Hallo <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">In Chrome kopiert</translation>
-<translation id="6317463785365643240">Nicht verschlüsseln</translation>
 <translation id="8627706565932943526">Synchronisierungsfehler</translation>
 <translation id="1807246157184219062">Hell</translation>
 <translation id="9219103736887031265">Bilder</translation>
@@ -254,7 +248,6 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="5324858694974489420">Jugendschutzeinstellungen</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Alle Websites blockieren</translation>
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="5424715742813396254">Gespeicherten Namen/Passwort oder Ausnahme bearbeiten</translation>
 <translation id="6978479750597523876">Übersetzungseinstellungen zurücksetzen</translation>
@@ -266,7 +259,6 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="2526148617758225454">Die Datenkomprimierung ist aktiviert. Sie können sie in den Einstellungen verwalten.</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="3102119246920354026">Cache</translation>
-<translation id="651048280540227067">Menü schließen</translation>
 <translation id="748127970106343339">Löschen der Anmeldedaten des Geräts bestätigen</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="5899349522111170522">Neue Datei erstellen</translation>
@@ -283,7 +275,6 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Teilen...</translation>
 <translation id="1056898198331236512">Warnung</translation>
-<translation id="3338301885994755905">Blockieren (empfohlen)</translation>
 <translation id="6575643671698722332">Fehler beim Zurücksetzen, da das Gerät nicht online ist. Versuchen Sie es erneut.</translation>
 <translation id="8987061207681586800">Chrome personalisieren</translation>
 <translation id="654446541061731451">Tab zum Beamen auswählen</translation>
@@ -342,13 +333,9 @@ Zum Verlassen die Zurück-Taste drücken</translation>
 <translation id="5138299137310274655">Diese Seite ist auf <ph name="SOURCE_LANGUAGE"/>. In <ph name="TARGET_LANGUAGE"/> übersetzen?</translation>
 <translation id="2913331724188855103">Websites dürfen Cookiedaten speichern und lesen (empfohlen).</translation>
 <translation id="5512137114520586844">Dieses Konto wird von <ph name="PARENT_NAME"/> verwaltet.</translation>
-<translation id="7649070708921625228">Hilfe</translation>
 <translation id="1373696734384179344">Der Speicher reicht nicht aus, um den ausgewählten Inhalt herunterzuladen.</translation>
 <translation id="969096075394517431">Sprachen ändern</translation>
 <translation id="5085880389019676122">Kein USB-Speicher</translation>
-<translation id="1614564776292091138">Wenn &quot;Geschützte Inhalte&quot; aktiviert ist, können Websites Ihr Gerät authentifizieren, um sicherzustellen, dass es zur Wiedergabe von geschützten Premium-Videos berechtigt ist.
-
-Ist die Option deaktiviert, können Sie möglicherweise auf diesem Gerät keine Premium-Videos abspielen.</translation>
 <translation id="8928220460877261598">Sie sind jetzt in Chrome angemeldet.</translation>
 <translation id="7811044698839470685">Zugriff auf verschlüsselte Daten ist nur mit Passphrase möglich. Diese wird nicht an Google gesendet oder von Google gespeichert. Falls Sie sie vergessen, müssen Sie die Synchronisierung zurücksetzen.</translation>
 <translation id="8547287415299944404">Der Browserverlauf kann nicht über ein Kinderkonto gelöscht werden.</translation>
@@ -397,7 +384,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="6965382102122355670">OK</translation>
 <translation id="4440256989292146959">Mehr surfen, weniger verbrauchen</translation>
 <translation id="4023950129927433024">Wenn Sie die Passphrase vergessen haben, halten Sie die Synchronisierung über das <ph name="BEGIN_LINK"/>Google Dashboard<ph name="END_LINK"/> an und setzen Sie sie zurück.</translation>
-<translation id="6375900123462779979">Mikrofon- und Kamerazugriff</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>

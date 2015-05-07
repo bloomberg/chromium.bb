@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Værktøj til udpakning af udvidelser</translation>
 <translation id="149347756975725155">Udvidelsesikonet '<ph name="ICON"/>' kunne ikke indlæses.</translation>
 <translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen &quot;<ph name="HEADER_NAME"/>&quot; for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Vælg USB-enheder</translation>
 <translation id="6731255991101203740">Mappen til udpakning kunne ikke oprettet: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">Siden &quot;<ph name="ABOUT_PAGE"/>&quot; kunne ikke indlæses.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Applikationen &quot;<ph name="APP_NAME"/>&quot; anmoder om adgang til en eller flere af dine enheder.</translation>
 <translation id="6698810901424468597">Læse og redigere dine data på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Billedet kunne afkodes: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">Leverandør <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Få adgang til din netværkstrafik</translation>
 <translation id="1256619696651732561">Værktøj til parsing af udvidelsesmanifester</translation>
 <translation id="5972529113578162692">Administratoren af denne maskine kræver, at <ph name="EXTENSION_NAME"/> er installeret. Denne kan ikke afinstalleres.</translation>

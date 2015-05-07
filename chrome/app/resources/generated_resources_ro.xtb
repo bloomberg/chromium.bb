@@ -143,7 +143,6 @@
 <translation id="7974566588408714340">Reîncearcă folosind <ph name="EXTENSIONNAME"/></translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
-<translation id="7012312584667795941">Identitatea companiei <ph name="ORGANIZATION"/> din <ph name="LOCALITY"/> a fost verificată de <ph name="ISSUER"/>, dar verificarea înregistrărilor de auditare publică nu a reușit.</translation>
 <translation id="7113502843173351041">Vede adresa dvs. de e-mail</translation>
 <translation id="3726463242007121105">Acest dispozitiv nu poate fi deschis, deoarece sistemul său de fișiere nu este acceptat.</translation>
 <translation id="5606674617204776232">Pluginul <ph name="PEPPER_PLUGIN_NAME"/> de pe <ph name="PEPPER_PLUGIN_DOMAIN"/> dorește să vă acceseze dispozitivul.</translation>
@@ -316,7 +315,6 @@
 <translation id="5748743223699164725">Activați funcțiile experimentale ale platformei web în dezvoltare.</translation>
 <translation id="8110513421455578152">Specificați înălțimea prestabilită a panourilor.</translation>
 <translation id="7002454948392136538">Alegeți administratorul pentru acest utilizator monitorizat</translation>
-<translation id="9091975085874311841">Conexiunea la <ph name="DOMAIN"/> este criptată folosind criptografie modernă.</translation>
 <translation id="4640525840053037973">Conectează-te folosind Contul Google</translation>
 <translation id="4923279099980110923">Da, doresc să ajut</translation>
 <translation id="6922128026973287222">Economisește date și navighează mai rapid folosind Economizorul de date Google. Dă clic pentru a afla mai multe.</translation>
@@ -646,7 +644,6 @@ Pentru instrucțiuni suplimentare, verificați-vă e-mailurile la adresa <ph nam
 <translation id="2887525882758501333">Document PDF</translation>
 <translation id="289426338439836048">Alte rețele mobile...</translation>
 <translation id="5953576419932384180">Nu vă puteți aminti parola veche?</translation>
-<translation id="100869152053188797">Identitatea acestui site a fost verificată de <ph name="ISSUER"/>, pretinde că are înregistrări de auditare publică, dar înregistrările nu pot fi verificate.</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">Citește și modifică orice tastezi, inclusiv tastele de schimbare a activității, cum ar fi CMD+TAB</translation>
 <translation id="8214962590150211830">Elimină această persoană</translation>
@@ -1135,7 +1132,6 @@ Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="6954850746343724854">Activează modul Client nativ pentru toate aplicațiile web, chiar și pentru cele care nu au fost instalate din Magazinul web Chrome.</translation>
 <translation id="9043242398268815112">Cunoaște locația dispozitivului</translation>
 <translation id="9068931793451030927">Calea:</translation>
-<translation id="667314332843412173">Trimită notificări</translation>
 <translation id="4289540628985791613">Prezentare generală</translation>
 <translation id="283278805979278081">Fotografiază.</translation>
 <translation id="6111974609785983504">Permis în mod prestabilit</translation>
@@ -1227,7 +1223,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="3798449238516105146">Versiune</translation>
 <translation id="3608576286259426129">Previzualizare a imaginii utilizatorului</translation>
 <translation id="5764483294734785780">Sal&amp;vează conținutul audio ca...</translation>
-<translation id="4511834652944195516">Activează compatibilitatea de scriere MTP în Managerul de fișiere. Unele acțiuni (precum editarea unei imagini în volumul MTP) nu sunt acceptate încă.</translation>
 <translation id="313205617302240621">Ai uitat parola?</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -1382,6 +1377,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="3828440302402348524">Conectat(ă) ca <ph name="USER_NAME"/>...</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="3522159121915794564">Permite înscrierea utilizatorilor la colecția de lanțuri nevalide de certificate TLS/SSL.</translation>
+<translation id="6978121630131642226">Motoarele de căutare</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK"/>Conectează-te<ph name="END_SIGN_IN_LINK"/> pentru a controla și a vedea site-urile accesate de această persoană.</translation>
 <translation id="8965697826696209160">Nu există spațiu suficient.</translation>
 <translation id="329838636886466101">Repară</translation>
@@ -1425,7 +1421,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="8656946437567854031">Dacă dați clic pe Continuați, sunteți de acord cu <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, <ph name="LEGAL_DOC_LINK_TEXT_5"/> și <ph name="LEGAL_DOC_LINK_TEXT_6"/>.</translation>
 <translation id="830598693585544337">Activarea acestei opțiuni împiedică site-urile web să acceseze API-ul WebAudio.</translation>
 <translation id="3574777678278664892">Dacă este activat, managerul de parole nu va oferi salvarea datelor de conectare folosite pentru sincronizare.</translation>
-<translation id="1914436586714907696">Chrome nu a avut suficientă memorie.</translation>
 <translation id="5747785204778348146">Canal pentru dezvoltatori – instabil</translation>
 <translation id="3590194807845837023">Deblocați profilul și relansați Chrome</translation>
 <translation id="6644756108386233011">Resetați setările <ph name="IDS_SHORT_PRODUCT_NAME"/> modificate?</translation>
@@ -1463,7 +1458,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="7547811415869834682">Neerlandeză</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/> Comută la altă persoană</translation>
 <translation id="1587275751631642843">Consolă &amp;JavaScript</translation>
-<translation id="2348797501425402112">Activează compatibilitatea de scriere MTP</translation>
 <translation id="8460696843433742627">În timpul încercării de încărcare a adresei <ph name="URL"/>, s-a primit un răspuns nevalid.
         Este posibil ca serverul să fie oprit pentru lucrări de întreținere sau să fie configurat incorect.</translation>
 <translation id="297870353673992530">Server DNS:</translation>
@@ -2415,7 +2409,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4807098396393229769">Numele de pe card</translation>
 <translation id="4131410914670010031">Alb-negru</translation>
 <translation id="3800503346337426623">Omite conectarea și navighează ca invitat</translation>
-<translation id="2615413226240911668">Totuși, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba aspectul paginii.</translation>
 <translation id="1416136326154112077">Istoricul de navigare și setările acestui utilizator monitorizat pot fi în continuare vizibile pentru administrator la <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>.</translation>
 <translation id="2436733981438712345">Se procesează...</translation>
 <translation id="197288927597451399">Păstrează</translation>
@@ -2458,7 +2451,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="3774278775728862009">Metoda de introducere a textului în thailandeză (tastatură TIS-820.2538)</translation>
 <translation id="9115675100829699941">&amp;Marcaje</translation>
 <translation id="7570496663860904543">Când o pagină nu se încarcă, dacă în memoria cache a browserului există o versiune veche a paginii respective, se va afișa un buton pentru ca utilizatorii să poată să încarce acea versiune veche.  Principala opțiune de activare pune butonul în cea mai proeminentă poziție pe pagina de eroare; opțiunea secundară de activare îl pune în poziția secundă față de butonul de actualizare.</translation>
-<translation id="7191877888075697060">Conexiunea la <ph name="DOMAIN"/> este criptată folosind criptografie învechită.</translation>
 <translation id="1731589410171062430">Total: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Fixați</translation>
 <translation id="5298363578196989456">Nu se poate importa extensia „<ph name="IMPORT_NAME"/>”, deoarece nu este un modul folosit în comun.</translation>
@@ -2629,7 +2621,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN"/> este acum în modul ecran complet și dorește să dezactiveze cursorul mouse-ului dvs.</translation>
 <translation id="1497522201463361063">Nu s-a putut redenumi „<ph name="FILE_NAME"/>”. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Mai jos se află parola TPM generată aleatoriu, care a fost atribuită computerului tău:</translation>
-<translation id="5636000737234849121">Activează tastarea gestuală pentru tastatura virtuală.</translation>
 <translation id="5010043101506446253">Autoritate de certificare</translation>
 <translation id="5287425679749926365">Conturile dvs.</translation>
 <translation id="4249373718504745892">Accesul acestei pagini la camera și microfonul dvs. a fost blocat.</translation>
@@ -2718,7 +2709,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="8870318296973696995">Pagina de pornire</translation>
 <translation id="6659594942844771486">Filă</translation>
 <translation id="8283475148136688298">Codul de autentificare a fost respins în timpul conectării la „<ph name="DEVICE_NAME"/>”.</translation>
-<translation id="3491170932824591984">Identitatea acestui site a fost verificată de <ph name="ISSUER"/>, dar verificarea înregistrărilor de auditare publică nu a reușit.</translation>
 <translation id="6575134580692778371">Nu este configurată</translation>
 <translation id="4624768044135598934">Ai reușit!</translation>
 <translation id="7518150891539970662">Jurnale WebRTC (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
@@ -2979,7 +2969,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="8800420788467349919">Volum: <ph name="PRECENTAGE"/> %</translation>
 <translation id="1697068104427956555">Selectează o regiune pătrată a imaginii.</translation>
 <translation id="29232676912973978">Gestionați conexiunile...</translation>
-<translation id="6225644908173488565">Activează ștergerea gestuală pentru tastatura virtuală.</translation>
 <translation id="4090103403438682346">Activați Acces verificat</translation>
 <translation id="570197343572598071">Evenimente de afișat</translation>
 <translation id="1628736721748648976">Codificare</translation>
@@ -2993,7 +2982,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="8420728540268437431">Se traduce pagina...</translation>
 <translation id="736515969993332243">Se scanează rețelele.</translation>
 <translation id="7806513705704909664">Activați Completarea automată pentru a completa formularele web cu un singur clic.</translation>
-<translation id="6856069154773169210">Activează selecția gestuală pentru tastatura virtuală.</translation>
 <translation id="9063302675152872196">Activează conectarea directă prin firewallul sistemului de operare Chrome pentru aplicațiile Chrome care deschid un socket pentru server TCP/IP sau un socket UDP.</translation>
 <translation id="5430298929874300616">Elimină marcajul</translation>
 <translation id="3150994199788134383">O extensie a preluat controlul asupra setărilor de proxy, ceea ce înseamnă că poate modifica, întrerupe sau intercepta tot ceea ce faceți online. Dacă nu știți sigur de ce a apărut această modificare, probabil că nu ați aprobat-o.</translation>
@@ -3106,7 +3094,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="1436784010935106834">Eliminat</translation>
 <translation id="3730639321086573427">Destinații locale</translation>
 <translation id="399856887277429830">Rulează Instrumentul pentru eliminare de software</translation>
-<translation id="2734167549439405382">Identitatea acestui site a fost verificată de <ph name="ISSUER"/>, dar nu are înregistrări de auditare publică.</translation>
 <translation id="7918257978052780342">Înscrieți</translation>
 <translation id="2863937263901630331">Datele brute sunt disponibile prin NetLog. Pentru mai multe detalii, consultați ajutorul.</translation>
 <translation id="4195814663415092787">Continuați de unde ați rămas</translation>
@@ -3297,7 +3284,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="878431691778285679">Se pare că gestionați deja un utilizator cu acel nume.<ph name="LINE_BREAK"/>Doriți să <ph name="BEGIN_LINK"/>importați <ph name="PROFILE_NAME"/> pe acest dispozitiv.<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> dorește să utilizeze microfonul.</translation>
 <translation id="2805756323405976993">Aplicații</translation>
-<translation id="5151511998946489774">Identitatea acestui site a fost verificată de <ph name="ISSUER"/> și poate fi auditată public.</translation>
 <translation id="7235421518178823985">Acest server nu a putut dovedi că este <ph name="DOMAIN"/>; se pretinde că certificatul său de securitate este emis cu <ph name="DAYS"/> (de) zile în viitor. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1608626060424371292">Eliminați acest utilizator</translation>
 <translation id="2779552785085366231">Această pagină poate fi adăugată în Lansatorul de aplicații</translation>
@@ -3518,7 +3504,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
     Spațiu insuficient pe dispozitiv.
     <ph name="LINE_BREAK2"/>
     Încearcă să selectezi câteva fotografii pentru a începe.</translation>
-<translation id="3700834376805760154">Identitatea companiei <ph name="ORGANIZATION"/> din <ph name="LOCALITY"/> a fost verificată de <ph name="ISSUER"/> și poate fi auditată public.</translation>
 <translation id="4416628180566102937">Înregistrează și repornește</translation>
 <translation id="4623537843784569564">Este posibil ca această extensie să fi fost actualizată greșit. Încearcă să o reinstalezi.</translation>
 <translation id="4342311272543222243">Hopa! A apărut o eroare TPM.</translation>
@@ -3995,7 +3980,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7748144333872478614">Dezactivează fundalurile ferestrelor în TouchView</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Despre NaCl</translation>
-<translation id="3084771660770137092">Fie Chrome nu are suficientă memorie, fie procesarea paginii web a fost întreruptă dintr-un alt motiv. Pentru a continua, reîncarcă sau accesează altă pagină.</translation>
 <translation id="1114901192629963971">Parola nu poate fi confirmată în rețeaua actuală. Selectează altă rețea.</translation>
 <translation id="6430814529589430811">ASCII codificat Base64, certificat unic</translation>
 <translation id="3305661444342691068">Deschideți PDF în Previzualizare</translation>
@@ -4817,7 +4801,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4350711002179453268">Nu se poate realiza o conexiune sigură la server. Poate fi vorba de o problemă a serverului sau poate fi necesar un certificat de autentificare a clientului pe care nu-l ai.</translation>
 <translation id="4731422630970790516">Elementul 3 din raft</translation>
 <translation id="750509436279396091">Deschideți dosarul de descărcări</translation>
-<translation id="4417463059397999181">Nespecificat</translation>
 <translation id="4125496372515105318">Dezactivează cele mai recente funcții JavaScript stabile</translation>
 <translation id="5963026469094486319">Descarcă teme</translation>
 <translation id="7586312264284919041">Doriți traducerea acestei pagini?</translation>
@@ -4854,7 +4837,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="6449285849137521213">Aplicația „<ph name="EXTENSION_NAME"/>” a fost adăugată.</translation>
 <translation id="6516193643535292276">Nu se poate conecta la internet</translation>
 <translation id="5125751979347152379">Adresă URL nevalidă.</translation>
-<translation id="4467801982834340084">Identitatea companiei <ph name="ORGANIZATION"/> din <ph name="LOCALITY"/> a fost verificată de <ph name="ISSUER"/>, dar nu are înregistrări de auditare publică.</translation>
 <translation id="752397454622786805">Înscriere anulată</translation>
 <translation id="8206354486702514201">Această setare este impusă de administratorul dvs.</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -5048,7 +5030,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="5158593464696388225">Imaginea nu a putut fi salvată.</translation>
 <translation id="3296763833017966289">Georgiană</translation>
 <translation id="2242687258748107519">Informații fișier</translation>
-<translation id="1152775729948968688">Totuși, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba comportamentul paginii.</translation>
 <translation id="604124094241169006">Automat</translation>
 <translation id="862542460444371744">&amp;Extensii</translation>
 <translation id="2539110682392681234">Setările serverului proxy sunt aplicate de administrator.</translation>
@@ -5397,7 +5378,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="340771324714262530">Opriți oglindirea</translation>
 <translation id="3303260552072730022">O extensie a activat modul Ecran complet.</translation>
 <translation id="3348459612390503954">Felicitări</translation>
-<translation id="5845521171017703245">ID: <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">Ajustează conversia pe baza introducerii anterioare</translation>
 <translation id="8675377193764357545">Sincronizat ca <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="7265986070661382626">Nu puteți accesa acum site-ul <ph name="SITE"/>, deoarece acesta <ph name="BEGIN_LINK"/>folosește fixarea certificatelor<ph name="END_LINK"/>. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
@@ -5416,7 +5396,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="4047112090469382184">Ce siguranță oferă</translation>
 <translation id="5461512418490148136">Rămâneți cu noi, vă preluăm fișierele.</translation>
 <translation id="4268574628540273656">Adresă URL:</translation>
-<translation id="2766585356456507052">Identitatea companiei <ph name="ORGANIZATION"/> din <ph name="LOCALITY"/> a fost verificată de <ph name="ISSUER"/>, pretinde că are înregistrări de auditare publică, dar înregistrările nu pot fi verificate.</translation>
 <translation id="6690455781383741953">Activează economisirea energiei pentru plugin</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="5972826969634861500">Pornește <ph name="PRODUCT_NAME"/></translation>

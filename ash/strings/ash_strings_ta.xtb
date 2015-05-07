@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">நிலைத் தட்டு</translation>
 <translation id="2248649616066688669">வெளிப்புற காட்சியுடன் இணைக்கப்பட்டிருக்கும்போது, மூடியை மூடி வைத்தும் உங்கள் Chromebook ஐத் தொடர்ந்து பயன்படுத்தலாம்.</translation>
 <translation id="2946640296642327832">புளூடூத்தை இயக்கு</translation>
+<translation id="5537725057119320332">அனுப்பு</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> க்கு திரை விரிவாக்கப்படுகிறது</translation>
 <translation id="8206859287963243715">செல்லுலர்</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
@@ -166,7 +167,6 @@
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="7573962313813535744">டாக் செய்யப்பட்ட பயன்முறை</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="8660803626959853127"><ph name="COUNT"/> கோப்பு(களை) ஒத்திசைக்கிறது</translation>
 <translation id="5958529069007801266">கண்காணிக்கப்படும் பயனர்</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK முடக்கப்பட்டுள்ளது</translation>
@@ -186,6 +186,7 @@
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
 <translation id="743058460480092004">கேமராவும் மைக்ரோஃபோனும் பயன்பாட்டில் உள்ளன.</translation>
+<translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="8103386449138765447">SMS செய்திகள்: <ph name="MESSAGE_COUNT"/></translation>

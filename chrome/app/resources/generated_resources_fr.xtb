@@ -144,7 +144,6 @@
 <translation id="7974566588408714340">Réessayer avec &quot;<ph name="EXTENSIONNAME"/>&quot;</translation>
 <translation id="2972581237482394796">&amp;Rétablir</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
-<translation id="7012312584667795941">L'identité de la société <ph name="ORGANIZATION"/>, située à <ph name="LOCALITY"/>, a été validée par <ph name="ISSUER"/>, mais la validation de son certificat de clé publique a échoué.</translation>
 <translation id="7113502843173351041">Accéder à votre adresse e-mail</translation>
 <translation id="3726463242007121105">Impossible d'ouvrir ce périphérique, car son système de fichiers n'est pas compatible.</translation>
 <translation id="5606674617204776232">Une demande d'accès à votre appareil a été envoyée à partir du plug-in <ph name="PEPPER_PLUGIN_NAME"/> issu du domaine <ph name="PEPPER_PLUGIN_DOMAIN"/>.</translation>
@@ -313,7 +312,6 @@
 <translation id="5748743223699164725">Active les fonctionnalités expérimentales de Web Platform qui sont en cours de développement.</translation>
 <translation id="8110513421455578152">Indiquer la hauteur par défaut des mosaïques</translation>
 <translation id="7002454948392136538">Sélectionner le gestionnaire de cet utilisateur supervisé</translation>
-<translation id="9091975085874311841">Votre connexion à <ph name="DOMAIN"/> est chiffrée avec une technologie de cryptographie moderne.</translation>
 <translation id="4640525840053037973">Connexion à l'aide de votre compte Google</translation>
 <translation id="4923279099980110923">Je souhaite apporter mon aide</translation>
 <translation id="6922128026973287222">Sauvegardez les données et bénéficiez d'une navigation plus rapide avec l'Économiseur de données Google. Cliquez ici pour en savoir plus.</translation>
@@ -639,7 +637,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="2887525882758501333">Document PDF</translation>
 <translation id="289426338439836048">Autre réseau mobile...</translation>
 <translation id="5953576419932384180">Vous avez oublié votre ancien mot de passe ?</translation>
-<translation id="100869152053188797">L'identité de ce site Web a été validée par <ph name="ISSUER"/>, mais son certificat de clé publique est inconnu.</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">Lire et modifier tous les éléments saisis, y compris les touches de changement de tâches CMD + TAB</translation>
 <translation id="8214962590150211830">Supprimer ce profil utilisateur</translation>
@@ -1122,7 +1119,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="6954850746343724854">Activer Native Client pour toutes les applications Web, même celles qui n'ont pas été installées depuis le Chrome Web Store</translation>
 <translation id="9043242398268815112">Connaître l'emplacement de l'appareil</translation>
 <translation id="9068931793451030927">Chemin :</translation>
-<translation id="667314332843412173">Envoyer des notifications</translation>
 <translation id="4289540628985791613">Présentation</translation>
 <translation id="283278805979278081">Prendre la photo</translation>
 <translation id="6111974609785983504">Autorisée par défaut</translation>
@@ -1215,7 +1211,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY"/>) pourra vous ê
 <translation id="3798449238516105146">Version</translation>
 <translation id="3608576286259426129">Aperçu de l'image de l'utilisateur</translation>
 <translation id="5764483294734785780">En&amp;registrer le fichier audio sous...</translation>
-<translation id="4511834652944195516">Cette option permet d'activer la compatibilité en écriture avec MTP dans le gestionnaire de fichiers. Certaines opérations, telles que la modification d'une image sur le volume MTP, ne sont pas encore possibles.</translation>
 <translation id="313205617302240621">Mot de passe oublié ?</translation>
 <translation id="5252456968953390977">Itinérance</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -1371,6 +1366,7 @@ Calcul de la durée restante</translation>
 <translation id="3828440302402348524">Connecté en tant que <ph name="USER_NAME"/>…</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="3522159121915794564">Autoriser les utilisateurs à récupérer les chaînes de certificats TLS/SSL non valides</translation>
+<translation id="6978121630131642226">Moteurs de recherche</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK"/>Se connecter<ph name="END_SIGN_IN_LINK"/> pour contrôler et afficher les sites Web consultés par cette personne</translation>
 <translation id="8965697826696209160">Espace disponible insuffisant.</translation>
 <translation id="329838636886466101">Réparer</translation>
@@ -1414,7 +1410,6 @@ Calcul de la durée restante</translation>
 <translation id="8656946437567854031">En cliquant sur &quot;Continuer&quot;, vous acceptez d'être lié par les présents documents : <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, <ph name="LEGAL_DOC_LINK_TEXT_5"/> et <ph name="LEGAL_DOC_LINK_TEXT_6"/>.</translation>
 <translation id="830598693585544337">L'activation de cette option empêche les sites Web d'accéder à l'API WebAudio.</translation>
 <translation id="3574777678278664892">Si cette option est activée, le gestionnaire de mots de passe ne proposera pas d'enregistrer les identifiants utilisés pour la synchronisation.</translation>
-<translation id="1914436586714907696">Google Chrome est à court de mémoire.</translation>
 <translation id="5747785204778348146">Développeur (instable)</translation>
 <translation id="3590194807845837023">Déverrouiller le profil et relancer</translation>
 <translation id="6644756108386233011">Réinitialiser les paramètres <ph name="IDS_SHORT_PRODUCT_NAME"/> qui ont été modifiés ?</translation>
@@ -1452,7 +1447,6 @@ Calcul de la durée restante</translation>
 <translation id="7547811415869834682">Néerlandais</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/> – Changer d'utilisateur</translation>
 <translation id="1587275751631642843">Console &amp;JavaScript</translation>
-<translation id="2348797501425402112">Activer la compatibilité en écriture avec MTP</translation>
 <translation id="8460696843433742627">Réponse reçue incorrecte lors de la tentative de chargement de <ph name="URL"/>.
         Cela peut être dû à une opération de maintenance ou à une configuration incorrecte sur le serveur.</translation>
 <translation id="297870353673992530">Serveur DNS :</translation>
@@ -2402,7 +2396,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="4807098396393229769">Titulaire de la carte</translation>
 <translation id="4131410914670010031">Noir et blanc</translation>
 <translation id="3800503346337426623">Ignorer la connexion et naviguer en tant qu'invité</translation>
-<translation id="2615413226240911668">Toutefois, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer l'aspect et le comportement de cette page.</translation>
 <translation id="1416136326154112077">Le gestionnaire peut toujours consulter les paramètres et l'historique de navigation de cet utilisateur supervisé à l'adresse <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>.</translation>
 <translation id="2436733981438712345">Traitement en cours…</translation>
 <translation id="197288927597451399">Enregistrer</translation>
@@ -2445,7 +2438,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3774278775728862009">Mode de saisie du thaï (clavier TIS-820.2538)</translation>
 <translation id="9115675100829699941">&amp;Favoris</translation>
 <translation id="7570496663860904543">En cas d'échec du chargement d'une page, un bouton permet à l'utilisateur d'en afficher une copie non actualisée, si celle-ci existe dans le cache du navigateur. Si le bouton est défini comme bouton principal, il est mis en évidence sur la page d'erreur pour que l'utilisateur puisse afficher une copie, tandis que s'il est défini comme bouton secondaire, il servira à recharger la page.</translation>
-<translation id="7191877888075697060">La technologie de cryptographie utilisée pour chiffrer votre connexion à <ph name="DOMAIN"/> est obsolète.</translation>
 <translation id="1731589410171062430">Total : <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Épingler</translation>
 <translation id="5298363578196989456">Impossible d'importer l'extension &quot;<ph name="IMPORT_NAME"/>&quot;, car il ne s'agit pas d'un module partagé.</translation>
@@ -2616,7 +2608,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN"/> est maintenant affiché en mode plein écran et veut désactiver le curseur de votre souris</translation>
 <translation id="1497522201463361063">Impossible de renommer &quot;<ph name="FILE_NAME"/>&quot;. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Le mot de passe TPM ci-dessous, généré de façon aléatoire, a été attribué à votre ordinateur :</translation>
-<translation id="5636000737234849121">Activer la saisie gestuelle pour le clavier virtuel</translation>
 <translation id="5010043101506446253">Autorité de certification</translation>
 <translation id="5287425679749926365">Vos comptes</translation>
 <translation id="4249373718504745892">L'accès à votre caméra et à votre micro est bloqué pour cette page</translation>
@@ -2705,7 +2696,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8870318296973696995">Page d'accueil</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="8283475148136688298">Refus du code d'authentification lors de la connexion à l'appareil &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
-<translation id="3491170932824591984">L'identité de ce site Web a été validée par <ph name="ISSUER"/>, mais la validation de son certificat de clé publique a échoué.</translation>
 <translation id="6575134580692778371">Non configuré</translation>
 <translation id="4624768044135598934">Opération réussie !</translation>
 <translation id="7518150891539970662">Journaux WebRTC (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
@@ -2968,7 +2958,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8800420788467349919">Volume : <ph name="PRECENTAGE"/> %</translation>
 <translation id="1697068104427956555">Sélectionner un carré dans l'image</translation>
 <translation id="29232676912973978">Gérer les connexions…</translation>
-<translation id="6225644908173488565">Autoriser la suppression de geste pour le clavier virtuel</translation>
 <translation id="4090103403438682346">Activer l'accès validé</translation>
 <translation id="570197343572598071">Événements à afficher</translation>
 <translation id="1628736721748648976">Encodage</translation>
@@ -2982,7 +2971,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8420728540268437431">Traduction de la page en cours…</translation>
 <translation id="736515969993332243">Recherche de réseaux en cours</translation>
 <translation id="7806513705704909664">Activer la saisie automatique pour remplir les formulaires Web en un simple clic</translation>
-<translation id="6856069154773169210">Autoriser la sélection de geste pour le clavier virtuel</translation>
 <translation id="9063302675152872196">Autoriser les brèches dans le pare-feu Chrome OS pour les applications Chrome qui ouvrent une interface de connexion au serveur TCP/IP ou une interface de connexion UDP</translation>
 <translation id="5430298929874300616">Supprimer le favori</translation>
 <translation id="3150994199788134383">Une extension a pris le contrôle de vos paramètres de proxy, ce qui signifie que toutes vos activités en ligne peuvent être modifiées, interrompues ou espionnées. Si vous ne savez pas pourquoi cette modification s'est produite, c'est qu'elle est probablement indésirable.</translation>
@@ -3095,7 +3083,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1436784010935106834">Supprimé</translation>
 <translation id="3730639321086573427">Emplacements de destination locaux</translation>
 <translation id="399856887277429830">Exécuter l'outil de suppression de logiciels</translation>
-<translation id="2734167549439405382">L'identité de ce site Web a été validée par <ph name="ISSUER"/>, mais il ne possède pas de certificat de clé publique.</translation>
 <translation id="7918257978052780342">Enregistrer</translation>
 <translation id="2863937263901630331">Les données brutes sont disponibles via NetLog. Reportez-vous à l'aide pour plus de détails.</translation>
 <translation id="4195814663415092787">Reprendre mes activités là où je m'étais arrêté</translation>
@@ -3279,7 +3266,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="878431691778285679">Il semble que vous gérez déjà un utilisateur portant ce nom.<ph name="LINE_BREAK"/>Voulez-vous <ph name="BEGIN_LINK"/>importer <ph name="PROFILE_NAME"/> sur cet appareil<ph name="END_LINK"/> ?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> veut utiliser votre micro.</translation>
 <translation id="2805756323405976993">Applications</translation>
-<translation id="5151511998946489774">L'identité de ce site Web a été validée par <ph name="ISSUER"/>, et elle est vérifiable publiquement.</translation>
 <translation id="7235421518178823985">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN"/>, car la date d'émission de son certificat de sécurité est ultérieure de <ph name="DAYS"/> jours à la date du jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1608626060424371292">Supprimer cet utilisateur</translation>
 <translation id="2779552785085366231">Cette page peut être ajoutée au lanceur d'applications.</translation>
@@ -3500,7 +3486,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
     Espace insuffisant sur l'appareil.
     <ph name="LINE_BREAK2"/>
     Veuillez sélectionner quelques photos pour commencer.</translation>
-<translation id="3700834376805760154">L'identité de la société <ph name="ORGANIZATION"/>, située à <ph name="LOCALITY"/>, a été validée par <ph name="ISSUER"/>, et elle est vérifiable publiquement.</translation>
 <translation id="4416628180566102937">Enregistrer et redémarrer</translation>
 <translation id="4623537843784569564">Il est possible que la mise à jour de cette extension n'ait pas pu être effectuée correctement. Veuillez la réinstaller.</translation>
 <translation id="4342311272543222243">Une erreur liée au module de plate-forme sécurisée s'est produite</translation>
@@ -3978,7 +3963,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7748144333872478614">Désactiver les backdrops de fenêtres dans TouchView</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">À propos de NaCl</translation>
-<translation id="3084771660770137092">Google Chrome n'avait pas suffisamment de mémoire ou le processus de la page Web a été arrêté pour une autre raison. Pour continuer, actualisez la page ou ouvrez-en une autre.</translation>
 <translation id="1114901192629963971">Impossible de valider votre mot de passe sur le réseau actuel. Sélectionnez un autre réseau.</translation>
 <translation id="6430814529589430811">Certificat unique codé Base 64 ASCII</translation>
 <translation id="3305661444342691068">Ouvrir le PDF dans Aperçu</translation>
@@ -4799,7 +4783,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="4350711002179453268">Impossible d'établir une connexion sécurisée avec le serveur. Le serveur a peut-être rencontré un problème ou exige un certificat d'authentification du client dont vous ne disposez pas.</translation>
 <translation id="4731422630970790516">Élément d'étagère 3</translation>
 <translation id="750509436279396091">Ouvrir le dossier des téléchargements</translation>
-<translation id="4417463059397999181">Non spécifié</translation>
 <translation id="4125496372515105318">Désactiver les dernières fonctionnalités JavaScript stables</translation>
 <translation id="5963026469094486319">Obtenir d'autres thèmes</translation>
 <translation id="7586312264284919041">Voulez-vous traduire cette page ?</translation>
@@ -4836,7 +4819,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="6449285849137521213">L'application &quot;<ph name="EXTENSION_NAME"/>&quot; a été ajoutée.</translation>
 <translation id="6516193643535292276">Impossible de se connecter à Internet.</translation>
 <translation id="5125751979347152379">URL incorrecte</translation>
-<translation id="4467801982834340084">L'identité de la société <ph name="ORGANIZATION"/>, située à <ph name="LOCALITY"/>, a été validée par <ph name="ISSUER"/>, mais elle ne dispose pas de certificat de clé publique.</translation>
 <translation id="752397454622786805">La désinscription a bien été effectuée</translation>
 <translation id="8206354486702514201">Ce paramètre est appliqué par votre administrateur.</translation>
 <translation id="6040143037577758943">Fermer</translation>
@@ -5030,7 +5012,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="5158593464696388225">Échec de l'enregistrement de l'image.</translation>
 <translation id="3296763833017966289">Géorgien</translation>
 <translation id="2242687258748107519">Informations sur le fichier</translation>
-<translation id="1152775729948968688">Toutefois, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer le comportement de cette page.</translation>
 <translation id="604124094241169006">Automatique</translation>
 <translation id="862542460444371744">&amp;Extensions</translation>
 <translation id="2539110682392681234">Le proxy est contrôlé par votre administrateur.</translation>
@@ -5379,7 +5360,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="340771324714262530">Arrêter la mise en miroir</translation>
 <translation id="3303260552072730022">Une extension a déclenché le mode plein écran.</translation>
 <translation id="3348459612390503954">Félicitations</translation>
-<translation id="5845521171017703245">ID : <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">Ajuster la conversion en fonction de l'entrée précédente</translation>
 <translation id="8675377193764357545">Synchronisé en tant que <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="7265986070661382626">Vous ne pouvez pas consulter le site <ph name="SITE"/> pour le moment, car l'<ph name="BEGIN_LINK"/>épinglage des certificats<ph name="END_LINK"/> y est utilisé. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page ultérieurement.</translation>
@@ -5398,7 +5378,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="4047112090469382184">Niveau de sécurité</translation>
 <translation id="5461512418490148136">Veuillez patienter, récupération des fichiers en cours…</translation>
 <translation id="4268574628540273656">URL :</translation>
-<translation id="2766585356456507052">L'identité de la société <ph name="ORGANIZATION"/>, située à <ph name="LOCALITY"/>, a été validée par <ph name="ISSUER"/>, mais son certificat de clé publique est inconnu.</translation>
 <translation id="6690455781383741953">Activer l'économiseur d'énergie pour les plug-ins</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="5972826969634861500">Lancer <ph name="PRODUCT_NAME"/></translation>

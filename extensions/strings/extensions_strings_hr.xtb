@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Otpakiravanje proširenja</translation>
 <translation id="149347756975725155">Nije uspjelo učitavanje ikone proširenja &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Ovo proširenje nije uspjelo izmijeniti zaglavlje zahtjeva &quot;<ph name="HEADER_NAME"/>&quot; mrežnog zahtjeva jer je izmjena sukobljena s drugim proširenjem (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Proizvod <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Odaberite USB uređaje</translation>
 <translation id="6731255991101203740">Nije uspjelo stvaranje direktorija za raspakiravanje: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Nije uspjelo učitavanje stranice s informacijama &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup nekom od vaših uređaja.</translation>
 <translation id="6698810901424468597">čitati i mijenjati vaše podatke na web-lokacijama <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nije uspjelo dekodiranje slike: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="5544884907028850012">Dobavljač <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">pristupiti vašem mrežnom prometu</translation>
 <translation id="1256619696651732561">Raščlanjivanje manifesta proširenja</translation>
 <translation id="5972529113578162692">Administrator ovog računala zahtijeva instaliranje proširenja <ph name="EXTENSION_NAME"/> i ono se ne može deinstalirati.</translation>

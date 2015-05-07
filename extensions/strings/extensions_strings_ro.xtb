@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Instrument de despachetare a extensiilor</translation>
 <translation id="149347756975725155">Nu se poate încărca pictograma „<ph name="ICON"/>” a extensiei.</translation>
 <translation id="8825366169884721447">Această extensie nu a putut modifica antetul de solicitare „<ph name="HEADER_NAME"/>” al unei solicitări din rețea, deoarece modificarea era în conflict cu o altă extensie (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234"><ph name="PRODUCT_ID"/> produs</translation>
 <translation id="4776856853352853275">Selectează dispozitivele USB</translation>
 <translation id="6731255991101203740">Nu s-a putut crea directorul pentru dezarhivare: „<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">Pagina informativă „<ph name="ABOUT_PAGE"/>” nu s-a putut încărca.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Aplicația „<ph name="APP_NAME"/>” solicită accesul la cel puțin unul dintre dispozitivele tale.</translation>
 <translation id="6698810901424468597">Citește și modifică datele de pe <ph name="WEBSITE_1"/> și <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Imaginea nu a putut fi decodificată: „<ph name="IMAGE_NAME"/>”</translation>
-<translation id="5544884907028850012"><ph name="VENDOR_ID"/> vânzător</translation>
 <translation id="2048182445208425546">Accesează traficul de rețea</translation>
 <translation id="1256619696651732561">Analizor al manifestului extensiei</translation>
 <translation id="5972529113578162692">Administratorul acestui computer solicită ca <ph name="EXTENSION_NAME"/> să fie instalată. Aceasta nu poate fi dezinstalată.</translation>

@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Konfigurer Chrome</translation>
 <translation id="6448273550210938826">Nettadresse- og søkeforslag</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
-<translation id="8425213833346101688">Endre</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="8607727265103077134">Fra Google Wallet</translation>
 <translation id="6292937202013477045">Det kan hende at angripere prøver å stjele informasjonen din (for eksempel bilder, passord, meldinger og kredittkort) fra <ph name="DOMAIN_NAME"/>.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">Søkemotor</translation>
 <translation id="346339498574870680">Kopiér bildenettadressen</translation>
 <translation id="5063480226653192405">Bruk</translation>
-<translation id="6657585470893396449">Passord</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Legg til adresse</translation>
 <translation id="4816465935029283692">Datatyper</translation>
@@ -133,14 +131,11 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="9060538597317784206">Vis <ph name="APP_NAME"/>-appen i Play Butikk. Vurdering: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Lagre</translation>
-<translation id="1151972924205500581">Passord er påkrevd</translation>
 <translation id="2870560284913253234">Nettsted</translation>
-<translation id="3101226206443094477">Logg på med Google-kontoen din:</translation>
 <translation id="2718352093833049315">Bare på Wi-Fi</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="5487729733663684359">Denne Android-versjonen har ikke lenger støtte for Chrome-oppdateringer.</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
-<translation id="1201402288615127009">Neste</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2487368562788861256">La Google <ph name="BEGIN_LINK"/>optimalisere sidene du besøker<ph name="END_LINK"/>, og bruk mindre penger på datatrafikk.</translation>
 <translation id="5911030830365207728">Google Oversetter</translation>
@@ -153,7 +148,6 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="138361230106469022">Hei, <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
-<translation id="6317463785365643240">Ikke kryptér</translation>
 <translation id="8627706565932943526">Synkroniseringsfeil</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="9219103736887031265">Bilder</translation>
@@ -254,7 +248,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="5324858694974489420">Foreldreinnstillinger</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Blokkér alle nettsteder.</translation>
 <translation id="8168435359814927499">Innhold</translation>
 <translation id="5424715742813396254">Rediger lagret navn/passord eller unntak</translation>
 <translation id="6978479750597523876">Tilbakestilling av oversettelsesinnstillinger</translation>
@@ -266,7 +259,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="2526148617758225454">Datasparing er på. Du kan administrere denne funksjonen i Innstillinger.</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="3102119246920354026">Buffer</translation>
-<translation id="651048280540227067">Lukk menyen</translation>
 <translation id="748127970106343339">Bekreft sletting av enhetslegitimasjon</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="5899349522111170522">Opprett en ny fil</translation>
@@ -283,7 +275,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="7977858705483383621">Sikkert Søk</translation>
 <translation id="8909135823018751308">Del</translation>
 <translation id="1056898198331236512">Advarsel</translation>
-<translation id="3338301885994755905">Blokkér (anbefales).</translation>
 <translation id="6575643671698722332">Tilbakestillingen var mislykket. Sjekk at enheten din har Internett-tilkobling og prøv på nytt.</translation>
 <translation id="8987061207681586800">Tilpass Chrome</translation>
 <translation id="654446541061731451">Velg en fane for beaming</translation>
@@ -342,13 +333,9 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="5138299137310274655">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Tillat at nettsteder lagrer og leser data i informasjonskapsler (anbefales).</translation>
 <translation id="5512137114520586844">Denne kontoen er administrert av <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">Hjelp</translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
 <translation id="969096075394517431">Endre språk</translation>
 <translation id="5085880389019676122">USB-lagring utilgjengelig</translation>
-<translation id="1614564776292091138">Når beskyttet innhold er PÅ, kan nettsteder autentisere enheten din for å sikre at den er autorisert til å spille av beskyttede premiumvideoer.
-
-Hvis denne funksjonen er AV, kan du sannsynligvis ikke spille av premiumvideoer på denne enheten.</translation>
 <translation id="8928220460877261598">Du er nå logget på Chrome.</translation>
 <translation id="7811044698839470685">De krypterte dataene dine kan ikke leses av andre enn de som har passordfrasen din. Denne frasen verken sendes til eller lagres av Google, og hvis du glemmer den, må du tilbakestille synkroniseringen.</translation>
 <translation id="8547287415299944404">Nettlesingsloggen kan ikke slettes for kontoer for barn.</translation>
@@ -397,7 +384,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="6965382102122355670">OK</translation>
 <translation id="4440256989292146959">Mer surfing for mindre penger</translation>
 <translation id="4023950129927433024">Hvis du har glemt passordet ditt, bør du stoppe og tilbakestille synkroniseringen via <ph name="BEGIN_LINK"/>Google Oversikt<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">Tilgang til mikrofonen og kameraet</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>

@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">ตั้งค่า Chrome</translation>
 <translation id="6448273550210938826">การค้นหาและคำแนะนำ URL</translation>
 <translation id="7998918019931843664">เปิดแท็บที่ปิดไปแล้วขึ้นใหม่</translation>
-<translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="4996978546172906250">แชร์ผ่าน</translation>
 <translation id="8607727265103077134">จาก Google Wallet</translation>
 <translation id="6292937202013477045">ผู้บุกรุกอาจพยายามขโมยข้อมูลของคุณ (เช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) จาก <ph name="DOMAIN_NAME"/></translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">เครื่องมือค้นหา</translation>
 <translation id="346339498574870680">คัดลอก URL รูปภาพ</translation>
 <translation id="5063480226653192405">การใช้</translation>
-<translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
 <translation id="4816465935029283692">ชนิดข้อมูล</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
 <translation id="9060538597317784206">ดูแอป <ph name="APP_NAME"/> บน Play สโตร์ คะแนน: <ph name="APP_RATING"/></translation>
 <translation id="5317780077021120954">บันทึก</translation>
-<translation id="1151972924205500581">ต้องมีรหัสผ่าน</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
-<translation id="3101226206443094477">ลงชื่อเข้าใช้ด้วยบัญชี Google ของคุณ:</translation>
 <translation id="2718352093833049315">Wi-Fi เท่านั้น</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="5487729733663684359">ไม่มีการสนับสนุนการอัปเดต Chrome บน Android เวอร์ชันนี้อีกต่อไป</translation>
 <translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
-<translation id="1201402288615127009">ถัดไป</translation>
 <translation id="2414886740292270097">มืด</translation>
 <translation id="2487368562788861256">ใช้ข้อมูลน้อยลงโดยใช้ Google เพื่อ<ph name="BEGIN_LINK"/>เพิ่มประสิทธิภาพหน้าที่คุณเข้าชม<ph name="END_LINK"/></translation>
 <translation id="5911030830365207728">Google แปลภาษา</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">การอัปเดต</translation>
 <translation id="138361230106469022">สวัสดี คุณ <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
-<translation id="6317463785365643240">ไม่เข้ารหัส</translation>
 <translation id="8627706565932943526">ข้อผิดพลาดในการซิงค์</translation>
 <translation id="1807246157184219062">สว่าง</translation>
 <translation id="9219103736887031265">ภาพ</translation>
@@ -181,7 +175,7 @@
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="5626370437647899551">เพิ่มบัญชี Google</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
-<translation id="8084156870963450514">ลงชื่อเข้าใช้เพื่อเข้าถึงข้อมูลทั้งหมดของคุณในเว็บจากอุปกรณ์เครื่องใดก็ได้</translation>
+<translation id="8084156870963450514">ลงชื่อเข้าใช้เพื่อเข้าถึงข้อมูลทั้งหมดของคุณในเว็บจากอุปกรณ์ใดก็ได้</translation>
 <translation id="4543661749405994812">คัดลอกที่อยู่อีเมล</translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="5659593005791499971">อีเมล</translation>
@@ -254,7 +248,6 @@
 <translation id="5324858694974489420">การตั้งค่าของผู้ปกครอง</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">บล็อกไซต์ทั้งหมด</translation>
 <translation id="8168435359814927499">เนื้อหา</translation>
 <translation id="5424715742813396254">แก้ไขชื่อ/รหัสผ่านหรือข้อยกเว้นที่บันทึกไว้</translation>
 <translation id="6978479750597523876">รีเซ็ตการตั้งค่าการแปล</translation>
@@ -266,7 +259,6 @@
 <translation id="2526148617758225454">โปรแกรมประหยัดอินเทอร์เน็ตเปิดอยู่ จัดการโปรแกรมนี้ได้ในการตั้งค่า</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="3102119246920354026">แคช</translation>
-<translation id="651048280540227067">ปิดเมนู</translation>
 <translation id="748127970106343339">ยืนยันการลบข้อมูลรับรองของอุปกรณ์</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="5899349522111170522">สร้างไฟล์ใหม่</translation>
@@ -283,7 +275,6 @@
 <translation id="7977858705483383621">ค้นหาปลอดภัย</translation>
 <translation id="8909135823018751308">แชร์…</translation>
 <translation id="1056898198331236512">คำเตือน</translation>
-<translation id="3338301885994755905">บล็อก (แนะนำ)</translation>
 <translation id="6575643671698722332">การรีเซ็ตล้มเหลว ตรวจสอบว่าอุปกรณ์ของคุณออนไลน์และลองอีกครั้ง</translation>
 <translation id="8987061207681586800">เปลี่ยน Chrome ในแบบคุณ</translation>
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
@@ -332,7 +323,7 @@
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="8617240290563765734">ต้องการเปิด URL แนะนำซึ่งระบุอยู่ในเนื้อหาที่ดาวน์โหลดไหม</translation>
 <translation id="5565871407246142825">บัตรเครดิต</translation>
-<translation id="8829678271838353305">ลงชื่อเข้าใช้ด้วย <ph name="ACCOUNT_EMAIL_LAST"/> อยู่แต่เดิม การลงชื่อเข้าใช้ด้วย <ph name="ACCOUNT_EMAIL_NEW"/> จะรวมข้อมูลที่ซิงค์ เช่น บุ๊กมาร์ก ในแต่ละบัญชีเข้าด้วยกัน หากไม่ต้องการรวมข้อมูล ให้ล้างข้อมูลการท่องเว็บใน<ph name="BEGIN_LINK"/>การตั้งค่า<ph name="END_LINK"/></translation>
+<translation id="8829678271838353305">เดิมลงชื่อเข้าใช้ด้วย <ph name="ACCOUNT_EMAIL_LAST"/> การลงชื่อเข้าใช้ด้วย <ph name="ACCOUNT_EMAIL_NEW"/> จะรวมข้อมูลที่ซิงค์ เช่น บุ๊กมาร์ก ในแต่ละบัญชีเข้าด้วยกัน หากไม่ต้องการรวมข้อมูล โปรดล้างข้อมูลการท่องเว็บใน<ph name="BEGIN_LINK"/>การตั้งค่า<ph name="END_LINK"/></translation>
 <translation id="7324738665594301612">เรากำลังทดสอบการพร็อกซีของหน้า HTTPS ผ่านเซิร์ฟเวอร์ของ Google ซึ่งเป็นส่วนหนึ่งของการทดลอง</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="6333140779060797560">แชร์ผ่าน <ph name="APPLICATION"/></translation>
@@ -342,13 +333,9 @@
 <translation id="5138299137310274655">หน้านี้อยู่ในภาษา<ph name="SOURCE_LANGUAGE"/> ต้องการแปลเป็นภาษา<ph name="TARGET_LANGUAGE"/>ไหม</translation>
 <translation id="2913331724188855103">อนุญาตให้ไซต์บันทึกและอ่านข้อมูลคุกกี้ (แนะนำ)</translation>
 <translation id="5512137114520586844">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME"/></translation>
-<translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
 <translation id="969096075394517431">เปลี่ยนภาษา</translation>
 <translation id="5085880389019676122">USB ใช้งานไม่ได้</translation>
-<translation id="1614564776292091138">เมื่อเนื้อหาที่ได้รับความคุ้มครองเปิดใช้งานอยู่ เว็บไซต์จะสามารถตรวจสอบสิทธิ์อุปกรณ์ของคุณเพื่อให้แน่ใจว่าเป็นอุปกรณ์ที่ได้รับอนุญาตให้เล่นวิดีโอพรีเมียมที่ได้รับการคุ้มครอง
-
-หากปิดอยู่ คุณอาจไม่สามารถเล่นวิดีโอพรีเมียมบนอุปกรณ์นี้ได้</translation>
 <translation id="8928220460877261598">คุณได้ลงชื่อเข้าใช้ Chrome แล้ว</translation>
 <translation id="7811044698839470685">เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะสามารถอ่านข้อมูลที่เข้ารหัสของคุณได้ Google จะไม่ส่งหรือจัดเก็บรหัสผ่านนี้ หากคุณลืมรหัสผ่าน คุณจะต้องรีเซ็ตการซิงค์</translation>
 <translation id="8547287415299944404">ไม่สามารถล้างประวัติการเข้าชมด้วยบัญชีของเด็ก</translation>
@@ -397,7 +384,6 @@
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="4440256989292146959">ท่องเว็บได้มากขึ้นแต่ใช้อินเทอร์เน็ตน้อยลง</translation>
 <translation id="4023950129927433024">หากคุณลืมรหัสผ่าน ให้หยุดและรีเซ็ตการซิงค์ผ่าน <ph name="BEGIN_LINK"/>Google แดชบอร์ด<ph name="END_LINK"/></translation>
-<translation id="6375900123462779979">เข้าถึงไมโครโฟนและกล้องถ่ายรูป</translation>
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>

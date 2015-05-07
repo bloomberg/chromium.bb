@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">വിപുലീകരണ അൺ‌പാക്കർ</translation>
 <translation id="149347756975725155">വിപുലീകരണ ഐക്കണ്‍ '<ph name="ICON"/>' ലോഡുചെയ്യാനായില്ല.</translation>
 <translation id="8825366169884721447">പരിഷ്‌ക്കാരം മറ്റൊരു (<ph name="EXTENSION_NAME"/>) വിപുലീകരണവുമായി വൈരുദ്ധ്യം സൃഷ്‌ടിക്കുന്നതിനാൽ ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയുടെ അഭ്യർത്ഥന തലക്കെട്ട് &quot;<ph name="HEADER_NAME"/>&quot; പരിഷ്‌ക്കരിക്കുന്നതിൽ ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>
-<translation id="7495493006406536234">ഉൽപ്പന്നം <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB ഉപകരണങ്ങൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6731255991101203740">അൺസിപ്പ് ചെയ്യാനായി ഡയറക്‌ടറി സൃഷ്‌ടിക്കാൻ കഴിഞ്ഞില്ല: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' എന്ന ആമുഖം പേജ് ലോഡുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">നിങ്ങളുടെ ഒന്നോ അതിലധികമോ ഉപകരണങ്ങളിലേക്കുള്ള ആക്‌സസ്സിന് &quot;<ph name="APP_NAME"/>&quot; അപ്ലിക്കേഷൻ അഭ്യർത്ഥിക്കുന്നു.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> എന്നിവയിലെ നിങ്ങളുടെ ഡാറ്റ വായിക്കുക, മാറ്റുക</translation>
 <translation id="2159915644201199628">ചിത്രം ഡീകോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">വെണ്ടർ <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">നിങ്ങളുടെ നെറ്റ്‌വർക്ക് ട്രാഫിക്ക് ആക്‌സസ്സുചെയ്യുക</translation>
 <translation id="1256619696651732561">വിപുലീകരണ മാനിഫെസ്റ്റ് പാഴ്‌സർ</translation>
 <translation id="5972529113578162692">ഈ മെഷീനിന്റെ അഡ്‌മിനിസ്ട്രേറ്ററിന് <ph name="EXTENSION_NAME"/> ഇൻസ്‌റ്റാളുചെയ്യേണ്ടതുണ്ട്. ഇത് അൺഇൻസ്‌റ്റാളുചെയ്യാനാകില്ല.</translation>

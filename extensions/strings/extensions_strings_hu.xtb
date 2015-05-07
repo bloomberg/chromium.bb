@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Bővítmény-kicsomagoló</translation>
 <translation id="149347756975725155">A(z) '<ph name="ICON"/>' bővítményikon betöltése nem sikerült.</translation>
 <translation id="8825366169884721447">A bővítmény nem tudta módosítani egy hálózati kérés „<ph name="HEADER_NAME"/>” kérésfejlécét, mert a módosítás ütközik egy másik bővítménnyel (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Termék: <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB-eszközök kiválasztása</translation>
 <translation id="6731255991101203740">Nem sikerült könyvtárat létrehozni a kicsomagoláshoz: „<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">A(z) „<ph name="ABOUT_PAGE"/>” névjegyoldal betöltése sikertelen volt.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">A(z) „<ph name="APP_NAME"/>” alkalmazás hozzáférést kér egy vagy több eszközéhez.</translation>
 <translation id="6698810901424468597">Adatainak olvasása és módosítása itt: <ph name="WEBSITE_1"/> és <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nem sikerült dekódolni a képet: „<ph name="IMAGE_NAME"/>”</translation>
-<translation id="5544884907028850012">Szállító: <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">A hálózati forgalom elérése</translation>
 <translation id="1256619696651732561">Bővítményjegyzék elemzője</translation>
 <translation id="5972529113578162692">A számítógép adminisztrátorának szüksége van arra, hogy a(z) <ph name="EXTENSION_NAME"/> telepítve legyen. Nem lehet eltávolítani.</translation>

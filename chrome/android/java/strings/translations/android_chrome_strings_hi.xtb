@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Chrome सेट करें</translation>
 <translation id="6448273550210938826">खोज और URL सुझाव</translation>
 <translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
-<translation id="8425213833346101688">बदलें</translation>
 <translation id="4996978546172906250">इसके द्वारा साझा करें</translation>
 <translation id="8607727265103077134">Google वॉलेट की ओर से</translation>
 <translation id="6292937202013477045">हो सकता है हमलावर <ph name="DOMAIN_NAME"/> से आपकी जानकारी (उदाहरण के लिए पासवर्ड, संदेश या क्रेडिट कार्ड) चुराने का प्रयास कर रहे हों.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">खोज इंजन</translation>
 <translation id="346339498574870680">चित्र URL की प्रतिलिपि बनाएं</translation>
 <translation id="5063480226653192405">उपयोग</translation>
-<translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="5578795271662203820">इस चित्र के लिए <ph name="SEARCH_ENGINE"/> खोजें</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
 <translation id="4816465935029283692">डेटा प्रकार</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
 <translation id="9060538597317784206"><ph name="APP_NAME"/> को Play स्‍टोर पर देखें.  रेटिंग: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">सहेजें</translation>
-<translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
 <translation id="2870560284913253234">साइट</translation>
-<translation id="3101226206443094477">अपने Google खाते से प्रवेश करें:</translation>
 <translation id="2718352093833049315">केवल वाई-फ़ाई पर</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="5487729733663684359">Chrome अपडेट अब Android के इस वर्शन के लिए समर्थित नहीं हैं.</translation>
 <translation id="5100237604440890931">संक्षिप्त - विस्तृत करने के लिए क्लिक करें.</translation>
-<translation id="1201402288615127009">अगला</translation>
 <translation id="2414886740292270097">गहरा</translation>
 <translation id="2487368562788861256"><ph name="BEGIN_LINK"/>देखे जाने वाले पृष्‍ठों को ऑप्‍टिमाइज़ करने<ph name="END_LINK"/> Google का उपयोग करके डेटा पर कम खर्च करें.</translation>
 <translation id="5911030830365207728">Google अनुवाद</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="138361230106469022">नमस्‍ते, <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
-<translation id="6317463785365643240">एन्क्रिप्ट ना करें</translation>
 <translation id="8627706565932943526">समन्वयन त्रुटि</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="9219103736887031265">चित्र</translation>
@@ -254,7 +248,6 @@
 <translation id="5324858694974489420">अभिभावकीय सेटिंग</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">सभी साइटें अवरुद्ध करें</translation>
 <translation id="8168435359814927499">सामग्री</translation>
 <translation id="5424715742813396254">सहेजे गए नाम/पासवर्ड या अपवाद को संपादित करना</translation>
 <translation id="6978479750597523876">अनुवाद सेटिंग रीसेट करें</translation>
@@ -266,7 +259,6 @@
 <translation id="2526148617758225454">डेटा सर्वर चालू है. उसे सेटिंग में प्रबंधित करें.</translation>
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="3102119246920354026">संचय</translation>
-<translation id="651048280540227067">मेनू को खारिज करें</translation>
 <translation id="748127970106343339">डिवाइस प्रमाणिकता हटाने की पुष्‍टि करें</translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
 <translation id="5899349522111170522">नई फ़ाइल बनाएं</translation>
@@ -283,7 +275,6 @@
 <translation id="7977858705483383621">सुरक्षित खोज</translation>
 <translation id="8909135823018751308">साझा करें…</translation>
 <translation id="1056898198331236512">चेतावनी</translation>
-<translation id="3338301885994755905">अवरुद्ध करें (अनुशंसित)</translation>
 <translation id="6575643671698722332">रीसेट विफल रहा. डिवाइस ऑनलाइन होना सुनिश्चित करें और पुन: प्रयास करें.</translation>
 <translation id="8987061207681586800">Chrome को अपना बनाएं</translation>
 <translation id="654446541061731451">बीम के लिए टैब को चुनें</translation>
@@ -342,13 +333,9 @@
 <translation id="5138299137310274655">यह पृष्‍ठ <ph name="SOURCE_LANGUAGE"/> में है. इसका <ph name="TARGET_LANGUAGE"/> में अनुवाद करें?</translation>
 <translation id="2913331724188855103">साइटों को कुकी डेटा सहेजने और पढ़ने दें (अनुशंसित)</translation>
 <translation id="5512137114520586844">यह खाता <ph name="PARENT_NAME"/> द्वारा प्रबंधित है.</translation>
-<translation id="7649070708921625228">सहायता</translation>
 <translation id="1373696734384179344">चयनित सामग्री डाउनलोड करने के लिए मेमोरी अपर्याप्‍त है.</translation>
 <translation id="969096075394517431">भाषाएं बदलें</translation>
 <translation id="5085880389019676122">USB मेमोरी अनुपलब्ध</translation>
-<translation id="1614564776292091138">संरक्षित सामग्री के चालू होने पर, वेबसाइटें यह सुनिश्चित करने के लिए आपके डिवाइस को प्रमाणीकृत कर सकेंगी कि वह प्रीमियम और संरक्षित वीडियो चलाने के लिए प्राधिकृत है.
-
-बंद होने पर, आप इस डिवाइस पर प्रीमियम वीडियो नहीं चला सकेंगे.</translation>
 <translation id="8928220460877261598">अब आप Chrome में प्रवेश हो गए हैं.</translation>
 <translation id="7811044698839470685">जिसके पास आपका पासफ़्रेज़ होगा वही आपका एन्क्रिप्ट डेटा पढ़ सकता है. यह पासफ़्रेज़ Google को नहीं भेजा जाता न ही संग्रहीत किया जाता है. यदि आप पासफ़्रेज़ भूल गए हैं, तो आपको समन्वयन रीसेट करना होगा.</translation>
 <translation id="8547287415299944404">ब्राउज़िंग इतिहास को बच्‍चों के खातों से साफ़ नहीं किया जा सकता</translation>
@@ -397,7 +384,6 @@
 <translation id="6965382102122355670">ठीक</translation>
 <translation id="4440256989292146959">कम से अधिक ब्राउज़ करें</translation>
 <translation id="4023950129927433024">यदि‍ आप अपना पासफ्रेज़ भूल गए हैं, तो रूकें और  <ph name="BEGIN_LINK"/>Google डैशबोर्ड<ph name="END_LINK"/> के द्वारा समन्‍वयन रीसेट करें.</translation>
-<translation id="6375900123462779979">अपना माइक और कैमरा एक्सेस करें</translation>
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
 <translation id="1178581264944972037">पॉज़ करें</translation>
 <translation id="5127805178023152808">समन्वयन बंद है</translation>

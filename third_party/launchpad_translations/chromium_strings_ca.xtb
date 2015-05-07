@@ -76,7 +76,6 @@
 <translation id="3068515742935458733">Ajudeu a millorar Chromium; envieu informes d'error i <ph name="UMA_LINK"/> a Google.</translation>
 <translation id="734373864078049451">El vostre web, les adreces d'interès i altres coses de Chromium resideixen aquí.</translation>
 <translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
-<translation id="3065280201209294872">El lloc fa servir una configuració de seguretat obsoleta que pot evitar que les futures versions de Chromium puguin accedir-hi amb seguretat.</translation>
 <translation id="8551886023433311834">L'actualització està a punt d'acabar. Reinicieu el dispositiu per completar-la.</translation>
 <translation id="8353224596138547809">Voleu que Chromium desi la vostra contrasenya per a aquest lloc?</translation>
 <translation id="8738058698779197622">Per establir una connexió segura, el rellotge ha d'estar ben ajustat, perquè els certificats que els llocs web fan servir per identificar-se només són vàlids per a períodes de temps concrets. Com que el rellotge del dispositiu no està ben ajustat, Chromium no pot verificar aquests certificats.</translation>

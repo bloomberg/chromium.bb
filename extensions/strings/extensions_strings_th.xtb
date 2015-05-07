@@ -1,7 +1,7 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="4542520061254486227">อ่านข้อมูลใน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="3983586614702900908">อุปกรณ์จากผู้ขายที่ไม่รู้จัก</translation>
-<translation id="730515362922783851">แลกเปลี่ยนข้อมูลกับอุปกรณ์ที่อยู่ในเครือข่ายในท้องถิ่นหรืออินเทอร์เน็ต</translation>
+<translation id="730515362922783851">แลกเปลี่ยนข้อมูลกับอุปกรณ์ที่อยู่ในเครือข่ายเฉพาะที่หรืออินเทอร์เน็ต</translation>
 <translation id="3624204664103857160">ไม่สามารถโหลดหน้า Launcher &quot;<ph name="PAGE"/>&quot;</translation>
 <translation id="8804398419035066391">ติดต่อกับเว็บไซต์ที่ร่วมมือ</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID ส่วนขยาย &quot;<ph name="EXTENSION_ID"/>&quot;) ถูกบล็อกโดยผู้ดูแลระบบ</translation>
@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">ตัวแตกไฟล์ส่วนขยาย</translation>
 <translation id="149347756975725155">ไม่สามารถโหลดไอคอนส่วนขยาย &quot;<ph name="ICON"/>&quot;</translation>
 <translation id="8825366169884721447">ส่วนขยายนี้ไม่สามารถแก้ไขส่วนหัวคำขอ &quot;<ph name="HEADER_NAME"/>&quot; ของคำขอเครือข่ายได้เนื่องจากการแก้ไขขัดแย้งกับส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>)</translation>
-<translation id="7495493006406536234">ผลิตภัณฑ์ <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">เลือกอุปกรณ์ USB</translation>
 <translation id="6731255991101203740">ไม่สามารถสร้างไดเรกทอรีสำหรับการแตกไฟล์ซิป: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">ไม่สามารถโหลดหน้าเกี่ยวกับ &quot;<ph name="ABOUT_PAGE"/>&quot;</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์ในการเข้าถึงอุปกรณ์ของคุณอย่างน้อย 1 เครื่อง</translation>
 <translation id="6698810901424468597">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">ไม่สามารถถอดรหัสภาพ: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">ผู้ให้บริการ <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">เข้าถึงปริมาณการใช้งานเครือข่าย</translation>
 <translation id="1256619696651732561">โปรแกรมแยกวิเคราะห์ไฟล์ Manifest ส่วนขยาย</translation>
 <translation id="5972529113578162692">ผู้ดูแลระบบของอุปกรณ์เครื่องนี้กำหนดให้ติดตั้ง <ph name="EXTENSION_NAME"/> ไม่สามารถถอนการติดตั้งส่วนขยายนี้ได้</translation>

@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">વિસ્તાર અનપેકર</translation>
 <translation id="149347756975725155">એક્સ્ટેંશન આયકન '<ph name="ICON"/>' લોડ કરી શકાયું નથી.</translation>
 <translation id="8825366169884721447">આ એક્સટેન્શન એક નેટવર્ક વિનંતીની વિનંતી હેડર &quot;<ph name="HEADER_NAME"/>&quot; ને સંશોધિત કરવામાં નિષ્ફળ થયુ કારણ કે સંશોધિકરણ અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME"/>) સાથે વિરોધાભાસી છે.</translation>
-<translation id="7495493006406536234">ઉત્પાદન <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB ઉપકરણો પસંદ કરો</translation>
 <translation id="6731255991101203740">આને અનઝિપ કરવા માટે નિર્દેશિકા બનાવી શક્યાં નથી: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' વિશે પૃષ્ઠ લોડ કરી શકાયું નથી.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા એક અથવા વધુ ઉપકરણો પરની ઍક્સેસની વિનંતી કરી રહી છે.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> અને <ph name="WEBSITE_2"/> પર તમારો ડેટા વાંચો અને બદલો</translation>
 <translation id="2159915644201199628">છબીને ડિકોડ કરી શક્યાં નથી: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">વિક્રેતા <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">તમારા નેટવર્ક ટ્રાફિકની ઍક્સેસ</translation>
 <translation id="1256619696651732561">વિસ્તાર મેનીફેસ્ટ વિશ્લેશક</translation>
 <translation id="5972529113578162692">આ મશીનના વ્યવસ્થાપક માટે <ph name="EXTENSION_NAME"/> ઇન્સ્ટોલ કરેલું હોવું જરૂરી છે. તે અનઇન્સ્ટોલ કરી શકાતું નથી.</translation>

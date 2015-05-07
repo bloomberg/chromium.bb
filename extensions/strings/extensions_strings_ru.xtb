@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Распаковщик расширений</translation>
 <translation id="149347756975725155">Не удается загрузить значок расширения &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Это расширение не может изменить заголовок запроса (<ph name="HEADER_NAME"/>) из-за конфликта с другим расширением (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Устройство <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Выбор USB-устройств</translation>
 <translation id="6731255991101203740">Не удалось создать каталог для распаковки: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Не удалось загрузить страницу <ph name="ABOUT_PAGE"/>.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Приложение &quot;<ph name="APP_NAME"/>&quot; запрашивает доступ к нескольким устройствам.</translation>
 <translation id="6698810901424468597">Просмотр и изменение данные на сайтах <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Не удалось декодировать изображение: <ph name="IMAGE_NAME"/></translation>
-<translation id="5544884907028850012">Поставщик <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Доступ к сетевому трафику</translation>
 <translation id="1256619696651732561">Синтаксический анализатор манифестов расширений</translation>
 <translation id="5972529113578162692">Удаление расширения &quot;<ph name="EXTENSION_NAME"/>&quot; на этом компьютере запрещено администратором</translation>

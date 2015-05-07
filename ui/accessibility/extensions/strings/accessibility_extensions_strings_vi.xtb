@@ -12,15 +12,19 @@
 <translation id="8480209185614411573">Độ tương phản cao</translation>
 <translation id="1588438908519853928">Bình thường</translation>
 <translation id="4954450790315188152">Khi chế độ Duyệt với con nháy được bật:</translation>
+<translation id="1591070050619849194">Tắt tất cả hoạt ảnh.</translation>
 <translation id="2965611304828530558">&lt;p&gt;Khi bạn tới một liên kết hoặc nút điều khiển, liên kết hoặc nút điều khiển đó sẽ tự động được lấy làm tiêu điểm.   Nhấn &lt;span class='key'&gt;Enter&lt;/span&gt; để nhấp vào liên kết hoặc nút. &lt;/p&gt; &lt;p&gt;   Khi một nút điều khiển được lấy làm tiêu điểm (như hộp văn bản hoặc hộp danh sách) đang chụp các phím mũi tên, nhấn &lt;span class='key'&gt;Esc&lt;/span&gt; rồi đến mũi tên trái hoặc phải để tiếp tục chế độ Duyệt với con nháy. &lt;/p&gt; &lt;p&gt;   Hoặc, nhấn vào &lt;span class='key'&gt;Tab&lt;/span&gt; để chuyển tới nút điều khiển có thể lấy làm tiêu điểm tiếp theo. &lt;/p&gt;</translation>
 <translation id="5041932793799765940">Điều chỉnh màu</translation>
 <translation id="2394933097471027016">Hãy dùng thử ngay bây giờ - chế độ Duyệt với con nháy luôn được bật trên trang này!</translation>
 <translation id="3622586652998721735">Đặt làm giao thức mặc định</translation>
+<translation id="4937901943818762779">Cho phép hình ảnh động nhưng chỉ được xuất hiện một lần.</translation>
 <translation id="2179565792157161713">Mở mô tả dài trong tab mới</translation>
 <translation id="7942349550061667556">Đỏ</translation>
 <translation id="1555130319947370107">Xanh lam</translation>
 <translation id="2471847333270902538">Lược đồ màu dành cho <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Nhấp chuột phải vào bất cứ nội dung nào có thuộc tính &quot;longdesc&quot; hoặc &quot;aria-describedat&quot; để truy cập vào mô tả dài của nội dung đó.</translation>
+<translation id="6838518108677880446">Thiết lập:</translation>
+<translation id="5594989420907487559">Chạy hoạt ảnh chỉ một lần hoặc tắt hoàn toàn hoạt ảnh.</translation>
 <translation id="786423340267544509">Thêm đường viền vào phần tử có thuộc tính aria-describedat hoặc longdesc.</translation>
 <translation id="690628312087070417">Khi con nháy nhảy một khoảng cách rộng:</translation>
 <translation id="1996252509865389616">Bật?</translation>
@@ -37,16 +41,23 @@
 <translation id="1287053896835709737">Vàng trên nền đen</translation>
 <translation id="4896660567607030658">Không có phản hồi, chỉ hiển thị con trỏ.</translation>
 <translation id="5631241868147802353">Lược đồ màu mặc định:</translation>
+<translation id="1791496371305830581">Cho phép tất cả hình ảnh động.</translation>
 <translation id="5173942593318174089">Đánh dấu vị trí con trỏ bằng hoạt ảnh.</translation>
 <translation id="7379645913608427028">Mức độ</translation>
+<translation id="3252573918265662711">Thiết lập</translation>
 <translation id="894241283505723656">Mô tả dài trong menu ngữ cảnh</translation>
 <translation id="5555153510860501336">Độ tương phản cao đang bị tắt</translation>
+<translation id="2808027189040546825">Bước 1: Chọn hàng có các ngôi sao nhạt nhất:</translation>
+<translation id="8321034316479930120">Chính sách hoạt ảnh</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="1703735871906654364">Duyệt với con nháy</translation>
+<translation id="145360476452865422">Chính sách hoạt ảnh:</translation>
 <translation id="7384431257964758081">Độ tương phản cao đang được bật</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="5650358096585648000">Phản hồi trực quan</translation>
 <translation id="4388820049312272371">Đánh dấu nhanh vị trí con trỏ.</translation>
+<translation id="7586636300921797327">Bước 2: Điều chỉnh thanh trượt cho đến khi tất cả ngôi sao hiển thị trong
+        hàng đã chọn</translation>
 <translation id="2223143012868735942">Bộ lọc màu tùy chỉnh được áp dụng cho các trang web để tăng cường nhận biết màu.</translation>
 <translation id="4023902424053835668">Duyệt qua văn bản của trang web bằng các phím mũi tên.</translation>
 <translation id="2795227192542594043">Tiện ích này cung cấp cho bạn một con trỏ di động trong trang web, cho phép bạn chọn văn bản bằng bàn phím.</translation>

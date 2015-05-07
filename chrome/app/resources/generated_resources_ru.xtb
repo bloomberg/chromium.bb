@@ -143,7 +143,6 @@
 <translation id="7974566588408714340">Подключиться через <ph name="EXTENSIONNAME"/></translation>
 <translation id="2972581237482394796">&amp;Повторить</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
-<translation id="7012312584667795941"><ph name="ORGANIZATION"/>, <ph name="LOCALITY"/>: подлинность подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>), но проверка записей общедоступного аудита не пройдена.</translation>
 <translation id="7113502843173351041">Доступ к вашему адресу электронной почты</translation>
 <translation id="3726463242007121105">Невозможно получить доступ к устройству, так как его файловая система не поддерживается.</translation>
 <translation id="5606674617204776232">Плагин <ph name="PEPPER_PLUGIN_NAME"/> в домене <ph name="PEPPER_PLUGIN_DOMAIN"/> пытается получить доступ к вашему мобильному устройству.</translation>
@@ -312,7 +311,6 @@
 <translation id="5748743223699164725">Включить поддержку экспериментальных функций веб-платформы.</translation>
 <translation id="8110513421455578152">Обозначает высоту изображения по умолчанию.</translation>
 <translation id="7002454948392136538">Выбор менеджера для этого контролируемого профиля</translation>
-<translation id="9091975085874311841">Соединение с <ph name="DOMAIN"/> зашифровано с помощью современных технологий.</translation>
 <translation id="4640525840053037973">Войдите в свой аккаунт Google</translation>
 <translation id="4923279099980110923">Да, отправить файл на анализ</translation>
 <translation id="6922128026973287222">Расширение &quot;Экономия трафика&quot; от Google помогает быстрее просматривать веб-страницы и расходовать меньше трафика. Нажмите здесь, чтобы узнать подробности.</translation>
@@ -637,7 +635,6 @@
 <translation id="2887525882758501333">Документ PDF</translation>
 <translation id="289426338439836048">Другие мобильные сети...</translation>
 <translation id="5953576419932384180">Забыли пароль?</translation>
-<translation id="100869152053188797">Подлинность этого сайта подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>). Заявлено наличие записей общедоступного аудита, но они не могут быть проверены.</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">Просмотр и изменение вводимого текста, в том числе доступ к клавишам переключения задач, например CMD + TAB</translation>
 <translation id="8214962590150211830">Удалить пользователя</translation>
@@ -1118,7 +1115,6 @@
 <translation id="6954850746343724854">Включите Native Client для всех веб-приложений, включая установленные не из Интернет-магазина Chrome.</translation>
 <translation id="9043242398268815112">Сведения о местоположении устройства</translation>
 <translation id="9068931793451030927">Путь:</translation>
-<translation id="667314332843412173">отправку оповещений</translation>
 <translation id="4289540628985791613">Обзор</translation>
 <translation id="283278805979278081">Сделать снимок экрана</translation>
 <translation id="6111974609785983504">Разрешено по умолчанию</translation>
@@ -1210,7 +1206,6 @@
 <translation id="3798449238516105146">Версия</translation>
 <translation id="3608576286259426129">Предварительный просмотр фото</translation>
 <translation id="5764483294734785780">Со&amp;хранить аудио как...</translation>
-<translation id="4511834652944195516">Включение поддержки записи MTP в диспетчере файлов. Некоторые операции (например, редактирование изображений в томе MTP) не поддерживаются.</translation>
 <translation id="313205617302240621">Забыли пароль?</translation>
 <translation id="5252456968953390977">Роуминг</translation>
 <translation id="8744641000906923997">Ромадзи</translation>
@@ -1365,6 +1360,7 @@
 <translation id="3828440302402348524">Выполнен вход под именем <ph name="USER_NAME"/>...</translation>
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="3522159121915794564">Позволяет пользователям включить коллекцию цепочек недействительных сертификатов TLS/SSL.</translation>
+<translation id="6978121630131642226">Поисковые системы</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK"/>Войдите в аккаунт<ph name="END_SIGN_IN_LINK"/>, чтобы просматривать сайты, открытые этим пользователем, и контролировать его действия.</translation>
 <translation id="8965697826696209160">Недостаточно свободного места.</translation>
 <translation id="329838636886466101">Восстановить</translation>
@@ -1408,7 +1404,6 @@
 <translation id="8656946437567854031">Нажимая &quot;Продолжить&quot;, вы принимаете следующие правила и условия: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, <ph name="LEGAL_DOC_LINK_TEXT_5"/> и <ph name="LEGAL_DOC_LINK_TEXT_6"/>.</translation>
 <translation id="830598693585544337">Если включить эту функцию, доступ сайтов к API WebAudio будет заблокирован.</translation>
 <translation id="3574777678278664892">Не предлагать сохранять учетные данные, используемые для синхронизации.</translation>
-<translation id="1914436586714907696">Chrome не хватает памяти.</translation>
 <translation id="5747785204778348146">Нестабильная</translation>
 <translation id="3590194807845837023">Разблокировать профиль и перезапустить</translation>
 <translation id="6644756108386233011">Сбросить измененные настройки <ph name="IDS_SHORT_PRODUCT_NAME"/>?</translation>
@@ -1446,7 +1441,6 @@
 <translation id="7547811415869834682">Нидерландская</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/> Сменить пользователя</translation>
 <translation id="1587275751631642843">Консоль &amp;JavaScript</translation>
-<translation id="2348797501425402112">Включить поддержку записи MTP</translation>
 <translation id="8460696843433742627">При попытке загрузить <ph name="URL"/> получен недопустимый ответ.
          Сервер может быть неправильно настроенным или находиться в режиме обслуживания.</translation>
 <translation id="297870353673992530">DNS-сервер:</translation>
@@ -2387,7 +2381,6 @@
 <translation id="4807098396393229769">Имя владельца</translation>
 <translation id="4131410914670010031">Черно-белая печать</translation>
 <translation id="3800503346337426623">Войти в гостевом режиме</translation>
-<translation id="2615413226240911668">Однако эта страница содержит другие ресурсы, которые не являются безопасными. Эти ресурсы могут быть просмотрены третьей стороной во время передачи данных, а также могут быть изменены злоумышленником для изменения вида страницы.</translation>
 <translation id="1416136326154112077">Менеджер может просматривать данные об использовании и историю этого контролируемого профиля на странице: <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>.</translation>
 <translation id="2436733981438712345">Обработка...</translation>
 <translation id="197288927597451399">Сохранить</translation>
@@ -2430,7 +2423,6 @@
 <translation id="3774278775728862009">тайская раскладка (для клавиатуры TIS-820.2538)</translation>
 <translation id="9115675100829699941">&amp;Закладки</translation>
 <translation id="7570496663860904543">При ошибке загрузки страницы показывать кнопку, с помощью которой можно загрузить неактивную локальную копию, если она сохранена в кеше браузера. Если сделать кнопку основной, она будет располагаться на самом видном месте страницы ошибки, а если второстепенной – то рядом с кнопкой перезагрузки.</translation>
-<translation id="7191877888075697060">Соединение с <ph name="DOMAIN"/> зашифровано с помощью устаревших технологий.</translation>
 <translation id="1731589410171062430">Всего: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="PAGE_OR_PAGES_LABEL"/>: <ph name="NUMBER_OF_PAGES"/>)</translation>
 <translation id="7461924472993315131">Закрепить</translation>
 <translation id="5298363578196989456">Не удалось импортировать расширение &quot;<ph name="IMPORT_NAME"/>&quot;, поскольку это не общий модуль</translation>
@@ -2601,7 +2593,6 @@
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN"/> отображается в полноэкранном режиме и пытается скрыть курсор.</translation>
 <translation id="1497522201463361063">Не удалось переименовать &quot;<ph name="FILE_NAME"/>&quot;. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Этот модуль случайным образом сгенерировал для вашего компьютера следующий пароль:</translation>
-<translation id="5636000737234849121">Включает функцию непрерывного ввода на виртуальной клавиатуре.</translation>
 <translation id="5010043101506446253">Центр сертификации</translation>
 <translation id="5287425679749926365">Аккаунты</translation>
 <translation id="4249373718504745892">Этот сайт не имеет доступа к вашим камере и микрофону</translation>
@@ -2690,7 +2681,6 @@
 <translation id="8870318296973696995">Главная страница</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="8283475148136688298">При подключении к &quot;<ph name="DEVICE_NAME"/>&quot; код аутентификации был отклонен.</translation>
-<translation id="3491170932824591984">Подлинность этого сайта подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>), но проверка записей общедоступного аудита не пройдена.</translation>
 <translation id="6575134580692778371">Не настроено</translation>
 <translation id="4624768044135598934">Получилось!</translation>
 <translation id="7518150891539970662">Журналы WebRTC (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
@@ -2946,7 +2936,6 @@
 <translation id="8800420788467349919">Громкость: <ph name="PRECENTAGE"/>%</translation>
 <translation id="1697068104427956555">Выделите прямоугольную область на изображении.</translation>
 <translation id="29232676912973978">Настроить подключения</translation>
-<translation id="6225644908173488565">Включает удаление жестов на виртуальной клавиатуре.</translation>
 <translation id="4090103403438682346">Включить службу проверенного доступа</translation>
 <translation id="570197343572598071">Отображаемые события</translation>
 <translation id="1628736721748648976">Кодировка</translation>
@@ -2960,7 +2949,6 @@
 <translation id="8420728540268437431">Перевод страницы…</translation>
 <translation id="736515969993332243">Поиск сетей...</translation>
 <translation id="7806513705704909664">Включить автозаполнение форм одним кликом.</translation>
-<translation id="6856069154773169210">Включает выбор жестов на виртуальной клавиатуре.</translation>
 <translation id="9063302675152872196">Разрешает пробивать бреши в брандмауэре Chrome OS тем приложениям Chrome, которые открывают сокет сервера TCP/IP или сокет UDP.</translation>
 <translation id="5430298929874300616">Удалить закладку</translation>
 <translation id="3150994199788134383">Расширение контролирует настройки прокси-сервера. Это значит, что оно может отследить или изменить передаваемые вами данные, а также оборвать интернет-соединение. Если вы не знали об этом, вам следует отключить расширение.</translation>
@@ -3073,7 +3061,6 @@
 <translation id="1436784010935106834">Удалено</translation>
 <translation id="3730639321086573427">Локальные места назначения</translation>
 <translation id="399856887277429830">Скачать</translation>
-<translation id="2734167549439405382">Подлинность этого сайта подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>), но записи общедоступного аудита отсутствуют.</translation>
 <translation id="7918257978052780342">Зарегистрироваться</translation>
 <translation id="2863937263901630331">Первичные данные доступны через NetLog. Подробную информацию вы можете найти в Справке.</translation>
 <translation id="4195814663415092787">Ранее открытые вкладки</translation>
@@ -3255,7 +3242,6 @@
 <translation id="878431691778285679">У вас уже есть контролируемый профиль с именем <ph name="PROFILE_NAME"/>.<ph name="LINE_BREAK"/><ph name="BEGIN_LINK"/>Импортировать его на это устройство<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> запрашивает разрешение на использование вашего микрофона.</translation>
 <translation id="2805756323405976993">Сервисы</translation>
-<translation id="5151511998946489774">Подлинность этого сайта подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>), и доступна для проверки.</translation>
 <translation id="7235421518178823985">Не удалось подтвердить, что это сервер <ph name="DOMAIN"/>. Его сертификат безопасности вступит в силу через <ph name="DAYS"/> дн. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="1608626060424371292">Удалить профиль</translation>
 <translation id="2779552785085366231">Эту страницу можно добавить на панель запуска приложений</translation>
@@ -3476,7 +3462,6 @@
     На устройстве недостаточно места.
     <ph name="LINE_BREAK2"/>
     Попробуйте сначала импортировать часть снимков.</translation>
-<translation id="3700834376805760154"><ph name="ORGANIZATION"/>, <ph name="LOCALITY"/>: подлинность подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>), и доступна для проверки.</translation>
 <translation id="4416628180566102937">Зарегистрировать и перезагрузить</translation>
 <translation id="4623537843784569564">Возможно, расширение обновлено неправильно. Переустановите его.</translation>
 <translation id="4342311272543222243">Ошибка доверенного платформенного модуля.</translation>
@@ -3954,7 +3939,6 @@
 <translation id="7748144333872478614">Отключить заставки в TouchView</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">О NaCl</translation>
-<translation id="3084771660770137092">Выполнение процесса этой веб-страницы было прекращено. Это может быть вызвано тем, что Chrome не хватает памяти, или иными причинами. Чтобы продолжить, обновите страницу или перейдите на другой URL.</translation>
 <translation id="1114901192629963971">Не удалось проверить пароль в этой сети. Выберите другую сеть.</translation>
 <translation id="6430814529589430811">Единый сертификат ASCII с кодировкой Base64</translation>
 <translation id="3305661444342691068">Открыть PDF для просмотра</translation>
@@ -4774,7 +4758,6 @@
 <translation id="4350711002179453268">Не удается создать безопасное соединение с сервером. На сервере могла возникнуть проблема, или необходим сертификат клиентской аутентификации, который у вас отсутствует.</translation>
 <translation id="4731422630970790516">3-й объект на панели запуска</translation>
 <translation id="750509436279396091">Открыть папку скачанных файлов</translation>
-<translation id="4417463059397999181">Нет данных</translation>
 <translation id="4125496372515105318">Отключить новые стабильные функции JavaScript</translation>
 <translation id="5963026469094486319">Выбрать тему</translation>
 <translation id="7586312264284919041">Перевести эту страницу?</translation>
@@ -4811,7 +4794,6 @@
 <translation id="6449285849137521213">Приложение &quot;<ph name="EXTENSION_NAME"/>&quot; добавлено.</translation>
 <translation id="6516193643535292276">Не удается подключиться к Интернету</translation>
 <translation id="5125751979347152379">Недопустимый URL.</translation>
-<translation id="4467801982834340084"><ph name="ORGANIZATION"/>, <ph name="LOCALITY"/>: подлинность подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>), но записи общедоступного аудита отсутствуют.</translation>
 <translation id="752397454622786805">Отменено</translation>
 <translation id="8206354486702514201">Этот параметр включен администратором.</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -5005,7 +4987,6 @@
 <translation id="5158593464696388225">Не удалось сохранить изображение.</translation>
 <translation id="3296763833017966289">Грузинский</translation>
 <translation id="2242687258748107519">Информация о файле</translation>
-<translation id="1152775729948968688">Однако эта страница содержит другие ресурсы, которые не являются безопасными. Эти ресурсы могут быть просмотрены третьей стороной во время передачи данных, а также могут быть изменены злоумышленником для изменения поведения страницы.</translation>
 <translation id="604124094241169006">Автоматически</translation>
 <translation id="862542460444371744">Расширения</translation>
 <translation id="2539110682392681234">Параметры прокси-сервера заданы администратором.</translation>
@@ -5354,7 +5335,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="340771324714262530">Прекратить зеркалирование</translation>
 <translation id="3303260552072730022">Неизвестное расширение запустило полноэкранный режим.</translation>
 <translation id="3348459612390503954">Поздравляем!</translation>
-<translation id="5845521171017703245">Идентификатор: <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">Изменение преобразования на основе предыдущего метода ввода</translation>
 <translation id="8675377193764357545">Выполнена синхронизация с аккаунтом <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="7265986070661382626">Перейти на сайт <ph name="SITE"/> невозможно, так как он использует <ph name="BEGIN_LINK"/>закрепление сертификата<ph name="END_LINK"/>. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
@@ -5373,7 +5353,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4047112090469382184">Почему это безопасно?</translation>
 <translation id="5461512418490148136">Подождите, пока загружаются файлы.</translation>
 <translation id="4268574628540273656">URL:</translation>
-<translation id="2766585356456507052"><ph name="ORGANIZATION"/>, <ph name="LOCALITY"/>: подлинность подтверждена организацией, выдавшей сертификат (<ph name="ISSUER"/>). Заявлено наличие записей общедоступного аудита, но они не могут быть проверены.</translation>
 <translation id="6690455781383741953">Включить энергосберегающий режим для плагинов</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="5972826969634861500">Запустить <ph name="PRODUCT_NAME"/></translation>

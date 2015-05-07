@@ -12,15 +12,19 @@
 <translation id="8480209185614411573">High Contrast</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="4954450790315188152">When Caret Browsing is enabled:</translation>
+<translation id="1591070050619849194">Disable all image animation.</translation>
 <translation id="2965611304828530558">&lt;p&gt;When you reach a link or control, it is automatically focused. Press &lt;span class='key'&gt;Enter&lt;/span&gt; to click a link or button. &lt;/p&gt; &lt;p&gt; When a focused control (like a text box or a list box) is capturing arrow keys, press &lt;span class='key'&gt;Esc&lt;/span&gt; followed by the left or right arrow to continue Caret Browsing. &lt;/p&gt; &lt;p&gt; Alternatively, press &lt;span class='key'&gt;Tab&lt;/span&gt; to move to the next focusable control. &lt;/p&gt;</translation>
 <translation id="5041932793799765940">Colour adjustment</translation>
 <translation id="2394933097471027016">Try it out now – Caret Browsing is always enabled on this page!</translation>
 <translation id="3622586652998721735">Set as default scheme</translation>
+<translation id="4937901943818762779">Allow animated images, but only once.</translation>
 <translation id="2179565792157161713">Open Long Description In New Tab</translation>
 <translation id="7942349550061667556">Red</translation>
 <translation id="1555130319947370107">Blue</translation>
 <translation id="2471847333270902538">Colour scheme for <ph name="SITE"/>:</translation>
 <translation id="381767806621926835">Right-click on anything with a &quot;longdesc&quot; or &quot;aria-describedat&quot; attribute to access its long description.</translation>
+<translation id="6838518108677880446">Set-up:</translation>
+<translation id="5594989420907487559">Run animations only once, or disable animation completely.</translation>
 <translation id="786423340267544509">Add border to elements with aria-describedat or longdesc attributes.</translation>
 <translation id="690628312087070417">When the caret jumps by a large distance:</translation>
 <translation id="1996252509865389616">Enable?</translation>
@@ -37,16 +41,23 @@
 <translation id="1287053896835709737">Yellow on Black</translation>
 <translation id="4896660567607030658">No feedback, just show the cursor.</translation>
 <translation id="5631241868147802353">Default colour scheme:</translation>
+<translation id="1791496371305830581">Allow all animated images.</translation>
 <translation id="5173942593318174089">Highlight the cursor position with an animation.</translation>
 <translation id="7379645913608427028">Degree</translation>
+<translation id="3252573918265662711">Set-up</translation>
 <translation id="894241283505723656">Long Descriptions in Context Menu</translation>
 <translation id="5555153510860501336">High Contrast is Disabled</translation>
+<translation id="2808027189040546825">Step 1: Select the row with the faintest stars:</translation>
+<translation id="8321034316479930120">Animation Policy</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="1703735871906654364">Caret Browsing</translation>
+<translation id="145360476452865422">Animation Policy:</translation>
 <translation id="7384431257964758081">High Contrast is Enabled</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="5650358096585648000">Visual Feedback</translation>
 <translation id="4388820049312272371">Highlight the cursor position with a quick flash.</translation>
+<translation id="7586636300921797327">Step 2: Adjust the slider until all of the stars are visible in the
+        selected row</translation>
 <translation id="2223143012868735942">A customisable colour filter applied to web pages to improve colour perception.</translation>
 <translation id="4023902424053835668">Browse the text of web pages using arrow keys.</translation>
 <translation id="2795227192542594043">This extension gives you a movable cursor in the web page, allowing you to select text with the keyboard.</translation>

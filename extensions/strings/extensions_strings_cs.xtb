@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Rozbalovač rozšíření</translation>
 <translation id="149347756975725155">Nelze načíst ikonu rozšíření <ph name="ICON"/>.</translation>
 <translation id="8825366169884721447">Tomuto rozšíření se nepodařilo změnit záhlaví <ph name="HEADER_NAME"/> síťového požadavku, protože změna byla v konfliktu s jiným rozšířením (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Výběr zařízení USB</translation>
 <translation id="6731255991101203740">Nepodařilo se vytvořit adresář pro rozbalení: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Načtení stránky s informacemi <ph name="ABOUT_PAGE"/> se nezdařilo.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Aplikace <ph name="APP_NAME"/> žádá o přístup k jednomu nebo více z vašich zařízení.</translation>
 <translation id="6698810901424468597">Čtení a úprava dat na webu <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nepodařilo se dekódovat obrázek: <ph name="IMAGE_NAME"/></translation>
-<translation id="5544884907028850012">Dodavatel <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Přístup k provozu na síti</translation>
 <translation id="1256619696651732561">Analyzátor manifestů rozšíření</translation>
 <translation id="5972529113578162692">Administrátor tohoto zařízení vyžaduje, aby bylo rozšíření <ph name="EXTENSION_NAME"/> nainstalováno. Toto rozšíření nelze odinstalovat.</translation>

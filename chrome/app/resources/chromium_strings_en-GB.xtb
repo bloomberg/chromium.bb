@@ -78,7 +78,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3068515742935458733">Help make Chromium better by sending crash reports and <ph name="UMA_LINK"/> to Google</translation>
 <translation id="734373864078049451">Your web, bookmarks and other Chromium stuff live here.</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
-<translation id="3065280201209294872">The site is using outdated security settings that may prevent future versions of Chromium from being able to safely access it.</translation>
 <translation id="8551886023433311834">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="8353224596138547809">Do you want Chromium to save your password for this site?</translation>
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>

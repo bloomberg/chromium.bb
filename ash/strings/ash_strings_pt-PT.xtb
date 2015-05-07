@@ -22,7 +22,7 @@
 <translation id="595202126637698455">Rastreio do desempenho ativado</translation>
 <translation id="8054466585765276473">A calcular tempo da bateria.</translation>
 <translation id="7982789257301363584">Rede</translation>
-<translation id="2303600792989757991">Ativar/desativar visão geral das janelas</translation>
+<translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Sobreposição do teclado</translation>
 <translation id="6047696787498798094">A partilha do ecrã será interrompida quando mudar para outro utilizador. Pretende continuar?</translation>
@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Tabuleiro de estado</translation>
 <translation id="2248649616066688669">Pode continuar a utilizar o Chromebook enquanto estiver ligado a um monitor externo, mesmo com a tampa fechada.</translation>
 <translation id="2946640296642327832">Ativar Bluetooth</translation>
+<translation id="5537725057119320332">Transmitir</translation>
 <translation id="6459472438155181876">A prolongar ecrã para <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Telemóvel</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
@@ -166,7 +167,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
-<translation id="8660803626959853127">A sincronizar <ph name="COUNT"/> ficheiro(s)</translation>
 <translation id="5958529069007801266">Utilizador supervisionado</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
@@ -186,6 +186,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
+<translation id="6550675742724504774">Opções</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE"/> (requer reinicio)</translation>
 <translation id="8103386449138765447">Mensagens SMS: <ph name="MESSAGE_COUNT"/></translation>

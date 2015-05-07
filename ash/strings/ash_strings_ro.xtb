@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Bara de stare</translation>
 <translation id="2248649616066688669">Puteți folosi în continuare Chromebookul când este conectat la un afișaj extern, chiar și cu ecranul închis.</translation>
 <translation id="2946640296642327832">Activați Bluetooth</translation>
+<translation id="5537725057119320332">Proiectează</translation>
 <translation id="6459472438155181876">Se extinde ecranul pe <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Celular</translation>
 <translation id="6596816719288285829">Adresă IP</translation>
@@ -166,7 +167,6 @@
 <translation id="112308213915226829">Ascundeți automat raftul</translation>
 <translation id="7573962313813535744">Modul andocat</translation>
 <translation id="2792498699870441125">Alt+Căutare</translation>
-<translation id="8660803626959853127">Se sincronizează <ph name="COUNT"/> (de) fișiere</translation>
 <translation id="5958529069007801266">Utilizator monitorizat</translation>
 <translation id="3709443003275901162">Peste 9</translation>
 <translation id="639644700271529076">Tasta CAPS LOCK este dezactivată</translation>
@@ -186,6 +186,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Camera foto și microfonul sunt în uz.</translation>
+<translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Modifică înapoi la „<ph name="FROM_LOCALE"/>” (este necesară repornirea)</translation>
 <translation id="8103386449138765447">Mesaje SMS: <ph name="MESSAGE_COUNT"/></translation>

@@ -76,7 +76,6 @@
 <translation id="3068515742935458733">Pomognite nam poboljšati Chromium šaljući izvješća o rušenju programa i <ph name="UMA_LINK"/> Googleu</translation>
 <translation id="734373864078049451">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromiumu.</translation>
 <translation id="3197823471738295152">Uređaj je ažuran.</translation>
-<translation id="3065280201209294872">Ova web-lokacija upotrebljava sigurnosne postavke koje mogu sprječavati buduće verzije Chromiuma da joj sigurno pristupe.</translation>
 <translation id="8551886023433311834">Gotovo ažurno! Ponovo pokrenite uređaj da biste dovršili ažuriranje.</translation>
 <translation id="8353224596138547809">Želite li da Chromium spremi vašu zaporku za ovu web-lokaciju?</translation>
 <translation id="8738058698779197622">Za uspostavu sigurne veze sat mora biti točno postavljen. To je zato što certifikati koje web-lokacije upotrebljavaju za međusobnu identifikaciju vrijede samo određeno vrijeme. Budući da sat na vašem uređaju nije točan, Chromium ne može potvrditi te certifikate.</translation>

@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Status-felt</translation>
 <translation id="2248649616066688669">Du kan fortsette å bruke Chromebooken din mens den er tilkoblet en ekstern skjerm, selv når du lukker lokket.</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="6459472438155181876">Utvider skjermen til <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
@@ -167,7 +168,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="112308213915226829">Skjul hylle automatisk</translation>
 <translation id="7573962313813535744">Dokket modus</translation>
 <translation id="2792498699870441125">Alt + Søk</translation>
-<translation id="8660803626959853127">Synkroniserer <ph name="COUNT"/> fil(er)</translation>
 <translation id="5958529069007801266">Administrert bruker</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
@@ -187,6 +187,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Kameraet og mikrofonen er i bruk.</translation>
+<translation id="6550675742724504774">Alternativer</translation>
 <translation id="6406704438230478924">alt gr</translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE"/> (krever omstart)</translation>
 <translation id="8103386449138765447">SMS-meldinger: <ph name="MESSAGE_COUNT"/></translation>

@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">एक्‍सटेंशन अनपैकर</translation>
 <translation id="149347756975725155">एक्सटेंशन आइकन '<ph name="ICON"/>' लोड नहीं कर सका.</translation>
 <translation id="8825366169884721447">यह एक्सटेंशन किसी नेटवर्क अनुरोध के अनुरोध शीर्षलेख &quot;<ph name="HEADER_NAME"/>&quot; को बदलने में विफल रहा क्योंकि बदलाव का एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME"/>) के साथ विरोध हुआ था.</translation>
-<translation id="7495493006406536234">उत्‍पाद <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">USB डिवाइस चुनें</translation>
 <translation id="6731255991101203740">अनज़िप करने के लिए निर्देशिका नहीं बनाई जा सकी: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">संक्षिप्त विवरण पृष्ठ '<ph name="ABOUT_PAGE"/>' लोड नहीं हो सका.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; ऐप्‍लिकेशन आपके एक या अधिक डिवाइस की ऐक्‍सेस का अनुरोध कर रहा है.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> और <ph name="WEBSITE_2"/> पर मौजूद अपना डेटा पढ़ें और बदलें</translation>
 <translation id="2159915644201199628">चित्र को डीकोड नहीं किया जा सका: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012">विक्रेता <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">अपना नेटवर्क ट्रैफ़िक ऐक्‍सेस करें</translation>
 <translation id="1256619696651732561">एक्‍सटेंशन मेनिफ़ेस्‍ट पार्सर</translation>
 <translation id="5972529113578162692">इस मशीन के व्‍यवस्‍थापक के लिए आवश्‍यक है कि <ph name="EXTENSION_NAME"/> इंस्‍टॉल किया जाए. उसे अनइंस्‍टॉल नहीं किया जा सकता.</translation>

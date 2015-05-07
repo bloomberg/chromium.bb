@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Laajennuksien purkaja</translation>
 <translation id="149347756975725155">Laajennuskuvakkeen <ph name="ICON"/> lataaminen ei onnistunut.</translation>
 <translation id="8825366169884721447">Tämä laajennus ei muokannut verkkopyynnön otsikkoa <ph name="HEADER_NAME"/>, koska muokkaus oli ristiriidassa toisen laajennuksen (<ph name="EXTENSION_NAME"/>) kanssa.</translation>
-<translation id="7495493006406536234">Tuote <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Valitse USB-laitteita</translation>
 <translation id="6731255991101203740">Ei voitu luoda hakemistoa <ph name="DIRECTORY_PATH"/> laajennuksen purkamista varten:</translation>
 <translation id="4233778200880751280">Tietosivun <ph name="ABOUT_PAGE"/> lataus epäonnistui.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Sovellus <ph name="APP_NAME"/> pyytää käyttölupaa yhteen tai useampaan laitteeseesi.</translation>
 <translation id="6698810901424468597">lukea ja muuttaa tietojasi sivustoissa <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Kuvan koodin purkaminen epäonnistui: <ph name="IMAGE_NAME"/></translation>
-<translation id="5544884907028850012">Myyjä <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Käyttää verkkoliikennettäsi</translation>
 <translation id="1256619696651732561">Laajennusluettelon jäsentäjä</translation>
 <translation id="5972529113578162692">Tämän laitteen järjestelmänvalvoja on määrittänyt, että laitteessa täytyy olla <ph name="EXTENSION_NAME"/>. Laajennusta ei voi poistaa.</translation>

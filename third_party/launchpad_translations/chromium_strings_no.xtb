@@ -76,7 +76,6 @@
 <translation id="3068515742935458733">Bidra til å gjøre Chromium bedre ved å sende programstopprapporter og <ph name="UMA_LINK"/> til Google</translation>
 <translation id="734373864078049451">Her finner du nettinnholdet, bokmerkene og de andre Chromium-tingene dine.</translation>
 <translation id="3197823471738295152">Enheten er oppdatert.</translation>
-<translation id="3065280201209294872">Dette nettstedet bruker utdaterte sikkerhetsinnstillinger som kan føre til at fremtidige versjoner av Chromium ikke kan opprette sikre tilkoblinger til det.</translation>
 <translation id="8551886023433311834">Nesten oppdatert! Start enheten på nytt for å fullføre oppdateringen.</translation>
 <translation id="8353224596138547809">Vil du at Chromium skal lagre passordet du bruker på dette nettstedet?</translation>
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>

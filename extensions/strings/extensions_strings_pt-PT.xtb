@@ -28,10 +28,9 @@
 <translation id="2350172092385603347">Localização utilizada, mas não foi especificado default_locale no manifesto.</translation>
 <translation id="3759933321830434300">Bloquear partes de páginas Web</translation>
 <translation id="6143635259298204954">Não é possível descompactar a extensão. Para descompactar uma extensão em segurança, é necessário existir um caminho para o seu directório de perfil sem uma ligação simbólica. Não existe um caminho deste tipo para o seu perfil.</translation>
-<translation id="8712265948125780616">Extension Unpacker</translation>
+<translation id="8712265948125780616">Descompactador de extensões</translation>
 <translation id="149347756975725155">Não foi possível carregar o ícone de extensão &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Falha desta extensão ao modificar o cabeçalho do pedido &quot;<ph name="HEADER_NAME"/>&quot; de um pedido de rede, porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produto <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Selecionar dispositivos USB</translation>
 <translation id="6731255991101203740">Não foi possível criar um diretório para descomprimir: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Não foi possível carregar a página acerca de &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
@@ -55,8 +54,8 @@
 <translation id="27822970480436970">Esta extensão não conseguiu modificar um pedido de rede, porque a modificação entrou em conflito com outra extensão.</translation>
 <translation id="2241053333139545397">Ler e alterar os seus dados em vários Websites</translation>
 <translation id="8602184400052594090">O ficheiro de manifesto está em falta ou é ilegível.</translation>
-<translation id="2270627217422354837">Trocar dados com com qualquer dispositivo nos domínios: <ph name="DOMAINS"/></translation>
-<translation id="7093866338626856921">Trocar dados com os dispositivos com o nome: <ph name="HOSTNAMES"/></translation>
+<translation id="2270627217422354837">Trocar dados com com qualquer dispositivo nos seguintes domínios: <ph name="DOMAINS"/></translation>
+<translation id="7093866338626856921">Trocar dados com os seguintes dispositivos: <ph name="HOSTNAMES"/></translation>
 <translation id="4883436287898674711">Todos os sites de <ph name="WEBSITE_1"/></translation>
 <translation id="9111791539553342076">Falha desta extensão ao modificar o cabeçalho da resposta &quot;<ph name="HEADER_NAME"/>&quot; de um pedido de rede, porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9150045010208374699">Utilizar a sua câmara</translation>
@@ -76,9 +75,8 @@
 <translation id="2677911863018634147">A aplicação&quot;<ph name="APP_NAME"/>&quot; está a solicitar acesso a um ou mais dos seus dispositivos.</translation>
 <translation id="6698810901424468597">Ler e alterar os seus dados em <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Não foi possível descodificar a imagem: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="5544884907028850012">Fornecedor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Aceder ao tráfego da sua rede</translation>
-<translation id="1256619696651732561">Extension Manifest Parser</translation>
+<translation id="1256619696651732561">Analisador de manifestos de extensão</translation>
 <translation id="5972529113578162692">O administrador deste computador requer que a extensão <ph name="EXTENSION_NAME"/> esteja instalada. Não é possível desinstalá-la.</translation>
 <translation id="1135328998467923690">O pacote é inválido: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
 <translation id="7131040479572660648">Ler os seus dados em <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>

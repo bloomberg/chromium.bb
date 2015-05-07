@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="149347756975725155">Kan ikke laste inn utvidelsesikonet «<ph name="ICON"/>».</translation>
 <translation id="8825366169884721447">Denne utvidelsen kunne ikke endre forespørselsoverskriften «<ph name="HEADER_NAME"/>» i en nettverksforespørsel fordi endringen kom i konflikt med en annen utvidelse (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Velg USB-enheter</translation>
 <translation id="6731255991101203740">Kunne ikke opprette katalog for utpakking: «<ph name="DIRECTORY_PATH"/>»</translation>
 <translation id="4233778200880751280">Kunne ikke laste inn info-siden «<ph name="ABOUT_PAGE"/>».</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Appen «<ph name="APP_NAME"/>» ber om tilgang til én eller flere av enhetene dine.</translation>
 <translation id="6698810901424468597">lese og endre opplysningene dine på <ph name="WEBSITE_1"/> og <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Kunne ikke dekode bilde: «<ph name="IMAGE_NAME"/>»</translation>
-<translation id="5544884907028850012">Leverandør <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Få tilgang til nettverkstrafikken din</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="5972529113578162692">Administratoren for denne maskinen krever at <ph name="EXTENSION_NAME"/> installeres. Denne utvidelsen kan ikke avinstalleres.</translation>

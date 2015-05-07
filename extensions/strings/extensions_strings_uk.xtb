@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Засіб розпакування розширень</translation>
 <translation id="149347756975725155">Не вдалося завантажити піктограму розширення &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Це розширення не змінило заголовок запиту &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Продукт <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Вибрати пристрої USB</translation>
 <translation id="6731255991101203740">Не вдалося створити каталог для розпакування: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Додаток <ph name="APP_NAME"/> запитує доступ до одного або кількох ваших пристроїв.</translation>
 <translation id="6698810901424468597">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Не вдалося декодувати зображення: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="5544884907028850012">Постачальник послуг <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Отримувати доступ до трафіку мережі</translation>
 <translation id="1256619696651732561">Синтаксичний аналізатор маніфесту розширення</translation>
 <translation id="5972529113578162692">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/>. Його неможливо видалити.</translation>

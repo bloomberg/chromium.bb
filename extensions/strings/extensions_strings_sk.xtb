@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="149347756975725155">Nepodarilo sa načítať ikonu rozšírenia „<ph name="ICON"/>“.</translation>
 <translation id="8825366169884721447">Tomuto rozšíreniu sa nepodarilo upraviť hlavičku <ph name="HEADER_NAME"/> žiadosti o sieť, pretože táto úprava kolidovala s iným rozšírením (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Produkt <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Výber zariadení USB</translation>
 <translation id="6731255991101203740">Nepodarilo sa vytvoriť adresár na rozbalenie: <ph name="DIRECTORY_PATH"/></translation>
 <translation id="4233778200880751280">Informačnú stránku <ph name="ABOUT_PAGE"/> sa nepodarilo načítať.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému alebo viacerým vašim zariadeniam.</translation>
 <translation id="6698810901424468597">Čítanie a úprava údajov na weboch <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Nepodarilo sa dekódovať obrázok: <ph name="IMAGE_NAME"/></translation>
-<translation id="5544884907028850012">Dodávateľ <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Prístup k dátam prenášaným v sieti</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="5972529113578162692">Správca tohto počítača vyžaduje, aby bolo nainštalované rozšírenie <ph name="EXTENSION_NAME"/>. Nedá sa odinštalovať.</translation>

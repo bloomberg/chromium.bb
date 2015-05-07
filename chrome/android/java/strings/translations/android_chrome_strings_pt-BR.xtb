@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Configurar o Google Chrome</translation>
 <translation id="6448273550210938826">Sugestões de pesquisa e URL</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
-<translation id="8425213833346101688">Alterar</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
 <translation id="8607727265103077134">Da Google Wallet</translation>
 <translation id="6292937202013477045">Invasores podem tentar roubar suas informações (por exemplo, fotos, senhas, mensagens e cartões de crédito) do <ph name="DOMAIN_NAME"/>.</translation>
@@ -17,10 +16,12 @@
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
 <translation id="346339498574870680">Copiar URL da imagem</translation>
 <translation id="5063480226653192405">Uso</translation>
-<translation id="6657585470893396449">Senha</translation>
 <translation id="5578795271662203820">Pesquisar imagem no <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
+<translation id="5098185943924922330">Ajude-nos a priorizar os recursos e aprimoramentos nos quais deveríamos trabalhar, enviando informações ao Google sobre os arquivos, aplicativos e serviços que estão sendo executados quando ocorre uma falha.
+
+        As estatísticas de uso incluem informações como preferências, cliques em botões e uso da memória. Elas não incluem URLs de páginas da Web ou qualquer informação pessoal. Relatórios de erros contêm informações do sistema do momento da falha e podem conter URLs de páginas da Web ou informações pessoais, dependendo de o que estava acontecendo no momento da falha.</translation>
 <translation id="4042870126885713738">Mostrar sugestões quando um endereço da Web não for convertido ou uma conexão não puder ser estabelecida</translation>
 <translation id="8237438615979997762">Os dados armazenados neste dispositivo e na sua Conta do Google permanecerão nos dois locais. Entretanto, dados novos ou alterações feitas nos seus dados não serão sincronizados entre eles.</translation>
 <translation id="6831043979455480757">Traduzir</translation>
@@ -133,14 +134,11 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="8073388330009372546">Abrir imagem em nova guia</translation>
 <translation id="9060538597317784206">Ver aplicativo <ph name="APP_NAME"/> na Play Store.  Classificação: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Salvar</translation>
-<translation id="1151972924205500581">Senha obrigatória</translation>
 <translation id="2870560284913253234">Site</translation>
-<translation id="3101226206443094477">Faça login usando sua Conta do Google:</translation>
 <translation id="2718352093833049315">Apenas com Wi-Fi</translation>
 <translation id="7029809446516969842">Senhas</translation>
 <translation id="5487729733663684359">As atualizações do Chrome não são mais compatíveis com esta versão do Android.</translation>
 <translation id="5100237604440890931">Visualização recolhida. Clique para expandir</translation>
-<translation id="1201402288615127009">Próxima</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2487368562788861256">Gaste menos em dados usando o Google para <ph name="BEGIN_LINK"/>otimizar as páginas que você visita<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
@@ -153,7 +151,6 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="138361230106469022">Olá, <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
-<translation id="6317463785365643240">Não criptografar</translation>
 <translation id="8627706565932943526">Erro de sincronização</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="9219103736887031265">Imagens</translation>
@@ -254,7 +251,6 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="5324858694974489420">Configurações parentais</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Bloquear todos os sites</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
 <translation id="5424715742813396254">Editar nome/senha salvos ou exceção</translation>
 <translation id="6978479750597523876">Redefinir configurações do Google Tradutor</translation>
@@ -266,7 +262,6 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="2526148617758225454">A economia de dados está ativada. Gerencie esse recurso em &quot;Configurações&quot;.</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="3102119246920354026">Cache</translation>
-<translation id="651048280540227067">Ignorar menu</translation>
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
 <translation id="3089395242580810162">Abrir em guia anônima</translation>
 <translation id="5899349522111170522">Criar novo arquivo</translation>
@@ -283,7 +278,6 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Compartilhar...</translation>
 <translation id="1056898198331236512">Aviso</translation>
-<translation id="3338301885994755905">Bloquear (recomendado)</translation>
 <translation id="6575643671698722332">Falha na redefinição. Veja se o dispositivo está on-line e tente novamente.</translation>
 <translation id="8987061207681586800">O Chrome é seu</translation>
 <translation id="654446541061731451">Selecione uma guia para transferir</translation>
@@ -342,13 +336,9 @@ Aperte o botão &quot;Voltar&quot; para sair.</translation>
 <translation id="5138299137310274655">Esta página está escrita em <ph name="SOURCE_LANGUAGE"/>. Deseja traduzi-la para <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Permitir que os sites salvem e leiam dados de cookies (recomendado)</translation>
 <translation id="5512137114520586844">Esta conta é gerenciada por <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">Ajuda</translation>
 <translation id="1373696734384179344">Memória insuficiente para fazer o download do conteúdo selecionado.</translation>
 <translation id="969096075394517431">Alterar idiomas</translation>
 <translation id="5085880389019676122">Armaz. USB indisponível</translation>
-<translation id="1614564776292091138">Quando o conteúdo protegido está ativado, os websites podem autenticar seu dispositivo para assegurar que ele tenha autorização para reproduzir vídeos premium protegidos.
-
-Se o conteúdo protegido estiver desativado, não será possível reproduzir vídeos premium neste dispositivo.</translation>
 <translation id="8928220460877261598">Você fez login no Chrome.</translation>
 <translation id="7811044698839470685">Apenas uma pessoa com sua senha pode ler os dados criptografados. A senha não é enviada ao Google nem armazenada por ele. Se você esquecer a senha, terá que reiniciar a sincronização.</translation>
 <translation id="8547287415299944404">Não é possível apagar o histórico de navegação com contas para crianças</translation>
@@ -396,7 +386,6 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="6965382102122355670">OK</translation>
 <translation id="4440256989292146959">Navegue mais por menos</translation>
 <translation id="4023950129927433024">Se você esqueceu sua senha, pare e reinicie a sincronização por meio do <ph name="BEGIN_LINK"/>Painel do Google<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">Acessar microfone e câmera</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="5127805178023152808">A sincronização está desativada</translation>

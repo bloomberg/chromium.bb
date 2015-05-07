@@ -144,7 +144,6 @@
 <translation id="7974566588408714340">Försök igen med <ph name="EXTENSIONNAME"/></translation>
 <translation id="2972581237482394796">&amp;Upprepa</translation>
 <translation id="5895138241574237353">Starta om</translation>
-<translation id="7012312584667795941">Identiteten för <ph name="ORGANIZATION"/> på adressen <ph name="LOCALITY"/> har verifierats av <ph name="ISSUER"/> men det gick inte att verifiera dess offentliga granskningsposter.</translation>
 <translation id="7113502843173351041">Känn till din e-postadress</translation>
 <translation id="3726463242007121105">Enheten kan inte öppnas eftersom dess filsystem inte stöds.</translation>
 <translation id="5606674617204776232"><ph name="PEPPER_PLUGIN_NAME"/> på <ph name="PEPPER_PLUGIN_DOMAIN"/> vill komma åt din enhet.</translation>
@@ -317,7 +316,6 @@
 <translation id="5748743223699164725">Aktivera experimentella Web Platform-funktioner som är under utveckling.</translation>
 <translation id="8110513421455578152">Ange standardhöjd för panelen.</translation>
 <translation id="7002454948392136538">Välj ansvarig för den här övervakade användaren</translation>
-<translation id="9091975085874311841">Anslutningen till <ph name="DOMAIN"/> är krypterad med modern kryptografi.</translation>
 <translation id="4640525840053037973">Logga in med ditt Google-konto</translation>
 <translation id="4923279099980110923">Ja, jag vill hjälpa till</translation>
 <translation id="6922128026973287222">Spara data och bläddra snabbare med Google Databesparing. Klicka här om du vill veta mer.</translation>
@@ -647,7 +645,6 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL"/>. Där finns dessa och andra anvis
 <translation id="2887525882758501333">PDF-dokument</translation>
 <translation id="289426338439836048">Andra mobila nätverk...</translation>
 <translation id="5953576419932384180">Kommer du inte ihåg det gamla lösenordet?</translation>
-<translation id="100869152053188797">Webbplatsens identitet har verifierats av <ph name="ISSUER"/> och offentliga granskningsposter ska finnas enligt uppgift men det gick inte att verifiera dem.</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">Läsa och ändra allt som du skriver in, bland annat tangenter för att byta aktivitet som CMD+TAB</translation>
 <translation id="8214962590150211830">Ta bort personen</translation>
@@ -1128,7 +1125,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="6954850746343724854">Aktivera Native Client för alla webbprogram, även de som inte installerats från Chrome Web Store.</translation>
 <translation id="9043242398268815112">Läser av enhetens position</translation>
 <translation id="9068931793451030927">Sökväg:</translation>
-<translation id="667314332843412173">Skicka aviseringar</translation>
 <translation id="4289540628985791613">Översikt</translation>
 <translation id="283278805979278081">Ta bild.</translation>
 <translation id="6111974609785983504">Tillåts som standard</translation>
@@ -1221,7 +1217,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="3798449238516105146">Version</translation>
 <translation id="3608576286259426129">Förhandsgranskning av användarens bild</translation>
 <translation id="5764483294734785780">S&amp;para ljud som...</translation>
-<translation id="4511834652944195516">Aktivera stöd för MTP i filhanteraren. Vissa åtgärder (redigering av en bild på MTP-volymen) stöds inte ännu.</translation>
 <translation id="313205617302240621">Glömt lösenordet?</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -1376,6 +1371,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="3828440302402348524">Inloggad som <ph name="USER_NAME"/> ...</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="3522159121915794564">Tillåter att användarna tillåter att ogiltiga TLS/SSL-certifikatkedjor samlas in.</translation>
+<translation id="6978121630131642226">Sökmotorer</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK"/>Logga in<ph name="END_SIGN_IN_LINK"/> om du vill styra och visa vilka webbplatser den här personen besöker.</translation>
 <translation id="8965697826696209160">Det finns inte tillräckligt med ledigt utrymme.</translation>
 <translation id="329838636886466101">Reparera</translation>
@@ -1419,7 +1415,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="8656946437567854031">Genom att klicka på Fortsätt godkänner du <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, <ph name="LEGAL_DOC_LINK_TEXT_5"/> och <ph name="LEGAL_DOC_LINK_TEXT_6"/>.</translation>
 <translation id="830598693585544337">Om du aktiverar det här alternativet får inga webbsidor använda API:et WebAudio.</translation>
 <translation id="3574777678278664892">Om du aktiverar det här alternativet ges du inte möjlighet att spara användaruppgifterna som används vid synkronisering.</translation>
-<translation id="1914436586714907696">Chrome fick slut på minne.</translation>
 <translation id="5747785204778348146">Utvecklare – instabil</translation>
 <translation id="3590194807845837023">Lås upp profil och starta om</translation>
 <translation id="6644756108386233011">Har återställningen ändrat inställningarna för <ph name="IDS_SHORT_PRODUCT_NAME"/>?</translation>
@@ -1457,7 +1452,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="7547811415869834682">nederländska</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/> Byt till ett annat konto</translation>
 <translation id="1587275751631642843">&amp;JavaScript-konsol</translation>
-<translation id="2348797501425402112">Aktivera stöd för MTP-skrivning</translation>
 <translation id="8460696843433742627">Ett ogiltigt svar togs emot vid försöket att hämta<ph name="URL"/>.
         Servern kan ligga nere för underhåll eller vara felkonfigurerad.</translation>
 <translation id="297870353673992530">DNS-server:</translation>
@@ -2402,7 +2396,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="4807098396393229769">Namn på kort</translation>
 <translation id="4131410914670010031">Svartvitt</translation>
 <translation id="3800503346337426623">Hoppa över inloggningen och använd som gäst</translation>
-<translation id="2615413226240911668">Den här sidan innehåller emellertid andra resurser som inte är säkra. Andra kan se resurserna när de överförs och hackare kan ändra resurserna så att sidan får ett annat utseende.</translation>
 <translation id="1416136326154112077">Den som hanterar användaren kan fortfarande se vilka webbplatser som har besökts och användarens inställningar på <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>.</translation>
 <translation id="2436733981438712345">Behandlas...</translation>
 <translation id="197288927597451399">Behåll</translation>
@@ -2445,7 +2438,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="3774278775728862009">Thailändsk inmatningsmetod (TIS-820.2538-tangentbord)</translation>
 <translation id="9115675100829699941">&amp;Bokmärken</translation>
 <translation id="7570496663860904543">När en sida inte kan läsas in visas en knapp där användaren kan välja att läsa in en inaktuell kopia av sidan, om en sådan finns i webbläsaren. Med alternativet Primär placeras knappen på den mest framträdande positionen på felsidan. Med alternativet Sekundär placeras den efter uppdateringsknappen.</translation>
-<translation id="7191877888075697060">Anslutningen till <ph name="DOMAIN"/> är krypterad med gammal kryptografi.</translation>
 <translation id="1731589410171062430">Totalt: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Fäst</translation>
 <translation id="5298363578196989456">Det gick inte att importera tillägget <ph name="IMPORT_NAME"/> eftersom det inte är en delad modul.</translation>
@@ -2616,7 +2608,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="8273972836055206582"><ph name="FULLSCREEN_ORIGIN"/> är nu i helskärmsläge och försöker inaktivera muspekaren.</translation>
 <translation id="1497522201463361063">Det gick inte att byta namn på <ph name="FILE_NAME"/>. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Nedan visas det slumpmässigt genererade lösenordet för TPM som har tilldelats din dator:</translation>
-<translation id="5636000737234849121">Aktivera svepskrivning för virtuellt tangentbord.</translation>
 <translation id="5010043101506446253">Certifikatutfärdare</translation>
 <translation id="5287425679749926365">Dina konton</translation>
 <translation id="4249373718504745892">Den här sidan har blockerats och kan inte komma åt kameran och mikrofonen.</translation>
@@ -2705,7 +2696,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="8870318296973696995">Startsida</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="8283475148136688298">Autentiseringskoden avvisades vid anslutning till <ph name="DEVICE_NAME"/>.</translation>
-<translation id="3491170932824591984">Webbplatsens identitet har verifierats av <ph name="ISSUER"/>, men det gick inte att verifiera dess offentliga granskningsposter.</translation>
 <translation id="6575134580692778371">Inte konfigurerat</translation>
 <translation id="4624768044135598934">Klart!</translation>
 <translation id="7518150891539970662">WebRTC-loggar (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
@@ -2961,7 +2951,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="8800420788467349919">Volym: <ph name="PRECENTAGE"/> %</translation>
 <translation id="1697068104427956555">Välj ett kvadratiskt område på bilden.</translation>
 <translation id="29232676912973978">Hantera anslutningar ...</translation>
-<translation id="6225644908173488565">Aktivera svepradering för virtuellt tangentbord.</translation>
 <translation id="4090103403438682346">Aktivera verifierad åtkomst</translation>
 <translation id="570197343572598071">Events att visa</translation>
 <translation id="1628736721748648976">Teckenkodning</translation>
@@ -2975,7 +2964,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="8420728540268437431">Sidan håller på att översättas ...</translation>
 <translation id="736515969993332243">Söker efter nätverk.</translation>
 <translation id="7806513705704909664">Aktivera Autofyll och fyll i webbformulär med ett enda klick.</translation>
-<translation id="6856069154773169210">Aktivera svepmarkering för det virtuella tangentbordet.</translation>
 <translation id="9063302675152872196">Aktivera håltagning i Chrome OS-brandväggen för Chrome-appar som öppnar en TCP/IP-serversocket eller UDP-socket.</translation>
 <translation id="5430298929874300616">Ta bort bokmärke</translation>
 <translation id="3150994199788134383">Ett tillägg har tagit kontroll över dina proxyinställningar, vilket innebär att det kan ändra, knäcka eller tjuvlyssna på allt du gör på webben. Om du inte vet varför den här ändringen inträffade är den troligen inte önskvärd.</translation>
@@ -3088,7 +3076,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="1436784010935106834">Borttagna</translation>
 <translation id="3730639321086573427">Lokala platser</translation>
 <translation id="399856887277429830">Kör verktyget för borttagning av programvara</translation>
-<translation id="2734167549439405382">Webbplatsens identitet har verifierats av <ph name="ISSUER"/> men det finns inga offentliga granskningsposter.</translation>
 <translation id="7918257978052780342">Registrera</translation>
 <translation id="2863937263901630331">Oformaterad data är tillgänglig via NetLog. Mer information finns i hjälpen.</translation>
 <translation id="4195814663415092787">Fortsätt där du slutade</translation>
@@ -3270,7 +3257,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="878431691778285679">Det ser ut som om du redan hanterar en användare med det namnet.<ph name="LINE_BREAK"/>Ville du <ph name="BEGIN_LINK"/>importera <ph name="PROFILE_NAME"/> till den här enheten<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> försöker använda din mikrofon.</translation>
 <translation id="2805756323405976993">Appar</translation>
-<translation id="5151511998946489774">Webbplatsens identitet har verifierats av <ph name="ISSUER"/> och kan granskas offentligt.</translation>
 <translation id="7235421518178823985">Servern kunde inte bevisa att den är <ph name="DOMAIN"/> eftersom dess säkerhetscertifikat verkar komma från <ph name="DAYS"/> dagar framåt i tiden. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="2779552785085366231">Den här sidan kan läggas till i startprogrammet för appar</translation>
@@ -3491,7 +3477,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
     Det finns inte tillräckligt med utrymme på enheten.
     <ph name="LINE_BREAK2"/>
     Testa att välja ett par foton för att komma igång.</translation>
-<translation id="3700834376805760154">Identiteten för <ph name="ORGANIZATION"/> på adressen <ph name="LOCALITY"/> har verifierats av <ph name="ISSUER"/> och kan granskas offentligt.</translation>
 <translation id="4416628180566102937">Registrera och starta om</translation>
 <translation id="4623537843784569564">Det här tillägget kan ha uppdaterats på fel sätt. Testa att installera om det.</translation>
 <translation id="4342311272543222243">Ett TPM-fel inträffade.</translation>
@@ -3971,7 +3956,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="7748144333872478614">Inaktivera fönsterbakgrunder i TouchView</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">Om NaCl</translation>
-<translation id="3084771660770137092">Antingen tog minnet slut i Chrome eller så avslutades processen för webbsidan av någon annan anledning. Om du vill fortsätta läser du in sidan på nytt eller öppnar en annan sida.</translation>
 <translation id="1114901192629963971">Det går inte att verifiera lösenordet i det nuvarande nätverket. Välj ett annat nätverk.</translation>
 <translation id="6430814529589430811">Base64-kodad ASCII, enstaka certifikat</translation>
 <translation id="3305661444342691068">Öppna PDF i förhandsgranskning</translation>
@@ -4795,7 +4779,6 @@ hanteraren
 <translation id="4350711002179453268">Det går inte att upprätta en säker anslutning till servern. Det kan bero på ett problem med servern eller så kan det behövas ett klientautentiseringscertifikat som du inte har.</translation>
 <translation id="4731422630970790516">Hyllobjekt 3</translation>
 <translation id="750509436279396091">Öppna mappen för nedladdningar</translation>
-<translation id="4417463059397999181">Inte specificerad</translation>
 <translation id="4125496372515105318">Inaktivera de senaste stabila JavaScript-funktionerna</translation>
 <translation id="5963026469094486319">Hämta teman</translation>
 <translation id="7586312264284919041">Vill du översätta sidan?</translation>
@@ -4832,7 +4815,6 @@ hanteraren
 <translation id="6449285849137521213">Appen <ph name="EXTENSION_NAME"/> har lagts till.</translation>
 <translation id="6516193643535292276">Det går inte att ansluta till Internet</translation>
 <translation id="5125751979347152379">Ogiltig webbadress.</translation>
-<translation id="4467801982834340084">Identiteten för <ph name="ORGANIZATION"/> på adressen <ph name="LOCALITY"/> har verifierats av <ph name="ISSUER"/> men det finns inga offentliga granskningsposter.</translation>
 <translation id="752397454622786805">Avregistrerad</translation>
 <translation id="8206354486702514201">Administratören har gjort den här inställningen obligatorisk.</translation>
 <translation id="6040143037577758943">Stäng</translation>
@@ -5027,7 +5009,6 @@ hanteraren
 <translation id="5158593464696388225">Det gick inte att spara bilden.</translation>
 <translation id="3296763833017966289">georgiska</translation>
 <translation id="2242687258748107519">Filinformation</translation>
-<translation id="1152775729948968688">Den här sidan innehåller emellertid andra resurser som inte är säkra. Andra kan se resurserna när de överförs och hackare kan ändra resurserna så att sidan får ett annat beteende.</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="862542460444371744">&amp;Tillägg</translation>
 <translation id="2539110682392681234">Proxyinställningarna aktiveras av administratören.</translation>
@@ -5376,7 +5357,6 @@ hanteraren
 <translation id="340771324714262530">Stoppa spegling</translation>
 <translation id="3303260552072730022">Ett tillägg aktiverade helskärmsläge.</translation>
 <translation id="3348459612390503954">Grattis</translation>
-<translation id="5845521171017703245">Id: <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">Anpassa konverteringen utifrån föregående inmatning</translation>
 <translation id="8675377193764357545">Synkroniserad till <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="7265986070661382626">Det går inte att besöka <ph name="SITE"/> just nu på grund av att <ph name="BEGIN_LINK"/>fäste av certifikat<ph name="END_LINK"/> förekommer på webbplatsen. Nätverksfel och attacker är vanligtvis tillfälliga, så den här sidan fungerar troligen senare.</translation>
@@ -5395,7 +5375,6 @@ hanteraren
 <translation id="4047112090469382184">Därför är detta säkert</translation>
 <translation id="5461512418490148136">Håll ut, vi hämtar dina filer.</translation>
 <translation id="4268574628540273656">Webbadress:</translation>
-<translation id="2766585356456507052">Identiteten för <ph name="ORGANIZATION"/> på adressen <ph name="LOCALITY"/> har verifierats av <ph name="ISSUER"/> och offentliga granskningsposter ska finnas enligt uppgift men det gick inte att verifiera dem.</translation>
 <translation id="6690455781383741953">Aktivera Plugin Power Saver</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="5972826969634861500">Starta <ph name="PRODUCT_NAME"/></translation>

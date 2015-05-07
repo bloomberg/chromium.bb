@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">扩展程序解压缩程序</translation>
 <translation id="149347756975725155">无法加载扩展程序图标“<ph name="ICON"/>”。</translation>
 <translation id="8825366169884721447">此扩展程序无法修改网络请求的请求标头“<ph name="HEADER_NAME"/>”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME"/>）产生了冲突。</translation>
-<translation id="7495493006406536234">产品 <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">选择 USB 设备</translation>
 <translation id="6731255991101203740">无法创建解压缩目录：“<ph name="DIRECTORY_PATH"/>”</translation>
 <translation id="4233778200880751280">无法加载简介页面“<ph name="ABOUT_PAGE"/>”。</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">“<ph name="APP_NAME"/>”应用请求访问您的一台或多台设备。</translation>
 <translation id="6698810901424468597">读取和更改您在<ph name="WEBSITE_1"/>和<ph name="WEBSITE_2"/>上的数据</translation>
 <translation id="2159915644201199628">无法对图片解码：“<ph name="IMAGE_NAME"/>”</translation>
-<translation id="5544884907028850012">供应商 <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">获取您的网络流量数据</translation>
 <translation id="1256619696651732561">扩展程序清单解析器</translation>
 <translation id="5972529113578162692">此设备的管理员要求安装“<ph name="EXTENSION_NAME"/>”，因此不能卸载该扩展程序。</translation>

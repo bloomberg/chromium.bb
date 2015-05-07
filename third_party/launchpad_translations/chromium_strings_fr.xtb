@@ -77,7 +77,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3068515742935458733">Aidez-nous à améliorer Chromium en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK"/>.</translation>
 <translation id="734373864078049451">Votre contenu Web, vos favoris et toutes vos données Chromium sont conservés ici.</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
-<translation id="3065280201209294872">En raison des paramètres de sécurité obsolètes du site, il se peut que les prochaines versions de Chromium ne puissent pas y accéder en toute sécurité.</translation>
 <translation id="8551886023433311834">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
 <translation id="8353224596138547809">Voulez-vous que Chromium enregistre votre mot de passe pour ce site ?</translation>
 <translation id="8738058698779197622">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chromium n'est pas en mesure de vérifier la validité des certificats.</translation>

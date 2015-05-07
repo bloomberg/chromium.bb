@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">‏הגדרת Chrome</translation>
 <translation id="6448273550210938826">הצעות חיפוש וכתובות אתר</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
-<translation id="8425213833346101688">שנה</translation>
 <translation id="4996978546172906250">שתף באמצעות</translation>
 <translation id="8607727265103077134">‏מארנק Google</translation>
 <translation id="6292937202013477045">ייתכן שתוקפים מנסים לגנוב את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי) מ-<ph name="DOMAIN_NAME"/>.</translation>
@@ -17,10 +16,12 @@
 <translation id="1506061864768559482">מנוע חיפוש</translation>
 <translation id="346339498574870680">העתק את כתובת האתר של התמונה</translation>
 <translation id="5063480226653192405">שימוש</translation>
-<translation id="6657585470893396449">סיסמה</translation>
 <translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
 <translation id="4816465935029283692">סוגי נתונים</translation>
+<translation id="5098185943924922330">‏כדי לעזור לנו לקבוע את סדר העדיפויות לגבי תכונות ושיפורים שעלינו לעבוד עליהם, שלח ל-Google מידע על הקבצים, על האפליקציות ועל השירותים הפועלים בזמן שאתה נתקל בקריסה.
+
+        סטטיסטיקות השימוש כוללות מידע כגון העדפות, לחיצות על לחצנים ושימוש בזיכרון. הן אינן כוללות כתובות של דפי אינטרנט או מידע אישי. דוחות קריסה מכילים מידע על המערכת בזמן הקריסה, והם עשויים להכיל כתובות של דפי אינטרנט או מידע אישי, בהתאם למתרחש בזמן הקריסה.</translation>
 <translation id="4042870126885713738">הצג הצעות כאשר כתובת אינטרנט אינה מזוהה או כשלא ניתן ליצור חיבור</translation>
 <translation id="8237438615979997762">‏הנתונים השמורים במכשיר הזה והנתונים השמורים בחשבון Google שלך יישארו בשני המקומות. עם זאת, לא יתבצע בין השניים סנכרון של נתונים חדשים שתוסיף או של שינויים שתבצע בנתונים הקיימים.</translation>
 <translation id="6831043979455480757">תרגם</translation>
@@ -133,14 +134,11 @@
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="9060538597317784206">‏הצג את האפליקציה <ph name="APP_NAME"/> בחנות Play. דירוג: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">שמור</translation>
-<translation id="1151972924205500581">נדרשת סיסמה</translation>
 <translation id="2870560284913253234">אתר</translation>
-<translation id="3101226206443094477">‏היכנס באמצעות חשבון Google שלך:</translation>
 <translation id="2718352093833049315">‏רק ב-Wi-Fi</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="5487729733663684359">‏עדכוני Chrome אינם נתמכים עוד בגרסה הזו של Android.</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
-<translation id="1201402288615127009">הבא</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2487368562788861256">‏חסוך בהוצאות על נתונים על ידי שימוש ב-Google <ph name="BEGIN_LINK"/>לביצוע אופטימיזציה של דפים שבהם אתה מבקר<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -153,7 +151,6 @@
 <translation id="473775607612524610">עדכן</translation>
 <translation id="138361230106469022">שלום <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
-<translation id="6317463785365643240">אל תצפין</translation>
 <translation id="8627706565932943526">שגיאת סנכרון</translation>
 <translation id="1807246157184219062">בהיר</translation>
 <translation id="9219103736887031265">תמונות</translation>
@@ -254,7 +251,6 @@
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">חסום את כל האתרים</translation>
 <translation id="8168435359814927499">תוכן</translation>
 <translation id="5424715742813396254">ערוך שם/סיסמה או חריג שנשמרו</translation>
 <translation id="6978479750597523876">‏אפס את הגדרות Google Translate</translation>
@@ -266,7 +262,6 @@
 <translation id="2526148617758225454">‏חוסך הנתונים (Data Saver) פועל. תוכל לנהל אותו ב'הגדרות'.</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="3102119246920354026">קובץ שמור</translation>
-<translation id="651048280540227067">סגור את התפריט</translation>
 <translation id="748127970106343339">אשר את מחיקת פרטי הכניסה של המכשיר</translation>
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="5899349522111170522">צור קובץ חדש</translation>
@@ -283,7 +278,6 @@
 <translation id="7977858705483383621">חיפוש בטוח</translation>
 <translation id="8909135823018751308">שתף…</translation>
 <translation id="1056898198331236512">אזהרה</translation>
-<translation id="3338301885994755905">חסום (מומלץ)</translation>
 <translation id="6575643671698722332">האיפוס נכשל. ודא שהמכשיר שלך במצב מקוון ונסה שוב.</translation>
 <translation id="8987061207681586800">‏התאם אישית את Chrome</translation>
 <translation id="654446541061731451">בחר כרטיסייה להעברת התוכן שלה</translation>
@@ -342,13 +336,9 @@
 <translation id="5138299137310274655">דף זה מוצג ב<ph name="SOURCE_LANGUAGE"/>. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">‏התר לאתרים לשמור ולקרוא נתונים של קובצי Cookie (מומלץ)</translation>
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">עזרה</translation>
 <translation id="1373696734384179344">אין מספיק זיכרון להורדת התוכן הנבחר.</translation>
 <translation id="969096075394517431">החלף שפות</translation>
 <translation id="5085880389019676122">‏אחסון USB אינו זמין</translation>
-<translation id="1614564776292091138">כאשר האפשרות לתוכן מוגן מופעלת, אתרים יוכלו לאמת את זהות המכשיר שלך, כדי להבטיח שהוא מורשה להפעיל סרטונים מוגנים המוצעים בתשלום.
-
-כאשר האפשרות הזו כבויה, ייתכן שלא תוכל להפעיל במכשיר הזה סרטונים בתשלום.</translation>
 <translation id="8928220460877261598">‏אתה מחובר כעת ל-Chrome.</translation>
 <translation id="7811044698839470685">‏רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה אינו נשלח אל Google או מאוחסן על ידה. אם תשכח אותו, תצטרך לאפס את הסנכרון.</translation>
 <translation id="8547287415299944404">לא ניתן למחוק את היסטוריית הגלישה בחשבונות בשביל ילדים</translation>
@@ -395,7 +385,6 @@
 <translation id="6965382102122355670">אישור</translation>
 <translation id="4440256989292146959">לגלוש יותר, לשלם פחות</translation>
 <translation id="4023950129927433024">‏אם שכחת את ביטוי הסיסמה, עצור ואפס את הסינכרון דרך <ph name="BEGIN_LINK"/>מרכז השליטה של Google‏<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">גישה למיקרופון ולמצלמה שלך</translation>
 <translation id="7437998757836447326">‏יציאה מ-Chrome</translation>
 <translation id="1178581264944972037">השהה</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>

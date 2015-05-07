@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">विस्तार अनपॅकर</translation>
 <translation id="149347756975725155">विस्तार प्रतीक '<ph name="ICON"/>' लोड करणे शक्य नाही.</translation>
 <translation id="8825366169884721447">हा विस्तार एका नेटवर्क विनंतीचा &quot;<ph name="HEADER_NAME"/>&quot; हा विनंती शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
-<translation id="7495493006406536234"><ph name="PRODUCT_ID"/> उत्पादन</translation>
 <translation id="4776856853352853275">USB डिव्हाइसेस निवडा</translation>
 <translation id="6731255991101203740">अनझिप करण्यासाठी निर्देशिका तयार करणे शक्य झाले नाही: '<ph name="DIRECTORY_PATH"/>'</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; अनुप्रयोग आपल्या एका किंवा अधिक डिव्हाइसेसवर प्रवेशाची विनंती करत आहे.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा आणि बदला</translation>
 <translation id="2159915644201199628">प्रतिमा डीकोड करणे शक्य झाले नाही: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="5544884907028850012"><ph name="VENDOR_ID"/> विक्रेता</translation>
 <translation id="2048182445208425546">आपल्या नेटवर्क रहदारीवर प्रवेश करा</translation>
 <translation id="1256619696651732561">विस्तार मॅनिफेस्ट विश्लेषक</translation>
 <translation id="5972529113578162692">या मशीनच्या प्रशासकासाठी <ph name="EXTENSION_NAME"/> स्थापित करणे आवश्यक आहे. हे विस्थापित केले जाऊ शकत नाही.</translation>

@@ -75,7 +75,6 @@
 <translation id="3068515742935458733">障害レポートと<ph name="UMA_LINK"/>を Google に自動送信して Chromium の機能向上に役立てる</translation>
 <translation id="734373864078049451">ウェブ、ブックマーク、その他の Chromium データを好みに設定できます。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
-<translation id="3065280201209294872">このサイトでは古いセキュリティ設定が使用されており、Chromium の今後のバージョンではこのサイトに安全にアクセスできない可能性があります。</translation>
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
 <translation id="8353224596138547809">Chromium でこのサイトのパスワードを保存しますか？</translation>
 <translation id="8738058698779197622">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chromium ではこれらの証明書を確認できません。</translation>

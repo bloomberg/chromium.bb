@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">بازکننده بسته افزونه</translation>
 <translation id="149347756975725155">بارکردن نماد پسوند &quot;<ph name="ICON"/>&quot; ممکن نیست.</translation>
 <translation id="8825366169884721447">این فایل افزودنی نتوانست عنوان درخواست «<ph name="HEADER_NAME"/>» درخواست شبکه را تغییر دهد چون تغییر با فایل افزودنی دیگر (<ph name="EXTENSION_NAME"/>) تناقض داشت.</translation>
-<translation id="7495493006406536234">محصول <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">‏انتخاب دستگاه‌های USB</translation>
 <translation id="6731255991101203740">ایجاد دایرکتوری برای خارج کردن «<ph name="DIRECTORY_PATH"/>» از حالت زیپ امکان‌پذیر نیست</translation>
 <translation id="4233778200880751280">صفحه درباره «<ph name="ABOUT_PAGE"/>» بارگیری نشد.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یک یا چند دستگاه شما را دارد.</translation>
 <translation id="6698810901424468597">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">رمزگشایی تصویر امکان‌پذیر نیست: «<ph name="IMAGE_NAME"/>»</translation>
-<translation id="5544884907028850012">فروشنده <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">دسترسی به ترافیک شبکه شما</translation>
 <translation id="1256619696651732561">تجزیه‌کننده مانیفست افزونه</translation>
 <translation id="5972529113578162692">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME"/> را لازم می‌داند. این برنامه افزودنی نمی‌تواند حذف نصب شود.</translation>

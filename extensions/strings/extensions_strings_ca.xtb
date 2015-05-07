@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Eina per desempaquetar extensions</translation>
 <translation id="149347756975725155">No s'ha pogut carregar la icona d'extensió &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Aquesta extensió no ha pogut modificar la capçalera de la sol·licitud &quot;<ph name="HEADER_NAME"/>&quot; d'una sol·licitud de xarxa perquè la modificació entrava en conflicte amb una altra extensió (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Producte <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Seleccionar dispositius USB</translation>
 <translation id="6731255991101203740">No s'ha pogut crear un directori per descomprimir: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">No s'ha pogut carregar la pàgina d'informació &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">L'aplicació &quot;<ph name="APP_NAME"/>&quot; sol·licita accés a un o més dels vostres dispositius.</translation>
 <translation id="6698810901424468597">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">No s'ha pogut descodificar la imatge: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="5544884907028850012">Proveïdor <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Accedir al trànsit de xarxa</translation>
 <translation id="1256619696651732561">Analitzador per a manifests d'extensions</translation>
 <translation id="5972529113578162692">L'administrador d'aquest dispositiu requereix que l'extensió <ph name="EXTENSION_NAME"/> estigui instal·lada. No es pot desinstal·lar.</translation>

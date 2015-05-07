@@ -143,7 +143,6 @@
 <translation id="7974566588408714340">Pokušaj ponovo pomoću proširenja <ph name="EXTENSIONNAME"/></translation>
 <translation id="2972581237482394796">&amp;Vrati poništeno</translation>
 <translation id="5895138241574237353">Ponovno pokreni</translation>
-<translation id="7012312584667795941">Identitet organizacije <ph name="ORGANIZATION"/> na lokaciji <ph name="LOCALITY"/> potvrdio je izdavač <ph name="ISSUER"/>, ali zapisi javne revizije nisu potvrđeni.</translation>
 <translation id="7113502843173351041">znati vašu e-adrese</translation>
 <translation id="3726463242007121105">Nije moguće otvoriti ovaj uređaj jer nije podržan njegov datotečni sustav.</translation>
 <translation id="5606674617204776232">Dodatak <ph name="PEPPER_PLUGIN_NAME"/> na domeni <ph name="PEPPER_PLUGIN_DOMAIN"/> želi pristupiti vašem uređaju.</translation>
@@ -312,7 +311,6 @@
 <translation id="5748743223699164725">Omogućuje eksperimentalne značajke Web-platforme u izgradnji.</translation>
 <translation id="8110513421455578152">Određuje zadanu visinu razlomljenog elementa.</translation>
 <translation id="7002454948392136538">Odaberite upravitelja za tog nadziranog korisnika</translation>
-<translation id="9091975085874311841">Vaša veza s domenom <ph name="DOMAIN"/> kriptirana je modernom kriptografijom.</translation>
 <translation id="4640525840053037973">Prijavite se svojim Google računom</translation>
 <translation id="4923279099980110923">Da, želim pomoći</translation>
 <translation id="6922128026973287222">Štedite podatke i pregledavajte brže uz Google uštedu podataka. Kliknite za više informacija.</translation>
@@ -635,7 +633,6 @@ Ove i daljnje upute pronaći ćete u e-poruci koju smo poslali na adresu <ph nam
 <translation id="2887525882758501333">PDF dokument</translation>
 <translation id="289426338439836048">Druga mobilna mreža...</translation>
 <translation id="5953576419932384180">Ne možete se sjetiti stare zaporke?</translation>
-<translation id="100869152053188797">Identitet web-lokacije potvrdio je izdavač <ph name="ISSUER"/>, tvrdi da ima zapise javne revizije, ali oni se ne mogu potvrditi.</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">pročitati i promijeniti sve što se piše uključujući tipke za promjenu zadatka, na primjer, CMD + TAB</translation>
 <translation id="8214962590150211830">Ukloni ovu osobu</translation>
@@ -1111,7 +1108,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="6954850746343724854">Omogućavanje lokalnog klijenta za sve web-aplikacije, čak i one koje nisu instalirane iz Chrome web-trgovine.</translation>
 <translation id="9043242398268815112">Zna lokaciju uređaja</translation>
 <translation id="9068931793451030927">Put:</translation>
-<translation id="667314332843412173">slati obavijesti</translation>
 <translation id="4289540628985791613">Pregled</translation>
 <translation id="283278805979278081">Poslikajte.</translation>
 <translation id="6111974609785983504">Dopušteno prema zadanim postavkama</translation>
@@ -1203,7 +1199,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="3798449238516105146">Verzija</translation>
 <translation id="3608576286259426129">Pregled korisnikove slike</translation>
 <translation id="5764483294734785780">Sp&amp;remi zvučni zapis kao...</translation>
-<translation id="4511834652944195516">Omogućuje se podrška za zapisivanje na MTP u upravitelju datoteka. Neke radnje (uređivanje slike na MTP jedinici) još nisu podržane.</translation>
 <translation id="313205617302240621">Zaboravili ste zaporku?</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -1358,6 +1353,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="3828440302402348524">Prijavljeni ste kao <ph name="USER_NAME"/>...</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="3522159121915794564">Korisnicima omogućuje uključivanje zbirke nevažećih lanaca TLS/SSL certifikata.</translation>
+<translation id="6978121630131642226">Tražilice</translation>
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK"/>Prijavite se<ph name="END_SIGN_IN_LINK"/> kako biste upravljali web-lokacijama koje ova osoba posjeti i prikazali ih.</translation>
 <translation id="8965697826696209160">Nema dovoljno prostora.</translation>
 <translation id="329838636886466101">Popravak</translation>
@@ -1401,7 +1397,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8656946437567854031">Klikom na Nastavi prihvaćate sljedeće: <ph name="LEGAL_DOC_LINK_TEXT_1"/>, <ph name="LEGAL_DOC_LINK_TEXT_2"/>, <ph name="LEGAL_DOC_LINK_TEXT_3"/>, <ph name="LEGAL_DOC_LINK_TEXT_4"/>, <ph name="LEGAL_DOC_LINK_TEXT_5"/> i <ph name="LEGAL_DOC_LINK_TEXT_6"/>.</translation>
 <translation id="830598693585544337">Kada je ta opcija omogućena, web-lokacije ne mogu pristupiti API-ju WebAudio.</translation>
 <translation id="3574777678278664892">Ako je omogućen, upravitelj zaporki neće ponuditi spremanje vjerodajnice upotrijebljene za sinkroniziranje.</translation>
-<translation id="1914436586714907696">Chrome je ostao bez memorije.</translation>
 <translation id="5747785204778348146">Razvojni programer – nestabilno</translation>
 <translation id="3590194807845837023">Otključaj profil i pokreni ponovo</translation>
 <translation id="6644756108386233011">Želite li vratiti izmijenjene postavke usluge <ph name="IDS_SHORT_PRODUCT_NAME"/> na zadano?</translation>
@@ -1439,7 +1434,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="7547811415869834682">Nizozemski</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/>: promijeni osobu</translation>
 <translation id="1587275751631642843">&amp;JavaScript konzola</translation>
-<translation id="2348797501425402112">Omogući podršku za zapisivanje na MTP</translation>
 <translation id="8460696843433742627">Pri pokušaju učitavanja <ph name="URL"/> primljen je nevažeći odgovor.
         Poslužitelj je možda isključen zbog održavanja ili je pogrešno konfiguriran.</translation>
 <translation id="297870353673992530">DNS poslužitelj:</translation>
@@ -2378,7 +2372,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="4807098396393229769">Ime na kartici</translation>
 <translation id="4131410914670010031">Crno-bijelo</translation>
 <translation id="3800503346337426623">Preskoči prijavu i pregledavaj kao gost</translation>
-<translation id="2615413226240911668">Ova stranica, međutim, uključuje druge resurse koji nisu sigurni. Te resurse mogu vidjeti drugi ljudi tijekom tranzita, a napadači ih mogu mijenjati kako bi promijenili izgled stranice.</translation>
 <translation id="1416136326154112077">Postavke i povijest pregledavanja za tog zaštićenog korisnika mogu i dalje biti vidljive upravitelju na adresi <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/>.</translation>
 <translation id="2436733981438712345">Obrada...</translation>
 <translation id="197288927597451399">Zadrži</translation>
@@ -2421,7 +2414,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="3774278775728862009">Thai način unosa (tipkovnica TIS-820.2538)</translation>
 <translation id="9115675100829699941">&amp;Bookmarks (Oznake)</translation>
 <translation id="7570496663860904543">Kada se stranica ne uspije učitati, korisniku će se prikazati gumb za učitavanje neaktivne kopije ako u predmemoriji preglednika postoji kopija neaktivne stranice. Primarni izbor omogućivanja postavlja gumb na najistaknutiji položaj na stranici pogreške, dok ga sekundarni izbor omogućivanja postavlja kao drugi gumb uz gumb za ponovno učitavanje.</translation>
-<translation id="7191877888075697060">Vaša veza s domenom <ph name="DOMAIN"/> kriptirana je zastarjelom kriptografijom.</translation>
 <translation id="1731589410171062430">Ukupno: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
 <translation id="7461924472993315131">Prikvači</translation>
 <translation id="5298363578196989456">Nije moguće uvesti proširenje &quot;<ph name="IMPORT_NAME"/>&quot; jer nije dijeljeni modul.</translation>
@@ -2592,7 +2584,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="8273972836055206582">Stranica <ph name="FULLSCREEN_ORIGIN"/> sada je na cijelom zaslonu i želi onemogućiti pokazivač miša.</translation>
 <translation id="1497522201463361063">Nije moguće promijeniti naziv datoteke &quot;<ph name="FILE_NAME"/>&quot;. <ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">Dolje je nasumice generirana zaporka modula pouzdane platforme dodijeljena vašem računalu:</translation>
-<translation id="5636000737234849121">Omogući pisanje kretnjama za virtualnu tipkovnicu.</translation>
 <translation id="5010043101506446253">Tijelo za izdavanje certifikata</translation>
 <translation id="5287425679749926365">Vaši računi</translation>
 <translation id="4249373718504745892">Stranici je blokiran pristup vašoj kameri i vašem mikrofonu.</translation>
@@ -2681,7 +2672,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="8283475148136688298">Autentifikacijski kôd odbijen je prilikom povezivanja s uređajem &quot;<ph name="DEVICE_NAME"/>&quot;.</translation>
-<translation id="3491170932824591984">Identitet web-lokacije potvrdio je izdavač <ph name="ISSUER"/>, ali zapisi javne revizije nisu potvrđeni.</translation>
 <translation id="6575134580692778371">Nije konfigurirano</translation>
 <translation id="4624768044135598934">Uspjeh!</translation>
 <translation id="7518150891539970662">WebRTC zapisnici (<ph name="WEBRTC_LOG_COUNT"/>)</translation>
@@ -2937,7 +2927,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="8800420788467349919">Glasnoća: <ph name="PRECENTAGE"/>%</translation>
 <translation id="1697068104427956555">Odaberite kvadratno područje slike.</translation>
 <translation id="29232676912973978">Upravljanje vezama...</translation>
-<translation id="6225644908173488565">Omogući brisanje kretnji za virtualnu tipkovnicu.</translation>
 <translation id="4090103403438682346">Omogući potvrđeni pristup</translation>
 <translation id="570197343572598071">Događaji za prikaz</translation>
 <translation id="1628736721748648976">Kodiranje</translation>
@@ -2951,7 +2940,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="8420728540268437431">Ta se stranica prevodi...</translation>
 <translation id="736515969993332243">Skeniranje mreža.</translation>
 <translation id="7806513705704909664">Omogući automatsko popunjavanje web-obrazaca jednim klikom.</translation>
-<translation id="6856069154773169210">Omogući odabir kretnji za virtualnu tipkovnicu.</translation>
 <translation id="9063302675152872196">Omogući probijanje otvora u vatrozidu OS-a Chrome za Chromeove aplikacije koje otvaraju utičnicu TCP/IP poslužitelja ili UDP utičnicu.</translation>
 <translation id="5430298929874300616">Ukloni oznaku</translation>
 <translation id="3150994199788134383">Proširenje je preuzelo kontrolu nad vašim postavkama proxyja, a to znači da može promijeniti, prekinuti ili prisluškivati sve što radite online. Ako niste sigurni zašto je došlo do te promjene, vjerojatno je ne želite.</translation>
@@ -3064,7 +3052,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="1436784010935106834">Uklonjeno</translation>
 <translation id="3730639321086573427">Lokalna odredišta</translation>
 <translation id="399856887277429830">Pokreni alat za uklanjanje softvera</translation>
-<translation id="2734167549439405382">Identitet web-lokacije potvrdio je izdavač <ph name="ISSUER"/>, ali web-lokacija nema zapise javne revizije.</translation>
 <translation id="7918257978052780342">Registriraj</translation>
 <translation id="2863937263901630331">Neobrađeni podaci dostupni su putem NetLoga. Više pojedinosti potražite u pomoći.</translation>
 <translation id="4195814663415092787">Nastavite tamo gdje ste stali</translation>
@@ -3246,7 +3233,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="878431691778285679">Izgleda da već upravljate korisnikom pod tim imenom.<ph name="LINE_BREAK"/>Jeste li htjeli <ph name="BEGIN_LINK"/>uvesti korisnika <ph name="PROFILE_NAME"/> na ovaj uređaj<ph name="END_LINK"/>?</translation>
 <translation id="2912905526406334195">Host <ph name="HOST"/> želi upotrijebiti vaš mikrofon.</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
-<translation id="5151511998946489774">Identitet te web-lokacije potvrdio je izdavač <ph name="ISSUER"/> i može se javno nadzirati.</translation>
 <translation id="7235421518178823985">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN"/>; njegov je sigurnosni certifikat datiran <ph name="DAYS"/> dan(a) u budućnosti. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="1608626060424371292">Ukloni tog korisnika</translation>
 <translation id="2779552785085366231">Tu stranicu možete dodati u Pokretač aplikacija</translation>
@@ -3467,7 +3453,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
     Nema dovoljno prostora na uređaju.
     <ph name="LINE_BREAK2"/>
     Za početak pokušajte odabrati nekoliko fotografija.</translation>
-<translation id="3700834376805760154">Identitet organizacije <ph name="ORGANIZATION"/> na lokaciji <ph name="LOCALITY"/> potvrdio je izdavač <ph name="ISSUER"/> i može se javno nadzirati.</translation>
 <translation id="4416628180566102937">Registriraj i ponovo pokreni</translation>
 <translation id="4623537843784569564">Ovo proširenje možda je pogrešno ažurirano. Pokušajte ponovo instalirati.</translation>
 <translation id="4342311272543222243">Ups, TPM pogreška.</translation>
@@ -3944,7 +3929,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="7748144333872478614">Onemogući pozadine prozora u TouchViewu</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">O lokalnom klijentu</translation>
-<translation id="3084771660770137092">Pregledniku Chrome ponestalo je memorije ili je proces za web-stranicu prekinut iz nekog drugog razloga. Da biste nastavili, ponovo učitajte stranicu ili idite na neku drugu stranicu.</translation>
 <translation id="1114901192629963971">Vašu zaporku nije moguće provjeriti na ovoj mreži. Odaberite drugu mrežu.</translation>
 <translation id="6430814529589430811">Base64-šifriran ASCII, jedan certifikat</translation>
 <translation id="3305661444342691068">Otvori PDF u Pregledu</translation>
@@ -4764,7 +4748,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="4350711002179453268">Nije moguće uspostaviti sigurnu vezu s poslužiteljem. To je možda problem na poslužitelju ili je potreban certifikat za provjeru autentičnosti koji nemate.</translation>
 <translation id="4731422630970790516">Stavka police 3</translation>
 <translation id="750509436279396091">Otvori mapu preuzimanja</translation>
-<translation id="4417463059397999181">Nije navedeno</translation>
 <translation id="4125496372515105318">Onemogući najnovije stabilne značajke JavaScripta</translation>
 <translation id="5963026469094486319">Nabavi teme</translation>
 <translation id="7586312264284919041">Želite li prevesti ovu stranicu?</translation>
@@ -4801,7 +4784,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="6449285849137521213">Dodana je aplikacija &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="6516193643535292276">Povezivanje s internetom nije moguće</translation>
 <translation id="5125751979347152379">Nevažeći URL.</translation>
-<translation id="4467801982834340084">Identitet organizacije <ph name="ORGANIZATION"/> na lokaciji <ph name="LOCALITY"/> potvrdio je izdavač <ph name="ISSUER"/>, ali ta organizacija nema zapise javne revizije.</translation>
 <translation id="752397454622786805">Registracija poništena</translation>
 <translation id="8206354486702514201">Ovu postavku nametnuo je vaš administrator.</translation>
 <translation id="6040143037577758943">Zatvori</translation>
@@ -4996,7 +4978,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="5158593464696388225">Slika nije spremljena.</translation>
 <translation id="3296763833017966289">Gruzijski</translation>
 <translation id="2242687258748107519">Informacije o datoteci</translation>
-<translation id="1152775729948968688">Ova stranica, međutim, uključuje druge resurse koji nisu sigurni. Te resurse mogu vidjeti drugi ljudi tijekom tranzita, a napadači ih mogu mijenjati kako bi promijenili ponašanje stranice.</translation>
 <translation id="604124094241169006">Automatski</translation>
 <translation id="862542460444371744">&amp;Proširenja</translation>
 <translation id="2539110682392681234">Proxy poslužitelj nametnuo je vaš administrator.</translation>
@@ -5344,7 +5325,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="340771324714262530">Zaustavi zrcaljenje</translation>
 <translation id="3303260552072730022">Proširenje je pokrenulo prikaz na cijelom zaslonu.</translation>
 <translation id="3348459612390503954">Čestitamo</translation>
-<translation id="5845521171017703245">ID: <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">Prilagodba pretvorbe na temelju prethodnog unosa</translation>
 <translation id="8675377193764357545">Sinkronizirano kao <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="7265986070661382626">Trenutačno ne možete posjetiti <ph name="SITE"/> jer web-lokacija <ph name="BEGIN_LINK"/>upotrebljava prikvačivanje certifikata<ph name="END_LINK"/>. Mrežne pogreške i napadi uglavnom su privremeni, tako da će stranica vjerojatno kasnije funkcionirati.</translation>
@@ -5363,7 +5343,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="4047112090469382184">Koliko je to sigurno</translation>
 <translation id="5461512418490148136">Još samo malo. Dohvaćamo vaše datoteke.</translation>
 <translation id="4268574628540273656">URL:</translation>
-<translation id="2766585356456507052">Identitet organizacije <ph name="ORGANIZATION"/> na lokaciji <ph name="LOCALITY"/> potvrdio je izdavač <ph name="ISSUER"/>, tvrdi da ima zapise javne revizije, ali oni se ne mogu potvrditi.</translation>
 <translation id="6690455781383741953">Omogućivanje štednje energije za dodatke.</translation>
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="5972826969634861500">Pokreni <ph name="PRODUCT_NAME"/></translation>

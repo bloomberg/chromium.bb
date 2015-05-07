@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">A Chrome beállítása</translation>
 <translation id="6448273550210938826">Keresési és URL-javaslatok</translation>
 <translation id="7998918019931843664">Bezárt lap megnyitása</translation>
-<translation id="8425213833346101688">Módosítás</translation>
 <translation id="4996978546172906250">Megosztás itt:</translation>
 <translation id="8607727265103077134">A Google Wallettól</translation>
 <translation id="6292937202013477045">A támadók megpróbálhatják ellopni a(z) <ph name="DOMAIN_NAME"/> webhelyen lévő adatait (például fotókat, jelszavakat, üzeneteket vagy hitelkártyaadatokat).</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">Keresőmotor</translation>
 <translation id="346339498574870680">Kép URL-jének másolása</translation>
 <translation id="5063480226653192405">Használat</translation>
-<translation id="6657585470893396449">Jelszó</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE"/> keresővel</translation>
 <translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="4816465935029283692">Adattípusok</translation>
@@ -133,14 +131,11 @@
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
 <translation id="9060538597317784206">A(z) <ph name="APP_NAME"/> alkalmazás megtekintése a Play Áruházban. Értékelés: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Mentés</translation>
-<translation id="1151972924205500581">Jelszó szükséges</translation>
 <translation id="2870560284913253234">Webhely</translation>
-<translation id="3101226206443094477">Jelentkezzen be Google-fiókjával:</translation>
 <translation id="2718352093833049315">Csak Wi-Fi-n</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="5487729733663684359">Az Android e verziója többé nem támogatja a Chrome-frissítéseket.</translation>
 <translation id="5100237604440890931">Összecsukva – kattintson a kibontáshoz.</translation>
-<translation id="1201402288615127009">Következő</translation>
 <translation id="2414886740292270097">Sötét</translation>
 <translation id="2487368562788861256">Kisebb az adatforgalom, ha a Google <ph name="BEGIN_LINK"/>optimalizálja a felkeresett oldalakat<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Fordító</translation>
@@ -153,7 +148,6 @@
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="138361230106469022">Üdv, <ph name="FULL_NAME"/>!</translation>
 <translation id="6600954340915313787">A Chrome-ba másolva</translation>
-<translation id="6317463785365643240">Ne titkosítsa</translation>
 <translation id="8627706565932943526">Szinkronizálási hiba</translation>
 <translation id="1807246157184219062">Világos</translation>
 <translation id="9219103736887031265">Képek</translation>
@@ -254,7 +248,6 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="5324858694974489420">Szülői beállítások</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Az összes webhely tiltása</translation>
 <translation id="8168435359814927499">Tartalom</translation>
 <translation id="5424715742813396254">Mentett név/jelszó vagy kivétel szerkesztése</translation>
 <translation id="6978479750597523876">A fordító beállításainak visszaállítása</translation>
@@ -266,7 +259,6 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="2526148617758225454">Az Adatforgalom-csökkentő be van kapcsolva, és a Beállítások menüben kezelheti.</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="3102119246920354026">Gyorsítótár</translation>
-<translation id="651048280540227067">Menü figyelmen kívül hagyása</translation>
 <translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
 <translation id="5899349522111170522">Új fájl létrehozása</translation>
@@ -283,7 +275,6 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="7977858705483383621">Biztonságos Keresés</translation>
 <translation id="8909135823018751308">Megosztás...</translation>
 <translation id="1056898198331236512">Figyelmeztetés</translation>
-<translation id="3338301885994755905">Tiltás (ajánlott)</translation>
 <translation id="6575643671698722332">Nem sikerült. Ellenőrizze a hálózatot, és próbálja újra.</translation>
 <translation id="8987061207681586800">Formálja saját ízlésére a Chrome-ot</translation>
 <translation id="654446541061731451">Válassza ki a sugározni kívánt lapot</translation>
@@ -342,13 +333,9 @@ A kilépéshez nyomja meg a vissza billentyűt.</translation>
 <translation id="5138299137310274655">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
 <translation id="2913331724188855103">Cookie-adatok mentésének és olvasásának engedélyezése a webhelyeken (ajánlott)</translation>
 <translation id="5512137114520586844">A fiók kezelője: <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">Súgó</translation>
 <translation id="1373696734384179344">Nincs elegendő memória a kiválasztott tartalom letöltéséhez.</translation>
 <translation id="969096075394517431">Nyelvek módosítása</translation>
 <translation id="5085880389019676122">Az USB-tár nem érhető el</translation>
-<translation id="1614564776292091138">Ha a védett tartalom ENGEDÉLYEZVE van, a webhelyek hitelesíthetik az Ön eszközét, hogy megbizonyosodjanak róla, hogy engedélyezett rajta a prémium és védett videók lejátszása.
-
-Ha LE VAN TILTVA, előfordulhat, hogy nem tud majd prémium videókat lejátszani ezen az eszközön.</translation>
 <translation id="8928220460877261598">Bejelentkezett a Chrome-ba.</translation>
 <translation id="7811044698839470685">Titkosított adatait csak az tudja elolvasni, aki rendelkezik az Ön összetett jelszavával, amelyet a Google nem küld el és nem tárol. Ha elfelejti, alaphelyzetbe kell állítani a szinkronizálást.</translation>
 <translation id="8547287415299944404">A böngészési előzmények nem törölhetők a gyerekeknek szóló fiókok esetében</translation>
@@ -397,7 +384,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="6965382102122355670">OK</translation>
 <translation id="4440256989292146959">Több böngészés kedvezőbb áron</translation>
 <translation id="4023950129927433024">Ha elfelejtette összetett jelszavát, állítsa le és állítsa vissza a <ph name="BEGIN_LINK"/>Google irányítópulton<ph name="END_LINK"/> keresztül történő szinkronizálást.</translation>
-<translation id="6375900123462779979">Hozzáférés: mikrofon/kamera</translation>
 <translation id="7437998757836447326">Kijelentkezés a Chrome-ból</translation>
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="5127805178023152808">Szinkronizálás kikapcsolva</translation>

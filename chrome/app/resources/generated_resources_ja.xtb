@@ -144,7 +144,6 @@
 <translation id="7974566588408714340">「<ph name="EXTENSIONNAME"/>」で再試行</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="5895138241574237353">再起動</translation>
-<translation id="7012312584667795941"><ph name="ORGANIZATION"/>（所在地 <ph name="LOCALITY"/>）の識別情報は、<ph name="ISSUER"/> により確認済みですが、公開監査記録の確認に失敗しました。</translation>
 <translation id="7113502843173351041">メールアドレスの読み取り</translation>
 <translation id="3726463242007121105">ファイルシステムがサポートされていないため、このデバイスを開くことはできません。</translation>
 <translation id="5606674617204776232"><ph name="PEPPER_PLUGIN_DOMAIN"/>の<ph name="PEPPER_PLUGIN_NAME"/>がお使いの端末へのアクセスを求めています。</translation>
@@ -314,7 +313,6 @@
 <translation id="5748743223699164725">開発中の試験運用版ウェブ プラットフォームの機能を有効にします。</translation>
 <translation id="8110513421455578152">デフォルトのタイルの高さを指定します。</translation>
 <translation id="7002454948392136538">この監視対象ユーザーの管理者を選択</translation>
-<translation id="9091975085874311841"><ph name="DOMAIN"/> への接続は最新の暗号化技術により暗号化されています。</translation>
 <translation id="4640525840053037973">Google アカウントでログイン</translation>
 <translation id="4923279099980110923">はい、協力します</translation>
 <translation id="6922128026973287222">Google データセーバーを使うとデータの保存や閲覧が速くなります。クリックして詳細をご確認ください。</translation>
@@ -637,7 +635,6 @@
 <translation id="2887525882758501333">PDF ドキュメント</translation>
 <translation id="289426338439836048">他のモバイル ネットワーク...</translation>
 <translation id="5953576419932384180">古いパスワードを忘れた場合</translation>
-<translation id="100869152053188797">このウェブサイトの識別情報は <ph name="ISSUER"/> により確認済みで、公開監査記録があることが申し立てられていますが、その記録を確認できません。</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="8054635925509770969">入力内容の読み取りと変更（CMD+TAB などのタスク切り替えキーの操作を含む）</translation>
 <translation id="8214962590150211830">このユーザーを削除</translation>
@@ -1118,7 +1115,6 @@
 <translation id="6954850746343724854">Chrome ウェブストアからインストールしたもの以外でも、すべてのウェブ アプリケーションについてネイティブ クライアントを有効にします。</translation>
 <translation id="9043242398268815112">デバイスの場所の認識</translation>
 <translation id="9068931793451030927">パス:</translation>
-<translation id="667314332843412173">通知の送信</translation>
 <translation id="4289540628985791613">概要</translation>
 <translation id="283278805979278081">写真を撮影します</translation>
 <translation id="6111974609785983504">デフォルトで許可</translation>
@@ -1211,7 +1207,6 @@
 <translation id="3798449238516105146">バージョン</translation>
 <translation id="3608576286259426129">ユーザー画像のプレビュー</translation>
 <translation id="5764483294734785780">名前を付けてオーディオを保存(&amp;V)...</translation>
-<translation id="4511834652944195516">ファイル マネージャで MTP の書き込みサポートを有効にします。一部の操作（MTP ボリューム上での画像の編集）はまだサポートされていません。</translation>
 <translation id="313205617302240621">パスワードをお忘れの場合</translation>
 <translation id="5252456968953390977">ローミング</translation>
 <translation id="8744641000906923997">ローマ字</translation>
@@ -1366,6 +1361,7 @@
 <translation id="3828440302402348524"><ph name="USER_NAME"/> としてログインしています...</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="3522159121915794564">無効な TLS / SSL 証明書チェーンの収集を有効にすることをユーザーに許可します。</translation>
+<translation id="6978121630131642226">検索エンジン</translation>
 <translation id="1097507499312291972">このユーザーがアクセスするウェブサイトを管理、表示するには、<ph name="BEGIN_SIGN_IN_LINK"/>ログイン<ph name="END_SIGN_IN_LINK"/>します。</translation>
 <translation id="8965697826696209160">空き容量が不足しています。</translation>
 <translation id="329838636886466101">修復</translation>
@@ -1409,7 +1405,6 @@
 <translation id="8656946437567854031">[続行] をクリックすると、<ph name="LEGAL_DOC_LINK_TEXT_1"/>、<ph name="LEGAL_DOC_LINK_TEXT_2"/>、<ph name="LEGAL_DOC_LINK_TEXT_3"/>、<ph name="LEGAL_DOC_LINK_TEXT_4"/>、<ph name="LEGAL_DOC_LINK_TEXT_5"/>、<ph name="LEGAL_DOC_LINK_TEXT_6"/>に同意したことになります。</translation>
 <translation id="830598693585544337">このオプションを有効にすると、ウェブサイトから WebAudio API にアクセスできなくなります。</translation>
 <translation id="3574777678278664892">有効になっている場合、パスワード マネージャでは同期に使用する認証情報の保存に関するメッセージは表示されません。</translation>
-<translation id="1914436586714907696">Chrome のメモリが不足しています。</translation>
 <translation id="5747785204778348146">Dev - 不安定</translation>
 <translation id="3590194807845837023">プロフィールのロックを解除して再起動</translation>
 <translation id="6644756108386233011">変更された <ph name="IDS_SHORT_PRODUCT_NAME"/> 設定をリセットしますか？</translation>
@@ -1447,7 +1442,6 @@
 <translation id="7547811415869834682">オランダ語</translation>
 <translation id="6690565918367819723"><ph name="PROFILE_NAME"/>: ユーザーを切り替える</translation>
 <translation id="1587275751631642843">JavaScript コンソール(&amp;J)</translation>
-<translation id="2348797501425402112">MTP の書き込みサポートを有効にする</translation>
 <translation id="8460696843433742627"><ph name="URL"/> を読み込もうとして、無効なレスポンスを受信しました。
         サーバーがメンテナンスのために停止しているか、正しく設定されていない可能性があります。</translation>
 <translation id="297870353673992530">DNS サーバー:</translation>
@@ -2395,7 +2389,6 @@
 <translation id="4807098396393229769">名義人名</translation>
 <translation id="4131410914670010031">白黒</translation>
 <translation id="3800503346337426623">ログインせずゲストとしてブラウジング</translation>
-<translation id="2615413226240911668">ただし、このページには安全でない他のリソースが含まれています。これらのリソースは、送信中に他のユーザーに参照されたり、悪意のあるユーザーにページの見た目を変更されたりする可能性があります。</translation>
 <translation id="1416136326154112077">この監視対象ユーザーの設定や閲覧履歴は引き続き、管理者が <ph name="BEGIN_LINK"/>www.chrome.com/manage<ph name="END_LINK"/> で見ることができます。</translation>
 <translation id="2436733981438712345">処理しています...</translation>
 <translation id="197288927597451399">保存</translation>
@@ -2438,7 +2431,6 @@
 <translation id="3774278775728862009">タイ語の入力方法（TIS-820.2538 キーボード）</translation>
 <translation id="9115675100829699941">ブックマーク(&amp;B)</translation>
 <translation id="7570496663860904543">ページの読み込みに失敗したとき、そのページの古いコピーがブラウザのキャッシュに残っている場合は、そのコピーを読み込むためのボタンが表示されます。メインを有効に選択していると、このボタンはエラーページ上で最も目立つ場所に表示されます。セカンダリを有効に選択していると、このボタンは再読み込みボタンの次に目立つように表示されます。</translation>
-<translation id="7191877888075697060"><ph name="DOMAIN"/> への接続は古い暗号化技術により暗号化されています。</translation>
 <translation id="1731589410171062430">印刷総数: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/>（<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>）</translation>
 <translation id="7461924472993315131">固定</translation>
 <translation id="5298363578196989456">拡張機能「<ph name="IMPORT_NAME"/>」は、共有モジュールではないため読み込めません。</translation>
@@ -2609,7 +2601,6 @@
 <translation id="8273972836055206582">現在 <ph name="FULLSCREEN_ORIGIN"/> は全画面表示で、マウス カーソルは無効になります。</translation>
 <translation id="1497522201463361063">ファイル「<ph name="FILE_NAME"/>」の名前を変更することができません。<ph name="ERROR_MESSAGE"/></translation>
 <translation id="8226742006292257240">ランダムに生成され、ご使用のパソコンに割り当てられた TPM パスワードは以下のとおりです:</translation>
-<translation id="5636000737234849121">仮想キーボードでのジェスチャー入力を有効にします。</translation>
 <translation id="5010043101506446253">認証局</translation>
 <translation id="5287425679749926365">お使いのアカウント</translation>
 <translation id="4249373718504745892">このページではカメラとマイクへのアクセスがブロックされています。</translation>
@@ -2698,7 +2689,6 @@
 <translation id="8870318296973696995">ホームページ</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="8283475148136688298">「<ph name="DEVICE_NAME"/>」への接続中に、認証コードが拒否されました。</translation>
-<translation id="3491170932824591984">このウェブサイトの識別情報は、<ph name="ISSUER"/> により確認済みですが、公開監査記録の確認に失敗しました。</translation>
 <translation id="6575134580692778371">設定されていません</translation>
 <translation id="4624768044135598934">完了しました</translation>
 <translation id="7518150891539970662">WebRTC ログ（<ph name="WEBRTC_LOG_COUNT"/> 件）</translation>
@@ -2959,7 +2949,6 @@
 <translation id="8800420788467349919">音量: <ph name="PRECENTAGE"/>%</translation>
 <translation id="1697068104427956555">画像の切り取り範囲を指定してください。</translation>
 <translation id="29232676912973978">接続を管理...</translation>
-<translation id="6225644908173488565">仮想キーボードでのジェスチャー削除を有効にします。</translation>
 <translation id="4090103403438682346">確認済みのアクセスを有効にする</translation>
 <translation id="570197343572598071">表示するイベント</translation>
 <translation id="1628736721748648976">エンコード</translation>
@@ -2973,7 +2962,6 @@
 <translation id="8420728540268437431">このページは翻訳中です...</translation>
 <translation id="736515969993332243">ネットワークをスキャンしています。</translation>
 <translation id="7806513705704909664">ワンクリックでのウェブ フォームへの自動入力を有効にする</translation>
-<translation id="6856069154773169210">仮想キーボードでのジェスチャー選択を有効にします。</translation>
 <translation id="9063302675152872196">TCP/IP サーバー ソケットまたは UDP ソケットを開く Chrome アプリのために Chrome OS ファイアウォールでの穴開けを有効にします。</translation>
 <translation id="5430298929874300616">ブックマークを削除</translation>
 <translation id="3150994199788134383">拡張機能によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>
@@ -3086,7 +3074,6 @@
 <translation id="1436784010935106834">削除しました</translation>
 <translation id="3730639321086573427">ローカルの送信先</translation>
 <translation id="399856887277429830">ソフトウェア削除ツールの実行</translation>
-<translation id="2734167549439405382">このウェブサイトの識別情報は、<ph name="ISSUER"/> により確認済みですが、公開監査記録がありません。</translation>
 <translation id="7918257978052780342">登録</translation>
 <translation id="2863937263901630331">元データは NetLog でご覧いただけます。詳しくはヘルプをご覧ください。</translation>
 <translation id="4195814663415092787">前回開いていたページを開く</translation>
@@ -3270,7 +3257,6 @@
 <translation id="878431691778285679">この名前でユーザーを既に管理しているようです。<ph name="LINE_BREAK"/><ph name="BEGIN_LINK"/>このデバイスに <ph name="PROFILE_NAME"/> をインポート<ph name="END_LINK"/>しますか？</translation>
 <translation id="2912905526406334195"><ph name="HOST"/> がマイクへのアクセスを求めています。</translation>
 <translation id="2805756323405976993">アプリ</translation>
-<translation id="5151511998946489774">このウェブサイトの識別情報は <ph name="ISSUER"/> により確認済みで、公開監査が可能です。</translation>
 <translation id="7235421518178823985">このサーバーが <ph name="DOMAIN"/> であることを確認できませんでした。このサーバーのセキュリティ証明書は <ph name="DAYS"/> 日後から有効になるものと想定されています。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1608626060424371292">このユーザーを削除</translation>
 <translation id="2779552785085366231">このページをアプリ ランチャーに追加できます</translation>
@@ -3491,7 +3477,6 @@
     デバイスに十分な空きがありません。
     <ph name="LINE_BREAK2"/>
     まず写真を数件だけ選択してお試しください。</translation>
-<translation id="3700834376805760154"><ph name="ORGANIZATION"/>（所在地 <ph name="LOCALITY"/>）の識別情報は <ph name="ISSUER"/> により確認済みで、公開監査が可能です。</translation>
 <translation id="4416628180566102937">登録して再起動</translation>
 <translation id="4623537843784569564">この拡張機能は更新が正しく行われなかった可能性があります。再インストールしてみてください。</translation>
 <translation id="4342311272543222243">TPM エラー。</translation>
@@ -3970,7 +3955,6 @@
 <translation id="7748144333872478614">TouchView でウィンドウの背景を無効にする</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="4618518823426718711">NaCl について</translation>
-<translation id="3084771660770137092">Chrome のメモリが不足しているか、ウェブページのプロセスが何らかの原因で終了しました。続行するには、ページを再読み込みするか別のページに移動してください。</translation>
 <translation id="1114901192629963971">現在のネットワークではパスワードを確認できません。別のネットワークを選択してください。</translation>
 <translation id="6430814529589430811">Base64 エンコード ASCII 形式の単一の証明書</translation>
 <translation id="3305661444342691068">PDF をプレビュー</translation>
@@ -4791,7 +4775,6 @@
 <translation id="4350711002179453268">サーバーとの安全な接続を確立できません。サーバー側に問題があるか、サーバーが必要とするクライアント認証証明書を所持していない可能性があります。</translation>
 <translation id="4731422630970790516">シェルフ アイテム 3</translation>
 <translation id="750509436279396091">ダウンロード フォルダを開く</translation>
-<translation id="4417463059397999181">指定なし</translation>
 <translation id="4125496372515105318">最新の安定版の JavaScript 機能を無効にする</translation>
 <translation id="5963026469094486319">テーマを取得</translation>
 <translation id="7586312264284919041">このページを翻訳してもよろしいですか？</translation>
@@ -4828,7 +4811,6 @@
 <translation id="6449285849137521213">アプリ「<ph name="EXTENSION_NAME"/>」が追加されました。</translation>
 <translation id="6516193643535292276">インターネットに接続できません</translation>
 <translation id="5125751979347152379">URL が無効です。</translation>
-<translation id="4467801982834340084"><ph name="ORGANIZATION"/>（所在地 <ph name="LOCALITY"/>）の識別情報は、<ph name="ISSUER"/> により確認済みですが、公開監査記録がありません。</translation>
 <translation id="752397454622786805">登録解除完了</translation>
 <translation id="8206354486702514201">この設定は管理者によって制御されています。</translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -5023,7 +5005,6 @@
 <translation id="5158593464696388225">画像を保存できませんでした。</translation>
 <translation id="3296763833017966289">グルジア語</translation>
 <translation id="2242687258748107519">ファイル情報</translation>
-<translation id="1152775729948968688">ただし、このページには安全でない他のリソースが含まれています。これらのリソースは、送信中に他のユーザーに参照されたり、悪意のあるユーザーにページの動作を変更されたりする可能性があります。</translation>
 <translation id="604124094241169006">自動設定</translation>
 <translation id="862542460444371744">拡張機能(&amp;E)</translation>
 <translation id="2539110682392681234">プロキシは管理者によって制御されています。</translation>
@@ -5372,7 +5353,6 @@
 <translation id="340771324714262530">ミラーリングを停止</translation>
 <translation id="3303260552072730022">拡張機能によって自動的に全画面表示になりました。</translation>
 <translation id="3348459612390503954">設定完了</translation>
-<translation id="5845521171017703245">ID: <ph name="ASSET_ID"/></translation>
 <translation id="5212108862377457573">直前の入力に基づいて変換を調整</translation>
 <translation id="8675377193764357545"><ph name="USER_EMAIL_ADDRESS"/> として同期しました</translation>
 <translation id="7265986070661382626"><ph name="SITE"/> では<ph name="BEGIN_LINK"/>証明書のピン留めが使用されている<ph name="END_LINK"/>ため、現在このサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、またページにアクセスできるようになる可能性があります。</translation>
@@ -5391,7 +5371,6 @@
 <translation id="4047112090469382184">デバイスが保護される仕組み</translation>
 <translation id="5461512418490148136">しばらくお待ちください。ファイルを取得しています。</translation>
 <translation id="4268574628540273656">URL:</translation>
-<translation id="2766585356456507052"><ph name="ORGANIZATION"/>（所在地 <ph name="LOCALITY"/>）の識別情報は、<ph name="ISSUER"/> により確認済みで、公開監査記録があることが申し立てられていますが、その記録を確認できません。</translation>
 <translation id="6690455781383741953">プラグイン省電力機能を有効にする</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME"/> を起動</translation>

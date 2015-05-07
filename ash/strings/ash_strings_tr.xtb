@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Durum tepsisi</translation>
 <translation id="2248649616066688669">Chromebook'unuz harici bir ekrana bağlıyken, kapağı kapalı olsa da cihazınızı kullanmaya devam edebilirsiniz.</translation>
 <translation id="2946640296642327832">Bluetooth'u etkinleştir</translation>
+<translation id="5537725057119320332">Yayınla</translation>
 <translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cep telefonu</translation>
 <translation id="6596816719288285829">IP Adresi</translation>
@@ -167,7 +168,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="112308213915226829">Rafı otomatik gizle</translation>
 <translation id="7573962313813535744">Yuva modu</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
-<translation id="8660803626959853127"><ph name="COUNT"/> dosya senkronize ediliyor</translation>
 <translation id="5958529069007801266">Denetlenen kullanıcı</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
@@ -187,6 +187,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="743058460480092004">Kamera ve mikrofon kullanımda.</translation>
+<translation id="6550675742724504774">Seçenekler</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Tekrar &quot;<ph name="FROM_LOCALE"/>&quot; ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="8103386449138765447">SMS mesajları: <ph name="MESSAGE_COUNT"/></translation>

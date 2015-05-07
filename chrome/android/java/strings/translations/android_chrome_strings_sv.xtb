@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Konfigurera Chrome</translation>
 <translation id="6448273550210938826">Sökning och webbadressförslag</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
-<translation id="8425213833346101688">Ändra</translation>
 <translation id="4996978546172906250">Dela via</translation>
 <translation id="8607727265103077134">Från Google Wallet</translation>
 <translation id="6292937202013477045">Hackare kan försöka stjäla din information (exempelvis bilder, lösenord, meddelanden och kreditkortsuppgifter) från <ph name="DOMAIN_NAME"/>.</translation>
@@ -17,7 +16,6 @@
 <translation id="1506061864768559482">Sökmotor</translation>
 <translation id="346339498574870680">Kopiera bildwebbadress</translation>
 <translation id="5063480226653192405">Användning</translation>
-<translation id="6657585470893396449">Lösenord</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE"/> efter denna bild</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="4816465935029283692">Datatyper</translation>
@@ -133,14 +131,11 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="9060538597317784206">Visa appen <ph name="APP_NAME"/> i Play Butik. Betyg: <ph name="APP_RATING"/>.</translation>
 <translation id="5317780077021120954">Spara</translation>
-<translation id="1151972924205500581">Lösenord krävs</translation>
 <translation id="2870560284913253234">Webbplats</translation>
-<translation id="3101226206443094477">Logga in med ditt Google-konto:</translation>
 <translation id="2718352093833049315">Endast på Wi-Fi</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="5487729733663684359">Uppdateringar av Chrome stöds inte längre för den här versionen av Android.</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
-<translation id="1201402288615127009">Nästa</translation>
 <translation id="2414886740292270097">Mörk</translation>
 <translation id="2487368562788861256">Minska datakostnaderna genom att låta Google <ph name="BEGIN_LINK"/>optimera sidorna du besöker<ph name="END_LINK"/>.</translation>
 <translation id="5911030830365207728">Google Översätt</translation>
@@ -153,7 +148,6 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="138361230106469022">Hej <ph name="FULL_NAME"/>!</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
-<translation id="6317463785365643240">Kryptera inte</translation>
 <translation id="8627706565932943526">Synkroniseringsfel</translation>
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="9219103736887031265">Bilder</translation>
@@ -254,7 +248,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="4065916988127915326">Blockera alla webbplatser</translation>
 <translation id="8168435359814927499">Innehåll</translation>
 <translation id="5424715742813396254">Redigera sparat namn/lösenord eller undantag</translation>
 <translation id="6978479750597523876">Återställ översättningsinställningar</translation>
@@ -266,7 +259,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="2526148617758225454">Databesparing är på. Hantera funktionen i Inställningar.</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="3102119246920354026">Cacheminne</translation>
-<translation id="651048280540227067">Stäng menyn</translation>
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="5899349522111170522">Skapa ny fil</translation>
@@ -283,7 +275,6 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="1056898198331236512">Varning</translation>
-<translation id="3338301885994755905">Blockera (rekommenderas)</translation>
 <translation id="6575643671698722332">Fel vid återställning. Kolla att enheten är online. Försök igen.</translation>
 <translation id="8987061207681586800">Anpassa Chrome</translation>
 <translation id="654446541061731451">Välj en flik som du vill överföra</translation>
@@ -342,13 +333,9 @@ Tryck på bakåtknappen om du vill lämna det.</translation>
 <translation id="5138299137310274655">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE"/>. Vill du översätta den till <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
 <translation id="5512137114520586844">Det här kontot hanteras av <ph name="PARENT_NAME"/>.</translation>
-<translation id="7649070708921625228">Hjälp</translation>
 <translation id="1373696734384179344">Det finns inte tillräckligt med minne för att hämta det valda innehållet.</translation>
 <translation id="969096075394517431">Ändra språk</translation>
 <translation id="5085880389019676122">USB-enhet ej tillgänglig</translation>
-<translation id="1614564776292091138">När skyddat innehåll är PÅ kan enheten autentiseras på webbplatser för att kontrollera att den har behörighet att spela upp högkvalitativa skyddade videor.
-
-Om skyddat innehåll däremot är AV kan det hända att du inte kan spela upp högkvalitativa videor på enheten.</translation>
 <translation id="8928220460877261598">Du är nu inloggad i Chrome.</translation>
 <translation id="7811044698839470685">Bara personer som känner till din lösenfras kan läsa din krypterade data. Lösenfrasen skickas inte till eller lagras av Google. Om du glömmer frasen måste du återställa synkroniseringen.</translation>
 <translation id="8547287415299944404">Webbhistoriken kan inte rensas med barnkonton</translation>
@@ -397,7 +384,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="6965382102122355670">OK</translation>
 <translation id="4440256989292146959">Surfa mer för mindre</translation>
 <translation id="4023950129927433024">Om du har glömt lösenfrasen avslutar du och återställer synkroniseringen via <ph name="BEGIN_LINK"/>Google Översikt<ph name="END_LINK"/>.</translation>
-<translation id="6375900123462779979">Tillgång till mikrofon o. kamera</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>

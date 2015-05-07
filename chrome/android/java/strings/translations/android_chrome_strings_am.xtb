@@ -7,7 +7,6 @@
 <translation id="1657479659644194568">Chrome ያቀናብሩ</translation>
 <translation id="6448273550210938826">የፍለጋ እና ዩአርኤል ጥቆማዎች</translation>
 <translation id="7998918019931843664">የተዘጋውን ትር ዳግም ይክፈቱ</translation>
-<translation id="8425213833346101688">ለውጥ</translation>
 <translation id="4996978546172906250">ያጋሩ በ</translation>
 <translation id="8607727265103077134">ከGoogle Wallet</translation>
 <translation id="6292937202013477045">አጥቂዎች የእርስዎን መረጃ (ለምሳሌ፣ ፎቶዎች፣ የይለፍ ቃሎች፣ መልዕክቶች እና የብድር ካርዶች) ከ<ph name="DOMAIN_NAME"/> ላይ ለመስረቅ እየሞከሩ ሊሆን ይችላል።</translation>
@@ -17,10 +16,12 @@
 <translation id="1506061864768559482">የፍለጋ ፕሮግራም</translation>
 <translation id="346339498574870680">የምስል ዩአርኤል ቅዳ</translation>
 <translation id="5063480226653192405">አጠቃቀም</translation>
-<translation id="6657585470893396449">የይለፍ ቃል፦</translation>
 <translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE"/> ላይ ይፈልጉት</translation>
 <translation id="7764225426217299476">አድራሻ አክል</translation>
 <translation id="4816465935029283692">የውሂብ ዓይነቶች</translation>
+<translation id="5098185943924922330">ስለፋይሎች፣ መተግበሪያዎች፣ እና እየሰሩ ያሉ አገልግሎቶች በማናቸውም ጊዜ መሰናከል በሚያጋጥምዎት ጊዜ ወደ Google መረጃ በመላክ ልንሰራባቸው የሚገቡ ነገሮችን ቅድሚያ የሚሰጣቸውን እንድንለይ እና ማሻሻያዎችን እንድናደርግ ያግዙን።
+
+        የአጠቃቀም ስታትስቲክስ እንደ ምርጫዎች፣ የአዝራር ጠቅ ማድረጎች እና የማህደረ ትውስታ የመሳሰሉ መረጃዎችን ያካትታል። የድር ገጽ ዩአርኤሎችን ወይም ማናቸውም የግል መረጃዎችን አያካትቱም። የብልሽት ሪፖርቶች በብልሽቱ ጊዜ ያለውን የስርዓት መረጃ ይይዛሉ፣ እና በብልሽቱ ወቅት ምን እንደተፈጠረ የሚመረኮዝ ሆኖ  የድር ገጽ ዩአርኤሎች ወይም የግል መረጃን ይይዛሉ።</translation>
 <translation id="4042870126885713738">አንድ የድር አድራሻ መፍትሔ ካላመጣ ወይም ግንኙነት ሊፈጠር ካልቻለ ጥቆማዎችን አሳይ</translation>
 <translation id="8237438615979997762">በዚህ መሣሪያ እና እንዲሁም በGoogle መለያዎ ላይ የተከማቸው ውሂብ በሁለቱም ቦታዎች ላይ እንደሆኑ ይቀራሉ። ይሁንና አዲስ ውሂብ ወይም በውሂብዎ ላይ የሚያደርጓቸው ለውጦች አይመሳሰሉም።</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
@@ -133,14 +134,11 @@
 <translation id="8073388330009372546">ምስሉን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="9060538597317784206">መተግበሪያ <ph name="APP_NAME"/>ን በPlay Store ላይ አሳይ።  ደረጃ አሰጣጥ፦ <ph name="APP_RATING"/>።</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
-<translation id="1151972924205500581">የይለፍ ቃል ያስፈልጋል</translation>
 <translation id="2870560284913253234">ጣቢያ</translation>
-<translation id="3101226206443094477">በGoogle መለያዎ ይግቡ፦</translation>
 <translation id="2718352093833049315">በWi-Fi ላይ ብቻ</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
 <translation id="5487729733663684359">የChrome ዝማኔዎች ከአሁን በኋላ ለዚህ የAndroid ዝማኔዎች አይደገፉም።</translation>
 <translation id="5100237604440890931">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
-<translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="2414886740292270097">ጨለማ</translation>
 <translation id="2487368562788861256">Google <ph name="BEGIN_LINK"/>የጎበኟቸውን ገጾች እንዲያመቻች<ph name="END_LINK"/> በመጠቀም በውሂብ ላይ ያነሰ ያጥፉ።</translation>
 <translation id="5911030830365207728">Google ትርጉም</translation>
@@ -153,7 +151,6 @@
 <translation id="473775607612524610">አዘምን</translation>
 <translation id="138361230106469022">ሰላም፣ <ph name="FULL_NAME"/></translation>
 <translation id="6600954340915313787">ወደ Chrome ተቀድቷል</translation>
-<translation id="6317463785365643240">አታመስጥር</translation>
 <translation id="8627706565932943526">የማመሳሰል ስህተት</translation>
 <translation id="1807246157184219062">ብርሃን</translation>
 <translation id="9219103736887031265">ምስሎች</translation>
@@ -254,7 +251,6 @@
 <translation id="5324858694974489420">የወላጅ መቆጣጠሪያዎች</translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
-<translation id="4065916988127915326">ሁሉንም ጣቢያዎች አግድ</translation>
 <translation id="8168435359814927499">ይዘት</translation>
 <translation id="5424715742813396254">የተቀመጠ ስም/የይለፍ ቃል ወይም ለየት ያለውን ያርትዑ</translation>
 <translation id="6978479750597523876">የትርጉም ቅንብሮችን ዳግም ይጀመሩ</translation>
@@ -266,7 +262,6 @@
 <translation id="2526148617758225454">የውሂብ አስቀማጭ በርቷል። በቅንብሮች ውስጥ ያስተዳድሩት።</translation>
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="3102119246920354026">መሸጎጫ</translation>
-<translation id="651048280540227067">ምናሌውን አሰናብት</translation>
 <translation id="748127970106343339">የመሣሪያ ምስክርነት ስረዛን ያረጋግጡ</translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
 <translation id="5899349522111170522">አዲስ ፋይል ይፍጠሩ</translation>
@@ -283,7 +278,6 @@
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="8909135823018751308">አጋራ…</translation>
 <translation id="1056898198331236512">ማስጠንቀቂያ</translation>
-<translation id="3338301885994755905">አግድ (የሚመከር)</translation>
 <translation id="6575643671698722332">ዳግም ማስጀመር አልተሳካም። የእርስዎ መሣሪያ መስመር ላይ መሆኑን ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="8987061207681586800">Chromeን የራስዎ ያድርጉት</translation>
 <translation id="654446541061731451">በሞገድ የሚለቅቁት ትር ይምረጡ</translation>
@@ -342,13 +336,9 @@
 <translation id="5138299137310274655">ይህ ገጽ በ<ph name="SOURCE_LANGUAGE"/> ነው። ወደ <ph name="TARGET_LANGUAGE"/> ይተርጎም?</translation>
 <translation id="2913331724188855103">ጣቢያዎች የኩኪ ውሂብ እንዲያስቀምጡ እና እንዲያነቡ ይፍቀዱ (የሚመከር)</translation>
 <translation id="5512137114520586844">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME"/> ነው።</translation>
-<translation id="7649070708921625228">እገዛ</translation>
 <translation id="1373696734384179344">የተመረጠውን ይዘት ለማውረድ በቂ ያልሆነ ማህደረ ትውስታ።</translation>
 <translation id="969096075394517431">ቋንቋዎችን ይቀይሩ</translation>
 <translation id="5085880389019676122">የUSB ማከማቻ አይገኝም</translation>
-<translation id="1614564776292091138">ጥበቃ የሚደረግለት ይዘት ሲበራ ድር ጣቢያዎች የእርስዎ መሣሪያ ዋና እና ጥበቃ የሚደረግላቸው ቪዲዮዎችን ለማጫወት የተፈቀደለት መሆኑን ለማረጋገጥ ፈቀዳ ሊሰጡት ይችላሉ።
-
-ከጠፋ ዋና ቪዲዮዎች በዚህ መሣሪያ ላይ ማጫወት ላይችሉ ይችላሉ።</translation>
 <translation id="8928220460877261598">አሁን ወደ Chrome ገብተዋል።</translation>
 <translation id="7811044698839470685">የይለፈ ሐረግዎ ያለው ሰው ብቻ ነው የተመሰጠረውን ውሂብዎን ማንበብ የሚችለው። ይህ የይለፍ ሐረግ ወደ Google አይላክም ወይም እሱ ላይም አይከማችም። የይለፍ ሐረግዎን ከረሱት ማመሳሰልን ዳግም ማስጀመር አለብዎት።</translation>
 <translation id="8547287415299944404">የአሰሳ ታሪክ በህጻናት መለያ ሊጸዳ አይችልም</translation>
@@ -397,7 +387,6 @@
 <translation id="6965382102122355670">ይሁን</translation>
 <translation id="4440256989292146959">ባነሰ ተጨማሪ ያስሱ</translation>
 <translation id="4023950129927433024">የይለፍ ሐረግዎን ከረሱ ማመሳሰልን ያቁሙ እና በ<ph name="BEGIN_LINK"/>Google Dashboard <ph name="END_LINK"/> በኩል ዳግም ያስጀምሩ።</translation>
-<translation id="6375900123462779979">የእርስዎን ማይክሮፎን እና ካሜራ ይደርሳል</translation>
 <translation id="7437998757836447326">ዘግተው ከChrome ይውጡ</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
 <translation id="5127805178023152808">አመሳስል ጠፍቷል</translation>

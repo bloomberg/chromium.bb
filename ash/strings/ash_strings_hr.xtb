@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Ladica statusa</translation>
 <translation id="2248649616066688669">Možete nastaviti upotrebljavati svoj Chromebook dok je povezan s vanjskim zaslonom, čak i ako je poklopac zatvoren.</translation>
 <translation id="2946640296642327832">Omogući Bluetooth</translation>
+<translation id="5537725057119320332">Emitiraj</translation>
 <translation id="6459472438155181876">Proširivanje zaslona na zaslon <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobitel</translation>
 <translation id="6596816719288285829">IP adresa</translation>
@@ -166,7 +167,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="112308213915226829">Automatski sakrij policu</translation>
 <translation id="7573962313813535744">Način rada u priključnoj stanici</translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
-<translation id="8660803626959853127">Sinkroniziranje datoteka (<ph name="COUNT"/>)</translation>
 <translation id="5958529069007801266">Nadzirani korisnik</translation>
 <translation id="3709443003275901162">više od 9</translation>
 <translation id="639644700271529076">Tipka CAPS LOCK isključena</translation>
@@ -186,6 +186,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">Fotoaparat i mikrofon su aktivni.</translation>
+<translation id="6550675742724504774">Opcije</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="3573179567135747900">Vratite na &quot;<ph name="FROM_LOCALE"/>&quot; (zahtijeva ponovno pokretanje)</translation>
 <translation id="8103386449138765447">SMS poruke: <ph name="MESSAGE_COUNT"/></translation>

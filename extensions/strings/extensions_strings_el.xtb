@@ -31,7 +31,6 @@
 <translation id="8712265948125780616">Εργαλείο αποσυσκευασίας επεκτάσεων</translation>
 <translation id="149347756975725155">Δεν ήταν δυνατή η φόρτωση του εικονιδίου επέκτασης &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="8825366169884721447">Αυτή η επέκταση απέτυχε να τροποποιήσει την κεφαλίδα αιτήματος &quot;<ph name="HEADER_NAME"/>&quot; κάποιου αιτήματος δικτύου επειδή η τροποποίηση ήρθε σε σύγκρουση με κάποια άλλη επέκταση (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="7495493006406536234">Προϊόν <ph name="PRODUCT_ID"/></translation>
 <translation id="4776856853352853275">Επιλέξτε συσκευές USB</translation>
 <translation id="6731255991101203740">Δεν ήταν δυνατή η δημιουργία καταλόγου για την αποσυμπίεση: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
 <translation id="4233778200880751280">Δεν ήταν δυνατή η φόρτωση της σελίδας πληροφοριών &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
@@ -76,7 +75,6 @@
 <translation id="2677911863018634147">Η εφαρμογή &quot;<ph name="APP_NAME"/>&quot; ζητάει πρόσβαση σε μία ή περισσότερες συσκευές σας.</translation>
 <translation id="6698810901424468597">Διαβάστε και αλλάξτε τα δεδομένα σας στο <ph name="WEBSITE_1"/> και το <ph name="WEBSITE_2"/></translation>
 <translation id="2159915644201199628">Δεν ήταν δυνατή η αποκωδικοποίηση της εικόνας: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="5544884907028850012">Προμηθευτής <ph name="VENDOR_ID"/></translation>
 <translation id="2048182445208425546">Πρόσβαση στην επισκεψιμότητά σας δικτύου</translation>
 <translation id="1256619696651732561">Συντακτικός αναλυτής μανιφέστου επέκτασης</translation>
 <translation id="5972529113578162692">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME"/>. Η εγκατάσταση δεν μπορεί να καταργηθεί.</translation>

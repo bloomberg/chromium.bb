@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">سینی وضعیت</translation>
 <translation id="2248649616066688669">‏وقتی دستگاه Chromebook شما به یک نمایشگر خارجی متصل است می‌توانید همچنان از آن استفاده کنید، حتی با در بسته.</translation>
 <translation id="2946640296642327832">فعال کردن بلوتوث</translation>
+<translation id="5537725057119320332">فرستادن</translation>
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">سلولی</translation>
 <translation id="6596816719288285829">‏آدرس IP</translation>
@@ -164,7 +165,6 @@
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
 <translation id="2792498699870441125">‏Alt+جستجو</translation>
-<translation id="8660803626959853127">در حال همگام‌سازی فایل(های) <ph name="COUNT"/></translation>
 <translation id="5958529069007801266">کاربر نظارت‌شده</translation>
 <translation id="3709443003275901162">+۹</translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
@@ -184,6 +184,7 @@
 <translation id="6165508094623778733">بیشتر بیاموزید</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="743058460480092004">دوربین و میکروفن در حال استفاده هستند.</translation>
+<translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6406704438230478924">دگرساز راست</translation>
 <translation id="3573179567135747900">به &quot;<ph name="FROM_LOCALE"/>&quot; تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
 <translation id="8103386449138765447">پیامک‌ها: <ph name="MESSAGE_COUNT"/></translation>
