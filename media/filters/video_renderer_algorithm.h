@@ -91,6 +91,10 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // stream frames.  Frames inserted prior to the last rendered frame will not
   // be used.  They will be discarded on the next call to Render(), counting as
   // dropped frames, or by RemoveExpiredFrames(), counting as expired frames.
+  //
+  // Attempting to enqueue a frame with the same timestamp as a previous frame
+  // will result in the previous frame being replaced if it has not been
+  // rendered yet.  If it has been rendered, the new frame will be dropped.
   void EnqueueFrame(const scoped_refptr<VideoFrame>& frame);
 
   // Removes all frames from the |frame_queue_| and clears predictors.  The
@@ -279,8 +283,13 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // more frames, or chosen a frame which exceeded acceptable drift.
   bool last_render_had_glitch_;
 
-  // For testing functionality which enables clockless playback of all frames.
+  // For testing functionality which enables clockless playback of all frames,
+  // does not prevent frame dropping due to equivalent timestamps.
   bool frame_dropping_disabled_;
+
+  // Tracks frames dropped during enqueue when identical timestamps are added
+  // to the queue.  Callers are told about these frames during Render().
+  size_t frames_dropped_during_enqueue_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererAlgorithm);
 };

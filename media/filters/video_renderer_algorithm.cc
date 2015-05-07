@@ -53,7 +53,8 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     return nullptr;
 
   if (frames_dropped)
-    *frames_dropped = 0;
+    *frames_dropped = frames_dropped_during_enqueue_;
+  frames_dropped_during_enqueue_ = 0;
 
   // Once Render() is called |last_frame_index_| has meaning and should thus be
   // preserved even if better frames come in before it due to out of order
@@ -252,7 +253,7 @@ void VideoRendererAlgorithm::OnLastFrameDropped() {
 }
 
 void VideoRendererAlgorithm::Reset() {
-  last_frame_index_ = 0;
+  frames_dropped_during_enqueue_ = last_frame_index_ = 0;
   have_rendered_frames_ = last_render_had_glitch_ = false;
   last_deadline_max_ = base::TimeTicks();
   average_frame_duration_ = render_interval_ = base::TimeDelta();
@@ -316,14 +317,30 @@ void VideoRendererAlgorithm::EnqueueFrame(
 
   // If a frame was inserted before the first frame, update the index. On the
   // next call to Render() it will be dropped.
-  if (static_cast<size_t>(it - frame_queue_.begin()) <= last_frame_index_ &&
-      have_rendered_frames_) {
+  const size_t new_frame_index = it - frame_queue_.begin();
+  if (new_frame_index <= last_frame_index_ && have_rendered_frames_) {
+    if (new_frame_index == last_frame_index_ &&
+        frame->timestamp() ==
+            frame_queue_[last_frame_index_].frame->timestamp()) {
+      DVLOG(2) << "Ignoring frame with the same timestamp as the most recently "
+                  "rendered frame.";
+      ++frames_dropped_during_enqueue_;
+      return;
+    }
     ++last_frame_index_;
+  } else if (new_frame_index < frame_queue_.size() &&
+             frame->timestamp() ==
+                 frame_queue_[new_frame_index].frame->timestamp()) {
+    DVLOG(2) << "Replacing existing frame with the same timestamp with most "
+             << "recently received frame.";
+    frame_queue_[new_frame_index].frame = frame;
+    ++frames_dropped_during_enqueue_;
+    return;
   }
 
   // The vast majority of cases should always append to the back, but in rare
   // circumstance we get out of order timestamps, http://crbug.com/386551.
-  it = frame_queue_.insert(it, ready_frame);
+  frame_queue_.insert(it, ready_frame);
 
   // Project the current cadence calculations to include the new frame.  These
   // may not be accurate until the next Render() call.  These updates are done

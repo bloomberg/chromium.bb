@@ -1132,4 +1132,38 @@ TEST_F(VideoRendererAlgorithmTest, UglyTimestampsHaveCadence) {
   }
 }
 
+TEST_F(VideoRendererAlgorithmTest, EnqueueFrames) {
+  TickGenerator tg(base::TimeTicks(), 50);
+  time_source_.StartTicking();
+
+  EXPECT_EQ(0u, frames_queued());
+  scoped_refptr<VideoFrame> frame_1 = CreateFrame(tg.interval(0));
+  algorithm_.EnqueueFrame(frame_1);
+  EXPECT_EQ(1u, frames_queued());
+
+  // Enqueuing a frame with the same timestamp should not increase the queue and
+  // just replace the existing frame if we haven't rendered it.
+  scoped_refptr<VideoFrame> frame_2 = CreateFrame(tg.interval(0));
+  algorithm_.EnqueueFrame(frame_2);
+  EXPECT_EQ(1u, frames_queued());
+
+  size_t frames_dropped = 0;
+  scoped_refptr<VideoFrame> rendered_frame =
+      RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(frame_2, rendered_frame);
+
+  // The replaced frame should count as dropped.
+  EXPECT_EQ(1u, frames_dropped);
+
+  // Trying to replace frame_2 with frame_1 should do nothing.
+  algorithm_.EnqueueFrame(frame_1);
+  EXPECT_EQ(1u, frames_queued());
+
+  rendered_frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(frame_2, rendered_frame);
+  EXPECT_EQ(1u, frames_dropped);
+}
+
 }  // namespace media
