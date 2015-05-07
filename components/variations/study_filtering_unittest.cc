@@ -372,6 +372,55 @@ TEST(VariationsStudyFilteringTest, CheckStudyHardwareClass) {
   }
 }
 
+TEST(VariationsStudyFilteringTest, CheckStudyCountry) {
+  struct {
+    const char* country;
+    const char* exclude_country;
+    const char* actual_country;
+    bool expected_result;
+  } test_cases[] = {
+      // Neither filtered nor excluded set:
+      // True since empty is always a match.
+      {"", "", "us", true},
+      {"", "", "", true},
+
+      // Filtered set:
+      {"us", "", "us", true},
+      {"br,ca,us", "", "us", true},
+      {"br,ca,us", "", "in", false},
+      // Empty, which is what would happen if no country was returned from the
+      // server.
+      {"br,ca,us", "", "", false},
+
+      // Excluded set:
+      {"", "us", "us", false},
+      {"", "br,ca,us", "us", false},
+      {"", "br,ca,us", "in", true},
+      // Empty, which is what would happen if no country was returned from the
+      // server.
+      {"", "br,ca,us", "", true},
+
+      // Not testing when both are set as it should never occur and should be
+      // considered undefined.
+  };
+
+  for (const auto& test : test_cases) {
+    Study_Filter filter;
+    std::vector<std::string> countries;
+    base::SplitString(test.country, ',', &countries);
+    for (const std::string& country : countries)
+      filter.add_country(country);
+
+    std::vector<std::string> exclude_countries;
+    base::SplitString(test.exclude_country, ',', &exclude_countries);
+    for (const std::string& exclude_country : exclude_countries)
+      filter.add_exclude_country(exclude_country);
+
+    EXPECT_EQ(test.expected_result,
+              internal::CheckStudyCountry(filter, test.actual_country));
+  }
+}
+
 TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   const std::string kTrial1Name = "A";
   const std::string kGroup1Name = "Group1";
@@ -396,15 +445,67 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   AddExperiment("Default", 25, study3);
 
   std::vector<ProcessedStudy> processed_studies;
-  FilterAndValidateStudies(
-      seed, "en-CA", base::Time::Now(), base::Version("20.0.0.0"),
-      Study_Channel_STABLE, Study_FormFactor_DESKTOP, "", &processed_studies);
+  FilterAndValidateStudies(seed, "en-CA", base::Time::Now(),
+                           base::Version("20.0.0.0"), Study_Channel_STABLE,
+                           Study_FormFactor_DESKTOP, "", "",
+                           &processed_studies);
 
   // Check that only the first kTrial1Name study was kept.
   ASSERT_EQ(2U, processed_studies.size());
   EXPECT_EQ(kTrial1Name, processed_studies[0].study()->name());
   EXPECT_EQ(kGroup1Name, processed_studies[0].study()->experiment(0).name());
   EXPECT_EQ(kTrial3Name, processed_studies[1].study()->name());
+}
+
+TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
+  const char kSessionCountry[] = "ca";
+  const char kPermanentCountry[] = "us";
+
+  struct {
+    Study_Consistency consistency;
+    const char* filter_country;
+    const char* filter_exclude_country;
+    bool expect_study_kept;
+  } test_cases[] = {
+      // Country-agnostic studies should be kept regardless of country.
+      {Study_Consistency_SESSION, nullptr, nullptr, true},
+      {Study_Consistency_PERMANENT, nullptr, nullptr, true},
+
+      // Session-consistency studies should obey the country code in the seed.
+      {Study_Consistency_SESSION, kSessionCountry, nullptr, true},
+      {Study_Consistency_SESSION, nullptr, kSessionCountry, false},
+      {Study_Consistency_SESSION, kPermanentCountry, nullptr, false},
+      {Study_Consistency_SESSION, nullptr, kPermanentCountry, true},
+
+      // Permanent-consistency studies should obey the permanent-consistency
+      // country code.
+      {Study_Consistency_PERMANENT, kPermanentCountry, nullptr, true},
+      {Study_Consistency_PERMANENT, nullptr, kPermanentCountry, false},
+      {Study_Consistency_PERMANENT, kSessionCountry, nullptr, false},
+      {Study_Consistency_PERMANENT, nullptr, kSessionCountry, true},
+  };
+
+  for (const auto& test : test_cases) {
+    VariationsSeed seed;
+    seed.set_country_code(kSessionCountry);
+    Study* study = seed.add_study();
+    study->set_name("study");
+    study->set_default_experiment_name("Default");
+    AddExperiment("Default", 100, study);
+    study->set_consistency(test.consistency);
+    if (test.filter_country)
+      study->mutable_filter()->add_country(test.filter_country);
+    if (test.filter_exclude_country)
+      study->mutable_filter()->add_exclude_country(test.filter_exclude_country);
+
+    std::vector<ProcessedStudy> processed_studies;
+    FilterAndValidateStudies(seed, "en-CA", base::Time::Now(),
+                             base::Version("20.0.0.0"), Study_Channel_STABLE,
+                             Study_FormFactor_DESKTOP, "", kPermanentCountry,
+                             &processed_studies);
+
+    EXPECT_EQ(test.expect_study_kept, !processed_studies.empty());
+  }
 }
 
 TEST(VariationsStudyFilteringTest, IsStudyExpired) {

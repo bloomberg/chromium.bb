@@ -6,6 +6,8 @@
 
 #include <set>
 
+#include "base/stl_util.h"
+
 namespace variations {
 
 namespace {
@@ -149,6 +151,21 @@ bool CheckStudyVersion(const Study_Filter& filter,
   return true;
 }
 
+bool CheckStudyCountry(const Study_Filter& filter, const std::string& country) {
+  // Empty country and exclude_country matches all.
+  if (filter.country_size() == 0 && filter.exclude_country_size() == 0)
+    return true;
+
+  // Checks if we are supposed to filter for a specified set of countries. Note
+  // that this means this overrides the exclude_country in case that ever occurs
+  // (which it shouldn't).
+  if (filter.country_size() > 0)
+    return ContainsValue(filter.country(), country);
+
+  // Omit if matches any of the exclude entries.
+  return !ContainsValue(filter.exclude_country(), country);
+}
+
 bool IsStudyExpired(const Study& study, const base::Time& date_time) {
   if (study.has_expiry_date()) {
     const base::Time expiry_date =
@@ -166,7 +183,8 @@ bool ShouldAddStudy(
     const base::Version& version,
     Study_Channel channel,
     Study_FormFactor form_factor,
-    const std::string& hardware_class) {
+    const std::string& hardware_class,
+    const std::string& country) {
   if (study.has_filter()) {
     if (!CheckStudyChannel(study.filter(), channel)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
@@ -205,6 +223,11 @@ bool ShouldAddStudy(
                   " due to hardware_class.";
       return false;
     }
+
+    if (!CheckStudyCountry(study.filter(), country)) {
+      DVLOG(1) << "Filtered out study " << study.name() << " due to country.";
+      return false;
+    }
   }
 
   DVLOG(1) << "Kept study " << study.name() << ".";
@@ -221,6 +244,7 @@ void FilterAndValidateStudies(
     Study_Channel channel,
     Study_FormFactor form_factor,
     const std::string& hardware_class,
+    const std::string& permanent_consistency_country,
     std::vector<ProcessedStudy>* filtered_studies) {
   DCHECK(version.IsValid());
 
@@ -233,8 +257,29 @@ void FilterAndValidateStudies(
 
   for (int i = 0; i < seed.study_size(); ++i) {
     const Study& study = seed.study(i);
+
+    // Unless otherwise specified, use an empty country that won't pass any
+    // filters that specifically include countries, but will pass any filters
+    // that specifically exclude countries.
+    std::string country;
+    switch (study.consistency()) {
+      case Study_Consistency_SESSION:
+        if (seed.has_country_code())
+          country = seed.country_code();
+        break;
+      case Study_Consistency_PERMANENT:
+        // Use the saved |permanent_consistency_country| for permanent
+        // consistency studies. This allows Chrome to use the same country for
+        // filtering permanent consistency studies between Chrome upgrades.
+        // Since some studies have user-visible effects, this helps to avoid
+        // annoying users with experimental group churn while traveling.
+        country = permanent_consistency_country;
+        break;
+    }
+
     if (!internal::ShouldAddStudy(study, locale, reference_date, version,
-                                  channel, form_factor, hardware_class)) {
+                                  channel, form_factor, hardware_class,
+                                  country)) {
       continue;
     }
 

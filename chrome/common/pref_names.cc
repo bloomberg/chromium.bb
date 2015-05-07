@@ -1320,6 +1320,12 @@ const char kVariationsCompressedSeed[] = "variations_compressed_seed";
 // fetch (i.e. when the Variations server responds with 200 or 304).
 const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
 
+// Pair of <Chrome version string, country code string> representing the country
+// used for filtering permanent consistency studies until the next time Chrome
+// is updated.
+const char kVariationsPermanentConsistencyCountry[] =
+    "variations_permanent_consistency_country";
+
 // String for the restrict parameter to be appended to the variations URL.
 const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
 

@@ -115,10 +115,12 @@ VariationsSeedSimulator::Result VariationsSeedSimulator::SimulateSeedStudies(
     const base::Version& version,
     Study_Channel channel,
     Study_FormFactor form_factor,
-    const std::string& hardware_class) {
+    const std::string& hardware_class,
+    const std::string& permanent_consistency_country) {
   std::vector<ProcessedStudy> filtered_studies;
   FilterAndValidateStudies(seed, locale, reference_date, version, channel,
-                           form_factor, hardware_class, &filtered_studies);
+                           form_factor, hardware_class,
+                           permanent_consistency_country, &filtered_studies);
 
   return ComputeDifferences(filtered_studies);
 }

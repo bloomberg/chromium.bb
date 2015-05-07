@@ -47,6 +47,9 @@ bool CheckStudyStartDate(const Study_Filter& filter,
 bool CheckStudyVersion(const Study_Filter& filter,
                        const base::Version& version);
 
+// Checks whether a study is applicable for the given |country| per |filter|.
+bool CheckStudyCountry(const Study_Filter& filter, const std::string& country);
+
 // Checks whether |study| is expired using the given date/time.
 bool IsStudyExpired(const Study& study, const base::Time& date_time);
 
@@ -58,7 +61,8 @@ bool ShouldAddStudy(const Study& study,
                     const base::Version& version,
                     Study_Channel channel,
                     Study_FormFactor form_factor,
-                    const std::string& hardware_class);
+                    const std::string& hardware_class,
+                    const std::string& country);
 
 }  // namespace internal
 
@@ -72,6 +76,7 @@ void FilterAndValidateStudies(const VariationsSeed& seed,
                               Study_Channel channel,
                               Study_FormFactor form_factor,
                               const std::string& hardware_class,
+                              const std::string& permanent_consistency_country,
                               std::vector<ProcessedStudy>* filtered_studies);
 
 }  // namespace variations

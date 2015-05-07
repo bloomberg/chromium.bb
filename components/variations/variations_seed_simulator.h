@@ -59,7 +59,8 @@ class VariationsSeedSimulator {
                              const base::Version& version,
                              Study_Channel channel,
                              Study_FormFactor form_factor,
-                             const std::string& hardware_class);
+                             const std::string& hardware_class,
+                             const std::string& permanent_consistency_country);
 
  private:
   friend class VariationsSeedSimulatorTest;

@@ -170,6 +170,25 @@ class VariationsService
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedStoredWhenOKStatus);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedNotStoredWhenNonOKStatus);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, SeedDateUpdatedOn304Status);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest,
+                           LoadPermanentConsistencyCountry);
+
+  // Set of different possible values to report for the
+  // Variations.LoadPermanentConsistencyCountryResult histogram. This enum must
+  // be kept consistent with its counterpart in histograms.xml.
+  enum LoadPermanentConsistencyCountryResult {
+    LOAD_COUNTRY_NO_PREF_NO_SEED = 0,
+    LOAD_COUNTRY_NO_PREF_HAS_SEED,
+    LOAD_COUNTRY_INVALID_PREF_NO_SEED,
+    LOAD_COUNTRY_INVALID_PREF_HAS_SEED,
+    LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ,
+    LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ,
+    LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ,
+    LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ,
+    LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ,
+    LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ,
+    LOAD_COUNTRY_MAX,
+  };
 
   // Checks if prerequisites for fetching the Variations seed are met, and if
   // so, performs the actual fetch using |DoActualFetch|.
@@ -192,6 +211,15 @@ class VariationsService
 
   // Record the time of the most recent successful fetch.
   void RecordLastFetchTime();
+
+  // Loads the country code to use for filtering permanent consistency studies,
+  // updating the stored country code if the stored value was for a different
+  // Chrome version. The country used for permanent consistency studies is kept
+  // consistent between Chrome upgrades in order to avoid annoying the user due
+  // to experiment churn while traveling.
+  std::string LoadPermanentConsistencyCountry(
+      const base::Version& version,
+      const variations::VariationsSeed& seed);
 
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;

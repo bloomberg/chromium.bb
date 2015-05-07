@@ -44364,6 +44364,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Variations.LoadPermanentConsistencyCountryResult"
+    enum="VariationsPermanentConsistencyCountryResult">
+  <owner>sclittle@chromium.org</owner>
+  <summary>
+    Records how the country code saved in prefs used for filtering permanent
+    consistency studies compares to the country code in the variations seed.
+    This is recorded each time the saved country code is loaded from the pref.
+  </summary>
+</histogram>
+
 <histogram name="Variations.LoadSeedSignature" enum="VariationSeedSignature">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -64939,6 +64949,31 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Invalid Signature"/>
   <int value="3" label="Invalid Signature for Seed"/>
   <int value="4" label="Valid Signature for Seed"/>
+</enum>
+
+<enum name="VariationsPermanentConsistencyCountryResult" type="int">
+  <int value="0" label="Saved pref missing and no country code in seed"/>
+  <int value="1" label="Saved pref missing and country code in seed"/>
+  <int value="2" label="Saved pref invalid and no country code in seed"/>
+  <int value="3" label="Saved pref invalid and country code in seed"/>
+  <int value="4"
+      label="Saved pref present for current version and no country code in
+             seed"/>
+  <int value="5"
+      label="Saved pref present for different version and no country code in
+             seed"/>
+  <int value="6"
+      label="Saved pref present for current version and country code in seed
+             matches"/>
+  <int value="7"
+      label="Saved pref present for current version and country code in seed
+             is different"/>
+  <int value="8"
+      label="Saved pref present for different version and country code in
+             seed matches"/>
+  <int value="9"
+      label="Saved pref present for different version and country code in
+             seed is different"/>
 </enum>
 
 <enum name="VariationsResourceRequestsAllowedState" type="int">

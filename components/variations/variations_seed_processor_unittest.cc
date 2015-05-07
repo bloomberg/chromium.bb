@@ -235,6 +235,7 @@ TEST_F(VariationsSeedProcessorTest,
                                         Study_Channel_STABLE,
                                         Study_FormFactor_DESKTOP,
                                         "",
+                                        "",
                                         override_callback_.callback());
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
@@ -251,6 +252,7 @@ TEST_F(VariationsSeedProcessorTest,
                                         version,
                                         Study_Channel_STABLE,
                                         Study_FormFactor_DESKTOP,
+                                        "",
                                         "",
                                         override_callback_.callback());
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
@@ -460,6 +462,7 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
                                       base::Version("20.0.0.0"),
                                       Study_Channel_STABLE,
                                       Study_FormFactor_DESKTOP,
+                                      "",
                                       "",
                                       override_callback_.callback());
 

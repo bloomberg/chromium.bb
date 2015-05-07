@@ -95,10 +95,12 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     Study_Channel channel,
     Study_FormFactor form_factor,
     const std::string& hardware_class,
+    const std::string& permanent_consistency_country,
     const UIStringOverrideCallback& override_callback) {
   std::vector<ProcessedStudy> filtered_studies;
   FilterAndValidateStudies(seed, locale, reference_date, version, channel,
-                           form_factor, hardware_class, &filtered_studies);
+                           form_factor, hardware_class,
+                           permanent_consistency_country, &filtered_studies);
 
   for (size_t i = 0; i < filtered_studies.size(); ++i)
     CreateTrialFromStudy(filtered_studies[i], override_callback);

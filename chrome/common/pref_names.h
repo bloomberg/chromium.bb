@@ -450,6 +450,7 @@ extern const char kCrashReportingEnabled[];
 
 extern const char kVariationsCompressedSeed[];
 extern const char kVariationsLastFetchTime[];
+extern const char kVariationsPermanentConsistencyCountry[];
 extern const char kVariationsRestrictParameter[];
 extern const char kVariationsSeed[];
 extern const char kVariationsSeedDate[];
