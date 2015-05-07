@@ -90,11 +90,13 @@
 //<include src="metadata/metadata_cache_set.js">
 //<include src="metadata/new_metadata_provider.js">
 //
-//<include src="app_installer.js">
+//<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/app_installer.js">
+//<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_webview_client.js">
+//<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container.js">
+//<include src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container_error_dialog.js">
+//
 //<include src="app_state_controller.js">
 //<include src="column_visibility_controller.js">
-//<include src="cws_container_client.js">
-//<include src="cws_widget_container.js">
 //<include src="dialog_action_controller.js">
 //<include src="dialog_type.js">
 //<include src="directory_contents.js">
@@ -132,7 +134,6 @@
 //<include src="list_thumbnail_loader.js">
 //<include src="ui/banners.js" >
 //<include src="ui/conflict_dialog.js">
-//<include src="ui/cws_widget_container_error_dialog.js">
 //<include src="ui/default_action_dialog.js">
 //<include src="ui/dialog_footer.js">
 //<include src="ui/directory_tree.js">

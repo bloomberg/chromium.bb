@@ -247,6 +247,7 @@
       'variables': {
         'files': [
           '../chromeos/test/data/',
+          '../components/chrome_apps/webstore_widget/cws_widget/',
           '../ui/file_manager/file_manager/',
           '../ui/file_manager/gallery/',
           '../ui/file_manager/image_loader/',

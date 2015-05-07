@@ -21,7 +21,6 @@
     <link rel="stylesheet" href="foreground/css/menu.css">
     <link rel="stylesheet" href="foreground/css/combobutton.css">
     <link rel="stylesheet" href="foreground/css/file_manager.css">
-    <link rel="stylesheet" href="foreground/css/cws_widget_container.css">
     <link rel="stylesheet" href="foreground/css/share_dialog.css">
     <link rel="stylesheet" href="foreground/css/file_status.css">
     <link rel="stylesheet" href="foreground/css/file_types.css">
@@ -36,6 +35,8 @@
     <link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
     <link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
     <link rel="import" href="chrome://resources/polymer/paper-ripple/paper-ripple.html">
+
+    <link rel="stylesheet" href="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container.css">
 
     <!-- Don't load main_scripts.js when flattening is disabled. -->
     <if expr="False"><!-- </if>
@@ -57,6 +58,12 @@
       <!-- Loads the client of the image loader extension -->
       <script src="common/js/lru_cache.js"></script>
       <script src="chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/image_loader_client.js"></script>
+
+      <!-- Scripts for Chrome Webstore widget -->
+      <script src="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/app_installer.js"></script>
+      <script src="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_webview_client.js"></script>
+      <script src="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container.js"></script>
+      <script src="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container_error_dialog.js"></script>
 
       <script src="chrome://resources/js/load_time_data.js"></script>
       <script src="chrome://resources/js/cr.js"></script>
@@ -114,11 +121,8 @@
       <script src="foreground/js/metadata/new_metadata_provider.js"></script>
       <script src="foreground/js/metadata/thumbnail_model.js"></script>
 
-      <script src="foreground/js/app_installer.js"></script>
       <script src="foreground/js/app_state_controller.js"></script>
       <script src="foreground/js/column_visibility_controller.js"></script>
-      <script src="foreground/js/cws_container_client.js"></script>
-      <script src="foreground/js/cws_widget_container.js"></script>
       <script src="foreground/js/dialog_action_controller.js"></script>
       <script src="foreground/js/dialog_type.js"></script>
       <script src="foreground/js/directory_contents.js"></script>
@@ -155,7 +159,6 @@
       <script src="foreground/js/list_thumbnail_loader.js"></script>
       <script src="foreground/js/ui/banners.js"></script>
       <script src="foreground/js/ui/conflict_dialog.js"></script>
-      <script src="foreground/js/ui/cws_widget_container_error_dialog.js"></script>
       <script src="foreground/js/ui/default_action_dialog.js"></script>
       <script src="foreground/js/ui/dialog_footer.js"></script>
       <script src="foreground/js/ui/directory_tree.js"></script>

@@ -37,6 +37,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "components/chrome_apps/grit/chrome_apps_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "grit/keyboard_resources.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
@@ -328,6 +329,13 @@ void ComponentLoader::AddGalleryExtension() {
 #endif
 }
 
+void ComponentLoader::AddWebstoreWidgetExtension() {
+#if defined(OS_CHROMEOS)
+  Add(IDR_CHROME_APPS_WEBSTORE_WIDGET_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("webstore_widget")));
+#endif
+}
+
 void ComponentLoader::AddHangoutServicesExtension() {
 #if defined(GOOGLE_CHROME_BUILD) || defined(ENABLE_HANGOUT_SERVICES_EXTENSION)
   Add(IDR_HANGOUT_SERVICES_MANIFEST,
@@ -551,6 +559,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddAudioPlayerExtension();
     AddFileManagerExtension();
     AddGalleryExtension();
+    AddWebstoreWidgetExtension();
 
     AddHangoutServicesExtension();
     AddHotwordAudioVerificationApp();
