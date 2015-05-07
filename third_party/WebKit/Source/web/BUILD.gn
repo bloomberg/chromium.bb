@@ -106,6 +106,9 @@ source_set("test_support") {
 if (!is_mac) {
   # TODO(GYP): Can't link Blink binaries yet on mac.
   test("webkit_unit_tests") {
+    visibility = []  # Allow re-assignment of list.
+    visibility = [ "*" ]
+
     deps = [
       ":test_support",
       ":web",
