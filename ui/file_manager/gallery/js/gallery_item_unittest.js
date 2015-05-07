@@ -88,7 +88,10 @@ function testSaveToFile(callback) {
   reportPromise(
       new Promise(item.saveToFile.bind(
           item,
-          {getLocationInfo: function() { return {}; }},
+          {
+            getLocationInfo: function() { return {}; },
+            getVolumeInfo: function() { return {}; }
+          },
           metadataModel,
           /* fallbackDir */ null,
           /* overwrite */ true,
@@ -131,7 +134,10 @@ function testSaveToFileWriteFailCase(callback) {
   reportPromise(
       new Promise(item.saveToFile.bind(
           item,
-          {getLocationInfo: function() { return {}; }},
+          {
+            getLocationInfo: function() { return {}; },
+            getVolumeInfo: function() { return {}; }
+          },
           getMockMetadataModel(),
           /* fallbackDir */ null,
           /* overwrite */ true,
@@ -181,7 +187,10 @@ function testSaveToFileGetBlobFailCase(callback) {
   reportPromise(
       new Promise(item.saveToFile.bind(
           item,
-          {getLocationInfo: function() { return {}; }},
+          {
+            getLocationInfo: function() { return {}; },
+            getVolumeInfo: function() { return {}; }
+          },
           getMockMetadataModel(),
           /* fallbackDir */ null,
           /* overwrite */ true,
@@ -231,7 +240,10 @@ function testSaveToFileRaw(callback) {
   reportPromise(
       new Promise(item.saveToFile.bind(
           item,
-          {getLocationInfo: function() { return {}; }},
+          {
+            getLocationInfo: function() { return {}; },
+            getVolumeInfo: function() { return {}; }
+          },
           metadataModel,
           /* fallbackDir */ null,
           /* overwrite is true but ignored */ true,

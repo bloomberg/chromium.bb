@@ -331,10 +331,13 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   var maxChunkSize = 20;
   var volumeInfo = this.volumeManager_.getVolumeInfo(entries[0]);
   if (volumeInfo) {
-    if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MTP)
+    if (GalleryUtil.isOnMTPVolume(entries[0], this.volumeManager_))
       maxChunkSize = 1;
-    if (volumeInfo.isReadOnly)
+
+    if (volumeInfo.isReadOnly ||
+        GalleryUtil.isOnMTPVolume(entries[0], this.volumeManager_)) {
       this.context_.readonlyDirName = volumeInfo.label;
+    }
   }
 
   // If items are empty, stop initialization.

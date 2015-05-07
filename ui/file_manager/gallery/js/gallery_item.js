@@ -212,7 +212,7 @@ Gallery.Item.prototype.createCopyName_ = function(
 /**
  * Writes the new item content to either the existing or a new file.
  *
- * @param {!VolumeManager} volumeManager Volume manager instance.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!MetadataModel} metadataModel
  * @param {DirectoryEntry} fallbackDir Fallback directory in case the current
  *     directory is read only.
@@ -344,7 +344,10 @@ Gallery.Item.prototype.saveToFile = function(
     }
   }.bind(this);
 
-  if (this.locationInfo_.isReadOnly) {
+  // Since in-place editing is not supported on MTP volume, Gallery.app handles
+  // MTP volume as read only volume.
+  if (this.locationInfo_.isReadOnly ||
+      GalleryUtil.isOnMTPVolume(this.entry_, volumeManager)) {
     saveToDir(fallbackDir);
   } else {
     this.entry_.getParent(saveToDir, onError);

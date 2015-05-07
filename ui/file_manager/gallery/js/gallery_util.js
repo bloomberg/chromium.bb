@@ -51,3 +51,15 @@ GalleryUtil.createEntrySet = function(originalEntries) {
     });
   });
 };
+
+/**
+ * Returns true if entry is on MTP volume.
+ * @param {!Entry} entry An entry.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
+ * @return True if entry is on MTP volume.
+ */
+GalleryUtil.isOnMTPVolume = function(entry, volumeManager) {
+  var volumeInfo = volumeManager.getVolumeInfo(entry);
+  return volumeInfo &&
+      volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MTP;
+}

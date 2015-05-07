@@ -20,7 +20,6 @@
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
-
  * @constructor
  * @struct
  * @suppress {checkStructDictInheritance}
@@ -1020,7 +1019,9 @@ SlideMode.prototype.itemLoaded_ = function(
 
   // For once edited image, disallow the 'overwrite' setting change.
   ImageUtil.setAttribute(this.overwriteOriginalBox_, 'disabled',
-      !this.getSelectedItem().isOriginal() || FileType.isRaw(item.getEntry()));
+      !this.getSelectedItem().isOriginal() ||
+      FileType.isRaw(item.getEntry()) ||
+      GalleryUtil.isOnMTPVolume(item.getEntry(), this.volumeManager_));
 
   var keys = {};
   keys[SlideMode.OVERWRITE_BUBBLE_KEY] = 0;
