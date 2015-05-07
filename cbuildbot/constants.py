@@ -24,6 +24,7 @@ def _FindSourceRoot():
 SOURCE_ROOT = _FindSourceRoot()
 CHROOT_SOURCE_ROOT = '/mnt/host/source'
 CHROOT_WORKSPACE_ROOT = '/mnt/host/workspace'
+CHROOT_CACHE_ROOT = '/var/cache/chromeos-cache'
 
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
 CHROMITE_DIR = os.path.join(SOURCE_ROOT, 'chromite')
