@@ -330,6 +330,16 @@ component("gfx") {
     configs += [ "//build/config/linux:fontconfig" ]
   }
 
+  # Chrome OS
+  if (is_chromeos) {
+    # Robust JPEG decoding for the login screen.
+    sources += [
+      "chromeos/codec/jpeg_codec_robust_slow.cc",
+      "chromeos/codec/jpeg_codec_robust_slow.h",
+    ]
+    deps += [ "//third_party/libjpeg" ]
+  }
+
   if (!use_aura) {
     sources -= [
       "path_aura.cc",
@@ -503,6 +513,10 @@ test("gfx_unittests") {
     sources -= [ "screen_unittest.cc" ]
   } else {
     sources -= [ "nine_image_painter_unittest.cc" ]
+  }
+
+  if (is_chromeos) {
+    sources += [ "chromeos/codec/jpeg_codec_robust_slow_unittest.cc" ]
   }
 
   if (is_win) {

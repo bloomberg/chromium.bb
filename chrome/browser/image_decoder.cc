@@ -134,10 +134,12 @@ void ImageDecoder::DecodeImageInSandbox(
   batch_mode_timer_->Reset();
 
   switch (image_codec) {
+#if defined(OS_CHROMEOS)
     case ROBUST_JPEG_CODEC:
       utility_process_host_->Send(new ChromeUtilityMsg_RobustJPEGDecodeImage(
           image_data, request_id));
       break;
+#endif  // defined(OS_CHROMEOS)
     case DEFAULT_CODEC:
       utility_process_host_->Send(new ChromeUtilityMsg_DecodeImage(
           image_data, shrink_to_fit, request_id));

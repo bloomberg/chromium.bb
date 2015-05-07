@@ -135,11 +135,13 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_DecodeImage,
                      bool /* shrink image if needed for IPC msg limit */,
                      int /* delegate id */)
 
+#if defined(OS_CHROMEOS)
 // Tell the utility process to decode the given JPEG image data with a robust
 // libjpeg codec.
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RobustJPEGDecodeImage,
                      std::vector<unsigned char> /* encoded image contents*/,
                      int /* delegate id */)
+#endif  // defined(OS_CHROMEOS)
 
 // Tell the utility process to patch the given |input_file| using |patch_file|
 // and place the output in |output_file|. The patch should use the bsdiff

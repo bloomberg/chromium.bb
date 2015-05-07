@@ -49,10 +49,10 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnDecodeImage(const std::vector<unsigned char>& encoded_data,
                      bool shrink_to_fit,
                      int request_id);
+#if defined(OS_CHROMEOS)
   void OnRobustJPEGDecodeImage(const std::vector<unsigned char>& encoded_data,
                                int request_id);
 
-#if defined(OS_CHROMEOS)
   void OnCreateZipFile(const base::FilePath& src_dir,
                        const std::vector<base::FilePath>& src_relative_paths,
                        const base::FileDescriptor& dest_fd);

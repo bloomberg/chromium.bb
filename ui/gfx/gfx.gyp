@@ -372,6 +372,16 @@
             ],
           },
         }],
+        ['chromeos==1', {
+          # Chrome OS requires robust JPEG decoding for the login screen.
+          'sources': [
+            'chromeos/codec/jpeg_codec_robust_slow.cc',
+            'chromeos/codec/jpeg_codec_robust_slow.h',
+          ],
+          'dependencies': [
+            '<(libjpeg_ijg_gyp_path):libjpeg',
+          ],
+        }],
         ['use_aura==0 and toolkit_views==0', {
           'sources!': [
             'nine_image_painter.cc',

@@ -115,6 +115,11 @@
             'render_text_unittest.cc',
           ],
         }],
+        ['chromeos==1', {
+          'sources': [
+            'chromeos/codec/jpeg_codec_robust_slow_unittest.cc',
+          ],
+        }],
         ['use_aura==1', {
           'sources!': [
             'screen_unittest.cc',

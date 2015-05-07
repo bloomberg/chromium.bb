@@ -24,8 +24,11 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
-#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/size.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/gfx/chromeos/codec/jpeg_codec_robust_slow.h"
+#endif
 
 #if !defined(OS_ANDROID)
 #include "chrome/utility/profile_import_handler.h"
@@ -148,8 +151,10 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeContentUtilityClient, message)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DecodeImage, OnDecodeImage)
+#if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RobustJPEGDecodeImage,
                         OnRobustJPEGDecodeImage)
+#endif  // defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileBsdiff,
                         OnPatchFileBsdiff)
@@ -310,13 +315,13 @@ void ChromeContentUtilityClient::OnDetectSeccompSupport() {
 }
 #endif  // defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
 
+#if defined(OS_CHROMEOS)
 void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
     const std::vector<unsigned char>& encoded_data,
     int request_id) {
   // Our robust jpeg decoding is using IJG libjpeg.
-  if (gfx::JPEGCodec::JpegLibraryVariant() == gfx::JPEGCodec::IJG_LIBJPEG &&
-      !encoded_data.empty()) {
-    scoped_ptr<SkBitmap> decoded_image(gfx::JPEGCodec::Decode(
+  if (!encoded_data.empty()) {
+    scoped_ptr<SkBitmap> decoded_image(gfx::JPEGCodecRobustSlow::Decode(
         &encoded_data[0], encoded_data.size()));
     if (!decoded_image.get() || decoded_image->empty()) {
       Send(new ChromeUtilityHostMsg_DecodeImage_Failed(request_id));
@@ -329,6 +334,7 @@ void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
   }
   ReleaseProcessIfNeeded();
 }
+#endif  // defined(OS_CHROMEOS)
 
 void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   int error_code;

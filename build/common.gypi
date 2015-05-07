@@ -923,8 +923,6 @@
         ['chromeos==1', {
           'enable_basic_printing%': 0,
           'enable_print_preview%': 1,
-          # When building for ChromeOS we dont want Chromium to use libjpeg_turbo.
-          'use_libjpeg_turbo%': 0,
         }],
 
         # Do not enable the Settings App on ChromeOS.
@@ -1514,6 +1512,11 @@
     # Experiment: http://crbug.com/426914
     'envoy%': 0,
 
+    # Used to set libjpeg_gyp_path. Chrome OS ui/gfx/gfx.gyp uses the IJG path
+    # for robust login screen decoding.
+    'libjpeg_ijg_gyp_path': '<(DEPTH)/third_party/libjpeg/libjpeg.gyp',
+    'libjpeg_turbo_gyp_path': '<(DEPTH)/third_party/libjpeg_turbo/libjpeg.gyp',
+
     'conditions': [
       ['buildtype=="Official"', {
         # Continue to embed build meta data in Official builds, basically the
@@ -2002,9 +2005,9 @@
       # library used by Chromium.
       ['use_system_libjpeg==1 or use_libjpeg_turbo==0', {
         # Configuration for using the system libjeg is here.
-        'libjpeg_gyp_path': '../third_party/libjpeg/libjpeg.gyp',
+        'libjpeg_gyp_path': '<(libjpeg_ijg_gyp_path)',
       }, {
-        'libjpeg_gyp_path': '../third_party/libjpeg_turbo/libjpeg.gyp',
+        'libjpeg_gyp_path': '<(libjpeg_turbo_gyp_path)',
       }],
 
       # Options controlling the use of GConf (the classic GNOME configuration
