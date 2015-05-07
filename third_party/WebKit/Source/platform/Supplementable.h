@@ -113,7 +113,7 @@ template<bool>
 class SupplementTracing;
 
 template<>
-class SupplementTracing<true> : public GarbageCollectedMixin { };
+class PLATFORM_EXPORT SupplementTracing<true> : public GarbageCollectedMixin { };
 
 template<>
 class GC_PLUGIN_IGNORE("crbug.com/476419") PLATFORM_EXPORT SupplementTracing<false> {
@@ -156,6 +156,7 @@ class SupplementableTracing;
 
 template<typename T>
 class SupplementableTracing<T, true> : public GarbageCollectedMixin {
+    WTF_MAKE_NONCOPYABLE(SupplementableTracing);
 public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -163,6 +164,7 @@ public:
     }
 
 protected:
+    SupplementableTracing() { }
     typedef HeapHashMap<const char*, Member<SupplementBase<T, true>>, PtrHash<const char*>> SupplementMap;
     SupplementMap m_supplements;
 };

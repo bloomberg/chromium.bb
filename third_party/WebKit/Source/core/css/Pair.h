@@ -21,6 +21,7 @@
 #ifndef Pair_h
 #define Pair_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -32,7 +33,7 @@ namespace blink {
 // and border-spacing (all of which are space-separated sets of two values).  At the moment we are only using it for
 // border-radius and background-size, but (FIXME) border-spacing and background-position could be converted over to use
 // it (eliminating some extra -webkit- internal properties).
-class Pair final : public RefCountedWillBeGarbageCollected<Pair> {
+class CORE_EXPORT Pair final : public RefCountedWillBeGarbageCollected<Pair> {
 public:
     enum IdenticalValuesPolicy { DropIdenticalValues, KeepIdenticalValues };
 

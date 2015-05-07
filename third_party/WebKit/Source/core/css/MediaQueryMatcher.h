@@ -39,10 +39,11 @@ class MediaQuerySet;
 // The listeners must be called in the very same order in which they have been added.
 
 class CORE_EXPORT MediaQueryMatcher final : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryMatcher> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryMatcher)
-        WTF_MAKE_NONCOPYABLE(MediaQueryMatcher);
+    WTF_MAKE_NONCOPYABLE(MediaQueryMatcher);
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryMatcher> create(Document&);
+    ~MediaQueryMatcher();
+
     void documentDetached();
 
     void addMediaQueryList(MediaQueryList*);

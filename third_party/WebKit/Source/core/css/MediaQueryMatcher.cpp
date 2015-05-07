@@ -44,7 +44,9 @@ MediaQueryMatcher::MediaQueryMatcher(Document& document)
     ASSERT(m_document);
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryMatcher)
+MediaQueryMatcher::~MediaQueryMatcher()
+{
+}
 
 void MediaQueryMatcher::documentDetached()
 {
