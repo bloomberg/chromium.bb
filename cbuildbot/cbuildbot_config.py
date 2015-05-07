@@ -4,8 +4,6 @@
 
 """Configuration options for various cbuildbot builders."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import copy
@@ -165,7 +163,7 @@ def GetDefaultWaterfall(build_config):
       IsCQType(b_type) or
       IsCanaryType(b_type) or
       b_type in (
-        constants.PRE_CQ_LAUNCHER_TYPE,
+          constants.PRE_CQ_LAUNCHER_TYPE,
       )):
     if build_config['internal']:
       return constants.WATERFALL_INTERNAL
@@ -173,7 +171,7 @@ def GetDefaultWaterfall(build_config):
       return constants.WATERFALL_EXTERNAL
 
 
-# pylint: disable=W0102
+# pylint: disable=dangerous-default-value
 def GetCanariesForChromeLKGM(configs=GetConfig()):
   """Grabs a list of builders that are important for the Chrome LKGM."""
   builders = []
@@ -183,6 +181,7 @@ def GetCanariesForChromeLKGM(configs=GetConfig()):
       builders.append(build_name)
 
   return builders
+# pylint: enable=dangerous-default-value
 
 
 def FindFullConfigsForBoard(board=None):
@@ -263,6 +262,9 @@ def GetSlavesForMaster(master_config, options=None):
       slave_configs.append(build_config)
 
   return slave_configs
+
+
+# pylint: disable=bad-continuation
 
 
 # Enumeration of valid settings; any/all config settings must be in this.
@@ -687,7 +689,7 @@ _settings = dict(
 
 class _JSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
-  # pylint: disable=E0202
+  # pylint: disable=method-hidden
   def default(self, obj):
     return self.encode(obj.__dict__)
 
