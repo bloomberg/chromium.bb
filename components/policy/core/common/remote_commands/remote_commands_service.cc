@@ -117,8 +117,12 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
   result.set_timestamp((command->execution_started_time() -
                         base::Time::UnixEpoch()).InMilliseconds());
 
-  if (command->status() == RemoteCommandJob::SUCCEEDED) {
-    result.set_result(em::RemoteCommandResult_ResultType_RESULT_SUCCESS);
+  if (command->status() == RemoteCommandJob::SUCCEEDED ||
+      command->status() == RemoteCommandJob::FAILED) {
+    if (command->status() == RemoteCommandJob::SUCCEEDED)
+      result.set_result(em::RemoteCommandResult_ResultType_RESULT_SUCCESS);
+    else
+      result.set_result(em::RemoteCommandResult_ResultType_RESULT_FAILURE);
     const scoped_ptr<std::string> result_payload = command->GetResultPayload();
     if (result_payload)
       result.set_payload(*result_payload);
@@ -126,7 +130,7 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
              command->status() == RemoteCommandJob::INVALID) {
     result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
   } else {
-    result.set_result(em::RemoteCommandResult_ResultType_RESULT_FAILURE);
+    NOTREACHED();
   }
 
   unsent_results_.push_back(result);

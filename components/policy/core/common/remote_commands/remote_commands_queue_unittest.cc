@@ -201,8 +201,11 @@ TEST_F(RemoteCommandsQueueTest, SingleFailedCommand) {
   AddJobAndVerifyRunningAfter(job.Pass(), base::TimeDelta::FromSeconds(9));
 
   // After 11 seconds, the job is expected to be finished.
-  EXPECT_CALL(observer_, OnJobFinished(Property(&RemoteCommandJob::status,
-                                                RemoteCommandJob::FAILED)));
+  EXPECT_CALL(observer_,
+              OnJobFinished(AllOf(
+                  Property(&RemoteCommandJob::status, RemoteCommandJob::FAILED),
+                  Property(&RemoteCommandJob::GetResultPayload,
+                           Pointee(StrEq(kPayload))))));
   task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
   Mock::VerifyAndClearExpectations(&observer_);
 

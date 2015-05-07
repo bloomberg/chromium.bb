@@ -91,8 +91,8 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
   // RemoteCommandJob:
   bool IsExpired(base::Time now) override;
   bool ParseCommandPayload(const std::string& command_payload) override;
-  void RunImpl(const SucceededCallback& succeeded_callback,
-               const FailedCallback& failed_callback) override;
+  void RunImpl(const CallbackWithResult& succeeded_callback,
+               const CallbackWithResult& failed_callback) override;
   void TerminateImpl() override;
 
   void StoreScreenshot(size_t screen,
@@ -105,10 +105,10 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
 
   // The callback that will be called when the screenshot was successfully
   // uploaded.
-  SucceededCallback succeeded_callback_;
+  CallbackWithResult succeeded_callback_;
 
   // The callback that will be called when this command failed.
-  FailedCallback failed_callback_;
+  CallbackWithResult failed_callback_;
 
   // Tracks the number of pending screenshots.
   int num_pending_screenshots_;

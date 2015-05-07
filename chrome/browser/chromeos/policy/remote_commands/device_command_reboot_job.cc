@@ -51,8 +51,8 @@ bool DeviceCommandRebootJob::IsExpired(base::Time now) {
 }
 
 void DeviceCommandRebootJob::RunImpl(
-    const SucceededCallback& succeeded_callback,
-    const FailedCallback& failed_callback) {
+    const CallbackWithResult& succeeded_callback,
+    const CallbackWithResult& failed_callback) {
   // Determines the time delta between the command having been issued and the
   // boot time of the system.
   const base::TimeDelta uptime =

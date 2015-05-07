@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -113,7 +114,8 @@ void DeviceCommandScreenshotJob::OnSuccess() {
 void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
   // TODO(cschuet): Add payload delivery in the failure case.
   // http://crbug.com/482865
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, failed_callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(failed_callback_, nullptr));
 }
 
 bool DeviceCommandScreenshotJob::IsExpired(base::Time now) {
@@ -171,8 +173,8 @@ void DeviceCommandScreenshotJob::StartScreenshotUpload() {
 }
 
 void DeviceCommandScreenshotJob::RunImpl(
-    const SucceededCallback& succeeded_callback,
-    const FailedCallback& failed_callback) {
+    const CallbackWithResult& succeeded_callback,
+    const CallbackWithResult& failed_callback) {
   succeeded_callback_ = succeeded_callback;
   failed_callback_ = failed_callback;
 
@@ -183,8 +185,10 @@ void DeviceCommandScreenshotJob::RunImpl(
 
   // Immediately fail if there are no attached screens.
   // TODO(cschuet): Fix http://crbug.com/482865.
-  if (root_windows.size() == 0)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, failed_callback_);
+  if (root_windows.size() == 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(failed_callback_, nullptr));
+  }
 
   // Post tasks to the sequenced worker pool for taking screenshots on each
   // attached screen.

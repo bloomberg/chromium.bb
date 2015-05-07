@@ -92,8 +92,7 @@ class POLICY_EXPORT RemoteCommandJob {
     virtual scoped_ptr<std::string> Serialize() = 0;
   };
 
-  using SucceededCallback = base::Callback<void(scoped_ptr<ResultPayload>)>;
-  using FailedCallback = base::Closure;
+  using CallbackWithResult = base::Callback<void(scoped_ptr<ResultPayload>)>;
 
   RemoteCommandJob();
 
@@ -119,8 +118,8 @@ class POLICY_EXPORT RemoteCommandJob {
   // |succeeded_callback| or |failed_callback| on the thread that this method
   // was called.
   // Also see comments regarding Run().
-  virtual void RunImpl(const SucceededCallback& succeed_callback,
-                       const FailedCallback& failed_callback) = 0;
+  virtual void RunImpl(const CallbackWithResult& succeed_callback,
+                       const CallbackWithResult& failed_callback) = 0;
 
   // Subclasses should implement this method for actual command execution
   // termination. Be cautious that tasks might be running on another thread or
@@ -130,9 +129,9 @@ class POLICY_EXPORT RemoteCommandJob {
   virtual void TerminateImpl();
 
  private:
-  // Posted tasks are expected to call one of these two methods.
-  void OnCommandExecutionSucceeded(scoped_ptr<ResultPayload> result);
-  void OnCommandExecutionFailed();
+  // Posted tasks are expected to call this method.
+  void OnCommandExecutionFinishedWithResult(bool succeeded,
+                                            scoped_ptr<ResultPayload> result);
 
   Status status_;
 

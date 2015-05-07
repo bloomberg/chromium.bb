@@ -30,8 +30,8 @@ class DeviceCommandRebootJob : public RemoteCommandJob {
  private:
   // RemoteCommandJob:
   bool IsExpired(base::Time now) override;
-  void RunImpl(const SucceededCallback& succeeded_callback,
-               const FailedCallback& failed_callback) override;
+  void RunImpl(const CallbackWithResult& succeeded_callback,
+               const CallbackWithResult& failed_callback) override;
   void TerminateImpl() override;
   base::TimeDelta GetCommmandTimeout() const override;
 

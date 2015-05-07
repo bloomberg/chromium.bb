@@ -68,10 +68,10 @@ bool RemoteCommandJob::Run(base::Time now,
   status_ = RUNNING;
   finished_callback_ = finished_callback;
 
-  RunImpl(base::Bind(&RemoteCommandJob::OnCommandExecutionSucceeded,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&RemoteCommandJob::OnCommandExecutionFailed,
-                     weak_factory_.GetWeakPtr()));
+  RunImpl(base::Bind(&RemoteCommandJob::OnCommandExecutionFinishedWithResult,
+                     weak_factory_.GetWeakPtr(), true),
+          base::Bind(&RemoteCommandJob::OnCommandExecutionFinishedWithResult,
+                     weak_factory_.GetWeakPtr(), false));
 
   // The command is expected to run asynchronously.
   DCHECK_EQ(RUNNING, status_);
@@ -106,7 +106,7 @@ bool RemoteCommandJob::IsExecutionFinished() const {
 
 scoped_ptr<std::string> RemoteCommandJob::GetResultPayload() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(SUCCEEDED, status_);
+  DCHECK(status_ == SUCCEEDED || status_ == FAILED);
 
   if (!result_payload_)
     return nullptr;
@@ -129,22 +129,14 @@ bool RemoteCommandJob::IsExpired(base::Time now) {
 void RemoteCommandJob::TerminateImpl() {
 }
 
-void RemoteCommandJob::OnCommandExecutionSucceeded(
+void RemoteCommandJob::OnCommandExecutionFinishedWithResult(
+    bool succeeded,
     scoped_ptr<RemoteCommandJob::ResultPayload> result_payload) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(RUNNING, status_);
-  status_ = SUCCEEDED;
+  status_ = succeeded ? SUCCEEDED : FAILED;
 
   result_payload_ = result_payload.Pass();
-
-  if (!finished_callback_.is_null())
-    finished_callback_.Run();
-}
-
-void RemoteCommandJob::OnCommandExecutionFailed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(RUNNING, status_);
-  status_ = FAILED;
 
   if (!finished_callback_.is_null())
     finished_callback_.Run();
