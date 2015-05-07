@@ -142,11 +142,24 @@ base::TimeTicks BackoffEntry::CalculateReleaseTime() const {
   delay_ms -= base::RandDouble() * policy_->jitter_factor * delay_ms;
 
   // Do overflow checking in microseconds, the internal unit of TimeTicks.
+  base::internal::CheckedNumeric<int64> backoff_duration_us = delay_ms + 0.5;
+  backoff_duration_us *= base::Time::kMicrosecondsPerMillisecond;
+  base::TimeDelta backoff_duration = base::TimeDelta::FromMicroseconds(
+      backoff_duration_us.ValueOrDefault(kint64max));
+  base::TimeTicks release_time = BackoffDurationToReleaseTime(backoff_duration);
+
+  // Never reduce previously set release horizon, e.g. due to Retry-After
+  // header.
+  return std::max(release_time, exponential_backoff_release_time_);
+}
+
+base::TimeTicks BackoffEntry::BackoffDurationToReleaseTime(
+    base::TimeDelta backoff_duration) const {
   const int64 kTimeTicksNowUs =
       (GetTimeTicksNow() - base::TimeTicks()).InMicroseconds();
+  // Do overflow checking in microseconds, the internal unit of TimeTicks.
   base::internal::CheckedNumeric<int64> calculated_release_time_us =
-      delay_ms + 0.5;
-  calculated_release_time_us *= base::Time::kMicrosecondsPerMillisecond;
+      backoff_duration.InMicroseconds();
   calculated_release_time_us += kTimeTicksNowUs;
 
   base::internal::CheckedNumeric<int64> maximum_release_time_us = kint64max;
@@ -162,11 +175,7 @@ base::TimeTicks BackoffEntry::CalculateReleaseTime() const {
       calculated_release_time_us.ValueOrDefault(kint64max),
       maximum_release_time_us.ValueOrDefault(kint64max));
 
-  // Never reduce previously set release horizon, e.g. due to Retry-After
-  // header.
-  return std::max(
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(release_time_us),
-      exponential_backoff_release_time_);
+  return base::TimeTicks() + base::TimeDelta::FromMicroseconds(release_time_us);
 }
 
 base::TimeTicks BackoffEntry::GetTimeTicksNow() const {
