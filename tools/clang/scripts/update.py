@@ -65,9 +65,9 @@ def WriteStampFile(s):
 
 def PrintRevision():
   """Print the current Clang revision."""
-  # gyp runs update.py --print-revision even when clang=1 isn't set.
+  # gyp runs update.py --print-revision even when clang isn't used.
   # It won't use the value, but we must not error.
-  if not re.search(r'\b(clang|asan)=1', os.environ.get('GYP_DEFINES', '')):
+  if not os.path.exists(LLVM_DIR):
     print "0"
     return
 
