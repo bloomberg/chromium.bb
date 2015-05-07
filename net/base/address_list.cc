@@ -16,16 +16,16 @@ namespace {
 
 base::Value* NetLogAddressListCallback(const AddressList* address_list,
                                        NetLogCaptureMode capture_mode) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  base::ListValue* list = new base::ListValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
 
   for (AddressList::const_iterator it = address_list->begin();
        it != address_list->end(); ++it) {
     list->Append(new base::StringValue(it->ToString()));
   }
 
-  dict->Set("address_list", list);
-  return dict;
+  dict->Set("address_list", list.Pass());
+  return dict.release();
 }
 
 }  // namespace

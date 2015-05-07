@@ -284,12 +284,11 @@ base::Value* URLRequest::GetStateAsValue() const {
   dict->SetString("url", original_url().possibly_invalid_spec());
 
   if (url_chain_.size() > 1) {
-    base::ListValue* list = new base::ListValue();
-    for (std::vector<GURL>::const_iterator url = url_chain_.begin();
-         url != url_chain_.end(); ++url) {
-      list->AppendString(url->possibly_invalid_spec());
+    scoped_ptr<base::ListValue> list(new base::ListValue());
+    for (const GURL& url : url_chain_) {
+      list->AppendString(url.possibly_invalid_spec());
     }
-    dict->Set("url_chain", list);
+    dict->Set("url_chain", list.Pass());
   }
 
   dict->SetInteger("load_flags", load_flags_);

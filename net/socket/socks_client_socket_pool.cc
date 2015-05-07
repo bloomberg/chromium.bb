@@ -272,11 +272,11 @@ base::DictionaryValue* SOCKSClientSocketPool::GetInfoAsValue(
     bool include_nested_pools) const {
   base::DictionaryValue* dict = base_.GetInfoAsValue(name, type);
   if (include_nested_pools) {
-    base::ListValue* list = new base::ListValue();
+    scoped_ptr<base::ListValue> list(new base::ListValue());
     list->Append(transport_pool_->GetInfoAsValue("transport_socket_pool",
                                                  "transport_socket_pool",
                                                  false));
-    dict->Set("nested_pools", list);
+    dict->Set("nested_pools", list.Pass());
   }
   return dict;
 }

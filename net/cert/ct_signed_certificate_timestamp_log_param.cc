@@ -89,39 +89,36 @@ void SetBinaryData(
 // Returns a dictionary where each key is a field of the SCT and its value
 // is this field's value in the SCT. This dictionary is meant to be used for
 // outputting a de-serialized SCT to the NetLog.
-base::DictionaryValue* SCTToDictionary(
+scoped_ptr<base::DictionaryValue> SCTToDictionary(
     const ct::SignedCertificateTimestamp& sct) {
-  base::DictionaryValue* out = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue());
 
   out->SetString("origin", OriginToString(sct.origin));
   out->SetInteger("version", sct.version);
 
-  SetBinaryData("log_id", sct.log_id, out);
+  SetBinaryData("log_id", sct.log_id, out.get());
   base::TimeDelta time_since_unix_epoch =
       sct.timestamp - base::Time::UnixEpoch();
   out->SetString("timestamp",
       base::Int64ToString(time_since_unix_epoch.InMilliseconds()));
-  SetBinaryData("extensions", sct.extensions, out);
+  SetBinaryData("extensions", sct.extensions, out.get());
 
   out->SetString("hash_algorithm",
                  HashAlgorithmToString(sct.signature.hash_algorithm));
   out->SetString("signature_algorithm",
                  SignatureAlgorithmToString(sct.signature.signature_algorithm));
-  SetBinaryData(
-      "signature_data", sct.signature.signature_data, out);
+  SetBinaryData("signature_data", sct.signature.signature_data, out.get());
 
   return out;
 }
 
 // Given a list of SCTs, return a ListValue instance where each item in the
 // list is a dictionary created by SCTToDictionary.
-base::ListValue* SCTListToPrintableValues(
+scoped_ptr<base::ListValue> SCTListToPrintableValues(
     const ct::SCTList& sct_list) {
-  base::ListValue* output_scts = new base::ListValue();
-  for (ct::SCTList::const_iterator it = sct_list.begin();
-       it != sct_list.end();
-       ++it)
-    output_scts->Append(SCTToDictionary(*(it->get())));
+  scoped_ptr<base::ListValue> output_scts(new base::ListValue());
+  for (const auto& sct : sct_list)
+    output_scts->Append(SCTToDictionary(*(sct.get())));
 
   return output_scts;
 }

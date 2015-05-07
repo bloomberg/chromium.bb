@@ -98,10 +98,10 @@ bool NetLog::Source::IsValid() const {
 
 void NetLog::Source::AddToEventParameters(
     base::DictionaryValue* event_params) const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("type", static_cast<int>(type));
   dict->SetInteger("id", static_cast<int>(id));
-  event_params->Set("source_dependency", dict);
+  event_params->Set("source_dependency", dict.Pass());
 }
 
 NetLog::ParametersCallback NetLog::Source::ToEventParametersCallback() const {
@@ -135,10 +135,10 @@ base::Value* NetLog::Entry::ToValue() const {
   entry_dict->SetString("time", TickCountToString(data_->time));
 
   // Set the entry source.
-  base::DictionaryValue* source_dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> source_dict(new base::DictionaryValue());
   source_dict->SetInteger("id", data_->source.id);
   source_dict->SetInteger("type", static_cast<int>(data_->source.type));
-  entry_dict->Set("source", source_dict);
+  entry_dict->Set("source", source_dict.Pass());
 
   // Set the event info.
   entry_dict->SetInteger("type", static_cast<int>(data_->type));
@@ -146,9 +146,10 @@ base::Value* NetLog::Entry::ToValue() const {
 
   // Set the event-specific parameters.
   if (data_->parameters_callback) {
-    base::Value* value = data_->parameters_callback->Run(capture_mode_);
+    scoped_ptr<base::Value> value(
+        data_->parameters_callback->Run(capture_mode_));
     if (value)
-      entry_dict->Set("params", value);
+      entry_dict->Set("params", value.Pass());
   }
 
   return entry_dict;

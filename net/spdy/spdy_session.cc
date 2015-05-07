@@ -77,8 +77,7 @@ base::Value* NetLogSpdySynStreamSentCallback(const SpdyHeaderBlock* headers,
                                              SpdyStreamId stream_id,
                                              NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
+  dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("priority", static_cast<int>(spdy_priority));
@@ -95,8 +94,7 @@ base::Value* NetLogSpdySynStreamReceivedCallback(
     SpdyStreamId associated_stream,
     NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
+  dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("priority", static_cast<int>(spdy_priority));
@@ -111,8 +109,7 @@ base::Value* NetLogSpdySynReplyOrHeadersReceivedCallback(
     SpdyStreamId stream_id,
     NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
+  dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetBoolean("fin", fin);
   dict->SetInteger("stream_id", stream_id);
   return dict;
@@ -175,8 +172,8 @@ base::Value* NetLogSpdySendSettingsCallback(
     const SettingsMap* settings,
     const SpdyMajorVersion protocol_version,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  base::ListValue* settings_list = new base::ListValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> settings_list(new base::ListValue());
   for (SettingsMap::const_iterator it = settings->begin();
        it != settings->end(); ++it) {
     const SpdySettingsIds id = it->first;
@@ -188,8 +185,8 @@ base::Value* NetLogSpdySendSettingsCallback(
         flags,
         value)));
   }
-  dict->Set("settings", settings_list);
-  return dict;
+  dict->Set("settings", settings_list.Pass());
+  return dict.release();
 }
 
 base::Value* NetLogSpdyWindowUpdateFrameCallback(
@@ -265,8 +262,7 @@ base::Value* NetLogSpdyPushPromiseReceivedCallback(
     SpdyStreamId promised_stream_id,
     NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
+  dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
   dict->SetInteger("id", stream_id);
   dict->SetInteger("promised_stream_id", promised_stream_id);
   return dict;
@@ -1792,20 +1788,17 @@ void SpdySession::MakeUnavailable() {
 }
 
 base::Value* SpdySession::GetInfoAsValue() const {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetInteger("source_id", net_log_.source().id);
 
   dict->SetString("host_port_pair", host_port_pair().ToString());
   if (!pooled_aliases_.empty()) {
-    base::ListValue* alias_list = new base::ListValue();
-    for (std::set<SpdySessionKey>::const_iterator it =
-             pooled_aliases_.begin();
-         it != pooled_aliases_.end(); it++) {
-      alias_list->Append(new base::StringValue(
-          it->host_port_pair().ToString()));
+    scoped_ptr<base::ListValue> alias_list(new base::ListValue());
+    for (const auto& alias : pooled_aliases_) {
+      alias_list->AppendString(alias.host_port_pair().ToString());
     }
-    dict->Set("aliases", alias_list);
+    dict->Set("aliases", alias_list.Pass());
   }
   dict->SetString("proxy", host_port_proxy_pair().second.ToURI());
 
@@ -1838,7 +1831,7 @@ base::Value* SpdySession::GetInfoAsValue() const {
   dict->SetInteger("recv_window_size", session_recv_window_size_);
   dict->SetInteger("unacked_recv_window_bytes",
                    session_unacked_recv_window_bytes_);
-  return dict;
+  return dict.release();
 }
 
 bool SpdySession::IsReused() const {
