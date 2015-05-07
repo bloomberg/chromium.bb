@@ -13,8 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -107,19 +106,17 @@ typedef base::Callback<
 
 // static
 void OpenInputStreamOnWorkerThread(
-    scoped_refptr<base::MessageLoopProxy> job_thread_proxy,
+    scoped_refptr<base::SingleThreadTaskRunner> job_thread_task_runner,
     scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate> delegate,
     const GURL& url,
     OnInputStreamOpenedCallback callback) {
-
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
 
   scoped_ptr<InputStream> input_stream = delegate->OpenInputStream(env, url);
-  job_thread_proxy->PostTask(FROM_HERE,
-                             base::Bind(callback,
-                                        base::Passed(delegate.Pass()),
-                                        base::Passed(input_stream.Pass())));
+  job_thread_task_runner->PostTask(
+      FROM_HERE, base::Bind(callback, base::Passed(delegate.Pass()),
+                            base::Passed(input_stream.Pass())));
 }
 
 } // namespace
@@ -137,13 +134,12 @@ void AndroidStreamReaderURLRequestJob::Start() {
       FROM_HERE,
       base::Bind(
           &OpenInputStreamOnWorkerThread,
-          base::MessageLoop::current()->message_loop_proxy(),
+          base::MessageLoop::current()->task_runner(),
           // This is intentional - the job could be deleted while the callback
           // is executing on the background thread.
           // The delegate will be "returned" to the job once the InputStream
           // open attempt is completed.
-          base::Passed(&delegate_),
-          request()->url(),
+          base::Passed(&delegate_), request()->url(),
           base::Bind(&AndroidStreamReaderURLRequestJob::OnInputStreamOpened,
                      weak_factory_.GetWeakPtr())));
 }

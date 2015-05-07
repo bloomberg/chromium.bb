@@ -6,13 +6,14 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
 namespace android_webview {
 
 RenderingTest::RenderingTest() : message_loop_(new base::MessageLoop) {
-  ui_proxy_ = base::MessageLoopProxy::current();
+  ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 RenderingTest::~RenderingTest() {
@@ -23,7 +24,7 @@ RenderingTest::~RenderingTest() {
 void RenderingTest::SetUpTestHarness() {
   DCHECK(!browser_view_renderer_.get());
   browser_view_renderer_.reset(
-      new BrowserViewRenderer(this, base::MessageLoopProxy::current()));
+      new BrowserViewRenderer(this, base::ThreadTaskRunnerHandle::Get()));
   InitializeCompositor();
   Attach();
 }
@@ -43,7 +44,7 @@ void RenderingTest::Attach() {
 void RenderingTest::RunTest() {
   SetUpTestHarness();
 
-  ui_proxy_->PostTask(
+  ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RenderingTest::StartTest, base::Unretained(this)));
   message_loop_->Run();
 }
@@ -53,8 +54,9 @@ void RenderingTest::StartTest() {
 }
 
 void RenderingTest::EndTest() {
-  ui_proxy_->PostTask(FROM_HERE, base::Bind(&RenderingTest::QuitMessageLoop,
-                                            base::Unretained(this)));
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RenderingTest::QuitMessageLoop, base::Unretained(this)));
 }
 
 void RenderingTest::QuitMessageLoop() {

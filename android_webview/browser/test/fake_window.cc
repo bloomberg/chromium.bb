@@ -5,8 +5,9 @@
 #include "android_webview/browser/test/fake_window.h"
 
 #include "android_webview/browser/browser_view_renderer.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -108,7 +109,7 @@ void FakeWindow::PostInvalidate() {
   if (on_draw_hardware_pending_)
     return;
   on_draw_hardware_pending_ = true;
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&FakeWindow::OnDrawHardware, weak_ptr_factory_.GetWeakPtr()));
 }

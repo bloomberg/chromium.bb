@@ -8,7 +8,7 @@
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/test/fake_window.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -68,7 +68,7 @@ class RenderingTest : public testing::Test,
   void Attach();
   void EndTest();
 
-  scoped_refptr<base::MessageLoopProxy> ui_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_ptr<BrowserViewRenderer> browser_view_renderer_;
   scoped_ptr<content::TestSynchronousCompositor> compositor_;
   scoped_ptr<FakeWindow> window_;

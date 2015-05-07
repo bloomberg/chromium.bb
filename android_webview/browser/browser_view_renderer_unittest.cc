@@ -5,6 +5,8 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/test/rendering_test.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 
 namespace android_webview {
 
@@ -81,8 +83,9 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
                     AwDrawGLInfo* draw_info) override {
     if (draw_gl_count_on_rt_ == 1) {
       draw_gl_count_on_rt_++;
-      ui_proxy_->PostTask(FROM_HERE, base::Bind(&RenderingTest::PostInvalidate,
-                                                base::Unretained(this)));
+      ui_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&RenderingTest::PostInvalidate, base::Unretained(this)));
       return false;
     }
 

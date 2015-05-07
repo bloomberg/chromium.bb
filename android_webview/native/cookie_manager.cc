@@ -16,9 +16,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -208,7 +208,7 @@ class CookieManager {
   void SetAcceptFileSchemeCookiesLocked(bool accept);
 
   scoped_refptr<net::CookieMonster> cookie_monster_;
-  scoped_refptr<base::MessageLoopProxy> cookie_monster_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> cookie_monster_task_runner_;
   base::Lock cookie_monster_lock_;
 
   scoped_ptr<base::Thread> cookie_monster_client_thread_;
@@ -265,14 +265,13 @@ void CookieManager::EnsureCookieMonsterExistsLocked() {
   cookie_monster_client_thread_.reset(
       new base::Thread("CookieMonsterClient"));
   cookie_monster_client_thread_->Start();
-  cookie_monster_proxy_ = cookie_monster_client_thread_->message_loop_proxy();
+  cookie_monster_task_runner_ = cookie_monster_client_thread_->task_runner();
   cookie_monster_backend_thread_.reset(
       new base::Thread("CookieMonsterBackend"));
   cookie_monster_backend_thread_->Start();
 
-  CreateCookieMonster(user_data_dir,
-                      cookie_monster_proxy_,
-                      cookie_monster_backend_thread_->message_loop_proxy());
+  CreateCookieMonster(user_data_dir, cookie_monster_task_runner_,
+                      cookie_monster_backend_thread_->task_runner());
 }
 
 // Executes the |task| on the |cookie_monster_proxy_| message loop and
@@ -319,7 +318,7 @@ void CookieManager::ExecCookieTaskSync(
 void CookieManager::ExecCookieTask(const base::Closure& task) {
   base::AutoLock lock(cookie_monster_lock_);
   EnsureCookieMonsterExistsLocked();
-  cookie_monster_proxy_->PostTask(FROM_HERE, task);
+  cookie_monster_task_runner_->PostTask(FROM_HERE, task);
 }
 
 scoped_refptr<net::CookieStore> CookieManager::GetCookieStore() {

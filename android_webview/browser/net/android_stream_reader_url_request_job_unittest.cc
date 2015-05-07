@@ -8,9 +8,10 @@
 #include "android_webview/browser/net/input_stream_reader.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
@@ -160,7 +161,7 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
                                          network_delegate,
                                          delegate.Pass()),
         stream_reader_(stream_reader.Pass()) {
-    message_loop_proxy_ = base::MessageLoopProxy::current();
+    task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   scoped_ptr<InputStreamReader> CreateStreamReader(
@@ -171,11 +172,11 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
   ~TestStreamReaderJob() override {}
 
   base::TaskRunner* GetWorkerThreadRunner() override {
-    return message_loop_proxy_.get();
+    return task_runner_.get();
   }
 
   scoped_ptr<InputStreamReader> stream_reader_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class AndroidStreamReaderURLRequestJobTest : public Test {
