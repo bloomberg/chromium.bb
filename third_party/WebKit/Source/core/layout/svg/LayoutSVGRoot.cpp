@@ -74,6 +74,9 @@ void LayoutSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, d
     intrinsicSize.setWidth(floatValueForLength(svg->intrinsicWidth(), 0));
     intrinsicSize.setHeight(floatValueForLength(svg->intrinsicHeight(), 0));
 
+    if (!isHorizontalWritingMode())
+        intrinsicSize = intrinsicSize.transposedSize();
+
     if (!intrinsicSize.isEmpty()) {
         intrinsicRatio = intrinsicSize.width() / static_cast<double>(intrinsicSize.height());
     } else {
@@ -85,6 +88,8 @@ void LayoutSVGRoot::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, d
         if (!viewBoxSize.isEmpty()) {
             // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
             intrinsicRatio = viewBoxSize.width() / static_cast<double>(viewBoxSize.height());
+            if (!isHorizontalWritingMode())
+                intrinsicRatio = 1 / intrinsicRatio;
         }
     }
 }
