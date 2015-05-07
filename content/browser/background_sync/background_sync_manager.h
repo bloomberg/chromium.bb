@@ -288,25 +288,17 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   void OnNetworkChanged();
 
-  // Operation Scheduling callbacks
-  void PendingStatusAndRegistrationCallback(
-      const StatusAndRegistrationCallback& callback,
-      ErrorType error,
-      const BackgroundSyncRegistration& sync_registration);
-  void PendingStatusAndRegistrationsCallback(
-      const StatusAndRegistrationsCallback& callback,
-      ErrorType error,
-      const std::vector<BackgroundSyncRegistration>& sync_registrations);
-  void PendingStatusCallback(const StatusCallback& callback, ErrorType error);
-  void PendingClosure(const base::Closure& closure);
-
+  // Operation Scheduling callback and convenience functions.
+  template <typename CallbackT, typename... Params>
+  void CompleteOperationCallback(const CallbackT& callback,
+                                 Params... parameters);
+  base::Closure MakeEmptyCompletion();
   StatusAndRegistrationCallback MakeStatusAndRegistrationCompletion(
       const StatusAndRegistrationCallback& callback);
   StatusAndRegistrationsCallback MakeStatusAndRegistrationsCompletion(
       const StatusAndRegistrationsCallback& callback);
   BackgroundSyncManager::StatusCallback MakeStatusCompletion(
       const StatusCallback& callback);
-  base::Closure MakeEmptyCompletion();
 
   SWIdToRegistrationsMap sw_to_registrations_map_;
   CacheStorageScheduler op_scheduler_;

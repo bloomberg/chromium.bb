@@ -829,58 +829,21 @@ void BackgroundSyncManager::OnNetworkChanged() {
   FireReadyEvents();
 }
 
-void BackgroundSyncManager::PendingStatusAndRegistrationCallback(
-    const StatusAndRegistrationCallback& callback,
-    ErrorType error,
-    const BackgroundSyncRegistration& sync_registration) {
+template <typename CallbackT, typename... Params>
+void BackgroundSyncManager::CompleteOperationCallback(const CallbackT& callback,
+                                                      Params... parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // The callback might delete this object, so hang onto a weak ptr to find out.
-  base::WeakPtr<BackgroundSyncManager> manager = weak_ptr_factory_.GetWeakPtr();
-  callback.Run(error, sync_registration);
-  if (manager)
-    op_scheduler_.CompleteOperationAndRunNext();
-}
-
-void BackgroundSyncManager::PendingStatusAndRegistrationsCallback(
-    const StatusAndRegistrationsCallback& callback,
-    ErrorType error,
-    const std::vector<BackgroundSyncRegistration>& sync_registrations) {
-  // The callback might delete this object, so hang onto a weak ptr to find out.
-  base::WeakPtr<BackgroundSyncManager> manager = weak_ptr_factory_.GetWeakPtr();
-  callback.Run(error, sync_registrations);
-  if (manager)
-    op_scheduler_.CompleteOperationAndRunNext();
-}
-
-void BackgroundSyncManager::PendingStatusCallback(
-    const StatusCallback& callback,
-    ErrorType error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // The callback might delete this object, so hang onto a weak ptr to find out.
-  base::WeakPtr<BackgroundSyncManager> manager = weak_ptr_factory_.GetWeakPtr();
-  callback.Run(error);
-  if (manager)
-    op_scheduler_.CompleteOperationAndRunNext();
-}
-
-void BackgroundSyncManager::PendingClosure(const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // The callback might delete this object, so hang onto a weak ptr to find out.
-  base::WeakPtr<BackgroundSyncManager> manager = weak_ptr_factory_.GetWeakPtr();
-  callback.Run();
-  if (manager)
-    op_scheduler_.CompleteOperationAndRunNext();
+  callback.Run(parameters...);
+  op_scheduler_.CompleteOperationAndRunNext();
 }
 
 base::Closure BackgroundSyncManager::MakeEmptyCompletion() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  return base::Bind(&BackgroundSyncManager::PendingClosure,
-                    weak_ptr_factory_.GetWeakPtr(),
-                    base::Bind(base::DoNothing));
+  return base::Bind(
+      &BackgroundSyncManager::CompleteOperationCallback<base::Closure>,
+      weak_ptr_factory_.GetWeakPtr(), base::Bind(base::DoNothing));
 }
 
 BackgroundSyncManager::StatusAndRegistrationCallback
@@ -888,25 +851,31 @@ BackgroundSyncManager::MakeStatusAndRegistrationCompletion(
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  return base::Bind(
-      &BackgroundSyncManager::PendingStatusAndRegistrationCallback,
-      weak_ptr_factory_.GetWeakPtr(), callback);
+  return base::Bind(&BackgroundSyncManager::CompleteOperationCallback<
+                        StatusAndRegistrationCallback, ErrorType,
+                        const BackgroundSyncRegistration&>,
+                    weak_ptr_factory_.GetWeakPtr(), callback);
 }
 
 BackgroundSyncManager::StatusAndRegistrationsCallback
 BackgroundSyncManager::MakeStatusAndRegistrationsCompletion(
     const StatusAndRegistrationsCallback& callback) {
-  return base::Bind(
-      &BackgroundSyncManager::PendingStatusAndRegistrationsCallback,
-      weak_ptr_factory_.GetWeakPtr(), callback);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  return base::Bind(&BackgroundSyncManager::CompleteOperationCallback<
+                        StatusAndRegistrationsCallback, ErrorType,
+                        const std::vector<BackgroundSyncRegistration>&>,
+                    weak_ptr_factory_.GetWeakPtr(), callback);
 }
 
 BackgroundSyncManager::StatusCallback
 BackgroundSyncManager::MakeStatusCompletion(const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  return base::Bind(&BackgroundSyncManager::PendingStatusCallback,
-                    weak_ptr_factory_.GetWeakPtr(), callback);
+  return base::Bind(
+      &BackgroundSyncManager::CompleteOperationCallback<StatusCallback,
+                                                        ErrorType>,
+      weak_ptr_factory_.GetWeakPtr(), callback);
 }
 
 }  // namespace content
