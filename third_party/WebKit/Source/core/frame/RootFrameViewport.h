@@ -5,6 +5,7 @@
 #ifndef RootFrameViewport_h
 #define RootFrameViewport_h
 
+#include "core/CoreExport.h"
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
@@ -20,7 +21,7 @@ class LayoutRect;
 // APIs that don't make sense on the combined viewport, the call is delegated to
 // the layout viewport. Thus, we could say this class is a decorator on the
 // FrameView scrollable area that adds pinch-zoom semantics to scrolling.
-class RootFrameViewport final : public ScrollableArea {
+class CORE_EXPORT RootFrameViewport final : public ScrollableArea {
 public:
     static PassOwnPtr<RootFrameViewport> create(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
     {

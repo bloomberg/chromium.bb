@@ -45,7 +45,7 @@ class HTMLParserOptions;
 class HTMLTokenizer;
 class SegmentedString;
 
-struct CachedDocumentParameters {
+struct CORE_EXPORT CachedDocumentParameters {
     static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtr<MediaValues> mediaValues = nullptr)
     {
         return adoptPtr(new CachedDocumentParameters(document, mediaValues));

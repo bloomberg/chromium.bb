@@ -30,6 +30,7 @@
 #define FrameConsole_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "core/frame/ConsoleTypes.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -47,7 +48,7 @@ class WorkerGlobalScopeProxy;
 
 // FrameConsole takes per-frame console messages and routes them up through the FrameHost to the ChromeClient and Inspector.
 // It's meant as an abstraction around ChromeClient calls and the way that Blink core/ can add messages to the console.
-class FrameConsole final : public NoBaseWillBeGarbageCollected<FrameConsole> {
+class CORE_EXPORT FrameConsole final : public NoBaseWillBeGarbageCollected<FrameConsole> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FrameConsole);
 public:
     static PassOwnPtrWillBeRawPtr<FrameConsole> create(LocalFrame& frame)
