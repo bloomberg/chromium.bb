@@ -32,10 +32,8 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLTableCaptionElement.h"
@@ -187,9 +185,9 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::insertRow(int index, Excep
 
     RefPtrWillBeRawPtr<HTMLTableRowElement> lastRow = nullptr;
     RefPtrWillBeRawPtr<HTMLTableRowElement> row = nullptr;
-    if (index == -1)
+    if (index == -1) {
         lastRow = HTMLTableRowsCollection::lastRow(*this);
-    else {
+    } else {
         for (int i = 0; i <= index; ++i) {
             row = HTMLTableRowsCollection::rowAfter(*this, lastRow.get());
             if (!row) {
@@ -204,9 +202,9 @@ PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::insertRow(int index, Excep
     }
 
     RefPtrWillBeRawPtr<ContainerNode> parent;
-    if (lastRow)
+    if (lastRow) {
         parent = row ? row->parentNode() : lastRow->parentNode();
-    else {
+    } else {
         parent = lastBody();
         if (!parent) {
             RefPtrWillBeRawPtr<HTMLTableSectionElement> newBody = HTMLTableSectionElement::create(tbodyTag, document());
@@ -231,9 +229,9 @@ void HTMLTableElement::deleteRow(int index, ExceptionState& exceptionState)
 
     HTMLTableRowElement* row = 0;
     int i = 0;
-    if (index == -1)
+    if (index == -1) {
         row = HTMLTableRowsCollection::lastRow(*this);
-    else {
+    } else {
         for (i = 0; i <= index; ++i) {
             row = HTMLTableRowsCollection::rowAfter(*this, row);
             if (!row)
@@ -287,18 +285,18 @@ static bool getBordersFromFrameAttributeValue(const AtomicString& value, bool& b
 
 void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
-    if (name == widthAttr)
+    if (name == widthAttr) {
         addHTMLLengthToStyle(style, CSSPropertyWidth, value);
-    else if (name == heightAttr)
+    } else if (name == heightAttr) {
         addHTMLLengthToStyle(style, CSSPropertyHeight, value);
-    else if (name == borderAttr)
+    } else if (name == borderAttr) {
         addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderWidth, parseBorderWidthAttribute(value), CSSPrimitiveValue::CSS_PX);
-    else if (name == bordercolorAttr) {
+    } else if (name == bordercolorAttr) {
         if (!value.isEmpty())
             addHTMLColorToStyle(style, CSSPropertyBorderColor, value);
-    } else if (name == bgcolorAttr)
+    } else if (name == bgcolorAttr) {
         addHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
-    else if (name == backgroundAttr) {
+    } else if (name == backgroundAttr) {
         String url = stripLeadingAndTrailingHTMLSpaces(value);
         if (!url.isEmpty()) {
             RefPtrWillBeRawPtr<CSSImageValue> imageValue = CSSImageValue::create(url, document().completeURL(url));
@@ -320,8 +318,9 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
             if (equalIgnoringCase(value, "center")) {
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitMarginStart, CSSValueAuto);
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitMarginEnd, CSSValueAuto);
-            } else
+            } else {
                 addPropertyToPresentationAttributeStyle(style, CSSPropertyFloat, value);
+            }
         }
     } else if (name == rulesAttr) {
         // The presence of a valid rules attribute causes border collapsing to be enabled.
@@ -339,8 +338,9 @@ void HTMLTableElement::collectStyleForPresentationAttribute(const QualifiedName&
             addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderLeftStyle, borderLeft ? CSSValueSolid : CSSValueHidden);
             addPropertyToPresentationAttributeStyle(style, CSSPropertyBorderRightStyle, borderRight ? CSSValueSolid : CSSValueHidden);
         }
-    } else
+    } else {
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 bool HTMLTableElement::isPresentationAttribute(const QualifiedName& name) const
@@ -386,8 +386,9 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
             m_padding = 1;
     } else if (name == colsAttr) {
         // ###
-    } else
+    } else {
         HTMLElement::parseAttribute(name, value);
+    }
 
     if (bordersBefore != cellBorders() || oldPadding != m_padding) {
         m_sharedCellStyle = nullptr;
@@ -431,21 +432,21 @@ const StylePropertySet* HTMLTableElement::additionalPresentationAttributeStyle()
 HTMLTableElement::CellBorders HTMLTableElement::cellBorders() const
 {
     switch (m_rulesAttr) {
-        case NoneRules:
-        case GroupsRules:
+    case NoneRules:
+    case GroupsRules:
+        return NoBorders;
+    case AllRules:
+        return SolidBorders;
+    case ColsRules:
+        return SolidBordersColsOnly;
+    case RowsRules:
+        return SolidBordersRowsOnly;
+    case UnsetRules:
+        if (!m_borderAttr)
             return NoBorders;
-        case AllRules:
+        if (m_borderColorAttr)
             return SolidBorders;
-        case ColsRules:
-            return SolidBordersColsOnly;
-        case RowsRules:
-            return SolidBordersRowsOnly;
-        case UnsetRules:
-            if (!m_borderAttr)
-                return NoBorders;
-            if (m_borderColorAttr)
-                return SolidBorders;
-            return InsetBorders;
+        return InsetBorders;
     }
     ASSERT_NOT_REACHED();
     return NoBorders;
