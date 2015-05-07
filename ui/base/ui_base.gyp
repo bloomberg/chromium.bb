@@ -633,6 +633,7 @@
     {
       # GN version: //ui/base:test_support
       'target_name': 'ui_base_test_support',
+      'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
@@ -642,6 +643,10 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
+        'test/ios/keyboard_appearance_listener.h',
+        'test/ios/keyboard_appearance_listener.mm',
+        'test/ios/ui_view_test_utils.h',
+        'test/ios/ui_view_test_utils.mm',
         'test/test_clipboard.cc',
         'test/test_clipboard.h',
         'test/ui_controls.h',
@@ -656,23 +661,15 @@
       ],
       'conditions': [
         ['OS!="ios"', {
-          'type': 'static_library',
-            'dependecies': [
-              'ime/ui_base_ime.gyp:ui_base_ime',
-            ],
-            'sources': [
-              'ime/dummy_input_method.cc',
-              'ime/dummy_input_method.h',
-              'ime/dummy_text_input_client.cc',
-              'ime/dummy_text_input_client.h',
-            ],
-        }, {  # OS=="ios"
-          # None of the sources in this target are built on iOS, resulting in
-          # link errors when building targets that depend on this target
-          # because the static library isn't found. If this target is changed
-          # to have sources that are built on iOS, the target should be changed
-          # to be of type static_library on all platforms.
-          'type': 'none',
+          'dependecies': [
+            'ime/ui_base_ime.gyp:ui_base_ime',
+          ],
+          'sources': [
+            'ime/dummy_input_method.cc',
+            'ime/dummy_input_method.h',
+            'ime/dummy_text_input_client.cc',
+            'ime/dummy_text_input_client.h',
+          ],
         }],
         ['use_aura==1', {
           'sources!': [
