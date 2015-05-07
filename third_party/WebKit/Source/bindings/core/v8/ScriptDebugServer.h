@@ -136,6 +136,7 @@ private:
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Object> debuggerScriptLocal() const;
+    v8::Local<v8::Context> debuggerContext() const;
     void clearBreakpoints();
 
     void dispatchDidParseSource(ScriptDebugListener*, v8::Local<v8::Object> sourceObject, CompileResult);
@@ -165,6 +166,7 @@ private:
     V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;
+    v8::UniquePersistent<v8::Context> m_debuggerContext;
     v8::Local<v8::Object> m_executionState;
     RefPtr<ScriptState> m_pausedScriptState;
     bool m_runningNestedMessageLoop;
