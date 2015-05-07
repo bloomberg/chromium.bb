@@ -2195,6 +2195,9 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         if (handleSyntheticWheelFromTouchpadPinchEvent(pinchEvent))
             return true;
 
+        if (pinchEvent.data.pinchUpdate.zoomDisabled)
+            return false;
+
         if (page()->frameHost().pinchViewport().magnifyScaleAroundAnchor(pinchEvent.data.pinchUpdate.scale, FloatPoint(pinchEvent.x, pinchEvent.y)))
             return true;
     }
