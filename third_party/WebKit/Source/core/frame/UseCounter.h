@@ -701,6 +701,8 @@ public:
         DialogInSandboxedContext = 767,
         SVGSMILAnimationInImageRegardlessOfCache = 768,
         PushSubscriptionId = 769,
+        EncryptedMediaSecureOrigin = 770,
+        EncryptedMediaInsecureOrigin = 771,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

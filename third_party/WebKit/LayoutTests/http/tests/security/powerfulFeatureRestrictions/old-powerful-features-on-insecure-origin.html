@@ -98,6 +98,10 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
             this.done();
         }));
     }, 'device orientation');
+    
+    promise_test(function(test) {
+        return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+    }, 'requestMediaKeySystemAccess');
 }
 </script>
 </body>

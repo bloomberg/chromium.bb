@@ -10,6 +10,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
 #include "modules/encryptedmedia/MediaKeySystemAccess.h"
@@ -174,13 +175,22 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     }
 
     // 3-4. 'May Document use powerful features?' check.
-    // FIXME: Implement 'May Document use powerful features?' check.
+    ExecutionContext* executionContext = scriptState->executionContext();
+    String errorMessage;
+    if (executionContext->isPrivilegedContext(errorMessage)) {
+        UseCounter::count(executionContext, UseCounter::EncryptedMediaSecureOrigin);
+    } else {
+        UseCounter::countDeprecation(executionContext, UseCounter::EncryptedMediaInsecureOrigin);
+        // TODO(ddorwin): Implement the following:
+        // Reject promise with a new DOMException whose name is NotSupportedError.
+    }
+
 
     // 5. Let origin be the origin of document.
     //    (Passed with the execution context in step 7.)
 
     // 6. Let promise be a new promise.
-    Document* document = toDocument(scriptState->executionContext());
+    Document* document = toDocument(executionContext);
     if (!document->page()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidStateError, "Document does not have a page."));
@@ -192,7 +202,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     // 7. Asynchronously determine support, and if allowed, create and
     //    initialize the MediaKeySystemAccess object.
     MediaKeysController* controller = MediaKeysController::from(document->page());
-    WebEncryptedMediaClient* mediaClient = controller->encryptedMediaClient(scriptState->executionContext());
+    WebEncryptedMediaClient* mediaClient = controller->encryptedMediaClient(executionContext);
     mediaClient->requestMediaKeySystemAccess(WebEncryptedMediaRequest(initializer));
 
     // 8. Return promise.
