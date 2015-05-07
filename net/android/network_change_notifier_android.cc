@@ -172,9 +172,6 @@ NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
   delegate_->AddObserver(this);
   dns_config_service_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  // Wait until Init is called on the DNS config thread before
-  // calling InitAfterStart.
-  dns_config_service_thread_->WaitUntilThreadStarted();
   dns_config_service_thread_->InitAfterStart();
 }
 

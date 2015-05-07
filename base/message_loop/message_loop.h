@@ -114,8 +114,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   explicit MessageLoop(Type type = TYPE_DEFAULT);
   // Creates a TYPE_CUSTOM MessageLoop with the supplied MessagePump, which must
   // be non-NULL.
-  explicit MessageLoop(scoped_ptr<MessagePump> pump);
-
+  explicit MessageLoop(scoped_ptr<base::MessagePump> pump);
   ~MessageLoop() override;
 
   // Returns the MessageLoop object for the current thread, or null if none.
@@ -395,6 +394,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
 
+  // Wakes up the message pump. Can be called on any thread. The caller is
+  // responsible for synchronizing ScheduleWork() calls.
+  void ScheduleWork();
+
   // Returns the TaskAnnotator which is used to add debug information to posted
   // tasks.
   debug::TaskAnnotator* task_annotator() { return &task_annotator_; }
@@ -408,33 +411,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
  private:
   friend class RunLoop;
-  friend class internal::IncomingTaskQueue;
-  friend class ScheduleWorkTest;
-  friend class Thread;
 
-  using MessagePumpFactoryCallback = Callback<scoped_ptr<MessagePump>()>;
-
-  // Creates a MessageLoop without binding to a thread.
-  // If |type| is TYPE_CUSTOM non-null |pump_factory| must be also given
-  // to create a message pump for this message loop.  Otherwise a default
-  // message pump for the |type| is created.
-  //
-  // It is valid to call this to create a new message loop on one thread,
-  // and then pass it to the thread where the message loop actually runs.
-  // The message loop's BindToCurrentThread() method must be called on the
-  // thread the message loop runs on, before calling Run().
-  // Before BindToCurrentThread() is called only Post*Task() functions can
-  // be called on the message loop.
-  scoped_ptr<MessageLoop> CreateUnbound(
-      Type type,
-      MessagePumpFactoryCallback pump_factory);
-
-  // Common private constructor. Other constructors delegate the initialization
-  // to this constructor.
-  MessageLoop(Type type, MessagePumpFactoryCallback pump_factory);
-
-  // Configure various members and bind this message loop to the current thread.
-  void BindToCurrentThread();
+  // Configures various members for the two constructors.
+  void Init();
 
   // Invokes the actual run loop using the message pump.
   void RunHandler();
@@ -457,10 +436,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Loads tasks from the incoming queue to |work_queue_| if the latter is
   // empty.
   void ReloadWorkQueue();
-
-  // Wakes up the message pump. Can be called on any thread. The caller is
-  // responsible for synchronizing ScheduleWork() calls.
-  void ScheduleWork();
 
   // Start recording histogram info about events and action IF it was enabled
   // and IF the statistics recorder can accept a registration of our histogram.
@@ -514,10 +489,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // which enter a modal message loop.
   bool os_modal_loop_;
 #endif
-
-  // pump_factory_.Run() is called to create a message pump for this loop
-  // if type_ is TYPE_CUSTOM and pump_ is null.
-  MessagePumpFactoryCallback pump_factory_;
 
   std::string thread_name_;
   // A profiling histogram showing the counts of various messages and events.

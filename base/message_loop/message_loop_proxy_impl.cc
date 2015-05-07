@@ -15,12 +15,7 @@ namespace internal {
 MessageLoopProxyImpl::MessageLoopProxyImpl(
     scoped_refptr<IncomingTaskQueue> incoming_queue)
     : incoming_queue_(incoming_queue),
-      valid_thread_id_(kInvalidThreadId) {
-}
-
-void MessageLoopProxyImpl::BindToCurrentThread() {
-  DCHECK_EQ(kInvalidThreadId, valid_thread_id_);
-  valid_thread_id_ = PlatformThread::CurrentId();
+      valid_thread_id_(PlatformThread::CurrentId()) {
 }
 
 bool MessageLoopProxyImpl::PostDelayedTask(
