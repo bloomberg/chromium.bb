@@ -157,6 +157,9 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (layer->scrollsWithRespectTo(&squashingLayer))
         return CompositingReasonScrollsWithRespectToSquashingLayer;
 
+    if (layer->scrollParent() && layer->hasCompositingDescendant())
+        return CompositingReasonScrollChildWithCompositedDescendants;
+
     const DeprecatedPaintLayer::AncestorDependentCompositingInputs& compositingInputs = layer->ancestorDependentCompositingInputs();
     const DeprecatedPaintLayer::AncestorDependentCompositingInputs& squashingLayerCompositingInputs = squashingLayer.ancestorDependentCompositingInputs();
 
