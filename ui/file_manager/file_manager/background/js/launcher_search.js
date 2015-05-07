@@ -165,6 +165,19 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
           }
         }
 
+        // If we haven't picked a default task yet, then just pick the first one
+        // which is not genric file hanlder as default task.
+        // TODO(yawano) Share task execution logic with file_tasks.js.
+        if (!defaultTask) {
+          for (var i = 0; i < tasks.length; i++) {
+            var task = tasks[i];
+            if (!task.isGenericFileHandler) {
+              defaultTask = task;
+              break;
+            }
+          }
+        }
+
         if (defaultTask) {
           // Execute default task.
           chrome.fileManagerPrivate.executeTask(
