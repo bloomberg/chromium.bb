@@ -100,6 +100,13 @@ class ApplicationImpl : public Application {
   // Quits the main run loop for this application.
   static void Terminate();
 
+ protected:
+  // Application implementation.
+  void AcceptConnection(const String& requestor_url,
+                        InterfaceRequest<ServiceProvider> services,
+                        ServiceProviderPtr exposed_services,
+                        const String& url) override;
+
  private:
   class ShellPtrWatcher;
 
@@ -112,11 +119,6 @@ class ApplicationImpl : public Application {
   }
 
   // Application implementation.
-  void AcceptConnection(const String& requestor_url,
-                        InterfaceRequest<ServiceProvider> services,
-                        ServiceProviderPtr exposed_services,
-                        const String& url) override;
-
   void RequestQuit() override;
 
   typedef std::vector<internal::ServiceRegistry*> ServiceRegistryList;
