@@ -2426,13 +2426,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ClearDataCache) {
   TestHelper("testClearCache", "web_view/clear_data_cache", NEEDS_TEST_SERVER);
 }
 
-// This test is disabled on Win due to being flaky. http://crbug.com/294592
-#if defined(OS_WIN)
-#define MAYBE_ConsoleMessage DISABLED_ConsoleMessage
-#else
-#define MAYBE_ConsoleMessage ConsoleMessage
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_ConsoleMessage) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "console_messages"))
           << message_;
