@@ -5,6 +5,24 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
 namespace ui {
+namespace {
+
+GestureConfiguration* instance = nullptr;
+
+}  // namespace
+
+// static
+void GestureConfiguration::SetInstance(GestureConfiguration* config) {
+  instance = config;
+}
+
+// static
+GestureConfiguration* GestureConfiguration::GetInstance() {
+  if (instance)
+    return instance;
+
+  return GestureConfiguration::GetPlatformSpecificInstance();
+}
 
 GestureConfiguration::GestureConfiguration()
     : default_radius_(25),

@@ -6,7 +6,6 @@
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_CONFIGURATION_H_
 
 #include "base/basictypes.h"
-#include "base/memory/singleton.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/velocity_tracker.h"
 
@@ -14,6 +13,8 @@ namespace ui {
 
 class GESTURE_DETECTION_EXPORT GestureConfiguration {
  public:
+  // Sets the shared instance. This does not take ownership of |config|.
+  static void SetInstance(GestureConfiguration* config);
   // Returns the singleton GestureConfiguration.
   static GestureConfiguration* GetInstance();
 
@@ -180,6 +181,10 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   void set_span_slop(float val) { span_slop_ = val; }
 
  private:
+  // Returns the platform specific instance. This is invoked if a specific
+  // instance has not been set.
+  static GestureConfiguration* GetPlatformSpecificInstance();
+
   // These are listed in alphabetical order ignoring underscores.
   // NOTE: Adding new configuration parameters requires initializing
   // corresponding entries in aura_test_base.cc's SetUp().
@@ -232,7 +237,6 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   bool two_finger_tap_enabled_;
   VelocityTracker::Strategy velocity_tracker_strategy_;
 
-  friend struct DefaultSingletonTraits<GestureConfiguration>;
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);
 };
 

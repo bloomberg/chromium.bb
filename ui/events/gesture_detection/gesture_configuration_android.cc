@@ -4,6 +4,7 @@
 
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
+#include "base/memory/singleton.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/screen.h"
 
@@ -68,7 +69,7 @@ class GestureConfigurationAndroid : public GestureConfiguration {
 }  // namespace
 
 // Create a GestureConfigurationAura singleton instance when using Android.
-GestureConfiguration* GestureConfiguration::GetInstance() {
+GestureConfiguration* GestureConfiguration::GetPlatformSpecificInstance() {
   return GestureConfigurationAndroid::GetInstance();
 }
 

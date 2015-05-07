@@ -4,13 +4,32 @@
 
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
+#include "base/memory/singleton.h"
 #include "ui/gfx/screen.h"
 
 namespace ui {
+namespace {
+class GestureConfigurationDefault : public GestureConfiguration {
+ public:
+  ~GestureConfigurationDefault() override {
+  }
 
-// Create a GestureConfigurationAura singleton instance when using Mac.
-GestureConfiguration* GestureConfiguration::GetInstance() {
-  return Singleton<GestureConfiguration>::get();
+  static GestureConfigurationDefault* GetInstance() {
+    return Singleton<GestureConfigurationDefault>::get();
+  }
+
+ private:
+  GestureConfigurationDefault() {}
+
+  friend struct DefaultSingletonTraits<GestureConfigurationDefault>;
+  DISALLOW_COPY_AND_ASSIGN(GestureConfigurationDefault);
+};
+
+}  // namespace
+
+// Create a GestureConfiguration singleton instance when using Mac.
+GestureConfiguration* GestureConfiguration::GetPlatformSpecificInstance() {
+  return GestureConfigurationDefault::GetInstance();
 }
 
 }  // namespace ui

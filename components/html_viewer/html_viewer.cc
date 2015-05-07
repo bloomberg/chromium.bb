@@ -31,6 +31,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(OS_ANDROID)
+#include "components/html_viewer/ui_setup_android.h"
+#else
+#include "components/html_viewer/ui_setup.h"
+#endif
+
 using mojo::ApplicationConnection;
 using mojo::Array;
 using mojo::BindToRequest;
@@ -170,6 +176,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
+    ui_setup_.reset(new UISetup);
     base::DiscardableMemoryAllocator::SetInstance(
         &discardable_memory_allocator_);
 
@@ -231,6 +238,8 @@ class HTMLViewer : public mojo::ApplicationDelegate,
                                web_media_player_factory_.get(), is_headless_),
         &request);
   }
+
+  scoped_ptr<UISetup> ui_setup_;
 
   // Skia requires that we have one of these. Unlike the one used in chrome,
   // this doesn't use purgable shared memory. Instead, it tries to free the

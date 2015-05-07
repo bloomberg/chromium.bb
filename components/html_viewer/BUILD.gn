@@ -129,6 +129,7 @@ source_set("lib") {
     "//ui/events:gesture_detection",
     "//ui/events/blink",
     "//ui/events/gestures/blink",
+    "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/native_theme",
     "//ui/resources:ui_test_pak",
@@ -168,6 +169,9 @@ if (is_android) {
     sources = [
       "android/android_hooks.cc",
       "html_viewer.cc",
+      "ui_setup.h",
+      "ui_setup_android.cc",
+      "ui_setup_android.h",
     ]
 
     deps = [
