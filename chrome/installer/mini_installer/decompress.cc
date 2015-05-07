@@ -5,6 +5,7 @@
 #include <windows.h>  // NOLINT
 #include <fcntl.h>  // for _O_* constants
 #include <fdi.h>
+#include <stdlib.h>
 
 #include "chrome/installer/mini_installer/decompress.h"
 
@@ -191,12 +192,12 @@ bool InitializeFdi() {
     };
 
     wchar_t path[MAX_PATH] = {0};
-    for (int i = 0; i < arraysize(candidate_paths); ++i) {
+    for (int i = 0; i < _countof(candidate_paths); ++i) {
       path[0] = L'\0';
       DWORD result = ::ExpandEnvironmentStringsW(candidate_paths[i],
-                                                 path, arraysize(path));
+                                                 path, _countof(path));
 
-      if (result > 0 && result <= arraysize(path))
+      if (result > 0 && result <= _countof(path))
         g_fdi = ::LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 
       if (g_fdi)
