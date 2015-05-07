@@ -74,11 +74,22 @@ class Frame {
   Frame();
   ~Frame();
 
+  // Sets this frame's contents based on |frame|. Returns true on success. On
+  // failure, this frame's existing contents may be lost.
+  bool CopyFrom(const Frame& frame);
+
   // Copies |frame| data into |frame_|. Returns true on success.
   bool Init(const uint8* frame, uint64 length);
 
   // Copies |additional| data into |additional_|. Returns true on success.
   bool AddAdditionalData(const uint8* additional, uint64 length, uint64 add_id);
+
+  // Returns true if the frame has valid parameters.
+  bool IsValid() const;
+
+  // Returns true if the frame can be written as a SimpleBlock based on current
+  // parameters.
+  bool CanBeSimpleBlock() const;
 
   uint64 add_id() const { return add_id_; }
   const uint8* additional() const { return additional_; }
@@ -128,6 +139,8 @@ class Frame {
 
   // Discard padding for the frame.
   int64 discard_padding_;
+
+  LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Frame);
 };
 
 ///////////////////////////////////////////////////////////////
@@ -717,13 +730,17 @@ class Chapters {
 //  |Init| must be called before any other method in this class.
 class Cluster {
  public:
-  Cluster(uint64 timecode, int64 cues_pos);
-  ~Cluster();
-
   // |timecode| is the absolute timecode of the cluster. |cues_pos| is the
   // position for the cluster within the segment that should be written in
-  // the cues element.
+  // the cues element. |timecode_scale| is the timecode scale of the segment.
+  Cluster(uint64 timecode, int64 cues_pos, uint64 timecode_scale);
+  ~Cluster();
+
   bool Init(IMkvWriter* ptr_writer);
+
+  // Adds a frame to be output in the file. The frame is written out through
+  // |writer_| if successful. Returns true on success.
+  bool AddFrame(const Frame* frame);
 
   // Adds a frame to be output in the file. The frame is written out through
   // |writer_| if successful. Returns true on success.
@@ -799,75 +816,29 @@ class Cluster {
   // Returns the size in bytes for the entire Cluster element.
   uint64 Size() const;
 
+  // Given |abs_timecode|, calculates timecode relative to most recent timecode.
+  // Returns -1 on failure, or a relative timecode.
+  int64 GetRelativeTimecode(int64 abs_timecode) const;
+
   int64 size_position() const { return size_position_; }
   int32 blocks_added() const { return blocks_added_; }
   uint64 payload_size() const { return payload_size_; }
   int64 position_for_cues() const { return position_for_cues_; }
   uint64 timecode() const { return timecode_; }
+  uint64 timecode_scale() const { return timecode_scale_; }
 
  private:
-  //  Signature that matches either of WriteSimpleBlock or WriteMetadataBlock
-  //  in the muxer utilities package.
-  typedef uint64 (*WriteBlock)(IMkvWriter* writer, const uint8* data,
-                               uint64 length, uint64 track_number,
-                               int64 timecode, uint64 generic_arg);
-
-  //  Signature that matches WriteBlockWithAdditional
-  //  in the muxer utilities package.
-  typedef uint64 (*WriteBlockAdditional)(IMkvWriter* writer, const uint8* data,
-                                         uint64 length, const uint8* additional,
-                                         uint64 add_id,
-                                         uint64 additional_length,
-                                         uint64 track_number, int64 timecode,
-                                         uint64 is_key);
-
-  //  Signature that matches WriteBlockWithDiscardPadding
-  //  in the muxer utilities package.
-  typedef uint64 (*WriteBlockDiscardPadding)(IMkvWriter* writer,
-                                             const uint8* data, uint64 length,
-                                             int64 discard_padding,
-                                             uint64 track_number,
-                                             int64 timecode, uint64 is_key);
-
   // Utility method that confirms that blocks can still be added, and that the
-  // cluster header has been written. Used by |DoWriteBlock*|. Returns true
+  // cluster header has been written. Used by |DoWriteFrame*|. Returns true
   // when successful.
-  template <typename Type>
-  bool PreWriteBlock(Type* write_function);
+  bool PreWriteBlock();
 
-  // Utility method used by the |DoWriteBlock*| methods that handles the book
+  // Utility method used by the |DoWriteFrame*| methods that handles the book
   // keeping required after each block is written.
   void PostWriteBlock(uint64 element_size);
 
-  // To simplify things, we require that there be fewer than 127
-  // tracks -- this allows us to serialize the track number value for
-  // a stream using a single byte, per the Matroska encoding.
-  bool IsValidTrackNumber(uint64 track_number) const;
-
-  // Given |abs_timecode|, calculates timecode relative to most recent timecode.
-  // Returns -1 on failure, or a relative timecode.
-  int64 GetRelativeTimecode(int64 abs_timecode) const;
-
-  //  Used to implement AddFrame and AddMetadata.
-  bool DoWriteBlock(const uint8* frame, uint64 length, uint64 track_number,
-                    uint64 absolute_timecode, uint64 generic_arg,
-                    WriteBlock write_block);
-
-  // Used to implement AddFrameWithAdditional
-  bool DoWriteBlockWithAdditional(const uint8* frame, uint64 length,
-                                  const uint8* additional,
-                                  uint64 additional_length, uint64 add_id,
-                                  uint64 track_number, uint64 absolute_timecode,
-                                  uint64 generic_arg,
-                                  WriteBlockAdditional write_block);
-
-  // Used to implement AddFrameWithDiscardPadding
-  bool DoWriteBlockWithDiscardPadding(const uint8* frame, uint64 length,
-                                      int64 discard_padding,
-                                      uint64 track_number,
-                                      uint64 absolute_timecode,
-                                      uint64 generic_arg,
-                                      WriteBlockDiscardPadding write_block);
+  // Does some verification and calls WriteFrame.
+  bool DoWriteFrame(const Frame* const frame);
 
   // Outputs the Cluster header to |writer_|. Returns true on success.
   bool WriteClusterHeader();
@@ -892,6 +863,9 @@ class Cluster {
 
   // The absolute timecode of the cluster.
   const uint64 timecode_;
+
+  // The timecode scale of the Segment containing the cluster.
+  const uint64 timecode_scale_;
 
   // Pointer to the writer object. Not owned by this class.
   IMkvWriter* writer_;
