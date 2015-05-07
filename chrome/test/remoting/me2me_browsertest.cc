@@ -25,17 +25,13 @@ class Me2MeBrowserTest : public RemoteDesktopBrowserTest {
   void MinimizeApp();
 };
 
-IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
-                       MANUAL_Me2Me_Connect_Local_Host) {
-  SetUpTest();
+IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest, MANUAL_Me2Me_Connect_Local_Host) {
+  content::WebContents* content = SetUpTest();
+  LoadScript(content, FILE_PATH_LITERAL("me2me_browser_test.js"));
+  RunJavaScriptTest(content, "ConnectToLocalHost", "{"
+    "pin: '" + me2me_pin() + "'"
+  "}");
 
-  ConnectToLocalHost(false);
-
-  // TODO(chaitali): Change the mouse input test to also work in the
-  // HTTP server framework
-  // TestMouseInput();
-
-  DisconnectMe2Me();
   Cleanup();
 }
 
@@ -129,28 +125,13 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
   Cleanup();
 }
 
-IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
-                       MANUAL_Me2Me_v2_Alive_OnLostFocus) {
-  SetUpTest();
+IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest, MANUAL_Me2Me_v2_Alive_OnLostFocus) {
+  content::WebContents* content = SetUpTest();
+  LoadScript(content, FILE_PATH_LITERAL("me2me_browser_test.js"));
+  RunJavaScriptTest(content, "AliveOnLostFocus", "{"
+    "pin: '" + me2me_pin() + "'"
+  "}");
 
-  // Connect to host.
-  ConnectToLocalHost(false);
-
-  // Minimize the window
-  MinimizeApp();
-
-  // Wait for a few seconds for app to process any notifications it
-  // would have got from minimizing.
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(4)).Wait());
-
-  // Validate that the session is still active.
-  EXPECT_TRUE(RemoteDesktopBrowserTest::IsSessionConnected());
-
-  // Maximize so we can disconnect and teardown.
-  RestoreApp();
-
-  // Cleanup
-  DisconnectMe2Me();
   Cleanup();
 }
 
@@ -249,24 +230,6 @@ void Me2MeBrowserTest::ConnectPinlessAndCleanupPairings(bool cleanup_all) {
 
 bool Me2MeBrowserTest::IsPairingSpinnerHidden() {
   return !HtmlElementVisible("paired-client-manager-dialog-working");
-}
-
-void Me2MeBrowserTest::MinimizeApp() {
-  extensions::AppWindow* appWindow = GetFirstAppWindow();
-  if (appWindow) {
-    appWindow->Minimize();
-  } else {
-    browser()->window()->Minimize();
-  }
-}
-
-void Me2MeBrowserTest::RestoreApp() {
-  extensions::AppWindow* appWindow = GetFirstAppWindow();
-  if (appWindow) {
-    appWindow->Restore();
-  } else {
-    browser()->window()->Restore();
-  }
 }
 
 }  // namespace remoting
