@@ -99,9 +99,6 @@ public abstract class ChromeSwitches {
      */
     public static final String RENDER_PROCESS_LIMIT = "renderer-process-limit";
 
-    /** Enable begin frame scheduling. */
-    public static final String ENABLE_BEGIN_FRAME_SCHEDULING = "enable-begin-frame-scheduling";
-
     /**
      * Enable enhanced bookmarks feature.
      * Native switch - switches::kEnhancedBookmarksExperiment
