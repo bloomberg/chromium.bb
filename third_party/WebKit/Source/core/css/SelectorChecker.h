@@ -43,7 +43,6 @@ class ComputedStyle;
 class SelectorChecker {
     WTF_MAKE_NONCOPYABLE(SelectorChecker);
 public:
-    enum Match { SelectorMatches, SelectorFailsLocally, SelectorFailsAllSiblings, SelectorFailsCompletely };
     enum VisitedMatchType { VisitedMatchDisabled, VisitedMatchEnabled };
     enum Mode { ResolvingStyle = 0, CollectingStyleRules, CollectingCSSRules, QueryingRules, SharingRules };
 
@@ -98,12 +97,14 @@ public:
         unsigned specificity;
     };
 
-    Match match(const SelectorCheckingContext&, MatchResult* = 0) const;
+    bool match(const SelectorCheckingContext&, MatchResult* = 0) const;
     bool checkOne(const SelectorCheckingContext&, unsigned* specificity = 0) const;
 
     static bool matchesFocusPseudoClass(const Element&);
 
 private:
+    enum Match { SelectorMatches, SelectorFailsLocally, SelectorFailsAllSiblings, SelectorFailsCompletely };
+    Match matchSelector(const SelectorCheckingContext&, MatchResult* = 0) const;
     Match matchForSubSelector(const SelectorCheckingContext&, MatchResult*) const;
     Match matchForRelation(const SelectorCheckingContext&, MatchResult*) const;
     Match matchForShadowDistributed(SelectorCheckingContext& nextContext, const Element*, MatchResult* = 0) const;

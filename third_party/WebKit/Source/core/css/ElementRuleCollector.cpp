@@ -265,8 +265,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
     context.scrollbarPart = m_pseudoStyleRequest.scrollbarPart;
     context.isUARule = m_matchingUARules;
     context.scopeContainsLastMatchedElement = m_scopeContainsLastMatchedElement;
-    SelectorChecker::Match match = selectorChecker.match(context, result);
-    if (match != SelectorChecker::SelectorMatches)
+    if (!selectorChecker.match(context, result))
         return false;
     if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != result->dynamicPseudo)
         return false;

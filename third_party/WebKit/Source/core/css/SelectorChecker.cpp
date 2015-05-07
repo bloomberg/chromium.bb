@@ -162,13 +162,18 @@ static bool shouldMatchHoverOrActive(const SelectorChecker::SelectorCheckingCont
     return context.element->isLink();
 }
 
+bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult* result) const
+{
+    return matchSelector(context, result) == SelectorMatches;
+}
+
 // Recursive check of selectors and combinators
 // It can return 4 different values:
 // * SelectorMatches          - the selector matches the element e
 // * SelectorFailsLocally     - the selector fails for the element e
 // * SelectorFailsAllSiblings - the selector fails for e and any sibling of e
 // * SelectorFailsCompletely  - the selector fails for e and any sibling or ancestor of e
-SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& context, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingContext& context, MatchResult* result) const
 {
     // first selector has to match
     unsigned specificity = 0;
@@ -262,7 +267,7 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
         return SelectorFailsCompletely;
 
     nextContext.isSubSelector = true;
-    return match(nextContext, result);
+    return matchSelector(nextContext, result);
 }
 
 static bool selectorMatchesShadowRoot(const CSSSelector* selector)
@@ -286,7 +291,7 @@ SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheck
 {
     if (!isOpenShadowRoot(node))
         return SelectorFailsCompletely;
-    return match(context, result);
+    return matchSelector(context, result);
 }
 
 SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, MatchResult* result) const
@@ -318,7 +323,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
 
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
-            Match match = this->match(nextContext, result);
+            Match match = this->matchSelector(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsCompletely)
                 return match;
             if (nextSelectorExceedsScope(nextContext))
@@ -339,7 +344,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.element = parentElement(context);
             if (!nextContext.element)
                 return SelectorFailsCompletely;
-            return match(nextContext, result);
+            return matchSelector(nextContext, result);
         }
     case CSSSelector::DirectAdjacent:
         // Shadow roots can't have sibling elements
@@ -355,7 +360,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             return SelectorFailsAllSiblings;
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
-        return match(nextContext, result);
+        return matchSelector(nextContext, result);
 
     case CSSSelector::IndirectAdjacent:
         // Shadow roots can't have sibling elements
@@ -370,7 +375,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
         for (; nextContext.element; nextContext.element = ElementTraversal::previousSibling(*nextContext.element)) {
-            Match match = this->match(nextContext, result);
+            Match match = this->matchSelector(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsAllSiblings || match == SelectorFailsCompletely)
                 return match;
         };
@@ -388,7 +393,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.element = shadowHost;
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            return this->match(nextContext, result);
+            return this->matchSelector(nextContext, result);
         }
 
     case CSSSelector::ShadowDeep:
@@ -404,7 +409,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
             for (nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*nextContext.element)) {
-                Match match = this->match(nextContext, result);
+                Match match = this->matchSelector(nextContext, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
                 if (nextSelectorExceedsScope(nextContext))
@@ -432,7 +437,7 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(SelectorChecki
             nextContext.scope = insertionPoints[i]->containingShadowRoot();
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
-        if (match(nextContext, result) == SelectorMatches)
+        if (matchSelector(nextContext, result) == SelectorMatches)
             return SelectorMatches;
     }
     return SelectorFailsLocally;
@@ -785,7 +790,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
             subContext.isSubSelector = true;
             ASSERT(selector.selectorList());
             for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-                if (match(subContext) == SelectorMatches)
+                if (matchSelector(subContext) == SelectorMatches)
                     return true;
             }
         }
@@ -977,7 +982,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context)
         const CSSSelector* contextSelector = context.selector;
         ASSERT(contextSelector);
         for (subContext.selector = contextSelector->selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-            if (match(subContext) == SelectorMatches)
+            if (matchSelector(subContext) == SelectorMatches)
                 return true;
         }
         return false;
@@ -1022,7 +1027,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, un
         do {
             MatchResult subResult;
             hostContext.element = nextElement;
-            if (match(hostContext, &subResult) == SelectorMatches) {
+            if (matchSelector(hostContext, &subResult) == SelectorMatches) {
                 matched = true;
                 // Consider div:host(div:host(div:host(div:host...))).
                 maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);

@@ -125,7 +125,7 @@ bool HTMLContentElement::matchSelector(Element& element) const
     SelectorChecker selectorChecker(SelectorChecker::QueryingRules);
     for (const CSSSelector* selector = selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
         SelectorChecker::SelectorCheckingContext context(*selector, &element, SelectorChecker::VisitedMatchDisabled);
-        if (selectorChecker.match(context) == SelectorChecker::SelectorMatches)
+        if (selectorChecker.match(context))
             return true;
     }
     return false;
