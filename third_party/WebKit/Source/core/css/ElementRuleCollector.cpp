@@ -165,7 +165,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
         collectMatchingRulesForList(matchRequest.ruleSet->linkPseudoClassRules(), cascadeOrder, matchRequest, ruleRange);
     if (SelectorChecker::matchesFocusPseudoClass(element))
         collectMatchingRulesForList(matchRequest.ruleSet->focusPseudoClassRules(), cascadeOrder, matchRequest, ruleRange);
-    collectMatchingRulesForList(matchRequest.ruleSet->tagRules(element.localName()), cascadeOrder, matchRequest, ruleRange);
+    collectMatchingRulesForList(matchRequest.ruleSet->tagRules(element.localNameForSelectorMatching()), cascadeOrder, matchRequest, ruleRange);
     collectMatchingRulesForList(matchRequest.ruleSet->universalRules(), cascadeOrder, matchRequest, ruleRange);
 }
 

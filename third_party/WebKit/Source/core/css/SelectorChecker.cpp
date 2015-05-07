@@ -99,8 +99,16 @@ static bool matchesTagName(const Element& element, const QualifiedName& tagQName
     if (tagQName == anyQName())
         return true;
     const AtomicString& localName = tagQName.localName();
-    if (localName != starAtom && localName != element.localName())
-        return false;
+    if (localName != starAtom && localName != element.localName()) {
+        if (element.isHTMLElement() || !element.document().isHTMLDocument())
+            return false;
+        // Non-html elements in html documents are normalized to their camel-cased
+        // version during parsing if applicable. Yet, type selectors are lower-cased
+        // for selectors in html documents. Try a case-insensitive match below to
+        // allow type selector matching for such elements.
+        if (!equalIgnoringCase(localName, element.localName()))
+            return false;
+    }
     const AtomicString& namespaceURI = tagQName.namespaceURI();
     return namespaceURI == starAtom || namespaceURI == element.namespaceURI();
 }

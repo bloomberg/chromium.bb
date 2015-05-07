@@ -241,6 +241,7 @@ public:
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
 
     virtual const AtomicString& localName() const override final { return m_tagName.localName(); }
+    AtomicString localNameForSelectorMatching() const;
     const AtomicString& prefix() const { return m_tagName.prefix(); }
     virtual const AtomicString& namespaceURI() const override final { return m_tagName.namespaceURI(); }
 
@@ -846,6 +847,13 @@ inline void Element::setTagNameForCreateElementNS(const QualifiedName& tagName)
     ASSERT(tagName.localName() == m_tagName.localName());
     ASSERT(tagName.namespaceURI() == m_tagName.namespaceURI());
     m_tagName = tagName;
+}
+
+inline AtomicString Element::localNameForSelectorMatching() const
+{
+    if (isHTMLElement() || !document().isHTMLDocument())
+        return localName();
+    return localName().lower();
 }
 
 inline bool isShadowHost(const Node* node)

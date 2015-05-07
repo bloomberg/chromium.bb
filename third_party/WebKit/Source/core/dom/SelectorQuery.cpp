@@ -174,6 +174,21 @@ void SelectorDataList::collectElementsByClassName(ContainerNode& rootNode, const
     }
 }
 
+inline bool matchesTagName(const QualifiedName& tagName, const Element& element)
+{
+    if (tagName == anyQName())
+        return true;
+    if (element.hasLocalName(tagName.localName()))
+        return true;
+    // Non-html elements in html documents are normalized to their camel-cased
+    // version during parsing if applicable. Yet, type selectors are lower-cased
+    // for selectors in html documents. Try a case-insensitive match below to
+    // allow type selector matching for such elements.
+    if (!element.isHTMLElement() && element.document().isHTMLDocument())
+        return equalIgnoringCase(tagName.localName(), element.localName());
+    return false;
+}
+
 template <typename SelectorQueryTrait>
 void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const QualifiedName& tagName,  typename SelectorQueryTrait::OutputType& output) const
 {
@@ -181,7 +196,7 @@ void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const Q
         // querySelector*() doesn't allow namespaces and throws before it gets
         // here so we can ignore them.
         ASSERT(tagName.namespaceURI() == starAtom);
-        if (tagName == anyQName() || element.hasLocalName(tagName.localName())) {
+        if (matchesTagName(tagName, element)) {
             SelectorQueryTrait::appendElement(output, element);
             if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
                 return;

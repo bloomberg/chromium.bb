@@ -30,6 +30,7 @@
 #include "core/css/SelectorFilter.h"
 
 #include "core/css/CSSSelector.h"
+#include "core/dom/Document.h"
 
 namespace blink {
 
@@ -38,7 +39,7 @@ enum { TagNameSalt = 13, IdAttributeSalt = 17, ClassAttributeSalt = 19 };
 
 static inline void collectElementIdentifierHashes(const Element& element, Vector<unsigned, 4>& identifierHashes)
 {
-    identifierHashes.append(element.localName().impl()->existingHash() * TagNameSalt);
+    identifierHashes.append(element.localNameForSelectorMatching().impl()->existingHash() * TagNameSalt);
     if (element.hasID())
         identifierHashes.append(element.idForStyleResolution().impl()->existingHash() * IdAttributeSalt);
     if (element.isStyledElement() && element.hasClass()) {
