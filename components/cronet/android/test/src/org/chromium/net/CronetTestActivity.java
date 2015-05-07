@@ -10,10 +10,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
+import static junit.framework.Assert.assertTrue;
+
+import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 
 import java.nio.channels.Channels;
@@ -30,16 +34,31 @@ public class CronetTestActivity extends Activity {
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
     public static final String POST_DATA_KEY = "postData";
     public static final String CONFIG_KEY = "config";
+    public static final String CACHE_KEY = "cache";
     public static final String LIBRARY_INIT_KEY = "libraryInit";
     /**
-      * Skip library initialization.
+      * Skips library initialization.
       */
     public static final String LIBRARY_INIT_SKIP = "skip";
 
+    // Uses disk cache.
+    public static final String CACHE_DISK = "disk";
+
+    // Uses disk cache but does not store http data.
+    public static final String CACHE_DISK_NO_HTTP = "diskNoHttp";
+
+    // Uses in-memory cache.
+    public static final String CACHE_IN_MEMORY = "memory";
+
     /**
-      * Initialize Cronet Async API only.
+      * Initializes Cronet Async API only.
       */
     public static final String LIBRARY_INIT_CRONET_ONLY = "cronetOnly";
+
+    /**
+      * Initializes Cronet HttpURLConnection Wrapper API.
+      */
+    public static final String LIBRARY_INIT_WRAPPER = "wrapperOnly";
 
     public CronetURLStreamHandlerFactory mStreamHandlerFactory;
     public UrlRequestContext mUrlRequestContext;
@@ -71,14 +90,19 @@ public class CronetTestActivity extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prepareTestStorage();
 
         String initString = getCommandLineArg(LIBRARY_INIT_KEY);
         if (LIBRARY_INIT_SKIP.equals(initString)) {
             return;
         }
 
+        if (LIBRARY_INIT_WRAPPER.equals(initString)) {
+            mStreamHandlerFactory =
+                new CronetURLStreamHandlerFactory(this, getContextConfig());
+        }
+
         mUrlRequestContext = initRequestContext();
-        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(this, getContextConfig());
         mHistogramManager = HistogramManager.createHistogramManager();
 
         if (LIBRARY_INIT_CRONET_ONLY.equals(initString)) {
@@ -92,12 +116,46 @@ public class CronetTestActivity extends Activity {
         }
     }
 
+    /**
+     * Prepares the path for the test storage (http cache, QUIC server info).
+     */
+    private void prepareTestStorage() {
+        File storage = new File(getTestStorage());
+        if (storage.exists()) {
+            assertTrue(recursiveDelete(storage));
+        }
+        assertTrue(storage.mkdir());
+    }
+
+    private String getTestStorage() {
+        return PathUtils.getDataDirectory(getApplicationContext()) + "/test_storage";
+    }
+
+    private boolean recursiveDelete(File path) {
+        if (path.isDirectory()) {
+            for (File c : path.listFiles()) {
+                if (!recursiveDelete(c)) {
+                    return false;
+                }
+            }
+        }
+        return path.delete();
+    }
+
     UrlRequestContextConfig getContextConfig() {
         UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY,
-                               100 * 1024)
-              .enableSPDY(true)
-              .enableQUIC(true);
+
+        String cacheString = getCommandLineArg(CACHE_KEY);
+        if (CACHE_DISK.equals(cacheString)) {
+            config.setStoragePath(getTestStorage());
+            config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK, 1000 * 1024);
+        } else if (CACHE_DISK_NO_HTTP.equals(cacheString)) {
+            config.setStoragePath(getTestStorage());
+            config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK_NO_HTTP, 1000 * 1024);
+        } else if (CACHE_IN_MEMORY.equals(cacheString)) {
+            config.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY, 100 * 1024);
+        }
+        config.enableSPDY(true).enableQUIC(true);
 
         // Override config if it is passed from the launcher.
         String configString = getCommandLineArg(CONFIG_KEY);
@@ -188,16 +246,24 @@ public class CronetTestActivity extends Activity {
     }
 
     public void startNetLog() {
-        mRequestFactory.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
-                + "/cronet_sample_netlog_old_api.json",
-                false);
-        mUrlRequestContext.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
-                + "/cronet_sample_netlog_new_api.json",
-                false);
+        if (mRequestFactory != null) {
+            mRequestFactory.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
+                    + "/cronet_sample_netlog_old_api.json",
+                    false);
+        }
+        if (mUrlRequestContext != null) {
+            mUrlRequestContext.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
+                    + "/cronet_sample_netlog_new_api.json",
+                    false);
+        }
     }
 
     public void stopNetLog() {
-        mRequestFactory.stopNetLog();
-        mUrlRequestContext.stopNetLog();
+        if (mRequestFactory != null) {
+            mRequestFactory.stopNetLog();
+        }
+        if (mUrlRequestContext != null) {
+            mUrlRequestContext.stopNetLog();
+        }
     }
 }

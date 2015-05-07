@@ -11,9 +11,6 @@ import android.test.ActivityInstrumentationTestCase2;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import org.chromium.base.PathUtils;
-
-import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -84,7 +81,7 @@ public class CronetTestBase extends
     }
 
     // Helper method to tell the activity to skip factory init in onCreate().
-    protected CronetTestActivity skipFactoryInitInOnCreate() {
+    protected CronetTestActivity launchCronetTestAppAndSkipFactoryInit() {
         String[] commandLineArgs = {
                 CronetTestActivity.LIBRARY_INIT_KEY, CronetTestActivity.LIBRARY_INIT_SKIP};
         CronetTestActivity activity =
@@ -154,31 +151,6 @@ public class CronetTestBase extends
         } catch (Throwable e) {
             throw new Throwable("CronetTestBase#runTest failed.", e);
         }
-    }
-
-    /**
-     * Returns the path for the test storage (http cache, QUIC server info).
-     */
-    public String prepareTestStorage() {
-        String storagePath = PathUtils.getDataDirectory(
-                getInstrumentation().getTargetContext()) + "/test_storage";
-        File storage = new File(storagePath);
-        if (storage.exists()) {
-            assertTrue(recursiveDelete(storage));
-        }
-        assertTrue(storage.mkdir());
-        return storagePath;
-    }
-
-    boolean recursiveDelete(File path) {
-        if (path.isDirectory()) {
-            for (File c : path.listFiles()) {
-                if (!recursiveDelete(c)) {
-                    return false;
-                }
-            }
-        }
-        return path.delete();
     }
 
     @Target(ElementType.METHOD)
