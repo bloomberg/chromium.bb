@@ -2164,5 +2164,15 @@ crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/we
 crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/week-suggestion-picker-min-max-attribute.html [ Timeout ]
 crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Timeout ]
 crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/week-suggestion-picker-step-attribute.html [ Timeout ]
+crbug.com/485428 [ Linux ] virtual/slimmingpaint/css3/filters/huge-region.html [ Timeout ]
+crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/listbox-selection-2.html [ Timeout ]
+
+crbug.com/485501 [ Linux Debug ] virtual/slimmingpaint/fast/events/drag-and-drop-autoscroll-mainframe.html [ Crash ]
+crbug.com/485501 [ Linux Debug ] virtual/slimmingpaint/fast/events/remove-child-onscroll.html [ Crash ]
+crbug.com/485501 [ Linux Debug ] virtual/slimmingpaint/fast/events/select-event-on-input-recursive.html [ Crash ]
+crbug.com/485501 [ Linux Debug ] virtual/slimmingpaint/fast/events/touch/gesture/pad-gesture-fling.html [ Crash ]
+crbug.com/485501 [ Linux Debug ] virtual/slimmingpaint/fast/repaint/fixed-move-after-keyboard-scroll.html [ Crash ]
+crbug.com/485501 [ Linux Debug ] virtual/slimmingpaint/fast/repaint/repaint-tile-clipped.html [ Crash ]
+crbug.com/485501 [ Linux Debug ] virtual/slimmingpaint/media/video-controls-dont-show-on-focus-when-disabled.html [ Crash ]
 
 crbug.com/480652 virtual/slimmingpaint/svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
