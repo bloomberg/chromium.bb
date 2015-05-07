@@ -14,7 +14,7 @@ namespace blink {
 // allocator.
 class BLINK_PLATFORM_EXPORT WebMemoryAllocatorDump {
 public:
-    virtual ~WebMemoryAllocatorDump() { }
+    virtual ~WebMemoryAllocatorDump();
 
     // Adds a scalar attribute to the dump.
     // Arguments:

@@ -5,6 +5,7 @@
 #ifndef WebProcessMemoryDump_h
 #define WebProcessMemoryDump_h
 
+#include "WebCommon.h"
 #include "WebString.h"
 
 namespace blink {
@@ -16,7 +17,7 @@ class WebMemoryAllocatorDump;
 // WebProcessMemoryDump instance with the stats of their allocators.
 class BLINK_PLATFORM_EXPORT WebProcessMemoryDump {
 public:
-    virtual ~WebProcessMemoryDump() { }
+    virtual ~WebProcessMemoryDump();
 
     // Creates a new MemoryAllocatorDump with the given name and returns the
     // empty object back to the caller. |absoluteName| uniquely identifies the
