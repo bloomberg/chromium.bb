@@ -37,10 +37,20 @@ CastSessionDelegateBase::CastSessionDelegateBase()
           content::RenderThread::Get()->GetIOMessageLoopProxy()),
       weak_factory_(this) {
   DCHECK(io_task_runner_.get());
+#if defined(OS_WIN)
+  // Note that this also increases the accuracy of PostDelayTask,
+  // which is is very helpful to cast.
+  if (!base::Time::ActivateHighResolutionTimer(true)) {
+    LOG(WARNING) << "Failed to activate high resolution timers for cast.";
+  }
+#endif
 }
 
 CastSessionDelegateBase::~CastSessionDelegateBase() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+#if defined(OS_WIN)
+  base::Time::ActivateHighResolutionTimer(false);
+#endif
 }
 
 void CastSessionDelegateBase::StartUDP(
