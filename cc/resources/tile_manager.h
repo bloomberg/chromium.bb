@@ -14,7 +14,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "cc/base/ref_counted_managed.h"
 #include "cc/base/unique_notifier.h"
 #include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/memory_history.h"
@@ -86,8 +85,7 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
-class CC_EXPORT TileManager : public TileTaskRunnerClient,
-                              public RefCountedManager<Tile> {
+class CC_EXPORT TileManager : public TileTaskRunnerClient {
  public:
   enum NamedTaskSet {
     REQUIRED_FOR_ACTIVATION,
@@ -118,13 +116,13 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
 
   void UpdateVisibleTiles(const GlobalStateThatImpactsTilePriority& state);
 
-  scoped_refptr<Tile> CreateTile(RasterSource* raster_source,
-                                 const gfx::Size& desired_texture_size,
-                                 const gfx::Rect& content_rect,
-                                 float contents_scale,
-                                 int layer_id,
-                                 int source_frame_number,
-                                 int flags);
+  ScopedTilePtr CreateTile(RasterSource* raster_source,
+                           const gfx::Size& desired_texture_size,
+                           const gfx::Rect& content_rect,
+                           float contents_scale,
+                           int layer_id,
+                           int source_frame_number,
+                           int flags);
 
   bool IsReadyToActivate() const;
   bool IsReadyToDraw() const;
@@ -192,9 +190,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   void FreeResourcesForReleasedTiles();
   void CleanUpReleasedTiles();
 
-  // Overriden from RefCountedManager<Tile>:
   friend class Tile;
-  void Release(Tile* tile) override;
+  // Virtual for testing.
+  virtual void Release(Tile* tile);
 
   // Overriden from TileTaskRunnerClient:
   void DidFinishRunningTileTasks(TaskSet task_set) override;

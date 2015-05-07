@@ -15,7 +15,6 @@ source_set("base") {
     "invalidation_region.h",
     "math_util.cc",
     "math_util.h",
-    "ref_counted_managed.h",
     "region.cc",
     "region.h",
     "rolling_time_delta_history.cc",

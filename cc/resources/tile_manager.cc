@@ -763,17 +763,16 @@ void TileManager::UpdateTileDrawInfo(
   client_->NotifyTileStateChanged(tile);
 }
 
-scoped_refptr<Tile> TileManager::CreateTile(
-    RasterSource* raster_source,
-    const gfx::Size& desired_texture_size,
-    const gfx::Rect& content_rect,
-    float contents_scale,
-    int layer_id,
-    int source_frame_number,
-    int flags) {
-  scoped_refptr<Tile> tile = make_scoped_refptr(
-      new Tile(this, raster_source, desired_texture_size, content_rect,
-               contents_scale, layer_id, source_frame_number, flags));
+ScopedTilePtr TileManager::CreateTile(RasterSource* raster_source,
+                                      const gfx::Size& desired_texture_size,
+                                      const gfx::Rect& content_rect,
+                                      float contents_scale,
+                                      int layer_id,
+                                      int source_frame_number,
+                                      int flags) {
+  ScopedTilePtr tile(new Tile(this, raster_source, desired_texture_size,
+                              content_rect, contents_scale, layer_id,
+                              source_frame_number, flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
   tiles_[tile->id()] = tile.get();

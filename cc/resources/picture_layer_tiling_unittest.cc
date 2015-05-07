@@ -1951,7 +1951,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
   tiling_->CreateAllTilesForTesting();
   EXPECT_EQ(150, tiling_->TilingDataForTesting().max_texture_size().width());
   EXPECT_EQ(100, tiling_->TilingDataForTesting().max_texture_size().height());
-  EXPECT_EQ(4u, tiling_->AllRefTilesForTesting().size());
+  EXPECT_EQ(4u, tiling_->AllTilesForTesting().size());
 
   client_.SetTileSize(gfx::Size(250, 200));
 
@@ -1968,7 +1968,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
   // Tile size in the tiling should be resized to 250x200.
   EXPECT_EQ(250, tiling_->TilingDataForTesting().max_texture_size().width());
   EXPECT_EQ(200, tiling_->TilingDataForTesting().max_texture_size().height());
-  EXPECT_EQ(0u, tiling_->AllRefTilesForTesting().size());
+  EXPECT_EQ(0u, tiling_->AllTilesForTesting().size());
 }
 
 }  // namespace

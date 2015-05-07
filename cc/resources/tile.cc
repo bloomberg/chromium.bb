@@ -23,7 +23,7 @@ Tile::Tile(TileManager* tile_manager,
            int layer_id,
            int source_frame_number,
            int flags)
-    : RefCountedManaged<Tile>(tile_manager),
+    : tile_manager_(tile_manager),
       desired_texture_size_(desired_texture_size),
       content_rect_(content_rect),
       contents_scale_(contents_scale),
@@ -89,6 +89,11 @@ size_t Tile::GPUMemoryUsageInBytes() const {
   if (draw_info_.resource_)
     return draw_info_.resource_->bytes();
   return 0;
+}
+
+void Tile::Deleter::operator()(Tile* tile) const {
+  TileManager* tile_manager = tile->tile_manager_;
+  tile_manager->Release(tile);
 }
 
 }  // namespace cc
