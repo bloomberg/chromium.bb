@@ -37,19 +37,6 @@ ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(JNIEnv* env,
                                                  toolbar_model_->GetText());
 }
 
-ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetQueryExtractionParam(
-    JNIEnv* env,
-    jobject obj) {
-  content::WebContents* web_contents = GetActiveWebContents();
-  if (!web_contents)
-    return ScopedJavaLocalRef<jstring>();
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  UIThreadSearchTermsData search_terms_data(profile);
-  return base::android::ConvertUTF8ToJavaString(
-      env, chrome::InstantExtendedEnabledParam(true));
-}
-
 ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetCorpusChipText(
     JNIEnv* env,
     jobject obj) {

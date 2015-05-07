@@ -27,9 +27,6 @@ class ToolbarModelAndroid : public ToolbarModelDelegate {
   base::android::ScopedJavaLocalRef<jstring> GetText(
       JNIEnv* env,
       jobject obj);
-  base::android::ScopedJavaLocalRef<jstring> GetQueryExtractionParam(
-      JNIEnv* env,
-      jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetCorpusChipText(
       JNIEnv* env,
       jobject obj);
