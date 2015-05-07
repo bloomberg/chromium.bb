@@ -89,7 +89,8 @@ void ProxyDecryptor::CreateCdm(CdmFactory* cdm_factory,
 void ProxyDecryptor::OnCdmCreated(const std::string& key_system,
                                   const GURL& security_origin,
                                   const CdmContextReadyCB& cdm_context_ready_cb,
-                                  scoped_ptr<MediaKeys> cdm) {
+                                  scoped_ptr<MediaKeys> cdm,
+                                  const std::string& /* error_message */) {
   is_creating_cdm_ = false;
 
   if (!cdm) {

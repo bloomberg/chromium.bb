@@ -111,7 +111,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // Callback for CreateCdm().
   void OnCdmCreated(const std::string& key_system,
                     blink::WebContentDecryptionModuleResult result,
-                    scoped_ptr<MediaKeys> cdm);
+                    scoped_ptr<MediaKeys> cdm,
+                    const std::string& error_message);
 
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,

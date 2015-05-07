@@ -42,7 +42,8 @@ void PpapiDecryptor::Create(
   if (!pepper_cdm_wrapper) {
     DLOG(ERROR) << "Plugin instance creation failed.";
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(cdm_created_cb, nullptr));
+        FROM_HERE, base::Bind(cdm_created_cb, nullptr,
+                              "Plugin instance creation failed."));
   }
 
   scoped_ptr<PpapiDecryptor> ppapi_decryptor(

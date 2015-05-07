@@ -36,7 +36,7 @@ void CdmSessionAdapter::CreateCdm(
     blink::WebContentDecryptionModuleResult result) {
   // Note: WebContentDecryptionModuleImpl::Create() calls this method without
   // holding a reference to the CdmSessionAdapter. Bind OnCdmCreated() with
-  // |this| instead of |weak_this| to prevent |this| from being desctructed.
+  // |this| instead of |weak_this| to prevent |this| from being destructed.
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   cdm_factory->Create(
       key_system, allow_distinctive_identifier, allow_persistent_state,
@@ -121,12 +121,13 @@ const std::string& CdmSessionAdapter::GetKeySystemUMAPrefix() const {
 void CdmSessionAdapter::OnCdmCreated(
     const std::string& key_system,
     blink::WebContentDecryptionModuleResult result,
-    scoped_ptr<MediaKeys> cdm) {
+    scoped_ptr<MediaKeys> cdm,
+    const std::string& error_message) {
   DVLOG(2) << __FUNCTION__;
   if (!cdm) {
     result.completeWithError(
         blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
-        "Failed to create the CDM instance.");
+        blink::WebString::fromUTF8(error_message));
     return;
   }
 

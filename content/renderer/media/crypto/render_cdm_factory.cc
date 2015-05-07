@@ -57,7 +57,7 @@ void RenderCdmFactory::Create(
 
   if (!security_origin.is_valid()) {
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(cdm_created_cb, nullptr));
+        FROM_HERE, base::Bind(cdm_created_cb, nullptr, "Invalid origin."));
     return;
   }
 
@@ -70,7 +70,7 @@ void RenderCdmFactory::Create(
         new media::AesDecryptor(security_origin, session_message_cb,
                                 session_closed_cb, session_keys_change_cb));
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm)));
+        FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm), ""));
     return;
   }
 
@@ -90,7 +90,8 @@ void RenderCdmFactory::Create(
 #else
   // No possible CDM to create, so fail the request.
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(cdm_created_cb, nullptr));
+      FROM_HERE,
+      base::Bind(cdm_created_cb, nullptr, "Key system not supported."));
 #endif  // defined(ENABLE_PEPPER_CDMS)
 }
 

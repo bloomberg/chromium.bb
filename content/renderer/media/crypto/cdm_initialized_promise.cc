@@ -17,14 +17,14 @@ CdmInitializedPromise::~CdmInitializedPromise() {
 
 void CdmInitializedPromise::resolve() {
   MarkPromiseSettled();
-  cdm_created_cb_.Run(cdm_.Pass());
+  cdm_created_cb_.Run(cdm_.Pass(), "");
 }
 
 void CdmInitializedPromise::reject(media::MediaKeys::Exception exception_code,
                                    uint32 system_code,
                                    const std::string& error_message) {
   MarkPromiseSettled();
-  cdm_created_cb_.Run(nullptr);
+  cdm_created_cb_.Run(nullptr, error_message);
 }
 
 }  // namespace content

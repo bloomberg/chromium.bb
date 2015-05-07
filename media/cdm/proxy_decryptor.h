@@ -76,7 +76,8 @@ class MEDIA_EXPORT ProxyDecryptor {
   void OnCdmCreated(const std::string& key_system,
                     const GURL& security_origin,
                     const CdmContextReadyCB& cdm_context_ready_cb,
-                    scoped_ptr<MediaKeys> cdm);
+                    scoped_ptr<MediaKeys> cdm,
+                    const std::string& error_message);
 
   void GenerateKeyRequestInternal(EmeInitDataType init_data_type,
                                   const std::vector<uint8>& init_data);
