@@ -55884,9 +55884,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1861251313"
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>
   <int value="1865799183" label="javascript-harmony"/>
+  <int value="1891210939" label="enable-blink-features"/>
   <int value="1896456311" label="enable-password-save-in-page-navigation"/>
   <int value="1900529524" label="disable-touch-drag-drop"/>
   <int value="1906942630" label="enable-easy-unlock"/>
+  <int value="1915178511" label="disable-blink-features"/>
   <int value="1930901873" label="disable-sync-app-list"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>
   <int value="1944156526" label="sync-url"/>

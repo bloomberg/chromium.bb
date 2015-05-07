@@ -2458,6 +2458,17 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableNewVideoRenderer)
   },
+  // Temporary flag to ease the transition to standard-compliant scrollTop
+  // behavior.  Will be removed shortly after http://crbug.com/157855 ships.
+  {
+    "scroll-top-left-interop",
+    IDS_FLAGS_SCROLL_TOP_LEFT_INTEROP_NAME,
+    IDS_FLAGS_SCROLL_TOP_LEFT_INTEROP_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
+        switches::kEnableBlinkFeatures, "ScrollTopLeftInterop",
+        switches::kDisableBlinkFeatures, "ScrollTopLeftInterop")
+  }
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

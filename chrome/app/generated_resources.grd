@@ -6904,6 +6904,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_NEW_VIDEO_RENDERER_DESCRIPTION" desc="Description for the flag to disable the new video rendering path for video elements.">
         Disables the new compositor driven video rendering path for video elements.
       </message>
+      <message name="IDS_FLAGS_SCROLL_TOP_LEFT_INTEROP_NAME" desc="Title for the flag to enable scrollTop interoperability">
+        Document scrolling element interoperability.
+      </message>
+      <message name="IDS_FLAGS_SCROLL_TOP_LEFT_INTEROP_DESCRIPTION" desc="Description for the flag to enable scrollTop interoperability.">
+        Control whether document.body.scrollTop/scrollLeft in JavaScript reflects the standard interoperable behavior (enabled) or legacy WebKit behavior (disabled).
+        When enabled, document.scrollingElement is document.documentElement, when disabled it's document.body (for strict-mode pages).
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
