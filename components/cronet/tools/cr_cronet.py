@@ -64,7 +64,7 @@ def main():
   options, extra_options_list = parser.parse_known_args()
   print options
   print extra_options_list
-  gyp_defines = 'GYP_DEFINES="OS=android enable_websockets=0 '+ \
+  gyp_defines = 'GYP_DEFINES="OS=android run_findbugs=1 enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
       'use_icu_alternatives_on_android=1" '
   out_dir = 'out/Debug'
