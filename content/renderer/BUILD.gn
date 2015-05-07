@@ -148,10 +148,10 @@ source_set("renderer") {
             ".",
             "//content")
     deps += [
-      "//media/cast:sender",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/shared_impl",
+      "//third_party/libvpx",
       "//third_party/libyuv",
     ]
   } else {

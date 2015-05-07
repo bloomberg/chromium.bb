@@ -15,8 +15,8 @@
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/pepper_video_encoder_host.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/cast/cast_config.h"
-#include "media/cast/sender/vp8_encoder.h"
+#include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -27,6 +27,14 @@ namespace content {
 // software encoding.
 const int32_t kMaxWidth = 1920;
 const int32_t kMaxHeight = 1088;
+
+// Default speed for the encoder (same as WebRTC). Increases the CPU
+// usage as the value is more negative (VP8 valid range: -16..16).
+const int32_t kDefaultCpuUsed = -6;
+
+// Default quantizer min/max values.
+const int32_t kDefaultMinQuantizer = 2;
+const int32_t kDefaultMaxQuantizer = 52;
 
 // Bitstream buffer size.
 const uint32_t kBitstreamBufferSize = 2 * 1024 * 1024;
@@ -71,21 +79,33 @@ class VideoEncoderShim::EncoderImpl {
   };
 
   void DoEncode();
+  void NotifyError(media::VideoEncodeAccelerator::Error error);
 
   base::WeakPtr<VideoEncoderShim> shim_;
-  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
-  scoped_ptr<media::cast::SoftwareVideoEncoder> encoder_;
+  bool initialized_;
+
+  // Libvpx internal objects. Only valid if |initialized_| is true.
+  vpx_codec_enc_cfg_t config_;
+  vpx_codec_ctx_t encoder_;
+
+  uint32 framerate_;
+
   std::deque<PendingEncode> frames_;
   std::deque<BitstreamBuffer> buffers_;
 };
 
 VideoEncoderShim::EncoderImpl::EncoderImpl(
     const base::WeakPtr<VideoEncoderShim>& shim)
-    : shim_(shim), media_task_runner_(base::MessageLoopProxy::current()) {
+    : shim_(shim),
+      renderer_task_runner_(base::MessageLoopProxy::current()),
+      initialized_(false) {
 }
 
 VideoEncoderShim::EncoderImpl::~EncoderImpl() {
+  if (initialized_)
+    vpx_codec_destroy(&encoder_);
 }
 
 void VideoEncoderShim::EncoderImpl::Initialize(
@@ -93,21 +113,52 @@ void VideoEncoderShim::EncoderImpl::Initialize(
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
     uint32 initial_bitrate) {
-  media::cast::VideoSenderConfig config;
-
-  config.max_number_of_video_buffers_used = kInputFrameCount;
-  config.number_of_encode_threads = 1;
-  encoder_.reset(new media::cast::Vp8Encoder(config));
-
-  encoder_->UpdateRates(initial_bitrate);
-
   gfx::Size coded_size =
       media::VideoFrame::PlaneSize(input_format, 0, input_visible_size);
 
-  media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoEncoderShim::OnRequireBitstreamBuffers, shim_,
-                            kInputFrameCount, coded_size,
-                            kBitstreamBufferSize));
+  // Populate encoder configuration with default values.
+  if (vpx_codec_enc_config_default(vpx_codec_vp8_cx(), &config_, 0) !=
+      VPX_CODEC_OK) {
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+
+  config_.g_threads = 1;
+  config_.g_w = input_visible_size.width();
+  config_.g_h = input_visible_size.height();
+
+  framerate_ = config_.g_timebase.den;
+
+  config_.g_lag_in_frames = 0;
+  config_.g_timebase.num = 1;
+  config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
+  config_.rc_target_bitrate = initial_bitrate / 1000;
+  config_.rc_min_quantizer = kDefaultMinQuantizer;
+  config_.rc_max_quantizer = kDefaultMaxQuantizer;
+
+  vpx_codec_flags_t flags = 0;
+  if (vpx_codec_enc_init(&encoder_, vpx_codec_vp8_cx(), &config_, flags) !=
+      VPX_CODEC_OK) {
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+  initialized_ = true;
+
+  if (vpx_codec_enc_config_set(&encoder_, &config_) != VPX_CODEC_OK) {
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+
+  if (vpx_codec_control(&encoder_, VP8E_SET_CPUUSED, kDefaultCpuUsed) !=
+      VPX_CODEC_OK) {
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+
+  renderer_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoEncoderShim::OnRequireBitstreamBuffers, shim_,
+                 kInputFrameCount, coded_size, kBitstreamBufferSize));
 }
 
 void VideoEncoderShim::EncoderImpl::Encode(
@@ -127,13 +178,29 @@ void VideoEncoderShim::EncoderImpl::UseOutputBitstreamBuffer(
 void VideoEncoderShim::EncoderImpl::RequestEncodingParametersChange(
     uint32 bitrate,
     uint32 framerate) {
-  encoder_->UpdateRates(bitrate);
+  framerate_ = framerate;
+
+  uint32 bitrate_kbit = bitrate / 1000;
+  if (config_.rc_target_bitrate == bitrate_kbit)
+    return;
+
+  config_.rc_target_bitrate = bitrate_kbit;
+  if (vpx_codec_enc_config_set(&encoder_, &config_) != VPX_CODEC_OK)
+    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
 }
 
 void VideoEncoderShim::EncoderImpl::Stop() {
-  frames_.clear();
+  // Release frames on the renderer thread.
+  while (!frames_.empty()) {
+    PendingEncode frame = frames_.front();
+    frames_.pop_front();
+
+    frame.frame->AddRef();
+    media::VideoFrame* raw_frame = frame.frame.get();
+    frame.frame = nullptr;
+    renderer_task_runner_->ReleaseSoon(FROM_HERE, raw_frame);
+  }
   buffers_.clear();
-  encoder_.reset();
 }
 
 void VideoEncoderShim::EncoderImpl::DoEncode() {
@@ -141,28 +208,71 @@ void VideoEncoderShim::EncoderImpl::DoEncode() {
     PendingEncode frame = frames_.front();
     frames_.pop_front();
 
+    // Wrapper for vpx_codec_encode() to access the YUV data in the
+    // |video_frame|. Only the VISIBLE rectangle within |video_frame|
+    // is exposed to the codec.
+    vpx_image_t vpx_image;
+    vpx_image_t* const result = vpx_img_wrap(
+        &vpx_image, VPX_IMG_FMT_I420, frame.frame->visible_rect().width(),
+        frame.frame->visible_rect().height(), 1,
+        frame.frame->data(media::VideoFrame::kYPlane));
+    DCHECK_EQ(result, &vpx_image);
+    vpx_image.planes[VPX_PLANE_Y] =
+        frame.frame->visible_data(media::VideoFrame::kYPlane);
+    vpx_image.planes[VPX_PLANE_U] =
+        frame.frame->visible_data(media::VideoFrame::kUPlane);
+    vpx_image.planes[VPX_PLANE_V] =
+        frame.frame->visible_data(media::VideoFrame::kVPlane);
+    vpx_image.stride[VPX_PLANE_Y] =
+        frame.frame->stride(media::VideoFrame::kYPlane);
+    vpx_image.stride[VPX_PLANE_U] =
+        frame.frame->stride(media::VideoFrame::kUPlane);
+    vpx_image.stride[VPX_PLANE_V] =
+        frame.frame->stride(media::VideoFrame::kVPlane);
+
+    vpx_codec_flags_t flags = 0;
     if (frame.force_keyframe)
-      encoder_->GenerateKeyFrame();
+      flags = VPX_EFLAG_FORCE_KF;
 
-    scoped_ptr<media::cast::EncodedFrame> encoded_frame(
-        new media::cast::EncodedFrame());
-    encoder_->Encode(frame.frame, base::TimeTicks::Now(), encoded_frame.get());
+    const base::TimeDelta frame_duration =
+        base::TimeDelta::FromSecondsD(1.0 / framerate_);
+    if (vpx_codec_encode(&encoder_, &vpx_image, 0,
+                         frame_duration.InMicroseconds(), flags,
+                         VPX_DL_REALTIME) != VPX_CODEC_OK) {
+      NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+      return;
+    }
 
-    BitstreamBuffer buffer = buffers_.front();
-    buffers_.pop_front();
+    const vpx_codec_cx_pkt_t* packet = nullptr;
+    vpx_codec_iter_t iter = nullptr;
+    while ((packet = vpx_codec_get_cx_data(&encoder_, &iter)) != nullptr) {
+      if (packet->kind != VPX_CODEC_CX_FRAME_PKT)
+        continue;
 
-    CHECK(buffer.buffer.size() >= encoded_frame->data.size());
-    memcpy(buffer.mem, encoded_frame->bytes(), encoded_frame->data.size());
+      BitstreamBuffer buffer = buffers_.front();
+      buffers_.pop_front();
 
-    // Pass the media::VideoFrame back to the renderer thread so it's
-    // freed on the right thread.
-    media_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &VideoEncoderShim::OnBitstreamBufferReady, shim_,
-            frame.frame, buffer.buffer.id(), encoded_frame->data.size(),
-            encoded_frame->dependency == media::cast::EncodedFrame::KEY));
+      CHECK(buffer.buffer.size() >= packet->data.frame.sz);
+      memcpy(buffer.mem, packet->data.frame.buf, packet->data.frame.sz);
+
+      // Pass the media::VideoFrame back to the renderer thread so it's
+      // freed on the right thread.
+      renderer_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&VideoEncoderShim::OnBitstreamBufferReady, shim_,
+                     frame.frame, buffer.buffer.id(),
+                     base::checked_cast<size_t>(packet->data.frame.sz),
+                     (packet->data.frame.flags & VPX_FRAME_IS_KEY) != 0));
+      break;  // Done, since all data is provided in one CX_FRAME_PKT packet.
+    }
   }
+}
+
+void VideoEncoderShim::EncoderImpl::NotifyError(
+    media::VideoEncodeAccelerator::Error error) {
+  renderer_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoEncoderShim::OnNotifyError, shim_, error));
+  Stop();
 }
 
 VideoEncoderShim::VideoEncoderShim(PepperVideoEncoderHost* host)
@@ -183,13 +293,23 @@ VideoEncoderShim::~VideoEncoderShim() {
 
 media::VideoEncodeAccelerator::SupportedProfiles
 VideoEncoderShim::GetSupportedProfiles() {
-  media::VideoEncodeAccelerator::SupportedProfile profile;
-  profile.profile = media::VP8PROFILE_ANY;
-  profile.max_resolution = gfx::Size(kMaxWidth, kMaxHeight);
-  profile.max_framerate_numerator = media::cast::kDefaultMaxFrameRate;
-  profile.max_framerate_denominator = 1;
   media::VideoEncodeAccelerator::SupportedProfiles profiles;
-  profiles.push_back(profile);
+
+  // Get the default VP8 config from Libvpx.
+  vpx_codec_enc_cfg_t config;
+  vpx_codec_err_t ret =
+      vpx_codec_enc_config_default(vpx_codec_vp8_cx(), &config, 0);
+  if (ret == VPX_CODEC_OK) {
+    media::VideoEncodeAccelerator::SupportedProfile profile;
+    profile.profile = media::VP8PROFILE_ANY;
+    profile.max_resolution = gfx::Size(kMaxWidth, kMaxHeight);
+    // Libvpx and media::VideoEncodeAccelerator are using opposite
+    // notions of denominator/numerator.
+    profile.max_framerate_numerator = config.g_timebase.den;
+    profile.max_framerate_denominator = config.g_timebase.num;
+    profiles.push_back(profile);
+  }
+
   return profiles;
 }
 

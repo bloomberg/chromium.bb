@@ -22,7 +22,8 @@ void TestVideoEncoder::RunTests(const std::string& filter) {
 }
 
 std::string TestVideoEncoder::TestCreate() {
-  // Test that we get results for supported formats.
+  // Test that we get results for supported formats. We should at
+  // least get the software supported formats.
   {
     pp::VideoEncoder video_encoder(instance_);
     ASSERT_FALSE(video_encoder.is_null());
@@ -41,8 +42,13 @@ std::string TestVideoEncoder::TestCreate() {
     bool found_vp8 = false;
     for (uint32_t i = 0; i < video_profiles.size(); ++i) {
       const PP_VideoProfileDescription& description = video_profiles[i];
-      if (description.profile == PP_VIDEOPROFILE_VP8_ANY)
+      if (description.profile == PP_VIDEOPROFILE_VP8_ANY &&
+          description.hardware_accelerated == PP_FALSE) {
+        ASSERT_GE(description.max_framerate_numerator /
+                      description.max_framerate_denominator,
+                  30U);
         found_vp8 = true;
+      }
     }
     ASSERT_TRUE(found_vp8);
   }
