@@ -1223,7 +1223,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 1",
-          "input": "hund hund<em>en </em>hund<em>er </em>hund<em>ene</em>",
+          "input":    "hund hunden hunder hundene",
+          "typeform": "00000000011100001110000111",
           "output": "⠓⠥⠝⠙ ⠓⠥⠝⠙⠆⠑⠝⠰ ⠓⠥⠝⠙⠆⠑⠗⠰ ⠓⠥⠝⠙⠆⠑⠝⠑⠰"
         }
       ]
@@ -1232,7 +1233,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 2",
-          "input": "Det var bare det at hun også <em>mis</em>unte ham det",
+          "input":    "Det var bare det at hun også misunte ham det",
+          "typeform": "00000000000000000000000000000111000000000000",
           "output": "⠠⠙⠑⠞ ⠧⠁⠗ ⠃⠁⠗⠑ ⠙⠑⠞ ⠁⠞ ⠓⠥⠝ ⠕⠛⠎⠡ ⠆⠍⠊⠎⠰⠥⠝⠞⠑ ⠓⠁⠍ ⠙⠑⠞⠄"
         }
       ]
@@ -1241,7 +1243,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 3",
-          "input": "Jeg verken <em>vil </em>eller <em>kan </em>gjøre dette for deg!",
+          "input":    "Jeg verken vil eller kan gjøre dette for deg!",
+          "typeform": "000000000001111000000111100000000000000000000",
           "output": "⠠⠚⠑⠛ ⠧⠑⠗⠅⠑⠝ ⠆⠧⠊⠇⠰ ⠑⠇⠇⠑⠗ ⠆⠅⠁⠝⠰ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠞⠑ ⠋⠕⠗ ⠙⠑⠛⠖"
         }
       ]
@@ -1250,7 +1253,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 4",
-          "input": "Karin Fossum slo gjennom som krimforfatter med romanen <em>Evas øye</em>, som kom ut i 1995.",
+          "input":    "Karin Fossum slo gjennom som krimforfatter med romanen Evas øye, som kom ut i 1995.",
+          "typeform": "00000000000000000000000000000000000000000000000000000001111111100000000000000000000",
           "output": "⠠⠅⠁⠗⠊⠝ ⠠⠋⠕⠎⠎⠥⠍ ⠎⠇⠕ ⠛⠚⠑⠝⠝⠕⠍ ⠎⠕⠍ ⠅⠗⠊⠍⠋⠕⠗⠋⠁⠞⠞⠑⠗ ⠍⠑⠙ ⠗⠕⠍⠁⠝⠑⠝ ⠆⠑⠧⠁⠎ ⠪⠽⠑⠰⠂ ⠎⠕⠍ ⠅⠕⠍ ⠥⠞ ⠊ ⠼⠁⠊⠊⠑⠄"
         }
       ]
@@ -1259,7 +1263,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 5",
-          "input": "\"Hør her: <em>du <u>må </u>gjøre det</em>!\"",
+          "input":    "\"Hør her: du må gjøre det!\"",
+          "typeform": "000000000011155511111111100",
           "output": "⠲⠠⠓⠪⠗ ⠓⠑⠗⠒ ⠆⠙⠥ ⠸⠍⠡⠸ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠰⠖⠲"
         }
       ]
@@ -1268,7 +1273,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 6",
-          "input": "Romanen <em>Tusen  strålende soler </em>av den afghansk-amerikanske forfatteren Khaled Hosseini  tyder på å bli en like stor suksess som den forrige romanen, <em>Drageløperen</em>. I bokanmeldelsen fra <em>Dagbladet </em>06.06.07 forklares dette med: <strong>Ikke fordi Hosseini er en spesielt god  forfatter. Men fordi tematikken til den USA-bosatte Hosseini, har en spesiell  dragning på et vestlig publikum.</strong>",
+          "input":    "Romanen Tusen  strålende soler av den afghansk-amerikanske forfatteren Khaled Hosseini  tyder på å bli en like stor suksess som den forrige romanen, Drageløperen. I bokanmeldelsen fra Dagbladet 06.06.07 forklares dette med: Ikke fordi Hosseini er en spesielt god  forfatter. Men fordi tematikken til den USA-bosatte Hosseini, har en spesiell  dragning på et vestlig publikum.",
+          "typeform": "000000001111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111111110000000000000000000000011111111110000000000000000000000000000002222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222",
           "output": "⠠⠗⠕⠍⠁⠝⠑⠝ ⠆⠠⠞⠥⠎⠑⠝ ⠎⠞⠗⠡⠇⠑⠝⠙⠑ ⠎⠕⠇⠑⠗⠰ ⠁⠧ ⠙⠑⠝ ⠁⠋⠛⠓⠁⠝⠎⠅⠁⠍⠑⠗⠊⠅⠁⠝⠎⠅⠑ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠑⠝ ⠠⠅⠓⠁⠇⠑⠙ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠞⠽⠙⠑⠗ ⠏⠡ ⠡ ⠃⠇⠊ ⠑⠝ ⠇⠊⠅⠑ ⠎⠞⠕⠗ ⠎⠥⠅⠎⠑⠎⠎ ⠎⠕⠍ ⠙⠑⠝ ⠋⠕⠗⠗⠊⠛⠑ ⠗⠕⠍⠁⠝⠑⠝⠂ ⠆⠠⠙⠗⠁⠛⠑⠇⠪⠏⠑⠗⠑⠝⠰⠄ ⠠⠊ ⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑⠝ ⠋⠗⠁ ⠆⠠⠙⠁⠛⠃⠇⠁⠙⠑⠞⠰ ⠼⠚⠋⠄⠚⠋⠄⠚⠛ ⠋⠕⠗⠅⠇⠁⠗⠑⠎ ⠙⠑⠞⠞⠑ ⠍⠑⠙⠒ ⠠⠄⠊⠅⠅⠑ ⠋⠕⠗⠙⠊ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠑⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠞ ⠛⠕⠙ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠄ ⠠⠍⠑⠝ ⠋⠕⠗⠙⠊ ⠞⠑⠍⠁⠞⠊⠅⠅⠑⠝ ⠞⠊⠇ ⠙⠑⠝ ⠠⠠⠥⠎⠁⠃⠕⠎⠁⠞⠞⠑ ⠠⠓⠕⠎⠎⠑⠊⠝⠊⠂ ⠓⠁⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠇ ⠙⠗⠁⠛⠝⠊⠝⠛ ⠏⠡ ⠑⠞ ⠧⠑⠎⠞⠇⠊⠛ ⠏⠥⠃⠇⠊⠅⠥⠍⠄⠠⠄"
         }
       ]
@@ -1277,7 +1283,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 7",
-          "input": "Vinje, Finn-Erik. 2004. <em>Skriveregler</em>. 8. utg. Oslo",
+          "input":    "Vinje, Finn-Erik. 2004. Skriveregler. 8. utg. Oslo",
+          "typeform": "00000000000000000000000011111111111100000000000000",
           "output": "⠠⠧⠊⠝⠚⠑⠂ ⠠⠋⠊⠝⠝⠤⠠⠑⠗⠊⠅⠄ ⠼⠃⠚⠚⠙⠄ ⠠⠄⠠⠎⠅⠗⠊⠧⠑⠗⠑⠛⠇⠑⠗⠠⠄⠄ ⠼⠓⠄ ⠥⠞⠛⠄⠠⠕⠎⠇⠕"
         }
       ]
@@ -1286,7 +1293,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 8",
-          "input": "Hellevik, Alf. 1970. <em>God nynorsk</em>.  Oslo",
+          "input":    "Hellevik, Alf. 1970. God nynorsk.  Oslo",
+          "typeform": "000000000000000000000111111111110000000",
           "output": "⠠⠓⠑⠇⠇⠑⠧⠊⠅⠂ ⠠⠁⠇⠋⠄ ⠼⠁⠊⠛⠚⠄ ⠠⠄⠛⠕⠙ ⠝⠽⠝⠕⠗⠎⠅⠠⠄⠄ ⠠⠕⠎⠇⠕"
         }
       ]
@@ -1295,7 +1303,8 @@
       "data": [
         {
           "comment": "Highlighting: Example 9",
-          "input": "Ny afghansk bestselger. Bokanmeldelse <em>Dagbladet </em>06.06.07",
+          "input":    "Ny afghansk bestselger. Bokanmeldelse Dagbladet 06.06.07",
+          "typeform": "00000000000000000000000000000000000000111111111100000000",
           "output": "⠠⠝⠽ ⠁⠋⠛⠓⠁⠝⠎⠅ ⠃⠑⠎⠞⠎⠑⠇⠛⠑⠗⠄⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑ ⠠⠄⠙⠁⠛⠃⠇⠁⠙⠑⠞⠠⠄⠼⠚⠋⠄⠚⠋⠄⠚⠛"
         }
       ]
