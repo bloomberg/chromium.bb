@@ -76,13 +76,13 @@ browserTest.init = function() {
 /**
  * Fails the C++ calling browser test with |message| if |expr| is false.
  * @param {*} expr
- * @param {string} message
+ * @param {string=} opt_message
  * @return {void}
  */
-browserTest.expect = function(expr, message) {
+browserTest.expect = function(expr, opt_message) {
   if (!expr) {
-    message = (message) ? '<' + message + '>' : '';
-    browserTest.fail('Expectation failed.' + message);
+    var message = (opt_message) ? '<' + opt_message + '>' : '';
+    browserTest.fail('Expectation failed.' + opt_message);
   }
 };
 
@@ -241,7 +241,7 @@ browserTest.disconnect = function() {
 
 /**
  * @param {string} pin
- * @param {?boolean} opt_expectError
+ * @param {boolean=} opt_expectError
  * @return {Promise}
  */
 browserTest.enterPIN = function(pin, opt_expectError) {

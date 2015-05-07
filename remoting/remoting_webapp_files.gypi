@@ -36,6 +36,7 @@
       'webapp/browser_test/cancel_pin_browser_test.js',
       'webapp/browser_test/invalid_pin_browser_test.js',
       'webapp/browser_test/it2me_browser_test.js',
+      'webapp/browser_test/me2me_browser_test.js',
       'webapp/browser_test/scrollbar_browser_test.js',
       'webapp/browser_test/timeout_waiter.js',
       'webapp/browser_test/unauthenticated_browser_test.js',

@@ -154,6 +154,16 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
   Cleanup();
 }
 
+IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest, MANUAL_Me2Me_RetryOnHostOffline) {
+  content::WebContents* content = SetUpTest();
+  LoadScript(content, FILE_PATH_LITERAL("me2me_browser_test.js"));
+  RunJavaScriptTest(content, "RetryOnHostOffline", "{"
+    "pin: '" + me2me_pin() + "'"
+  "}");
+
+  Cleanup();
+}
+
 IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
                        MANUAL_Me2Me_Disable_Remote_Connection) {
   SetUpTest();
