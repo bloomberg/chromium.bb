@@ -273,6 +273,7 @@ void HTMLTextAreaElement::subtreeHasChanged()
     m_valueIsUpToDate = false;
     setNeedsValidityCheck();
     setAutofilled(false);
+    updatePlaceholderVisibility(false);
 
     if (!focused())
         return;
