@@ -24,7 +24,7 @@ declare_args() {
   # TODO(maruel): This decision should be revisited because having an
   # official deterministic build has high value too but MSVC toolset can't
   # generate anything deterministic with WPO enabled AFAIK.
-  dont_embed_build_metadata = is_official_build
+  dont_embed_build_metadata = !is_official_build
 
   # Set to true to enable dcheck in Release builds.
   dcheck_always_on = false
