@@ -58,11 +58,6 @@
 
 class GrContext;
 
-// TODO(hiroshige): This #define is introduced to commit CLs that require
-// Chromium-Blink interface changes, and should be removed after the CLs are
-// landed. https://crbug.com/478149
-#define WEB_CONVERTABLE_TO_TRACE_FORMAT_IS_MOVED
-
 namespace blink {
 
 class WebAudioBus;
