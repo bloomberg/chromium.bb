@@ -9496,6 +9496,154 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.HasPermissions_AutoDisable3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when it is
+    automatically disabled due to a permission increase (e.g., after an
+    extension upgrade). To find places where this histogram may be emitted, look
+    for calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument AutoDisable. For Sync users, this may be reported for each device,
+    depending on whether the Sync update or the extension auto-update happen
+    first.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_Install3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when it was
+    installed. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument Install. For Sync users, this is reported for each device.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_InstallAbort3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when installation
+    was aborted (e.g. because the parent window of the confirmation dialog went
+    away), not including installation errors and user cancels. To find places
+    where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    InstallAbort.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_InstallCancel3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when installation
+    was canceled. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument InstallCancel.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_Load3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when it was
+    loaded (which happens at profile open or extension install). To find places
+    where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument Load.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_ReEnable3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when it was
+    re-enabled from a confirmation prompt. To find places where this histogram
+    may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    ReEnable.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_ReEnableAbort3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when the
+    re-enable prompt was aborted (e.g. because the parent window of the
+    confirmation dialog went away), not including installation errors and manual
+    user cancels. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument ReEnableAbort.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_ReEnableCancel3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when the
+    re-enable was canceled from the confirmation prompt. To find places where
+    this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    ReEnableCancel.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_Uninstall3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when it was
+    uninstalled. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument Uninstall. For Sync users, this is reported for each device.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_WebStoreInstall3" enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when it was
+    installed through the web store. To find places where this histogram may be
+    emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    WebStoreInstall. Contrary to the more-general HasPermissions_Install3
+    histogram, this one is NOT reported for each device.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_WebStoreInstallAbort3"
+    enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when installation
+    from the web store was aborted (e.g. because the parent window of the
+    confirmation dialog went away), not including installation errors and user
+    cancels. To find places where this histogram may be emitted, look for calls
+    to ExtensionService::RecordPermissionMessagesHistogram with the argument
+    WebStoreInstallAbort.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.HasPermissions_WebStoreInstallCancel3"
+    enum="Boolean">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    Whether there were any permissions present in an extension when installation
+    from the web store was canceled. To find places where this histogram may be
+    emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    WebStoreInstallCancel.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.HostedAppLaunchContainer" enum="AppLaunchContainer">
   <owner>benwells@chromium.org</owner>
   <summary>
@@ -9971,7 +10119,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it is automatically disabled
-    due to a permission increase (e.g., after an extension upgrade).
+    due to a permission increase (e.g., after an extension upgrade). To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    AutoDisable.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_AutoDisable3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it is automatically disabled
+    due to a permission increase (e.g., after an extension upgrade). To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    AutoDisable. For Sync users, this may be reported for each device, depending
+    on whether the Sync update or the extension auto-update happen first.
   </summary>
 </histogram>
 
@@ -9992,7 +10157,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
-    The permissions present in an extension when it was installed.
+    The permissions present in an extension when it was installed. To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    Install.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Install3" enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was installed. To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    Install. For Sync users, this is reported for each device.
   </summary>
 </histogram>
 
@@ -10013,7 +10192,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was aborted, not
-    including installation errors and user cancels.
+    including installation errors and user cancels. To find places where this
+    histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    InstallAbort.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_InstallAbort3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation was aborted (e.g.
+    because the parent window of the confirmation dialog went away), not
+    including installation errors and user cancels. To find places where this
+    histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    InstallAbort.
   </summary>
 </histogram>
 
@@ -10035,7 +10231,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
-    The permissions present in an extension when installation was canceled.
+    The permissions present in an extension when installation was canceled. To
+    find places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    InstallCancel.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_InstallCancel3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation was canceled. To
+    find places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    InstallCancel.
   </summary>
 </histogram>
 
@@ -10060,7 +10271,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Extensions.Permissions_Load2" enum="ExtensionPermission2">
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
-  <summary>The permissions present in an extension when it was loaded.</summary>
+  <summary>
+    The permissions present in an extension when it was loaded. To find places
+    where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument Load.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Load3" enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was loaded (which happens at
+    profile open or extension install). To find places where this histogram may
+    be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument Load.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_ReEnable" enum="ExtensionPermission">
@@ -10071,7 +10297,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was re-enabled from a
-    confirmation prompt.
+    confirmation prompt. To find places where this histogram may be emitted,
+    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
+    the argument ReEnable.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnable3" enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was re-enabled from a
+    confirmation prompt. To find places where this histogram may be emitted,
+    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
+    the argument ReEnable.
   </summary>
 </histogram>
 
@@ -10093,7 +10332,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable prompt was
-    aborted, not including installation errors and manual user cancels.
+    aborted, not including installation errors and manual user cancels. To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    ReEnableAbort.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnableAbort3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when the re-enable prompt was
+    aborted (e.g. because the parent window of the confirmation dialog went
+    away), not including installation errors and manual user cancels. To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    ReEnableAbort.
   </summary>
 </histogram>
 
@@ -10116,7 +10372,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable was canceled from
-    the confirmation prompt.
+    the confirmation prompt. To find places where this histogram may be emitted,
+    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
+    the argument ReEnableCancel.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_ReEnableCancel3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when the re-enable was canceled from
+    the confirmation prompt. To find places where this histogram may be emitted,
+    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
+    the argument ReEnableCancel.
   </summary>
 </histogram>
 
@@ -10137,7 +10407,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
-    The permissions present in an extension when it was uninstalled.
+    The permissions present in an extension when it was uninstalled. To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    Uninstall.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_Uninstall3" enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was uninstalled. To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    Uninstall. For Sync users, this is reported for each device.
   </summary>
 </histogram>
 
@@ -10159,7 +10443,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed through the
-    web store.
+    web store. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument WebStoreInstall.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstall3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was installed through the
+    web store. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument WebStoreInstall. Contrary to the more-general Permissions_Install3
+    histogram, this one is NOT reported for each device.
   </summary>
 </histogram>
 
@@ -10183,7 +10482,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
-    was aborted, not including installation errors and user cancels.
+    was aborted, not including installation errors and user cancels. To find
+    places where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    WebStoreInstallAbort.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstallAbort3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was aborted (e.g. because the parent window of the confirmation dialog went
+    away), not including installation errors and user cancels. To find places
+    where this histogram may be emitted, look for calls to
+    ExtensionService::RecordPermissionMessagesHistogram with the argument
+    WebStoreInstallAbort.
   </summary>
 </histogram>
 
@@ -10207,7 +10523,21 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
-    was canceled.
+    was canceled. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument WebStoreInstallCancel.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Permissions_WebStoreInstallCancel3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was canceled. To find places where this histogram may be emitted, look for
+    calls to ExtensionService::RecordPermissionMessagesHistogram with the
+    argument WebStoreInstallCancel.
   </summary>
 </histogram>
 
@@ -51910,6 +52240,206 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="78" label="kInterceptAllKeys"/>
   <int value="79" label="kSettingsPrivate"/>
   <int value="80" label="kPrinterProvider"/>
+  <int value="81" label="kSearchEnginesPrivate"/>
+  <int value="82" label="kAutofillPrivate"/>
+</enum>
+
+<enum name="ExtensionPermission3" type="int">
+<!-- Generated from ../../../extensions/common/permissions/api_permission.h -->
+
+  <int value="0" label="kInvalid"/>
+  <int value="1" label="kUnknown"/>
+  <int value="2" label="kAccessibilityFeaturesModify"/>
+  <int value="3" label="kAccessibilityFeaturesRead"/>
+  <int value="4" label="kAccessibilityPrivate"/>
+  <int value="5" label="kActiveTab"/>
+  <int value="6" label="kActivityLogPrivate"/>
+  <int value="7" label="kAlarms"/>
+  <int value="8" label="kAlphaEnabled"/>
+  <int value="9" label="kAlwaysOnTopWindows"/>
+  <int value="10" label="kAppView"/>
+  <int value="11" label="kAudio"/>
+  <int value="12" label="kAudioCapture"/>
+  <int value="13" label="kAudioModem"/>
+  <int value="14" label="kAutofillPrivate"/>
+  <int value="15" label="kAutomation"/>
+  <int value="16" label="kAutoTestPrivate"/>
+  <int value="17" label="kBackground"/>
+  <int value="18" label="kBluetoothPrivate"/>
+  <int value="19" label="kBookmark"/>
+  <int value="20" label="kBookmarkManagerPrivate"/>
+  <int value="21" label="kBrailleDisplayPrivate"/>
+  <int value="22" label="kBrowser"/>
+  <int value="23" label="kBrowsingData"/>
+  <int value="24" label="kCast"/>
+  <int value="25" label="kCastStreaming"/>
+  <int value="26" label="kChromeosInfoPrivate"/>
+  <int value="27" label="kClipboardRead"/>
+  <int value="28" label="kClipboardWrite"/>
+  <int value="29" label="kCloudPrintPrivate"/>
+  <int value="30" label="kCommandLinePrivate"/>
+  <int value="31" label="kCommandsAccessibility"/>
+  <int value="32" label="kContentSettings"/>
+  <int value="33" label="kContextMenus"/>
+  <int value="34" label="kCookie"/>
+  <int value="35" label="kCopresence"/>
+  <int value="36" label="kCopresencePrivate"/>
+  <int value="37" label="kCryptotokenPrivate"/>
+  <int value="38" label="kDataReductionProxy"/>
+  <int value="39" label="kDiagnostics"/>
+  <int value="40" label="kDial"/>
+  <int value="41" label="kDebugger"/>
+  <int value="42" label="kDeclarative"/>
+  <int value="43" label="kDeclarativeContent"/>
+  <int value="44" label="kDeclarativeWebRequest"/>
+  <int value="45" label="kDesktopCapture"/>
+  <int value="46" label="kDesktopCapturePrivate"/>
+  <int value="47" label="kDeveloperPrivate"/>
+  <int value="48" label="kDevtools"/>
+  <int value="49" label="kDns"/>
+  <int value="50" label="kDocumentScan"/>
+  <int value="51" label="kDownloads"/>
+  <int value="52" label="kDownloadsInternal"/>
+  <int value="53" label="kDownloadsOpen"/>
+  <int value="54" label="kDownloadsShelf"/>
+  <int value="55" label="kEasyUnlockPrivate"/>
+  <int value="56" label="kEchoPrivate"/>
+  <int value="57" label="kEmbeddedExtensionOptions"/>
+  <int value="58" label="kEnterprisePlatformKeys"/>
+  <int value="59" label="kEnterprisePlatformKeysPrivate"/>
+  <int value="60" label="kExperienceSamplingPrivate"/>
+  <int value="61" label="kExperimental"/>
+  <int value="62" label="kExtensionView"/>
+  <int value="63" label="kExternallyConnectableAllUrls"/>
+  <int value="64" label="kFeedbackPrivate"/>
+  <int value="65" label="kFileBrowserHandler"/>
+  <int value="66" label="kFileBrowserHandlerInternal"/>
+  <int value="67" label="kFileManagerPrivate"/>
+  <int value="68" label="kFileSystem"/>
+  <int value="69" label="kFileSystemDirectory"/>
+  <int value="70" label="kFileSystemProvider"/>
+  <int value="71" label="kFileSystemRequestFileSystem"/>
+  <int value="72" label="kFileSystemRetainEntries"/>
+  <int value="73" label="kFileSystemWrite"/>
+  <int value="74" label="kFileSystemWriteDirectory"/>
+  <int value="75" label="kFirstRunPrivate"/>
+  <int value="76" label="kFontSettings"/>
+  <int value="77" label="kFullscreen"/>
+  <int value="78" label="kGcdPrivate"/>
+  <int value="79" label="kGcm"/>
+  <int value="80" label="kGeolocation"/>
+  <int value="81" label="kHid"/>
+  <int value="82" label="kHistory"/>
+  <int value="83" label="kHomepage"/>
+  <int value="84" label="kHotwordPrivate"/>
+  <int value="85" label="kIdentity"/>
+  <int value="86" label="kIdentityEmail"/>
+  <int value="87" label="kIdentityPrivate"/>
+  <int value="88" label="kIdltest"/>
+  <int value="89" label="kIdle"/>
+  <int value="90" label="kImeWindowEnabled"/>
+  <int value="91" label="kInlineInstallPrivate"/>
+  <int value="92" label="kInput"/>
+  <int value="93" label="kInputMethodPrivate"/>
+  <int value="94" label="kInterceptAllKeys"/>
+  <int value="95" label="kLauncherSearchProvider"/>
+  <int value="96" label="kLocation"/>
+  <int value="97" label="kLogPrivate"/>
+  <int value="98" label="kManagement"/>
+  <int value="99" label="kMediaGalleries"/>
+  <int value="100" label="kMediaPlayerPrivate"/>
+  <int value="101" label="kMediaRouterPrivate"/>
+  <int value="102" label="kMetricsPrivate"/>
+  <int value="103" label="kMDns"/>
+  <int value="104" label="kMusicManagerPrivate"/>
+  <int value="105" label="kNativeMessaging"/>
+  <int value="106" label="kNetworkingConfig"/>
+  <int value="107" label="kNetworkingPrivate"/>
+  <int value="108" label="kNotificationProvider"/>
+  <int value="109" label="kNotifications"/>
+  <int value="110" label="kOverrideEscFullscreen"/>
+  <int value="111" label="kPageCapture"/>
+  <int value="112" label="kPointerLock"/>
+  <int value="113" label="kPlatformKeys"/>
+  <int value="114" label="kPlugin"/>
+  <int value="115" label="kPower"/>
+  <int value="116" label="kPreferencesPrivate"/>
+  <int value="117" label="kPrincipalsPrivate"/>
+  <int value="118" label="kPrinterProvider"/>
+  <int value="119" label="kPrivacy"/>
+  <int value="120" label="kProcesses"/>
+  <int value="121" label="kProxy"/>
+  <int value="122" label="kImageWriterPrivate"/>
+  <int value="123" label="kReadingListPrivate"/>
+  <int value="124" label="kRtcPrivate"/>
+  <int value="125" label="kSearchProvider"/>
+  <int value="126" label="kSearchEnginesPrivate"/>
+  <int value="127" label="kSerial"/>
+  <int value="128" label="kSessions"/>
+  <int value="129" label="kSettingsPrivate"/>
+  <int value="130" label="kSignedInDevices"/>
+  <int value="131" label="kSocket"/>
+  <int value="132" label="kStartupPages"/>
+  <int value="133" label="kStorage"/>
+  <int value="134" label="kStreamsPrivate"/>
+  <int value="135" label="kSyncFileSystem"/>
+  <int value="136" label="kSystemPrivate"/>
+  <int value="137" label="kSystemDisplay"/>
+  <int value="138" label="kSystemStorage"/>
+  <int value="139" label="kTab"/>
+  <int value="140" label="kTabCapture"/>
+  <int value="141" label="kTabCaptureForTab"/>
+  <int value="142" label="kTerminalPrivate"/>
+  <int value="143" label="kTopSites"/>
+  <int value="144" label="kTts"/>
+  <int value="145" label="kTtsEngine"/>
+  <int value="146" label="kUnlimitedStorage"/>
+  <int value="147" label="kU2fDevices"/>
+  <int value="148" label="kUsb"/>
+  <int value="149" label="kUsbDevice"/>
+  <int value="150" label="kVideoCapture"/>
+  <int value="151" label="kVirtualKeyboardPrivate"/>
+  <int value="152" label="kVpnProvider"/>
+  <int value="153" label="kWallpaper"/>
+  <int value="154" label="kWallpaperPrivate"/>
+  <int value="155" label="kWebcamPrivate"/>
+  <int value="156" label="kWebConnectable"/>
+  <int value="157" label="kWebNavigation"/>
+  <int value="158" label="kWebRequest"/>
+  <int value="159" label="kWebRequestBlocking"/>
+  <int value="160" label="kWebrtcAudioPrivate"/>
+  <int value="161" label="kWebrtcDesktopCapturePrivate"/>
+  <int value="162" label="kWebrtcLoggingPrivate"/>
+  <int value="163" label="kWebstorePrivate"/>
+  <int value="164" label="kWebstoreWidgetPrivate"/>
+  <int value="165" label="kWebView"/>
+  <int value="166" label="kWindowShape"/>
+  <int value="167" label="kScreenlockPrivate"/>
+  <int value="168" label="kSystemCpu"/>
+  <int value="169" label="kSystemMemory"/>
+  <int value="170" label="kSystemNetwork"/>
+  <int value="171" label="kSystemInfoCpu"/>
+  <int value="172" label="kSystemInfoMemory"/>
+  <int value="173" label="kBluetooth"/>
+  <int value="174" label="kBluetoothDevices"/>
+  <int value="175" label="kFavicon"/>
+  <int value="176" label="kFullAccess"/>
+  <int value="177" label="kHostReadOnly"/>
+  <int value="178" label="kHostReadWrite"/>
+  <int value="179" label="kHostsAll"/>
+  <int value="180" label="kHostsAllReadOnly"/>
+  <int value="181" label="kMediaGalleriesAllGalleriesCopyTo"/>
+  <int value="182" label="kMediaGalleriesAllGalleriesDelete"/>
+  <int value="183" label="kMediaGalleriesAllGalleriesRead"/>
+  <int value="184" label="kNetworkState"/>
+  <int value="185" label="kOverrideBookmarksUI"/>
+  <int value="186" label="kShouldWarnAllHosts"/>
+  <int value="187" label="kSocketAnyHost"/>
+  <int value="188" label="kSocketDomainHosts"/>
+  <int value="189" label="kSocketSpecificHosts"/>
+  <int value="190" label="kUsbDeviceList"/>
+  <int value="191" label="kUsbDeviceUnknownProduct"/>
+  <int value="192" label="kUsbDeviceUnknownVendor"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">

@@ -666,11 +666,10 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
   // and if it is false, this function is called in response to
   // ExtensionInstallPrompt::ConfirmInstall().
   if (!update_from_settings_page_) {
-    std::string histogram_name = user_initiated
-                                     ? "Extensions.Permissions_InstallCancel2"
-                                     : "Extensions.Permissions_InstallAbort2";
+    const char* histogram_name = user_initiated ? "InstallCancel"
+                                                : "InstallAbort";
     ExtensionService::RecordPermissionMessagesHistogram(
-        extension(), histogram_name.c_str());
+        extension(), histogram_name);
 
     NotifyCrxInstallComplete(false);
   }

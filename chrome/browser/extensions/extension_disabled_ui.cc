@@ -128,9 +128,8 @@ void ExtensionDisabledDialogDelegate::InstallUIProceed() {
 }
 
 void ExtensionDisabledDialogDelegate::InstallUIAbort(bool user_initiated) {
-  std::string histogram_name = user_initiated
-                                   ? "Extensions.Permissions_ReEnableCancel2"
-                                   : "Extensions.Permissions_ReEnableAbort2";
+  std::string histogram_name = user_initiated ? "ReEnableCancel"
+                                              : "ReEnableAbort";
   ExtensionService::RecordPermissionMessagesHistogram(
       extension_, histogram_name.c_str());
 

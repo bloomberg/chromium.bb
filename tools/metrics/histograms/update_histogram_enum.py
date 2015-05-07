@@ -89,12 +89,12 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
   doesn't contain any corresponding data will be preserved. |source_enum_path|
   will be used to insert a comment.
   """
-  # Get a dom of <enum name=|name| ...> node in |document|.
+  # Get a dom of <enum name=|histogram_enum_name| ...> node in |document|.
   for enum_node in document.getElementsByTagName('enum'):
     if enum_node.attributes['name'].value == histogram_enum_name:
       break
   else:
-    raise UserError('No {0} enum node found'.format(name))
+    raise UserError('No {0} enum node found'.format(histogram_enum_name))
 
   new_item_nodes = {}
   new_comments = []

@@ -111,9 +111,8 @@ void NavigationObserver::InstallUIAbort(bool user_initiated) {
   in_progress_prompt_navigation_controller_ = NULL;
   extension_install_prompt_.reset();
 
-  std::string histogram_name = user_initiated
-                                   ? "Extensions.Permissions_ReEnableCancel2"
-                                   : "Extensions.Permissions_ReEnableAbort2";
+  std::string histogram_name = user_initiated ? "ReEnableCancel"
+                                              : "ReEnableAbort";
   ExtensionService::RecordPermissionMessagesHistogram(
       extension, histogram_name.c_str());
 }

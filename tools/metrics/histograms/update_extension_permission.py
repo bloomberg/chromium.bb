@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Updates ExtensionPermission2 enum in histograms.xml file with values read
-from permission_message.h.
+"""Updates ExtensionPermission2 and ExtensionPermission3 enums in histograms.xml
+file with values read from permission_message.h and api_permission.h,
+respectively.
 
 If the file was pretty-printed, the updated version is pretty-printed too.
 """
@@ -24,5 +25,13 @@ if __name__ == '__main__':
                                                     'extensions', 'common',
                                                     'permissions',
                                                     'permission_message.h'),
+                      start_marker='^enum ID {',
+                      end_marker='^kEnumBoundary')
+
+  UpdateHistogramEnum(histogram_enum_name='ExtensionPermission3',
+                      source_enum_path=os.path.join('..', '..', '..',
+                                                    'extensions', 'common',
+                                                    'permissions',
+                                                    'api_permission.h'),
                       start_marker='^enum ID {',
                       end_marker='^kEnumBoundary')

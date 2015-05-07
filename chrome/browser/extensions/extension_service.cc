@@ -82,6 +82,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/one_shot_event.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -99,6 +100,7 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DevToolsAgentHost;
+using extensions::APIPermission;
 using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionIdSet;
@@ -109,6 +111,8 @@ using extensions::FeatureSwitch;
 using extensions::InstallVerifier;
 using extensions::ManagementPolicy;
 using extensions::Manifest;
+using extensions::PermissionID;
+using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
 using extensions::PermissionMessageIDs;
 using extensions::PermissionSet;
@@ -742,8 +746,7 @@ bool ExtensionService::UninstallExtension(
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
                             extension->GetType(), 100);
-  RecordPermissionMessagesHistogram(extension.get(),
-                                    "Extensions.Permissions_Uninstall2");
+  RecordPermissionMessagesHistogram(extension.get(), "Uninstall");
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
@@ -992,8 +995,7 @@ void ExtensionService::UnblockAllExtensions() {
 void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension) {
   GrantPermissions(extension);
-  RecordPermissionMessagesHistogram(extension,
-                                    "Extensions.Permissions_ReEnable2");
+  RecordPermissionMessagesHistogram(extension, "ReEnable");
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
 }
@@ -1008,21 +1010,41 @@ void ExtensionService::RecordPermissionMessagesHistogram(
     const Extension* extension, const char* histogram) {
   // Since this is called from multiple sources, and since the histogram macros
   // use statics, we need to manually lookup the histogram ourselves.
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      histogram,
+  base::HistogramBase* legacy_counter = base::LinearHistogram::FactoryGet(
+      base::StringPrintf("Extensions.Permissions_%s2", histogram),
       1,
       PermissionMessage::kEnumBoundary,
       PermissionMessage::kEnumBoundary + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 
-  PermissionMessageIDs permissions =
+  // TODO(treib): Remove the legacy "2" histograms. See crbug.com/484102.
+  PermissionMessageIDs legacy_permissions =
       extension->permissions_data()->GetLegacyPermissionMessageIDs();
-  if (permissions.empty()) {
-    counter->Add(PermissionMessage::kNone);
+  if (legacy_permissions.empty()) {
+    legacy_counter->Add(PermissionMessage::kNone);
   } else {
-    for (PermissionMessage::ID id : permissions)
-      counter->Add(id);
+    for (PermissionMessage::ID id : legacy_permissions)
+      legacy_counter->Add(id);
   }
+
+  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+      base::StringPrintf("Extensions.Permissions_%s3", histogram),
+      1,
+      APIPermission::kEnumBoundary,
+      APIPermission::kEnumBoundary + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+
+  base::HistogramBase* counter_has_any = base::BooleanHistogram::FactoryGet(
+      base::StringPrintf("Extensions.HasPermissions_%s3", histogram),
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+
+  PermissionIDSet permissions =
+      extensions::PermissionMessageProvider::Get()->GetAllPermissionIDs(
+          extension->permissions_data()->active_permissions().get(),
+          extension->GetType());
+  counter_has_any->AddBoolean(!permissions.empty());
+  for (const PermissionID& id : permissions)
+    counter->Add(id.id());
 }
 
 void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
@@ -1661,8 +1683,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   } else if (is_privilege_increase) {
     disable_reasons |= Extension::DISABLE_PERMISSIONS_INCREASE;
     if (!extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
-      RecordPermissionMessagesHistogram(extension,
-                                        "Extensions.Permissions_AutoDisable2");
+      RecordPermissionMessagesHistogram(extension, "AutoDisable");
     }
     extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
@@ -1785,8 +1806,7 @@ void ExtensionService::OnExtensionInstalled(
                               extension->GetType(), 100);
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
                               extension->location(), Manifest::NUM_LOCATIONS);
-    RecordPermissionMessagesHistogram(extension,
-                                      "Extensions.Permissions_Install2");
+    RecordPermissionMessagesHistogram(extension, "Install");
   } else {
     UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateType",
                               extension->GetType(), 100);

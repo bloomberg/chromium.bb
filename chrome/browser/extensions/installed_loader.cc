@@ -498,8 +498,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
 
     RecordCreationFlags(extension);
 
-    ExtensionService::RecordPermissionMessagesHistogram(
-        extension, "Extensions.Permissions_Load2");
+    ExtensionService::RecordPermissionMessagesHistogram(extension, "Load");
 
     // For incognito and file access, skip anything that doesn't appear in
     // settings. Also, policy-installed (and unpacked of course, checked above)

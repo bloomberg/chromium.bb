@@ -427,7 +427,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceedHook() {
   // for all extension installs, so we only need to record the web store
   // specific histogram here.
   ExtensionService::RecordPermissionMessagesHistogram(
-      dummy_extension().get(), "Extensions.Permissions_WebStoreInstall2");
+      dummy_extension().get(), "WebStoreInstall");
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbortHook(
@@ -435,14 +435,12 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbortHook(
   // The web store install histograms are a subset of the install histograms.
   // We need to record both histograms here since CrxInstaller::InstallUIAbort
   // is never called for web store install cancellations.
-  std::string histogram_name =
-      user_initiated ? "Extensions.Permissions_WebStoreInstallCancel2"
-                     : "Extensions.Permissions_WebStoreInstallAbort2";
+  std::string histogram_name = user_initiated ? "WebStoreInstallCancel"
+                                              : "WebStoreInstallAbort";
   ExtensionService::RecordPermissionMessagesHistogram(dummy_extension().get(),
                                                       histogram_name.c_str());
 
-  histogram_name = user_initiated ? "Extensions.Permissions_InstallCancel2"
-                                  : "Extensions.Permissions_InstallAbort2";
+  histogram_name = user_initiated ? "InstallCancel" : "InstallAbort";
   ExtensionService::RecordPermissionMessagesHistogram(dummy_extension().get(),
                                                       histogram_name.c_str());
 }
