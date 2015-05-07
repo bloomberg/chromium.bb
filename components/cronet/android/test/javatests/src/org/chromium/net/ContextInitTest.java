@@ -24,7 +24,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitFactoryAndStartRequest() {
-        CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
+        CronetTestActivity activity = skipFactoryInitInOnCreate();
 
         // Immediately make a request after initializing the factory.
         HttpUrlRequestFactory factory = activity.initRequestFactory();
@@ -36,7 +36,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitFactoryStartRequestAndCancel() {
-        CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
+        CronetTestActivity activity = skipFactoryInitInOnCreate();
 
         // Make a request and cancel it after initializing the factory.
         HttpUrlRequestFactory factory = activity.initRequestFactory();
@@ -53,7 +53,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitFactoryStartTwoRequests() throws Exception {
-        CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
+        CronetTestActivity activity = skipFactoryInitInOnCreate();
 
         // Make two request right after initializing the factory.
         int[] statusCodes = {0, 0};
@@ -90,7 +90,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoFactoriesSimultaneously() throws Exception {
-        final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
+        final CronetTestActivity activity = skipFactoryInitInOnCreate();
 
         RequestThread thread1 = new RequestThread(activity, URL);
         RequestThread thread2 = new RequestThread(activity, URL_404);
@@ -106,7 +106,7 @@ public class ContextInitTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoFactoriesInSequence() throws Exception {
-        final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
+        final CronetTestActivity activity = skipFactoryInitInOnCreate();
 
         RequestThread thread1 = new RequestThread(activity, URL);
         RequestThread thread2 = new RequestThread(activity, URL_404);

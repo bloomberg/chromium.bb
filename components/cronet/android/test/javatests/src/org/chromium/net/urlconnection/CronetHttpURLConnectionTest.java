@@ -13,6 +13,7 @@ import org.chromium.net.CronetTestActivity;
 import org.chromium.net.CronetTestBase;
 import org.chromium.net.MockUrlRequestJobFactory;
 import org.chromium.net.NativeTestServer;
+import org.chromium.net.UrlRequestContextConfig;
 import org.chromium.net.UrlRequestException;
 
 import java.io.ByteArrayOutputStream;
@@ -44,11 +45,14 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        UrlRequestContextConfig config = new UrlRequestContextConfig();
+        config.setStoragePath(prepareTestStorage());
+        config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK,
+                1000 * 1024);
         String[] commandLineArgs = {
-                CronetTestActivity.CACHE_KEY, CronetTestActivity.CACHE_DISK,
-                CronetTestActivity.LIBRARY_INIT_KEY, CronetTestActivity.LIBRARY_INIT_WRAPPER,
-        };
-        launchCronetTestAppWithUrlAndCommandLineArgs(null, commandLineArgs);
+                CronetTestActivity.CONFIG_KEY, config.toString()};
+        launchCronetTestAppWithUrlAndCommandLineArgs(null,
+                commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
     }
