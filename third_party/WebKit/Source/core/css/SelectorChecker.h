@@ -106,11 +106,11 @@ public:
 private:
     Match matchForSubSelector(const SelectorCheckingContext&, MatchResult*) const;
     Match matchForRelation(const SelectorCheckingContext&, MatchResult*) const;
-    Match matchForShadowDistributed(const Element*, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
-    Match matchForPseudoShadow(const ContainerNode*, const SelectorCheckingContext&, MatchResult*) const;
+    Match matchForShadowDistributed(SelectorCheckingContext& nextContext, const Element*, MatchResult* = 0) const;
+    Match matchForPseudoShadow(const SelectorCheckingContext&, const ContainerNode*, MatchResult*) const;
     bool checkPseudoClass(const SelectorCheckingContext&, unsigned* specificity) const;
     bool checkPseudoElement(const SelectorCheckingContext&) const;
-    bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector&) const;
+    bool checkScrollbarPseudoClass(const SelectorCheckingContext&) const;
     bool checkPseudoHost(const SelectorCheckingContext&, unsigned*) const;
 
     Mode m_mode;

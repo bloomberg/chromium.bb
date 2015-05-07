@@ -282,7 +282,7 @@ static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(
     return toElement(parent);
 }
 
-SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const ContainerNode* node, const SelectorCheckingContext& context, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheckingContext& context, const ContainerNode* node, MatchResult* result) const
 {
     if (!isOpenShadowRoot(node))
         return SelectorFailsCompletely;
@@ -306,7 +306,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::Descendant:
         if (context.selector->relationIsAffectedByPseudoContent()) {
             for (Element* element = context.element; element; element = element->parentElement()) {
-                if (matchForShadowDistributed(element, nextContext, result) == SelectorMatches)
+                if (matchForShadowDistributed(nextContext, element, result) == SelectorMatches)
                     return SelectorMatches;
             }
             return SelectorFailsCompletely;
@@ -315,7 +315,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.elementStyle = 0;
 
         if (selectorMatchesShadowRoot(nextContext.selector))
-            return matchForPseudoShadow(context.element->containingShadowRoot(), nextContext, result);
+            return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
 
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
             Match match = this->match(nextContext, result);
@@ -328,13 +328,13 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::Child:
         {
             if (context.selector->relationIsAffectedByPseudoContent())
-                return matchForShadowDistributed(context.element, nextContext, result);
+                return matchForShadowDistributed(nextContext, context.element, result);
 
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
 
             if (selectorMatchesShadowRoot(nextContext.selector))
-                return matchForPseudoShadow(context.element->parentNode(), nextContext, result);
+                return matchForPseudoShadow(nextContext, context.element->parentNode(), result);
 
             nextContext.element = parentElement(context);
             if (!nextContext.element)
@@ -395,7 +395,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         {
             if (context.selector->relationIsAffectedByPseudoContent()) {
                 for (Element* element = context.element; element; element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*element)) {
-                    if (matchForShadowDistributed(element, nextContext, result) == SelectorMatches)
+                    if (matchForShadowDistributed(nextContext, element, result) == SelectorMatches)
                         return SelectorMatches;
                 }
                 return SelectorFailsCompletely;
@@ -421,7 +421,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     return SelectorFailsCompletely;
 }
 
-SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element* element, SelectorCheckingContext& nextContext, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForShadowDistributed(SelectorCheckingContext& nextContext, const Element* element, MatchResult* result) const
 {
     ASSERT(element);
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
@@ -639,7 +639,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
     if (context.hasScrollbarPseudo) {
         // CSS scrollbars match a specific subset of pseudo classes, and they have specialized rules for each
         // (since there are no elements involved).
-        return checkScrollbarPseudoClass(context, &element.document(), selector);
+        return checkScrollbarPseudoClass(context);
     }
 
     if (context.hasSelectionPseudo) {
@@ -1049,15 +1049,16 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, un
     return false;
 }
 
-bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& context, Document* document, const CSSSelector& selector) const
+bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& context) const
 {
+    const CSSSelector& selector = *context.selector;
     LayoutScrollbar* scrollbar = context.scrollbar;
     ScrollbarPart part = context.scrollbarPart;
 
     // FIXME: This is a temporary hack for resizers and scrollbar corners. Eventually :window-inactive should become a real
     // pseudo class and just apply to everything.
     if (selector.pseudoType() == CSSSelector::PseudoWindowInactive)
-        return !document->page()->focusController().isActive();
+        return !context.element->document().page()->focusController().isActive();
 
     if (!scrollbar)
         return false;
