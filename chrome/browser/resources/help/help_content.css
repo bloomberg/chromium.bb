@@ -62,41 +62,33 @@
   margin-top: 30px;
 }
 
-.help-page-icon,
-.help-page-icon-large {
+.help-page-icon {
+  background-position: center;
   background-repeat: no-repeat;
   display: inline-block;
-  margin-right: 4px;
-  vertical-align: top;
-}
-
-.help-page-icon {
-  height: 17px;
-  width: 17px;
-}
-
-.help-page-icon-large {
-  height: 22px;
-  width: 22px;
+  height: 18px;
+  vertical-align: middle;
+  width: 18px;
 }
 
 #update-status-icon.up-to-date {
-  background-image: url(chrome://theme/IDR_UPDATE_UPTODATE);
-  background-size: 17px;
+  background-image: url(chrome://theme/IDR_CHECKMARK);
+  background-size: 18px;
 }
 
 #update-status-icon.working {
   background-image: url(chrome://resources/images/throbber.svg);
+  background-size: 16px;
 }
 
 #update-status-icon.failed {
-  background-image: url(chrome://theme/IDR_UPDATE_FAILED);
-  background-size: 17px;
+  background-image: url(chrome://theme/IDR_ERROR);
+  background-size: 18px;
 }
 
 #update-status-message-container {
   display: inline-block;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 #more-info-expander {
@@ -126,21 +118,18 @@
   margin-top: 8px;
 }
 
-#channel-change-disallowed-icon {
+#channel-change-disallowed-icon,
+.channel-change-error-icon {
   -webkit-margin-start: 4px;
   background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
-  background-size: 17px;
-  vertical-align: middle;
+  background-size: 16px;
 }
 
 .channel-change-error-bubble {
   display: flex;
 }
 
-.channel-change-error-icon {
-  -webkit-margin-start: 4px;
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
-  background-size: 22px;
+.channel-change-error-bubble .channel-change-error-icon {
   vertical-align: top;
 }
 
