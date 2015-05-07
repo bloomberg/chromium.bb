@@ -20,7 +20,7 @@ TEST(ValuesTest, Basic) {
   ASSERT_EQ(std::string("http://google.com"), homepage);
 
   ASSERT_FALSE(settings.Get("global", NULL));
-  settings.Set("global", new FundamentalValue(true));
+  settings.SetBoolean("global", true);
   ASSERT_TRUE(settings.Get("global", NULL));
   settings.SetString("global.homepage", "http://scurvy.com");
   ASSERT_TRUE(settings.Get("global", NULL));
@@ -34,7 +34,7 @@ TEST(ValuesTest, Basic) {
     settings.GetList("global.toolbar.bookmarks", &toolbar_bookmarks));
 
   toolbar_bookmarks = new ListValue;
-  settings.Set("global.toolbar.bookmarks", toolbar_bookmarks);
+  settings.Set("global.toolbar.bookmarks", make_scoped_ptr(toolbar_bookmarks));
   ASSERT_TRUE(settings.GetList("global.toolbar.bookmarks", &toolbar_bookmarks));
 
   DictionaryValue* new_bookmark = new DictionaryValue;
@@ -57,10 +57,10 @@ TEST(ValuesTest, Basic) {
 
 TEST(ValuesTest, List) {
   scoped_ptr<ListValue> mixed_list(new ListValue());
-  mixed_list->Set(0, new FundamentalValue(true));
-  mixed_list->Set(1, new FundamentalValue(42));
-  mixed_list->Set(2, new FundamentalValue(88.8));
-  mixed_list->Set(3, new StringValue("foo"));
+  mixed_list->Set(0, make_scoped_ptr(new FundamentalValue(true)));
+  mixed_list->Set(1, make_scoped_ptr(new FundamentalValue(42)));
+  mixed_list->Set(2, make_scoped_ptr(new FundamentalValue(88.8)));
+  mixed_list->Set(3, make_scoped_ptr(new StringValue("foo")));
   ASSERT_EQ(4u, mixed_list->GetSize());
 
   Value *value = NULL;
@@ -264,14 +264,14 @@ TEST(ValuesTest, DictionaryDeletion) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, new DeletionTestValue(&deletion_flag));
+    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
   }
   EXPECT_TRUE(deletion_flag);
 
   {
     DictionaryValue dict;
-    dict.Set(key, new DeletionTestValue(&deletion_flag));
+    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     dict.Clear();
     EXPECT_TRUE(deletion_flag);
@@ -279,7 +279,7 @@ TEST(ValuesTest, DictionaryDeletion) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, new DeletionTestValue(&deletion_flag));
+    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     dict.Set(key, Value::CreateNullValue());
     EXPECT_TRUE(deletion_flag);
@@ -293,7 +293,7 @@ TEST(ValuesTest, DictionaryRemoval) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, new DeletionTestValue(&deletion_flag));
+    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(dict.HasKey(key));
     EXPECT_FALSE(dict.Remove("absent key", &removed_item));
@@ -307,7 +307,7 @@ TEST(ValuesTest, DictionaryRemoval) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, new DeletionTestValue(&deletion_flag));
+    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(dict.HasKey(key));
     EXPECT_TRUE(dict.Remove(key, NULL));
@@ -419,7 +419,7 @@ TEST(ValuesTest, DeepCopy) {
   original_nested_dictionary->SetString("key", "value");
   original_dict.Set("dictionary", make_scoped_ptr(original_nested_dictionary));
 
-  scoped_ptr<DictionaryValue> copy_dict(original_dict.DeepCopy());
+  scoped_ptr<DictionaryValue> copy_dict = original_dict.CreateDeepCopy();
   ASSERT_TRUE(copy_dict.get());
   ASSERT_NE(copy_dict.get(), &original_dict);
 
@@ -548,8 +548,7 @@ TEST(ValuesTest, Equals) {
   dv.SetString("d2", ASCIIToUTF16("http://google.com"));
   dv.Set("e", make_scoped_ptr(Value::CreateNullValue()));
 
-  scoped_ptr<DictionaryValue> copy;
-  copy.reset(dv.DeepCopy());
+  scoped_ptr<DictionaryValue> copy = dv.CreateDeepCopy();
   EXPECT_TRUE(dv.Equals(copy.get()));
 
   ListValue* list = new ListValue;
@@ -558,14 +557,14 @@ TEST(ValuesTest, Equals) {
   dv.Set("f", make_scoped_ptr(list));
 
   EXPECT_FALSE(dv.Equals(copy.get()));
-  copy->Set("f", list->DeepCopy());
+  copy->Set("f", list->CreateDeepCopy());
   EXPECT_TRUE(dv.Equals(copy.get()));
 
   list->Append(new FundamentalValue(true));
   EXPECT_FALSE(dv.Equals(copy.get()));
 
   // Check if Equals detects differences in only the keys.
-  copy.reset(dv.DeepCopy());
+  copy = dv.CreateDeepCopy();
   EXPECT_TRUE(dv.Equals(copy.get()));
   copy->Remove("a", NULL);
   copy->SetBoolean("aa", false);
@@ -598,29 +597,29 @@ TEST(ValuesTest, StaticEquals) {
 TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   DictionaryValue original_dict;
   Value* original_null = Value::CreateNullValue();
-  original_dict.Set("null", original_null);
+  original_dict.Set("null", make_scoped_ptr(original_null));
   FundamentalValue* original_bool = new FundamentalValue(true);
-  original_dict.Set("bool", original_bool);
+  original_dict.Set("bool", make_scoped_ptr(original_bool));
   FundamentalValue* original_int = new FundamentalValue(42);
-  original_dict.Set("int", original_int);
+  original_dict.Set("int", make_scoped_ptr(original_int));
   FundamentalValue* original_double = new FundamentalValue(3.14);
-  original_dict.Set("double", original_double);
+  original_dict.Set("double", make_scoped_ptr(original_double));
   StringValue* original_string = new StringValue("hello");
-  original_dict.Set("string", original_string);
+  original_dict.Set("string", make_scoped_ptr(original_string));
   StringValue* original_string16 = new StringValue(ASCIIToUTF16("hello16"));
-  original_dict.Set("string16", original_string16);
+  original_dict.Set("string16", make_scoped_ptr(original_string16));
 
   scoped_ptr<char[]> original_buffer(new char[42]);
   memset(original_buffer.get(), '!', 42);
   BinaryValue* original_binary = new BinaryValue(original_buffer.Pass(), 42);
-  original_dict.Set("binary", original_binary);
+  original_dict.Set("binary", make_scoped_ptr(original_binary));
 
   ListValue* original_list = new ListValue();
   FundamentalValue* original_list_element_0 = new FundamentalValue(0);
   original_list->Append(original_list_element_0);
   FundamentalValue* original_list_element_1 = new FundamentalValue(1);
   original_list->Append(original_list_element_1);
-  original_dict.Set("list", original_list);
+  original_dict.Set("list", make_scoped_ptr(original_list));
 
   Value* original_dict_value = &original_dict;
   Value* original_bool_value = original_bool;
@@ -631,14 +630,15 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   Value* original_binary_value = original_binary;
   Value* original_list_value = original_list;
 
-  scoped_ptr<Value> copy_dict_value(original_dict_value->DeepCopy());
-  scoped_ptr<Value> copy_bool_value(original_bool_value->DeepCopy());
-  scoped_ptr<Value> copy_int_value(original_int_value->DeepCopy());
-  scoped_ptr<Value> copy_double_value(original_double_value->DeepCopy());
-  scoped_ptr<Value> copy_string_value(original_string_value->DeepCopy());
-  scoped_ptr<Value> copy_string16_value(original_string16_value->DeepCopy());
-  scoped_ptr<Value> copy_binary_value(original_binary_value->DeepCopy());
-  scoped_ptr<Value> copy_list_value(original_list_value->DeepCopy());
+  scoped_ptr<Value> copy_dict_value = original_dict_value->CreateDeepCopy();
+  scoped_ptr<Value> copy_bool_value = original_bool_value->CreateDeepCopy();
+  scoped_ptr<Value> copy_int_value = original_int_value->CreateDeepCopy();
+  scoped_ptr<Value> copy_double_value = original_double_value->CreateDeepCopy();
+  scoped_ptr<Value> copy_string_value = original_string_value->CreateDeepCopy();
+  scoped_ptr<Value> copy_string16_value =
+      original_string16_value->CreateDeepCopy();
+  scoped_ptr<Value> copy_binary_value = original_binary_value->CreateDeepCopy();
+  scoped_ptr<Value> copy_list_value = original_list_value->CreateDeepCopy();
 
   EXPECT_TRUE(original_dict_value->Equals(copy_dict_value.get()));
   EXPECT_TRUE(original_bool_value->Equals(copy_bool_value.get()));
@@ -679,50 +679,52 @@ TEST(ValuesTest, RemoveEmptyChildren) {
     EXPECT_EQ(2U, root->size());
   }
   {
-    DictionaryValue* inner = new DictionaryValue;
-    root->Set("dict_with_emtpy_children", inner);
+    scoped_ptr<DictionaryValue> inner(new DictionaryValue);
     inner->Set("empty_dict", new DictionaryValue);
     inner->Set("empty_list", new ListValue);
+    root->Set("dict_with_empty_children", inner.Pass());
     root.reset(root->DeepCopyWithoutEmptyChildren());
     EXPECT_EQ(2U, root->size());
   }
   {
-    ListValue* inner = new ListValue;
-    root->Set("list_with_empty_children", inner);
-    inner->Append(new DictionaryValue);
-    inner->Append(new ListValue);
+    scoped_ptr<ListValue> inner(new ListValue);
+    inner->Append(make_scoped_ptr(new DictionaryValue));
+    inner->Append(make_scoped_ptr(new ListValue));
+    root->Set("list_with_empty_children", inner.Pass());
     root.reset(root->DeepCopyWithoutEmptyChildren());
     EXPECT_EQ(2U, root->size());
   }
 
   // Nested with siblings.
   {
-    ListValue* inner = new ListValue;
-    root->Set("list_with_empty_children", inner);
-    inner->Append(new DictionaryValue);
-    inner->Append(new ListValue);
-    DictionaryValue* inner2 = new DictionaryValue;
-    root->Set("dict_with_empty_children", inner2);
-    inner2->Set("empty_dict", new DictionaryValue);
-    inner2->Set("empty_list", new ListValue);
+    scoped_ptr<ListValue> inner(new ListValue());
+    inner->Append(make_scoped_ptr(new DictionaryValue));
+    inner->Append(make_scoped_ptr(new ListValue));
+    root->Set("list_with_empty_children", inner.Pass());
+    scoped_ptr<DictionaryValue> inner2(new DictionaryValue);
+    inner2->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
+    inner2->Set("empty_list", make_scoped_ptr(new ListValue));
+    root->Set("dict_with_empty_children", inner2.Pass());
     root.reset(root->DeepCopyWithoutEmptyChildren());
     EXPECT_EQ(2U, root->size());
   }
 
   // Make sure nested values don't get pruned.
   {
-    ListValue* inner = new ListValue;
-    root->Set("list_with_empty_children", inner);
-    ListValue* inner2 = new ListValue;
-    inner->Append(new DictionaryValue);
-    inner->Append(inner2);
+    scoped_ptr<ListValue> inner(new ListValue);
+    scoped_ptr<ListValue> inner2(new ListValue);
     inner2->Append(new StringValue("hello"));
+    inner->Append(make_scoped_ptr(new DictionaryValue));
+    inner->Append(inner2.Pass());
+    root->Set("list_with_empty_children", inner.Pass());
     root.reset(root->DeepCopyWithoutEmptyChildren());
     EXPECT_EQ(3U, root->size());
-    EXPECT_TRUE(root->GetList("list_with_empty_children", &inner));
-    EXPECT_EQ(1U, inner->GetSize());  // Dictionary was pruned.
-    EXPECT_TRUE(inner->GetList(0, &inner2));
-    EXPECT_EQ(1U, inner2->GetSize());
+
+    ListValue* inner_value, *inner_value2;
+    EXPECT_TRUE(root->GetList("list_with_empty_children", &inner_value));
+    EXPECT_EQ(1U, inner_value->GetSize());  // Dictionary was pruned.
+    EXPECT_TRUE(inner_value->GetList(0, &inner_value2));
+    EXPECT_EQ(1U, inner_value2->GetSize());
   }
 }
 
@@ -809,7 +811,7 @@ TEST(ValuesTest, DictionaryIterator) {
   }
 
   StringValue value1("value1");
-  dict.Set("key1", value1.DeepCopy());
+  dict.Set("key1", value1.CreateDeepCopy());
   bool seen1 = false;
   for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     EXPECT_FALSE(seen1);
@@ -820,7 +822,7 @@ TEST(ValuesTest, DictionaryIterator) {
   EXPECT_TRUE(seen1);
 
   StringValue value2("value2");
-  dict.Set("key2", value2.DeepCopy());
+  dict.Set("key2", value2.CreateDeepCopy());
   bool seen2 = seen1 = false;
   for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     if (it.key() == "key1") {
@@ -853,21 +855,21 @@ TEST(ValuesTest, GetWithNullOutValue) {
   DictionaryValue dict_value;
   ListValue list_value;
 
-  main_dict.Set("bool", bool_value.DeepCopy());
-  main_dict.Set("int", int_value.DeepCopy());
-  main_dict.Set("double", double_value.DeepCopy());
-  main_dict.Set("string", string_value.DeepCopy());
-  main_dict.Set("binary", binary_value.DeepCopy());
-  main_dict.Set("dict", dict_value.DeepCopy());
-  main_dict.Set("list", list_value.DeepCopy());
+  main_dict.Set("bool", bool_value.CreateDeepCopy());
+  main_dict.Set("int", int_value.CreateDeepCopy());
+  main_dict.Set("double", double_value.CreateDeepCopy());
+  main_dict.Set("string", string_value.CreateDeepCopy());
+  main_dict.Set("binary", binary_value.CreateDeepCopy());
+  main_dict.Set("dict", dict_value.CreateDeepCopy());
+  main_dict.Set("list", list_value.CreateDeepCopy());
 
-  main_list.Append(bool_value.DeepCopy());
-  main_list.Append(int_value.DeepCopy());
-  main_list.Append(double_value.DeepCopy());
-  main_list.Append(string_value.DeepCopy());
-  main_list.Append(binary_value.DeepCopy());
-  main_list.Append(dict_value.DeepCopy());
-  main_list.Append(list_value.DeepCopy());
+  main_list.Append(bool_value.CreateDeepCopy());
+  main_list.Append(int_value.CreateDeepCopy());
+  main_list.Append(double_value.CreateDeepCopy());
+  main_list.Append(string_value.CreateDeepCopy());
+  main_list.Append(binary_value.CreateDeepCopy());
+  main_list.Append(dict_value.CreateDeepCopy());
+  main_list.Append(list_value.CreateDeepCopy());
 
   EXPECT_TRUE(main_dict.Get("bool", NULL));
   EXPECT_TRUE(main_dict.Get("int", NULL));

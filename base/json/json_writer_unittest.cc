@@ -73,14 +73,13 @@ TEST(JSONWriterTest, NestedTypes) {
   // Writer unittests like empty list/dict nesting,
   // list list nesting, etc.
   DictionaryValue root_dict;
-  ListValue* list = new ListValue;
-  root_dict.Set("list", list);
-  DictionaryValue* inner_dict = new DictionaryValue;
-  list->Append(inner_dict);
+  scoped_ptr<ListValue> list(new ListValue());
+  scoped_ptr<DictionaryValue> inner_dict(new DictionaryValue());
   inner_dict->SetInteger("inner int", 10);
-  ListValue* inner_list = new ListValue;
-  list->Append(inner_list);
-  list->Append(new FundamentalValue(true));
+  list->Append(inner_dict.Pass());
+  list->Append(make_scoped_ptr(new ListValue()));
+  list->AppendBoolean(true);
+  root_dict.Set("list", list.Pass());
 
   // Test the pretty-printer.
   EXPECT_TRUE(JSONWriter::Write(&root_dict, &output_js));
@@ -109,17 +108,17 @@ TEST(JSONWriterTest, KeysWithPeriods) {
   std::string output_js;
 
   DictionaryValue period_dict;
-  period_dict.SetWithoutPathExpansion("a.b", new FundamentalValue(3));
-  period_dict.SetWithoutPathExpansion("c", new FundamentalValue(2));
-  DictionaryValue* period_dict2 = new DictionaryValue;
-  period_dict2->SetWithoutPathExpansion("g.h.i.j", new FundamentalValue(1));
-  period_dict.SetWithoutPathExpansion("d.e.f", period_dict2);
+  period_dict.SetIntegerWithoutPathExpansion("a.b", 3);
+  period_dict.SetIntegerWithoutPathExpansion("c", 2);
+  scoped_ptr<DictionaryValue> period_dict2(new DictionaryValue());
+  period_dict2->SetIntegerWithoutPathExpansion("g.h.i.j", 1);
+  period_dict.SetWithoutPathExpansion("d.e.f", period_dict2.Pass());
   EXPECT_TRUE(JSONWriter::Write(&period_dict, &output_js));
   EXPECT_EQ("{\"a.b\":3,\"c\":2,\"d.e.f\":{\"g.h.i.j\":1}}", output_js);
 
   DictionaryValue period_dict3;
-  period_dict3.Set("a.b", new FundamentalValue(2));
-  period_dict3.SetWithoutPathExpansion("a.b", new FundamentalValue(1));
+  period_dict3.SetInteger("a.b", 2);
+  period_dict3.SetIntegerWithoutPathExpansion("a.b", 1);
   EXPECT_TRUE(JSONWriter::Write(&period_dict3, &output_js));
   EXPECT_EQ("{\"a\":{\"b\":2},\"a.b\":1}", output_js);
 }
@@ -148,11 +147,14 @@ TEST(JSONWriterTest, BinaryValues) {
   EXPECT_EQ("[5,2]", output_js);
 
   DictionaryValue binary_dict;
-  binary_dict.Set("a", BinaryValue::CreateWithCopiedBuffer("asdf", 4));
-  binary_dict.Set("b", new FundamentalValue(5));
-  binary_dict.Set("c", BinaryValue::CreateWithCopiedBuffer("asdf", 4));
-  binary_dict.Set("d", new FundamentalValue(2));
-  binary_dict.Set("e", BinaryValue::CreateWithCopiedBuffer("asdf", 4));
+  binary_dict.Set(
+      "a", make_scoped_ptr(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+  binary_dict.SetInteger("b", 5);
+  binary_dict.Set(
+      "c", make_scoped_ptr(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+  binary_dict.SetInteger("d", 2);
+  binary_dict.Set(
+      "e", make_scoped_ptr(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
   EXPECT_FALSE(JSONWriter::Write(&binary_dict, &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
       &binary_dict, JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &output_js));

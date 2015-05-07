@@ -34,19 +34,19 @@ void TracedValue::SetString(const char* name, const std::string& value) {
   GetCurrentDictionary()->SetString(name, value);
 }
 
-void TracedValue::SetValue(const char* name, Value* value) {
-  GetCurrentDictionary()->Set(name, value);
+void TracedValue::SetValue(const char* name, scoped_ptr<Value> value) {
+  GetCurrentDictionary()->Set(name, value.Pass());
 }
 
 void TracedValue::BeginDictionary(const char* name) {
   DictionaryValue* dictionary = new DictionaryValue();
-  GetCurrentDictionary()->Set(name, dictionary);
+  GetCurrentDictionary()->Set(name, make_scoped_ptr(dictionary));
   stack_.push_back(dictionary);
 }
 
 void TracedValue::BeginArray(const char* name) {
   ListValue* array = new ListValue();
-  GetCurrentDictionary()->Set(name, array);
+  GetCurrentDictionary()->Set(name, make_scoped_ptr(array));
   stack_.push_back(array);
 }
 

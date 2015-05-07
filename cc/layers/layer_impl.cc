@@ -1566,7 +1566,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
       DCHECK(converted_to_dictionary);
       for (base::DictionaryValue::Iterator it(*dictionary_value); !it.IsAtEnd();
            it.Advance()) {
-        state->SetValue(it.key().data(), it.value().DeepCopy());
+        state->SetValue(it.key().data(), it.value().CreateDeepCopy());
       }
     } else {
       NOTREACHED();

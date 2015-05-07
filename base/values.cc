@@ -140,6 +140,10 @@ Value* Value::DeepCopy() const {
   return CreateNullValue();
 }
 
+scoped_ptr<Value> Value::CreateDeepCopy() const {
+  return make_scoped_ptr(DeepCopy());
+}
+
 bool Value::Equals(const Value* other) const {
   // This method should only be getting called for null Values--all subclasses
   // need to provide their own implementation;.
@@ -829,6 +833,10 @@ DictionaryValue* DictionaryValue::DeepCopy() const {
   return result;
 }
 
+scoped_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
+  return make_scoped_ptr(DeepCopy());
+}
+
 bool DictionaryValue::Equals(const Value* other) const {
   if (other->GetType() != GetType())
     return false;
@@ -881,6 +889,10 @@ bool ListValue::Set(size_t index, Value* in_value) {
     list_[index] = in_value;
   }
   return true;
+}
+
+bool ListValue::Set(size_t index, scoped_ptr<Value> in_value) {
+  return Set(index, in_value.release());
 }
 
 bool ListValue::Get(size_t index, const Value** out_value) const {
@@ -1030,6 +1042,10 @@ ListValue::iterator ListValue::Erase(iterator iter,
     delete *iter;
 
   return list_.erase(iter);
+}
+
+void ListValue::Append(scoped_ptr<Value> in_value) {
+  Append(in_value.release());
 }
 
 void ListValue::Append(Value* in_value) {

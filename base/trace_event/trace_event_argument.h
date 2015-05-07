@@ -29,7 +29,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   void SetDouble(const char* name, double);
   void SetBoolean(const char* name, bool value);
   void SetString(const char* name, const std::string& value);
-  void SetValue(const char* name, Value* value);
+  void SetValue(const char* name, scoped_ptr<Value> value);
   void BeginDictionary(const char* name);
   void BeginArray(const char* name);
 
@@ -49,7 +49,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   ListValue* GetCurrentArray();
 
   scoped_ptr<base::Value> root_;
-  std::vector<Value*> stack_;
+  std::vector<Value*> stack_;  // Weak references.
   DISALLOW_COPY_AND_ASSIGN(TracedValue);
 };
 

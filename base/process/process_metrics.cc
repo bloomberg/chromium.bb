@@ -33,11 +33,11 @@ scoped_ptr<Value> SystemMetrics::ToValue() const {
 
   res->SetInteger("committed_memory", static_cast<int>(committed_memory_));
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  res->Set("meminfo", memory_info_.ToValue().release());
-  res->Set("diskinfo", disk_info_.ToValue().release());
+  res->Set("meminfo", memory_info_.ToValue());
+  res->Set("diskinfo", disk_info_.ToValue());
 #endif
 #if defined(OS_CHROMEOS)
-  res->Set("swapinfo", swap_info_.ToValue().release());
+  res->Set("swapinfo", swap_info_.ToValue());
 #endif
 
   return res.Pass();

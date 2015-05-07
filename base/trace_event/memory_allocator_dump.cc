@@ -109,7 +109,7 @@ void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
   value->BeginDictionary("attrs");
 
   for (DictionaryValue::Iterator it(attributes_); !it.IsAtEnd(); it.Advance())
-    value->SetValue(it.key().c_str(), it.value().DeepCopy());
+    value->SetValue(it.key().c_str(), it.value().CreateDeepCopy());
 
   value->EndDictionary();  // "attrs": { ... }
   value->EndDictionary();  // "allocator_name/heap_subheap": { ... }

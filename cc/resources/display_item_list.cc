@@ -158,8 +158,7 @@ DisplayItemList::AsValue() const {
     item->AsValueInto(state.get());
   }
   state->EndArray();
-  state->SetValue("params.layer_rect",
-                  MathUtil::AsValue(layer_rect_).release());
+  state->SetValue("params.layer_rect", MathUtil::AsValue(layer_rect_));
 
   SkPictureRecorder recorder;
   SkCanvas* canvas =

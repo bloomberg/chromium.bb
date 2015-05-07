@@ -239,52 +239,39 @@ void TestResultsTracker::AddGlobalTag(const std::string& tag) {
 bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
   scoped_ptr<DictionaryValue> summary_root(new DictionaryValue);
 
-  ListValue* global_tags = new ListValue;
-  summary_root->Set("global_tags", global_tags);
-
-  for (std::set<std::string>::const_iterator i = global_tags_.begin();
-       i != global_tags_.end();
-       ++i) {
-    global_tags->AppendString(*i);
+  scoped_ptr<ListValue> global_tags(new ListValue);
+  for (const auto& global_tag : global_tags_) {
+    global_tags->AppendString(global_tag);
   }
+  summary_root->Set("global_tags", global_tags.Pass());
 
-  ListValue* all_tests = new ListValue;
-  summary_root->Set("all_tests", all_tests);
-
-  for (std::set<std::string>::const_iterator i = all_tests_.begin();
-       i != all_tests_.end();
-       ++i) {
-    all_tests->AppendString(*i);
+  scoped_ptr<ListValue> all_tests(new ListValue);
+  for (const auto& test : all_tests_) {
+    all_tests->AppendString(test);
   }
+  summary_root->Set("all_tests", all_tests.Pass());
 
-  ListValue* disabled_tests = new ListValue;
-  summary_root->Set("disabled_tests", disabled_tests);
-
-  for (std::set<std::string>::const_iterator i = disabled_tests_.begin();
-       i != disabled_tests_.end();
-       ++i) {
-    disabled_tests->AppendString(*i);
+  scoped_ptr<ListValue> disabled_tests(new ListValue);
+  for (const auto& disabled_test : disabled_tests_) {
+    disabled_tests->AppendString(disabled_test);
   }
+  summary_root->Set("disabled_tests", disabled_tests.Pass());
 
-  ListValue* per_iteration_data = new ListValue;
-  summary_root->Set("per_iteration_data", per_iteration_data);
+  scoped_ptr<ListValue> per_iteration_data(new ListValue);
 
   for (int i = 0; i <= iteration_; i++) {
-    DictionaryValue* current_iteration_data = new DictionaryValue;
-    per_iteration_data->Append(current_iteration_data);
+    scoped_ptr<DictionaryValue> current_iteration_data(new DictionaryValue);
 
     for (PerIterationData::ResultsMap::const_iterator j =
              per_iteration_data_[i].results.begin();
          j != per_iteration_data_[i].results.end();
          ++j) {
-      ListValue* test_results = new ListValue;
-      current_iteration_data->SetWithoutPathExpansion(j->first, test_results);
+      scoped_ptr<ListValue> test_results(new ListValue);
 
       for (size_t k = 0; k < j->second.test_results.size(); k++) {
         const TestResult& test_result = j->second.test_results[k];
 
-        DictionaryValue* test_result_value = new DictionaryValue;
-        test_results->Append(test_result_value);
+        scoped_ptr<DictionaryValue> test_result_value(new DictionaryValue);
 
         test_result_value->SetString("status", test_result.StatusAsString());
         test_result_value->SetInteger(
@@ -310,8 +297,14 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
         Base64Encode(test_result.output_snippet, &base64_output_snippet);
         test_result_value->SetString("output_snippet_base64",
                                      base64_output_snippet);
+        test_results->Append(test_result_value.Pass());
       }
+
+      current_iteration_data->SetWithoutPathExpansion(j->first,
+                                                      test_results.Pass());
     }
+    per_iteration_data->Append(current_iteration_data.Pass());
+    summary_root->Set("per_iteration_data", per_iteration_data.Pass());
   }
 
   JSONFileValueSerializer serializer(path);
