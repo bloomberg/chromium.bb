@@ -68,6 +68,10 @@ class VersionInfo {
   // will be CHANNEL_UNKNOWN.
   static Channel GetChannel();
 
+  // Returns a string equivalent of the channel, independent of whether it is a
+  // branded build or not and without any additional modifiers.
+  static std::string GetChannelString();
+
 #if defined(OS_CHROMEOS)
   // Sets channel before use.
   static void SetChannel(const std::string& channel);

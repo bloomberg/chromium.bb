@@ -35,6 +35,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/system/version_loader.h"
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,6 +58,7 @@ const char kAuthIframeParentOrigin[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/";
 
 const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
+const char kEndpointGen[] = "1.0";
 
 void UpdateAuthParams(base::DictionaryValue* params,
                       bool has_users,
@@ -184,6 +186,20 @@ GaiaScreenHandler::~GaiaScreenHandler() {
 }
 
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    base::PostTaskAndReplyWithResult(
+        content::BrowserThread::GetBlockingPool(), FROM_HERE,
+        base::Bind(&version_loader::GetVersion, version_loader::VERSION_SHORT),
+        base::Bind(&GaiaScreenHandler::LoadGaiaWithVersion,
+                   weak_factory_.GetWeakPtr(), context));
+  } else {
+    LoadGaiaWithVersion(context, "");
+  }
+}
+
+void GaiaScreenHandler::LoadGaiaWithVersion(
+    const GaiaContext& context,
+    const std::string& platform_version) {
   if (!auth_extension_) {
     Profile* signin_profile = ProfileHelper::GetSigninProfile();
     auth_extension_.reset(new ScopedGaiaAuthExtension(signin_profile));
@@ -260,9 +276,15 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     if (!enterprise_domain.empty())
       params.SetString("enterpriseDomain", enterprise_domain);
 
+    chrome::VersionInfo version_info;
     params.SetString("chromeType", GetChromeDeviceTypeString());
     params.SetString("clientId",
                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+    params.SetString("clientVersion", version_info.Version());
+    if (!platform_version.empty())
+      params.SetString("platformVersion", platform_version);
+    params.SetString("releaseChannel", chrome::VersionInfo::GetChannelString());
+    params.SetString("endpointGen", kEndpointGen);
 
     std::string email_domain;
     if (CrosSettings::Get()->GetString(

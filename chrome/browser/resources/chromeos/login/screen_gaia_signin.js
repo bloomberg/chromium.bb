@@ -423,12 +423,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (this.isNewGaiaFlow) {
         $('inner-container').classList.add('new-gaia-flow');
         $('progress-dots').hidden = true;
-        if (data.enterpriseDomain)
-          params.enterpriseDomain = data.enterpriseDomain;
         params.chromeType = data.chromeType;
         params.isNewGaiaFlowChromeOS = true;
         $('login-header-bar').showGuestButton = true;
-        params.deviceId = data.deviceId;
       }
 
       if (data.gaiaEndpoint)

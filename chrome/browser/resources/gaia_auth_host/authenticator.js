@@ -87,6 +87,10 @@ cr.define('cr.login', function() {
     'emailDomain',         // Value used to prefill domain for email.
     'deviceId',            // User device ID (sync Id).
     'sessionIsEphemeral',  // User session would be ephemeral.
+    'clientVersion',       // Version of the Chrome build.
+    'platformVersion',     // Version of the OS build.
+    'releaseChannel',      // Installation channel.
+    'endpointGen',         // Current endpoint generation.
   ];
 
   /**
@@ -249,6 +253,14 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'client_id', data.clientId);
       if (data.enterpriseDomain)
         url = appendParam(url, 'manageddomain', data.enterpriseDomain);
+      if (data.clientVersion)
+        url = appendParam(url, 'client_version', data.clientVersion);
+      if (data.platformVersion)
+        url = appendParam(url, 'platform_version', data.platformVersion);
+      if (data.releaseChannel)
+        url = appendParam(url, 'release_channel', data.releaseChannel);
+      if (data.endpointGen)
+        url = appendParam(url, 'endpoint_gen', data.endpointGen);
       this.deviceId_ = data.deviceId;
       this.sessionIsEphemeral_ = data.sessionIsEphemeral;
     } else {

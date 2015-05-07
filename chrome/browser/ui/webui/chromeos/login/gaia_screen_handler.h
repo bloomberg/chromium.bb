@@ -80,6 +80,10 @@ class GaiaScreenHandler : public BaseScreenHandler {
   ~GaiaScreenHandler() override;
 
   void LoadGaia(const GaiaContext& context);
+
+  // Callback that loads GAIA after version information has been retrieved.
+  void LoadGaiaWithVersion(const GaiaContext& context,
+                           const std::string& platform_version);
   void UpdateGaia(const GaiaContext& context);
 
   // Sends request to reload Gaia. If |force_reload| is true, request

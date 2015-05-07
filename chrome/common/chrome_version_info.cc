@@ -95,4 +95,26 @@ std::string VersionInfo::OSType() const {
 #endif
 }
 
+// static
+std::string VersionInfo::GetChannelString() {
+  switch (GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      return "stable";
+      break;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      return "beta";
+      break;
+    case chrome::VersionInfo::CHANNEL_DEV:
+      return "dev";
+      break;
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      return "canary";
+      break;
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      return "unknown";
+      break;
+  }
+  return std::string();
+}
+
 }  // namespace chrome
