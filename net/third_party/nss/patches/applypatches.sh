@@ -49,3 +49,4 @@ patch -p2 < $patches_dir/reorderextensions.patch
 
 patch -p2 < $patches_dir/removebuildmetadata.patch
 
+patch -p2 < $patches_dir/norenegotiatelock.patch

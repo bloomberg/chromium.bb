@@ -103,6 +103,10 @@ Patches:
   * Make the build metadata deterministic
     patches/removebuildmetadata.patch
 
+  * Fix locking bug in ssl3_HandleHelloRequest when rejecting a renegotiation.
+    patches/norenegotiatelock.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=1162521
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

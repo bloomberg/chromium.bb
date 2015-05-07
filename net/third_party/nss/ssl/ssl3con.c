@@ -5532,9 +5532,7 @@ ssl3_HandleHelloRequest(sslSocket *ss)
 	return SECFailure;
     }
     if (ss->opt.enableRenegotiation == SSL_RENEGOTIATE_NEVER) {
-	ssl_GetXmitBufLock(ss);
-	rv = SSL3_SendAlert(ss, alert_warning, no_renegotiation);
-	ssl_ReleaseXmitBufLock(ss);
+	(void)SSL3_SendAlert(ss, alert_warning, no_renegotiation);
 	PORT_SetError(SSL_ERROR_RENEGOTIATION_NOT_ALLOWED);
 	return SECFailure;
     }
