@@ -1271,18 +1271,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // TODO(isherman): verify entire form.
 }
 
-// http://crbug.com/281527
-#if defined(OS_MACOSX)
-#define MAYBE_FormFillLatencyAfterSubmit FormFillLatencyAfterSubmit
-#else
-#define MAYBE_FormFillLatencyAfterSubmit DISABLED_FormFillLatencyAfterSubmit
-#endif
 // Test latency time on form submit with lots of stored Autofill profiles.
 // This test verifies when a profile is selected from the Autofill dictionary
 // that consists of thousands of profiles, the form does not hang after being
 // submitted.
+// Flakily times out: http://crbug.com/281527
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_FormFillLatencyAfterSubmit) {
+                       DISABLED_FormFillLatencyAfterSubmit) {
   ASSERT_TRUE(test_server()->Start());
 
   std::vector<std::string> cities;
