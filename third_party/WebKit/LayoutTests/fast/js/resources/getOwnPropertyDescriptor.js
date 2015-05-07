@@ -35,8 +35,8 @@ descriptorShouldBe("[1,2,3]", "'length'", {writable: true, enumerable: false, co
 descriptorShouldBe("[1,2,3]", "'length'", {writable: true, enumerable: false, configurable: false, value:"3"});
 descriptorShouldBe("/(a)*/g.exec('a')", "0", {writable: true, enumerable: true, configurable: true, value:"'a'"});
 descriptorShouldBe("/(a)*/g.exec('a')", "'length'", {writable: true, enumerable: false, configurable: false, value:2});
-descriptorShouldBe("function(){}", "'length'", {writable: false, enumerable: false, configurable: false, value:0});
-descriptorShouldBe("Math.sin", "'length'", {writable: false, enumerable: false, configurable: false, value:1});
+descriptorShouldBe("function(){}", "'length'", {writable: false, enumerable: false, configurable: true, value:0});
+descriptorShouldBe("Math.sin", "'length'", {writable: false, enumerable: false, configurable: true, value:1});
 descriptorShouldBe("Math.sin", "'name'", {writable: false, enumerable: false, configurable: true, value:"'sin'"});
 var global = this;
 descriptorShouldBe("global", "'global'", {writable: true, enumerable: true, configurable: false, value:"global"});
@@ -47,14 +47,6 @@ descriptorShouldBe("global", "'window'", {writable: false, enumerable: true, con
 descriptorShouldBe("global", "'XMLHttpRequest'", {writable: true, enumerable: false, configurable: true, value:"XMLHttpRequest"});
 descriptorShouldBe("global", "'length'", {writable: true, enumerable: true, configurable: false, value:"global.length"});
 descriptorShouldBe("global", "0", {writable: true, enumerable: false, configurable: false, value:"global[0]"});
-descriptorShouldBe("document.getElementsByTagName('div')", "'length'", {writable: false, enumerable: true, configurable: false, value:"1"});
-descriptorShouldBe("document.getElementsByTagName('div')", "0", {writable: false, enumerable: true, configurable: false, value:"document.getElementsByTagName('div')[0]"});
-descriptorShouldBe("document.getElementsByClassName('pass')", "0", {writable: false, enumerable: true, configurable: false, value:"document.getElementsByClassName('pass')[0]"});
-descriptorShouldBe("document.getElementsByClassName('pass')", "'length'", {writable: false, enumerable: true, configurable: false, value:"document.getElementsByClassName('pass').length"});
-var select = document.createElement("select");
-select.innerHTML = "<option>foo</option>";
-descriptorShouldBe("select", "'length'", {writable: false, enumerable: true, configurable: false, value:"select.length"});
-descriptorShouldBe("select", "0", {writable: true, enumerable: true, configurable: false, value:"select[0]"});
 
 var objectWithGetter = {};
 function getterFunc(){};
@@ -71,10 +63,10 @@ descriptorShouldBe("objectWithAccessor", "'accessor'", {"set": "setterFunc", "ge
 
 shouldThrow("Object.getOwnPropertyDescriptor(null)");
 shouldThrow("Object.getOwnPropertyDescriptor(undefined)");
-shouldThrow("Object.getOwnPropertyDescriptor(1)");
-shouldThrow("Object.getOwnPropertyDescriptor('')");
-shouldThrow("Object.getOwnPropertyDescriptor(true)");
-shouldThrow("Object.getOwnPropertyDescriptor(false)");
+shouldBeUndefined("Object.getOwnPropertyDescriptor(1)");
+shouldBeUndefined("Object.getOwnPropertyDescriptor('')");
+shouldBeUndefined("Object.getOwnPropertyDescriptor(true)");
+shouldBeUndefined("Object.getOwnPropertyDescriptor(false)");
 
 debug("Checking property ordering");
 var normalOrder = ["'value'", "'writable'", "'enumerable'", "'configurable'"];

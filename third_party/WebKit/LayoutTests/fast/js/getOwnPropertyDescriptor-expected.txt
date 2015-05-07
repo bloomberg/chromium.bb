@@ -93,12 +93,12 @@ PASS Object.getOwnPropertyDescriptor(function(){}, 'length').value is 0
 PASS Object.getOwnPropertyDescriptor(function(){}, 'length').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(function(){}, 'length').hasOwnProperty('set') is false
 PASS Object.getOwnPropertyDescriptor(function(){}, 'length').enumerable is false
-PASS Object.getOwnPropertyDescriptor(function(){}, 'length').configurable is false
+PASS Object.getOwnPropertyDescriptor(function(){}, 'length').configurable is true
 PASS Object.getOwnPropertyDescriptor(Math.sin, 'length').value is 1
 PASS Object.getOwnPropertyDescriptor(Math.sin, 'length').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(Math.sin, 'length').hasOwnProperty('set') is false
 PASS Object.getOwnPropertyDescriptor(Math.sin, 'length').enumerable is false
-PASS Object.getOwnPropertyDescriptor(Math.sin, 'length').configurable is false
+PASS Object.getOwnPropertyDescriptor(Math.sin, 'length').configurable is true
 PASS Object.getOwnPropertyDescriptor(Math.sin, 'name').value is 'sin'
 PASS Object.getOwnPropertyDescriptor(Math.sin, 'name').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(Math.sin, 'name').hasOwnProperty('set') is false
@@ -144,36 +144,6 @@ FAIL Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('get') should be 
 FAIL Object.getOwnPropertyDescriptor(global, 0).hasOwnProperty('set') should be false. Threw exception TypeError: Cannot read property 'hasOwnProperty' of undefined
 FAIL Object.getOwnPropertyDescriptor(global, 0).enumerable should be false. Threw exception TypeError: Cannot read property 'enumerable' of undefined
 FAIL Object.getOwnPropertyDescriptor(global, 0).configurable should be false. Threw exception TypeError: Cannot read property 'configurable' of undefined
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').value is 1
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').hasOwnProperty('get') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').hasOwnProperty('set') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').enumerable is true
-FAIL Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 'length').configurable should be false. Was true.
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 0).value is document.getElementsByTagName('div')[0]
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 0).hasOwnProperty('get') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 0).hasOwnProperty('set') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 0).enumerable is true
-FAIL Object.getOwnPropertyDescriptor(document.getElementsByTagName('div'), 0).configurable should be false. Was true.
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 0).value is document.getElementsByClassName('pass')[0]
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 0).hasOwnProperty('get') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 0).hasOwnProperty('set') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 0).enumerable is true
-FAIL Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 0).configurable should be false. Was true.
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').value is document.getElementsByClassName('pass').length
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').hasOwnProperty('get') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').hasOwnProperty('set') is false
-PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').enumerable is true
-FAIL Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').configurable should be false. Was true.
-PASS Object.getOwnPropertyDescriptor(select, 'length').value is select.length
-PASS Object.getOwnPropertyDescriptor(select, 'length').hasOwnProperty('get') is false
-PASS Object.getOwnPropertyDescriptor(select, 'length').hasOwnProperty('set') is false
-PASS Object.getOwnPropertyDescriptor(select, 'length').enumerable is true
-FAIL Object.getOwnPropertyDescriptor(select, 'length').configurable should be false. Was true.
-PASS Object.getOwnPropertyDescriptor(select, 0).value is select[0]
-PASS Object.getOwnPropertyDescriptor(select, 0).hasOwnProperty('get') is false
-PASS Object.getOwnPropertyDescriptor(select, 0).hasOwnProperty('set') is false
-PASS Object.getOwnPropertyDescriptor(select, 0).enumerable is true
-FAIL Object.getOwnPropertyDescriptor(select, 0).configurable should be false. Was true.
 PASS Object.getOwnPropertyDescriptor(objectWithGetter, 'getter').get is getterFunc
 PASS Object.getOwnPropertyDescriptor(objectWithGetter, 'getter').set is undefined
 PASS Object.getOwnPropertyDescriptor(objectWithGetter, 'getter').hasOwnProperty('value') is false
@@ -192,12 +162,12 @@ PASS Object.getOwnPropertyDescriptor(objectWithAccessor, 'accessor').hasOwnPrope
 PASS Object.getOwnPropertyDescriptor(objectWithAccessor, 'accessor').hasOwnProperty('writable') is false
 PASS Object.getOwnPropertyDescriptor(objectWithAccessor, 'accessor').enumerable is true
 PASS Object.getOwnPropertyDescriptor(objectWithAccessor, 'accessor').configurable is true
-PASS Object.getOwnPropertyDescriptor(null) threw exception TypeError: Object.getOwnPropertyDescriptor called on non-object.
-PASS Object.getOwnPropertyDescriptor(undefined) threw exception TypeError: Object.getOwnPropertyDescriptor called on non-object.
-PASS Object.getOwnPropertyDescriptor(1) threw exception TypeError: Object.getOwnPropertyDescriptor called on non-object.
-PASS Object.getOwnPropertyDescriptor('') threw exception TypeError: Object.getOwnPropertyDescriptor called on non-object.
-PASS Object.getOwnPropertyDescriptor(true) threw exception TypeError: Object.getOwnPropertyDescriptor called on non-object.
-PASS Object.getOwnPropertyDescriptor(false) threw exception TypeError: Object.getOwnPropertyDescriptor called on non-object.
+PASS Object.getOwnPropertyDescriptor(null) threw exception TypeError: Cannot convert undefined or null to object.
+PASS Object.getOwnPropertyDescriptor(undefined) threw exception TypeError: Cannot convert undefined or null to object.
+PASS Object.getOwnPropertyDescriptor(1) is undefined.
+PASS Object.getOwnPropertyDescriptor('') is undefined.
+PASS Object.getOwnPropertyDescriptor(true) is undefined.
+PASS Object.getOwnPropertyDescriptor(false) is undefined.
 Checking property ordering
 PASS property is 'value'
 PASS property is 'writable'
