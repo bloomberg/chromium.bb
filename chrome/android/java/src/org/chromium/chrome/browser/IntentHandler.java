@@ -159,6 +159,15 @@ public class IntentHandler {
     public static final String GOOGLECHROME_NAVIGATE_PREFIX =
             GOOGLECHROME_SCHEME + "://navigate?url=";
 
+    /**
+     * The class name to be specified in the ComponentName for Intents that are creating a new
+     * tab (regardless of whether the user is in document or tabbed mode).
+     */
+    // TODO(tedchoc): Remove this and directly reference the Launcher activity when that becomes
+    //                publicly available.
+    private static final String TAB_ACTIVITY_COMPONENT_CLASS_NAME =
+            "com.google.android.apps.chrome.Main";
+
     private static boolean sTestIntentsEnabled;
 
     private final IntentHandlerDelegate mDelegate;
@@ -342,8 +351,38 @@ public class IntentHandler {
      * token.
      */
     public static void startActivityForTrustedIntent(Intent intent, Context context) {
+        startActivityForTrustedIntentInternal(intent, context, null);
+    }
+
+    /**
+     * Start the activity that handles launching tabs in Chrome given the trusted intent.
+     *
+     * This allows specifying URLs that chrome:// handles internally, but does not expose in
+     * intent-filters for global use.
+     *
+     * To make sure the intent is not dropped by Chrome, we send along an authentication token to
+     * identify ourselves as a trusted sender. The method {@link #shouldIgnoreIntent} validates the
+     * token.
+     */
+    public static void startChromeLauncherActivityForTrustedIntent(Intent intent, Context context) {
+        // Specify the exact component that will handle creating a new tab.  This allows specifying
+        // URLs that are not exposed in the intent filters (i.e. chrome://).
+        startActivityForTrustedIntentInternal(intent, context, new ComponentName(
+                context.getPackageName(), TAB_ACTIVITY_COMPONENT_CLASS_NAME));
+    }
+
+    private static void startActivityForTrustedIntentInternal(
+            Intent intent, Context context, ComponentName componentName) {
         // The caller might want to re-use the Intent, so we'll use a copy.
         Intent copiedIntent = new Intent(intent);
+
+        if (componentName != null) {
+            assert copiedIntent.getComponent() == null;
+            // Specify the exact component that will handle creating a new tab.  This allows
+            // specifying URLs that are not exposed in the intent filters (i.e. chrome://).
+            copiedIntent.setComponent(componentName);
+        }
+
         addTrustedIntentExtras(copiedIntent, context);
 
         // Make sure we use the application context.
