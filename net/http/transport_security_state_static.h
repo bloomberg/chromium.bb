@@ -540,6 +540,7 @@ static const char* const kTestAcceptableCerts[] = {
 static const char* const kGoogleAcceptableCerts[] = {
   kSPKIHash_GoogleBackup2048,
   kSPKIHash_GoogleG2,
+  kSPKIHash_GeoTrustGlobal,
   NULL,
 };
 static const char* const kTorAcceptableCerts[] = {

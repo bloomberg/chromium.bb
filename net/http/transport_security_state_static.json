@@ -46,7 +46,8 @@
       "name": "google",
       "static_spki_hashes": [
         "GoogleBackup2048",
-        "GoogleG2"
+        "GoogleG2",
+        "GeoTrustGlobal"
       ]
     },
     {

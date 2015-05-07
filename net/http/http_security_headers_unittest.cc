@@ -663,6 +663,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   // Damage the hashes to cause a pin validation failure.
   new_static_domain_state2.pkp.spki_hashes[0].data()[0] ^= 0x80;
   new_static_domain_state2.pkp.spki_hashes[1].data()[0] ^= 0x80;
+  new_static_domain_state2.pkp.spki_hashes[2].data()[0] ^= 0x80;
   const bool is_issued_by_known_root = true;
   EXPECT_FALSE(
       state.CheckPublicKeyPins(domain,
