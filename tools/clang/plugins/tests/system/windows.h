@@ -12,4 +12,6 @@
 #define SYSTEM_REDUNDANT1 virtual void NonVirtualFinal() final
 #define SYSTEM_REDUNDANT2 virtual void Virtual() override final
 
+#define SYSTEM_INLINE_VIRTUAL virtual int Foo() { return 4; }
+
 #endif  // TOOLS_CLANG_PLUGINS_TESTS_SYSTEM_WINDOWS_H_

@@ -508,9 +508,27 @@ void FindBadConstructsConsumer::CheckVirtualBodies(
   if (method->hasBody() && method->hasInlineBody()) {
     if (CompoundStmt* cs = dyn_cast<CompoundStmt>(method->getBody())) {
       if (cs->size()) {
-        emitWarning(cs->getLBracLoc(),
-                    "virtual methods with non-empty bodies shouldn't be "
-                    "declared inline.");
+        SourceLocation loc = cs->getLBracLoc();
+        // CR_BEGIN_MSG_MAP_EX and BEGIN_SAFE_MSG_MAP_EX try to be compatible
+        // to BEGIN_MSG_MAP(_EX).  So even though they are in chrome code,
+        // we can't easily fix them, so explicitly whitelist them here.
+        bool emit = true;
+        if (loc.isMacroID()) {
+          SourceManager& manager = instance().getSourceManager();
+          if (InBannedDirectory(manager.getSpellingLoc(loc)))
+            emit = false;
+          else {
+            StringRef name = Lexer::getImmediateMacroName(
+                loc, manager, instance().getLangOpts());
+            if (name == "CR_BEGIN_MSG_MAP_EX" ||
+                name == "BEGIN_SAFE_MSG_MAP_EX")
+              emit = false;
+          }
+        }
+        if (emit)
+          emitWarning(loc,
+                      "virtual methods with non-empty bodies shouldn't be "
+                      "declared inline.");
       }
     }
   }
