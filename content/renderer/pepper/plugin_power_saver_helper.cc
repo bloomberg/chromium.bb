@@ -34,9 +34,9 @@ const char kPeripheralHeuristicHistogram[] =
     "Plugin.PowerSaver.PeripheralHeuristic";
 
 // Maximum dimensions plugin content may have while still being considered
-// peripheral content. These match the sizes used by Safari.
-const int kPeripheralContentMaxWidth = 400;
-const int kPeripheralContentMaxHeight = 300;
+// peripheral content. These are similar to the numbers used by WebKit.
+const int kPeripheralContentMaxWidth = 398;
+const int kPeripheralContentMaxHeight = 298;
 
 // Plugin content below this size in height and width is considered "tiny".
 // Tiny content is never peripheral, as tiny plugins often serve a critical
