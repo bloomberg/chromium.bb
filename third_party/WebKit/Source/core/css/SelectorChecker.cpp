@@ -270,11 +270,6 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     return matchSelector(nextContext, result);
 }
 
-static bool selectorMatchesShadowRoot(const CSSSelector* selector)
-{
-    return selector && selector->isShadowPseudoElement();
-}
-
 static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(const Element& element)
 {
     ContainerNode* parent = element.parentOrShadowHostNode();
@@ -319,7 +314,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
 
-        if (selectorMatchesShadowRoot(nextContext.selector))
+        if (nextContext.selector->isShadowPseudoElement())
             return matchForPseudoShadow(nextContext, context.element->containingShadowRoot(), result);
 
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
@@ -338,7 +333,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
 
-            if (selectorMatchesShadowRoot(nextContext.selector))
+            if (nextContext.selector->isShadowPseudoElement())
                 return matchForPseudoShadow(nextContext, context.element->parentNode(), result);
 
             nextContext.element = parentElement(context);
@@ -348,7 +343,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         }
     case CSSSelector::DirectAdjacent:
         // Shadow roots can't have sibling elements
-        if (selectorMatchesShadowRoot(nextContext.selector))
+        if (nextContext.selector->isShadowPseudoElement())
             return SelectorFailsCompletely;
 
         if (m_mode == ResolvingStyle) {
@@ -364,7 +359,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::IndirectAdjacent:
         // Shadow roots can't have sibling elements
-        if (selectorMatchesShadowRoot(nextContext.selector))
+        if (nextContext.selector->isShadowPseudoElement())
             return SelectorFailsCompletely;
 
         if (m_mode == ResolvingStyle) {
