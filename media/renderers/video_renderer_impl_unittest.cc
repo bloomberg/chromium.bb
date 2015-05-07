@@ -386,6 +386,8 @@ TEST_P(VideoRendererImplTest, InitializeAndEndOfStream) {
     SatisfyPendingReadWithEndOfStream();
     event.RunAndWait();
   }
+  // Firing a time state changed to true should be ignored...
+  renderer_->OnTimeStateChanged(true);
   EXPECT_FALSE(null_video_sink_->is_started());
   Destroy();
 }

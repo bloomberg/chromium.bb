@@ -391,10 +391,14 @@ void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
   if (!use_new_video_renderering_path_ || sink_started_ == time_progressing_)
     return;
 
-  if (time_progressing_)
-    StartSink();
-  else
+  if (time_progressing_) {
+    // If only an EOS frame came in after a seek, the renderer may not have
+    // received the ended event yet though we've posted it.
+    if (!rendered_end_of_stream_)
+      StartSink();
+  } else {
     StopSink();
+  }
 }
 
 void VideoRendererImpl::PaintNextReadyFrame_Locked() {
