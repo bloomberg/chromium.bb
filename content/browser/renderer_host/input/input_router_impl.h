@@ -247,6 +247,11 @@ private:
   // to the client_ after all events have been dispatched/acked.
   bool flush_requested_;
 
+  // Whether there are any active flings in the renderer. As the fling
+  // end notification is asynchronous, we use a count rather than a boolean
+  // to avoid races in bookkeeping when starting a new fling.
+  int active_renderer_fling_count_;
+
   TouchEventQueue touch_event_queue_;
   GestureEventQueue gesture_event_queue_;
   TouchActionFilter touch_action_filter_;

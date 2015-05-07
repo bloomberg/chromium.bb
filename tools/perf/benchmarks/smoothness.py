@@ -247,7 +247,7 @@ class SmoothnessSimpleMobilePages(benchmark.Benchmark):
     return 'smoothness.simple_mobile_sites'
 
 
-@benchmark.Disabled  # crbug.com/483037
+@benchmark.Enabled('android')
 class SmoothnessFlingSimpleMobilePages(benchmark.Benchmark):
   """Measures rendering statistics for flinging a simple mobile sites page set.
   """

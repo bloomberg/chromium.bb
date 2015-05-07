@@ -15,6 +15,7 @@
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/common/input/did_overscroll_params.h"
+#include "content/common/input_messages.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -287,10 +288,11 @@ void SynchronousCompositorImpl::DidOverscroll(
 }
 
 void SynchronousCompositorImpl::DidStopFlinging() {
-  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-      contents_->GetRenderWidgetHostView());
-  if (rwhv)
-    rwhv->DidStopFlinging();
+  // It's important that the fling-end notification follow the same path as it
+  // takes on other platforms (using an IPC). This ensures consistent
+  // bookkeeping at all stages of the input pipeline.
+  contents_->GetRenderProcessHost()->OnMessageReceived(
+      InputHostMsg_DidStopFlinging(routing_id_));
 }
 
 InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
