@@ -75,9 +75,6 @@ public:
 
     LayoutFlowThread* flowThread() const { return m_flowThread; }
 
-    // Used to temporarily set m_flowThread to nullptr. Needed because of crbug.com/370461 (list item markers).
-    void setFlowThread(LayoutFlowThread* flowThread) { m_flowThread = flowThread; }
-
     ColumnInfo* columnInfo() const { return m_columnInfo; }
 
     LayoutObject& layoutObject() const { return m_layoutObject; }

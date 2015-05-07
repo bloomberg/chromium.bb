@@ -29,7 +29,6 @@
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/TextAutosizer.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -45,6 +44,9 @@ LayoutListItem::LayoutListItem(Element* element)
     , m_notInList(false)
 {
     setInline(false);
+
+    setConsumesSubtreeChangeNotification();
+    registerSubtreeChangeListenerOnDescendants(true);
 }
 
 void LayoutListItem::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
@@ -56,6 +58,7 @@ void LayoutListItem::styleDidChange(StyleDifference diff, const ComputedStyle* o
         if (!m_marker)
             m_marker = LayoutListMarker::createAnonymous(this);
         m_marker->listItemStyleDidChange();
+        notifyOfSubtreeChange();
     } else if (m_marker) {
         m_marker->destroy();
         m_marker = nullptr;
@@ -83,6 +86,20 @@ void LayoutListItem::willBeRemovedFromTree()
     LayoutBlockFlow::willBeRemovedFromTree();
 
     updateListMarkerNumbers();
+}
+
+void LayoutListItem::subtreeDidChange()
+{
+    if (!m_marker)
+        return;
+
+    if (!updateMarkerLocation())
+        return;
+
+    // If the marker is inside we need to redo the preferred width calculations
+    // as the size of the item now includes the size of the list marker.
+    if (m_marker->isInside())
+        setPreferredLogicalWidthsDirty();
 }
 
 static bool isList(const Node& node)
@@ -265,38 +282,10 @@ static LayoutObject* firstNonMarkerChild(LayoutObject* parent)
     return result;
 }
 
-void LayoutListItem::updateMarkerLocationAndInvalidateWidth()
-{
-    ASSERT(m_marker);
-
-    // FIXME: We should not modify the structure of the layout tree
-    // during layout. crbug.com/370461
-    DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
-    LayoutState* layoutState = view()->layoutState();
-    LayoutFlowThread* currentFlowThread = nullptr;
-    if (layoutState) {
-        // We're about to modify the layout tree structure (during layout!), and any code using
-        // LayoutState might get utterly confused by that. There's no evidence that anything other
-        // than the flow thread code will suffer, though, so just reset the current flow thread
-        // temporarily.
-        // FIXME: get rid of this hack, including the flow thread setter in LayoutState, as part of
-        // fixing crbug.com/370461
-        currentFlowThread = layoutState->flowThread();
-        layoutState->setFlowThread(nullptr);
-    }
-    if (updateMarkerLocation()) {
-        // If the marker is inside we need to redo the preferred width calculations
-        // as the size of the item now includes the size of the list marker.
-        if (m_marker->isInside())
-            containingBlock()->updateLogicalWidth();
-    }
-    if (layoutState)
-        layoutState->setFlowThread(currentFlowThread);
-}
-
 bool LayoutListItem::updateMarkerLocation()
 {
     ASSERT(m_marker);
+
     LayoutObject* markerParent = m_marker->parent();
     LayoutObject* lineBoxParent = getParentOfFirstLineBox(this, m_marker);
     if (!lineBoxParent) {
@@ -322,23 +311,6 @@ bool LayoutListItem::updateMarkerLocation()
     return false;
 }
 
-void LayoutListItem::layout()
-{
-    ASSERT(needsLayout());
-
-    if (m_marker) {
-        // The marker must be autosized before calling
-        // updateMarkerLocationAndInvalidateWidth. It cannot be done in the
-        // parent's beginLayout because it is not yet in the layout tree.
-        if (TextAutosizer* textAutosizer = document().textAutosizer())
-            textAutosizer->inflateListItem(this, m_marker);
-
-        updateMarkerLocationAndInvalidateWidth();
-    }
-
-    LayoutBlockFlow::layout();
-}
-
 void LayoutListItem::addOverflowFromChildren()
 {
     LayoutBlockFlow::addOverflowFromChildren();
@@ -347,7 +319,7 @@ void LayoutListItem::addOverflowFromChildren()
 
 void LayoutListItem::positionListMarker()
 {
-    if (m_marker && m_marker->parent()->isBox() && !m_marker->isInside() && m_marker->inlineBoxWrapper()) {
+    if (m_marker && m_marker->parent() && m_marker->parent()->isBox() && !m_marker->isInside() && m_marker->inlineBoxWrapper()) {
         LayoutUnit markerOldLogicalLeft = m_marker->logicalLeft();
         LayoutUnit blockOffset = 0;
         LayoutUnit lineOffset = 0;
@@ -489,8 +461,6 @@ void LayoutListItem::clearExplicitValue()
 void LayoutListItem::setNotInList(bool notInList)
 {
     m_notInList = notInList;
-    if (m_marker)
-        updateMarkerLocation();
 }
 
 static LayoutListItem* previousOrNextItem(bool isListReversed, Node* list, LayoutListItem* item)

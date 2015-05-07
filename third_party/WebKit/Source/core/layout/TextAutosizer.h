@@ -64,7 +64,6 @@ public:
     void updatePageInfo();
     void record(const LayoutBlock*);
     void destroy(const LayoutBlock*);
-    void inflateListItem(LayoutListItem*, LayoutListMarker*);
 
     DECLARE_TRACE();
 

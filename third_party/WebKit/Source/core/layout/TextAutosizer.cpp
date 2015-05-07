@@ -372,24 +372,6 @@ void TextAutosizer::beginLayout(LayoutBlock* block)
         inflate(block);
 }
 
-void TextAutosizer::inflateListItem(LayoutListItem* listItem, LayoutListMarker* listItemMarker)
-{
-    if (!shouldHandleLayout())
-        return;
-    ASSERT(listItem && listItemMarker);
-
-    if (prepareForLayout(listItem) == StopLayout)
-        return;
-
-    // Force the LI to be inside the DBCAT when computing the multiplier.
-    // This guarantees that the DBCAT has entered layout, so we can ask for its width.
-    // It also makes sense because the list marker is autosized like a text node.
-    float multiplier = clusterMultiplier(currentCluster());
-
-    applyMultiplier(listItem, multiplier);
-    applyMultiplier(listItemMarker, multiplier);
-}
-
 void TextAutosizer::inflateAutoTable(LayoutTable* table)
 {
     ASSERT(table);
@@ -456,6 +438,7 @@ float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, flo
             if (!multiplier)
                 multiplier = cluster->m_flags & SUPPRESSING ? 1.0f : clusterMultiplier(cluster);
             applyMultiplier(child, multiplier);
+
             // FIXME: Investigate why MarkOnlyThis is sufficient.
             if (parent->isLayoutInline())
                 child->setPreferredLogicalWidthsDirty(MarkOnlyThis);
@@ -472,9 +455,25 @@ float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, flo
         applyMultiplier(parent, multiplier); // Parent handles line spacing.
     } else if (!parent->isListItem()) {
         // For consistency, a block with no immediate text child should always have a
-        // multiplier of 1 (except for list items which are handled in inflateListItem).
+        // multiplier of 1.
         applyMultiplier(parent, 1);
     }
+
+    if (parent->isListItem()) {
+        float multiplier = clusterMultiplier(cluster);
+        applyMultiplier(parent, multiplier);
+
+        // The list item has to be treated special because we can have a tree such that you have
+        // a list item for a form inside it. The list marker then ends up inside the form and when
+        // we try to get the clusterMultiplier we have the wrong cluster root to work from and get
+        // the wrong value.
+        LayoutListItem* item = toLayoutListItem(parent);
+        if (LayoutListMarker* marker = item->marker()) {
+            applyMultiplier(marker, multiplier);
+            marker->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+        }
+    }
+
     return multiplier;
 }
 
@@ -940,7 +939,6 @@ const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(const LayoutBloc
 const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size_t& depth, TextLeafSearch firstOrLast) const
 {
     // List items are treated as text due to the marker.
-    // The actual layoutObject for the marker (LayoutListMarker) may not be in the tree yet since it is added during layout.
     if (parent->isListItem())
         return parent;
 

@@ -60,6 +60,8 @@ public:
 
     bool isEmpty() const;
 
+    LayoutListMarker* marker() const { return m_marker; }
+
     virtual const char* name() const override { return "LayoutListItem"; }
 
 private:
@@ -72,11 +74,10 @@ private:
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual void layout() override;
+    virtual void subtreeDidChange() final;
 
     // Returns true if we re-attached and updated the location of the marker.
     bool updateMarkerLocation();
-    void updateMarkerLocationAndInvalidateWidth();
 
     void positionListMarker();
 

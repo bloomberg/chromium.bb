@@ -97,7 +97,6 @@ public:
     void setAdjustedLogicalLineTop(LayoutUnit value) { m_adjustedLogicalLineTop = value; }
 
     LayoutFlowThread* flowThread() const { return m_flowThread; }
-    void setFlowThread(LayoutFlowThread* thread) { m_flowThread = thread; }
 
 private:
     Vector<LayoutBlockFlow::FloatWithRect> m_floats;
