@@ -229,7 +229,7 @@ TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {
   EXPECT_FALSE(params.enable_quic);
   EXPECT_TRUE(params.enable_quic_for_proxies);
   EXPECT_TRUE(IOThread::ShouldEnableQuicForDataReductionProxy());
-  EXPECT_EQ(256 * 1024, params.quic_socket_receive_buffer_size);
+  EXPECT_EQ(1024 * 1024, params.quic_socket_receive_buffer_size);
 }
 
 TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
@@ -423,11 +423,11 @@ TEST_F(IOThreadTest, QuicPacketLossThresholdFieldTrialParams) {
 
 TEST_F(IOThreadTest, QuicReceiveBufferSize) {
   field_trial_group_ = "Enabled";
-  field_trial_params_["receive_buffer_size"] = "1048576";
+  field_trial_params_["receive_buffer_size"] = "2097152";
   ConfigureQuicGlobals();
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(1048576, params.quic_socket_receive_buffer_size);
+  EXPECT_EQ(2097152, params.quic_socket_receive_buffer_size);
 }
 
 TEST_F(IOThreadTest, AlternativeServiceProbabilityThresholdFromFlag) {
