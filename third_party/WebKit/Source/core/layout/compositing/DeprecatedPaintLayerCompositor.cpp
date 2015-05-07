@@ -185,8 +185,14 @@ static LayoutVideo* findFullscreenVideoLayoutObject(Document& document)
 void DeprecatedPaintLayerCompositor::updateIfNeededRecursive()
 {
     for (Frame* child = m_layoutView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame())
-            toLocalFrame(child)->contentLayoutObject()->compositor()->updateIfNeededRecursive();
+        if (!child->isLocalFrame())
+            continue;
+        LocalFrame* localFrame = toLocalFrame(child);
+        // It's possible for trusted Pepper plugins to force hit testing in situations where
+        // the frame tree is in an inconsistent state, such as in the middle of frame detach.
+        // TODO(bbudge) Remove this check when trusted Pepper plugins are gone.
+        if (localFrame->document()->isActive())
+            localFrame->contentLayoutObject()->compositor()->updateIfNeededRecursive();
     }
 
     TRACE_EVENT0("blink", "DeprecatedPaintLayerCompositor::updateIfNeededRecursive");

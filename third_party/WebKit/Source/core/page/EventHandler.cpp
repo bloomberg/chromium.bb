@@ -902,10 +902,6 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
     HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
     HitTestResult result(request, point, padding.height(), padding.width(), padding.height(), padding.width());
 
-    // Don't hit test if the frame is detached.
-    if (!m_frame->document()->isActive())
-        return result;
-
     // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
     // have intentionally clicked on something belonging to this page. Furthermore,
