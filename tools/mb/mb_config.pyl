@@ -144,8 +144,10 @@
     },
     'chromium.linux': {
       'Android GN': 'android_gn_release_bot',
+      'Android GN (dbg)': 'android_gn_debug_bot',
       'Linux Builder': 'gyp_release_bot',
       'Linux GN': 'gn_release_bot',
+      'Linux GN Clobber': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot',
       'Linux Tests': 'gyp_release_bot',
     },
