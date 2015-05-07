@@ -230,7 +230,6 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window->GetChildById(container_id);
   desktop_widget->Init(params);
-  desktop_widget->GetNativeWindow()->layer()->SetMasksToBounds(true);
   desktop_widget->SetContentsView(
       new LayerControlView(new DesktopBackgroundView()));
   int animation_type = wallpaper_delegate->GetAnimationType();
