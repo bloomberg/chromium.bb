@@ -119,11 +119,7 @@ class TrackedObjectsTest : public testing::Test {
 unsigned int TrackedObjectsTest::test_time_;
 
 TEST_F(TrackedObjectsTest, TaskStopwatchNoStartStop) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   // Check that creating and destroying a stopwatch without starting it doesn't
   // crash.
@@ -132,11 +128,7 @@ TEST_F(TrackedObjectsTest, TaskStopwatchNoStartStop) {
 
 TEST_F(TrackedObjectsTest, MinimalStartupShutdown) {
   // Minimal test doesn't even create any tasks.
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   EXPECT_FALSE(ThreadData::first());  // No activity even on this thread.
   ThreadData* data = ThreadData::Get();
@@ -154,8 +146,7 @@ TEST_F(TrackedObjectsTest, MinimalStartupShutdown) {
   Reset();
 
   // Do it again, just to be sure we reset state completely.
-  EXPECT_TRUE(
-      ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE));
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
   EXPECT_FALSE(ThreadData::first());  // No activity even on this thread.
   data = ThreadData::Get();
   EXPECT_TRUE(ThreadData::first());  // Now class was constructed.
@@ -170,11 +161,7 @@ TEST_F(TrackedObjectsTest, MinimalStartupShutdown) {
 }
 
 TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   // Instigate tracking on a single tracked object, on our thread.
   const char kFunction[] = "TinyStartupShutdown";
@@ -250,11 +237,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
 }
 
 TEST_F(TrackedObjectsTest, DeathDataTestRecordDeath) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   scoped_ptr<DeathData> data(new DeathData());
   ASSERT_NE(data, reinterpret_cast<DeathData*>(NULL));
@@ -293,11 +276,7 @@ TEST_F(TrackedObjectsTest, DeathDataTestRecordDeath) {
 }
 
 TEST_F(TrackedObjectsTest, DeathDataTest2Phases) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   scoped_ptr<DeathData> data(new DeathData());
   ASSERT_NE(data, reinterpret_cast<DeathData*>(NULL));
@@ -362,11 +341,7 @@ TEST_F(TrackedObjectsTest, DeathDataTest2Phases) {
 }
 
 TEST_F(TrackedObjectsTest, Delta) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   DeathDataSnapshot snapshot;
   snapshot.count = 10;
@@ -398,10 +373,7 @@ TEST_F(TrackedObjectsTest, Delta) {
 
 TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotWorkerThread) {
   // Start in the deactivated state.
-  if (!ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "DeactivatedBirthOnlyToSnapshotWorkerThread";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -423,10 +395,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotWorkerThread) {
 
 TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotMainThread) {
   // Start in the deactivated state.
-  if (!ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "DeactivatedBirthOnlyToSnapshotMainThread";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -447,11 +416,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotMainThread) {
 }
 
 TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotWorkerThread) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "BirthOnlyToSnapshotWorkerThread";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -464,11 +429,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotWorkerThread) {
 }
 
 TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotMainThread) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "BirthOnlyToSnapshotMainThread";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -481,11 +442,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotMainThread) {
 }
 
 TEST_F(TrackedObjectsTest, LifeCycleToSnapshotMainThread) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "LifeCycleToSnapshotMainThread";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -514,11 +471,7 @@ TEST_F(TrackedObjectsTest, LifeCycleToSnapshotMainThread) {
 }
 
 TEST_F(TrackedObjectsTest, TwoPhases) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TwoPhases";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -617,11 +570,7 @@ TEST_F(TrackedObjectsTest, TwoPhases) {
 }
 
 TEST_F(TrackedObjectsTest, ThreePhases) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "ThreePhases";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -762,11 +711,7 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
 }
 
 TEST_F(TrackedObjectsTest, TwoPhasesSecondEmpty) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TwoPhasesSecondEmpty";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -829,11 +774,7 @@ TEST_F(TrackedObjectsTest, TwoPhasesSecondEmpty) {
 }
 
 TEST_F(TrackedObjectsTest, TwoPhasesFirstEmpty) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   ThreadData::OnProfilingPhaseCompleted(0);
 
@@ -894,11 +835,7 @@ TEST_F(TrackedObjectsTest, TwoPhasesFirstEmpty) {
 // our tallied births are matched by tallied deaths (except for when the
 // task is still running, or is queued).
 TEST_F(TrackedObjectsTest, LifeCycleMidDeactivatedToSnapshotMainThread) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "LifeCycleMidDeactivatedToSnapshotMainThread";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -911,8 +848,7 @@ TEST_F(TrackedObjectsTest, LifeCycleMidDeactivatedToSnapshotMainThread) {
   pending_task.time_posted = kTimePosted;  // Overwrite implied Now().
 
   // Turn off tracking now that we have births.
-  EXPECT_TRUE(
-      ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED));
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const unsigned int kStartOfRun = 5;
   const unsigned int kEndOfRun = 7;
@@ -934,10 +870,7 @@ TEST_F(TrackedObjectsTest, LifeCycleMidDeactivatedToSnapshotMainThread) {
 // the birth nor the death will be recorded.
 TEST_F(TrackedObjectsTest, LifeCyclePreDeactivatedToSnapshotMainThread) {
   // Start in the deactivated state.
-  if (!ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "LifeCyclePreDeactivatedToSnapshotMainThread";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -974,11 +907,7 @@ TEST_F(TrackedObjectsTest, LifeCyclePreDeactivatedToSnapshotMainThread) {
 }
 
 TEST_F(TrackedObjectsTest, TwoLives) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TwoLives";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -1018,11 +947,7 @@ TEST_F(TrackedObjectsTest, TwoLives) {
 }
 
 TEST_F(TrackedObjectsTest, DifferentLives) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   // Use a well named thread.
   ThreadData::InitializeThreadContext(kMainThreadName);
@@ -1094,11 +1019,7 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
 }
 
 TEST_F(TrackedObjectsTest, TaskWithNestedExclusion) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TaskWithNestedExclusion";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -1132,11 +1053,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusion) {
 }
 
 TEST_F(TrackedObjectsTest, TaskWith2NestedExclusions) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TaskWith2NestedExclusions";
   Location location(kFunction, kFile, kLineNumber, NULL);
@@ -1176,11 +1093,7 @@ TEST_F(TrackedObjectsTest, TaskWith2NestedExclusions) {
 }
 
 TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(
-          ThreadData::PROFILING_ACTIVE)) {
-    // Don't run the test if task tracking is not compiled in.
-    return;
-  }
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TaskWithNestedExclusionWithNestedTask";
   Location location(kFunction, kFile, kLineNumber, NULL);

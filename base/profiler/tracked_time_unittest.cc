@@ -70,16 +70,14 @@ TEST(TrackedTimeTest, TrackedTimerVsTimeTicks) {
 TEST(TrackedTimeTest, TrackedTimerDisabled) {
   // Check to be sure disabling the collection of data induces a null time
   // (which we know will return much faster).
-  if (!ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED))
-    return;
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
   // Since we disabled tracking, we should get a null response.
   TrackedTime track_now = ThreadData::Now();
   EXPECT_TRUE(track_now.is_null());
 }
 
 TEST(TrackedTimeTest, TrackedTimerEnabled) {
-  if (!ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE))
-    return;
+  ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
   // Make sure that when we enable tracking, we get a real timer result.
 
   // First get a 64 bit timer (which should not be null).

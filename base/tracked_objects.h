@@ -499,14 +499,13 @@ class BASE_EXPORT ThreadData {
   const std::string& thread_name() const { return thread_name_; }
 
   // Initializes all statics if needed (this initialization call should be made
-  // while we are single threaded).  Returns false if unable to initialize.
-  static bool Initialize();
+  // while we are single threaded).
+  static void Initialize();
 
   // Sets internal status_.
   // If |status| is false, then status_ is set to DEACTIVATED.
   // If |status| is true, then status_ is set to PROFILING_ACTIVE.
-  // If it fails to initialize the TLS slot, this function will return false.
-  static bool InitializeAndSetTrackingStatus(Status status);
+  static void InitializeAndSetTrackingStatus(Status status);
 
   static Status status();
 

@@ -4,15 +4,12 @@
 
 #include "base/threading/thread_local.h"
 
-#include "base/logging.h"
-
 namespace base {
 namespace internal {
 
 // static
 void ThreadLocalPlatform::AllocateSlot(SlotType* slot) {
-  bool succeed = slot->Initialize(NULL);
-  CHECK(succeed);
+  slot->Initialize(nullptr);
 }
 
 // static

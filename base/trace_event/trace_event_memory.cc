@@ -71,13 +71,12 @@ void DeleteStackOnThreadCleanup(void* value) {
   delete stack;
 }
 
-// Initializes the thread-local TraceMemoryStack pointer. Returns true on
-// success or if it is already initialized.
-bool InitThreadLocalStorage() {
+// Initializes the thread-local TraceMemoryStack pointer.
+void InitThreadLocalStorage() {
   if (tls_trace_memory_stack.initialized())
-    return true;
-  // Initialize the thread-local storage key, returning true on success.
-  return tls_trace_memory_stack.Initialize(&DeleteStackOnThreadCleanup);
+    return;
+  // Initialize the thread-local storage key.
+  tls_trace_memory_stack.Initialize(&DeleteStackOnThreadCleanup);
 }
 
 // Clean up thread-local-storage in the main thread.
@@ -195,8 +194,7 @@ void TraceMemoryController::StartProfiling() {
   if (dump_timer_.IsRunning())
     return;
   DVLOG(1) << "Starting trace memory";
-  if (!InitThreadLocalStorage())
-    return;
+  InitThreadLocalStorage();
   ScopedTraceMemory::set_enabled(true);
   // Call ::HeapProfilerWithPseudoStackStart().
   heap_profiler_start_function_(&GetPseudoStack);

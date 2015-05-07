@@ -362,8 +362,7 @@ ThreadData* ThreadData::next() const { return next_; }
 
 // static
 void ThreadData::InitializeThreadContext(const std::string& suggested_name) {
-  if (!Initialize())  // Always initialize if needed.
-    return;
+  Initialize();
   ThreadData* current_thread_data =
       reinterpret_cast<ThreadData*>(tls_index_.Get());
   if (current_thread_data)
@@ -692,9 +691,9 @@ static void OptionallyInitializeAlternateTimer() {
     ThreadData::SetAlternateTimeSource(alternate_time_source);
 }
 
-bool ThreadData::Initialize() {
+void ThreadData::Initialize() {
   if (status_ >= DEACTIVATED)
-    return true;  // Someone else did the initialization.
+    return;  // Someone else did the initialization.
   // Due to racy lazy initialization in tests, we'll need to recheck status_
   // after we acquire the lock.
 
@@ -703,7 +702,7 @@ bool ThreadData::Initialize() {
   // initialization.
   base::AutoLock lock(*list_lock_.Pointer());
   if (status_ >= DEACTIVATED)
-    return true;  // Someone raced in here and beat us.
+    return;  // Someone raced in here and beat us.
 
   // Put an alternate timer in place if the environment calls for it, such as
   // for tracking TCMalloc allocations.  This insertion is idempotent, so we
@@ -717,8 +716,7 @@ bool ThreadData::Initialize() {
   if (!tls_index_.initialized()) {  // Testing may have initialized this.
     DCHECK_EQ(status_, UNINITIALIZED);
     tls_index_.Initialize(&ThreadData::OnThreadTermination);
-    if (!tls_index_.initialized())
-      return false;
+    DCHECK(tls_index_.initialized());
   } else {
     // TLS was initialzed for us earlier.
     DCHECK_EQ(status_, DORMANT_DURING_TESTS);
@@ -733,21 +731,18 @@ bool ThreadData::Initialize() {
   // we get the lock earlier in this method.
   status_ = kInitialStartupState;
   DCHECK(status_ != UNINITIALIZED);
-  return true;
 }
 
 // static
-bool ThreadData::InitializeAndSetTrackingStatus(Status status) {
+void ThreadData::InitializeAndSetTrackingStatus(Status status) {
   DCHECK_GE(status, DEACTIVATED);
   DCHECK_LE(status, PROFILING_ACTIVE);
 
-  if (!Initialize())  // No-op if already initialized.
-    return false;  // Not compiled in.
+  Initialize();  // No-op if already initialized.
 
   if (status > DEACTIVATED)
     status = PROFILING_ACTIVE;
   status_ = status;
-  return true;
 }
 
 // static
@@ -801,8 +796,8 @@ void ThreadData::ShutdownSingleThreadedCleanup(bool leak) {
   // This is only called from test code, where we need to cleanup so that
   // additional tests can be run.
   // We must be single threaded... but be careful anyway.
-  if (!InitializeAndSetTrackingStatus(DEACTIVATED))
-    return;
+  InitializeAndSetTrackingStatus(DEACTIVATED);
+
   ThreadData* thread_data_list;
   {
     base::AutoLock lock(*list_lock_.Pointer());
