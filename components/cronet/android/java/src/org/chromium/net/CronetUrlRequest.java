@@ -21,7 +21,7 @@ import java.util.concurrent.Executor;
 
 /**
  * UrlRequest using Chromium HTTP stack implementation. Could be accessed from
- * any thread on Executor. Cancel can be done from any thread.
+ * any thread on Executor. Cancel can be called from any thread.
  * All @CallByNative methods are called on native network thread
  * and post tasks with listener calls onto Executor. Upon return from listener
  * callback native request adapter is called on executive thread and posts
@@ -34,14 +34,13 @@ final class CronetUrlRequest implements UrlRequest {
     private long mUrlRequestAdapter;
 
     private boolean mStarted = false;
-    private boolean mCanceled = false;
     private boolean mDisableCache = false;
     private boolean mWaitingOnRedirect = false;
     private boolean mWaitingOnRead = false;
 
     /*
-     * Synchronize access to mUrlRequestAdapter, mStarted, mCanceled and
-     * mDestroyAfterReading.
+     * Synchronize access to mUrlRequestAdapter, mStarted, mWaitingOnRedirect,
+     * and mWaitingOnRead.
      */
     private final Object mUrlRequestAdapterLock = new Object();
     private final CronetUrlRequestContext mRequestContext;
@@ -78,7 +77,7 @@ final class CronetUrlRequest implements UrlRequest {
 
         @Override
         public void run() {
-            if (isCanceled()) {
+            if (isDone()) {
                 return;
             }
             try {
@@ -314,7 +313,7 @@ final class CronetUrlRequest implements UrlRequest {
             }
             mWaitingOnRedirect = false;
 
-            if (isCanceled()) {
+            if (isDone()) {
                 return;
             }
 
@@ -330,14 +329,14 @@ final class CronetUrlRequest implements UrlRequest {
                         "ByteBuffer is already full.");
             }
 
-            if (isCanceled()) {
-                return;
-            }
-
             if (!mWaitingOnRead) {
                 throw new IllegalStateException("Unexpected read attempt.");
             }
             mWaitingOnRead = false;
+
+            if (isDone()) {
+                return;
+            }
 
             // Indicate buffer has no new data.  This is primarily to make it
             // clear the buffer has no data in the failure and completion cases.
@@ -359,18 +358,17 @@ final class CronetUrlRequest implements UrlRequest {
     @Override
     public void cancel() {
         synchronized (mUrlRequestAdapterLock) {
-            if (mCanceled || !mStarted) {
+            if (isDone() || !mStarted) {
                 return;
             }
-            mCanceled = true;
             destroyRequestAdapter();
         }
     }
 
     @Override
-    public boolean isCanceled() {
+    public boolean isDone() {
         synchronized (mUrlRequestAdapterLock) {
-            return mCanceled;
+            return mStarted && mUrlRequestAdapter == 0;
         }
     }
 
@@ -431,7 +429,7 @@ final class CronetUrlRequest implements UrlRequest {
 
     private void checkNotStarted() {
         synchronized (mUrlRequestAdapterLock) {
-            if (mStarted || isCanceled()) {
+            if (mStarted || isDone()) {
                 throw new IllegalStateException("Request is already started.");
             }
         }
@@ -458,12 +456,12 @@ final class CronetUrlRequest implements UrlRequest {
                 "CalledByNative method has thrown an exception", e);
         Log.e(CronetUrlRequestContext.LOG_TAG,
                 "Exception in CalledByNative method", e);
-        // Do not call into listener if request is canceled.
+        // Do not call into listener if request is complete.
         synchronized (mUrlRequestAdapterLock) {
-            if (isCanceled()) {
+            if (isDone()) {
                 return;
             }
-            cancel();
+            destroyRequestAdapter();
         }
         try {
             mListener.onFailed(this, mResponseInfo, requestError);
@@ -490,10 +488,10 @@ final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             public void run() {
                 synchronized (mUrlRequestAdapterLock) {
-                    if (isCanceled()) {
+                    if (isDone()) {
                         return;
                     }
-                    cancel();
+                    destroyRequestAdapter();
                 }
                 try {
                     mListener.onFailed(CronetUrlRequest.this,
@@ -534,7 +532,7 @@ final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             public void run() {
                 synchronized (mUrlRequestAdapterLock) {
-                    if (isCanceled()) {
+                    if (isDone()) {
                         return;
                     }
                     mWaitingOnRedirect = true;
@@ -562,7 +560,7 @@ final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             public void run() {
                 synchronized (mUrlRequestAdapterLock) {
-                    if (isCanceled()) {
+                    if (isDone()) {
                         return;
                     }
                     mWaitingOnRead = true;
@@ -623,7 +621,7 @@ final class CronetUrlRequest implements UrlRequest {
         Runnable task = new Runnable() {
             public void run() {
                 synchronized (mUrlRequestAdapterLock) {
-                    if (isCanceled()) {
+                    if (isDone()) {
                         return;
                     }
                     // Destroy adapter first, so request context could be shut

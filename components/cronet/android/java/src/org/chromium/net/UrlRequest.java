@@ -110,10 +110,10 @@ public interface UrlRequest {
     public void cancel();
 
     /**
-     * @return True if the request has been cancelled by the embedder.
-     * False in all other cases (Including errors).
+     * @return True if the request was successfully started and is now done
+     * with its work (completed, canceled, or failed).
      */
-    public boolean isCanceled();
+    public boolean isDone();
 
     /**
      * Disables cache for the request. If context is not set up to use cache,

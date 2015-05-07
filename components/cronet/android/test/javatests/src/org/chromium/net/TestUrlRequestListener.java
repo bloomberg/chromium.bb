@@ -113,6 +113,7 @@ class TestUrlRequestListener implements UrlRequestListener {
             ResponseInfo info,
             String newLocationUrl) {
         assertEquals(mExecutorThread, Thread.currentThread());
+        assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
                    || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
         assertNull(mError);
@@ -130,6 +131,7 @@ class TestUrlRequestListener implements UrlRequestListener {
     @Override
     public void onResponseStarted(UrlRequest request, ResponseInfo info) {
         assertEquals(mExecutorThread, Thread.currentThread());
+        assertFalse(request.isDone());
         assertTrue(mResponseStep == ResponseStep.NOTHING
                    || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
         assertNull(mError);
@@ -147,6 +149,7 @@ class TestUrlRequestListener implements UrlRequestListener {
             ResponseInfo info,
             ByteBuffer byteBuffer) {
         assertEquals(mExecutorThread, Thread.currentThread());
+        assertFalse(request.isDone());
         assertTrue(byteBuffer.remaining() > 0);
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                    || mResponseStep == ResponseStep.ON_READ_COMPLETED);
@@ -171,6 +174,7 @@ class TestUrlRequestListener implements UrlRequestListener {
     @Override
     public void onSucceeded(UrlRequest request, ExtendedResponseInfo info) {
         assertEquals(mExecutorThread, Thread.currentThread());
+        assertTrue(request.isDone());
         assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
                    || mResponseStep == ResponseStep.ON_READ_COMPLETED);
         assertNull(mError);
@@ -186,6 +190,7 @@ class TestUrlRequestListener implements UrlRequestListener {
             ResponseInfo info,
             UrlRequestException error) {
         assertEquals(mExecutorThread, Thread.currentThread());
+        assertTrue(request.isDone());
         // Shouldn't happen after success.
         assertTrue(mResponseStep != ResponseStep.ON_SUCCEEDED);
         // Should happen at most once for a single request.

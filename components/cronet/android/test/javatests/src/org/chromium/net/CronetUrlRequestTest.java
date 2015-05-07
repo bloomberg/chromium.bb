@@ -53,6 +53,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 url, listener, listener.getExecutor());
         urlRequest.start();
         listener.blockForDone();
+        assertTrue(urlRequest.isDone());
         return listener;
     }
 
@@ -1246,7 +1247,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         listener.blockForDone();
         assertEquals(1, listener.mRedirectCount);
         assertEquals(listener.mResponseStep, failureStep);
-        assertTrue(urlRequest.isCanceled());
+        assertTrue(urlRequest.isDone());
         assertEquals(expectResponseInfo, listener.mResponseInfo != null);
         assertEquals(expectError, listener.mError != null);
         assertEquals(expectError, listener.mOnErrorCalled);
@@ -1294,7 +1295,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         listener.blockForDone();
         assertEquals(1, listener.mRedirectCount);
         assertEquals(listener.mResponseStep, ResponseStep.ON_SUCCEEDED);
-        assertFalse(urlRequest.isCanceled());
+        assertTrue(urlRequest.isDone());
         assertNotNull(listener.mResponseInfo);
         assertNull(listener.mError);
         assertFalse(listener.mOnErrorCalled);
