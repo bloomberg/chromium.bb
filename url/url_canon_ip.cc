@@ -5,6 +5,7 @@
 #include "url/url_canon_ip.h"
 
 #include <stdlib.h>
+#include <limits>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -146,7 +147,7 @@ CanonHostInfo::Family IPv4ComponentToNumber(const CHAR* spec,
   uint64 num = _strtoui64(buf, NULL, BaseForType(base));
 
   // Check for 32-bit overflow.
-  if (num > kuint32max)
+  if (num > std::numeric_limits<uint32_t>::max())
     return CanonHostInfo::BROKEN;
 
   // No overflow.  Success!
@@ -198,7 +199,7 @@ CanonHostInfo::Family DoIPv4AddressToNumber(const CHAR* spec,
   // First, process all components but the last, while making sure each fits
   // within an 8-bit field.
   for (int i = 0; i < existing_components - 1; i++) {
-    if (component_values[i] > kuint8max)
+    if (component_values[i] > std::numeric_limits<uint8_t>::max())
       return CanonHostInfo::BROKEN;
     address[i] = static_cast<unsigned char>(component_values[i]);
   }
