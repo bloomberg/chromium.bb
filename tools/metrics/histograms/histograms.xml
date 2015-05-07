@@ -49028,6 +49028,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1680432366" label="virtualCamera.ax"/>
   <int value="1736709911" label="bitguard.dll"/>
   <int value="1763208296" label="safetynut.dll"/>
+  <int value="1806942655" label="dpinterface32.dll"/>
   <int value="1850669228" label="YCWebCameraSource.ax"/>
   <int value="1979101632" label="bsvc.dll"/>
   <int value="1996673448" label="scdetour.dll"/>
