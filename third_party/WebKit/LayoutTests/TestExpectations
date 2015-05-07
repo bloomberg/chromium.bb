@@ -2167,3 +2167,5 @@ crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/we
 crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/week-suggestion-picker-min-max-attribute.html [ Timeout ]
 crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Timeout ]
 crbug.com/485428 [ Linux ] virtual/slimmingpaint/fast/forms/suggestion-picker/week-suggestion-picker-step-attribute.html [ Timeout ]
+
+crbug.com/480652 virtual/slimmingpaint/svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
