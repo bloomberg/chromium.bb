@@ -18,7 +18,7 @@ static const std::string kContraints = "c";
 static const std::string kRtcConfiguration = "r";
 static const std::string kUrl = "u";
 
-class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
+class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
  public:
   void OnUpdate(const std::string& command, const base::Value* value) override {
     command_ = command;
@@ -39,9 +39,9 @@ class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
    scoped_ptr<base::Value> value_;
 };
 
-class WebRTCInternalsTest : public testing::Test {
+class WebRtcInternalsTest : public testing::Test {
  public:
-  WebRTCInternalsTest() : io_thread_(BrowserThread::UI, &io_loop_) {
+  WebRtcInternalsTest() : io_thread_(BrowserThread::UI, &io_loop_) {
     WebRTCInternals::GetInstance()->ResetForTesting();
   }
 
@@ -92,9 +92,9 @@ class WebRTCInternalsTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(WebRTCInternalsTest, AddRemoveObserver) {
-  scoped_ptr<MockWebRTCInternalsProxy> observer(
-      new MockWebRTCInternalsProxy());
+TEST_F(WebRtcInternalsTest, AddRemoveObserver) {
+  scoped_ptr<MockWebRtcInternalsProxy> observer(
+      new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
@@ -104,9 +104,9 @@ TEST_F(WebRTCInternalsTest, AddRemoveObserver) {
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(3, 4);
 }
 
-TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
-  scoped_ptr<MockWebRTCInternalsProxy> observer(
-      new MockWebRTCInternalsProxy());
+TEST_F(WebRtcInternalsTest, SendAddPeerConnectionUpdate) {
+  scoped_ptr<MockWebRtcInternalsProxy> observer(
+      new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
       0, 1, 2, kUrl, kRtcConfiguration, kContraints);
@@ -125,9 +125,9 @@ TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(1, 2);
 }
 
-TEST_F(WebRTCInternalsTest, SendRemovePeerConnectionUpdate) {
-  scoped_ptr<MockWebRTCInternalsProxy> observer(
-      new MockWebRTCInternalsProxy());
+TEST_F(WebRtcInternalsTest, SendRemovePeerConnectionUpdate) {
+  scoped_ptr<MockWebRtcInternalsProxy> observer(
+      new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
       0, 1, 2, kUrl, kRtcConfiguration, kContraints);
@@ -143,9 +143,9 @@ TEST_F(WebRTCInternalsTest, SendRemovePeerConnectionUpdate) {
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
 }
 
-TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
-  scoped_ptr<MockWebRTCInternalsProxy> observer(
-      new MockWebRTCInternalsProxy());
+TEST_F(WebRtcInternalsTest, SendUpdatePeerConnectionUpdate) {
+  scoped_ptr<MockWebRtcInternalsProxy> observer(
+      new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
       0, 1, 2, kUrl, kRtcConfiguration, kContraints);
@@ -173,8 +173,8 @@ TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
 }
 
-TEST_F(WebRTCInternalsTest, AddGetUserMedia) {
-  scoped_ptr<MockWebRTCInternalsProxy> observer(new MockWebRTCInternalsProxy());
+TEST_F(WebRtcInternalsTest, AddGetUserMedia) {
+  scoped_ptr<MockWebRtcInternalsProxy> observer(new MockWebRtcInternalsProxy());
 
   // Add one observer before "getUserMedia".
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
@@ -193,7 +193,7 @@ TEST_F(WebRTCInternalsTest, AddGetUserMedia) {
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
 }
 
-TEST_F(WebRTCInternalsTest, SendAllUpdateWithGetUserMedia) {
+TEST_F(WebRtcInternalsTest, SendAllUpdateWithGetUserMedia) {
   const int rid = 1;
   const int pid = 2;
   const std::string audio_constraint = "aaa";
@@ -201,7 +201,7 @@ TEST_F(WebRTCInternalsTest, SendAllUpdateWithGetUserMedia) {
   WebRTCInternals::GetInstance()->OnGetUserMedia(
       rid, pid, kUrl, true, true, audio_constraint, video_constraint);
 
-  scoped_ptr<MockWebRTCInternalsProxy> observer(new MockWebRTCInternalsProxy());
+  scoped_ptr<MockWebRtcInternalsProxy> observer(new MockWebRtcInternalsProxy());
   // Add one observer after "getUserMedia".
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->UpdateObserver(observer.get());
@@ -213,7 +213,7 @@ TEST_F(WebRTCInternalsTest, SendAllUpdateWithGetUserMedia) {
   WebRTCInternals::GetInstance()->RemoveObserver(observer.get());
 }
 
-TEST_F(WebRTCInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
+TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   const int rid = 0, pid = 1, lid = 2;
   const std::string update_type = "fakeType";
   const std::string update_value = "fakeValue";
@@ -223,7 +223,7 @@ TEST_F(WebRTCInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   WebRTCInternals::GetInstance()->OnUpdatePeerConnection(
       pid, lid, update_type, update_value);
 
-  scoped_ptr<MockWebRTCInternalsProxy> observer(new MockWebRTCInternalsProxy());
+  scoped_ptr<MockWebRtcInternalsProxy> observer(new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
 
   WebRTCInternals::GetInstance()->UpdateObserver(observer.get());
@@ -256,9 +256,9 @@ TEST_F(WebRTCInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   EXPECT_FALSE(time.empty());
 }
 
-TEST_F(WebRTCInternalsTest, OnAddStats) {
+TEST_F(WebRtcInternalsTest, OnAddStats) {
   const int rid = 0, pid = 1, lid = 2;
-  scoped_ptr<MockWebRTCInternalsProxy> observer(new MockWebRTCInternalsProxy());
+  scoped_ptr<MockWebRtcInternalsProxy> observer(new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
       rid, pid, lid, kUrl, kRtcConfiguration, kContraints);
@@ -277,8 +277,8 @@ TEST_F(WebRTCInternalsTest, OnAddStats) {
   VerifyList(dict, "reports", list);
 }
 
-TEST_F(WebRTCInternalsTest, AecRecordingFileSelectionCanceled) {
-  scoped_ptr<MockWebRTCInternalsProxy> observer(new MockWebRTCInternalsProxy());
+TEST_F(WebRtcInternalsTest, AecRecordingFileSelectionCanceled) {
+  scoped_ptr<MockWebRtcInternalsProxy> observer(new MockWebRtcInternalsProxy());
   WebRTCInternals::GetInstance()->AddObserver(observer.get());
   WebRTCInternals::GetInstance()->FileSelectionCanceled(NULL);
   EXPECT_EQ("aecRecordingFileSelectionCancelled", observer->command());

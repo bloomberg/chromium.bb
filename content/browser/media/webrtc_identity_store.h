@@ -81,7 +81,7 @@ class CONTENT_EXPORT WebRTCIdentityStore
 
  private:
   friend class base::RefCountedThreadSafe<WebRTCIdentityStore>;
-  friend class WebRTCIdentityStoreTest;
+  friend class WebRtcIdentityStoreTest;
 
   void SetValidityPeriodForTesting(base::TimeDelta validity_period);
   void SetTaskRunnerForTesting(

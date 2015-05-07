@@ -15,7 +15,7 @@
 using content::BrowserThread;
 using content::MessageLoopRunner;
 
-class WebRTCDeviceProviderTest : public InProcessBrowserTest {
+class WebRtcDeviceProviderTest : public InProcessBrowserTest {
  protected:
   scoped_refptr<WebRTCDeviceProvider> CreateProvider();
   static void Unreference(
@@ -25,7 +25,7 @@ class WebRTCDeviceProviderTest : public InProcessBrowserTest {
 };
 
 scoped_refptr<WebRTCDeviceProvider>
-WebRTCDeviceProviderTest::CreateProvider() {
+WebRtcDeviceProviderTest::CreateProvider() {
   return new WebRTCDeviceProvider(
       browser()->profile(),
       SigninManagerFactory::GetForProfile(browser()->profile()),
@@ -33,11 +33,11 @@ WebRTCDeviceProviderTest::CreateProvider() {
 }
 
 // static
-void WebRTCDeviceProviderTest::Unreference(
+void WebRtcDeviceProviderTest::Unreference(
     scoped_refptr<WebRTCDeviceProvider> provider) {
 }
 
-IN_PROC_BROWSER_TEST_F(WebRTCDeviceProviderTest, TestDeleteSelf) {
+IN_PROC_BROWSER_TEST_F(WebRtcDeviceProviderTest, TestDeleteSelf) {
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO,
@@ -47,6 +47,6 @@ IN_PROC_BROWSER_TEST_F(WebRTCDeviceProviderTest, TestDeleteSelf) {
   runner->Run();
 }
 
-IN_PROC_BROWSER_TEST_F(WebRTCDeviceProviderTest, OutliveProfile) {
+IN_PROC_BROWSER_TEST_F(WebRtcDeviceProviderTest, OutliveProfile) {
   provider_ = CreateProvider();
 }
