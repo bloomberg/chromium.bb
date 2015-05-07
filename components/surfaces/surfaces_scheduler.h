@@ -30,6 +30,7 @@ class SurfacesScheduler : public cc::SchedulerClient {
 
  private:
   void WillBeginImplFrame(const cc::BeginFrameArgs& args) override;
+  void DidFinishImplFrame() override;
   void ScheduledActionSendBeginMainFrame() override;
   cc::DrawResult ScheduledActionDrawAndSwapIfPossible() override;
   cc::DrawResult ScheduledActionDrawAndSwapForced() override;
@@ -43,7 +44,6 @@ class SurfacesScheduler : public cc::SchedulerClient {
   base::TimeDelta DrawDurationEstimate() override;
   base::TimeDelta BeginMainFrameToCommitDurationEstimate() override;
   base::TimeDelta CommitToActivateDurationEstimate() override;
-  void DidBeginImplFrameDeadline() override;
   void SendBeginFramesToChildren(const cc::BeginFrameArgs& args) override;
   void SendBeginMainFrameNotExpectedSoon() override;
 

@@ -523,7 +523,7 @@ void Scheduler::FinishImplFrame() {
   state_machine_.OnBeginImplFrameIdle();
   ProcessScheduledActions();
 
-  client_->DidBeginImplFrameDeadline();
+  client_->DidFinishImplFrame();
   frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
 }
 

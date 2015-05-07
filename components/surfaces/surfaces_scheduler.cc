@@ -48,6 +48,9 @@ void SurfacesScheduler::RemoveDisplay(cc::Display* display) {
 void SurfacesScheduler::WillBeginImplFrame(const cc::BeginFrameArgs& args) {
 }
 
+void SurfacesScheduler::DidFinishImplFrame() {
+}
+
 void SurfacesScheduler::ScheduledActionSendBeginMainFrame() {
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
@@ -101,9 +104,6 @@ base::TimeDelta SurfacesScheduler::BeginMainFrameToCommitDurationEstimate() {
 
 base::TimeDelta SurfacesScheduler::CommitToActivateDurationEstimate() {
   return base::TimeDelta();
-}
-
-void SurfacesScheduler::DidBeginImplFrameDeadline() {
 }
 
 void SurfacesScheduler::SendBeginFramesToChildren(

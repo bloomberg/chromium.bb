@@ -1671,7 +1671,12 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
 void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   // Sample the frame time now. This time will be used for updating animations
   // when we draw.
-  UpdateCurrentBeginFrameArgs(args);
+  DCHECK(!current_begin_frame_args_.IsValid());
+  current_begin_frame_args_ = args;
+  // TODO(mithro): Stop overriding the frame time once the usage of frame
+  // timing is unified.
+  current_begin_frame_args_.frame_time = gfx::FrameTime::Now();
+
   // Cache the begin impl frame interval
   begin_impl_frame_interval_ = args.interval;
 
@@ -1684,6 +1689,11 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
 
   for (auto& it : video_frame_controllers_)
     it->OnBeginFrame(args);
+}
+
+void LayerTreeHostImpl::DidFinishImplFrame() {
+  DCHECK(current_begin_frame_args_.IsValid());
+  current_begin_frame_args_ = BeginFrameArgs();
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {
@@ -3131,19 +3141,6 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
 
 TreePriority LayerTreeHostImpl::GetTreePriority() const {
   return global_tile_state_.tree_priority;
-}
-
-void LayerTreeHostImpl::UpdateCurrentBeginFrameArgs(
-    const BeginFrameArgs& args) {
-  DCHECK(!current_begin_frame_args_.IsValid());
-  current_begin_frame_args_ = args;
-  // TODO(skyostil): Stop overriding the frame time once the usage of frame
-  // timing is unified.
-  current_begin_frame_args_.frame_time = gfx::FrameTime::Now();
-}
-
-void LayerTreeHostImpl::ResetCurrentBeginFrameArgsForNextFrame() {
-  current_begin_frame_args_ = BeginFrameArgs();
 }
 
 BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {

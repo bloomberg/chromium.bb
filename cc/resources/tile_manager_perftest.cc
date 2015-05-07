@@ -390,7 +390,7 @@ class TileManagerPerfTest : public testing::Test {
     do {
       BeginFrameArgs args =
           CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
-      host_impl_.UpdateCurrentBeginFrameArgs(args);
+      host_impl_.WillBeginImplFrame(args);
       for (const auto& layer : layers)
         layer->UpdateTiles(resourceless_software_draw);
 
@@ -398,7 +398,7 @@ class TileManagerPerfTest : public testing::Test {
       tile_manager()->PrepareTiles(global_state);
       tile_manager()->UpdateVisibleTiles(global_state);
       timer_.NextLap();
-      host_impl_.ResetCurrentBeginFrameArgsForNextFrame();
+      host_impl_.DidFinishImplFrame();
     } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("prepare_tiles", "", test_name,
