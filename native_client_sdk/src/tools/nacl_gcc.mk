@@ -94,79 +94,79 @@ LDFLAGS_SHARED = -shared
 #
 # Compile Macro
 #
-# $1 = Source Name
-# $2 = Compile Flags
+# $1 = Source name
+# $2 = Compiler flags
 #
 define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1),_x86_32)
 $(call SRC_TO_OBJ,$(1),_x86_32): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(X86_32_CC) -o $$@ -c $$< $(POSIX_CFLAGS) $(2) $(NACL_CFLAGS) $(X86_32_CFLAGS))
+	$(call LOG,CC  ,$$@,$(X86_32_CC) -o $$@ -c $$< $(POSIX_CFLAGS) $(NACL_CFLAGS) $(X86_32_CFLAGS) $(CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_32)
 
 -include $(call SRC_TO_DEP,$(1),_x86_64)
 $(call SRC_TO_OBJ,$(1),_x86_64): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(X86_64_CC) -o $$@ -c $$< $(POSIX_CFLAGS) $(2) $(NACL_CFLAGS) $(X86_64_CFLAGS))
+	$(call LOG,CC  ,$$@,$(X86_64_CC) -o $$@ -c $$< $(POSIX_CFLAGS) $(NACL_CFLAGS) $(X86_64_CFLAGS) $(CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_64)
 
 -include $(call SRC_TO_DEP,$(1),_arm)
 $(call SRC_TO_OBJ,$(1),_arm): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(ARM_CC) -o $$@ -c $$< $(POSIX_CFLAGS) $(2) $(NACL_CFLAGS) $(ARM_CFLAGS))
+	$(call LOG,CC  ,$$@,$(ARM_CC) -o $$@ -c $$< $(POSIX_CFLAGS) $(NACL_CFLAGS) $(ARM_CFLAGS) $(CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_arm)
 
 -include $(call SRC_TO_DEP,$(1),_x86_32_pic)
 $(call SRC_TO_OBJ,$(1),_x86_32_pic): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(X86_32_CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(2) $(NACL_CFLAGS) $(X86_32_CFLAGS))
+	$(call LOG,CC  ,$$@,$(X86_32_CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(NACL_CFLAGS) $(X86_32_CFLAGS) $(CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_32_pic)
 
 -include $(call SRC_TO_DEP,$(1),_x86_64_pic)
 $(call SRC_TO_OBJ,$(1),_x86_64_pic): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(X86_64_CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(2) $(NACL_CFLAGS) $(X86_64_CFLAGS))
+	$(call LOG,CC  ,$$@,$(X86_64_CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(NACL_CFLAGS) $(X86_64_CFLAGS) $(CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_64_pic)
 
 -include $(call SRC_TO_DEP,$(1),_arm_pic)
 $(call SRC_TO_OBJ,$(1),_arm_pic): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(ARM_CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(2) $(NACL_CFLAGS) $(ARM_CFLAGS))
+	$(call LOG,CC  ,$$@,$(ARM_CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(NACL_CFLAGS) $(ARM_CFLAGS) $(CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_arm_pic)
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1),_x86_32)
 $(call SRC_TO_OBJ,$(1),_x86_32): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(X86_32_CXX) -o $$@ -c $$< $(POSIX_CFLAGS) $(2) $(NACL_CXXFLAGS) $(X86_32_CXXFLAGS))
+	$(call LOG,CXX ,$$@,$(X86_32_CXX) -o $$@ -c $$< $(POSIX_CFLAGS) $(NACL_CXXFLAGS) $(X86_32_CXXFLAGS) $(CXXFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_32)
 
 -include $(call SRC_TO_DEP,$(1),_x86_64)
 $(call SRC_TO_OBJ,$(1),_x86_64): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(X86_64_CXX) -o $$@ -c $$< $(POSIX_CFLAGS) $(2) $(NACL_CXXFLAGS) $(X86_64_CXXFLAGS))
+	$(call LOG,CXX ,$$@,$(X86_64_CXX) -o $$@ -c $$< $(POSIX_CFLAGS) $(NACL_CXXFLAGS) $(X86_64_CXXFLAGS) $(CXXFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_64)
 
 -include $(call SRC_TO_DEP,$(1),_arm)
 $(call SRC_TO_OBJ,$(1),_arm): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(ARM_CXX) -o $$@ -c $$< $(POSIX_CFLAGS) $(2) $(NACL_CXXFLAGS) $(ARM_CXXFLAGS))
+	$(call LOG,CXX ,$$@,$(ARM_CXX) -o $$@ -c $$< $(POSIX_CFLAGS) $(NACL_CXXFLAGS) $(ARM_CXXFLAGS) $(CXXFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_arm)
 
 -include $(call SRC_TO_DEP,$(1),_x86_32_pic)
 $(call SRC_TO_OBJ,$(1),_x86_32_pic): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(X86_32_CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(2) $(NACL_CXXFLAGS) $(X86_32_CXXFLAGS))
+	$(call LOG,CXX ,$$@,$(X86_32_CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(NACL_CXXFLAGS) $(X86_32_CXXFLAGS) $(CXXFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_32_pic)
 
 -include $(call SRC_TO_DEP,$(1),_x86_64_pic)
 $(call SRC_TO_OBJ,$(1),_x86_64_pic): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(X86_64_CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(2) $(NACL_CXXFLAGS) $(X86_64_CXXFLAGS))
+	$(call LOG,CXX ,$$@,$(X86_64_CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(NACL_CXXFLAGS) $(X86_64_CXXFLAGS) $(CXXFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_x86_64_pic)
 
 -include $(call SRC_TO_DEP,$(1),_arm_pic)
 $(call SRC_TO_OBJ,$(1),_arm_pic): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(ARM_CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(2) $(NACL_CXXFLAGS) $(ARM_CXXFLAGS))
+	$(call LOG,CXX ,$$@,$(ARM_CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(NACL_CXXFLAGS) $(ARM_CXXFLAGS) $(CXXFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_arm_pic)
 endef
 
 
 #
-# $1 = Source Name
-# $2 = POSIX Compile Flags
-# $3 = Include Directories
-# $4 = VC Flags (unused)
+# $1 = Source name
+# $2 = POSIX compiler flags
+# $3 = Include directories
+# $4 = VC flags (unused)
 #
 define COMPILE_RULE
 ifeq ($(suffix $(1)),.c)
@@ -206,11 +206,11 @@ GLIBC_REMAP :=
 # file is part of LIB_RULE, so users of the DEPS system are currently required to
 # use the LIB_RULE macro as well as the SO_RULE for each shared library.
 #
-# $1 = Target Name
-# $2 = List of Sources
+# $1 = Target name
+# $2 = List of source files
 # $3 = List of LIBS
 # $4 = List of DEPS
-# $5 = Library Paths
+# $5 = Library paths
 # $6 = 1 => Don't add to NMF.
 #
 define SO_LINKER_RULE
@@ -270,8 +270,8 @@ endif
 endef
 
 #
-# $1 = Target Name
-# $2 = List of Sources
+# $1 = Target name
+# $2 = List of source files
 # $3 = List of LIBS
 # $4 = List of DEPS
 # $5 = 1 => Don't add to NMF.
@@ -283,10 +283,10 @@ endef
 #
 # LIB Macro
 #
-# $1 = Target Name
-# $2 = List of Sources
-# $3 = POSIX Link Flags
-# $4 = VC Link Flags (unused)
+# $1 = Target name
+# $2 = List of source files
+# $3 = POSIX linker flags
+# $4 = VC linkr flags (unused)
 #
 define LIB_RULE
 $(STAMPDIR)/$(1).stamp:
@@ -343,12 +343,12 @@ endef
 #
 # Specific Link Macro
 #
-# $1 = Target Name
-# $2 = List of Sources
+# $1 = Target name
+# $2 = List of source files
 # $3 = List of LIBS
 # $4 = List of DEPS
-# $5 = Link Flags
-# $6 = Library Paths
+# $5 = Linkr flags
+# $6 = Library paths
 #
 define LINKER_RULE
 ifneq (,$(findstring x86_32,$(ARCHES)))
@@ -380,12 +380,12 @@ endef
 #
 # Generalized Link Macro
 #
-# $1 = Target Name
-# $2 = List of Sources
+# $1 = Target name
+# $2 = List of source files
 # $3 = List of LIBS
 # $4 = List of DEPS
-# $5 = POSIX Linker Switches
-# $6 = VC Linker Switches
+# $5 = POSIX linker flags
+# $6 = VC linker flags
 #
 define LINK_RULE
 $(call LINKER_RULE,$(1),$(2),$(filter-out pthread,$(3)),$(4),$(5),$(LIB_PATHS))

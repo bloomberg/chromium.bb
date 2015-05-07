@@ -48,29 +48,29 @@ endif
 #
 # Individual Macros
 #
-# $1 = Source Name
-# $2 = Compile Flags
+# $1 = Source name
+# $2 = Compile flags
 #
 define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(HOST_CFLAGS) $(2))
+	$(call LOG,CC  ,$$@,$(CC) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(HOST_CFLAGS) $(CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(HOST_CFLAGS) $(2))
+	$(call LOG,CXX ,$$@,$(CXX) -o $$@ -c $$< -fPIC $(POSIX_CFLAGS) $(HOST_CFLAGS) $(CXXFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
 #
 # Compile Macro
 #
-# $1 = Source Name
-# $2 = POSIX Compile Flags
-# $3 = VC Flags (unused)
+# $1 = Source name
+# $2 = POSIX compiler flags
+# $3 = VC compiler flags (unused)
 #
 define COMPILE_RULE
 ifeq ($(suffix $(1)),.c)
@@ -84,9 +84,8 @@ endef
 #
 # SO Macro
 #
-# $1 = Target Name
-# $2 = List of Sources
-#
+# $1 = Target name
+# $2 = list of source files
 #
 define SO_RULE
 $(error 'Shared libraries not supported by Host')
@@ -96,9 +95,8 @@ endef
 #
 # LIB Macro
 #
-# $1 = Target Name
-# $2 = List of Sources
-#
+# $1 = Target name
+# $2 = List of source files
 #
 define LIB_RULE
 $(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
@@ -115,12 +113,12 @@ endef
 #
 # Link Macro
 #
-# $1 = Target Name
+# $1 = Target name
 # $2 = List of inputs
 # $3 = List of libs
 # $4 = List of deps
 # $5 = List of lib dirs
-# $6 = Linker Args
+# $6 = Linker flags
 #
 ifdef STANDALONE
 define LINKER_RULE
@@ -141,11 +139,11 @@ endif
 # Link Macro
 #
 # $1 = Target Name
-# $2 = List of Sources
+# $2 = List of source files
 # $3 = List of LIBS
 # $4 = List of DEPS
-# $5 = POSIX Linker Switches
-# $6 = VC Linker Switches
+# $5 = POSIX linker flags
+# $6 = VC linker flags
 #
 define LINK_RULE
 $(call LINKER_RULE,$(OUTDIR)/$(1)$(HOST_EXT),$(foreach src,$(2),$(call SRC_TO_OBJ,$(src))),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
@@ -159,8 +157,8 @@ all: $(LIB_LIST) $(DEPS_LIST)
 # The host build makes shared libraries, so the best we can do is -S, which
 # only strip debug symbols.  We don't strip the symbol names.
 #
-# $1 = Target Name
-# $2 = Input Name
+# $1 = Target name
+# $2 = Input name
 #
 define STRIP_RULE
 all: $(OUTDIR)/$(1)$(HOST_EXT)

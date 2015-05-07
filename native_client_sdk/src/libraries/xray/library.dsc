@@ -14,9 +14,7 @@
         'symtable.c',
         'xray.c'
       ],
-      'CFLAGS': [
-        '-DXRAY -DXRAY_ANNOTATE -O2'
-      ]
+      'CFLAGS': ['-DXRAY -DXRAY_ANNOTATE -O2']
     }
   ],
   'HEADERS': [
