@@ -346,7 +346,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
     if (!relayoutChildren && simplifiedLayout())
         return;
 
-    LayoutAnalyzer::BlockScope analyzer(*this);
+    LayoutRect prevRect = frameRect();
     SubtreeLayoutScope layoutScope(*this);
 
     // Multiple passes might be required for column and pagination based layout
@@ -381,6 +381,9 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
 
     if (isHTMLDialogElement(node()) && isOutOfFlowPositioned())
         positionDialog();
+
+    if (LayoutAnalyzer* analyzer = frameView()->layoutAnalyzer())
+        analyzer->increment((frameRect() == prevRect) ? LayoutAnalyzer::LayoutBlockRectangleDidNotChange : LayoutAnalyzer::LayoutBlockRectangleChanged);
 
     clearNeedsLayout();
 }
