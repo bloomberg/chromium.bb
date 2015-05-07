@@ -16,6 +16,13 @@
 namespace blink {
 
 class Document;
+class HasTagName {
+public:
+    explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) { }
+    bool operator() (const Element& element) const { return element.hasTagName(m_tagName); }
+private:
+    const QualifiedName m_tagName;
+};
 
 class CORE_EXPORT NthIndexCache final {
     STACK_ALLOCATED();
@@ -25,7 +32,9 @@ public:
     ~NthIndexCache();
 
     inline unsigned nthChildIndex(Element&);
+    inline unsigned nthChildIndexOfType(Element&, const QualifiedName&);
     inline unsigned nthLastChildIndex(Element&);
+    inline unsigned nthLastChildIndexOfType(Element&, const QualifiedName&);
 
 private:
     class NthIndexData final : public NoBaseWillBeGarbageCollected<NthIndexData> {
@@ -35,9 +44,12 @@ private:
         NthIndexData() { }
 
         inline unsigned nthIndex(Element&);
+        inline unsigned nthIndexOfType(Element&, const QualifiedName&);
         inline unsigned nthLastIndex(Element&);
+        inline unsigned nthLastIndexOfType(Element&, const QualifiedName&);
 
         unsigned cacheNthIndices(Element&);
+        unsigned cacheNthIndicesOfType(Element&, const QualifiedName&);
 
         WillBeHeapHashMap<RawPtrWillBeMember<Element>, unsigned> m_elementIndexMap;
         unsigned m_count = 0;
@@ -45,11 +57,20 @@ private:
         DECLARE_TRACE();
     };
 
-    NthIndexData& ensureNthIndexDataFor(Node&);
-
     using ParentMap = WillBeHeapHashMap<RefPtrWillBeMember<Node>, OwnPtrWillBeMember<NthIndexData>>;
-
     OwnPtrWillBeMember<ParentMap> m_parentMap;
+
+    using IndexByType = WillBeHeapHashMap<String, OwnPtrWillBeMember<NthIndexData>>;
+
+    using ParentMapForType = WillBeHeapHashMap<RefPtrWillBeMember<Node>, OwnPtrWillBeMember<IndexByType>>;
+    OwnPtrWillBeMember<ParentMapForType> m_parentMapForType;
+
+
+    NthIndexData& ensureNthIndexDataFor(Node&);
+    NthIndexCache::IndexByType& ensureTypeIndexMap(Node&);
+
+    NthIndexCache::NthIndexData& nthIndexDataWithTagName(Element&);
+
     RawPtrWillBeMember<Document> m_document;
     uint64_t m_domTreeVersion;
 };
@@ -70,11 +91,34 @@ inline unsigned NthIndexCache::NthIndexData::nthIndex(Element& element)
     return index;
 }
 
+inline unsigned NthIndexCache::NthIndexData::nthIndexOfType(Element& element, const QualifiedName& type)
+{
+    if (element.isPseudoElement())
+        return 1;
+    if (!m_count)
+        return cacheNthIndicesOfType(element, type);
+    unsigned index = 0;
+    for (Element* sibling = &element; sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(type)), index++) {
+        auto it = m_elementIndexMap.find(sibling);
+        if (it != m_elementIndexMap.end())
+            return it->value + index;
+    }
+    return index;
+}
+
 inline unsigned NthIndexCache::NthIndexData::nthLastIndex(Element& element)
 {
     if (element.isPseudoElement())
         return 1;
     unsigned index = nthIndex(element);
+    return m_count - index + 1;
+}
+
+inline unsigned NthIndexCache::NthIndexData::nthLastIndexOfType(Element& element, const QualifiedName& type)
+{
+    if (element.isPseudoElement())
+        return 1;
+    unsigned index = nthIndexOfType(element, type);
     return m_count - index + 1;
 }
 
@@ -84,11 +128,24 @@ inline unsigned NthIndexCache::nthChildIndex(Element& element)
     return ensureNthIndexDataFor(*element.parentNode()).nthIndex(element);
 }
 
+inline unsigned NthIndexCache::nthChildIndexOfType(Element& element, const QualifiedName& type)
+{
+    ASSERT(element.parentNode());
+    return nthIndexDataWithTagName(element).nthIndexOfType(element, type);
+}
+
 inline unsigned NthIndexCache::nthLastChildIndex(Element& element)
 {
     ASSERT(element.parentNode());
     return ensureNthIndexDataFor(*element.parentNode()).nthLastIndex(element);
 }
+
+inline unsigned NthIndexCache::nthLastChildIndexOfType(Element& element, const QualifiedName& type)
+{
+    ASSERT(element.parentNode());
+    return nthIndexDataWithTagName(element).nthLastIndexOfType(element, type);
+}
+
 
 } // namespace blink
 

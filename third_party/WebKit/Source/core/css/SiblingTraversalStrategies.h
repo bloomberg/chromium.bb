@@ -48,15 +48,6 @@ public:
     static int countElementsAfter(Element&);
     static int countElementsOfTypeBefore(Element&, const QualifiedName&);
     static int countElementsOfTypeAfter(Element&, const QualifiedName&);
-
-private:
-    class HasTagName {
-    public:
-        explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) { }
-        bool operator() (const Element& element) const { return element.hasTagName(m_tagName); }
-    private:
-        const QualifiedName& m_tagName;
-    };
 };
 
 inline bool DOMSiblingTraversalStrategy::isFirstChild(Element& element)
@@ -93,6 +84,8 @@ inline int DOMSiblingTraversalStrategy::countElementsBefore(Element& element)
 
 inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element& element, const QualifiedName& type)
 {
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthChildIndexOfType(element, type) - 1;
     int count = 0;
     for (const Element* sibling = ElementTraversal::previousSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(type)))
         ++count;
@@ -112,6 +105,9 @@ inline int DOMSiblingTraversalStrategy::countElementsAfter(Element& element)
 
 inline int DOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& element, const QualifiedName& type)
 {
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthLastChildIndexOfType(element, type) - 1;
+
     int count = 0;
     for (const Element* sibling = ElementTraversal::nextSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::nextSibling(*sibling, HasTagName(type)))
         ++count;

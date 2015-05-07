@@ -35,9 +35,23 @@ NthIndexCache::NthIndexData& NthIndexCache::ensureNthIndexDataFor(Node& parent)
     return *addResult.storedValue->value;
 }
 
+NthIndexCache::IndexByType& NthIndexCache::ensureTypeIndexMap(Node& parent)
+{
+    if (!m_parentMapForType)
+        m_parentMapForType = adoptPtrWillBeNoop(new ParentMapForType());
+
+    ParentMapForType::AddResult addResult = m_parentMapForType->add(&parent, nullptr);
+    if (addResult.isNewEntry)
+        addResult.storedValue->value = adoptPtrWillBeNoop(new IndexByType());
+
+    ASSERT(addResult.storedValue->value);
+    return *addResult.storedValue->value;
+}
+
 unsigned NthIndexCache::NthIndexData::cacheNthIndices(Element& element)
 {
     ASSERT(!element.isPseudoElement());
+    ASSERT(m_elementIndexMap.isEmpty());
     unsigned index = 0;
     // The frequency at which we cache the nth-index for a set of siblings.
     // A spread value of 3 means every third Element will have its nth-index cached.
@@ -55,6 +69,37 @@ unsigned NthIndexCache::NthIndexData::cacheNthIndices(Element& element)
     ASSERT(count && index);
     m_count = count;
     return index;
+}
+
+unsigned NthIndexCache::NthIndexData::cacheNthIndicesOfType(Element& element, const QualifiedName& type)
+{
+    ASSERT(!element.isPseudoElement());
+    ASSERT(m_elementIndexMap.isEmpty());
+    unsigned index = 0;
+    // The frequency at which we cache the nth-index of type for a set of siblings.
+    // A spread value of 3 means every third Element of its type will have its nth-index cached.
+    // Using a spread value > 1 is done to save memory. Looking up the nth-index of its type will
+    // still be done in less time, as most number of elements traversed
+    // will be equal to find 'spread' elements in the sibling set.
+    const unsigned spread = 3;
+    unsigned count = 0;
+    for (Element* sibling = ElementTraversal::firstChild(*element.parentNode(), HasTagName(type)); sibling; sibling = ElementTraversal::nextSibling(*sibling, HasTagName(type))) {
+        if (!(++count % spread))
+            m_elementIndexMap.add(sibling, count);
+        if (sibling == &element)
+            index = count;
+    }
+    ASSERT(count && index);
+    m_count = count;
+    return index;
+}
+
+NthIndexCache::NthIndexData& NthIndexCache::nthIndexDataWithTagName(Element& element)
+{
+    IndexByType::AddResult addResult = ensureTypeIndexMap(*element.parentNode()).add(element.tagName(), nullptr);
+    if (addResult.isNewEntry)
+        addResult.storedValue->value = adoptPtrWillBeNoop(new NthIndexData());
+    return *addResult.storedValue->value;
 }
 
 DEFINE_TRACE(NthIndexCache::NthIndexData)
