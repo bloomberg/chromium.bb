@@ -128,7 +128,6 @@ def main():
     build_utils.Touch(options.stamp)
 
   if options.depfile:
-    print libraries
     build_utils.WriteDepfile(
         options.depfile,
         libraries + build_utils.GetPythonDependencies())
