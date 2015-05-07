@@ -996,7 +996,7 @@ action("make_core_generated_html_entity_table") {
     "$blink_core_output_dir/HTMLEntityTable.cpp",
   ]
 
-  args = [ "-o" ] + rebase_path(outputs, root_build_dir) 
+  args = [ "-o" ] + rebase_path(outputs, root_build_dir)
   args += rebase_path(inputs, root_build_dir)
 
   deps = make_core_generated_deps

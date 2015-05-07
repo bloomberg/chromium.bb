@@ -621,7 +621,7 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
         return false;
 
     DOMArrayPiece iv(ivBufferSource);
-    DOMArrayPiece additionalData(additionalDataBufferSource);
+    DOMArrayPiece additionalData(additionalDataBufferSource, DOMArrayPiece::AllowNullPointToNullWithZeroSize);
 
     params = adoptPtr(new WebCryptoAesGcmParams(iv.bytes(), iv.byteLength(), hasAdditionalData, additionalData.bytes(), additionalData.byteLength(), hasTagLength, tagLength));
     return true;
@@ -639,7 +639,7 @@ bool parseRsaOaepParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>&
     if (!getOptionalBufferSource(raw, "label", hasLabel, labelBufferSource, context, error))
         return false;
 
-    DOMArrayPiece label(labelBufferSource);
+    DOMArrayPiece label(labelBufferSource, DOMArrayPiece::AllowNullPointToNullWithZeroSize);
     params = adoptPtr(new WebCryptoRsaOaepParams(hasLabel, label.bytes(), label.byteLength()));
     return true;
 }
