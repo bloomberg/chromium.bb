@@ -153,7 +153,6 @@ struct rpir_output {
 	DISPMANX_DISPLAY_HANDLE_T display;
 
 	DISPMANX_UPDATE_HANDLE_T update;
-	struct weston_matrix matrix;
 
 	/* all Elements currently on screen */
 	struct wl_list view_list; /* struct rpir_surface::link */
@@ -678,7 +677,6 @@ rpir_view_compute_rects(struct rpir_view *view,
 			VC_IMAGE_TRANSFORM_T *flipmask)
 {
 	struct weston_output *output_base = view->view->surface->output;
-	struct rpir_output *output = to_rpir_output(output_base);
 	struct weston_matrix matrix = view->view->transform.matrix;
 	VC_IMAGE_TRANSFORM_T flipt = 0;
 	int src_x, src_y;
@@ -712,14 +710,14 @@ rpir_view_compute_rects(struct rpir_view *view,
 		src_height = view->surface->front->height << 16;
 	}
 
-	weston_matrix_multiply(&matrix, &output->matrix);
+	weston_matrix_multiply(&matrix, &output_base->matrix);
 
 #ifdef SURFACE_TRANSFORM
 	if (matrix.type >= WESTON_MATRIX_TRANSFORM_OTHER) {
 #else
 	if (matrix.type >= WESTON_MATRIX_TRANSFORM_ROTATE) {
 #endif
-		warn_bad_matrix(&matrix, &output->matrix,
+		warn_bad_matrix(&matrix, &output_base->matrix,
 				&view->view->transform.matrix);
 	} else {
 		if (matrix.type & WESTON_MATRIX_TRANSFORM_ROTATE) {
@@ -730,7 +728,7 @@ rpir_view_compute_rects(struct rpir_view *view,
 				   fabsf(matrix.d[4]) < 1e-4) {
 				/* no transpose */
 			} else {
-				warn_bad_matrix(&matrix, &output->matrix,
+				warn_bad_matrix(&matrix, &output_base->matrix,
 					&view->view->transform.matrix);
 			}
 		}
@@ -1324,64 +1322,6 @@ rpir_output_dmx_remove_all(struct rpir_output *output,
 	}
 }
 
-static void
-output_compute_matrix(struct weston_output *base)
-{
-	struct rpir_output *output = to_rpir_output(base);
-	struct weston_matrix *matrix = &output->matrix;
-#ifdef SURFACE_TRANSFORM
-	const float half_w = 0.5f * base->width;
-	const float half_h = 0.5f * base->height;
-#endif
-	float mag;
-
-	weston_matrix_init(matrix);
-	weston_matrix_translate(matrix, -base->x, -base->y, 0.0f);
-
-#ifdef SURFACE_TRANSFORM
-	weston_matrix_translate(matrix, -half_w, -half_h, 0.0f);
-	switch (base->transform) {
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		weston_matrix_scale(matrix, -1.0f, 1.0f, 1.0f);
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-		/* weston_matrix_rotate_xy(matrix, 1.0f, 0.0f); no-op */
-		weston_matrix_translate(matrix, half_w, half_h, 0.0f);
-		break;
-
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		weston_matrix_scale(matrix, -1.0f, 1.0f, 1.0f);
-	case WL_OUTPUT_TRANSFORM_90:
-		weston_matrix_rotate_xy(matrix, 0.0f, 1.0f);
-		weston_matrix_translate(matrix, half_h, half_w, 0.0f);
-		break;
-
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		weston_matrix_scale(matrix, -1.0f, 1.0f, 1.0f);
-	case WL_OUTPUT_TRANSFORM_180:
-		weston_matrix_rotate_xy(matrix, -1.0f, 0.0f);
-		weston_matrix_translate(matrix, half_w, half_h, 0.0f);
-		break;
-
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		weston_matrix_scale(matrix, -1.0f, 1.0f, 1.0f);
-	case WL_OUTPUT_TRANSFORM_270:
-		weston_matrix_rotate_xy(matrix, 0.0f, -1.0f);
-		weston_matrix_translate(matrix, half_h, half_w, 0.0f);
-		break;
-
-	default:
-		break;
-	}
-#endif
-
-	if (base->zoom.active) {
-		mag = 1.0f / (1.0f - base->zoom.spring_z.current);
-		weston_matrix_translate(matrix, base->zoom.trans_x,
-					base->zoom.trans_y, 0.0f);
-		weston_matrix_scale(matrix, mag, mag, 1.0f);
-	}
-}
-
 /* Note: this won't work right for multiple outputs. A DispmanX Element
  * is tied to one DispmanX Display, i.e. output.
  */
@@ -1397,8 +1337,6 @@ rpi_renderer_repaint_output(struct weston_output *base,
 	int layer = 1;
 
 	assert(output->update != DISPMANX_NO_HANDLE);
-
-	output_compute_matrix(base);
 
 	rpi_resource_release(&output->capture_buffer);
 	free(output->capture_data);
