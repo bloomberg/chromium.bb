@@ -31,6 +31,10 @@ binding.registerCustomHook(function(api) {
   apiFunctions.setHandleRequest(
       'selectClientCertificates', function(details, callback) {
         internalAPI.selectClientCertificates(details, function(matches) {
+          if (chrome.runtime.lastError) {
+            callback([]);
+            return;
+          }
           callback($Array.map(matches, function(match) {
             // internalAPI.selectClientCertificates returns publicExponent as
             // ArrayBuffer, but it should be a Uint8Array.

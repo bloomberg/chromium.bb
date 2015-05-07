@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/common/extensions/api/platform_keys_internal.h"
+#include "components/web_modal/popup_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 
@@ -28,6 +29,9 @@ const char kErrorAlgorithmNotPermittedByCertificate[] =
     "The requested Algorithm is not permitted by the certificate.";
 const char kErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
+const char kErrorInteractiveCallFromBackground[] =
+    "Interactive calls must happen in the context of a browser tab or a "
+    "window.";
 
 const char kWebCryptoRSASSA_PKCS1_v1_5[] = "RSASSA-PKCS1-v1_5";
 
@@ -164,13 +168,24 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
     request.certificate_authorities.push_back(
         std::string(cert_authority.begin(), cert_authority.end()));
   }
+  content::WebContents* web_contents = nullptr;
+  if (params->details.interactive) {
+    web_contents = GetSenderWebContents();
+
+    // Ensure that this function is called in a context that allows opening
+    // dialogs.
+    if (!web_contents ||
+        !web_modal::PopupManager::FromWebContents(web_contents)) {
+      return RespondNow(Error(kErrorInteractiveCallFromBackground));
+    }
+  }
 
   service->SelectClientCertificates(
       request, params->details.interactive, extension_id(),
       base::Bind(&PlatformKeysInternalSelectClientCertificatesFunction::
                      OnSelectedCertificates,
                  this),
-      GetAssociatedWebContents());
+      web_contents);
   return RespondLater();
 }
 

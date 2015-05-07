@@ -392,6 +392,35 @@ function testSignClient2Fails() {
   testSignFails(data.client_2);
 }
 
+function testBackgroundNoninteractiveSelect() {
+  var details = {interactive: false, request: requestAll};
+
+  chrome.runtime.getBackgroundPage(callbackPass(function(bp) {
+    bp.chrome.platformKeys.selectClientCertificates(
+      details, callbackPass(function(actualMatches) {
+        assertTrue(!bp.chrome.runtime.lastError);
+        var expectedCount = systemTokenEnabled ? 2 : 1;
+        assertEq(expectedCount, actualMatches.length);
+      }));
+  }));
+}
+
+function testBackgroundInteractiveSelect() {
+  var details = {interactive: true, request: requestAll};
+
+  chrome.runtime.getBackgroundPage(callbackPass(function(bp) {
+    bp.chrome.platformKeys.selectClientCertificates(
+        // callbackPass checks chrome.runtime.lastError and not the error of
+        // the background page.
+        details, callbackPass(function(actualMatches) {
+          assertEq(bp.chrome.runtime.lastError.message,
+                   'Interactive calls must happen in the context of a ' +
+                       'browser tab or a window.');
+          assertEq([], actualMatches);
+        }));
+  }));
+}
+
 var testSuites = {
   // These tests assume already granted permissions for client_1 and client_2.
   // On interactive selectClientCertificates calls, the simulated user does not
@@ -400,6 +429,8 @@ var testSuites = {
     var tests = [
       testStaticMethods,
       testSelectAllCerts,
+      testBackgroundNoninteractiveSelect,
+      testBackgroundInteractiveSelect,
       testSelectCA1Certs,
       testInteractiveSelectNoCerts,
       testMatchResult,
