@@ -534,7 +534,7 @@ Google Chrome is unable to recover your settings.
         You are viewing a secure Google Chrome page.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM" desc="The text of the identity section when the site is using a certificate that will stop working in future versions of Chrome.">
-        The site is using outdated security settings that may prevent future versions of Chrome from being able to safely access it.
+        The certificate chain for this website contains at least one certificate that was signed using a deprecated signature algorithm based on SHA-1.
       </message>
 
       <!-- Print Preview -->
