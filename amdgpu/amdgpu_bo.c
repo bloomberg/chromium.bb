@@ -194,7 +194,7 @@ int amdgpu_bo_query_info(amdgpu_bo_handle bo,
 	/* Query buffer info. */
 	gem_op.handle = bo->handle;
 	gem_op.op = AMDGPU_GEM_OP_GET_GEM_CREATE_INFO;
-	gem_op.value = (intptr_t)&bo_info;
+	gem_op.value = (uintptr_t)&bo_info;
 
 	r = drmCommandWriteRead(bo->dev->fd, DRM_AMDGPU_GEM_OP,
 				&gem_op, sizeof(gem_op));
