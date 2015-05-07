@@ -74,7 +74,7 @@ element.style  { ()
 /-- overloaded --/     color: blue;
 
 [expanded] 
-.inline-style-added-by-parser-with-source-url  { ()
+.inline-style-added-by-parser-with-source-url  { (inlineStyleAddedByParser.css:2 -> inlineStyleAddedByParser.css:2:1)
 /-- overloaded --/     color: green;
 
 [expanded] 
