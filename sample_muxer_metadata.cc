@@ -376,5 +376,12 @@ bool SampleMuxerMetadata::SortableCue::Write(mkvmuxer::Segment* segment) const {
   const data_t buf = reinterpret_cast<data_t>(frame.data());
   const mkvmuxer::uint64 len = frame.length();
 
-  return segment->AddMetadata(buf, len, track_num, start_ns, duration_ns);
+  mkvmuxer::Frame muxer_frame;
+  if (!muxer_frame.Init(buf, len))
+    return 0;
+  muxer_frame.set_track_number(track_num);
+  muxer_frame.set_timestamp(start_ns);
+  muxer_frame.set_duration(duration_ns);
+  muxer_frame.set_is_key(true);  // All metadata frames are keyframes.
+  return segment->AddGenericFrame(&muxer_frame);
 }
