@@ -18,6 +18,10 @@ float NormalizeAxis(long value, long min, long max) {
   return (2.f * (value - min) / static_cast<float>(max - min)) - 1.f;
 }
 
+unsigned long GetBitmask(unsigned short bits) {
+  return (1 << bits) - 1;
+}
+
 // From the HID Usage Tables specification.
 USHORT DeviceUsages[] = {
   0x04,  // Joysticks
@@ -310,6 +314,7 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
       gamepad_info->axes[axis_index].caps = axes_caps[i];
       gamepad_info->axes[axis_index].value = 0;
       gamepad_info->axes[axis_index].active = true;
+      gamepad_info->axes[axis_index].bitmask = GetBitmask(axes_caps[i].BitSize);
       gamepad_info->axes_length =
           std::max(gamepad_info->axes_length, axis_index + 1);
     } else {
@@ -333,6 +338,8 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
           gamepad_info->axes[next_index].caps = axes_caps[i];
           gamepad_info->axes[next_index].value = 0;
           gamepad_info->axes[next_index].active = true;
+          gamepad_info->axes[next_index].bitmask = GetBitmask(
+              axes_caps[i].BitSize);
           gamepad_info->axes_length =
               std::max(gamepad_info->axes_length, next_index + 1);
         }
@@ -413,8 +420,9 @@ void RawInputDataFetcher::UpdateGamepad(
           reinterpret_cast<PCHAR>(input->data.hid.bRawData),
           input->data.hid.dwSizeHid);
       if (status == HIDP_STATUS_SUCCESS) {
-        axis->value = NormalizeAxis(axis_value,
-            axis->caps.LogicalMin, axis->caps.LogicalMax);
+        axis->value = NormalizeAxis(axis_value & axis->bitmask,
+            axis->caps.LogicalMin & axis->bitmask,
+            axis->caps.LogicalMax & axis->bitmask);
       }
     }
   }

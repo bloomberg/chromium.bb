@@ -31,6 +31,7 @@ struct RawGamepadAxis {
   HIDP_VALUE_CAPS caps;
   float value;
   bool active;
+  unsigned long bitmask;
 };
 
 struct RawGamepadInfo {

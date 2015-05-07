@@ -139,6 +139,28 @@ void MapperADT1(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->axesLength = AXIS_INDEX_COUNT;
 }
 
+void MapperNvShield(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[3]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = NullButton();
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[8];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
+  DpadFromAxis(mapped, input.axes[9]);
+
+  mapped->buttonsLength = BUTTON_INDEX_COUNT;
+  mapped->axesLength = AXIS_INDEX_COUNT;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -149,6 +171,7 @@ struct MappingData {
     {"046d", "c216", MapperLogitechDualAction},  // Logitech DualAction
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
     {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
+    {"0955", "7210", MapperNvShield},        // Nvidia Shield gamepad
     {"18d1", "2c40", MapperADT1},            // ADT-1 Controller
     {"2378", "1008", MapperOnLiveWireless},  // OnLive Controller (Bluetooth)
     {"2378", "100a", MapperOnLiveWireless},  // OnLive Controller (Wired)

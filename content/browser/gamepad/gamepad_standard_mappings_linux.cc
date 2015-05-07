@@ -206,6 +206,25 @@ void MapperADT1(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
   mapped->axesLength = AXIS_INDEX_COUNT;
 }
 
+void MapperNvShield(const blink::WebGamepad& input, blink::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = NullButton();
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[8];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[9];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[6];
+
+  mapped->buttonsLength = BUTTON_INDEX_COUNT;
+  mapped->axesLength = AXIS_INDEX_COUNT;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -225,6 +244,7 @@ struct MappingData {
       {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
       {"0925", "0005", MapperLakeviewResearch},    // SmartJoy PLUS Adapter
       {"0925", "8866", MapperLakeviewResearch},    // WiseGroup MP-8866
+      {"0955", "7210", MapperNvShield},        // Nvidia Shield gamepad
       {"0e8f", "0003", MapperXGEAR},           // XFXforce XGEAR PS2 Controller
       {"18d1", "2c40", MapperADT1},            // ADT-1 Controller
       {"2378", "1008", MapperOnLiveWireless},  // OnLive Controller (Bluetooth)
