@@ -16,7 +16,6 @@ from chromite.cli.cros import cros_image
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 
 
@@ -97,15 +96,9 @@ class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
     self.SetupCommandMock([])
     self.cmd_mock.inst.Run()
 
-    expected_args = [os.path.join(constants.CROSUTILS_DIR, 'build_image'),
-                     '--noenable_bootcache', '--enable_rootfs_verification',
-                     '--output_root=%s' % os.path.join(self.workspace_path,
-                                                       'build/images'),
-                     '--loglevel=7', '--progress_bar']
-
     # Test that BrilloImageOperation.Run is called with the correct arguments.
-    op.assert_called_once_with(cros_build_lib.RunCommand, expected_args,
-                               log_level=logging.DEBUG)
+    self.assertEqual(1, op.call_count)
+    self.assertTrue('--progress_bar' in op.call_args[0][1])
 
 
 class ImageCommandParserTest(cros_test_lib.TestCase):
@@ -129,7 +122,7 @@ class ImageCommandParserTest(cros_test_lib.TestCase):
     self.assertEqual(instance.options.disk_layout, None)
     self.assertEqual(instance.options.enable_serial, None)
     self.assertEqual(instance.options.kernel_log_level, 7)
-    self.assertEqual(instance.options.image_types, [])
+    self.assertEqual(instance.options.image_types, ['test'])
 
   def testParserSetValues(self):
     """Tests that the parser reads in values correctly."""

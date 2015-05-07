@@ -19,7 +19,13 @@ from chromite.lib import operation
 from chromite.lib import workspace_lib
 
 
-IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install', []]
+# argparse does not behave well with nargs='*', default and choices
+# (http://bugs.python.org/issue9625). We need to add ['test'] (the default) as
+# a possible choice to:
+# * avoid argparse complaining about the default being illegal.
+# * ensure image_types is always a list.
+IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install',
+               ['test']]
 
 
 class BrilloImageOperation(operation.ParallelEmergeOperation):
@@ -160,7 +166,7 @@ class ImageCommand(command.CliCommand):
     parser.add_argument('--kernel_log_level', default=7, type=int,
                         help="The log level to add to the kernel command line.")
     parser.add_argument('image_types', nargs='*', choices=IMAGE_TYPES,
-                        default=None, help="The image types to build.")
+                        default=['test'], help="The image types to build.")
 
   def Run(self):
     commandline.RunInsideChroot(self, auto_detect_brick=True)
