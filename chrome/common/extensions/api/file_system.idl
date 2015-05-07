@@ -83,7 +83,7 @@ namespace fileSystem {
     boolean? acceptsMultiple;
   };
 
-  [nodoc] dictionary RequestFileSystemOptions {
+  dictionary RequestFileSystemOptions {
     // The ID of the requested volume.
     DOMString volumeId;
 
@@ -94,7 +94,7 @@ namespace fileSystem {
 
   // Represents a mounted volume, which can be accessed via <code>chrome.
   // fileSystem.requestFileSystem</code>.
-  [nodoc] dictionary Volume {
+  dictionary Volume {
     DOMString volumeId;
     boolean writable;
   };
@@ -130,9 +130,9 @@ namespace fileSystem {
   callback IsRestorableCallback = void (boolean isRestorable);
   [nodoc] callback GetObservedEntriesCallback = void (
       [instanceOf=Entry] object[] entries);
-  [nodoc] callback RequestFileSystemCallback = void(
+  callback RequestFileSystemCallback = void(
       [instanceOf=FileSystem] optional object fileSystem);
-  [nodoc] callback GetVolumeListCallback = void(optional Volume[] volumes);
+  callback GetVolumeListCallback = void(optional Volume[] volumes);
 
   interface Functions {
     // Get the display path of an Entry object. The display path is based on
@@ -182,15 +182,15 @@ namespace fileSystem {
     // confirmation dialog will be shown on top of the active app window.
     // In case of an error, <code>fileSystem</code> will be undefined, and
     // <code>chrome.runtime.lastError</code> will be set.
-    [nodoc] static void requestFileSystem(RequestFileSystemOptions options,
-                                          RequestFileSystemCallback callback);
+    static void requestFileSystem(RequestFileSystemOptions options,
+                                  RequestFileSystemCallback callback);
 
     // Returns a list of volumes available for <code>requestFileSystem()</code>.
     // The <code>"fileSystem": {"requestFileSystem"}</code> manifest permission
     // is required. Available to kiosk apps running in the kiosk session only.
     // In case of an error, <code>volumes</code> will be undefined, and <code>
     // chrome.runtime.lastError</code> will be set.
-    [nodoc] static void getVolumeList(GetVolumeListCallback callback);
+    static void getVolumeList(GetVolumeListCallback callback);
 
     // Observes a directory entry. Emits an event if the tracked directory is
     // changed (including the list of files on it), or removed. If <code>

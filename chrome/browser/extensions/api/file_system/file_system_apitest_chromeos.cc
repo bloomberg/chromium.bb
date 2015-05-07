@@ -18,7 +18,6 @@
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -167,9 +166,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 // This class contains chrome.filesystem.requestFileSystem API tests.
 class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
  public:
-  FileSystemApiTestForRequestFileSystem()
-      : current_channel_(chrome::VersionInfo::CHANNEL_DEV),
-        fake_user_manager_(nullptr) {}
+  FileSystemApiTestForRequestFileSystem() : fake_user_manager_(nullptr) {}
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -185,7 +182,6 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
   }
 
  protected:
-  extensions::ScopedCurrentChannel current_channel_;
   base::ScopedTempDir temp_dir_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
