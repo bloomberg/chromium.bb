@@ -26,21 +26,27 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
     if (LowerCaseEqualsASCII(name_latin1, "accept"))
       has_accept_header_ = true;
 
-    buffer_[name_latin1] = value_latin1;
+    HTTPHeaderPtr header = HTTPHeader::New();
+    header->name = name_latin1;
+    header->value = value_latin1;
+    buffer_.push_back(header.Pass());
   }
 
-  Map<String, String> GetBuffer() {
+  Array<HTTPHeaderPtr> GetBuffer() {
     // In some cases, WebKit doesn't add an Accept header, but not having the
     // header confuses some web servers.  See bug 808613.
     if (!has_accept_header_) {
-      buffer_["Accept"] = "*/*";
+      HTTPHeaderPtr header = HTTPHeader::New();
+      header->name = "Accept";
+      header->value = "*/*";
+      buffer_.push_back(header.Pass());
       has_accept_header_ = true;
     }
     return buffer_.Pass();
   }
 
  private:
-  Map<String, String> buffer_;
+  Array<HTTPHeaderPtr> buffer_;
   bool has_accept_header_;
 };
 

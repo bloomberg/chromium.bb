@@ -53,9 +53,11 @@ URLResponsePtr LocalFetcher::AsURLResponse(base::TaskRunner* task_runner,
   response->body = data_pipe.consumer_handle.Pass();
   int64 file_size;
   if (base::GetFileSize(path_, &file_size)) {
-    response->headers = Array<String>(1);
-    response->headers[0] =
-        base::StringPrintf("Content-Length: %" PRId64, file_size);
+    response->headers = Array<HTTPHeaderPtr>(1);
+    HTTPHeaderPtr header = HTTPHeader::New();
+    header->name = "Content-Length";
+    header->value = base::StringPrintf("%" PRId64, file_size);
+    response->headers[0] = header.Pass();
   }
   common::CopyFromFile(path_, data_pipe.producer_handle.Pass(), skip,
                        task_runner, base::Bind(&IgnoreResult));

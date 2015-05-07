@@ -55,19 +55,9 @@ blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   result.setLoadTiming(timing);
 
   for (size_t i = 0; i < url_response->headers.size(); ++i) {
-    const std::string& header_line = url_response->headers[i];
-    size_t first_colon = header_line.find(":");
-
-    if (first_colon == std::string::npos || first_colon == 0)
-      continue;
-
-    std::string value;
-    TrimWhitespaceASCII(header_line.substr(first_colon + 1),
-                        base::TRIM_LEADING,
-                        &value);
     result.setHTTPHeaderField(
-        blink::WebString::fromUTF8(header_line.substr(0, first_colon)),
-        blink::WebString::fromUTF8(value));
+        blink::WebString::fromUTF8(url_response->headers[i]->name),
+        blink::WebString::fromUTF8(url_response->headers[i]->value));
   }
 
   return result;

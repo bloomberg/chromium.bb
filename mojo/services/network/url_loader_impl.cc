@@ -31,13 +31,16 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
     response->status_code = headers->response_code();
     response->status_line = headers->GetStatusLine();
 
+    response->headers = Array<HTTPHeaderPtr>::New(0);
     std::vector<String> header_lines;
     void* iter = nullptr;
     std::string name, value;
-    while (headers->EnumerateHeaderLines(&iter, &name, &value))
-      header_lines.push_back(name + ": " + value);
-    if (!header_lines.empty())
-      response->headers.Swap(&header_lines);
+    while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
+      HTTPHeaderPtr header = HTTPHeader::New();
+      header->name = name;
+      header->value = value;
+      response->headers.push_back(header.Pass());
+    }
   }
 
   std::string mime_type;
@@ -134,9 +137,11 @@ void URLLoaderImpl::Start(URLRequestPtr request,
       net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE);
   if (request->headers) {
     net::HttpRequestHeaders headers;
-    for (auto i = request->headers.begin(); i != request->headers.end(); ++i) {
-      base::StringPiece header = i.GetKey().To<base::StringPiece>();
-      base::StringPiece value = i.GetValue().To<base::StringPiece>();
+    for (size_t i = 0; i < request->headers.size(); ++i) {
+      base::StringPiece header =
+          request->headers[i]->name.To<base::StringPiece>();
+      base::StringPiece value =
+          request->headers[i]->value.To<base::StringPiece>();
       if (header == net::HttpRequestHeaders::kReferer) {
         url_request_->SetReferrer(value.as_string());
       } else {
