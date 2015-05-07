@@ -568,13 +568,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
-  // Checks if |security_origin| has permission to access the microphone or
-  // camera. Note that this does not query the user. |type| must be
-  // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-  virtual bool CheckMediaAccessPermission(BrowserContext* browser_context,
-                                          const GURL& security_origin,
-                                          MediaStreamType type);
-
   // Allows to override browser Mojo services exposed through the
   // RenderProcessHost.
   virtual void OverrideRenderProcessMojoServices(ServiceRegistry* registry) {}

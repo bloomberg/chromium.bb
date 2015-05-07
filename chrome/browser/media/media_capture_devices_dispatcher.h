@@ -84,12 +84,6 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension);
 
-  // Checks if we have media access permission. Note that this only checks the
-  // settings and does not query the user.
-  bool CheckMediaAccessPermission(content::BrowserContext* browser_context,
-                                  const GURL& security_origin,
-                                  content::MediaStreamType type);
-
   // Method called from WebCapturerDelegate implementations to check media
   // access permission. Note that this does not query the user.
   bool CheckMediaAccessPermission(content::WebContents* web_contents,
