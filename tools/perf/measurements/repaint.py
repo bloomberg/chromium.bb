@@ -19,8 +19,7 @@ class Repaint(page_test.PageTest):
         '--enable-gpu-benchmarking'
     ])
 
-  def WillRunActions(self, page, tab):
-    tab.WaitForDocumentReadyStateToBeComplete()
+  def WillNavigateToPage(self, page, tab):
     self._smoothness_controller = smoothness_controller.SmoothnessController()
     self._smoothness_controller.Start(page, tab)
 
