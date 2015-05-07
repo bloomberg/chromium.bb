@@ -7,10 +7,14 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_surface.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::Return;
+using ::testing::SetArgPointee;
+using ::testing::_;
 
 namespace gpu {
 
@@ -20,6 +24,9 @@ class GPUInfoCollectorTest : public testing::Test {
   ~GPUInfoCollectorTest() override {}
 
   void SetUp() override {
+    testing::Test::SetUp();
+    gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
+    gfx::GLSurface::InitializeOneOffWithMockBindingsForTests();
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::MockGLInterface::SetGLInterface(gl_.get());
 #if defined(OS_WIN)
@@ -45,6 +52,19 @@ class GPUInfoCollectorTest : public testing::Test {
     const char* gl_vendor = "NVIDIA Corporation";
     const char* gl_version = "2.1 NVIDIA-1.6.18";
     const char* gl_shading_language_version = "1.20 ";
+    const char* gl_extensions =
+        "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
+        "GL_EXT_read_format_bgra";
+#elif defined(OS_ANDROID)
+    const uint32 vendor_id = 0;  // not implemented
+    const uint32 device_id = 0;  // not implemented
+    const char* driver_vendor = "";  // not implemented
+    const char* driver_version = "14.0";
+    const char* shader_version = "1.00";
+    const char* gl_renderer = "Adreno (TM) 320";
+    const char* gl_vendor = "Qualcomm";
+    const char* gl_version = "OpenGL ES 2.0 V@14.0 AU@04.02 (CL@3206)";
+    const char* gl_shading_language_version = "1.00";
     const char* gl_extensions =
         "GL_OES_packed_depth_stencil GL_EXT_texture_format_BGRA8888 "
         "GL_EXT_read_format_bgra";
@@ -89,11 +109,17 @@ class GPUInfoCollectorTest : public testing::Test {
     EXPECT_CALL(*gl_, GetString(GL_RENDERER))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
             gl_renderer)));
+    EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_SAMPLES, _))
+        .WillOnce(SetArgPointee<1>(8))
+        .RetiresOnSaturation();
   }
 
   void TearDown() override {
     ::gfx::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
+    gfx::ClearGLBindings();
+
+    testing::Test::TearDown();
   }
 
  public:
@@ -105,60 +131,23 @@ class GPUInfoCollectorTest : public testing::Test {
 // TODO(rlp): Test the vendor and device id collection if deemed necessary as
 //            it involves several complicated mocks for each platform.
 
-// TODO(kbr): re-enable these tests; see http://crbug.com/100285 .
-
-TEST_F(GPUInfoCollectorTest, DISABLED_DriverVendorGL) {
+TEST_F(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
   GPUInfo gpu_info;
   CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.driver_vendor,
             gpu_info.driver_vendor);
-}
-
-// Skip Windows because the driver version is obtained from bot registry.
 #if !defined(OS_WIN)
-TEST_F(GPUInfoCollectorTest, DISABLED_DriverVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
+  // Skip Windows because the driver version is obtained from bot registry.
   EXPECT_EQ(test_values_.driver_version,
             gpu_info.driver_version);
-}
 #endif
-
-TEST_F(GPUInfoCollectorTest, DISABLED_PixelShaderVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.pixel_shader_version,
             gpu_info.pixel_shader_version);
-}
-
-TEST_F(GPUInfoCollectorTest, DISABLED_VertexShaderVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.vertex_shader_version,
             gpu_info.vertex_shader_version);
-}
-
-TEST_F(GPUInfoCollectorTest, DISABLED_GLVersionGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_version, gpu_info.gl_version);
-}
-
-TEST_F(GPUInfoCollectorTest, DISABLED_GLRendererGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_renderer, gpu_info.gl_renderer);
-}
-
-TEST_F(GPUInfoCollectorTest, DISABLED_GLVendorGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_vendor, gpu_info.gl_vendor);
-}
-
-TEST_F(GPUInfoCollectorTest, DISABLED_GLExtensionsGL) {
-  GPUInfo gpu_info;
-  CollectGraphicsInfoGL(&gpu_info);
   EXPECT_EQ(test_values_.gl_extensions, gpu_info.gl_extensions);
 }
 

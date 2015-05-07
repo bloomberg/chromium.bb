@@ -703,6 +703,8 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
         return NULL;
       return surface;
     }
+    case kGLImplementationMockGL:
+      return new GLSurfaceStub;
     default:
       NOTREACHED();
       return NULL;
