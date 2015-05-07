@@ -7664,7 +7664,7 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
   EXPECT_FALSE(controller.begin_frame_args().IsValid());
   host_impl_->AddVideoFrameController(&controller);
   EXPECT_TRUE(controller.begin_frame_args().IsValid());
-  host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
+  host_impl_->DidFinishImplFrame();
 }
 
 TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
@@ -7673,7 +7673,7 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
   FakeVideoFrameController controller;
 
   host_impl_->WillBeginImplFrame(begin_frame_args);
-  host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
+  host_impl_->DidFinishImplFrame();
 
   EXPECT_FALSE(controller.begin_frame_args().IsValid());
   host_impl_->AddVideoFrameController(&controller);

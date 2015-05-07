@@ -342,6 +342,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool SwapBuffers(const FrameData& frame);
   virtual void WillBeginImplFrame(const BeginFrameArgs& args);
+  virtual void DidFinishImplFrame();
   void DidModifyTilePriorities();
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
@@ -445,8 +446,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetTreePriority(TreePriority priority);
   TreePriority GetTreePriority() const;
 
-  void UpdateCurrentBeginFrameArgs(const BeginFrameArgs& args);
-  void ResetCurrentBeginFrameArgsForNextFrame();
   virtual BeginFrameArgs CurrentBeginFrameArgs() const;
 
   // Expected time between two begin impl frame calls.

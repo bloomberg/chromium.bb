@@ -46,8 +46,7 @@ class SchedulerClient {
   virtual base::TimeDelta DrawDurationEstimate() = 0;
   virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() = 0;
   virtual base::TimeDelta CommitToActivateDurationEstimate() = 0;
-  // TODO(sunnyps): Rename DidBeginImplFrameDeadline to DidFinishImplFrame.
-  virtual void DidBeginImplFrameDeadline() = 0;
+  virtual void DidFinishImplFrame() = 0;
   virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
 
