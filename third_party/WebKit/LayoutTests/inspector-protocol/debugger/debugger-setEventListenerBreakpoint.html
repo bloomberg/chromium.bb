@@ -6,28 +6,41 @@
 function test()
 {
     InspectorTest.startDumpingProtocolMessages();
-    InspectorTest.sendCommand("Debugger.enable", {}, setEventListenerBreakpoint);
+    InspectorTest.sendCommand("Debugger.enable", {}, setEventListenerBreakpointWhenDOMDisabled);
 
     function finishIfError(message)
     {
         if (message.result)
             return;
-        testRunner.logToStderr("FAIL: finishIfError");
         InspectorTest.log("FAIL: " + JSON.stringify(message));
         InspectorTest.completeTest();
+    }
+
+    function setEventListenerBreakpointWhenDOMDisabled(message)
+    {
+        finishIfError(message);
+        InspectorTest.log("PASS: Debugger was enabled");
+        InspectorTest.sendCommand("DOMDebugger.setEventListenerBreakpoint", {'eventName':'click'}, enableDOMAgent);
+    }
+
+    function enableDOMAgent(message)
+    {
+        InspectorTest.log("Error on attempt to set event listener breakpoint when DOM is disabled: " + message.error.message);
+        InspectorTest.sendCommand("DOM.enable", {}, setEventListenerBreakpoint);
     }
 
     function setEventListenerBreakpoint(message)
     {
         finishIfError(message);
-        InspectorTest.log("PASS: Debugger was enabled");
+        InspectorTest.log("PASS: DOM was enabled");
         InspectorTest.sendCommand("DOMDebugger.setEventListenerBreakpoint", {'eventName':'click'}, disableDOMAgent);
     }
+
 
     function disableDOMAgent(message)
     {
         finishIfError(message);
-        InspectorTest.log("PASS: Listener was set and we expect that DOM agent was silently enabled.");
+        InspectorTest.log("PASS: Listener was set.");
         InspectorTest.sendCommand("DOM.disable", {}, disableDOMAgent2);
     }
 
@@ -41,7 +54,6 @@ function test()
     function finish(message)
     {
         if (!message.error) {
-            testRunner.logToStderr("FAIL: finish");
             InspectorTest.log("FAIL: we expected an error but it wasn't happen.");
             InspectorTest.completeTest();
             return;

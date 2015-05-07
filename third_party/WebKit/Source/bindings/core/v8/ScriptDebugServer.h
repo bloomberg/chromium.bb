@@ -133,7 +133,7 @@ protected:
     virtual void quitMessageLoopOnPause() = 0;
 
 private:
-    void ensureDebuggerScriptCompiled();
+    void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Object> debuggerScriptLocal() const;
     void clearBreakpoints();

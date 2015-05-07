@@ -212,6 +212,8 @@ protected:
     void resetModifiedSources();
 
 private:
+    bool checkEnabled(ErrorString*);
+
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
 

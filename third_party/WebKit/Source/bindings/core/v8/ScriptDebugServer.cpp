@@ -104,7 +104,7 @@ void ScriptDebugServer::enable()
     ASSERT(!enabled());
     v8::HandleScope scope(m_isolate);
     v8::Debug::SetDebugEventListener(&ScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
-    ensureDebuggerScriptCompiled();
+    compileDebuggerScript();
 }
 
 void ScriptDebugServer::disable()
@@ -194,7 +194,10 @@ void ScriptDebugServer::clearBreakpoints()
 
 void ScriptDebugServer::setBreakpointsActivated(bool activated)
 {
-    ensureDebuggerScriptCompiled();
+    if (!enabled()) {
+        ASSERT_NOT_REACHED();
+        return;
+    }
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
     v8::Context::Scope contextScope(debuggerContext);
@@ -209,7 +212,7 @@ void ScriptDebugServer::setBreakpointsActivated(bool activated)
 
 ScriptDebugServer::PauseOnExceptionsState ScriptDebugServer::pauseOnExceptionsState()
 {
-    ensureDebuggerScriptCompiled();
+    ASSERT(enabled());
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
@@ -220,7 +223,7 @@ ScriptDebugServer::PauseOnExceptionsState ScriptDebugServer::pauseOnExceptionsSt
 
 void ScriptDebugServer::setPauseOnExceptionsState(PauseOnExceptionsState pauseOnExceptionsState)
 {
-    ensureDebuggerScriptCompiled();
+    ASSERT(enabled());
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
@@ -313,7 +316,7 @@ void ScriptDebugServer::stepOutOfFunction()
 
 void ScriptDebugServer::clearStepping()
 {
-    ensureDebuggerScriptCompiled();
+    ASSERT(enabled());
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
 
@@ -331,7 +334,7 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
         v8::Isolate* m_isolate;
     };
 
-    ensureDebuggerScriptCompiled();
+    ASSERT(enabled());
     v8::HandleScope scope(m_isolate);
 
     OwnPtr<v8::Context::Scope> contextScope;
@@ -675,10 +678,12 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
     listener->didParseSource(sourceID, script, compileResult);
 }
 
-void ScriptDebugServer::ensureDebuggerScriptCompiled()
+void ScriptDebugServer::compileDebuggerScript()
 {
-    if (!m_debuggerScript.IsEmpty())
+    if (!m_debuggerScript.IsEmpty()) {
+        ASSERT_NOT_REACHED();
         return;
+    }
 
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
@@ -700,41 +705,50 @@ v8::Local<v8::String> ScriptDebugServer::v8InternalizedString(const char* str) c
 
 v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Local<v8::Function> function)
 {
-    ensureDebuggerScriptCompiled();
-
+    if (!enabled()) {
+        ASSERT_NOT_REACHED();
+        return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
+    }
     v8::Local<v8::Value> argv[] = { function };
     return callDebuggerMethod("getFunctionScopes", 1, argv).ToLocalChecked();
 }
 
 v8::Local<v8::Value> ScriptDebugServer::generatorObjectDetails(v8::Local<v8::Object>& object)
 {
-    ensureDebuggerScriptCompiled();
-
+    if (!enabled()) {
+        ASSERT_NOT_REACHED();
+        return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
+    }
     v8::Local<v8::Value> argv[] = { object };
     return callDebuggerMethod("getGeneratorObjectDetails", 1, argv).ToLocalChecked();
 }
 
 v8::Local<v8::Value> ScriptDebugServer::collectionEntries(v8::Local<v8::Object>& object)
 {
-    ensureDebuggerScriptCompiled();
-
+    if (!enabled()) {
+        ASSERT_NOT_REACHED();
+        return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
+    }
     v8::Local<v8::Value> argv[] = { object };
     return callDebuggerMethod("getCollectionEntries", 1, argv).ToLocalChecked();
 }
 
 v8::Local<v8::Value> ScriptDebugServer::getInternalProperties(v8::Local<v8::Object>& object)
 {
-    if (m_debuggerScript.IsEmpty())
+    if (!enabled()) {
+        // FIXME: provide a way to collect internal properties without enabling debugger. See crbug.com/485451
         return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
-
+    }
     v8::Local<v8::Value> argv[] = { object };
     return callDebuggerMethod("getInternalProperties", 1, argv).ToLocalChecked();
 }
 
 v8::MaybeLocal<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue)
 {
-    if (m_debuggerScript.IsEmpty())
+    if (m_debuggerScript.IsEmpty()) {
+        ASSERT_NOT_REACHED();
         return m_isolate->ThrowException(v8::String::NewFromUtf8(m_isolate, "Debugging is not enabled.", v8::NewStringType::kNormal).ToLocalChecked());
+    }
 
     v8::Local<v8::Value> argv[] = {
         functionValue,
