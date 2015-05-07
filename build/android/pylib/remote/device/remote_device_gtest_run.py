@@ -18,6 +18,10 @@ from pylib.remote.device import remote_device_helper
 
 _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
+# TODO(jbudorick): Remove this extra when b/18981674 is fixed.
+_EXTRA_ONLY_OUTPUT_FAILURES = (
+    'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
+        'OnlyOutputFailures')
 
 
 class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
@@ -57,6 +61,8 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
         env_vars[_EXTRA_COMMAND_LINE_FILE] = os.path.basename(flag_file.name)
         self._test_instance._data_deps.append(
             (os.path.abspath(flag_file.name), None))
+      if self._env.only_output_failures:
+        env_vars[_EXTRA_ONLY_OUTPUT_FAILURES] = None
       self._AmInstrumentTestSetup(
           dummy_app_path, self._test_instance.apk, runner_package,
           environment_variables=env_vars)
@@ -67,11 +73,13 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
   def _ParseTestResults(self):
     logging.info('Parsing results from stdout.')
     results = base_test_result.TestRunResults()
-    output = self._GetRawTestOutput().splitlines()
+    output = self._results['results']['output'].splitlines()
     output = (l[len(self._INSTRUMENTATION_STREAM_LEADER):] for l in output
               if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
     results_list = self._test_instance.ParseGTestOutput(output)
     results.AddResults(results_list)
+    if self._env.only_output_failures:
+      logging.info('See logcat for more results information.')
     if not self._results['results']['pass']:
       results.AddResult(base_test_result.BaseTestResult(
           'Remote Service detected error.',

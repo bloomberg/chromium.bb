@@ -29,8 +29,6 @@ class RemoteDeviceTestRun(test_run.TestRun):
   COMPLETE = 'complete'
   HEARTBEAT_INTERVAL = 300
 
-  _RESULTS_FILE = 'appurify_results/result.txt'
-
   def __init__(self, env, test_instance):
     """Constructor.
 
@@ -185,21 +183,6 @@ class RemoteDeviceTestRun(test_run.TestRun):
                                               logging.WARNING):
         appurify_sanitized.utils.wget(self._results['results']['url'],
                                       results_path)
-
-  def _GetRawTestOutput(self):
-    """Returns the test output."""
-    # TODO(mikecase): Remove getting results from zip when b/18981674 is fixed.
-    results_zipfile = self._env.results_path
-    if results_zipfile and os.path.exists(results_zipfile):
-      with zipfile.ZipFile(results_zipfile) as z:
-        with z.open(self._RESULTS_FILE, 'r') as r:
-          return r.read()
-    else:
-      logging.warning(
-          'If the test output is too long, some test results may get cut off.')
-      logging.warning(
-          'Use the --results-path option to ensure you get the full results.')
-      return self._results['results']['output']
 
   def _GetTestStatus(self, test_run_id):
     """Checks the state of the test, and sets self._results

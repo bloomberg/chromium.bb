@@ -60,7 +60,7 @@ class RemoteDeviceInstrumentationTestRun(
     r = base_test_result.TestRunResults()
     result_code, result_bundle, statuses = (
         self._test_instance.ParseAmInstrumentRawOutput(
-            self._GetRawTestOutput().splitlines()))
+            self._results['results']['output'].splitlines()))
     result = self._test_instance.GenerateTestResults(
         result_code, result_bundle, statuses, 0, 0)
 
