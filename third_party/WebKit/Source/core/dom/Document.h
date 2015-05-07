@@ -108,6 +108,7 @@ class FrameHost;
 class FrameRequestCallback;
 class FrameView;
 class HTMLAllCollection;
+class HTMLBodyElement;
 class HTMLCanvasElement;
 class HTMLCollection;
 class HTMLDialogElement;
@@ -778,7 +779,14 @@ public:
     static bool hasValidNamespaceForElements(const QualifiedName&);
     static bool hasValidNamespaceForAttributes(const QualifiedName&);
 
+    // "body element" as defined by HTML5 (https://html.spec.whatwg.org/multipage/dom.html#the-body-element-2).
+    // That is, the first body or frameset child of the document element.
     HTMLElement* body() const;
+
+    // "HTML body element" as defined by CSSOM View spec (http://dev.w3.org/csswg/cssom-view/#the-html-body-element).
+    // That is, the first body child of the document element.
+    HTMLBodyElement* firstBodyElement() const;
+
     void setBody(PassRefPtrWillBeRawPtr<HTMLElement>, ExceptionState&);
 
     HTMLHeadElement* head() const;

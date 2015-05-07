@@ -132,6 +132,7 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBaseElement.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDialogElement.h"
@@ -1254,7 +1255,7 @@ Element* Document::scrollingElement()
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
         if (inQuirksMode()) {
             updateLayoutIgnorePendingStylesheets();
-            HTMLElement* bodyElem = body();
+            HTMLBodyElement* bodyElem = firstBodyElement();
             if (bodyElem && bodyElem->layoutBox() && bodyElem->layoutBox()->hasOverflowClip())
                 return nullptr;
 
@@ -2362,6 +2363,19 @@ HTMLElement* Document::body() const
     for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*documentElement()); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (isHTMLFrameSetElement(*child) || isHTMLBodyElement(*child))
             return child;
+    }
+
+    return 0;
+}
+
+HTMLBodyElement* Document::firstBodyElement() const
+{
+    if (!documentElement())
+        return 0;
+
+    for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*documentElement()); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+        if (isHTMLBodyElement(*child))
+            return toHTMLBodyElement(child);
     }
 
     return 0;
