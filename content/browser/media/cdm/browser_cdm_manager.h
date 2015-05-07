@@ -108,6 +108,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // Message handlers.
   void OnInitializeCdm(int render_frame_id,
                        int cdm_id,
+                       uint32_t promise_id,
                        const std::string& key_system,
                        const GURL& frame_url);
   void OnSetServerCertificate(int render_frame_id,
@@ -135,6 +136,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // |security_origin|.
   void AddCdm(int render_frame_id,
               int cdm_id,
+              uint32_t promise_id,
               const std::string& key_system,
               const GURL& security_origin);
 

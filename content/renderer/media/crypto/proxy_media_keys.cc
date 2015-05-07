@@ -205,9 +205,9 @@ void ProxyMediaKeys::InitializeCdm(
     const std::string& key_system,
     const GURL& security_origin,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  // TODO(jrummell): |Pass promise| on. http://crbug.com/469003.
-  manager_->InitializeCdm(cdm_id_, this, key_system, security_origin);
-  promise->resolve();
+  uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
+  manager_->InitializeCdm(cdm_id_, promise_id, this, key_system,
+                          security_origin);
 }
 
 }  // namespace content

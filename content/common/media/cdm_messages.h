@@ -37,9 +37,10 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages from render to browser.
 
-IPC_MESSAGE_CONTROL4(CdmHostMsg_InitializeCdm,
+IPC_MESSAGE_CONTROL5(CdmHostMsg_InitializeCdm,
                      int /* render_frame_id */,
                      int /* cdm_id */,
+                     uint32_t /* promise_id */,
                      std::string /* key_system */,
                      GURL /* security_origin */)
 

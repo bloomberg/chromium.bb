@@ -291,16 +291,17 @@ void BrowserCdmManager::OnSessionExpirationUpdate(
 
 void BrowserCdmManager::OnInitializeCdm(int render_frame_id,
                                         int cdm_id,
+                                        uint32_t promise_id,
                                         const std::string& key_system,
                                         const GURL& security_origin) {
   if (key_system.size() > media::limits::kMaxKeySystemLength) {
-    // This failure will be discovered and reported by OnCreateSession()
-    // as GetCdm() will return null.
     NOTREACHED() << "Invalid key system: " << key_system;
+    RejectPromise(render_frame_id, cdm_id, promise_id,
+                  MediaKeys::INVALID_ACCESS_ERROR, 0, "Invalid key system.");
     return;
   }
 
-  AddCdm(render_frame_id, cdm_id, key_system, security_origin);
+  AddCdm(render_frame_id, cdm_id, promise_id, key_system, security_origin);
 }
 
 void BrowserCdmManager::OnSetServerCertificate(
@@ -437,12 +438,15 @@ void BrowserCdmManager::OnDestroyCdm(int render_frame_id, int cdm_id) {
 
 void BrowserCdmManager::AddCdm(int render_frame_id,
                                int cdm_id,
+                               uint32_t promise_id,
                                const std::string& key_system,
                                const GURL& security_origin) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!GetCdm(render_frame_id, cdm_id));
 
   bool use_secure_surface = false;
+  scoped_ptr<SimplePromise> promise(
+      new SimplePromise(this, render_frame_id, cdm_id, promise_id));
 
 #if defined(OS_ANDROID)
   // TODO(sandersd): Pass the security level from key system instead.
@@ -465,15 +469,15 @@ void BrowserCdmManager::AddCdm(int render_frame_id,
       BROWSER_CDM_MANAGER_CB(OnSessionExpirationUpdate)));
 
   if (!cdm) {
-    // This failure will be discovered and reported by
-    // OnCreateSessionAndGenerateRequest() as GetCdm() will return null.
     DVLOG(1) << "failed to create CDM.";
+    promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "Failed to create CDM.");
     return;
   }
 
   uint64 id = GetId(render_frame_id, cdm_id);
   cdm_map_.add(id, cdm.Pass());
   cdm_security_origin_map_[id] = security_origin;
+  promise->resolve();
 }
 
 void BrowserCdmManager::RemoveAllCdmForFrame(int render_frame_id) {

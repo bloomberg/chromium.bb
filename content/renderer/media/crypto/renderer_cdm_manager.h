@@ -35,6 +35,7 @@ class RendererCdmManager : public RenderFrameObserver {
 
   // Encrypted media related methods.
   void InitializeCdm(int cdm_id,
+                     uint32_t promise_id,
                      ProxyMediaKeys* media_keys,
                      const std::string& key_system,
                      const GURL& security_origin);
