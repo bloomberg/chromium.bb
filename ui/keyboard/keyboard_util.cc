@@ -174,14 +174,14 @@ bool IsGestureSelectionEnabled() {
   std::string keyboard_switch =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kGestureSelection);
-  return keyboard_switch == switches::kGestureSelectionEnabled;
+  return keyboard_switch != switches::kGestureSelectionDisabled;
 }
 
 bool IsGestureDeletionEnabled() {
   std::string keyboard_switch =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kGestureDeletion);
-  return keyboard_switch == switches::kGestureDeletionEnabled;
+  return keyboard_switch != switches::kGestureDeletionDisabled;
 }
 
 bool IsMaterialDesignEnabled() {
