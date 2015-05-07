@@ -123,14 +123,10 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
                            const scoped_refptr<CacheStorageCache>& cache,
                            CacheStorageCache::ErrorType error,
                            scoped_ptr<CacheStorageCache::Requests> requests);
-  void OnCacheDeleteCallback(int thread_id,
-                             int request_id,
-                             const scoped_refptr<CacheStorageCache>& cache,
-                             CacheStorageCache::ErrorType error);
-  void OnCachePutCallback(int thread_id,
-                          int request_id,
-                          const scoped_refptr<CacheStorageCache>& cache,
-                          CacheStorageCache::ErrorType error);
+  void OnCacheBatchCallback(int thread_id,
+                            int request_id,
+                            const scoped_refptr<CacheStorageCache>& cache,
+                            CacheStorageCache::ErrorType error);
 
   // Hangs onto a scoped_refptr for the cache if it isn't already doing so.
   // Returns a unique cache_id. Call DropCacheReference when the client is done

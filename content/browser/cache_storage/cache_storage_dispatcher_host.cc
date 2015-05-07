@@ -283,7 +283,7 @@ void CacheStorageDispatcherHost::OnCacheBatch(
 
   if (operation.operation_type == CACHE_STORAGE_CACHE_OPERATION_TYPE_DELETE) {
     cache->Delete(scoped_request.Pass(),
-                  base::Bind(&CacheStorageDispatcherHost::OnCacheDeleteCallback,
+                  base::Bind(&CacheStorageDispatcherHost::OnCacheBatchCallback,
                              this, thread_id, request_id, cache));
     return;
   }
@@ -297,8 +297,8 @@ void CacheStorageDispatcherHost::OnCacheBatch(
         operation.response.headers, operation.response.blob_uuid,
         operation.response.blob_size, operation.response.stream_url));
     cache->Put(scoped_request.Pass(), scoped_response.Pass(),
-               base::Bind(&CacheStorageDispatcherHost::OnCachePutCallback, this,
-                          thread_id, request_id, cache));
+               base::Bind(&CacheStorageDispatcherHost::OnCacheBatchCallback,
+                          this, thread_id, request_id, cache));
 
     return;
   }
@@ -442,21 +442,7 @@ void CacheStorageDispatcherHost::OnCacheKeysCallback(
   Send(new CacheStorageMsg_CacheKeysSuccess(thread_id, request_id, out));
 }
 
-void CacheStorageDispatcherHost::OnCacheDeleteCallback(
-    int thread_id,
-    int request_id,
-    const scoped_refptr<CacheStorageCache>& cache,
-    CacheStorageCache::ErrorType error) {
-  if (error != CacheStorageCache::ERROR_TYPE_OK) {
-    Send(new CacheStorageMsg_CacheBatchError(
-        thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
-    return;
-  }
-
-  Send(new CacheStorageMsg_CacheBatchSuccess(thread_id, request_id));
-}
-
-void CacheStorageDispatcherHost::OnCachePutCallback(
+void CacheStorageDispatcherHost::OnCacheBatchCallback(
     int thread_id,
     int request_id,
     const scoped_refptr<CacheStorageCache>& cache,
