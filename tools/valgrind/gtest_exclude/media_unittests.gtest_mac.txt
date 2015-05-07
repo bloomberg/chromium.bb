@@ -10,6 +10,3 @@ PipelineIntegrationTest.*
 
 # Hangs the whole Mac Valgrind bot: http://crbug.com/462483
 MidiManagerMacTest.*
-
-# http://crbug.com/484893
-NewVideoRenderer/VideoRendererImplTest.RenderingStartedThenStopped/0

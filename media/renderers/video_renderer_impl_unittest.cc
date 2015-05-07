@@ -434,6 +434,7 @@ TEST_P(VideoRendererImplTest, DecodeError_Playing) {
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
   StartPlayingFrom(0);
   renderer_->OnTimeStateChanged(true);
+  AdvanceTimeInMs(10);
 
   QueueFrames("error");
   SatisfyPendingRead();
@@ -550,7 +551,6 @@ TEST_P(VideoRendererImplTest, Underflow) {
         .Times(0);
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(90)))
         .WillOnce(RunClosure(event.GetClosure()));
-    AdvanceWallclockTimeInMs(91);
     AdvanceTimeInMs(91);
 
     event.RunAndWait();
@@ -564,7 +564,11 @@ TEST_P(VideoRendererImplTest, Underflow) {
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
-    AdvanceWallclockTimeInMs(29);
+    AdvanceTimeInMs(30);
+    // The old rendering path needs wall clock time to increase too.
+    if (!GetParam())
+      AdvanceWallclockTimeInMs(30);
+
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
   }
@@ -676,7 +680,6 @@ TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
   // because this is a background render, we won't underflow by waiting until
   // a pending read is ready.
   null_video_sink_->set_background_render(true);
-  AdvanceWallclockTimeInMs(91);
   AdvanceTimeInMs(91);
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(90)));
   WaitForPendingRead();
@@ -688,6 +691,7 @@ TEST_P(VideoRendererImplTest, RenderingStartedThenStopped) {
   EXPECT_EQ(0u, last_pipeline_statistics_.video_frames_dropped);
   EXPECT_EQ(4u, last_pipeline_statistics_.video_frames_decoded);
 
+  AdvanceTimeInMs(30);
   WaitForEnded();
   Destroy();
 }

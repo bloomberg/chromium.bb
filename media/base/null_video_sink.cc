@@ -68,21 +68,20 @@ void NullVideoSink::CallRender() {
     return;
   }
 
-  // Recompute now to compensate for the cost of Render().
   const base::TimeTicks now = tick_clock_->NowTicks();
-  base::TimeDelta delay = current_render_time_ - now;
-
-  // If we're behind, find the next nearest on time interval.
-  if (delay < base::TimeDelta())
-    delay += interval_ * (-delay / interval_ + 1);
-  current_render_time_ = now + delay;
-
-  // The tick clock is frozen in this case, so clamp delay to the interval time.
-  // We still want the interval passed to Render() to grow, but we also don't
-  // want the delay used here to increase slowly over time.
-  if (last_now_ == now && delay > interval_)
+  base::TimeDelta delay;
+  if (last_now_ == now) {
+    // The tick clock is frozen in this case, so don't advance deadline.
     delay = interval_;
-  last_now_ = now;
+    current_render_time_ = now;
+  } else {
+    // If we're behind, find the next nearest on time interval.
+    delay = current_render_time_ - now;
+    if (delay < base::TimeDelta())
+      delay += interval_ * (-delay / interval_ + 1);
+    current_render_time_ = now + delay;
+    last_now_ = now;
+  }
 
   task_runner_->PostDelayedTask(FROM_HERE, cancelable_worker_.callback(),
                                 delay);
