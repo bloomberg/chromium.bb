@@ -205,7 +205,7 @@ class BatteryUtilsChargeDevice(BatteryUtilsTest):
       self.battery.ChargeDeviceToLevel(95)
 
 
-class DeviceUtilsGetBatteryInfoTest(BatteryUtilsTest):
+class BatteryUtilsGetBatteryInfoTest(BatteryUtilsTest):
 
   def testGetBatteryInfo_normal(self):
     with self.assertCall(
@@ -234,7 +234,7 @@ class DeviceUtilsGetBatteryInfoTest(BatteryUtilsTest):
       self.assertEquals({}, self.battery.GetBatteryInfo())
 
 
-class DeviceUtilsGetChargingTest(BatteryUtilsTest):
+class BatteryUtilsGetChargingTest(BatteryUtilsTest):
 
   def testGetCharging_usb(self):
     with self.assertCall(
@@ -262,7 +262,7 @@ class DeviceUtilsGetChargingTest(BatteryUtilsTest):
       self.assertFalse(self.battery.GetCharging())
 
 
-class DeviceUtilsGetNetworkDataTest(BatteryUtilsTest):
+class BatteryUtilsGetNetworkDataTest(BatteryUtilsTest):
 
   def testGetNetworkData_noDataUsage(self):
     with self.assertCalls(
@@ -308,6 +308,20 @@ class DeviceUtilsGetNetworkDataTest(BatteryUtilsTest):
       self.battery._cache.clear()
       self.assertEqual(self.battery.GetNetworkData('test_package1'), (1,2))
 
+class BatteryUtilsLetBatteryCoolToTemperatureTest(BatteryUtilsTest):
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testLetBatteryCoolToTemperature_startUnder(self):
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'temperature': '500'})):
+      self.battery.LetBatteryCoolToTemperature(600)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testLetBatteryCoolToTemperature_startOver(self):
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'temperature': '500'}),
+        (self.call.battery.GetBatteryInfo(), {'temperature': '400'})):
+      self.battery.LetBatteryCoolToTemperature(400)
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)

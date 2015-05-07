@@ -184,6 +184,12 @@ def SetProperties(device, options):
     except device_errors.CommandFailedError as e:
       logging.exception('Unable to charge device to specified level.')
 
+  if options.max_battery_temp is not None:
+    try:
+      battery = battery_utils.BatteryUtils(device)
+      battery.LetBatteryCoolToTemperature(options.max_battery_temp)
+    except device_errors.CommandFailedError as e:
+      logging.exception('Unable to let battery cool to specified temperature.')
 
 def _ConfigureLocalProperties(device, java_debug=True):
   """Set standard readonly testing device properties prior to reboot."""
@@ -308,6 +314,8 @@ def main():
                       help='list of adb keys to push to device')
   parser.add_argument('-v', '--verbose', action='count', default=1,
                       help='Log more information.')
+  parser.add_argument('--max-battery-temp', type=int, metavar='NUM',
+                      help='Wait for the battery to have this temp or lower.')
   args = parser.parse_args()
   constants.SetBuildType(args.target)
 

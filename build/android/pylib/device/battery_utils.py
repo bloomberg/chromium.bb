@@ -384,3 +384,22 @@ class BatteryUtils(object):
       return battery_level >= level
 
     timeout_retry.WaitFor(device_charged, wait_period=wait_period)
+
+  def LetBatteryCoolToTemperature(self, target_temp, wait_period=60):
+    """Lets device sit to give battery time to cool down
+    Args:
+      temp: maximum temperature to allow in tenths of degrees c.
+      wait_period: time in seconds to wait between checking.
+    """
+    def cool_device():
+      temp = self.GetBatteryInfo().get('temperature')
+      if temp is None:
+        logging.warning('Unable to find current battery temperature.')
+        temp = 0
+      else:
+        logging.info('Current battery temperature: %s', temp)
+      return int(temp) <= target_temp
+
+    logging.info('Waiting for the device to cool down to %s degrees.',
+                 target_temp)
+    timeout_retry.WaitFor(cool_device, wait_period=wait_period)
