@@ -801,9 +801,6 @@ crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.htm
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
-crbug.com/370461 compositing/contents-opaque/visibility-hidden.html [ NeedsRebaseline ]
-crbug.com/370461 virtual/slimmingpaint/compositing/contents-opaque/visibility-hidden.html [ NeedsRebaseline ]
-
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
