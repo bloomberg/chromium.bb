@@ -249,10 +249,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_LEGACY_DRAWPICTURECALLBACK
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_ROUND_MIPMAP_LEVEL_CHOICE
-#   define SK_SUPPORT_LEGACY_ROUND_MIPMAP_LEVEL_CHOICE
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_GETDEVICE
 #   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
