@@ -78,6 +78,7 @@ class FullscreenObserver : public WebContentsObserver {
   TabContentsController* delegate_;  // weak
 }
 
+- (NSColor*)computeBackgroundColor;
 - (void)updateBackgroundColor;
 @end
 
@@ -101,6 +102,29 @@ class FullscreenObserver : public WebContentsObserver {
   delegate_ = nil;
 }
 
+- (NSColor*)computeBackgroundColor {
+  // This view is sometimes flashed into visibility (e.g, when closing
+  // windows or opening new tabs), so ensure that the flash be the theme
+  // background color in those cases.
+  NSColor* backgroundColor = nil;
+  ThemeService* const theme =
+      static_cast<ThemeService*>([[self window] themeProvider]);
+  if (theme)
+    backgroundColor = theme->GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+  if (!backgroundColor)
+    backgroundColor = [NSColor whiteColor];
+
+  // If the page is in fullscreen tab capture mode, change the background color
+  // to be a dark tint of the new tab page's background color.
+  if ([delegate_ contentsInFullscreenCaptureMode]) {
+    const float kDarknessFraction = 0.80f;
+    return [backgroundColor blendedColorWithFraction:kDarknessFraction
+                                             ofColor:[NSColor blackColor]];
+  } else {
+    return backgroundColor;
+  }
+}
+
 // Override auto-resizing logic to query the delegate for the exact frame to
 // use for the contents view.
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
@@ -122,33 +146,17 @@ class FullscreenObserver : public WebContentsObserver {
 }
 
 - (void)updateBackgroundColor {
-  // This view is sometimes flashed into visibility (e.g, when closing
-  // windows or opening new tabs), so ensure that the flash be the theme
-  // background color in those cases.
-  SkColor skBackgroundColor = SK_ColorWHITE;
-  ThemeService* const theme =
-      static_cast<ThemeService*>([[self window] themeProvider]);
-  if (theme)
-    skBackgroundColor = theme->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-
-  // Make the web contents use the same background color as the theme.
-  if ([delegate_ webContents])
-    [delegate_ webContents]->SetBackgroundColor(skBackgroundColor);
-
-  // If the page is in fullscreen tab capture mode, change the background color
-  // to be a dark tint of the new tab page's background color.
-  if ([delegate_ contentsInFullscreenCaptureMode]) {
-    const int kBackgroundDivisor = 5;
-    skBackgroundColor = skBackgroundColor = SkColorSetARGB(
-        SkColorGetA(skBackgroundColor),
-        SkColorGetR(skBackgroundColor) / kBackgroundDivisor,
-        SkColorGetG(skBackgroundColor) / kBackgroundDivisor,
-        SkColorGetB(skBackgroundColor) / kBackgroundDivisor);
-  }
+  // Convert from an NSColor to a CGColorRef.
+  NSColor* nsBackgroundColor = [self computeBackgroundColor];
+  NSColorSpace* nsColorSpace = [nsBackgroundColor colorSpace];
+  CGColorSpaceRef cgColorSpace = [nsColorSpace CGColorSpace];
+  const NSInteger numberOfComponents = [nsBackgroundColor numberOfComponents];
+  CGFloat components[numberOfComponents];
+  [nsBackgroundColor getComponents:components];
+  base::ScopedCFTypeRef<CGColorRef> cgBackgroundColor(
+      CGColorCreate(cgColorSpace, components));
 
   ScopedCAActionDisabler disabler;
-  base::ScopedCFTypeRef<CGColorRef> cgBackgroundColor(
-    gfx::CGColorCreateFromSkColor(skBackgroundColor));
   [[self layer] setBackgroundColor:cgBackgroundColor];
 }
 
@@ -188,12 +196,10 @@ class FullscreenObserver : public WebContentsObserver {
 }
 
 - (void)dealloc {
-  if (viewHasLoaded_) {
-    [static_cast<TabContentsContainerView*>([self view]) delegateDestroyed];
-    // Make sure the contents view has been removed from the container view to
-    // allow objects to be released.
-    [[self view] removeFromSuperview];
-  }
+  [static_cast<TabContentsContainerView*>([self view]) delegateDestroyed];
+  // Make sure the contents view has been removed from the container view to
+  // allow objects to be released.
+  [[self view] removeFromSuperview];
   [super dealloc];
 }
 
@@ -202,7 +208,6 @@ class FullscreenObserver : public WebContentsObserver {
       [[TabContentsContainerView alloc] initWithDelegate:self]);
   [view setAutoresizingMask:NSViewHeightSizable|NSViewWidthSizable];
   [self setView:view];
-  viewHasLoaded_ = YES;
 }
 
 - (void)ensureContentsSizeDoesNotChange {

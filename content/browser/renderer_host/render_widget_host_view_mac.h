@@ -405,6 +405,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
+  // The background CoreAnimation layer which is hosted by |cocoa_view_|.
+  base::scoped_nsobject<CALayer> background_layer_;
+
   // The state of |delegated_frame_host_| and |browser_compositor_| to
   // manage being visible, hidden, or occluded.
   enum BrowserCompositorViewState {

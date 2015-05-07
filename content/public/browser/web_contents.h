@@ -650,10 +650,6 @@ class WebContents : public PageNavigator,
 
   // Returns true if other views are allowed, false otherwise.
   virtual bool GetAllowOtherViews() = 0;
-
-  // Set the background color which may be flashed if there is not content
-  // available yet.
-  virtual void SetBackgroundColor(SkColor background_color) = 0;
 #endif  // OS_ANDROID
 
  private:

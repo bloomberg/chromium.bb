@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -110,10 +109,6 @@ class WebContentsView {
   virtual void SetOverscrollControllerEnabled(bool enabled) = 0;
 
 #if defined(OS_MACOSX)
-  // Set the background color which may be flashed if there is not content
-  // available yet.
-  virtual void SetBackgroundColor(SkColor background_color) = 0;
-
   // Allowing other views disables optimizations which assume that only a single
   // WebContents is present.
   virtual void SetAllowOtherViews(bool allow) = 0;

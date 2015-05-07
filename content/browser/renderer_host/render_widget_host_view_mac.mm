@@ -564,8 +564,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
 
-  base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
-  [cocoa_view_ setLayer:background_layer];
+  // Paint this view host with |background_color_| when there is no content
+  // ready to draw.
+  background_layer_.reset([[CALayer alloc] init]);
+  // Set the default color to be white. This is the wrong thing to do, but many
+  // UI components expect this view to be opaque.
+  [background_layer_ setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+  [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 
   if (IsDelegatedRendererEnabled()) {

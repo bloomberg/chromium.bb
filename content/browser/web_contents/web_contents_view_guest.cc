@@ -107,10 +107,6 @@ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
 }
 
 #if defined(OS_MACOSX)
-void WebContentsViewGuest::SetBackgroundColor(SkColor background_color) {
-  platform_view_->SetBackgroundColor(background_color);
-}
-
 void WebContentsViewGuest::SetAllowOtherViews(bool allow) {
   platform_view_->SetAllowOtherViews(allow);
 }

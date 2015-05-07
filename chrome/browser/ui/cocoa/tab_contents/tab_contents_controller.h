@@ -33,18 +33,14 @@ class WebContents;
 // and scaling will be avoided whenever possible.
 @interface TabContentsController : NSViewController {
  @private
-  content::WebContents* contents_;  // weak
-  // When |fullscreenObserver_| is not-NULL, TabContentsController monitors for
-  // and auto-embeds fullscreen widgets as a subview.
-  scoped_ptr<FullscreenObserver> fullscreenObserver_;
-  // Set to true while TabContentsController is embedding a fullscreen widget
-  // view as a subview instead of the normal WebContentsView render view. Note:
-  // This will be false in the case of non-Flash fullscreen.
-  BOOL isEmbeddingFullscreenWidget_;
-  // This is used to prevent lazily loading the view during tear-down. This
-  // functionality is present in the 10.10 SDK as the viewLoaded property of
-  // NSViewController.
-  BOOL viewHasLoaded_;
+   content::WebContents* contents_;  // weak
+   // When |fullscreenObserver_| is not-NULL, TabContentsController monitors for
+   // and auto-embeds fullscreen widgets as a subview.
+   scoped_ptr<FullscreenObserver> fullscreenObserver_;
+   // Set to true while TabContentsController is embedding a fullscreen widget
+   // view as a subview instead of the normal WebContentsView render view. Note:
+   // This will be false in the case of non-Flash fullscreen.
+   BOOL isEmbeddingFullscreenWidget_;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
 

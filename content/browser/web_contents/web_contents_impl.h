@@ -364,7 +364,6 @@ class CONTENT_EXPORT WebContentsImpl
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
   virtual WebContentsAndroid* GetWebContentsAndroid();
 #elif defined(OS_MACOSX)
-  void SetBackgroundColor(SkColor background_color) override;
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
 #endif

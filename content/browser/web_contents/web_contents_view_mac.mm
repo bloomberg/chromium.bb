@@ -26,7 +26,6 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
-#include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -276,13 +275,6 @@ gfx::Rect WebContentsViewMac::GetViewBounds() const {
   return gfx::Rect();
 }
 
-void WebContentsViewMac::SetBackgroundColor(SkColor background_color) {
-  ScopedCAActionDisabler disabler;
-  base::ScopedCFTypeRef<CGColorRef> cg_background_color(
-      gfx::CGColorCreateFromSkColor(background_color));
-  [[cocoa_view_ layer] setBackgroundColor:cg_background_color];
-}
-
 void WebContentsViewMac::SetAllowOtherViews(bool allow) {
   if (allow_other_views_ == allow)
     return;
@@ -401,16 +393,6 @@ void WebContentsViewMac::CloseTab() {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
     webContentsView_ = w;
-
-    // Initialize the view to have a white background color, since many views
-    // that host web contents expect this. This may be changed via
-    // SetBackgroundColor.
-    base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
-    [background_layer
-        setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-    [self setLayer:background_layer];
-    [self setWantsLayer:YES];
-
     dragDest_.reset(
         [[WebDragDest alloc] initWithWebContentsImpl:[self webContents]]);
     [self registerDragTypes];

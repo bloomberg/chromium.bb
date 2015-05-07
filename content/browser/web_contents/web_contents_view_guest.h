@@ -63,7 +63,6 @@ class WebContentsViewGuest : public WebContentsView,
   void RenderViewSwappedIn(RenderViewHost* host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
 #if defined(OS_MACOSX)
-  void SetBackgroundColor(SkColor background_color) override;
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() const override;
   bool IsEventTracking() const override;
