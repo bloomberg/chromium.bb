@@ -238,13 +238,16 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView tests.
 
-// Simple ShelfDelegate implmentation for ShelfViewTest.OverflowBubbleSize
-// and CheckDragAndDropFromOverflowBubbleToShelf
+// A ShelfDelegate test double that will always convert between ShelfIDs and app
+// ids. This does not support pinning and unpinning operations however CanPin()
+// will return true and the return value of IsAppPinned(...) is configurable.
 class TestShelfDelegateForShelfView : public ShelfDelegate {
  public:
   explicit TestShelfDelegateForShelfView(ShelfModel* model)
       : model_(model) {}
   ~TestShelfDelegateForShelfView() override {}
+
+  void set_is_app_pinned(bool is_pinned) { is_app_pinned_ = is_pinned; }
 
   // ShelfDelegate overrides:
   void OnShelfCreated(Shelf* shelf) override {}
@@ -257,6 +260,8 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
     return id;
   }
 
+  bool HasShelfIDToAppIDMapping(ShelfID id) const override { return true; }
+
   const std::string& GetAppIDForShelfID(ShelfID id) override {
     // Use |app_id_| member variable because returning a reference to local
     // variable is not allowed.
@@ -264,28 +269,21 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
     return app_id_;
   }
 
-  void PinAppWithID(const std::string& app_id) override {}
+  void PinAppWithID(const std::string& app_id) override { NOTREACHED(); }
 
   bool IsAppPinned(const std::string& app_id) override {
-    // Returns true for ShelfViewTest.OverflowBubbleSize. To test ripping off in
-    // that test, an item is already pinned state.
-    return true;
+    return is_app_pinned_;
   }
 
   bool CanPin() const override { return true; }
 
-  void UnpinAppWithID(const std::string& app_id) override {
-    ShelfID id = 0;
-    EXPECT_TRUE(base::StringToInt(app_id, &id));
-    ASSERT_GT(id, 0);
-    int index = model_->ItemIndexByID(id);
-    ASSERT_GE(index, 0);
-
-    model_->RemoveItemAt(index);
-  }
+  void UnpinAppWithID(const std::string& app_id) override { NOTREACHED(); }
 
  private:
   ShelfModel* model_;
+
+  // Tracks whether apps are pinned or not.
+  bool is_app_pinned_ = false;
 
   // Temp member variable for returning a value. See the comment in the
   // GetAppIDForShelfID().
@@ -316,6 +314,8 @@ class ShelfViewTest : public AshTestBase {
     test_api_.reset(new ShelfViewTestAPI(shelf_view_));
     test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
 
+    ReplaceShelfDelegate();
+
     item_manager_ = Shell::GetInstance()->shelf_item_delegate_manager();
     DCHECK(item_manager_);
 
@@ -324,6 +324,7 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void TearDown() override {
+    shelf_delegate_ = nullptr;
     test_api_.reset();
     AshTestBase::TearDown();
   }
@@ -615,20 +616,24 @@ class ShelfViewTest : public AshTestBase {
     return model_->items()[index].id;
   }
 
-  void ReplaceShelfDelegateForRipOffTest() {
+  void ReplaceShelfDelegate() {
     // Replace ShelfDelegate.
-    test::ShellTestApi test_api(Shell::GetInstance());
-    test_api.SetShelfDelegate(NULL);
-    ShelfDelegate* delegate = new TestShelfDelegateForShelfView(model_);
-    test_api.SetShelfDelegate(delegate);
-    test::ShelfTestAPI(Shelf::ForPrimaryDisplay()).SetShelfDelegate(delegate);
-    test_api_->SetShelfDelegate(delegate);
+    test::ShellTestApi shell_test_api(Shell::GetInstance());
+    shell_test_api.SetShelfDelegate(NULL);
+    shelf_delegate_ = new TestShelfDelegateForShelfView(model_);
+    shell_test_api.SetShelfDelegate(shelf_delegate_);
+    test::ShelfTestAPI(Shelf::ForPrimaryDisplay())
+        .SetShelfDelegate(shelf_delegate_);
+    test_api_->SetShelfDelegate(shelf_delegate_);
   }
 
   ShelfModel* model_;
   ShelfView* shelf_view_;
   int browser_index_;
   ShelfItemDelegateManager* item_manager_;
+
+  // Owned by ash::Shell.
+  TestShelfDelegateForShelfView* shelf_delegate_;
 
   scoped_ptr<ShelfViewTestAPI> test_api_;
 
@@ -1501,9 +1506,7 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
 
 // Checks the overflow bubble size when an item is ripped off and re-inserted.
 TEST_F(ShelfViewTest, OverflowBubbleSize) {
-  // Replace current ShelfDelegate with TestShelfDelegateForShelfView.
-  ReplaceShelfDelegateForRipOffTest();
-
+  shelf_delegate_->set_is_app_pinned(true);
   AddButtonsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/436131).
@@ -1721,9 +1724,6 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
 // Checks various drag and drop operations from OverflowBubble to Shelf.
 TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
-  // Replace current ShelfDelegate with TestShelfDelegateForShelfView.
-  ReplaceShelfDelegateForRipOffTest();
-
   AddButtonsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/425097).

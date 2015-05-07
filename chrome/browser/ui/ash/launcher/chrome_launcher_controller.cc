@@ -569,7 +569,7 @@ void ChromeLauncherController::CloseLauncherItem(ash::ShelfID id) {
 }
 
 void ChromeLauncherController::Pin(ash::ShelfID id) {
-  DCHECK(HasItemController(id));
+  DCHECK(HasShelfIDToAppIDMapping(id));
 
   int index = model_->ItemIndexByID(id);
   DCHECK_GE(index, 0);
@@ -611,7 +611,7 @@ bool ChromeLauncherController::IsPinned(ash::ShelfID id) {
 }
 
 void ChromeLauncherController::TogglePinned(ash::ShelfID id) {
-  if (!HasItemController(id))
+  if (!HasShelfIDToAppIDMapping(id))
     return;  // May happen if item closed with menu open.
 
   if (IsPinned(id))
@@ -704,7 +704,7 @@ bool ChromeLauncherController::IsOpen(ash::ShelfID id) {
 }
 
 bool ChromeLauncherController::IsPlatformApp(ash::ShelfID id) {
-  if (!HasItemController(id))
+  if (!HasShelfIDToAppIDMapping(id))
     return false;
 
   std::string app_id = GetAppIDForShelfID(id);
@@ -800,6 +800,11 @@ ash::ShelfID ChromeLauncherController::GetShelfIDForAppID(
       return i->first;
   }
   return 0;
+}
+
+bool ChromeLauncherController::HasShelfIDToAppIDMapping(ash::ShelfID id) const {
+  return id_to_item_controller_map_.find(id) !=
+         id_to_item_controller_map_.end();
 }
 
 const std::string& ChromeLauncherController::GetAppIDForShelfID(
@@ -1161,8 +1166,8 @@ void ChromeLauncherController::ShelfItemMoved(int start_index,
   const ash::ShelfItem& item = model_->items()[target_index];
   // We remember the moved item position if it is either pinnable or
   // it is the app list with the alternate shelf layout.
-  if ((HasItemController(item.id) && IsPinned(item.id)) ||
-       item.type == ash::TYPE_APP_LIST)
+  if ((HasShelfIDToAppIDMapping(item.id) && IsPinned(item.id)) ||
+      item.type == ash::TYPE_APP_LIST)
     PersistPinnedState();
 }
 
@@ -1485,7 +1490,7 @@ ash::ShelfID ChromeLauncherController::CreateAppShortcutLauncherItemWithType(
 
 LauncherItemController* ChromeLauncherController::GetLauncherItemController(
     const ash::ShelfID id) {
-  if (!HasItemController(id))
+  if (!HasShelfIDToAppIDMapping(id))
     return NULL;
   return id_to_item_controller_map_[id];
 }
@@ -1839,7 +1844,7 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
     int index,
     ash::ShelfItemType shelf_item_type) {
   ash::ShelfID id = model_->next_id();
-  CHECK(!HasItemController(id));
+  CHECK(!HasShelfIDToAppIDMapping(id));
   CHECK(controller);
   id_to_item_controller_map_[id] = controller;
   controller->set_shelf_id(id);
@@ -1862,11 +1867,6 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
   SetShelfItemDelegate(id, controller);
 
   return id;
-}
-
-bool ChromeLauncherController::HasItemController(ash::ShelfID id) const {
-  return id_to_item_controller_map_.find(id) !=
-         id_to_item_controller_map_.end();
 }
 
 std::vector<content::WebContents*>

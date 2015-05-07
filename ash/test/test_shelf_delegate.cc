@@ -33,6 +33,12 @@ void TestShelfDelegate::AddShelfItem(aura::Window* window) {
 }
 
 void TestShelfDelegate::AddShelfItem(aura::Window* window,
+                                     const std::string& app_id) {
+  AddShelfItem(window, STATUS_CLOSED);
+  AddShelfIDToAppIDMapping(GetShelfIDForWindow(window), app_id);
+}
+
+void TestShelfDelegate::AddShelfItem(aura::Window* window,
                                      ShelfItemStatus status) {
   ShelfItem item;
   if (window->type() == ui::wm::WINDOW_TYPE_PANEL)
@@ -53,13 +59,20 @@ void TestShelfDelegate::AddShelfItem(aura::Window* window,
 }
 
 void TestShelfDelegate::RemoveShelfItemForWindow(aura::Window* window) {
-  ShelfID id = GetShelfIDForWindow(window);
-  if (id == 0)
+  ShelfID shelf_id = GetShelfIDForWindow(window);
+  if (shelf_id == 0)
     return;
-  int index = model_->ItemIndexByID(id);
+  int index = model_->ItemIndexByID(shelf_id);
   DCHECK_NE(-1, index);
   model_->RemoveItemAt(index);
   window->RemoveObserver(this);
+  if (HasShelfIDToAppIDMapping(shelf_id)) {
+    const std::string& app_id = GetAppIDForShelfID(shelf_id);
+    if (IsAppPinned(app_id))
+      UnpinAppWithID(app_id);
+    if (HasShelfIDToAppIDMapping(shelf_id))
+      RemoveShelfIDToAppIDMapping(shelf_id);
+  }
 }
 
 void TestShelfDelegate::OnWindowDestroying(aura::Window* window) {
@@ -82,11 +95,20 @@ void TestShelfDelegate::OnShelfDestroyed(Shelf* shelf) {
 }
 
 ShelfID TestShelfDelegate::GetShelfIDForAppID(const std::string& app_id) {
+  for (auto const& iter : shelf_id_to_app_id_map_) {
+    if (iter.second == app_id)
+      return iter.first;
+  }
   return 0;
 }
 
+bool TestShelfDelegate::HasShelfIDToAppIDMapping(ShelfID id) const {
+  return shelf_id_to_app_id_map_.find(id) != shelf_id_to_app_id_map_.end();
+}
+
 const std::string& TestShelfDelegate::GetAppIDForShelfID(ShelfID id) {
-  return base::EmptyString();
+  DCHECK_GT(shelf_id_to_app_id_map_.count(id), 0u);
+  return shelf_id_to_app_id_map_[id];
 }
 
 void TestShelfDelegate::PinAppWithID(const std::string& app_id) {
@@ -103,6 +125,15 @@ bool TestShelfDelegate::IsAppPinned(const std::string& app_id) {
 
 void TestShelfDelegate::UnpinAppWithID(const std::string& app_id) {
   pinned_apps_.erase(app_id);
+}
+
+void TestShelfDelegate::AddShelfIDToAppIDMapping(ShelfID shelf_id,
+                                                 const std::string& app_id) {
+  shelf_id_to_app_id_map_[shelf_id] = app_id;
+}
+
+void TestShelfDelegate::RemoveShelfIDToAppIDMapping(ShelfID shelf_id) {
+  shelf_id_to_app_id_map_.erase(shelf_id);
 }
 
 }  // namespace test

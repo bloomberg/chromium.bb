@@ -28,7 +28,12 @@ class ASH_EXPORT ShelfDelegate {
   // Get the shelf ID from an application ID.
   virtual ShelfID GetShelfIDForAppID(const std::string& app_id) = 0;
 
+  // Checks whether a mapping exists from the ShelfID |id| to an app id.
+  virtual bool HasShelfIDToAppIDMapping(ShelfID id) const = 0;
+
   // Get the application ID for a given shelf ID.
+  // |HasShelfIDToAppIDMapping(ShelfID)| should be called first to ensure the
+  // ShelfID can be successfully mapped to an app id.
   virtual const std::string& GetAppIDForShelfID(ShelfID id) = 0;
 
   // Pins an app with |app_id| to shelf. A running instance will get pinned.

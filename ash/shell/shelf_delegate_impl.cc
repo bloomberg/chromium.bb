@@ -30,6 +30,10 @@ ShelfID ShelfDelegateImpl::GetShelfIDForAppID(const std::string& app_id) {
   return 0;
 }
 
+bool ShelfDelegateImpl::HasShelfIDToAppIDMapping(ShelfID id) const {
+  return false;
+}
+
 const std::string& ShelfDelegateImpl::GetAppIDForShelfID(ShelfID id) {
   return base::EmptyString();
 }

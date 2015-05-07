@@ -28,6 +28,7 @@ class ShelfDelegateImpl : public ShelfDelegate {
   void OnShelfCreated(Shelf* shelf) override;
   void OnShelfDestroyed(Shelf* shelf) override;
   ShelfID GetShelfIDForAppID(const std::string& app_id) override;
+  bool HasShelfIDToAppIDMapping(ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ShelfID id) override;
   void PinAppWithID(const std::string& app_id) override;
   bool IsAppPinned(const std::string& app_id) override;

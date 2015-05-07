@@ -301,6 +301,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   void OnShelfCreated(ash::Shelf* shelf) override;
   void OnShelfDestroyed(ash::Shelf* shelf) override;
   ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
+  bool HasShelfIDToAppIDMapping(ash::ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ash::ShelfID id) override;
   void PinAppWithID(const std::string& app_id) override;
   bool IsAppPinned(const std::string& app_id) override;
@@ -503,8 +504,6 @@ class ChromeLauncherController : public ash::ShelfDelegate,
                                         ash::ShelfItemStatus status,
                                         int index,
                                         ash::ShelfItemType shelf_item_type);
-
-  bool HasItemController(ash::ShelfID id) const;
 
   // Enumerate all Web contents which match a given shortcut |controller|.
   std::vector<content::WebContents*> GetV1ApplicationsFromController(
