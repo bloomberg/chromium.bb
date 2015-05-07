@@ -5,6 +5,7 @@
 #include "config.h"
 #include "public/platform/WebScheduler.h"
 
+#include "platform/Task.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
@@ -12,27 +13,6 @@
 namespace blink {
 
 namespace {
-class TaskRunner : public WebThread::Task {
-    WTF_MAKE_NONCOPYABLE(TaskRunner);
-public:
-    explicit TaskRunner(PassOwnPtr<WebScheduler::Task> task)
-        : m_task(task)
-    {
-    }
-
-    ~TaskRunner() override
-    {
-    }
-
-    // WebThread::Task implementation.
-    void run() override
-    {
-        (*m_task)();
-    }
-
-private:
-    OwnPtr<WebScheduler::Task> m_task;
-};
 
 class IdleTaskRunner : public WebThread::IdleTask {
     WTF_MAKE_NONCOPYABLE(IdleTaskRunner);
@@ -76,7 +56,7 @@ void WebScheduler::postIdleTaskAfterWakeup(const WebTraceLocation& location, Pas
 
 void WebScheduler::postLoadingTask(const WebTraceLocation& location, PassOwnPtr<Task> task)
 {
-    postLoadingTask(location, new TaskRunner(task));
+    postLoadingTask(location, new blink::Task(task));
 }
 
 } // namespace blink
