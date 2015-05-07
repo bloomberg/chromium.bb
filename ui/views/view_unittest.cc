@@ -459,7 +459,8 @@ TEST_F(ViewTest, PaintWithUnknownInvalidation) {
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
   root_view->Paint(
-      ui::PaintContext(&canvas, paint_area).CloneWithoutInvalidation());
+      ui::PaintContext(ui::PaintContext(&canvas, paint_area),
+                       ui::PaintContext::CLONE_WITHOUT_INVALIDATION));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }

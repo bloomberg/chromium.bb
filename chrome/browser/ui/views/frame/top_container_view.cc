@@ -29,7 +29,8 @@ void TopContainerView::PaintChildren(const ui::PaintContext& context) {
     // Use a clone without invalidation info, as we're painting something
     // outside of the normal parent-child relationship, so invalidations are
     // no longer in the correct space to compare.
-    frame->Paint(context.CloneWithoutInvalidation());
+    frame->Paint(ui::PaintContext(
+        context, ui::PaintContext::CLONE_WITHOUT_INVALIDATION));
   }
   View::PaintChildren(context);
 }

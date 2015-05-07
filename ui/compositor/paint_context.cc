@@ -27,7 +27,8 @@ PaintContext::PaintContext(cc::DisplayItemList* list,
                            const gfx::Rect& invalidation)
     : canvas_(nullptr),
       list_(list),
-      recorder_(new SkPictureRecorder),
+      owned_recorder_(new SkPictureRecorder),
+      recorder_(owned_recorder_.get()),
       device_scale_factor_(device_scale_factor),
       bounds_(bounds),
       invalidation_(invalidation) {
@@ -41,17 +42,16 @@ PaintContext::PaintContext(gfx::Canvas* canvas)
     : PaintContext(canvas, gfx::Rect()) {
 }
 
-PaintContext::PaintContext(const PaintContext& other)
+PaintContext::PaintContext(const PaintContext& other,
+                           const gfx::Vector2d& offset)
     : canvas_(other.canvas_),
       list_(other.list_),
-      // The SkPictureRecorder doesn't hold state, it is only held on the
-      // PaintContext as an optimization for fewer allocations. So we can just
-      // make a new one here.
-      recorder_(new SkPictureRecorder),
+      owned_recorder_(nullptr),
+      recorder_(other.recorder_),
       device_scale_factor_(other.device_scale_factor_),
       bounds_(other.bounds_),
       invalidation_(other.invalidation_),
-      offset_(other.offset_) {
+      offset_(other.offset_ + offset) {
 #if DCHECK_IS_ON()
   root_visited_ = other.root_visited_;
   inside_paint_recorder_ = other.inside_paint_recorder_;
@@ -59,9 +59,19 @@ PaintContext::PaintContext(const PaintContext& other)
 }
 
 PaintContext::PaintContext(const PaintContext& other,
-                           const gfx::Vector2d& offset)
-    : PaintContext(other) {
-  offset_ += offset;
+                           CloneWithoutInvalidation c)
+    : canvas_(other.canvas_),
+      list_(other.list_),
+      owned_recorder_(nullptr),
+      recorder_(other.recorder_),
+      device_scale_factor_(other.device_scale_factor_),
+      bounds_(other.bounds_),
+      invalidation_(),
+      offset_(other.offset_) {
+#if DCHECK_IS_ON()
+  root_visited_ = other.root_visited_;
+  inside_paint_recorder_ = other.inside_paint_recorder_;
+#endif
 }
 
 PaintContext::~PaintContext() {

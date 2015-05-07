@@ -745,8 +745,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     DCHECK_IMPLIES(!parent(), bounds().origin() == gfx::Point());
     offset_to_parent = GetMirroredPosition().OffsetFromOrigin();
   }
-  ui::PaintContext context =
-      parent_context.CloneWithPaintOffset(offset_to_parent);
+  ui::PaintContext context(parent_context, offset_to_parent);
 
   bool is_invalidated = true;
   if (context.CanCheckInvalid()) {

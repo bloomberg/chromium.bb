@@ -42,19 +42,16 @@ class COMPOSITOR_EXPORT PaintContext {
   // for invalidation).
   explicit PaintContext(gfx::Canvas* canvas);
 
-  PaintContext(const PaintContext& other);
-
-  ~PaintContext();
-
   // Clone a PaintContext with an additional |offset|.
-  PaintContext CloneWithPaintOffset(const gfx::Vector2d& offset) const {
-    return PaintContext(*this, offset);
-  }
+  PaintContext(const PaintContext& other, const gfx::Vector2d& offset);
 
   // Clone a PaintContext that has no consideration for invalidation.
-  PaintContext CloneWithoutInvalidation() const {
-    return PaintContext(canvas_);
-  }
+  enum CloneWithoutInvalidation {
+    CLONE_WITHOUT_INVALIDATION,
+  };
+  PaintContext(const PaintContext& other, CloneWithoutInvalidation c);
+
+  ~PaintContext();
 
   // When true, IsRectInvalid() can be called, otherwise its result would be
   // invalid.
@@ -95,14 +92,13 @@ class COMPOSITOR_EXPORT PaintContext {
   // cache contents.
   friend class PaintCache;
 
-  PaintContext& operator=(const PaintContext& other) = delete;
-
-  // Clone a PaintContext with an additional |offset|.
-  PaintContext(const PaintContext& other, const gfx::Vector2d& offset);
-
   gfx::Canvas* canvas_;
   cc::DisplayItemList* list_;
-  scoped_ptr<SkPictureRecorder> recorder_;
+  scoped_ptr<SkPictureRecorder> owned_recorder_;
+  // A pointer to the |owned_recorder_| in this PaintContext, or in another one
+  // which this was copied from. We expect a copied-from PaintContext to outlive
+  // copies made from it.
+  SkPictureRecorder* recorder_;
   // The device scale of the frame being painted. Used to determine which bitmap
   // resources to use in the frame.
   float device_scale_factor_;
@@ -124,6 +120,8 @@ class COMPOSITOR_EXPORT PaintContext {
   // recorder is active.
   mutable bool inside_paint_recorder_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(PaintContext);
 };
 
 }  // namespace ui
