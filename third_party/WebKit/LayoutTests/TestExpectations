@@ -2077,8 +2077,7 @@ crbug.com/480652 svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
 crbug.com/480652 virtual/pointerevent/fast/events/window-onerror-04.html [ NeedsManualRebaseline ]
 crbug.com/480652 virtual/slimmingpaint/fast/events/window-onerror-04.html [ NeedsManualRebaseline ]
 
-# Bogus expectation, needs rebaseline after V8 roll.
-crbug.com/484077 inspector/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
+crbug.com/484077 inspector/sources/debugger/properties-special.html [ NeedsRebaseline ]
 
 #---------------------------
 # Slimming Paint for SVG expectations.
