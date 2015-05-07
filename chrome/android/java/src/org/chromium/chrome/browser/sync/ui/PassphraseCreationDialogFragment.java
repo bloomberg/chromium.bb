@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -94,7 +94,7 @@ public class PassphraseCreationDialogFragment extends DialogFragment {
             }
         });
 
-        return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
+        return new AlertDialog.Builder(getActivity())
                 .setView(view)
                 .setTitle(R.string.sync_passphrase_type_custom)
                 .setPositiveButton(R.string.ok, null)

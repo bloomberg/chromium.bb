@@ -17,7 +17,7 @@
         android:id="@+id/username_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
-        <EditText
+        <org.chromium.chrome.browser.widget.AlertDialogEditText
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,7 +30,7 @@
         android:id="@+id/password_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
-        <EditText
+        <org.chromium.chrome.browser.widget.AlertDialogEditText
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

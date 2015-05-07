@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="25dp"
             android:text="@string/sync_custom_passphrase"/>
-        <EditText
+        <org.chromium.chrome.browser.widget.AlertDialogEditText
             android:id="@+id/passphrase"
             android:hint="@string/sync_enter_custom_passphrase_hint"
             android:layout_width="match_parent"
@@ -24,7 +24,7 @@
             android:inputType="textPassword"
             android:singleLine="true"
             android:imeOptions="actionNext" />
-        <EditText
+        <org.chromium.chrome.browser.widget.AlertDialogEditText
             android:id="@+id/confirm_passphrase"
             android:hint="@string/sync_enter_custom_passphrase_hint_confirm"
             android:layout_width="match_parent"

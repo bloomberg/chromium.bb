@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -87,7 +87,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
 
         prepare(layout);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme)
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setView(layout)
                 .setTitle(mTitle)
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {

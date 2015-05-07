@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,7 +55,7 @@ public class LoginPrompt implements ChromeHttpAuthHandler.AutofillObserver {
         TextView explanationView = (TextView) v.findViewById(R.id.explanation);
         explanationView.setText(mAuthHandler.getMessageBody());
 
-        mDialog = new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+        mDialog = new AlertDialog.Builder(mContext)
                 .setTitle(R.string.login_dialog_title)
                 .setView(v)
                 .setPositiveButton(R.string.login_dialog_ok_button_label,
