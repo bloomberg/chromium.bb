@@ -134,8 +134,8 @@ public:
     void setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
-    WillBeHeapVector<RefPtrWillBeMember<Attr>>& ensureAttrNodeList();
-    WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrNodeList() { return m_attrNodeList.get(); }
+    AttrNodeList& ensureAttrNodeList();
+    AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
     void removeAttrNodeList() { m_attrNodeList.clear(); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
@@ -152,7 +152,7 @@ private:
     OwnPtrWillBeMember<ClassList> m_classList;
     OwnPtrWillBeMember<ElementShadow> m_shadow;
     OwnPtrWillBeMember<NamedNodeMap> m_attributeMap;
-    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Attr>>> m_attrNodeList;
+    OwnPtrWillBeMember<AttrNodeList> m_attrNodeList;
     OwnPtrWillBeMember<InputMethodContext> m_inputMethodContext;
     OwnPtrWillBeMember<ElementAnimations> m_elementAnimations;
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;

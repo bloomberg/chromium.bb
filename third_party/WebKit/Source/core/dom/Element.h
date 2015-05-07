@@ -84,6 +84,8 @@ enum ElementFlags {
     NumberOfElementFlags = 7, // Required size of bitfield used to store the flags.
 };
 
+typedef WillBeHeapVector<RefPtrWillBeMember<Attr>> AttrNodeList;
+
 class CORE_EXPORT Element : public ContainerNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -221,7 +223,7 @@ public:
     PassRefPtrWillBeRawPtr<Attr> attrIfExists(const QualifiedName&);
     PassRefPtrWillBeRawPtr<Attr> ensureAttr(const QualifiedName&);
 
-    WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrNodeList();
+    AttrNodeList* attrNodeList();
 
     CSSStyleDeclaration* style();
 
@@ -646,7 +648,7 @@ private:
     ElementRareData* elementRareData() const;
     ElementRareData& ensureElementRareData();
 
-    WillBeHeapVector<RefPtrWillBeMember<Attr>>& ensureAttrNodeList();
+    AttrNodeList& ensureAttrNodeList();
     void removeAttrNodeList();
     void detachAllAttrNodesFromElement();
     void detachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);

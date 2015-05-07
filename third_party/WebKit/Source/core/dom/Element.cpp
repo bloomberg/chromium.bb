@@ -131,17 +131,6 @@ namespace blink {
 using namespace HTMLNames;
 using namespace XMLNames;
 
-typedef WillBeHeapVector<RefPtrWillBeMember<Attr>> AttrNodeList;
-
-static Attr* findAttrNodeInList(const AttrNodeList& attrNodeList, const QualifiedName& name)
-{
-    for (const auto& attr : attrNodeList) {
-        if (attr->qualifiedName() == name)
-            return attr.get();
-    }
-    return nullptr;
-}
-
 PassRefPtrWillBeRawPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
 {
     return adoptRefWillBeNoop(new Element(tagName, document, CreateElement));
@@ -1989,12 +1978,12 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
 }
 #endif
 
-WillBeHeapVector<RefPtrWillBeMember<Attr>>* Element::attrNodeList()
+AttrNodeList* Element::attrNodeList()
 {
     return hasRareData() ? elementRareData()->attrNodeList() : nullptr;
 }
 
-WillBeHeapVector<RefPtrWillBeMember<Attr>>& Element::ensureAttrNodeList()
+AttrNodeList& Element::ensureAttrNodeList()
 {
     return ensureElementRareData().ensureAttrNodeList();
 }
@@ -2724,13 +2713,13 @@ void Element::normalizeAttributes()
 {
     if (!hasAttributes())
         return;
-    WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrNodes = attrNodeList();
+    AttrNodeList* attrNodes = attrNodeList();
     if (!attrNodes)
         return;
     // Copy the Attr Vector because Node::normalize() can fire synchronous JS
     // events (e.g. DOMSubtreeModified) and a JS listener could add / remove
     // attributes while we are iterating.
-    WillBeHeapVector<RefPtrWillBeMember<Attr>> attrNodesCopy(*attrNodes);
+    AttrNodeList attrNodesCopy(*attrNodes);
     for (size_t i = 0; i < attrNodesCopy.size(); ++i)
         attrNodesCopy[i]->normalize();
 }
@@ -3175,19 +3164,22 @@ void Element::setSavedLayerScrollOffset(const IntSize& size)
 
 PassRefPtrWillBeRawPtr<Attr> Element::attrIfExists(const QualifiedName& name)
 {
-    if (AttrNodeList* attrNodeList = this->attrNodeList())
-        return findAttrNodeInList(*attrNodeList, name);
+    if (AttrNodeList* attrNodeList = this->attrNodeList()) {
+        for (const auto& attr : *attrNodeList) {
+            if (attr->qualifiedName() == name)
+                return attr.get();
+        }
+    }
     return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<Attr> Element::ensureAttr(const QualifiedName& name)
 {
-    AttrNodeList& attrNodeList = ensureAttrNodeList();
-    RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(attrNodeList, name);
+    RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(name);
     if (!attrNode) {
         attrNode = Attr::create(*this, name);
         treeScope().adoptIfNeeded(*attrNode);
-        attrNodeList.append(attrNode);
+        ensureAttrNodeList().append(attrNode);
     }
     return attrNode.release();
 }
@@ -3198,15 +3190,11 @@ void Element::detachAttrNodeFromElementWithValue(Attr* attrNode, const AtomicStr
     attrNode->detachFromElementWithValue(value);
 
     AttrNodeList* list = attrNodeList();
-    for (unsigned i = 0; i < list->size(); ++i) {
-        if (list->at(i)->qualifiedName() == attrNode->qualifiedName()) {
-            list->remove(i);
-            if (list->isEmpty())
-                removeAttrNodeList();
-            return;
-        }
-    }
-    ASSERT_NOT_REACHED();
+    size_t index = list->find(attrNode);
+    ASSERT(index != kNotFound);
+    list->remove(index);
+    if (list->isEmpty())
+        removeAttrNodeList();
 }
 
 void Element::detachAllAttrNodesFromElement()
@@ -3217,7 +3205,7 @@ void Element::detachAllAttrNodesFromElement()
 
     AttributeCollection attributes = elementData()->attributes();
     for (const Attribute& attr : attributes) {
-        if (RefPtrWillBeRawPtr<Attr> attrNode = findAttrNodeInList(*list, attr.name()))
+        if (RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(attr.name()))
             attrNode->detachFromElementWithValue(attr.value());
     }
 

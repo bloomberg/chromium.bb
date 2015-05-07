@@ -49,10 +49,10 @@ CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* o
     return *m_cssomWrapper;
 }
 
-WillBeHeapVector<RefPtrWillBeMember<Attr>>& ElementRareData::ensureAttrNodeList()
+AttrNodeList& ElementRareData::ensureAttrNodeList()
 {
     if (!m_attrNodeList)
-        m_attrNodeList = adoptPtrWillBeNoop(new WillBeHeapVector<RefPtrWillBeMember<Attr>>());
+        m_attrNodeList = adoptPtrWillBeNoop(new AttrNodeList);
     return *m_attrNodeList;
 }
 
