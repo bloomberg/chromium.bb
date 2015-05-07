@@ -143,7 +143,7 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
 
   InitializeEntryIfNeeded(entry);
 
-  if (!entry->GetURL().SchemeIsSecure())
+  if (!entry->GetURL().SchemeIsCryptographic())
     return;
 
   if (!web_contents->DisplayedInsecureContent())
@@ -251,13 +251,13 @@ void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
   if (entry->GetSSL().security_style != SECURITY_STYLE_UNKNOWN)
     return;
 
-  entry->GetSSL().security_style = entry->GetURL().SchemeIsSecure() ?
+  entry->GetSSL().security_style = entry->GetURL().SchemeIsCryptographic() ?
       SECURITY_STYLE_AUTHENTICATED : SECURITY_STYLE_UNAUTHENTICATED;
 }
 
 void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {
   GURL parsed_origin(origin);
-  if (parsed_origin.SchemeIsSecure())
+  if (parsed_origin.SchemeIsCryptographic())
     backend_->HostRanInsecureContent(parsed_origin.host(), pid);
 }
 

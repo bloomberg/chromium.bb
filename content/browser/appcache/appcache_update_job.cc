@@ -169,7 +169,7 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
     return;
   }
 
-  if (url_.SchemeIsSecure()) {
+  if (url_.SchemeIsCryptographic()) {
     // Do not cache content with cert errors.
     // Also, we willfully violate the HTML5 spec at this point in order
     // to support the appcaching of cross-origin HTTPS resources.

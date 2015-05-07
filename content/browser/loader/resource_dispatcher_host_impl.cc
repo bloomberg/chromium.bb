@@ -862,7 +862,7 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
         "Net.ErrorCodesForMainFrame3",
         -loader->request()->status().error());
 
-    if (loader->request()->url().SchemeIsSecure()) {
+    if (loader->request()->url().SchemeIsCryptographic()) {
       if (loader->request()->url().host() == "www.google.com") {
         UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ErrorCodesForHTTPSGoogleMainFrame2",
                                     -loader->request()->status().error());
@@ -887,7 +887,7 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
         -loader->request()->status().error());
   }
 
-  if (loader->request()->url().SchemeIsSecure()) {
+  if (loader->request()->url().SchemeIsCryptographic()) {
     RecordCertificateHistograms(loader->request()->ssl_info(),
                                 info->GetResourceType());
   }
