@@ -99,14 +99,7 @@ void GpuBrowserCompositorOutputSurface::OnSwapBuffersCompleted(
   // it has been drawn, see OnSurfaceDisplayed();
   NOTREACHED();
 #else
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&RenderWidgetHostImpl::CompositorFrameDrawn, latency_info));
-  }
+  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
   OnSwapBuffersComplete();
 #endif
 }
