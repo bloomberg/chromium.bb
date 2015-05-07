@@ -256,6 +256,10 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
 
 void EnrollmentScreen::OnDeviceAttributeUploadCompleted(bool success) {
   if (success) {
+    // If the device attributes have been successfully uploaded, fetch policy.
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    connector->GetDeviceCloudPolicyManager()->core()->RefreshSoon();
     actor_->ShowEnrollmentStatus(policy::EnrollmentStatus::ForStatus(
         policy::EnrollmentStatus::STATUS_SUCCESS));
   } else {
