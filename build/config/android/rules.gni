@@ -548,14 +548,12 @@ template("android_resources") {
   base_path = "$target_gen_dir/$target_name"
   zip_path = base_path + ".resources.zip"
   srcjar_path = base_path + ".srcjar"
-  r_text_path = base_path + "_R.txt"
   build_config = base_path + ".build_config"
 
   write_build_config("${target_name}__build_config") {
     type = "android_resources"
     resources_zip = zip_path
     srcjar = srcjar_path
-    r_text = r_text_path
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
@@ -1308,7 +1306,6 @@ template("android_apk") {
   final_deps += [ ":${_template_name}__process_resources" ]
   process_resources("${_template_name}__process_resources") {
     srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
-    r_text_path = "${target_gen_dir}/${target_name}_R.txt"
     android_manifest = _android_manifest
     resource_dirs = [ "//build/android/ant/empty/res" ]
     zip_path = resources_zip_path

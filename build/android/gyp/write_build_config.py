@@ -100,7 +100,6 @@ def main(argv):
   # android_resources options
   parser.add_option('--srcjar', help='Path to target\'s resources srcjar.')
   parser.add_option('--resources-zip', help='Path to target\'s resources zip.')
-  parser.add_option('--r-text', help='Path to target\'s R.txt file.')
   parser.add_option('--package-name',
       help='Java package name for these resources.')
   parser.add_option('--android-manifest', help='Path to android manifest.')
@@ -240,21 +239,16 @@ def main(argv):
       deps_info['srcjar'] = options.srcjar
     if options.package_name:
       deps_info['package_name'] = options.package_name
-    if options.r_text:
-      deps_info['r_text'] = options.r_text
 
   if options.type == 'android_resources' or options.type == 'android_apk':
     config['resources'] = {}
     config['resources']['dependency_zips'] = [
         c['resources_zip'] for c in all_resources_deps]
     config['resources']['extra_package_names'] = []
-    config['resources']['extra_r_text_files'] = []
 
   if options.type == 'android_apk':
     config['resources']['extra_package_names'] = [
         c['package_name'] for c in all_resources_deps if 'package_name' in c]
-    config['resources']['extra_r_text_files'] = [
-        c['r_text'] for c in all_resources_deps if 'r_text' in c]
 
   if options.type in ['android_apk', 'deps_dex']:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
