@@ -89,8 +89,10 @@ bool ResolveStringFromCommandLineInput(
                                setup->loader()->default_toolchain_label(),
                                Value(nullptr, input), &err);
   if (err.has_error()) {
-    err.PrintToStdout();
-    return false;
+    // Not a valid label, assume this must be a file.
+    file_matches->push_back(current_dir.ResolveRelativeFile(
+        input, setup->build_settings().root_path_utf8()));
+    return true;
   }
 
   const Item* item = setup->builder()->GetItem(label);
