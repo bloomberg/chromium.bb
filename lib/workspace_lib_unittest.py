@@ -102,11 +102,15 @@ class WorkspaceLibTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(os.path.join(self.workspace_dir, '.chroot'),
                      workspace_lib.ChrootPath(self.workspace_dir))
 
-    # Set a new value.
+    # Set a new absolute value, check that we get it back.
     workspace_lib.SetChrootDir(self.workspace_dir, self.bogus_dir)
-
-    # Check we get it back.
     self.assertEqual(self.bogus_dir,
+                     workspace_lib.ChrootPath(self.workspace_dir))
+
+    # Set a new relative path, check that it is properly appended to the
+    # workspace path.
+    workspace_lib.SetChrootDir(self.workspace_dir, 'some/path')
+    self.assertEqual(os.path.join(self.workspace_dir, 'some/path'),
                      workspace_lib.ChrootPath(self.workspace_dir))
 
   @mock.patch.object(osutils, 'IsInsideVm', return_value=True)

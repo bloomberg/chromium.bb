@@ -80,8 +80,9 @@ def WorkspacePath(workspace_reference_dir=None):
 def ChrootPath(workspace_path):
   """Returns the path to the chroot associated with the given workspace.
 
-  Each workspace should have it's own associated chroot. This method gives
-  the path to that chroot.
+  Each workspace has its own associated chroot. This method returns the chroot
+  path set in the workspace config if present, or else the default location,
+  which varies depending on whether or not we run in a VM.
 
   Args:
     workspace_path: Root directory of the workspace (WorkspacePath()).
@@ -90,13 +91,16 @@ def ChrootPath(workspace_path):
     Path to where the chroot is, or where it should be created.
   """
   config_value = GetChrootDir(workspace_path)
-
   if config_value:
-    return config_value
-  elif osutils.IsInsideVm():
+    # If the config value is a relative path, we base it in the workspace path.
+    # Otherwise, it is an absolute path and will be returned as is.
+    return os.path.join(workspace_path, config_value)
+
+  # The default for a VM.
+  if osutils.IsInsideVm():
     return os.path.join(MAIN_CHROOT_DIR_IN_VM, os.path.basename(workspace_path))
 
-  # Return the default value.
+  # The default for all other cases.
   return os.path.join(workspace_path, WORKSPACE_CHROOT_DIR)
 
 
