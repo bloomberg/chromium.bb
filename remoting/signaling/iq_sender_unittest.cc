@@ -79,6 +79,25 @@ class IqSenderTest : public testing::Test {
     delete sent_stanza;
   }
 
+  bool FormatAndDeliverResponse(const std::string& from,
+                                scoped_ptr<XmlElement>* response_out) {
+    scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
+    response->AddAttr(QName(std::string(), "type"), "result");
+    response->AddAttr(QName(std::string(), "id"), kStanzaId);
+    response->AddAttr(QName(std::string(), "from"), from);
+
+    XmlElement* response_body = new XmlElement(
+        QName("test:namespace", "response-body"));
+    response->AddElement(response_body);
+
+    bool result = sender_->OnSignalStrategyIncomingStanza(response.get());
+
+    if (response_out)
+      *response_out = response.Pass();
+
+    return result;
+  }
+
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<IqSender> sender_;
@@ -91,16 +110,8 @@ TEST_F(IqSenderTest, SendIq) {
     SendTestMessage();
   });
 
-  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName(std::string(), "type"), "result");
-  response->AddAttr(QName(std::string(), "id"), kStanzaId);
-  response->AddAttr(QName(std::string(), "from"), kTo);
-
-  XmlElement* result = new XmlElement(
-      QName("test:namespace", "response-body"));
-  response->AddElement(result);
-
-  EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
+  scoped_ptr<XmlElement> response;
+  EXPECT_TRUE(FormatAndDeliverResponse(kTo, &response));
 
   EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
   base::RunLoop().RunUntilIdle();
@@ -118,23 +129,28 @@ TEST_F(IqSenderTest, Timeout) {
   message_loop_.Run();
 }
 
+TEST_F(IqSenderTest, NotNormalizedJid) {
+  ASSERT_NO_FATAL_FAILURE({
+    SendTestMessage();
+  });
+
+  // Set upper-case from value, which is equivalent to kTo in the original
+  // message.
+  scoped_ptr<XmlElement> response;
+  EXPECT_TRUE(FormatAndDeliverResponse("USER@domain.com", &response));
+
+  EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(IqSenderTest, InvalidFrom) {
   ASSERT_NO_FATAL_FAILURE({
     SendTestMessage();
   });
 
-  scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
-  response->AddAttr(QName(std::string(), "type"), "result");
-  response->AddAttr(QName(std::string(), "id"), kStanzaId);
-  response->AddAttr(QName(std::string(), "from"), "different_user@domain.com");
+  EXPECT_FALSE(FormatAndDeliverResponse("different_user@domain.com", nullptr));
 
-  XmlElement* result = new XmlElement(
-      QName("test:namespace", "response-body"));
-  response->AddElement(result);
-
-  EXPECT_CALL(callback_, OnReply(_, _))
-      .Times(0);
-  EXPECT_FALSE(sender_->OnSignalStrategyIncomingStanza(response.get()));
+  EXPECT_CALL(callback_, OnReply(_, _)).Times(0);
   base::RunLoop().RunUntilIdle();
 }
 

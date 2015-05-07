@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/libjingle/xmpp/constants.h"
@@ -109,8 +110,8 @@ bool IqSender::OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) {
 
   IqRequest* request = it->second;
 
-  if (request->addressee_ != from) {
-    LOG(ERROR) << "Received IQ response from from a invalid JID. Ignoring it."
+  if (NormalizeJid(request->addressee_) != NormalizeJid(from)) {
+    LOG(ERROR) << "Received IQ response from an invalid JID. Ignoring it."
                << " Message received from: " << from
                << " Original JID: " << request->addressee_;
     return false;
