@@ -40,12 +40,10 @@ class ScopedShowWindow : public aura::WindowObserver {
   // Cancel restoring the window on going out of scope.
   void CancelRestore();
 
-  aura::Window* window() { return window_; }
-
+ private:
   // aura::WindowObserver:
   void OnWillRemoveWindow(aura::Window* window) override;
 
- private:
   // The window being shown.
   aura::Window* window_;
 
@@ -112,17 +110,16 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
       current_index_(0) {
   ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(true);
 
-  for (WindowList::const_iterator i = windows_.begin(); i != windows_.end();
-       ++i) {
-    (*i)->AddObserver(this);
-  }
+  for (auto* window : windows_)
+    window->AddObserver(this);
 }
 
 WindowCycleList::~WindowCycleList() {
   ash::Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
-  for (WindowList::const_iterator i = windows_.begin(); i != windows_.end();
-       ++i) {
-    (*i)->RemoveObserver(this);
+  for (auto* window : windows_) {
+    // TODO(oshima): Remove this once crbug.com/483491 is fixed.
+    CHECK(window);
+    window->RemoveObserver(this);
   }
   if (showing_window_)
     showing_window_->CancelRestore();
@@ -155,11 +152,12 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   showing_window_->Show(windows_[current_index_]);
 }
 
-void WindowCycleList::OnWindowDestroyed(aura::Window* window) {
+void WindowCycleList::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
 
   WindowList::iterator i = std::find(windows_.begin(), windows_.end(), window);
-  DCHECK(i != windows_.end());
+  // TODO(oshima): Change this back to DCHECK once crbug.com/483491 is fixed.
+  CHECK(i != windows_.end());
   int removed_index = static_cast<int>(i - windows_.begin());
   windows_.erase(i);
   if (current_index_ > removed_index ||

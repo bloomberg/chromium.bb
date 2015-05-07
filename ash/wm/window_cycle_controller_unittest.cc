@@ -58,6 +58,11 @@ class WindowCycleControllerTest : public test::AshTestBase {
     return window;
   }
 
+  const WindowCycleList::WindowList& GetWindows(
+      WindowCycleController* controller) {
+    return controller->window_cycle_list()->windows();
+  }
+
  private:
   scoped_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
@@ -119,10 +124,10 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
 
   // Window lists should return the topmost window in front.
   ASSERT_TRUE(controller->window_cycle_list());
-  ASSERT_EQ(3u, controller->window_cycle_list()->windows().size());
-  ASSERT_EQ(window0.get(), controller->window_cycle_list()->windows()[0]);
-  ASSERT_EQ(window1.get(), controller->window_cycle_list()->windows()[1]);
-  ASSERT_EQ(window2.get(), controller->window_cycle_list()->windows()[2]);
+  ASSERT_EQ(3u, GetWindows(controller).size());
+  ASSERT_EQ(window0.get(), GetWindows(controller)[0]);
+  ASSERT_EQ(window1.get(), GetWindows(controller)[1]);
+  ASSERT_EQ(window2.get(), GetWindows(controller)[2]);
 
   controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
@@ -269,10 +274,10 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
 
   // Window lists should return the topmost window in front.
   ASSERT_TRUE(controller->window_cycle_list());
-  ASSERT_EQ(3u, controller->window_cycle_list()->windows().size());
-  EXPECT_EQ(window0.get(), controller->window_cycle_list()->windows()[0]);
-  EXPECT_EQ(window2.get(), controller->window_cycle_list()->windows()[1]);
-  EXPECT_EQ(window1.get(), controller->window_cycle_list()->windows()[2]);
+  ASSERT_EQ(3u, GetWindows(controller).size());
+  EXPECT_EQ(window0.get(), GetWindows(controller)[0]);
+  EXPECT_EQ(window2.get(), GetWindows(controller)[1]);
+  EXPECT_EQ(window1.get(), GetWindows(controller)[2]);
 
   controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
@@ -314,11 +319,11 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
 
   // Window lists should return the topmost window in front.
   ASSERT_TRUE(controller->window_cycle_list());
-  ASSERT_EQ(4u, controller->window_cycle_list()->windows().size());
-  EXPECT_EQ(window0.get(), controller->window_cycle_list()->windows()[0]);
-  EXPECT_EQ(window3.get(), controller->window_cycle_list()->windows()[1]);
-  EXPECT_EQ(window2.get(), controller->window_cycle_list()->windows()[2]);
-  EXPECT_EQ(window1.get(), controller->window_cycle_list()->windows()[3]);
+  ASSERT_EQ(4u, GetWindows(controller).size());
+  EXPECT_EQ(window0.get(), GetWindows(controller)[0]);
+  EXPECT_EQ(window3.get(), GetWindows(controller)[1]);
+  EXPECT_EQ(window2.get(), GetWindows(controller)[2]);
+  EXPECT_EQ(window1.get(), GetWindows(controller)[3]);
 
   controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
@@ -393,11 +398,11 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
 
   // Window lists should return the topmost window in front.
   ASSERT_TRUE(controller->window_cycle_list());
-  ASSERT_EQ(4u, controller->window_cycle_list()->windows().size());
-  EXPECT_EQ(window2.get(), controller->window_cycle_list()->windows()[0]);
-  EXPECT_EQ(window3.get(), controller->window_cycle_list()->windows()[1]);
-  EXPECT_EQ(window1.get(), controller->window_cycle_list()->windows()[2]);
-  EXPECT_EQ(window0.get(), controller->window_cycle_list()->windows()[3]);
+  ASSERT_EQ(4u, GetWindows(controller).size());
+  EXPECT_EQ(window2.get(), GetWindows(controller)[0]);
+  EXPECT_EQ(window3.get(), GetWindows(controller)[1]);
+  EXPECT_EQ(window1.get(), GetWindows(controller)[2]);
+  EXPECT_EQ(window0.get(), GetWindows(controller)[3]);
 
   controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
@@ -437,10 +442,10 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
 
   // Window lists should return the topmost window in front.
   ASSERT_TRUE(controller->window_cycle_list());
-  ASSERT_EQ(3u, controller->window_cycle_list()->windows().size());
-  EXPECT_EQ(window0.get(), controller->window_cycle_list()->windows()[0]);
-  EXPECT_EQ(window2.get(), controller->window_cycle_list()->windows()[1]);
-  EXPECT_EQ(window1.get(), controller->window_cycle_list()->windows()[2]);
+  ASSERT_EQ(3u, GetWindows(controller).size());
+  EXPECT_EQ(window0.get(), GetWindows(controller)[0]);
+  EXPECT_EQ(window2.get(), GetWindows(controller)[1]);
+  EXPECT_EQ(window1.get(), GetWindows(controller)[2]);
 
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->StopCycling();
