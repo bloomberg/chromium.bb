@@ -55,8 +55,6 @@ public:
     virtual bool isInteractiveContent() const override;
     virtual bool appendFormData(FormDataList&, bool) override;
 
-    virtual bool isObjectElement() const override { return true; }
-
     // Implementations of constraint validation API.
     // Note that the object elements are always barred from constraint validation.
     virtual String validationMessage() const override { return String(); }

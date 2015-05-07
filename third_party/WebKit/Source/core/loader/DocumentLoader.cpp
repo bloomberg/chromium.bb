@@ -458,17 +458,8 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
 
     if (m_response.isHTTP()) {
         int status = m_response.httpStatusCode();
-        // FIXME: Fallback content only works if the parent is in the same processs.
-        if ((status < 200 || status >= 300) && m_frame->owner()) {
-            if (!m_frame->deprecatedLocalOwner()) {
-                ASSERT_NOT_REACHED();
-            } else if (m_frame->deprecatedLocalOwner()->isObjectElement()) {
-                m_frame->deprecatedLocalOwner()->renderFallbackContent();
-                // object elements are no longer rendered after we fallback, so don't
-                // keep trying to process data from their load
-                cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
-            }
-        }
+        if ((status < 200 || status >= 300) && m_frame->owner())
+            m_frame->owner()->renderFallbackContent();
     }
 }
 

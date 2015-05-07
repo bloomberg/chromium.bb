@@ -63,9 +63,6 @@ public:
     virtual bool loadedNonEmptyDocument() const { return false; }
     virtual void didLoadNonEmptyDocument() { }
 
-    virtual void renderFallbackContent() { }
-
-    virtual bool isObjectElement() const { return false; }
     void setWidget(PassRefPtrWillBeRawPtr<Widget>);
     Widget* ownedWidget() const;
 
@@ -79,9 +76,10 @@ public:
     };
 
     // FrameOwner overrides:
-    virtual bool isLocal() const { return true; }
-    virtual void dispatchLoad() override;
-    virtual SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
+    bool isLocal() const override { return true; }
+    void dispatchLoad() override;
+    SandboxFlags sandboxFlags() const override { return m_sandboxFlags; }
+    void renderFallbackContent() override { }
 
     DECLARE_VIRTUAL_TRACE();
 

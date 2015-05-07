@@ -15,7 +15,7 @@ namespace blink {
 // 1. Allows the local frame's loader to retrieve sandbox flags associated with
 //    its owner element in another process.
 // 2. Trigger a load event on its owner element once it finishes a load.
-class RemoteBridgeFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
+class RemoteBridgeFrameOwner final : public NoBaseWillBeGarbageCollectedFinalized<RemoteBridgeFrameOwner>, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteBridgeFrameOwner);
 public:
     static PassOwnPtrWillBeRawPtr<RemoteBridgeFrameOwner> create(PassRefPtrWillBeRawPtr<WebLocalFrameImpl> frame, SandboxFlags flags)
@@ -23,12 +23,12 @@ public:
         return adoptPtrWillBeNoop(new RemoteBridgeFrameOwner(frame, flags));
     }
 
-    virtual bool isLocal() const override
+    bool isLocal() const override
     {
         return false;
     }
 
-    virtual SandboxFlags sandboxFlags() const override
+    SandboxFlags sandboxFlags() const override
     {
         return m_sandboxFlags;
     }
@@ -43,7 +43,12 @@ public:
         m_frame = frame;
     }
 
-    virtual void dispatchLoad() override;
+    void dispatchLoad() override;
+
+    void renderFallbackContent() override
+    {
+        // TODO(dcheng): Implement.
+    }
 
     DECLARE_VIRTUAL_TRACE();
 

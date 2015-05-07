@@ -23,6 +23,10 @@ public:
 
     virtual SandboxFlags sandboxFlags() const = 0;
     virtual void dispatchLoad() = 0;
+
+    // On load failure, a frame can ask its owner to render fallback content
+    // which replaces the frame contents.
+    virtual void renderFallbackContent() = 0;
 };
 
 } // namespace blink
