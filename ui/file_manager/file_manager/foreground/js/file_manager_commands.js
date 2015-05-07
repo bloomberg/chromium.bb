@@ -1259,7 +1259,6 @@ CommandHandler.COMMANDS_['add-new-services'] = /** @type {Command} */ ({
   /**
    * @param {!Event} event Command event.
    * @param {!FileManager} fileManager FileManager to use.
-   * @suppress {checkTypes}
    */
   execute: function(event, fileManager) {
     fileManager.ui.suggestAppsDialog.showProviders(
@@ -1267,14 +1266,15 @@ CommandHandler.COMMANDS_['add-new-services'] = /** @type {Command} */ ({
           // If a new provider is installed, then launch it so the configuration
           // dialog is shown (if it's available).
           if (result === SuggestAppsDialog.Result.SUCCESS) {
-            // TODO(mtomasz): Pass extension_id to addProvidedFileSystem.
-            chrome.fileManagerPrivate.addProvidedFileSystem(function() {
-              if (chrome.runtime.lastError) {
-                // TODO(mtomasz): Handle the error and let users uninstall the
-                // extension easily.
-                console.error(chrome.runtime.lastError.message);
-              }
-            });
+            chrome.fileManagerPrivate.addProvidedFileSystem(
+                assert(itemId),
+                function() {
+                  if (chrome.runtime.lastError) {
+                    // TODO(mtomasz): Handle the error and let users uninstall
+                    // the extension easily.
+                    console.error(chrome.runtime.lastError.message);
+                  }
+                });
           }
         });
   },
