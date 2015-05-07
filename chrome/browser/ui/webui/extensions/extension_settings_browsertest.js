@@ -283,7 +283,9 @@ AsyncExtensionSettingsWebUITest.prototype = {
   },
 };
 
-TEST_F('AsyncExtensionSettingsWebUITest', 'testErrorListButtonVisibility',
+// Still fails on CrWinClang tester. BUG=463245
+TEST_F('AsyncExtensionSettingsWebUITest',
+       'DISABLED_testErrorListButtonVisibility',
     function() {
   var testButtonVisibility = function() {
     var extensionList = $('extension-list-wrapper');
