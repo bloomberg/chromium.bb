@@ -39,6 +39,7 @@ class MAYBE_CredentialManagerClientTest : public content::RenderViewTest {
 
   void TearDown() override {
     credential_.reset();
+    client_.reset();
     content::RenderViewTest::TearDown();
   }
 
