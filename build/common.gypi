@@ -2625,13 +2625,13 @@
           ],
         },
       }],
-      ['(clang==1 or host_clang==1) and OS!="win"', {
+      ['clang==1 or host_clang==1', {
         # This is here so that all files get recompiled after a clang roll and
         # when turning clang on or off.
         # (defines are passed via the command line, and build systems rebuild
         # things when their commandline changes). Nothing should ever read this
         # define.
-        'defines': ['CR_CLANG_REVISION=<!(<(DEPTH)/tools/clang/scripts/update.sh --print-revision)'],
+        'defines': ['CR_CLANG_REVISION=<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)'],
       }],
       ['enable_rlz==1', {
         'defines': ['ENABLE_RLZ'],

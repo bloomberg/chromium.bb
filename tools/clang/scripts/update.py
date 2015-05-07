@@ -65,8 +65,14 @@ def WriteStampFile(s):
 
 def PrintRevision():
   """Print the current Clang revision."""
+  # gyp runs update.py --print-revision even when clang=1 isn't set.
+  # It won't use the value, but we must not error.
+  if not re.search(r'\b(clang|asan)=1', os.environ.get('GYP_DEFINES', '')):
+    print "0"
+    return
+
   # TODO(hans): This needs an update when we move to prebuilt Clang binaries.
-  svn_info = subprocess.check_output(['svn', 'info', LLVM_DIR])
+  svn_info = subprocess.check_output(['svn', 'info', LLVM_DIR], shell=True)
   m = re.search(r'Revision: (\d+)', svn_info)
   assert m
   print m.group(1)
@@ -82,15 +88,6 @@ def RmTree(dir):
     raise
 
   shutil.rmtree(dir, onerror=ChmodAndRetry)
-
-
-def ClobberChromiumBuildFiles():
-  """Clobber Chomium build files."""
-  print 'Clobbering Chromium build files...'
-  out_dir = os.path.join(CHROMIUM_DIR, 'out')
-  if os.path.isdir(out_dir):
-    RmTree(out_dir)
-    print 'Removed Chromium out dir: %s.' % (out_dir)
 
 
 def RunCommand(command, fail_hard=True):
@@ -223,9 +220,6 @@ def UpdateClang(args):
     return 0
 
   AddCMakeToPath()
-  if args.clobber:
-    ClobberChromiumBuildFiles()
-
   # Reset the stamp file in case the build is unsuccessful.
   WriteStampFile('')
 
@@ -306,12 +300,15 @@ def main():
     # dup()ed sys.stdin is writable, try
     #   fd2 = os.dup(sys.stdin.fileno()); os.write(fd2, 'hi')
     # TODO: Fix gclient instead, http://crbug.com/95350
+    try:
+      stderr = os.fdopen(os.dup(sys.stdin.fileno()))
+    except:
+      stderr = sys.stderr
     return subprocess.call(
-        [os.path.join(os.path.dirname(__file__), 'update.sh')] +  sys.argv[1:],
-        stderr=os.fdopen(os.dup(sys.stdin.fileno())))
+        [os.path.join(os.path.dirname(__file__), 'update.sh')] + sys.argv[1:],
+        stderr=stderr)
 
   parser = argparse.ArgumentParser(description='Build Clang.')
-  parser.add_argument('--no-clobber', dest='clobber', action='store_false')
   parser.add_argument('--tools', nargs='*', default=['plugins'])
   # For now, this flag is only used for the non-Windows flow, but argparser gets
   # mad if it sees a flag it doesn't recognize.
