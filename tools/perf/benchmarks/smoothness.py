@@ -186,6 +186,38 @@ class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
     return 'smoothness.gpu_rasterization.key_mobile_sites_smooth'
 
 
+class SmoothnessGpuRasterizationToughPathRenderingCases(benchmark.Benchmark):
+  """Tests a selection of pages with SVG and 2D canvas paths with GPU
+  rasterization.
+  """
+  tag = 'gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughPathRenderingCasesPageSet
+
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.gpu_rasterization.tough_path_rendering_cases'
+
+
+class SmoothnessGpuRasterizationFiltersCases(benchmark.Benchmark):
+  """Tests a selection of pages with SVG and CSS filter effects with GPU
+  rasterization.
+  """
+  tag = 'gpu_rasterization'
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughFiltersCasesPageSet
+
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.gpu_rasterization.tough_filters_cases'
+
+
 @benchmark.Enabled('android')
 class SmoothnessSyncScrollKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics for the key mobile sites with synchronous
