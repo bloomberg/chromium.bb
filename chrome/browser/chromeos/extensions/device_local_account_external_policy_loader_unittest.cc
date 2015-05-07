@@ -10,10 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -142,7 +142,7 @@ void DeviceLocalAccountExternalPolicyLoaderTest::SetUp() {
   cache_dir_ = temp_dir_.path().Append(kCacheDir);
   ASSERT_TRUE(base::CreateDirectoryAndGetError(cache_dir_, NULL));
   request_context_getter_ =
-      new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
+      new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
   TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
       request_context_getter_.get());
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
@@ -211,7 +211,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListEmpty) {
   // Start the cache. Verify that the loader announces an empty extension list.
   EXPECT_CALL(visitor_, OnExternalProviderReady(provider_.get()))
       .Times(1);
-  loader_->StartCache(base::MessageLoopProxy::current());
+  loader_->StartCache(base::ThreadTaskRunnerHandle::Get());
   base::RunLoop().RunUntilIdle();
   VerifyAndResetVisitorCallExpectations();
 
@@ -237,7 +237,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   SetForceInstallListPolicy();
 
   // Start the cache.
-  loader_->StartCache(base::MessageLoopProxy::current());
+  loader_->StartCache(base::ThreadTaskRunnerHandle::Get());
 
   // Spin the loop, allowing the loader to process the force-install list.
   // Verify that the loader announces an empty extension list.

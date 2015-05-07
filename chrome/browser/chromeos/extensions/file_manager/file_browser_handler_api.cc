@@ -33,7 +33,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -178,7 +178,8 @@ void FileSelectorImpl::SelectFile(
   if (!StartSelectFile(suggested_name, allowed_extensions, browser)) {
     // If the dialog wasn't launched, let's asynchronously report failure to the
     // function.
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
         base::Bind(&FileSelectorImpl::FileSelectionCanceled,
                    base::Unretained(this), static_cast<void*>(NULL)));
   }

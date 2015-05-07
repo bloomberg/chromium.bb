@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -101,10 +102,11 @@ class MockFileSelector : public file_manager::FileSelector {
 
     // Send response to the extension function.
     // The callback will take a reference to the function and keep it alive.
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(&FileBrowserHandlerInternalSelectFileFunction::
-                       OnFilePathSelected,
-                   function, success_, selected_path_));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected,
+            function, success_, selected_path_));
     delete this;
   }
 

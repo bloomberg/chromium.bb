@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -81,12 +81,12 @@ class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
     // The dialog should stay around until AcceptWindow or CancelWindow is
     // called, so base::Unretained is safe.
     if (dialog_action == DIALOG_TEST_ACTION_ACCEPT) {
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(base::IgnoreResult(&chromeos::EchoDialogView::Accept),
                      base::Unretained(dialog)));
     } else if (dialog_action == DIALOG_TEST_ACTION_CANCEL) {
-      base::MessageLoopProxy::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(base::IgnoreResult(&chromeos::EchoDialogView::Cancel),
                      base::Unretained(dialog)));
