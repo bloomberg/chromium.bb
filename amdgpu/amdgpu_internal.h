@@ -36,8 +36,9 @@
 
 #define AMDGPU_CS_MAX_RINGS 8
 /* do not use below macro if b is not power of 2 aligned value */
-#define ROUND_DOWN(a,b) ((a) & (~((b)-1)))
-#define ROUND_UP(a,b) (((a)+((b)-1)) & (~((b)-1)))
+#define __round_mask(x, y) ((__typeof__(x))((y)-1))
+#define ROUND_UP(x, y) ((((x)-1) | __round_mask(x, y))+1)
+#define ROUND_DOWN(x, y) ((x) & ~__round_mask(x, y))
 
 struct amdgpu_bo_va_hole {
 	struct list_head list;
