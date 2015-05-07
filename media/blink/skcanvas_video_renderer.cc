@@ -605,14 +605,15 @@ void SkCanvasVideoRenderer::CopyVideoFrameTextureToGLTexture(
     bool premultiply_alpha,
     bool flip_y) {
   DCHECK(video_frame && video_frame->format() == VideoFrame::NATIVE_TEXTURE);
-  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
-  DCHECK(mailbox_holder->texture_target == GL_TEXTURE_2D ||
-         mailbox_holder->texture_target == GL_TEXTURE_RECTANGLE_ARB ||
-         mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES);
+  DCHECK_EQ(1u, VideoFrame::NumTextures(video_frame->texture_format()));
+  const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
+  DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
+         mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB ||
+         mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES);
 
-  gl->WaitSyncPointCHROMIUM(mailbox_holder->sync_point);
+  gl->WaitSyncPointCHROMIUM(mailbox_holder.sync_point);
   uint32 source_texture = gl->CreateAndConsumeTextureCHROMIUM(
-      mailbox_holder->texture_target, mailbox_holder->mailbox.name);
+      mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
   // The video is stored in a unmultiplied format, so premultiply
   // if necessary.

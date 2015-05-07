@@ -301,12 +301,10 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
       if (frame->format() == VideoFrame::NATIVE_TEXTURE) {
         DCHECK(frame->coded_size() == frame->visible_rect().size())
             << "Textures are always supposed to be tightly packed.";
-        client->event_handler->OnMailboxBufferReady(client->controller_id,
-                                                    buffer_id,
-                                                    *frame->mailbox_holder(),
-                                                    frame->coded_size(),
-                                                    timestamp,
-                                                    copy_of_metadata.Pass());
+        DCHECK_EQ(1u, VideoFrame::NumTextures(frame->texture_format()));
+        client->event_handler->OnMailboxBufferReady(
+            client->controller_id, buffer_id, frame->mailbox_holder(0),
+            frame->coded_size(), timestamp, copy_of_metadata.Pass());
       } else if (frame->format() == media::VideoFrame::I420) {
         bool is_new_buffer = client->known_buffers.insert(buffer_id).second;
         if (is_new_buffer) {

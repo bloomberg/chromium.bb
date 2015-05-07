@@ -552,25 +552,21 @@ VideoCaptureDeviceClient::TextureWrapHelper::OnIncomingCapturedGpuMemoryBuffer(
     gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
   }
 
-  scoped_ptr<gpu::MailboxHolder> mailbox_holder(new gpu::MailboxHolder(
-      gl_helper_->ProduceMailboxHolderFromTexture(texture_id)));
-  DCHECK(!mailbox_holder->mailbox.IsZero());
-  DCHECK(mailbox_holder->mailbox.Verify());
-  DCHECK(mailbox_holder->texture_target);
-  DCHECK(mailbox_holder->sync_point);
+  const gpu::MailboxHolder& mailbox_holder(
+      gl_helper_->ProduceMailboxHolderFromTexture(texture_id));
+  DCHECK(!mailbox_holder.mailbox.IsZero());
+  DCHECK(mailbox_holder.mailbox.Verify());
+  DCHECK(mailbox_holder.texture_target);
+  DCHECK(mailbox_holder.sync_point);
 
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::WrapNativeTexture(
-          mailbox_holder.Pass(),
-          media::BindToCurrentLoop(
-              base::Bind(&VideoCaptureDeviceClient::TextureWrapHelper::
-                             ReleaseCallback,
-                         this, image_id, texture_id)),
-          frame_format.frame_size,
-          gfx::Rect(frame_format.frame_size),
-          frame_format.frame_size,
-          base::TimeDelta(),
-          true /* allow_overlay */);
+          mailbox_holder,
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCaptureDeviceClient::TextureWrapHelper::ReleaseCallback,
+              this, image_id, texture_id)),
+          frame_format.frame_size, gfx::Rect(frame_format.frame_size),
+          frame_format.frame_size, base::TimeDelta(), true /* allow_overlay */);
   video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                      frame_format.frame_rate);
 

@@ -147,12 +147,12 @@ class VideoCaptureControllerTest : public testing::Test {
   }
 
   scoped_refptr<media::VideoFrame> WrapMailboxBuffer(
-      scoped_ptr<gpu::MailboxHolder> holder,
+      const gpu::MailboxHolder& holder,
       const media::VideoFrame::ReleaseMailboxCB& release_cb,
       gfx::Size dimensions) {
     return media::VideoFrame::WrapNativeTexture(
-        holder.Pass(), release_cb, dimensions, gfx::Rect(dimensions),
-        dimensions, base::TimeDelta(), false);
+        holder, release_cb, dimensions, gfx::Rect(dimensions), dimensions,
+        base::TimeDelta(), false);
   }
 
   TestBrowserThreadBundle bundle_;
@@ -488,10 +488,10 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 #endif
     device_->OnIncomingCapturedVideoFrame(
         buffer.Pass(),
-        WrapMailboxBuffer(make_scoped_ptr(new gpu::MailboxHolder(
-                              gpu::Mailbox(), 0, mailbox_syncpoints[i])),
-                          base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
-                          capture_resolution),
+        WrapMailboxBuffer(
+            gpu::MailboxHolder(gpu::Mailbox(), 0, mailbox_syncpoints[i]),
+            base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
+            capture_resolution),
         base::TimeTicks());
   }
   // ReserveOutputBuffers ought to fail now regardless of buffer format, because

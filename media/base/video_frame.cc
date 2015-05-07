@@ -140,14 +140,10 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
   const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
   DCHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
 
+  gpu::MailboxHolder mailboxes[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format,
-                     new_coded_size,
-                     visible_rect,
-                     natural_size,
-                     scoped_ptr<gpu::MailboxHolder>(),
-                     timestamp,
-                     false));
+      new VideoFrame(format, new_coded_size, visible_rect, natural_size,
+                     mailboxes, TEXTURE_RGBA, timestamp, false));
   frame->AllocateYUV();
   return frame;
 }
@@ -243,23 +239,43 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
-    scoped_ptr<gpu::MailboxHolder> mailbox_holder,
+    const gpu::MailboxHolder& mailbox_holder,
     const ReleaseMailboxCB& mailbox_holder_release_cb,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp,
     bool allow_overlay) {
-  scoped_refptr<VideoFrame> frame(new VideoFrame(NATIVE_TEXTURE,
-                                                 coded_size,
-                                                 visible_rect,
-                                                 natural_size,
-                                                 mailbox_holder.Pass(),
-                                                 timestamp,
-                                                 false));
-  frame->mailbox_holder_release_cb_ = mailbox_holder_release_cb;
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
+  mailbox_holders[kARGBPlane] = mailbox_holder;
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(NATIVE_TEXTURE, coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_RGBA, timestamp, false));
+  frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
   frame->allow_overlay_ = allow_overlay;
+  return frame;
+}
 
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapYUV420NativeTextures(
+    const gpu::MailboxHolder& y_mailbox_holder,
+    const gpu::MailboxHolder& u_mailbox_holder,
+    const gpu::MailboxHolder& v_mailbox_holder,
+    const ReleaseMailboxCB& mailbox_holder_release_cb,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp,
+    bool allow_overlay) {
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
+  mailbox_holders[kYPlane] = y_mailbox_holder;
+  mailbox_holders[kUPlane] = u_mailbox_holder;
+  mailbox_holders[kVPlane] = v_mailbox_holder;
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(NATIVE_TEXTURE, coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_YUV_420, timestamp, false));
+  frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
+  frame->allow_overlay_ = allow_overlay;
   return frame;
 }
 
@@ -284,14 +300,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalPackedMemory(
 
   switch (format) {
     case VideoFrame::I420: {
+      gpu::MailboxHolder mailbox_holders[kMaxPlanes];
       scoped_refptr<VideoFrame> frame(
-          new VideoFrame(format,
-                         new_coded_size,
-                         visible_rect,
-                         natural_size,
-                         scoped_ptr<gpu::MailboxHolder>(),
-                         timestamp,
-                         false));
+          new VideoFrame(format, new_coded_size, visible_rect, natural_size,
+                         mailbox_holders, TEXTURE_RGBA, timestamp, false));
       frame->shared_memory_handle_ = handle;
       frame->shared_memory_offset_ = data_offset;
       frame->strides_[kYPlane] = new_coded_size.width();
@@ -326,14 +338,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
   const gfx::Size new_coded_size = AdjustCodedSize(format, coded_size);
   CHECK(IsValidConfig(format, new_coded_size, visible_rect, natural_size));
 
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format,
-                     new_coded_size,
-                     visible_rect,
-                     natural_size,
-                     scoped_ptr<gpu::MailboxHolder>(),
-                     timestamp,
-                     false));
+      new VideoFrame(format, new_coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_RGBA, timestamp, false));
   frame->strides_[kYPlane] = y_stride;
   frame->strides_[kUPlane] = u_stride;
   frame->strides_[kVPlane] = v_stride;
@@ -364,14 +372,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     return NULL;
   }
 
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format,
-                     coded_size,
-                     visible_rect,
-                     natural_size,
-                     scoped_ptr<gpu::MailboxHolder>(),
-                     timestamp,
-                     false));
+      new VideoFrame(format, coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_RGBA, timestamp, false));
 
   for (size_t i = 0; i < dmabuf_fds.size(); ++i) {
     int duped_fd = HANDLE_EINTR(dup(dmabuf_fds[i]));
@@ -424,14 +428,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
   if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
     return NULL;
 
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format,
-                     coded_size,
-                     visible_rect,
-                     natural_size,
-                     scoped_ptr<gpu::MailboxHolder>(),
-                     timestamp,
-                     false));
+      new VideoFrame(format, coded_size, visible_rect, natural_size,
+                     mailbox_holders, TEXTURE_RGBA, timestamp, false));
 
   frame->cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
   return frame;
@@ -449,14 +449,11 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   CHECK_NE(frame->format(), NATIVE_TEXTURE);
 
   DCHECK(frame->visible_rect().Contains(visible_rect));
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> wrapped_frame(
-      new VideoFrame(frame->format(),
-                     frame->coded_size(),
-                     visible_rect,
-                     natural_size,
-                     scoped_ptr<gpu::MailboxHolder>(),
-                     frame->timestamp(),
-                     frame->end_of_stream()));
+      new VideoFrame(frame->format(), frame->coded_size(), visible_rect,
+                     natural_size, mailbox_holders, TEXTURE_RGBA,
+                     frame->timestamp(), frame->end_of_stream()));
 
   for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
     wrapped_frame->strides_[i] = frame->stride(i);
@@ -469,13 +466,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
-  return new VideoFrame(VideoFrame::UNKNOWN,
-                        gfx::Size(),
-                        gfx::Rect(),
-                        gfx::Size(),
-                        scoped_ptr<gpu::MailboxHolder>(),
-                        kNoTimestamp(),
-                        true);
+  gpu::MailboxHolder mailbox_holders[kMaxPlanes];
+  return new VideoFrame(VideoFrame::UNKNOWN, gfx::Size(), gfx::Rect(),
+                        gfx::Size(), mailbox_holders, TEXTURE_RGBA,
+                        kNoTimestamp(), true);
 }
 
 // static
@@ -522,14 +516,10 @@ scoped_refptr<VideoFrame> VideoFrame::CreateTransparentFrame(
 scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
     const gfx::Size& size) {
   DCHECK(IsValidConfig(VideoFrame::HOLE, size, gfx::Rect(size), size));
+  gpu::MailboxHolder mailboxes[kMaxPlanes];
   scoped_refptr<VideoFrame> frame(
-      new VideoFrame(VideoFrame::HOLE,
-                     size,
-                     gfx::Rect(size),
-                     size,
-                     scoped_ptr<gpu::MailboxHolder>(),
-                     base::TimeDelta(),
-                     false));
+      new VideoFrame(VideoFrame::HOLE, size, gfx::Rect(size), size, mailboxes,
+                     TEXTURE_RGBA, base::TimeDelta(), false));
   return frame;
 }
 #endif  // defined(VIDEO_HOLE)
@@ -562,6 +552,18 @@ size_t VideoFrame::NumPlanes(Format format) {
   return 0;
 }
 
+// static
+size_t VideoFrame::NumTextures(TextureFormat texture_format) {
+  switch (texture_format) {
+    case TEXTURE_RGBA:
+      return 1;
+    case TEXTURE_YUV_420:
+      return 3;
+  }
+
+  NOTREACHED();
+  return 0;
+}
 
 // static
 size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
@@ -664,14 +666,15 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
                        const gfx::Size& coded_size,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
-                       scoped_ptr<gpu::MailboxHolder> mailbox_holder,
+                       const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
+                       VideoFrame::TextureFormat texture_format,
                        base::TimeDelta timestamp,
                        bool end_of_stream)
     : format_(format),
+      texture_format_(texture_format),
       coded_size_(coded_size),
       visible_rect_(visible_rect),
       natural_size_(natural_size),
-      mailbox_holder_(mailbox_holder.Pass()),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
       shared_memory_offset_(0),
       timestamp_(timestamp),
@@ -679,13 +682,13 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
       end_of_stream_(end_of_stream),
       allow_overlay_(false) {
   DCHECK(IsValidConfig(format_, coded_size_, visible_rect_, natural_size_));
-
+  memcpy(&mailbox_holders_, mailbox_holders, sizeof(mailbox_holders_));
   memset(&strides_, 0, sizeof(strides_));
   memset(&data_, 0, sizeof(data_));
 }
 
 VideoFrame::~VideoFrame() {
-  if (!mailbox_holder_release_cb_.is_null()) {
+  if (!mailbox_holders_release_cb_.is_null()) {
     uint32 release_sync_point;
     {
       // To ensure that changes to |release_sync_point_| are visible on this
@@ -693,7 +696,7 @@ VideoFrame::~VideoFrame() {
       base::AutoLock locker(release_sync_point_lock_);
       release_sync_point = release_sync_point_;
     }
-    base::ResetAndReturn(&mailbox_holder_release_cb_).Run(release_sync_point);
+    base::ResetAndReturn(&mailbox_holders_release_cb_).Run(release_sync_point);
   }
   if (!no_longer_needed_cb_.is_null())
     base::ResetAndReturn(&no_longer_needed_cb_).Run();
@@ -771,9 +774,10 @@ uint8* VideoFrame::visible_data(size_t plane) {
       static_cast<const VideoFrame*>(this)->visible_data(plane));
 }
 
-const gpu::MailboxHolder* VideoFrame::mailbox_holder() const {
+const gpu::MailboxHolder& VideoFrame::mailbox_holder(size_t texture) const {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
-  return mailbox_holder_.get();
+  DCHECK_LT(texture, NumTextures(texture_format_));
+  return mailbox_holders_[texture];
 }
 
 base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
@@ -788,7 +792,7 @@ void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
   base::AutoLock locker(release_sync_point_lock_);
   // Must wait on the previous sync point before inserting a new sync point so
-  // that |mailbox_holder_release_cb_| guarantees the previous sync point
+  // that |mailbox_holders_release_cb_| guarantees the previous sync point
   // occurred when it waits on |release_sync_point_|.
   if (release_sync_point_)
     client->WaitSyncPoint(release_sync_point_);

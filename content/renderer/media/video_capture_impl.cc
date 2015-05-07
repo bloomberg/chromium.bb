@@ -276,7 +276,7 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
     first_frame_timestamp_ = timestamp;
 
   scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
-      make_scoped_ptr(new gpu::MailboxHolder(mailbox_holder)),
+      mailbox_holder,
       media::BindToCurrentLoop(base::Bind(
           &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
           buffer_id, scoped_refptr<ClientBuffer>())),

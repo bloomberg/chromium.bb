@@ -400,8 +400,8 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(decoder_texture_target_);
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      make_scoped_ptr(new gpu::MailboxHolder(
-          pb.texture_mailbox(), decoder_texture_target_, 0 /* sync_point */)),
+      gpu::MailboxHolder(pb.texture_mailbox(), decoder_texture_target_,
+                         0 /* sync_point */),
       BindToCurrentLoop(base::Bind(
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),

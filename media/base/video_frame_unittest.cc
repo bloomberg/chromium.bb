@@ -252,14 +252,14 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(
-            new gpu::MailboxHolder(gpu::Mailbox(), 5, 0 /* sync_point */)),
+        gpu::MailboxHolder(gpu::Mailbox(), 5, 0 /* sync_point */),
         base::Bind(&TextureCallback, &called_sync_point),
-        gfx::Size(10, 10),           // coded_size
-        gfx::Rect(10, 10),           // visible_rect
-        gfx::Size(10, 10),           // natural_size
-        base::TimeDelta(),           // timestamp
-        false);                      // allow_overlay
+        gfx::Size(10, 10),  // coded_size
+        gfx::Rect(10, 10),  // visible_rect
+        gfx::Size(10, 10),  // natural_size
+        base::TimeDelta(),  // timestamp
+        false);             // allow_overlay
+    EXPECT_EQ(VideoFrame::TEXTURE_RGBA, frame->texture_format());
   }
   // Nobody set a sync point to |frame|, so |frame| set |called_sync_point| to 0
   // as default value.
@@ -284,33 +284,44 @@ class SyncPointClientImpl : public VideoFrame::SyncPointClient {
 // Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
 // destroyed with the release sync point, which was updated by clients.
 // (i.e. the compositor, webgl).
-TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
-  gpu::Mailbox mailbox;
-  mailbox.name[0] = 50;
+TEST(VideoFrame,
+     TexturesNoLongerNeededCallbackAfterTakingAndReleasingMailboxes) {
+  const int kPlanesNum = 3;
+  gpu::Mailbox mailbox[kPlanesNum];
+  for (int i = 0; i < kPlanesNum; ++i) {
+    mailbox[i].name[0] = 50 + 1;
+  }
+
   uint32 sync_point = 7;
   uint32 target = 9;
   uint32 release_sync_point = 111;
   uint32 called_sync_point = 0;
-
   {
-    scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new gpu::MailboxHolder(mailbox, target, sync_point)),
+    scoped_refptr<VideoFrame> frame = VideoFrame::WrapYUV420NativeTextures(
+        gpu::MailboxHolder(mailbox[VideoFrame::kYPlane], target, sync_point),
+        gpu::MailboxHolder(mailbox[VideoFrame::kUPlane], target, sync_point),
+        gpu::MailboxHolder(mailbox[VideoFrame::kVPlane], target, sync_point),
         base::Bind(&TextureCallback, &called_sync_point),
-        gfx::Size(10, 10),           // coded_size
-        gfx::Rect(10, 10),           // visible_rect
-        gfx::Size(10, 10),           // natural_size
-        base::TimeDelta(),           // timestamp
-        false);                      // allow_overlay
+        gfx::Size(10, 10),  // coded_size
+        gfx::Rect(10, 10),  // visible_rect
+        gfx::Size(10, 10),  // natural_size
+        base::TimeDelta(),  // timestamp
+        false);             // allow_overlay
 
-    const gpu::MailboxHolder* mailbox_holder = frame->mailbox_holder();
-
-    EXPECT_EQ(mailbox.name[0], mailbox_holder->mailbox.name[0]);
-    EXPECT_EQ(target, mailbox_holder->texture_target);
-    EXPECT_EQ(sync_point, mailbox_holder->sync_point);
+    EXPECT_EQ(VideoFrame::TEXTURE_YUV_420, frame->texture_format());
+    EXPECT_EQ(3u, VideoFrame::NumTextures(frame->texture_format()));
+    for (size_t i = 0; i < VideoFrame::NumTextures(frame->texture_format());
+         ++i) {
+      const gpu::MailboxHolder& mailbox_holder = frame->mailbox_holder(i);
+      EXPECT_EQ(mailbox[i].name[0], mailbox_holder.mailbox.name[0]);
+      EXPECT_EQ(target, mailbox_holder.texture_target);
+      EXPECT_EQ(sync_point, mailbox_holder.sync_point);
+    }
 
     SyncPointClientImpl client(release_sync_point);
     frame->UpdateReleaseSyncPoint(&client);
-    EXPECT_EQ(sync_point, mailbox_holder->sync_point);
+    EXPECT_EQ(sync_point,
+              frame->mailbox_holder(VideoFrame::kYPlane).sync_point);
   }
   EXPECT_EQ(release_sync_point, called_sync_point);
 }

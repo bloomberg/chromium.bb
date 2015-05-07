@@ -11,6 +11,7 @@
 #include "base/md5.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame_metadata.h"
 #include "ui/gfx/geometry/rect.h"
@@ -20,10 +21,6 @@
 #include <CoreVideo/CVPixelBuffer.h>
 #include "base/mac/scoped_cftyperef.h"
 #endif
-
-namespace gpu {
-struct MailboxHolder;
-}  // namespace gpu
 
 namespace media {
 
@@ -69,6 +66,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     FORMAT_MAX = YV12HD,  // Must always be equal to largest entry logged.
   };
 
+  // Defines the internal format and the number of the textures in the mailbox
+  // holders.
+  enum TextureFormat {
+    TEXTURE_RGBA,     // One RGBA texture.
+    TEXTURE_YUV_420,  // 3 RED textures one per channel. UV are 2x2 subsampled.
+  };
+
   // Returns the name of a Format as a string.
   static std::string FormatToString(Format format);
 
@@ -88,7 +92,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Call prior to CreateFrame to ensure validity of frame configuration. Called
   // automatically by VideoDecoderConfig::IsValidConfig().
   // TODO(scherkus): VideoDecoderConfig shouldn't call this method
-  static bool IsValidConfig(Format format, const gfx::Size& coded_size,
+  static bool IsValidConfig(Format format,
+                            const gfx::Size& coded_size,
                             const gfx::Rect& visible_rect,
                             const gfx::Size& natural_size);
 
@@ -96,15 +101,27 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // destroyed.
   typedef base::Callback<void(uint32)> ReleaseMailboxCB;
 
-  // Wraps a native texture of the given parameters with a VideoFrame.  The
-  // backing of the VideoFrame is held in the mailbox held by |mailbox_holder|,
-  // and |mailbox_holder_release_cb| will be called with |mailbox_holder| as the
-  // argument when the VideoFrame is to be destroyed.
-  // |read_pixels_cb| may be used to do (slow!) readbacks from the
-  // texture to main memory.
+  // Wraps a native texture of the given parameters with a VideoFrame.
+  // The backing of the VideoFrame is held in the mailbox held by
+  // |mailbox_holder|, and |mailbox_holder_release_cb| will be called with
+  // a syncpoint as the argument when the VideoFrame is to be destroyed.
   static scoped_refptr<VideoFrame> WrapNativeTexture(
-      scoped_ptr<gpu::MailboxHolder> mailbox_holder,
+      const gpu::MailboxHolder& mailbox_holder,
       const ReleaseMailboxCB& mailbox_holder_release_cb,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp,
+      bool allow_overlay);
+
+  // Wraps a set of native textures representing YUV data with a VideoFrame.
+  // |mailbox_holders_release_cb| will be called with a syncpoint as the
+  // argument when the VideoFrame is to be destroyed.
+  static scoped_refptr<VideoFrame> WrapYUV420NativeTextures(
+      const gpu::MailboxHolder& y_mailbox_holder,
+      const gpu::MailboxHolder& u_mailbox_holder,
+      const gpu::MailboxHolder& v_mailbox_holder,
+      const ReleaseMailboxCB& mailbox_holders_release_cb,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
@@ -217,6 +234,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   static size_t NumPlanes(Format format);
 
+  static size_t NumTextures(TextureFormat texture_format);
+
   // Returns the required allocation size for a (tightly packed) frame of the
   // given coded size and format.
   static size_t AllocationSize(Format format, const gfx::Size& coded_size);
@@ -253,6 +272,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   Format format() const { return format_; }
 
+  TextureFormat texture_format() const { return texture_format_; }
+
   const gfx::Size& coded_size() const { return coded_size_; }
   const gfx::Rect& visible_rect() const { return visible_rect_; }
   const gfx::Size& natural_size() const { return natural_size_; }
@@ -278,10 +299,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const uint8* visible_data(size_t plane) const;
   uint8* visible_data(size_t plane);
 
-  // Returns the mailbox holder of the native texture wrapped by this frame.
+  // Returns a mailbox holder for a given texture.
   // Only valid to call if this is a NATIVE_TEXTURE frame. Before using the
   // mailbox, the caller must wait for the included sync point.
-  const gpu::MailboxHolder* mailbox_holder() const;
+  const gpu::MailboxHolder& mailbox_holder(size_t texture) const;
 
   // Returns the shared-memory handle, if present
   base::SharedMemoryHandle shared_memory_handle() const;
@@ -349,7 +370,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gfx::Size& coded_size,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
-             scoped_ptr<gpu::MailboxHolder> mailbox_holder,
+             const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
+             TextureFormat texture_format,
              base::TimeDelta timestamp,
              bool end_of_stream);
   virtual ~VideoFrame();
@@ -358,6 +380,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Frame format.
   const Format format_;
+
+  // Format of the native textures associated with this frame.
+  const TextureFormat texture_format_;
 
   // Width and height of the video frame, in pixels. This must include pixel
   // data for the whole image; i.e. for YUV formats with subsampled chroma
@@ -383,9 +408,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Array of data pointers to each plane.
   uint8* data_[kMaxPlanes];
 
-  // Native texture mailbox, if this is a NATIVE_TEXTURE frame.
-  const scoped_ptr<gpu::MailboxHolder> mailbox_holder_;
-  ReleaseMailboxCB mailbox_holder_release_cb_;
+  // Native texture mailboxes, if this is a NATIVE_TEXTURE frame.
+  gpu::MailboxHolder mailbox_holders_[kMaxPlanes];
+  ReleaseMailboxCB mailbox_holders_release_cb_;
 
   // Shared memory handle, if this frame was allocated from shared memory.
   base::SharedMemoryHandle shared_memory_handle_;

@@ -663,17 +663,18 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   if (!video_frame.get() ||
       video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
-  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  DCHECK_EQ(1u, media::VideoFrame::NumTextures(video_frame->texture_format()));
+  const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   DCHECK((!is_remote_ &&
-          mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES) ||
-         (is_remote_ && mailbox_holder->texture_target == GL_TEXTURE_2D));
+          mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES) ||
+         (is_remote_ && mailbox_holder.texture_target == GL_TEXTURE_2D));
 
-  web_graphics_context->waitSyncPoint(mailbox_holder->sync_point);
+  web_graphics_context->waitSyncPoint(mailbox_holder.sync_point);
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
   uint32 src_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
-      mailbox_holder->texture_target, mailbox_holder->mailbox.name);
+      mailbox_holder.texture_target, mailbox_holder.mailbox.name);
 
   // The video is stored in an unmultiplied format, so premultiply if
   // necessary.
@@ -1203,8 +1204,8 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
   GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
 
   scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-      make_scoped_ptr(new gpu::MailboxHolder(texture_mailbox, texture_target,
-                                             texture_mailbox_sync_point)),
+      gpu::MailboxHolder(texture_mailbox, texture_target,
+                         texture_mailbox_sync_point),
       media::BindToCurrentLoop(base::Bind(&OnReleaseTexture,
                                           stream_texture_factory_,
                                           remote_playback_texture_id)),
@@ -1241,8 +1242,8 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
 
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new gpu::MailboxHolder(texture_mailbox_, texture_target,
-                                               texture_mailbox_sync_point)),
+        gpu::MailboxHolder(texture_mailbox_, texture_target,
+                           texture_mailbox_sync_point),
         media::BindToCurrentLoop(base::Bind(
             &OnReleaseTexture, stream_texture_factory_, texture_id_ref)),
         natural_size_, gfx::Rect(natural_size_), natural_size_,

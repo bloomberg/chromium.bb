@@ -408,9 +408,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   if (!context_provider_)
     return VideoFrameExternalResources();
 
-  const gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  DCHECK_EQ(1u, media::VideoFrame::NumTextures(video_frame->texture_format()));
+  const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   VideoFrameExternalResources external_resources;
-  switch (mailbox_holder->texture_target) {
+  switch (mailbox_holder.texture_target) {
     case GL_TEXTURE_2D:
       external_resources.type = VideoFrameExternalResources::RGB_RESOURCE;
       break;
@@ -427,9 +428,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   }
 
   external_resources.mailboxes.push_back(
-      TextureMailbox(mailbox_holder->mailbox,
-                     mailbox_holder->texture_target,
-                     mailbox_holder->sync_point));
+      TextureMailbox(mailbox_holder.mailbox, mailbox_holder.texture_target,
+                     mailbox_holder.sync_point));
   external_resources.mailboxes.back().set_allow_overlay(
       video_frame->allow_overlay());
   external_resources.release_callbacks.push_back(

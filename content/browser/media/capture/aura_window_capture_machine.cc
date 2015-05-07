@@ -282,9 +282,8 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     if (!texture_mailbox.IsTexture())
       return false;
     video_frame = media::VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new gpu::MailboxHolder(texture_mailbox.mailbox(),
-                                               texture_mailbox.target(),
-                                               texture_mailbox.sync_point())),
+        gpu::MailboxHolder(texture_mailbox.mailbox(), texture_mailbox.target(),
+                           texture_mailbox.sync_point()),
         base::Bind(&RunSingleReleaseCallback, base::Passed(&release_callback)),
         result->size(), gfx::Rect(result->size()), result->size(),
         base::TimeDelta(), false);
