@@ -1,6 +1,11 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
+testing without tabstop for crbug/479050
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
 testing single shadow DOM tree
 PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
 PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
