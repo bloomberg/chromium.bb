@@ -2,6 +2,7 @@ include_rules = [
   "+chromeos/dbus",
   "+dbus",
   "+grit",
+  "+jni",
   "+net/base",
   "+net/log",
   "+net/socket",

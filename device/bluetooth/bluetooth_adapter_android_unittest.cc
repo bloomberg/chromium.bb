@@ -14,11 +14,12 @@ class BluetoothAdapterAndroidTest : public testing::Test {
     adapter_ = BluetoothAdapterAndroid::CreateAdapter().get();
   }
 
-  scoped_refptr<BluetoothAdapter> adapter_;
+  scoped_refptr<BluetoothAdapterAndroid> adapter_;
 };
 
 TEST_F(BluetoothAdapterAndroidTest, Construct) {
-  EXPECT_TRUE(adapter_.get());
+  ASSERT_TRUE(adapter_.get());
+  EXPECT_FALSE(adapter_->HasBluetoothPermission());
 }
 
 }  // namespace device

@@ -429,6 +429,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../device/battery/battery.gyp:device_battery_java',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth_java',
             '../device/vibration/vibration.gyp:device_vibration_java',
             '../media/media.gyp:media_java',
             '../mojo/mojo_base.gyp:mojo_system_java',

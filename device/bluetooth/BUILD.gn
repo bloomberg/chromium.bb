@@ -4,6 +4,10 @@
 
 import("//tools/grit/grit_rule.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")  # For generate_jni().
+}
+
 config("bluetooth_config") {
   if (is_win) {
     ldflags = [
@@ -19,6 +23,8 @@ config("bluetooth_config") {
 
 component("bluetooth") {
   sources = [
+    "android/bluetooth_jni_registrar.cc",
+    "android/bluetooth_jni_registrar.h",
     "bluetooth_adapter.cc",
     "bluetooth_adapter.h",
     "bluetooth_adapter_android.cc",
@@ -123,9 +129,11 @@ component("bluetooth") {
     "//ui/base",
   ]
 
-  if (is_win) {
-    libs = [ "setupapi.lib" ]
-  } else if (is_chromeos) {
+  if (is_android) {
+    deps += [ ":bluetooth_jni" ]
+  }
+
+  if (is_chromeos) {
     deps += [
       "//chromeos",
       "//dbus",
@@ -134,6 +142,10 @@ component("bluetooth") {
 
   if (is_mac) {
     libs = [ "IOBluetooth.framework" ]
+  }
+
+  if (is_win) {
+    libs = [ "setupapi.lib" ]
   }
 }
 
@@ -227,4 +239,13 @@ static_library("mocks") {
     "//net",
     "//testing/gmock",
   ]
+}
+
+if (is_android) {
+  generate_jni("bluetooth_jni") {
+    sources = [
+      "android/java/src/org/chromium/device/bluetooth/BluetoothAdapter.java",
+    ]
+    jni_package = "bluetooth"
+  }
 }

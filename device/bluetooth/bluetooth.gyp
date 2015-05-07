@@ -125,6 +125,15 @@
             '../../build/linux/system.gyp:dbus'
           ]
         }],
+        ['OS == "android"', {
+          'dependencies': [
+            'device_bluetooth_jni_headers',
+          ],
+          'sources': [
+            'android/bluetooth_jni_registrar.cc',
+            'android/bluetooth_jni_registrar.h',
+          ],
+        }],
         ['OS=="win"', {
           # The following two blocks are duplicated. They apply to static lib
           # and shared lib configurations respectively.
@@ -220,5 +229,33 @@
         'test/mock_bluetooth_socket.h',
       ],
     },
+  ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'device_bluetooth_jni_headers',
+          'type': 'none',
+          'sources': [
+            'android/java/src/org/chromium/device/bluetooth/BluetoothAdapter.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'device_bluetooth',
+          },
+          'includes': [ '../../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'device_bluetooth_java',
+          'type': 'none',
+          'dependencies': [
+            '../../base/base.gyp:base',
+          ],
+          'variables': {
+            'java_in_dir': '../../device/bluetooth/android/java',
+          },
+          'includes': [ '../../build/java.gypi' ],
+        },
+      ],
+    }],
   ],
 }

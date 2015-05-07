@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_ANDROID_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_ANDROID_H_
 
+#include "base/android/jni_android.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -19,7 +20,14 @@ namespace device {
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
     : public BluetoothAdapter {
  public:
-  static base::WeakPtr<BluetoothAdapter> CreateAdapter();
+  // Create a BluetoothAdapterAndroid instance.
+  static base::WeakPtr<BluetoothAdapterAndroid> CreateAdapter();
+
+  // Register C++ methods exposed to Java using JNI.
+  static bool RegisterJNI(JNIEnv* env);
+
+  // True if this app has android permissions necessary for Bluetooth.
+  bool HasBluetoothPermission() const;
 
   // BluetoothAdapter:
   std::string GetAddress() const override;
@@ -73,6 +81,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
                           const ErrorCallback& error_callback) override;
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
+
+  // Java object org.chromium.device.bluetooth.BluetoothAdapter.
+  base::android::ScopedJavaGlobalRef<jobject> j_bluetooth_adapter_;
 
   std::string address_;
   std::string name_;

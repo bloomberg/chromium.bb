@@ -4,10 +4,14 @@
 
 #include "device/bluetooth/bluetooth_adapter_android.h"
 
+#include "base/android/jni_android.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
+#include "jni/BluetoothAdapter_jni.h"
+
+using base::android::AttachCurrentThread;
 
 namespace device {
 
@@ -18,9 +22,20 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 }
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapterAndroid::CreateAdapter() {
+base::WeakPtr<BluetoothAdapterAndroid>
+BluetoothAdapterAndroid::CreateAdapter() {
   BluetoothAdapterAndroid* adapter = new BluetoothAdapterAndroid();
   return adapter->weak_ptr_factory_.GetWeakPtr();
+}
+
+// static
+bool BluetoothAdapterAndroid::RegisterJNI(JNIEnv* env) {
+  return RegisterNativesImpl(env);  // Generated in BluetoothAdapter_jni.h
+}
+
+bool BluetoothAdapterAndroid::HasBluetoothPermission() const {
+  return Java_BluetoothAdapter_hasBluetoothPermission(
+      AttachCurrentThread(), j_bluetooth_adapter_.obj());
 }
 
 std::string BluetoothAdapterAndroid::GetAddress() const {
@@ -108,6 +123,8 @@ void BluetoothAdapterAndroid::RegisterAdvertisement(
 }
 
 BluetoothAdapterAndroid::BluetoothAdapterAndroid() : weak_ptr_factory_(this) {
+  j_bluetooth_adapter_.Reset(Java_BluetoothAdapter_create(
+      AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
 BluetoothAdapterAndroid::~BluetoothAdapterAndroid() {

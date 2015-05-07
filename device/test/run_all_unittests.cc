@@ -7,7 +7,16 @@
 #include "base/test/test_suite.h"
 #include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "device/bluetooth/android/bluetooth_jni_registrar.h"
+#endif
+
 int main(int argc, char** argv) {
+#if defined(OS_ANDROID)
+  device::android::RegisterBluetoothJni(base::android::AttachCurrentThread());
+#endif
+
   base::TestSuite test_suite(argc, argv);
 
   mojo::embedder::test::InitWithSimplePlatformSupport();
