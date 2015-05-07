@@ -102,6 +102,12 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu-document.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu.html [ WontFix ]
 [ Mac ] fast/events/menu-key-context-menu-position.html [ WontFix ]
+[ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-document.html [ WontFix ]
+[ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu.html [ WontFix ]
+[ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-position.html [ WontFix ]
+[ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-document.html [ WontFix ]
+[ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ WontFix ]
+[ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-position.html [ WontFix ]
 
 # Link Highlighting is only supported on Windows and Linux
 [ Mac ] compositing/gestures [ WontFix ]
