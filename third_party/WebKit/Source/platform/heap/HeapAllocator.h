@@ -31,33 +31,6 @@ public:
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
 
-template<typename T> struct WeakHandlingHashTraits : WTF::SimpleClassHashTraits<T> {
-    // We want to treat the object as a weak object in the sense that it can
-    // disappear from hash sets and hash maps.
-    static const WTF::WeakHandlingFlag weakHandlingFlag = WTF::WeakHandlingInCollections;
-    // Normally whether or not an object needs tracing is inferred
-    // automatically from the presence of the trace method, but we don't
-    // necessarily have a trace method, and we may not need one because T
-    // can perhaps only be allocated inside collections, never as independent
-    // objects.  Explicitly mark this as needing tracing and it will be traced
-    // in collections using the traceInCollection method, which it must have.
-    template<typename U = void> struct NeedsTracingLazily {
-        static const bool value = true;
-    };
-    // The traceInCollection method traces differently depending on whether we
-    // are strongifying the trace operation.  We strongify the trace operation
-    // when there are active iterators on the object.  In this case all
-    // WeakMembers are marked like strong members so that elements do not
-    // suddenly disappear during iteration.  Returns true if weak pointers to
-    // dead objects were found: In this case any strong pointers were not yet
-    // traced and the entry should be removed from the collection.
-    template<typename VisitorDispatcher>
-    static bool traceInCollection(VisitorDispatcher visitor, T& t, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
-    {
-        return t.traceInCollection(visitor, strongify);
-    }
-};
-
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
 // This is a static-only class used as a trait on collections to make them heap
