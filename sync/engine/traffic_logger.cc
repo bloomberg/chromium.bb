@@ -18,11 +18,12 @@ namespace syncer {
 namespace {
 template <class T>
 void LogData(const T& data,
-             base::DictionaryValue* (*to_dictionary_value)(const T&, bool),
+             scoped_ptr<base::DictionaryValue>(*to_dictionary_value)(const T&,
+                                                                     bool),
              const std::string& description) {
   if (::logging::DEBUG_MODE && VLOG_IS_ON(1)) {
-    scoped_ptr<base::DictionaryValue> value(
-        (*to_dictionary_value)(data, true /* include_specifics */));
+    scoped_ptr<base::DictionaryValue> value =
+        (*to_dictionary_value)(data, true /* include_specifics */);
     std::string message;
     base::JSONWriter::WriteWithOptions(value.get(),
         base::JSONWriter::OPTIONS_PRETTY_PRINT,

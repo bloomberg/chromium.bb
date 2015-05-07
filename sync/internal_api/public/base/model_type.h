@@ -14,6 +14,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/enum_set.h"
 
@@ -292,8 +293,8 @@ SYNC_EXPORT std::string ModelTypeSetToString(ModelTypeSet model_types);
 SYNC_EXPORT ModelTypeSet ModelTypeSetFromString(
     const std::string& model_type_string);
 
-// Caller takes ownership of returned list.
-SYNC_EXPORT base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types);
+SYNC_EXPORT scoped_ptr<base::ListValue> ModelTypeSetToValue(
+    ModelTypeSet model_types);
 
 SYNC_EXPORT ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 

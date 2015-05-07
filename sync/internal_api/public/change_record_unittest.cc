@@ -53,7 +53,7 @@ void CheckChangeRecordValue(
   if (record.action == ChangeRecord::ACTION_DELETE) {
     scoped_ptr<base::DictionaryValue> expected_extra_value;
     if (record.extra.get()) {
-      expected_extra_value.reset(record.extra->ToValue());
+      expected_extra_value = record.extra->ToValue();
     }
     const base::Value* extra_value = NULL;
     EXPECT_EQ(record.extra.get() != NULL,
@@ -67,10 +67,32 @@ void CheckChangeRecordValue(
   }
 }
 
-class MockExtraChangeRecordData
-    : public ExtraPasswordChangeRecordData {
+class TestExtraChangeRecordData : public ExtraPasswordChangeRecordData {
  public:
-  MOCK_CONST_METHOD0(ToValue, base::DictionaryValue*());
+  TestExtraChangeRecordData()
+      : to_value_calls_(0), expected_to_value_calls_(0) {}
+
+  ~TestExtraChangeRecordData() override {
+    EXPECT_EQ(expected_to_value_calls_, to_value_calls_);
+  }
+
+  scoped_ptr<base::DictionaryValue> ToValue() const override {
+    const_cast<TestExtraChangeRecordData*>(this)->to_value_calls_++;
+    return dict_->CreateDeepCopy();
+  }
+
+  void set_dictionary_value(scoped_ptr<base::DictionaryValue> dict) {
+    dict_ = dict.Pass();
+  }
+
+  void set_expected_to_value_calls(size_t expectation) {
+    expected_to_value_calls_ = expectation;
+  }
+
+ private:
+  scoped_ptr<base::DictionaryValue> dict_;
+  size_t to_value_calls_;
+  size_t expected_to_value_calls_;
 };
 
 TEST_F(ChangeRecordTest, ChangeRecordToValue) {
@@ -87,7 +109,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.action = ChangeRecord::ACTION_ADD;
     record.id = kTestId;
     record.specifics = old_specifics;
-    record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
+    record.extra.reset(new TestExtraChangeRecordData());
     scoped_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
@@ -98,7 +120,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.action = ChangeRecord::ACTION_UPDATE;
     record.id = kTestId;
     record.specifics = old_specifics;
-    record.extra.reset(new StrictMock<MockExtraChangeRecordData>());
+    record.extra.reset(new TestExtraChangeRecordData());
     scoped_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
@@ -120,12 +142,12 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.id = kTestId;
     record.specifics = old_specifics;
 
-    base::DictionaryValue extra_value;
-    extra_value.SetString("foo", "bar");
-    scoped_ptr<StrictMock<MockExtraChangeRecordData> > extra(
-        new StrictMock<MockExtraChangeRecordData>());
-    EXPECT_CALL(*extra, ToValue()).Times(2).WillRepeatedly(
-        Invoke(&extra_value, &base::DictionaryValue::DeepCopy));
+    scoped_ptr<base::DictionaryValue> extra_value(new base::DictionaryValue());
+    extra_value->SetString("foo", "bar");
+    scoped_ptr<TestExtraChangeRecordData> extra(
+        new TestExtraChangeRecordData());
+    extra->set_dictionary_value(extra_value.Pass());
+    extra->set_expected_to_value_calls(2U);
 
     record.extra.reset(extra.release());
     scoped_ptr<base::DictionaryValue> value(record.ToValue());

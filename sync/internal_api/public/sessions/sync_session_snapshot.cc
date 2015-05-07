@@ -54,7 +54,7 @@ SyncSessionSnapshot::SyncSessionSnapshot(
 
 SyncSessionSnapshot::~SyncSessionSnapshot() {}
 
-base::DictionaryValue* SyncSessionSnapshot::ToValue() const {
+scoped_ptr<base::DictionaryValue> SyncSessionSnapshot::ToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("numSuccessfulCommits",
                     model_neutral_state_.num_successful_commits);
@@ -71,7 +71,7 @@ base::DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->SetInteger("numServerOverwrites",
                     model_neutral_state_.num_server_overwrites);
   value->Set("downloadProgressMarkers",
-             ProgressMarkerMapToValue(download_progress_markers_).release());
+             ProgressMarkerMapToValue(download_progress_markers_));
   value->SetBoolean("isSilenced", is_silenced_);
   // We don't care too much if we lose precision here, also.
   value->SetInteger("numEncryptionConflicts",
@@ -96,16 +96,14 @@ base::DictionaryValue* SyncSessionSnapshot::ToValue() const {
     const std::string model_type = ModelTypeToString(static_cast<ModelType>(i));
     counter_entries->Set(model_type, type_entries.release());
   }
-  value->Set("counter_entries", counter_entries.release());
-  return value.release();
+  value->Set("counter_entries", counter_entries.Pass());
+  return value;
 }
 
 std::string SyncSessionSnapshot::ToString() const {
-  scoped_ptr<base::DictionaryValue> value(ToValue());
   std::string json;
-  base::JSONWriter::WriteWithOptions(value.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json);
+  base::JSONWriter::WriteWithOptions(
+      ToValue().get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   return json;
 }
 

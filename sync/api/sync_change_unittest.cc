@@ -142,16 +142,16 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   e = change_list[1];
   EXPECT_EQ(SyncChange::ACTION_ADD, e.change_type());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  ref_spec.reset(EntitySpecificsToValue(add_specifics));
-  e_spec.reset(EntitySpecificsToValue(e.sync_data().GetSpecifics()));
+  ref_spec = EntitySpecificsToValue(add_specifics);
+  e_spec = EntitySpecificsToValue(e.sync_data().GetSpecifics());
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 
   // Verify delete.
   e = change_list[2];
   EXPECT_EQ(SyncChange::ACTION_DELETE, e.change_type());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  ref_spec.reset(EntitySpecificsToValue(delete_specifics));
-  e_spec.reset(EntitySpecificsToValue(e.sync_data().GetSpecifics()));
+  ref_spec = EntitySpecificsToValue(delete_specifics);
+  e_spec = EntitySpecificsToValue(e.sync_data().GetSpecifics());
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 }
 

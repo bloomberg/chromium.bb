@@ -46,9 +46,9 @@ class ProtoValueConversionsTest : public testing::Test {
  protected:
   template <class T>
   void TestSpecificsToValue(
-      base::DictionaryValue* (*specifics_to_value)(const T&)) {
+      scoped_ptr<base::DictionaryValue>(*specifics_to_value)(const T&)) {
     const T& specifics(T::default_instance());
-    scoped_ptr<base::DictionaryValue> value(specifics_to_value(specifics));
+    scoped_ptr<base::DictionaryValue> value = specifics_to_value(specifics);
     // We can't do much but make sure that this doesn't crash.
   }
 };

@@ -44,8 +44,7 @@ class SYNC_EXPORT SyncSessionSnapshot {
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource legacy_updates_source);
   ~SyncSessionSnapshot();
 
-  // Caller takes ownership of the returned dictionary.
-  base::DictionaryValue* ToValue() const;
+  scoped_ptr<base::DictionaryValue> ToValue() const;
 
   std::string ToString() const;
 

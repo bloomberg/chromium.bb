@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/immutable.h"
 #include "sync/protocol/password_specifics.pb.h"
@@ -29,8 +30,7 @@ class SYNC_EXPORT ExtraPasswordChangeRecordData {
       const sync_pb::PasswordSpecificsData& data);
   virtual ~ExtraPasswordChangeRecordData();
 
-  // Transfers ownership of the DictionaryValue to the caller.
-  virtual base::DictionaryValue* ToValue() const;
+  virtual scoped_ptr<base::DictionaryValue> ToValue() const;
 
   const sync_pb::PasswordSpecificsData& unencrypted() const;
  private:
@@ -50,8 +50,7 @@ struct SYNC_EXPORT_PRIVATE ChangeRecord {
   ChangeRecord();
   ~ChangeRecord();
 
-  // Transfers ownership of the DictionaryValue to the caller.
-  base::DictionaryValue* ToValue() const;
+  scoped_ptr<base::DictionaryValue> ToValue() const;
 
   int64 id;
   Action action;

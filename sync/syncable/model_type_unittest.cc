@@ -58,7 +58,7 @@ TEST_F(ModelTypeTest, ModelTypeSetFromValue) {
   // Now try with a few random types.
   model_types.Put(BOOKMARKS);
   model_types.Put(APPS);
-  value.reset(ModelTypeSetToValue(model_types));
+  value = ModelTypeSetToValue(model_types);
   EXPECT_TRUE(model_types.Equals(ModelTypeSetFromValue(*value)));
 }
 

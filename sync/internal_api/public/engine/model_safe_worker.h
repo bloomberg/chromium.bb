@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -148,8 +149,8 @@ class SYNC_EXPORT ModelSafeWorker
 typedef std::map<ModelType, ModelSafeGroup> ModelSafeRoutingInfo;
 
 // Caller takes ownership of return value.
-SYNC_EXPORT_PRIVATE base::DictionaryValue* ModelSafeRoutingInfoToValue(
-    const ModelSafeRoutingInfo& routing_info);
+SYNC_EXPORT_PRIVATE scoped_ptr<base::DictionaryValue>
+ModelSafeRoutingInfoToValue(const ModelSafeRoutingInfo& routing_info);
 
 SYNC_EXPORT std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info);

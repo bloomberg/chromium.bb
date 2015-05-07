@@ -11,9 +11,9 @@
 
 namespace syncer {
 
-base::DictionaryValue* ModelSafeRoutingInfoToValue(
+scoped_ptr<base::DictionaryValue> ModelSafeRoutingInfoToValue(
     const ModelSafeRoutingInfo& routing_info) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   for (ModelSafeRoutingInfo::const_iterator it = routing_info.begin();
        it != routing_info.end(); ++it) {
     dict->SetString(ModelTypeToString(it->first),
@@ -24,8 +24,8 @@ base::DictionaryValue* ModelSafeRoutingInfoToValue(
 
 std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info) {
-  scoped_ptr<base::DictionaryValue> dict(
-      ModelSafeRoutingInfoToValue(routing_info));
+  scoped_ptr<base::DictionaryValue> dict =
+      ModelSafeRoutingInfoToValue(routing_info);
   std::string json;
   base::JSONWriter::Write(dict.get(), &json);
   return json;
