@@ -461,15 +461,18 @@ static inline bool containsHTMLSpace(const AtomicString& string)
 
 static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, TextCaseSensitivity caseSensitivity)
 {
+    // TODO(esprehn): How do we get here with a null value?
     const AtomicString& value = attributeItem.value();
     if (value.isNull())
         return false;
 
     switch (match) {
     case CSSSelector::AttributeExact:
-        if ((caseSensitivity == TextCaseSensitive) ? selectorValue != value : !equalIgnoringCase(selectorValue, value))
-            return false;
-        break;
+        if (caseSensitivity == TextCaseSensitive)
+            return selectorValue == value;
+        return equalIgnoringCase(selectorValue, value);
+    case CSSSelector::AttributeSet:
+        return true;
     case CSSSelector::AttributeList:
         {
             // Ignore empty selectors or selectors containing HTML spaces
@@ -490,20 +493,20 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
                 // No match. Keep looking.
                 startSearchAt = foundPos + 1;
             }
-            break;
+            return true;
         }
     case CSSSelector::AttributeContain:
-        if (!value.contains(selectorValue, caseSensitivity) || selectorValue.isEmpty())
+        if (selectorValue.isEmpty())
             return false;
-        break;
+        return value.contains(selectorValue, caseSensitivity);
     case CSSSelector::AttributeBegin:
-        if (!value.startsWith(selectorValue, caseSensitivity) || selectorValue.isEmpty())
+        if (selectorValue.isEmpty())
             return false;
-        break;
+        return value.startsWith(selectorValue, caseSensitivity);
     case CSSSelector::AttributeEnd:
-        if (!value.endsWith(selectorValue, caseSensitivity) || selectorValue.isEmpty())
+        if (selectorValue.isEmpty())
             return false;
-        break;
+        return value.endsWith(selectorValue, caseSensitivity);
     case CSSSelector::AttributeHyphen:
         if (value.length() < selectorValue.length())
             return false;
@@ -512,13 +515,12 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
         // It they start the same, check for exact match or following '-':
         if (value.length() != selectorValue.length() && value[selectorValue.length()] != '-')
             return false;
-        break;
-    case CSSSelector::PseudoClass:
-    case CSSSelector::PseudoElement:
+        return true;
     default:
         break;
     }
 
+    ASSERT_NOT_REACHED();
     return true;
 }
 
