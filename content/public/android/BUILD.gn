@@ -35,6 +35,7 @@ android_library("content_java") {
     "//device/battery/android:battery_monitor_android",
     "//device/battery:mojo_bindings_java",
     "//media/base/android:media_java",
+    "//media/midi:midi_java",
     "//mojo/android:system_java",
     "//net/android:net_java",
     "//third_party/mojo/src/mojo/public/java:bindings",
