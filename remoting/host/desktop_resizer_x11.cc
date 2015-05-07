@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "remoting/host/desktop_resizer.h"
-#include "remoting/host/linux/x11_util.h"
 
 #include <string.h>
 #include <X11/extensions/Xrandr.h>
@@ -11,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "remoting/base/logging.h"
+#include "remoting/host/linux/x11_util.h"
 
 // On Linux, we use the xrandr extension to change the desktop resolution. For
 // now, we only support resize-to-client for Xvfb-based servers that can match
@@ -121,10 +121,10 @@ class ScreenResources {
 };
 
 
-class DesktopResizerLinux : public DesktopResizer {
+class DesktopResizerX11 : public DesktopResizer {
  public:
-  DesktopResizerLinux();
-  ~DesktopResizerLinux() override;
+  DesktopResizerX11();
+  ~DesktopResizerX11() override;
 
   // DesktopResizer interface
   ScreenResolution GetCurrentResolution() override;
@@ -153,10 +153,10 @@ class DesktopResizerLinux : public DesktopResizer {
   ScreenResources resources_;
   bool exact_resize_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopResizerLinux);
+  DISALLOW_COPY_AND_ASSIGN(DesktopResizerX11);
 };
 
-DesktopResizerLinux::DesktopResizerLinux()
+DesktopResizerX11::DesktopResizerX11()
     : display_(XOpenDisplay(nullptr)),
       screen_(DefaultScreen(display_)),
       root_(RootWindow(display_, screen_)),
@@ -165,11 +165,11 @@ DesktopResizerLinux::DesktopResizerLinux()
   XRRSelectInput(display_, root_, RRScreenChangeNotifyMask);
 }
 
-DesktopResizerLinux::~DesktopResizerLinux() {
+DesktopResizerX11::~DesktopResizerX11() {
   XCloseDisplay(display_);
 }
 
-ScreenResolution DesktopResizerLinux::GetCurrentResolution() {
+ScreenResolution DesktopResizerX11::GetCurrentResolution() {
   if (!exact_resize_) {
     // TODO(jamiewalch): Remove this early return if we decide to support
     // non-Xvfb servers.
@@ -199,7 +199,7 @@ ScreenResolution DesktopResizerLinux::GetCurrentResolution() {
   return result;
 }
 
-std::list<ScreenResolution> DesktopResizerLinux::GetSupportedResolutions(
+std::list<ScreenResolution> DesktopResizerX11::GetSupportedResolutions(
     const ScreenResolution& preferred) {
   std::list<ScreenResolution> result;
   if (exact_resize_) {
@@ -225,7 +225,7 @@ std::list<ScreenResolution> DesktopResizerLinux::GetSupportedResolutions(
   return result;
 }
 
-void DesktopResizerLinux::SetResolution(const ScreenResolution& resolution) {
+void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
   if (!exact_resize_) {
     // TODO(jamiewalch): Remove this early return if we decide to support
     // non-Xvfb servers.
@@ -274,14 +274,14 @@ void DesktopResizerLinux::SetResolution(const ScreenResolution& resolution) {
   DeleteMode(kTempModeName);
 }
 
-void DesktopResizerLinux::RestoreResolution(const ScreenResolution& original) {
+void DesktopResizerX11::RestoreResolution(const ScreenResolution& original) {
   // Since the desktop is only visible via a remote connection, the original
   // resolution of the desktop will never been seen and there's no point
   // restoring it; if we did, we'd just risk messing up the user's window
   // layout.
 }
 
-void DesktopResizerLinux::CreateMode(const char* name, int width, int height) {
+void DesktopResizerX11::CreateMode(const char* name, int width, int height) {
   XRRModeInfo mode;
   memset(&mode, 0, sizeof(mode));
   mode.width = width;
@@ -300,7 +300,7 @@ void DesktopResizerLinux::CreateMode(const char* name, int width, int height) {
   XRRAddOutputMode(display_, resources_.GetOutput(), mode_id);
 }
 
-void DesktopResizerLinux::DeleteMode(const char* name) {
+void DesktopResizerX11::DeleteMode(const char* name) {
   RRMode mode_id = resources_.GetIdForMode(name);
   if (mode_id) {
     XRRDeleteOutputMode(display_, resources_.GetOutput(), mode_id);
@@ -309,7 +309,7 @@ void DesktopResizerLinux::DeleteMode(const char* name) {
   }
 }
 
-void DesktopResizerLinux::SwitchToMode(const char* name) {
+void DesktopResizerX11::SwitchToMode(const char* name) {
   RRMode mode_id = None;
   RROutput* outputs = nullptr;
   int number_of_outputs = 0;
@@ -324,7 +324,7 @@ void DesktopResizerLinux::SwitchToMode(const char* name) {
 }
 
 scoped_ptr<DesktopResizer> DesktopResizer::Create() {
-  return make_scoped_ptr(new DesktopResizerLinux);
+  return make_scoped_ptr(new DesktopResizerX11);
 }
 
 }  // namespace remoting

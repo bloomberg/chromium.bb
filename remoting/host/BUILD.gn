@@ -71,6 +71,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     } else {
       sources -= [
         "clipboard_x11.cc",
+        "desktop_resizer_x11.cc",
         "input_injector_x11.cc",
         "local_input_monitor_x11.cc",
       ]
@@ -81,6 +82,10 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
           "linux/x_server_clipboard.h",
         ]
       }
+    }
+
+    if (!use_ozone) {
+      sources -= [ "desktop_resizer_ozone.cc" ]
     }
 
     if (is_chromeos) {
@@ -106,9 +111,11 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
       if (use_ozone) {
         deps += [ "//ui/ozone" ]
+        sources -= [ "desktop_resizer_ozone.cc" ]
       } else {
         sources -= [
           "clipboard_x11.cc",
+          "desktop_resizer_x11.cc",
           "input_injector_chromeos.cc",
           "input_injector_chromeos.h",
           "linux/x_server_clipboard.cc",
