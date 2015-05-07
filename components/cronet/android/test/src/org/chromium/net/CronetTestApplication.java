@@ -22,7 +22,6 @@ public class CronetTestApplication extends Application {
     public void onCreate() {
         super.onCreate();
         initializeApplicationParameters(this);
-        TestFilesInstaller.installIfNeeded(this);
     }
 
     public static void initializeApplicationParameters(Context context) {

@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.test.FailurePhase;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,15 +18,27 @@ import java.util.List;
 import java.util.concurrent.Executors;
 
 /**
- * Tests that use mock URLRequestJobs to simulate URL requests.
+ * Tests making requests using {@link ChromiumUrlRequest}.
  */
-public class MockUrlRequestJobTest extends CronetTestBase {
-    private static final String TAG = "MockURLRequestJobTest";
-
+public class ChromiumUrlRequestTest extends CronetTestBase {
     private CronetTestActivity mActivity;
-    private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
     private TestHttpUrlRequestListener mListener;
     private HttpUrlRequest mRequest;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mActivity = launchCronetTestApp();
+        assertTrue(NativeTestServer.startNativeTestServer(
+                getInstrumentation().getTargetContext()));
+        MockUrlRequestJobFactory.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        NativeTestServer.shutdownNativeTestServer();
+        super.tearDown();
+    }
 
     // Helper function to create a HttpUrlRequest with the specified url.
     private void createRequestAndWaitForComplete(
@@ -69,20 +82,12 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mActivity = launchCronetTestApp();
-        mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(
-                getInstrumentation().getTargetContext());
-    }
-
     @SmallTest
     @Feature({"Cronet"})
     public void testSuccessURLRequest() throws Exception {
         createRequestAndWaitForComplete(
-                MockUrlRequestJobFactory.SUCCESS_URL, false);
-        assertEquals(MockUrlRequestJobFactory.SUCCESS_URL, mListener.mUrl);
+                NativeTestServer.getSuccessURL(), false);
+        assertEquals(NativeTestServer.getSuccessURL(), mListener.mUrl);
         assertEquals(200, mListener.mHttpStatusCode);
         assertEquals("OK", mListener.mHttpStatusText);
         assertEquals("this is a text file\n",
@@ -99,9 +104,9 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testRedirectURLRequest() throws Exception {
         createRequestAndWaitForComplete(
-                MockUrlRequestJobFactory.REDIRECT_URL, false);
+                NativeTestServer.getRedirectURL(), false);
         // ChromiumUrlRequest does not expose the url after redirect.
-        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, mListener.mUrl);
+        assertEquals(NativeTestServer.getRedirectURL(), mListener.mUrl);
         assertEquals(200, mListener.mHttpStatusCode);
         assertEquals("OK", mListener.mHttpStatusText);
         // Expect that the request is redirected to success.txt.
@@ -119,8 +124,8 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testNotFoundURLRequest() throws Exception {
         createRequestAndWaitForComplete(
-                MockUrlRequestJobFactory.NOTFOUND_URL, false);
-        assertEquals(MockUrlRequestJobFactory.NOTFOUND_URL, mListener.mUrl);
+                NativeTestServer.getNotFoundURL(), false);
+        assertEquals(NativeTestServer.getNotFoundURL(), mListener.mUrl);
         assertEquals(404, mListener.mHttpStatusCode);
         assertEquals("Not Found", mListener.mHttpStatusText);
         assertEquals(
@@ -138,9 +143,12 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testFailedURLRequest() throws Exception {
-        createRequestAndWaitForComplete(
-                MockUrlRequestJobFactory.FAILED_URL, false);
-        assertEquals(MockUrlRequestJobFactory.FAILED_URL, mListener.mUrl);
+        // -2 is the net error code for FAILED. See net_error_list.h.
+        int errorFailed = -2;
+        String failedUrl = MockUrlRequestJobFactory.getMockUrlWithFailure(
+                FailurePhase.START, errorFailed);
+        createRequestAndWaitForComplete(failedUrl, false);
+        assertEquals(failedUrl, mListener.mUrl);
         assertEquals("", mListener.mHttpStatusText);
         assertEquals(0, mListener.mHttpStatusCode);
         // Test that ChromiumUrlRequest caches information which is available
@@ -157,11 +165,11 @@ public class MockUrlRequestJobTest extends CronetTestBase {
     // Test that redirect can be disabled for a request.
     public void testDisableRedirects() throws Exception {
         createRequestAndWaitForComplete(
-                MockUrlRequestJobFactory.REDIRECT_URL, true);
+                NativeTestServer.getRedirectURL(), true);
         // Currently Cronet does not expose the url after redirect.
-        assertEquals(MockUrlRequestJobFactory.REDIRECT_URL, mListener.mUrl);
+        assertEquals(NativeTestServer.getRedirectURL(), mListener.mUrl);
         assertEquals(302, mListener.mHttpStatusCode);
-        // MockUrlRequestJob somehow does not populate status text as "Found".
+        // url_request_adapter.cc does not populate status text when redirects are disabled.
         assertEquals("", mListener.mHttpStatusText);
         // Expect that the request is not redirected to success.txt.
         assertNotNull(mListener.mResponseHeaders);
@@ -177,7 +185,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         // Test that ChromiumUrlRequest caches information which is available
         // after the native request adapter has been destroyed.
         assertEquals(302, mRequest.getHttpStatusCode());
-        // MockUrlRequestJob somehow does not populate status text as "Found".
+        // url_request_adapter.cc does not populate status text when redirects are disabled.
         assertEquals("", mRequest.getHttpStatusText());
         assertEquals("Request failed because there were too many redirects "
                 + "or redirects have been disabled",
@@ -233,7 +241,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
             // Create request.
             final HttpUrlRequest request =
                     mActivity.mRequestFactory.createRequest(
-                            MockUrlRequestJobFactory.SUCCESS_URL,
+                            NativeTestServer.getSuccessURL(),
                             HttpUrlRequest.REQUEST_PRIORITY_LOW, headers,
                             channel, listener);
             request.start();
@@ -264,7 +272,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         String data = "MyBigFunkyData";
         int dataLength = data.length();
         int repeatCount = 10000;
-        String mockUrl = mMockUrlRequestJobFactory.getMockUrlForData(data,
+        String mockUrl = MockUrlRequestJobFactory.getMockUrlForData(data,
                 repeatCount);
 
         // Create request.
@@ -295,7 +303,7 @@ public class MockUrlRequestJobTest extends CronetTestBase {
         String data = "MyBigFunkyData";
         int dataLength = data.length();
         int repeatCount = 100000;
-        String mockUrl = mMockUrlRequestJobFactory.getMockUrlForData(data,
+        String mockUrl = MockUrlRequestJobFactory.getMockUrlForData(data,
                 repeatCount);
         createRequestAndWaitForComplete(mockUrl, false);
         assertEquals(mockUrl, mListener.mUrl);

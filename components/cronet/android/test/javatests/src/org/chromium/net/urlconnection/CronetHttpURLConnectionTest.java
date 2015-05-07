@@ -553,10 +553,8 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         String data = "MyBigFunkyData";
         int dataLength = data.length();
         int repeatCount = 100000;
-        MockUrlRequestJobFactory mockUrlRequestJobFactory = new MockUrlRequestJobFactory(
-                getInstrumentation().getTargetContext());
-        URL url = new URL(mockUrlRequestJobFactory.getMockUrlForData(data,
-                repeatCount));
+        MockUrlRequestJobFactory.setUp();
+        URL url = new URL(MockUrlRequestJobFactory.getMockUrlForData(data, repeatCount));
         HttpURLConnection connection =
                 (HttpURLConnection) url.openConnection();
         InputStream in = connection.getInputStream();
@@ -613,10 +611,8 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         String data = "MyBigFunkyData";
         int dataLength = data.length();
         int repeatCount = 100000;
-        MockUrlRequestJobFactory mockUrlRequestJobFactory = new MockUrlRequestJobFactory(
-                getInstrumentation().getTargetContext());
-        URL url = new URL(mockUrlRequestJobFactory.getMockUrlForData(data,
-                repeatCount));
+        MockUrlRequestJobFactory.setUp();
+        URL url = new URL(MockUrlRequestJobFactory.getMockUrlForData(data, repeatCount));
         HttpURLConnection connection =
                 (HttpURLConnection) url.openConnection();
         InputStream in = connection.getInputStream();

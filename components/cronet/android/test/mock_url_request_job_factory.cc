@@ -6,40 +6,23 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/files/file_path.h"
-#include "base/path_service.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "jni/MockUrlRequestJobFactory_jni.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 
 namespace cronet {
 
-void AddUrlInterceptors(JNIEnv* env, jclass jcaller, jstring jtest_files_root) {
-  base::FilePath test_files_root(
-      base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
-  net::URLRequestMockHTTPJob::AddUrlHandlers(
-      test_files_root, new base::SequencedWorkerPool(1, "Worker"));
+void AddUrlInterceptors(JNIEnv* env, jclass jcaller) {
   net::URLRequestMockDataJob::AddUrlHandler();
   net::URLRequestFailedJob::AddUrlHandler();
 }
 
-jstring GetMockUrl(JNIEnv* jenv, jclass jcaller, jstring jpath) {
-  base::FilePath path(base::android::ConvertJavaStringToUTF8(jenv, jpath));
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl(path));
-  return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
-}
-
 jstring GetMockUrlWithFailure(JNIEnv* jenv,
                               jclass jcaller,
-                              jstring jpath,
                               jint jphase,
                               jint jnet_error) {
-  base::FilePath path(base::android::ConvertJavaStringToUTF8(jenv, jpath));
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrlWithFailure(
-      path,
-      static_cast<net::URLRequestMockHTTPJob::FailurePhase>(jphase),
+  GURL url(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
+      static_cast<net::URLRequestFailedJob::FailurePhase>(jphase),
       static_cast<int>(jnet_error)));
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec()).Release();
 }

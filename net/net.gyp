@@ -1397,7 +1397,18 @@
           'variables': {
             'java_in_dir': '../net/test/android/javatests',
           },
+          'dependencies': [
+            'url_request_failed_job_java',
+          ],
           'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'url_request_failed_job_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'test/url_request/url_request_failed_job.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
           'target_name': 'net_javatests',

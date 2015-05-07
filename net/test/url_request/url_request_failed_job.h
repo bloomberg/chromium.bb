@@ -14,28 +14,56 @@
 
 namespace net {
 
-// This class simulates a URLRequestJob failing with a given error code while
-// trying to connect.
+// This class simulates a URLRequestJob failing with a given error code at
+// a particular phase while trying to connect.
 class URLRequestFailedJob : public URLRequestJob {
  public:
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net.test
+  enum FailurePhase {
+    START = 0,
+    READ_SYNC = 1,
+    READ_ASYNC = 2,
+    MAX_FAILURE_PHASE = 3,
+  };
+
+  URLRequestFailedJob(URLRequest* request,
+                      NetworkDelegate* network_delegate,
+                      FailurePhase phase,
+                      int net_error);
+
+  // Same as above, except that the job fails at FailurePhase.START.
   URLRequestFailedJob(URLRequest* request,
                       NetworkDelegate* network_delegate,
                       int net_error);
 
+  // URLRequestJob implementation:
   void Start() override;
+  bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
+  int GetResponseCode() const override;
+  void GetResponseInfo(HttpResponseInfo* info) override;
 
   // Adds the testing URLs to the URLRequestFilter.
   static void AddUrlHandler();
   static void AddUrlHandlerForHostname(const std::string& hostname);
 
   // Given a net error code, constructs a mock URL that will return that error
-  // asynchronously when started.  |net_error| must be a valid net error code
-  // other than net::OK and net::ERR_IO_PENDING.
+  // asynchronously when started. |net_error| must be a valid net error code
+  // other than net::OK. Passing net::ERR_IO_PENDING for |net_error| causes the
+  // resulting request to hang.
   static GURL GetMockHttpUrl(int net_error);
   static GURL GetMockHttpsUrl(int net_error);
 
-  // URLRequestFailedJob must be added as a handler for |hostname| for
-  // the returned URL to return |net_error|.
+  // Constructs a mock URL that reports |net_error| at given |phase| of the
+  // request. |net_error| must be a valid net error code other than net::OK.
+  // Passing net::ERR_IO_PENDING for |net_error| causes the resulting request to
+  // hang.
+  static GURL GetMockHttpUrlWithFailurePhase(FailurePhase phase, int net_error);
+
+  // Given a net error code and a host name, constructs a mock URL that will
+  // return that error asynchronously when started. |net_error| must be a valid
+  // net error code other than net::OK. Passing net::ERR_IO_PENDING for
+  // |net_error| causes the resulting request to hang.
   static GURL GetMockHttpUrlForHostname(int net_error,
                                         const std::string& hostname);
   static GURL GetMockHttpsUrlForHostname(int net_error,
@@ -45,13 +73,8 @@ class URLRequestFailedJob : public URLRequestJob {
   ~URLRequestFailedJob() override;
 
  private:
-  static URLRequestJob* Factory(URLRequest* request,
-                                NetworkDelegate* network_delegate,
-                                const std::string& scheme);
-
-  // Simulate a failure.
-  void StartAsync();
-
+  HttpResponseInfo response_info_;
+  const FailurePhase phase_;
   const int net_error_;
 
   base::WeakPtrFactory<URLRequestFailedJob> weak_factory_;

@@ -18,7 +18,11 @@ import org.chromium.base.JNINamespace;
 public final class NativeTestServer {
     private static final ConditionVariable sHostResolverBlock = new ConditionVariable();
 
+    // This variable contains the response body of a request to getSuccessURL().
+    public static final String SUCCESS_BODY = "this is a text file\n";
+
     public static boolean startNativeTestServer(Context context) {
+        TestFilesInstaller.installIfNeeded(context);
         return nativeStartNativeTestServer(
                 TestFilesInstaller.getInstalledPath(context));
     }
@@ -66,6 +70,25 @@ public final class NativeTestServer {
 
     public static String getSdchURL() {
         return nativeGetSdchURL();
+    }
+
+    // The following URLs will make NativeTestServer serve a response based on
+    // the contents of the corresponding file and its mock-http-headers file.
+
+    public static String getSuccessURL() {
+        return nativeGetFileURL("/success.txt");
+    }
+
+    public static String getRedirectURL() {
+        return nativeGetFileURL("/redirect.html");
+    }
+
+    public static String getMultiRedirectURL() {
+        return nativeGetFileURL("/multiredirect.html");
+    }
+
+    public static String getNotFoundURL() {
+        return nativeGetFileURL("/notfound.html");
     }
 
     @CalledByNative

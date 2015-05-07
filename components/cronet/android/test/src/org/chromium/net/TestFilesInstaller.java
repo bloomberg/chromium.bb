@@ -50,7 +50,7 @@ public final class TestFilesInstaller {
     /**
      * Returns whether test files are installed.
      */
-    public static boolean areFilesInstalled(Context context) {
+    private static boolean areFilesInstalled(Context context) {
         // Checking for file directory is fine even when new files are added,
         // because the app will be re-installed and app data will be cleared.
         File directory = new File(getInstalledPath(context));

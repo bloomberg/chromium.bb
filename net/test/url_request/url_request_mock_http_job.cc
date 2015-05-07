@@ -28,13 +28,6 @@ const char kMockHostname[] = "mock.http";
 const base::FilePath::CharType kMockHeaderFileSuffix[] =
     FILE_PATH_LITERAL(".mock-http-headers");
 
-// String names of failure phases matching FailurePhase enum.
-const char* kFailurePhase[] {
-  "start",      // START
-  "readasync",  // READ_ASYNC
-  "readsync",   // READ_SYNC
-};
-
 class MockJobInterceptor : public URLRequestInterceptor {
  public:
   // When |map_all_requests_to_base_path| is true, all request should return the
@@ -132,22 +125,6 @@ GURL URLRequestMockHTTPJob::GetMockHttpsUrl(const base::FilePath& path) {
 }
 
 // static
-GURL URLRequestMockHTTPJob::GetMockUrlWithFailure(const base::FilePath& path,
-                                                  FailurePhase phase,
-                                                  int net_error) {
-  static_assert(arraysize(kFailurePhase) == MAX_FAILURE_PHASE,
-                "kFailurePhase must match FailurePhase enum");
-  DCHECK_GE(phase, START);
-  DCHECK_LE(phase, READ_SYNC);
-  std::string url(GetMockUrl(path).spec());
-  url.append("?");
-  url.append(kFailurePhase[phase]);
-  url.append("=");
-  url.append(base::IntToString(net_error));
-  return GURL(url);
-}
-
-// static
 scoped_ptr<URLRequestInterceptor> URLRequestMockHTTPJob::CreateInterceptor(
     const base::FilePath& base_path,
     const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
@@ -192,8 +169,6 @@ bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
 
 // Public virtual version.
 void URLRequestMockHTTPJob::Start() {
-  if (MaybeReportErrorOnPhase(START))
-    return;
   base::PostTaskAndReplyWithResult(
       task_runner_.get(),
       FROM_HERE,
@@ -202,59 +177,13 @@ void URLRequestMockHTTPJob::Start() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-// Public virtual version.
-bool URLRequestMockHTTPJob::ReadRawData(IOBuffer* buf,
-                                        int buf_size,
-                                        int* bytes_read) {
-  if (MaybeReportErrorOnPhase(READ_SYNC))
-    return false;
-  if (MaybeReportErrorOnPhase(READ_ASYNC))
-    return false;
-  return URLRequestFileJob::ReadRawData(buf, buf_size, bytes_read);
-}
-
 void URLRequestMockHTTPJob::SetHeadersAndStart(const std::string& raw_headers) {
-  if (MaybeReportErrorOnPhase(START))
-    return;
   raw_headers_ = raw_headers;
   // Handle CRLF line-endings.
   ReplaceSubstringsAfterOffset(&raw_headers_, 0, "\r\n", "\n");
   // ParseRawHeaders expects \0 to end each header line.
   ReplaceSubstringsAfterOffset(&raw_headers_, 0, "\n", std::string("\0", 1));
   URLRequestFileJob::Start();
-}
-
-bool URLRequestMockHTTPJob::MaybeReportErrorOnPhase(
-    FailurePhase current_phase) {
-  DCHECK_GE(current_phase, START);
-  DCHECK_LE(current_phase, READ_SYNC);
-  std::string phase_key(kFailurePhase[current_phase]);
-  std::string phase_error_string;
-  if (!GetValueForKeyInQuery(request_->url(), phase_key, &phase_error_string))
-    return false;
-
-  int net_error;
-  if (!base::StringToInt(phase_error_string, &net_error))
-    return false;
-
-  if (net_error != ERR_IO_PENDING &&
-      (current_phase == START || current_phase == READ_SYNC)) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, net_error));
-    return true;
-  }
-
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
-
-  if (current_phase != READ_ASYNC)
-    return true;
-
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestMockHTTPJob::NotifyDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 URLRequestStatus(URLRequestStatus::FAILED, net_error)));
-
-  return true;
 }
 
 // Private const version.

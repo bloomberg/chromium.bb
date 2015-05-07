@@ -301,30 +301,13 @@
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
           ],
-          'conditions': [
-            # If file support is disabled, add the following sources since
-            # url_request_mock_http_job depends on them.
-            ['disable_file_support==1',
-              {
-                'sources': [
-                  '../net/base/directory_lister.cc',
-                  '../net/base/directory_lister.h',
-                  '../net/url_request/test_url_request_interceptor.cc',
-                  '../net/url_request/test_url_request_interceptor.h',
-                  '../net/url_request/url_request_file_job.cc',
-                  '../net/url_request/url_request_file_job.h',
-                  '../net/test/url_request/url_request_mock_http_job.cc',
-                  '../net/test/url_request/url_request_mock_http_job.h',
-                ]
-              }
-            ],
-          ],
         },
         {
           'target_name': 'cronet_test_apk',
           'type': 'none',
           'dependencies': [
             'cronet_java',
+            '../net/net.gyp:net_java_test_support',
           ],
           'variables': {
             'apk_name': 'CronetTest',

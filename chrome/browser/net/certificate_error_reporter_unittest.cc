@@ -29,7 +29,6 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,11 +71,7 @@ void EnableUrlRequestMocks(bool enable) {
   if (!enable)
     return;
 
-  base::FilePath root_http;
   net::URLRequestFailedJob::AddUrlHandler();
-  PathService::Get(chrome::DIR_TEST_DATA, &root_http);
-  net::URLRequestMockHTTPJob::AddUrlHandlers(root_http,
-                                             BrowserThread::GetBlockingPool());
   net::URLRequestMockDataJob::AddUrlHandler();
 }
 
@@ -336,9 +331,8 @@ TEST_F(CertificateErrorReporterTest, PendingRequestGetsDeleted) {
   network_delegate()->set_url_request_destroyed_callback(
       run_loop.QuitClosure());
 
-  GURL url = net::URLRequestMockHTTPJob::GetMockUrlWithFailure(
-      base::FilePath(FILE_PATH_LITERAL("empty.html")),
-      net::URLRequestMockHTTPJob::START, net::ERR_IO_PENDING);
+  GURL url = net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
+      net::URLRequestFailedJob::START, net::ERR_IO_PENDING);
   network_delegate()->set_expect_url(url);
   network_delegate()->ExpectHostname(kHostname);
 

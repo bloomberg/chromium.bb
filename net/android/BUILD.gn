@@ -10,7 +10,6 @@ android_library("net_java") {
   deps = [
     "//base:base_java",
   ]
-
   srcjar_deps = [
     ":net_errors_java",
     ":net_android_java_enums_srcjar",
@@ -29,6 +28,7 @@ android_aidl("remote_android_keystore_aidl") {
 
 android_library("net_java_test_support") {
   DEPRECATED_java_in_dir = "../test/android/javatests/src"
+  srcjar_deps = [ ":net_java_test_support_enums_srcjar" ]
 }
 
 android_library("net_javatests") {
@@ -47,6 +47,15 @@ java_cpp_template("net_errors_java") {
   ]
   inputs = [
     "../base/net_error_list.h",
+  ]
+}
+
+java_cpp_enum("net_java_test_support_enums_srcjar") {
+  sources = [
+    "../test/url_request/url_request_failed_job.h",
+  ]
+  outputs = [
+    "org/chromium/net/test/FailurePhase.java",
   ]
 }
 
