@@ -33,15 +33,18 @@ int64 FakeCpuTime() {
 class MockOutputter : public Outputter {
  public:
   MockOutputter() {}
-  MOCK_METHOD4(TraceDevice,
-               void(const std::string& category, const std::string& name,
+  MOCK_METHOD5(TraceDevice,
+               void(GpuTracerSource source,
+                    const std::string& category, const std::string& name,
                     int64 start_time, int64 end_time));
 
-  MOCK_METHOD2(TraceServiceBegin,
-               void(const std::string& category, const std::string& name));
+  MOCK_METHOD3(TraceServiceBegin,
+               void(GpuTracerSource source,
+                    const std::string& category, const std::string& name));
 
-  MOCK_METHOD2(TraceServiceEnd,
-               void(const std::string& category, const std::string& name));
+  MOCK_METHOD3(TraceServiceEnd,
+               void(GpuTracerSource source,
+                    const std::string& category, const std::string& name));
 
  protected:
   ~MockOutputter() {}
@@ -267,27 +270,29 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void ExpectOutputterBeginMocks(MockOutputter* outputter,
+                                 GpuTracerSource source,
                                  const std::string& category,
                                  const std::string& name) {
     EXPECT_CALL(*outputter,
-                TraceServiceBegin(category, name));
+                TraceServiceBegin(source, category, name));
   }
 
   void ExpectOutputterEndMocks(MockOutputter* outputter,
+                               GpuTracerSource source,
                                const std::string& category,
                                const std::string& name, int64 expect_start_time,
                                int64 expect_end_time,
                                bool trace_device) {
     EXPECT_CALL(*outputter,
-                TraceServiceEnd(category, name));
+                TraceServiceEnd(source, category, name));
 
     if (trace_device) {
       EXPECT_CALL(*outputter,
-                  TraceDevice(category, name,
+                  TraceDevice(source, category, name,
                               expect_start_time, expect_end_time))
           .Times(Exactly(1));
     } else {
-      EXPECT_CALL(*outputter, TraceDevice(category, name,
+      EXPECT_CALL(*outputter, TraceDevice(source, category, name,
                                           expect_start_time, expect_end_time))
           .Times(Exactly(0));
     }
@@ -295,15 +300,16 @@ class BaseGpuTest : public GpuServiceTest {
 
   void ExpectOutputterMocks(MockOutputter* outputter,
                             bool tracing_device,
+                            GpuTracerSource source,
                             const std::string& category,
                             const std::string& name, int64 expect_start_time,
                             int64 expect_end_time) {
-    ExpectOutputterBeginMocks(outputter, category, name);
+    ExpectOutputterBeginMocks(outputter, source, category, name);
     bool valid_timer = tracing_device &&
                        gpu_timing_client_->IsAvailable() &&
                        gpu_timing_client_->IsTimerOffsetAvailable();
-    ExpectOutputterEndMocks(outputter, category, name, expect_start_time,
-                            expect_end_time, valid_timer);
+    ExpectOutputterEndMocks(outputter, source, category, name,
+                            expect_start_time, expect_end_time, valid_timer);
   }
 
   void ExpectTracerOffsetQueryMocks() {
@@ -335,6 +341,7 @@ class BaseGpuTraceTest : public BaseGpuTest {
 
   void DoTraceTest(bool tracing_service, bool tracing_device) {
     // Expected results
+    const GpuTracerSource tracer_source = kTraceGroupMarker;
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const int64 offset_time = 3231;
@@ -347,14 +354,15 @@ class BaseGpuTraceTest : public BaseGpuTest {
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
     if (tracing_service)
-      ExpectOutputterMocks(outputter_ref_.get(), tracing_device, category_name,
-                           trace_name, expect_start_time, expect_end_time);
+      ExpectOutputterMocks(outputter_ref_.get(), tracing_device, tracer_source,
+                           category_name, trace_name,
+                           expect_start_time, expect_end_time);
 
     if (tracing_device)
       ExpectTraceQueryMocks();
 
     scoped_refptr<GPUTrace> trace = new GPUTrace(
-        outputter_ref_, gpu_timing_client_.get(),
+        outputter_ref_, gpu_timing_client_.get(), tracer_source,
         category_name, trace_name, tracing_service, tracing_device);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
@@ -499,10 +507,9 @@ class BaseGpuTracerTest : public BaseGpuTest {
       std::string source_category = category_name + num_char;
       std::string source_trace_name = trace_name + num_char;
 
-      ExpectOutputterBeginMocks(outputter_ref_.get(),
-                                source_category, source_trace_name);
-
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
+      ExpectOutputterBeginMocks(outputter_ref_.get(), source,
+                                source_category, source_trace_name);
       ASSERT_TRUE(tracer.Begin(source_category, source_trace_name, source));
     }
 
@@ -520,11 +527,11 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
       bool valid_timer = gpu_timing_client_->IsAvailable() &&
                          gpu_timing_client_->IsTimerOffsetAvailable();
-      ExpectOutputterEndMocks(outputter_ref_.get(), source_category,
-                              source_trace_name, expect_start_time + i,
-                              expect_end_time + i, valid_timer);
 
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
+      ExpectOutputterEndMocks(outputter_ref_.get(), source, source_category,
+                              source_trace_name, expect_start_time + i,
+                              expect_end_time + i, valid_timer);
 
       // Check if the current category/name are correct for this source.
       ASSERT_EQ(source_category, tracer.CurrentCategory(source));
@@ -546,6 +553,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
           .WillRepeatedly(
                Invoke(&gl_fake_queries_, &GlFakeQueries::GetError));
 
+    const GpuTracerSource tracer_source = kTraceGroupMarker;
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const GpuTracerSource source = static_cast<GpuTracerSource>(0);
@@ -572,7 +580,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
     ExpectTraceQueryMocks();
 
-    ExpectOutputterBeginMocks(outputter_ref_.get(),
+    ExpectOutputterBeginMocks(outputter_ref_.get(), tracer_source,
                               category_name, trace_name);
     ASSERT_TRUE(tracer.Begin(category_name, trace_name, source));
 
@@ -590,7 +598,8 @@ class BaseGpuTracerTest : public BaseGpuTest {
     gl_fake_queries_.SetDisjoint();
     ASSERT_TRUE(disjoint_client->CheckAndResetTimerErrors());
 
-    ExpectOutputterEndMocks(outputter_ref_.get(), category_name, trace_name,
+    ExpectOutputterEndMocks(outputter_ref_.get(), tracer_source,
+                            category_name, trace_name,
                             expect_start_time, expect_end_time, false);
 
     ASSERT_TRUE(tracer.End(source));
