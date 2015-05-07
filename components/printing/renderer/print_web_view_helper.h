@@ -62,11 +62,7 @@ class FrameReference {
 
   void Reset(blink::WebLocalFrame* frame);
 
-  bool IsFrameValid() const;
-
-  const blink::WebLocalFrame* GetFrame() const;
   blink::WebLocalFrame* GetFrame();
-  const blink::WebView* view() const;
   blink::WebView* view();
 
  private:

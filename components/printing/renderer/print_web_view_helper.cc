@@ -457,27 +457,15 @@ void FrameReference::Reset(blink::WebLocalFrame* frame) {
   }
 }
 
-bool FrameReference::IsFrameValid() const {
-  if (!view_ || !frame_)
-    return false;
-  for (blink::WebFrame* frame = view_->mainFrame(); frame;
+blink::WebLocalFrame* FrameReference::GetFrame() {
+  if (view_ == NULL || frame_ == NULL)
+    return NULL;
+  for (blink::WebFrame* frame = view_->mainFrame(); frame != NULL;
        frame = frame->traverseNext(false)) {
     if (frame == frame_)
-      return true;
+      return frame_;
   }
-  return false;
-}
-
-const blink::WebLocalFrame* FrameReference::GetFrame() const {
-  return IsFrameValid() ? frame_ : nullptr;
-}
-
-blink::WebLocalFrame* FrameReference::GetFrame() {
-  return IsFrameValid() ? frame_ : nullptr;
-}
-
-const blink::WebView* FrameReference::view() const {
-  return view_;
+  return NULL;
 }
 
 blink::WebView* FrameReference::view() {
@@ -576,7 +564,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   void StartPrinting();
 
   blink::WebLocalFrame* frame() { return frame_.GetFrame(); }
-  const blink::WebLocalFrame* frame() const { return frame_.GetFrame(); }
 
   const blink::WebNode& node() const { return node_to_print_; }
 
@@ -607,13 +594,16 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
 
  private:
   void CallOnReady();
-  std::string GetSelectionAsDataUrl() const;
+  void ResizeForPrinting();
+  void RestoreSize();
   void CopySelection(const WebPreferences& preferences);
 
   FrameReference frame_;
   blink::WebNode node_to_print_;
   bool owns_web_view_;
   blink::WebPrintParams web_print_params_;
+  gfx::Size prev_view_size_;
+  gfx::Size prev_scroll_offset_;
   int expected_pages_count_;
   base::Closure on_ready_;
   bool should_print_backgrounds_;
@@ -657,7 +647,30 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
   FinishPrinting();
 }
 
+void PrepareFrameAndViewForPrint::ResizeForPrinting() {
+  // Layout page according to printer page size. Since WebKit shrinks the
+  // size of the page automatically (from 125% to 200%) we trick it to
+  // think the page is 125% larger so the size of the page is correct for
+  // minimum (default) scaling.
+  // This is important for sites that try to fill the page.
+  gfx::Size print_layout_size(web_print_params_.printContentArea.width,
+                              web_print_params_.printContentArea.height);
+  print_layout_size.set_height(
+      static_cast<int>(static_cast<double>(print_layout_size.height()) * 1.25));
+
+  if (!frame())
+    return;
+  blink::WebView* web_view = frame_.view();
+  // Backup size and offset.
+  if (blink::WebFrame* web_frame = web_view->mainFrame())
+    prev_scroll_offset_ = web_frame->scrollOffset();
+  prev_view_size_ = web_view->size();
+
+  web_view->resize(print_layout_size);
+}
+
 void PrepareFrameAndViewForPrint::StartPrinting() {
+  ResizeForPrinting();
   blink::WebView* web_view = frame_.view();
   web_view->settings()->setShouldPrintBackgrounds(should_print_backgrounds_);
   expected_pages_count_ =
@@ -677,33 +690,13 @@ void PrepareFrameAndViewForPrint::CopySelectionIfNeeded(
   }
 }
 
-std::string PrepareFrameAndViewForPrint::GetSelectionAsDataUrl() const {
-  std::string url_str = "data:text/html;charset=utf-8,";
-
-  blink::WebView* web_view = frame()->view();
-  blink::WebFrame* web_frame = web_view->mainFrame();
-
-  // Backup size and offset.
-  gfx::Size prev_scroll_offset;
-  if (web_frame)
-    prev_scroll_offset = web_frame->scrollOffset();
-  gfx::Size prev_view_size = web_view->size();
-  web_view->resize(gfx::Size(web_print_params_.printContentArea.width,
-                             web_print_params_.printContentArea.height));
-  url_str.append(
-      net::EscapeQueryParamValue(frame()->selectionAsMarkup().utf8(), false));
-
-  // Restore size and offset.
-  web_view->resize(prev_view_size);
-  if (web_frame)
-    web_frame->setScrollOffset(prev_scroll_offset);
-
-  return url_str;
-}
-
 void PrepareFrameAndViewForPrint::CopySelection(
     const WebPreferences& preferences) {
-  std::string url_str = GetSelectionAsDataUrl();
+  ResizeForPrinting();
+  std::string url_str = "data:text/html;charset=utf-8,";
+  url_str.append(
+      net::EscapeQueryParamValue(frame()->selectionAsMarkup().utf8(), false));
+  RestoreSize();
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
   // on the page).
@@ -755,6 +748,15 @@ void PrepareFrameAndViewForPrint::CallOnReady() {
   return on_ready_.Run();  // Can delete |this|.
 }
 
+void PrepareFrameAndViewForPrint::RestoreSize() {
+  if (frame()) {
+    blink::WebView* web_view = frame_.GetFrame()->view();
+    web_view->resize(prev_view_size_);
+    if (blink::WebFrame* web_frame = web_view->mainFrame())
+      web_frame->setScrollOffset(prev_scroll_offset_);
+  }
+}
+
 void PrepareFrameAndViewForPrint::FinishPrinting() {
   blink::WebLocalFrame* frame = frame_.GetFrame();
   if (frame) {
@@ -764,6 +766,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
       frame->printEnd();
       if (!owns_web_view_) {
         web_view->settings()->setShouldPrintBackgrounds(false);
+        RestoreSize();
       }
     }
     if (owns_web_view_) {
