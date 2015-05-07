@@ -102,7 +102,8 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
         {
             v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());
             for (size_t i = 0; i < key->array().size(); ++i) {
-                v8::Local<v8::Value> value = toV8(key->array()[i].get(), creationContext, isolate);                if (value.IsEmpty())
+                v8::Local<v8::Value> value = toV8(key->array()[i].get(), creationContext, isolate);
+                if (value.IsEmpty())
                     value = v8::Undefined(isolate);
                 // TODO(jsbell): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
                 if (!v8CallBoolean(array->ForceSet(context, v8::Integer::New(isolate, i), value)))
