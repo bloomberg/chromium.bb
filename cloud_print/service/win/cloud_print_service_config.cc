@@ -66,7 +66,7 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
 
  private:
   friend class base::RefCounted<SetupDialog>;
-  ~SetupDialog() {}
+  ~SetupDialog() override {}
 
   // Window Message Handlers
   LRESULT OnInitDialog(UINT message, WPARAM wparam, LPARAM lparam,
