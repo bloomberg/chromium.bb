@@ -129,16 +129,15 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void ReportMetrics(const std::string& sync_username,
                              bool custom_passphrase_sync_enabled);
 
-  // Retrieves the statistics for |origin_domain| and notifies |consumer| on
-  // completion. The request will be cancelled if the consumer is destroyed.
-  virtual void GetSiteStats(const GURL& origin_domain,
-                            PasswordStoreConsumer* consumer);
-
   // Adds or replaces the statistics for the domain |stats.origin_domain|.
   void AddSiteStats(const InteractionsStats& stats);
 
   // Removes the statistics for |origin_domain|.
   void RemoveSiteStats(const GURL& origin_domain);
+
+  // Retrieves the statistics for |origin_domain| and notifies |consumer| on
+  // completion. The request will be cancelled if the consumer is destroyed.
+  void GetSiteStats(const GURL& origin_domain, PasswordStoreConsumer* consumer);
 
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
@@ -252,6 +251,7 @@ class PasswordStore : protected PasswordStoreSync,
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
+  // Returns a raw pointer so that InteractionsStats can be forward declared.
   virtual scoped_ptr<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) WARN_UNUSED_RESULT = 0;
 

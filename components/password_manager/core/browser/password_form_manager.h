@@ -122,10 +122,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // delayed until the data arrives.
   void ProcessFrame(const base::WeakPtr<PasswordManagerDriver>& driver);
 
-  // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) override;
-  void OnGetSiteStatistics(scoped_ptr<InteractionsStats> stats) override;
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
@@ -202,10 +200,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void SimulateFetchMatchingLoginsFromPasswordStore() {
     // Just need to update the internal states.
     state_ = MATCHING_PHASE;
-  }
-
-  const InteractionsStats* interactions_stats() const {
-    return interactions_stats_.get();
   }
 #endif
 
@@ -349,9 +343,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // The PasswordForm from the page or dialog managed by |this|.
   const autofill::PasswordForm observed_form_;
-
-  // Statistics for the current domain.
-  scoped_ptr<InteractionsStats> interactions_stats_;
 
   // Stores provisionally saved form until |pending_credentials_| is created.
   scoped_ptr<const autofill::PasswordForm> provisionally_saved_form_;

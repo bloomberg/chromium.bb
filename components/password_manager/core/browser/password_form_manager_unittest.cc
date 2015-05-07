@@ -1520,35 +1520,4 @@ TEST_F(PasswordFormManagerTest, PasswordToSave_NewValue) {
   EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form));
 }
 
-TEST_F(PasswordFormManagerTest, FetchStatistics) {
-  TestPasswordManagerClient client_with_store(mock_store());
-  TestPasswordManager manager(&client_with_store);
-  PasswordFormManager form_manager(&manager, &client_with_store,
-                                   client_with_store.driver(), *observed_form(),
-                                   false);
-
-  const PasswordStore::AuthorizationPromptPolicy auth_policy =
-      PasswordStore::DISALLOW_PROMPT;
-  InteractionsStats stats;
-  stats.origin_domain = observed_form()->origin.GetOrigin();
-  stats.nopes_count = 5;
-  stats.dismissal_count = 6;
-  EXPECT_CALL(*mock_store(),
-              GetLogins(*observed_form(), auth_policy, &form_manager));
-  EXPECT_CALL(*mock_store(),
-              GetSiteStats(observed_form()->origin.GetOrigin(), &form_manager));
-  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
-
-  ScopedVector<PasswordForm> simulated_results;
-  form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
-  form_manager.OnGetSiteStatistics(
-      make_scoped_ptr(new InteractionsStats(stats)));
-  ASSERT_TRUE(form_manager.interactions_stats());
-  EXPECT_EQ(stats.origin_domain,
-            form_manager.interactions_stats()->origin_domain);
-  EXPECT_EQ(stats.nopes_count, form_manager.interactions_stats()->nopes_count);
-  EXPECT_EQ(stats.dismissal_count,
-            form_manager.interactions_stats()->dismissal_count);
-}
-
 }  // namespace password_manager

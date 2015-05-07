@@ -301,9 +301,6 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
     return;
   }
   password_store->GetLogins(observed_form_, prompt_policy, this);
-
-  // The statistics is needed for the "Save password?" bubble.
-  password_store->GetSiteStats(observed_form_.origin.GetOrigin(), this);
 }
 
 bool PasswordFormManager::HasCompletedMatching() const {
@@ -532,14 +529,6 @@ void PasswordFormManager::OnGetPasswordStoreResults(
       ProcessFrame(driver);
   }
   drivers_.clear();
-}
-
-void PasswordFormManager::OnGetSiteStatistics(
-    scoped_ptr<InteractionsStats> stats) {
-  // On Windows the password request may be resolved after the statistics due to
-  // importing from IE.
-  DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
-  interactions_stats_.swap(stats);
 }
 
 bool PasswordFormManager::ShouldIgnoreResult(const PasswordForm& form) const {

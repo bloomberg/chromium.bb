@@ -47,9 +47,6 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(FillBlacklistLogins,
                bool(ScopedVector<autofill::PasswordForm>*));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
-  MOCK_METHOD2(GetSiteStats,
-               void(const GURL& origin_domain,
-                    PasswordStoreConsumer* consumer));
   void AddSiteStatsImpl(const InteractionsStats& stats) override {}
   void RemoveSiteStatsImpl(const GURL& origin_domain) override {}
   scoped_ptr<InteractionsStats> GetSiteStatsImpl(
