@@ -132,7 +132,6 @@ FileBrowserHandlerParser::FileBrowserHandlerParser() {
 FileBrowserHandlerParser::~FileBrowserHandlerParser() {
 }
 
-#if defined(OS_CHROMEOS)
 namespace {
 
 FileBrowserHandler* LoadFileBrowserHandler(
@@ -270,13 +269,9 @@ bool LoadFileBrowserHandlers(
 }
 
 }  // namespace
-#endif
 
 bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
                                      base::string16* error) {
-#if !defined(OS_CHROMEOS)
-  return true;
-#else
   const base::Value* file_browser_handlers_value = nullptr;
   if (!extension->manifest()->Get(keys::kFileBrowserHandlers,
                                   &file_browser_handlers_value)) {
@@ -306,7 +301,6 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
 
   extension->SetManifestData(keys::kFileBrowserHandlers, info.release());
   return true;
-#endif
 }
 
 const std::vector<std::string> FileBrowserHandlerParser::Keys() const {

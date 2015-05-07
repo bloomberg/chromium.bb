@@ -113,6 +113,12 @@ static_library("common") {
     if (enable_media_router) {
       defines += [ "ENABLE_MEDIA_ROUTER=1" ]
     }
+    if (is_chromeos) {
+      sources +=
+          rebase_path(gypi_values.chrome_common_extensions_chromeos_sources,
+                      ".",
+                      "//chrome")
+    }
   }
 
   if (is_win || is_mac) {

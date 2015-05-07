@@ -24,15 +24,6 @@ namespace {
 class FileBrowserHandlerManifestTest : public ChromeManifestTest {
 };
 
-#if !defined(OS_CHROMEOS)
-TEST_F(FileBrowserHandlerManifestTest, PermissionNotAllowedOnNonChromeOS) {
-  RunTestcase(
-      Testcase("filebrowser_valid.json",
-               "'fileBrowserHandler' is not allowed for specified platform."),
-      EXPECT_TYPE_WARNING);
-}
-#else
-
 TEST_F(FileBrowserHandlerManifestTest, PermissionAllowed) {
   RunTestcase(Testcase("filebrowser_valid.json"), EXPECT_TYPE_SUCCESS);
 }
@@ -212,6 +203,5 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerWithCreate) {
   EXPECT_FALSE(action->CanRead());
   EXPECT_FALSE(action->CanWrite());
 }
-#endif
 
 }  // namespace

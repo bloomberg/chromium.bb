@@ -857,7 +857,6 @@
       'common/extensions/api/extension_action/browser_action_manifest_unittest.cc',
       'common/extensions/api/extension_action/page_action_manifest_unittest.cc',
       'common/extensions/api/extension_api_unittest.cc',
-      'common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc',
       'common/extensions/api/storage/storage_schema_manifest_handler_unittest.cc',
       'common/extensions/chrome_extensions_client_unittest.cc',
       'common/extensions/command_unittest.cc',
@@ -1325,6 +1324,7 @@
       'browser/ui/webui/chromeos/login/l10n_util_unittest.cc',
       'browser/ui/webui/chromeos/login/signin_userlist_unittest.cc',
       'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
+      'common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc',
     ],
     'chrome_unit_tests_desktop_linux_sources': [
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',

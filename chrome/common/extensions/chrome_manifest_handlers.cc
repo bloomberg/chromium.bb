@@ -5,11 +5,7 @@
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 
 #include "chrome/common/extensions/api/commands/commands_handler.h"
-#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/common/extensions/api/input_ime/input_components_handler.h"
-#endif
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
@@ -33,6 +29,11 @@
 #include "extensions/common/manifest_handlers/requirements_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
+#include "chrome/common/extensions/api/input_ime/input_components_handler.h"
+#endif
+
 namespace extensions {
 
 void RegisterChromeManifestHandlers() {
@@ -47,11 +48,7 @@ void RegisterChromeManifestHandlers() {
   (new CopresenceManifestHandler)->Register();
   (new DevToolsPageHandler)->Register();
   (new ExtensionActionHandler)->Register();
-  (new FileBrowserHandlerParser)->Register();
   (new HomepageURLHandler)->Register();
-#if defined(OS_CHROMEOS)
-  (new InputComponentsHandler)->Register();
-#endif
   (new LinkedAppIconsHandler)->Register();
   (new MinimumChromeVersionChecker)->Register();
   (new OmniboxHandler)->Register();
@@ -68,6 +65,10 @@ void RegisterChromeManifestHandlers() {
   (new UpdateURLHandler)->Register();
   (new UrlHandlersParser)->Register();
   (new URLOverridesHandler)->Register();
+#if defined(OS_CHROMEOS)
+  (new FileBrowserHandlerParser)->Register();
+  (new InputComponentsHandler)->Register();
+#endif
 }
 
 }  // namespace extensions
