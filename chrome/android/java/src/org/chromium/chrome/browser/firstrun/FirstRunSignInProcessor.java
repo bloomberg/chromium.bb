@@ -14,7 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;

@@ -15,7 +15,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.io.IOException;

@@ -18,7 +18,7 @@ import android.speech.RecognizerIntent;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.ui.base.DeviceFormFactor;

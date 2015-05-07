@@ -18,7 +18,7 @@ import android.support.v7.media.MediaRouter;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 
 /**

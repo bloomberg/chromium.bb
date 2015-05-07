@@ -12,8 +12,8 @@ import android.preference.PreferenceManager;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;

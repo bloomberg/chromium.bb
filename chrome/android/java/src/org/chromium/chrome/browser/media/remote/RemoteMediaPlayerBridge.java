@@ -15,7 +15,7 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.media.MediaPlayerBridge;
 

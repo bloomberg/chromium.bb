@@ -13,7 +13,7 @@ import android.view.KeyEvent;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 
 import java.util.Set;

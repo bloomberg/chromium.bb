@@ -14,7 +14,7 @@ import android.os.Bundle;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;

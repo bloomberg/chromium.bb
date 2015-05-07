@@ -10,7 +10,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
-import org.chromium.chrome.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeSwitches;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

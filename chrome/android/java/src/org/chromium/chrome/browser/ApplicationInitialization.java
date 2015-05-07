@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.util.TypedValue;
 
 import org.chromium.base.CommandLine;
-import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.common.ContentSwitches;
