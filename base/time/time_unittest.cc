@@ -717,7 +717,7 @@ TEST(TimeTicks, NowFromSystemTraceTime) {
 
 TEST(TimeTicks, SnappedToNextTickBasic) {
   base::TimeTicks phase = base::TimeTicks::FromInternalValue(4000);
-  base::TimeDelta interval = base::TimeDelta::FromMicroseconds(1000);
+  base::TimeDelta interval = base::TimeDelta::FromInternalValue(1000);
   base::TimeTicks timestamp;
 
   // Timestamp in previous interval.
@@ -760,7 +760,7 @@ TEST(TimeTicks, SnappedToNextTickOverflow) {
   // int(big_timestamp / interval) < 0, so this causes a crash if the number of
   // intervals elapsed is attempted to be stored in an int.
   base::TimeTicks phase = base::TimeTicks::FromInternalValue(0);
-  base::TimeDelta interval = base::TimeDelta::FromMicroseconds(4000);
+  base::TimeDelta interval = base::TimeDelta::FromInternalValue(4000);
   base::TimeTicks big_timestamp =
       base::TimeTicks::FromInternalValue(8635916564000);
 

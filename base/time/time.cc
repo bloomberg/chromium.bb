@@ -97,21 +97,20 @@ int64 TimeDelta::InMicroseconds() const {
   return delta_;
 }
 
-namespace time_internal {
-
-int64 SaturatedAdd(TimeDelta delta, int64 value) {
-  CheckedNumeric<int64> rv(delta.delta_);
+int64 TimeDelta::SaturatedAdd(int64 value) const {
+  CheckedNumeric<int64> rv(delta_);
   rv += value;
   return FromCheckedNumeric(rv);
 }
 
-int64 SaturatedSub(TimeDelta delta, int64 value) {
-  CheckedNumeric<int64> rv(delta.delta_);
+int64 TimeDelta::SaturatedSub(int64 value) const {
+  CheckedNumeric<int64> rv(delta_);
   rv -= value;
   return FromCheckedNumeric(rv);
 }
 
-int64 FromCheckedNumeric(const CheckedNumeric<int64> value) {
+// static
+int64 TimeDelta::FromCheckedNumeric(const CheckedNumeric<int64> value) {
   if (value.IsValid())
     return value.ValueUnsafe();
 
@@ -124,8 +123,6 @@ int64 FromCheckedNumeric(const CheckedNumeric<int64> value) {
     limit = -limit;
   return value.ValueOrDefault(limit);
 }
-
-}  // namespace time_internal
 
 std::ostream& operator<<(std::ostream& os, TimeDelta time_delta) {
   return os << time_delta.InSecondsF() << "s";
@@ -308,12 +305,15 @@ TimeTicks TimeTicks::SnappedToNextTick(TimeTicks tick_phase,
                                        TimeDelta tick_interval) const {
   // |interval_offset| is the offset from |this| to the next multiple of
   // |tick_interval| after |tick_phase|, possibly negative if in the past.
-  TimeDelta interval_offset = (tick_phase - *this) % tick_interval;
+  TimeDelta interval_offset = TimeDelta::FromInternalValue(
+      (tick_phase - *this).ToInternalValue() % tick_interval.ToInternalValue());
   // If |this| is exactly on the interval (i.e. offset==0), don't adjust.
   // Otherwise, if |tick_phase| was in the past, adjust forward to the next
   // tick after |this|.
-  if (!interval_offset.is_zero() && tick_phase < *this)
+  if (interval_offset.ToInternalValue() != 0 && tick_phase < *this) {
     interval_offset += tick_interval;
+  }
+
   return *this + interval_offset;
 }
 
