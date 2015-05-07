@@ -75,14 +75,30 @@ DocumentLifecycle::~DocumentLifecycle()
 
 bool DocumentLifecycle::canAdvanceTo(State state) const
 {
-    if (state > m_state)
+    // We can stop from anywhere.
+    if (state == Stopping)
         return true;
-    if (m_state == Disposed) {
-        // FIXME: We can dispose a document multiple times. This seems wrong.
-        // See https://code.google.com/p/chromium/issues/detail?id=301668.
-        return state == Disposed;
-    }
-    if (m_state == StyleClean) {
+
+    switch (m_state) {
+    case Uninitialized:
+        return state == Inactive;
+    case Inactive:
+        if (state == StyleClean)
+            return true;
+        if (state == Disposed)
+            return true;
+        break;
+    case VisualUpdatePending:
+        if (state == InPreLayout)
+            return true;
+        if (state == InStyleRecalc)
+            return true;
+        if (state == InPerformLayout)
+            return true;
+        break;
+    case InStyleRecalc:
+        return state == StyleClean;
+    case StyleClean:
         // We can synchronously recalc style.
         if (state == InStyleRecalc)
             return true;
@@ -97,14 +113,14 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
         // We can redundant arrive in the style clean state.
         if (state == StyleClean)
             return true;
-        return false;
-    }
-    if (m_state == InLayoutSubtreeChange) {
-        if (state == LayoutSubtreeChangeClean)
+        if (state == LayoutClean)
             return true;
-        return false;
-    }
-    if (m_state == LayoutSubtreeChangeClean) {
+        if (state == InCompositingUpdate)
+            return true;
+        break;
+    case InLayoutSubtreeChange:
+        return state == LayoutSubtreeChangeClean;
+    case LayoutSubtreeChangeClean:
         // We can synchronously recalc style.
         if (state == InStyleRecalc)
             return true;
@@ -116,23 +132,30 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
         // Can move back to style clean.
         if (state == StyleClean)
             return true;
-        return false;
-    }
-    if (m_state == InPreLayout) {
+        if (state == LayoutClean)
+            return true;
+        if (state == InCompositingUpdate)
+            return true;
+        break;
+    case InPreLayout:
         if (state == InStyleRecalc)
             return true;
         if (state == StyleClean)
             return true;
         if (state == InPreLayout)
             return true;
-        return false;
-    }
-    if (m_state == AfterPerformLayout) {
+        break;
+    case InPerformLayout:
+        return state == AfterPerformLayout;
+    case AfterPerformLayout:
         // We can synchronously recompute layout in AfterPerformLayout.
         // FIXME: Ideally, we would unnest this recursion into a loop.
-        return state == InPreLayout;
-    }
-    if (m_state == LayoutClean) {
+        if (state == InPreLayout)
+            return true;
+        if (state == LayoutClean)
+            return true;
+        break;
+    case LayoutClean:
         // We can synchronously recalc style.
         if (state == InStyleRecalc)
             return true;
@@ -147,30 +170,37 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
             return true;
         if (state == StyleClean)
             return true;
-        return false;
-    }
-    if (m_state == CompositingClean) {
+        if (state == InCompositingUpdate)
+            return true;
+        break;
+    case InCompositingUpdate:
+        return state == CompositingClean;
+    case CompositingClean:
         if (state == InStyleRecalc)
             return true;
         if (state == InCompositingUpdate)
             return true;
         if (state == InPaintInvalidation)
             return true;
-        return false;
-    }
-    if (m_state == InPaintInvalidation) {
-        if (state == PaintInvalidationClean)
-            return true;
-        return false;
-    }
-    if (m_state == PaintInvalidationClean) {
+        break;
+    case InPaintInvalidation:
+        return state == PaintInvalidationClean;
+    case PaintInvalidationClean:
         if (state == InStyleRecalc)
             return true;
         if (state == InPreLayout)
             return true;
         if (state == InCompositingUpdate)
             return true;
-        return false;
+        break;
+    case Stopping:
+        return state == Stopped;
+    case Stopped:
+        return state == Disposed;
+    case Disposed:
+        // FIXME: We can dispose a document multiple times. This seems wrong.
+        // See https://code.google.com/p/chromium/issues/detail?id=301668.
+        return state == Disposed;
     }
     return false;
 }
