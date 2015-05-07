@@ -318,7 +318,7 @@ static void verifyGarbageCollectedIfMember(T*)
 template<typename T>
 static void verifyGarbageCollectedIfMember(Member<T>* t)
 {
-    STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "non garbage collected object in member");
+    static_assert(IsGarbageCollectedType<T>::value, "non garbage collected object in member");
 }
 
 // Specialization for things that either need marking or have weak pointers or

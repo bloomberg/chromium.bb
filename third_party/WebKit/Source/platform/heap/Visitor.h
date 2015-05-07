@@ -63,7 +63,10 @@ class Visitor;
 // in header files where we have only forward declarations of classes.
 template<typename T, void (T::*method)(Visitor*)>
 struct TraceMethodDelegate {
-    static void trampoline(Visitor* visitor, void* self) { (reinterpret_cast<T*>(self)->*method)(visitor); }
+    static void trampoline(Visitor* visitor, void* self)
+    {
+        (reinterpret_cast<T*>(self)->*method)(visitor);
+    }
 };
 
 // HasInlinedTraceMethod<T>::value is true for T supporting
@@ -142,6 +145,7 @@ template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<
 
 template<typename T>
 class NeedsAdjustAndMark<T, true> {
+    static_assert(sizeof(T), "T must be fully defined");
 public:
     static const bool value = false;
 };
@@ -149,6 +153,7 @@ template <typename T> const bool NeedsAdjustAndMark<T, true>::value;
 
 template<typename T>
 class NeedsAdjustAndMark<T, false> {
+    static_assert(sizeof(T), "T must be fully defined");
 public:
     static const bool value = IsGarbageCollectedMixin<typename WTF::RemoveConst<T>::Type>::value;
 };
@@ -162,6 +167,7 @@ public:
     template<typename VisitorDispatcher>
     static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
     {
+        static_assert(sizeof(T), "T must be fully defined");
         return visitor->isMarked(obj);
     }
 };
@@ -172,6 +178,7 @@ public:
     template<typename VisitorDispatcher>
     static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
     {
+        static_assert(sizeof(T), "T must be fully defined");
         return obj->isHeapObjectAlive(visitor);
     }
 };
@@ -190,8 +197,8 @@ public:
     template<typename T>
     void mark(T* t)
     {
-        // Check that we actually know the definition of T when tracing.
         static_assert(sizeof(T), "T must be fully defined");
+        static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
         if (!t)
             return;
 #if ENABLE(ASSERT)
@@ -199,8 +206,6 @@ public:
         Derived::fromHelper(this)->checkMarkingAllowed();
 #endif
         TraceTrait<T>::mark(Derived::fromHelper(this), t);
-
-        STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "attempted to mark non garbage collected object");
     }
 
     // Member version of the one-argument templated trace method.
@@ -232,10 +237,9 @@ public:
     template<typename T>
     void trace(const WeakMember<T>& t)
     {
-        // Check that we actually know the definition of T when tracing.
-        static_assert(sizeof(T), "we need to know the definition of the type we are tracing");
+        static_assert(sizeof(T), "T must be fully defined");
+        static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
         registerWeakCell(const_cast<WeakMember<T>&>(t).cell());
-        STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "cannot weak trace non garbage collected object");
     }
 
     template<typename T>
@@ -255,7 +259,6 @@ public:
     template<typename T>
     void trace(const T& t)
     {
-        // Check that we actually know the definition of T when tracing.
         static_assert(sizeof(T), "T must be fully defined");
         if (WTF::IsPolymorphic<T>::value) {
             intptr_t vtable = *reinterpret_cast<const intptr_t*>(&t);
@@ -283,35 +286,35 @@ public:
     // those off-heap collection backing stores.
     template<typename T, size_t inlineCapacity> void trace(const Vector<OwnPtr<T>, inlineCapacity>& vector)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t inlineCapacity> void trace(const Vector<RefPtr<T>, inlineCapacity>& vector)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t inlineCapacity> void trace(const Vector<RawPtr<T>, inlineCapacity>& vector)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t inlineCapacity> void trace(const Vector<WeakPtr<T>, inlineCapacity>& vector)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Vector");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Vector");
     }
     template<typename T, size_t N> void trace(const Deque<OwnPtr<T>, N>& deque)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
     }
     template<typename T, size_t N> void trace(const Deque<RefPtr<T>, N>& deque)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
     }
     template<typename T, size_t N> void trace(const Deque<RawPtr<T>, N>& deque)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
     }
     template<typename T, size_t N> void trace(const Deque<WeakPtr<T>, N>& deque)
     {
-        STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, "cannot trace garbage collected object inside Deque");
+        static_assert(!IsGarbageCollectedType<T>::value, "cannot trace garbage collected object inside Deque");
     }
 #endif
 
@@ -345,7 +348,6 @@ public:
 
     template<typename T> inline bool isHeapObjectAlive(T* obj)
     {
-        // Check that we actually know the definition of T when tracing.
         static_assert(sizeof(T), "T must be fully defined");
         // The strongification of collections relies on the fact that once a
         // collection has been strongified, there is no way that it can contain
@@ -360,7 +362,11 @@ public:
     {
         return isHeapObjectAlive(member.get());
     }
-    template<typename T> inline bool isHeapObjectAlive(RawPtr<T> ptr)
+    template<typename T> inline bool isHeapObjectAlive(const WeakMember<T>& member)
+    {
+        return isHeapObjectAlive(member.get());
+    }
+    template<typename T> inline bool isHeapObjectAlive(const RawPtr<T>& ptr)
     {
         return isHeapObjectAlive(ptr.get());
     }

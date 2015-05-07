@@ -12,11 +12,6 @@
 
 namespace blink {
 
-#define STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
-    static_assert(IsGarbageCollectedType<T>::value, ErrorMessage)
-#define STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, ErrorMessage) \
-    static_assert(!IsGarbageCollectedType<T>::value, ErrorMessage)
-
 template<typename T> class GarbageCollected;
 template<typename T, typename U, typename V, typename W, typename X> class HeapHashMap;
 template<typename T, typename U, typename V> class HeapHashSet;
@@ -26,6 +21,8 @@ template<typename T, size_t inlineCapacity> class HeapVector;
 template<typename T, size_t inlineCapacity> class HeapDeque;
 template<typename T, typename U, typename V> class HeapHashCountedSet;
 template<typename T> class HeapTerminatedArray;
+template<typename T, typename Traits> class HeapVectorBacking;
+template<typename Table> class HeapHashTableBacking;
 template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
 class InlinedGlobalMarkingVisitor;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
@@ -66,12 +63,14 @@ struct IsGarbageCollectedType {
     using HeapDequeSubclass = WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque>;
     using HeapHashCountedSetSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapHashCountedSet>;
     using HeapTerminatedArraySubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray>;
+    using HeapVectorBackingSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapVectorBacking>;
+    using HeapHashTableBackingSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapHashTableBacking>;
 
     template<typename U, size_t inlineCapacity> static TrueType listHashSetNodeIsHeapAllocated(WTF::ListHashSetNode<U, HeapListHashSetAllocator<U, inlineCapacity>>*);
     static FalseType listHashSetNodeIsHeapAllocated(...);
     static const bool isHeapAllocatedListHashSetNode = sizeof(TrueType) == sizeof(listHashSetNodeIsHeapAllocated(reinterpret_cast<NonConstType*>(0)));
 
-    static_assert(sizeof(T), "type must be complete");
+    static_assert(sizeof(T), "T must be fully defined");
 
     static const bool value =
         GarbageCollectedSubclass::value
@@ -84,6 +83,8 @@ struct IsGarbageCollectedType {
         || HeapDequeSubclass::value
         || HeapHashCountedSetSubclass::value
         || HeapTerminatedArraySubclass::value
+        || HeapVectorBackingSubclass::value
+        || HeapHashTableBackingSubclass::value
         || isHeapAllocatedListHashSetNode;
 };
 

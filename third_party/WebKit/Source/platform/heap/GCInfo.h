@@ -29,12 +29,19 @@ struct FinalizerTraitImpl;
 
 template<typename T>
 struct FinalizerTraitImpl<T, true> {
-    static void finalize(void* obj) { static_cast<T*>(obj)->finalizeGarbageCollectedObject(); };
+    static void finalize(void* obj)
+    {
+        static_assert(sizeof(T), "T must be fully defined");
+        static_cast<T*>(obj)->finalizeGarbageCollectedObject();
+    };
 };
 
 template<typename T>
 struct FinalizerTraitImpl<T, false> {
-    static void finalize(void* obj) { };
+    static void finalize(void* obj)
+    {
+        static_assert(sizeof(T), "T must be fully defined");
+    };
 };
 
 // The FinalizerTrait is used to determine if a type requires
@@ -157,6 +164,7 @@ template<typename T>
 struct GCInfoAtBase {
     static size_t index()
     {
+        static_assert(sizeof(T), "T must be fully defined");
         static const GCInfo gcInfo = {
             TraceTrait<T>::trace,
             FinalizerTrait<T>::finalize,

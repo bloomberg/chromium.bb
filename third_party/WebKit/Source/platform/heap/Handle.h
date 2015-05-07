@@ -298,7 +298,8 @@ public:
     template<typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor)
     {
-        STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, "non-garbage collected object should not be in Persistent");
+        static_assert(sizeof(T), "T must be fully defined");
+        static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
 #if ENABLE(GC_PROFILING)
         visitor->setHostInfo(this, m_tracingName.isEmpty() ? "Persistent" : m_tracingName);
 #endif
@@ -424,6 +425,7 @@ public:
     template<typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor)
     {
+        static_assert(sizeof(Collection), "Collection must be fully defined");
 #if ENABLE(GC_PROFILING)
         visitor->setHostInfo(this, "PersistentHeapCollectionBase");
 #endif
@@ -1003,6 +1005,7 @@ template<typename T> inline T* getPtr(const blink::Persistent<T>& p)
 
 template<typename T, size_t inlineCapacity>
 struct NeedsTracing<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>> *> {
+    static_assert(sizeof(T), "T must be fully defined");
     // All heap allocated node pointers need visiting to keep the nodes alive,
     // regardless of whether they contain pointers to other heap allocated
     // objects.
@@ -1014,6 +1017,7 @@ template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
 
 template<typename T>
 struct PointerParamStorageTraits<T*, false> {
+    static_assert(sizeof(T), "T must be fully defined");
     using StorageType = T*;
 
     static StorageType wrap(T* value) { return value; }
@@ -1022,6 +1026,7 @@ struct PointerParamStorageTraits<T*, false> {
 
 template<typename T>
 struct PointerParamStorageTraits<T*, true> {
+    static_assert(sizeof(T), "T must be fully defined");
     using StorageType = blink::CrossThreadPersistent<T>;
 
     static StorageType wrap(T* value) { return value; }
@@ -1030,10 +1035,12 @@ struct PointerParamStorageTraits<T*, true> {
 
 template<typename T>
 struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
+    static_assert(sizeof(T), "T must be fully defined");
 };
 
 template<typename T>
 struct ParamStorageTraits<RawPtr<T>> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
+    static_assert(sizeof(T), "T must be fully defined");
 };
 
 template<typename T>
