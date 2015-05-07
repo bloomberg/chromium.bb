@@ -47,6 +47,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
 
   def __init__(self, builder_run, **kwargs):
     super(BranchUtilStage, self).__init__(builder_run, **kwargs)
+    self.skip_remote_push = self._run.options.skip_remote_push
     self.dryrun = self._run.options.debug_forced
     self.branch_name = self._run.options.branch_name
     self.rename_to = self._run.options.rename_to
@@ -65,7 +66,8 @@ class BranchUtilStage(generic_stages.BuilderStage):
     # If dest_ref is already refs/heads/<branch> it's a noop.
     dest_ref = git.NormalizeRef(git.StripRefs(dest_ref))
     push_to = git.RemoteRef(checkout['push_remote'], dest_ref)
-    git.GitPush(checkout['local_path'], src_ref, push_to, dryrun=self.dryrun,
+    dryrun = self.dryrun or self.skip_remote_push
+    git.GitPush(checkout['local_path'], src_ref, push_to, dryrun=dryrun,
                 force=force)
 
   def _FetchAndCheckoutTo(self, checkout_dir, remote_ref):
@@ -341,8 +343,9 @@ class BranchUtilStage(generic_stages.BuilderStage):
       message = 'Fix up manifest after branching %s.' % branch_ref
       git.RunGit(manifest_dir, ['commit', '-m', message], print_cmd=True)
       push_to = git.RemoteRef(push_remote, branch_ref)
+      dryrun = self.dryrun or self.skip_remote_push
       git.GitPush(manifest_dir, manifest_version.PUSH_BRANCH, push_to,
-                  dryrun=self.dryrun, force=self.dryrun)
+                  dryrun=dryrun, force=dryrun)
 
   def _IncrementVersionOnDisk(self, incr_type, push_to, message):
     """Bumps the version found in chromeos_version.sh on a branch.

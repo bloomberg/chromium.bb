@@ -495,6 +495,10 @@ def _CreateParser():
                           help='Rename a branch to the specified name.')
   group.add_remote_option('--force-create', default=False, action='store_true',
                           help='Overwrites an existing branch.')
+  group.add_remote_option('--skip-remote-push', default=False,
+                          action='store_true',
+                          help='Do not actually push to remote git repos.  '
+                               'Used for end-to-end testing branching.')
 
   parser.add_option_group(group)
 
