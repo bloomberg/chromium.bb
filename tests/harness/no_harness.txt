@@ -9,7 +9,7 @@
         {
           "comment": "Norwegian alphabet",
           "input": "a b c d e f g h i j k l m n o p q r s t u v w x y z æ ø å",
-          "output": "⠁⠀⠃⠀⠉⠀⠙⠀⠑⠀⠋⠀⠛⠀⠓⠀⠊⠀⠚⠀⠅⠀⠇⠀⠍⠀⠝⠀⠕⠀⠏⠀⠟⠀⠗⠀⠎⠀⠞⠀⠥⠀⠧⠀⠺⠀⠭⠀⠽⠀⠵⠀⠜⠀⠪⠀⠡"
+          "output": "⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵ ⠜ ⠪ ⠡"
         }
       ]
     },
@@ -108,7 +108,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 1",
           "input": "vis à vis",
-          "output": "⠧⠊⠎⠀⠷⠀⠧⠊⠎"
+          "output": "⠧⠊⠎ ⠷ ⠧⠊⠎"
         }
       ]
     },
@@ -117,7 +117,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 2",
           "input": "à jour",
-          "output": "⠷⠀⠚⠕⠥⠗"
+          "output": "⠷ ⠚⠕⠥⠗"
         }
       ]
     },
@@ -162,7 +162,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 7",
           "input": "Jeg har en idé!",
-          "output": "⠠⠚⠑⠛⠀⠓⠁⠗⠀⠑⠝⠀⠊⠙⠿⠖"
+          "output": "⠠⠚⠑⠛ ⠓⠁⠗ ⠑⠝ ⠊⠙⠿⠖"
         }
       ]
     },
@@ -171,7 +171,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 8",
           "input": "Det er én ting jeg lurer på, sa André.",
-          "output": "⠲⠠⠙⠑⠞⠀⠑⠗⠀⠿⠝⠀⠞⠊⠝⠛⠀⠚⠑⠛⠀⠇⠥⠗⠑⠗⠀⠏⠡⠂⠲⠀⠎⠁⠀⠠⠁⠝⠙⠗⠿⠄"
+          "output": "⠲⠠⠙⠑⠞ ⠑⠗ ⠿⠝ ⠞⠊⠝⠛ ⠚⠑⠛ ⠇⠥⠗⠑⠗ ⠏⠡⠂⠲ ⠎⠁ ⠠⠁⠝⠙⠗⠿⠄"
         }
       ]
     },
@@ -180,7 +180,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 9",
           "input": "I går lét vi borna få vera oppe lenge.",
-          "output": "⠠⠊⠀⠛⠡⠗⠀⠇⠿⠞⠀⠧⠊⠀⠃⠕⠗⠝⠁⠀⠋⠡⠀⠧⠑⠗⠁⠀⠕⠏⠏⠑⠀⠇⠑⠝⠛⠑⠄"
+          "output": "⠠⠊ ⠛⠡⠗ ⠇⠿⠞ ⠧⠊ ⠃⠕⠗⠝⠁ ⠋⠡ ⠧⠑⠗⠁ ⠕⠏⠏⠑ ⠇⠑⠝⠛⠑⠄"
         }
       ]
     },
@@ -198,7 +198,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 11",
           "input": "I dag lèt eg ingen koma innfor døra mi.",
-          "output": "⠠⠊⠀⠙⠁⠛⠀⠇⠮⠞⠀⠑⠛⠀⠊⠝⠛⠑⠝⠀⠅⠕⠍⠁⠀⠊⠝⠝⠋⠕⠗⠀⠙⠪⠗⠁⠀⠍⠊⠄"
+          "output": "⠠⠊ ⠙⠁⠛ ⠇⠮⠞ ⠑⠛ ⠊⠝⠛⠑⠝ ⠅⠕⠍⠁ ⠊⠝⠝⠋⠕⠗ ⠙⠪⠗⠁ ⠍⠊⠄"
         }
       ]
     },
@@ -207,7 +207,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 12",
           "input": "Det vart fint vêr i dag.",
-          "output": "⠠⠙⠑⠞⠀⠧⠁⠗⠞⠀⠋⠊⠝⠞⠀⠧⠣⠗⠀⠊⠀⠙⠁⠛⠄"
+          "output": "⠠⠙⠑⠞ ⠧⠁⠗⠞ ⠋⠊⠝⠞ ⠧⠣⠗ ⠊ ⠙⠁⠛⠄"
         }
       ]
     },
@@ -216,7 +216,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 13",
           "input": "De hadde en tête-à-tête.",
-          "output": "⠠⠙⠑⠀⠓⠁⠙⠙⠑⠀⠑⠝⠀⠞⠣⠞⠑⠤⠷⠤⠞⠣⠞⠑⠄"
+          "output": "⠠⠙⠑ ⠓⠁⠙⠙⠑ ⠑⠝ ⠞⠣⠞⠑⠤⠷⠤⠞⠣⠞⠑⠄"
         }
       ]
     },
@@ -225,7 +225,7 @@
         {
           "comment": "Alphabet used in Norwegian: Example 14",
           "input": "Det trur eg òg.",
-          "output": "⠙⠑⠞⠀⠞⠗⠥⠗⠀⠑⠛⠀⠬⠛⠄"
+          "output": "⠙⠑⠞ ⠞⠗⠥⠗ ⠑⠛ ⠬⠛⠄"
         }
       ]
     },
@@ -270,7 +270,7 @@
         {
           "comment": "Alphabet used in Sami",
           "input": "a á b c č d đ e f g h i j k l m n ŋ o p r s š t ŧ u v z ž",
-          "output": "⠁⠀⠷⠀⠃⠀⠉⠀⠩⠀⠙⠀⠹⠀⠑⠀⠋⠀⠛⠀⠓⠀⠊⠀⠚⠀⠅⠀⠇⠀⠍⠀⠝⠀⠫⠀⠕⠀⠏⠀⠗⠀⠎⠀⠱⠀⠞⠀⠳⠀⠥⠀⠧⠀⠵⠀⠮"
+          "output": "⠁ ⠷ ⠃ ⠉ ⠩ ⠙ ⠹ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠫ ⠕ ⠏ ⠗ ⠎ ⠱ ⠞ ⠳ ⠥ ⠧ ⠵ ⠮"
         }
       ]
     },
@@ -279,7 +279,7 @@
         {
           "comment": "Alphabet used in norrønt",
           "input": "a á b c d ð e é f g h i í j k l m n o ó p q r s t u ú v w x y ý z þ æ ö oe ǫ",
-          "output": "⠁⠀⠡⠀⠃⠀⠉⠀⠙⠀⠱⠀⠑⠀⠮⠀⠋⠀⠛⠀⠓⠀⠊⠀⠣⠀⠚⠀⠅⠀⠇⠀⠍⠀⠝⠀⠕⠀⠹⠀⠏⠀⠟⠀⠗⠀⠎⠀⠞⠀⠥⠀⠻⠀⠧⠀⠺⠀⠭⠀⠽⠀⠯⠀⠵⠀⠫⠀⠜⠀⠪⠀⠬⠀⠾"
+          "output": "⠁ ⠡ ⠃ ⠉ ⠙ ⠱ ⠑ ⠮ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠺ ⠭ ⠽ ⠯ ⠵ ⠫ ⠜ ⠪ ⠬ ⠾"
         }
       ]
     },
@@ -288,7 +288,7 @@
         {
           "comment": "Alphabet used in Iceland",
           "input": "a á b c d ð e é f g h i í j k l m n o ó p q r s t u ú v w x y ý z þ æ ö",
-          "output": "⠁⠀⠡⠀⠃⠀⠉⠀⠙⠀⠱⠀⠑⠀⠮⠀⠋⠀⠛⠀⠓⠀⠊⠀⠣⠀⠚⠀⠅⠀⠇⠀⠍⠀⠝⠀⠕⠀⠹⠀⠏⠀⠟⠀⠗⠀⠎⠀⠞⠀⠥⠀⠻⠀⠧⠀⠺⠀⠭⠀⠽⠀⠯⠀⠵⠀⠫⠀⠜⠀⠪"
+          "output": "⠁ ⠡ ⠃ ⠉ ⠙ ⠱ ⠑ ⠮ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠺ ⠭ ⠽ ⠯ ⠵ ⠫ ⠜ ⠪"
         }
       ]
     },
@@ -297,7 +297,7 @@
         {
           "comment": "Alphabet used in Denmark and Norwegian",
           "input": "a á b d ð e f g h i í j k l m n o ó p r s t u ú v y ý æ ö",
-          "output": "⠁⠀⠡⠀⠃⠀⠙⠀⠱⠀⠑⠀⠋⠀⠛⠀⠓⠀⠊⠀⠣⠀⠚⠀⠅⠀⠇⠀⠍⠀⠝⠀⠕⠀⠹⠀⠏⠀⠗⠀⠎⠀⠞⠀⠥⠀⠻⠀⠧⠀⠽⠀⠯⠀⠜⠀⠪"
+          "output": "⠁ ⠡ ⠃ ⠙ ⠱ ⠑ ⠋ ⠛ ⠓ ⠊ ⠣ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠹ ⠏ ⠗ ⠎ ⠞ ⠥ ⠻ ⠧ ⠽ ⠯ ⠜ ⠪"
         }
       ]
     },
@@ -369,7 +369,7 @@
         {
           "comment": "Full stop: Example 2",
           "input": "Eva spiser frokost.",
-          "output": "⠠⠑⠧⠁⠀⠎⠏⠊⠎⠑⠗⠀⠋⠗⠕⠅⠕⠎⠞⠄"
+          "output": "⠠⠑⠧⠁ ⠎⠏⠊⠎⠑⠗ ⠋⠗⠕⠅⠕⠎⠞⠄"
         }
       ]
     },
@@ -378,7 +378,7 @@
         {
           "comment": "Full stop: Example 3",
           "input": "H.C. Andersen.",
-          "output": "⠓⠄⠠⠉⠄⠀⠠⠁⠝⠙⠑⠗⠎⠑⠝⠄"
+          "output": "⠓⠄⠠⠉⠄ ⠠⠁⠝⠙⠑⠗⠎⠑⠝⠄"
         }
       ]
     },
@@ -387,7 +387,7 @@
         {
           "comment": "Full stop: Example 4",
           "input": "Det er helt tåp...",
-          "output": "⠙⠑⠞⠀⠑⠗⠀⠓⠑⠇⠞⠀⠞⠡⠏…"
+          "output": "⠙⠑⠞ ⠑⠗ ⠓⠑⠇⠞ ⠞⠡⠏…"
         }
       ]
     },
@@ -396,7 +396,7 @@
         {
           "comment": "Full stop: Example 5",
           "input": "Jeg kan da for ... ikke vite det.",
-          "output": "⠠⠚⠑⠛⠀⠅⠁⠝⠀⠙⠁⠀⠋⠕⠗⠀⠄⠄⠄⠀⠊⠅⠅⠑⠀⠧⠊⠞⠑⠀⠙⠑⠞⠄"
+          "output": "⠠⠚⠑⠛ ⠅⠁⠝ ⠙⠁ ⠋⠕⠗ ⠄⠄⠄ ⠊⠅⠅⠑ ⠧⠊⠞⠑ ⠙⠑⠞⠄"
         }
       ]
     },
@@ -414,7 +414,7 @@
         {
           "comment": "Comma: Example 2",
           "input": "Jeg kan ikke uttale meg om dette, da jeg ikke kjenner saken.",
-          "output": "⠠⠚⠑⠛⠀⠅⠁⠝⠀⠊⠅⠅⠑⠀⠥⠞⠞⠁⠇⠑⠀⠍⠑⠛⠀⠕⠍⠀⠙⠑⠞⠞⠑⠂⠀⠙⠁⠀⠚⠑⠛⠀⠊⠅⠅⠑⠀⠅⠚⠑⠝⠝⠑⠗⠀⠎⠁⠅⠑⠝⠄"
+          "output": "⠠⠚⠑⠛ ⠅⠁⠝ ⠊⠅⠅⠑ ⠥⠞⠞⠁⠇⠑ ⠍⠑⠛ ⠕⠍ ⠙⠑⠞⠞⠑⠂ ⠙⠁ ⠚⠑⠛ ⠊⠅⠅⠑ ⠅⠚⠑⠝⠝⠑⠗ ⠎⠁⠅⠑⠝⠄"
         }
       ]
     },
@@ -423,7 +423,7 @@
         {
           "comment": "Comma: Example 3",
           "input": "Jan kjøpte grønnsaker, egg og ost.",
-          "output": "⠠⠚⠁⠝⠀⠅⠚⠪⠏⠞⠑⠀⠛⠗⠪⠝⠝⠎⠁⠅⠑⠗⠂⠀⠑⠛⠛⠀⠕⠛⠀⠕⠎⠞⠄"
+          "output": "⠠⠚⠁⠝ ⠅⠚⠪⠏⠞⠑ ⠛⠗⠪⠝⠝⠎⠁⠅⠑⠗⠂ ⠑⠛⠛ ⠕⠛ ⠕⠎⠞⠄"
         }
       ]
     },
@@ -432,7 +432,7 @@
         {
           "comment": "Comma: Example 4",
           "input": "Hanne kjøpte 2,5 kg blåbær.",
-          "output": "⠠⠓⠁⠝⠝⠑⠀⠅⠚⠪⠏⠞⠑⠀⠼⠃⠂⠑⠀⠅⠛⠀⠃⠇⠡⠃⠜⠗⠄"
+          "output": "⠠⠓⠁⠝⠝⠑ ⠅⠚⠪⠏⠞⠑ ⠼⠃⠂⠑ ⠅⠛ ⠃⠇⠡⠃⠜⠗⠄"
         }
       ]
     },
@@ -441,7 +441,7 @@
         {
           "comment": "Comma: Example 5",
           "input": "Genseren kostet kr 99,50.",
-          "output": "⠠⠛⠑⠝⠎⠑⠗⠑⠝⠀⠅⠕⠎⠞⠑⠞⠀⠅⠗⠀⠼⠊⠊⠂⠑⠚⠄"
+          "output": "⠠⠛⠑⠝⠎⠑⠗⠑⠝ ⠅⠕⠎⠞⠑⠞ ⠅⠗ ⠼⠊⠊⠂⠑⠚⠄"
         }
       ]
     },
@@ -459,7 +459,7 @@
         {
           "comment": "Semicolon: Example 2",
           "input": "Tore forsvant; det ble stor oppstandelse.",
-          "output": "⠠⠞⠕⠗⠑⠀⠋⠕⠗⠎⠧⠁⠝⠞⠆⠀⠙⠑⠞⠀⠃⠇⠑⠀⠎⠞⠕⠗⠀⠕⠏⠏⠎⠞⠁⠝⠙⠑⠇⠎⠑⠄"
+          "output": "⠠⠞⠕⠗⠑ ⠋⠕⠗⠎⠧⠁⠝⠞⠆ ⠙⠑⠞ ⠃⠇⠑ ⠎⠞⠕⠗ ⠕⠏⠏⠎⠞⠁⠝⠙⠑⠇⠎⠑⠄"
         }
       ]
     },
@@ -468,7 +468,7 @@
         {
           "comment": "Semicolon: Example 3",
           "input": "15,9; 22,6; 3; 2,5",
-          "output": "⠼⠁⠑⠂⠊⠆⠀⠼⠃⠃⠂⠋⠆⠀⠼⠉⠆⠀⠼⠃⠂⠑"
+          "output": "⠼⠁⠑⠂⠊⠆ ⠼⠃⠃⠂⠋⠆ ⠼⠉⠆ ⠼⠃⠂⠑"
         }
       ]
     },
@@ -477,7 +477,7 @@
         {
           "comment": "Semicolon: Example 4",
           "input": "Tekst; Regnskap 2006; Regnskap 2005; Budsjett 2006; Budsjett 2007",
-          "output": "⠠⠞⠑⠅⠎⠞⠆⠀⠠⠗⠑⠛⠝⠎⠅⠁⠏⠀⠼⠃⠚⠚⠋⠆⠀⠠⠗⠑⠛⠝⠎⠅⠁⠏⠀⠼⠃⠚⠚⠑⠆⠀⠠⠃⠥⠙⠎⠚⠑⠞⠞⠀⠼⠃⠚⠚⠋⠆⠀⠠⠃⠥⠙⠎⠚⠑⠞⠞⠀⠼⠃⠚⠚⠛"
+          "output": "⠠⠞⠑⠅⠎⠞⠆ ⠠⠗⠑⠛⠝⠎⠅⠁⠏ ⠼⠃⠚⠚⠋⠆ ⠠⠗⠑⠛⠝⠎⠅⠁⠏ ⠼⠃⠚⠚⠑⠆ ⠠⠃⠥⠙⠎⠚⠑⠞⠞ ⠼⠃⠚⠚⠋⠆ ⠠⠃⠥⠙⠎⠚⠑⠞⠞ ⠼⠃⠚⠚⠛"
         }
       ]
     },
@@ -495,7 +495,7 @@
         {
           "comment": "Semicolon: Example 6",
           "input": "Inndekning av felleskostnader; 2.088.000; 1.986.000; 1.986.000; 2.088.000",
-          "output": "⠠⠊⠝⠝⠙⠑⠅⠝⠊⠝⠛⠀⠁⠧⠀⠋⠑⠇⠇⠑⠎⠅⠕⠎⠞⠝⠁⠙⠑⠗⠆⠀⠼⠃⠄⠚⠓⠓⠄⠚⠚⠚⠆⠀⠼⠁⠄⠊⠓⠋⠄⠚⠚⠚⠆⠀⠼⠁⠄⠊⠓⠋⠄⠚⠚⠚⠆⠀⠼⠃⠄⠚⠓⠓⠄⠚⠚⠚"
+          "output": "⠠⠊⠝⠝⠙⠑⠅⠝⠊⠝⠛ ⠁⠧ ⠋⠑⠇⠇⠑⠎⠅⠕⠎⠞⠝⠁⠙⠑⠗⠆ ⠼⠃⠄⠚⠓⠓⠄⠚⠚⠚⠆ ⠼⠁⠄⠊⠓⠋⠄⠚⠚⠚⠆ ⠼⠁⠄⠊⠓⠋⠄⠚⠚⠚⠆ ⠼⠃⠄⠚⠓⠓⠄⠚⠚⠚"
         }
       ]
     },
@@ -504,7 +504,7 @@
         {
           "comment": "Semicolon: Example 7",
           "input": "Andre leieinntekter; 40.800; 39.600; 38.000; 40.000",
-          "output": "⠠⠁⠝⠙⠗⠑⠀⠇⠑⠊⠑⠊⠝⠝⠞⠑⠅⠞⠑⠗⠆⠀⠼⠙⠚⠄⠓⠚⠚⠆⠀⠼⠉⠊⠄⠋⠚⠚⠆⠀⠼⠉⠓⠄⠚⠚⠚⠆⠀⠼⠙⠚⠄⠚⠚⠚"
+          "output": "⠠⠁⠝⠙⠗⠑ ⠇⠑⠊⠑⠊⠝⠝⠞⠑⠅⠞⠑⠗⠆ ⠼⠙⠚⠄⠓⠚⠚⠆ ⠼⠉⠊⠄⠋⠚⠚⠆ ⠼⠉⠓⠄⠚⠚⠚⠆ ⠼⠙⠚⠄⠚⠚⠚"
         }
       ]
     },
@@ -522,7 +522,7 @@
         {
           "comment": "Colon: Example 2",
           "input": "Per sa: \"Jeg vil ikke være med på sjøen i dag.\"",
-          "output": "⠠⠏⠑⠗⠀⠎⠁⠒⠀⠲⠠⠚⠑⠛⠀⠧⠊⠇⠀⠊⠅⠅⠑⠀⠧⠜⠗⠑⠀⠍⠑⠙⠀⠏⠡⠀⠎⠚⠪⠑⠝⠀⠊⠀⠙⠁⠛⠄⠲"
+          "output": "⠠⠏⠑⠗ ⠎⠁⠒ ⠲⠠⠚⠑⠛ ⠧⠊⠇ ⠊⠅⠅⠑ ⠧⠜⠗⠑ ⠍⠑⠙ ⠏⠡ ⠎⠚⠪⠑⠝ ⠊ ⠙⠁⠛⠄⠲"
         }
       ]
     },
@@ -531,7 +531,7 @@
         {
           "comment": "Colon: Example 3",
           "input": "Det finnes 3 ulike skjemaer: røde, gule og blå.",
-          "output": "⠠⠙⠑⠞⠀⠋⠊⠝⠝⠑⠎⠀⠼⠉⠀⠥⠇⠊⠅⠑⠀⠎⠅⠚⠑⠍⠁⠑⠗⠒⠀⠗⠪⠙⠑⠂⠀⠛⠥⠇⠑⠀⠕⠛⠀⠃⠇⠡⠄"
+          "output": "⠠⠙⠑⠞ ⠋⠊⠝⠝⠑⠎ ⠼⠉ ⠥⠇⠊⠅⠑ ⠎⠅⠚⠑⠍⠁⠑⠗⠒ ⠗⠪⠙⠑⠂ ⠛⠥⠇⠑ ⠕⠛ ⠃⠇⠡⠄"
         }
       ]
     },
@@ -540,7 +540,7 @@
         {
           "comment": "Colon: Example 4",
           "input": "Målestokk 1 :50.000.",
-          "output": "⠠⠍⠡⠇⠑⠎⠞⠕⠅⠅⠀⠼⠁⠀⠒⠼⠑⠚⠄⠚⠚⠚⠄"
+          "output": "⠠⠍⠡⠇⠑⠎⠞⠕⠅⠅ ⠼⠁ ⠒⠼⠑⠚⠄⠚⠚⠚⠄"
         }
       ]
     },
@@ -558,7 +558,7 @@
         {
           "comment": "Question mark: Example 2",
           "input": "Melk? Juice? Eller vann?",
-          "output": "⠠⠍⠑⠇⠅⠢⠀⠠⠚⠥⠊⠉⠑⠢⠀⠠⠑⠇⠇⠑⠗⠀⠧⠁⠝⠝⠢"
+          "output": "⠠⠍⠑⠇⠅⠢ ⠠⠚⠥⠊⠉⠑⠢ ⠠⠑⠇⠇⠑⠗ ⠧⠁⠝⠝⠢"
         }
       ]
     },
@@ -567,7 +567,7 @@
         {
           "comment": "Question mark: Example 3",
           "input": "Skal vi gå ut og spise i dag? spurte Karin.",
-          "output": "⠲⠠⠎⠅⠁⠇⠀⠧⠊⠀⠛⠡⠀⠥⠞⠀⠕⠛⠀⠎⠏⠊⠎⠑⠀⠊⠀⠙⠁⠛⠢⠲⠀⠎⠏⠥⠗⠞⠑⠀⠠⠅⠁⠗⠊⠝⠄"
+          "output": "⠲⠠⠎⠅⠁⠇ ⠧⠊ ⠛⠡ ⠥⠞ ⠕⠛ ⠎⠏⠊⠎⠑ ⠊ ⠙⠁⠛⠢⠲ ⠎⠏⠥⠗⠞⠑ ⠠⠅⠁⠗⠊⠝⠄"
         }
       ]
     },
@@ -585,7 +585,7 @@
         {
           "comment": "Exclamation Mark: Example 2",
           "input": "Pass på!",
-          "output": "⠠⠏⠁⠎⠎⠀⠏⠡⠖"
+          "output": "⠠⠏⠁⠎⠎ ⠏⠡⠖"
         }
       ]
     },
@@ -594,7 +594,7 @@
         {
           "comment": "Exclamation Mark: Example 3",
           "input": "Lykke til!",
-          "output": "⠠⠇⠽⠅⠅⠑⠀⠞⠊⠇⠖"
+          "output": "⠠⠇⠽⠅⠅⠑ ⠞⠊⠇⠖"
         }
       ]
     },
@@ -603,7 +603,7 @@
         {
           "comment": "Parentes: Example 1",
           "input": "( )",
-          "output": "⠦⠀⠴"
+          "output": "⠦ ⠴"
         }
       ]
     },
@@ -612,7 +612,7 @@
         {
           "comment": "Parentes: Example 2",
           "input": "Det var ingen sak (trodde han).",
-          "output": "⠠⠙⠑⠞⠀⠧⠁⠗⠀⠊⠝⠛⠑⠝⠀⠎⠁⠅⠀⠦⠞⠗⠕⠙⠙⠑⠀⠓⠁⠝⠴⠄"
+          "output": "⠠⠙⠑⠞ ⠧⠁⠗ ⠊⠝⠛⠑⠝ ⠎⠁⠅ ⠦⠞⠗⠕⠙⠙⠑ ⠓⠁⠝⠴⠄"
         }
       ]
     },
@@ -621,7 +621,7 @@
         {
           "comment": "Parentes: Example 3",
           "input": "Året etter (1930) kom han hit.",
-          "output": "⠠⠡⠗⠑⠞⠀⠑⠞⠞⠑⠗⠀⠦⠼⠁⠊⠉⠚⠴⠀⠅⠕⠍⠀⠓⠁⠝⠀⠓⠊⠞⠄"
+          "output": "⠠⠡⠗⠑⠞ ⠑⠞⠞⠑⠗ ⠦⠼⠁⠊⠉⠚⠴ ⠅⠕⠍ ⠓⠁⠝ ⠓⠊⠞⠄"
         }
       ]
     },
@@ -630,7 +630,7 @@
         {
           "comment": "Brackets: Example 1",
           "input": "[ ]",
-          "output": "⠷⠀⠾"
+          "output": "⠷ ⠾"
         }
       ]
     },
@@ -639,7 +639,7 @@
         {
           "comment": "Brackets: Example 2",
           "input": "valg [val]",
-          "output": "⠧⠁⠇⠛⠀⠷⠧⠁⠇⠾"
+          "output": "⠧⠁⠇⠛ ⠷⠧⠁⠇⠾"
         }
       ]
     },
@@ -648,7 +648,7 @@
         {
           "comment": "Brackets: Example 3",
           "input": "Utelatt tekst [...] er ikke tatt med.",
-          "output": "⠠⠥⠞⠑⠇⠁⠞⠞⠀⠞⠑⠅⠎⠞⠀⠷⠄⠄⠄⠾⠀⠑⠗⠀⠊⠅⠅⠑⠀⠞⠁⠞⠞⠀⠍⠑⠙⠄"
+          "output": "⠠⠥⠞⠑⠇⠁⠞⠞ ⠞⠑⠅⠎⠞ ⠷⠄⠄⠄⠾ ⠑⠗ ⠊⠅⠅⠑ ⠞⠁⠞⠞ ⠍⠑⠙⠄"
         }
       ]
     },
@@ -657,7 +657,7 @@
         {
           "comment": "Curly brackets: Example 1",
           "input": "{ }",
-          "output": "⠷⠀⠠⠾"
+          "output": "⠷ ⠠⠾"
         }
       ]
     },
@@ -666,7 +666,7 @@
         {
           "comment": "Curly brackets: Example 2",
           "input": "Ich bin, du bist, {er, sie, es} ist",
-          "output": "⠠⠊⠉⠓⠀⠃⠊⠝⠂⠀⠙⠥⠀⠃⠊⠎⠞⠂⠀⠠⠷⠑⠗⠂⠀⠎⠊⠑⠂⠀⠑⠎⠠⠾⠀⠊⠎⠞"
+          "output": "⠠⠊⠉⠓ ⠃⠊⠝⠂ ⠙⠥ ⠃⠊⠎⠞⠂ ⠠⠷⠑⠗⠂ ⠎⠊⠑⠂ ⠑⠎⠠⠾ ⠊⠎⠞"
         }
       ]
     },
@@ -675,7 +675,7 @@
         {
           "comment": "Mengdeparentes: Example 1",
           "input": "{ }",
-          "output": "⠣⠀⠜"
+          "output": "⠣ ⠜"
         }
       ]
     },
@@ -684,7 +684,7 @@
         {
           "comment": "Mengdeparentes: Example 2",
           "input": "L = {1, 3, 4}",
-          "output": "⠠⠇⠀⠶⠣⠼⠁⠂⠀⠼⠉⠂⠀⠼⠙⠜"
+          "output": "⠠⠇ ⠶⠣⠼⠁⠂ ⠼⠉⠂ ⠼⠙⠜"
         }
       ]
     },
@@ -693,7 +693,7 @@
         {
           "comment": "Quotes: Example 1",
           "input": "\" \"",
-          "output": "⠲⠀⠲"
+          "output": "⠲ ⠲"
         }
       ]
     },
@@ -702,7 +702,7 @@
         {
           "comment": "Quotes: Example 2",
           "input": "Jeg går nå, sa han.",
-          "output": "⠲⠠⠚⠑⠛⠀⠛⠡⠗⠀⠝⠡⠂⠲⠀⠎⠁⠀⠓⠁⠝⠄"
+          "output": "⠲⠠⠚⠑⠛ ⠛⠡⠗ ⠝⠡⠂⠲ ⠎⠁ ⠓⠁⠝⠄"
         }
       ]
     },
@@ -711,7 +711,7 @@
         {
           "comment": "Quotes: Example 3",
           "input": "Båten het \"Vesta\".",
-          "output": "⠠⠃⠡⠞⠑⠝⠀⠓⠑⠞⠀⠲⠠⠧⠑⠎⠞⠁⠲⠄"
+          "output": "⠠⠃⠡⠞⠑⠝ ⠓⠑⠞ ⠲⠠⠧⠑⠎⠞⠁⠲⠄"
         }
       ]
     },
@@ -720,7 +720,7 @@
         {
           "comment": "Quotes: Example 4",
           "input": "Reiste han med Vesta\"?\"",
-          "output": "⠲⠠⠗⠑⠊⠎⠞⠑⠀⠓⠁⠝⠀⠍⠑⠙⠀⠲⠠⠧⠑⠎⠞⠁⠲⠢⠲"
+          "output": "⠲⠠⠗⠑⠊⠎⠞⠑ ⠓⠁⠝ ⠍⠑⠙ ⠲⠠⠧⠑⠎⠞⠁⠲⠢⠲"
         }
       ]
     },
@@ -729,7 +729,7 @@
         {
           "comment": "Quotes: Example 5",
           "input": "Vera\" het båten,\" rettet hun.",
-          "output": "⠲⠲⠠⠧⠑⠗⠁⠲⠀⠓⠑⠞⠀⠃⠡⠞⠑⠝⠂⠲⠀⠗⠑⠞⠞⠑⠞⠀⠓⠥⠝⠄"
+          "output": "⠲⠲⠠⠧⠑⠗⠁⠲ ⠓⠑⠞ ⠃⠡⠞⠑⠝⠂⠲ ⠗⠑⠞⠞⠑⠞ ⠓⠥⠝⠄"
         }
       ]
     },
@@ -738,7 +738,7 @@
         {
           "comment": "Quotes: Example 6",
           "input": "5 kasser à 20 kg 3 \" à 30 \"",
-          "output": "⠼⠑⠀⠅⠁⠎⠎⠑⠗⠀⠷⠀⠼⠃⠚⠀⠅⠛⠀⠼⠉⠀⠲⠀⠷⠀⠼⠉⠚⠀⠲"
+          "output": "⠼⠑ ⠅⠁⠎⠎⠑⠗ ⠷ ⠼⠃⠚ ⠅⠛ ⠼⠉ ⠲ ⠷ ⠼⠉⠚ ⠲"
         }
       ]
     },
@@ -756,7 +756,7 @@
         {
           "comment": " Apostrophe : Example 2",
           "input": "Har du sett'n her?",
-          "output": "⠠⠓⠁⠗⠀⠙⠥⠀⠎⠑⠞⠞⠐⠝⠀⠓⠑⠗⠢"
+          "output": "⠠⠓⠁⠗ ⠙⠥ ⠎⠑⠞⠞⠐⠝ ⠓⠑⠗⠢"
         }
       ]
     },
@@ -765,7 +765,7 @@
         {
           "comment": " Apostrophe : Example 3",
           "input": "Dette må være Vigdis' bok.",
-          "output": "⠠⠙⠑⠞⠞⠑⠀⠍⠡⠀⠧⠜⠗⠑⠀⠧⠊⠛⠙⠊⠎⠐⠀⠃⠕⠅⠄"
+          "output": "⠠⠙⠑⠞⠞⠑ ⠍⠡ ⠧⠜⠗⠑ ⠧⠊⠛⠙⠊⠎⠐ ⠃⠕⠅⠄"
         }
       ]
     },
@@ -774,7 +774,7 @@
         {
           "comment": " Apostrophe : Example 4",
           "input": "Møtet var i NATO's faste råd.",
-          "output": "⠠⠍⠪⠞⠑⠞⠀⠧⠁⠗⠀⠊⠀⠠⠠⠝⠁⠞⠕⠠⠎⠀⠋⠁⠎⠞⠑⠀⠗⠡⠙⠄"
+          "output": "⠠⠍⠪⠞⠑⠞ ⠧⠁⠗ ⠊ ⠠⠠⠝⠁⠞⠕⠠⠎ ⠋⠁⠎⠞⠑ ⠗⠡⠙⠄"
         }
       ]
     },
@@ -792,7 +792,7 @@
         {
           "comment": "Asterisk: Example 2",
           "input": "Det var den første skolen for blinde.*",
-          "output": "⠠⠙⠑⠞⠀⠧⠁⠗⠀⠙⠑⠝⠀⠋⠪⠗⠎⠞⠑⠀⠎⠅⠕⠇⠑⠝⠀⠋⠕⠗⠀⠃⠇⠊⠝⠙⠑⠄⠔"
+          "output": "⠠⠙⠑⠞ ⠧⠁⠗ ⠙⠑⠝ ⠋⠪⠗⠎⠞⠑ ⠎⠅⠕⠇⠑⠝ ⠋⠕⠗ ⠃⠇⠊⠝⠙⠑⠄⠔"
         }
       ]
     },
@@ -810,7 +810,7 @@
         {
           "comment": "Ampersand: Example 2",
           "input": "Donald Duck & co.",
-          "output": "⠠⠙⠕⠝⠁⠇⠙⠀⠠⠙⠥⠉⠅⠀⠬⠀⠉⠕⠄"
+          "output": "⠠⠙⠕⠝⠁⠇⠙ ⠠⠙⠥⠉⠅ ⠬ ⠉⠕⠄"
         }
       ]
     },
@@ -828,7 +828,7 @@
         {
           "comment": "Section sign:Example 2",
           "input": "§ 18 § 223 2. ledd",
-          "output": "⠬⠼⠁⠓⠀⠬⠼⠃⠃⠉⠀⠼⠃⠄⠀⠇⠑⠙⠙"
+          "output": "⠬⠼⠁⠓ ⠬⠼⠃⠃⠉ ⠼⠃⠄ ⠇⠑⠙⠙"
         }
       ]
     },
@@ -837,7 +837,7 @@
         {
           "comment": "Section sign:Example 3",
           "input": "§§ 28—32 §§ 20 og 24",
-          "output": "⠬⠬⠼⠃⠓⠤⠤⠼⠉⠃⠀⠬⠬⠼⠃⠚⠀⠕⠛⠀⠼⠃⠙"
+          "output": "⠬⠬⠼⠃⠓⠤⠤⠼⠉⠃ ⠬⠬⠼⠃⠚ ⠕⠛ ⠼⠃⠙"
         }
       ]
     },
@@ -855,7 +855,7 @@
         {
           "comment": "Number sign:Example 2",
           "input": "På telefonen finner du tasten #.",
-          "output": "⠏⠡⠀⠞⠑⠇⠑⠋⠕⠝⠑⠝⠀⠋⠊⠝⠝⠑⠗⠀⠙⠥⠀⠞⠁⠎⠞⠑⠝⠀⠼⠄"
+          "output": "⠏⠡ ⠞⠑⠇⠑⠋⠕⠝⠑⠝ ⠋⠊⠝⠝⠑⠗ ⠙⠥ ⠞⠁⠎⠞⠑⠝ ⠼⠄"
         }
       ]
     },
@@ -864,7 +864,7 @@
         {
           "comment": "Number sign:Example 3",
           "input": "Viderekobling oppløses ved å trykke #21#.",
-          "output": "⠠⠧⠊⠙⠑⠗⠑⠅⠕⠃⠇⠊⠝⠛⠀⠕⠏⠏⠇⠪⠎⠑⠎⠀⠧⠑⠙⠀⠡⠀⠞⠗⠽⠅⠅⠑⠀⠼⠠⠼⠃⠁⠼⠄"
+          "output": "⠠⠧⠊⠙⠑⠗⠑⠅⠕⠃⠇⠊⠝⠛ ⠕⠏⠏⠇⠪⠎⠑⠎ ⠧⠑⠙ ⠡ ⠞⠗⠽⠅⠅⠑ ⠼⠠⠼⠃⠁⠼⠄"
         }
       ]
     },
@@ -882,7 +882,7 @@
         {
           "comment": "Dash :Example 3",
           "input": "Anne-Lise fikk en aha-opplevelse.",
-          "output": "⠠⠁⠝⠝⠑⠤⠠⠇⠊⠎⠑⠀⠋⠊⠅⠅⠀⠑⠝⠀⠁⠓⠁⠕⠏⠏⠇⠑⠧⠑⠇⠎⠑⠄"
+          "output": "⠠⠁⠝⠝⠑⠤⠠⠇⠊⠎⠑ ⠋⠊⠅⠅ ⠑⠝ ⠁⠓⠁⠕⠏⠏⠇⠑⠧⠑⠇⠎⠑⠄"
         }
       ]
     },
@@ -891,7 +891,7 @@
         {
           "comment": "Dash :Example 4",
           "input": "14-åringer kalles i dag fjortiser.",
-          "output": "⠼⠁⠙⠤⠡⠗⠊⠝⠛⠑⠗⠀⠅⠁⠇⠇⠑⠎⠀⠊⠀⠙⠁⠛⠀⠋⠚⠕⠗⠞⠊⠎⠑⠗⠄"
+          "output": "⠼⠁⠙⠤⠡⠗⠊⠝⠛⠑⠗ ⠅⠁⠇⠇⠑⠎ ⠊ ⠙⠁⠛ ⠋⠚⠕⠗⠞⠊⠎⠑⠗⠄"
         }
       ]
     },
@@ -900,7 +900,7 @@
         {
           "comment": "Dash :Example 5",
           "input": "Kultur- og kirkedepartementet skrev til alle stortingsmenn og -kvinner.",
-          "output": "⠠⠅⠥⠇⠞⠥⠗⠤⠀⠕⠛⠀⠅⠊⠗⠅⠑⠙⠑⠏⠁⠗⠞⠑⠍⠑⠝⠞⠑⠞⠀⠎⠅⠗⠑⠧⠀⠞⠊⠇⠀⠁⠇⠇⠑⠀⠎⠞⠕⠗⠞⠊⠝⠛⠎⠍⠑⠝⠝⠀⠕⠛⠀⠤⠅⠧⠊⠝⠝⠑⠗⠄"
+          "output": "⠠⠅⠥⠇⠞⠥⠗⠤ ⠕⠛ ⠅⠊⠗⠅⠑⠙⠑⠏⠁⠗⠞⠑⠍⠑⠝⠞⠑⠞ ⠎⠅⠗⠑⠧ ⠞⠊⠇ ⠁⠇⠇⠑ ⠎⠞⠕⠗⠞⠊⠝⠛⠎⠍⠑⠝⠝ ⠕⠛ ⠤⠅⠧⠊⠝⠝⠑⠗⠄"
         }
       ]
     },
@@ -918,7 +918,7 @@
         {
           "comment": "Lang dash: Example 2",
           "input": "Toget går i pendeltrafikk Oslo–Lillehammer.",
-          "output": "⠠⠞⠕⠛⠑⠞⠀⠛⠡⠗⠀⠊⠀⠏⠑⠝⠙⠑⠇⠞⠗⠁⠋⠊⠅⠅⠀⠠⠕⠎⠇⠕⠤⠤⠠⠇⠊⠇⠇⠑⠓⠁⠍⠍⠑⠗⠄"
+          "output": "⠠⠞⠕⠛⠑⠞ ⠛⠡⠗ ⠊ ⠏⠑⠝⠙⠑⠇⠞⠗⠁⠋⠊⠅⠅ ⠠⠕⠎⠇⠕⠤⠤⠠⠇⠊⠇⠇⠑⠓⠁⠍⠍⠑⠗⠄"
         }
       ]
     },
@@ -927,7 +927,7 @@
         {
           "comment": "Lang dash: Example 3",
           "input": "Åpningstiden er 9–16.",
-          "output": "⠠⠡⠏⠝⠊⠝⠛⠎⠞⠊⠙⠑⠝⠀⠑⠗⠀⠼⠊⠤⠤⠼⠁⠋⠄"
+          "output": "⠠⠡⠏⠝⠊⠝⠛⠎⠞⠊⠙⠑⠝ ⠑⠗ ⠼⠊⠤⠤⠼⠁⠋⠄"
         }
       ]
     },
@@ -936,7 +936,7 @@
         {
           "comment": "Lang dash: Example 4",
           "input": "Bosnia-Hercegovina–Norge 0–2.",
-          "output": "⠠⠃⠕⠎⠝⠊⠁⠤⠠⠓⠑⠗⠉⠑⠛⠕⠧⠊⠝⠁⠤⠤⠠⠝⠕⠗⠛⠑⠀⠼⠚⠤⠤⠼⠃⠄"
+          "output": "⠠⠃⠕⠎⠝⠊⠁⠤⠠⠓⠑⠗⠉⠑⠛⠕⠧⠊⠝⠁⠤⠤⠠⠝⠕⠗⠛⠑ ⠼⠚⠤⠤⠼⠃⠄"
         }
       ]
     },
@@ -954,7 +954,7 @@
         {
           "comment": "Tankestrek: Example 2",
           "input": "Matta – det var det de kalte Svein Mathiesen – var sidekommentator.",
-          "output": "⠠⠍⠁⠞⠞⠁⠀⠤⠤⠀⠙⠑⠞⠀⠧⠁⠗⠀⠙⠑⠞⠀⠙⠑⠀⠅⠁⠇⠞⠑⠀⠠⠎⠧⠑⠊⠝⠀⠠⠍⠁⠞⠓⠊⠑⠎⠑⠝⠀⠤⠤⠀⠧⠁⠗⠀⠎⠊⠙⠑⠅⠕⠍⠍⠑⠝⠞⠁⠞⠕⠗⠄"
+          "output": "⠠⠍⠁⠞⠞⠁ ⠤⠤ ⠙⠑⠞ ⠧⠁⠗ ⠙⠑⠞ ⠙⠑ ⠅⠁⠇⠞⠑ ⠠⠎⠧⠑⠊⠝ ⠠⠍⠁⠞⠓⠊⠑⠎⠑⠝ ⠤⠤ ⠧⠁⠗ ⠎⠊⠙⠑⠅⠕⠍⠍⠑⠝⠞⠁⠞⠕⠗⠄"
         }
       ]
     },
@@ -963,7 +963,7 @@
         {
           "comment": "Tankestrek: Example 3",
           "input": "– Pass på, kamerat Brezhnjev, nå kommer vi! sa Lillelien.",
-          "output": "⠤⠤⠀⠠⠏⠁⠎⠎⠀⠏⠡⠂⠀⠅⠁⠍⠑⠗⠁⠞⠀⠠⠃⠗⠑⠵⠓⠝⠚⠑⠧⠂⠀⠝⠡⠀⠅⠕⠍⠍⠑⠗⠀⠧⠊⠖⠀⠎⠁⠀⠠⠇⠊⠇⠇⠑⠇⠊⠑⠝⠄"
+          "output": "⠤⠤ ⠠⠏⠁⠎⠎ ⠏⠡⠂ ⠅⠁⠍⠑⠗⠁⠞ ⠠⠃⠗⠑⠵⠓⠝⠚⠑⠧⠂ ⠝⠡ ⠅⠕⠍⠍⠑⠗ ⠧⠊⠖ ⠎⠁ ⠠⠇⠊⠇⠇⠑⠇⠊⠑⠝⠄"
         }
       ]
     },
@@ -981,7 +981,7 @@
         {
           "comment": "Slash: Example 2",
           "input": "Han kjørte i 100 km/t i 50-sonen.",
-          "output": "⠠⠓⠁⠝⠀⠅⠚⠪⠗⠞⠑⠀⠊⠀⠼⠁⠚⠚⠀⠅⠍⠌⠞⠀⠊⠀⠼⠑⠚⠤⠎⠕⠝⠑⠝⠄"
+          "output": "⠠⠓⠁⠝ ⠅⠚⠪⠗⠞⠑ ⠊ ⠼⠁⠚⠚ ⠅⠍⠌⠞ ⠊ ⠼⠑⠚⠤⠎⠕⠝⠑⠝⠄"
         }
       ]
     },
@@ -990,7 +990,7 @@
         {
           "comment": "Slash: Example 3",
           "input": "Enhver kan forsyne seg med det han/hun måtte ønske.",
-          "output": "⠠⠑⠝⠓⠧⠑⠗⠀⠅⠁⠝⠀⠋⠕⠗⠎⠽⠝⠑⠀⠎⠑⠛⠀⠍⠑⠙⠀⠙⠑⠞⠀⠓⠁⠝⠌⠓⠥⠝⠀⠍⠡⠞⠞⠑⠀⠪⠝⠎⠅⠑⠄"
+          "output": "⠠⠑⠝⠓⠧⠑⠗ ⠅⠁⠝ ⠋⠕⠗⠎⠽⠝⠑ ⠎⠑⠛ ⠍⠑⠙ ⠙⠑⠞ ⠓⠁⠝⠌⠓⠥⠝ ⠍⠡⠞⠞⠑ ⠪⠝⠎⠅⠑⠄"
         }
       ]
     },
@@ -999,7 +999,7 @@
         {
           "comment": "Slash: Example 4",
           "input": "De framførte \"Våren\" av Grieg/Vinje.",
-          "output": "⠠⠙⠑⠀⠋⠗⠁⠍⠋⠪⠗⠞⠑⠀⠲⠧⠡⠗⠑⠝⠲⠀⠁⠧⠀⠠⠛⠗⠊⠑⠛⠌⠠⠧⠊⠝⠚⠑⠄"
+          "output": "⠠⠙⠑ ⠋⠗⠁⠍⠋⠪⠗⠞⠑ ⠲⠧⠡⠗⠑⠝⠲ ⠁⠧ ⠠⠛⠗⠊⠑⠛⠌⠠⠧⠊⠝⠚⠑⠄"
         }
       ]
     },
@@ -1008,7 +1008,7 @@
         {
           "comment": "Slash: Example 5",
           "input": "Det må lederen og/eller kassereren bestemme.",
-          "output": "⠙⠑⠞⠀⠍⠡⠀⠇⠑⠙⠑⠗⠑⠝⠀⠕⠛⠌⠑⠇⠇⠑⠗⠀⠅⠁⠎⠎⠑⠗⠑⠗⠑⠝⠀⠃⠑⠎⠞⠑⠍⠍⠑⠄"
+          "output": "⠙⠑⠞ ⠍⠡ ⠇⠑⠙⠑⠗⠑⠝ ⠕⠛⠌⠑⠇⠇⠑⠗ ⠅⠁⠎⠎⠑⠗⠑⠗⠑⠝ ⠃⠑⠎⠞⠑⠍⠍⠑⠄"
         }
       ]
     },
@@ -1017,7 +1017,7 @@
         {
           "comment": "Slash: Example 6",
           "input": "En durkdreven drømmer fra Drammen / dro djervt uten draft over dammen. / Den dåd han har drømt, / til døden er dømt. / Han druknet i dønningen. Amen!",
-          "output": "⠠⠑⠝⠀⠙⠥⠗⠅⠙⠗⠑⠧⠑⠝⠀⠙⠗⠪⠍⠍⠑⠗⠀⠋⠗⠁⠀⠠⠙⠗⠁⠍⠍⠑⠝⠀⠌⠀⠙⠗⠕⠀⠙⠚⠑⠗⠧⠞⠀⠥⠞⠑⠝⠀⠙⠗⠁⠋⠞⠀⠕⠧⠑⠗⠀⠙⠁⠍⠍⠑⠝⠄⠀⠌⠀⠠⠙⠑⠝⠀⠙⠡⠙⠀⠓⠁⠝⠀⠓⠁⠗⠀⠙⠗⠪⠍⠞⠂⠀⠌⠀⠞⠊⠇⠀⠙⠪⠙⠑⠝⠀⠑⠗⠀⠙⠪⠍⠞⠄⠀⠌⠀⠠⠓⠁⠝⠀⠙⠗⠥⠅⠝⠑⠞⠀⠊⠀⠙⠪⠝⠝⠊⠝⠛⠑⠝⠄⠀⠠⠁⠍⠑⠝⠖"
+          "output": "⠠⠑⠝ ⠙⠥⠗⠅⠙⠗⠑⠧⠑⠝ ⠙⠗⠪⠍⠍⠑⠗ ⠋⠗⠁ ⠠⠙⠗⠁⠍⠍⠑⠝ ⠌ ⠙⠗⠕ ⠙⠚⠑⠗⠧⠞ ⠥⠞⠑⠝ ⠙⠗⠁⠋⠞ ⠕⠧⠑⠗ ⠙⠁⠍⠍⠑⠝⠄ ⠌ ⠠⠙⠑⠝ ⠙⠡⠙ ⠓⠁⠝ ⠓⠁⠗ ⠙⠗⠪⠍⠞⠂ ⠌ ⠞⠊⠇ ⠙⠪⠙⠑⠝ ⠑⠗ ⠙⠪⠍⠞⠄ ⠌ ⠠⠓⠁⠝ ⠙⠗⠥⠅⠝⠑⠞ ⠊ ⠙⠪⠝⠝⠊⠝⠛⠑⠝⠄ ⠠⠁⠍⠑⠝⠖"
         }
       ]
     },
@@ -1026,7 +1026,7 @@
         {
           "comment": "Small Latin letters: Example 1",
           "input": "Anne løser oppgavene 19 c, 24 d og 33 c.",
-          "output": "⠠⠁⠝⠝⠑⠀⠇⠪⠎⠑⠗⠀⠕⠏⠏⠛⠁⠧⠑⠝⠑⠀⠼⠁⠊⠰⠉⠂⠀⠼⠃⠙⠰⠙⠀⠕⠛⠀⠼⠉⠉⠰⠉⠄"
+          "output": "⠠⠁⠝⠝⠑ ⠇⠪⠎⠑⠗ ⠕⠏⠏⠛⠁⠧⠑⠝⠑ ⠼⠁⠊⠰⠉⠂ ⠼⠃⠙⠰⠙ ⠕⠛ ⠼⠉⠉⠰⠉⠄"
         }
       ]
     },
@@ -1035,7 +1035,7 @@
         {
           "comment": "Small Latin letters: Example 2",
           "input": "Jeg vet at hun spiller i klasse a.",
-          "output": "⠚⠑⠛⠀⠧⠑⠞⠀⠁⠞⠀⠓⠥⠝⠀⠎⠏⠊⠇⠇⠑⠗⠀⠊⠀⠅⠇⠁⠎⠎⠑⠀⠁⠄"
+          "output": "⠚⠑⠛ ⠧⠑⠞ ⠁⠞ ⠓⠥⠝ ⠎⠏⠊⠇⠇⠑⠗ ⠊ ⠅⠇⠁⠎⠎⠑ ⠁⠄"
         }
       ]
     },
@@ -1044,7 +1044,7 @@
         {
           "comment": "Capital Latin letter: Example 1",
           "input": "Det var en gang ...",
-          "output": "⠠⠙⠑⠞⠀⠧⠁⠗⠀⠑⠝⠀⠛⠁⠝⠛⠀⠄⠄⠄"
+          "output": "⠠⠙⠑⠞ ⠧⠁⠗ ⠑⠝ ⠛⠁⠝⠛ ⠄⠄⠄"
         }
       ]
     },
@@ -1053,7 +1053,7 @@
         {
           "comment": "Capital Latin letter: Example 2",
           "input": "Mitt navn er Kristin Halvorsen.",
-          "output": "⠠⠍⠊⠞⠞⠀⠝⠁⠧⠝⠀⠑⠗⠀⠠⠅⠗⠊⠎⠞⠊⠝⠀⠠⠓⠁⠇⠧⠕⠗⠎⠑⠝⠄"
+          "output": "⠠⠍⠊⠞⠞ ⠝⠁⠧⠝ ⠑⠗ ⠠⠅⠗⠊⠎⠞⠊⠝ ⠠⠓⠁⠇⠧⠕⠗⠎⠑⠝⠄"
         }
       ]
     },
@@ -1062,7 +1062,7 @@
         {
           "comment": "Capital Latin letter: Example 3",
           "input": "FN NSB LO",
-          "output": "⠠⠠⠋⠝⠀⠠⠠⠝⠎⠃⠀⠠⠠⠇⠕"
+          "output": "⠠⠠⠋⠝ ⠠⠠⠝⠎⠃ ⠠⠠⠇⠕"
         }
       ]
     },
@@ -1071,7 +1071,7 @@
         {
           "comment": "Capital Latin letter: Example 4",
           "input": "SVs landsmøte i 2007 ble avholdt i tiden 22.–25. mars.",
-          "output": "⠠⠠⠎⠧⠰⠎⠀⠇⠁⠝⠙⠎⠍⠪⠞⠑⠀⠊⠀⠼⠃⠚⠚⠛⠀⠃⠇⠑⠀⠁⠧⠓⠕⠇⠙⠞⠀⠊⠀⠞⠊⠙⠑⠝⠀⠼⠃⠃⠄⠤⠤⠼⠃⠑⠄⠀⠍⠁⠗⠎⠄"
+          "output": "⠠⠠⠎⠧⠰⠎ ⠇⠁⠝⠙⠎⠍⠪⠞⠑ ⠊ ⠼⠃⠚⠚⠛ ⠃⠇⠑ ⠁⠧⠓⠕⠇⠙⠞ ⠊ ⠞⠊⠙⠑⠝ ⠼⠃⠃⠄⠤⠤⠼⠃⠑⠄ ⠍⠁⠗⠎⠄"
         }
       ]
     },
@@ -1080,7 +1080,7 @@
         {
           "comment": "Capital Latin letter: Example 5",
           "input": "NSBs rutetabeller finner du på Internett.",
-          "output": "⠠⠠⠝⠎⠃⠰⠎⠀⠗⠥⠞⠑⠞⠁⠃⠑⠇⠇⠑⠗⠀⠋⠊⠝⠝⠑⠗⠀⠙⠥⠀⠏⠡⠀⠠⠊⠝⠞⠑⠗⠝⠑⠞⠞⠄"
+          "output": "⠠⠠⠝⠎⠃⠰⠎ ⠗⠥⠞⠑⠞⠁⠃⠑⠇⠇⠑⠗ ⠋⠊⠝⠝⠑⠗ ⠙⠥ ⠏⠡ ⠠⠊⠝⠞⠑⠗⠝⠑⠞⠞⠄"
         }
       ]
     },
@@ -1089,7 +1089,7 @@
         {
           "comment": "Capital Latin letter: Example 6",
           "input": "Alle CD-ene som var oppbevart i boden, ble stjålet.",
-          "output": "⠠⠁⠇⠇⠑⠀⠠⠠⠉⠙⠤⠑⠝⠑⠀⠎⠕⠍⠀⠧⠁⠗⠀⠕⠏⠏⠃⠑⠧⠁⠗⠞⠀⠊⠀⠃⠕⠙⠑⠝⠂⠀⠃⠇⠑⠀⠎⠞⠚⠡⠇⠑⠞⠄"
+          "output": "⠠⠁⠇⠇⠑ ⠠⠠⠉⠙⠤⠑⠝⠑ ⠎⠕⠍ ⠧⠁⠗ ⠕⠏⠏⠃⠑⠧⠁⠗⠞ ⠊ ⠃⠕⠙⠑⠝⠂ ⠃⠇⠑ ⠎⠞⠚⠡⠇⠑⠞⠄"
         }
       ]
     },
@@ -1098,7 +1098,7 @@
         {
           "comment": "Capital Latin letter: Example 7",
           "input": "MediaLT RadiOrakel",
-          "output": "⠠⠍⠑⠙⠊⠁⠠⠇⠠⠞⠀⠠⠗⠁⠙⠊⠠⠕⠗⠁⠅⠑⠇"
+          "output": "⠠⠍⠑⠙⠊⠁⠠⠇⠠⠞ ⠠⠗⠁⠙⠊⠠⠕⠗⠁⠅⠑⠇"
         }
       ]
     },
@@ -1107,7 +1107,7 @@
         {
           "comment": "Capital Latin letter: Example 8",
           "input": "KrFs leder er Knut Arild Hareide.",
-          "output": "⠠⠅⠗⠠⠋⠎⠀⠇⠑⠙⠑⠗⠀⠑⠗⠀⠠⠅⠝⠥⠞⠀⠠⠁⠗⠊⠇⠙⠀⠠⠓⠁⠗⠑⠊⠙⠑⠄"
+          "output": "⠠⠅⠗⠠⠋⠎ ⠇⠑⠙⠑⠗ ⠑⠗ ⠠⠅⠝⠥⠞ ⠠⠁⠗⠊⠇⠙ ⠠⠓⠁⠗⠑⠊⠙⠑⠄"
         }
       ]
     },
@@ -1116,7 +1116,7 @@
         {
           "comment": "Capital Latin letter: Example 9",
           "input": "TVNorge har flere nyhetssendinger pr. dag.",
-          "output": "⠠⠞⠠⠧⠠⠝⠕⠗⠛⠑⠀⠓⠁⠗⠀⠋⠇⠑⠗⠑⠀⠝⠽⠓⠑⠞⠎⠎⠑⠝⠙⠊⠝⠛⠑⠗⠀⠏⠗⠄⠀⠙⠁⠛⠄"
+          "output": "⠠⠞⠠⠧⠠⠝⠕⠗⠛⠑ ⠓⠁⠗ ⠋⠇⠑⠗⠑ ⠝⠽⠓⠑⠞⠎⠎⠑⠝⠙⠊⠝⠛⠑⠗ ⠏⠗⠄ ⠙⠁⠛⠄"
         }
       ]
     },
@@ -1125,7 +1125,7 @@
         {
           "comment": "Capital Latin letter: Example 10",
           "input": "DTBook NBfU",
-          "output": "⠠⠙⠠⠞⠠⠃⠕⠕⠅⠀⠠⠝⠠⠃⠋⠠⠥"
+          "output": "⠠⠙⠠⠞⠠⠃⠕⠕⠅ ⠠⠝⠠⠃⠋⠠⠥"
         }
       ]
     },
@@ -1134,7 +1134,7 @@
         {
           "comment": "Capital Latin letter: Example 11",
           "input": "MHz kHz",
-          "output": "⠠⠍⠠⠓⠵⠀⠅⠠⠓⠵"
+          "output": "⠠⠍⠠⠓⠵ ⠅⠠⠓⠵"
         }
       ]
     },
@@ -1143,7 +1143,7 @@
         {
           "comment": "Capital Latin letter: Example 12",
           "input": "DnB NOR",
-          "output": "⠠⠙⠝⠠⠃⠀⠠⠠⠝⠕⠗"
+          "output": "⠠⠙⠝⠠⠃ ⠠⠠⠝⠕⠗"
         }
       ]
     },
@@ -1152,7 +1152,7 @@
         {
           "comment": "Capital Latin letter: Example 13",
           "input": "CO2 NaCl",
-          "output": "⠠⠉⠠⠕⠡⠼⠃⠀⠠⠝⠁⠠⠉⠇"
+          "output": "⠠⠉⠠⠕⠡⠼⠃ ⠠⠝⠁⠠⠉⠇"
         }
       ]
     },
@@ -1170,7 +1170,7 @@
         {
           "comment": "Capital Latin letter: Example 15",
           "input": "HCl CHCl3",
-          "output": "⠠⠓⠠⠉⠇⠀⠠⠉⠠⠓⠠⠉⠇⠡⠼⠉"
+          "output": "⠠⠓⠠⠉⠇ ⠠⠉⠠⠓⠠⠉⠇⠡⠼⠉"
         }
       ]
     },
@@ -1179,7 +1179,7 @@
         {
           "comment": "Greek Letters: Example1",
           "input": "π = 3,14",
-          "output": "⠘⠏⠀⠶⠼⠉⠂⠁⠙"
+          "output": "⠘⠏ ⠶⠼⠉⠂⠁⠙"
         }
       ]
     },
@@ -1188,7 +1188,7 @@
         {
           "comment": "Greek Letters: Example2",
           "input": "Øretelefonen tåler en motstand på 8 Ω (Ohm).",
-          "output": "⠠⠪⠗⠑⠞⠑⠇⠑⠋⠕⠝⠑⠝⠀⠞⠡⠇⠑⠗⠀⠑⠝⠀⠍⠕⠞⠎⠞⠁⠝⠙⠀⠏⠡⠀⠼⠓⠀⠸⠺⠀⠦⠠⠕⠓⠍⠴⠄"
+          "output": "⠠⠪⠗⠑⠞⠑⠇⠑⠋⠕⠝⠑⠝ ⠞⠡⠇⠑⠗ ⠑⠝ ⠍⠕⠞⠎⠞⠁⠝⠙ ⠏⠡ ⠼⠓ ⠸⠺ ⠦⠠⠕⠓⠍⠴⠄"
         }
       ]
     },
@@ -1197,7 +1197,7 @@
         {
           "comment": "Roman numbers: Example 1",
           "input": "Per Egil Hegge ga i 2006 ut en biografi om Harald V.",
-          "output": "⠠⠏⠑⠗⠀⠠⠑⠛⠊⠇⠀⠠⠓⠑⠛⠛⠑⠀⠛⠁⠀⠊⠀⠼⠃⠚⠚⠋⠀⠥⠞⠀⠑⠝⠀⠃⠊⠕⠛⠗⠁⠋⠊⠀⠕⠍⠀⠠⠓⠁⠗⠁⠇⠙⠀⠠⠧⠄"
+          "output": "⠠⠏⠑⠗ ⠠⠑⠛⠊⠇ ⠠⠓⠑⠛⠛⠑ ⠛⠁ ⠊ ⠼⠃⠚⠚⠋ ⠥⠞ ⠑⠝ ⠃⠊⠕⠛⠗⠁⠋⠊ ⠕⠍ ⠠⠓⠁⠗⠁⠇⠙ ⠠⠧⠄"
         }
       ]
     },
@@ -1206,7 +1206,7 @@
         {
           "comment": "Roman numbers: Example 2",
           "input": "Haakon VII var konge i Norge 1905—1957.",
-          "output": "⠠⠓⠁⠁⠅⠕⠝⠀⠠⠧⠊⠊⠀⠧⠁⠗⠀⠅⠕⠝⠛⠑⠀⠊⠀⠠⠝⠕⠗⠛⠑⠀⠼⠁⠊⠚⠑⠤⠤⠼⠁⠊⠑⠛⠄"
+          "output": "⠠⠓⠁⠁⠅⠕⠝ ⠠⠧⠊⠊ ⠧⠁⠗ ⠅⠕⠝⠛⠑ ⠊ ⠠⠝⠕⠗⠛⠑ ⠼⠁⠊⠚⠑⠤⠤⠼⠁⠊⠑⠛⠄"
         }
       ]
     },
@@ -1215,7 +1215,7 @@
         {
           "comment": "Roman numbers: Example 3",
           "input": "Utdraget er hentet fra kap. IV iii.",
-          "output": "⠠⠥⠞⠙⠗⠁⠛⠑⠞⠀⠑⠗⠀⠓⠑⠝⠞⠑⠞⠀⠋⠗⠁⠀⠅⠁⠏⠄⠀⠠⠊⠧⠀⠰⠊⠊⠊⠄"
+          "output": "⠠⠥⠞⠙⠗⠁⠛⠑⠞ ⠑⠗ ⠓⠑⠝⠞⠑⠞ ⠋⠗⠁ ⠅⠁⠏⠄ ⠠⠊⠧ ⠰⠊⠊⠊⠄"
         }
       ]
     },
@@ -1224,7 +1224,7 @@
         {
           "comment": "Highlighting: Example 1",
           "input": "hund hund<em>en </em>hund<em>er </em>hund<em>ene</em>",
-          "output": "⠓⠥⠝⠙⠀⠓⠥⠝⠙⠆⠑⠝⠰⠀⠓⠥⠝⠙⠆⠑⠗⠰⠀⠓⠥⠝⠙⠆⠑⠝⠑⠰"
+          "output": "⠓⠥⠝⠙ ⠓⠥⠝⠙⠆⠑⠝⠰ ⠓⠥⠝⠙⠆⠑⠗⠰ ⠓⠥⠝⠙⠆⠑⠝⠑⠰"
         }
       ]
     },
@@ -1233,7 +1233,7 @@
         {
           "comment": "Highlighting: Example 2",
           "input": "Det var bare det at hun også <em>mis</em>unte ham det",
-          "output": "⠠⠙⠑⠞⠀⠧⠁⠗⠀⠃⠁⠗⠑⠀⠙⠑⠞⠀⠁⠞⠀⠓⠥⠝⠀⠕⠛⠎⠡⠀⠆⠍⠊⠎⠰⠥⠝⠞⠑⠀⠓⠁⠍⠀⠙⠑⠞⠄"
+          "output": "⠠⠙⠑⠞ ⠧⠁⠗ ⠃⠁⠗⠑ ⠙⠑⠞ ⠁⠞ ⠓⠥⠝ ⠕⠛⠎⠡ ⠆⠍⠊⠎⠰⠥⠝⠞⠑ ⠓⠁⠍ ⠙⠑⠞⠄"
         }
       ]
     },
@@ -1242,7 +1242,7 @@
         {
           "comment": "Highlighting: Example 3",
           "input": "Jeg verken <em>vil </em>eller <em>kan </em>gjøre dette for deg!",
-          "output": "⠠⠚⠑⠛⠀⠧⠑⠗⠅⠑⠝⠀⠆⠧⠊⠇⠰⠀⠑⠇⠇⠑⠗⠀⠆⠅⠁⠝⠰⠀⠛⠚⠪⠗⠑⠀⠙⠑⠞⠞⠑⠀⠋⠕⠗⠀⠙⠑⠛⠖"
+          "output": "⠠⠚⠑⠛ ⠧⠑⠗⠅⠑⠝ ⠆⠧⠊⠇⠰ ⠑⠇⠇⠑⠗ ⠆⠅⠁⠝⠰ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠞⠑ ⠋⠕⠗ ⠙⠑⠛⠖"
         }
       ]
     },
@@ -1251,7 +1251,7 @@
         {
           "comment": "Highlighting: Example 4",
           "input": "Karin Fossum slo gjennom som krimforfatter med romanen <em>Evas øye</em>, som kom ut i 1995.",
-          "output": "⠠⠅⠁⠗⠊⠝⠀⠠⠋⠕⠎⠎⠥⠍⠀⠎⠇⠕⠀⠛⠚⠑⠝⠝⠕⠍⠀⠎⠕⠍⠀⠅⠗⠊⠍⠋⠕⠗⠋⠁⠞⠞⠑⠗⠀⠍⠑⠙⠀⠗⠕⠍⠁⠝⠑⠝⠀⠆⠑⠧⠁⠎⠀⠪⠽⠑⠰⠂⠀⠎⠕⠍⠀⠅⠕⠍⠀⠥⠞⠀⠊⠀⠼⠁⠊⠊⠑⠄"
+          "output": "⠠⠅⠁⠗⠊⠝ ⠠⠋⠕⠎⠎⠥⠍ ⠎⠇⠕ ⠛⠚⠑⠝⠝⠕⠍ ⠎⠕⠍ ⠅⠗⠊⠍⠋⠕⠗⠋⠁⠞⠞⠑⠗ ⠍⠑⠙ ⠗⠕⠍⠁⠝⠑⠝ ⠆⠑⠧⠁⠎ ⠪⠽⠑⠰⠂ ⠎⠕⠍ ⠅⠕⠍ ⠥⠞ ⠊ ⠼⠁⠊⠊⠑⠄"
         }
       ]
     },
@@ -1260,7 +1260,7 @@
         {
           "comment": "Highlighting: Example 5",
           "input": "\"Hør her: <em>du <u>må </u>gjøre det</em>!\"",
-          "output": "⠲⠠⠓⠪⠗⠀⠓⠑⠗⠒⠀⠆⠙⠥⠀⠸⠍⠡⠸⠀⠛⠚⠪⠗⠑⠀⠙⠑⠞⠰⠖⠲"
+          "output": "⠲⠠⠓⠪⠗ ⠓⠑⠗⠒ ⠆⠙⠥ ⠸⠍⠡⠸ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠰⠖⠲"
         }
       ]
     },
@@ -1269,7 +1269,7 @@
         {
           "comment": "Highlighting: Example 6",
           "input": "Romanen <em>Tusen  strålende soler </em>av den afghansk-amerikanske forfatteren Khaled Hosseini  tyder på å bli en like stor suksess som den forrige romanen, <em>Drageløperen</em>. I bokanmeldelsen fra <em>Dagbladet </em>06.06.07 forklares dette med: <strong>Ikke fordi Hosseini er en spesielt god  forfatter. Men fordi tematikken til den USA-bosatte Hosseini, har en spesiell  dragning på et vestlig publikum.</strong>",
-          "output": "⠠⠗⠕⠍⠁⠝⠑⠝⠀⠆⠠⠞⠥⠎⠑⠝⠀⠎⠞⠗⠡⠇⠑⠝⠙⠑⠀⠎⠕⠇⠑⠗⠰⠀⠁⠧⠀⠙⠑⠝⠀⠁⠋⠛⠓⠁⠝⠎⠅⠁⠍⠑⠗⠊⠅⠁⠝⠎⠅⠑⠀⠋⠕⠗⠋⠁⠞⠞⠑⠗⠑⠝⠀⠠⠅⠓⠁⠇⠑⠙⠀⠠⠓⠕⠎⠎⠑⠊⠝⠊⠀⠞⠽⠙⠑⠗⠀⠏⠡⠀⠡⠀⠃⠇⠊⠀⠑⠝⠀⠇⠊⠅⠑⠀⠎⠞⠕⠗⠀⠎⠥⠅⠎⠑⠎⠎⠀⠎⠕⠍⠀⠙⠑⠝⠀⠋⠕⠗⠗⠊⠛⠑⠀⠗⠕⠍⠁⠝⠑⠝⠂⠀⠆⠠⠙⠗⠁⠛⠑⠇⠪⠏⠑⠗⠑⠝⠰⠄⠀⠠⠊⠀⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑⠝⠀⠋⠗⠁⠀⠆⠠⠙⠁⠛⠃⠇⠁⠙⠑⠞⠰⠀⠼⠚⠋⠄⠚⠋⠄⠚⠛⠀⠋⠕⠗⠅⠇⠁⠗⠑⠎⠀⠙⠑⠞⠞⠑⠀⠍⠑⠙⠒⠀⠠⠄⠊⠅⠅⠑⠀⠋⠕⠗⠙⠊⠀⠠⠓⠕⠎⠎⠑⠊⠝⠊⠀⠑⠗⠀⠑⠝⠀⠎⠏⠑⠎⠊⠑⠇⠞⠀⠛⠕⠙⠀⠋⠕⠗⠋⠁⠞⠞⠑⠗⠄⠀⠠⠍⠑⠝⠀⠋⠕⠗⠙⠊⠀⠞⠑⠍⠁⠞⠊⠅⠅⠑⠝⠀⠞⠊⠇⠀⠙⠑⠝⠀⠠⠠⠥⠎⠁⠃⠕⠎⠁⠞⠞⠑⠀⠠⠓⠕⠎⠎⠑⠊⠝⠊⠂⠀⠓⠁⠗⠀⠑⠝⠀⠎⠏⠑⠎⠊⠑⠇⠇⠀⠙⠗⠁⠛⠝⠊⠝⠛⠀⠏⠡⠀⠑⠞⠀⠧⠑⠎⠞⠇⠊⠛⠀⠏⠥⠃⠇⠊⠅⠥⠍⠄⠠⠄"
+          "output": "⠠⠗⠕⠍⠁⠝⠑⠝ ⠆⠠⠞⠥⠎⠑⠝ ⠎⠞⠗⠡⠇⠑⠝⠙⠑ ⠎⠕⠇⠑⠗⠰ ⠁⠧ ⠙⠑⠝ ⠁⠋⠛⠓⠁⠝⠎⠅⠁⠍⠑⠗⠊⠅⠁⠝⠎⠅⠑ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠑⠝ ⠠⠅⠓⠁⠇⠑⠙ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠞⠽⠙⠑⠗ ⠏⠡ ⠡ ⠃⠇⠊ ⠑⠝ ⠇⠊⠅⠑ ⠎⠞⠕⠗ ⠎⠥⠅⠎⠑⠎⠎ ⠎⠕⠍ ⠙⠑⠝ ⠋⠕⠗⠗⠊⠛⠑ ⠗⠕⠍⠁⠝⠑⠝⠂ ⠆⠠⠙⠗⠁⠛⠑⠇⠪⠏⠑⠗⠑⠝⠰⠄ ⠠⠊ ⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑⠝ ⠋⠗⠁ ⠆⠠⠙⠁⠛⠃⠇⠁⠙⠑⠞⠰ ⠼⠚⠋⠄⠚⠋⠄⠚⠛ ⠋⠕⠗⠅⠇⠁⠗⠑⠎ ⠙⠑⠞⠞⠑ ⠍⠑⠙⠒ ⠠⠄⠊⠅⠅⠑ ⠋⠕⠗⠙⠊ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠑⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠞ ⠛⠕⠙ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠄ ⠠⠍⠑⠝ ⠋⠕⠗⠙⠊ ⠞⠑⠍⠁⠞⠊⠅⠅⠑⠝ ⠞⠊⠇ ⠙⠑⠝ ⠠⠠⠥⠎⠁⠃⠕⠎⠁⠞⠞⠑ ⠠⠓⠕⠎⠎⠑⠊⠝⠊⠂ ⠓⠁⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠇ ⠙⠗⠁⠛⠝⠊⠝⠛ ⠏⠡ ⠑⠞ ⠧⠑⠎⠞⠇⠊⠛ ⠏⠥⠃⠇⠊⠅⠥⠍⠄⠠⠄"
         }
       ]
     },
@@ -1278,7 +1278,7 @@
         {
           "comment": "Highlighting: Example 7",
           "input": "Vinje, Finn-Erik. 2004. <em>Skriveregler</em>. 8. utg. Oslo",
-          "output": "⠠⠧⠊⠝⠚⠑⠂⠀⠠⠋⠊⠝⠝⠤⠠⠑⠗⠊⠅⠄⠀⠼⠃⠚⠚⠙⠄⠀⠠⠄⠠⠎⠅⠗⠊⠧⠑⠗⠑⠛⠇⠑⠗⠠⠄⠄⠀⠼⠓⠄⠀⠥⠞⠛⠄⠠⠕⠎⠇⠕"
+          "output": "⠠⠧⠊⠝⠚⠑⠂ ⠠⠋⠊⠝⠝⠤⠠⠑⠗⠊⠅⠄ ⠼⠃⠚⠚⠙⠄ ⠠⠄⠠⠎⠅⠗⠊⠧⠑⠗⠑⠛⠇⠑⠗⠠⠄⠄ ⠼⠓⠄ ⠥⠞⠛⠄⠠⠕⠎⠇⠕"
         }
       ]
     },
@@ -1287,7 +1287,7 @@
         {
           "comment": "Highlighting: Example 8",
           "input": "Hellevik, Alf. 1970. <em>God nynorsk</em>.  Oslo",
-          "output": "⠠⠓⠑⠇⠇⠑⠧⠊⠅⠂⠀⠠⠁⠇⠋⠄⠀⠼⠁⠊⠛⠚⠄⠀⠠⠄⠛⠕⠙⠀⠝⠽⠝⠕⠗⠎⠅⠠⠄⠄⠀⠠⠕⠎⠇⠕"
+          "output": "⠠⠓⠑⠇⠇⠑⠧⠊⠅⠂ ⠠⠁⠇⠋⠄ ⠼⠁⠊⠛⠚⠄ ⠠⠄⠛⠕⠙ ⠝⠽⠝⠕⠗⠎⠅⠠⠄⠄ ⠠⠕⠎⠇⠕"
         }
       ]
     },
@@ -1296,7 +1296,7 @@
         {
           "comment": "Highlighting: Example 9",
           "input": "Ny afghansk bestselger. Bokanmeldelse <em>Dagbladet </em>06.06.07",
-          "output": "⠠⠝⠽⠀⠁⠋⠛⠓⠁⠝⠎⠅⠀⠃⠑⠎⠞⠎⠑⠇⠛⠑⠗⠄⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑⠀⠠⠄⠙⠁⠛⠃⠇⠁⠙⠑⠞⠠⠄⠼⠚⠋⠄⠚⠋⠄⠚⠛"
+          "output": "⠠⠝⠽ ⠁⠋⠛⠓⠁⠝⠎⠅ ⠃⠑⠎⠞⠎⠑⠇⠛⠑⠗⠄⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑ ⠠⠄⠙⠁⠛⠃⠇⠁⠙⠑⠞⠠⠄⠼⠚⠋⠄⠚⠋⠄⠚⠛"
         }
       ]
     },
@@ -1305,7 +1305,7 @@
         {
           "comment": "Sperret tekst: Example 1",
           "input": "Det viktigste er å få fram m e n i n g e n.",
-          "output": "⠙⠑⠞⠀⠧⠊⠅⠞⠊⠛⠎⠞⠑⠀⠑⠗⠀⠡⠀⠋⠡⠀⠋⠗⠁⠍⠀⠐⠂⠍⠑⠝⠊⠝⠛⠑⠝⠐⠂⠄"
+          "output": "⠙⠑⠞ ⠧⠊⠅⠞⠊⠛⠎⠞⠑ ⠑⠗ ⠡ ⠋⠡ ⠋⠗⠁⠍ ⠐⠂⠍⠑⠝⠊⠝⠛⠑⠝⠐⠂⠄"
         }
       ]
     },
@@ -1314,7 +1314,7 @@
         {
           "comment": "Sperret tekst: Example 2",
           "input": "L a s t a t e n ( k o m m u n e n ) g å f o r a n.",
-          "output": "⠐⠂⠠⠇⠁⠀⠎⠞⠁⠞⠑⠝⠀⠦⠅⠕⠍⠍⠥⠝⠑⠝⠴⠀⠛⠡⠀⠋⠕⠗⠁⠝⠄⠐⠂"
+          "output": "⠐⠂⠠⠇⠁ ⠎⠞⠁⠞⠑⠝ ⠦⠅⠕⠍⠍⠥⠝⠑⠝⠴ ⠛⠡ ⠋⠕⠗⠁⠝⠄⠐⠂"
         }
       ]
     },
@@ -1323,7 +1323,7 @@
         {
           "comment": "Capitalization: Example 1",
           "input": "Jeg bare MÅ snakke med deg!",
-          "output": "⠚⠑⠛⠀⠃⠁⠗⠑⠀⠠⠠⠍⠡⠀⠎⠝⠁⠅⠅⠑⠀⠍⠑⠙⠀⠙⠑⠛⠖"
+          "output": "⠚⠑⠛ ⠃⠁⠗⠑ ⠠⠠⠍⠡ ⠎⠝⠁⠅⠅⠑ ⠍⠑⠙ ⠙⠑⠛⠖"
         }
       ]
     },
@@ -1332,7 +1332,7 @@
         {
           "comment": "Capitalization: Example 2",
           "input": "DEN BESTE BURSDAGEN jeg har hatt var da jeg fylte åtte.",
-          "output": "⠠⠠⠙⠑⠝⠀⠠⠠⠃⠑⠎⠞⠑⠀⠠⠠⠃⠥⠗⠎⠙⠁⠛⠑⠝⠀⠚⠑⠛⠀⠓⠁⠗⠀⠓⠁⠞⠞⠀⠧⠁⠗⠀⠙⠁⠀⠚⠑⠛⠀⠋⠽⠇⠞⠑⠀⠡⠞⠞⠑⠄"
+          "output": "⠠⠠⠙⠑⠝ ⠠⠠⠃⠑⠎⠞⠑ ⠠⠠⠃⠥⠗⠎⠙⠁⠛⠑⠝ ⠚⠑⠛ ⠓⠁⠗ ⠓⠁⠞⠞ ⠧⠁⠗ ⠙⠁ ⠚⠑⠛ ⠋⠽⠇⠞⠑ ⠡⠞⠞⠑⠄"
         }
       ]
     },
@@ -1341,7 +1341,7 @@
         {
           "comment": "Headlines:  Example 1",
           "input": "EN ROSE MED TORNER",
-          "output": "⠠⠑⠝⠀⠠⠠⠗⠕⠎⠑⠀⠠⠠⠍⠑⠙⠀⠠⠠⠞⠕⠗⠝⠑⠗"
+          "output": "⠠⠑⠝ ⠠⠠⠗⠕⠎⠑ ⠠⠠⠍⠑⠙ ⠠⠠⠞⠕⠗⠝⠑⠗"
         }
       ]
     },
@@ -1350,7 +1350,7 @@
         {
           "comment": "Headlines:  Example 2",
           "input": "SAK 27/07 SØKNAD OM ØKONOMISK STØTTE FOR 2007",
-          "output": "⠎⠁⠅⠀⠼⠃⠛⠌⠼⠚⠛⠀⠠⠠⠎⠪⠅⠝⠁⠙⠀⠠⠠⠕⠍⠀⠠⠠⠪⠅⠕⠝⠕⠍⠊⠎⠅⠀⠠⠠⠎⠞⠪⠞⠞⠑⠀⠠⠠⠋⠕⠗⠀⠼⠃⠚⠚⠛"
+          "output": "⠎⠁⠅ ⠼⠃⠛⠌⠼⠚⠛ ⠠⠠⠎⠪⠅⠝⠁⠙ ⠠⠠⠕⠍ ⠠⠠⠪⠅⠕⠝⠕⠍⠊⠎⠅ ⠠⠠⠎⠞⠪⠞⠞⠑ ⠠⠠⠋⠕⠗ ⠼⠃⠚⠚⠛"
         }
       ]
     },
@@ -1395,7 +1395,7 @@
         {
           "comment": "Numeric characters: Example 5",
           "input": "3 415 3.868,6",
-          "output": "⠼⠉⠀⠼⠙⠁⠑⠀⠼⠉⠄⠓⠋⠓⠂⠋"
+          "output": "⠼⠉ ⠼⠙⠁⠑ ⠼⠉⠄⠓⠋⠓⠂⠋"
         }
       ]
     },
@@ -1431,7 +1431,7 @@
         {
           "comment": "Numeric characters: Example 9",
           "input": "Han tjente 2 000 kr i år 2000.",
-          "output": "⠠⠓⠁⠝⠀⠞⠚⠑⠝⠞⠑⠀⠼⠃⠄⠚⠚⠚⠀⠅⠗⠀⠊⠀⠡⠗⠀⠼⠃⠚⠚⠚⠄"
+          "output": "⠠⠓⠁⠝ ⠞⠚⠑⠝⠞⠑ ⠼⠃⠄⠚⠚⠚ ⠅⠗ ⠊ ⠡⠗ ⠼⠃⠚⠚⠚⠄"
         }
       ]
     },
@@ -1440,7 +1440,7 @@
         {
           "comment": "Numeric characters: Example 10",
           "input": "Adressen hennes var Kallbakken, 8013 Bodø.",
-          "output": "⠠⠁⠙⠗⠑⠎⠎⠑⠝⠀⠓⠑⠝⠝⠑⠎⠀⠧⠁⠗⠀⠠⠅⠁⠇⠇⠃⠁⠅⠅⠑⠝⠂⠀⠼⠓⠚⠁⠉⠀⠠⠃⠕⠙⠪⠄"
+          "output": "⠠⠁⠙⠗⠑⠎⠎⠑⠝ ⠓⠑⠝⠝⠑⠎ ⠧⠁⠗ ⠠⠅⠁⠇⠇⠃⠁⠅⠅⠑⠝⠂ ⠼⠓⠚⠁⠉ ⠠⠃⠕⠙⠪⠄"
         }
       ]
     },
@@ -1449,7 +1449,7 @@
         {
           "comment": "Numeric characters: Example 11",
           "input": "π = 3,141.59",
-          "output": "⠘⠏⠀⠶⠼⠉⠂⠁⠙⠁⠄⠑⠊"
+          "output": "⠘⠏ ⠶⠼⠉⠂⠁⠙⠁⠄⠑⠊"
         }
       ]
     },
@@ -1485,7 +1485,7 @@
         {
           "comment": "Numeric characters: Example 15",
           "input": "Mitt bankkontonummer er 6411 18 96267.",
-          "output": "⠠⠍⠊⠞⠞⠀⠃⠁⠝⠅⠅⠕⠝⠞⠕⠝⠥⠍⠍⠑⠗⠀⠑⠗⠀⠼⠋⠙⠁⠁⠼⠁⠓⠼⠊⠋⠃⠋⠛⠄"
+          "output": "⠠⠍⠊⠞⠞ ⠃⠁⠝⠅⠅⠕⠝⠞⠕⠝⠥⠍⠍⠑⠗ ⠑⠗ ⠼⠋⠙⠁⠁⠼⠁⠓⠼⠊⠋⠃⠋⠛⠄"
         }
       ]
     },
@@ -1494,7 +1494,7 @@
         {
           "comment": "Numeric characters: Example 16",
           "input": "Mitt kontonummer er 0531 57 96263.",
-          "output": "⠠⠍⠊⠞⠞⠀⠅⠕⠝⠞⠕⠝⠥⠍⠍⠑⠗⠀⠑⠗⠀⠼⠚⠑⠉⠁⠼⠑⠛⠼⠊⠋⠃⠋⠉⠄"
+          "output": "⠠⠍⠊⠞⠞ ⠅⠕⠝⠞⠕⠝⠥⠍⠍⠑⠗ ⠑⠗ ⠼⠚⠑⠉⠁⠼⠑⠛⠼⠊⠋⠃⠋⠉⠄"
         }
       ]
     },
@@ -1512,7 +1512,7 @@
         {
           "comment": "Fractions and mixed numbers: Example 2",
           "input": "Han spiste 3/8 av pizzaen.",
-          "output": "⠠⠓⠁⠝⠀⠎⠏⠊⠎⠞⠑⠀⠼⠉⠌⠼⠓⠀⠁⠧⠀⠏⠊⠵⠵⠁⠑⠝⠄"
+          "output": "⠠⠓⠁⠝ ⠎⠏⠊⠎⠞⠑ ⠼⠉⠌⠼⠓ ⠁⠧ ⠏⠊⠵⠵⠁⠑⠝⠄"
         }
       ]
     },
@@ -1521,7 +1521,7 @@
         {
           "comment": "Fractions and mixed numbers: Example 3",
           "input": "Barna får en 1/4-liters kartong med melk på skolen.",
-          "output": "⠠⠃⠁⠗⠝⠁⠀⠋⠡⠗⠀⠑⠝⠀⠼⠁⠌⠼⠙⠤⠇⠊⠞⠑⠗⠎⠀⠅⠁⠗⠞⠕⠝⠛⠀⠍⠑⠙⠀⠍⠑⠇⠅⠀⠏⠡⠀⠎⠅⠕⠇⠑⠝⠄"
+          "output": "⠠⠃⠁⠗⠝⠁ ⠋⠡⠗ ⠑⠝ ⠼⠁⠌⠼⠙⠤⠇⠊⠞⠑⠗⠎ ⠅⠁⠗⠞⠕⠝⠛ ⠍⠑⠙ ⠍⠑⠇⠅ ⠏⠡ ⠎⠅⠕⠇⠑⠝⠄"
         }
       ]
     },
@@ -1530,7 +1530,7 @@
         {
           "comment": "Fractions and mixed numbers: Example 4",
           "input": "Han kjøpte 2 1 1/2-litersflasker brus.",
-          "output": "⠠⠓⠁⠝⠀⠅⠚⠪⠏⠞⠑⠀⠼⠃⠀⠼⠁⠼⠁⠌⠼⠃⠇⠊⠞⠑⠗⠎⠋⠇⠁⠎⠅⠑⠗⠀⠃⠗⠥⠎⠄"
+          "output": "⠠⠓⠁⠝ ⠅⠚⠪⠏⠞⠑ ⠼⠃ ⠼⠁⠼⠁⠌⠼⠃⠇⠊⠞⠑⠗⠎⠋⠇⠁⠎⠅⠑⠗ ⠃⠗⠥⠎⠄"
         }
       ]
     }
