@@ -69,10 +69,15 @@ void ExtensionUninstallDialogCocoa::Show() {
   }
 
   if ([alert runModal] == NSAlertFirstButtonReturn) {
-    if (reportAbuseCheckbox.get() && [reportAbuseCheckbox state] == NSOnState)
+    bool report_abuse_checked =
+        reportAbuseCheckbox.get() && [reportAbuseCheckbox state] == NSOnState;
+    if (report_abuse_checked)
       HandleReportAbuse();
+    OnDialogClosed(report_abuse_checked ?
+        CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE : CLOSE_ACTION_UNINSTALL);
     delegate_->ExtensionUninstallAccepted();
   } else {
+    OnDialogClosed(CLOSE_ACTION_CANCELED);
     delegate_->ExtensionUninstallCanceled();
   }
 }

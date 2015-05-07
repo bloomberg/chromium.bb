@@ -10434,6 +10434,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time taken to load a toolstrip.</summary>
 </histogram>
 
+<histogram name="Extensions.UninstallDialogAction"
+    enum="ExtensionUninstallDialogAction">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The action that was taken from an extension uninstall dialog. Recorded once
+    per dialog shown. Only recorded if all possible actions (including report
+    abuse) were available on the dialog.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.UninstallType" enum="ExtensionType">
   <owner>kalman@chromium.org</owner>
   <summary>Uninstalls grouped by Extension::HistogramType.</summary>
@@ -51877,6 +51887,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="HOSTED_APP"/>
   <int value="5" label="LEGACY_PACKAGED_APP"/>
   <int value="6" label="PLATFORM_APP"/>
+</enum>
+
+<enum name="ExtensionUninstallDialogAction" type="int">
+  <int value="0" label="Uninstall only"/>
+  <int value="1" label="Uninstall and report abuse"/>
+  <int value="2" label="Dialog canceled"/>
 </enum>
 
 <enum name="ExtensionUnpackFailureReason" type="int">

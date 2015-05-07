@@ -143,16 +143,20 @@ void ExtensionUninstallDialogViews::ExtensionUninstallAccepted(
     bool report_abuse_checked) {
   // The widget gets destroyed when the dialog is accepted.
   view_->DialogDestroyed();
-  view_ = NULL;
+  view_ = nullptr;
   if (report_abuse_checked)
     HandleReportAbuse();
+  OnDialogClosed(report_abuse_checked ?
+      CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE : CLOSE_ACTION_UNINSTALL);
+
   delegate_->ExtensionUninstallAccepted();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallCanceled() {
   // The widget gets destroyed when the dialog is canceled.
   view_->DialogDestroyed();
-  view_ = NULL;
+  view_ = nullptr;
+  OnDialogClosed(CLOSE_ACTION_CANCELED);
   delegate_->ExtensionUninstallCanceled();
 }
 
