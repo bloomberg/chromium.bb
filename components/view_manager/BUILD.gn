@@ -124,7 +124,8 @@ source_set("test_support") {
   ]
 }
 
-test("view_manager_unittests") {
+test("tests") {
+  output_name = "view_manager_unittests"
   sources = [
     "animation_runner_unittest.cc",
     "focus_controller_unittest.cc",

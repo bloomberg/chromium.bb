@@ -94,7 +94,8 @@ source_set("lib") {
   ]
 }
 
-test("resource_provider_unittests") {
+test("tests") {
+  output_name = "resource_provider_unittests"
   sources = [
     "file_utils_unittest.cc",
   ]

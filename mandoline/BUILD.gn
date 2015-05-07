@@ -26,11 +26,11 @@ group("tests") {
     deps += [
       "//components/clipboard:apptests",
       "//components/html_viewer:apptests",
-      "//components/html_viewer:html_viewer_unittests",
+      "//components/html_viewer:tests",
       "//components/resource_provider:apptests",
-      "//components/resource_provider:resource_provider_unittests",
+      "//components/resource_provider:tests",
       "//components/view_manager:apptests",
-      "//components/view_manager:view_manager_unittests",
+      "//components/view_manager:tests",
       "//components/window_manager:apptests",
     ]
   }
