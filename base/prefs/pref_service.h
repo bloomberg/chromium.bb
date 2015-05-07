@@ -313,6 +313,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
 
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;
+  friend class PrefServiceTest_WriteablePrefStoreFlags_Test;
 
   // Registration of pref change observers must be done using the
   // PrefChangeRegistrar, which is declared as a friend here to grant it

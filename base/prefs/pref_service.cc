@@ -40,12 +40,14 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 
 // Returns the WriteablePrefStore::PrefWriteFlags for the pref with the given
 // |path|.
-uint32 GetWriteFlags(const PrefService* service, const std::string& path) {
-  const PrefService::Preference* pref = service->FindPreference(path);
-
+uint32 GetWriteFlags(const PrefService::Preference* pref) {
   uint32 write_flags = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
+
+  if (!pref)
+    return write_flags;
+
   if (pref->registration_flags() & PrefRegistry::LOSSY_PREF)
-    write_flags &= WriteablePrefStore::LOSSY_PREF_WRITE_FLAG;
+    write_flags |= WriteablePrefStore::LOSSY_PREF_WRITE_FLAG;
   return write_flags;
 }
 
@@ -368,7 +370,7 @@ void PrefService::ClearPref(const std::string& path) {
     NOTREACHED() << "Trying to clear an unregistered pref: " << path;
     return;
   }
-  user_pref_store_->RemoveValue(path, GetWriteFlags(this, path));
+  user_pref_store_->RemoveValue(path, GetWriteFlags(pref));
 }
 
 void PrefService::Set(const std::string& path, const base::Value& value) {
@@ -465,14 +467,14 @@ base::Value* PrefService::GetMutableUserPref(const std::string& path,
     } else {
       NOTREACHED();
     }
-    user_pref_store_->SetValueSilently(path, value, GetWriteFlags(this, path));
+    user_pref_store_->SetValueSilently(path, value, GetWriteFlags(pref));
   }
   return value;
 }
 
 void PrefService::ReportUserPrefChanged(const std::string& key) {
   DCHECK(CalledOnValidThread());
-  user_pref_store_->ReportValueChanged(key, GetWriteFlags(this, key));
+  user_pref_store_->ReportValueChanged(key, GetWriteFlags(FindPreference(key)));
 }
 
 void PrefService::SetUserPrefValue(const std::string& path,
@@ -492,8 +494,7 @@ void PrefService::SetUserPrefValue(const std::string& path,
     return;
   }
 
-  user_pref_store_->SetValue(path, owned_value.release(),
-                             GetWriteFlags(this, path));
+  user_pref_store_->SetValue(path, owned_value.release(), GetWriteFlags(pref));
 }
 
 void PrefService::UpdateCommandLinePrefStore(PrefStore* command_line_store) {

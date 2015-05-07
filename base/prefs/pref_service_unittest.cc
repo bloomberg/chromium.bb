@@ -8,6 +8,7 @@
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service_factory.h"
 #include "base/prefs/pref_value_store.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/prefs/testing_pref_store.h"
@@ -225,6 +226,115 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kRecommendedValue, actual_int_value);
+}
+
+// A PrefStore which just stores the last write flags that were used to write
+// values to it.
+class WriteFlagChecker : public TestingPrefStore {
+ public:
+  WriteFlagChecker() {}
+
+  void ReportValueChanged(const std::string& key, uint32 flags) override {
+    SetLastWriteFlags(flags);
+  }
+
+  void SetValue(const std::string& key,
+                base::Value* value,
+                uint32 flags) override {
+    SetLastWriteFlags(flags);
+    delete value;
+  }
+
+  void SetValueSilently(const std::string& key,
+                        base::Value* value,
+                        uint32 flags) override {
+    SetLastWriteFlags(flags);
+    delete value;
+  }
+
+  void RemoveValue(const std::string& key, uint32 flags) override {
+    SetLastWriteFlags(flags);
+  }
+
+  uint32 GetLastFlagsAndClear() {
+    CHECK(last_write_flags_set_);
+    uint32 result = last_write_flags_;
+    last_write_flags_set_ = false;
+    last_write_flags_ = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
+    return result;
+  }
+
+  bool last_write_flags_set() { return last_write_flags_set_; }
+
+ private:
+  ~WriteFlagChecker() override {}
+
+  void SetLastWriteFlags(uint32 flags) {
+    CHECK(!last_write_flags_set_);
+    last_write_flags_set_ = true;
+    last_write_flags_ = flags;
+  }
+
+  bool last_write_flags_set_ = false;
+  uint32 last_write_flags_ = WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
+};
+
+TEST(PrefServiceTest, WriteablePrefStoreFlags) {
+  scoped_refptr<WriteFlagChecker> flag_checker(new WriteFlagChecker);
+  scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple);
+  base::PrefServiceFactory factory;
+  factory.set_user_prefs(flag_checker);
+  scoped_ptr<PrefService> prefs(factory.Create(registry.get()));
+
+  // The first 8 bits of write flags are reserved for subclasses. Create a
+  // custom flag in this range
+  uint32 kCustomRegistrationFlag = 1 << 2;
+
+  // A map of the registration flags that will be tested and the write flags
+  // they are expected to convert to.
+  struct RegistrationToWriteFlags {
+    const char* pref_name;
+    uint32 registration_flags;
+    uint32 write_flags;
+  };
+  const RegistrationToWriteFlags kRegistrationToWriteFlags[] = {
+      {"none",
+       PrefRegistry::NO_REGISTRATION_FLAGS,
+       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS},
+      {"lossy",
+       PrefRegistry::LOSSY_PREF,
+       WriteablePrefStore::LOSSY_PREF_WRITE_FLAG},
+      {"custom",
+       kCustomRegistrationFlag,
+       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS},
+      {"lossyandcustom",
+       PrefRegistry::LOSSY_PREF | kCustomRegistrationFlag,
+       WriteablePrefStore::LOSSY_PREF_WRITE_FLAG}};
+
+  for (size_t i = 0; i < arraysize(kRegistrationToWriteFlags); ++i) {
+    RegistrationToWriteFlags entry = kRegistrationToWriteFlags[i];
+    registry->RegisterDictionaryPref(
+        entry.pref_name, new base::DictionaryValue(), entry.registration_flags);
+
+    SCOPED_TRACE("Currently testing pref with name: " +
+                 std::string(entry.pref_name));
+
+    prefs->GetMutableUserPref(entry.pref_name, base::Value::TYPE_DICTIONARY);
+    EXPECT_TRUE(flag_checker->last_write_flags_set());
+    EXPECT_EQ(entry.write_flags, flag_checker->GetLastFlagsAndClear());
+
+    prefs->ReportUserPrefChanged(entry.pref_name);
+    EXPECT_TRUE(flag_checker->last_write_flags_set());
+    EXPECT_EQ(entry.write_flags, flag_checker->GetLastFlagsAndClear());
+
+    prefs->ClearPref(entry.pref_name);
+    EXPECT_TRUE(flag_checker->last_write_flags_set());
+    EXPECT_EQ(entry.write_flags, flag_checker->GetLastFlagsAndClear());
+
+    prefs->SetUserPrefValue(entry.pref_name, new base::DictionaryValue());
+    EXPECT_TRUE(flag_checker->last_write_flags_set());
+    EXPECT_EQ(entry.write_flags, flag_checker->GetLastFlagsAndClear());
+  }
 }
 
 class PrefServiceSetValueTest : public testing::Test {
