@@ -40,6 +40,8 @@
       'Handle.h',
       'Heap.cpp',
       'Heap.h',
+      'HeapAllocator.cpp',
+      'HeapAllocator.h',
       'InlinedGlobalMarkingVisitor.h',
       'MarkingVisitor.h',
       'MarkingVisitorImpl.h',
