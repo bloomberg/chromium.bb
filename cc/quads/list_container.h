@@ -10,8 +10,9 @@
 #include "cc/base/cc_export.h"
 
 namespace cc {
-class SharedQuadState;
+class DisplayItem;
 class DrawQuad;
+class SharedQuadState;
 
 // This class is a container type that handles allocating contiguous memory for
 // new elements and traversing through elements with either iterator or reverse
@@ -234,6 +235,7 @@ class CC_EXPORT ListContainer {
 #if !defined(COMPILER_MSVC)
 extern template class ListContainer<SharedQuadState>;
 extern template class ListContainer<DrawQuad>;
+extern template class ListContainer<DisplayItem>;
 #endif
 }  // namespace cc
 

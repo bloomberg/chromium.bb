@@ -10,13 +10,18 @@
 
 namespace cc {
 
-ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
-                                         SkRegion::Op clip_op,
-                                         bool antialias)
-    : clip_path_(clip_path), clip_op_(clip_op), antialias_(antialias) {
+ClipPathDisplayItem::ClipPathDisplayItem() {
 }
 
 ClipPathDisplayItem::~ClipPathDisplayItem() {
+}
+
+void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
+                                 SkRegion::Op clip_op,
+                                 bool antialias) {
+  clip_path_ = clip_path;
+  clip_op_ = clip_op;
+  antialias_ = antialias;
 }
 
 void ClipPathDisplayItem::Raster(SkCanvas* canvas,

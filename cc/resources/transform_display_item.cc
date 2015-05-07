@@ -10,11 +10,15 @@
 
 namespace cc {
 
-TransformDisplayItem::TransformDisplayItem(const gfx::Transform& transform)
-    : transform_(transform) {
+TransformDisplayItem::TransformDisplayItem()
+    : transform_(gfx::Transform::kSkipInitialization) {
 }
 
 TransformDisplayItem::~TransformDisplayItem() {
+}
+
+void TransformDisplayItem::SetNew(const gfx::Transform& transform) {
+  transform_ = transform;
 }
 
 void TransformDisplayItem::Raster(SkCanvas* canvas,

@@ -47,11 +47,10 @@ PaintRecorder::~PaintRecorder() {
   if (!context_.list_)
     return;
 
-  scoped_ptr<cc::DrawingDisplayItem> item = cc::DrawingDisplayItem::Create(
-      skia::AdoptRef(context_.recorder_->endRecordingAsPicture()));
+  auto* item = context_.list_->CreateAndAppendItem<cc::DrawingDisplayItem>();
+  item->SetNew(skia::AdoptRef(context_.recorder_->endRecordingAsPicture()));
   if (cache_)
-    cache_->SetCache(item->Clone());
-  context_.list_->AppendItem(item.Pass());
+    cache_->SetCache(item);
 }
 
 }  // namespace ui

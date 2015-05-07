@@ -353,6 +353,8 @@ component("cc") {
     "resources/gpu_tile_task_worker_pool.h",
     "resources/image_layer_updater.cc",
     "resources/image_layer_updater.h",
+    "resources/largest_display_item.cc",
+    "resources/largest_display_item.h",
     "resources/layer_painter.h",
     "resources/layer_quad.cc",
     "resources/layer_quad.h",

@@ -13,19 +13,22 @@
 
 namespace cc {
 
-CompositingDisplayItem::CompositingDisplayItem(uint8_t alpha,
-                                               SkXfermode::Mode xfermode,
-                                               SkRect* bounds,
-                                               skia::RefPtr<SkColorFilter> cf)
-    : alpha_(alpha),
-      xfermode_(xfermode),
-      has_bounds_(!!bounds),
-      color_filter_(cf) {
-  if (bounds)
-    bounds_ = SkRect(*bounds);
+CompositingDisplayItem::CompositingDisplayItem() {
 }
 
 CompositingDisplayItem::~CompositingDisplayItem() {
+}
+
+void CompositingDisplayItem::SetNew(uint8_t alpha,
+                                    SkXfermode::Mode xfermode,
+                                    SkRect* bounds,
+                                    skia::RefPtr<SkColorFilter> cf) {
+  alpha_ = alpha;
+  xfermode_ = xfermode;
+  has_bounds_ = !!bounds;
+  if (bounds)
+    bounds_ = SkRect(*bounds);
+  color_filter_ = cf;
 }
 
 void CompositingDisplayItem::Raster(SkCanvas* canvas,

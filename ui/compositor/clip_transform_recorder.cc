@@ -23,15 +23,26 @@ ClipTransformRecorder::ClipTransformRecorder(const PaintContext& context)
 ClipTransformRecorder::~ClipTransformRecorder() {
   if (context_.canvas_)
     context_.canvas_->Restore();
-  for (auto it = closers_.rbegin(); it != closers_.rend(); ++it)
-    context_.list_->AppendItem(make_scoped_ptr(*it));
+  for (Closer c : closers_) {
+    switch (c) {
+      case CLIP_RECT:
+        context_.list_->CreateAndAppendItem<cc::EndClipDisplayItem>();
+        break;
+      case CLIP_PATH:
+        context_.list_->CreateAndAppendItem<cc::EndClipPathDisplayItem>();
+        break;
+      case TRANSFORM:
+        context_.list_->CreateAndAppendItem<cc::EndTransformDisplayItem>();
+        break;
+    }
+  }
 }
 
 void ClipTransformRecorder::ClipRect(const gfx::Rect& clip_rect) {
   if (context_.list_) {
-    context_.list_->AppendItem(
-        cc::ClipDisplayItem::Create(clip_rect, std::vector<SkRRect>()));
-    closers_.push_back(cc::EndClipDisplayItem::Create().release());
+    auto* item = context_.list_->CreateAndAppendItem<cc::ClipDisplayItem>();
+    item->SetNew(clip_rect, std::vector<SkRRect>());
+    closers_.push_back(CLIP_RECT);
   } else {
     context_.canvas_->ClipRect(clip_rect);
   }
@@ -40,9 +51,9 @@ void ClipTransformRecorder::ClipRect(const gfx::Rect& clip_rect) {
 void ClipTransformRecorder::ClipPath(const gfx::Path& clip_path) {
   bool anti_alias = false;
   if (context_.list_) {
-    context_.list_->AppendItem(cc::ClipPathDisplayItem::Create(
-        clip_path, SkRegion::kIntersect_Op, anti_alias));
-    closers_.push_back(cc::EndClipPathDisplayItem::Create().release());
+    auto* item = context_.list_->CreateAndAppendItem<cc::ClipPathDisplayItem>();
+    item->SetNew(clip_path, SkRegion::kIntersect_Op, anti_alias);
+    closers_.push_back(CLIP_PATH);
   } else {
     context_.canvas_->ClipPath(clip_path, anti_alias);
   }
@@ -52,9 +63,9 @@ void ClipTransformRecorder::ClipPathWithAntiAliasing(
     const gfx::Path& clip_path) {
   bool anti_alias = true;
   if (context_.list_) {
-    context_.list_->AppendItem(cc::ClipPathDisplayItem::Create(
-        clip_path, SkRegion::kIntersect_Op, anti_alias));
-    closers_.push_back(cc::EndClipPathDisplayItem::Create().release());
+    auto* item = context_.list_->CreateAndAppendItem<cc::ClipPathDisplayItem>();
+    item->SetNew(clip_path, SkRegion::kIntersect_Op, anti_alias);
+    closers_.push_back(CLIP_PATH);
   } else {
     context_.canvas_->ClipPath(clip_path, anti_alias);
   }
@@ -62,8 +73,10 @@ void ClipTransformRecorder::ClipPathWithAntiAliasing(
 
 void ClipTransformRecorder::Transform(const gfx::Transform& transform) {
   if (context_.list_) {
-    context_.list_->AppendItem(cc::TransformDisplayItem::Create(transform));
-    closers_.push_back(cc::EndTransformDisplayItem::Create().release());
+    auto* item =
+        context_.list_->CreateAndAppendItem<cc::TransformDisplayItem>();
+    item->SetNew(transform);
+    closers_.push_back(TRANSFORM);
   } else {
     context_.canvas_->Transform(transform);
   }

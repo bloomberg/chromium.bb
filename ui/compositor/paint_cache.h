@@ -5,12 +5,8 @@
 #ifndef UI_COMPOSITOR_PAINT_CACHE_H_
 #define UI_COMPOSITOR_PAINT_CACHE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "cc/resources/drawing_display_item.h"
 #include "ui/compositor/compositor_export.h"
-
-namespace cc {
-class DrawingDisplayItem;
-}
 
 namespace ui {
 class PaintContext;
@@ -33,9 +29,10 @@ class COMPOSITOR_EXPORT PaintCache {
   // Only PaintRecorder can modify these.
   friend PaintRecorder;
 
-  void SetCache(scoped_ptr<cc::DrawingDisplayItem> item);
+  void SetCache(const cc::DrawingDisplayItem* item);
 
-  scoped_ptr<cc::DrawingDisplayItem> display_item_;
+  bool has_cache_;
+  cc::DrawingDisplayItem display_item_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintCache);
 };

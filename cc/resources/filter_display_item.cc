@@ -16,12 +16,16 @@
 
 namespace cc {
 
-FilterDisplayItem::FilterDisplayItem(const FilterOperations& filters,
-                                     gfx::RectF bounds)
-    : filters_(filters), bounds_(bounds) {
+FilterDisplayItem::FilterDisplayItem() {
 }
 
 FilterDisplayItem::~FilterDisplayItem() {
+}
+
+void FilterDisplayItem::SetNew(const FilterOperations& filters,
+                               const gfx::RectF& bounds) {
+  filters_ = filters;
+  bounds_ = bounds;
 }
 
 void FilterDisplayItem::Raster(SkCanvas* canvas,

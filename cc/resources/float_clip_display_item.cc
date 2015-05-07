@@ -11,11 +11,14 @@
 
 namespace cc {
 
-FloatClipDisplayItem::FloatClipDisplayItem(gfx::RectF clip_rect)
-    : clip_rect_(clip_rect) {
+FloatClipDisplayItem::FloatClipDisplayItem() {
 }
 
 FloatClipDisplayItem::~FloatClipDisplayItem() {
+}
+
+void FloatClipDisplayItem::SetNew(const gfx::RectF& clip_rect) {
+  clip_rect_ = clip_rect;
 }
 
 void FloatClipDisplayItem::Raster(SkCanvas* canvas,

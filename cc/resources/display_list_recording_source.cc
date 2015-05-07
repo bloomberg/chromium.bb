@@ -124,6 +124,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     painter->PaintContentsToDisplayList(display_list_.get(), recorded_viewport_,
                                         painting_control);
   }
+  display_list_->ProcessAppendedItems();
   if (use_cached_picture_)
     display_list_->CreateAndCacheSkPicture();
 

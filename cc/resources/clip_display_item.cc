@@ -13,12 +13,16 @@
 
 namespace cc {
 
-ClipDisplayItem::ClipDisplayItem(gfx::Rect clip_rect,
-                                 const std::vector<SkRRect>& rounded_clip_rects)
-    : clip_rect_(clip_rect), rounded_clip_rects_(rounded_clip_rects) {
+ClipDisplayItem::ClipDisplayItem() {
 }
 
 ClipDisplayItem::~ClipDisplayItem() {
+}
+
+void ClipDisplayItem::SetNew(gfx::Rect clip_rect,
+                             const std::vector<SkRRect>& rounded_clip_rects) {
+  clip_rect_ = clip_rect;
+  rounded_clip_rects_ = rounded_clip_rects;
 }
 
 void ClipDisplayItem::Raster(SkCanvas* canvas,

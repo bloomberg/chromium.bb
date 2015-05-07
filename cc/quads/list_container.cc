@@ -10,6 +10,7 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
+#include "cc/resources/display_item.h"
 
 namespace {
 const size_t kDefaultNumElementTypesToReserve = 32;
@@ -714,5 +715,6 @@ size_t ListContainer<BaseElementType>::ConstReverseIterator::index() const {
 
 template class ListContainer<SharedQuadState>;
 template class ListContainer<DrawQuad>;
+template class ListContainer<DisplayItem>;
 
 }  // namespace cc

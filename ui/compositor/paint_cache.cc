@@ -5,27 +5,28 @@
 #include "ui/compositor/paint_cache.h"
 
 #include "cc/resources/display_item_list.h"
-#include "cc/resources/drawing_display_item.h"
 #include "ui/compositor/paint_context.h"
 
 namespace ui {
 
-PaintCache::PaintCache() {
+PaintCache::PaintCache() : has_cache_(false) {
 }
 
 PaintCache::~PaintCache() {
 }
 
 bool PaintCache::UseCache(const PaintContext& context) {
-  if (!display_item_)
+  if (!has_cache_)
     return false;
   DCHECK(context.list_);
-  context.list_->AppendItem(display_item_->Clone());
+  auto* item = context.list_->CreateAndAppendItem<cc::DrawingDisplayItem>();
+  display_item_.CloneTo(item);
   return true;
 }
 
-void PaintCache::SetCache(scoped_ptr<cc::DrawingDisplayItem> item) {
-  display_item_ = item.Pass();
+void PaintCache::SetCache(const cc::DrawingDisplayItem* item) {
+  item->CloneTo(&display_item_);
+  has_cache_ = true;
 }
 
 }  // namespace ui

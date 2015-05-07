@@ -73,7 +73,8 @@ void PictureImageLayer::PaintContentsToDisplayList(
 
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
-  display_list->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture.Pass());
 }
 
 bool PictureImageLayer::FillsBoundsCompletely() const {

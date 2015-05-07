@@ -39,6 +39,7 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   layer->PaintContentsToDisplayList(
       display_list.get(), layer_rect,
       ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->ProcessAppendedItems();
   unsigned char actual_pixels[4 * 200 * 200] = {0};
   DrawDisplayList(actual_pixels, layer_rect, display_list);
 
@@ -70,6 +71,7 @@ TEST(PictureImageLayerTest, PaintContentsToCachedDisplayList) {
   layer->PaintContentsToDisplayList(
       display_list.get(), layer_rect,
       ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->ProcessAppendedItems();
   display_list->CreateAndCacheSkPicture();
   unsigned char actual_pixels[4 * 200 * 200] = {0};
   DrawDisplayList(actual_pixels, layer_rect, display_list);

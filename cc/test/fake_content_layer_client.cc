@@ -78,8 +78,8 @@ void FakeContentLayerClient::PaintContentsToDisplayList(
   SkPictureRecorder recorder;
   skia::RefPtr<SkCanvas> canvas;
   skia::RefPtr<SkPicture> picture;
-  display_list->AppendItem(
-      ClipDisplayItem::Create(clip, std::vector<SkRRect>()));
+  auto* item = display_list->CreateAndAppendItem<ClipDisplayItem>();
+  item->SetNew(clip, std::vector<SkRRect>());
 
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
        it != draw_rects_.end(); ++it) {
@@ -90,21 +90,24 @@ void FakeContentLayerClient::PaintContentsToDisplayList(
     canvas->drawRectCoords(draw_rect.x(), draw_rect.y(), draw_rect.width(),
                            draw_rect.height(), paint);
     picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-    display_list->AppendItem(DrawingDisplayItem::Create(picture));
+    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+    item->SetNew(picture.Pass());
   }
 
   for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
        it != draw_bitmaps_.end(); ++it) {
     if (!it->transform.IsIdentity()) {
-      display_list->AppendItem(TransformDisplayItem::Create(it->transform));
+      auto* item = display_list->CreateAndAppendItem<TransformDisplayItem>();
+      item->SetNew(it->transform);
     }
     canvas = skia::SharePtr(
         recorder.beginRecording(it->bitmap.width(), it->bitmap.height()));
     canvas->drawBitmap(it->bitmap, it->point.x(), it->point.y(), &it->paint);
     picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-    display_list->AppendItem(DrawingDisplayItem::Create(picture));
+    auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+    item->SetNew(picture.Pass());
     if (!it->transform.IsIdentity()) {
-      display_list->AppendItem(EndTransformDisplayItem::Create());
+      display_list->CreateAndAppendItem<EndTransformDisplayItem>();
     }
   }
 
@@ -118,12 +121,13 @@ void FakeContentLayerClient::PaintContentsToDisplayList(
           recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
       canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
       picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-      display_list->AppendItem(DrawingDisplayItem::Create(picture));
+      auto* item = display_list->CreateAndAppendItem<DrawingDisplayItem>();
+      item->SetNew(picture.Pass());
       draw_rect.Inset(1, 1);
     }
   }
 
-  display_list->AppendItem(EndClipDisplayItem::Create());
+  display_list->CreateAndAppendItem<EndClipDisplayItem>();
 }
 
 bool FakeContentLayerClient::FillsBoundsCompletely() const { return false; }

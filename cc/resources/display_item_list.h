@@ -11,6 +11,8 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+// TODO(danakj): Move ListContainer out of cc/quads/
+#include "cc/quads/list_container.h"
 #include "cc/resources/display_item.h"
 #include "cc/resources/pixel_ref_map.h"
 #include "skia/ext/refptr.h"
@@ -33,8 +35,16 @@ class CC_EXPORT DisplayItemList
               SkDrawPictureCallback* callback,
               float contents_scale) const;
 
-  void AppendItem(scoped_ptr<DisplayItem> item);
+  template <typename DisplayItemType>
+  DisplayItemType* CreateAndAppendItem() {
+#if DCHECK_IS_ON()
+    needs_process_ = true;
+#endif
+    ProcessAppendedItemsOnTheFly();
+    return items_.AllocateAndConstruct<DisplayItemType>();
+  }
 
+  void ProcessAppendedItems();
   void CreateAndCacheSkPicture();
 
   bool IsSuitableForGpuRasterization() const;
@@ -53,7 +63,18 @@ class CC_EXPORT DisplayItemList
                   bool retain_individual_display_items);
   DisplayItemList(gfx::Rect layer_rect, bool use_cached_picture);
   ~DisplayItemList();
-  ScopedPtrVector<DisplayItem> items_;
+
+  // While appending new items, if they are not being retained, this can process
+  // periodically to avoid retaining all the items and processing at the end.
+  void ProcessAppendedItemsOnTheFly();
+#if DCHECK_IS_ON()
+  bool ProcessAppendedItemsCalled() const { return !needs_process_; }
+  bool needs_process_;
+#else
+  bool ProcessAppendedItemsCalled() const { return true; }
+#endif
+
+  ListContainer<DisplayItem> items_;
   skia::RefPtr<SkPicture> picture_;
 
   scoped_ptr<SkPictureRecorder> recorder_;

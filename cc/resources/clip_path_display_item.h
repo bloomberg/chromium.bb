@@ -18,13 +18,10 @@ namespace cc {
 
 class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
  public:
+  ClipPathDisplayItem();
   ~ClipPathDisplayItem() override;
 
-  static scoped_ptr<ClipPathDisplayItem> Create(const SkPath& path,
-                                                SkRegion::Op clip_op,
-                                                bool antialias) {
-    return make_scoped_ptr(new ClipPathDisplayItem(path, clip_op, antialias));
-  }
+  void SetNew(const SkPath& path, SkRegion::Op clip_op, bool antialias);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
 
@@ -44,6 +41,7 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
 
 class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
  public:
+  EndClipPathDisplayItem();
   ~EndClipPathDisplayItem() override;
 
   static scoped_ptr<EndClipPathDisplayItem> Create() {
@@ -56,9 +54,6 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-
- protected:
-  EndClipPathDisplayItem();
 };
 
 }  // namespace cc

@@ -40,8 +40,13 @@ class COMPOSITOR_EXPORT ClipTransformRecorder {
   void Transform(const gfx::Transform& transform);
 
  private:
+  enum Closer {
+    CLIP_RECT,
+    CLIP_PATH,
+    TRANSFORM,
+  };
   const PaintContext& context_;
-  std::vector<cc::DisplayItem*> closers_;
+  std::vector<Closer> closers_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipTransformRecorder);
 };

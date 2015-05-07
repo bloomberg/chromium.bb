@@ -48,7 +48,9 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->ProcessAppendedItems();
   list->CreateAndCacheSkPicture();
   DrawDisplayList(pixels, layer_rect, list);
 
@@ -90,10 +92,12 @@ TEST(DisplayItemListTest, ClipItem) {
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item1 = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item1->SetNew(picture.Pass());
 
   gfx::Rect clip_rect(60, 60, 10, 10);
-  list->AppendItem(ClipDisplayItem::Create(clip_rect, std::vector<SkRRect>()));
+  auto* item2 = list->CreateAndAppendItem<ClipDisplayItem>();
+  item2->SetNew(clip_rect, std::vector<SkRRect>());
 
   gfx::PointF second_offset(2.f, 3.f);
   gfx::RectF second_recording_rect(second_offset, layer_rect.size());
@@ -102,9 +106,11 @@ TEST(DisplayItemListTest, ClipItem) {
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item3 = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item3->SetNew(picture.Pass());
 
-  list->AppendItem(EndClipDisplayItem::Create());
+  list->CreateAndAppendItem<EndClipDisplayItem>();
+  list->ProcessAppendedItems();
   list->CreateAndCacheSkPicture();
 
   DrawDisplayList(pixels, layer_rect, list);
@@ -148,11 +154,13 @@ TEST(DisplayItemListTest, TransformItem) {
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item1 = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item1->SetNew(picture);
 
   gfx::Transform transform;
   transform.Rotate(45.0);
-  list->AppendItem(TransformDisplayItem::Create(transform));
+  auto* item2 = list->CreateAndAppendItem<TransformDisplayItem>();
+  item2->SetNew(transform);
 
   gfx::PointF second_offset(2.f, 3.f);
   gfx::RectF second_recording_rect(second_offset, layer_rect.size());
@@ -161,9 +169,11 @@ TEST(DisplayItemListTest, TransformItem) {
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item3 = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item3->SetNew(picture);
 
-  list->AppendItem(EndTransformDisplayItem::Create());
+  list->CreateAndAppendItem<EndTransformDisplayItem>();
+  list->ProcessAppendedItems();
   list->CreateAndCacheSkPicture();
 
   DrawDisplayList(pixels, layer_rect, list);
@@ -215,8 +225,10 @@ TEST(DisplayItemListTest, FilterItem) {
   filters.Append(FilterOperation::CreateReferenceFilter(image_filter));
   filters.Append(FilterOperation::CreateBrightnessFilter(0.5f));
   gfx::RectF filter_bounds(10.f, 10.f, 50.f, 50.f);
-  list->AppendItem(FilterDisplayItem::Create(filters, filter_bounds));
-  list->AppendItem(EndFilterDisplayItem::Create());
+  auto* item = list->CreateAndAppendItem<FilterDisplayItem>();
+  item->SetNew(filters, filter_bounds);
+  list->CreateAndAppendItem<EndFilterDisplayItem>();
+  list->ProcessAppendedItems();
   list->CreateAndCacheSkPicture();
 
   DrawDisplayList(pixels, layer_rect, list);
@@ -258,14 +270,18 @@ TEST(DisplayItemListTest, CompactingItems) {
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list_without_caching->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item1 = list_without_caching->CreateAndAppendItem<DrawingDisplayItem>();
+  item1->SetNew(picture);
+  list_without_caching->ProcessAppendedItems();
   DrawDisplayList(pixels, layer_rect, list_without_caching);
 
   unsigned char expected_pixels[4 * 100 * 100] = {0};
   use_cached_picture = true;
   scoped_refptr<DisplayItemList> list_with_caching =
       DisplayItemList::Create(layer_rect, use_cached_picture);
-  list_with_caching->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item2 = list_with_caching->CreateAndAppendItem<DrawingDisplayItem>();
+  item2->SetNew(picture);
+  list_with_caching->ProcessAppendedItems();
   list_with_caching->CreateAndCacheSkPicture();
   DrawDisplayList(expected_pixels, layer_rect, list_with_caching);
 
@@ -292,7 +308,9 @@ TEST(DisplayItemListTest, PictureMemoryUsage) {
 
   // Using a cached picture, we should get about the right size.
   list = DisplayItemList::Create(layer_rect, true);
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  auto* item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->ProcessAppendedItems();
   list->CreateAndCacheSkPicture();
   memory_usage = list->PictureMemoryUsage();
   EXPECT_GE(memory_usage, picture_size);
@@ -300,7 +318,9 @@ TEST(DisplayItemListTest, PictureMemoryUsage) {
 
   // Using no cached picture, we should still get the right size.
   list = DisplayItemList::Create(layer_rect, false);
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->ProcessAppendedItems();
   memory_usage = list->PictureMemoryUsage();
   EXPECT_GE(memory_usage, picture_size);
   EXPECT_LE(memory_usage, 2 * picture_size);
@@ -309,7 +329,9 @@ TEST(DisplayItemListTest, PictureMemoryUsage) {
   // picture and items are retained (currently this only happens due to certain
   // categories being traced).
   list = new DisplayItemList(layer_rect, true, true);
-  list->AppendItem(DrawingDisplayItem::Create(picture));
+  item = list->CreateAndAppendItem<DrawingDisplayItem>();
+  item->SetNew(picture);
+  list->ProcessAppendedItems();
   list->CreateAndCacheSkPicture();
   memory_usage = list->PictureMemoryUsage();
   EXPECT_EQ(static_cast<size_t>(0), memory_usage);

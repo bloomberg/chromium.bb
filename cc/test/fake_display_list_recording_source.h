@@ -47,6 +47,7 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
         DisplayItemList::Create(recorded_viewport_, use_cached_picture);
     client_.PaintContentsToDisplayList(display_list_.get(), recorded_viewport_,
                                        painting_control);
+    display_list_->ProcessAppendedItems();
     display_list_->CreateAndCacheSkPicture();
     if (gather_pixel_refs_)
       display_list_->GatherPixelRefs(grid_cell_size_);

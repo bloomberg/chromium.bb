@@ -20,13 +20,11 @@ namespace cc {
 
 class CC_EXPORT ClipDisplayItem : public DisplayItem {
  public:
+  ClipDisplayItem();
   ~ClipDisplayItem() override;
 
-  static scoped_ptr<ClipDisplayItem> Create(
-      gfx::Rect clip_rect,
-      const std::vector<SkRRect>& rounded_clip_rects) {
-    return make_scoped_ptr(new ClipDisplayItem(clip_rect, rounded_clip_rects));
-  }
+  void SetNew(gfx::Rect clip_rect,
+              const std::vector<SkRRect>& rounded_clip_rects);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
 
@@ -46,11 +44,8 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
 
 class CC_EXPORT EndClipDisplayItem : public DisplayItem {
  public:
+  EndClipDisplayItem();
   ~EndClipDisplayItem() override;
-
-  static scoped_ptr<EndClipDisplayItem> Create() {
-    return make_scoped_ptr(new EndClipDisplayItem());
-  }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
 
@@ -58,9 +53,6 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-
- protected:
-  EndClipDisplayItem();
 };
 
 }  // namespace cc

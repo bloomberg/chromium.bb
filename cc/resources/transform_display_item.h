@@ -17,12 +17,10 @@ namespace cc {
 
 class CC_EXPORT TransformDisplayItem : public DisplayItem {
  public:
+  TransformDisplayItem();
   ~TransformDisplayItem() override;
 
-  static scoped_ptr<TransformDisplayItem> Create(
-      const gfx::Transform& transform) {
-    return make_scoped_ptr(new TransformDisplayItem(transform));
-  }
+  void SetNew(const gfx::Transform& transform);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
 
@@ -40,6 +38,7 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
 
 class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
  public:
+  EndTransformDisplayItem();
   ~EndTransformDisplayItem() override;
 
   static scoped_ptr<EndTransformDisplayItem> Create() {
@@ -52,9 +51,6 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
   int ApproximateOpCount() const override;
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
-
- protected:
-  EndTransformDisplayItem();
 };
 
 }  // namespace cc
