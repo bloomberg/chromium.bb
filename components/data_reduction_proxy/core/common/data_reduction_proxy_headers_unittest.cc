@@ -367,10 +367,9 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
         new net::HttpResponseHeaders(headers));
 
     DataReductionProxyInfo data_reduction_proxy_info;
-    EXPECT_EQ(tests[i].expected_result,
-              ParseHeadersAndSetProxyInfo(
-                  parsed.get(), GURL(), net::BoundNetLog(),
-                  &data_reduction_proxy_info, event_creator()));
+    EXPECT_EQ(
+        tests[i].expected_result,
+        ParseHeadersForBypassInfo(parsed.get(), &data_reduction_proxy_info));
     EXPECT_EQ(tests[i].expected_retry_delay,
               data_reduction_proxy_info.bypass_duration.InSeconds());
     EXPECT_EQ(tests[i].expected_bypass_all,
@@ -392,8 +391,7 @@ TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
 
   DataReductionProxyInfo data_reduction_proxy_info;
   EXPECT_TRUE(
-      ParseHeadersAndSetProxyInfo(parsed.get(), GURL(), net::BoundNetLog(),
-                                  &data_reduction_proxy_info, event_creator()));
+      ParseHeadersForBypassInfo(parsed.get(), &data_reduction_proxy_info));
   EXPECT_LE(60, data_reduction_proxy_info.bypass_duration.InSeconds());
   EXPECT_GE(5 * 60, data_reduction_proxy_info.bypass_duration.InSeconds());
   EXPECT_FALSE(data_reduction_proxy_info.bypass_all);
@@ -604,11 +602,8 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
     scoped_refptr<net::HttpResponseHeaders> parsed(
         new net::HttpResponseHeaders(headers));
     DataReductionProxyInfo chrome_proxy_info;
-    bool event_was_logged;
-    EXPECT_EQ(tests[i].expected_result,
-              GetDataReductionProxyBypassType(
-                  parsed.get(), GURL(), net::BoundNetLog(), &chrome_proxy_info,
-                  event_creator(), &event_was_logged));
+    EXPECT_EQ(tests[i].expected_result, GetDataReductionProxyBypassType(
+                                            parsed.get(), &chrome_proxy_info));
   }
 }
 

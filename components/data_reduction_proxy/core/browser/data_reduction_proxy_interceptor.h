@@ -6,13 +6,14 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_INTERCEPTOR_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/url_request/url_request_interceptor.h"
 
 namespace data_reduction_proxy {
 class DataReductionProxyBypassProtocol;
+class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyEventCreator;
-class DataReductionProxyBypassStats;
 
 // Used to intercept responses that contain explicit and implicit signals
 // to bypass the Data Reduction Proxy. If the proxy should be bypassed,
@@ -56,8 +57,19 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptResponseOrRedirect(
       net::URLRequest* request, net::NetworkDelegate* network_delegate) const;
 
+  // If a request is being bypassed, log the bypass event to the
+  // |event_creator_|.
+  void MaybeAddBypassEvent(
+      net::URLRequest* request,
+      const DataReductionProxyInfo& data_reduction_proxy_info,
+      DataReductionProxyBypassType bypass_type,
+      bool should_retry) const;
+
   // Must outlive |this| if non-NULL.
   DataReductionProxyBypassStats* bypass_stats_;
+
+  // Must outlive |this|.
+  DataReductionProxyEventCreator* event_creator_;
 
   // Object responsible for identifying cases when a response should cause the
   // data reduction proxy to be bypassed, and for triggering proxy bypasses in

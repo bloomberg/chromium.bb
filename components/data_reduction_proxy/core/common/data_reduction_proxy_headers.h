@@ -33,10 +33,20 @@ enum DataReductionProxyBypassType {
 #undef BYPASS_EVENT_TYPE
 };
 
+// Values for the bypass actions that can be specified by the Data Reduction
+// Proxy in response to a client request.
+enum DataReductionProxyBypassAction {
+#define BYPASS_ACTION_TYPE(label, value) BYPASS_ACTION_TYPE_##label = value,
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_action_list.h"
+#undef BYPASS_ACTION_TYPE
+};
+
 // Contains instructions contained in the Chrome-Proxy header.
 struct DataReductionProxyInfo {
   DataReductionProxyInfo()
-      : bypass_all(false), mark_proxies_as_bad(false) {}
+      : bypass_all(false),
+        mark_proxies_as_bad(false),
+        bypass_action(BYPASS_ACTION_TYPE_NONE) {}
 
   // True if Chrome should bypass all available data reduction proxies. False
   // if only the currently connected data reduction proxy should be bypassed.
@@ -49,6 +59,9 @@ struct DataReductionProxyInfo {
   // Amount of time to bypass the data reduction proxy or proxies. This value is
   // ignored if |mark_proxies_as_bad| is false.
   base::TimeDelta bypass_duration;
+
+  // The bypass action specified by the data reduction proxy.
+  DataReductionProxyBypassAction bypass_action;
 };
 
 // Returns true if the Chrome-Proxy header is present and contains a bypass
@@ -57,11 +70,8 @@ struct DataReductionProxyInfo {
 // (as specified in |ProxyList::UpdateRetryInfoOnFallback|) should be used.
 // If all available data reduction proxies should by bypassed, |bypass_all| is
 // set to true. |proxy_info| must be non-NULL.
-bool ParseHeadersAndSetProxyInfo(const net::HttpResponseHeaders* headers,
-                                 const GURL& url,
-                                 const net::BoundNetLog& bound_net_log,
-                                 DataReductionProxyInfo* proxy_info,
-                                 DataReductionProxyEventCreator* event_creator);
+bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders* headers,
+                               DataReductionProxyInfo* proxy_info);
 
 // Returns true if the response contains the data reduction proxy Via header
 // value. If non-NULL, sets |has_intermediary| to true if another server added
@@ -76,11 +86,7 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
 // applicable.
 DataReductionProxyBypassType GetDataReductionProxyBypassType(
     const net::HttpResponseHeaders* headers,
-    const GURL& url,
-    const net::BoundNetLog& bound_net_log,
-    DataReductionProxyInfo* proxy_info,
-    DataReductionProxyEventCreator* event_creator,
-    bool* event_logged);
+    DataReductionProxyInfo* proxy_info);
 
 // Searches for the specified Chrome-Proxy action, and if present saves its
 // value as a string in |action_value|. Only returns the first one and ignores

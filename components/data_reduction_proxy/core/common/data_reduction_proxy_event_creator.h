@@ -57,8 +57,10 @@ class DataReductionProxyEventCreator {
   // Adds a DATA_REDUCTION_PROXY_BYPASS_REQUESTED event to the event store
   // when the bypass reason is initiated by the data reduction proxy.
   void AddBypassActionEvent(const net::BoundNetLog& net_log,
-                            const std::string& bypass_action,
+                            DataReductionProxyBypassAction bypass_action,
+                            const std::string& request_method,
                             const GURL& gurl,
+                            bool should_retry,
                             const base::TimeDelta& bypass_duration);
 
   // Adds a DATA_REDUCTION_PROXY_BYPASS_REQUESTED event to the event store
@@ -66,7 +68,9 @@ class DataReductionProxyEventCreator {
   // as network errors.
   void AddBypassTypeEvent(const net::BoundNetLog& net_log,
                           DataReductionProxyBypassType bypass_type,
+                          const std::string& request_method,
                           const GURL& gurl,
+                          bool should_retry,
                           const base::TimeDelta& bypass_duration);
 
   // Adds a DATA_REDUCTION_PROXY_CANARY_REQUEST event to the event store

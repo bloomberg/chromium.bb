@@ -6,6 +6,7 @@ import("//chrome/version.gni")
 
 static_library("common") {
   sources = [
+    "data_reduction_proxy_bypass_action_list.h",
     "data_reduction_proxy_bypass_type_list.h",
     "data_reduction_proxy_client_config_parser.cc",
     "data_reduction_proxy_client_config_parser.h",

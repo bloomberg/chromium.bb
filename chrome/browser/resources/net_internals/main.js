@@ -309,6 +309,8 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   SdchProblemCode = Constants.sdchProblemCode;
   DataReductionProxyBypassEventType =
       Constants.dataReductionProxyBypassEventType;
+  DataReductionProxyBypassActionType =
+      Constants.dataReductionProxyBypassActionType;
   // certStatusFlag may not be present when loading old log Files
   if (typeof(Constants.certStatusFlag) == 'object')
     CertStatusFlag = Constants.certStatusFlag;

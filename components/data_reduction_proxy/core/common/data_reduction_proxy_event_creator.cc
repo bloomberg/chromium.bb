@@ -10,6 +10,8 @@
 #include "base/values.h"
 #include "net/proxy/proxy_server.h"
 
+namespace data_reduction_proxy {
+
 namespace {
 
 scoped_ptr<base::Value> BuildDataReductionProxyEvent(
@@ -78,14 +80,18 @@ base::Value* DisableDataReductionProxyCallback(
 // the Data Reduction Proxy. Ownership of the base::Value is passed to the
 // caller.
 base::Value* UrlBypassActionCallback(
-    const std::string& action,
+    DataReductionProxyBypassAction action,
+    const std::string& request_method,
     const GURL& url,
+    bool should_retry,
     int bypass_seconds,
     int64 expiration_ticks,
     net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetString("action", action);
+  dict->SetInteger("bypass_action_type", action);
+  dict->SetString("method", request_method);
   dict->SetString("url", url.spec());
+  dict->SetBoolean("should_retry", should_retry);
   dict->SetString("bypass_duration_seconds",
                   base::Int64ToString(bypass_seconds));
   dict->SetString("expiration", base::Int64ToString(expiration_ticks));
@@ -95,15 +101,18 @@ base::Value* UrlBypassActionCallback(
 // A callback which creates a base::Value containing information about bypassing
 // the Data Reduction Proxy. Ownership of the base::Value is passed to the
 // caller.
-base::Value* UrlBypassTypeCallback(
-    data_reduction_proxy::DataReductionProxyBypassType bypass_type,
-    const GURL& url,
-    int bypass_seconds,
-    int64 expiration_ticks,
-    net::NetLogCaptureMode /* capture_mode */) {
+base::Value* UrlBypassTypeCallback(DataReductionProxyBypassType bypass_type,
+                                   const std::string& request_method,
+                                   const GURL& url,
+                                   bool should_retry,
+                                   int bypass_seconds,
+                                   int64 expiration_ticks,
+                                   net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("bypass_type", bypass_type);
+  dict->SetString("method", request_method);
   dict->SetString("url", url.spec());
+  dict->SetBoolean("should_retry", should_retry);
   dict->SetString("bypass_duration_seconds",
                   base::Int64ToString(bypass_seconds));
   dict->SetString("expiration", base::Int64ToString(expiration_ticks));
@@ -144,8 +153,6 @@ base::Value* EndConfigRequestCallback(
 
 }  // namespace
 
-namespace data_reduction_proxy {
-
 DataReductionProxyEventCreator::DataReductionProxyEventCreator(
     DataReductionProxyEventStorageDelegate* storage_delegate)
     : storage_delegate_(storage_delegate) {
@@ -183,14 +190,16 @@ void DataReductionProxyEventCreator::AddProxyDisabledEvent(
 
 void DataReductionProxyEventCreator::AddBypassActionEvent(
     const net::BoundNetLog& net_log,
-    const std::string& bypass_action,
+    DataReductionProxyBypassAction bypass_action,
+    const std::string& request_method,
     const GURL& url,
+    bool should_retry,
     const base::TimeDelta& bypass_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
   int64 expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
   const net::NetLog::ParametersCallback& parameters_callback =
-      base::Bind(&UrlBypassActionCallback, bypass_action, url,
-                 bypass_duration.InSeconds(), expiration_ticks);
+      base::Bind(&UrlBypassActionCallback, bypass_action, request_method, url,
+                 should_retry, bypass_duration.InSeconds(), expiration_ticks);
   PostBoundNetLogBypassEvent(
       net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
       net::NetLog::PHASE_NONE, expiration_ticks, parameters_callback);
@@ -199,13 +208,15 @@ void DataReductionProxyEventCreator::AddBypassActionEvent(
 void DataReductionProxyEventCreator::AddBypassTypeEvent(
     const net::BoundNetLog& net_log,
     DataReductionProxyBypassType bypass_type,
+    const std::string& request_method,
     const GURL& url,
+    bool should_retry,
     const base::TimeDelta& bypass_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
   int64 expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
   const net::NetLog::ParametersCallback& parameters_callback =
-      base::Bind(&UrlBypassTypeCallback, bypass_type, url,
-                 bypass_duration.InSeconds(), expiration_ticks);
+      base::Bind(&UrlBypassTypeCallback, bypass_type, request_method, url,
+                 should_retry, bypass_duration.InSeconds(), expiration_ticks);
   PostBoundNetLogBypassEvent(
       net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
       net::NetLog::PHASE_NONE, expiration_ticks, parameters_callback);

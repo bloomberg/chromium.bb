@@ -316,6 +316,9 @@ var BandwidthView = (function() {
               }
             } else if (key == 'bypass_type') {
               value = getKeyWithValue(DataReductionProxyBypassEventType, value);
+            } else if (key == 'bypass_action_type') {
+              value = getKeyWithValue(DataReductionProxyBypassActionType,
+                                      value);
             } else if (key == 'expiration') {
               value = timeutil.convertTimeTicksToDate(value);
             }

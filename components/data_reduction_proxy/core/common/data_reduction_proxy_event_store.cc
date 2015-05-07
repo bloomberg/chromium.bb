@@ -19,11 +19,25 @@ struct StringToConstant {
   const int constant;
 };
 
+// Creates an associative array of the enum name to enum value for
+// DataReductionProxyBypassType. Ensures that the same enum space is used
+// without having to keep an enum map in sync.
 const StringToConstant kDataReductionProxyBypassEventTypeTable[] = {
 #define BYPASS_EVENT_TYPE(label, value) { \
     # label, data_reduction_proxy::BYPASS_EVENT_TYPE_ ## label },
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_type_list.h"
 #undef BYPASS_EVENT_TYPE
+};
+
+// Creates an associate array of the enum name to enum value for
+// DataReductionProxyBypassAction. Ensures that the same enum space is used
+// without having to keep an enum map in sync.
+const StringToConstant kDataReductionProxyBypassActionTypeTable[] = {
+#define BYPASS_ACTION_TYPE(label, value)                       \
+  { #label, data_reduction_proxy::BYPASS_ACTION_TYPE_##label } \
+  ,
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_action_list.h"
+#undef BYPASS_ACTION_TYPE
 };
 
 }  // namespace
@@ -33,14 +47,23 @@ namespace data_reduction_proxy {
 // static
 void DataReductionProxyEventStore::AddConstants(
     base::DictionaryValue* constants_dict) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   for (size_t i = 0;
        i < arraysize(kDataReductionProxyBypassEventTypeTable); ++i) {
     dict->SetInteger(kDataReductionProxyBypassEventTypeTable[i].name,
                      kDataReductionProxyBypassEventTypeTable[i].constant);
   }
 
-  constants_dict->Set("dataReductionProxyBypassEventType", dict);
+  constants_dict->Set("dataReductionProxyBypassEventType", dict.Pass());
+
+  dict.reset(new base::DictionaryValue());
+  for (size_t i = 0; i < arraysize(kDataReductionProxyBypassActionTypeTable);
+       ++i) {
+    dict->SetInteger(kDataReductionProxyBypassActionTypeTable[i].name,
+                     kDataReductionProxyBypassActionTypeTable[i].constant);
+  }
+
+  constants_dict->Set("dataReductionProxyBypassActionType", dict.Pass());
 }
 
 DataReductionProxyEventStore::DataReductionProxyEventStore()

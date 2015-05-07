@@ -8,7 +8,6 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
@@ -69,11 +68,9 @@ void MarkProxiesAsBadUntil(
 namespace data_reduction_proxy {
 
 DataReductionProxyBypassProtocol::DataReductionProxyBypassProtocol(
-    DataReductionProxyConfig* config,
-    DataReductionProxyEventCreator* event_creator)
-    : config_(config), event_creator_(event_creator) {
+    DataReductionProxyConfig* config)
+    : config_(config) {
   DCHECK(config_);
-  DCHECK(event_creator_);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 }
 
@@ -83,7 +80,8 @@ DataReductionProxyBypassProtocol::~DataReductionProxyBypassProtocol() {
 
 bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
     net::URLRequest* request,
-    DataReductionProxyBypassType* proxy_bypass_type) {
+    DataReductionProxyBypassType* proxy_bypass_type,
+    DataReductionProxyInfo* data_reduction_proxy_info) {
   DCHECK(request);
   const net::HttpResponseHeaders* response_headers =
       request->response_info().headers.get();
@@ -126,11 +124,8 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
 
   // GetDataReductionProxyBypassType will only log a net_log event if a bypass
   // command was sent via the data reduction proxy headers
-  bool event_logged = false;
-  DataReductionProxyInfo data_reduction_proxy_info;
   DataReductionProxyBypassType bypass_type = GetDataReductionProxyBypassType(
-      response_headers, request->url(), request->net_log(),
-      &data_reduction_proxy_info, event_creator_, &event_logged);
+      response_headers, data_reduction_proxy_info);
 
   if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER) {
     if (DataReductionProxyParams::
@@ -153,12 +148,6 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   if (bypass_type == BYPASS_EVENT_TYPE_MAX)
     return false;
 
-  if (!event_logged) {
-    event_creator_->AddBypassTypeEvent(
-        request->net_log(), bypass_type, request->url(),
-        data_reduction_proxy_info.bypass_duration);
-  }
-
   DCHECK(request->context());
   DCHECK(request->context()->proxy_service());
   net::ProxyServer proxy_server =
@@ -170,15 +159,12 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
           NULL)) {
     DataReductionProxyBypassStats::RecordDataReductionProxyBypassInfo(
         second.is_valid() && !second.host_port_pair().IsEmpty(),
-        data_reduction_proxy_info.bypass_all,
-        proxy_server,
-        bypass_type);
+        data_reduction_proxy_info->bypass_all, proxy_server, bypass_type);
   }
 
-  if (data_reduction_proxy_info.mark_proxies_as_bad) {
-    MarkProxiesAsBadUntil(request,
-                          data_reduction_proxy_info.bypass_duration,
-                          data_reduction_proxy_info.bypass_all,
+  if (data_reduction_proxy_info->mark_proxies_as_bad) {
+    MarkProxiesAsBadUntil(request, data_reduction_proxy_info->bypass_duration,
+                          data_reduction_proxy_info->bypass_all,
                           data_reduction_proxy_type_info.proxy_servers);
   } else {
     request->SetLoadFlags(request->load_flags() |
