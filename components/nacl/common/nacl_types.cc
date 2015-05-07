@@ -32,7 +32,7 @@ NaClResourcePrefetchResult::NaClResourcePrefetchResult()
 }
 
 NaClResourcePrefetchResult::NaClResourcePrefetchResult(
-    IPC::PlatformFileForTransit file,
+    const IPC::PlatformFileForTransit& file,
     const base::FilePath& file_path_metadata,
     const std::string& file_key)
     : file(file), file_path_metadata(file_path_metadata), file_key(file_key) {
@@ -98,7 +98,7 @@ NaClLaunchResult::NaClLaunchResult()
 }
 
 NaClLaunchResult::NaClLaunchResult(
-    FileDescriptor imc_channel_handle,
+    const IPC::PlatformFileForTransit& imc_channel_handle,
     const IPC::ChannelHandle& ppapi_ipc_channel_handle,
     const IPC::ChannelHandle& trusted_ipc_channel_handle,
     const IPC::ChannelHandle& manifest_service_ipc_channel_handle,

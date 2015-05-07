@@ -203,6 +203,72 @@ void CloseFile(base::File file) {
 unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
     ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
 
+// Unfortunately, we cannot use ScopedGeneric directly for IPC::ChannelHandle,
+// because there is neither operator== nor operator != definition for it.
+// Instead, define a simple wrapper for IPC::ChannelHandle with an assumption
+// that this only takes a transferred IPC::ChannelHandle or one to be
+// transferred via IPC.
+class NaClProcessHost::ScopedChannelHandle {
+  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedChannelHandle, RValue);
+ public:
+  ScopedChannelHandle() {
+  }
+  explicit ScopedChannelHandle(const IPC::ChannelHandle& handle)
+      : handle_(handle) {
+    DCHECK(IsSupportedHandle(handle_));
+  }
+  ScopedChannelHandle(RValue other) : handle_(other.object->handle_) {
+    other.object->handle_ = IPC::ChannelHandle();
+    DCHECK(IsSupportedHandle(handle_));
+  }
+  ~ScopedChannelHandle() {
+    CloseIfNecessary();
+  }
+
+  const IPC::ChannelHandle& get() const { return handle_; }
+  IPC::ChannelHandle release() WARN_UNUSED_RESULT {
+    IPC::ChannelHandle result = handle_;
+    handle_ = IPC::ChannelHandle();
+    return result;
+  }
+
+  void reset(const IPC::ChannelHandle& handle = IPC::ChannelHandle()) {
+    DCHECK(IsSupportedHandle(handle));
+#if defined(OS_POSIX)
+    // Following the manner of base::ScopedGeneric, we do not support
+    // reset() with same handle for simplicity of the implementation.
+    CHECK(handle.socket.fd == -1 || handle.socket.fd != handle_.socket.fd);
+#endif
+    CloseIfNecessary();
+    handle_ = handle;
+  }
+
+ private:
+  // Returns true if the given handle is closable automatically by this
+  // class. This function is just a helper for validation.
+  static bool IsSupportedHandle(const IPC::ChannelHandle& handle) {
+#if defined(OS_WIN)
+    // On Windows, it is not supported to marshal the |pipe.handle|.
+    // In our case, we wrap a transferred ChannelHandle (or one to be
+    // transferred) via IPC, so we can assume |handle.pipe.handle| is NULL.
+    return handle.pipe.handle == NULL;
+#else
+    return true;
+#endif
+  }
+
+  void CloseIfNecessary() {
+#if defined(OS_POSIX)
+    if (handle_.socket.auto_close) {
+      // Defer closing task to the ScopedFD.
+      base::ScopedFD(handle_.socket.fd);
+    }
+#endif
+  }
+
+  IPC::ChannelHandle handle_;
+};
+
 NaClProcessHost::NaClProcessHost(
     const GURL& manifest_url,
     base::File nexe_file,
@@ -656,10 +722,10 @@ void NaClProcessHost::OnResourcesReady() {
   }
 }
 
-bool NaClProcessHost::ReplyToRenderer(
-    const IPC::ChannelHandle& ppapi_channel_handle,
-    const IPC::ChannelHandle& trusted_channel_handle,
-    const IPC::ChannelHandle& manifest_service_channel_handle) {
+void NaClProcessHost::ReplyToRenderer(
+    ScopedChannelHandle ppapi_channel_handle,
+    ScopedChannelHandle trusted_channel_handle,
+    ScopedChannelHandle manifest_service_channel_handle) {
 #if defined(OS_WIN)
   // If we are on 64-bit Windows, the NaCl process's sandbox is
   // managed by a different process from the renderer's sandbox.  We
@@ -669,58 +735,44 @@ bool NaClProcessHost::ReplyToRenderer(
   if (RunningOnWOW64()) {
     if (!content::BrokerAddTargetPeer(process_->GetData().handle)) {
       SendErrorToRenderer("BrokerAddTargetPeer() failed");
-      return false;
+      return;
     }
   }
 #endif
 
-  FileDescriptor imc_handle_for_renderer;
-#if defined(OS_WIN)
-  // Copy the handle into the renderer process.
-  HANDLE handle_in_renderer;
-  if (!DuplicateHandle(base::GetCurrentProcessHandle(),
-                       socket_for_renderer_.TakePlatformFile(),
-                       nacl_host_message_filter_->PeerHandle(),
-                       &handle_in_renderer,
-                       0,  // Unused given DUPLICATE_SAME_ACCESS.
-                       FALSE,
-                       DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    SendErrorToRenderer("DuplicateHandle() failed");
-    return false;
-  }
-  imc_handle_for_renderer = reinterpret_cast<FileDescriptor>(
-      handle_in_renderer);
-#else
-  // No need to dup the imc_handle - we don't pass it anywhere else so
-  // it cannot be closed.
-  FileDescriptor imc_handle;
-  imc_handle.fd = socket_for_renderer_.TakePlatformFile();
-  imc_handle.auto_close = true;
-  imc_handle_for_renderer = imc_handle;
-#endif
+  // Hereafter, we always send an IPC message with handles which, on Windows,
+  // are not closable in this process.
+  IPC::PlatformFileForTransit imc_handle_for_renderer =
+      IPC::TakeFileHandleForProcess(socket_for_renderer_.Pass(),
+                                    nacl_host_message_filter_->PeerHandle());
 
-  const ChildProcessData& data = process_->GetData();
+  std::string error_message;
   base::SharedMemoryHandle crash_info_shmem_renderer_handle;
   if (!crash_info_shmem_.ShareToProcess(nacl_host_message_filter_->PeerHandle(),
                                         &crash_info_shmem_renderer_handle)) {
-    SendErrorToRenderer("ShareToProcess() failed");
-    return false;
+    // On error, we do not send "IPC::ChannelHandle"s to the renderer process.
+    // Note that some other FDs/handles still get sent to the renderer, but
+    // will be closed there.
+    ppapi_channel_handle.reset();
+    trusted_channel_handle.reset();
+    manifest_service_channel_handle.reset();
+    error_message = "ShareToProcess() failed";
   }
 
+  const ChildProcessData& data = process_->GetData();
   SendMessageToRenderer(
       NaClLaunchResult(imc_handle_for_renderer,
-                       ppapi_channel_handle,
-                       trusted_channel_handle,
-                       manifest_service_channel_handle,
+                       ppapi_channel_handle.release(),
+                       trusted_channel_handle.release(),
+                       manifest_service_channel_handle.release(),
                        base::GetProcId(data.handle),
                        data.id,
                        crash_info_shmem_renderer_handle),
-      std::string() /* error_message */);
+      error_message);
 
   // Now that the crash information shmem handles have been shared with the
   // plugin and the renderer, the browser can close its handle.
   crash_info_shmem_.Close();
-  return true;
 }
 
 void NaClProcessHost::SendErrorToRenderer(const std::string& error_message) {
@@ -733,13 +785,18 @@ void NaClProcessHost::SendMessageToRenderer(
     const std::string& error_message) {
   DCHECK(nacl_host_message_filter_.get());
   DCHECK(reply_msg_);
-  if (nacl_host_message_filter_.get() != NULL && reply_msg_ != NULL) {
-    NaClHostMsg_LaunchNaCl::WriteReplyParams(
-        reply_msg_, result, error_message);
-    nacl_host_message_filter_->Send(reply_msg_);
-    nacl_host_message_filter_ = NULL;
-    reply_msg_ = NULL;
+  if (nacl_host_message_filter_.get() == NULL || reply_msg_ == NULL) {
+    // As DCHECKed above, this case should not happen in general.
+    // Though, in this case, unfortunately there is no proper way to release
+    // resources which are already created in |result|. We just give up on
+    // releasing them, and leak them.
+    return;
   }
+
+  NaClHostMsg_LaunchNaCl::WriteReplyParams(reply_msg_, result, error_message);
+  nacl_host_message_filter_->Send(reply_msg_);
+  nacl_host_message_filter_ = NULL;
+  reply_msg_ = NULL;
 }
 
 void NaClProcessHost::SetDebugStubPort(int port) {
@@ -941,74 +998,83 @@ void NaClProcessHost::StartNaClFileResolved(
 // This method is called when NaClProcessHostMsg_PpapiChannelCreated is
 // received.
 void NaClProcessHost::OnPpapiChannelsCreated(
-    const IPC::ChannelHandle& browser_channel_handle,
-    const IPC::ChannelHandle& ppapi_renderer_channel_handle,
-    const IPC::ChannelHandle& trusted_renderer_channel_handle,
-    const IPC::ChannelHandle& manifest_service_channel_handle) {
+    const IPC::ChannelHandle& raw_browser_channel_handle,
+    const IPC::ChannelHandle& raw_ppapi_renderer_channel_handle,
+    const IPC::ChannelHandle& raw_trusted_renderer_channel_handle,
+    const IPC::ChannelHandle& raw_manifest_service_channel_handle) {
+  ScopedChannelHandle browser_channel_handle(raw_browser_channel_handle);
+  ScopedChannelHandle ppapi_renderer_channel_handle(
+      raw_ppapi_renderer_channel_handle);
+  ScopedChannelHandle trusted_renderer_channel_handle(
+      raw_trusted_renderer_channel_handle);
+  ScopedChannelHandle manifest_service_channel_handle(
+      raw_manifest_service_channel_handle);
+
   if (!enable_ppapi_proxy()) {
-    ReplyToRenderer(IPC::ChannelHandle(),
-                    trusted_renderer_channel_handle,
-                    manifest_service_channel_handle);
+    ReplyToRenderer(ScopedChannelHandle(),
+                    trusted_renderer_channel_handle.Pass(),
+                    manifest_service_channel_handle.Pass());
     return;
   }
 
-  if (!ipc_proxy_channel_.get()) {
-    DCHECK_EQ(PROCESS_TYPE_NACL_LOADER, process_->GetData().process_type);
-
-    ipc_proxy_channel_ =
-        IPC::ChannelProxy::Create(browser_channel_handle,
-                                  IPC::Channel::MODE_CLIENT,
-                                  NULL,
-                                  base::MessageLoopProxy::current().get());
-    // Create the browser ppapi host and enable PPAPI message dispatching to the
-    // browser process.
-    ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(
-        ipc_proxy_channel_.get(),  // sender
-        permissions_,
-        process_->GetData().handle,
-        ipc_proxy_channel_.get(),
-        nacl_host_message_filter_->render_process_id(),
-        render_view_id_,
-        profile_directory_));
-    ppapi_host_->SetOnKeepaliveCallback(
-        NaClBrowser::GetDelegate()->GetOnKeepaliveCallback());
-
-    ppapi::PpapiNaClPluginArgs args;
-    args.off_the_record = nacl_host_message_filter_->off_the_record();
-    args.permissions = permissions_;
-    args.keepalive_throttle_interval_milliseconds =
-        keepalive_throttle_interval_milliseconds_;
-    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-    DCHECK(cmdline);
-    std::string flag_whitelist[] = {
-      switches::kV,
-      switches::kVModule,
-    };
-    for (size_t i = 0; i < arraysize(flag_whitelist); ++i) {
-      std::string value = cmdline->GetSwitchValueASCII(flag_whitelist[i]);
-      if (!value.empty()) {
-        args.switch_names.push_back(flag_whitelist[i]);
-        args.switch_values.push_back(value);
-      }
-    }
-
-    ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
-        scoped_ptr<ppapi::host::HostFactory>(
-            NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
-                ppapi_host_.get())));
-
-    // Send a message to initialize the IPC dispatchers in the NaCl plugin.
-    ipc_proxy_channel_->Send(new PpapiMsg_InitializeNaClDispatcher(args));
-
-    // Let the renderer know that the IPC channels are established.
-    ReplyToRenderer(ppapi_renderer_channel_handle,
-                    trusted_renderer_channel_handle,
-                    manifest_service_channel_handle);
-  } else {
+  if (ipc_proxy_channel_.get()) {
     // Attempt to open more than 1 browser channel is not supported.
     // Shut down the NaCl process.
     process_->GetHost()->ForceShutdown();
+    return;
   }
+
+  DCHECK_EQ(PROCESS_TYPE_NACL_LOADER, process_->GetData().process_type);
+
+  ipc_proxy_channel_ =
+      IPC::ChannelProxy::Create(browser_channel_handle.release(),
+                                IPC::Channel::MODE_CLIENT,
+                                NULL,
+                                base::MessageLoopProxy::current().get());
+  // Create the browser ppapi host and enable PPAPI message dispatching to the
+  // browser process.
+  ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(
+      ipc_proxy_channel_.get(),  // sender
+      permissions_,
+      process_->GetData().handle,
+      ipc_proxy_channel_.get(),
+      nacl_host_message_filter_->render_process_id(),
+      render_view_id_,
+      profile_directory_));
+  ppapi_host_->SetOnKeepaliveCallback(
+      NaClBrowser::GetDelegate()->GetOnKeepaliveCallback());
+
+  ppapi::PpapiNaClPluginArgs args;
+  args.off_the_record = nacl_host_message_filter_->off_the_record();
+  args.permissions = permissions_;
+  args.keepalive_throttle_interval_milliseconds =
+      keepalive_throttle_interval_milliseconds_;
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  DCHECK(cmdline);
+  std::string flag_whitelist[] = {
+    switches::kV,
+    switches::kVModule,
+  };
+  for (size_t i = 0; i < arraysize(flag_whitelist); ++i) {
+    std::string value = cmdline->GetSwitchValueASCII(flag_whitelist[i]);
+    if (!value.empty()) {
+      args.switch_names.push_back(flag_whitelist[i]);
+      args.switch_values.push_back(value);
+    }
+  }
+
+  ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
+      scoped_ptr<ppapi::host::HostFactory>(
+          NaClBrowser::GetDelegate()->CreatePpapiHostFactory(
+              ppapi_host_.get())));
+
+  // Send a message to initialize the IPC dispatchers in the NaCl plugin.
+  ipc_proxy_channel_->Send(new PpapiMsg_InitializeNaClDispatcher(args));
+
+  // Let the renderer know that the IPC channels are established.
+  ReplyToRenderer(ppapi_renderer_channel_handle.Pass(),
+                  trusted_renderer_channel_handle.Pass(),
+                  manifest_service_channel_handle.Pass());
 }
 
 bool NaClProcessHost::StartWithLaunchedProcess() {

@@ -16,28 +16,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_platform_file.h"
 
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#endif
-
-#if defined(OS_WIN)
-#include <windows.h>   // for HANDLE
-#endif
-
-// TODO(gregoryd): add a Windows definition for base::FileDescriptor
 namespace nacl {
-
-#if defined(OS_WIN)
-typedef HANDLE FileDescriptor;
-inline HANDLE ToNativeHandle(const FileDescriptor& desc) {
-  return desc;
-}
-#elif defined(OS_POSIX)
-typedef base::FileDescriptor FileDescriptor;
-inline int ToNativeHandle(const FileDescriptor& desc) {
-  return desc.fd;
-}
-#endif
 
 // We allocate a page of shared memory for sharing crash information from
 // trusted code in the NaCl process to the renderer.
@@ -74,7 +53,7 @@ struct NaClResourcePrefetchRequest {
 // a NaCl manifest file.
 struct NaClResourcePrefetchResult {
   NaClResourcePrefetchResult();
-  NaClResourcePrefetchResult(IPC::PlatformFileForTransit file,
+  NaClResourcePrefetchResult(const IPC::PlatformFileForTransit& file,
                              const base::FilePath& file_path,
                              const std::string& file_key);
   ~NaClResourcePrefetchResult();
@@ -161,7 +140,7 @@ struct NaClLaunchParams {
 struct NaClLaunchResult {
   NaClLaunchResult();
   NaClLaunchResult(
-      FileDescriptor imc_channel_handle,
+      const IPC::PlatformFileForTransit& imc_channel_handle,
       const IPC::ChannelHandle& ppapi_ipc_channel_handle,
       const IPC::ChannelHandle& trusted_ipc_channel_handle,
       const IPC::ChannelHandle& manifest_service_ipc_channel_handle,
@@ -171,7 +150,7 @@ struct NaClLaunchResult {
   ~NaClLaunchResult();
 
   // For plugin loader <-> renderer IMC communication.
-  FileDescriptor imc_channel_handle;
+  IPC::PlatformFileForTransit imc_channel_handle;
 
   // For plugin <-> renderer PPAPI communication.
   IPC::ChannelHandle ppapi_ipc_channel_handle;

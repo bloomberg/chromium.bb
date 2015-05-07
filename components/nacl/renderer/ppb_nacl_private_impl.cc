@@ -385,7 +385,6 @@ void LaunchSelLdr(PP_Instance instance,
   scoped_ptr<ManifestServiceChannel::Delegate> manifest_service_proxy(
       new ManifestServiceProxy(instance, process_type));
 
-  FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
   int routing_id = GetRoutingID(instance);
@@ -415,11 +414,6 @@ void LaunchSelLdr(PP_Instance instance,
     perm_bits |= ppapi::PERMISSION_DEV;
   instance_info.permissions =
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
-  std::string error_message_string;
-  NaClLaunchResult launch_result;
-
-  IPC::PlatformFileForTransit nexe_for_transit =
-      IPC::InvalidPlatformFileForTransit();
 
   std::vector<NaClResourcePrefetchRequest> resource_prefetch_request_list;
   if (process_type == kNativeNaClProcessType) {
@@ -438,6 +432,8 @@ void LaunchSelLdr(PP_Instance instance,
     }
   }
 
+  IPC::PlatformFileForTransit nexe_for_transit =
+      IPC::InvalidPlatformFileForTransit();
 #if defined(OS_POSIX)
   if (nexe_file_info->handle != PP_kInvalidFileHandle)
     nexe_for_transit = base::FileDescriptor(nexe_file_info->handle, true);
@@ -447,8 +443,11 @@ void LaunchSelLdr(PP_Instance instance,
   // it's simpler to do the duplication in the browser anyway.
   nexe_for_transit = nexe_file_info->handle;
 #else
-#error Unsupported target platform.
+# error Unsupported target platform.
 #endif
+
+  std::string error_message_string;
+  NaClLaunchResult launch_result;
   if (!sender->Send(new NaClHostMsg_LaunchNaCl(
           NaClLaunchParams(
               instance_info.url.spec(),
@@ -472,6 +471,12 @@ void LaunchSelLdr(PP_Instance instance,
   load_manager->set_nonsfi(PP_ToBool(uses_nonsfi_mode));
 
   if (!error_message_string.empty()) {
+    // Even on error, some FDs/handles may be passed to here.
+    // We must release those resources.
+    // See also nacl_process_host.cc.
+    IPC::PlatformFileForTransitToFile(launch_result.imc_channel_handle);
+    base::SharedMemory::CloseHandle(launch_result.crash_info_shmem_handle);
+
     if (PP_ToBool(main_service_runtime)) {
       load_manager->ReportLoadError(PP_NACL_ERROR_SEL_LDR_LAUNCH,
                                     "ServiceRuntime: failed to start",
@@ -483,7 +488,7 @@ void LaunchSelLdr(PP_Instance instance,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
     return;
   }
-  result_socket = launch_result.imc_channel_handle;
+
   instance_info.channel_handle = launch_result.ppapi_ipc_channel_handle;
   instance_info.plugin_pid = launch_result.plugin_pid;
   instance_info.plugin_child_id = launch_result.plugin_child_id;
@@ -494,7 +499,9 @@ void LaunchSelLdr(PP_Instance instance,
     nacl_plugin_instance->instance_info.reset(new InstanceInfo(instance_info));
   }
 
-  *(static_cast<NaClHandle*>(imc_handle)) = ToNativeHandle(result_socket);
+  *(static_cast<NaClHandle*>(imc_handle)) =
+      IPC::PlatformFileForTransitToPlatformFile(
+          launch_result.imc_channel_handle);
 
   // Store the crash information shared memory handle.
   load_manager->set_crash_info_shmem_handle(

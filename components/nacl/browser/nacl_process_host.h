@@ -111,6 +111,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   content::BrowserPpapiHost* browser_ppapi_host() { return ppapi_host_.get(); }
 
  private:
+  class ScopedChannelHandle;
+
   void LaunchNaClGdb();
 
   // Mark the process as using a particular GDB debug stub port and notify
@@ -142,10 +144,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Sends the reply message to the renderer who is waiting for the plugin
   // to load. Returns true on success.
-  bool ReplyToRenderer(
-      const IPC::ChannelHandle& ppapi_channel_handle,
-      const IPC::ChannelHandle& trusted_channel_handle,
-      const IPC::ChannelHandle& manifest_service_channel_handle);
+  void ReplyToRenderer(
+      ScopedChannelHandle ppapi_channel_handle,
+      ScopedChannelHandle trusted_channel_handle,
+      ScopedChannelHandle manifest_service_channel_handle);
 
   // Sends the reply with error message to the renderer.
   void SendErrorToRenderer(const std::string& error_message);
