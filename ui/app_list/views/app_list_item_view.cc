@@ -358,12 +358,10 @@ void AppListItemView::StateChanged() {
     // keyboard selection; for mouse hover, keyboard selection takes precedence.
     if (!apps_grid_view_->IsSelectedView(this) || state() == STATE_PRESSED)
       SetItemIsHighlighted(true);
-    title_->SetEnabledColor(kGridTitleHoverColor);
   } else {
     SetItemIsHighlighted(false);
     if (item_weak_)
       item_weak_->set_highlighted(false);
-    title_->SetEnabledColor(kGridTitleColor);
   }
   SetTitleSubpixelAA();
 }

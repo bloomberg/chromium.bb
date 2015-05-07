@@ -37,7 +37,6 @@ APP_LIST_EXPORT extern const SkColor kResultDimmedTextColor;
 APP_LIST_EXPORT extern const SkColor kResultURLTextColor;
 
 APP_LIST_EXPORT extern const SkColor kGridTitleColor;
-APP_LIST_EXPORT extern const SkColor kGridTitleHoverColor;
 
 APP_LIST_EXPORT extern const SkColor kFolderTitleColor;
 APP_LIST_EXPORT extern const SkColor kFolderTitleHintTextColor;

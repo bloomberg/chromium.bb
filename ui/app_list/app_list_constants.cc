@@ -40,7 +40,6 @@ const SkColor kResultDimmedTextColor = SkColorSetRGB(0x84, 0x84, 0x84);
 const SkColor kResultURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
 const SkColor kGridTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
-const SkColor kGridTitleHoverColor = kGridTitleColor;
 
 const SkColor kFolderTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);

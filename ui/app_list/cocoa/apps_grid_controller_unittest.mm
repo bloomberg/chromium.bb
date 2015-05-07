@@ -288,22 +288,6 @@ TEST_F(AppsGridControllerTest, Pagination) {
   EXPECT_EQ(1u, [[GetPageAt(0) content] count]);
 }
 
-// Tests that selecting an item changes the text color correctly.
-TEST_F(AppsGridControllerTest, SelectionChangesTextColor) {
-  model()->PopulateApps(2);
-  [apps_grid_controller_ selectItemAtIndex:0];
-  EXPECT_NSEQ(ButtonTitleColorAt(0),
-              gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor));
-  EXPECT_NSEQ(ButtonTitleColorAt(1),
-              gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor));
-
-  [apps_grid_controller_ selectItemAtIndex:1];
-  EXPECT_NSEQ(ButtonTitleColorAt(0),
-              gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor));
-  EXPECT_NSEQ(ButtonTitleColorAt(1),
-              gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor));
-}
-
 // Tests basic keyboard navigation on the first page.
 TEST_F(AppsGridControllerTest, FirstPageKeyboardNavigation) {
   model()->PopulateApps(kItemsPerPage - 2);

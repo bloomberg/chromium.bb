@@ -238,12 +238,11 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   NSDictionary* titleAttributes = @{
     NSParagraphStyleAttributeName : paragraphStyle,
     NSFontAttributeName : ui::ResourceBundle::GetSharedInstance()
-        .GetFontList(app_list::kItemTextFontStyle)
-        .DeriveWithSizeDelta(kMacFontSizeDelta)
-        .GetPrimaryFont()
-        .GetNativeFont(),
-    NSForegroundColorAttributeName : [self isSelected] ?
-        gfx::SkColorToSRGBNSColor(app_list::kGridTitleHoverColor) :
+                              .GetFontList(app_list::kItemTextFontStyle)
+                              .DeriveWithSizeDelta(kMacFontSizeDelta)
+                              .GetPrimaryFont()
+                              .GetNativeFont(),
+    NSForegroundColorAttributeName :
         gfx::SkColorToSRGBNSColor(app_list::kGridTitleColor)
   };
   NSString* buttonTitle =
