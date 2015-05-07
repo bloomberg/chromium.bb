@@ -143,6 +143,13 @@ void ServiceWorkerContextWrapper::Shutdown() {
 
 void ServiceWorkerContextWrapper::DeleteAndStartOver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    // The context could be null due to system shutdown or restart failure. In
+    // either case, we should not have to recover the system, so just return
+    // here.
+    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+    return;
+  }
   context_core_->DeleteAndStartOver(
       base::Bind(&ServiceWorkerContextWrapper::DidDeleteAndStartOver, this));
 }
