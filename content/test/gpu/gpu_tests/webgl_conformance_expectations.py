@@ -44,12 +44,22 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         bug=478572)
+    self.Fail('conformance/glsl/misc/const-variable-initialization.html',
+        bug=485632)
+    self.Fail('conformance/misc/expando-loss.html',
+        bug=485634)
 
     # Win failures
-    self.Fail('conformance/glsl/misc/ternary-operators-in-global-initializers.html',
+    self.Fail('conformance/glsl/misc/' +
+              'ternary-operators-in-global-initializers.html',
         ['win'], bug=415694)
     self.Fail('conformance/glsl/misc/struct-specifiers-in-uniforms.html',
         ['win'], bug=433412)
+    self.Fail('conformance/glsl/bugs/' +
+              'pow-of-small-constant-in-user-defined-function.html',
+        ['win'], bug=485641)
+    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+        ['win'], bug=485642)
 
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
@@ -392,7 +402,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('conformance2/core/draw-buffers.html', bug=483282)
     self.Fail('conformance2/core/frag-depth.html', bug=483282)
-    self.Fail('conformance2/core/misc-parameters.html', bug=483282)
     self.Fail('conformance2/core/tex-mipmap-levels.html', bug=483282)
 
     self.Fail('conformance2/core/tex-new-formats.html', bug=483282)

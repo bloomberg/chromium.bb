@@ -127,7 +127,7 @@ class WebglConformance(benchmark_module.Benchmark):
   def AddBenchmarkCommandLineArgs(cls, group):
     group.add_option('--webgl-conformance-version',
         help='Version of the WebGL conformance tests to run.',
-        default='1.0.3')
+        default='1.0.4')
     group.add_option('--webgl2-only',
         help='Whether we include webgl 1 tests if version is 2.0.0 or above.',
         default='false')
