@@ -236,7 +236,7 @@
       }
     ]
   },
-  "Win 7 ATI GPU Perf": {
+  "Win 7 ATI GPU Perf (2)": {
     "scripts": [
       {
         "args": [
@@ -299,7 +299,7 @@
       }
     ]
   },
-  "Win 7 Nvidia GPU Perf": {
+  "Win 7 Nvidia GPU Perf (2)": {
     "scripts": [
       {
         "args": [
