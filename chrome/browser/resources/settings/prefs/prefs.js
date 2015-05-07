@@ -19,22 +19,23 @@
 (function() {
   'use strict';
 
-  Polymer('cr-settings-prefs', {
-    publish: {
+  Polymer({
+    is: 'cr-settings-prefs',
+
+    properties: {
       /**
        * Object containing all preferences.
-       *
-       * @attribute settings
-       * @type {Object}
-       * @default null
        */
-      settings: null,
+      settings: {
+        type: Object,
+        value: function() { return {}; },
+        notify: true,
+      },
     },
 
     /** @override */
     created: function() {
       CrSettingsPrefs.isInitialized = false;
-      this.settings = {};
 
       chrome.settingsPrivate.onPrefsChanged.addListener(
           this.onPrefsChanged_.bind(this));

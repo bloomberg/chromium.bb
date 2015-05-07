@@ -1,21 +1,19 @@
-<link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_events/cr_events.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/v0_8/cr_events/cr_events.html">
 <link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
-<link rel="import" href="checkbox_style.html">
 
-<polymer-element name="cr-settings-checkbox">
+<dom-module id="cr-settings-checkbox">
+  <link rel="import" type="css" href="checkbox.css">
   <template>
-    <core-style ref="checkboxStyle"></core-style>
     <cr-events id="events"></cr-events>
-    <cr-settings-pref-tracker pref="{{pref}}"></cr-settings-pref-tracker>
+    <cr-settings-pref-tracker pref="[[pref]]"></cr-settings-pref-tracker>
 
-    <core-label horizontal layout>
-      <cr-checkbox id="checkbox" checked="{{pref.value}}"
-          disabled="{{pref.disabled}}" for></cr-checkbox>
+    <cr-checkbox id="checkbox" checked="{{pref.value}}"
+        disabled="[[pref.disabled]]">
       <span>{{label}}</span>
       <span class="sub-label">{{subLabel}}</span>
-    </core-label>
+    </cr-checkbox>
   </template>
   <script src="checkbox.js"></script>
-</polymer-element>
+</dom-module>

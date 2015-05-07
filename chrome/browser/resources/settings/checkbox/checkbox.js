@@ -14,31 +14,27 @@
  * @element cr-settings-checkbox
  */
 Polymer({
-  publish: {
-    /**
-     * The boolean preference to control.
-     *
-     * @attribute pref
-     * @type {Object}
-     * @default null
-     */
-    pref: null,
+  is: 'cr-settings-checkbox',
 
+  properties: {
     /**
-     * @attribute label
-     * @type {string}
-     * @default ''
+     * The boolean preference object to control.
+     * @type {?chrome.settingsPrivate.PrefObject}
      */
-    label: '',
+    pref: Object,
 
-    /**
-     * @attribute label
-     * @type {string}
-     * @default ''
-     */
-    subLabel: '',
+    label: {
+      type: String,
+      value: '',
+    },
+
+    subLabel: {
+      type: String,
+      value: '',
+    },
   },
 
+  /** @override */
   ready: function() {
     this.$.events.forward(this.$.checkbox, ['change']);
   },

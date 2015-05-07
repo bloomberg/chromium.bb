@@ -35,20 +35,18 @@
 
   document.addEventListener(CrSettingsPrefs.INITIALIZED, validateAll_);
 
-  Polymer('cr-settings-pref-tracker', {
-    publish: {
+  Polymer({
+    is: 'cr-settings-pref-tracker',
+
+    properties: {
       /**
        * The Preference object being tracked.
-       *
-       * @attribute pref
-       * @type {Object}
-       * @default null
+       * @type {?chrome.settingsPrivate.PrefObject}
        */
-      pref: null,
-    },
-
-    observe: {
-      pref: 'validate_',
+      pref: {
+        type: Object,
+        observer: 'validate_',
+      },
     },
 
     /** @override */
