@@ -54,16 +54,7 @@ static v8::Local<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicS
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    //
-    // FIXME: Oilpan: explicitly convert adopt()'s result so as to
-    // disambiguate the (implicit) conversion of its
-    // PassRefPtrWillBeRawPtr<StaticElementList> result -- the
-    // other toV8() overload that introduces the ambiguity is
-    // toV8(NodeList*, ...).
-    //
-    // When adopt() no longer uses transition types, the conversion
-    // can be removed.
-    return toV8(PassRefPtrWillBeRawPtr<NodeList>(StaticElementList::adopt(namedItems)), info.Holder(), info.GetIsolate());
+    return toV8(StaticElementList::adopt(namedItems), info.Holder(), info.GetIsolate());
 }
 
 template<class CallbackInfo>
