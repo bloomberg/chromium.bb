@@ -77,10 +77,8 @@ void BufferQueue::CopyBufferDamage(int texture,
 }
 
 void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
-  displayed_surface_.damage.Union(damage);
   for (size_t i = 0; i < available_surfaces_.size(); i++)
     available_surfaces_[i].damage.Union(damage);
-
   for (std::deque<AllocatedSurface>::iterator it =
            in_flight_surfaces_.begin();
        it != in_flight_surfaces_.end();
@@ -91,12 +89,10 @@ void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
 void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   if (damage != gfx::Rect(size_)) {
     // We must have a frame available to copy from.
-    DCHECK(!in_flight_surfaces_.empty() || displayed_surface_.texture);
-    unsigned int texture_id = !in_flight_surfaces_.empty()
-                                  ? in_flight_surfaces_.back().texture
-                                  : displayed_surface_.texture;
-
-    CopyBufferDamage(current_surface_.texture, texture_id, damage,
+    DCHECK(!in_flight_surfaces_.empty());
+    CopyBufferDamage(current_surface_.texture,
+                     in_flight_surfaces_.back().texture,
+                     damage,
                      current_surface_.damage);
   }
   UpdateBufferDamage(damage);
@@ -125,15 +121,13 @@ void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
 }
 
 void BufferQueue::PageFlipComplete() {
-  if (displayed_surface_.texture)
-    available_surfaces_.push_back(displayed_surface_);
-
-  displayed_surface_ = in_flight_surfaces_.front();
-  in_flight_surfaces_.pop_front();
+  if (in_flight_surfaces_.size() > 1) {
+    available_surfaces_.push_back(in_flight_surfaces_.front());
+    in_flight_surfaces_.pop_front();
+  }
 }
 
 void BufferQueue::FreeAllSurfaces() {
-  FreeSurface(&displayed_surface_);
   FreeSurface(&current_surface_);
   while (!in_flight_surfaces_.empty()) {
     FreeSurface(&in_flight_surfaces_.front());

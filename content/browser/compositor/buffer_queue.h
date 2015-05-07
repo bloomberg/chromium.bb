@@ -82,7 +82,6 @@ class CONTENT_EXPORT BufferQueue {
   size_t allocated_count_;
   unsigned int internalformat_;
   AllocatedSurface current_surface_;  // This surface is currently bound.
-  AllocatedSurface displayed_surface_;  // The surface currently on the screen.
   std::vector<AllocatedSurface> available_surfaces_;  // These are free for use.
   std::deque<AllocatedSurface> in_flight_surfaces_;
   GLHelper* gl_helper_;
