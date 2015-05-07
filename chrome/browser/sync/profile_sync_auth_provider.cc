@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 
@@ -54,7 +54,7 @@ void ProfileSyncAuthProvider::SyncThreadProxy::RequestAccessToken(
       base::Bind(&ProfileSyncAuthProvider::RequestAccessToken,
                  provider_impl_,
                  callback,
-                 base::MessageLoopProxy::current()));
+                 base::ThreadTaskRunnerHandle::Get()));
 }
 
 void ProfileSyncAuthProvider::SyncThreadProxy::InvalidateAccessToken(
@@ -132,6 +132,6 @@ scoped_ptr<syncer::SyncAuthProvider>
 ProfileSyncAuthProvider::CreateProviderForSyncThread() {
   DCHECK(CalledOnValidThread());
   scoped_ptr<syncer::SyncAuthProvider> auth_provider(new SyncThreadProxy(
-      weak_factory_.GetWeakPtr(), base::MessageLoopProxy::current()));
+      weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
   return auth_provider.Pass();
 }

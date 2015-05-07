@@ -18,6 +18,7 @@ class ProfileSyncService;
 class ProfileSyncComponentsFactory;
 
 namespace base {
+class SingleThreadTaskRunner;
 class TimeDelta;
 }
 
@@ -45,7 +46,7 @@ namespace browser_sync {
 class FrontendDataTypeController : public sync_driver::DataTypeController {
  public:
   FrontendDataTypeController(
-      scoped_refptr<base::MessageLoopProxy> ui_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,

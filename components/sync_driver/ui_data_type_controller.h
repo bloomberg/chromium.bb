@@ -32,7 +32,7 @@ namespace sync_driver {
 class UIDataTypeController : public DataTypeController {
  public:
   UIDataTypeController(
-      scoped_refptr<base::MessageLoopProxy> ui_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
       syncer::ModelType type,
       SyncApiComponentFactory* sync_factory);
@@ -120,7 +120,7 @@ class UIDataTypeController : public DataTypeController {
   // real work. We do not own the object.
   base::WeakPtr<syncer::SyncableService> local_service_;
 
-  scoped_refptr<base::MessageLoopProxy> ui_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
  private:
    // Associate the sync model with the service's model, then start syncing.
   virtual void Associate();

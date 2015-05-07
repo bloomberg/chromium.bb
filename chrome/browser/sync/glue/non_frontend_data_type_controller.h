@@ -23,6 +23,7 @@ class ProfileSyncComponentsFactory;
 
 namespace base {
 class TimeDelta;
+class SingleThreadTaskRunner;
 }
 
 namespace syncer {
@@ -50,7 +51,7 @@ class NonFrontendDataTypeController : public sync_driver::DataTypeController {
   class BackendComponentsContainer;
 
   NonFrontendDataTypeController(
-      scoped_refptr<base::MessageLoopProxy> ui_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,

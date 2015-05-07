@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
@@ -25,7 +26,7 @@ namespace browser_sync {
 // a dependency on ProfileSyncService.  That dep can probably be removed
 // without too much work.
 FrontendDataTypeController::FrontendDataTypeController(
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
@@ -84,7 +85,7 @@ void FrontendDataTypeController::StartAssociating(
   start_callback_ = start_callback;
   state_ = ASSOCIATING;
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
     FROM_HERE, base::Bind(&FrontendDataTypeController::Associate, this));
 }
 
@@ -143,14 +144,14 @@ void FrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
   if (!model_load_callback_.is_null()) {
     syncer::SyncMergeResult local_merge_result(type());
     local_merge_result.set_error(error);
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(model_load_callback_, type(), error));
   }
 }
 
 FrontendDataTypeController::FrontendDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+    : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
       profile_sync_factory_(NULL),
       profile_(NULL),
       sync_service_(NULL),

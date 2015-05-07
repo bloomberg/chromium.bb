@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -57,10 +58,10 @@ class SingleClientBackupRollbackTest : public SyncTest {
     base::Time backup_time;
     syncer::CheckSyncDbLastModifiedTime(
         GetProfile(0)->GetPath().Append(FILE_PATH_LITERAL("Sync Data Backup")),
-        base::MessageLoopProxy::current(),
+        base::ThreadTaskRunnerHandle::Get(),
         base::Bind(&SingleClientBackupRollbackTest::CheckDbCallback,
                    base::Unretained(this), &backup_time));
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
     return backup_time;

@@ -19,6 +19,10 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace syncer {
 class SyncError;
 struct UserShare;
@@ -150,7 +154,7 @@ class DataTypeController
   friend class base::RefCountedDeleteOnMessageLoop<DataTypeController>;
   friend class base::DeleteHelper<DataTypeController>;
 
-  DataTypeController(scoped_refptr<base::MessageLoopProxy> ui_thread,
+  DataTypeController(scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
                      const base::Closure& error_callback);
 
   // If the DTC is waiting for models to load, once the models are

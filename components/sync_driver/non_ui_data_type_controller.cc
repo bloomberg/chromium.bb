@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
 #include "components/sync_driver/sync_api_component_factory.h"
@@ -22,7 +23,7 @@ NonUIDataTypeController::CreateSharedChangeProcessor() {
 }
 
 NonUIDataTypeController::NonUIDataTypeController(
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
     SyncApiComponentFactory* sync_factory)
     : DataTypeController(ui_thread, error_callback),
@@ -171,7 +172,7 @@ void NonUIDataTypeController::OnSingleDataTypeUnrecoverableError(
 }
 
 NonUIDataTypeController::NonUIDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+    : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
       sync_factory_(NULL) {}
 
 NonUIDataTypeController::~NonUIDataTypeController() {}

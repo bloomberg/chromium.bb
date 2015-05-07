@@ -25,7 +25,7 @@ class SyncApiComponentFactory;
 class NonUIDataTypeController : public DataTypeController {
  public:
   NonUIDataTypeController(
-      scoped_refptr<base::MessageLoopProxy> ui_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
       const base::Closure& error_callback,
       SyncApiComponentFactory* sync_factory);
 
@@ -155,7 +155,7 @@ class NonUIDataTypeController : public DataTypeController {
   // and released in StopLocalService().
   base::WeakPtr<syncer::SyncableService> local_service_;
 
-  scoped_refptr<base::MessageLoopProxy> ui_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
 };
 
 }  // namespace sync_driver

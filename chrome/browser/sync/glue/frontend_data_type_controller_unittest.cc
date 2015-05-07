@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller_mock.h"
@@ -41,7 +42,7 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
       Profile* profile,
       ProfileSyncService* sync_service,
       FrontendDataTypeControllerMock* mock)
-      : FrontendDataTypeController(base::MessageLoopProxy::current(),
+      : FrontendDataTypeController(base::ThreadTaskRunnerHandle::Get(),
                                    base::Closure(),
                                    profile_sync_factory,
                                    profile,

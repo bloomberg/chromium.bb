@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller_mock.h"
@@ -57,7 +58,7 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
       Profile* profile,
       ProfileSyncService* sync_service,
       NonFrontendDataTypeControllerMock* mock)
-      : NonFrontendDataTypeController(base::MessageLoopProxy::current(),
+      : NonFrontendDataTypeController(base::ThreadTaskRunnerHandle::Get(),
                                       base::Closure(),
                                       profile_sync_factory,
                                       profile,

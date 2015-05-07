@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
@@ -160,7 +161,7 @@ NonFrontendDataTypeController::AssociationResult::~AssociationResult() {}
 // effort for now, hence  still having a dependency on ProfileSyncService.
 // That dep can probably be removed without too much work.
 NonFrontendDataTypeController::NonFrontendDataTypeController(
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
@@ -302,7 +303,7 @@ void NonFrontendDataTypeController::OnSingleDataTypeUnrecoverableError(
 }
 
 NonFrontendDataTypeController::NonFrontendDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(), base::Closure()),
+    : DataTypeController(base::ThreadTaskRunnerHandle::Get(), base::Closure()),
       state_(NOT_RUNNING),
       profile_sync_factory_(NULL),
       profile_(NULL),

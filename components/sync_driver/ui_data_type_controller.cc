@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/shared_change_processor_ref.h"
 #include "sync/api/sync_error.h"
@@ -17,7 +18,7 @@
 namespace sync_driver {
 
 UIDataTypeController::UIDataTypeController()
-    : DataTypeController(base::MessageLoopProxy::current(),
+    : DataTypeController(base::ThreadTaskRunnerHandle::Get(),
                          base::Closure()),
       sync_factory_(NULL),
       state_(NOT_RUNNING),
@@ -25,7 +26,7 @@ UIDataTypeController::UIDataTypeController()
 }
 
 UIDataTypeController::UIDataTypeController(
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback,
     syncer::ModelType type,
     SyncApiComponentFactory* sync_factory)

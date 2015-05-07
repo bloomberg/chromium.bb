@@ -11,7 +11,7 @@
 namespace sync_driver {
 
 DataTypeController::DataTypeController(
-    scoped_refptr<base::MessageLoopProxy> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
     const base::Closure& error_callback)
     : base::RefCountedDeleteOnMessageLoop<DataTypeController>(ui_thread),
       error_callback_(error_callback),
