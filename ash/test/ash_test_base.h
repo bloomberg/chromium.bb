@@ -124,6 +124,9 @@ class AshTestBase : public testing::Test {
   // Utility methods to emulate user logged in or not, session started or not
   // and user able to lock screen or not cases.
   void SetSessionStarted(bool session_started);
+  // Sets the SessionState to active, marking the begining of transitioning to
+  // a user session. The session is considered blocked until SetSessionStarted
+  // is called.
   void SetSessionStarting();
   void SetUserLoggedIn(bool user_logged_in);
   void SetCanLockScreen(bool can_lock_screen);

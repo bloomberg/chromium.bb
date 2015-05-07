@@ -1174,13 +1174,13 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
 }
 
 bool ShelfLayoutManager::IsAlignmentLocked() const {
-  SessionStateDelegate* session_state_delegate =
-      Shell::GetInstance()->session_state_delegate();
   if (state_.is_screen_locked)
     return true;
   // The session state becomes active at the start of transitioning to a user
   // session, however the session is considered blocked until the full UI is
   // ready. Exit early to allow for proper layout.
+  SessionStateDelegate* session_state_delegate =
+      Shell::GetInstance()->session_state_delegate();
   if (session_state_delegate->GetSessionState() ==
       SessionStateDelegate::SESSION_STATE_ACTIVE) {
     return false;

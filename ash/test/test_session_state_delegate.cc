@@ -62,15 +62,30 @@ class MockUserInfo : public user_manager::UserInfo {
   DISALLOW_COPY_AND_ASSIGN(MockUserInfo);
 };
 
+// A test version of user_manager::UserManager which can be used for testing on
+// non-ChromeOS builds.
+class TestSessionStateDelegate::TestUserManager {
+ public:
+  TestUserManager() : session_started_(false) {}
+
+  void SessionStarted() { session_started_ = true; }
+
+  bool IsSessionStarted() const { return session_started_; }
+
+ private:
+  // True if SessionStarted() has been called.
+  bool session_started_;
+  DISALLOW_COPY_AND_ASSIGN(TestUserManager);
+};
+
 TestSessionStateDelegate::TestSessionStateDelegate()
-    : has_active_user_(false),
-      active_user_session_started_(false),
-      can_lock_screen_(true),
+    : can_lock_screen_(true),
       should_lock_screen_before_suspending_(false),
       screen_locked_(false),
       user_adding_screen_running_(false),
       logged_in_users_(1),
       active_user_index_(0),
+      user_manager_(new TestUserManager()),
       session_state_(SESSION_STATE_LOGIN_PRIMARY) {
   user_list_.push_back(
       new MockUserInfo("First@tray"));  // This is intended to be capitalized.
@@ -116,15 +131,16 @@ int TestSessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
 
 int TestSessionStateDelegate::NumberOfLoggedInUsers() const {
   // TODO(skuhne): Add better test framework to test multiple profiles.
-  return has_active_user_ ? logged_in_users_ : 0;
+  return IsActiveUserSessionStarted() ? logged_in_users_ : 0;
 }
 
 bool TestSessionStateDelegate::IsActiveUserSessionStarted() const {
-  return active_user_session_started_;
+  return user_manager_->IsSessionStarted() &&
+         session_state_ == SESSION_STATE_ACTIVE;
 }
 
 bool TestSessionStateDelegate::CanLockScreen() const {
-  return has_active_user_ && can_lock_screen_;
+  return IsActiveUserSessionStarted() && can_lock_screen_;
 }
 
 bool TestSessionStateDelegate::IsScreenLocked() const {
@@ -146,7 +162,7 @@ void TestSessionStateDelegate::UnlockScreen() {
 
 bool TestSessionStateDelegate::IsUserSessionBlocked() const {
   return !IsActiveUserSessionStarted() || IsScreenLocked() ||
-      user_adding_screen_running_;
+         user_adding_screen_running_ || session_state_ != SESSION_STATE_ACTIVE;
 }
 
 SessionStateDelegate::SessionState TestSessionStateDelegate::GetSessionState()
@@ -155,26 +171,25 @@ SessionStateDelegate::SessionState TestSessionStateDelegate::GetSessionState()
 }
 
 void TestSessionStateDelegate::SetHasActiveUser(bool has_active_user) {
-  has_active_user_ = has_active_user;
   if (!has_active_user) {
-    active_user_session_started_ = false;
     session_state_ = SESSION_STATE_LOGIN_PRIMARY;
   } else {
+    session_state_ = SESSION_STATE_ACTIVE;
     Shell::GetInstance()->ShowShelf();
   }
 }
 
 void TestSessionStateDelegate::SetActiveUserSessionStarted(
     bool active_user_session_started) {
-  active_user_session_started_ = active_user_session_started;
   if (active_user_session_started) {
+    user_manager_->SessionStarted();
     session_state_ = SESSION_STATE_ACTIVE;
-    has_active_user_ = true;
     Shell::GetInstance()->CreateShelf();
     Shell::GetInstance()->UpdateAfterLoginStatusChange(
         user::LOGGED_IN_USER);
   } else {
     session_state_ = SESSION_STATE_LOGIN_PRIMARY;
+    user_manager_.reset(new TestUserManager());
   }
 }
 
@@ -192,6 +207,8 @@ void TestSessionStateDelegate::SetUserAddingScreenRunning(
   user_adding_screen_running_ = user_adding_screen_running;
   if (user_adding_screen_running_)
     session_state_ = SESSION_STATE_LOGIN_SECONDARY;
+  else
+    session_state_ = SESSION_STATE_ACTIVE;
 }
 
 void TestSessionStateDelegate::SetUserImage(
