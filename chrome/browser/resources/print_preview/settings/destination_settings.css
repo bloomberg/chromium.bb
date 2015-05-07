@@ -8,9 +8,7 @@
 }
 
 #destination-settings .throbber {
-  display: block;
-  margin-bottom: 4px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 #destination-settings .destination-settings-box {

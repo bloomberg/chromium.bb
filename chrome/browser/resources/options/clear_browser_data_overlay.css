@@ -12,8 +12,10 @@
 }
 
 #cbd-throbber {
-  margin: 4px 10px;
-  vertical-align: middle;
+  /* This should be changed to align-self: center; when the parent is changed to
+   * display: flex; */
+  position: relative;
+  top: 5px;
   visibility: hidden;
 }
 
