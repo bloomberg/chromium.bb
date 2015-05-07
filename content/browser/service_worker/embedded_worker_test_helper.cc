@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -27,9 +28,12 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       weak_factory_(this) {
   scoped_ptr<MockServiceWorkerDatabaseTaskManager> database_task_manager(
       new MockServiceWorkerDatabaseTaskManager(
-          base::MessageLoopProxy::current()));
-  wrapper_->InitInternal(user_data_directory, database_task_manager.Pass(),
-                         base::MessageLoopProxy::current(), NULL, NULL);
+          base::ThreadTaskRunnerHandle::Get()));
+  wrapper_->InitInternal(user_data_directory,
+                         database_task_manager.Pass(),
+                         base::ThreadTaskRunnerHandle::Get(),
+                         NULL,
+                         NULL);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
   registry()->AddChildProcessSender(mock_render_process_id, this, nullptr);
 }
@@ -222,22 +226,22 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
       registry()->GetWorker(params.embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnStartWorker,
-                  weak_factory_.GetWeakPtr(),
-                  params.embedded_worker_id,
-                  params.service_worker_version_id,
-                  params.scope,
-                  params.script_url,
-                  params.pause_after_download));
+                 weak_factory_.GetWeakPtr(),
+                 params.embedded_worker_id,
+                 params.service_worker_version_id,
+                 params.scope,
+                 params.script_url,
+                 params.pause_after_download));
 }
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
       int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnResumeAfterDownload,
                  weak_factory_.GetWeakPtr(),
@@ -247,7 +251,7 @@ void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
 void EmbeddedWorkerTestHelper::OnStopWorkerStub(int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnStopWorker,
                  weak_factory_.GetWeakPtr(),
@@ -261,7 +265,7 @@ void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
   EXPECT_EQ(worker->thread_id(), thread_id);
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(
           base::IgnoreResult(&EmbeddedWorkerTestHelper::OnMessageToWorker),
@@ -272,7 +276,7 @@ void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(
 }
 
 void EmbeddedWorkerTestHelper::OnActivateEventStub(int request_id) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnActivateEvent,
                  weak_factory_.GetWeakPtr(),
@@ -281,7 +285,7 @@ void EmbeddedWorkerTestHelper::OnActivateEventStub(int request_id) {
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnInstallEvent,
                  weak_factory_.GetWeakPtr(),
@@ -292,7 +296,7 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int request_id,
     const ServiceWorkerFetchRequest& request) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent,
                  weak_factory_.GetWeakPtr(),

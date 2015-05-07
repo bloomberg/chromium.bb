@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/resource_context_impl.h"
@@ -98,7 +99,7 @@ storage::BlobProtocolHandler* CreateMockBlobProtocolHandler(
   // The FileSystemContext and MessageLoopProxy are not actually used but a
   // MessageLoopProxy is needed to avoid a DCHECK in BlobURLRequestJob ctor.
   return new storage::BlobProtocolHandler(
-      blob_storage_context, nullptr, base::MessageLoopProxy::current().get());
+      blob_storage_context, nullptr, base::ThreadTaskRunnerHandle::Get().get());
 }
 
 }  // namespace

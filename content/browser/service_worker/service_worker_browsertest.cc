@@ -6,7 +6,9 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -57,7 +59,7 @@ struct FetchResult {
 
 void RunAndQuit(const base::Closure& closure,
                 const base::Closure& quit,
-                base::MessageLoopProxy* original_message_loop) {
+                base::SingleThreadTaskRunner* original_message_loop) {
   closure.Run();
   original_message_loop->PostTask(FROM_HERE, quit);
 }
@@ -66,9 +68,12 @@ void RunOnIOThreadWithDelay(const base::Closure& closure,
                             base::TimeDelta delay) {
   base::RunLoop run_loop;
   BrowserThread::PostDelayedTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&RunAndQuit, closure, run_loop.QuitClosure(),
-                 base::MessageLoopProxy::current()),
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&RunAndQuit,
+                 closure,
+                 run_loop.QuitClosure(),
+                 base::ThreadTaskRunnerHandle::Get()),
       delay);
   run_loop.Run();
 }
@@ -81,8 +86,8 @@ void RunOnIOThread(
     const base::Callback<void(const base::Closure& continuation)>& closure) {
   base::RunLoop run_loop;
   base::Closure quit_on_original_thread =
-      base::Bind(base::IgnoreResult(&base::MessageLoopProxy::PostTask),
-                 base::MessageLoopProxy::current().get(),
+      base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+                 base::ThreadTaskRunnerHandle::Get().get(),
                  FROM_HERE,
                  run_loop.QuitClosure());
   BrowserThread::PostTask(BrowserThread::IO,
