@@ -123,6 +123,9 @@ class SigninClient : public KeyedService {
   // the core SigninClient.
   virtual ios::ProfileOAuth2TokenServiceIOSProvider* GetIOSProvider() = 0;
 #endif
+
+  // Execute |callback| if and when there is a network connection.
+  virtual void DelayNetworkCall(const base::Closure& callback) = 0;
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_

@@ -242,6 +242,7 @@
       'browser/shell_integration_win_unittest.cc',
       'browser/signin/account_reconcilor_unittest.cc',
       'browser/signin/account_service_flag_fetcher_unittest.cc',
+      'browser/signin/chrome_signin_client_unittest.cc',
       'browser/signin/local_auth_unittest.cc',
       'browser/signin/signin_global_error_unittest.cc',
       'browser/signin/signin_manager_unittest.cc',

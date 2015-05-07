@@ -32,6 +32,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -44,10 +45,19 @@ ChromeSigninClient::ChromeSigninClient(
     : profile_(profile),
       signin_error_controller_(signin_error_controller) {
   signin_error_controller_->AddObserver(this);
+#if !defined(OS_CHROMEOS)
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+#endif
 }
 
 ChromeSigninClient::~ChromeSigninClient() {
   signin_error_controller_->RemoveObserver(this);
+}
+
+void ChromeSigninClient::Shutdown() {
+#if !defined(OS_CHROMEOS)
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+#endif
 }
 
 // static
@@ -224,4 +234,33 @@ void ChromeSigninClient::OnErrorChanged() {
 
   cache.SetProfileIsAuthErrorAtIndex(index,
       signin_error_controller_->HasError());
+}
+
+#if !defined(OS_CHROMEOS)
+void ChromeSigninClient::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (type >= net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE)
+    return;
+
+  for (const base::Closure& callback : delayed_callbacks_)
+    callback.Run();
+
+  delayed_callbacks_.clear();
+}
+#endif
+
+void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
+#if defined(OS_CHROMEOS)
+  chromeos::DelayNetworkCall(
+      base::TimeDelta::FromMilliseconds(chromeos::kDefaultNetworkRetryDelayMS),
+      callback);
+  return;
+#else
+  // Don't bother if we don't have any kind of network connection.
+  if (net::NetworkChangeNotifier::IsOffline()) {
+    delayed_callbacks_.push_back(callback);
+  } else {
+    callback.Run();
+  }
+#endif
 }
