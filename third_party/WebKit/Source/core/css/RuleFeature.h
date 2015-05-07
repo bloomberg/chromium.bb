@@ -81,7 +81,6 @@ public:
     }
 
     bool hasSelectorForId(const AtomicString& idValue) const { return m_idInvalidationSets.contains(idValue); }
-    bool hasSelectorForPseudoType(CSSSelector::PseudoType pseudo) const { return m_pseudoInvalidationSets.contains(pseudo); }
 
     void collectInvalidationSetsForClass(InvalidationSetVector&, Element&, const AtomicString& className) const;
     void collectInvalidationSetsForId(InvalidationSetVector&, Element&, const AtomicString& id) const;

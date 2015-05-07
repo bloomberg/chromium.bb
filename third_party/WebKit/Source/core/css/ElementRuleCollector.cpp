@@ -37,7 +37,6 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSSupportsRule.h"
-#include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -266,7 +265,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
     context.scrollbarPart = m_pseudoStyleRequest.scrollbarPart;
     context.isUARule = m_matchingUARules;
     context.scopeContainsLastMatchedElement = m_scopeContainsLastMatchedElement;
-    SelectorChecker::Match match = selectorChecker.match(context, DOMSiblingTraversalStrategy(), result);
+    SelectorChecker::Match match = selectorChecker.match(context, result);
     if (match != SelectorChecker::SelectorMatches)
         return false;
     if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != result->dynamicPseudo)

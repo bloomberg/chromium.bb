@@ -94,7 +94,6 @@ crbug.com/356828 [ Debug Win7 ] fast/dom/gc-dom-tree-lifetime.html [ Pass Timeou
 crbug.com/356828 [ Release XP ] fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 Bug(gardener) [ Debug Win7 ] fast/dom/minor-dom-gc.html [ Failure Pass ]
 Bug(gardener) [ Release Win7 ] fast/dom/nodesFromRect/nodesFromRect-culled-inlines.html [ Failure Pass ]
-Bug(gardener) [ Debug Win7 ] fast/dom/shadow/pseudoclass-update-indeterminate-progress.html [ ImageOnlyFailure Pass ]
 Bug(gardener) crbug.com/339778 crbug.com/412273 [ Release Win7 ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/339778 crbug.com/412273 [ Debug Win7 ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/339778 crbug.com/412273 [ Release XP ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]

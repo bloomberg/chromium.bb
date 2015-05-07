@@ -118,7 +118,6 @@ PrefixedEncryptedMedia status=stable
 // See https://crbug.com/346236 for current status.
 PrefixedVideoFullscreen status=stable
 Presentation status=test
-PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
 PushMessaging status=stable
 // Push messaging payloads are blocked on the Push API supporting encryption.
 PushMessagingData status=test

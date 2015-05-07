@@ -29,7 +29,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/SelectorChecker.h"
-#include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -123,7 +122,7 @@ inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Eleme
     selectorCheckingContext.scope = !rootNode.isDocumentNode() ? &rootNode : 0;
     if (selectorCheckingContext.scope)
         selectorCheckingContext.scopeContainsLastMatchedElement = true;
-    return selectorChecker.match(selectorCheckingContext, DOMSiblingTraversalStrategy()) == SelectorChecker::SelectorMatches;
+    return selectorChecker.match(selectorCheckingContext) == SelectorChecker::SelectorMatches;
 }
 
 bool SelectorDataList::matches(Element& targetElement) const

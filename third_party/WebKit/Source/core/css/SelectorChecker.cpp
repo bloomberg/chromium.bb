@@ -160,12 +160,11 @@ static bool shouldMatchHoverOrActive(const SelectorChecker::SelectorCheckingCont
 // * SelectorFailsLocally     - the selector fails for the element e
 // * SelectorFailsAllSiblings - the selector fails for e and any sibling of e
 // * SelectorFailsCompletely  - the selector fails for e and any sibling or ancestor of e
-template<typename SiblingTraversalStrategy>
-SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& context, MatchResult* result) const
 {
     // first selector has to match
     unsigned specificity = 0;
-    if (!checkOne(context, siblingTraversalStrategy, &specificity))
+    if (!checkOne(context, &specificity))
         return SelectorFailsLocally;
 
     if (context.selector->match() == CSSSelector::PseudoElement) {
@@ -212,12 +211,12 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
 
         if (result) {
             TemporaryChange<PseudoId> dynamicPseudoScope(result->dynamicPseudo, NOPSEUDO);
-            match = matchForRelation(context, siblingTraversalStrategy, result);
+            match = matchForRelation(context, result);
         } else {
-            return matchForRelation(context, siblingTraversalStrategy, 0);
+            return matchForRelation(context, 0);
         }
     } else {
-        match = matchForSubSelector(context, siblingTraversalStrategy, result);
+        match = matchForSubSelector(context, result);
     }
     if (match != SelectorMatches || !result)
         return match;
@@ -239,8 +238,7 @@ static inline bool isOpenShadowRoot(const Node* node)
     return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRoot::OpenShadowRoot;
 }
 
-template<typename SiblingTraversalStrategy>
-SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorCheckingContext& context, MatchResult* result) const
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
 
@@ -256,7 +254,7 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
         return SelectorFailsCompletely;
 
     nextContext.isSubSelector = true;
-    return match(nextContext, siblingTraversalStrategy, result);
+    return match(nextContext, result);
 }
 
 static bool selectorMatchesShadowRoot(const CSSSelector* selector)
@@ -276,16 +274,14 @@ static inline Element* parentOrShadowHostButDisallowEscapingUserAgentShadowTree(
     return toElement(parent);
 }
 
-template<typename SiblingTraversalStrategy>
-SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const ContainerNode* node, const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const ContainerNode* node, const SelectorCheckingContext& context, MatchResult* result) const
 {
     if (!isOpenShadowRoot(node))
         return SelectorFailsCompletely;
-    return match(context, siblingTraversalStrategy, result);
+    return match(context, result);
 }
 
-template<typename SiblingTraversalStrategy>
-SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, MatchResult* result) const
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
     nextContext.previousElement = context.element;
@@ -302,7 +298,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::Descendant:
         if (context.selector->relationIsAffectedByPseudoContent()) {
             for (Element* element = context.element; element; element = element->parentElement()) {
-                if (matchForShadowDistributed(element, siblingTraversalStrategy, nextContext, result) == SelectorMatches)
+                if (matchForShadowDistributed(element, nextContext, result) == SelectorMatches)
                     return SelectorMatches;
             }
             return SelectorFailsCompletely;
@@ -311,10 +307,10 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.elementStyle = 0;
 
         if (selectorMatchesShadowRoot(nextContext.selector))
-            return matchForPseudoShadow(context.element->containingShadowRoot(), nextContext, siblingTraversalStrategy, result);
+            return matchForPseudoShadow(context.element->containingShadowRoot(), nextContext, result);
 
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
-            Match match = this->match(nextContext, siblingTraversalStrategy, result);
+            Match match = this->match(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsCompletely)
                 return match;
             if (nextSelectorExceedsScope(nextContext))
@@ -324,18 +320,18 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::Child:
         {
             if (context.selector->relationIsAffectedByPseudoContent())
-                return matchForShadowDistributed(context.element, siblingTraversalStrategy, nextContext, result);
+                return matchForShadowDistributed(context.element, nextContext, result);
 
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
 
             if (selectorMatchesShadowRoot(nextContext.selector))
-                return matchForPseudoShadow(context.element->parentNode(), nextContext, siblingTraversalStrategy, result);
+                return matchForPseudoShadow(context.element->parentNode(), nextContext, result);
 
             nextContext.element = parentElement(context);
             if (!nextContext.element)
                 return SelectorFailsCompletely;
-            return match(nextContext, siblingTraversalStrategy, result);
+            return match(nextContext, result);
         }
     case CSSSelector::DirectAdjacent:
         // Shadow roots can't have sibling elements
@@ -351,7 +347,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             return SelectorFailsAllSiblings;
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
-        return match(nextContext, siblingTraversalStrategy, result);
+        return match(nextContext, result);
 
     case CSSSelector::IndirectAdjacent:
         // Shadow roots can't have sibling elements
@@ -366,7 +362,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
         for (; nextContext.element; nextContext.element = ElementTraversal::previousSibling(*nextContext.element)) {
-            Match match = this->match(nextContext, siblingTraversalStrategy, result);
+            Match match = this->match(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsAllSiblings || match == SelectorFailsCompletely)
                 return match;
         };
@@ -384,14 +380,14 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.element = shadowHost;
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            return this->match(nextContext, siblingTraversalStrategy, result);
+            return this->match(nextContext, result);
         }
 
     case CSSSelector::ShadowDeep:
         {
             if (context.selector->relationIsAffectedByPseudoContent()) {
                 for (Element* element = context.element; element; element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*element)) {
-                    if (matchForShadowDistributed(element, siblingTraversalStrategy, nextContext, result) == SelectorMatches)
+                    if (matchForShadowDistributed(element, nextContext, result) == SelectorMatches)
                         return SelectorMatches;
                 }
                 return SelectorFailsCompletely;
@@ -400,7 +396,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
             for (nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*nextContext.element)) {
-                Match match = this->match(nextContext, siblingTraversalStrategy, result);
+                Match match = this->match(nextContext, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
                 if (nextSelectorExceedsScope(nextContext))
@@ -417,8 +413,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     return SelectorFailsCompletely;
 }
 
-template<typename SiblingTraversalStrategy>
-SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element* element, const SiblingTraversalStrategy& siblingTraversalStrategy, SelectorCheckingContext& nextContext, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element* element, SelectorCheckingContext& nextContext, MatchResult* result) const
 {
     ASSERT(element);
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
@@ -429,7 +424,7 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element*
             nextContext.scope = insertionPoints[i]->containingShadowRoot();
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
-        if (match(nextContext, siblingTraversalStrategy, result) == SelectorMatches)
+        if (match(nextContext, result) == SelectorMatches)
             return SelectorMatches;
     }
     return SelectorFailsLocally;
@@ -558,8 +553,7 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
     return false;
 }
 
-template<typename SiblingTraversalStrategy>
-bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, unsigned* specificity) const
+bool SelectorChecker::checkOne(const SelectorCheckingContext& context, unsigned* specificity) const
 {
     ASSERT(context.element);
     Element& element = *context.element;
@@ -591,9 +585,9 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         return anyAttributeMatches(element, selector.match(), selector);
 
     case CSSSelector::PseudoClass:
-        return checkPseudoClass(context, siblingTraversalStrategy, specificity);
+        return checkPseudoClass(context, specificity);
     case CSSSelector::PseudoElement:
-        return checkPseudoElement(context, siblingTraversalStrategy);
+        return checkPseudoElement(context);
 
     case CSSSelector::PagePseudoClass:
         // FIXME: what?
@@ -606,8 +600,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     return true;
 }
 
-template<typename SiblingTraversalStrategy>
-bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, unsigned* specificity) const
+bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, unsigned* specificity) const
 {
     Element& element = *context.element;
     const CSSSelector& selector = *context.selector;
@@ -629,7 +622,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             // We cannot determine whether :host or :scope matches a given element or not.
             if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
                 return true;
-            if (!checkOne(subContext, siblingTraversalStrategy))
+            if (!checkOne(subContext))
                 return true;
         }
         return false;
@@ -681,14 +674,14 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 parent->setChildrenAffectedByFirstChildRules();
                 element.setAffectedByFirstChildRules();
             }
-            return siblingTraversalStrategy.isFirstChild(element);
+            return DOMSiblingTraversalStrategy::isFirstChild(element);
         }
         break;
     case CSSSelector::PseudoFirstOfType:
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return siblingTraversalStrategy.isFirstOfType(element, element.tagQName());
+            return DOMSiblingTraversalStrategy::isFirstOfType(element, element.tagQName());
         }
         break;
     case CSSSelector::PseudoLastChild:
@@ -699,7 +692,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             }
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return siblingTraversalStrategy.isLastChild(element);
+            return DOMSiblingTraversalStrategy::isLastChild(element);
         }
         break;
     case CSSSelector::PseudoLastOfType:
@@ -708,7 +701,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return siblingTraversalStrategy.isLastOfType(element, element.tagQName());
+            return DOMSiblingTraversalStrategy::isLastOfType(element, element.tagQName());
         }
         break;
     case CSSSelector::PseudoOnlyChild:
@@ -721,7 +714,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             }
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return siblingTraversalStrategy.isFirstChild(element) && siblingTraversalStrategy.isLastChild(element);
+            return DOMSiblingTraversalStrategy::isFirstChild(element) && DOMSiblingTraversalStrategy::isLastChild(element);
         }
         break;
     case CSSSelector::PseudoOnlyOfType:
@@ -733,7 +726,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             }
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return siblingTraversalStrategy.isFirstOfType(element, element.tagQName()) && siblingTraversalStrategy.isLastOfType(element, element.tagQName());
+            return DOMSiblingTraversalStrategy::isFirstOfType(element, element.tagQName()) && DOMSiblingTraversalStrategy::isLastOfType(element, element.tagQName());
         }
         break;
     case CSSSelector::PseudoNthChild:
@@ -742,7 +735,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return selector.matchNth(1 + siblingTraversalStrategy.countElementsBefore(element));
+            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsBefore(element));
         }
         break;
     case CSSSelector::PseudoNthOfType:
@@ -751,7 +744,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return selector.matchNth(1 + siblingTraversalStrategy.countElementsOfTypeBefore(element, element.tagQName()));
+            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsOfTypeBefore(element, element.tagQName()));
         }
         break;
     case CSSSelector::PseudoNthLastChild:
@@ -762,7 +755,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return selector.matchNth(1 + siblingTraversalStrategy.countElementsAfter(element));
+            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsAfter(element));
         }
         break;
     case CSSSelector::PseudoNthLastOfType:
@@ -773,7 +766,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return selector.matchNth(1 + siblingTraversalStrategy.countElementsOfTypeAfter(element, element.tagQName()));
+            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsOfTypeAfter(element, element.tagQName()));
         }
         break;
     case CSSSelector::PseudoTarget:
@@ -784,7 +777,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
             subContext.isSubSelector = true;
             ASSERT(selector.selectorList());
             for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-                if (match(subContext, siblingTraversalStrategy) == SelectorMatches)
+                if (match(subContext) == SelectorMatches)
                     return true;
             }
         }
@@ -937,7 +930,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
         return element.isUnresolvedCustomElement();
     case CSSSelector::PseudoHost:
     case CSSSelector::PseudoHostContext:
-        return checkPseudoHost(context, siblingTraversalStrategy, specificity);
+        return checkPseudoHost(context, specificity);
     case CSSSelector::PseudoSpatialNavigationFocus:
         return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
     case CSSSelector::PseudoListBox:
@@ -963,8 +956,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, c
     return false;
 }
 
-template<typename SiblingTraversalStrategy>
-bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy) const
+bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context) const
 {
     const CSSSelector& selector = *context.selector;
 
@@ -977,7 +969,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
         const CSSSelector* contextSelector = context.selector;
         ASSERT(contextSelector);
         for (subContext.selector = contextSelector->selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
-            if (match(subContext, siblingTraversalStrategy) == SelectorMatches)
+            if (match(subContext) == SelectorMatches)
                 return true;
         }
         return false;
@@ -987,8 +979,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
     return true;
 }
 
-template<typename SiblingTraversalStrategy>
-bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, unsigned* specificity) const
+bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, unsigned* specificity) const
 {
     const CSSSelector& selector = *context.selector;
     Element& element = *context.element;
@@ -1023,7 +1014,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, co
         do {
             MatchResult subResult;
             hostContext.element = nextElement;
-            if (match(hostContext, siblingTraversalStrategy, &subResult) == SelectorMatches) {
+            if (match(hostContext, &subResult) == SelectorMatches) {
                 matched = true;
                 // Consider div:host(div:host(div:host(div:host...))).
                 maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
@@ -1137,11 +1128,5 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
         return true;
     return element.focused() && isFrameFocused(element);
 }
-
-template
-SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext&, const DOMSiblingTraversalStrategy&, MatchResult*) const;
-
-template
-SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext&, const ShadowDOMSiblingTraversalStrategy&, MatchResult*) const;
 
 }

@@ -396,16 +396,6 @@ bool Internals::hasSelectorForAttributeInShadow(Element* host, const AtomicStrin
     return host->shadow()->ensureSelectFeatureSet().hasSelectorForAttribute(attributeName);
 }
 
-bool Internals::hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionState& exceptionState)
-{
-    ASSERT(host);
-    if (!host->shadow()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The host element does not have a shadow.");
-        return 0;
-    }
-    return host->shadow()->ensureSelectFeatureSet().hasSelectorForPseudoType(CSSSelector::parsePseudoType(AtomicString(pseudoClass), false));
-}
-
 unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node* node2, ExceptionState& exceptionState) const
 {
     ASSERT(node1 && node2);

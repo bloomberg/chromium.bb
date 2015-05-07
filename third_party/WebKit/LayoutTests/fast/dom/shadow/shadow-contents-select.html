@@ -88,33 +88,6 @@ function testSelectIsTypeWithAttribute() {
     document.getElementById('container').appendChild(target);
 }
 
-function testSelectIsTypeWithFirstOfType() {
-    var target = document.createElement('div');
-    target.innerHTML = "<div>azunyan</div><span>content</span><span>peropero</span>";
-
-    appendShadow(target, "span:first-of-type");
-
-    document.getElementById('container').appendChild(target);
-}
-
-function testSelectIsTypeWithFirstOfType2() {
-    var target = document.createElement('div');
-    target.innerHTML = "<div><span>azunyan</span></div><span>content</span><span>peropero</span>";
-
-    appendShadow(target, "span:first-of-type");
-
-    document.getElementById('container').appendChild(target);
-}
-
-function testSelectIsTypeWithLastOfType() {
-    var target = document.createElement('div');
-    target.innerHTML = "<span>azunyan</span><span>content</span><div>peropero</div>";
-
-    appendShadow(target, "span:last-of-type");
-
-    document.getElementById('container').appendChild(target);
-}
-
 function testSelectIsDetails() {
     var target = document.createElement('div');
     target.innerHTML = "<details>content</details>";
@@ -153,9 +126,6 @@ var testFuncs = [
     testSelectIsMultiId,
     testSelectIsType,
     testSelectIsTypeWithAttribute,
-    testSelectIsTypeWithFirstOfType,
-    testSelectIsTypeWithFirstOfType2,
-    testSelectIsTypeWithLastOfType,
     testSelectIsDetails,
     testSelectIsDetails2,
     testSelectWhenDynamicallyChildrenChanged,

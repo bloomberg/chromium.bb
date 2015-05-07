@@ -59,7 +59,6 @@
     [RaisesException, TypeChecking=Interface] boolean hasSelectorForIdInShadow(Element host, DOMString id);
     [RaisesException, TypeChecking=Interface] boolean hasSelectorForClassInShadow(Element host, DOMString className);
     [RaisesException, TypeChecking=Interface] boolean hasSelectorForAttributeInShadow(Element host, DOMString attributeName);
-    [RaisesException, TypeChecking=Interface] boolean hasSelectorForPseudoClassInShadow(Element host, DOMString pseudoClass);
     [RaisesException, TypeChecking=Interface] unsigned short compareTreeScopePosition(Node treeScope1, Node treeScope2);
     [RaisesException] unsigned long updateStyleAndReturnAffectedElementCount();
     [RaisesException] unsigned long needsLayoutCount();

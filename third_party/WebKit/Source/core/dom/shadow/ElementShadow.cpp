@@ -347,12 +347,6 @@ void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot& root)
     }
 }
 
-void ElementShadow::distributedNodePseudoStateChanged(CSSSelector::PseudoType pseudo)
-{
-    if (ensureSelectFeatureSet().hasSelectorForPseudoType(pseudo))
-        setNeedsDistributionRecalc();
-}
-
 void ElementShadow::willAffectSelector()
 {
     for (ElementShadow* shadow = this; shadow; shadow = shadow->containingShadow()) {

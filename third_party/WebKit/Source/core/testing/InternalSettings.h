@@ -74,7 +74,6 @@ public:
         bool m_imagesEnabled;
         String m_defaultVideoPosterURL;
         bool m_originalLayerSquashingEnabled;
-        bool m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled;
         bool m_originalImageColorProfilesEnabled;
         ImageAnimationPolicy m_originalImageAnimationPolicy;
         bool m_originalScrollTopLeftInteropEnabled;
@@ -121,7 +120,6 @@ public:
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setOverlayScrollbarsEnabled(bool);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
-    void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool);
     void setImageColorProfilesEnabled(bool);
     void setImageAnimationPolicy(const String&, ExceptionState&);
     void setScrollTopLeftInteropEnabled(bool);

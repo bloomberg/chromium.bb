@@ -69,7 +69,7 @@ private:
     bool validateSelect() const;
     void parseSelect();
 
-    bool matchSelector(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth) const;
+    bool matchSelector(Element&) const;
 
     bool m_shouldParseSelect;
     bool m_isValidSelector;
@@ -102,7 +102,7 @@ inline bool HTMLContentElement::canSelectNode(const WillBeHeapVector<RawPtrWillB
         return false;
     if (!siblings[nth]->isElementNode())
         return false;
-    return matchSelector(siblings, nth);
+    return matchSelector(*toElement(siblings[nth]));
 }
 
 } // namespace blink

@@ -58,7 +58,6 @@ public:
     void attach(const Node::AttachContext&);
     void detach(const Node::AttachContext&);
 
-    void distributedNodePseudoStateChanged(CSSSelector::PseudoType);
     void willAffectSelector();
     const SelectRuleFeatureSet& ensureSelectFeatureSet();
 

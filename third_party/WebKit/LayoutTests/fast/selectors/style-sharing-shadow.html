@@ -66,10 +66,10 @@
 
     var host6 = document.createElement('div');
     var root1 = host6.createShadowRoot();
-    root1.innerHTML = '<style>.foo::content > p { color: red; }</style><content class="foo" select=":first-child"></content><content></content>';
+    root1.innerHTML = '<style>.foo::content > p { color: red; }</style><content class="foo" select=".a"></content><content></content>';
     var root2 = host6.createShadowRoot();
     root2.innerHTML = '<shadow></shadow>';
-    host6.innerHTML = '<p>A</p><p>B</p>';
+    host6.innerHTML = '<p class="a">A</p><p>B</p>';
     container.appendChild(host6);
     document.body.offsetHeight;
     light = host6.querySelectorAll('p');

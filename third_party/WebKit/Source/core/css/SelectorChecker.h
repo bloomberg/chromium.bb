@@ -98,31 +98,20 @@ public:
         unsigned specificity;
     };
 
-    template<typename SiblingTraversalStrategy>
-    Match match(const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult* = 0) const;
-
-    template<typename SiblingTraversalStrategy>
-    bool checkOne(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned* specificity = 0) const;
+    Match match(const SelectorCheckingContext&, MatchResult* = 0) const;
+    bool checkOne(const SelectorCheckingContext&, unsigned* specificity = 0) const;
 
     static bool matchesFocusPseudoClass(const Element&);
 
 private:
-    template<typename SiblingTraversalStrategy>
-    Match matchForSubSelector(const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
-    template<typename SiblingTraversalStrategy>
-    Match matchForRelation(const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
-    template<typename SiblingTraversalStrategy>
-    Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
-    template<typename SiblingTraversalStrategy>
-    Match matchForPseudoShadow(const ContainerNode*, const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
-    template<typename SiblingTraversalStrategy>
-    bool checkPseudoClass(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned* specificity) const;
-    template<typename SiblingTraversalStrategy>
-    bool checkPseudoElement(const SelectorCheckingContext&, const SiblingTraversalStrategy&) const;
-
+    Match matchForSubSelector(const SelectorCheckingContext&, MatchResult*) const;
+    Match matchForRelation(const SelectorCheckingContext&, MatchResult*) const;
+    Match matchForShadowDistributed(const Element*, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
+    Match matchForPseudoShadow(const ContainerNode*, const SelectorCheckingContext&, MatchResult*) const;
+    bool checkPseudoClass(const SelectorCheckingContext&, unsigned* specificity) const;
+    bool checkPseudoElement(const SelectorCheckingContext&) const;
     bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector&) const;
-    template<typename SiblingTraversalStrategy>
-    bool checkPseudoHost(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned*) const;
+    bool checkPseudoHost(const SelectorCheckingContext&, unsigned*) const;
 
     Mode m_mode;
 };

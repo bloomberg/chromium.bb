@@ -72,7 +72,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_imagesEnabled(settings->imagesEnabled())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
     , m_originalLayerSquashingEnabled(settings->layerSquashingEnabled())
-    , m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled())
     , m_originalImageColorProfilesEnabled(RuntimeEnabledFeatures::imageColorProfilesEnabled())
     , m_originalImageAnimationPolicy(settings->imageAnimationPolicy())
     , m_originalScrollTopLeftInteropEnabled(RuntimeEnabledFeatures::scrollTopLeftInteropEnabled())
@@ -96,7 +95,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setImagesEnabled(m_imagesEnabled);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
     settings->genericFontFamilySettings().reset();
-    RuntimeEnabledFeatures::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(m_originalPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled);
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(m_originalImageColorProfilesEnabled);
     settings->setImageAnimationPolicy(m_originalImageAnimationPolicy);
     RuntimeEnabledFeatures::setScrollTopLeftInteropEnabled(m_originalScrollTopLeftInteropEnabled);
@@ -187,11 +185,6 @@ void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)
 void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(bool enabled)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(enabled);
-}
-
-void InternalSettings::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(enabled);
 }
 
 void InternalSettings::setImageColorProfilesEnabled(bool enabled)

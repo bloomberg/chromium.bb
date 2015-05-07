@@ -60,7 +60,6 @@
     void setLangAttributeAwareFormControlUIEnabled(boolean enabled);
     void setOverlayScrollbarsEnabled(boolean enabled);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(boolean enabled);
-    void setPseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled(boolean enabled);
     void setImageColorProfilesEnabled(boolean enabled);
     void setScrollTopLeftInteropEnabled(boolean enabled);
     void setLinkHeaderEnabled(boolean enabled);

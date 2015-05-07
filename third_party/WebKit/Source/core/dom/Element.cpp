@@ -1786,9 +1786,6 @@ void Element::pseudoStateChanged(CSSSelector::PseudoType pseudo)
 
     if (inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange)
         document().styleEngine().pseudoStateChangedForElement(pseudo, *this);
-
-    if (ElementShadow* elementShadow = shadowWhereNodeCanBeDistributed(*this))
-        elementShadow->distributedNodePseudoStateChanged(pseudo);
 }
 
 void Element::setAnimationStyleChange(bool animationStyleChange)

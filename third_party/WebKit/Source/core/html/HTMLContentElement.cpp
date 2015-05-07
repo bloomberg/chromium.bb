@@ -29,7 +29,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/SelectorChecker.h"
-#include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -107,13 +106,9 @@ bool HTMLContentElement::validateSelect() const
     if (!m_selectorList.isValid())
         return false;
 
-    bool allowAnyPseudoClasses = RuntimeEnabledFeatures::pseudoClassesInMatchingCriteriaInAuthorShadowTreesEnabled() || (containingShadowRoot() && containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot);
-
     for (const CSSSelector* selector = m_selectorList.first(); selector; selector = m_selectorList.next(*selector)) {
         if (!selector->isCompound())
             return false;
-        if (allowAnyPseudoClasses)
-            continue;
         for (const CSSSelector* subSelector = selector; subSelector; subSelector = subSelector->tagHistory()) {
             if (includesDisallowedPseudoClass(*subSelector))
                 return false;
@@ -122,19 +117,15 @@ bool HTMLContentElement::validateSelect() const
     return true;
 }
 
-static inline bool checkOneSelector(const CSSSelector& selector, const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth)
+// TODO(esprehn): element should really be const, but matching a selector is not
+// const for some SelectorCheckingModes (mainly ResolvingStyle) where it sets
+// dynamic restyle flags on elements.
+bool HTMLContentElement::matchSelector(Element& element) const
 {
-    Element* element = toElement(siblings[nth]);
     SelectorChecker selectorChecker(SelectorChecker::QueryingRules);
-    SelectorChecker::SelectorCheckingContext context(selector, element, SelectorChecker::VisitedMatchEnabled);
-    ShadowDOMSiblingTraversalStrategy strategy(siblings, nth);
-    return selectorChecker.match(context, strategy) == SelectorChecker::SelectorMatches;
-}
-
-bool HTMLContentElement::matchSelector(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth) const
-{
     for (const CSSSelector* selector = selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
-        if (checkOneSelector(*selector, siblings, nth))
+        SelectorChecker::SelectorCheckingContext context(*selector, &element, SelectorChecker::VisitedMatchDisabled);
+        if (selectorChecker.match(context) == SelectorChecker::SelectorMatches)
             return true;
     }
     return false;

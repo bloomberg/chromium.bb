@@ -33,21 +33,21 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NthIndexCache.h"
-#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
+// TODO(esprehn): Merge this into ElementTraversal.
 class DOMSiblingTraversalStrategy {
 public:
-    bool isFirstChild(Element&) const;
-    bool isLastChild(Element&) const;
-    bool isFirstOfType(Element&, const QualifiedName&) const;
-    bool isLastOfType(Element&, const QualifiedName&) const;
+    static bool isFirstChild(Element&);
+    static bool isLastChild(Element&);
+    static bool isFirstOfType(Element&, const QualifiedName&);
+    static bool isLastOfType(Element&, const QualifiedName&);
 
-    int countElementsBefore(Element&) const;
-    int countElementsAfter(Element&) const;
-    int countElementsOfTypeBefore(Element&, const QualifiedName&) const;
-    int countElementsOfTypeAfter(Element&, const QualifiedName&) const;
+    static int countElementsBefore(Element&);
+    static int countElementsAfter(Element&);
+    static int countElementsOfTypeBefore(Element&, const QualifiedName&);
+    static int countElementsOfTypeAfter(Element&, const QualifiedName&);
 
 private:
     class HasTagName {
@@ -59,27 +59,27 @@ private:
     };
 };
 
-inline bool DOMSiblingTraversalStrategy::isFirstChild(Element& element) const
+inline bool DOMSiblingTraversalStrategy::isFirstChild(Element& element)
 {
     return !ElementTraversal::previousSibling(element);
 }
 
-inline bool DOMSiblingTraversalStrategy::isLastChild(Element& element) const
+inline bool DOMSiblingTraversalStrategy::isLastChild(Element& element)
 {
     return !ElementTraversal::nextSibling(element);
 }
 
-inline bool DOMSiblingTraversalStrategy::isFirstOfType(Element& element, const QualifiedName& type) const
+inline bool DOMSiblingTraversalStrategy::isFirstOfType(Element& element, const QualifiedName& type)
 {
     return !ElementTraversal::previousSibling(element, HasTagName(type));
 }
 
-inline bool DOMSiblingTraversalStrategy::isLastOfType(Element& element, const QualifiedName& type) const
+inline bool DOMSiblingTraversalStrategy::isLastOfType(Element& element, const QualifiedName& type)
 {
     return !ElementTraversal::nextSibling(element, HasTagName(type));
 }
 
-inline int DOMSiblingTraversalStrategy::countElementsBefore(Element& element) const
+inline int DOMSiblingTraversalStrategy::countElementsBefore(Element& element)
 {
     if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
         return nthIndexCache->nthChildIndex(element) - 1;
@@ -91,7 +91,7 @@ inline int DOMSiblingTraversalStrategy::countElementsBefore(Element& element) co
     return count;
 }
 
-inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element& element, const QualifiedName& type) const
+inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element& element, const QualifiedName& type)
 {
     int count = 0;
     for (const Element* sibling = ElementTraversal::previousSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(type)))
@@ -99,7 +99,7 @@ inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element& eleme
     return count;
 }
 
-inline int DOMSiblingTraversalStrategy::countElementsAfter(Element& element) const
+inline int DOMSiblingTraversalStrategy::countElementsAfter(Element& element)
 {
     if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
         return nthIndexCache->nthLastChildIndex(element) - 1;
@@ -110,135 +110,11 @@ inline int DOMSiblingTraversalStrategy::countElementsAfter(Element& element) con
     return count;
 }
 
-inline int DOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& element, const QualifiedName& type) const
+inline int DOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& element, const QualifiedName& type)
 {
     int count = 0;
     for (const Element* sibling = ElementTraversal::nextSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::nextSibling(*sibling, HasTagName(type)))
         ++count;
-    return count;
-}
-
-class ShadowDOMSiblingTraversalStrategy final {
-    STACK_ALLOCATED();
-public:
-    ShadowDOMSiblingTraversalStrategy(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth)
-        : m_siblings(siblings)
-        , m_nth(nth)
-    {
-    }
-
-    bool isFirstChild(Element&) const;
-    bool isLastChild(Element&) const;
-    bool isFirstOfType(Element&, const QualifiedName&) const;
-    bool isLastOfType(Element&, const QualifiedName&) const;
-
-    int countElementsBefore(Element&) const;
-    int countElementsAfter(Element&) const;
-    int countElementsOfTypeBefore(Element&, const QualifiedName&) const;
-    int countElementsOfTypeAfter(Element&, const QualifiedName&) const;
-
-private:
-    const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& m_siblings;
-    int m_nth;
-};
-
-inline bool ShadowDOMSiblingTraversalStrategy::isFirstChild(Element& element) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    for (int i = m_nth - 1; i >= 0; --i) {
-        if (m_siblings[i]->isElementNode())
-            return false;
-    }
-
-    return true;
-}
-
-inline bool ShadowDOMSiblingTraversalStrategy::isLastChild(Element& element) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    for (size_t i = m_nth + 1; i < m_siblings.size(); ++i) {
-        if (m_siblings[i]->isElementNode())
-            return false;
-    }
-
-    return true;
-}
-
-inline bool ShadowDOMSiblingTraversalStrategy::isFirstOfType(Element& element, const QualifiedName& type) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    for (int i = m_nth - 1; i >= 0; --i) {
-        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
-            return false;
-    }
-
-    return true;
-}
-
-inline bool ShadowDOMSiblingTraversalStrategy::isLastOfType(Element& element, const QualifiedName& type) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    for (size_t i = m_nth + 1; i < m_siblings.size(); ++i) {
-        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
-            return false;
-    }
-
-    return true;
-}
-
-inline int ShadowDOMSiblingTraversalStrategy::countElementsBefore(Element& element) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    int count = 0;
-    for (int i = m_nth - 1; i >= 0; --i) {
-        if (m_siblings[i]->isElementNode())
-            ++count;
-    }
-
-    return count;
-}
-
-inline int ShadowDOMSiblingTraversalStrategy::countElementsAfter(Element& element) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    int count = 0;
-    for (size_t i = m_nth + 1; i < m_siblings.size(); ++i) {
-        if (m_siblings[i]->isElementNode())
-            return ++count;
-    }
-
-    return count;
-}
-
-inline int ShadowDOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element& element, const QualifiedName& type) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    int count = 0;
-    for (int i = m_nth - 1; i >= 0; --i) {
-        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
-            ++count;
-    }
-
-    return count;
-}
-
-inline int ShadowDOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& element, const QualifiedName& type) const
-{
-    ASSERT(element == toElement(m_siblings[m_nth]));
-
-    int count = 0;
-    for (size_t i = m_nth + 1; i < m_siblings.size(); ++i) {
-        if (m_siblings[i]->isElementNode() && toElement(m_siblings[i])->hasTagName(type))
-            return ++count;
-    }
-
     return count;
 }
 
