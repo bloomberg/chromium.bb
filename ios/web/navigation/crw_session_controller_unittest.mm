@@ -14,6 +14,7 @@
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_browser_state.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -54,6 +55,7 @@ class CRWSessionControllerTest : public PlatformTest {
     return web::Referrer(GURL(url), web::ReferrerPolicyDefault);
   }
 
+  web::TestWebThreadBundle thread_bundle_;
   web::TestBrowserState browser_state_;
   base::scoped_nsobject<CRWSessionController> session_controller_;
 };
