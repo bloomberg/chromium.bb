@@ -210,8 +210,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     const IPC::Message& message) {
   RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
       web_contents()->GetRenderWidgetHostView());
-  if (rwhv &&
-      rwhv->OnMessageReceivedFromEmbedder(
+  // Until the guest is attached, it should not be handling input events.
+  if (attached() && rwhv && rwhv->OnMessageReceivedFromEmbedder(
           message,
           static_cast<RenderViewHostImpl*>(
               embedder_web_contents()->GetRenderViewHost()))) {
