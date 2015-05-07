@@ -14,7 +14,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
@@ -102,7 +101,9 @@ DownloadNotificationItem::DownloadNotificationItem(content::DownloadItem* item,
   notification_->set_progress(0);
   notification_->set_never_timeout(false);
 
-  UpdateNotificationData(ADD_NEW);
+  UpdateNotificationData();
+
+  notification_ui_manager()->Add(*notification_, profile);
 }
 
 DownloadNotificationItem::~DownloadNotificationItem() {
@@ -118,8 +119,10 @@ void DownloadNotificationItem::OnNotificationClick() {
       item_->SetOpenWhenComplete(!item_->GetOpenWhenComplete());  // Toggle
   }
 
-  if (item_->IsDone())
-    CloseNotificationByUser();
+  if (item_->IsDone()) {
+    notification_ui_manager()->CancelById(
+        watcher_->id(), NotificationUIManager::GetProfileID(profile_));
+  }
 }
 
 void DownloadNotificationItem::OnNotificationButtonClick(int button_index) {
@@ -131,11 +134,6 @@ void DownloadNotificationItem::OnNotificationButtonClick(int button_index) {
   }
 
   DownloadCommands::Command command = button_actions_->at(button_index);
-  if (command != DownloadCommands::PAUSE &&
-      command != DownloadCommands::RESUME) {
-    CloseNotificationByUser();
-  }
-
   DownloadCommands(item_).ExecuteCommand(command);
 }
 
@@ -143,30 +141,13 @@ void DownloadNotificationItem::OnNotificationButtonClick(int button_index) {
 void DownloadNotificationItem::OnDownloadUpdated(content::DownloadItem* item) {
   DCHECK_EQ(item, item_);
 
-  UpdateNotificationData(UPDATE_EXISTING);
+  UpdateNotificationData();
+
+  // Updates notification.
+  notification_ui_manager()->Update(*notification_, profile_);
 }
 
-void DownloadNotificationItem::CloseNotificationByUser() {
-  const std::string& notification_id = watcher_->id();
-  const ProfileID profile_id = NotificationUIManager::GetProfileID(profile_);
-  const std::string& notification_id_in_message_center =
-      notification_ui_manager()->FindById(notification_id, profile_id)->id();
-
-  notification_ui_manager()->CancelById(notification_id, profile_id);
-
-  // When the message center is visible, |NotificationUIManager::CancelByID()|
-  // delays the close hence the notification is not closed at this time. But
-  // from the viewpoint of UX of MessageCenter, we should close it immediately
-  // because it's by user action. So, we request closing of it directlly to
-  // MessageCenter instance.
-  // Note that: this calling has no side-effect even when the message center
-  // is not opened.
-  g_browser_process->message_center()->RemoveNotification(
-      notification_id_in_message_center, true /* by_user */);
-}
-
-void DownloadNotificationItem::UpdateNotificationData(
-    NotificationUpdateType type) {
+void DownloadNotificationItem::UpdateNotificationData() {
   DownloadItemModel model(item_);
   DownloadCommands command(item_);
 
@@ -219,14 +200,9 @@ void DownloadNotificationItem::UpdateNotificationData(
         // TODO(yoshiki): Popup a notification again.
         break;
       case content::DownloadItem::CANCELLED:
-        // Confgirms that a download is cancelled by user action.
-        DCHECK(item_->GetLastReason() ==
-                   content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED ||
-               item_->GetLastReason() ==
-                   content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
-
-        CloseNotificationByUser();
-        return;  // Skips the remaining since the notification has closed.
+        notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+        SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_WARNING);
+        break;
       case content::DownloadItem::INTERRUPTED:
         notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
         SetNotificationImage(IDR_DOWNLOAD_NOTIFICATION_WARNING);
@@ -260,13 +236,6 @@ void DownloadNotificationItem::UpdateNotificationData(
   if (item_->IsDone()) {
     // TODO(yoshiki): If the downloaded file is an image, show the thumbnail.
   }
-
-  if (type == ADD_NEW)
-    notification_ui_manager()->Add(*notification_, profile_);
-  else if (type == UPDATE_EXISTING)
-    notification_ui_manager()->Update(*notification_, profile_);
-  else
-    NOTREACHED();
 }
 
 void DownloadNotificationItem::OnDownloadOpened(content::DownloadItem* item) {

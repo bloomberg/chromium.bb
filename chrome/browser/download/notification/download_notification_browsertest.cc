@@ -54,16 +54,6 @@ static const TestAccountInfo kTestAccounts[] = {
     {"charlie@invalid.domain",   "10003", "hashcharl", "Charlie"},
 };
 
-bool IsInNotifications(
-    const message_center::NotificationList::Notifications& notifications,
-    const std::string& id) {
-  for (const auto& notification : notifications) {
-    if (notification->id() == id)
-      return true;
-  }
-  return false;
-}
-
 // Base class observing notification events.
 class MessageCenterChangeObserver
     : public message_center::MessageCenterObserver {
@@ -138,7 +128,7 @@ class NotificationAddObserver : public MessageCenterChangeObserver {
 // Class observing of "UPDATE" notification events.
 class NotificationUpdateObserver : public MessageCenterChangeObserver {
  public:
-  NotificationUpdateObserver() {
+  NotificationUpdateObserver() : waiting_(false) {
     MessageCenterChangeObserver();
   }
   ~NotificationUpdateObserver() override {}
@@ -164,45 +154,9 @@ class NotificationUpdateObserver : public MessageCenterChangeObserver {
 
  private:
   std::string notification_id_;
-  bool waiting_ = false;
+  bool waiting_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationUpdateObserver);
-};
-
-// Class observing of "REMOVE" notification events.
-class NotificationRemoveObserver : public MessageCenterChangeObserver {
- public:
-  NotificationRemoveObserver() {
-    MessageCenterChangeObserver();
-  }
-  ~NotificationRemoveObserver() override {}
-
-  std::string Wait() {
-    if (!notification_id_.empty())
-      return notification_id_;
-
-    waiting_ = true;
-    RunLoop();
-    waiting_ = false;
-    return notification_id_;
-  }
-
-  // message_center::MessageCenterObserver:
-  void OnNotificationRemoved(
-      const std::string& notification_id, bool by_user) override {
-    if (notification_id_.empty()) {
-      notification_id_ = notification_id;
-
-      if (waiting_)
-        QuitRunLoop();
-    }
-  }
-
- private:
-  std::string notification_id_;
-  bool waiting_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationRemoveObserver);
 };
 
 class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
@@ -281,43 +235,6 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
         DownloadServiceFactory::GetForBrowserContext(browser()->profile())
             ->GetDownloadManagerDelegate());
   }
-
-  void CreateDownload() {
-    GURL url(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
-
-    // Starts a download.
-    NotificationAddObserver download_start_notification_observer;
-    ui_test_utils::NavigateToURL(browser(), url);
-    EXPECT_TRUE(download_start_notification_observer.Wait());
-
-    // Confirms that a notification is created.
-    notification_id_ = download_start_notification_observer.notification_id();
-    EXPECT_FALSE(notification_id_.empty());
-    ASSERT_TRUE(notification());
-
-    // Confirms that there is only one notification.
-    message_center::NotificationList::Notifications
-        visible_notifications = GetMessageCenter()->GetVisibleNotifications();
-    EXPECT_EQ(1u, visible_notifications.size());
-    EXPECT_TRUE(IsInNotifications(visible_notifications, notification_id_));
-
-    // Confirms that a download is also started.
-    std::vector<content::DownloadItem*> downloads;
-    GetDownloadManager(browser())->GetAllDownloads(&downloads);
-    EXPECT_EQ(1u, downloads.size());
-    download_item_ = downloads[0];
-    ASSERT_TRUE(download_item_);
-  }
-
-  content::DownloadItem* download_item() const { return download_item_; }
-  std::string notification_id() const { return notification_id_; }
-  message_center::Notification* notification() const {
-    return GetNotification(notification_id_);
-  }
-
- private:
-  content::DownloadItem* download_item_ = nullptr;
-  std::string notification_id_;
 };
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
@@ -346,9 +263,6 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
             GetNotification(notification_id())->title());
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
             GetNotification(notification_id())->type());
-
-  // Opens the message center.
-  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
 
   // Try to open the downloaded item by clicking the notification.
   EXPECT_FALSE(GetDownloadManagerDelegate()->opened());
@@ -483,59 +397,6 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
             GetNotification(notification_id1)->type());
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE,
             GetNotification(notification_id2)->type());
-}
-
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, CancelDownload) {
-  CreateDownload();
-
-  // Opens the message center.
-  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-
-  // Cancels the notification by clicking the "cancel' button.
-  NotificationRemoveObserver notification_close_observer;
-  notification()->ButtonClick(1);
-  EXPECT_EQ(notification_id(), notification_close_observer.Wait());
-  EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
-
-  // Confirms that a download is also cancelled.
-  std::vector<content::DownloadItem*> downloads;
-  GetDownloadManager(browser())->GetAllDownloads(&downloads);
-  EXPECT_EQ(1u, downloads.size());
-  EXPECT_EQ(content::DownloadItem::CANCELLED, downloads[0]->GetState());
-}
-
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DownloadCancelledByUserExternally) {
-  CreateDownload();
-
-  // Cancels the notification by clicking the "cancel' button.
-  NotificationRemoveObserver notification_close_observer;
-  download_item()->Cancel(true /* by_user */);
-  EXPECT_EQ(notification_id(), notification_close_observer.Wait());
-  EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
-
-  // Confirms that a download is also cancelled.
-  std::vector<content::DownloadItem*> downloads;
-  GetDownloadManager(browser())->GetAllDownloads(&downloads);
-  EXPECT_EQ(1u, downloads.size());
-  EXPECT_EQ(content::DownloadItem::CANCELLED, downloads[0]->GetState());
-}
-
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       DownloadCancelledExternally) {
-  CreateDownload();
-
-  // Cancels the notification by clicking the "cancel' button.
-  NotificationRemoveObserver notification_close_observer;
-  download_item()->Cancel(false /* by_user */);
-  EXPECT_EQ(notification_id(), notification_close_observer.Wait());
-  EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
-
-  // Confirms that a download is also cancelled.
-  std::vector<content::DownloadItem*> downloads;
-  GetDownloadManager(browser())->GetAllDownloads(&downloads);
-  EXPECT_EQ(1u, downloads.size());
-  EXPECT_EQ(content::DownloadItem::CANCELLED, downloads[0]->GetState());
 }
 
 //////////////////////////////////////////////////
