@@ -22,12 +22,3 @@ source_set("cpp") {
     "//third_party/mojo/src/mojo/public/interfaces/application",
   ]
 }
-
-source_set("common") {
-  sources = [
-    "keys.cc",
-    "keys.h",
-    "types.h",
-    "util.h",
-  ]
-}
