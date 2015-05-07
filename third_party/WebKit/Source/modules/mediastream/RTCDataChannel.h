@@ -104,7 +104,7 @@ private:
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
-    ExecutionContext* m_executionContext;
+    RawPtrWillBeMember<ExecutionContext> m_executionContext;
 
     OwnPtr<WebRTCDataChannelHandler> m_handler;
 

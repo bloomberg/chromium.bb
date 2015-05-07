@@ -176,7 +176,7 @@ private:
         void resumeTimerFired(Timer<EventQueue>*);
 
         State m_state;
-        EventTarget* m_target;
+        RawPtrWillBeMember<EventTarget> m_target;
         WillBeHeapDeque<RefPtrWillBeMember<Event>> m_events;
         Timer<EventQueue> m_resumeTimer;
     };

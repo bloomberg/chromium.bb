@@ -74,6 +74,11 @@ DOMFileSystemBase::~DOMFileSystemBase()
 {
 }
 
+DEFINE_TRACE(DOMFileSystemBase)
+{
+    visitor->trace(m_context);
+}
+
 WebFileSystem* DOMFileSystemBase::fileSystem() const
 {
     Platform* platform = Platform::current();

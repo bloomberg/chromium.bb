@@ -117,7 +117,7 @@ public:
     int readDirectory(DirectoryReaderBase*, const String& path, EntriesCallback*, ErrorCallback*, SynchronousType = Asynchronous);
     bool waitForAdditionalResult(int callbacksId);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     DOMFileSystemBase(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
@@ -125,7 +125,7 @@ protected:
     friend class DOMFileSystemBaseTest;
     friend class DOMFileSystemSync;
 
-    ExecutionContext* m_context;
+    RawPtrWillBeMember<ExecutionContext> m_context;
     String m_name;
     FileSystemType m_type;
     KURL m_filesystemRootURL;

@@ -334,6 +334,7 @@ void RTCDataChannel::clearWeakMembers(Visitor* visitor)
 
 DEFINE_TRACE(RTCDataChannel)
 {
+    visitor->trace(m_executionContext);
     visitor->trace(m_scheduledEvents);
     visitor->template registerWeakMembers<RTCDataChannel, &RTCDataChannel::clearWeakMembers>(this);
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>::trace(visitor);

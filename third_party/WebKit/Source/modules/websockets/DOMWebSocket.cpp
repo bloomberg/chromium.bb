@@ -153,6 +153,7 @@ void DOMWebSocket::EventQueue::resumeTimerFired(Timer<EventQueue>*)
 
 DEFINE_TRACE(DOMWebSocket::EventQueue)
 {
+    visitor->trace(m_target);
     visitor->trace(m_events);
 }
 
