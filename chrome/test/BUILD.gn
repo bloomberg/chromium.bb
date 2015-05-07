@@ -255,7 +255,7 @@ if (!is_android) {
       "//sync",
       "//testing/gmock",
       "//testing/gtest",
-      "//third_party/hunspell",
+      "//third_party/hunspell_new",
       "//third_party/icu",
       "//third_party/libpng",
       "//third_party/npapi",
@@ -1292,7 +1292,7 @@ if (!is_android) {
                       ".",
                       "//chrome")
       if (is_mac && !is_ios) {
-        deps += [ "//third_party/hunspell" ]
+        deps += [ "//third_party/hunspell_new" ]
       }
     }
 
@@ -1569,7 +1569,7 @@ if (!is_android) {
     }
     if (!is_mac && !is_ios) {
       deps += [
-        "//third_party/hunspell",
+        "//third_party/hunspell_new",
         "//chrome:packed_extra_resources",
         "//chrome:packed_resources",
         "//chrome/tools/convert_dict:lib",

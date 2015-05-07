@@ -12,7 +12,7 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/hunspell/src/hunspell/hunspell.hxx"
+#include "third_party/hunspell_new/src/hunspell/hunspell.hxx"
 
 using content::RenderThread;
 

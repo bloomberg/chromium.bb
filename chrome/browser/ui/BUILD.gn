@@ -98,7 +98,6 @@ source_set("ui") {
       "//third_party/WebKit/public:resources",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/expat",
-      "//third_party/hunspell",
       "//third_party/leveldatabase",
       "//third_party/mojo/src/mojo/edk/system",
       "//third_party/npapi",
@@ -440,9 +439,6 @@ source_set("ui") {
         rebase_path(gypi_values.chrome_browser_ui_service_discovery_sources,
                     ".",
                     "//chrome")
-  }
-  if (enable_spellcheck) {
-    deps += [ "//third_party/hunspell" ]
   }
 }
 

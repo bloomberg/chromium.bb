@@ -19,7 +19,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/hunspell/google/bdict.h"
+#include "third_party/hunspell_new/google/bdict.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;

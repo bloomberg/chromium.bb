@@ -6,7 +6,7 @@
 #include "langnum.hxx"
 
 #ifdef HUNSPELL_CHROME_CLIENT
-#include "third_party/hunspell/google/bdict_reader.h"
+#include "third_party/hunspell_new/google/bdict_reader.h"
 #endif
 
 #define  SPELL_XML "<?xml?>"

@@ -3172,11 +3172,6 @@
         ['enable_service_discovery==1', {
           'sources': [ '<@(chrome_browser_ui_service_discovery_sources)' ],
         }],
-        ['enable_spellcheck==1', {
-          'dependencies': [
-            '../third_party/hunspell/hunspell.gyp:hunspell',
-          ],
-        }],
         ['enable_extensions==1', {
           'dependencies': [
             '<(DEPTH)/extensions/components/extensions_components.gyp:javascript_dialog_extensions_client',

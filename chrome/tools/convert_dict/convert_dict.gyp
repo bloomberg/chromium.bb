@@ -35,7 +35,7 @@
       'dependencies': [
         '../../../base/base.gyp:base',
         '../../../base/base.gyp:base_i18n',
-        '../../../third_party/hunspell/hunspell.gyp:hunspell',
+        '../../../third_party/hunspell_new/hunspell.gyp:hunspell',
         'convert_dict_lib',
       ],
       'sources': [

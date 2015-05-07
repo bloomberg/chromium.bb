@@ -207,6 +207,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/hunspell': [  # http://crbug.com/98134
         'UNKNOWN',
     ],
+    'third_party/hunspell_new': [  # http://crbug.com/98134
+        'UNKNOWN',
+    ],
     'third_party/iccjpeg': [  # http://crbug.com/98137
         'UNKNOWN',
     ],

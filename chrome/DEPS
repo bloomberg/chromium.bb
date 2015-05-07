@@ -36,7 +36,7 @@ include_rules = [
   "+third_party/WebKit/public/web",
 
   # Allow inclusion of third-party code:
-  "+third_party/hunspell",
+  "+third_party/hunspell_new",
   "+third_party/libxml",
   "+third_party/mojo/src/mojo/public",
   "+third_party/skia",

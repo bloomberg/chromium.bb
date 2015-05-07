@@ -3291,7 +3291,7 @@
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_browser_spellchecker_sources)' ],
           'dependencies': [
-            '../third_party/hunspell/hunspell.gyp:hunspell',
+            '../third_party/hunspell_new/hunspell.gyp:hunspell',
           ],
         }],
         ['disable_nacl==0', {

@@ -2175,7 +2175,7 @@
           'sources': [ '<@(chrome_unit_tests_spellchecker_sources)' ],
           'conditions': [
             ['OS!="mac" and OS!="ios"', {
-              'dependencies': [ '../third_party/hunspell/hunspell.gyp:hunspell' ],
+              'dependencies': [ '../third_party/hunspell_new/hunspell.gyp:hunspell' ],
             }],
           ],
         }],
@@ -2444,7 +2444,7 @@
         }],
         ['OS!="mac" and OS!="ios"', {
           'dependencies': [
-            '../third_party/hunspell/hunspell.gyp:hunspell',
+            '../third_party/hunspell_new/hunspell.gyp:hunspell',
             'chrome_resources.gyp:packed_extra_resources',
             'chrome_resources.gyp:packed_resources',
             'tools/convert_dict/convert_dict.gyp:convert_dict_lib',
