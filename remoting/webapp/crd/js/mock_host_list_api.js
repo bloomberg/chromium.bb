@@ -133,6 +133,16 @@ remoting.MockHostListApi.prototype.remove = function(hostId) {
   });
 };
 
+/** @override */
+remoting.MockHostListApi.prototype.getSupportHost = function(supportId) {
+  var that = this;
+  return new Promise(function(resolve, reject) {
+    remoting.mockIdentity.validateTokenAndCall(
+        resolve, remoting.Error.handler(reject), [that.hosts[0]]);
+  });
+
+};
+
 /**
  * @param {boolean} active
  */

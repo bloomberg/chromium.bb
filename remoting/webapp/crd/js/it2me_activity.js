@@ -50,11 +50,7 @@ remoting.It2MeActivity.prototype.start = function() {
     that.desktopActivity_.getConnectingDialog().show();
     return that.verifyAccessCode_(accessCode);
   }).then(function() {
-    return remoting.identity.getToken();
-  }).then(function(/** string */ token) {
-    return that.getHostInfo_(token);
-  }).then(function(/** !remoting.Xhr.Response */ response) {
-    return that.onHostInfo_(response);
+    return remoting.HostListApi.getInstance().getSupportHost(that.hostId_);
   }).then(function(/** remoting.Host */ host) {
     that.connect_(host);
   }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
@@ -146,51 +142,6 @@ remoting.It2MeActivity.prototype.verifyAccessCode_ = function(accessCode) {
 };
 
 /**
- * Continues an IT2Me connection once an access token has been obtained.
- *
- * @param {string} token An OAuth2 access token.
- * @return {Promise<!remoting.Xhr.Response>}
- * @private
- */
-remoting.It2MeActivity.prototype.getHostInfo_ = function(token) {
-  var that = this;
-  return new remoting.Xhr({
-    method: 'GET',
-    url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
-        encodeURIComponent(that.hostId_),
-    oauthToken: token
-  }).start();
-};
-
-/**
- * Continues an IT2Me connection once the host JID has been looked up.
- *
- * @param {!remoting.Xhr.Response} xhrResponse The server response to the
- *     support-hosts query.
- * @return {!Promise<!remoting.Host>} Rejects on error.
- * @private
- */
-remoting.It2MeActivity.prototype.onHostInfo_ = function(xhrResponse) {
-  if (xhrResponse.status == 200) {
-    var response = /** @type {{data: {jabberId: string, publicKey: string}}} */
-        (base.jsonParseSafe(xhrResponse.getText()));
-    if (response && response.data &&
-        response.data.jabberId && response.data.publicKey) {
-      var host = new remoting.Host(this.hostId_);
-      host.jabberId = response.data.jabberId;
-      host.publicKey = response.data.publicKey;
-      host.hostName = response.data.jabberId.split('/')[0];
-      return Promise.resolve(host);
-    } else {
-      console.error('Invalid "support-hosts" response from server.');
-      return Promise.reject(remoting.Error.unexpected());
-    }
-  } else {
-    return Promise.reject(translateSupportHostsError(xhrResponse.status));
-  }
-};
-
-/**
  * @param {remoting.Host} host
  * @private
  */
@@ -198,21 +149,5 @@ remoting.It2MeActivity.prototype.connect_ = function(host) {
   this.desktopActivity_.start(
       host, new remoting.CredentialsProvider({ accessCode: this.passCode_ }));
 };
-
-/**
- * TODO(jrw): Replace with remoting.Error.fromHttpStatus.
- * @param {number} error An HTTP error code returned by the support-hosts
- *     endpoint.
- * @return {remoting.Error} The equivalent remoting.Error code.
- */
-function translateSupportHostsError(error) {
-  switch (error) {
-    case 0: return new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE);
-    case 404: return new remoting.Error(remoting.Error.Tag.INVALID_ACCESS_CODE);
-    case 502: // No break
-    case 503: return new remoting.Error(remoting.Error.Tag.SERVICE_UNAVAILABLE);
-    default: return remoting.Error.unexpected();
-  }
-}
 
 })();

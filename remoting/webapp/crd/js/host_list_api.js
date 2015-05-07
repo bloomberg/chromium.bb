@@ -62,6 +62,16 @@ remoting.HostListApi.prototype.remove = function(hostId) {
 };
 
 /**
+ * Attempts to look up a host using an ID derived from its publicly
+ * visible access code.
+ *
+ * @param {string} supportId The support ID of the host to connect to.
+ * @return {!Promise<!remoting.Host>}
+ */
+remoting.HostListApi.prototype.getSupportHost = function(supportId) {
+};
+
+/**
  * @private {remoting.HostListApi}
  */
 var instance = null;

@@ -157,4 +157,35 @@ remoting.HostListApiImpl.defaultResponse_ = function(opt_ignoreErrors) {
   return result;
 };
 
+/** @override */
+remoting.HostListApiImpl.prototype.getSupportHost = function(supportId) {
+  return new remoting.Xhr({
+    method: 'GET',
+    url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
+        encodeURIComponent(supportId),
+    useIdentity: true
+  }).start().then(function(xhrResponse) {
+    if (xhrResponse.status == 200) {
+      var response =
+          /** @type {{data: {jabberId: string, publicKey: string}}} */
+          (base.jsonParseSafe(xhrResponse.getText()));
+      if (response && response.data &&
+          response.data.jabberId && response.data.publicKey) {
+        var host = new remoting.Host(supportId);
+        host.jabberId = response.data.jabberId;
+        host.publicKey = response.data.publicKey;
+        host.hostName = response.data.jabberId.split('/')[0];
+        return host;
+      } else {
+        console.error('Invalid "support-hosts" response from server.');
+        throw remoting.Error.unexpected();
+      }
+    } else if (xhrResponse.status == 404) {
+      throw new remoting.Error(remoting.Error.Tag.INVALID_ACCESS_CODE);
+    } else {
+      throw remoting.Error.fromHttpStatus(xhrResponse.status);
+    }
+  });
+};
+
 })();
