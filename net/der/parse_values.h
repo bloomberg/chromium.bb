@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DER_PARSE_TYPES_H_
-#define NET_DER_PARSE_TYPES_H_
+#ifndef NET_DER_PARSE_VALUES_H_
+#define NET_DER_PARSE_VALUES_H_
 
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
@@ -66,4 +66,4 @@ NET_EXPORT bool ParseGeneralizedTime(const Input& in,
 
 }  // namespace net
 
-#endif  // NET_DER_PARSE_TYPES_H_
+#endif  // NET_DER_PARSE_VALUES_H_

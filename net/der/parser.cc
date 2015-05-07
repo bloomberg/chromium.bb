@@ -13,12 +13,11 @@ namespace der {
 
 Parser::Parser() : input_(Input()), advance_mark_(Mark::NullMark()) {
 }
+
 Parser::Parser(const Input& input)
     : input_(input), advance_mark_(Mark::NullMark()) {
 }
 
-// Reads the next TLV from the input and writes the tag and value to the
-// output parameters |tag| and |out|.
 bool Parser::PeekTagAndValue(Tag* tag, Input* out) {
   ByteReader reader = input_;
 

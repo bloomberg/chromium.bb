@@ -74,7 +74,7 @@ namespace der {
 //       return false;
 //     if (!foo_parser->SkipOptionalTag(kOctetString))
 //       return false;
-//     if (!foo_parser->ReadTag(kOctetString, &quux))
+//     if (!foo_parser->ReadTag(kOctetString, quux_out))
 //       return false;
 //     return true;
 //   }
