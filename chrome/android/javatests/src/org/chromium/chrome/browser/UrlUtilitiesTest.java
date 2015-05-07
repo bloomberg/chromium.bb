@@ -134,6 +134,13 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
                 + "component=wump.noodle/Crumpet;i.pumpkinCount%3D=42;"
                 + "S.goat=leg;end"));
 
+        // Android's Intent.toUri does not generate URLs like this, but
+        // Google Authenticator does, and we must handle them.
+        assertTrue(UrlUtilities.validateIntentUrl(
+                "intent:#Intent;action=com.google.android.apps.chrome."
+                + "TEST_AUTHENTICATOR;category=android.intent.category."
+                + "BROWSABLE;S.inputData=cancelled;end"));
+
         // Junk after end.
         assertFalse(UrlUtilities.validateIntentUrl(
                 "intent://10010#Intent;scheme=tel;action=com.google.android.apps."

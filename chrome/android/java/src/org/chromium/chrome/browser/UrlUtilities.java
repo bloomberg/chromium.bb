@@ -241,7 +241,14 @@ public class UrlUtilities {
         try {
             parsed = new URI(url);
         } catch (URISyntaxException e) {
-            Log.d(TAG, e.toString());
+            // It may be that we received a URI of the form "intent:#Intent...",
+            // which e.g. Google Authenticator produces. Work around that
+            // specific case.
+            if (url.indexOf("intent:#Intent;") == 0) {
+                return validateIntentUrl(url.replace("intent:#Intent;", "intent://foo/#Intent;"));
+            }
+
+            Log.d(TAG, "Could not parse url '" + url + "': " + e.toString());
             return false;
         }
 
@@ -263,7 +270,7 @@ public class UrlUtilities {
 
         String path = parsed.getPath();
         if (path == null || (!path.isEmpty() && !path.equals("/"))) {
-            Log.d(TAG, "path was null or not '/'");
+            Log.d(TAG, "path was null or not \"/\"");
             return false;
         }
 
@@ -299,7 +306,7 @@ public class UrlUtilities {
                 || !parts[0].equals("Intent")
                 || !parts[parts.length - 1].equals("end")) {
             Log.d(TAG, "Invalid fragment (not enough parts, lacking Intent, "
-                    + "or lacking end");
+                    + "or lacking end)");
             return false;
         }
 
