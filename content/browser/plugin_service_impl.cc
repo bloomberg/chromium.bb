@@ -481,7 +481,8 @@ void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
                  client));
   if (filter_) {
     DCHECK_EQ(WebPluginInfo::PLUGIN_TYPE_NPAPI, info.type);
-    filter_->NPAPIPluginLoaded(render_process_id, render_frame_id, info);
+    filter_->NPAPIPluginLoaded(render_process_id, render_frame_id, mime_type,
+                               info);
   }
 }
 

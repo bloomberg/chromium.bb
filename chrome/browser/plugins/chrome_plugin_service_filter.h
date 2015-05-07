@@ -70,6 +70,15 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   // Returns whether the plugin is found in |restricted_plugins_|.
   bool IsPluginRestricted(const base::FilePath& plugin_path);
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // Called when browser can't find a plugin with specified |mime_type| and
+  // NPAPI plugins are disabled.
+  // TODO(wfh): Remove when NPAPI is gone.
+  void NPAPIPluginNotFound(int render_process_id,
+                           int render_frame_id,
+                           const std::string& mime_type);
+#endif
+
   // PluginServiceFilter implementation:
   bool IsPluginAvailable(int render_process_id,
                          int render_frame_id,
@@ -85,6 +94,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
   void NPAPIPluginLoaded(int render_process_id,
                          int render_frame_id,
+                         const std::string& mime_type,
                          const content::WebPluginInfo& info) override;
 
  private:
@@ -115,6 +125,12 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  void ShowNPAPIInfoBar(int render_process_id,
+                        int render_frame_id,
+                        const base::string16& name,
+                        const std::string& mime_type,
+                        bool is_removed);
+
   ProcessDetails* GetOrRegisterProcess(int render_process_id);
   const ProcessDetails* GetProcess(int render_process_id) const;
 
@@ -132,7 +148,8 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   std::map<int, ProcessDetails> plugin_details_;
 
   // Keeps track if loading a plugin has already trigged an infobar.
-  std::set<base::FilePath> infobared_plugins_;
+  // Accessed on UI thread.
+  std::set<std::string> infobared_plugin_mime_types_;
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_

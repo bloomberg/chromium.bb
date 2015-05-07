@@ -60,8 +60,14 @@ class PluginFinder {
                                 scoped_ptr<PluginMetadata>* plugin_metadata);
 #endif
 
-  // Returns the plugin name with the given identifier.
+  // Returns the plugin name with the given |identifier| or |identifier| if not
+  // found.
   base::string16 FindPluginNameWithIdentifier(const std::string& identifier);
+
+  // Returns the plugin name with the given |mime_type| and |language| or
+  // |mime_type| if not found.
+  base::string16 FindPluginName(const std::string& mime_type,
+                                const std::string& language);
 
   // Gets plugin metadata using |plugin|.
   scoped_ptr<PluginMetadata> GetPluginMetadata(

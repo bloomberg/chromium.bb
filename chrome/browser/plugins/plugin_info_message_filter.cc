@@ -56,6 +56,19 @@ using content::WebPluginInfo;
 
 namespace {
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// These are the mime-types of plugins which are known to have PPAPI versions.
+const char* kPepperPluginMimeTypes[] = {
+    "application/pdf",
+    "application/x-google-chrome-pdf",
+    "application/x-nacl",
+    "application/x-pnacl",
+    "application/vnd.chromium.remoting-viewer",
+    "application/x-shockwave-flash",
+    "application/futuresplash",
+};
+#endif
+
 // For certain sandboxed Pepper plugins, use the JavaScript Content Settings.
 bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
   if (plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
@@ -471,6 +484,19 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
       url, mime_type, allow_wildcard, &matching_plugins, &mime_types);
   if (matching_plugins.empty()) {
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    if (!PluginService::GetInstance()->NPAPIPluginsSupported()) {
+      // At this point it is not known for sure this is an NPAPI plugin as it
+      // could be a not-yet-installed Pepper plugin. To avoid notifying on
+      // these types, bail early based on a blacklist of pepper mime types.
+      for (auto pepper_mime_type : kPepperPluginMimeTypes)
+        if (pepper_mime_type == mime_type)
+          return false;
+
+      ChromePluginServiceFilter::GetInstance()->NPAPIPluginNotFound(
+          render_process_id_, render_frame_id, mime_type);
+    }
+#endif
     return false;
   }
 

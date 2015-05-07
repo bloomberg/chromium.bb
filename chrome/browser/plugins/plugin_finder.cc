@@ -250,6 +250,20 @@ PluginFinder::~PluginFinder() {
   STLDeleteValues(&identifier_plugin_);
 }
 
+base::string16 PluginFinder::FindPluginName(const std::string& mime_type,
+                                            const std::string& language) {
+  base::AutoLock lock(mutex_);
+
+  for (auto plugin : identifier_plugin_) {
+    if (language == plugin.second->language() &&
+        plugin.second->HasMimeType(mime_type)) {
+      return plugin.second->name();
+    }
+  }
+
+  return base::UTF8ToUTF16(mime_type);
+}
+
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 bool PluginFinder::FindPlugin(
     const std::string& mime_type,
