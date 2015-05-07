@@ -30,7 +30,7 @@
     "structures": [2200],
   },
   "chrome/common/common_resources.grd": {
-    "includes": [2500],
+    "includes": [3000],
   },
   "chrome/renderer/resources/renderer_resources.grd": {
     "includes": [3500],

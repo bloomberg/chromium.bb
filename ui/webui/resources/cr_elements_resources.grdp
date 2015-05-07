@@ -105,6 +105,15 @@
 
   <!-- Polymer 0.8 Elements -->
   <if expr="enable_polymer_v08">
+    <structure name="IDR_CR_ELEMENTS_08_CR_BUTTON_CSS"
+               file="../../webui/resources/cr_elements/v0_8/cr_button/cr_button.css"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_BUTTON_HTML"
+               file="../../webui/resources/cr_elements/v0_8/cr_button/cr_button.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_BUTTON_JS"
+               file="../../webui/resources/cr_elements/v0_8/cr_button/cr_button.js"
+               type="chrome_html" />
     <structure name="IDR_CR_ELEMENTS_08_CR_CHECKBOX_CSS"
                file="../../webui/resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.css"
                type="chrome_html" />
@@ -113,6 +122,39 @@
                type="chrome_html" />
     <structure name="IDR_CR_ELEMENTS_08_CR_CHECKBOX_JS"
                file="../../webui/resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_COLLAPSE_CSS"
+               file="../../webui/resources/cr_elements/v0_8/cr_collapse/cr_collapse.css"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_COLLAPSE_HTML"
+               file="../../webui/resources/cr_elements/v0_8/cr_collapse/cr_collapse.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_COLLAPSE_JS"
+               file="../../webui/resources/cr_elements/v0_8/cr_collapse/cr_collapse.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_EVENTS_HTML"
+               file="../../webui/resources/cr_elements/v0_8/cr_events/cr_events.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_EVENTS_JS"
+               file="../../webui/resources/cr_elements/v0_8/cr_events/cr_events.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_INPUT_CSS"
+               file="../../webui/resources/cr_elements/v0_8/cr_input/cr_input.css"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_INPUT_HTML"
+               file="../../webui/resources/cr_elements/v0_8/cr_input/cr_input.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_INPUT_JS"
+               file="../../webui/resources/cr_elements/v0_8/cr_input/cr_input.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_TOGGLE_BUTTON_CSS"
+               file="../../webui/resources/cr_elements/v0_8/cr_toggle_button/cr_toggle_button.css"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_TOGGLE_BUTTON_HTML"
+               file="../../webui/resources/cr_elements/v0_8/cr_toggle_button/cr_toggle_button.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_08_CR_TOGGLE_BUTTON_JS"
+               file="../../webui/resources/cr_elements/v0_8/cr_toggle_button/cr_toggle_button.js"
                type="chrome_html" />
   </if>
 </grit-part>
