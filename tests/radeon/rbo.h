@@ -26,7 +26,7 @@
 #ifndef RBO_H
 #define RBO_H
 
-#include "list.h"
+#include "util_double_list.h"
 
 struct rbo {
     struct list_head    list;

@@ -9,8 +9,7 @@ LIBDRM_FREEDRENO_FILES := \
 	msm/msm_drm.h \
 	msm/msm_pipe.c \
 	msm/msm_priv.h \
-	msm/msm_ringbuffer.c \
-	list.h
+	msm/msm_ringbuffer.c
 
 LIBDRM_FREEDRENO_KGSL_FILES := \
 	kgsl/kgsl_bo.c \

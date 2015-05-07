@@ -48,7 +48,7 @@
 #include "xf86drm.h"
 #include "xf86atomic.h"
 
-#include "list.h"
+#include "util_double_list.h"
 
 #include "freedreno_drmif.h"
 #include "freedreno_ringbuffer.h"

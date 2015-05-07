@@ -8,7 +8,8 @@ LIBDRM_FILES := \
 	xf86drmMode.c \
 	xf86atomic.h \
 	libdrm_macros.h \
-	libdrm_lists.h
+	libdrm_lists.h \
+	util_double_list.h
 
 LIBDRM_H_FILES := \
 	xf86drm.h \
