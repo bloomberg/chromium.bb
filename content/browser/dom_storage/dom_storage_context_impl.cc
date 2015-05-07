@@ -167,6 +167,11 @@ void DOMStorageContextImpl::DeleteSessionStorage(
     NotifyAreaCleared(area, usage_info.origin);
 }
 
+void DOMStorageContextImpl::Flush() {
+  for (auto& entry : namespaces_)
+    entry.second->Flush();
+}
+
 void DOMStorageContextImpl::Shutdown() {
   is_shutdown_ = true;
   StorageNamespaceMap::const_iterator it = namespaces_.begin();

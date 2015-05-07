@@ -4,6 +4,9 @@
 
 #include "content/browser/storage_partition_impl.h"
 
+#include <set>
+#include <vector>
+
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_main_loop.h"
@@ -901,6 +904,12 @@ void StoragePartitionImpl::ClearData(
     const base::Closure& callback) {
   ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
                 origin_matcher, GetURLRequestContext(), begin, end, callback);
+}
+
+void StoragePartitionImpl::Flush() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (GetDOMStorageContext())
+    GetDOMStorageContext()->Flush();
 }
 
 WebRTCIdentityStore* StoragePartitionImpl::GetWebRTCIdentityStore() {

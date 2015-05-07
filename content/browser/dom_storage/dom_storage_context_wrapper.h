@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_WRAPPER_H_
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_WRAPPER_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -52,6 +54,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
 
   // Called when the BrowserContext/Profile is going away.
   void Shutdown();
+
+  void Flush();
 
  private:
   friend class DOMStorageMessageFilter;  // for access to context()

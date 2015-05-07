@@ -160,6 +160,14 @@ void DOMStorageNamespace::Shutdown() {
     it->second.area_->Shutdown();
 }
 
+void DOMStorageNamespace::Flush() {
+  for (auto& entry : areas_) {
+    if (!entry.second.area_->HasUncommittedChanges())
+      continue;
+    entry.second.area_->ScheduleImmediateCommit();
+  }
+}
+
 unsigned int DOMStorageNamespace::CountInMemoryAreas() const {
   unsigned int area_count = 0;
   for (AreaMap::const_iterator it = areas_.begin(); it != areas_.end(); ++it) {

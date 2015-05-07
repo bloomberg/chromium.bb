@@ -207,6 +207,8 @@ class TestStoragePartition : public StoragePartition {
                    base::Unretained(this), callback));
   }
 
+  void Flush() override {}
+
   StoragePartitionRemovalData GetStoragePartitionRemovalData() {
     return storage_partition_removal_data_;
   }

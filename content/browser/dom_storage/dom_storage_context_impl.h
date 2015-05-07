@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
@@ -39,11 +40,11 @@ class SessionStorageDatabase;
 struct LocalStorageUsageInfo;
 struct SessionStorageUsageInfo;
 
-// The Context is the root of an object containment hierachy for
+// The Context is the root of an object containment hierarchy for
 // Namespaces and Areas related to the owning profile.
 // One instance is allocated in the main process for each profile,
 // instance methods should be called serially in the background as
-// determined by the task_runner. Specifcally not on chrome's non-blocking
+// determined by the task_runner. Specifically not on chrome's non-blocking
 // IO thread since these methods can result in blocking file io.
 //
 // In general terms, the DOMStorage object relationships are...
@@ -127,6 +128,10 @@ class CONTENT_EXPORT DOMStorageContextImpl
   // policies. Contained areas and namespaces will stop functioning after
   // this method has been called.
   void Shutdown();
+
+  // Initiate the process of flushing (writing - not sync'ing) any unwritten
+  // data managed by this instance. Flushing will start "soon".
+  void Flush();
 
   // Methods to add, remove, and notify EventObservers.
   void AddEventObserver(EventObserver* observer);

@@ -4,6 +4,9 @@
 
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
@@ -160,6 +163,13 @@ void DOMStorageContextWrapper::Shutdown() {
       FROM_HERE,
       DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DOMStorageContextImpl::Shutdown, context_));
+}
+
+void DOMStorageContextWrapper::Flush() {
+  DCHECK(context_.get());
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&DOMStorageContextImpl::Flush, context_));
 }
 
 }  // namespace content

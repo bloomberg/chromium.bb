@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_NAMESPACE_H_
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -70,6 +71,7 @@ class CONTENT_EXPORT DOMStorageNamespace
   void DeleteSessionStorageOrigin(const GURL& origin);
   void PurgeMemory(PurgeOption purge);
   void Shutdown();
+  void Flush();
 
   unsigned int CountInMemoryAreas() const;
 

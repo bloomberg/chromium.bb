@@ -134,6 +134,11 @@ class CONTENT_EXPORT StoragePartition {
                          const base::Time end,
                          const base::Closure& callback) = 0;
 
+  // Write any unwritten data to disk.
+  // Note: this method does not sync the data - it only ensures that any
+  // unwritten data has been written out to the filesystem.
+  virtual void Flush() = 0;
+
  protected:
   virtual ~StoragePartition() {}
 };

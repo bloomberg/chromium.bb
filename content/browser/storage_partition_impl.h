@@ -71,6 +71,8 @@ class StoragePartitionImpl : public StoragePartition {
                  const base::Time end,
                  const base::Closure& callback) override;
 
+  void Flush() override;
+
   WebRTCIdentityStore* GetWebRTCIdentityStore();
 
   // Can return nullptr while |this| is being destroyed.
