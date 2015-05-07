@@ -19,13 +19,12 @@
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 
+#if defined(ENABLE_NOTIFICATIONS)
+#include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
+#endif
+
 class Profile;
 class PushMessagingApplicationId;
-
-namespace content {
-struct NotificationDatabaseData;
-struct PlatformNotificationData;
-}
 
 namespace gcm {
 class GCMDriver;
@@ -115,54 +114,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               const base::Closure& message_handled_closure,
                               content::PushDeliveryStatus status);
 
-  // Developers are required to display a Web Notification in response to an
-  // incoming push message in order to clarify to the user that something has
-  // happened in the background. When they forget to do so, display a default
-  // notification on their behalf.
-  void RequireUserVisibleUX(const GURL& requesting_origin,
-                            int64_t service_worker_registration_id,
-                            const base::Closure& message_handled_closure);
-
-  static void DidGetNotificationsFromDatabaseIOProxy(
-      const base::WeakPtr<PushMessagingServiceImpl>& ui_weak_ptr,
-      const GURL& requesting_origin,
-      int64_t service_worker_registration_id,
-      const base::Closure& message_handled_closure,
-      bool success,
-      const std::vector<content::NotificationDatabaseData>& data);
-
-  void DidGetNotificationsFromDatabase(
-      const GURL& requesting_origin,
-      int64_t service_worker_registration_id,
-      const base::Closure& message_handled_closure,
-      bool success,
-      const std::vector<content::NotificationDatabaseData>& data);
-
-  void DidGetNotificationsShownAndNeeded(
-      const GURL& requesting_origin,
-      int64_t service_worker_registration_id,
-      bool notification_shown,
-      bool notification_needed,
-      const base::Closure& message_handled_closure,
-      const std::string& data,
-      bool success,
-      bool not_found);
-
-  static void DidWriteNotificationDataIOProxy(
-      const base::WeakPtr<PushMessagingServiceImpl>& ui_weak_ptr,
-      const GURL& requesting_origin,
-      const content::PlatformNotificationData& notification_data,
-      const base::Closure& message_handled_closure,
-      bool success,
-      int64_t persistent_notification_id);
-
-  void DidWriteNotificationData(
-      const GURL& requesting_origin,
-      const content::PlatformNotificationData& notification_data,
-      const base::Closure& message_handled_closure,
-      bool success,
-      int64_t persistent_notification_id);
-
   // Register methods ----------------------------------------------------------
 
   void RegisterEnd(
@@ -213,6 +164,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   base::Closure message_callback_for_testing_;
   base::Closure content_setting_changed_callback_for_testing_;
+
+#if defined(ENABLE_NOTIFICATIONS)
+  PushMessagingNotificationManager notification_manager_;
+#endif
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 

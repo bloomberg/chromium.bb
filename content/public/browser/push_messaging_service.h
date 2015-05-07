@@ -77,7 +77,6 @@ class CONTENT_EXPORT PushMessagingService {
       const GURL& embedding_origin,
       bool user_visible) = 0;
 
- protected:
   // Provide a storage mechanism to read/write an opaque
   // "notifications_shown_by_last_few_pushes" string associated with a Service
   // Worker registration. Stored data is deleted when the associated
@@ -93,6 +92,7 @@ class CONTENT_EXPORT PushMessagingService {
       const std::string& notifications_shown,
       const ResultCallback& callback);
 
+ protected:
   static void GetSenderId(BrowserContext* browser_context,
                           const GURL& origin,
                           int64 service_worker_registration_id,

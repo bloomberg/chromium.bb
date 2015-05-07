@@ -1920,6 +1920,8 @@
       'browser/notifications/platform_notification_service_impl.h',
       'browser/notifications/profile_notification.cc',
       'browser/notifications/profile_notification.h',
+      'browser/push_messaging/push_messaging_notification_manager.cc',
+      'browser/push_messaging/push_messaging_notification_manager.h',
     ],
     # Used on non-Android platforms when notifications are enabled.
     'chrome_browser_notifications_non_android_sources': [
