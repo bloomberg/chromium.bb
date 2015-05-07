@@ -388,6 +388,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         @Override
         public void showRepostFormWarningDialog() {
+            // When the dialog is visible, keeping the refresh animation active
+            // in the background is distracting and unnecessary (and likely to
+            // jank when the dialog is shown).
+            if (mSwipeRefreshHandler != null) {
+                mSwipeRefreshHandler.reset();
+            }
             RepostFormWarningDialog warningDialog = new RepostFormWarningDialog(
                     new Runnable() {
                         @Override

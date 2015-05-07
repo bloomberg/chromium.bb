@@ -24,6 +24,10 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
     // call to stop the refresh animation.
     private static final int STOP_REFRESH_ANIMATION_DELAY_MS = 500;
 
+    // Max allowed duration of the refresh animation after a refresh signal,
+    // guarding against cases where the page reload fails or takes too long.
+    private static final int MAX_REFRESH_ANIMATION_DURATION_MS = 7500;
+
     // The modified AppCompat version of the refresh effect, handling all core
     // logic, rendering and animation.
     private final SwipeRefreshLayout mSwipeRefreshLayout;
@@ -65,6 +69,7 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
 
         if (mContentViewCore != null) {
             setEnabled(false);
+            cancelStopRefreshingRunnable();
             mSwipeRefreshLayout.setOnRefreshListener(null);
             mContentViewCore.setOverscrollRefreshHandler(null);
         }
@@ -77,9 +82,9 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (mStopRefreshingRunnable != null) {
-                    mSwipeRefreshLayout.removeCallbacks(mStopRefreshingRunnable);
-                }
+                cancelStopRefreshingRunnable();
+                mSwipeRefreshLayout.postDelayed(
+                        getStopRefreshingRunnable(), MAX_REFRESH_ANIMATION_DURATION_MS);
                 if (mAccessibilityRefreshString == null) {
                     int resId = R.string.accessibility_swipe_refresh;
                     mAccessibilityRefreshString =
@@ -99,16 +104,9 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
      */
     public void didStopRefreshing() {
         if (!mSwipeRefreshLayout.isRefreshing()) return;
-        if (mStopRefreshingRunnable == null) {
-            mStopRefreshingRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    mSwipeRefreshLayout.setRefreshing(false);
-                }
-            };
-        }
-        mSwipeRefreshLayout.removeCallbacks(mStopRefreshingRunnable);
-        mSwipeRefreshLayout.postDelayed(mStopRefreshingRunnable, STOP_REFRESH_ANIMATION_DELAY_MS);
+        cancelStopRefreshingRunnable();
+        mSwipeRefreshLayout.postDelayed(
+                getStopRefreshingRunnable(), STOP_REFRESH_ANIMATION_DELAY_MS);
     }
 
     @Override
@@ -133,6 +131,7 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
 
     @Override
     public void reset() {
+        cancelStopRefreshingRunnable();
         mSwipeRefreshLayout.reset();
         detachSwipeRefreshLayoutIfNecessary();
     }
@@ -141,6 +140,24 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
     public void setEnabled(boolean enabled) {
         mSwipeRefreshLayout.setEnabled(enabled);
         if (!enabled) reset();
+    }
+
+    private void cancelStopRefreshingRunnable() {
+        if (mStopRefreshingRunnable != null) {
+            mSwipeRefreshLayout.removeCallbacks(mStopRefreshingRunnable);
+        }
+    }
+
+    private Runnable getStopRefreshingRunnable() {
+        if (mStopRefreshingRunnable == null) {
+            mStopRefreshingRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
+            };
+        }
+        return mStopRefreshingRunnable;
     }
 
     // The animation view is attached/detached on-demand to minimize overlap

@@ -422,7 +422,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
                 }
             }
         };
-        animation.setRepeatCount(10);
+        animation.setRepeatCount(Animation.INFINITE);
         animation.setRepeatMode(Animation.RESTART);
         animation.setInterpolator(LINEAR_INTERPOLATOR);
         animation.setAnimationListener(new Animation.AnimationListener() {
