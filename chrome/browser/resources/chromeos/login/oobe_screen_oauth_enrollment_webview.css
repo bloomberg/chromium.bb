@@ -24,7 +24,6 @@
   display: none;
 }
 
-.oauth-enroll-state-working #oauth-enroll-step-working,
 .oauth-enroll-state-error #oauth-enroll-step-error,
 .oauth-enroll-state-attribute-prompt #oauth-enroll-step-attribute-prompt,
 .oauth-enroll-state-success #oauth-enroll-step-success {
@@ -33,6 +32,9 @@
   margin: 0 auto;
 }
 
+.oauth-enroll-state-working #oauth-enroll-step-signin,
+.oauth-enroll-state-attribute-prompt-error
+    #oauth-enroll-step-attribute-prompt-error,
 .oauth-enroll-state-signin #oauth-enroll-step-signin {
   display: block;
   height: 100%;
@@ -57,22 +59,6 @@
 .oauth-enroll-step-content {
   display: table-cell;
   vertical-align: middle;
-}
-
-.oauth-enroll-step-icon {
-  display: inline-block;
-  position: relative;
-  top: 0.5em;
-  vertical-align: top;
-}
-
-.oauth-enroll-step-icon > * {
-  -webkit-margin-end: .4em;
-  display: inline-block;
-  height: 22px;
-  position: relative;
-  top: -11px;
-  width: 22px;
 }
 
 .oauth-enroll-step-message {
@@ -137,7 +123,7 @@
 }
 
 #oauth-enroll-cancel-button {
-  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
+  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE);
   right: 10px;
 }
 
@@ -146,8 +132,9 @@ html[dir=rtl] #oauth-enroll-cancel-button {
   right: auto;
 }
 
-#oauth-enrollment.saml #oauth-enroll-cancel-button {
-  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE);
+.oauth-enroll-state-signin #oauth-enroll-cancel-button,
+.oauth-enroll-state-working #oauth-enroll-cancel-button {
+  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
 }
 
 #oauth-enroll-back-button {

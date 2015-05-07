@@ -7,39 +7,16 @@
     <div id="oauth-enroll-step-signin">
       <div id="oauth-enroll-auth-view-container"></div>
     </div>
-    <div id="oauth-enroll-step-working">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-icon">
-          <span class="spinner"></span>
-        </span>
-        <span class="oauth-enroll-step-message">
-          <span i18n-content="oauthEnrollWorking"></span>
-        </span>
-      </div>
-    </div>
     <div id="oauth-enroll-step-error">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-icon">
-          <img src="chrome://theme/IDR_ENROLL_FAILURE">
-        </span>
-        <span class="oauth-enroll-step-message">
-          <span id="oauth-enroll-error-message"></span>
-          <p>
-            <a id="oauth-enroll-error-retry" class="oauth-enroll-link" href="#"
-                i18n-content="oauthEnrollRetry"></a>
-          </p>
-        </span>
-      </div>
+      <notification-card id="oauth-enroll-error-card" type="fail"
+          i18n-values="buttonLabel:oauthEnrollRetry">
+      </notification-card>
     </div>
     <div id="oauth-enroll-step-success">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-icon">
-          <img src="chrome://theme/IDR_ENROLL_SUCCESS">
-        </span>
-        <span class="oauth-enroll-step-message">
-          <span i18n-content="oauthEnrollSuccess"></span>
-        </span>
-      </div>
+      <notification-card id="oauth-enroll-success-card" type="success"
+          i18n-values="buttonLabel:oauthEnrollDone"
+          i18n-content="oauthEnrollSuccess">
+      </notification-card>
     </div>
     <div id="oauth-enroll-step-attribute-prompt">
       <div class="oauth-enroll-step-content">
@@ -72,6 +49,11 @@
         </p>
       </div>
     </div>
+    <div id="oauth-enroll-step-attribute-prompt-error">
+      <notification-card id="oauth-enroll-attribute-prompt-error-card"
+          type="fail" i18n-values="buttonLabel:oauthEnrollDone">
+      </notification-card>
+    </div>
   </div>
   <div id="oauth-saml-notice-container">
     <span id="oauth-saml-notice-message"></span>
@@ -81,6 +63,6 @@
       class="custom-appearance custom-gaia-button" hidden
       i18n-values="aria-label:backButton" tabindex="0"></button>
   <button id="oauth-enroll-cancel-button"
-      class="custom-appearance custom-gaia-button"
+      class="custom-appearance custom-gaia-button oauth-enroll-button"
       i18n-values="aria-label:closeButton" tabindex="0"></button>
 </div>

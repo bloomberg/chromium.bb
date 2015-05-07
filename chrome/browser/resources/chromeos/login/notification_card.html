@@ -15,7 +15,8 @@
     </notification-card>
 
   Atributes:
-   'buttonLabel' - label displayed on the button.
+   'buttonLabel' - label displayed on the button. If empty or not set, the
+                   button is hidden.
    'linkLabel' - text of the link. If empty or not set, the link is hidden.
    'heading' - heading. Can be omitted.
    'type' - icon type. Can be either 'success' or 'fail'. If not set, no icon
@@ -49,7 +50,7 @@
         </div>
       </div>
       <div self-stretch horizontal reverse layout justified center>
-        <paper-button on-tap="{{buttonClicked}}">
+        <paper-button on-tap="{{buttonClicked}}" hidden?="{{!buttonLabel}}">
           {{buttonLabel}}
         </paper-button>
         <a href="#" on-click="{{linkClicked}}" hidden?="{{!linkLabel}}">
