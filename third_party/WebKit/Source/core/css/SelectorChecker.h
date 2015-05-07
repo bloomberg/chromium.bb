@@ -98,11 +98,12 @@ public:
     };
 
     bool match(const SelectorCheckingContext&, MatchResult* = 0) const;
-    bool checkOne(const SelectorCheckingContext&, unsigned* specificity = 0) const;
 
     static bool matchesFocusPseudoClass(const Element&);
 
 private:
+    bool checkOne(const SelectorCheckingContext&, unsigned* specificity = 0) const;
+
     enum Match { SelectorMatches, SelectorFailsLocally, SelectorFailsAllSiblings, SelectorFailsCompletely };
     Match matchSelector(const SelectorCheckingContext&, MatchResult* = 0) const;
     Match matchForSubSelector(const SelectorCheckingContext&, MatchResult*) const;
