@@ -1,38 +1,38 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_KIOSK_WM_KIOSK_WM_H_
-#define COMPONENTS_KIOSK_WM_KIOSK_WM_H_
+#ifndef MANDOLINE_UI_BROWSER_BROWSER_H_
+#define MANDOLINE_UI_BROWSER_BROWSER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "components/kiosk_wm/navigator_host_impl.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/window_manager/window_manager_app.h"
 #include "components/window_manager/window_manager_delegate.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
+#include "mandoline/ui/browser/navigator_host_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
-namespace kiosk_wm {
+namespace mandoline {
 
 class MergedServiceProvider;
 
-class KioskWM : public mojo::ApplicationDelegate,
+class Browser : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
                 public mojo::ViewObserver,
                 public window_manager::WindowManagerDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost> {
  public:
-  KioskWM();
-  ~KioskWM() override;
+  Browser();
+  ~Browser() override;
 
-  base::WeakPtr<KioskWM> GetWeakPtr();
+  base::WeakPtr<Browser> GetWeakPtr();
 
   void ReplaceContentWithURL(const mojo::String& url);
 
@@ -82,11 +82,11 @@ class KioskWM : public mojo::ApplicationDelegate,
 
   NavigatorHostImpl navigator_host_;
 
-  base::WeakPtrFactory<KioskWM> weak_factory_;
+  base::WeakPtrFactory<Browser> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(KioskWM);
+  DISALLOW_COPY_AND_ASSIGN(Browser);
 };
 
-}  // namespace kiosk_wm
+}  // namespace mandoline
 
-#endif  // COMPONENTS_KIOSK_WM_KIOSK_WM_H_
+#endif  // MANDOLINE_UI_BROWSER_BROWSER_H_

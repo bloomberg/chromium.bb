@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_KIOSK_WM_MERGED_SERVICE_PROVIDER_H_
-#define COMPONENTS_KIOSK_WM_MERGED_SERVICE_PROVIDER_H_
+#ifndef MANDOLINE_UI_BROWSER_MERGED_SERVICE_PROVIDER_H_
+#define MANDOLINE_UI_BROWSER_MERGED_SERVICE_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
@@ -11,10 +11,10 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
 
-namespace kiosk_wm {
+namespace mandoline {
 
 // Used to wrap the second incoming WindowManager Embed() "exposed_services"
-// parameter with a new ServiceProvider that adds the KioskWM's
+// parameter with a new ServiceProvider that adds the Browser's
 // NavigatorHost service.
 class MergedServiceProvider : public mojo::ServiceProvider {
  public:
@@ -36,6 +36,6 @@ class MergedServiceProvider : public mojo::ServiceProvider {
   DISALLOW_COPY_AND_ASSIGN(MergedServiceProvider);
 };
 
-}  // namespace kiosk_wm
+}  // namespace mandoline
 
-#endif  // COMPONENTS_KIOSK_WM_MERGED_SERVICE_PROVIDER_H_
+#endif  // MANDOLINE_UI_BROWSER_MERGED_SERVICE_PROVIDER_H_

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/kiosk_wm/merged_service_provider.h"
+#include "mandoline/ui/browser/merged_service_provider.h"
 
-namespace kiosk_wm {
+namespace mandoline {
 
 MergedServiceProvider::MergedServiceProvider(
     mojo::ServiceProviderPtr exposed_services,
@@ -32,4 +32,4 @@ void MergedServiceProvider::ConnectToService(
   }
 }
 
-}  // namespace kiosk_wm
+}  // namespace mandoline

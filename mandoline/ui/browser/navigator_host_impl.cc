@@ -1,15 +1,15 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/kiosk_wm/navigator_host_impl.h"
+#include "mandoline/ui/browser/navigator_host_impl.h"
 
-#include "components/kiosk_wm/kiosk_wm.h"
+#include "mandoline/ui/browser/browser.h"
 
-namespace kiosk_wm {
+namespace mandoline {
 
-NavigatorHostImpl::NavigatorHostImpl(KioskWM* window_manager)
-    : current_index_(-1), kiosk_wm_(window_manager) {
+NavigatorHostImpl::NavigatorHostImpl(Browser* browser)
+    : current_index_(-1), browser_(browser) {
 }
 
 NavigatorHostImpl::~NavigatorHostImpl() {
@@ -27,8 +27,8 @@ void NavigatorHostImpl::DidNavigateLocally(const mojo::String& url) {
 
 void NavigatorHostImpl::RequestNavigate(mojo::Target target,
                                         mojo::URLRequestPtr request) {
-  // kiosk_wm sets up default services including navigation.
-  kiosk_wm_->ReplaceContentWithURL(request->url);
+  // The Browser sets up default services including navigation.
+  browser_->ReplaceContentWithURL(request->url);
 }
 
 void NavigatorHostImpl::RequestNavigateHistory(int32_t delta) {
@@ -37,7 +37,7 @@ void NavigatorHostImpl::RequestNavigateHistory(int32_t delta) {
   current_index_ =
       std::max(0, std::min(current_index_ + delta,
                            static_cast<int32_t>(history_.size()) - 1));
-  kiosk_wm_->ReplaceContentWithURL(history_[current_index_]);
+  browser_->ReplaceContentWithURL(history_[current_index_]);
 }
 
 void NavigatorHostImpl::RecordNavigation(const std::string& url) {
@@ -51,4 +51,4 @@ void NavigatorHostImpl::RecordNavigation(const std::string& url) {
   ++current_index_;
 }
 
-}  // namespace kiosk_wm
+}  // namespace mandoline
