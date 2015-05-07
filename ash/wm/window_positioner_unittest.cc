@@ -146,7 +146,7 @@ TEST_F(WindowPositionerTest, EnsureMinimumVisibility) {
   wm::GetWindowState(widget->GetNativeView())->set_minimum_visibility(true);
   widget->Show();
   // Make sure the bounds is adjusted to be inside the work area.
-  EXPECT_EQ("390,10 100x100", widget->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("375,10 100x100", widget->GetWindowBoundsInScreen().ToString());
   widget->CloseNow();
 }
 

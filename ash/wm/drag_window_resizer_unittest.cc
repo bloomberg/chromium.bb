@@ -177,19 +177,19 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
                              Shell::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   {
-    // Grab (0, 0) of the window and move the pointer to (790, 10).
+    // Grab (0, 0) of the window and move the pointer to (775, 10).
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 795, 10), 0);
-    // Window should be adjusted for minimum visibility (10px) during the drag.
-    EXPECT_EQ("790,10 50x60", window_->bounds().ToString());
+    // Window should be adjusted for minimum visibility (25px) during the drag.
+    EXPECT_EQ("775,10 50x60", window_->bounds().ToString());
     resizer->CompleteDrag();
     // Since the pointer is still on the primary root window, the parent should
     // not be changed.
-    // Window origin should be adjusted for minimum visibility (10px).
+    // Window origin should be adjusted for minimum visibility (25px).
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    EXPECT_EQ("790,10 50x60", window_->bounds().ToString());
+    EXPECT_EQ("775,10 50x60", window_->bounds().ToString());
   }
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
@@ -207,8 +207,9 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // even though only small fraction of the window is within the secondary
     // root window's bounds.
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    // Window origin should be adjusted for minimum visibility (10px).
-    int expected_x = -50 + 10;
+    // Window origin should be adjusted for minimum visibility (25px).
+    int expected_x = -50 + kMinimumOnScreenArea;
+
     EXPECT_EQ(base::IntToString(expected_x) + ",10 50x60",
               window_->bounds().ToString());
   }
@@ -326,10 +327,8 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysRightToLeft) {
     resizer->Drag(CalculateDragPoint(*resizer, -2, 0), ui::EF_CONTROL_DOWN);
     resizer->CompleteDrag();
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    // Window origin should be adjusted for minimum visibility (10px).
-    int expected_x = 800 - 10;
-    EXPECT_EQ(base::IntToString(expected_x) + ",0 50x60",
-              window_->bounds().ToString());
+    // Window origin should be adjusted for minimum visibility (25px).
+    EXPECT_EQ("775,0 50x60", window_->bounds().ToString());
   }
 }
 

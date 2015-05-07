@@ -188,7 +188,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
   // Y bounds should not be negative.
-  EXPECT_EQ("-20,0 30x40", window->bounds().ToString());
+  EXPECT_EQ("-5,0 30x40", window->bounds().ToString());
 
   // Minimized -> Normal transition.
   window->SetBounds(gfx::Rect(-100, -100, 30, 40));
@@ -200,7 +200,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
   // Y bounds should not be negative.
-  EXPECT_EQ("-20,0 30x40", window->bounds().ToString());
+  EXPECT_EQ("-5,0 30x40", window->bounds().ToString());
 
   // Fullscreen -> Normal transition.
   window->SetBounds(gfx::Rect(0, 0, 30, 40));  // reset bounds.
@@ -212,7 +212,7 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
   // Y bounds should not be negative.
-  EXPECT_EQ("-20,0 30x40", window->bounds().ToString());
+  EXPECT_EQ("-5,0 30x40", window->bounds().ToString());
 }
 
 TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
@@ -240,14 +240,14 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
 
   // If the restore bounds intersects with the current display,
   // don't move.
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(280, 0, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 30, 40));
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ("300,0 400x453", window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("280,0 30x40", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("295,0 30x40", window->GetBoundsInScreen().ToString());
 
   // Restoring widget state.
   scoped_ptr<views::Widget> w1(new views::Widget);
@@ -291,7 +291,7 @@ TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
 
   // If the restore bounds intersects with the current display,
   // don't move.
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(280, 0, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 30, 40));
   window->SetProperty(aura::client::kShowStateKey,
                       ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -299,7 +299,7 @@ TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("280,0 30x40", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("295,0 30x40", window->GetBoundsInScreen().ToString());
 }
 
 // WindowObserver implementation used by DontClobberRestoreBoundsWindowObserver.

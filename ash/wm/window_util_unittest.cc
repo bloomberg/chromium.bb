@@ -55,9 +55,9 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
             GetAdjustedBounds(visible_bounds, gfx::Rect(0, 0, 150, 150)));
   EXPECT_EQ("-50,0 100x100",
             GetAdjustedBounds(visible_bounds, gfx::Rect(-50, -50, 150, 150)));
-  EXPECT_EQ("-90,10 100x100",
+  EXPECT_EQ("-75,10 100x100",
             GetAdjustedBounds(visible_bounds, gfx::Rect(-100, 10, 150, 150)));
-  EXPECT_EQ("90,90 100x100",
+  EXPECT_EQ("75,75 100x100",
             GetAdjustedBounds(visible_bounds, gfx::Rect(100, 100, 150, 150)));
 
   const gfx::Rect visible_bounds_right(200, 50, 100, 100);
@@ -68,14 +68,12 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
   EXPECT_EQ(
       "210,60 100x100",
       GetAdjustedBounds(visible_bounds_right, gfx::Rect(210, 60, 150, 150)));
+  EXPECT_EQ("125,50 100x100",
+            GetAdjustedBounds(visible_bounds_right, gfx::Rect(0, 0, 150, 150)));
+  EXPECT_EQ("275,50 100x100", GetAdjustedBounds(visible_bounds_right,
+                                                gfx::Rect(300, 20, 150, 150)));
   EXPECT_EQ(
-      "110,50 100x100",
-      GetAdjustedBounds(visible_bounds_right, gfx::Rect(0, 0, 150, 150)));
-  EXPECT_EQ(
-      "290,50 100x100",
-      GetAdjustedBounds(visible_bounds_right, gfx::Rect(300, 20, 150, 150)));
-  EXPECT_EQ(
-      "110,140 100x100",
+      "125,125 100x100",
       GetAdjustedBounds(visible_bounds_right, gfx::Rect(-100, 150, 150, 150)));
 
   const gfx::Rect visible_bounds_left(-200, -50, 100, 100);
@@ -89,11 +87,10 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
       "-250,-40 100x100",
       GetAdjustedBounds(visible_bounds_left, gfx::Rect(-250, -40, 150, 150)));
   EXPECT_EQ(
-      "-290,-50 100x100",
+      "-275,-50 100x100",
       GetAdjustedBounds(visible_bounds_left, gfx::Rect(-400, -60, 150, 150)));
-  EXPECT_EQ(
-      "-110,0 100x100",
-      GetAdjustedBounds(visible_bounds_left, gfx::Rect(0, 0, 150, 150)));
+  EXPECT_EQ("-125,0 100x100",
+            GetAdjustedBounds(visible_bounds_left, gfx::Rect(0, 0, 150, 150)));
 }
 
 }  // namespace ash

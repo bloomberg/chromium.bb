@@ -257,10 +257,15 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_Compress) {
   EXPECT_EQ("300,200 200x200", window2_->bounds().ToString());
 
   // Collapse all the way to w1's min.
-  delegate_.set_min_size(gfx::Size(20, 20));
+  delegate_.set_min_size(gfx::Size(25, 25));
+  resizer->Drag(CalculateDragPoint(*resizer, -800, 25), 0);
+  EXPECT_EQ("0,300 25x300", window_->bounds().ToString());
+  EXPECT_EQ("25,200 475x200", window2_->bounds().ToString());
+
+  // But should keep minimum visible width;
   resizer->Drag(CalculateDragPoint(*resizer, -800, 20), 0);
-  EXPECT_EQ("0,300 20x300", window_->bounds().ToString());
-  EXPECT_EQ("20,200 480x200", window2_->bounds().ToString());
+  EXPECT_EQ("0,300 25x300", window_->bounds().ToString());
+  EXPECT_EQ("25,200 475x200", window2_->bounds().ToString());
 
   // Move 100 to the left.
   resizer->Drag(CalculateDragPoint(*resizer, 100, 10), 0);

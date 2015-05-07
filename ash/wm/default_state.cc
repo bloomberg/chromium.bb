@@ -513,6 +513,8 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
 void DefaultState::SetBounds(WindowState* window_state,
                              const SetBoundsEvent* event) {
   if (window_state->is_dragged()) {
+    // TODO(oshima|varkha): This may be no longer needed, as the dragging
+    // happens in docked window container. crbug.com/485612.
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (window_state->IsSnapped()) {
     gfx::Rect work_area_in_parent =

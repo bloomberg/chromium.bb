@@ -25,7 +25,7 @@ class Event;
 
 namespace ash {
 // We force at least this many DIPs for any window on the screen.
-const int kMinimumOnScreenArea = 10;
+const int kMinimumOnScreenArea = 25;
 
 namespace wm {
 
