@@ -11,7 +11,6 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../base/base.gyp:run_all_unittests',
         '../../base/base.gyp:test_support_base',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
@@ -37,6 +36,8 @@
         'public/referrer_util_unittest.cc',
         'public/test/http_server_unittest.mm',
         'string_util_unittest.cc',
+        'test/crw_fake_web_controller_observer_unittest.mm',
+        'test/run_all_unittests.cc',
         'ui_web_view_util_unittest.mm',
         'url_scheme_util_unittest.mm',
         'url_util_unittest.cc',
