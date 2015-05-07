@@ -43,12 +43,8 @@ class PushMessagingDispatcher : public RenderFrameObserver,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
       blink::WebPushSubscriptionCallbacks* callbacks);
-  // TODO(peter): Remove this method when Blink switched over to the above.
-  virtual void registerPushMessaging(
-      blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebPushSubscriptionCallbacks* callbacks);  // override
 
-  void DoRegister(
+  void DoSubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
       blink::WebPushSubscriptionCallbacks* callbacks,

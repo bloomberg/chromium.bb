@@ -7,6 +7,10 @@
 var resultQueue = new ResultQueue();
 var pushSubscription = null;
 
+var pushSubscriptionOptions = {
+  userVisibleOnly: true
+};
+
 // Sends data back to the test. This must be in response to an earlier
 // request, but it's ok to respond asynchronously. The request blocks until
 // the response is sent.
@@ -94,7 +98,7 @@ function removeManifest() {
 
 function subscribePush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    return swRegistration.pushManager.subscribe()
+    return swRegistration.pushManager.subscribe(pushSubscriptionOptions)
         .then(function(subscription) {
           pushSubscription = subscription;
           sendResultToTest(subscription.endpoint);
@@ -104,7 +108,7 @@ function subscribePush() {
 
 function permissionState() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    return swRegistration.pushManager.permissionState()
+    return swRegistration.pushManager.permissionState(pushSubscriptionOptions)
         .then(function(permission) {
           sendResultToTest('permission status - ' + permission);
         });

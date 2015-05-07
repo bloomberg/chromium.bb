@@ -76,15 +76,7 @@ void PushProvider::subscribe(
   int64 service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   thread_safe_sender_->Send(new PushMessagingHostMsg_RegisterFromWorker(
-      request_id, service_worker_registration_id, options.userVisible));
-}
-
-void PushProvider::registerPushMessaging(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushSubscriptionCallbacks* callbacks) {
-  subscribe(service_worker_registration,
-            blink::WebPushSubscriptionOptions(),
-            callbacks);
+      request_id, service_worker_registration_id, options.userVisibleOnly));
 }
 
 void PushProvider::unsubscribe(
@@ -102,12 +94,6 @@ void PushProvider::unsubscribe(
       request_id, service_worker_registration_id));
 }
 
-void PushProvider::unregister(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushUnsubscribeCallbacks* callbacks) {
-  unsubscribe(service_worker_registration, callbacks);
-}
-
 void PushProvider::getSubscription(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebPushSubscriptionCallbacks* callbacks) {
@@ -121,12 +107,6 @@ void PushProvider::getSubscription(
       request_id, service_worker_registration_id));
 }
 
-void PushProvider::getRegistration(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushSubscriptionCallbacks* callbacks) {
-  getSubscription(service_worker_registration, callbacks);
-}
-
 void PushProvider::getPermissionStatus(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
@@ -138,15 +118,7 @@ void PushProvider::getPermissionStatus(
   int64 service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   thread_safe_sender_->Send(new PushMessagingHostMsg_GetPermissionStatus(
-      request_id, service_worker_registration_id, options.userVisible));
-}
-
-void PushProvider::getPermissionStatus(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushPermissionStatusCallbacks* callbacks) {
-  getPermissionStatus(service_worker_registration,
-                      blink::WebPushSubscriptionOptions(),
-                      callbacks);
+      request_id, service_worker_registration_id, options.userVisibleOnly));
 }
 
 bool PushProvider::OnMessageReceived(const IPC::Message& message) {

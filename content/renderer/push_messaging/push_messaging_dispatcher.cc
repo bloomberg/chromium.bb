@@ -47,22 +47,14 @@ void PushMessagingDispatcher::subscribe(
   DCHECK(callbacks);
   RenderFrameImpl::FromRoutingID(routing_id())
       ->manifest_manager()
-      ->GetManifest(base::Bind(&PushMessagingDispatcher::DoRegister,
+      ->GetManifest(base::Bind(&PushMessagingDispatcher::DoSubscribe,
                                base::Unretained(this),
                                service_worker_registration,
                                options,
                                callbacks));
 }
 
-void PushMessagingDispatcher::registerPushMessaging(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushSubscriptionCallbacks* callbacks) {
-  subscribe(service_worker_registration,
-            blink::WebPushSubscriptionOptions(),
-            callbacks);
-}
-
-void PushMessagingDispatcher::DoRegister(
+void PushMessagingDispatcher::DoSubscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
     blink::WebPushSubscriptionCallbacks* callbacks,
@@ -85,7 +77,7 @@ void PushMessagingDispatcher::DoRegister(
   // TODO(peter): Display a deprecation warning if gcm_user_visible_only is
   // set to true. See https://crbug.com/471534
   const bool user_visible = manifest.gcm_user_visible_only ||
-                            options.userVisible;
+                            options.userVisibleOnly;
 
   Send(new PushMessagingHostMsg_RegisterFromDocument(
       routing_id(), request_id,
