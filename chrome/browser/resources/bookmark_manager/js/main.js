@@ -435,7 +435,8 @@ function updatePasteCommand(opt_f) {
   var promises = [];
 
   // The folders menu.
-  if (bmm.tree.selectedItem) {
+  // We can not paste into search item in tree.
+  if (bmm.tree.selectedItem && bmm.tree.selectedItem != searchTreeItem) {
     promises.push(new Promise(function(resolve) {
       var id = bmm.tree.selectedItem.bookmarkId;
       chrome.bookmarkManagerPrivate.canPaste(id, function(canPaste) {
