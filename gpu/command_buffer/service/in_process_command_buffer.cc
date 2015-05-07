@@ -12,11 +12,13 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/value_state.h"
@@ -98,13 +100,13 @@ GpuInProcessThread::~GpuInProcessThread() {
 }
 
 void GpuInProcessThread::ScheduleTask(const base::Closure& task) {
-  message_loop()->PostTask(FROM_HERE, task);
+  task_runner()->PostTask(FROM_HERE, task);
 }
 
 void GpuInProcessThread::ScheduleIdleWork(const base::Closure& callback) {
   // Match delay with GpuCommandBufferStub.
-  message_loop()->PostDelayedTask(
-      FROM_HERE, callback, base::TimeDelta::FromMilliseconds(2));
+  task_runner()->PostDelayedTask(FROM_HERE, callback,
+                                 base::TimeDelta::FromMilliseconds(2));
 }
 
 scoped_refptr<gles2::ShaderTranslatorCache>
@@ -930,12 +932,13 @@ bool InProcessCommandBuffer::Initialize() {
 
 namespace {
 
-void PostCallback(const scoped_refptr<base::MessageLoopProxy>& loop,
-                         const base::Closure& callback) {
-  // The loop.get() check is to support using InProcessCommandBuffer on a thread
-  // without a message loop.
-  if (loop.get() && !loop->BelongsToCurrentThread()) {
-    loop->PostTask(FROM_HERE, callback);
+void PostCallback(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const base::Closure& callback) {
+  // The task_runner.get() check is to support using InProcessCommandBuffer on
+  // a thread without a message loop.
+  if (task_runner.get() && !task_runner->BelongsToCurrentThread()) {
+    task_runner->PostTask(FROM_HERE, callback);
   } else {
     callback.Run();
   }
@@ -956,7 +959,9 @@ base::Closure InProcessCommandBuffer::WrapCallback(
   base::Closure callback_on_client_thread =
       base::Bind(&RunOnTargetThread, base::Passed(&scoped_callback));
   base::Closure wrapped_callback =
-      base::Bind(&PostCallback, base::MessageLoopProxy::current(),
+      base::Bind(&PostCallback, base::ThreadTaskRunnerHandle::IsSet()
+                                    ? base::ThreadTaskRunnerHandle::Get()
+                                    : nullptr,
                  callback_on_client_thread);
   return wrapped_callback;
 }

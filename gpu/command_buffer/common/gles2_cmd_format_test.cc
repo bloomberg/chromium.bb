@@ -7,10 +7,12 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
 namespace gles2 {
@@ -94,18 +96,16 @@ TEST(GLES2FormatAsyncUploadSyncTest, AsyncUploadSync) {
 
       // Set the async upload token on the fake upload thread and assert that
       // the associated buffer still has the given token.
-      thread.message_loop()->PostTask(FROM_HERE,
-                                      base::Bind(&SignalCompletion,
-                                                 &buffer_tokens[buffer],
-                                                 async_token,
-                                                 &sync));
+      thread.task_runner()->PostTask(
+          FROM_HERE, base::Bind(&SignalCompletion, &buffer_tokens[buffer],
+                                async_token, &sync));
     }
 
     // Flush the thread message loop before starting again.
     base::WaitableEvent waitable(false, false);
-    thread.message_loop()->PostTask(FROM_HERE,
-                                    base::Bind(&base::WaitableEvent::Signal,
-                                               base::Unretained(&waitable)));
+    thread.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waitable)));
     waitable.Wait();
   }
 }

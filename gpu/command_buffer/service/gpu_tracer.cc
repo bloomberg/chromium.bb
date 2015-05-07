@@ -7,7 +7,10 @@
 #include <deque>
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -336,9 +339,8 @@ scoped_refptr<Outputter> GPUTracer::CreateOutputter(const std::string& name) {
 }
 
 void GPUTracer::PostTask() {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&GPUTracer::Process, base::AsWeakPtr(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&GPUTracer::Process, base::AsWeakPtr(this)),
       base::TimeDelta::FromMilliseconds(kProcessInterval));
 }
 

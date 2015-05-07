@@ -5,8 +5,11 @@
 // This file contains the tests for the CommandBufferSharedState class.
 
 #include "gpu/command_buffer/common/command_buffer_shared.h"
+
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,9 +63,8 @@ TEST_F(CommandBufferSharedTest, TestConsistency) {
   memset(buffer.get(), 0, kSize * sizeof(int32));
 
   consumer.Start();
-  consumer.message_loop()->PostTask(
-      FROM_HERE, base::Bind(&WriteToState, buffer.get(),
-                            shared_state_.get()));
+  consumer.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&WriteToState, buffer.get(), shared_state_.get()));
 
   CommandBuffer::State last_state;
   while (1) {

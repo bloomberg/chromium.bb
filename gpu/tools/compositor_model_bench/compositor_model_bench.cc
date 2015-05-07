@@ -28,8 +28,11 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"
 #include "gpu/tools/compositor_model_bench/render_models.h"
@@ -119,9 +122,9 @@ class Simulator {
 
     LOG(INFO) << "Running " << sims_remaining_.size() << " simulations.";
 
-    loop.PostTask(FROM_HERE,
-                  base::Bind(&Simulator::ProcessEvents,
-                             weak_factory_.GetWeakPtr()));
+    loop.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&Simulator::ProcessEvents, weak_factory_.GetWeakPtr()));
     loop.Run();
   }
 
@@ -264,7 +267,7 @@ class Simulator {
       ExposureMask,
       reinterpret_cast<XEvent*>(&ev));
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&Simulator::UpdateLoop, weak_factory_.GetWeakPtr()));
   }
