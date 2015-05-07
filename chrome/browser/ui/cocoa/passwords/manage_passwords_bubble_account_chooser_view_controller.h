@@ -30,7 +30,6 @@ class ManagePasswordsBubbleModel;
                                                  NSTableViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;  // Weak.
-  id<ManagePasswordsBubbleContentViewDelegate> delegate_;  // Weak.
   NSButton* cancelButton_;  // Weak.
   BubbleCombobox* moreButton_;  // Weak.
   NSTableView* credentialsView_;  // Weak.

@@ -132,7 +132,8 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {
       base::Callback<void(const password_manager::CredentialInfo&)>()));
   // Trigger creation of controller and check the views.
   NSTableView* view = controller().credentialsView;
-  EXPECT_EQ(2U, view.numberOfRows);
+  ASSERT_NSNE(nil, view);
+  ASSERT_EQ(2U, view.numberOfRows);
   EXPECT_NSEQ(
       @"pizza",
       base::mac::ObjCCastStrict<CredentialItemView>(

@@ -33,7 +33,6 @@ class ManagePasswordsBubbleModel;
     : ManagePasswordsBubbleContentViewController {
  @private
   ManagePasswordsBubbleModel* model_;  // weak
-  id<ManagePasswordsBubblePendingViewDelegate> delegate_;  // weak
   base::scoped_nsobject<NSButton> saveButton_;
   base::scoped_nsobject<BubbleCombobox> nopeButton_;
   base::scoped_nsobject<ManagePasswordItemViewController> passwordItem_;

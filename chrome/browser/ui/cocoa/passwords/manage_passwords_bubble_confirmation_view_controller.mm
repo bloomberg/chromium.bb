@@ -26,9 +26,8 @@ using namespace password_manager::mac::ui;
 
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
            delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
-  if ((self = [super initWithNibName:nil bundle:nil])) {
+  if (([super initWithDelegate:delegate])) {
     model_ = model;
-    delegate_ = delegate;
   }
   return self;
 }

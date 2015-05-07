@@ -30,9 +30,8 @@ using namespace password_manager::mac::ui;
 
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
            delegate:(id<ManagePasswordsBubblePendingViewDelegate>)delegate {
-  if ((self = [super initWithNibName:nil bundle:nil])) {
+  if (([super initWithDelegate:delegate])) {
     model_ = model;
-    delegate_ = delegate;
   }
   return self;
 }
@@ -60,7 +59,10 @@ using namespace password_manager::mac::ui;
     model_->OnNeverForThisSiteClicked();
     [delegate_ viewShouldDismiss];
   } else {
-    [delegate_ passwordShouldNeverBeSavedOnSiteWithExistingPasswords];
+    SEL selector =
+        @selector(passwordShouldNeverBeSavedOnSiteWithExistingPasswords);
+    if ([delegate_ respondsToSelector:selector])
+      [delegate_ performSelector:selector];
   }
 }
 

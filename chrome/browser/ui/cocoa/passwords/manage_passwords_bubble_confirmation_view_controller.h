@@ -18,7 +18,6 @@ class ManagePasswordsBubbleModel;
     : ManagePasswordsBubbleContentViewController<NSTextViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;  // weak
-  id<ManagePasswordsBubbleContentViewDelegate> delegate_;  // weak
   base::scoped_nsobject<HyperlinkTextView> confirmationText_;
   base::scoped_nsobject<NSButton> okButton_;
 }

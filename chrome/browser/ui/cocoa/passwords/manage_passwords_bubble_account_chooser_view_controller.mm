@@ -60,9 +60,8 @@
       avatarManager:(AccountAvatarFetcherManager*)avatarManager
            delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
   DCHECK(model);
-  if ((self = [super initWithNibName:nil bundle:nil])) {
+  if (([super initWithDelegate:delegate])) {
     model_ = model;
-    delegate_ = delegate;
     avatarManager_.reset([avatarManager retain]);
   }
   return self;

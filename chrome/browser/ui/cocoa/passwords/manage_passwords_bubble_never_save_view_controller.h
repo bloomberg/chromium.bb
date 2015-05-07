@@ -27,7 +27,6 @@ class ManagePasswordsBubbleModel;
     : ManagePasswordsBubbleContentViewController {
  @private
   ManagePasswordsBubbleModel* model_;  // weak
-  id<ManagePasswordsBubbleNeverSaveViewDelegate> delegate_;  // weak
   base::scoped_nsobject<NSButton> confirmButton_;
   base::scoped_nsobject<NSButton> undoButton_;
 }

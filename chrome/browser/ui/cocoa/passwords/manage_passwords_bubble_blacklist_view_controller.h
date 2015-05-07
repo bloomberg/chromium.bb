@@ -20,7 +20,6 @@ class ManagePasswordsBubbleModel;
     : ManagePasswordsBubbleContentViewController {
  @private
   ManagePasswordsBubbleModel* model_;  // weak
-  id<ManagePasswordsBubbleContentViewDelegate> delegate_;  // weak
   base::scoped_nsobject<NSButton> doneButton_;
   base::scoped_nsobject<NSButton> undoBlacklistButton_;
 }

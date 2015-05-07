@@ -38,6 +38,11 @@
   return self;
 }
 
+- (void)dealloc {
+  [currentController_ setDelegate:nil];
+  [super dealloc];
+}
+
 - (void)showWindow:(id)sender {
   [self performLayout];
   [super showWindow:sender];

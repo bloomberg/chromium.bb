@@ -20,7 +20,7 @@ const CGFloat kUnrelatedControlVerticalPadding = 20;
 }  // namespace password_manager
 
 // Handles user interaction with the content view.
-@protocol ManagePasswordsBubbleContentViewDelegate
+@protocol ManagePasswordsBubbleContentViewDelegate<NSObject>
 
 // The user performed an action that should dismiss the bubble.
 - (void)viewShouldDismiss;
@@ -28,7 +28,10 @@ const CGFloat kUnrelatedControlVerticalPadding = 20;
 @end
 
 // Base class for a state of the password management bubble.
-@interface ManagePasswordsBubbleContentViewController : NSViewController
+@interface ManagePasswordsBubbleContentViewController : NSViewController {
+  id<ManagePasswordsBubbleContentViewDelegate> delegate_;  // Weak.
+}
+- (id)initWithDelegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
 - (NSButton*)addButton:(NSString*)title
                 toView:(NSView*)view
                 target:(id)target
@@ -36,6 +39,10 @@ const CGFloat kUnrelatedControlVerticalPadding = 20;
 - (NSTextField*)addTitleLabel:(NSString*)title toView:(NSView*)view;
 - (NSTextField*)addLabel:(NSString*)title toView:(NSView*)view;
 - (void)bubbleWillDisappear;
+
+@property(nonatomic, assign)
+    id<ManagePasswordsBubbleContentViewDelegate> delegate;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_CONTENT_VIEW_CONTROLLER_H_

@@ -4,9 +4,19 @@
 
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 
 @implementation ManagePasswordsBubbleContentViewController
+
+@synthesize delegate = delegate_;
+
+- (id)initWithDelegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
+  if ((self = [super initWithNibName:nil bundle:nil])) {
+    delegate_ = delegate;
+  }
+  return self;
+}
 
 - (NSButton*)addButton:(NSString*)title
                 toView:(NSView*)view
