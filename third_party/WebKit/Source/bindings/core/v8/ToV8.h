@@ -245,7 +245,7 @@ inline v8::Local<v8::Value> toV8(const Vector<std::pair<String, T>>& value, v8::
 // declared but not defined (so it's not clear that T is a subclass of
 // ScriptWrappable).
 // This hack helps detect such unwanted implicit conversions from T* to bool.
-v8::Handle<v8::Value> toV8(void* value, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(void* value, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 } // namespace blink
 

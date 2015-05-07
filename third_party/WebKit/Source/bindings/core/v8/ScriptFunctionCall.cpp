@@ -138,13 +138,13 @@ ScriptValue ScriptFunctionCall::callWithoutExceptionHandling()
     return ScriptValue(m_scriptState.get(), result);
 }
 
-v8::Handle<v8::Function> ScriptFunctionCall::function()
+v8::Local<v8::Function> ScriptFunctionCall::function()
 {
     v8::TryCatch tryCatch;
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
     v8::Local<v8::Value> value;
     if (!thisObject->Get(m_scriptState->context(), v8String(m_scriptState->isolate(), m_name)).ToLocal(&value))
-        return v8::Handle<v8::Function>();
+        return v8::Local<v8::Function>();
 
     ASSERT(value->IsFunction());
     return v8::Local<v8::Function>::Cast(value);
