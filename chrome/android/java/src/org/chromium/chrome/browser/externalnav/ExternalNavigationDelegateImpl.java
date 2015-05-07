@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -23,7 +24,9 @@ import android.util.Log;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -186,7 +189,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void startIncognitoIntent(final Intent intent) {
+    public void startIncognitoIntent(final Intent intent, final String referrerUrl,
+            final String fallbackUrl, final Tab tab, final boolean needsToCloseTab) {
         new AlertDialog.Builder(mActivity, R.style.AlertDialogTheme)
             .setTitle(R.string.external_app_leave_incognito_warning_title)
             .setMessage(R.string.external_app_leave_incognito_warning)
@@ -194,10 +198,63 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         startActivity(intent);
+                        if (tab != null && !tab.isClosing() && tab.isInitialized()
+                                && needsToCloseTab) {
+                            tab.getChromeWebContentsDelegateAndroid().closeContents();
+                        }
                     }
                 })
-            .setNegativeButton(R.string.cancel, null)
+            .setNegativeButton(R.string.cancel, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab);
+                    }
+                })
+            .setOnCancelListener(new OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab);
+                    }
+                })
             .show();
+    }
+
+    private void loadIntent(Intent intent, String referrerUrl, String fallbackUrl, Tab tab,
+            boolean needsToCloseTab) {
+        boolean needsToStartIntent = false;
+        if (tab == null || tab.isClosing() || !tab.isInitialized()) {
+            needsToStartIntent = true;
+            needsToCloseTab = false;
+        } else if (needsToCloseTab) {
+            needsToStartIntent = true;
+        }
+
+        String url = fallbackUrl != null ? fallbackUrl : intent.getDataString();
+        if (!UrlUtilities.isAcceptedScheme(url)) {
+            if (needsToCloseTab) tab.getChromeWebContentsDelegateAndroid().closeContents();
+            return;
+        }
+
+        if (needsToStartIntent) {
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
+            intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setPackage(getPackageName());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            IntentHandler.addTrustedIntentExtras(intent, mActivity);
+            startActivity(intent);
+
+            if (needsToCloseTab) tab.getChromeWebContentsDelegateAndroid().closeContents();
+            return;
+        }
+
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL);
+        if (!TextUtils.isEmpty(referrerUrl)) {
+            Referrer referrer = new Referrer(referrerUrl, 0 /* WebReferrerPolicyAlways */);
+            loadUrlParams.setReferrer(referrer);
+        }
+        tab.loadUrl(loadUrlParams);
     }
 
     @Override

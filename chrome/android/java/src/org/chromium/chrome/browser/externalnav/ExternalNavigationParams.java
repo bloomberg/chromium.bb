@@ -47,10 +47,14 @@ public class ExternalNavigationParams {
     /** Whether this navigation happens in main frame. */
     private final boolean mIsMainFrame;
 
+    /** Whether closing tab is needed or not after incognito dialog is closed. */
+    private final boolean mNeedsToCloseTabAfterIncognitoDialog;
+
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
             TabRedirectHandler redirectHandler, TransitionPageHelper transitionPageHelper, Tab tab,
-            boolean openInNewTab, boolean isBackgroundTabNavigation, boolean isMainFrame) {
+            boolean openInNewTab, boolean isBackgroundTabNavigation, boolean isMainFrame,
+            boolean needsToCloseTabAfterIncognitoDialog) {
         mUrl = url;
         mIsIncognito = isIncognito;
         mPageTransition = pageTransition;
@@ -63,6 +67,7 @@ public class ExternalNavigationParams {
         mOpenInNewTab = openInNewTab;
         mIsBackgroundTabNavigation = isBackgroundTabNavigation;
         mIsMainFrame = isMainFrame;
+        mNeedsToCloseTabAfterIncognitoDialog = needsToCloseTabAfterIncognitoDialog;
     }
 
     /** @return The URL to potentially open externally. */
@@ -128,6 +133,11 @@ public class ExternalNavigationParams {
         return mIsMainFrame;
     }
 
+    /** @return Whether closing tab is needed or not after incognito dialog is closed. */
+    public boolean needsToCloseTabAfterIncognitoDialog() {
+        return mNeedsToCloseTabAfterIncognitoDialog;
+    }
+
     /** The builder for {@link ExternalNavigationParams} objects. */
     public static class Builder {
         /** The URL which we are navigating to. */
@@ -164,6 +174,9 @@ public class ExternalNavigationParams {
 
         /** Whether this navigation happens in main frame. */
         private boolean mIsMainFrame;
+
+        /** Whether closing tab is needed or not after incognito dialog is closed. */
+        private boolean mNeedsToCloseTabAfterIncognitoDialog;
 
         public Builder(String url, boolean isIncognito) {
             mUrl = url;
@@ -221,12 +234,18 @@ public class ExternalNavigationParams {
             return this;
         }
 
+        /** Sets whether closing tab is needed or not after incognito dialog is closed. */
+        public Builder setNeedsToCloseTabAfterIncognitoDialog(boolean v) {
+            mNeedsToCloseTabAfterIncognitoDialog = v;
+            return this;
+        }
+
         /** @return A fully constructed {@link ExternalNavigationParams} object. */
         public ExternalNavigationParams build() {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
                     mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler,
                     mTransitionPageHelper, mTab, mOpenInNewTab, mIsBackgroundTabNavigation,
-                    mIsMainFrame);
+                    mIsMainFrame, mNeedsToCloseTabAfterIncognitoDialog);
         }
     }
 }

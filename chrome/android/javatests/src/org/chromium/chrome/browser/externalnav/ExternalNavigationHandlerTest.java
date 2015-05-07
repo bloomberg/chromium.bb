@@ -94,7 +94,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 true,
                 false,
                 null,
-                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_INCOGNITO_MODE,
                 START_INCOGNITO);
     }
 
@@ -967,7 +967,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void startIncognitoIntent(Intent intent) {
+        public void startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
+                Tab tab, boolean needsToCloseTab) {
             startIncognitoIntentCalled = true;
         }
 

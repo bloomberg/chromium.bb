@@ -48,6 +48,8 @@ public class ExternalNavigationHandler {
         OVERRIDE_WITH_EXTERNAL_INTENT,
         /* We should override the URL loading and clobber the current tab. */
         OVERRIDE_WITH_CLOBBERING_TAB,
+        /* We should override the URL loading and handle an intent in incognito mode. */
+        OVERRIDE_WITH_INCOGNITO_MODE,
         /* We shouldn't override the URL loading. */
         NO_OVERRIDE,
     }
@@ -315,8 +317,10 @@ public class ExternalNavigationHandler {
             if (params.isIncognito() && !mDelegate.willChromeHandleIntent(intent)) {
                 // This intent may leave Chrome.  Warn the user that incognito does not carry over
                 // to apps out side of Chrome.
-                mDelegate.startIncognitoIntent(intent);
-                return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(),
+                        hasBrowserFallbackUrl ? browserFallbackUrl : null, params.getTab(),
+                        params.needsToCloseTabAfterIncognitoDialog());
+                return OverrideUrlLoadingResult.OVERRIDE_WITH_INCOGNITO_MODE;
             } else {
                 if (params.getRedirectHandler() != null && incomingIntentRedirect) {
                     if (!params.getRedirectHandler().hasNewResolver(intent)) {

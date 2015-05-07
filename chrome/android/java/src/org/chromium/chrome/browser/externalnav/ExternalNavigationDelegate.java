@@ -59,9 +59,11 @@ interface ExternalNavigationDelegate {
 
     /**
      * Display a dialog warning the user that they may be leaving Chrome by starting this
-     * intent. Give the user the opportunity to cancel the action.
+     * intent. Give the user the opportunity to cancel the action. And if it is canceled, a
+     * navigation will happen in Chrome.
      */
-    void startIncognitoIntent(Intent intent);
+    void startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl, Tab tab,
+            boolean needsToCloseTab);
 
     /**
      * Clobber the current tab and try not to pass an intent when it should be handled by Chrome
