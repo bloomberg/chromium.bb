@@ -307,10 +307,13 @@ class WorkspaceTestCaseTest(cros_test_lib.WorkspaceTestCase):
     """Tests CreateBrick()."""
     self.CreateWorkspace()
 
-    brick = self.CreateBrick(name='foo', main_package='category/bar')
+    self.CreateBrick(name='bar')
+    brick = self.CreateBrick(name='foo', main_package='category/bar',
+                             dependencies=['//bar'])
     self.assertEqual(os.path.join(self.workspace_path, 'foo'), brick.brick_dir)
     self.assertEqual('foo', brick.FriendlyName())
     self.assertEqual(['category/bar'], brick.MainPackages())
+    self.assertEqual(['//bar'], [b.brick_locator for b in brick.Dependencies()])
 
   def testCreateBlueprint(self):
     """Tests CreateBlueprint()."""

@@ -1603,21 +1603,24 @@ class WorkspaceTestCase(MockTempDirTestCase):
     self.mock_workspace_path = self.PatchObject(
         workspace_lib, 'WorkspacePath', return_value=self.workspace_path)
 
-  def CreateBrick(self, name='thebrickfoo', main_package='category/bar'):
+  def CreateBrick(self, name='thebrickfoo', main_package='category/bar',
+                  dependencies=None):
     """Creates a new brick.
 
     Args:
       name: Brick name/path relative to the workspace root.
       main_package: Main package to assign.
+      dependencies: List of bricks to depend on.
 
     Returns:
       The created Brick object.
     """
     brick_path = os.path.join(self.workspace_path, name)
+    config = {'name': name, 'main_package': main_package}
+    if dependencies:
+      config['dependencies'] = dependencies
 
-    return brick_lib.Brick(brick_path,
-                           initial_config={'name': name,
-                                           'main_package': main_package})
+    return brick_lib.Brick(brick_path, initial_config=config)
 
   def CreateBlueprint(self, name='theblueprintfoo.json', bsp=None, bricks=None):
     """Creates a new blueprint.
