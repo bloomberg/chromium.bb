@@ -271,13 +271,14 @@ CronetURLRequestContextAdapter::GetNetworkTaskRunner() const {
 
 void CronetURLRequestContextAdapter::StartNetLogToFile(JNIEnv* env,
                                                        jobject jcaller,
-                                                       jstring jfile_name) {
+                                                       jstring jfile_name,
+                                                       jboolean jlog_all) {
   PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(
           &CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread,
           base::Unretained(this),
-          base::android::ConvertJavaStringToUTF8(env, jfile_name)));
+          base::android::ConvertJavaStringToUTF8(env, jfile_name), jlog_all));
 }
 
 void CronetURLRequestContextAdapter::StopNetLog(JNIEnv* env, jobject jcaller) {
@@ -288,7 +289,7 @@ void CronetURLRequestContextAdapter::StopNetLog(JNIEnv* env, jobject jcaller) {
 }
 
 void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
-    const std::string& file_name) {
+    const std::string& file_name, bool log_all) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   DCHECK(is_context_initialized_);
   DCHECK(context_);
@@ -301,6 +302,10 @@ void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
     return;
 
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
+  if (log_all) {
+    write_to_file_observer_->set_capture_mode(
+        net::NetLogCaptureMode::IncludeSocketBytes());
+  }
   write_to_file_observer_->StartObserving(context_->net_log(), file.Pass(),
                                   nullptr, context_.get());
 }

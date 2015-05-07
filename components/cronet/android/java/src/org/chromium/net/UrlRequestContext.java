@@ -56,13 +56,18 @@ public abstract class UrlRequestContext {
     public abstract void shutdown();
 
     /**
-     * Starts NetLog logging to a file. The NetLog capture mode used is
-     * NetLogCaptureMode::Default().
+     * Starts NetLog logging to a file. The NetLog capture mode used is either
+     * NetLogCaptureMode::Default() or NetLogCaptureMode::IncludeSocketBytes().
+     * The IncludeSocketBytes() mode includes basic events, user cookies,
+     * credentials and all transferred bytes in the log.
      * @param fileName The complete file path. It must not be empty. If file
      *            exists, it is truncated before starting. If actively logging,
      *            this method is ignored.
+     * @param logAll {@code true} to use the
+     *            NetLogCaptureMode::IncludeSocketBytes() logging level. If
+     *            false, NetLogCaptureMode::Default() is used instead.
      */
-    public abstract void startNetLogToFile(String fileName);
+    public abstract void startNetLogToFile(String fileName, boolean logAll);
 
     /**
      * Stops NetLog logging and flushes file to disk. If a logging session is

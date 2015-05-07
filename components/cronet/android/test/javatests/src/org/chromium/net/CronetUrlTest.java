@@ -66,7 +66,7 @@ public class CronetUrlTest extends CronetTestBase {
         // Start NetLog immediately after the request context is created to make
         // sure that the call won't crash the app even when the native request
         // context is not fully initialized. See crbug.com/470196.
-        factory.startNetLogToFile(file.getPath());
+        factory.startNetLogToFile(file.getPath(), false);
         // Starts a request.
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();

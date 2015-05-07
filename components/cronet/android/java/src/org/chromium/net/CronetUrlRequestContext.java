@@ -122,10 +122,11 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
     }
 
     @Override
-    public void startNetLogToFile(String fileName) {
+    public void startNetLogToFile(String fileName, boolean logAll) {
         synchronized (mLock) {
             checkHaveAdapter();
-            nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName);
+            nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName,
+                    logAll);
         }
     }
 
@@ -208,7 +209,7 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeStartNetLogToFile(long nativePtr,
-            String fileName);
+            String fileName, boolean logAll);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeStopNetLog(long nativePtr);

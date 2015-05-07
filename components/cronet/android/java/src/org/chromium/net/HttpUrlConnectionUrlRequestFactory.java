@@ -55,7 +55,7 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
     }
 
     @Override
-    public void startNetLogToFile(String fileName) {
+    public void startNetLogToFile(String fileName, boolean logAll) {
         try {
             PrintWriter out = new PrintWriter(fileName);
             out.println("NetLog is not supported by " + getName());

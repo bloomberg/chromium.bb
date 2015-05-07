@@ -64,8 +64,12 @@ public abstract class HttpUrlRequestFactory {
      * application temporary directory. |fileName| must not be empty. Log may
      * contain user's personal information (PII). If the file exists it is
      * truncated before starting. If actively logging the call is ignored.
+     * @param fileName The complete file path. It must not be empty. If file
+     *            exists, it is truncated before starting.
+     * @param logAll {@code true} to also include all transferred bytes in the
+     *            log.
      */
-    public abstract void startNetLogToFile(String fileName);
+    public abstract void startNetLogToFile(String fileName, boolean logAll);
 
     /**
      * Stops NetLog logging and flushes file to disk. If a logging session is

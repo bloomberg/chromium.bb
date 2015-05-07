@@ -15,7 +15,9 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestListener.ResponseStep;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 
 /**
  * Test CronetUrlRequestContext.
@@ -277,7 +279,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Start NetLog immediately after the request context is created to make
         // sure that the call won't crash the app even when the native request
         // context is not fully initialized. See crbug.com/470196.
-        requestContext.startNetLogToFile(file.getPath());
+        requestContext.startNetLogToFile(file.getPath(), false);
 
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
@@ -288,6 +290,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         requestContext.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
+        assertFalse(hasBytesInNetLog(file));
         assertTrue(file.delete());
         assertTrue(!file.exists());
     }
@@ -307,11 +310,13 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
         try {
-            mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
+            mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(),
+                    false);
             fail("Should throw an exception.");
         } catch (Exception e) {
             assertEquals("Context is shut down.", e.getMessage());
         }
+        assertFalse(hasBytesInNetLog(file));
         assertTrue(file.delete());
         assertTrue(!file.exists());
     }
@@ -324,10 +329,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
         // Start NetLog multiple times.
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
+        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
+        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
+        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
+        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
@@ -337,6 +342,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mActivity.mUrlRequestContext.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
+        assertFalse(hasBytesInNetLog(file));
         assertTrue(file.delete());
         assertTrue(!file.exists());
     }
@@ -348,7 +354,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         File directory = new File(PathUtils.getDataDirectory(
                 getInstrumentation().getTargetContext()));
         File file = File.createTempFile("cronet", "json", directory);
-        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath());
+        mActivity.mUrlRequestContext.startNetLogToFile(file.getPath(), false);
         // Start a request.
         TestUrlRequestListener listener = new TestUrlRequestListener();
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
@@ -363,8 +369,49 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mActivity.mUrlRequestContext.stopNetLog();
         assertTrue(file.exists());
         assertTrue(file.length() != 0);
+        assertFalse(hasBytesInNetLog(file));
         assertTrue(file.delete());
         assertTrue(!file.exists());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testNetLogWithBytes() throws Exception {
+        Context context = getInstrumentation().getTargetContext();
+        File directory = new File(PathUtils.getDataDirectory(context));
+        File file = File.createTempFile("cronet", "json", directory);
+        CronetUrlRequestContext requestContext = new CronetUrlRequestContext(
+                context,
+                new UrlRequestContextConfig().setLibraryName("cronet_tests"));
+        // Start NetLog with logAll as true.
+        requestContext.startNetLogToFile(file.getPath(), true);
+        // Start a request.
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest request = requestContext.createRequest(
+                TEST_URL, listener, listener.getExecutor());
+        request.start();
+        listener.blockForDone();
+        requestContext.stopNetLog();
+        assertTrue(file.exists());
+        assertTrue(file.length() != 0);
+        assertTrue(hasBytesInNetLog(file));
+        assertTrue(file.delete());
+        assertTrue(!file.exists());
+    }
+
+    private boolean hasBytesInNetLog(File logFile) throws Exception {
+        BufferedReader logReader = new BufferedReader(new FileReader(logFile));
+        try {
+            String logLine;
+            while ((logLine = logReader.readLine()) != null) {
+                if (logLine.contains("\"hex_encoded_bytes\"")) {
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            logReader.close();
+        }
     }
 
     private void enableCache(UrlRequestContextConfig.HttpCache cacheType)

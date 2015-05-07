@@ -269,11 +269,12 @@ URLRequestContextAdapter::GetNetworkTaskRunner() const {
   return network_thread_->message_loop_proxy();
 }
 
-void URLRequestContextAdapter::StartNetLogToFile(const std::string& file_name) {
+void URLRequestContextAdapter::StartNetLogToFile(const std::string& file_name,
+                                                 bool log_all) {
   PostTaskToNetworkThread(
       FROM_HERE,
-      base::Bind(
-          &URLRequestContextAdapter::StartNetLogToFileHelper, this, file_name));
+      base::Bind(&URLRequestContextAdapter::StartNetLogToFileHelper, this,
+                 file_name, log_all));
 }
 
 void URLRequestContextAdapter::StopNetLog() {
@@ -282,7 +283,7 @@ void URLRequestContextAdapter::StopNetLog() {
 }
 
 void URLRequestContextAdapter::StartNetLogToFileHelper(
-    const std::string& file_name) {
+    const std::string& file_name, bool log_all) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   // Do nothing if already logging to a file.
   if (write_to_file_observer_)
@@ -294,6 +295,10 @@ void URLRequestContextAdapter::StartNetLogToFileHelper(
     return;
 
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
+  if (log_all) {
+    write_to_file_observer_->set_capture_mode(
+        net::NetLogCaptureMode::IncludeSocketBytes());
+  }
   write_to_file_observer_->StartObserving(context_->net_log(), file.Pass(),
                                   nullptr, context_.get());
 }

@@ -58,7 +58,8 @@ class CronetURLRequestContextAdapter {
 
   net::URLRequestContext* GetURLRequestContext();
 
-  void StartNetLogToFile(JNIEnv* env, jobject jcaller, jstring jfile_name);
+  void StartNetLogToFile(JNIEnv* env, jobject jcaller, jstring jfile_name,
+                         jboolean jlog_all);
 
   void StopNetLog(JNIEnv* env, jobject jcaller);
 
@@ -81,7 +82,8 @@ class CronetURLRequestContextAdapter {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const;
 
-  void StartNetLogToFileOnNetworkThread(const std::string& file_name);
+  void StartNetLogToFileOnNetworkThread(const std::string& file_name,
+                                        bool log_all);
 
   void StopNetLogOnNetworkThread();
 

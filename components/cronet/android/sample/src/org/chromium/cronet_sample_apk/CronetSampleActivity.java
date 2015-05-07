@@ -191,7 +191,8 @@ public class CronetSampleActivity extends Activity {
 
     public void startNetLog() {
         mRequestFactory.startNetLogToFile(
-                Environment.getExternalStorageDirectory().getPath() + "/cronet_sample_netlog.json");
+                Environment.getExternalStorageDirectory().getPath() + "/cronet_sample_netlog.json",
+                false);
     }
 
     public void stopNetLog() {

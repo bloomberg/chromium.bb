@@ -80,7 +80,7 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
 
-  void StartNetLogToFile(const std::string& file_name);
+  void StartNetLogToFile(const std::string& file_name, bool log_all);
   void StopNetLog();
 
   // Called on main Java thread to initialize URLRequestContext.
@@ -94,7 +94,7 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
 
   // Helper function to start writing NetLog data to file. This should only be
   // run after context is initialized.
-  void StartNetLogToFileHelper(const std::string& file_name);
+  void StartNetLogToFileHelper(const std::string& file_name, bool log_all);
   // Helper function to stop writing NetLog data to file. This should only be
   // run after context is initialized.
   void StopNetLogHelper();

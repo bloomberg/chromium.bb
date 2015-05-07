@@ -129,11 +129,12 @@ static jstring GetStatisticsJSON(JNIEnv* env,
 static void StartNetLogToFile(JNIEnv* env,
                               jobject jcaller,
                               jlong jurl_request_context_adapter,
-                              jstring jfilename) {
+                              jstring jfilename,
+                              jboolean jlog_all) {
   URLRequestContextAdapter* context_adapter =
       reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
   std::string filename = ConvertJavaStringToUTF8(env, jfilename);
-  context_adapter->StartNetLogToFile(filename);
+  context_adapter->StartNetLogToFile(filename, jlog_all);
 }
 
 // Stops recording NetLog.
