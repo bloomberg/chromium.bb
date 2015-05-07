@@ -13,6 +13,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -144,6 +145,7 @@ void SAMLOfflineSigninLimiter::ForceOnlineLogin() {
   }
 
   user_manager::UserManager::Get()->SaveForceOnlineSignin(user->email(), true);
+  RecordReauthReason(user->email(), ReauthReason::SAML_REAUTH_POLICY);
   offline_signin_limit_timer_.reset();
 }
 

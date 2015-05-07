@@ -13886,6 +13886,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Login.ReauthReason" enum="LoginReauthReasons">
+  <owner>ginkage@chromium.org</owner>
+  <summary>
+    Tracks the reason why a user was sent through the GAIA re-auth flow.
+  </summary>
+</histogram>
+
 <histogram name="Login.StateKeyGenerationStatus"
     enum="LoginStateKeyGenerationStatus">
   <owner>mnissler@chromium.org</owner>
@@ -56031,6 +56038,41 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="41" label="UNUSED">Unused</int>
   <int value="42" label="NO_KEY_NO_POLICY">Un-owned</int>
   <int value="43" label="RESERVED">Reserved</int>
+</enum>
+
+<enum name="LoginReauthReasons" type="int">
+  <int value="0" label="None">
+    No reason recorded so far, nothing to report. This value should never be
+    reported in histogram.
+  </int>
+  <int value="1" label="Other">Legacy profile holders.</int>
+  <int value="2" label="InvalidTokenHandle">
+    Password changed, revoked credentials, account deleted.
+  </int>
+  <int value="3" label="IncorrectPwdEntered">
+    Incorrect password entered 3 times at the pod.
+  </int>
+  <int value="4" label="IncorrectSAMLPwdEntered">
+    Incorrect password entered by a SAML user once. OS would show a tooltip
+    offering user to complete the online sign-in.
+  </int>
+  <int value="5" label="SAMLReauthPolicy">
+    Company policy required re-auth for SAML users.
+  </int>
+  <int value="6" label="MissingCryptohome">
+    Cryptohome is missing, most likely due to deletion during garbage
+    collection.
+  </int>
+  <int value="7" label="SyncFailed">
+    After prior login, OS failed to connect to the sync with the existing RT.
+    This could be due to a deleted account, password changed, account revoked,
+    etc.
+  </int>
+  <int value="8" label="PwdUpdateSkipped">
+    User cancelled the password change prompt. Chrome OS has to continue to send
+    the user through the online flow until user updates their cryptohome
+    password or agrees to start the new cryptohome.
+  </int>
 </enum>
 
 <enum name="LoginStateKeyGenerationStatus" type="int">

@@ -502,6 +502,8 @@
         'browser/chromeos/login/saml/saml_offline_signin_limiter.h',
         'browser/chromeos/login/saml/saml_offline_signin_limiter_factory.cc',
         'browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h',
+        'browser/chromeos/login/reauth_stats.cc',
+        'browser/chromeos/login/reauth_stats.h',
         'browser/chromeos/login/screen_manager.cc',
         'browser/chromeos/login/screen_manager.h',
         'browser/chromeos/login/screens/base_screen.cc',

@@ -123,6 +123,12 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SetKnownUserBooleanPref(const UserID& user_id,
                                const std::string& path,
                                const bool in_value) override;
+  bool GetKnownUserIntegerPref(const UserID& user_id,
+                               const std::string& path,
+                               int* out_value) override;
+  void SetKnownUserIntegerPref(const UserID& user_id,
+                               const std::string& path,
+                               const int in_value) override;
   void UpdateGaiaID(const UserID& user_id, const std::string& gaia_id) override;
   bool FindGaiaID(const UserID& user_id, std::string* out_value) override;
   void UpdateUsingSAML(const std::string& user_id,
@@ -131,6 +137,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SetKnownUserDeviceId(const UserID& user_id,
                             const std::string& device_id) override;
   std::string GetKnownUserDeviceId(const UserID& user_id) override;
+  void UpdateReauthReason(const std::string& user_id,
+                          const int reauth_reason) override;
+  bool FindReauthReason(const std::string& user_id, int* out_value) override;
 
   virtual void SetIsCurrentUserNew(bool is_new);
 

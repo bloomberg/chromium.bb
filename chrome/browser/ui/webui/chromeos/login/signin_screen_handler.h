@@ -349,7 +349,7 @@ class SigninScreenHandler
   void HandleSignOutUser();
   void HandleOpenProxySettings();
   void HandleLoginVisible(const std::string& source);
-  void HandleCancelPasswordChangedFlow();
+  void HandleCancelPasswordChangedFlow(const std::string& user_id);
   void HandleCancelUserAdding();
   void HandleMigrateUserData(const std::string& password);
   void HandleResyncUserData();
@@ -367,6 +367,8 @@ class SigninScreenHandler
   void HandleCancelConsumerManagementEnrollment();
   void HandleGetTouchViewState();
   void HandleLogRemoveUserWarningShown();
+  void HandleFirstIncorrectPasswordAttempt(const std::string& email);
+  void HandleMaxIncorrectPasswordAttempts(const std::string& email);
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
   // currently selected for the public session identified by |user_id|.

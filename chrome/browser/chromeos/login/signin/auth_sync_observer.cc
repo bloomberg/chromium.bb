@@ -7,6 +7,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -68,6 +69,7 @@ void AuthSyncObserver::OnStateChanged() {
         user->oauth_token_status();
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         email, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
+    RecordReauthReason(email, ReauthReason::SYNC_FAILED);
     if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
         old_status != user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
        // Attempt to restore token from file.

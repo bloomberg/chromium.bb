@@ -348,6 +348,17 @@ class USER_MANAGER_EXPORT UserManager {
                                        const std::string& path,
                                        const bool in_value) = 0;
 
+  // Returns true if |user_id| preference by |path| does exist,
+  // fills in |out_value|. Otherwise returns false.
+  virtual bool GetKnownUserIntegerPref(const UserID& user_id,
+                                       const std::string& path,
+                                       int* out_value) = 0;
+
+  // Updates user's identified by |user_id| integer preference |path|.
+  virtual void SetKnownUserIntegerPref(const UserID& user_id,
+                                       const std::string& path,
+                                       const int in_value) = 0;
+
   // Updates |gaia_id| for user with |user_id|.
   // TODO(antrim): Update this once UserID contains GAIA ID.
   virtual void UpdateGaiaID(const UserID& user_id,
@@ -371,6 +382,15 @@ class USER_MANAGER_EXPORT UserManager {
   virtual void SetKnownUserDeviceId(const UserID& user_id,
                                     const std::string& device_id) = 0;
   virtual std::string GetKnownUserDeviceId(const UserID& user_id) = 0;
+
+  // Saves why the user has to go through re-auth flow.
+  virtual void UpdateReauthReason(const UserID& user_id,
+                                  const int reauth_reason) = 0;
+
+  // Returns the reason why the user with |user_id| has to go through the
+  // re-auth flow. Returns true if such a reason was recorded or false
+  // otherwise.
+  virtual bool FindReauthReason(const UserID& user_id, int* out_value) = 0;
 
  protected:
   // Sets UserManager instance.

@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -236,6 +237,11 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
   if (is_public_session)
     return false;
 
+  // At this point the reason for invalid token should be already set. If not,
+  // this might be a leftover from an old version.
+  if (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID)
+    RecordReauthReason(user->email(), ReauthReason::OTHER);
+
   return user->force_online_signin() ||
          (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) ||
          (token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN);
@@ -426,6 +432,7 @@ void UserSelectionScreen::OnUserStatusChecked(
     const user_manager::UserID& user_id,
     TokenHandleUtil::TokenHandleStatus status) {
   if (status == TokenHandleUtil::INVALID) {
+    RecordReauthReason(user_id, ReauthReason::INVALID_TOKEN_HANDLE);
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         user_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
     token_handle_util_->DeleteToken(user_id);

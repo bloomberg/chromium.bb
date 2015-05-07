@@ -88,6 +88,9 @@ const char kUsingSAMLKey[] = "using_saml";
 // Key of Device Id.
 const char kDeviceId[] = "device_id";
 
+// Key of the reason for re-auth.
+const char kReauthReasonKey[] = "reauth_reason";
+
 // Upper bound for a histogram metric reporting the amount of time between
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
@@ -549,6 +552,16 @@ bool UserManagerBase::FindUsingSAML(const std::string& user_id) {
   return false;
 }
 
+void UserManagerBase::UpdateReauthReason(const std::string& user_id,
+                                         const int reauth_reason) {
+  SetKnownUserIntegerPref(user_id, kReauthReasonKey, reauth_reason);
+}
+
+bool UserManagerBase::FindReauthReason(const std::string& user_id,
+                                       int* out_value) {
+  return GetKnownUserIntegerPref(user_id, kReauthReasonKey, out_value);
+}
+
 void UserManagerBase::UpdateUserAccountData(
     const std::string& user_id,
     const UserAccountData& account_data) {
@@ -837,6 +850,7 @@ void UserManagerBase::EnsureUsersLoaded() {
     }
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
+    user->set_using_saml(FindUsingSAML(*it));
     users_.push_back(user);
 
     base::string16 display_name;
@@ -1002,6 +1016,11 @@ bool UserManagerBase::FindKnownUserPrefs(
     const UserID& user_id,
     const base::DictionaryValue** out_value) {
   PrefService* local_state = GetLocalState();
+
+  // Local State may not be initialized in tests.
+  if (!local_state)
+    return false;
+
   const base::ListValue* known_users = local_state->GetList(kKnownUsers);
   for (size_t i = 0; i < known_users->GetSize(); ++i) {
     const base::DictionaryValue* element = nullptr;
@@ -1018,7 +1037,13 @@ bool UserManagerBase::FindKnownUserPrefs(
 void UserManagerBase::UpdateKnownUserPrefs(const UserID& user_id,
                                            const base::DictionaryValue& values,
                                            bool clear) {
-  ListPrefUpdate update(GetLocalState(), kKnownUsers);
+  PrefService* local_state = GetLocalState();
+
+  // Local State may not be initialized in tests.
+  if (!local_state)
+    return;
+
+  ListPrefUpdate update(local_state, kKnownUsers);
   for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* element = nullptr;
     if (update->GetDictionary(i, &element)) {
@@ -1050,7 +1075,13 @@ bool UserManagerBase::GetKnownUserStringPref(const UserID& user_id,
 void UserManagerBase::SetKnownUserStringPref(const UserID& user_id,
                                              const std::string& path,
                                              const std::string& in_value) {
-  ListPrefUpdate update(GetLocalState(), kKnownUsers);
+  PrefService* local_state = GetLocalState();
+
+  // Local State may not be initialized in tests.
+  if (!local_state)
+    return;
+
+  ListPrefUpdate update(local_state, kKnownUsers);
   base::DictionaryValue dict;
   dict.SetString(path, in_value);
   UpdateKnownUserPrefs(user_id, dict, false);
@@ -1069,9 +1100,39 @@ bool UserManagerBase::GetKnownUserBooleanPref(const UserID& user_id,
 void UserManagerBase::SetKnownUserBooleanPref(const UserID& user_id,
                                               const std::string& path,
                                               const bool in_value) {
-  ListPrefUpdate update(GetLocalState(), kKnownUsers);
+  PrefService* local_state = GetLocalState();
+
+  // Local State may not be initialized in tests.
+  if (!local_state)
+    return;
+
+  ListPrefUpdate update(local_state, kKnownUsers);
   base::DictionaryValue dict;
   dict.SetBoolean(path, in_value);
+  UpdateKnownUserPrefs(user_id, dict, false);
+}
+
+bool UserManagerBase::GetKnownUserIntegerPref(const UserID& user_id,
+                                              const std::string& path,
+                                              int* out_value) {
+  const base::DictionaryValue* user_pref_dict = nullptr;
+  if (!FindKnownUserPrefs(user_id, &user_pref_dict))
+    return false;
+  return user_pref_dict->GetInteger(path, out_value);
+}
+
+void UserManagerBase::SetKnownUserIntegerPref(const UserID& user_id,
+                                              const std::string& path,
+                                              const int in_value) {
+  PrefService* local_state = GetLocalState();
+
+  // Local State may not be initialized in tests.
+  if (!local_state)
+    return;
+
+  ListPrefUpdate update(local_state, kKnownUsers);
+  base::DictionaryValue dict;
+  dict.SetInteger(path, in_value);
   UpdateKnownUserPrefs(user_id, dict, false);
 }
 

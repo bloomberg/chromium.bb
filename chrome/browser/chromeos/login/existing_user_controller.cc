@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_context_initializer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_flow.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_token_initializer.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
@@ -572,6 +573,14 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
 
   // Clear the recorded displayed email so it won't affect any future attempts.
   display_email_.clear();
+
+  // TODO(ginkage): Fix this case once crbug.com/469990 is ready.
+  /*
+    if (failure.reason() == AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME) {
+      RecordReauthReason(last_login_attempt_username_,
+                         ReauthReason::MISSING_CRYPTOHOME);
+    }
+  */
 }
 
 void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
@@ -982,6 +991,7 @@ void ExistingUserController::ShowGaiaPasswordChanged(
   // changed.
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
       username, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
+  RecordReauthReason(username, ReauthReason::OTHER);
 
   login_display_->SetUIEnabled(true);
   login_display_->ShowGaiaPasswordChanged(username);

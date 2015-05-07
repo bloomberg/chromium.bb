@@ -45,7 +45,8 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
 
       var gaiaPasswordChanged = $('gaia-password-changed');
       gaiaPasswordChanged.addEventListener('cancel', function(e) {
-          chrome.send('cancelPasswordChangedFlow');
+          chrome.send('cancelPasswordChangedFlow',
+              [$('gaia-password-changed').email]);
           gaiaPasswordChanged.reset();
         });
 
@@ -142,7 +143,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
      */
     cancel: function() {
       this.disabled = true;
-      chrome.send('cancelPasswordChangedFlow');
+      chrome.send('cancelPasswordChangedFlow', ['']);
     },
 
     /**
