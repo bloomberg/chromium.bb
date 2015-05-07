@@ -55,7 +55,9 @@ bool EncryptSerializedReport(
 
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
   crypto::HKDF hkdf(std::string((char*)shared_secret, sizeof(shared_secret)),
-                    kHkdfLabel, std::string(), 0, 0, aead.KeyLength());
+                    std::string(),
+                    base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)), 0, 0,
+                    aead.KeyLength());
 
   const std::string key(hkdf.subkey_secret().data(),
                         hkdf.subkey_secret().size());
@@ -199,7 +201,9 @@ bool CertificateErrorReporter::DecryptCertificateErrorReport(
 
   crypto::Aead aead(crypto::Aead::AES_128_CTR_HMAC_SHA256);
   crypto::HKDF hkdf(std::string((char*)shared_secret, sizeof(shared_secret)),
-                    kHkdfLabel, std::string(), 0, 0, aead.KeyLength());
+                    std::string(),
+                    base::StringPiece(kHkdfLabel, sizeof(kHkdfLabel)), 0, 0,
+                    aead.KeyLength());
 
   const std::string key(hkdf.subkey_secret().data(),
                         hkdf.subkey_secret().size());
