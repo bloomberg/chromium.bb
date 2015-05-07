@@ -1367,7 +1367,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableCastStreamingHWEncoding,
       switches::kDisableJavaScriptHarmonyShipping,
       switches::kDisableNewBookmarkApps,
-      switches::kDisableOutOfProcessPdf,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,
 #if !defined(DISABLE_NACL)
@@ -1377,7 +1376,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kEnableNetBenchmarking,
       switches::kEnableNewBookmarkApps,
-      switches::kEnableOutOfProcessPdf,
       switches::kEnablePluginPlaceholderShadowDom,
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,

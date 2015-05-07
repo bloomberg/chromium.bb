@@ -16,7 +16,6 @@ class AwPrintWebViewHelperDelegate
   bool CancelPrerender(content::RenderView* render_view,
                        int routing_id) override;
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
-  bool IsOutOfProcessPdfEnabled() override;
   bool IsPrintPreviewEnabled() override;
   bool IsAskPrintSettingsEnabled() override;
   bool IsScriptedPrintEnabled() override;

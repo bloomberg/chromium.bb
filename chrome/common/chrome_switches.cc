@@ -291,9 +291,6 @@ const char kDisableOfflineAutoReload[]       = "disable-offline-auto-reload";
 const char kDisableOfflineAutoReloadVisibleOnly[] =
     "disable-offline-auto-reload-visible-only";
 
-// Disable the out of process PDF plugin.
-const char kDisableOutOfProcessPdf[]        = "disable-out-of-process-pdf";
-
 // Disable the setting to prompt the user for their OS account password before
 // revealing plaintext passwords in the password manager.
 const char kDisablePasswordManagerReauthentication[] =
@@ -482,9 +479,6 @@ const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 // Only auto-reload error pages when the tab is visible.
 const char kEnableOfflineAutoReloadVisibleOnly[] =
     "enable-offline-auto-reload-visible-only";
-
-// Enable the out of process PDF plugin.
-const char kEnableOutOfProcessPdf[]         = "enable-out-of-process-pdf";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
@@ -1365,18 +1359,6 @@ bool MediaRouterEnabled() {
 bool NewOfflineErrorPageEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kDisableNewOfflineErrorPage);
-}
-
-bool OutOfProcessPdfEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableOutOfProcessPdf))
-    return true;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kDisableOutOfProcessPdf))
-    return false;
-
-  // Default.
-  return true;
 }
 
 bool PdfMaterialUIEnabled() {

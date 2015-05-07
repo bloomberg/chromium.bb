@@ -31,11 +31,6 @@ class PDFExtensionTest : public ExtensionApiTest,
  public:
   ~PDFExtensionTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableOutOfProcessPdf);
-  }
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());

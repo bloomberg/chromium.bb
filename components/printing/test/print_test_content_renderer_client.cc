@@ -20,7 +20,6 @@ class PrintWebViewHelperDelegate : public PrintWebViewHelper::Delegate {
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override {
     return blink::WebElement();
   }
-  bool IsOutOfProcessPdfEnabled() override { return false; }
   bool IsPrintPreviewEnabled() override {
 #if defined(ENABLE_PRINT_PREVIEW)
     return true;

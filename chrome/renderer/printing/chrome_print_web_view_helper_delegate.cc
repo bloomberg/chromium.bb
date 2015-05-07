@@ -55,10 +55,6 @@ blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
   return blink::WebElement();
 }
 
-bool ChromePrintWebViewHelperDelegate::IsOutOfProcessPdfEnabled() {
-  return switches::OutOfProcessPdfEnabled();
-}
-
 bool ChromePrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(switches::kDisablePrintPreview);

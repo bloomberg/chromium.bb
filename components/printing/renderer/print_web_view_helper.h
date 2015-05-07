@@ -94,9 +94,6 @@ class PrintWebViewHelper
     // a pdf plugin element can't be extracted from the frame.
     virtual blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) = 0;
 
-    // Used to know whether the content to print could be nested in an iframe.
-    virtual bool IsOutOfProcessPdfEnabled() = 0;
-
     virtual bool IsPrintPreviewEnabled() = 0;
 
     // If true, the user can be asked to provide print settings.

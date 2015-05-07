@@ -1891,14 +1891,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableSessionCrashedBubble)
   },
   {
-    "enable-out-of-process-pdf",
-    IDS_FLAGS_OUT_OF_PROCESS_PDF_NAME,
-    IDS_FLAGS_OUT_OF_PROCESS_PDF_DESCRIPTION,
-    kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOutOfProcessPdf,
-                              switches::kDisableOutOfProcessPdf)
-  },
-  {
     "enable-pdf-material-ui",
     IDS_FLAGS_PDF_MATERIAL_UI_NAME,
     IDS_FLAGS_PDF_MATERIAL_UI_DESCRIPTION,

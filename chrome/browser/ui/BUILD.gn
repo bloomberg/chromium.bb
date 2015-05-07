@@ -486,8 +486,6 @@ source_set("test_support") {
     "login/login_prompt_test_utils.h",
     "passwords/manage_passwords_ui_controller_mock.cc",
     "passwords/manage_passwords_ui_controller_mock.h",
-    "pdf/pdf_browsertest_base.cc",
-    "pdf/pdf_browsertest_base.h",
     "test/test_confirm_bubble_model.cc",
     "test/test_confirm_bubble_model.h",
     "toolbar/test_toolbar_action_view_controller.cc",

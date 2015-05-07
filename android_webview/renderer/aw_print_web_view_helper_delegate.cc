@@ -21,10 +21,6 @@ blink::WebElement AwPrintWebViewHelperDelegate::GetPdfElement(
   return blink::WebElement();
 }
 
-bool AwPrintWebViewHelperDelegate::IsOutOfProcessPdfEnabled() {
-  return false;
-}
-
 bool AwPrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
   return false;
 }
