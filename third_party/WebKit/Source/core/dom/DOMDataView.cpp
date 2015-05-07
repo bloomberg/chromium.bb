@@ -18,7 +18,7 @@ PassRefPtr<DOMDataView> DOMDataView::create(PassRefPtr<DOMArrayBuffer> prpBuffer
     return adoptRef(new DOMDataView(dataView.release(), buffer.release()));
 }
 
-v8::Local<v8::Object> DOMDataView::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> DOMDataView::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the

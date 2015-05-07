@@ -20,7 +20,7 @@ public:
     const DataView* view() const { return static_cast<const DataView*>(DOMArrayBufferView::view()); }
     DataView* view() { return static_cast<DataView*>(DOMArrayBufferView::view()); }
 
-    virtual v8::Local<v8::Object> wrap(v8::Local<v8::Object> creationContext, v8::Isolate*) override;
+    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
     virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
 
 private:

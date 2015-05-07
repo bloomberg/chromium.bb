@@ -200,7 +200,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* 
     }
     if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.GetIsolate(), callbackInfo.Holder());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -213,7 +213,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl)
     }
     if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.GetIsolate(), callbackInfo.Holder());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -259,7 +259,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Scrip
     }
     if (DOMDataStore::setReturnValueForMainWorld(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.GetIsolate(), callbackInfo.Holder());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -328,7 +328,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ScriptWrappab
     }
     if (DOMDataStore::setReturnValueFast(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
         return;
-    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.GetIsolate(), callbackInfo.Holder());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -341,7 +341,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Node* impl, c
     }
     if (DOMDataStore::setReturnValueFast(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
         return;
-    v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.GetIsolate(), callbackInfo.Holder());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 

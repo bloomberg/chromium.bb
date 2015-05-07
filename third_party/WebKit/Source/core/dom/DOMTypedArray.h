@@ -68,7 +68,7 @@ public:
     // is responsible for doing so and returning undefined as necessary.
     ValueType item(unsigned index) const { return view()->item(index); }
 
-    virtual v8::Local<v8::Object> wrap(v8::Local<v8::Object> creationContext, v8::Isolate*) override;
+    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
     virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
 
 private:

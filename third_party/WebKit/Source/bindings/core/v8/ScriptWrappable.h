@@ -73,7 +73,7 @@ public:
     virtual const WrapperTypeInfo* wrapperTypeInfo() const = 0;
 
     // Creates and returns a new wrapper object.
-    virtual v8::Local<v8::Object> wrap(v8::Local<v8::Object> creationContext, v8::Isolate*);
+    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext);
 
     // Associates the instance with the existing wrapper. Returns |wrapper|.
     virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper);

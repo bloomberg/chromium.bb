@@ -39,7 +39,7 @@ private:
 
 } // namespace
 
-v8::Local<v8::Object> ScriptWrappable::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> ScriptWrappable::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
 

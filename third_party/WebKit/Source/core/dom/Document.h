@@ -1062,7 +1062,7 @@ public:
 
     virtual DOMTimerCoordinator* timers() override final;
 
-    virtual v8::Local<v8::Object> wrap(v8::Local<v8::Object> creationContext, v8::Isolate*) override;
+    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
     virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
 
     OriginsUsingFeatures::Value& originsUsingFeaturesValue() { return m_originsUsingFeaturesValue; }

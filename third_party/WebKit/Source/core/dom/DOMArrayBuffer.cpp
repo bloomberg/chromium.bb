@@ -11,7 +11,7 @@
 
 namespace blink {
 
-v8::Local<v8::Object> DOMArrayBuffer::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> DOMArrayBuffer::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the

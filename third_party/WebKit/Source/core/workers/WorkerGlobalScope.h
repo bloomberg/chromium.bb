@@ -106,7 +106,7 @@ public:
     WorkerNavigator* navigator() const;
 
     // ScriptWrappable
-    v8::Local<v8::Object> wrap(v8::Local<v8::Object> creationContext, v8::Isolate*) override final;
+    v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override final;
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override final;
 
     // ExecutionContextClient

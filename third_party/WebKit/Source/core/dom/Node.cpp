@@ -2461,7 +2461,7 @@ unsigned Node::lengthOfContents() const
     return 0;
 }
 
-v8::Local<v8::Object> Node::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> Node::wrap(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
