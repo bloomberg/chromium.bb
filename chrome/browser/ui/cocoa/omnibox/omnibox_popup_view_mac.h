@@ -23,7 +23,7 @@ class OmniboxView;
 // Implements OmniboxPopupView using a raw NSWindow containing an
 // NSTableView.
 class OmniboxPopupViewMac : public OmniboxPopupView,
-                            public OmniboxPopupMatrixDelegate {
+                            public OmniboxPopupMatrixObserver {
  public:
   OmniboxPopupViewMac(OmniboxView* omnibox_view,
                       OmniboxEditModel* edit_model,

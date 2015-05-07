@@ -18,7 +18,7 @@ NSEvent* MouseEventInRow(NSMatrix* matrix, NSEventType type, NSInteger row) {
 }
 
 class OmniboxPopupMatrixTest : public CocoaTest,
-                               public OmniboxPopupMatrixDelegate {
+                               public OmniboxPopupMatrixObserver {
  public:
   OmniboxPopupMatrixTest()
       : selected_row_(0),
@@ -28,7 +28,7 @@ class OmniboxPopupMatrixTest : public CocoaTest,
 
   void SetUp() override {
     CocoaTest::SetUp();
-    matrix_.reset([[OmniboxPopupMatrix alloc] initWithDelegate:this]);
+    matrix_.reset([[OmniboxPopupMatrix alloc] initWithObserver:this]);
     [[test_window() contentView] addSubview:matrix_];
   };
 

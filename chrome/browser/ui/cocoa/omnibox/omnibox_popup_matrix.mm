@@ -23,9 +23,9 @@ const NSInteger kMiddleButtonNumber = 2;
 
 @implementation OmniboxPopupMatrix
 
-- (id)initWithDelegate:(OmniboxPopupMatrixDelegate*)delegate {
+- (id)initWithObserver:(OmniboxPopupMatrixObserver*)observer {
   if ((self = [super initWithFrame:NSZeroRect])) {
-    delegate_ = delegate;
+    observer_ = observer;
     [self setCellClass:[OmniboxPopupCell class]];
 
     // Cells pack with no spacing.
@@ -43,8 +43,8 @@ const NSInteger kMiddleButtonNumber = 2;
   return self;
 }
 
-- (void)setDelegate:(OmniboxPopupMatrixDelegate*)delegate {
-  delegate_ = delegate;
+- (void)setObserver:(OmniboxPopupMatrixObserver*)observer {
+  observer_ = observer;
 }
 
 - (NSInteger)highlightedRow {
@@ -105,8 +105,8 @@ const NSInteger kMiddleButtonNumber = 2;
 
   const NSInteger highlightedRow = [self highlightedRow];
   if (highlightedRow != -1) {
-    DCHECK(delegate_);
-    delegate_->OnMatrixRowMiddleClicked(self, highlightedRow);
+    DCHECK(observer_);
+    observer_->OnMatrixRowMiddleClicked(self, highlightedRow);
   }
 }
 
@@ -140,8 +140,8 @@ const NSInteger kMiddleButtonNumber = 2;
       return;
     }
 
-    DCHECK(delegate_);
-    delegate_->OnMatrixRowClicked(self, selectedRow);
+    DCHECK(observer_);
+    observer_->OnMatrixRowClicked(self, selectedRow);
   }
 }
 
@@ -187,8 +187,8 @@ const NSInteger kMiddleButtonNumber = 2;
   NSInteger row, column;
   if ([self getRow:&row column:&column forPoint:point]) {
     DCHECK_EQ(column, 0);
-    DCHECK(delegate_);
-    delegate_->OnMatrixRowSelected(self, row);
+    DCHECK(observer_);
+    observer_->OnMatrixRowSelected(self, row);
     return YES;
   }
   return NO;

@@ -65,7 +65,7 @@ OmniboxPopupViewMac::~OmniboxPopupViewMac() {
 
   // Break references to |this| because the popup may not be
   // deallocated immediately.
-  [matrix_ setDelegate:NULL];
+  [matrix_ setObserver:NULL];
 }
 
 bool OmniboxPopupViewMac::IsOpen() const {
@@ -209,7 +209,7 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
     [background_view_ setContentViewMargins:NSZeroSize];
     [contentView addSubview:background_view_];
 
-    matrix_.reset([[OmniboxPopupMatrix alloc] initWithDelegate:this]);
+    matrix_.reset([[OmniboxPopupMatrix alloc] initWithObserver:this]);
     [background_view_ addSubview:matrix_];
 
     top_separator_view_.reset(

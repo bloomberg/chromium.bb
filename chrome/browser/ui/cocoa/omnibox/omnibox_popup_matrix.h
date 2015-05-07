@@ -12,7 +12,7 @@
 
 @class OmniboxPopupMatrix;
 
-class OmniboxPopupMatrixDelegate {
+class OmniboxPopupMatrixObserver {
  public:
   // Called when the selection in the matrix changes.
   virtual void OnMatrixRowSelected(OmniboxPopupMatrix* matrix, size_t row) = 0;
@@ -28,15 +28,15 @@ class OmniboxPopupMatrixDelegate {
 // Sets up a tracking area to implement hover by highlighting the cell the mouse
 // is over.
 @interface OmniboxPopupMatrix : NSMatrix {
-  OmniboxPopupMatrixDelegate* delegate_;  // weak
+  OmniboxPopupMatrixObserver* observer_;  // weak
   ui::ScopedCrTrackingArea trackingArea_;
 }
 
 // Create a zero-size matrix.
-- (id)initWithDelegate:(OmniboxPopupMatrixDelegate*)delegate;
+- (id)initWithObserver:(OmniboxPopupMatrixObserver*)observer;
 
 // Sets the delegate.
-- (void)setDelegate:(OmniboxPopupMatrixDelegate*)delegate;
+- (void)setObserver:(OmniboxPopupMatrixObserver*)observer;
 
 // Return the currently highlighted row.  Returns -1 if no row is highlighted.
 - (NSInteger)highlightedRow;
