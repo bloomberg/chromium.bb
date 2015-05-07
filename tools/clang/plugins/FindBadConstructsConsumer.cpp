@@ -78,13 +78,14 @@ bool IsGtestTestFixture(const CXXRecordDecl* decl) {
 // have to be true, but it probably will be.
 // TODO(dcheng): Add a warning to force virtual to always appear first ;-)
 FixItHint FixItRemovalForVirtual(const SourceManager& manager,
+                                 const LangOptions& lang_opts,
                                  const CXXMethodDecl* method) {
   SourceRange range(method->getLocStart());
   // Get the spelling loc just in case it was expanded from a macro.
   SourceRange spelling_range(manager.getSpellingLoc(range.getBegin()));
   // Sanity check that the text looks like virtual.
   StringRef text = clang::Lexer::getSourceText(
-      CharSourceRange::getTokenRange(spelling_range), manager, LangOptions());
+      CharSourceRange::getTokenRange(spelling_range), manager, lang_opts);
   if (text.trim() != "virtual")
     return FixItHint();
   return FixItHint::CreateRemoval(range);
@@ -411,6 +412,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     return;
 
   SourceManager& manager = instance().getSourceManager();
+  const LangOptions& lang_opts = instance().getLangOpts();
 
   // Complain if a method is annotated virtual && (override || final).
   if (has_virtual && (override_attr || final_attr)) {
@@ -423,7 +425,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
                           diag_redundant_virtual_specifier_)
           << "'virtual'"
           << (override_attr ? static_cast<Attr*>(override_attr) : final_attr)
-          << FixItRemovalForVirtual(manager, method);
+          << FixItRemovalForVirtual(manager, lang_opts, method);
     }
   }
 
@@ -435,11 +437,8 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     if (method->hasInlineBody()) {
       loc = method->getBody()->getSourceRange().getBegin();
     } else {
-      // TODO(dcheng): We should probably use ASTContext's LangOptions here.
-      LangOptions lang_options;
-      loc = Lexer::getLocForEndOfToken(
-          manager.getSpellingLoc(range.getEnd()), 0,
-          manager, lang_options);
+      loc = Lexer::getLocForEndOfToken(manager.getSpellingLoc(range.getEnd()),
+                                       0, manager, lang_opts);
       // The original code used the ending source loc of TypeSourceInfo's
       // TypeLoc. Unfortunately, this breaks down in the presence of attributes.
       // Attributes often appear at the end of a TypeLoc, e.g.
@@ -455,11 +454,11 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
       for (SourceLocation l = loc.getLocWithOffset(-1);
            l != manager.getLocForStartOfFile(manager.getFileID(loc));
            l = l.getLocWithOffset(-1)) {
-        l = Lexer::GetBeginningOfToken(l, manager, lang_options);
+        l = Lexer::GetBeginningOfToken(l, manager, lang_opts);
         Token token;
         // getRawToken() returns *true* on failure. In that case, just give up
         // and don't bother generating a possibly incorrect fix-it.
-        if (Lexer::getRawToken(l, token, manager, lang_options, true)) {
+        if (Lexer::getRawToken(l, token, manager, lang_opts, true)) {
           loc = SourceLocation();
           break;
         }
@@ -497,7 +496,7 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
       !InBannedDirectory(manager.getSpellingLoc(method->getLocStart()))) {
     diagnostic().Report(method->getLocStart(),
                         diag_base_method_virtual_and_final_)
-        << FixItRemovalForVirtual(manager, method)
+        << FixItRemovalForVirtual(manager, lang_opts, method)
         << FixItHint::CreateRemoval(final_attr->getRange());
   }
 }
