@@ -28,8 +28,9 @@ BarrierInfo::BarrierInfo(int num_callbacks, const base::Closure& done_closure)
 void BarrierInfo::Run() {
   DCHECK(!base::AtomicRefCountIsZero(&num_callbacks_left_));
   if (!base::AtomicRefCountDec(&num_callbacks_left_)) {
-    done_closure_.Run();
+    base::Closure done_closure = done_closure_;
     done_closure_.Reset();
+    done_closure.Run();
   }
 }
 
