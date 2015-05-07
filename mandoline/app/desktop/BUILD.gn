@@ -12,6 +12,7 @@ group("desktop") {
 
 executable("mandoline") {
   sources = [
+    "../core_services_initialization.cc",
     "launcher_process.cc",
     "launcher_process.h",
     "main.cc",
@@ -24,4 +25,6 @@ executable("mandoline") {
     "//mojo/environment:chromium",
     "//mojo/runner:lib",
   ]
+
+  data_deps = [ "//mandoline/services/core_services/" ]
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/core_services/core_services_application_delegate.h"
+#include "mandoline/services/core_services/core_services_application_delegate.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 

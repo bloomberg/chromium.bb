@@ -13,6 +13,25 @@ group("browser") {
 
 mojo_native_application("window_manager") {
   sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":kiosk_wm_lib",
+    "//mandoline/services/navigation/public/interfaces",
+    "//mojo/application",
+    "//mojo/common:common",
+    "//mojo/converters/geometry",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/utility",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
+    "//ui/gfx/geometry",
+    "//ui/mojo/events:interfaces",
+  ]
+}
+
+source_set("kiosk_wm_lib") {
+  sources = [
     "browser.cc",
     "browser.h",
     "merged_service_provider.cc",
@@ -26,8 +45,6 @@ mojo_native_application("window_manager") {
     "//components/view_manager/public/cpp",
     "//components/window_manager:lib",
     "//mandoline/services/navigation/public/interfaces",
-    "//mojo/application",
-    "//mojo/common:common",
     "//mojo/converters/geometry",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/utility",

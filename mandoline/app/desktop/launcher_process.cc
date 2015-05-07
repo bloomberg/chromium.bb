@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "mandoline/app/core_services_initialization.h"
 #include "mandoline/app/desktop/launcher_process.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
@@ -109,6 +110,7 @@ int LauncherProcessMain(int argc, char** argv) {
   // We want the runner::Context to outlive the MessageLoop so that pipes are
   // all gracefully closed / error-out before we try to shut the Context down.
   mojo::runner::Context shell_context;
+  InitCoreServicesForContext(&shell_context);
   {
     base::MessageLoop message_loop;
     if (!shell_context.Init()) {

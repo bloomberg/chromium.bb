@@ -1,5 +1,7 @@
 include_rules = [
   "+components/clipboard",
+  "+components/kiosk_wm",
+  "+components/view_manager",
   "+mojo/application",
   "+mojo/common",
   "+third_party/mojo_services/src/clipboard",

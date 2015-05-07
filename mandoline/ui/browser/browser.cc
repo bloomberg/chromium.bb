@@ -7,8 +7,6 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mandoline/ui/browser/merged_service_provider.h"
-#include "mojo/application/application_runner_chromium.h"
-#include "third_party/mojo/src/mojo/public/c/system/main.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mandoline {
@@ -141,8 +139,3 @@ void Browser::ReplaceContentWithURL(const mojo::String& url) {
 }
 
 }  // namespace mandoline
-
-MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(new mandoline::Browser);
-  return runner.Run(shell_handle);
-}

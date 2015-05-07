@@ -9,8 +9,6 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 mojo_native_application("view_manager") {
   sources = [
     "main.cc",
-    "view_manager_app.cc",
-    "view_manager_app.h",
   ]
 
   deps = [
@@ -19,7 +17,6 @@ mojo_native_application("view_manager") {
     "//components/view_manager/public/interfaces",
     "//components/window_manager/public/interfaces",
     "//mojo/application",
-    "//mojo/common:tracing_impl",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
@@ -63,6 +60,8 @@ source_set("view_manager_lib") {
     "view_coordinate_conversions.h",
     "view_locator.cc",
     "view_locator.h",
+    "view_manager_app.cc",
+    "view_manager_app.h",
     "view_manager_service_impl.cc",
     "view_manager_service_impl.h",
     "window_manager_access_policy.cc",
@@ -84,6 +83,7 @@ source_set("view_manager_lib") {
     "//components/window_manager/public/interfaces",
     "//mojo/application",
     "//mojo/common",
+    "//mojo/common:tracing_impl",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",

@@ -18,6 +18,7 @@ group("app") {
   data_deps = [
     "//components/html_viewer",
     "//mandoline/ui/browser",
+    "//mandoline/services/core_services",
     "//mojo/runner:mojo_runner",
   ]
 }
