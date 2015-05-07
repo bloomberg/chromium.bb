@@ -21,6 +21,7 @@ from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import dev_server_wrapper
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -777,12 +778,14 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     if not got_images:
       return
 
-    if 'test' in self._run.config.images:
-      image_name = 'chromiumos_test_image.bin'
-    elif 'dev' in self._run.config.images:
-      image_name = 'chromiumos_image.bin'
-    else:
-      image_name = 'chromiumos_base_image.bin'
+    payload_type = self._run.config.payload_image
+    if payload_type is None:
+      payload_type = 'base'
+      for t in ['test', 'dev']:
+        if t in self._run.config.images:
+          payload_type = t
+          break
+    image_name = dev_server_wrapper.IMAGE_TYPE_TO_NAME[payload_type]
     logging.info('Generating payloads to upload for %s', image_name)
     self._GeneratePayloads(image_name, full=True, stateful=True)
     self.board_runattrs.SetParallel('payloads_generated', True)

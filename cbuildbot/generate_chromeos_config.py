@@ -503,6 +503,10 @@ _settings = dict(
 # images -- List of images we want to build -- see build_image for more details.
   images=['test'],
 
+# payload_image -- Image from which we will build update payloads.  Must
+# either be None or name one of the images in the 'images' list, above.
+  payload_image=None,
+
 # factory_install_netboot -- Whether to build a netboot image.
   factory_install_netboot=True,
 
@@ -2703,6 +2707,7 @@ BuildConfig.add_group('beaglebone-release-group',
   ),
   _beaglebone_release.add_config('beaglebone_servo-release',
     boards=['beaglebone_servo'],
+    payload_image='base'
   ).derive(_grouped_variant_config),
   important=True,
 )

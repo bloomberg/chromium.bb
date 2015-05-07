@@ -680,6 +680,17 @@ class CBuildBotTest(cros_test_lib.TestCase):
                         '%s is not upload_hw_test_artifacts, but also not'
                         ' paygen_skip_testing' % build_name)
 
+  def testPayloadImageIsBuilt(self):
+    for build_name, config in generate_chromeos_config.GetConfig().iteritems():
+      if config.payload_image is not None:
+        self.assertNotEqual('recovery', config.payload_image,
+                            '%s wants to generate payloads from recovery '
+                            'images, which is not allowed.' % build_name)
+        self.assertIn(config.payload_image, config.images,
+                      '%s builds payloads from %s, which is not in images '
+                      'list %s' % (build_name, config.payload_image,
+                                   config.images))
+
   def testBuildPackagesForRecoveryImage(self):
     """Tests that we build the packages required for recovery image."""
     for build_name, config in generate_chromeos_config.GetConfig().iteritems():
