@@ -20,13 +20,9 @@ namespace blink {
 // This object is owned by Blink, and should be destroyed as each Cache instance is no longer in use.
 class WebServiceWorkerCache {
 public:
-    typedef WebCallbacks<WebServiceWorkerResponse, WebServiceWorkerCacheError> CacheMatchCallbacks;
-    typedef WebCallbacks<WebVector<WebServiceWorkerResponse>, WebServiceWorkerCacheError> CacheWithResponsesCallbacks;
-    typedef WebCallbacks<WebVector<WebServiceWorkerRequest>, WebServiceWorkerCacheError> CacheWithRequestsCallbacks;
-
-    // TODO(nhiroki): Remove this define after landing the chromium-side patch.
-    // http://crbug.com/482827
-#define CRBUG_482827
+    using CacheMatchCallbacks = WebCallbacks<WebServiceWorkerResponse, WebServiceWorkerCacheError>;
+    using CacheWithResponsesCallbacks = WebCallbacks<WebVector<WebServiceWorkerResponse>, WebServiceWorkerCacheError>;
+    using CacheWithRequestsCallbacks = WebCallbacks<WebVector<WebServiceWorkerRequest>, WebServiceWorkerCacheError>;
     using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
 
     virtual ~WebServiceWorkerCache() { }
