@@ -45,11 +45,13 @@ class Element;
 class Event;
 class EventListener;
 class EventTarget;
-class InspectorDOMAgent;
+class InjectedScriptManager;
 class InspectorDebuggerAgent;
+class InspectorDOMAgent;
 class JSONObject;
 class LocalFrame;
 class Node;
+class RegisteredEventListener;
 
 typedef String ErrorString;
 
@@ -61,7 +63,7 @@ class InspectorDOMDebuggerAgent final
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorDOMDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InspectorDOMAgent*, InspectorDebuggerAgent*);
+    static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InjectedScriptManager*, InspectorDOMAgent*, InspectorDebuggerAgent*);
 
     ~InspectorDOMDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -75,6 +77,7 @@ public:
     void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
     void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
     void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
+    void getEventListeners(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& result) override;
     // InspectorInstrumentation API
     void willInsertDOMNode(Node* parent);
     void didInvalidateStyleAttr(Node*);
@@ -101,7 +104,7 @@ public:
     void discardAgent() override;
 
 private:
-    InspectorDOMDebuggerAgent(InspectorDOMAgent*, InspectorDebuggerAgent*);
+    InspectorDOMDebuggerAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorDebuggerAgent*);
 
     void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
     PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
@@ -124,8 +127,11 @@ private:
     void setBreakpoint(ErrorString*, const String& eventName, const String* targetName);
     void removeBreakpoint(ErrorString*, const String& eventName, const String* targetName);
 
+    PassRefPtr<TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(const RegisteredEventListener&, const AtomicString& eventType, EventTarget*, const String& objectGroupId);
+
     void clear();
 
+    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     WillBeHeapHashMap<RawPtrWillBeMember<Node>, uint32_t> m_domBreakpoints;

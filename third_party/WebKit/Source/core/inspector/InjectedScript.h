@@ -99,6 +99,7 @@ public:
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> wrapNode(Node*, const String& groupName);
     ScriptValue findObjectById(const String& objectId) const;
 
+    String objectIdToObjectGroupName(const String& objectId) const;
     void releaseObjectGroup(const String&);
 
     void setCustomObjectFormatterEnabled(bool);

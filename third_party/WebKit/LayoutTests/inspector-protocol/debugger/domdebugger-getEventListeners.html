@@ -8,7 +8,7 @@ function test()
     // A general-purpose engine for sending a sequence of protocol commands.
     // The clients provide requests and response handlers, while the engine catches
     // errors and makes sure that once there's nothing to do completeTest() is called.
-    // @param step is an object with command, params and callback fields 
+    // @param step is an object with command, params and callback fields.
     function runRequestSeries(step)
     {
         processStep(step);
@@ -22,7 +22,7 @@ function test()
                 InspectorTest.completeTest();
             }
         }
-        
+
         function processStepOrFail(s)
         {
             if (!s) {
@@ -56,12 +56,11 @@ function test()
             InspectorTest.sendCommand(s.command, s.params, innerCallback);
         }
     }
-    
+
     runRequestSeries({ callback: callbackStartWindow });
 
     function callbackStartWindow()
     {
-        // Create an wrapper object with additional property.
         var expression = "(function(){\n\
             window.addEventListener('scroll', function(){ consol.log(42) }, false);\n\
             window.addEventListener('scroll', function(){ consol.log(42) }, false);\n\
@@ -70,8 +69,7 @@ function test()
             window.addEventListener(\"hover\", function hoverHandler(event) { console.log(\"hover - button - bubbling\"); }, true);\n\
             return window;\n\
         })()";
-        
-        return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalWindow };
+        return { command: "Runtime.evaluate", params: {expression: expression, objectGroup: "event-listeners-test"}, callback: callbackEvalWindow };
     }
     function callbackEvalWindow(result)
     {
@@ -79,18 +77,17 @@ function test()
         if (id === undefined)
             throw new Error("objectId is expected");
         return {
-            command: "Runtime.getEventListeners", params: {objectId: id, objectGroup: "event-listeners-test"}, callback: callbackListenersWindow
+            command: "DOMDebugger.getEventListeners", params: {objectId: id}, callback: callbackListenersWindow
         };
     }
     function callbackListenersWindow(result)
     {
-        logGetPropertiesResult("window", result);
+        logGetListenersResult("window", result);
         return {callback: calbackStartDivWithListeners};
-    }  
+    }
 
     function calbackStartDivWithListeners()
     {
-        // Create an wrapper object with additional property.
         var expression = "(function(){\n\
             var div = document.getElementById(\"listeners1\");\n\
             function clickHandler(event) { console.log('click - button - bubbling (registered before attribute)'); }\n\
@@ -98,8 +95,7 @@ function test()
             div.addEventListener(\"hover\", function hoverHandler(event) { console.log(\"hover - button - bubbling\"); }, true);\n\
             return div;\n\
         })()";
-        
-        return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalDivWithListeners };
+        return { command: "Runtime.evaluate", params: {expression: expression, objectGroup: "event-listeners-test"}, callback: callbackEvalDivWithListeners };
     }
     function callbackEvalDivWithListeners(result)
     {
@@ -107,23 +103,21 @@ function test()
         if (id === undefined)
             throw new Error("objectId is expected");
         return {
-            command: "Runtime.getEventListeners", params: {objectId: id, objectGroup: "event-listeners-test"}, callback: callbackListenersDivWithListeners
+            command: "DOMDebugger.getEventListeners", params: {objectId: id}, callback: callbackListenersDivWithListeners
         };
     }
     function callbackListenersDivWithListeners(result)
     {
-        logGetPropertiesResult("div#listeners1", result);
+        logGetListenersResult("div#listeners1", result);
         return {callback: calbackStartDivWithoutListeners};
-    }  
+    }
 
     function calbackStartDivWithoutListeners()
     {
-        // Create an wrapper object with additional property.
         var expression = "(function(){\n\
             return document.getElementById(\"listeners2\");\n\
         })()";
-        
-        return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalDivWithoutListeners };
+        return { command: "Runtime.evaluate", params: {expression: expression, objectGroup: "event-listeners-test"}, callback: callbackEvalDivWithoutListeners };
     }
     function callbackEvalDivWithoutListeners(result)
     {
@@ -131,17 +125,16 @@ function test()
         if (id === undefined)
             throw new Error("objectId is expected");
         return {
-            command: "Runtime.getEventListeners", params: {objectId: id, objectGroup: "event-listeners-test"}, callback: callbackListenersDivWithoutListeners
+            command: "DOMDebugger.getEventListeners", params: {objectId: id}, callback: callbackListenersDivWithoutListeners
         };
     }
     function callbackListenersDivWithoutListeners(result)
     {
-        logGetPropertiesResult("div#listeners2", result);
-    }  
+        logGetListenersResult("div#listeners2", result);
+    }
 
-    // A helper function that dumps object properties and internal properties in sorted order.    
-    function logGetPropertiesResult(title, protocolResult)
-    {   
+    function logGetListenersResult(title, protocolResult)
+    {
         InspectorTest.log("Event listeners of " + title);
         var listenersArray = protocolResult.listeners;
         listenersArray.sort(TypedThingComparator);
@@ -154,7 +147,7 @@ function test()
             if (l.handler) {
                 InspectorTest.log("  handler.type:" + l.handler.type);
                 InspectorTest.log("  handler.className:" + l.handler.className);
-                InspectorTest.log("  handler.description:" + l.handler.description.replace(/(\r\n|\n|\r)/gm,""));                
+                InspectorTest.log("  handler.description:" + l.handler.description.replace(/(\r\n|\n|\r)/gm,""));
             }
             InspectorTest.log("");
         }

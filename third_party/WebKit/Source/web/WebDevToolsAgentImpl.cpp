@@ -455,7 +455,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(debuggerAgentPtr.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent, m_instrumentingAgents.get()));
 
-    m_agents.append(InspectorDOMDebuggerAgent::create(m_domAgent, debuggerAgent));
+    m_agents.append(InspectorDOMDebuggerAgent::create(injectedScriptManager, m_domAgent, debuggerAgent));
 
     m_agents.append(InspectorInputAgent::create(m_pageAgent));
 

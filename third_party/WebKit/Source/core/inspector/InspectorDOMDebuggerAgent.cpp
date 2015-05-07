@@ -31,9 +31,16 @@
 #include "config.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "core/InspectorFrontend.h"
 #include "core/dom/Element.h"
+#include "core/dom/Node.h"
 #include "core/events/Event.h"
+#include "core/events/EventTarget.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/inspector/EventListenerInfo.h"
+#include "core/inspector/InjectedScript.h"
+#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -81,13 +88,14 @@ static const char pauseOnAllXHRs[] = "pauseOnAllXHRs";
 static const char xhrBreakpoints[] = "xhrBreakpoints";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
+PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
 {
-    return adoptPtrWillBeNoop(new InspectorDOMDebuggerAgent(domAgent, debuggerAgent));
+    return adoptPtrWillBeNoop(new InspectorDOMDebuggerAgent(injectedScriptManager, domAgent, debuggerAgent));
 }
 
-InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
+InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
     : InspectorBaseAgent<InspectorDOMDebuggerAgent, InspectorFrontend::DOMDebugger>("DOMDebugger")
+    , m_injectedScriptManager(injectedScriptManager)
     , m_domAgent(domAgent)
     , m_debuggerAgent(debuggerAgent)
 {
@@ -106,6 +114,7 @@ InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 
 DEFINE_TRACE(InspectorDOMDebuggerAgent)
 {
+    visitor->trace(m_injectedScriptManager);
     visitor->trace(m_domAgent);
     visitor->trace(m_debuggerAgent);
 #if ENABLE(OILPAN)
@@ -320,6 +329,60 @@ void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString, in
         for (Node* child = InspectorDOMAgent::innerFirstChild(node); child; child = InspectorDOMAgent::innerNextSibling(child))
             updateSubtreeBreakpoints(child, rootBit, false);
     }
+}
+
+void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray)
+{
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
+    if (injectedScript.isEmpty()) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+    EventTarget* target = injectedScript.eventTargetForObjectId(objectId);
+    if (!target) {
+        *errorString = "No event target with passed objectId";
+        return;
+    }
+
+    listenersArray = TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>::create();
+    Vector<EventListenerInfo> eventInformation;
+    EventListenerInfo::getEventListeners(target, eventInformation, false);
+    if (eventInformation.isEmpty())
+        return;
+
+    String objectGroup = injectedScript.objectIdToObjectGroupName(objectId);
+    RegisteredEventListenerIterator iterator(eventInformation);
+    while (const RegisteredEventListener* listener = iterator.nextRegisteredEventListener()) {
+        const EventListenerInfo& info = iterator.currentEventListenerInfo();
+        RefPtr<TypeBuilder::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(*listener, info.eventType, info.eventTarget, objectGroup);
+        if (listenerObject)
+            listenersArray->addItem(listenerObject);
+    }
+}
+
+PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, EventTarget* target, const String& objectGroupId)
+{
+    RefPtr<EventListener> eventListener = registeredEventListener.listener;
+    String scriptId;
+    int lineNumber;
+    int columnNumber;
+    ExecutionContext* context = target->executionContext();
+    if (!context)
+        return nullptr;
+    if (!eventListenerHandlerLocation(context, eventListener.get(), scriptId, lineNumber, columnNumber))
+        return nullptr;
+
+    RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
+        .setScriptId(scriptId)
+        .setLineNumber(lineNumber);
+    location->setColumnNumber(columnNumber);
+    RefPtr<TypeBuilder::DOMDebugger::EventListener> value = TypeBuilder::DOMDebugger::EventListener::create()
+        .setType(eventType)
+        .setUseCapture(registeredEventListener.useCapture)
+        .setLocation(location);
+    if (!objectGroupId.isEmpty())
+        value->setHandler(eventHandlerObject(context, eventListener.get(), m_injectedScriptManager, &objectGroupId));
+    return value.release();
 }
 
 void InspectorDOMDebuggerAgent::willInsertDOMNode(Node* parent)

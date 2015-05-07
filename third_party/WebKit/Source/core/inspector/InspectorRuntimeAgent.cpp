@@ -151,61 +151,6 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String
         injectedScript.getInternalProperties(errorString, objectId, &internalProperties, &exceptionDetails);
 }
 
-void InspectorRuntimeAgent::getEventListeners(ErrorString* errorString, const String& objectId, const String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::EventListener>>& listenersArray)
-{
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
-    if (injectedScript.isEmpty()) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-    EventTarget* target = injectedScript.eventTargetForObjectId(objectId);
-    if (!target) {
-        *errorString = "No event target with passed objectId";
-        return;
-    }
-
-    InjectedScriptCallScope callScope(this, true);
-
-    listenersArray = TypeBuilder::Array<TypeBuilder::Runtime::EventListener>::create();
-    Vector<EventListenerInfo> eventInformation;
-    EventListenerInfo::getEventListeners(target, eventInformation, false);
-    if (eventInformation.isEmpty())
-        return;
-
-    RegisteredEventListenerIterator iterator(eventInformation);
-    while (const RegisteredEventListener* listener = iterator.nextRegisteredEventListener()) {
-        const EventListenerInfo& info = iterator.currentEventListenerInfo();
-        RefPtr<TypeBuilder::Runtime::EventListener> listenerObject = buildObjectForEventListener(*listener, info.eventType, info.eventTarget, objectGroup);
-        if (listenerObject)
-            listenersArray->addItem(listenerObject);
-    }
-}
-
-PassRefPtr<TypeBuilder::Runtime::EventListener> InspectorRuntimeAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, EventTarget* target, const String* objectGroupId)
-{
-    RefPtr<EventListener> eventListener = registeredEventListener.listener;
-    String scriptId;
-    int lineNumber;
-    int columnNumber;
-    ExecutionContext* context = target->executionContext();
-    if (!context)
-        return nullptr;
-    if (!eventListenerHandlerLocation(context, eventListener.get(), scriptId, lineNumber, columnNumber))
-        return nullptr;
-
-    RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
-        .setScriptId(scriptId)
-        .setLineNumber(lineNumber);
-    location->setColumnNumber(columnNumber);
-    RefPtr<TypeBuilder::Runtime::EventListener> value = TypeBuilder::Runtime::EventListener::create()
-        .setType(eventType)
-        .setUseCapture(registeredEventListener.useCapture)
-        .setLocation(location);
-    if (objectGroupId)
-        value->setHandler(eventHandlerObject(context, eventListener.get(), m_injectedScriptManager, objectGroupId));
-    return value.release();
-}
-
 void InspectorRuntimeAgent::releaseObject(ErrorString*, const String& objectId)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);

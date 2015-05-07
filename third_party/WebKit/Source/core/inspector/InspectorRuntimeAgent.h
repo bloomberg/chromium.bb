@@ -38,11 +38,9 @@
 
 namespace blink {
 
-class EventTarget;
 class InjectedScript;
 class InjectedScriptManager;
 class JSONArray;
-class RegisteredEventListener;
 class ScriptDebugServer;
 class ScriptState;
 
@@ -86,7 +84,6 @@ public:
                         TypeBuilder::OptOutput<bool>* wasThrown) override final;
     void releaseObject(ErrorString*, const String& objectId) override final;
     void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override final;
-    void getEventListeners(ErrorString*, const String& objectId, const String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::EventListener>>& result) override final;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) override final;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* out_result) override;
@@ -112,7 +109,6 @@ protected:
 
 private:
     class InjectedScriptCallScope;
-    PassRefPtr<TypeBuilder::Runtime::EventListener> buildObjectForEventListener(const RegisteredEventListener&, const AtomicString& eventType, EventTarget*, const String* objectGroupId);
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     ScriptDebugServer* m_scriptDebugServer;

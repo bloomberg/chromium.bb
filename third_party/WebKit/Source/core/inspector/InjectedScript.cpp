@@ -351,6 +351,20 @@ ScriptValue InjectedScript::findObjectById(const String& objectId) const
     return resultValue;
 }
 
+String InjectedScript::objectIdToObjectGroupName(const String& objectId) const
+{
+    RefPtr<JSONValue> parsedObjectId = parseJSON(objectId);
+    if (!parsedObjectId)
+        return String();
+    RefPtr<JSONObject> object;
+    if (!parsedObjectId->asObject(&object))
+        return String();
+    int boundId = 0;
+    if (!object->getNumber("id", &boundId))
+        return String();
+    return m_native->groupName(boundId);
+}
+
 void InjectedScript::releaseObjectGroup(const String& objectGroup)
 {
     ASSERT(!isEmpty());

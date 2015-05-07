@@ -17,7 +17,7 @@ Event listeners of window
 
   type:load
   useCapture:false
-  lineNumber:171
+  lineNumber:164
   columnNumber:102
   handler.type:function
   handler.className:Function
@@ -59,7 +59,7 @@ Event listeners of div#listeners1
 
   type:load
   useCapture:false
-  lineNumber:169
+  lineNumber:162
   columnNumber:117
   handler.type:function
   handler.className:Function
