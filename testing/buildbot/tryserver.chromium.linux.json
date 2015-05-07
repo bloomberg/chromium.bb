@@ -169,14 +169,7 @@
   "linux_chromium_gn_rel": {
     "additional_compile_targets": [
       "browser_tests",
-      "content_browsertests",
-      "extensions_browsertests",
-      "interactive_ui_tests",
-      "mandoline:all",
-      "media_unittests",
-      "net_unittests",
-      "sync_integration_tests",
-      "unit_tests"
+      "mandoline:all"
     ],
     "gtest_tests": [
       {
@@ -208,6 +201,9 @@
       },
       {
         "test": "components_unittests"
+      },
+      {
+        "test": "content_browsertests"
       },
       {
         "test": "content_unittests"
@@ -249,6 +245,9 @@
         "test": "gpu_unittests"
       },
       {
+        "test": "interactive_ui_tests"
+      },
+      {
         "test": "ipc_mojo_unittests"
       },
       {
@@ -258,7 +257,13 @@
         "test": "jingle_unittests"
       },
       {
+        "test": "media_unittests"
+      },
+      {
         "test": "nacl_loader_unittests"
+      },
+      {
+        "test": "net_unittests"
       },
       {
         "test": "ppapi_unittests"
@@ -279,6 +284,9 @@
         "test": "sql_unittests"
       },
       {
+        "test": "sync_integration_tests"
+      },
+      {
         "test": "sync_unit_tests"
       },
       {
@@ -286,6 +294,9 @@
       },
       {
         "test": "ui_touch_selection_unittests"
+      },
+      {
+        "test": "unit_tests"
       },
       {
         "test": "url_unittests"
