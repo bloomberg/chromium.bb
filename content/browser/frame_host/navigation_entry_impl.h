@@ -131,6 +131,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   StartNavigationParams ConstructStartNavigationParams() const;
   RequestNavigationParams ConstructRequestNavigationParams(
       base::TimeTicks navigation_start,
+      bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,
       int current_length_to_send) const;

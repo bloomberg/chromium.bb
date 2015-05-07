@@ -67,10 +67,14 @@ TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
 
 void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
                                       int page_id,
+                                      int nav_entry_id,
+                                      bool did_create_new_entry,
                                       const GURL& url,
                                       ui::PageTransition transition) {
   TestDidNavigateWithReferrer(render_frame_host,
                               page_id,
+                              nav_entry_id,
+                              did_create_new_entry,
                               url,
                               Referrer(),
                               transition);
@@ -79,12 +83,15 @@ void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
 void TestWebContents::TestDidNavigateWithReferrer(
     RenderFrameHost* render_frame_host,
     int page_id,
+    int nav_entry_id,
+    bool did_create_new_entry,
     const GURL& url,
     const Referrer& referrer,
     ui::PageTransition transition) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
 
   params.page_id = page_id;
+  params.nav_entry_id = nav_entry_id;
   params.url = url;
   params.referrer = referrer;
   params.transition = transition;
@@ -92,6 +99,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   params.should_update_history = false;
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
+  params.did_create_new_entry = did_create_new_entry;
   params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.was_within_same_page = false;
@@ -182,7 +190,9 @@ void TestWebContents::CommitPendingNavigation() {
     page_id = GetMaxPageIDForSiteInstance(rfh->GetSiteInstance()) + 1;
   }
 
-  rfh->SendNavigate(page_id, entry->GetURL());
+  rfh->SendNavigate(page_id, entry->GetUniqueID(),
+                    GetController().GetPendingEntryIndex() == -1,
+                    entry->GetURL());
   // Simulate the SwapOut_ACK. This is needed when cross-site navigation
   // happens.
   if (old_rfh != rfh)
