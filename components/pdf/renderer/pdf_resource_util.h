@@ -9,13 +9,7 @@
 
 #include "ppapi/c/private/ppb_pdf.h"
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace pdf {
-
-gfx::ImageSkia* GetImageResource(PP_ResourceImage image_id);
 
 std::string GetStringResource(PP_ResourceString string_id);
 

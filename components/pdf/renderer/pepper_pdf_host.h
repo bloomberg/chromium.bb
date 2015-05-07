@@ -38,10 +38,33 @@ namespace pdf {
 
 class PepperPDFHost : public ppapi::host::ResourceHost {
  public:
+  class PrintClient {
+   public:
+    virtual ~PrintClient() {}
+
+    // Returns whether printing is enabled for the plugin instance identified by
+    // |instance_id|.
+    virtual bool IsPrintingEnabled(PP_Instance instance_id) = 0;
+
+    // Invokes the "Print" command for the plugin instance identified by
+    // |instance_id|. Returns whether the "Print" command was issued or not.
+    virtual bool Print(PP_Instance instance_id) = 0;
+  };
+
   PepperPDFHost(content::RendererPpapiHost* host,
                 PP_Instance instance,
                 PP_Resource resource);
   ~PepperPDFHost() override;
+
+  // Invokes the "Print" command for the given instance as if the user right
+  // clicked on it and selected "Print". Returns if the "Print" command was
+  // issued or not.
+  static bool InvokePrintingForInstance(PP_Instance instance);
+
+  // The caller retains the ownership of |print_client|. The client is
+  // allowed to be set only once, and when set, the client must outlive the
+  // PPB_PDF_Impl instance.
+  static void SetPrintClient(PrintClient* print_client);
 
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
@@ -62,22 +85,10 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
       ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgPrint(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgSaveAs(ppapi::host::HostMessageContext* context);
-  int32_t OnHostMsgGetResourceImage(ppapi::host::HostMessageContext* context,
-                                    PP_ResourceImage image_id,
-                                    float scale);
   int32_t OnHostMsgSetSelectedText(ppapi::host::HostMessageContext* context,
                                    const base::string16& selected_text);
   int32_t OnHostMsgSetLinkUnderCursor(ppapi::host::HostMessageContext* context,
                                       const std::string& url);
-
-  bool CreateImageData(PP_Instance instance,
-                       PP_ImageDataFormat format,
-                       const PP_Size& size,
-                       const SkBitmap& pixels_to_write,
-                       ppapi::HostResource* result,
-                       PP_ImageDataDesc* out_image_data_desc,
-                       IPC::PlatformFileForTransit* out_image_handle,
-                       uint32_t* out_byte_count);
 
   content::RendererPpapiHost* host_;
 

@@ -51,16 +51,11 @@ class PDFWebContentsHelper
   // Internal helpers ----------------------------------------------------------
 
   void UpdateLocationBar();
-  void OnModalPromptForPasswordClosed(IPC::Message* reply_message,
-                                      bool success,
-                                      const base::string16& actual_value);
 
   // Message handlers.
   void OnHasUnsupportedFeature();
   void OnSaveURLAs(const GURL& url, const content::Referrer& referrer);
   void OnUpdateContentRestrictions(int content_restrictions);
-  void OnModalPromptForPassword(const std::string& prompt,
-                                IPC::Message* reply_message);
 
   // The model for the confirmation prompt to open a PDF in Adobe Reader.
   scoped_ptr<OpenPDFInReaderPromptClient> open_in_reader_prompt_;

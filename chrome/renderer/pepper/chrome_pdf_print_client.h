@@ -6,15 +6,15 @@
 #define CHROME_RENDERER_PEPPER_CHROME_PDF_PRINT_CLIENT_H_
 
 #include "base/macros.h"
-#include "components/pdf/renderer/ppb_pdf_impl.h"
+#include "components/pdf/renderer/pepper_pdf_host.h"
 
-class ChromePDFPrintClient : public pdf::PPB_PDF_Impl::PrintClient {
+class ChromePDFPrintClient : public pdf::PepperPDFHost::PrintClient {
  public:
   ChromePDFPrintClient();
   ~ChromePDFPrintClient() override;
 
  private:
-  // pdf::PPB_PDF_Impl::PrintClient:
+  // pdf::PepperPDFHost::PrintClient:
   bool IsPrintingEnabled(PP_Instance instance_id) override;
   bool Print(PP_Instance instance_id) override;
 

@@ -25,16 +25,7 @@ class ChromePDFWebContentsHelperClient
 
   void OnSaveURL(content::WebContents* contents) override;
 
-  void OnShowPDFPasswordDialog(
-      content::WebContents* contents,
-      const base::string16& prompt,
-      const pdf::PasswordDialogClosedCallback& callback) override;
-
   DISALLOW_COPY_AND_ASSIGN(ChromePDFWebContentsHelperClient);
 };
-
-void ShowPDFPasswordDialog(content::WebContents* web_contents,
-                           const base::string16& prompt,
-                           const pdf::PasswordDialogClosedCallback& callback);
 
 #endif  // CHROME_BROWSER_UI_PDF_CHROME_PDF_WEB_CONTENTS_HELPER_CLIENT_H_

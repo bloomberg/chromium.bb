@@ -24,8 +24,3 @@ IPC_MESSAGE_ROUTED0(PDFHostMsg_PDFHasUnsupportedFeature)
 IPC_MESSAGE_ROUTED2(PDFHostMsg_PDFSaveURLAs,
                     GURL /* url */,
                     content::Referrer /* referrer */)
-
-// Brings up a Password... dialog for protected documents.
-IPC_SYNC_MESSAGE_ROUTED1_1(PDFHostMsg_PDFModalPromptForPassword,
-                           std::string /* prompt */,
-                           std::string /* actual_value */)

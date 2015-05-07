@@ -48,8 +48,6 @@ bool PDFWebContentsHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PDFHostMsg_PDFSaveURLAs, OnSaveURLAs)
     IPC_MESSAGE_HANDLER(PDFHostMsg_PDFUpdateContentRestrictions,
                         OnUpdateContentRestrictions)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(PDFHostMsg_PDFModalPromptForPassword,
-                                    OnModalPromptForPassword)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -82,26 +80,6 @@ void PDFWebContentsHelper::OnSaveURLAs(const GURL& url,
 void PDFWebContentsHelper::OnUpdateContentRestrictions(
     int content_restrictions) {
   client_->UpdateContentRestrictions(web_contents(), content_restrictions);
-}
-
-void PDFWebContentsHelper::OnModalPromptForPasswordClosed(
-    IPC::Message* reply_message,
-    bool success,
-    const base::string16& actual_value) {
-  PDFHostMsg_PDFModalPromptForPassword::WriteReplyParams(
-      reply_message, base::UTF16ToUTF8(actual_value));
-  Send(reply_message);
-}
-
-void PDFWebContentsHelper::OnModalPromptForPassword(
-    const std::string& prompt,
-    IPC::Message* reply_message) {
-  base::Callback<void(bool, const base::string16&)> callback =
-      base::Bind(&PDFWebContentsHelper::OnModalPromptForPasswordClosed,
-                 base::Unretained(this),
-                 reply_message);
-  client_->OnShowPDFPasswordDialog(
-      web_contents(), base::UTF8ToUTF16(prompt), callback);
 }
 
 }  // namespace pdf

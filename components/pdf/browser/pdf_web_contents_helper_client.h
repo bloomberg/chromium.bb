@@ -15,10 +15,6 @@ class WebContents;
 
 namespace pdf {
 
-typedef base::Callback<
-    void(bool /* success */, const base::string16& /* password */)>
-    PasswordDialogClosedCallback;
-
 class PDFWebContentsHelperClient {
  public:
   virtual ~PDFWebContentsHelperClient() {}
@@ -31,11 +27,6 @@ class PDFWebContentsHelperClient {
   virtual void OnPDFHasUnsupportedFeature(content::WebContents* contents) = 0;
 
   virtual void OnSaveURL(content::WebContents* contents) = 0;
-
-  virtual void OnShowPDFPasswordDialog(
-      content::WebContents* contents,
-      const base::string16& prompt,
-      const PasswordDialogClosedCallback& callback) = 0;
 };
 
 }  // namespace pdf

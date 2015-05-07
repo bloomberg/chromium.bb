@@ -10,8 +10,6 @@ static_library("renderer") {
     "pdf_resource_util.h",
     "pepper_pdf_host.cc",
     "pepper_pdf_host.h",
-    "ppb_pdf_impl.cc",
-    "ppb_pdf_impl.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

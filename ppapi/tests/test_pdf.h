@@ -19,7 +19,6 @@ class TestPDF : public TestCase {
 
  private:
   std::string TestGetLocalizedString();
-  std::string TestGetResourceImage();
   std::string TestGetV8ExternalSnapshotData();
 };
 

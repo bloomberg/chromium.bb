@@ -70,10 +70,3 @@ void ChromePDFWebContentsHelperClient::OnSaveURL(
     content::WebContents* contents) {
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_PDF_SAVE);
 }
-
-void ChromePDFWebContentsHelperClient::OnShowPDFPasswordDialog(
-    content::WebContents* contents,
-    const base::string16& prompt,
-    const pdf::PasswordDialogClosedCallback& callback) {
-  ShowPDFPasswordDialog(contents, prompt, callback);
-}

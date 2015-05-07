@@ -6,7 +6,6 @@
 
 #include "components/pdf/common/pdf_messages.h"
 #include "components/pdf/renderer/pdf_resource_util.h"
-#include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
@@ -22,19 +21,24 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep.h"
 
 namespace pdf {
+
+namespace {
+// --single-process model may fail in CHECK(!g_print_client) if there exist
+// more than two RenderThreads, so here we use TLS for g_print_client.
+// See http://crbug.com/457580.
+base::LazyInstance<base::ThreadLocalPointer<PepperPDFHost::PrintClient>>::Leaky
+    g_print_client_tls = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 PepperPDFHost::PepperPDFHost(content::RendererPpapiHost* host,
                              PP_Instance instance,
@@ -43,6 +47,20 @@ PepperPDFHost::PepperPDFHost(content::RendererPpapiHost* host,
       host_(host) {}
 
 PepperPDFHost::~PepperPDFHost() {}
+
+// static
+bool PepperPDFHost::InvokePrintingForInstance(PP_Instance instance_id) {
+  return g_print_client_tls.Pointer()->Get()
+             ? g_print_client_tls.Pointer()->Get()->Print(instance_id)
+             : false;
+}
+
+// static
+void PepperPDFHost::SetPrintClient(PepperPDFHost::PrintClient* client) {
+  CHECK(!g_print_client_tls.Pointer()->Get())
+      << "There should only be a single PrintClient for one RenderThread.";
+  g_print_client_tls.Pointer()->Set(client);
+}
 
 int32_t PepperPDFHost::OnResourceMessageReceived(
     const IPC::Message& msg,
@@ -61,8 +79,6 @@ int32_t PepperPDFHost::OnResourceMessageReceived(
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_PDF_Print, OnHostMsgPrint)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_PDF_SaveAs,
                                         OnHostMsgSaveAs)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_GetResourceImage,
-                                      OnHostMsgGetResourceImage)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetSelectedText,
                                       OnHostMsgSetSelectedText)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetLinkUnderCursor,
@@ -139,8 +155,7 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
 
 int32_t PepperPDFHost::OnHostMsgPrint(
     ppapi::host::HostMessageContext* context) {
-  return PPB_PDF_Impl::InvokePrintingForInstance(pp_instance()) ? PP_OK :
-      PP_ERROR_FAILED;
+  return InvokePrintingForInstance(pp_instance()) ? PP_OK : PP_ERROR_FAILED;
 }
 
 int32_t PepperPDFHost::OnHostMsgSaveAs(
@@ -159,57 +174,6 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
   render_view->Send(
       new PDFHostMsg_PDFSaveURLAs(render_view->GetRoutingID(), url, referrer));
   return PP_OK;
-}
-
-int32_t PepperPDFHost::OnHostMsgGetResourceImage(
-    ppapi::host::HostMessageContext* context,
-    PP_ResourceImage image_id,
-    float scale) {
-  gfx::ImageSkia* res_image_skia = GetImageResource(image_id);
-
-  if (!res_image_skia)
-    return PP_ERROR_FAILED;
-
-  gfx::ImageSkiaRep image_skia_rep = res_image_skia->GetRepresentation(scale);
-
-  if (image_skia_rep.is_null() || image_skia_rep.scale() != scale)
-    return PP_ERROR_FAILED;
-
-  PP_Size pp_size;
-  pp_size.width = image_skia_rep.pixel_width();
-  pp_size.height = image_skia_rep.pixel_height();
-
-  ppapi::HostResource host_resource;
-  PP_ImageDataDesc image_data_desc;
-  IPC::PlatformFileForTransit image_handle;
-  uint32_t byte_count = 0;
-  bool success =
-      CreateImageData(pp_instance(),
-                      ppapi::PPB_ImageData_Shared::GetNativeImageDataFormat(),
-                      pp_size,
-                      image_skia_rep.sk_bitmap(),
-                      &host_resource,
-                      &image_data_desc,
-                      &image_handle,
-                      &byte_count);
-  ppapi::ScopedPPResource image_data_resource(
-      ppapi::ScopedPPResource::PassRef(), host_resource.host_resource());
-  if (!success)
-    return PP_ERROR_FAILED;
-
-  ppapi::host::ReplyMessageContext reply_context =
-      context->MakeReplyMessageContext();
-  ppapi::proxy::SerializedHandle serialized_handle;
-  serialized_handle.set_shmem(image_handle, byte_count);
-  reply_context.params.AppendHandle(serialized_handle);
-  SendReply(
-      reply_context,
-      PpapiPluginMsg_PDF_GetResourceImageReply(host_resource, image_data_desc));
-
-  // Keep a reference to the resource only if the function succeeds.
-  image_data_resource.Release();
-
-  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PepperPDFHost::OnHostMsgSetSelectedText(
@@ -232,61 +196,6 @@ int32_t PepperPDFHost::OnHostMsgSetLinkUnderCursor(
     return PP_ERROR_FAILED;
   instance->SetLinkUnderCursor(url);
   return PP_OK;
-}
-
-// TODO(raymes): This function is mainly copied from ppb_image_data_proxy.cc.
-// It's a mess and needs to be fixed in several ways but this is better done
-// when we refactor PPB_ImageData. On success, the image handle will be
-// non-null.
-bool PepperPDFHost::CreateImageData(
-    PP_Instance instance,
-    PP_ImageDataFormat format,
-    const PP_Size& size,
-    const SkBitmap& pixels_to_write,
-    ppapi::HostResource* result,
-    PP_ImageDataDesc* out_image_data_desc,
-    IPC::PlatformFileForTransit* out_image_handle,
-    uint32_t* out_byte_count) {
-  PP_Resource resource = ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
-      instance,
-      ppapi::PPB_ImageData_Shared::SIMPLE,
-      format,
-      size,
-      false /* init_to_zero */,
-      out_image_data_desc,
-      out_image_handle,
-      out_byte_count);
-  if (!resource)
-    return false;
-
-  result->SetHostResource(instance, resource);
-
-  // Write the image to the resource shared memory.
-  ppapi::thunk::EnterResourceNoLock<ppapi::thunk::PPB_ImageData_API>
-      enter_resource(resource, false);
-  if (enter_resource.failed())
-    return false;
-
-  ppapi::thunk::PPB_ImageData_API* image_data =
-      static_cast<ppapi::thunk::PPB_ImageData_API*>(enter_resource.object());
-  SkCanvas* canvas = image_data->GetCanvas();
-  bool needs_unmapping = false;
-  if (!canvas) {
-    needs_unmapping = true;
-    image_data->Map();
-    canvas = image_data->GetCanvas();
-    if (!canvas)
-      return false;  // Failure mapping.
-  }
-
-  const SkBitmap* bitmap = &skia::GetTopDevice(*canvas)->accessBitmap(false);
-  pixels_to_write.copyPixelsTo(
-      bitmap->getPixels(), bitmap->getSize(), bitmap->rowBytes());
-
-  if (needs_unmapping)
-    image_data->Unmap();
-
-  return true;
 }
 
 }  // namespace pdf

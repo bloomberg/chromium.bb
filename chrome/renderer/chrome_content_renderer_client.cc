@@ -64,7 +64,7 @@
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
-#include "components/pdf/renderer/ppb_pdf_impl.h"
+#include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -508,7 +508,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 #if defined(ENABLE_PRINT_PREVIEW)
   pdf_print_client_.reset(new ChromePDFPrintClient());
-  pdf::PPB_PDF_Impl::SetPrintClient(pdf_print_client_.get());
+  pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
 
   std::set<GURL> origins;
@@ -1481,13 +1481,9 @@ bool ChromeContentRendererClient::WasWebRequestUsedBySomeExtensions() {
 
 const void* ChromeContentRendererClient::CreatePPAPIInterface(
     const std::string& interface_name) {
-#if defined(ENABLE_PLUGINS)
-#if !defined(DISABLE_NACL)
+#if defined(ENABLE_PLUGINS) && !defined(DISABLE_NACL)
   if (interface_name == PPB_NACL_PRIVATE_INTERFACE)
     return nacl::GetNaClPrivateInterface();
-#endif  // DISABLE_NACL
-  if (interface_name == PPB_PDF_INTERFACE)
-    return pdf::PPB_PDF_Impl::GetInterface();
 #endif
   return NULL;
 }

@@ -19,7 +19,6 @@ TestPDF::TestPDF(TestingInstance* instance)
 
 void TestPDF::RunTests(const std::string& filter) {
   RUN_TEST(GetLocalizedString, filter);
-  RUN_TEST(GetResourceImage, filter);
   RUN_TEST(GetV8ExternalSnapshotData, filter);
 }
 
@@ -29,20 +28,6 @@ std::string TestPDF::TestGetLocalizedString() {
   ASSERT_TRUE(string.is_string());
   ASSERT_EQ("This document is password protected.  Please enter a password.",
             string.AsString());
-  PASS();
-}
-
-std::string TestPDF::TestGetResourceImage() {
-  pp::ImageData data =
-      pp::PDF::GetResourceImage(instance_, PP_RESOURCEIMAGE_PDF_BUTTON_ZOOMIN);
-  ASSERT_EQ(43, data.size().width());
-  ASSERT_EQ(42, data.size().height());
-  for (int i = 0; i < data.size().width(); ++i) {
-    for (int j = 0; j < data.size().height(); ++j) {
-      pp::Point point(i, j);
-      ASSERT_NE(0, *data.GetAddr32(point));
-    }
-  }
   PASS();
 }
 
