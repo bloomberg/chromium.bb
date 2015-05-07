@@ -214,7 +214,7 @@ void VideoCaptureController::PauseOrResumeClient(
   if (!client)
     return;
 
-  DCHECK(client->paused != pause);
+  DLOG_IF(WARNING, client->paused == pause) << "Redundant client configuration";
   client->paused = pause;
 }
 
