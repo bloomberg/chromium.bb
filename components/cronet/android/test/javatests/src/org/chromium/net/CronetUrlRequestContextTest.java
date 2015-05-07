@@ -153,7 +153,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testShutdownDuringInit() throws Exception {
-        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+        final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
         final ConditionVariable block = new ConditionVariable(false);
 
         // Post a task to main thread to block until shutdown is called to test
@@ -192,7 +192,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitAndShutdownOnMainThread() throws Exception {
-        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+        final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
         final ConditionVariable block = new ConditionVariable(false);
 
         // Post a task to main thread to init and shutdown on the main thread.
@@ -416,17 +416,15 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     private void enableCache(UrlRequestContextConfig.HttpCache cacheType)
             throws Exception {
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.setLibraryName("cronet_tests");
-        if (cacheType == UrlRequestContextConfig.HttpCache.DISK
-                || cacheType == UrlRequestContextConfig.HttpCache.DISK_NO_HTTP) {
-            config.setStoragePath(prepareTestStorage());
+        String cacheTypeString = "";
+        if (cacheType == UrlRequestContextConfig.HttpCache.DISK) {
+            cacheTypeString = CronetTestActivity.CACHE_DISK;
+        } else if (cacheType == UrlRequestContextConfig.HttpCache.DISK_NO_HTTP) {
+            cacheTypeString = CronetTestActivity.CACHE_DISK_NO_HTTP;
+        } else if (cacheType == UrlRequestContextConfig.HttpCache.IN_MEMORY) {
+            cacheTypeString = CronetTestActivity.CACHE_IN_MEMORY;
         }
-
-        config.enableHttpCache(cacheType, 1000 * 1024);
-        String[] commandLineArgs = {
-                CronetTestActivity.CONFIG_KEY, config.toString()
-        };
+        String[] commandLineArgs = {CronetTestActivity.CACHE_KEY, cacheTypeString};
         mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
                 commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(
@@ -522,39 +520,27 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 listener.mError.getMessage());
     }
 
-    // TODO(mef): Simple cache uses global thread pool that is not affected by
-    // shutdown of UrlRequestContext. This test can be flaky unless that thread
-    // pool is shutdown and recreated. Enable the test when crbug.com/442321 is fixed.
     @SmallTest
     @Feature({"Cronet"})
-    public void disabled_testEnableHttpCacheDiskNewContext() throws Exception {
-        UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.setLibraryName("cronet_tests");
-        config.setStoragePath(prepareTestStorage());
-        config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK, 1000 * 1024);
-        String[] commandLineArgs = {
-                CronetTestActivity.CONFIG_KEY, config.toString()
-        };
-        mActivity = launchCronetTestAppWithUrlAndCommandLineArgs(null,
-                commandLineArgs);
-        assertTrue(NativeTestServer.startNativeTestServer(
-                getInstrumentation().getTargetContext()));
+    public void testEnableHttpCacheDiskNewContext() throws Exception {
+        enableCache(UrlRequestContextConfig.HttpCache.DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
         NativeTestServer.shutdownNativeTestServer();
         checkRequestCaching(url, true);
+
         // Shutdown original context and create another that uses the same cache.
         mActivity.mUrlRequestContext.shutdown();
-        mActivity.mUrlRequestContext = mActivity.mUrlRequestContext.createContext(
-                getInstrumentation().getTargetContext(), config);
+        mActivity.mUrlRequestContext = UrlRequestContext.createContext(
+                getInstrumentation().getTargetContext(), mActivity.getContextConfig());
         checkRequestCaching(url, true);
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testInitContextAndStartRequest() {
-        CronetTestActivity activity = skipFactoryInitInOnCreate();
+        CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
         // Immediately make a request after initializing the context.
         UrlRequestContext requestContext = activity.initRequestContext();
@@ -569,7 +555,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitContextStartTwoRequests() throws Exception {
-        CronetTestActivity activity = skipFactoryInitInOnCreate();
+        CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
         // Make two requests after initializing the context.
         UrlRequestContext requestContext = activity.initRequestContext();
@@ -590,7 +576,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoContextsSimultaneously() throws Exception {
-        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+        final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
         // Threads will block on runBlocker to ensure simultaneous execution.
         ConditionVariable runBlocker = new ConditionVariable(false);
@@ -609,7 +595,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoContextsInSequence() throws Exception {
-        final CronetTestActivity activity = skipFactoryInitInOnCreate();
+        final CronetTestActivity activity = launchCronetTestAppAndSkipFactoryInit();
 
         ConditionVariable runBlocker = new ConditionVariable(true);
         RequestThread thread1 = new RequestThread(activity, TEST_URL, runBlocker);

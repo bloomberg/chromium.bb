@@ -7,6 +7,7 @@ package org.chromium.net.urlconnection;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestActivity;
 import org.chromium.net.CronetTestBase;
 import org.chromium.net.NativeTestServer;
 
@@ -35,7 +36,10 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        launchCronetTestApp();
+        String[] commandLineArgs = {
+                CronetTestActivity.LIBRARY_INIT_KEY, CronetTestActivity.LIBRARY_INIT_WRAPPER,
+        };
+        launchCronetTestAppWithUrlAndCommandLineArgs(null, commandLineArgs);
         assertTrue(NativeTestServer.startNativeTestServer(
                 getInstrumentation().getTargetContext()));
     }

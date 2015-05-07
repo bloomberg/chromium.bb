@@ -4,11 +4,12 @@
 
 package org.chromium.net;
 
+import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -155,14 +156,6 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         NativeTestServer.shutdownNativeTestServer();
     }
 
-    /**
-     * Returns the path for the test storage (http cache, QUIC server info).
-     */
-    public String getTestStoragePath() {
-        return PathUtils.getDataDirectory(
-                getInstrumentation().getTargetContext()) + "/test_storage";
-    }
-
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCache() {
@@ -183,7 +176,11 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
             assertEquals("Storage path must be set", e.getMessage());
         }
 
-        config.setStoragePath(prepareTestStorage());
+        // Create a new directory to hold the disk cache data.
+        File dir = getInstrumentation().getTargetContext().getDir(
+                "disk_cache_dir", Context.MODE_PRIVATE);
+        String path = dir.getPath();
+        config.setStoragePath(path);
         config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK, 100);
         config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK_NO_HTTP, 100);
         try {
@@ -192,5 +189,6 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         } catch (IllegalArgumentException e) {
             assertEquals("Storage path must be empty", e.getMessage());
         }
+        dir.delete();
     }
 }
