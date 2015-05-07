@@ -708,17 +708,17 @@ void VolumeManager::OnRemovableStorageAttached(
           path);
   DCHECK(result);
 
-  bool write_supported = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableMtpWriteSupport);
+  bool disable_mtp_write = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableMtpWriteSupport);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&MTPDeviceMapService::RegisterMTPFileSystem,
                  base::Unretained(MTPDeviceMapService::GetInstance()),
-                 info.location(), fsid, !write_supported /* read_only */));
+                 info.location(), fsid, disable_mtp_write /* read_only */));
 
   linked_ptr<Volume> volume(
-      Volume::CreateForMTP(path, label, !write_supported));
+      Volume::CreateForMTP(path, label, disable_mtp_write));
   DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume);
 }
 

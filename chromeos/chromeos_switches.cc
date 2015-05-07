@@ -115,6 +115,9 @@ const char kDisableDeviceDisabling[] = "disable-device-disabling";
 // chrome://settings/languages.
 const char kEnableNewKoreanIme[] = "enable-new-korean-ime";
 
+// Disables mtp write support.
+const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
+
 // If this switch is set, the options for suggestions as typing on physical
 // keyboard will be enabled.
 const char kEnablePhysicalKeyboardAutocorrect[] =
@@ -127,9 +130,6 @@ const char kDisablePhysicalKeyboardAutocorrect[] =
 
 // Enabled sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
-
-// Enables mtp write support.
-const char kEnableMtpWriteSupport[] = "enable-mtp-write-support";
 
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =

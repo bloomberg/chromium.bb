@@ -245,10 +245,9 @@ storage::WatcherManager* FileSystemBackend::GetWatcherManager(
   if (type == storage::kFileSystemTypeProvided)
     return file_system_provider_delegate_->GetWatcherManager(type);
 
-  // Enables MTP file watcher only when MTP write support is enabled.
   if (type == storage::kFileSystemTypeDeviceMediaAsFileStorage &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableMtpWriteSupport)) {
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableMtpWriteSupport)) {
     return mtp_delegate_->GetWatcherManager(type);
   }
 

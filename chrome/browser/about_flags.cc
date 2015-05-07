@@ -2419,11 +2419,11 @@ const Experiment kExperiments[] = {
 #endif  // defined(ENABLE_APP_LIST)
 #if defined(OS_CHROMEOS)
   {
-    "enable-mtp-write-support",
-    IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_NAME,
-    IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_DESCRIPTION,
+    "disable-mtp-write-support",
+    IDS_FLAG_DISABLE_MTP_WRITE_SUPPORT_NAME,
+    IDS_FLAG_DISABLE_MTP_WRITE_SUPPORT_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kEnableMtpWriteSupport)
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableMtpWriteSupport)
   },
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
