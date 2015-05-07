@@ -79,7 +79,6 @@
         '|content/browser/renderer_host/delegated' \
         '|content/browser/renderer_host/software' \
         '|content/common/gpu/client/' \
-        '|webkit/common/gpu/'
     },
     'auto_bisect': {
       'filepath': 'tools/run-bisect-perf-regression.py'\
@@ -185,7 +184,6 @@
     },
     'cc': {
       'filepath': 'cc/|'\
-                  'webkit/renderer/compositor_bindings/|'\
                   'content/common/cc_messages'
     },
     'chrome_elf': {
@@ -583,7 +581,7 @@
     },
     'plugin': {
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
-        'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
+        'chrome/common/plugin',
     },
     'polymer': {
       'filepath': 'third_party/polymer/|'\
@@ -656,7 +654,6 @@
                    '|chrome/renderer/spellchecker/'\
                    '|third_party/hunspell/'\
                    '|third_party/hunspell_dictionaries/'\
-                   '|webkit/tools/test_shell/mock_spellcheck'
     },
     'streams': {
       'filepath': 'content/browser/streams/',
@@ -788,9 +785,6 @@
                   'chrome/test/data/chromeos/virtual_keyboard/'\
                   'chrome/common/extensions/api/virtual_keyboard',
     },
-    'webkit': {
-      'filepath': 'webkit/',
-    },
     'webrtc_media': {
       'filepath': 'chrome/browser/media/|'\
                   'content/browser/renderer_host/media/|'\
@@ -812,7 +806,7 @@
     },
     'worker': {
       'filepath': 'chrome/browser/worker_host/|chrome/worker/|'\
-        'chrome/common/worker_messages|webkit/glue/webworker',
+        'chrome/common/worker_messages',
     },
     'x11': {
       'filepath': 'content/browser/renderer_host/backing_store_x\.' \
@@ -1101,7 +1095,6 @@
     'views_core': ['tdanderson+views@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org'],
-    'webkit': ['darin-cc@chromium.org'],
     'webrtc_media': ['wjia+watch@chromium.org',
                      'mcasas+watch@chromium.org',
                      'posciak+watch@chromium.org'],
