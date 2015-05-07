@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
@@ -20,8 +21,6 @@
 
 namespace base {
 class CommandLine;
-class Time;
-class TimeDelta;
 }
 
 namespace net {
@@ -173,6 +172,10 @@ class DataReductionProxyConfigServiceClient
 
   // Used to correlate the start and end of requests.
   net::BoundNetLog bound_net_log_;
+
+  // Used to determine the latency in retrieving the Data Reduction Proxy
+  // configuration.
+  base::Time config_fetch_start_time_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

@@ -13,7 +13,8 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/time/time.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
@@ -33,6 +34,19 @@
 namespace data_reduction_proxy {
 
 namespace {
+
+// Key of the UMA DataReductionProxy.ConfigService.FetchResponseCode histogram.
+const char kUMAConfigServiceFetchResponseCode[] =
+    "DataReductionProxy.ConfigService.FetchResponseCode";
+
+// Key of the UMA
+// DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess histogram.
+const char kUMAConfigServiceFetchFailedAttemptsBeforeSuccess[] =
+    "DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess";
+
+// Key of the UMA DataReductionProxy.ConfigService.FetchLatency histogram.
+const char kUMAConfigServiceFetchLatency[] =
+    "DataReductionProxy.ConfigService.FetchLatency";
 
 // Default URL for retrieving the Data Reduction Proxy configuration.
 const char kClientConfigURL[] = "";
@@ -152,6 +166,7 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
   event_creator_->BeginConfigRequest(bound_net_log_, config_service_url_);
+  config_fetch_start_time_ = base::Time::Now();
   if (use_local_config_) {
     ReadAndApplyStaticConfig();
     return;
@@ -245,6 +260,11 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   ClientConfig config;
   bool succeeded = false;
 
+  if (!use_local_config_) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kUMAConfigServiceFetchResponseCode,
+                                response_code);
+  }
+
   if (status.status() == net::URLRequestStatus::SUCCESS &&
       response_code == net::HTTP_OK &&
       config_parser::ParseClientConfig(config_data, &config)) {
@@ -254,6 +274,15 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   base::Time expiration_time;
   if (succeeded) {
     expiration_time = config_parser::TimestampToTime(config.expire_time());
+  }
+
+  if (!use_local_config_ && succeeded) {
+    base::TimeDelta configuration_fetch_latency =
+        base::Time::Now() - config_fetch_start_time_;
+    UMA_HISTOGRAM_MEDIUM_TIMES(kUMAConfigServiceFetchLatency,
+                               configuration_fetch_latency);
+    UMA_HISTOGRAM_COUNTS_100(kUMAConfigServiceFetchFailedAttemptsBeforeSuccess,
+                             GetBackoffEntry()->failure_count());
   }
 
   GetBackoffEntry()->InformOfRequest(succeeded);

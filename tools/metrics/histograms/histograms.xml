@@ -4233,6 +4233,36 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram
+    name="DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess">
+  <owner>jeremyim@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The number of failed attempts when retrieving the configuration from the
+    Data Reduction Proxy API before a successful attempt took place.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.ConfigService.FetchLatency"
+    units="milliseconds">
+  <owner>jeremyim@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Time from when the Data Reduction Proxy configuration request starts until
+    it completes.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.ConfigService.FetchResponseCode"
+    enum="HttpResponseCode">
+  <owner>jeremyim@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Count per HttpResponseCode when attempting to retrieve the Data Reduction
+    Proxy configuration from the Data Reduction Proxy API.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.HeaderTamperDetectionHTTP">
   <owner>xingx@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
