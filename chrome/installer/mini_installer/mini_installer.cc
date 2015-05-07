@@ -23,7 +23,6 @@
 
 #include <windows.h>
 #include <shellapi.h>
-#include <stdlib.h>
 
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/configuration.h"
@@ -584,7 +583,7 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir) {
   // The name of the directory will use up 11 chars and then we need to append
   // the trailing backslash and a terminator.  We've already added the prefix
   // to the buffer, so let's just make sure we've got enough space for the rest.
-  if ((work_dir->capacity() - end) < (_countof("fffff.tmp") + 1))
+  if ((work_dir->capacity() - end) < (arraysize("fffff.tmp") + 1))
     return false;
 
   // Generate a unique id.  We only use the lowest 20 bits, so take the top
@@ -739,8 +738,8 @@ void DeleteOldChromeTempDirectories() {
   if (!len || len >= temp.capacity())
     return;
 
-  for (const wchar_t* directory_prefix : kDirectoryPrefixes) {
-    DeleteDirectoriesWithPrefix(temp.get(), directory_prefix);
+  for (int i = 0; i < arraysize(kDirectoryPrefixes); ++i) {
+    DeleteDirectoriesWithPrefix(temp.get(), kDirectoryPrefixes[i]);
   }
 }
 
@@ -776,7 +775,7 @@ bool ProcessNonInstallOperations(const Configuration& configuration,
 bool ShouldDeleteExtractedFiles() {
   wchar_t value[2] = {0};
   if (ReadValueFromRegistry(HKEY_CURRENT_USER, kCleanupRegistryKey,
-                            kCleanupRegistryValue, value, _countof(value)) &&
+                            kCleanupRegistryValue, value, arraysize(value)) &&
       value[0] == L'0') {
     return false;
   }

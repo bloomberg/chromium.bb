@@ -68,8 +68,8 @@ bool SafeStrCopy(wchar_t* dest, size_t dest_size, const wchar_t* src) {
   // failed concatenation.  For example:
   //
   // wchar_t buf[5] = {0};
-  // if (!SafeStrCat(buf, _countof(buf), kLongName))
-  //   SafeStrCat(buf, _countof(buf), kShortName);
+  // if (!SafeStrCat(buf, arraysize(buf), kLongName))
+  //   SafeStrCat(buf, arraysize(buf), kShortName);
   //
   // If we were to return false in the first call to SafeStrCat but still
   // mutate the buffer, the buffer will be in an unexpected state.

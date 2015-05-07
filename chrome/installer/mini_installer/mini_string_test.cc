@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <windows.h>
-#include <stdlib.h>
 
 #include <string>
 
@@ -35,7 +34,7 @@ TEST_F(MiniInstallerStringTest, StackStringOverflow) {
 
   size_t max_chars = str.capacity() - 1;
 
-  while ((str.length() + (_countof(kTestString) - 1)) <= max_chars) {
+  while ((str.length() + (arraysize(kTestString) - 1)) <= max_chars) {
     EXPECT_TRUE(str.append(kTestString));
     compare_str.append(kTestString);
     EXPECT_EQ(str.length(), compare_str.length());
@@ -71,6 +70,6 @@ TEST_F(MiniInstallerStringTest, StackStringFind) {
   EXPECT_EQ(static_cast<const wchar_t*>(NULL), str.findi(kTestStringNotFound));
   const wchar_t* found = str.findi(kTestStringFind);
   EXPECT_NE(static_cast<const wchar_t*>(NULL), found);
-  std::wstring check(found, _countof(kTestStringFind) - 1);
+  std::wstring check(found, arraysize(kTestStringFind) - 1);
   EXPECT_EQ(0, lstrcmpi(check.c_str(), kTestStringFind));
 }
