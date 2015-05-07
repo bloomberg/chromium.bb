@@ -35,6 +35,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLParamElement.h"
+#include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/TextResourceDecoder.h"
@@ -615,7 +616,8 @@ bool XSSAuditor::filterLinkToken(const FilterTokenRequest& request)
         return false;
 
     const HTMLToken::Attribute& attribute = request.token.attributes().at(indexOfAttribute);
-    if (!equalIgnoringCase(String(attribute.value), "import"))
+    LinkRelAttribute parsedAttribute(String(attribute.value));
+    if (!parsedAttribute.isImport())
         return false;
 
     return eraseAttributeIfInjected(request, hrefAttr, kURLWithUniqueOrigin, SrcLikeAttributeTruncation, AllowSameOriginHref);
