@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_REMOTE_COMMANDS_DEVICE_COMMAND_SCREENSHOT_JOB_H_
 
 #include <list>
+#include <map>
 #include <string>
 
 #include "base/macros.h"
@@ -89,7 +90,7 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
   void OnFailure(UploadJob::ErrorCode error_code) override;
 
   // RemoteCommandJob:
-  bool IsExpired(base::Time now) override;
+  bool IsExpired(base::TimeTicks now) override;
   bool ParseCommandPayload(const std::string& command_payload) override;
   void RunImpl(const CallbackWithResult& succeeded_callback,
                const CallbackWithResult& failed_callback) override;

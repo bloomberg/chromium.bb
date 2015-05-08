@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time/clock.h"
-#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,16 +21,20 @@ namespace policy {
 
 struct TestingRemoteCommandsServer::RemoteCommandWithCallback {
   RemoteCommandWithCallback(const em::RemoteCommand& command_proto,
+                            base::TimeTicks issued_time,
                             const ResultReportedCallback& reported_callback)
-      : command_proto(command_proto), reported_callback(reported_callback) {}
+      : command_proto(command_proto),
+        issued_time(issued_time),
+        reported_callback(reported_callback) {}
   ~RemoteCommandWithCallback() {}
 
   em::RemoteCommand command_proto;
+  base::TimeTicks issued_time;
   ResultReportedCallback reported_callback;
 };
 
 TestingRemoteCommandsServer::TestingRemoteCommandsServer()
-    : clock_(new base::DefaultClock()),
+    : clock_(new base::DefaultTickClock()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   weak_ptr_to_this_ = weak_factory_.GetWeakPtr();
@@ -59,11 +63,9 @@ void TestingRemoteCommandsServer::IssueCommand(
   command.set_unique_id(++last_generated_unique_id_);
   if (!payload.empty())
     command.set_payload(payload);
-  command.set_timestamp(
-      (clock_->Now() - base::Time::UnixEpoch()).InMilliseconds());
 
-  const RemoteCommandWithCallback command_with_callback(command,
-                                                        reported_callback);
+  const RemoteCommandWithCallback command_with_callback(
+      command, clock_->NowTicks(), reported_callback);
   if (skip_next_fetch)
     commands_issued_after_next_fetch_.push_back(command_with_callback);
   else
@@ -116,6 +118,10 @@ TestingRemoteCommandsServer::FetchCommands(
     if (!last_command_id ||
         command_with_callback.command_proto.unique_id() > *last_command_id) {
       fetched_commands.push_back(command_with_callback.command_proto);
+      // Simulate the age of commands calculation on the server side.
+      fetched_commands.back().set_age_of_command(
+          (clock_->NowTicks() - command_with_callback.issued_time)
+              .InMilliseconds());
     }
   }
 
@@ -127,7 +133,7 @@ TestingRemoteCommandsServer::FetchCommands(
   return fetched_commands;
 }
 
-void TestingRemoteCommandsServer::SetClock(scoped_ptr<base::Clock> clock) {
+void TestingRemoteCommandsServer::SetClock(scoped_ptr<base::TickClock> clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
   clock_ = clock.Pass();
 }

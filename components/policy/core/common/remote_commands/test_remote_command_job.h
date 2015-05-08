@@ -28,7 +28,7 @@ class TestRemoteCommandJob : public RemoteCommandJob {
 
   // RemoteCommandJob:
   bool ParseCommandPayload(const std::string& command_payload) override;
-  bool IsExpired(base::Time now) override;
+  bool IsExpired(base::TimeTicks now) override;
   void RunImpl(const CallbackWithResult& succeed_callback,
                const CallbackWithResult& failed_callback) override;
 

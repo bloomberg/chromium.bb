@@ -23,7 +23,8 @@ RemoteCommandJob::~RemoteCommandJob() {
     Terminate();
 }
 
-bool RemoteCommandJob::Init(const em::RemoteCommand& command) {
+bool RemoteCommandJob::Init(base::TimeTicks now,
+                            const em::RemoteCommand& command) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(NOT_INITIALIZED, status_);
 
@@ -35,12 +36,20 @@ bool RemoteCommandJob::Init(const em::RemoteCommand& command) {
 
   unique_id_ = command.unique_id();
 
-  if (command.has_timestamp()) {
-    issued_time_ = base::Time::UnixEpoch() +
-                   base::TimeDelta::FromMilliseconds(command.timestamp());
+  if (command.has_age_of_command()) {
+    // Use age of command provided by server to estimate the command issued time
+    // as a local TimeTick. We need to store issued time instead of age of
+    // command, since the execution time of command might be different from the
+    // time we got it from server.
+    // It's just an estimation since we lost the time the response was
+    // transmitted over the network.
+    issued_time_ =
+        now - base::TimeDelta::FromMilliseconds(command.age_of_command());
   } else {
-    LOG(WARNING) << "No issued_time provided be server for command "
+    LOG(WARNING) << "No age_of_command provided be server for command "
                  << unique_id_ << ".";
+    // Otherwise, assuming the command was issued just now.
+    issued_time_ = now;
   }
 
   if (!ParseCommandPayload(command.payload()))
@@ -50,7 +59,7 @@ bool RemoteCommandJob::Init(const em::RemoteCommand& command) {
   return true;
 }
 
-bool RemoteCommandJob::Run(base::Time now,
+bool RemoteCommandJob::Run(base::TimeTicks now,
                            const FinishedCallback& finished_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -122,7 +131,7 @@ bool RemoteCommandJob::ParseCommandPayload(const std::string& command_payload) {
   return true;
 }
 
-bool RemoteCommandJob::IsExpired(base::Time now) {
+bool RemoteCommandJob::IsExpired(base::TimeTicks now) {
   return false;
 }
 

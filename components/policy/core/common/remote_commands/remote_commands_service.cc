@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
@@ -68,7 +68,8 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   return true;
 }
 
-void RemoteCommandsService::SetClockForTesting(scoped_ptr<base::Clock> clock) {
+void RemoteCommandsService::SetClockForTesting(
+    scoped_ptr<base::TickClock> clock) {
   queue_.SetClockForTesting(clock.Pass());
 }
 
@@ -89,7 +90,7 @@ void RemoteCommandsService::EnqueueCommand(
 
   scoped_ptr<RemoteCommandJob> job = factory_->BuildJobForType(command.type());
 
-  if (!job || !job->Init(command)) {
+  if (!job || !job->Init(queue_.GetNowTicks(), command)) {
     em::RemoteCommandResult ignored_result;
     ignored_result.set_result(
         em::RemoteCommandResult_ResultType_RESULT_IGNORED);
@@ -115,7 +116,7 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
   em::RemoteCommandResult result;
   result.set_unique_id(command->unique_id());
   result.set_timestamp((command->execution_started_time() -
-                        base::Time::UnixEpoch()).InMilliseconds());
+                        base::TimeTicks::UnixEpoch()).InMilliseconds());
 
   if (command->status() == RemoteCommandJob::SUCCEEDED ||
       command->status() == RemoteCommandJob::FAILED) {

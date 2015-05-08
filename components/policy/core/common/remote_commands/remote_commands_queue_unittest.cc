@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/core/common/remote_commands/remote_commands_queue.h"
@@ -28,16 +28,13 @@ const char kPayload[] = "_PAYLOAD_FOR_TESTING_";
 const char kPayload2[] = "_PAYLOAD_FOR_TESTING2_";
 
 em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
-                                       base::Time issued_time,
+                                       base::TimeDelta age_of_command,
                                        const std::string& payload) {
   em::RemoteCommand command_proto;
   command_proto.set_type(
       enterprise_management::RemoteCommand_Type_COMMAND_ECHO_TEST);
   command_proto.set_unique_id(unique_id);
-  if (!issued_time.is_null()) {
-    command_proto.set_timestamp(
-        (issued_time - base::Time::UnixEpoch()).InMilliseconds());
-  }
+  command_proto.set_age_of_command(age_of_command.InMilliseconds());
   if (!payload.empty())
     command_proto.set_payload(payload);
   return command_proto;
@@ -75,11 +72,11 @@ class RemoteCommandsQueueTest : public testing::Test {
 
   void InitializeJob(RemoteCommandJob* job,
                      RemoteCommandJob::UniqueIDType unique_id,
-                     base::Time issued_time,
+                     base::TimeTicks issued_time,
                      const std::string& payload);
   void FailInitializeJob(RemoteCommandJob* job,
                          RemoteCommandJob::UniqueIDType unique_id,
-                         base::Time issued_time,
+                         base::TimeTicks issued_time,
                          const std::string& payload);
 
   void AddJobAndVerifyRunningAfter(scoped_ptr<RemoteCommandJob> job,
@@ -88,12 +85,12 @@ class RemoteCommandsQueueTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   RemoteCommandsQueue queue_;
   StrictMock<MockRemoteCommandsQueueObserver> observer_;
-  base::Time test_start_time_;
-  base::Clock* clock_;
+  base::TimeTicks test_start_time_;
+  base::TickClock* clock_;
 
  private:
   void VerifyCommandIssuedTime(RemoteCommandJob* job,
-                               base::Time expected_issued_time);
+                               base::TimeTicks expected_issued_time);
 
   base::ThreadTaskRunnerHandle runner_handle_;
 
@@ -107,8 +104,8 @@ RemoteCommandsQueueTest::RemoteCommandsQueueTest()
 }
 
 void RemoteCommandsQueueTest::SetUp() {
-  scoped_ptr<base::Clock> clock(task_runner_->GetMockClock());
-  test_start_time_ = clock->Now();
+  scoped_ptr<base::TickClock> clock(task_runner_->GetMockTickClock());
+  test_start_time_ = clock->NowTicks();
 
   clock_ = clock.get();
   queue_.SetClockForTesting(clock.Pass());
@@ -122,9 +119,12 @@ void RemoteCommandsQueueTest::TearDown() {
 void RemoteCommandsQueueTest::InitializeJob(
     RemoteCommandJob* job,
     RemoteCommandJob::UniqueIDType unique_id,
-    base::Time issued_time,
+    base::TimeTicks issued_time,
     const std::string& payload) {
-  EXPECT_TRUE(job->Init(GenerateCommandProto(unique_id, issued_time, payload)));
+  EXPECT_TRUE(
+      job->Init(clock_->NowTicks(),
+                GenerateCommandProto(
+                    unique_id, clock_->NowTicks() - issued_time, payload)));
   EXPECT_EQ(unique_id, job->unique_id());
   VerifyCommandIssuedTime(job, issued_time);
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
@@ -133,10 +133,12 @@ void RemoteCommandsQueueTest::InitializeJob(
 void RemoteCommandsQueueTest::FailInitializeJob(
     RemoteCommandJob* job,
     RemoteCommandJob::UniqueIDType unique_id,
-    base::Time issued_time,
+    base::TimeTicks issued_time,
     const std::string& payload) {
   EXPECT_FALSE(
-      job->Init(GenerateCommandProto(unique_id, issued_time, payload)));
+      job->Init(clock_->NowTicks(),
+                GenerateCommandProto(
+                    unique_id, clock_->NowTicks() - issued_time, payload)));
   EXPECT_EQ(RemoteCommandJob::INVALID, job->status());
 }
 
@@ -145,7 +147,7 @@ void RemoteCommandsQueueTest::AddJobAndVerifyRunningAfter(
     base::TimeDelta delta) {
   Mock::VerifyAndClearExpectations(&observer_);
 
-  const base::Time now = clock_->Now();
+  const base::TimeTicks now = clock_->NowTicks();
 
   // Add the job to the queue. It should start executing immediately.
   EXPECT_CALL(
@@ -163,7 +165,7 @@ void RemoteCommandsQueueTest::AddJobAndVerifyRunningAfter(
 
 void RemoteCommandsQueueTest::VerifyCommandIssuedTime(
     RemoteCommandJob* job,
-    base::Time expected_issued_time) {
+    base::TimeTicks expected_issued_time) {
   // Maximum possible error can be 1 millisecond due to truncating.
   EXPECT_GE(expected_issued_time, job->issued_time());
   EXPECT_LE(expected_issued_time - base::TimeDelta::FromMilliseconds(1),

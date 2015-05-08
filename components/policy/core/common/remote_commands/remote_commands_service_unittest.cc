@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
@@ -245,7 +245,7 @@ class RemoteCommandsServiceTest : public testing::Test {
 
   void SetUp() override {
     server_.reset(new TestingRemoteCommandsServer());
-    server_->SetClock(task_runner_->GetMockClock().Pass());
+    server_->SetClock(task_runner_->GetMockTickClock().Pass());
     cloud_policy_client_.reset(
         new TestingCloudPolicyClientForRemoteCommands(server_.get()));
   }
@@ -259,7 +259,8 @@ class RemoteCommandsServiceTest : public testing::Test {
   void StartService(scoped_ptr<RemoteCommandsFactory> factory) {
     remote_commands_service_.reset(
         new RemoteCommandsService(factory.Pass(), cloud_policy_client_.get()));
-    remote_commands_service_->SetClockForTesting(task_runner_->GetMockClock());
+    remote_commands_service_->SetClockForTesting(
+        task_runner_->GetMockTickClock());
   }
 
   void FlushAllTasks() {

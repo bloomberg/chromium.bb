@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <vector>
+
 #include "ash/test/ash_test_base.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
@@ -37,16 +40,13 @@ const char* const kUploadUrlFieldName = "fileUploadUrl";
 
 em::RemoteCommand GenerateScreenshotCommandProto(
     RemoteCommandJob::UniqueIDType unique_id,
-    base::Time issued_time,
+    base::TimeDelta age_of_command,
     const std::string upload_url) {
   em::RemoteCommand command_proto;
   command_proto.set_type(
       enterprise_management::RemoteCommand_Type_DEVICE_SCREENSHOT);
   command_proto.set_unique_id(unique_id);
-  if (!issued_time.is_null()) {
-    command_proto.set_timestamp(
-        (issued_time - base::Time::UnixEpoch()).InMilliseconds());
-  }
+  command_proto.set_age_of_command(age_of_command.InMilliseconds());
   std::string payload;
   base::DictionaryValue root_dict;
   root_dict.Set(kUploadUrlFieldName, new base::StringValue(upload_url));
@@ -195,14 +195,14 @@ class DeviceCommandScreenshotTest : public ash::test::AshTestBase {
 
   void InitializeScreenshotJob(RemoteCommandJob* job,
                                RemoteCommandJob::UniqueIDType unique_id,
-                               base::Time issued_time,
+                               base::TimeTicks issued_time,
                                const std::string& upload_url);
 
   std::string CreatePayloadFromResultCode(
       DeviceCommandScreenshotJob::ResultCode result_code);
 
   base::RunLoop run_loop_;
-  base::Time test_start_time_;
+  base::TimeTicks test_start_time_;
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
@@ -216,16 +216,18 @@ DeviceCommandScreenshotTest::DeviceCommandScreenshotTest()
 
 void DeviceCommandScreenshotTest::SetUp() {
   ash::test::AshTestBase::SetUp();
-  test_start_time_ = base::Time::Now();
+  test_start_time_ = base::TimeTicks::Now();
 }
 
 void DeviceCommandScreenshotTest::InitializeScreenshotJob(
     RemoteCommandJob* job,
     RemoteCommandJob::UniqueIDType unique_id,
-    base::Time issued_time,
+    base::TimeTicks issued_time,
     const std::string& upload_url) {
   EXPECT_TRUE(job->Init(
-      GenerateScreenshotCommandProto(unique_id, issued_time, upload_url)));
+      base::TimeTicks::Now(),
+      GenerateScreenshotCommandProto(
+          unique_id, base::TimeTicks::Now() - issued_time, upload_url)));
   EXPECT_EQ(unique_id, job->unique_id());
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
 }
@@ -258,7 +260,7 @@ TEST_F(DeviceCommandScreenshotTest, Success) {
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success = job->Run(
-      base::Time::Now(),
+      base::TimeTicks::Now(),
       base::Bind(
           &DeviceCommandScreenshotTest::VerifyResults, base::Unretained(this),
           base::Unretained(job.get()), RemoteCommandJob::SUCCEEDED,
@@ -276,7 +278,7 @@ TEST_F(DeviceCommandScreenshotTest, Failure) {
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
   bool success =
-      job->Run(base::Time::Now(),
+      job->Run(base::TimeTicks::Now(),
                base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
                           base::Unretained(this), base::Unretained(job.get()),
                           RemoteCommandJob::FAILED, ""));

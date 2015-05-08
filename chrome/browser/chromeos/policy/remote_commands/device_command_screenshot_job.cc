@@ -118,9 +118,7 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
       FROM_HERE, base::Bind(failed_callback_, nullptr));
 }
 
-bool DeviceCommandScreenshotJob::IsExpired(base::Time now) {
-  // TODO(cschuet): Make the expiration check based on age rather than
-  // issued_time(). http://crbug.com/482448
+bool DeviceCommandScreenshotJob::IsExpired(base::TimeTicks now) {
   return now > issued_time() + base::TimeDelta::FromMinutes(
                                    kCommandExpirationTimeInMinutes);
 }

@@ -57,7 +57,7 @@ bool TestRemoteCommandJob::ParseCommandPayload(
   return true;
 }
 
-bool TestRemoteCommandJob::IsExpired(base::Time now) {
+bool TestRemoteCommandJob::IsExpired(base::TimeTicks now) {
   return !issued_time().is_null() &&
          now > issued_time() +
                    base::TimeDelta::FromHours(kCommandExpirationTimeInHours);

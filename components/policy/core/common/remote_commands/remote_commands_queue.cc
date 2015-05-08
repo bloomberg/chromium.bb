@@ -8,13 +8,14 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/time/clock.h"
-#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 
 namespace policy {
 
-RemoteCommandsQueue::RemoteCommandsQueue() : clock_(new base::DefaultClock()) {
+RemoteCommandsQueue::RemoteCommandsQueue()
+    : clock_(new base::DefaultTickClock()) {
 }
 
 RemoteCommandsQueue::~RemoteCommandsQueue() {
@@ -39,8 +40,13 @@ void RemoteCommandsQueue::AddJob(scoped_ptr<RemoteCommandJob> job) {
     ScheduleNextJob();
 }
 
-void RemoteCommandsQueue::SetClockForTesting(scoped_ptr<base::Clock> clock) {
+void RemoteCommandsQueue::SetClockForTesting(
+    scoped_ptr<base::TickClock> clock) {
   clock_ = clock.Pass();
+}
+
+base::TimeTicks RemoteCommandsQueue::GetNowTicks() {
+  return clock_->NowTicks();
 }
 
 void RemoteCommandsQueue::OnCommandTimeout() {
@@ -75,7 +81,7 @@ void RemoteCommandsQueue::ScheduleNextJob() {
                                  running_command_->GetCommmandTimeout(), this,
                                  &RemoteCommandsQueue::OnCommandTimeout);
 
-  if (running_command_->Run(clock_->Now(),
+  if (running_command_->Run(clock_->NowTicks(),
                             base::Bind(&RemoteCommandsQueue::CurrentJobFinished,
                                        base::Unretained(this)))) {
     FOR_EACH_OBSERVER(Observer, observer_list_,

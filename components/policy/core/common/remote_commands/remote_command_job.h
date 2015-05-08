@@ -42,8 +42,14 @@ class POLICY_EXPORT RemoteCommandJob {
   virtual ~RemoteCommandJob();
 
   // Initialize from a RemoteCommand protobuf definition, must be called before
-  // calling Run().
-  bool Init(const enterprise_management::RemoteCommand& command);
+  // calling Run(). Returns true if the initialization is successful.
+  // |now| is the current time which will be used to estimate the command issued
+  // time. It must be consistent to the same parameter passed to Run() below.
+  // In order to minimize the error while estimating the command issued time,
+  // this method must be called immediately after the command is received from
+  // the server.
+  bool Init(base::TimeTicks now,
+            const enterprise_management::RemoteCommand& command);
 
   // Run the command asynchronously. |now| is the time which will be used for
   // command expiration checking and marking of execution start.
@@ -53,7 +59,7 @@ class POLICY_EXPORT RemoteCommandJob {
   // Returns true if the task is posted and the command marked as running.
   // Returns false otherwise, for example if the command is invalid or expired.
   // Subclasses should implement RunImpl() for actual work.
-  bool Run(base::Time now, const FinishedCallback& finished_callback);
+  bool Run(base::TimeTicks now, const FinishedCallback& finished_callback);
 
   // Attempts to terminate the running tasks associated with this command. Does
   // nothing if the task is already terminated or finished. It's guaranteed that
@@ -73,8 +79,10 @@ class POLICY_EXPORT RemoteCommandJob {
 
   // Helpful accessors.
   UniqueIDType unique_id() const { return unique_id_; }
-  base::Time issued_time() const { return issued_time_; }
-  base::Time execution_started_time() const { return execution_started_time_; }
+  base::TimeTicks issued_time() const { return issued_time_; }
+  base::TimeTicks execution_started_time() const {
+    return execution_started_time_;
+  }
   Status status() const { return status_; }
 
   // Returns whether execution of this command is finished.
@@ -110,7 +118,7 @@ class POLICY_EXPORT RemoteCommandJob {
   // are usually expected to compare |now| to the issued_time(), which is the
   // timestamp when the command was issued on the server.
   // The default implementation always returns false.
-  virtual bool IsExpired(base::Time now);
+  virtual bool IsExpired(base::TimeTicks now);
 
   // Subclasses should implement this method for actual command execution logic.
   // Implementations should execute commands asynchronously, possibly on a
@@ -136,10 +144,10 @@ class POLICY_EXPORT RemoteCommandJob {
   Status status_;
 
   UniqueIDType unique_id_;
-  // The time when the command was issued, provided by server.
-  base::Time issued_time_;
+  // The estimated time when the command was issued.
+  base::TimeTicks issued_time_;
   // The time when the command started running.
-  base::Time execution_started_time_;
+  base::TimeTicks execution_started_time_;
 
   scoped_ptr<ResultPayload> result_payload_;
 

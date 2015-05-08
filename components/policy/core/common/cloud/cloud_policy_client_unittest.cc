@@ -49,6 +49,7 @@ const char kResultPayload[] = "output_payload";
 const char kAssetId[] = "fake-asset-id";
 const char kLocation[] = "fake-location";
 
+const int64_t kAgeOfCommand = 123123123;
 const int64_t kLastCommandId = 123456789;
 const int64_t kTimestamp = 987654321;
 
@@ -123,7 +124,7 @@ class CloudPolicyClientTest : public testing::Test {
     em::RemoteCommand* command =
         remote_command_response_.mutable_remote_command_response()
             ->add_commands();
-    command->set_timestamp(kTimestamp + 1);
+    command->set_age_of_command(kAgeOfCommand);
     command->set_payload(kPayload);
     command->set_unique_id(kLastCommandId + 1);
     command->set_type(em::RemoteCommand_Type_COMMAND_ECHO_TEST);

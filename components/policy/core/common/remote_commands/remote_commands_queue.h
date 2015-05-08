@@ -15,7 +15,7 @@
 #include "components/policy/policy_export.h"
 
 namespace base {
-class Clock;
+class TickClock;
 }  // namespace base
 
 namespace policy {
@@ -55,7 +55,10 @@ class POLICY_EXPORT RemoteCommandsQueue {
   void AddJob(scoped_ptr<RemoteCommandJob> job);
 
   // Set an alternative clock for testing.
-  void SetClockForTesting(scoped_ptr<base::Clock> clock);
+  void SetClockForTesting(scoped_ptr<base::TickClock> clock);
+
+  // Helper function to get the current time.
+  base::TimeTicks GetNowTicks();
 
  private:
   // Callback function for the timer, used to terminate the running command
@@ -73,7 +76,7 @@ class POLICY_EXPORT RemoteCommandsQueue {
 
   scoped_ptr<RemoteCommandJob> running_command_;
 
-  scoped_ptr<base::Clock> clock_;
+  scoped_ptr<base::TickClock> clock_;
   base::OneShotTimer<RemoteCommandsQueue> execution_timeout_timer_;
 
   ObserverList<Observer, true> observer_list_;

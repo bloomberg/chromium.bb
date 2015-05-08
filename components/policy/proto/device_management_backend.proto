@@ -436,12 +436,12 @@ message RemoteCommand {
   // An opaque unique identifier for the command.
   optional int64 unique_id = 2;
 
-  // The time at which the command was issued, in milliseconds.
-  optional int64 timestamp = 3;
+  // The age of the command (in milliseconds) when it is sent from server to
+  // client, defined as current_server_time - command_generated_time.
+  optional int64 age_of_command = 3;
 
-  // Extra parameters for this command, might be a serialization of another
-  // protobuf.
-  optional bytes payload = 4;
+  // Extra parameters for this command, expected to be a JSON string.
+  optional string payload = 4;
 }
 
 // This protobuf defines the execution result of a single remote command
@@ -464,9 +464,9 @@ message RemoteCommandResult {
   // RESULT_SUCCESS.
   optional int64 timestamp = 3;
 
-  // Extra information sent to server as result of execution, might be a
-  // serialization of another protobuf.
-  optional bytes payload = 4;
+  // Extra information sent to server as result of execution, expected to be a
+  // JSON string.
+  optional string payload = 4;
 }
 
 message DeviceRemoteCommandRequest {

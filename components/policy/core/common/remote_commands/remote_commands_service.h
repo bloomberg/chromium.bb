@@ -18,7 +18,7 @@
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace base {
-class Clock;
+class TickClock;
 }  // namespace base
 
 namespace policy {
@@ -51,7 +51,7 @@ class POLICY_EXPORT RemoteCommandsService
   }
 
   // Set an alternative clock for testing.
-  void SetClockForTesting(scoped_ptr<base::Clock> clock);
+  void SetClockForTesting(scoped_ptr<base::TickClock> clock);
 
  private:
   // Helper function to enqueue a command which we get from server.
