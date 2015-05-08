@@ -15,6 +15,7 @@
 #include "gin/per_isolate_data.h"
 #include "gin/run_microtasks_observer.h"
 #include "gin/v8_initializer.h"
+#include "gin/v8_isolate_memory_dump_provider.h"
 
 namespace gin {
 
@@ -37,6 +38,7 @@ IsolateHolder::IsolateHolder(AccessMode access_mode)
   params.array_buffer_allocator = allocator;
   isolate_ = v8::Isolate::New(params);
   isolate_data_.reset(new PerIsolateData(isolate_, allocator));
+  isolate_memory_dump_provider_.reset(new V8IsolateMemoryDumpProvider(this));
 #if defined(OS_WIN)
   {
     void* code_range;
@@ -64,6 +66,7 @@ IsolateHolder::~IsolateHolder() {
       callback(code_range);
   }
 #endif
+  isolate_memory_dump_provider_.reset();
   isolate_data_.reset();
   isolate_->Dispose();
   isolate_ = NULL;

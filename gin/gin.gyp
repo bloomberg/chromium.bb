@@ -75,6 +75,8 @@
         'try_catch.h',
         'v8_initializer.h',
         'v8_initializer.cc',
+        'v8_isolate_memory_dump_provider.cc',
+        'v8_isolate_memory_dump_provider.h',
         'v8_platform.cc',
         'wrappable.cc',
         'wrappable.h',

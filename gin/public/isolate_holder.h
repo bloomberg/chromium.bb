@@ -14,6 +14,7 @@ namespace gin {
 
 class PerIsolateData;
 class RunMicrotasksObserver;
+class V8IsolateMemoryDumpProvider;
 
 // To embed Gin, first initialize gin using IsolateHolder::Initialize and then
 // create an instance of IsolateHolder to hold the v8::Isolate in which you
@@ -66,6 +67,7 @@ class GIN_EXPORT IsolateHolder {
   v8::Isolate* isolate_;
   scoped_ptr<PerIsolateData> isolate_data_;
   scoped_ptr<RunMicrotasksObserver> task_observer_;
+  scoped_ptr<V8IsolateMemoryDumpProvider> isolate_memory_dump_provider_;
   AccessMode access_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolateHolder);
