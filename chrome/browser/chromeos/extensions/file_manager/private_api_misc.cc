@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 
+#include <set>
+#include <vector>
+
 #include "ash/frame/frame_util.h"
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
@@ -12,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
@@ -49,7 +51,6 @@ namespace extensions {
 
 namespace {
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
-const char kGoogleCastApiExtensionId[] = "mafeflapfdfljijmlienjedomfjfmhpd";
 
 // Obtains the current app window.
 AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
@@ -96,7 +97,7 @@ GetLoggedInProfileInfoList() {
 
   return result_profiles;
 }
-} // namespace
+}  // namespace
 
 bool FileManagerPrivateLogoutUserForReauthenticationFunction::RunSync() {
   const user_manager::User* user =
@@ -252,54 +253,8 @@ bool FileManagerPrivateInstallWebstoreItemFunction::RunAsync() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (params->item_id.empty())
-    return false;
-
-  const extensions::WebstoreStandaloneInstaller::Callback callback =
-      base::Bind(
-          &FileManagerPrivateInstallWebstoreItemFunction::OnInstallComplete,
-          this);
-
-  // Only GoogleCastAPI extension can use silent installation.
-  if (params->silent_installation &&
-      params->item_id != kGoogleCastApiExtensionId) {
-    SetError("Only whitelisted items can do silent installation.");
-    return false;
-  }
-
-  scoped_refptr<file_manager::AppInstaller> installer(
-      new file_manager::AppInstaller(GetAssociatedWebContents(),
-                                     params->item_id,
-                                     GetProfile(),
-                                     params->silent_installation,
-                                     callback));
-  // installer will be AddRef()'d in BeginInstall().
-  installer->BeginInstall();
-  return true;
-}
-
-void FileManagerPrivateInstallWebstoreItemFunction::OnInstallComplete(
-    bool success,
-    const std::string& error,
-    extensions::webstore_install::Result result) {
-  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
-  if (success) {
-    if (logger) {
-      logger->Log(logging::LOG_INFO,
-                  "App install succeeded. (item id: %s)",
-                  webstore_item_id_.c_str());
-    }
-  } else {
-    if (logger) {
-      logger->Log(logging::LOG_ERROR,
-                  "App install failed. (item id: %s, reason: %s)",
-                  webstore_item_id_.c_str(),
-                  error.c_str());
-    }
-    SetError(error);
-  }
-
-  SendResponse(success);
+  SetError("Deleted, use chrome.webstoreWidgetPrivate API instead.");
+  return false;
 }
 
 FileManagerPrivateRequestWebStoreAccessTokenFunction::

@@ -2,24 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_manager/app_installer.h"
+#include "chrome/browser/extensions/api/webstore_widget_private/app_installer.h"
 
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
-namespace file_manager {
-
 namespace {
 const char kWebContentsDestroyedError[] = "WebContents is destroyed.";
 }  // namespace
 
+namespace webstore_widget {
+
 class AppInstaller::WebContentsObserver : public content::WebContentsObserver {
  public:
   WebContentsObserver(content::WebContents* web_contents, AppInstaller* parent)
-      : content::WebContentsObserver(web_contents),
-        parent_(parent) {
-  }
+      : content::WebContentsObserver(web_contents), parent_(parent) {}
 
  protected:
   // content::WebContentsObserver implementation.
@@ -45,7 +43,8 @@ AppInstaller::AppInstaller(content::WebContents* web_contents,
       web_contents_observer_(new WebContentsObserver(web_contents, this)) {
 }
 
-AppInstaller::~AppInstaller() {}
+AppInstaller::~AppInstaller() {
+}
 
 bool AppInstaller::CheckRequestorAlive() const {
   // The tab may have gone away - cancel installation in that case.
@@ -65,10 +64,8 @@ AppInstaller::CreateInstallPrompt() const {
       new ExtensionInstallPrompt::Prompt(
           ExtensionInstallPrompt::INLINE_INSTALL_PROMPT));
 
-  prompt->SetWebstoreData(localized_user_count(),
-                          show_user_count(),
-                          average_rating(),
-                          rating_count());
+  prompt->SetWebstoreData(localized_user_count(), show_user_count(),
+                          average_rating(), rating_count());
   return prompt;
 }
 
@@ -100,12 +97,10 @@ bool AppInstaller::CheckRequestorPermitted(
   return true;
 }
 
-void AppInstaller::OnWebContentsDestroyed(
-    content::WebContents* web_contents) {
-  callback_.Run(false,
-                kWebContentsDestroyedError,
+void AppInstaller::OnWebContentsDestroyed(content::WebContents* web_contents) {
+  callback_.Run(false, kWebContentsDestroyedError,
                 extensions::webstore_install::OTHER_ERROR);
   AbortInstall();
 }
 
-}  // namespace file_manager
+}  // namespace webstore_widget

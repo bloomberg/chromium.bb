@@ -43,6 +43,7 @@
     "storage",
     "syncFileSystem",
     "unlimitedStorage",
+    "webstoreWidgetPrivate",
     "webview"
   ],
   "file_browser_handlers": [

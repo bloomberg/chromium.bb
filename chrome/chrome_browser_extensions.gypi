@@ -35,6 +35,8 @@
       'browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.cc',
       'browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h',
       'browser/extensions/api/vpn_provider/vpn_service_factory.cc',
+      'browser/extensions/api/webstore_widget_private/app_installer.cc',
+      'browser/extensions/api/webstore_widget_private/app_installer.h',
       'browser/extensions/api/webstore_widget_private/webstore_widget_private_api.cc',
       'browser/extensions/api/webstore_widget_private/webstore_widget_private_api.h',
       'browser/extensions/updater/chromeos_extension_cache_delegate.cc',

@@ -136,7 +136,7 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
      *     message (null on success)
      */
     installWebstoreItem: function(itemId, callback) {
-      chrome.fileManagerPrivate.installWebstoreItem(
+      chrome.webstoreWidgetPrivate.installWebstoreItem(
           itemId,
           false /* show installation prompt */,
           function() {

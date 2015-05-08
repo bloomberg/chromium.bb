@@ -228,7 +228,7 @@ test.util.sync.overrideInstallWebstoreItemApi =
   };
 
   test.util.executedTasks_ = [];
-  contentWindow.chrome.fileManagerPrivate.installWebstoreItem =
+  contentWindow.chrome.webstoreWidgetPrivate.installWebstoreItem =
       installWebstoreItem;
   return true;
 };

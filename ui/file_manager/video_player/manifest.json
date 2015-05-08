@@ -28,6 +28,7 @@
     "metricsPrivate",
     "power",
     "storage",
+    "webstoreWidgetPrivate",
     "chrome://resources/",
     "chrome://theme/"
   ],

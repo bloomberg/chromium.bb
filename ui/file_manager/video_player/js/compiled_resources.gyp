@@ -86,6 +86,7 @@
           '<(CLOSURE_DIR)/externs/metrics_private.js',
           '../../externs/chrome_test.js',
           '../../externs/chrome_cast.js',
+          '../../externs/chrome_webstore_widget_private.js',
           '../../externs/platform.js',
           '../../externs/video_player_foreground.js',
         ],

@@ -67,7 +67,7 @@ function loadCastAPI(callback, opt_secondTry) {
     }
 
     // Installs the Google Cast API extension and retry loading.
-    chrome.fileManagerPrivate.installWebstoreItem(
+    chrome.webstoreWidgetPrivate.installWebstoreItem(
         'mafeflapfdfljijmlienjedomfjfmhpd',
         true,  // Don't use installation prompt.
         function() {

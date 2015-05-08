@@ -8,11 +8,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_
 
+#include <string>
+
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
-#include "chrome/common/extensions/webstore_install_result.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 namespace google_apis {
@@ -112,12 +113,6 @@ class FileManagerPrivateInstallWebstoreItemFunction
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;
-  void OnInstallComplete(bool success,
-                         const std::string& error,
-                         extensions::webstore_install::Result result);
-
- private:
-  std::string webstore_item_id_;
 };
 
 class FileManagerPrivateRequestWebStoreAccessTokenFunction
@@ -137,7 +132,6 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
 
   void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
                             const std::string& access_token);
-
 };
 
 class FileManagerPrivateGetProfilesFunction

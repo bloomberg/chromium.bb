@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -45,6 +46,10 @@ class WebstoreWidgetPrivateInstallWebstoreItemFunction
   ResponseAction Run() override;
 
  private:
+  void OnInstallComplete(bool success,
+                         const std::string& error,
+                         extensions::webstore_install::Result result);
+
   DISALLOW_COPY_AND_ASSIGN(WebstoreWidgetPrivateInstallWebstoreItemFunction);
 };
 

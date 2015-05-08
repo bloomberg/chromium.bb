@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_INSTALLER_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_INSTALLER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_WIDGET_PRIVATE_APP_INSTALLER_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_WIDGET_PRIVATE_APP_INSTALLER_H_
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 
@@ -14,10 +15,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace file_manager {
+namespace webstore_widget {
 
 // This class is used for installing apps and extensions suggested from the
-// Chrome Web Store for unsupported file types, inside Files.app.
+// Chrome Web Store Gallery widget.
 class AppInstaller : public extensions::WebstoreStandaloneInstaller {
  public:
   AppInstaller(content::WebContents* web_contents,
@@ -57,6 +58,6 @@ class AppInstaller : public extensions::WebstoreStandaloneInstaller {
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppInstaller);
 };
 
-}  // namespace file_manager
+}  // namespace webstore_widget
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_INSTALLER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_WIDGET_PRIVATE_APP_INSTALLER_H_

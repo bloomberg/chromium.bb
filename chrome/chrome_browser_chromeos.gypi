@@ -232,8 +232,6 @@
         'browser/chromeos/external_protocol_dialog.cc',
         'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/file_manager/app_id.h',
-        'browser/chromeos/file_manager/app_installer.cc',
-        'browser/chromeos/file_manager/app_installer.h',
         'browser/chromeos/file_manager/file_browser_handlers.cc',
         'browser/chromeos/file_manager/file_browser_handlers.h',
         'browser/chromeos/file_manager/file_tasks.cc',
