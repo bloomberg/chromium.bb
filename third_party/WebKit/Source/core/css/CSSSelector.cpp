@@ -68,8 +68,8 @@ unsigned CSSSelector::specificity() const
     // make sure the result doesn't overflow
     static const unsigned maxValueMask = 0xffffff;
     static const unsigned idMask = 0xff0000;
-    static const unsigned classMask = 0xff00;
-    static const unsigned elementMask = 0xff;
+    static const unsigned classMask = 0x00ff00;
+    static const unsigned elementMask = 0x0000ff;
 
     if (isForPage())
         return specificityForPage() & maxValueMask;
@@ -96,31 +96,41 @@ inline unsigned CSSSelector::specificityForOneSelector() const
 {
     // FIXME: Pseudo-elements and pseudo-classes do not have the same specificity. This function
     // isn't quite correct.
+    // http://www.w3.org/TR/selectors/#specificity
     switch (m_match) {
     case Id:
-        return 0x10000;
+        return 0x010000;
     case PseudoClass:
-        if (pseudoType() == PseudoHost || pseudoType() == PseudoHostContext)
+        switch (pseudoType()) {
+        case PseudoHost:
+        case PseudoHostContext:
+            // We dynamically compute the specificity of :host and :host-context
+            // during matching.
             return 0;
-        // fall through.
-    case AttributeExact:
+        case PseudoNot:
+            ASSERT(selectorList());
+            return selectorList()->first()->specificityForOneSelector();
+        // FIXME: PseudoAny should base the specificity on the sub-selectors.
+        // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0530.html
+        case PseudoAny:
+        default:
+            break;
+        }
+        return 0x000100;
     case Class:
+    case PseudoElement:
+    case AttributeExact:
     case AttributeSet:
     case AttributeList:
     case AttributeHyphen:
-    case PseudoElement:
     case AttributeContain:
     case AttributeBegin:
     case AttributeEnd:
-        // FIXME: PseudoAny should base the specificity on the sub-selectors.
-        // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0530.html
-        if (pseudoType() == PseudoNot) {
-            ASSERT(selectorList());
-            return selectorList()->first()->specificityForOneSelector();
-        }
-        return 0x100;
+        return 0x000100;
     case Tag:
-        return (tagQName().localName() != starAtom) ? 1 : 0;
+        if (tagQName().localName() == starAtom)
+            return 0;
+        return 0x000001;
     case Unknown:
         return 0;
     }
