@@ -22,7 +22,8 @@ class ExtensionMessageBubbleBridge : public extensions::ExtensionMessageBubble,
                                      public ToolbarActionsBarBubbleDelegate {
  public:
   ExtensionMessageBubbleBridge(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller);
+      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      bool anchored_to_extension);
   ~ExtensionMessageBubbleBridge() override;
 
   void SetBubble(ToolbarActionsBarBubbleMac* bubble);
@@ -46,6 +47,9 @@ class ExtensionMessageBubbleBridge : public extensions::ExtensionMessageBubble,
   void OnBubbleClosed(CloseAction action) override;
 
   scoped_ptr<extensions::ExtensionMessageBubbleController> controller_;
+
+  // True if the bubble is anchored to an extension action.
+  bool anchored_to_extension_;
 
   ToolbarActionsBarBubbleMac* bubble_;
 

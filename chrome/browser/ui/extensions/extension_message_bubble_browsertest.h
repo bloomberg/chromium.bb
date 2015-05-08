@@ -43,6 +43,12 @@ class ExtensionMessageBubbleBrowserTest
   // This also tests that the crashes in crbug.com/476426 are fixed.
   void TestBubbleAnchoredToWrenchMenu();
 
+  // Tests that an extension bubble will be anchored to the wrench menu if there
+  // are no highlighted extensions, even if there's a benevolent extension with
+  // an action.
+  // Regression test for crbug.com/485614.
+  void TestBubbleAnchoredToWrenchMenuWithOtherAction();
+
   // Tests that the extension bubble will show on startup.
   void PreBubbleShowsOnStartup();
   void TestBubbleShowsOnStartup();

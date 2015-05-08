@@ -62,9 +62,12 @@ class ToolbarActionsBarDelegate {
   virtual void OnOverflowedActionWantsToRunChanged(
       bool overflowed_action_wants_to_run) = 0;
 
-  // Displays the bubble for the passed ExtensionMessageBubbleController.
+  // Displays the bubble for the passed ExtensionMessageBubbleController,
+  // anchored to |anchor_action|. If |anchor_action| is null, it should be
+  // anchored to the hotdog menu.
   virtual void ShowExtensionMessageBubble(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller) = 0;
+      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      ToolbarActionViewController* anchor_action) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_DELEGATE_H_

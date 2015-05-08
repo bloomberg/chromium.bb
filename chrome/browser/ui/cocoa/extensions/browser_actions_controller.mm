@@ -82,6 +82,11 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // found.
 - (BrowserActionButton*)buttonForId:(const std::string&)id;
 
+// Returns the button at the given index. This is just a wrapper around
+// [NSArray objectAtIndex:], since that technically defaults to returning ids
+// (and can cause compile errors).
+- (BrowserActionButton*)buttonAtIndex:(NSUInteger)index;
+
 // Notification handlers for events registered by the class.
 
 // Updates each button's opacity, the cursor rects and chevron position.
@@ -152,10 +157,11 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Returns the associated ToolbarController.
 - (ToolbarController*)toolbarController;
 
-// Creates a message bubble anchored to the first action in the toolbar (or the
-// overflow menu, if no actions are present).
+// Creates a message bubble anchored to the given |anchorAction|, or the wrench
+// menu if no |anchorAction| is null.
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
-    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate;
+    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
+    anchorAction:(ToolbarActionViewController*)anchorAction;
 
 // Called when the window for the active bubble is closing, and sets the active
 // bubble to nil.
@@ -191,8 +197,8 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   void OnOverflowedActionWantsToRunChanged(bool overflowed_action_wants_to_run)
       override;
   void ShowExtensionMessageBubble(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
-          override;
+      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      ToolbarActionViewController* anchor_action) override;
 
   // The owning BrowserActionsController; weak.
   BrowserActionsController* controller_;
@@ -267,16 +273,19 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
 }
 
 void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+    ToolbarActionViewController* anchor_action) {
   // This goop is a by-product of needing to wire together abstract classes,
   // C++/Cocoa bridges, and ExtensionMessageBubbleController's somewhat strange
   // Show() interface. It's ugly, but it's pretty confined, so it's probably
   // okay (but if we ever need to expand, it might need to be reconsidered).
   scoped_ptr<ExtensionMessageBubbleBridge> bridge(
-      new ExtensionMessageBubbleBridge(controller.Pass()));
+      new ExtensionMessageBubbleBridge(controller.Pass(),
+                                       anchor_action != nullptr));
   ExtensionMessageBubbleBridge* weak_bridge = bridge.get();
   ToolbarActionsBarBubbleMac* bubble =
-      [controller_ createMessageBubble:bridge.Pass()];
+      [controller_ createMessageBubble:bridge.Pass()
+                          anchorAction:anchor_action];
   weak_bridge->SetBubble(bubble);
   weak_bridge->controller()->Show(weak_bridge);
 }
@@ -519,13 +528,13 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   std::vector<ToolbarActionViewController*> toolbar_actions =
       toolbarActionsBar_->GetActions();
   for (NSUInteger i = 0; i < [buttons_ count]; ++i) {
-    auto controller = static_cast<ToolbarActionViewController*>(
-        [[buttons_ objectAtIndex:i] viewController]);
+    ToolbarActionViewController* controller =
+        [[self buttonAtIndex:i] viewController];
     if (controller != toolbar_actions[i]) {
       size_t j = i + 1;
       while (true) {
-        auto other_controller = static_cast<ToolbarActionViewController*>(
-            [[buttons_ objectAtIndex:j] viewController]);
+        ToolbarActionViewController* other_controller =
+            [[self buttonAtIndex:j] viewController];
         if (other_controller == toolbar_actions[i])
           break;
         ++j;
@@ -663,6 +672,10 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   return nil;
 }
 
+- (BrowserActionButton*)buttonAtIndex:(NSUInteger)index {
+  return static_cast<BrowserActionButton*>([buttons_ objectAtIndex:index]);
+}
+
 - (void)containerFrameChanged:(NSNotification*)notification {
   [self updateButtonPositions];
   [self updateButtonOpacity];
@@ -713,10 +726,13 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   if (!activeBubble_ &&  // only show one bubble at a time
       ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
           browser_->profile())) {
+    ToolbarActionViewController* anchorAction = [buttons_ count] > 0 ?
+        [[self buttonAtIndex:0] viewController] : nullptr;
+    scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate(
+        new ExtensionToolbarIconSurfacingBubbleDelegate(browser_->profile()));
     ToolbarActionsBarBubbleMac* bubble =
-        [self createMessageBubble:scoped_ptr<ToolbarActionsBarBubbleDelegate>(
-            new ExtensionToolbarIconSurfacingBubbleDelegate(
-                browser_->profile()))];
+        [self createMessageBubble:delegate.Pass()
+                     anchorAction:anchorAction];
     [bubble showWindow:nil];
   }
   [containerView_ setTrackingEnabled:NO];
@@ -922,13 +938,12 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 }
 
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
-    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate {
+    (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
+    anchorAction:(ToolbarActionViewController*)anchorAction {
   DCHECK_GE([buttons_ count], 0u);
   NSPoint anchor;
-  if ([buttons_ count] > 0) {
-    auto controller = static_cast<ToolbarActionViewController*>(
-        [[buttons_ objectAtIndex:0] viewController]);
-    anchor = [self popupPointForId:controller->GetId()];
+  if (anchorAction) {
+    anchor = [self popupPointForId:anchorAction->GetId()];
   } else {
     NSView* wrenchButton = [[self toolbarController] wrenchButton];
     anchor = [self popupPointForView:wrenchButton

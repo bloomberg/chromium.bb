@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -45,7 +44,6 @@ class SettingsApiBubbleDelegate
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) override;
   void PerformAction(const ExtensionIdList& list) override;
-  void OnClose() override;
   base::string16 GetTitle() const override;
   base::string16 GetMessageBody(bool anchored_to_browser_action) const override;
   base::string16 GetOverflowText(
@@ -131,12 +129,6 @@ void SettingsApiBubbleDelegate::PerformAction(const ExtensionIdList& list) {
   for (size_t i = 0; i < list.size(); ++i) {
     service_->DisableExtension(list[i], Extension::DISABLE_USER_ACTION);
   }
-}
-
-void SettingsApiBubbleDelegate::OnClose() {
-  ExtensionToolbarModel* toolbar_model = ExtensionToolbarModel::Get(profile());
-  if (toolbar_model)
-    toolbar_model->StopHighlighting();
 }
 
 base::string16 SettingsApiBubbleDelegate::GetTitle() const {

@@ -95,7 +95,8 @@ ExtensionMessageBubbleController::ExtensionMessageBubbleController(
     : profile_(profile),
       user_action_(ACTION_BOUNDARY),
       delegate_(delegate),
-      initialized_(false) {
+      initialized_(false),
+      did_highlight_(false) {
 }
 
 ExtensionMessageBubbleController::~ExtensionMessageBubbleController() {
@@ -150,7 +151,8 @@ const ExtensionIdList& ExtensionMessageBubbleController::GetExtensionIdList() {
 bool ExtensionMessageBubbleController::CloseOnDeactivate() { return false; }
 
 void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
-  if (delegate_->ShouldHighlightExtensions()) {
+  if (delegate_->ShouldHighlightExtensions() && !did_highlight_) {
+    did_highlight_ = true;
     const ExtensionIdList& extension_ids = GetExtensionIdList();
     DCHECK(!extension_ids.empty());
     ExtensionToolbarModel::Get(profile_)->HighlightExtensions(extension_ids);
@@ -167,8 +169,8 @@ void ExtensionMessageBubbleController::OnBubbleAction() {
 
   delegate_->LogAction(ACTION_EXECUTE);
   delegate_->PerformAction(*GetOrCreateExtensionList());
-  AcknowledgeExtensions();
-  delegate_->OnClose();
+
+  OnClose();
 }
 
 void ExtensionMessageBubbleController::OnBubbleDismiss() {
@@ -183,8 +185,8 @@ void ExtensionMessageBubbleController::OnBubbleDismiss() {
   user_action_ = ACTION_DISMISS;
 
   delegate_->LogAction(ACTION_DISMISS);
-  AcknowledgeExtensions();
-  delegate_->OnClose();
+
+  OnClose();
 }
 
 void ExtensionMessageBubbleController::OnLinkClicked() {
@@ -202,8 +204,7 @@ void ExtensionMessageBubbleController::OnLinkClicked() {
                                ui::PAGE_TRANSITION_LINK,
                                false));
   }
-  AcknowledgeExtensions();
-  delegate_->OnClose();
+  OnClose();
 }
 
 void ExtensionMessageBubbleController::AcknowledgeExtensions() {
@@ -230,6 +231,12 @@ ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
   }
 
   return &extension_list_;
+}
+
+void ExtensionMessageBubbleController::OnClose() {
+  AcknowledgeExtensions();
+  if (did_highlight_)
+    ExtensionToolbarModel::Get(profile_)->StopHighlighting();
 }
 
 }  // namespace extensions

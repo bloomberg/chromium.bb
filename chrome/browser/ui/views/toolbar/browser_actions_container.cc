@@ -314,16 +314,13 @@ void BrowserActionsContainer::OnOverflowedActionWantsToRunChanged(
 }
 
 void BrowserActionsContainer::ShowExtensionMessageBubble(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
-  if (animating()) {
-    // Similarly, if the container is animating, we can't effectively anchor the
-    // bubble, so wait until animation stops.
-    pending_extension_bubble_controller_ = controller.Pass();
-    return;
-  }
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+    ToolbarActionViewController* anchor_action) {
+  // The container shouldn't be asked to show a bubble if it's animating.
+  DCHECK(!animating());
 
-  views::View* reference_view = VisibleBrowserActions() > 0 ?
-      static_cast<views::View*>(toolbar_action_views_[0]) :
+  views::View* reference_view = anchor_action ?
+      static_cast<views::View*>(GetViewForId(anchor_action->GetId())) :
       BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->app_menu();
 
   extensions::ExtensionMessageBubbleController* weak_controller =
@@ -681,9 +678,6 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
                     OnBrowserActionsContainerAnimationEnded());
 
   toolbar_actions_bar_->OnAnimationEnded();
-
-  if (pending_extension_bubble_controller_)
-    ShowExtensionMessageBubble(pending_extension_bubble_controller_.Pass());
 }
 
 content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {

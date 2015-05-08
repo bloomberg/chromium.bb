@@ -38,7 +38,6 @@ class ExtensionMessageBubbleController {
         const std::string& extension_id,
         BubbleAction action) = 0;
     virtual void PerformAction(const ExtensionIdList& list) = 0;
-    virtual void OnClose() {}
 
     // Text for various UI labels shown in the bubble.
     virtual base::string16 GetTitle() const = 0;
@@ -110,7 +109,8 @@ class ExtensionMessageBubbleController {
   // Whether to close the bubble when it loses focus.
   virtual bool CloseOnDeactivate();
 
-  // Highlights the affected extensions if appropriate.
+  // Highlights the affected extensions if appropriate. Safe to call multiple
+  // times.
   void HighlightExtensionsIfNecessary();
 
   // Sets up the callbacks and shows the bubble.
@@ -128,6 +128,9 @@ class ExtensionMessageBubbleController {
   // Get the data this class needs.
   ExtensionIdList* GetOrCreateExtensionList();
 
+  // Performs cleanup after the bubble closes.
+  void OnClose();
+
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;
 
@@ -142,6 +145,9 @@ class ExtensionMessageBubbleController {
 
   // Whether this class has initialized.
   bool initialized_;
+
+  // Whether or not the bubble is highlighting extensions.
+  bool did_highlight_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleController);
 };

@@ -47,10 +47,34 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {
 void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToWrenchMenu() {
   scoped_refptr<const extensions::Extension> no_action_extension =
       extensions::extension_action_test_util::CreateActionExtension(
-          "action_extension",
+          "no_action_extension",
           extensions::extension_action_test_util::NO_ACTION,
           extensions::Manifest::UNPACKED);
   extension_service()->AddExtension(no_action_extension.get());
+
+  Browser* second_browser = new Browser(
+      Browser::CreateParams(profile(), browser()->host_desktop_type()));
+  base::RunLoop().RunUntilIdle();
+
+  CheckBubble(second_browser, ANCHOR_WRENCH_MENU);
+  CloseBubble(second_browser);
+}
+
+void ExtensionMessageBubbleBrowserTest::
+TestBubbleAnchoredToWrenchMenuWithOtherAction() {
+  scoped_refptr<const extensions::Extension> no_action_extension =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "no_action_extension",
+          extensions::extension_action_test_util::NO_ACTION,
+          extensions::Manifest::UNPACKED);
+  extension_service()->AddExtension(no_action_extension.get());
+
+  scoped_refptr<const extensions::Extension> action_extension =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "action_extension",
+          extensions::extension_action_test_util::BROWSER_ACTION,
+          extensions::Manifest::INTERNAL);
+  extension_service()->AddExtension(action_extension.get());
 
   Browser* second_browser = new Browser(
       Browser::CreateParams(profile(), browser()->host_desktop_type()));

@@ -97,6 +97,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       ExtensionBubbleAnchoredToWrenchMenuWithOtherAction) {
+  TestBubbleAnchoredToWrenchMenuWithOtherAction();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        PRE_ExtensionBubbleShowsOnStartup) {
   PreBubbleShowsOnStartup();
 }

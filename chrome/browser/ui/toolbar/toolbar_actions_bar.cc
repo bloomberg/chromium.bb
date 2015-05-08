@@ -373,10 +373,15 @@ void ToolbarActionsBar::CreateActions() {
     checked_extension_bubble_ = true;
     // CreateActions() can be called as part of the browser window set up, which
     // we need to let finish before showing the actions.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
-                   weak_ptr_factory_.GetWeakPtr()));
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
+        ExtensionMessageBubbleFactory(browser_->profile()).GetController();
+    if (controller) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ToolbarActionsBar::MaybeShowExtensionBubble,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(controller.Pass())));
+    }
   }
 }
 
@@ -436,8 +441,11 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
 }
 
 void ToolbarActionsBar::OnAnimationEnded() {
-  // Check if we were waiting for animation to finish to run a popup.
-  if (!popped_out_closure_.is_null()) {
+  // Check if we were waiting for animation to complete to either show a
+  // message bubble, or to show a popup.
+  if (pending_extension_bubble_controller_) {
+    MaybeShowExtensionBubble(pending_extension_bubble_controller_.Pass());
+  } else if (!popped_out_closure_.is_null()) {
     popped_out_closure_.Run();
     popped_out_closure_.Reset();
   }
@@ -503,12 +511,23 @@ ToolbarActionViewController* ToolbarActionsBar::GetMainControllerForAction(
       main_bar_->GetActionForId(action->GetId()) : action;
 }
 
-void ToolbarActionsBar::MaybeShowExtensionBubble() {
-  scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
-      ExtensionMessageBubbleFactory(browser_->profile()).GetController();
-  if (controller) {
-    controller->HighlightExtensionsIfNecessary();
-    delegate_->ShowExtensionMessageBubble(controller.Pass());
+void ToolbarActionsBar::MaybeShowExtensionBubble(
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
+  controller->HighlightExtensionsIfNecessary();  // Safe to call multiple times.
+  if (delegate_->IsAnimating()) {
+    // If the toolbar is animating, we can't effectively anchor the bubble,
+    // so wait until animation stops.
+    pending_extension_bubble_controller_ = controller.Pass();
+  } else {
+    const extensions::ExtensionIdList& affected_extensions =
+        controller->GetExtensionIdList();
+    ToolbarActionViewController* anchor_action = nullptr;
+    for (const std::string& id : affected_extensions) {
+      anchor_action = GetActionForId(id);
+      if (anchor_action)
+        break;
+    }
+    delegate_->ShowExtensionMessageBubble(controller.Pass(), anchor_action);
   }
 }
 

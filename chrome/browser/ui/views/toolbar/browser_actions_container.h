@@ -250,8 +250,8 @@ class BrowserActionsContainer
   void OnOverflowedActionWantsToRunChanged(
       bool overflowed_action_wants_to_run) override;
   void ShowExtensionMessageBubble(
-      scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
-          override;
+      scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+      ToolbarActionViewController* anchor_action) override;
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
@@ -343,10 +343,6 @@ class BrowserActionsContainer
 
   // The class that registers for keyboard shortcuts for extension commands.
   scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
-
-  // The controller of the bubble to show once animation finishes, if any.
-  scoped_ptr<extensions::ExtensionMessageBubbleController>
-      pending_extension_bubble_controller_;
 
   // The extension bubble that is actively showing, if any.
   views::BubbleDelegateView* active_bubble_;

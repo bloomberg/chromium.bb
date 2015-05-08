@@ -8,8 +8,10 @@
 #include "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 
 ExtensionMessageBubbleBridge::ExtensionMessageBubbleBridge(
-    scoped_ptr<extensions::ExtensionMessageBubbleController> controller)
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
+    bool anchored_to_extension)
     : controller_(controller.Pass()),
+      anchored_to_extension_(anchored_to_extension),
       bubble_(nil) {
 }
 
@@ -32,7 +34,7 @@ base::string16 ExtensionMessageBubbleBridge::GetHeadingText() {
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetBodyText() {
-  return controller_->delegate()->GetMessageBody(true);
+  return controller_->delegate()->GetMessageBody(anchored_to_extension_);
 }
 
 base::string16 ExtensionMessageBubbleBridge::GetItemListText() {

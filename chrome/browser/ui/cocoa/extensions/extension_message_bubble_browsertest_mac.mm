@@ -121,6 +121,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       ExtensionBubbleAnchoredToWrenchMenuWithOtherAction) {
+  TestBubbleAnchoredToWrenchMenuWithOtherAction();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        PRE_ExtensionBubbleShowsOnStartup) {
   PreBubbleShowsOnStartup();
 }

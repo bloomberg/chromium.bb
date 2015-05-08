@@ -17,6 +17,7 @@
 
 namespace extensions {
 class Extension;
+class ExtensionMessageBubbleController;
 }
 
 namespace user_prefs {
@@ -223,7 +224,8 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   void SetOverflowedActionWantsToRun();
 
   // Shows an extension message bubble, if any should be shown.
-  void MaybeShowExtensionBubble();
+  void MaybeShowExtensionBubble(
+      scoped_ptr<extensions::ExtensionMessageBubbleController> controller);
 
   // The delegate for this object (in a real build, this is the view).
   ToolbarActionsBarDelegate* delegate_;
@@ -283,6 +285,10 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // The task to alert the |popped_out_action_| that animation has finished, and
   // it is fully popped out.
   base::Closure popped_out_closure_;
+
+  // The controller of the bubble to show once animation finishes, if any.
+  scoped_ptr<extensions::ExtensionMessageBubbleController>
+      pending_extension_bubble_controller_;
 
   base::WeakPtrFactory<ToolbarActionsBar> weak_ptr_factory_;
 
