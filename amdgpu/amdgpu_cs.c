@@ -790,7 +790,7 @@ uint64_t amdgpu_cs_calculate_timeout(uint64_t timeout)
 	return timeout;
 }
 
-static int amdgpu_ioctl_wait_cs(amdgpu_device_handle dev,
+static int amdgpu_ioctl_wait_cs(amdgpu_context_handle context,
 				unsigned ip,
 				unsigned ip_instance,
 				uint32_t ring,
@@ -798,6 +798,7 @@ static int amdgpu_ioctl_wait_cs(amdgpu_device_handle dev,
 				uint64_t timeout_ns,
 				bool *busy)
 {
+	amdgpu_device_handle dev = context->dev;
 	union drm_amdgpu_wait_cs args;
 	int r;
 
@@ -807,6 +808,7 @@ static int amdgpu_ioctl_wait_cs(amdgpu_device_handle dev,
 	args.in.ip_instance = ip_instance;
 	args.in.ring = ring;
 	args.in.timeout = amdgpu_cs_calculate_timeout(timeout_ns);
+	args.in.ctx_id = context->id;
 
 	/* Handle errors manually here because of timeout */
 	r = ioctl(dev->fd, DRM_IOCTL_AMDGPU_WAIT_CS, &args);
@@ -871,7 +873,7 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 
 	pthread_mutex_unlock(&context->sequence_mutex);
 
-	r = amdgpu_ioctl_wait_cs(context->dev, ip_type, ip_instance, ring,
+	r = amdgpu_ioctl_wait_cs(context, ip_type, ip_instance, ring,
 				 fence->fence, fence->timeout_ns, &busy);
 	if (!r && !busy) {
 		*expired = true;
