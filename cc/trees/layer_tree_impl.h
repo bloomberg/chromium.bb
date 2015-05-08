@@ -96,7 +96,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindPendingTreeLayerById(int id);
   bool PinchGestureActive() const;
   BeginFrameArgs CurrentBeginFrameArgs() const;
-  base::TimeDelta CurrentBeginFrameInterval() const;
+  base::TimeDelta begin_impl_frame_interval() const;
   void SetNeedsCommit();
   gfx::Rect DeviceViewport() const;
   gfx::Size DrawViewportSize() const;

@@ -43,6 +43,7 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
   using LayerTreeHostImpl::RemoveRenderPasses;
 
  private:
+  BeginFrameArgs current_begin_frame_args_;
   FakeLayerTreeHostImplClient client_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
 };

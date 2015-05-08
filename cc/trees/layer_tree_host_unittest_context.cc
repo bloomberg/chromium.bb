@@ -393,8 +393,8 @@ class MultipleCompositeDoesNotCreateOutputSurface
   }
 
   void BeginTest() override {
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(2));
+    layer_tree_host()->Composite(base::TimeTicks());
+    layer_tree_host()->Composite(base::TimeTicks());
   }
 
   scoped_ptr<OutputSurface> CreateOutputSurface() override {
@@ -439,12 +439,12 @@ class FailedCreateDoesNotCreateExtraOutputSurface
 
   void BeginTest() override {
     // First composite tries to create a surface.
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
+    layer_tree_host()->Composite(base::TimeTicks());
     EXPECT_EQ(num_requests_, 2);
     EXPECT_TRUE(has_failed_);
 
     // Second composite should not request or fail.
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(2));
+    layer_tree_host()->Composite(base::TimeTicks());
     EXPECT_EQ(num_requests_, 2);
     EndTest();
   }
@@ -489,9 +489,7 @@ class LayerTreeHostContextTestCommitAfterDelayedOutputSurface
         LayerTreeHostContextTest::CreateOutputSurface());
   }
 
-  void BeginTest() override {
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
-  }
+  void BeginTest() override { layer_tree_host()->Composite(base::TimeTicks()); }
 
   void ScheduleComposite() override {
     if (creating_output_)
@@ -524,7 +522,7 @@ class LayerTreeHostContextTestAvoidUnnecessaryComposite
 
   void BeginTest() override {
     in_composite_ = true;
-    layer_tree_host()->Composite(base::TimeTicks::FromInternalValue(1));
+    layer_tree_host()->Composite(base::TimeTicks());
     in_composite_ = false;
   }
 

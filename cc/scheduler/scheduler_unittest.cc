@@ -2618,14 +2618,16 @@ TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
 
 TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
   SetUpScheduler(true);
-  base::TimeDelta initial_interval = scheduler_->BeginImplFrameInterval();
+
+  base::TimeDelta initial_interval =
+      scheduler_->begin_impl_frame_args().interval;
   base::TimeDelta authoritative_interval =
       base::TimeDelta::FromMilliseconds(33);
 
   scheduler_->SetNeedsCommit();
   EXPECT_SCOPED(AdvanceFrame());
 
-  EXPECT_EQ(initial_interval, scheduler_->BeginImplFrameInterval());
+  EXPECT_EQ(initial_interval, scheduler_->begin_impl_frame_args().interval);
 
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
@@ -2637,8 +2639,9 @@ TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
 
   // At the next BeginFrame, authoritative interval is used instead of previous
   // interval.
-  EXPECT_NE(initial_interval, scheduler_->BeginImplFrameInterval());
-  EXPECT_EQ(authoritative_interval, scheduler_->BeginImplFrameInterval());
+  EXPECT_NE(initial_interval, scheduler_->begin_impl_frame_args().interval);
+  EXPECT_EQ(authoritative_interval,
+            scheduler_->begin_impl_frame_args().interval);
 }
 
 }  // namespace

@@ -878,8 +878,8 @@ BeginFrameArgs LayerTreeImpl::CurrentBeginFrameArgs() const {
   return layer_tree_host_impl_->CurrentBeginFrameArgs();
 }
 
-base::TimeDelta LayerTreeImpl::CurrentBeginFrameInterval() const {
-  return layer_tree_host_impl_->CurrentBeginFrameInterval();
+base::TimeDelta LayerTreeImpl::begin_impl_frame_interval() const {
+  return layer_tree_host_impl_->begin_impl_frame_interval();
 }
 
 void LayerTreeImpl::SetNeedsCommit() {

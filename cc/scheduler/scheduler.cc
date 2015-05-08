@@ -79,7 +79,6 @@ Scheduler::Scheduler(
       task_runner_(task_runner),
       begin_impl_frame_deadline_mode_(
           SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE),
-      begin_impl_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false),
       inside_action_(SchedulerStateMachine::ACTION_NONE),
@@ -276,19 +275,18 @@ void Scheduler::NotifyBeginMainFrameStarted() {
 
 base::TimeTicks Scheduler::AnticipatedDrawTime() const {
   if (!frame_source_->NeedsBeginFrames() ||
-      begin_impl_frame_tracker_.DangerousMethodHasFinished())
+      begin_impl_frame_args_.interval <= base::TimeDelta())
     return base::TimeTicks();
 
   base::TimeTicks now = Now();
-  BeginFrameArgs args = begin_impl_frame_tracker_.Current();
-  base::TimeTicks timebase = std::max(args.frame_time, args.deadline);
-  int64 intervals =
-      1 + ((now - timebase) / begin_impl_frame_tracker_.Interval());
-  return timebase + (begin_impl_frame_tracker_.Interval() * intervals);
+  base::TimeTicks timebase = std::max(begin_impl_frame_args_.frame_time,
+                                      begin_impl_frame_args_.deadline);
+  int64 intervals = 1 + ((now - timebase) / begin_impl_frame_args_.interval);
+  return timebase + (begin_impl_frame_args_.interval * intervals);
 }
 
 base::TimeTicks Scheduler::LastBeginImplFrameTime() {
-  return begin_impl_frame_tracker_.Current().frame_time;
+  return begin_impl_frame_args_.frame_time;
 }
 
 void Scheduler::SetupNextBeginFrameIfNeeded() {
@@ -322,13 +320,13 @@ void Scheduler::SetupPollingMechanisms() {
   if (IsBeginMainFrameSentOrStarted() &&
       !settings_.using_synchronous_renderer_compositor) {
     if (advance_commit_state_task_.IsCancelled() &&
-        begin_impl_frame_tracker_.DangerousMethodCurrentOrLast().IsValid()) {
+        begin_impl_frame_args_.IsValid()) {
       // Since we'd rather get a BeginImplFrame by the normal mechanism, we
       // set the interval to twice the interval from the previous frame.
       advance_commit_state_task_.Reset(advance_commit_state_closure_);
       task_runner_->PostDelayedTask(FROM_HERE,
                                     advance_commit_state_task_.callback(),
-                                    begin_impl_frame_tracker_.Interval() * 2);
+                                    begin_impl_frame_args_.interval * 2);
     }
   } else {
     advance_commit_state_task_.Cancel();
@@ -341,11 +339,6 @@ void Scheduler::SetupPollingMechanisms() {
 // a BeginRetroFrame.
 bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
-
-  // Trace this begin frame time through the Chrome stack
-  TRACE_EVENT_FLOW_BEGIN0(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"), "BeginFrameArgs",
-      args.frame_time.ToInternalValue());
 
   // TODO(brianderson): Adjust deadline in the DisplayScheduler.
   BeginFrameArgs adjusted_args(args);
@@ -502,8 +495,8 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
 
   advance_commit_state_task_.Cancel();
 
-  BeginFrameArgs adjusted_args = args;
-  adjusted_args.deadline -= client_->DrawDurationEstimate();
+  begin_impl_frame_args_ = args;
+  begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
 
   if (!state_machine_.impl_latency_takes_priority() &&
       main_thread_is_in_high_latency_mode &&
@@ -511,7 +504,7 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
     state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
   }
 
-  BeginImplFrame(adjusted_args);
+  BeginImplFrame();
 
   // The deadline will be scheduled in ProcessScheduledActions.
   state_machine_.OnBeginImplFrameDeadlinePending();
@@ -521,7 +514,8 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
 void Scheduler::BeginImplFrameSynchronous(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginImplFrame", "args",
                args.AsValue());
-  BeginImplFrame(args);
+  begin_impl_frame_args_ = args;
+  BeginImplFrame();
   FinishImplFrame();
 }
 
@@ -531,23 +525,21 @@ void Scheduler::FinishImplFrame() {
 
   client_->DidFinishImplFrame();
   frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
-  begin_impl_frame_tracker_.Finish();
 }
 
 // BeginImplFrame starts a compositor frame that will wait up until a deadline
 // for a BeginMainFrame+activation to complete before it times out and draws
 // any asynchronous animation and scroll/pinch updates.
-void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
+void Scheduler::BeginImplFrame() {
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(!BeginImplFrameDeadlinePending());
   DCHECK(state_machine_.HasInitializedOutputSurface());
   DCHECK(advance_commit_state_task_.IsCancelled());
 
-  begin_impl_frame_tracker_.Start(args);
   state_machine_.OnBeginImplFrame();
   devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
-  client_->WillBeginImplFrame(begin_impl_frame_tracker_.Current());
+  client_->WillBeginImplFrame(begin_impl_frame_args_);
 
   ProcessScheduledActions();
 }
@@ -574,14 +566,14 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
       break;
     case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR:
       // We are animating on the impl thread but we can wait for some time.
-      deadline = begin_impl_frame_tracker_.Current().deadline;
+      deadline = begin_impl_frame_args_.deadline;
       break;
     case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE:
       // We are blocked for one reason or another and we should wait.
       // TODO(brianderson): Handle long deadlines (that are past the next
       // frame's frame time) properly instead of using this hack.
-      deadline = begin_impl_frame_tracker_.Current().frame_time +
-                 begin_impl_frame_tracker_.Current().interval;
+      deadline =
+          begin_impl_frame_args_.frame_time + begin_impl_frame_args_.interval;
       break;
     case SchedulerStateMachine::
         BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW:
@@ -777,8 +769,26 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("advance_commit_state_task_",
                     !advance_commit_state_task_.IsCancelled());
   state->BeginDictionary("begin_impl_frame_args");
-  begin_impl_frame_tracker_.AsValueInto(Now(), state);
+  begin_impl_frame_args_.AsValueInto(state);
   state->EndDictionary();
+
+  base::TimeTicks now = Now();
+  base::TimeTicks frame_time = begin_impl_frame_args_.frame_time;
+  base::TimeTicks deadline = begin_impl_frame_args_.deadline;
+  base::TimeDelta interval = begin_impl_frame_args_.interval;
+  state->BeginDictionary("major_timestamps_in_ms");
+  state->SetDouble("0_interval", interval.InMillisecondsF());
+  state->SetDouble("1_now_to_deadline", (deadline - now).InMillisecondsF());
+  state->SetDouble("2_frame_time_to_now", (now - frame_time).InMillisecondsF());
+  state->SetDouble("3_frame_time_to_deadline",
+                   (deadline - frame_time).InMillisecondsF());
+  state->SetDouble("4_now", (now - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("5_frame_time",
+                   (frame_time - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("6_deadline",
+                   (deadline - base::TimeTicks()).InMillisecondsF());
+  state->EndDictionary();
+
   state->EndDictionary();
 
   state->BeginDictionary("client_state");
@@ -794,22 +804,22 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
 }
 
 bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
-  BeginFrameArgs args =
-      begin_impl_frame_tracker_.DangerousMethodCurrentOrLast();
-
   // Check if the main thread computation and commit can be finished before the
   // impl thread's deadline.
   base::TimeTicks estimated_draw_time =
-      args.frame_time + client_->BeginMainFrameToCommitDurationEstimate() +
+      begin_impl_frame_args_.frame_time +
+      client_->BeginMainFrameToCommitDurationEstimate() +
       client_->CommitToActivateDurationEstimate();
 
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
-               "CanCommitAndActivateBeforeDeadline",
-               "time_left_after_drawing_ms",
-               (args.deadline - estimated_draw_time).InMillisecondsF(), "state",
-               AsValue());
+  TRACE_EVENT2(
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+      "CanCommitAndActivateBeforeDeadline",
+      "time_left_after_drawing_ms",
+      (begin_impl_frame_args_.deadline - estimated_draw_time).InMillisecondsF(),
+      "state",
+      AsValue());
 
-  return estimated_draw_time < args.deadline;
+  return estimated_draw_time < begin_impl_frame_args_.deadline;
 }
 
 bool Scheduler::IsBeginMainFrameSentOrStarted() const {
