@@ -705,6 +705,8 @@
           'win/iat_patch_function.h',
           'win/iunknown_impl.cc',
           'win/iunknown_impl.h',
+          'win/memory_pressure_monitor.cc',
+          'win/memory_pressure_monitor.h',
           'win/message_window.cc',
           'win/message_window.h',
           'win/metro.cc',

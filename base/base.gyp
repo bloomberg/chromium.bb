@@ -654,6 +654,7 @@
         'win/event_trace_provider_unittest.cc',
         'win/i18n_unittest.cc',
         'win/iunknown_impl_unittest.cc',
+        'win/memory_pressure_monitor_unittest.cc',
         'win/message_window_unittest.cc',
         'win/object_watcher_unittest.cc',
         'win/pe_image_unittest.cc',

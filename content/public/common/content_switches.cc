@@ -986,6 +986,12 @@ const char kEnableWin32kRendererLockDown[] =
 // clashes between different instances of Chrome.
 const char kFontCacheSharedMemSuffix[] = "font-cache-shared-mem-suffix";
 
+// Sets the free memory thresholds below which the system is considered to be
+// under moderate and critical memory pressure. Used in the browser process,
+// and ignored if invalid. Specified as a pair of comma separated integers.
+// See base/win/memory_pressure_monitor.cc for defaults.
+const char kMemoryPressureThresholdsMb[] = "memory-pressure-thresholds-mb";
+
 // Enables the exporting of the tracing events to ETW. This is only supported on
 // Windows Vista and later.
 const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";

@@ -20,6 +20,8 @@ class BASE_EXPORT MemoryPressureMonitor {
  public:
   using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
 
+  virtual ~MemoryPressureMonitor();
+
   // Return the singleton MemoryPressureMonitor.
   static MemoryPressureMonitor* Get();
 
@@ -28,7 +30,6 @@ class BASE_EXPORT MemoryPressureMonitor {
 
  protected:
   MemoryPressureMonitor();
-  virtual ~MemoryPressureMonitor();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);

@@ -15647,6 +15647,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Memory.PressureLevel" enum="MemoryPressureLevel">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    The memory pressure level, which is recorded periodically (once per second).
+    This is used to show the relative time that systems spend in each of the
+    memory pressure states.
+  </summary>
+</histogram>
+
 <histogram name="Memory.ProcessCount">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
@@ -57437,6 +57446,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MediaUrlType" type="int">
   <int value="0" label="Non Http Live Stream Type"/>
   <int value="1" label="Http Live Stream Type"/>
+</enum>
+
+<enum name="MemoryPressureLevel" type="int">
+  <int value="0" label="No memory pressure"/>
+  <int value="1" label="Moderate memory pressure"/>
+  <int value="2" label="Critical memory pressure"/>
 </enum>
 
 <enum name="MetadataReadResult" type="int">

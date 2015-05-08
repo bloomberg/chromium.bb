@@ -17,6 +17,7 @@
 #include "base/profiler/scoped_profile.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -101,6 +102,7 @@
 #include <commctrl.h>
 #include <shellapi.h>
 
+#include "base/win/memory_pressure_monitor.h"
 #include "content/browser/system_message_window_win.h"
 #include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
@@ -298,6 +300,34 @@ NOINLINE void ResetThread_IndexedDb(scoped_ptr<base::Thread> thread) {
 
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE();
+
+#if defined(OS_WIN)
+// Creates a memory pressure monitor using automatic thresholds, or those
+// specified on the command-line. Ownership is passed to the caller.
+base::win::MemoryPressureMonitor* CreateWinMemoryPressureMonitor(
+    const base::CommandLine& parsed_command_line) {
+  std::vector<std::string> thresholds;
+  base::SplitString(
+      parsed_command_line.GetSwitchValueASCII(
+          switches::kMemoryPressureThresholdsMb),
+      ',',
+      &thresholds);
+
+  int moderate_threshold_mb = 0;
+  int critical_threshold_mb = 0;
+  if (thresholds.size() == 2 &&
+      base::StringToInt(thresholds[0], &moderate_threshold_mb) &&
+      base::StringToInt(thresholds[1], &critical_threshold_mb) &&
+      moderate_threshold_mb >= critical_threshold_mb &&
+      critical_threshold_mb >= 0) {
+    return new base::win::MemoryPressureMonitor(moderate_threshold_mb,
+                                                critical_threshold_mb);
+  }
+
+  // In absence of valid switches use the automatic defaults.
+  return new base::win::MemoryPressureMonitor();
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -613,6 +643,9 @@ int BrowserMainLoop::PreCreateThreads() {
   }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   memory_pressure_monitor_.reset(new base::MemoryPressureMonitorMac());
+#elif defined(OS_WIN)
+  memory_pressure_monitor_.reset(CreateWinMemoryPressureMonitor(
+      parsed_command_line_));
 #endif
 
 #if defined(ENABLE_PLUGINS)
