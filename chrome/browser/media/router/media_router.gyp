@@ -17,6 +17,8 @@
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'sources': [
+        'create_session_request.cc',
+        'create_session_request.h',
         'issue.cc',
         'issue.h',
         'issue_manager.cc',
@@ -42,6 +44,8 @@
         'media_source.h',
         'media_source_helper.cc',
         'media_source_helper.h',
+        'presentation_media_sinks_observer.cc',
+        'presentation_media_sinks_observer.h',
         'route_id_manager.cc',
         'route_id_manager.h',
       ],
@@ -74,5 +78,24 @@
         '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/media/router/media_router.mojom.h',
       ],
     },
+    {
+      'target_name': 'media_router_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '<(DEPTH)',
+      ],
+      'dependencies': [
+        ':media_router',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
+      ],
+      'sources': [
+        'mock_media_router.cc',
+        'mock_media_router.h',
+        'mock_screen_availability_listener.cc',
+        'mock_screen_availability_listener.h',
+      ],
+    },
+
   ],
 }

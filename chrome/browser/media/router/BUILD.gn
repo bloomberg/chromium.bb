@@ -21,6 +21,8 @@ source_set("router_core") {
     "//url",
   ]
   sources = [
+    "create_session_request.cc",
+    "create_session_request.h",
     "issue.cc",
     "issue.h",
     "issue_manager.cc",
@@ -44,6 +46,8 @@ source_set("router_core") {
     "media_source.h",
     "media_source_helper.cc",
     "media_source_helper.h",
+    "presentation_media_sinks_observer.cc",
+    "presentation_media_sinks_observer.h",
     "route_id_manager.cc",
     "route_id_manager.h",
   ]
@@ -64,7 +68,9 @@ source_set("unit_tests") {
   testonly = true
   deps = [
     ":router_core",
+    ":unit_tests_support",
     "//base/test:test_support",
+    "//chrome/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
@@ -74,7 +80,22 @@ source_set("unit_tests") {
     "media_router_type_converters_unittest.cc",
     "media_sink_unittest.cc",
     "media_source_unittest.cc",
+    "presentation_media_sinks_observer_unittest.cc",
     "route_id_manager_unittest.cc",
+  ]
+}
+
+source_set("unit_tests_support") {
+  testonly = true
+  deps = [
+    ":router_core",
+    "//testing/gmock",
+  ]
+  sources = [
+    "mock_media_router.cc",
+    "mock_media_router.h",
+    "mock_screen_availability_listener.cc",
+    "mock_screen_availability_listener.h",
   ]
 }
 

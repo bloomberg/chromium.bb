@@ -15,6 +15,10 @@
     'media_sink_unittest.cc',
     'media_source_helper_unittest.cc',
     'media_source_unittest.cc',
+    "presentation_media_sinks_observer_unittest.cc",
     'route_id_manager_unittest.cc',
+  ],
+  'dependencies': [
+    'browser/media/router/media_router.gyp:media_router_test_support',
   ],
 }
