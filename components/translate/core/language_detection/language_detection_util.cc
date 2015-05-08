@@ -88,8 +88,9 @@ int GetCLDMajorVersion() {
 std::string DetermineTextLanguage(const base::string16& text,
                                   bool* is_cld_reliable) {
   std::string language = translate::kUnknownLanguageCode;
-  int text_bytes = 0;
+  int num_bytes_evaluated = 0;
   bool is_reliable = false;
+  const bool is_plain_text = true;
 
   // Language or CLD2::Language
   int cld_language = 0;
@@ -99,9 +100,9 @@ std::string DetermineTextLanguage(const base::string16& text,
 #if !defined(CLD_VERSION) || CLD_VERSION==1
     case 1: {
       int num_languages = 0;
-      cld_language =
-          DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
-                                      &num_languages, NULL, &text_bytes);
+      cld_language = DetectLanguageOfUnicodeText(
+          NULL, text.c_str(), is_plain_text, &is_reliable, &num_languages, NULL,
+          &num_bytes_evaluated);
       is_valid_language = cld_language != NUM_LANGUAGES &&
           cld_language != UNKNOWN_LANGUAGE &&
           cld_language != TG_UNKNOWN_LANGUAGE;
@@ -110,13 +111,21 @@ std::string DetermineTextLanguage(const base::string16& text,
 #endif
 #if !defined(CLD_VERSION) || CLD_VERSION==2
     case 2: {
-      std::string utf8_text(base::UTF16ToUTF8(text));
-      CLD2::Language language3[3];
-      int percent3[3];
-      CLD2::DetectLanguageSummary(
-          utf8_text.c_str(), (int)utf8_text.size(), true, language3, percent3,
-          &text_bytes, &is_reliable);
-      cld_language = language3[0];
+      const std::string utf8_text(base::UTF16ToUTF8(text));
+      const int num_utf8_bytes = static_cast<int>(utf8_text.size());
+      const char* raw_utf8_bytes = utf8_text.c_str();
+      cld_language = CLD2::DetectLanguageCheckUTF8(
+          raw_utf8_bytes, num_utf8_bytes, is_plain_text, &is_reliable,
+          &num_bytes_evaluated);
+
+      if (num_bytes_evaluated < num_utf8_bytes &&
+          cld_language == CLD2::UNKNOWN_LANGUAGE) {
+        // Invalid UTF8 encountered, see bug http://crbug.com/444258.
+        // Retry using only the valid characters. This time the check for valid
+        // UTF8 can be skipped since the precise number of valid bytes is known.
+        cld_language = CLD2::DetectLanguage(raw_utf8_bytes, num_bytes_evaluated,
+                                            is_plain_text, &is_reliable);
+      }
       is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
           cld_language != CLD2::UNKNOWN_LANGUAGE &&
           cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
@@ -136,7 +145,7 @@ std::string DetermineTextLanguage(const base::string16& text,
   // TODO(toyoshim): CLD provides |is_reliable| flag. But, it just says that
   // the determined language code is correct with 50% confidence. Chrome should
   // handle the real confidence value to judge.
-  if (is_reliable && text_bytes >= 100 && is_valid_language) {
+  if (is_reliable && num_bytes_evaluated >= 100 && is_valid_language) {
     // We should not use LanguageCode_ISO_639_1 because it does not cover all
     // the languages CLD can detect. As a result, it'll return the invalid
     // language code for tradtional Chinese among others.
