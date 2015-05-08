@@ -174,14 +174,19 @@ void ImageDecoder::StartBatchMode() {
 
 void ImageDecoder::StopBatchMode() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  {
+    // Check for outstanding requests and wait for them to finish.
+    base::AutoLock lock(map_lock_);
+    if (!image_request_id_map_.empty()) {
+      batch_mode_timer_->Reset();
+      return;
+    }
+  }
+
   if (utility_process_host_) {
     utility_process_host_->EndBatchMode();
     utility_process_host_.reset();
   }
-
-  // There could be outstanding request that are taking too long. Fail these so
-  // that there aren't any dangling requests.
-  FailAllRequests();
 }
 
 void ImageDecoder::FailAllRequests() {
