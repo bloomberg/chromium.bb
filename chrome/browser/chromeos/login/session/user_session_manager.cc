@@ -952,6 +952,14 @@ void UserSessionManager::InitProfilePreferences(
         SigninManagerFactory::GetForProfile(profile);
     signin_manager->SetAuthenticatedAccountInfo(gaia_id,
                                                 user_context.GetUserID());
+
+    // Backfill GAIA ID in user prefs stored in Local State.
+    std::string tmp_gaia_id;
+    user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+    if (!user_manager->FindGaiaID(user_context.GetUserID(), &tmp_gaia_id) &&
+        !gaia_id.empty()) {
+      user_manager->UpdateGaiaID(user_context.GetUserID(), gaia_id);
+    }
   }
 }
 
