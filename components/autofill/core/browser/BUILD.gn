@@ -73,6 +73,8 @@ static_library("browser") {
     "form_structure.h",
     "name_field.cc",
     "name_field.h",
+    "options_util.cc",
+    "options_util.h",
     "password_generator.cc",
     "password_generator.h",
     "personal_data_manager.cc",
