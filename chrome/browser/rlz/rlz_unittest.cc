@@ -186,7 +186,7 @@ class RlzLibTest : public ChromeRenderViewHostTestHarness {
   void ExpectRlzPingSent(bool expected);
   void ExpectReactivationRlzPingSent(bool expected);
 
-  TestRLZTracker tracker_;
+  scoped_ptr<TestRLZTracker> tracker_;
   RlzLibTestNoMachineStateHelper m_rlz_test_helper_;
 #if defined(OS_POSIX)
   scoped_ptr<google_brand::BrandForTesting> brand_override_;
@@ -196,6 +196,7 @@ class RlzLibTest : public ChromeRenderViewHostTestHarness {
 void RlzLibTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
   m_rlz_test_helper_.SetUp();
+  tracker_.reset(new TestRLZTracker());
 
   // Make sure a non-organic brand code is set in the registry or the RLZTracker
   // is pretty much a no-op.
@@ -204,6 +205,7 @@ void RlzLibTest::SetUp() {
 }
 
 void RlzLibTest::TearDown() {
+  tracker_.reset();
   ChromeRenderViewHostTestHarness::TearDown();
   m_rlz_test_helper_.TearDown();
 }
@@ -257,9 +259,9 @@ void RlzLibTest::SimulateOmniboxUsage() {
                    base::TimeDelta::FromSeconds(0),
                    AutocompleteResult());
 
-  tracker_.Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                   content::NotificationService::AllSources(),
-                   content::Details<OmniboxLog>(&dummy));
+  tracker_->Observe(chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+                    content::NotificationService::AllSources(),
+                    content::Details<OmniboxLog>(&dummy));
 }
 
 void RlzLibTest::SimulateHomepageUsage() {
@@ -280,7 +282,7 @@ void RlzLibTest::SimulateAppListUsage() {
 }
 
 void RlzLibTest::InvokeDelayedInit() {
-  tracker_.DelayedInit();
+  tracker_->DelayedInit();
 }
 
 void RlzLibTest::ExpectEventRecorded(const char* event_name, bool expected) {
@@ -296,13 +298,13 @@ void RlzLibTest::ExpectEventRecorded(const char* event_name, bool expected) {
 void RlzLibTest::ExpectRlzPingSent(bool expected) {
   std::string brand;
   google_brand::GetBrand(&brand);
-  EXPECT_EQ(expected, tracker_.was_ping_sent_for_brand(brand.c_str()));
+  EXPECT_EQ(expected, tracker_->was_ping_sent_for_brand(brand.c_str()));
 }
 
 void RlzLibTest::ExpectReactivationRlzPingSent(bool expected) {
   std::string brand;
   google_brand::GetReactivationBrand(&brand);
-  EXPECT_EQ(expected, tracker_.was_ping_sent_for_brand(brand.c_str()));
+  EXPECT_EQ(expected, tracker_->was_ping_sent_for_brand(brand.c_str()));
 }
 
 // The events that affect the different RLZ scenarios are the following:
@@ -758,7 +760,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzOnIoThread) {
 
   base::string16 rlz;
 
-  tracker_.set_assume_not_ui_thread(true);
+  tracker_->set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
   EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
 }
@@ -769,7 +771,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzNotOnIoThread) {
 
   base::string16 rlz;
 
-  tracker_.set_assume_not_ui_thread(false);
+  tracker_->set_assume_not_ui_thread(false);
   EXPECT_FALSE(
       RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
 }
@@ -780,15 +782,15 @@ TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
 
   base::string16 rlz;
 
-  tracker_.set_assume_not_ui_thread(false);
+  tracker_->set_assume_not_ui_thread(false);
   EXPECT_FALSE(
       RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
 
-  tracker_.set_assume_not_ui_thread(true);
+  tracker_->set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
   EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
 
-  tracker_.set_assume_not_ui_thread(false);
+  tracker_->set_assume_not_ui_thread(false);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
   EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
 }
@@ -802,7 +804,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   base::string16 rlz;
 
   // Prime the cache.
-  tracker_.set_assume_not_ui_thread(true);
+  tracker_->set_assume_not_ui_thread(true);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
   EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
@@ -813,7 +815,7 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   EXPECT_STREQ(kAppListRlzString, base::UTF16ToUTF8(rlz).c_str());
 
   // Make sure cache is valid.
-  tracker_.set_assume_not_ui_thread(false);
+  tracker_->set_assume_not_ui_thread(false);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
   EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
@@ -824,13 +826,13 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   EXPECT_STREQ(kAppListRlzString, base::UTF16ToUTF8(rlz).c_str());
 
   // Perform ping.
-  tracker_.set_assume_not_ui_thread(true);
+  tracker_->set_assume_not_ui_thread(true);
   TestRLZTracker::InitRlzDelayed(true, false, kDelay, true, true, false);
   InvokeDelayedInit();
   ExpectRlzPingSent(true);
 
   // Make sure cache is now updated.
-  tracker_.set_assume_not_ui_thread(false);
+  tracker_->set_assume_not_ui_thread(false);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::ChromeOmnibox(), &rlz));
   EXPECT_STREQ(kNewOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
@@ -847,12 +849,12 @@ TEST_F(RlzLibTest, ObserveHandlesBadArgs) {
   details->entry->SetPageID(0);
   details->entry->SetTransitionType(ui::PAGE_TRANSITION_LINK);
 
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::NotificationService::AllSources(),
-                   content::Details<NavigationEntry>(NULL));
-  tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::NotificationService::AllSources(),
-                   content::Details<LoadCommittedDetails>(details.get()));
+  tracker_->Observe(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                    content::NotificationService::AllSources(),
+                    content::Details<NavigationEntry>(NULL));
+  tracker_->Observe(content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                    content::NotificationService::AllSources(),
+                    content::Details<LoadCommittedDetails>(details.get()));
 }
 
 // TODO(thakis): Reactivation doesn't exist on Mac yet.
