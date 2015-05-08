@@ -39,7 +39,10 @@ ShortcutDataFetcher::ShortcutDataFetcher(
     Observer* observer)
     : WebContentsObserver(web_contents),
       weak_observer_(observer),
+      is_waiting_for_web_application_info_(false),
+      is_icon_saved_(false),
       is_ready_(false),
+      icon_timeout_timer_(false, false),
       shortcut_info_(dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
                      web_contents->GetURL())),
       preferred_icon_size_in_px_(kPreferredIconSizeInDp *
@@ -119,6 +122,14 @@ void ShortcutDataFetcher::OnDidGetManifest(const content::Manifest& manifest) {
   }
 
   weak_observer_->OnTitleAvailable(shortcut_info_.title);
+
+  // Kick off a timeout for downloading the icon.  If an icon isn't set within
+  // the timeout, fall back to using a dynamically-generated launcher icon.
+  icon_timeout_timer_.Start(FROM_HERE,
+                            base::TimeDelta::FromMilliseconds(3000),
+                            base::Bind(&ShortcutDataFetcher::OnFaviconFetched,
+                                       this,
+                                       favicon_base::FaviconRawBitmapResult()));
 }
 
 bool ShortcutDataFetcher::OnMessageReceived(const IPC::Message& message) {
@@ -164,12 +175,14 @@ void ShortcutDataFetcher::FetchFavicon() {
       icon_types,
       threshold_to_get_any_largest_icon,
       base::Bind(&ShortcutDataFetcher::OnFaviconFetched, this),
-      &cancelable_task_tracker_);
+      &favicon_task_tracker_);
 }
 
 void ShortcutDataFetcher::OnFaviconFetched(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  if (!web_contents() || !weak_observer_) return;
+  if (!web_contents() || !weak_observer_ || is_icon_saved_) {
+    return;
+  }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
@@ -192,14 +205,14 @@ void ShortcutDataFetcher::CreateLauncherIcon(
   }
 
   if (weak_observer_) {
-    shortcut_icon_ = weak_observer_->FinalizeLauncherIcon(icon_bitmap,
-                                                          shortcut_info_.url);
+    icon_bitmap = weak_observer_->FinalizeLauncherIcon(icon_bitmap,
+                                                       shortcut_info_.url);
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&ShortcutDataFetcher::NotifyObserver, this));
+      base::Bind(&ShortcutDataFetcher::NotifyObserver, this, icon_bitmap));
 }
 
 void ShortcutDataFetcher::OnManifestIconFetched(
@@ -227,14 +240,16 @@ void ShortcutDataFetcher::OnManifestIconFetched(
     preferred_bitmap_index = i;
   }
 
-  shortcut_icon_ = bitmaps[preferred_bitmap_index];
-  NotifyObserver();
+  NotifyObserver(bitmaps[preferred_bitmap_index]);
 }
 
-void ShortcutDataFetcher::NotifyObserver() {
-  if (!web_contents() || !weak_observer_) return;
+void ShortcutDataFetcher::NotifyObserver(const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!web_contents() || !weak_observer_ || is_icon_saved_)
+    return;
 
+  is_icon_saved_ = true;
+  shortcut_icon_ = bitmap;
   is_ready_ = true;
   weak_observer_->OnDataAvailable(shortcut_info_, shortcut_icon_);
 }

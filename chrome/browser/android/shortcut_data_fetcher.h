@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/common/web_application_info.h"
 #include "components/favicon_base/favicon_types.h"
@@ -89,15 +90,19 @@ class ShortcutDataFetcher
                              const std::vector<gfx::Size>& sizes);
 
   // Notifies the observer that the shortcut data is all available.
-  void NotifyObserver();
+  void NotifyObserver(const SkBitmap& icon);
 
   Observer* weak_observer_;
 
   bool is_waiting_for_web_application_info_;
+  bool is_icon_saved_;
   bool is_ready_;
+  base::Timer icon_timeout_timer_;
   ShortcutInfo shortcut_info_;
+
+  // The icon must only be set on the UI thread for thread safety.
   SkBitmap shortcut_icon_;
-  base::CancelableTaskTracker cancelable_task_tracker_;
+  base::CancelableTaskTracker favicon_task_tracker_;
 
   const int preferred_icon_size_in_px_;
   static const int kPreferredIconSizeInDp;
