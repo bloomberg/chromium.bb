@@ -120,6 +120,10 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             break;
         }
         case DimensionToken:
+            if (!std::isfinite(token.numericValue())) {
+                destroyAndClear();
+                return;
+            }
             if (!token.unitType()) {
                 if (String(token.value()) == "__qem") {
                     value.setFromNumber(token.numericValue(), CSSParserValue::Q_EMS);
@@ -150,6 +154,10 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             // fallthrough
         case NumberToken:
         case PercentageToken:
+            if (!std::isfinite(token.numericValue())) {
+                destroyAndClear();
+                return;
+            }
             value.setFromNumber(token.numericValue(), token.unitType());
             value.isInt = (token.numericValueType() == IntegerValueType);
             break;

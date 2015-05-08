@@ -42,12 +42,13 @@
 #t32 { background-color: 1e1 }
 #t33 { background-color: 1e+1 }
 #t34 { background-color: 1e-1 }
+#t35 { background-color: 2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222f }
 </style>
 <script>
 var sheet = document.styleSheets[0];
 
 test(function(){ assert_true(!!sheet); }, "StyleSheet present");
-test(function(){ assert_equals(sheet.cssRules.length, 34); }, "All rules parsed");
+test(function(){ assert_equals(sheet.cssRules.length, 35); }, "All rules parsed");
 
 test(function(){
     assert_equals(sheet.cssRules[0].style.color, "rgb(0, 128, 0)");
@@ -183,6 +184,10 @@ test(function(){
 
 test(function(){
     assert_equals(sheet.cssRules[33].style.backgroundColor, "");
+}, "No hashless color quirk for background-color property with invalid hashless value");
+
+test(function(){
+    assert_equals(sheet.cssRules[34].style.backgroundColor, "");
 }, "No hashless color quirk for background-color property with invalid hashless value");
 
 </script>
