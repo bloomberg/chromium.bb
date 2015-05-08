@@ -183,7 +183,8 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     }
 
     WebGLTexture* tex = validateTextureBinding("texImage3D", target, true);
-    ASSERT(tex);
+    if (!tex)
+        return;
     webContext()->texImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, pixels);
     tex->setLevelInfo(target, level, internalformat, width, height, depth, type);
 }
@@ -1661,15 +1662,22 @@ DEFINE_TRACE(WebGL2RenderingContextBase)
 
 WebGLTexture* WebGL2RenderingContextBase::validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap)
 {
+    WebGLTexture* tex = nullptr;
     switch (target) {
-    // FIXME: add 2D Array texture binding point and 3D texture binding point.
     case GL_TEXTURE_2D_ARRAY:
-        return m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding.get();
+        tex = m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding.get();
+        if (!tex)
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no texture bound to GL_TEXTURE_2D_ARRAY");
+        break;
     case GL_TEXTURE_3D:
-        return m_textureUnits[m_activeTextureUnit].m_texture3DBinding.get();
+        tex = m_textureUnits[m_activeTextureUnit].m_texture3DBinding.get();
+        if (!tex)
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no texture bound to GL_TEXTURE_3D");
+        break;
     default:
         return WebGLRenderingContextBase::validateTextureBinding(functionName, target, useSixEnumsForCubeMap);
     }
+    return tex;
 }
 
 ScriptValue WebGL2RenderingContextBase::getTexParameter(ScriptState* scriptState, GLenum target, GLenum pname)

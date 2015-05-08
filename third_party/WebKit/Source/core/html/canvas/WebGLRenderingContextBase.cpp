@@ -4885,6 +4885,8 @@ WebGLTexture* WebGLRenderingContextBase::validateTextureBinding(const char* func
     switch (target) {
     case GL_TEXTURE_2D:
         tex = m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get();
+        if (!tex)
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no texture bound to GL_TEXTURE_2D");
         break;
     case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
@@ -4897,6 +4899,8 @@ WebGLTexture* WebGLRenderingContextBase::validateTextureBinding(const char* func
             return nullptr;
         }
         tex = m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get();
+        if (!tex)
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no texture bound to GL_TEXTURE_CUBE_MAP");
         break;
     case GL_TEXTURE_CUBE_MAP:
         if (useSixEnumsForCubeMap) {
@@ -4904,13 +4908,13 @@ WebGLTexture* WebGLRenderingContextBase::validateTextureBinding(const char* func
             return nullptr;
         }
         tex = m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get();
+        if (!tex)
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no texture bound to GL_TEXTURE_CUBE_MAP");
         break;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid texture target");
         return nullptr;
     }
-    if (!tex)
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "no texture");
     return tex;
 }
 
