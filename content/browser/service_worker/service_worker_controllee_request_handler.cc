@@ -87,16 +87,10 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   // It's for original request (A) or redirect case (B-a or B-b).
   DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
 
-  job_ = new ServiceWorkerURLRequestJob(request,
-                                        network_delegate,
-                                        provider_host_,
-                                        blob_storage_context_,
-                                        resource_context,
-                                        request_mode_,
-                                        credentials_mode_,
-                                        request_context_type_,
-                                        frame_type_,
-                                        body_);
+  job_ = new ServiceWorkerURLRequestJob(
+      request, network_delegate, provider_host_, blob_storage_context_,
+      resource_context, request_mode_, credentials_mode_,
+      is_main_resource_load_, request_context_type_, frame_type_, body_);
   resource_context_ = resource_context;
 
   if (is_main_resource_load_)

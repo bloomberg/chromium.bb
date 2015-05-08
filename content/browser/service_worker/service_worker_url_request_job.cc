@@ -46,6 +46,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     const ResourceContext* resource_context,
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
+    bool is_main_resource_load,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body)
@@ -59,6 +60,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       stream_pending_buffer_size_(0),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
+      is_main_resource_load_(is_main_resource_load),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       fall_back_required_(false),
@@ -486,9 +488,13 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     return;
 
   if (status != SERVICE_WORKER_OK) {
-    // Dispatching event has been failed, returns an error response.
-    // TODO(kinuko): Would be nice to log the error case.
-    DeliverErrorResponse();
+    // TODO(falken): Add UMA and the report error to the version.
+    if (is_main_resource_load_) {
+      response_type_ = FALLBACK_TO_NETWORK;
+      NotifyRestartRequired();
+    } else {
+      DeliverErrorResponse();
+    }
     return;
   }
 

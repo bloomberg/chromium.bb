@@ -58,6 +58,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       const ResourceContext* resource_context,
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
+      bool is_main_resource_load,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body);
@@ -196,6 +197,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
+  bool is_main_resource_load_;
   RequestContextType request_context_type_;
   RequestContextFrameType frame_type_;
   bool fall_back_required_;

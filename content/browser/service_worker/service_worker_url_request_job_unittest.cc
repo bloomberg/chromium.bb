@@ -40,6 +40,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "net/url_request/url_request_test_job.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
@@ -65,31 +66,35 @@ class MockHttpProtocolHandler
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
       : provider_host_(provider_host),
         resource_context_(resource_context),
-        blob_storage_context_(blob_storage_context) {}
+        blob_storage_context_(blob_storage_context),
+        job_(nullptr) {}
   ~MockHttpProtocolHandler() override {}
 
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    ServiceWorkerURLRequestJob* job =
-        new ServiceWorkerURLRequestJob(request,
-                                       network_delegate,
-                                       provider_host_,
-                                       blob_storage_context_,
-                                       resource_context_,
-                                       FETCH_REQUEST_MODE_NO_CORS,
-                                       FETCH_CREDENTIALS_MODE_OMIT,
-                                       REQUEST_CONTEXT_TYPE_HYPERLINK,
-                                       REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-                                       scoped_refptr<ResourceRequestBody>());
-    job->ForwardToServiceWorker();
-    return job;
+    if (job_ && job_->ShouldFallbackToNetwork()) {
+      // Simulate fallback to network by constructing a valid response.
+      return new net::URLRequestTestJob(request, network_delegate,
+                                        net::URLRequestTestJob::test_headers(),
+                                        "PASS", true);
+    }
+
+    job_ = new ServiceWorkerURLRequestJob(
+        request, network_delegate, provider_host_, blob_storage_context_,
+        resource_context_, FETCH_REQUEST_MODE_NO_CORS,
+        FETCH_CREDENTIALS_MODE_OMIT, true /* is_main_resource_load */,
+        REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+        scoped_refptr<ResourceRequestBody>());
+    job_->ForwardToServiceWorker();
+    return job_;
   }
 
  private:
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   const ResourceContext* resource_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
+  mutable ServiceWorkerURLRequestJob* job_;
 };
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
@@ -576,6 +581,42 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request_->status().is_success());
+}
+
+// Helper to simulate failing to dispatch a fetch event to a worker.
+class FailFetchHelper : public EmbeddedWorkerTestHelper {
+ public:
+  FailFetchHelper(int mock_render_process_id)
+      : EmbeddedWorkerTestHelper(base::FilePath(), mock_render_process_id) {}
+  ~FailFetchHelper() override {}
+
+ protected:
+  void OnFetchEvent(int embedded_worker_id,
+                    int request_id,
+                    const ServiceWorkerFetchRequest& request) override {
+    SimulateWorkerStopped(embedded_worker_id);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FailFetchHelper);
+};
+
+TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
+  SetUpWithHelper(new FailFetchHelper(kProcessID));
+
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
+  request_->set_method("GET");
+  request_->Start();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  // We should have fallen back to network.
+  EXPECT_EQ(200, request_->GetResponseCode());
+  EXPECT_EQ("PASS", url_request_delegate_.response_data());
+  EXPECT_FALSE(HasInflightRequests());
 }
 
 // TODO(kinuko): Add more tests with different response data and also for
