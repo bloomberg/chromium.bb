@@ -186,8 +186,11 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
                                     const base::ListValue& results,
                                     const std::string& error,
                                     functions::HistogramValue histogram_value) {
-    base::Process process = base::Process::DeprecatedGetProcessFromHandle(
-        render_view_host_->GetProcess()->GetHandle());
+    base::Process process =
+        content::RenderProcessHost::run_renderer_in_process()
+            ? base::Process::Current()
+            : base::Process::DeprecatedGetProcessFromHandle(
+                  render_view_host_->GetProcess()->GetHandle());
     CommonResponseCallback(render_view_host_, render_view_host_->GetRoutingID(),
                            process, request_id, type, results, error,
                            histogram_value);
