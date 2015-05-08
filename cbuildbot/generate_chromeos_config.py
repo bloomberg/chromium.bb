@@ -489,7 +489,7 @@ _settings = dict(
   build_type=constants.PFQ_TYPE,
 
 # builder_class_name -- The class name used to build this config.  See the
-# modules in cbuildbot/builders/*_builders.py for possible values.  This
+#modules in cbuildbot / builders/*_builders.py for possible values.  This
 # should be the name in string form -- e.g. "simple_builders.SimpleBuilder"
 # to get the SimpleBuilder class in the simple_builders module.  If not
 # specified, we'll fallback to legacy probing behavior until everyone has
@@ -1638,6 +1638,10 @@ _norootfs_verification_boards = frozenset([
     'lakitu',
 ])
 
+_base_layout_boards = frozenset([
+    'lakitu',
+])
+
 # A base config for each board.
 _base_configs = dict()
 
@@ -1666,6 +1670,8 @@ def _CreateBaseConfigs():
       base.update(hwqual=False)
     if board in _norootfs_verification_boards:
       base.update(rootfs_verification=False)
+    if board in _base_layout_boards:
+      base.update(disk_layout='base')
 
     # TODO(akeshet) Eliminate or clean up this special case.
     # kayle board has a lot of kayle-specific config changes.

@@ -23339,6 +23339,7 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Preflight Chrome Uprev & Build (internal)",
+        "disk_layout": "base",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23362,6 +23363,7 @@
         "chrome_rev": "latest_release",
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
+        "disk_layout": "base",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
@@ -23389,6 +23391,7 @@
         "cpe_export": false,
         "debug_symbols": false,
         "description": "Verifies compilation only",
+        "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
@@ -23420,6 +23423,7 @@
         "build_type": "full",
         "chroot_replace": true,
         "description": "Full Builds",
+        "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "git_sync": true,
         "images": [
@@ -23446,6 +23450,7 @@
         ],
         "build_type": "binary",
         "description": "Incremental Builds (internal)",
+        "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "internal": true,
         "manifest": "official.xml",
@@ -23472,6 +23477,7 @@
         "cpe_export": false,
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
@@ -23501,6 +23507,7 @@
         "build_type": "paladin",
         "chrome_sdk_build_chrome": false,
         "description": "Commit Queue (internal)",
+        "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
         "internal": true,
         "manifest": "official.xml",
@@ -23546,6 +23553,7 @@
         "cpe_export": false,
         "debug_symbols": false,
         "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
         "health_alert_recipients": [
             "chromeos-infra-eng@grotations.appspotmail.com"
@@ -23581,6 +23589,7 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Release Builds (canary) (internal)",
+        "disk_layout": "base",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
         "images": [
             "base",
@@ -23822,6 +23831,7 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Informational Chrome Uprev & Build (internal)",
+        "disk_layout": "base",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23844,6 +23854,7 @@
         "chrome_rev": "tot",
         "chroot_replace": true,
         "description": "Informational Chromium Uprev & Build (public)",
+        "disk_layout": "base",
         "name": "lakitu-tot-chromium-pfq-informational",
         "rootfs_verification": false,
         "sync_chrome": false,
