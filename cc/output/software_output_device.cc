@@ -43,18 +43,6 @@ void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
   frame_data->damage_rect = damage_rect_;
 }
 
-void SoftwareOutputDevice::CopyToPixels(const gfx::Rect& rect, void* pixels) {
-  DCHECK(surface_);
-  SkImageInfo info = SkImageInfo::MakeN32Premul(rect.width(), rect.height());
-  surface_->getCanvas()->readPixels(info, pixels, info.minRowBytes(), rect.x(),
-                                    rect.y());
-}
-
-void SoftwareOutputDevice::Scroll(const gfx::Vector2d& delta,
-                                  const gfx::Rect& clip_rect) {
-  NOTIMPLEMENTED();
-}
-
 void SoftwareOutputDevice::ReclaimSoftwareFrame(unsigned id) {
   NOTIMPLEMENTED();
 }

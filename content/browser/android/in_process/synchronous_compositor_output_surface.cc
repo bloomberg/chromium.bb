@@ -51,9 +51,6 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
     return surface_->current_sw_canvas_;
   }
   void EndPaint(cc::SoftwareFrameData* frame_data) override {}
-  void CopyToPixels(const gfx::Rect& rect, void* pixels) override {
-    NOTIMPLEMENTED();
-  }
 
  private:
   SynchronousCompositorOutputSurface* surface_;

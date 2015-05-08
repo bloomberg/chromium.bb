@@ -96,12 +96,4 @@ void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
   }
 }
 
-void SoftwareOutputDeviceWin::CopyToPixels(const gfx::Rect& rect,
-                                           void* pixels) {
-  DCHECK(contents_);
-  SkImageInfo info = SkImageInfo::MakeN32Premul(rect.width(), rect.height());
-  contents_->sk_canvas()->readPixels(
-      info, pixels, info.minRowBytes(), rect.x(), rect.y());
-}
-
 }  // namespace content

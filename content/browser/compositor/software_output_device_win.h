@@ -29,7 +29,6 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
               float scale_factor) override;
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
   void EndPaint(cc::SoftwareFrameData* frame_data) override;
-  void CopyToPixels(const gfx::Rect& rect, void* pixels) override;
 
  private:
   HWND hwnd_;

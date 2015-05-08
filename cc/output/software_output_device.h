@@ -48,14 +48,6 @@ class CC_EXPORT SoftwareOutputDevice {
   // that it holds to it.
   virtual void EndPaint(SoftwareFrameData* frame_data);
 
-  // Copies pixels inside |rect| from the current software framebuffer to
-  // |pixels|. Fails if there is no current softwareframebuffer.
-  virtual void CopyToPixels(const gfx::Rect& rect, void* pixels);
-
-  // Blit the pixel content of the SoftwareOutputDevice by |delta| with the
-  // write clipped to |clip_rect|.
-  virtual void Scroll(const gfx::Vector2d& delta, const gfx::Rect& clip_rect);
-
   // Discard the backing buffer in the surface provided by this instance.
   virtual void DiscardBackbuffer() {}
 
