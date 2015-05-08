@@ -6,17 +6,14 @@
 #define CONTENT_BROWSER_LOADER_CERTIFICATE_RESOURCE_HANDLER_H_
 
 #include <string>
-#include <utility>
-#include <vector>
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/loader/resource_handler.h"
 #include "net/base/mime_util.h"
 
 namespace net {
-class IOBuffer;
+class GrowableIOBuffer;
 class URLRequest;
 class URLRequestStatus;
 }  // namespace net
@@ -66,16 +63,9 @@ class CertificateResourceHandler : public ResourceHandler {
   void OnDataDownloaded(int bytes_downloaded) override;
 
  private:
-  typedef std::vector<std::pair<scoped_refptr<net::IOBuffer>,
-                                size_t> > ContentVector;
-
-  bool AssembleResource();
-
-  size_t content_length_;
-  ContentVector buffer_;
-  scoped_refptr<net::IOBuffer> read_buffer_;
-  scoped_refptr<net::IOBuffer> resource_buffer_;  // Downloaded certificate.
+  scoped_refptr<net::GrowableIOBuffer> buffer_;
   net::CertificateMimeType cert_type_;
+
   DISALLOW_COPY_AND_ASSIGN(CertificateResourceHandler);
 };
 
