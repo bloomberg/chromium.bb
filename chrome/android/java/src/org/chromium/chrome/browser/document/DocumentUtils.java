@@ -48,7 +48,7 @@ public class DocumentUtils {
         ApiCompatibilityUtils.setTaskDescription(activity, title, icon, color);
         int statusBarColor = useDefaultStatusBarColor
                 ? Color.BLACK : BrandColorUtils.computeStatusBarColor(color);
-        ApiCompatibilityUtils.setStatusBarColor(activity, statusBarColor);
+        ApiCompatibilityUtils.setStatusBarColor(activity.getWindow(), statusBarColor);
     }
 
     /**
