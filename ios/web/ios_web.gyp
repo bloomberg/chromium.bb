@@ -121,6 +121,8 @@
         'public/web/url_data_source_ios.h',
         'public/web_client.h',
         'public/web_client.mm',
+        'public/web_controller_factory.h',
+        'public/web_controller_factory.mm',
         'public/web_state/credential.h',
         'public/web_state/crw_native_content.h',
         'public/web_state/crw_native_content_provider.h',
