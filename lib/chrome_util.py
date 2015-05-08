@@ -293,8 +293,6 @@ class Path(object):
 
 
 _DISABLE_NACL = 'disable_nacl'
-_USE_DRM = 'use_drm'
-
 
 _CHROME_INTERNAL_FLAG = 'chrome_internal'
 _HIGHDPI_FLAG = 'highdpi'
@@ -345,8 +343,6 @@ _COPY_PATHS_APP_SHELL = (
 ) + _COPY_PATHS_COMMON
 
 _COPY_PATHS_CHROME = (
-    Path('ash_shell', exe=True, cond=C.GypSet(_USE_DRM)),
-    Path('aura_demo', exe=True, cond=C.GypSet(_USE_DRM)),
     Path('chrome', exe=True),
     Path('chrome-wrapper'),
     Path('chrome_100_percent.pak'),
