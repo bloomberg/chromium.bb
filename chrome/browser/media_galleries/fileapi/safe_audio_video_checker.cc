@@ -9,6 +9,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -39,7 +41,7 @@ void SafeAudioVideoChecker::Start() {
   }
 
   utility_process_host_ = content::UtilityProcessHost::Create(
-      this, base::MessageLoopProxy::current())->AsWeakPtr();
+      this, base::ThreadTaskRunnerHandle::Get())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);

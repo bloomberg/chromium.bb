@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
 
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -50,7 +52,7 @@ void SafeMediaMetadataParser::StartWorkOnIOThread(
   callback_ = callback;
 
   utility_process_host_ = content::UtilityProcessHost::Create(
-      this, base::MessageLoopProxy::current())->AsWeakPtr();
+      this, base::ThreadTaskRunnerHandle::Get())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
 

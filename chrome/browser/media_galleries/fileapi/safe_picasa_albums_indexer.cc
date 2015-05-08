@@ -5,6 +5,8 @@
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
 
 #include "base/files/file_util.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -97,7 +99,7 @@ void SafePicasaAlbumsIndexer::StartWorkOnIOThread() {
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
   UtilityProcessHost* host =
-      UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
+      UtilityProcessHost::Create(this, base::ThreadTaskRunnerHandle::Get());
   host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_MEDIA_LIBRARY_FILE_CHECKER_NAME));
   host->Send(new ChromeUtilityMsg_IndexPicasaAlbumsContents(album_uids_,
