@@ -29,14 +29,6 @@ class XmppSocketDataProvider: public net::SocketDataProvider {
 
   void Reset() override {}
 
-  bool AllReadDataConsumed() const override {
-    return true;
-  }
-
-  bool AllWriteDataConsumed() const override {
-    return true;
-  }
-
   void ReceiveData(const std::string& text) {
     socket()->OnReadComplete(
         net::MockRead(net::ASYNC, text.data(), text.size()));
