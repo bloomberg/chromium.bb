@@ -2971,8 +2971,6 @@ void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent, HitT
 
     Node* adjustedNode = nullptr;
     IntPoint adjustedPoint = gestureEvent->position();
-    IntSize radius = gestureEvent->area();
-    radius.scale(1.f / 2);
     bool adjusted = false;
     switch (gestureEvent->type()) {
     case PlatformEvent::GestureTap:
