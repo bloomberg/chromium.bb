@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry.core.platform import tracing_category_filter
 from telemetry.page import page_test
 from telemetry.web_perf import timeline_based_measurement
 
@@ -34,8 +35,14 @@ class Smoothness(page_test.PageTest):
 
   def WillNavigateToPage(self, page, tab):
     tracing_controller = tab.browser.platform.tracing_controller
+    # FIXME: Remove webkit.console when blink.console lands in chromium and
+    # the ref builds are updated. crbug.com/386847
+    custom_categories = [
+        'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
+    category_filter = tracing_category_filter.TracingCategoryFilter(
+        ','.join(custom_categories))
     self._tbm = timeline_based_measurement.TimelineBasedMeasurement(
-        timeline_based_measurement.Options(),
+        timeline_based_measurement.Options(category_filter),
         _CustomResultsWrapper)
     self._tbm.WillRunUserStory(
         tracing_controller, page.GetSyntheticDelayCategories())
