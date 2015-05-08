@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
@@ -703,6 +704,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #else
     CHECK(base::i18n::InitializeICU());
 #endif  // OS_ANDROID
+
+    base::StatisticsRecorder::Initialize();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

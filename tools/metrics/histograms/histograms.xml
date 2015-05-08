@@ -44051,6 +44051,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time spent in scavenging phase of GC.</summary>
 </histogram>
 
+<histogram name="V8.Initializer.LoadV8Snapshot.Result"
+    enum="V8InitializerLoadV8SnapshotResult">
+  <owner>oth@chromium.org</owner>
+  <summary>Results from snapshot loading.</summary>
+</histogram>
+
+<histogram name="V8.Initializer.OpenV8File.Result"
+    enum="V8InitializerOpenV8FileResult">
+  <owner>oth@chromium.org</owner>
+  <summary>Results from opening V8 snapshot files.</summary>
+</histogram>
+
 <histogram name="V8.MemoryExternalFragmentationCellSpace" units="percent">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
@@ -64941,6 +64953,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="5" label="FLAGS_MISMATCH">Reject due to flags hash mismatch</int>
   <int value="6" label="CHECKSUM_MISMATCH">Reject due to checksum mismatch</int>
+</enum>
+
+<enum name="V8InitializerLoadV8SnapshotResult" type="int">
+  <int value="0" label="SUCCESS">Load succeeded</int>
+  <int value="1" label="FAILED_OPEN">Failure to open snapshot file</int>
+  <int value="2" label="FAILED_MAP">Failed to map snapshot</int>
+  <int value="3" label="FAILED_VERIFY">Failed to verify snapshot</int>
+</enum>
+
+<enum name="V8InitializerOpenV8FileResult" type="int">
+  <int value="0" label="OPENED">Opened without issue</int>
+  <int value="1" label="OPENED_RETRY">Opened after one or more retries</int>
+  <int value="2" label="FAILED_IN_USE">Failed because file in use</int>
+  <int value="3" label="FAILED_OTHER">Failed for other reason</int>
 </enum>
 
 <enum name="ValidateMenuItemSelectorType" type="int">

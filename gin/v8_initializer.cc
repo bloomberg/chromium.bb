@@ -9,8 +9,11 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "crypto/sha2.h"
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
@@ -42,6 +45,11 @@ const int kV8SnapshotBasePathKey =
 const char kNativesFileName[] = "natives_blob.bin";
 const char kSnapshotFileName[] = "snapshot_blob.bin";
 
+// Constants for snapshot loading retries taken from:
+//   https://support.microsoft.com/en-us/kb/316609.
+const int kMaxOpenAttempts = 5;
+const int kOpenRetryDelayMillis = 250;
+
 void GetV8FilePaths(base::FilePath* natives_path_out,
                     base::FilePath* snapshot_path_out) {
 #if !defined(OS_MACOSX)
@@ -65,12 +73,12 @@ void GetV8FilePaths(base::FilePath* natives_path_out,
 #endif  // !defined(OS_MACOSX)
 }
 
-bool MapV8Files(base::File natives_file,
-                base::File snapshot_file,
-                base::MemoryMappedFile::Region natives_region =
-                    base::MemoryMappedFile::Region::kWholeFile,
-                base::MemoryMappedFile::Region snapshot_region =
-                    base::MemoryMappedFile::Region::kWholeFile) {
+static bool MapV8Files(base::File natives_file,
+                       base::File snapshot_file,
+                       base::MemoryMappedFile::Region natives_region =
+                           base::MemoryMappedFile::Region::kWholeFile,
+                       base::MemoryMappedFile::Region snapshot_region =
+                           base::MemoryMappedFile::Region::kWholeFile) {
   g_mapped_natives = new base::MemoryMappedFile;
   if (!g_mapped_natives->IsValid()) {
     if (!g_mapped_natives->Initialize(natives_file.Pass(), natives_region)) {
@@ -92,6 +100,49 @@ bool MapV8Files(base::File natives_file,
   }
 
   return true;
+}
+
+static bool OpenV8File(const base::FilePath& path,
+                       int flags,
+                       base::File& file) {
+  // Re-try logic here is motivated by http://crbug.com/479537
+  // for A/V on Windows (https://support.microsoft.com/en-us/kb/316609).
+
+  // These match tools/metrics/histograms.xml
+  enum OpenV8FileResult {
+    OPENED = 0,
+    OPENED_RETRY,
+    FAILED_IN_USE,
+    FAILED_OTHER,
+    MAX_VALUE
+  };
+
+  OpenV8FileResult result = OpenV8FileResult::FAILED_IN_USE;
+  for (int attempt = 0; attempt < kMaxOpenAttempts; attempt++) {
+    file.Initialize(path, flags);
+    if (file.IsValid()) {
+      if (attempt == 0) {
+        result = OpenV8FileResult::OPENED;
+        break;
+      } else {
+        result = OpenV8FileResult::OPENED_RETRY;
+        break;
+      }
+    } else if (file.error_details() != base::File::FILE_ERROR_IN_USE) {
+      result = OpenV8FileResult::FAILED_OTHER;
+      break;
+    } else if (kMaxOpenAttempts - 1 != attempt) {
+      base::PlatformThread::Sleep(
+          base::TimeDelta::FromMilliseconds(kOpenRetryDelayMillis));
+    }
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("V8.Initializer.OpenV8File.Result",
+                            result,
+                            OpenV8FileResult::MAX_VALUE);
+
+  return result == OpenV8FileResult::OPENED
+         || result == OpenV8FileResult::OPENED_RETRY;
 }
 
 #if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
@@ -123,6 +174,15 @@ extern const unsigned char g_snapshot_fingerprint[];
 
 // static
 bool V8Initializer::LoadV8Snapshot() {
+
+  enum LoadV8SnapshotResult {
+    SUCCESS = 0,
+    FAILED_OPEN,
+    FAILED_MAP,
+    FAILED_VERIFY,
+    MAX_VALUE
+  };
+
   if (g_mapped_natives && g_mapped_snapshot)
     return true;
 
@@ -130,25 +190,29 @@ bool V8Initializer::LoadV8Snapshot() {
   base::FilePath snapshot_data_path;
   GetV8FilePaths(&natives_data_path, &snapshot_data_path);
 
+  base::File natives_file;
+  base::File snapshot_file;
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  if (!MapV8Files(base::File(natives_data_path, flags),
-                  base::File(snapshot_data_path, flags)))
-    return false;
 
+  LoadV8SnapshotResult result;
+  if (!OpenV8File(natives_data_path, flags, natives_file) ||
+      !OpenV8File(snapshot_data_path, flags, snapshot_file)) {
+    result = LoadV8SnapshotResult::FAILED_OPEN;
+  } else if (!MapV8Files(natives_file.Pass(), snapshot_file.Pass())) {
+    result = LoadV8SnapshotResult::FAILED_MAP;
 #if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-  // TODO(oth) Remove these temporary CHECKs once http://crbug.com/479537 is
-  // fixed. These are just here to identify whether canary failures are
-  // due to verification or file/vm failures.
-  bool natives_ok =
-      VerifyV8SnapshotFile(g_mapped_natives, g_natives_fingerprint);
-  CHECK(natives_ok);
-  bool snapshot_ok =
-      VerifyV8SnapshotFile(g_mapped_snapshot, g_snapshot_fingerprint);
-  CHECK(snapshot_ok);
-  return natives_ok && snapshot_ok;
-#else
-  return true;
+  } else if (!VerifyV8SnapshotFile(g_mapped_natives, g_natives_fingerprint) ||
+             !VerifyV8SnapshotFile(g_mapped_snapshot, g_snapshot_fingerprint)) {
+    result = LoadV8SnapshotResult::FAILED_VERIFY;
 #endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
+  } else {
+    result = LoadV8SnapshotResult::SUCCESS;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("V8.Initializer.LoadV8Snapshot.Result",
+                            result,
+                            LoadV8SnapshotResult::MAX_VALUE);
+  return result == LoadV8SnapshotResult::SUCCESS;
 }
 
 // static
@@ -187,16 +251,17 @@ bool V8Initializer::OpenV8FilesForChildProcesses(
   base::FilePath snapshot_data_path;
   GetV8FilePaths(&natives_data_path, &snapshot_data_path);
 
+  base::File natives_data_file;
+  base::File snapshot_data_file;
   int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  base::File natives_data_file(natives_data_path, file_flags);
-  base::File snapshot_data_file(snapshot_data_path, file_flags);
 
-  if (!natives_data_file.IsValid() || !snapshot_data_file.IsValid())
-    return false;
-
-  *natives_fd_out = natives_data_file.TakePlatformFile();
-  *snapshot_fd_out = snapshot_data_file.TakePlatformFile();
-  return true;
+  bool success = OpenV8File(natives_data_path, file_flags, natives_data_file) &&
+                 OpenV8File(snapshot_data_path, file_flags, snapshot_data_file);
+  if (success) {
+    *natives_fd_out = natives_data_file.TakePlatformFile();
+    *snapshot_fd_out = snapshot_data_file.TakePlatformFile();
+  }
+  return success;
 }
 
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
