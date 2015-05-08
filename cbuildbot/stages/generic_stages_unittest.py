@@ -17,6 +17,7 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import generate_chromeos_config
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.stages import generic_stages
@@ -131,7 +132,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     if extra_config:
       build_config.update(extra_config)
     if options.remote_trybot:
-      build_config = cbuildbot_config.OverrideConfigForTrybot(
+      build_config = generate_chromeos_config.OverrideConfigForTrybot(
           build_config, options)
     options.managed_chrome = build_config['sync_chrome']
 

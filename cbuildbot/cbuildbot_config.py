@@ -16,8 +16,9 @@ from __future__ import print_function
 # pylint: disable=unused-import
 
 from chromite.cbuildbot.generate_chromeos_config import (
-    # Class for a single build config.
+    # Classes used to generate build configs.
     BuildConfig,
+    HWTestConfig,
 
     # Fetch the build config.
     GetConfig,
@@ -45,8 +46,6 @@ from chromite.cbuildbot.generate_chromeos_config import (
     GetCanariesForChromeLKGM,
     GetDisplayPosition,
     GetSlavesForMaster,
-    HWTestConfig,
-    OverrideConfigForTrybot,
 
     # Tests for config type categories.
     IsCanaryType,
