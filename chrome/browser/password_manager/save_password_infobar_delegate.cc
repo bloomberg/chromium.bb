@@ -125,11 +125,13 @@ void SavePasswordInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(
+  int brand_string_id =
       (source_type_ ==
        password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API)
-          ? IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_PROMPT
-          : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
+          ? IDS_PASSWORD_MANAGER_SMART_LOCK
+          : IDS_SAVE_PASSWORD_TITLE_BRAND;
+  return l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD,
+                                    l10n_util::GetStringUTF16(brand_string_id));
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(

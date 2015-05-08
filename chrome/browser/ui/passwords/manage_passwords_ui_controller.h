@@ -104,6 +104,9 @@ class ManagePasswordsUIController
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage();
 
+  // Open a new tab, pointing to the Smart Lock help article.
+  void NavigateToSmartLockHelpArticle();
+
   virtual const autofill::PasswordForm& PendingPassword() const;
 
   // Set the state of the Omnibox icon, and possibly show the associated bubble

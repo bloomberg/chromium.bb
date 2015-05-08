@@ -7,12 +7,17 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace password_bubble_experiment {
 namespace {
+
+const char kBrandingExperimentName[] = "PasswordBubbleBranding";
+const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
 
 // Return the number of consecutive times the user clicked "Not now" in the
 // "Save password" bubble.
@@ -53,5 +58,13 @@ void RecordBubbleClosed(
     nopes_count = 0;
   prefs->SetInteger(prefs::kPasswordBubbleNopesCount, nopes_count);
 }
+
+bool IsEnabledSmartLockBranding(Profile* profile) {
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+  return (signin && signin->IsAuthenticated() &&
+          base::FieldTrialList::FindFullName(kBrandingExperimentName) ==
+              kSmartLockBrandingGroupName);
+}
+
 
 }  // namespace password_bubble_experiment

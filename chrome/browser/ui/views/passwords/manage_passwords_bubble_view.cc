@@ -353,9 +353,11 @@ void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
 // A view offering the user the ability to save credentials. Contains a
 // single ManagePasswordItemsView, along with a "Save Passwords" button
 // and a rejection combobox.
-class ManagePasswordsBubbleView::PendingView : public views::View,
-                                               public views::ButtonListener,
-                                               public views::ComboboxListener {
+class ManagePasswordsBubbleView::PendingView
+    : public views::View,
+      public views::ButtonListener,
+      public views::ComboboxListener,
+      public views::StyledLabelListener {
  public:
   explicit PendingView(ManagePasswordsBubbleView* parent);
   ~PendingView() override;
@@ -363,6 +365,10 @@ class ManagePasswordsBubbleView::PendingView : public views::View,
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(const gfx::Range& range,
+                              int event_flags) override;
 
   // Handles the event when the user changes an index of a combobox.
   void OnPerformAction(views::Combobox* source) override;
@@ -407,8 +413,19 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   // TODO(mkwst): Need a mechanism to pipe a font list down into a combobox.
 
   // Title row.
+  views::StyledLabel* title_label =
+      new views::StyledLabel(parent_->model()->title(), this);
+  title_label->SetBaseFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::MediumFont));
+  if (!parent_->model()->title_brand_link_range().is_empty()) {
+    title_label->AddStyleRange(
+        parent_->model()->title_brand_link_range(),
+        views::StyledLabel::RangeStyleInfo::CreateForLink());
+  }
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+  layout->AddView(title_label);
 
   // Credential row.
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
@@ -436,6 +453,13 @@ void ManagePasswordsBubbleView::PendingView::ButtonPressed(
   DCHECK(sender == save_button_);
   parent_->model()->OnSaveClicked();
   parent_->Close();
+}
+
+void ManagePasswordsBubbleView::PendingView::StyledLabelLinkClicked(
+    const gfx::Range& range,
+    int event_flags) {
+  DCHECK_EQ(range, parent_->model()->title_brand_link_range());
+  parent_->model()->OnBrandLinkClicked();
 }
 
 void ManagePasswordsBubbleView::PendingView::OnPerformAction(

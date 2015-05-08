@@ -99,7 +99,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   }
 
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    title_ = PendingStateTitleBasedOnSavePasswordPref();
+    UpdatePendingStateTitle();
   } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -193,12 +193,12 @@ void ManagePasswordsBubbleModel::OnNopeClicked() {
 
 void ManagePasswordsBubbleModel::OnConfirmationForNeverForThisSite() {
   never_save_passwords_ = true;
-  title_ = PendingStateTitleBasedOnSavePasswordPref();
+  UpdatePendingStateTitle();
 }
 
 void ManagePasswordsBubbleModel::OnUndoNeverForThisSite() {
   never_save_passwords_ = false;
-  title_ = PendingStateTitleBasedOnSavePasswordPref();
+  UpdatePendingStateTitle();
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
@@ -241,6 +241,12 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   dismissal_reason_ = metrics_util::CLICKED_MANAGE;
   ManagePasswordsUIController::FromWebContents(web_contents())
       ->NavigateToPasswordManagerSettingsPage();
+}
+
+void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
+  dismissal_reason_ = metrics_util::CLICKED_BRAND_NAME;
+  ManagePasswordsUIController::FromWebContents(web_contents())
+      ->NavigateToSmartLockHelpArticle();
 }
 
 void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
@@ -302,20 +308,22 @@ int ManagePasswordsBubbleModel::PasswordFieldWidth() {
   return GetFieldWidth(PASSWORD_FIELD);
 }
 
-base::string16
-ManagePasswordsBubbleModel::PendingStateTitleBasedOnSavePasswordPref() const {
-  int message_id = 0;
+void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
+  title_brand_link_range_ = gfx::Range();
   if (never_save_passwords_) {
-    message_id = IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE;
-  } else if (IsNewUIActive()) {
-    SigninManagerBase* signin =
-        SigninManagerFactory::GetForProfile(GetProfile());
-    if (signin && signin->IsAuthenticated())
-      message_id = IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_PROMPT;
-    else
-      message_id = IDS_SAVE_PASSWORD;
+    title_ = l10n_util::GetStringUTF16(
+        IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE);
+  } else if (password_bubble_experiment::IsEnabledSmartLockBranding(
+                 GetProfile())) {
+    // "Google Smart Lock" should be a hyperlink.
+    base::string16 brand_link =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+    size_t offset = 0;
+    title_ = l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD, brand_link, &offset);
+    title_brand_link_range_ = gfx::Range(offset, offset + brand_link.length());
   } else {
-    message_id = IDS_SAVE_PASSWORD;
+    base::string16 brand_link =
+        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND);
+    title_ = l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD, brand_link);
   }
-  return l10n_util::GetStringUTF16(message_id);
 }

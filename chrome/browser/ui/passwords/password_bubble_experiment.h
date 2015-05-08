@@ -13,6 +13,7 @@ class PrefRegistrySyncable;
 }
 
 class PrefService;
+class Profile;
 
 // These functions handle the algorithms according to which the "Save password?"
 // bubble shows "No thanks" or "Never for this site" button default.
@@ -30,6 +31,10 @@ bool ShouldShowNeverForThisSiteDefault(PrefService* prefs);
 void RecordBubbleClosed(
     PrefService* prefs,
     password_manager::metrics_util::UIDismissalReason reason);
+
+// Returns true if the Save bubble should mention Smart Lock instead of Chrome.
+// This is only true for signed-in users.
+bool IsEnabledSmartLockBranding(Profile* profile);
 
 // The name of the finch experiment controlling the algorithm.
 extern const char kExperimentName[];

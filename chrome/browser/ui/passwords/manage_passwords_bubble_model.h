@@ -75,6 +75,9 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the manage link is clicked by the user.
   void OnManageLinkClicked();
 
+  // Called by the view code when the brand name link is clicked by the user.
+  void OnBrandLinkClicked();
+
   // Called by the view code when the auto-signin toast is about to close due to
   // timeout.
   void OnAutoSignInToastTimeout();
@@ -119,6 +122,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
     return save_confirmation_link_range_;
   }
 
+  const gfx::Range& title_brand_link_range() const {
+    return title_brand_link_range_;
+  }
+
   Profile* GetProfile() const;
 
   // Returns true iff the new UI should be presented to user for managing and
@@ -146,12 +153,16 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   static int PasswordFieldWidth();
 
  private:
-  // Returns the title for the PENDING_PASSWORD_STATE.
-  base::string16 PendingStateTitleBasedOnSavePasswordPref() const;
+  // Updates |title_| and |title_brand_link_range_| for the
+  // PENDING_PASSWORD_STATE.
+  void UpdatePendingStateTitle();
   // URL of the page from where this bubble was triggered.
   GURL origin_;
   password_manager::ui::State state_;
   base::string16 title_;
+  // Range of characters in the title that contains the Smart Lock Brand and
+  // should point to an article. For the default title the range is empty.
+  gfx::Range title_brand_link_range_;
   autofill::PasswordForm pending_password_;
   ScopedVector<const autofill::PasswordForm> local_credentials_;
   ScopedVector<const autofill::PasswordForm> federated_credentials_;
