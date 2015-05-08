@@ -8,7 +8,7 @@
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/common/url_constants.h"
-#include "components/favicon/content/content_favicon_driver.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 

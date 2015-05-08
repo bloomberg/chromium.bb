@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -83,14 +84,25 @@ TabLoader::~TabLoader() {
 
 void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   // Add the tabs to the list of tabs loading/to load and register them for
-  // notifications.
+  // notifications. Also, restore the favicons of the background tabs (the title
+  // has already been set by now).This avoids having blank icons in case the
+  // restore is halted due to memory pressure. Also, when multiple tabs are
+  // restored to a single window, the title may not appear, and the user will
+  // have no way of finding out which tabs corresponds to which page if the icon
+  // is a generic grey one.
   for (auto& restored_tab : tabs) {
-    if (!restored_tab.is_active())
+    if (!restored_tab.is_active()) {
       tabs_to_load_.push_back(&restored_tab.contents()->GetController());
-    else
+      favicon::ContentFaviconDriver* favicon_driver =
+          favicon::ContentFaviconDriver::FromWebContents(
+              restored_tab.contents());
+      favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
+    } else {
       tabs_loading_.insert(&restored_tab.contents()->GetController());
+    }
     RegisterForNotifications(&restored_tab.contents()->GetController());
   }
+
   // When multiple profiles are using the same TabLoader, another profile might
   // already have started loading. In that case, the tabs scheduled for loading
   // by this profile are already in the loading queue, and they will get loaded
