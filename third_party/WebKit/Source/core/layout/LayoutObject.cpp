@@ -3304,12 +3304,16 @@ void showTree(const blink::LayoutObject* object)
 {
     if (object)
         object->showTreeForThis();
+    else
+        fprintf(stderr, "Cannot showTree. Root is (nil)\n");
 }
 
 void showLineTree(const blink::LayoutObject* object)
 {
     if (object)
         object->showLineTreeForThis();
+    else
+        fprintf(stderr, "Cannot showLineTree. Root is (nil)\n");
 }
 
 void showLayoutTree(const blink::LayoutObject* object1)
@@ -3324,6 +3328,8 @@ void showLayoutTree(const blink::LayoutObject* object1, const blink::LayoutObjec
         while (root->parent())
             root = root->parent();
         root->showLayoutTreeAndMark(object1, "*", object2, "-", 0);
+    } else {
+        fprintf(stderr, "Cannot showLayoutTree. Root is (nil)\n");
     }
 }
 

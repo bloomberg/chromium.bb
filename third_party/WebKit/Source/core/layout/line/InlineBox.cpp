@@ -391,12 +391,16 @@ void showTree(const blink::InlineBox* b)
 {
     if (b)
         b->showTreeForThis();
+    else
+        fprintf(stderr, "Cannot showTree for (nil) InlineBox.\n");
 }
 
 void showLineTree(const blink::InlineBox* b)
 {
     if (b)
         b->showLineTreeForThis();
+    else
+        fprintf(stderr, "Cannot showLineTree for (nil) InlineBox.\n");
 }
 
 #endif

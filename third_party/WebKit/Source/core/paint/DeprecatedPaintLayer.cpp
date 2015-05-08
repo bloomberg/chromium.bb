@@ -2968,8 +2968,10 @@ DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
 // FIXME: Rename?
 void showLayerTree(const blink::DeprecatedPaintLayer* layer)
 {
-    if (!layer)
+    if (!layer) {
+        fprintf(stderr, "Cannot showLayerTree. Root is (nil)\n");
         return;
+    }
 
     if (blink::LocalFrame* frame = layer->layoutObject()->frame()) {
         WTF::String output = externalRepresentation(frame, blink::LayoutAsTextShowAllLayers | blink::LayoutAsTextShowLayerNesting | blink::LayoutAsTextShowCompositedLayers | blink::LayoutAsTextShowAddresses | blink::LayoutAsTextShowIDAndClass | blink::LayoutAsTextDontUpdateLayout | blink::LayoutAsTextShowLayoutState);
@@ -2979,8 +2981,10 @@ void showLayerTree(const blink::DeprecatedPaintLayer* layer)
 
 void showLayerTree(const blink::LayoutObject* layoutObject)
 {
-    if (!layoutObject)
+    if (!layoutObject) {
+        fprintf(stderr, "Cannot showLayerTree. Root is (nil)\n");
         return;
+    }
     showLayerTree(layoutObject->enclosingLayer());
 }
 #endif

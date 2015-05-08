@@ -1975,6 +1975,8 @@ void showTree(const blink::FrameSelection* sel)
 {
     if (sel)
         sel->showTreeForThis();
+    else
+        fprintf(stderr, "Cannot showTree for (nil) FrameSelection.\n");
 }
 
 #endif

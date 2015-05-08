@@ -383,6 +383,8 @@ void showCounterTree(const blink::CounterNode* counter)
 {
     if (counter)
         showTreeAndMark(counter);
+    else
+        fprintf(stderr, "Cannot showCounterTree for (nil).\n");
 }
 
 #endif

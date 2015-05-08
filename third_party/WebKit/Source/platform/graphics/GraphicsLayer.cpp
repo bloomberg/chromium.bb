@@ -1170,8 +1170,10 @@ DisplayItemList* GraphicsLayer::displayItemList()
 #ifndef NDEBUG
 void showGraphicsLayerTree(const blink::GraphicsLayer* layer)
 {
-    if (!layer)
+    if (!layer) {
+        fprintf(stderr, "Cannot showGraphicsLayerTree for (nil).\n");
         return;
+    }
 
     String output = layer->layerTreeAsText(blink::LayerTreeIncludesDebugInfo);
     fprintf(stderr, "%s\n", output.utf8().data());

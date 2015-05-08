@@ -2493,18 +2493,24 @@ void showNode(const blink::Node* node)
 {
     if (node)
         node->showNode("");
+    else
+        fprintf(stderr, "Cannot showNode for (nil)\n");
 }
 
 void showTree(const blink::Node* node)
 {
     if (node)
         node->showTreeForThis();
+    else
+        fprintf(stderr, "Cannot showTree for (nil)\n");
 }
 
 void showNodePath(const blink::Node* node)
 {
     if (node)
         node->showNodePathForThis();
+    else
+        fprintf(stderr, "Cannot showNodePath for (nil)\n");
 }
 
 #endif

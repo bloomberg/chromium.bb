@@ -789,6 +789,8 @@ void showTree(const blink::VisiblePosition* vpos)
 {
     if (vpos)
         vpos->showTreeForThis();
+    else
+        fprintf(stderr, "Cannot showTree for (nil) VisiblePosition.\n");
 }
 
 void showTree(const blink::VisiblePosition& vpos)

@@ -1723,6 +1723,8 @@ void showTree(const blink::Range* range)
     if (range && range->boundaryPointsValid()) {
         range->startContainer()->showTreeAndMark(range->startContainer(), "S", range->endContainer(), "E");
         fprintf(stderr, "start offset: %d, end offset: %d\n", range->startOffset(), range->endOffset());
+    } else {
+        fprintf(stderr, "Cannot show tree if range is null, or if boundary points are invalid.\n");
     }
 }
 
