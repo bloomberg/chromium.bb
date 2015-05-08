@@ -105,9 +105,9 @@ static bool matchesTagName(const Element& element, const QualifiedName& tagQName
             return false;
         // Non-html elements in html documents are normalized to their camel-cased
         // version during parsing if applicable. Yet, type selectors are lower-cased
-        // for selectors in html documents. Try a case-insensitive match below to
-        // allow type selector matching for such elements.
-        if (!equalIgnoringCase(localName, element.localName()))
+        // for selectors in html documents. Compare the upper case converted names
+        // instead to allow matching SVG elements like foreignObject.
+        if (element.tagQName().localNameUpper() != tagQName.localNameUpper())
             return false;
     }
     const AtomicString& namespaceURI = tagQName.namespaceURI();
