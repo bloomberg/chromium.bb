@@ -16,9 +16,9 @@ namespace gfx {
 
 class GL_EXPORT GLImageIOSurface : public GLImage {
  public:
-  explicit GLImageIOSurface(const gfx::Size& size);
+  GLImageIOSurface(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(IOSurfaceRef io_surface);
+  bool Initialize(IOSurfaceRef io_surface, GpuMemoryBuffer::Format format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
@@ -40,8 +40,10 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   ~GLImageIOSurface() override;
 
  private:
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   const gfx::Size size_;
+  const unsigned internalformat_;
+  GpuMemoryBuffer::Format format_;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);

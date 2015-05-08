@@ -29,6 +29,8 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
 
 int32 BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
+    case gfx::GpuMemoryBuffer::R_8:
+      return 1;
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return 4;
     case gfx::GpuMemoryBuffer::ATC:
@@ -36,7 +38,6 @@ int32 BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::DXT1:
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::R_8:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::YUV_420:
@@ -50,6 +51,8 @@ int32 BytesPerPixel(gfx::GpuMemoryBuffer::Format format) {
 
 int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
+    case gfx::GpuMemoryBuffer::R_8:
+      return 'L008';
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return 'BGRA';
     case gfx::GpuMemoryBuffer::ATC:
@@ -57,7 +60,6 @@ int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::DXT1:
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::R_8:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::YUV_420:
@@ -70,8 +72,8 @@ int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
 }
 
 const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
-  { gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP }
-};
+    {gfx::GpuMemoryBuffer::R_8, gfx::GpuMemoryBuffer::MAP},
+    {gfx::GpuMemoryBuffer::BGRA_8888, gfx::GpuMemoryBuffer::MAP}};
 
 }  // namespace
 
@@ -170,8 +172,9 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
   if (it == io_surfaces_.end())
     return scoped_refptr<gfx::GLImage>();
 
-  scoped_refptr<gfx::GLImageIOSurface> image(new gfx::GLImageIOSurface(size));
-  if (!image->Initialize(it->second.get()))
+  scoped_refptr<gfx::GLImageIOSurface> image(
+      new gfx::GLImageIOSurface(size, internalformat));
+  if (!image->Initialize(it->second.get(), format))
     return scoped_refptr<gfx::GLImage>();
 
   return image;
