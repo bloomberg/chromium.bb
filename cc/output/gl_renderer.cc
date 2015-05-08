@@ -358,6 +358,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       context_caps.gpu.discard_framebuffer;
 
   capabilities_.allow_rasterize_on_demand = true;
+  capabilities_.max_msaa_samples = context_caps.gpu.max_samples;
 
   use_sync_query_ = context_caps.gpu.sync_query;
   use_blend_equation_advanced_ = context_caps.gpu.blend_equation_advanced;
