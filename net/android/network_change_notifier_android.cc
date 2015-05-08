@@ -78,7 +78,8 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
         address_tracker_(base::Bind(base::DoNothing),
                          base::Bind(base::DoNothing),
                          // We're only interested in tunnel interface changes.
-                         base::Bind(NotifyNetworkChangeNotifierObservers)) {}
+                         base::Bind(NotifyNetworkChangeNotifierObservers),
+                         base::hash_set<std::string>()) {}
 
   ~DnsConfigServiceThread() override {
     NetworkChangeNotifier::RemoveNetworkChangeObserver(this);

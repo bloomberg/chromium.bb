@@ -20,12 +20,23 @@ namespace net {
 namespace internal {
 namespace {
 
+const int kTestInterfaceEth = 1;
 const int kTestInterfaceTun = 123;
+const int kTestInterfaceAp = 456;
+
+const char kIgnoredInterfaceName[] = "uap0";
 
 char* TestGetInterfaceName(int interface_index, char* buf) {
-  if (interface_index == kTestInterfaceTun)
-    return strncpy(buf, "tun0", IFNAMSIZ);
-  return strncpy(buf, "eth0", IFNAMSIZ);
+  if (interface_index == kTestInterfaceEth) {
+    snprintf(buf, IFNAMSIZ, "%s", "eth0");
+  } else if (interface_index == kTestInterfaceTun) {
+    snprintf(buf, IFNAMSIZ, "%s", "tun0");
+  } else if (interface_index == kTestInterfaceAp) {
+    snprintf(buf, IFNAMSIZ, "%s", kIgnoredInterfaceName);
+  } else {
+    snprintf(buf, IFNAMSIZ, "%s", "");
+  }
+  return buf;
 }
 
 }  // namespace
@@ -38,9 +49,9 @@ class AddressTrackerLinuxTest : public testing::Test {
 
   void InitializeAddressTracker(bool tracking) {
     if (tracking) {
-      tracker_.reset(new AddressTrackerLinux(base::Bind(&base::DoNothing),
-                                             base::Bind(&base::DoNothing),
-                                             base::Bind(&base::DoNothing)));
+      tracker_.reset(new AddressTrackerLinux(
+          base::Bind(&base::DoNothing), base::Bind(&base::DoNothing),
+          base::Bind(&base::DoNothing), ignored_interfaces_));
     } else {
       tracker_.reset(new AddressTrackerLinux());
     }
@@ -89,6 +100,11 @@ class AddressTrackerLinuxTest : public testing::Test {
     return tracker_->GetOnlineLinks();
   }
 
+  void IgnoreInterface(const std::string& interface_name) {
+    ignored_interfaces_.insert(interface_name);
+  }
+
+  base::hash_set<std::string> ignored_interfaces_;
   scoped_ptr<AddressTrackerLinux> tracker_;
   AddressTrackerLinux::GetInterfaceNameFunction original_get_interface_name_;
 };
@@ -150,6 +166,7 @@ class NetlinkMessage {
 void MakeAddrMessageWithCacheInfo(uint16 type,
                                   uint8 flags,
                                   uint8 family,
+                                  int index,
                                   const IPAddressNumber& address,
                                   const IPAddressNumber& local,
                                   uint32 preferred_lifetime,
@@ -158,6 +175,7 @@ void MakeAddrMessageWithCacheInfo(uint16 type,
   struct ifaddrmsg msg = {};
   msg.ifa_family = family;
   msg.ifa_flags = flags;
+  msg.ifa_index = index;
   nlmsg.AddPayload(&msg, sizeof(msg));
   if (address.size())
     nlmsg.AddAttribute(IFA_ADDRESS, &address[0], address.size());
@@ -173,10 +191,11 @@ void MakeAddrMessageWithCacheInfo(uint16 type,
 void MakeAddrMessage(uint16 type,
                      uint8 flags,
                      uint8 family,
+                     int index,
                      const IPAddressNumber& address,
                      const IPAddressNumber& local,
                      Buffer* output) {
-  MakeAddrMessageWithCacheInfo(type, flags, family, address, local,
+  MakeAddrMessageWithCacheInfo(type, flags, family, index, address, local,
                                INFINITY_LIFE_TIME, output);
 }
 
@@ -206,8 +225,8 @@ TEST_F(AddressTrackerLinuxTest, NewAddress) {
   const IPAddressNumber kAddr3(kAddress3, kAddress3 + arraysize(kAddress3));
 
   Buffer buffer;
-  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kAddr0, kEmpty,
-                  &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kTestInterfaceEth,
+                  kAddr0, kEmpty, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   AddressTrackerLinux::AddressMap map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -215,8 +234,8 @@ TEST_F(AddressTrackerLinuxTest, NewAddress) {
   EXPECT_EQ(IFA_F_TEMPORARY, map[kAddr0].ifa_flags);
 
   buffer.clear();
-  MakeAddrMessage(RTM_NEWADDR, IFA_F_HOMEADDRESS, AF_INET, kAddr1, kAddr2,
-                  &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_HOMEADDRESS, AF_INET, kTestInterfaceEth,
+                  kAddr1, kAddr2, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(2u, map.size());
@@ -225,7 +244,8 @@ TEST_F(AddressTrackerLinuxTest, NewAddress) {
   EXPECT_EQ(IFA_F_HOMEADDRESS, map[kAddr2].ifa_flags);
 
   buffer.clear();
-  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET6, kEmpty, kAddr3, &buffer);
+  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET6, kTestInterfaceEth, kEmpty, kAddr3,
+                  &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(3u, map.size());
@@ -239,8 +259,8 @@ TEST_F(AddressTrackerLinuxTest, NewAddressChange) {
   const IPAddressNumber kAddr0(kAddress0, kAddress0 + arraysize(kAddress0));
 
   Buffer buffer;
-  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kAddr0, kEmpty,
-                  &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kTestInterfaceEth,
+                  kAddr0, kEmpty, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   AddressTrackerLinux::AddressMap map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -248,8 +268,8 @@ TEST_F(AddressTrackerLinuxTest, NewAddressChange) {
   EXPECT_EQ(IFA_F_TEMPORARY, map[kAddr0].ifa_flags);
 
   buffer.clear();
-  MakeAddrMessage(RTM_NEWADDR, IFA_F_HOMEADDRESS, AF_INET, kAddr0, kEmpty,
-                  &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_HOMEADDRESS, AF_INET, kTestInterfaceEth,
+                  kAddr0, kEmpty, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -258,10 +278,10 @@ TEST_F(AddressTrackerLinuxTest, NewAddressChange) {
 
   // Both messages in one buffer.
   buffer.clear();
-  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kAddr0, kEmpty,
-                  &buffer);
-  MakeAddrMessage(RTM_NEWADDR, IFA_F_HOMEADDRESS, AF_INET, kAddr0, kEmpty,
-                  &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kTestInterfaceEth,
+                  kAddr0, kEmpty, &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_HOMEADDRESS, AF_INET, kTestInterfaceEth,
+                  kAddr0, kEmpty, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -274,8 +294,8 @@ TEST_F(AddressTrackerLinuxTest, NewAddressDuplicate) {
   const IPAddressNumber kAddr0(kAddress0, kAddress0 + arraysize(kAddress0));
 
   Buffer buffer;
-  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kAddr0, kAddr0,
-                  &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kTestInterfaceEth,
+                  kAddr0, kAddr0, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   AddressTrackerLinux::AddressMap map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -297,14 +317,17 @@ TEST_F(AddressTrackerLinuxTest, DeleteAddress) {
   const IPAddressNumber kAddr2(kAddress2, kAddress2 + arraysize(kAddress2));
 
   Buffer buffer;
-  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET, kAddr0, kEmpty, &buffer);
-  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET, kAddr1, kAddr2, &buffer);
+  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET, kTestInterfaceEth, kAddr0, kEmpty,
+                  &buffer);
+  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET, kTestInterfaceEth, kAddr1, kAddr2,
+                  &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   AddressTrackerLinux::AddressMap map = GetAddressMap();
   EXPECT_EQ(2u, map.size());
 
   buffer.clear();
-  MakeAddrMessage(RTM_DELADDR, 0, AF_INET, kEmpty, kAddr0, &buffer);
+  MakeAddrMessage(RTM_DELADDR, 0, AF_INET, kTestInterfaceEth, kEmpty, kAddr0,
+                  &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -312,14 +335,16 @@ TEST_F(AddressTrackerLinuxTest, DeleteAddress) {
   EXPECT_EQ(1u, map.count(kAddr2));
 
   buffer.clear();
-  MakeAddrMessage(RTM_DELADDR, 0, AF_INET, kAddr2, kAddr1, &buffer);
+  MakeAddrMessage(RTM_DELADDR, 0, AF_INET, kTestInterfaceEth, kAddr2, kAddr1,
+                  &buffer);
   // kAddr1 does not exist in the map.
   EXPECT_FALSE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
 
   buffer.clear();
-  MakeAddrMessage(RTM_DELADDR, 0, AF_INET, kAddr2, kEmpty, &buffer);
+  MakeAddrMessage(RTM_DELADDR, 0, AF_INET, kTestInterfaceEth, kAddr2, kEmpty,
+                  &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(0u, map.size());
@@ -332,7 +357,8 @@ TEST_F(AddressTrackerLinuxTest, DeprecatedLifetime) {
   const IPAddressNumber kAddr3(kAddress3, kAddress3 + arraysize(kAddress3));
 
   Buffer buffer;
-  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET6, kEmpty, kAddr3, &buffer);
+  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET6, kTestInterfaceEth, kEmpty, kAddr3,
+                  &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   AddressTrackerLinux::AddressMap map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -341,8 +367,8 @@ TEST_F(AddressTrackerLinuxTest, DeprecatedLifetime) {
 
   // Verify 0 preferred lifetime implies deprecated.
   buffer.clear();
-  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, 0, AF_INET6, kEmpty, kAddr3, 0,
-                               &buffer);
+  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, 0, AF_INET6, kTestInterfaceEth,
+                               kEmpty, kAddr3, 0, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -350,8 +376,8 @@ TEST_F(AddressTrackerLinuxTest, DeprecatedLifetime) {
 
   // Verify properly flagged message doesn't imply change.
   buffer.clear();
-  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, IFA_F_DEPRECATED, AF_INET6, kEmpty,
-                               kAddr3, 0, &buffer);
+  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, IFA_F_DEPRECATED, AF_INET6,
+                               kTestInterfaceEth, kEmpty, kAddr3, 0, &buffer);
   EXPECT_FALSE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -359,8 +385,8 @@ TEST_F(AddressTrackerLinuxTest, DeprecatedLifetime) {
 
   // Verify implied deprecated doesn't imply change.
   buffer.clear();
-  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, 0, AF_INET6, kEmpty, kAddr3, 0,
-                               &buffer);
+  MakeAddrMessageWithCacheInfo(RTM_NEWADDR, 0, AF_INET6, kTestInterfaceEth,
+                               kEmpty, kAddr3, 0, &buffer);
   EXPECT_FALSE(HandleAddressMessage(buffer));
   map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
@@ -376,11 +402,14 @@ TEST_F(AddressTrackerLinuxTest, IgnoredMessage) {
 
   Buffer buffer;
   // Ignored family.
-  MakeAddrMessage(RTM_NEWADDR, 0, AF_UNSPEC, kAddr3, kAddr0, &buffer);
+  MakeAddrMessage(RTM_NEWADDR, 0, AF_UNSPEC, kTestInterfaceEth, kAddr3, kAddr0,
+                  &buffer);
   // No address.
-  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET, kEmpty, kEmpty, &buffer);
+  MakeAddrMessage(RTM_NEWADDR, 0, AF_INET, kTestInterfaceEth, kEmpty, kEmpty,
+                  &buffer);
   // Ignored type.
-  MakeAddrMessage(RTM_DELROUTE, 0, AF_INET6, kAddr3, kEmpty, &buffer);
+  MakeAddrMessage(RTM_DELROUTE, 0, AF_INET6, kTestInterfaceEth, kAddr3, kEmpty,
+                  &buffer);
   EXPECT_FALSE(HandleAddressMessage(buffer));
   EXPECT_TRUE(GetAddressMap().empty());
 
@@ -407,37 +436,41 @@ TEST_F(AddressTrackerLinuxTest, AddInterface) {
   // Ignores loopback.
   MakeLinkMessage(RTM_NEWLINK,
                   IFF_LOOPBACK | IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
-                  0, &buffer);
+                  kTestInterfaceEth, &buffer);
   EXPECT_FALSE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks().empty());
 
   // Ignores not IFF_LOWER_UP.
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_RUNNING, kTestInterfaceEth,
+                  &buffer);
   EXPECT_FALSE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks().empty());
 
   // Ignores deletion.
-  MakeLinkMessage(RTM_DELLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_DELLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceEth, &buffer);
   EXPECT_FALSE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks().empty());
 
   // Verify success.
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceEth, &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
-  EXPECT_EQ(1u, GetOnlineLinks().count(0));
+  EXPECT_EQ(1u, GetOnlineLinks().count(kTestInterfaceEth));
   EXPECT_EQ(1u, GetOnlineLinks().size());
 
   // Ignores redundant enables.
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceEth, &buffer);
   EXPECT_FALSE(HandleLinkMessage(buffer));
-  EXPECT_EQ(1u, GetOnlineLinks().count(0));
+  EXPECT_EQ(1u, GetOnlineLinks().count(kTestInterfaceEth));
   EXPECT_EQ(1u, GetOnlineLinks().size());
 
   // Verify adding another online device (e.g. VPN) is considered a change.
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 1, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 2, &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
-  EXPECT_EQ(1u, GetOnlineLinks().count(0));
-  EXPECT_EQ(1u, GetOnlineLinks().count(1));
+  EXPECT_EQ(1u, GetOnlineLinks().count(kTestInterfaceEth));
+  EXPECT_EQ(1u, GetOnlineLinks().count(2));
   EXPECT_EQ(2u, GetOnlineLinks().size());
 }
 
@@ -447,30 +480,80 @@ TEST_F(AddressTrackerLinuxTest, RemoveInterface) {
   Buffer buffer;
 
   // Should disappear when not IFF_LOWER_UP.
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceEth, &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
   EXPECT_FALSE(GetOnlineLinks().empty());
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_RUNNING, kTestInterfaceEth,
+                  &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks().empty());
 
   // Ignores redundant disables.
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_RUNNING, kTestInterfaceEth,
+                  &buffer);
   EXPECT_FALSE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks().empty());
 
   // Ignores deleting down interfaces.
-  MakeLinkMessage(RTM_DELLINK, IFF_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_DELLINK, IFF_UP | IFF_RUNNING, kTestInterfaceEth,
+                  &buffer);
   EXPECT_FALSE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks().empty());
 
   // Should disappear when deleted.
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceEth, &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
   EXPECT_FALSE(GetOnlineLinks().empty());
-  MakeLinkMessage(RTM_DELLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_DELLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceEth, &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
   EXPECT_TRUE(GetOnlineLinks().empty());
+}
+
+TEST_F(AddressTrackerLinuxTest, IgnoreInterface) {
+  IgnoreInterface(kIgnoredInterfaceName);
+  InitializeAddressTracker(true);
+
+  Buffer buffer;
+  const IPAddressNumber kEmpty;
+  const IPAddressNumber kAddr0(kAddress0, kAddress0 + arraysize(kAddress0));
+
+  // Verify online links and address map has been not been updated
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kTestInterfaceAp,
+                  kAddr0, kEmpty, &buffer);
+  EXPECT_FALSE(HandleAddressMessage(buffer));
+  AddressTrackerLinux::AddressMap map = GetAddressMap();
+  EXPECT_EQ(0u, map.size());
+  EXPECT_EQ(0u, map.count(kAddr0));
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceAp, &buffer);
+  EXPECT_FALSE(HandleLinkMessage(buffer));
+  EXPECT_EQ(0u, GetOnlineLinks().count(kTestInterfaceAp));
+  EXPECT_EQ(0u, GetOnlineLinks().size());
+}
+
+TEST_F(AddressTrackerLinuxTest, IgnoreInterface_NonIgnoredInterface) {
+  IgnoreInterface(kIgnoredInterfaceName);
+  InitializeAddressTracker(true);
+
+  Buffer buffer;
+  const IPAddressNumber kEmpty;
+  const IPAddressNumber kAddr0(kAddress0, kAddress0 + arraysize(kAddress0));
+
+  // Verify eth0 is not ignored when only uap0 is ignored
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kTestInterfaceEth,
+                  kAddr0, kEmpty, &buffer);
+  EXPECT_TRUE(HandleAddressMessage(buffer));
+  AddressTrackerLinux::AddressMap map = GetAddressMap();
+  EXPECT_EQ(1u, map.size());
+  EXPECT_EQ(1u, map.count(kAddr0));
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING,
+                  kTestInterfaceEth, &buffer);
+  EXPECT_TRUE(HandleLinkMessage(buffer));
+  EXPECT_EQ(1u, GetOnlineLinks().count(kTestInterfaceEth));
+  EXPECT_EQ(1u, GetOnlineLinks().size());
 }
 
 TEST_F(AddressTrackerLinuxTest, TunnelInterface) {
@@ -481,7 +564,7 @@ TEST_F(AddressTrackerLinuxTest, TunnelInterface) {
   // Ignores without "tun" prefixed name.
   MakeLinkMessage(RTM_NEWLINK,
                   IFF_UP | IFF_LOWER_UP | IFF_RUNNING | IFF_POINTOPOINT,
-                  0, &buffer);
+                  kTestInterfaceEth, &buffer);
   EXPECT_FALSE(HandleTunnelMessage(buffer));
 
   // Verify success.
@@ -533,17 +616,17 @@ TEST_F(AddressTrackerLinuxTest, NonTrackingMode) {
   const IPAddressNumber kAddr0(kAddress0, kAddress0 + arraysize(kAddress0));
 
   Buffer buffer;
-  MakeAddrMessage(
-      RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kAddr0, kEmpty, &buffer);
+  MakeAddrMessage(RTM_NEWADDR, IFA_F_TEMPORARY, AF_INET, kTestInterfaceEth,
+                  kAddr0, kEmpty, &buffer);
   EXPECT_TRUE(HandleAddressMessage(buffer));
   AddressTrackerLinux::AddressMap map = GetAddressMap();
   EXPECT_EQ(1u, map.size());
   EXPECT_EQ(1u, map.count(kAddr0));
   EXPECT_EQ(IFA_F_TEMPORARY, map[kAddr0].ifa_flags);
 
-  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 0, &buffer);
+  MakeLinkMessage(RTM_NEWLINK, IFF_UP | IFF_LOWER_UP | IFF_RUNNING, 1, &buffer);
   EXPECT_TRUE(HandleLinkMessage(buffer));
-  EXPECT_EQ(1u, GetOnlineLinks().count(0));
+  EXPECT_EQ(1u, GetOnlineLinks().count(1));
   EXPECT_EQ(1u, GetOnlineLinks().size());
 }
 

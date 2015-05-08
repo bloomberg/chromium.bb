@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
@@ -25,11 +26,21 @@
 #include <glib-object.h>
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "net/base/network_change_notifier_linux.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
 namespace {
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Flag to specifies which network interfaces to ignore. Interfaces should
+// follow as a comma seperated list.
+const char kIgnoreNetifFlag[] = "ignore-netif";
+#endif
 
 // Conversions from various network-related types to string.
 
@@ -153,8 +164,25 @@ int main(int argc, char* argv[]) {
 
   NetWatcher net_watcher;
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  std::string ignored_netifs_str =
+      command_line->GetSwitchValueASCII(kIgnoreNetifFlag);
+  base::hash_set<std::string> ignored_interfaces;
+  if (!ignored_netifs_str.empty()) {
+    std::vector<std::string> ignored_netifs;
+    base::SplitString(ignored_netifs_str, ',', &ignored_netifs);
+    for (const std::string& ignored_netif : ignored_netifs) {
+      LOG(INFO) << "Ignoring: " << ignored_netif;
+      ignored_interfaces.insert(ignored_netif);
+    }
+  }
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
+      new net::NetworkChangeNotifierLinux(ignored_interfaces));
+#else
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::Create());
+#endif
 
   // Use the network loop as the file loop also.
   scoped_ptr<net::ProxyConfigService> proxy_config_service(
