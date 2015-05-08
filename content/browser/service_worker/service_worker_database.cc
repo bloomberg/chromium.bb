@@ -314,6 +314,14 @@ ServiceWorkerDatabase::Status LevelDBStatusToStatus(
     return ServiceWorkerDatabase::STATUS_ERROR_FAILED;
 }
 
+int64_t AccumulateResourceSizeInBytes(
+    const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources) {
+  int64_t total_size_bytes = 0;
+  for (const auto& resource : resources)
+    total_size_bytes += resource.size_bytes;
+  return total_size_bytes;
+}
+
 }  // namespace
 
 const char* ServiceWorkerDatabase::StatusToString(
@@ -585,15 +593,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   BumpNextVersionIdIfNeeded(registration.version_id, &batch);
 
   PutUniqueOriginToBatch(registration.scope.GetOrigin(), &batch);
-#if DCHECK_IS_ON()
-  int64_t total_size_bytes = 0;
-  for (const auto& resource : resources) {
-    total_size_bytes += resource.size_bytes;
-  }
-  DCHECK_EQ(total_size_bytes, registration.resources_total_size_bytes)
+
+  DCHECK_EQ(AccumulateResourceSizeInBytes(resources),
+            registration.resources_total_size_bytes)
       << "The total size in the registration must match the cumulative "
       << "sizes of the resources.";
-#endif
+
   PutRegistrationDataToBatch(registration, &batch);
   batch.Put(CreateRegistrationIdToOriginKey(registration.registration_id),
             registration.scope.GetOrigin().spec());
