@@ -747,6 +747,10 @@ void TestWebGraphicsContext3D::SetMaxTransferBufferUsageBytes(
       max_transfer_buffer_usage_bytes;
 }
 
+void TestWebGraphicsContext3D::SetMaxSamples(int max_samples) {
+  test_capabilities_.gpu.max_samples = max_samples;
+}
+
 TestWebGraphicsContext3D::TextureTargets::TextureTargets() {
   // Initialize default bindings.
   bound_textures_[GL_TEXTURE_2D] = 0;

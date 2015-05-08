@@ -56,6 +56,7 @@ DelegatingRenderer::DelegatingRenderer(RendererClient* client,
     capabilities_.using_image = caps.gpu.image;
 
     capabilities_.allow_rasterize_on_demand = false;
+    capabilities_.max_msaa_samples = caps.gpu.max_samples;
   }
 }
 

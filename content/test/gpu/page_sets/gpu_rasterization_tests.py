@@ -5,10 +5,10 @@ from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
 
 
-class GpuRasterizationTestsPage(page_module.Page):
+class GpuRasterizationBlueBoxPage(page_module.Page):
 
   def __init__(self, page_set):
-    super(GpuRasterizationTestsPage, self).__init__(
+    super(GpuRasterizationBlueBoxPage, self).__init__(
       url='file://../../data/gpu/pixel_background.html',
       page_set=page_set,
       name='GpuRasterization.BlueBox')
@@ -66,10 +66,40 @@ class GpuRasterizationTestsPage(page_module.Page):
     self.test_rect = [0, 0, 220, 220]
 
   def RunNavigateSteps(self, action_runner):
-    super(GpuRasterizationTestsPage, self).RunNavigateSteps(action_runner)
+    super(GpuRasterizationBlueBoxPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout_in_seconds=30)
 
+
+class GpuRasterizationConcavePathsPage(page_module.Page):
+
+  def __init__(self, page_set):
+    super(GpuRasterizationConcavePathsPage, self).__init__(
+      url='file://../../data/gpu/concave_paths.html',
+      page_set=page_set,
+      name='GpuRasterization.ConcavePaths')
+
+    self.expectations = [
+      {'comment': 'outside',
+       'color': [255, 255, 255],
+       'tolerance': 0,
+       'location': [5, 5]},
+      {'comment': 'inside',
+       'color': [255, 215, 0],
+       'tolerance': 0,
+       'location': [20, 50]},
+      {'comment': 'edge-1',
+       'color': [255, 220, 32],
+       'tolerance': 32,
+       'location': [72, 50]},
+    ]
+    self.test_rect = [0, 0, 100, 100]
+
+  def RunNavigateSteps(self, action_runner):
+    super(GpuRasterizationConcavePathsPage, self).\
+      RunNavigateSteps(action_runner)
+    action_runner.WaitForJavaScriptCondition(
+        'domAutomationController._finished', timeout_in_seconds=30)
 
 class GpuRasterizationTestsPageSet(page_set_module.PageSet):
 
@@ -78,4 +108,5 @@ class GpuRasterizationTestsPageSet(page_set_module.PageSet):
   def __init__(self):
     super(GpuRasterizationTestsPageSet, self).__init__()
 
-    self.AddUserStory(GpuRasterizationTestsPage(self))
+    self.AddUserStory(GpuRasterizationBlueBoxPage(self))
+    self.AddUserStory(GpuRasterizationConcavePathsPage(self))

@@ -29,7 +29,8 @@ RendererCapabilitiesImpl::RendererCapabilitiesImpl()
       using_egl_image(false),
       using_image(false),
       using_discard_framebuffer(false),
-      allow_rasterize_on_demand(false) {
+      allow_rasterize_on_demand(false),
+      max_msaa_samples(0) {
 }
 
 RendererCapabilitiesImpl::~RendererCapabilitiesImpl() {}

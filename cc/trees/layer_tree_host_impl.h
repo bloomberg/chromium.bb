@@ -81,6 +81,7 @@ enum class GpuRasterizationStatus {
   ON_FORCED,
   OFF_DEVICE,
   OFF_VIEWPORT,
+  MSAA_CONTENT,
   OFF_CONTENT
 };
 
@@ -329,6 +330,7 @@ class CC_EXPORT LayerTreeHostImpl
   }
   void UpdateGpuRasterizationStatus();
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
+  bool use_msaa() const { return use_msaa_; }
 
   GpuRasterizationStatus gpu_rasterization_status() const {
     return gpu_rasterization_status_;
@@ -649,6 +651,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool content_is_suitable_for_gpu_rasterization_;
   bool has_gpu_rasterization_trigger_;
   bool use_gpu_rasterization_;
+  bool use_msaa_;
   GpuRasterizationStatus gpu_rasterization_status_;
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;

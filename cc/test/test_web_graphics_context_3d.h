@@ -363,6 +363,7 @@ class TestWebGraphicsContext3D {
     return max_used_transfer_buffer_usage_bytes_;
   }
 
+  void SetMaxSamples(int max_samples);
   void set_test_support(TestContextSupport* test_support) {
     test_support_ = test_support;
   }
