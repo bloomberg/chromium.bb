@@ -2359,6 +2359,75 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
 
+class LayerTreeHostTestCompositeImmediatelyStateTransitions
+    : public LayerTreeHostTest {
+ public:
+  enum {
+    kInvalid,
+    kStartedTest,
+    kStartedImplFrame,
+    kStartedMainFrame,
+    kStartedCommit,
+    kCompletedCommit,
+    kCompletedMainFrame,
+    kCompletedImplFrame,
+  };
+
+  LayerTreeHostTestCompositeImmediatelyStateTransitions()
+      : current_state_(kInvalid), current_begin_frame_args_() {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->single_thread_proxy_scheduler = false;
+  }
+
+  void BeginTest() override {
+    current_state_ = kStartedTest;
+    PostCompositeImmediatelyToMainThread();
+  }
+
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
+                                  const BeginFrameArgs& args) override {
+    EXPECT_EQ(current_state_, kStartedTest);
+    current_state_ = kStartedImplFrame;
+
+    EXPECT_FALSE(current_begin_frame_args_.IsValid());
+    EXPECT_TRUE(args.IsValid());
+    current_begin_frame_args_ = args;
+  }
+  void WillBeginMainFrame() override {
+    EXPECT_EQ(current_state_, kStartedImplFrame);
+    current_state_ = kStartedMainFrame;
+  }
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    EXPECT_EQ(current_state_, kStartedMainFrame);
+    EXPECT_EQ(args.frame_time, current_begin_frame_args_.frame_time);
+  }
+  void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_EQ(current_state_, kStartedMainFrame);
+    current_state_ = kStartedCommit;
+  }
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_EQ(current_state_, kStartedCommit);
+    current_state_ = kCompletedCommit;
+  }
+  void DidBeginMainFrame() override {
+    EXPECT_EQ(current_state_, kCompletedCommit);
+    current_state_ = kCompletedMainFrame;
+  }
+  void DidFinishImplFrameOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_EQ(current_state_, kCompletedMainFrame);
+    current_state_ = kCompletedImplFrame;
+    EndTest();
+  }
+  void AfterTest() override { EXPECT_EQ(current_state_, kCompletedImplFrame); }
+
+ private:
+  int current_state_;
+  BeginFrameArgs current_begin_frame_args_;
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostTestCompositeImmediatelyStateTransitions);
+
 class LayerTreeHostWithProxy : public LayerTreeHost {
  public:
   LayerTreeHostWithProxy(FakeLayerTreeHostClient* client,
