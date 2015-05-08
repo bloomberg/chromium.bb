@@ -179,6 +179,10 @@ div.splitter {
   padding: 0 3px;
 }
 
+#directory-tree .tree-row > .button {
+  display: flex;
+}
+
 #directory-tree .tree-row > .expand-icon {
   flex: none;
   height: 36px;
@@ -189,13 +193,13 @@ div.splitter {
   width: 36px;
 }
 
-#directory-tree .tree-row > .item-icon {
+#directory-tree .tree-row .item-icon {
   flex: none;
   height: 16px;
   width: 16px;
 }
 
-#directory-tree .tree-row > .label {
+#directory-tree .tree-row .label {
   display: block;
   flex: auto;
   margin: 0 6px;

@@ -38,12 +38,23 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
 
 Object.freeze(DirectoryItemTreeBaseMethods);
 
-var TREE_ITEM_INNTER_HTML =
+var TREE_ITEM_INNER_HTML =
     '<div class="tree-row">' +
     ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
     ' <span class="expand-icon"></span>' +
     ' <span class="icon"></span>' +
     ' <span class="label entry-name"></span>' +
+    '</div>' +
+    '<div class="tree-children"></div>';
+
+var MENU_TREE_ITEM_INNER_HTML =
+    '<div class="tree-row">' +
+    ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
+    ' <span class="expand-icon"></span>' +
+    ' <div class="button">' +
+    '  <span class="icon item-icon"></span>' +
+    '  <span class="label entry-name"></span>' +
+    ' </div>' +
     '</div>' +
     '<div class="tree-children"></div>';
 
@@ -67,7 +78,7 @@ function DirectoryItem(label, tree) {
   item.directoryModel_ = tree.directoryModel;
   item.fileFilter_ = tree.directoryModel.getFileFilter();
 
-  item.innerHTML = TREE_ITEM_INNTER_HTML;
+  item.innerHTML = TREE_ITEM_INNER_HTML;
   item.addEventListener('expand', item.onExpand_.bind(item), false);
 
   // Sets hasChildren=false tentatively. This will be overridden after
@@ -689,7 +700,7 @@ function ShortcutItem(modelItem, tree) {
   item.dirEntry_ = modelItem.entry;
   item.modelItem_ = modelItem;
 
-  item.innerHTML = TREE_ITEM_INNTER_HTML;
+  item.innerHTML = TREE_ITEM_INNER_HTML;
 
   var icon = item.querySelector('.icon');
   icon.classList.add('item-icon');
@@ -785,35 +796,38 @@ ShortcutItem.prototype.activate = function() {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// CommandItem
+// MenuItem
 
 /**
  * A TreeItem which represents a command button.
  * Command items are displayed as top-level children of DirectoryTree.
  *
- * @param {NavigationModelCommandItem} modelItem
- * @param {DirectoryTree} tree Current tree, which contains this item.
+ * @param {!NavigationModelMenuItem} modelItem
+ * @param {!DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
  */
-function CommandItem(modelItem, tree) {
+function MenuItem(modelItem, tree) {
   var item = new cr.ui.TreeItem();
-  item.__proto__ = CommandItem.prototype;
+  item.__proto__ = MenuItem.prototype;
 
   item.parentTree_ = tree;
   item.modelItem_ = modelItem;
-
-  item.innerHTML = TREE_ITEM_INNTER_HTML;
-
-  var icon = item.querySelector('.icon');
-  icon.classList.add('item-icon');
-  icon.setAttribute('command-icon', modelItem.command.id);
-
+  item.innerHTML = MENU_TREE_ITEM_INNER_HTML;
   item.label = modelItem.label;
+
+  item.comboButton_ = /** @type {!cr.ui.ComboButton} */(queryRequiredElement(
+        assert(item.firstElementChild), '.button'));
+  item.comboButton_.setAttribute('menu', item.modelItem_.menu);
+  cr.ui.MenuButton.decorate(item.comboButton_);
+
+  var icon = queryRequiredElement(item, '.icon');
+  icon.setAttribute('menu-button-icon', item.modelItem_.icon);
+
   return item;
 }
 
-CommandItem.prototype = {
+MenuItem.prototype = {
   __proto__: cr.ui.TreeItem.prototype,
   get entry() {
     return null;
@@ -830,30 +844,29 @@ CommandItem.prototype = {
  * @param {!DirectoryEntry|!FakeEntry} entry
  * @return {boolean} True if the parent item is found.
  */
-CommandItem.prototype.searchAndSelectByEntry = function(entry) {
+MenuItem.prototype.searchAndSelectByEntry = function(entry) {
   return false;
 };
 
 /**
  * @override
  */
-CommandItem.prototype.handleClick = function(e) {
+MenuItem.prototype.handleClick = function(e) {
   this.activate();
 };
 
 /**
  * @param {!DirectoryEntry} entry
  */
-CommandItem.prototype.selectByEntry = function(entry) {
+MenuItem.prototype.selectByEntry = function(entry) {
 };
 
 /**
  * Executes the command.
  */
-CommandItem.prototype.activate = function() {
-  this.modelItem_.command.execute();
+MenuItem.prototype.activate = function() {
+  this.comboButton_.showMenu();
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTree
@@ -999,8 +1012,8 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
         case NavigationModelItemType.SHORTCUT:
           this.addAt(new ShortcutItem(modelItem, this), itemIndex);
           break;
-        case NavigationModelItemType.COMMAND:
-          this.addAt(new CommandItem(modelItem, this), itemIndex);
+        case NavigationModelItemType.MENU:
+          this.addAt(new MenuItem(modelItem, this), itemIndex);
           break;
       }
     }

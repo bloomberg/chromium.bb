@@ -967,10 +967,12 @@ FileManager.prototype = /** @struct */ {
                            assert(this.metadataModel_),
                            fakeEntriesVisible);
     directoryTree.dataModel = new NavigationListModel(
-        this.volumeManager_,
-        this.folderShortcutsModel_,
-        new NavigationModelCommandItem(
-          util.queryDecoratedElement('#add-new-services', cr.ui.Command)));
+        assert(this.volumeManager_),
+        assert(this.folderShortcutsModel_),
+        new NavigationModelMenuItem(
+            str('ADD_NEW_SERVICES_BUTTON_LABEL'),
+            '#add-new-services-menu',
+            'add-new-services'));
 
     this.ui_.initDirectoryTree(directoryTree);
   };

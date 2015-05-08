@@ -261,8 +261,8 @@
       <command id="inspect-element" shortcut="U+0043-Shift-Ctrl">
       <command id="inspect-background" shortcut="U+0042-Shift-Ctrl">
 
-      <command id="add-new-services"
-               i18n-values="label:ADD_NEW_SERVICES_BUTTON_LABEL">
+      <command id="install-new-extension"
+               i18n-values="label:INSTALL_NEW_EXTENSION_LABEL">
     </commands>
 
     <cr-menu id="file-context-menu" class="chrome-menu" showShortcuts>
@@ -328,6 +328,11 @@
     </cr-menu>
 
     <cr-menu id="tasks-menu" class="chrome-menu">
+    </cr-menu>
+
+    <cr-menu id="add-new-services-menu" class="chrome-menu">
+      <hr>
+      <cr-menu-item command="#install-new-extension"></cr-menu-item>
     </cr-menu>
 
     <cr-menu id="text-context-menu" class="chrome-menu" showShortcuts>

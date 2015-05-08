@@ -8,7 +8,7 @@
 var NavigationModelItemType = {
   SHORTCUT: 'shortcut',
   VOLUME: 'volume',
-  COMMAND: 'command'
+  MENU: 'menu'
 };
 
 /**
@@ -72,41 +72,75 @@ NavigationModelVolumeItem.prototype = /** @struct */ {
 };
 
 /**
- * Item of NavigationListModel for commands.
+ * Item of NavigationListModel for a menu button.
  *
- * @param {cr.ui.Command} command
+ * @param {string} label Label on the menu button.
+ * @param {string} menu Selector for the menu element.
+ * @param {string} icon Name of an icon on the menu button.
  * @constructor
  * @extends {NavigationModelItem}
  * @suppress {checkStructDictInheritance}
  * @struct
  */
-function NavigationModelCommandItem(command) {
-  NavigationModelItem.call(
-      this, command.label, NavigationModelItemType.COMMAND);
-  this.command_ = command;
+function NavigationModelMenuItem(label, menu, icon) {
+  NavigationModelItem.call(this, label, NavigationModelItemType.MENU);
+
+  /**
+   * @private {string}
+   * @const
+   */
+  this.menu_ = menu;
+
+  /**
+   * @private {string}
+   * @const
+   */
+  this.icon_ = icon;
 }
 
-NavigationModelCommandItem.prototype = /** @struct */ {
+NavigationModelMenuItem.prototype = /** @struct */ {
   __proto__: NavigationModelItem.prototype,
-  get command() { return this.command_; }
+  /**
+   * @return {string}
+   */
+  get menu() { return this.menu_; },
+
+  /**
+   * @return {string}
+   */
+  get icon() { return this.icon_; }
 };
 
 /**
  * A navigation list model. This model combines multiple models.
- * @param {VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
- * @param {(cr.ui.ArrayDataModel|FolderShortcutsDataModel)} shortcutListModel
+ * @param {!VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
+ * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
- * @param {NavigationModelCommandItem} commandModel, Command button at the
- *     end of the list.
+ * @param {!NavigationModelMenuItem} menuModel Menu button at the end of the
+ *     list.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function NavigationListModel(volumeManager, shortcutListModel, commandModel) {
+function NavigationListModel(volumeManager, shortcutListModel, menuModel) {
   cr.EventTarget.call(this);
 
+  /**
+   * @private {!VolumeManagerWrapper}
+   * @const
+   */
   this.volumeManager_ = volumeManager;
+
+  /**
+   * @private {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)}
+   * @const
+   */
   this.shortcutListModel_ = shortcutListModel;
-  this.commandModel_ = commandModel;
+
+  /**
+   * @private {!NavigationModelMenuItem}
+   * @const
+   */
+  this.menuModel_ = menuModel;
 
   var volumeInfoToModelItem = function(volumeInfo) {
     return new NavigationModelVolumeItem(
@@ -192,7 +226,8 @@ function NavigationListModel(volumeManager, shortcutListModel, commandModel) {
              oldListIndex < this.shortcutList_.length) {
         var shortcutEntry = this.shortcutListModel_.item(modelIndex);
         var cmp = this.shortcutListModel_.compare(
-            shortcutEntry, this.shortcutList_[oldListIndex].entry);
+            /** @type {Entry} */ (shortcutEntry),
+            this.shortcutList_[oldListIndex].entry);
         if (cmp > 0) {
           // The shortcut at shortcutList_[oldListIndex] is removed.
           permutation.push(-1);
@@ -264,7 +299,7 @@ NavigationListModel.prototype.item = function(index) {
   if (index < this.volumeList_.length + this.shortcutList_.length)
     return this.shortcutList_[index - this.volumeList_.length];
   if (index === this.length_() - 1)
-    return this.commandModel_;
+    return this.menuModel_;
 };
 
 /**
@@ -273,8 +308,8 @@ NavigationListModel.prototype.item = function(index) {
  * @private
  */
 NavigationListModel.prototype.length_ = function() {
-  return this.volumeList_.length + this.shortcutList_.length +
-      (this.commandModel_ ? 1 : 0);
+  return this.volumeList_.length + this.shortcutList_.length
+      + 1 /* for button menu */;
 };
 
 /**

@@ -204,6 +204,10 @@ cr-menu.chrome-menu > hr {
   margin: 4px 0;
 }
 
+cr-menu.chrome-menu > hr:first-child {
+  display: none;
+}
+
 cr-menu.chrome-menu > cr-menu-item[checked] {
   background-image: -webkit-image-set(
     url(../images/common/check_no_box.png) 1x,

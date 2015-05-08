@@ -1255,7 +1255,7 @@ CommandHandler.COMMANDS_['inspect-background'] = /** @type {Command} */ ({
  * Shows a suggest dialog with new services to be added to the left nav.
  * @type {Command}
  */
-CommandHandler.COMMANDS_['add-new-services'] = /** @type {Command} */ ({
+CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
   /**
    * @param {!Event} event Command event.
    * @param {!FileManager} fileManager FileManager to use.

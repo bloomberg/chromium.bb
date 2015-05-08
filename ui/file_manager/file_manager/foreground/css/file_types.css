@@ -329,7 +329,7 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
   -webkit-filter: contrast(0) brightness(0.7143);
 }
 
-.tree-row [command-icon='add-new-services'] {
+.tree-row [menu-button-icon='add-new-services'] {
   background-image: -webkit-image-set(
       url(../images/volumes/add.png) 1x,
       url(../images/volumes/2x/add.png) 2x);
