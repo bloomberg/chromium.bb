@@ -1,0 +1,18 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+layer at (8,8) size 160x584
+  LayoutBlockFlow {DIV} at (0,0) size 160x584 [border: (2px solid #800000)]
+    LayoutMultiColumnSet (anonymous) at (2,2) size 156x580
+layer at (10,10) size 312x282
+  LayoutMultiColumnFlowThread (anonymous) at (2,2) size 312x282
+    LayoutBlockFlow {DIV} at (0,0) size 110x282
+    LayoutBlockFlow {DIV} at (156,0) size 156x379 [bgcolor=#00FF00] [border: (2px solid #000000)]
+      LayoutBlockFlow {DIV} at (2,12) size 152x355 [bgcolor=#008000] [border: (2px solid #0000FF)]
+        LayoutInline {SPAN} at (0,0) size 145x192
+          LayoutText {#text} at (3,2) size 145x192
+            text run at (3,2) width 166: "In 2nd"
+            text run at (77,2) width 192: "column"
+        LayoutText {#text} at (0,0) size 0x0

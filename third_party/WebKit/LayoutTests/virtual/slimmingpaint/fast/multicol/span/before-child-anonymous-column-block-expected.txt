@@ -1,0 +1,21 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x52
+  LayoutBlockFlow {HTML} at (0,0) size 800x52
+    LayoutBlockFlow {BODY} at (16,16) size 768x20
+layer at (16,16) size 768x20
+  LayoutBlockFlow {DIV} at (0,0) size 768x20
+    LayoutMultiColumnSpannerPlaceholder (anonymous) at (0,0) size 0x0
+    LayoutMultiColumnSet (anonymous) at (0,0) size 768x20
+layer at (16,16) size 374x40
+  LayoutMultiColumnFlowThread (anonymous) at (0,0) size 374x40
+    LayoutBlockFlow {DIV} at (0,0) size 768x0
+    LayoutBlockFlow {DIV} at (0,0) size 374x20
+      LayoutText {#text} at (0,0) size 20x20
+        text run at (0,0) width 20: "3"
+    LayoutTable (anonymous) at (0,20) size 20x20
+      LayoutTableSection {DIV} at (0,0) size 20x20
+        LayoutTableRow (anonymous) at (0,0) size 20x20
+          LayoutTableCell (anonymous) at (0,0) size 20x20 [r=0 c=0 rs=1 cs=1]
+            LayoutText {#text} at (0,0) size 20x20
+              text run at (0,0) width 20: "4"
