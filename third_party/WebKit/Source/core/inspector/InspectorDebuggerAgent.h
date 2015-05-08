@@ -195,7 +195,7 @@ public:
     void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) final;
 
 protected:
-    explicit InspectorDebuggerAgent(InjectedScriptManager*);
+    InspectorDebuggerAgent(InjectedScriptManager*, v8::Isolate*);
 
     virtual void startListeningScriptDebugServer() = 0;
     virtual void stopListeningScriptDebugServer() = 0;
@@ -253,6 +253,7 @@ private:
 
     void internalSetAsyncCallStackDepth(int);
     void increaseCachedSkipStackGeneration();
+    PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
     typedef HashMap<String, Script> ScriptsMap;
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
@@ -306,6 +307,7 @@ private:
     bool m_pendingTraceAsyncOperationCompleted;
     bool m_startingStepIntoAsync;
     WillBeHeapVector<RawPtrWillBeMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
+    V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
 };
 
 } // namespace blink

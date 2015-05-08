@@ -34,14 +34,21 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "core/dom/Document.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScript.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
+
+using blink::TypeBuilder::Debugger::ExceptionDetails;
+using blink::TypeBuilder::Debugger::ScriptId;
+using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
@@ -51,7 +58,7 @@ PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(PageScriptDe
 }
 
 PageDebuggerAgent::PageDebuggerAgent(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
-    : InspectorDebuggerAgent(injectedScriptManager)
+    : InspectorDebuggerAgent(injectedScriptManager, pageScriptDebugServer->isolate())
     , m_pageScriptDebugServer(pageScriptDebugServer)
     , m_pageAgent(pageAgent)
     , m_overlay(overlay)
@@ -98,6 +105,7 @@ void PageDebuggerAgent::disable()
 {
     InspectorDebuggerAgent::disable();
     m_instrumentingAgents->setPageDebuggerAgent(0);
+    m_compiledScriptURLs.clear();
 }
 
 void PageDebuggerAgent::startListeningScriptDebugServer()
@@ -171,6 +179,49 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 void PageDebuggerAgent::didCommitLoadForLocalFrame(LocalFrame*)
 {
     resetModifiedSources();
+}
+
+void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
+{
+    InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
+    if (injectedScript.isEmpty()) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+    ExecutionContext* executionContext = injectedScript.scriptState()->executionContext();
+    RefPtrWillBeRawPtr<LocalFrame> protect(toDocument(executionContext)->frame());
+    InspectorDebuggerAgent::compileScript(errorString, expression, sourceURL, persistScript, executionContextId, scriptId, exceptionDetails);
+    if (!scriptId->isAssigned())
+        return;
+
+    String scriptIdValue = scriptId->getValue();
+    if (!scriptIdValue.isEmpty())
+        m_compiledScriptURLs.set(scriptId->getValue(), sourceURL);
+}
+
+void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, const int* executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
+{
+    InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
+    if (injectedScript.isEmpty()) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+    ExecutionContext* executionContext = injectedScript.scriptState()->executionContext();
+
+    String sourceURL = m_compiledScriptURLs.take(scriptId);
+    LocalFrame* frame = toDocument(executionContext)->frame();
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt()));
+    InspectorInstrumentationCookie cookie;
+    if (frame)
+        cookie = InspectorInstrumentation::willEvaluateScript(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt());
+
+    RefPtrWillBeRawPtr<LocalFrame> protect(frame);
+    InspectorDebuggerAgent::runScript(errorString, scriptId, executionContextId, objectGroup, doNotPauseOnExceptionsAndMuteConsole, result, exceptionDetails);
+
+    if (frame)
+        InspectorInstrumentation::didEvaluateScript(cookie);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
+
 }
 
 } // namespace blink

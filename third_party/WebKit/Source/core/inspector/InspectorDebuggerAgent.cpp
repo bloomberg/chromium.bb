@@ -30,12 +30,14 @@
 #include "config.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
+#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/AsyncCallChain.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -136,7 +138,7 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(const ScriptVal
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
-InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager)
+InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, v8::Isolate* isolate)
     : InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>("Debugger")
     , m_injectedScriptManager(injectedScriptManager)
     , m_pausedScriptState(nullptr)
@@ -161,6 +163,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_currentAsyncOperationId(unknownAsyncOperationId)
     , m_pendingTraceAsyncOperationCompleted(false)
     , m_startingStepIntoAsync(false)
+    , m_compiledScripts(isolate)
 {
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
 }
@@ -905,30 +908,31 @@ void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const Strin
     if (!checkEnabled(errorString))
         return;
     InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
-    if (injectedScript.isEmpty()) {
+    if (injectedScript.isEmpty() || !injectedScript.scriptState()->contextIsValid()) {
         *errorString = "Inspected frame has gone";
         return;
     }
 
-    String scriptIdValue;
-    String exceptionDetailsText;
-    int lineNumberValue = 0;
-    int columnNumberValue = 0;
-    RefPtrWillBeRawPtr<ScriptCallStack> stackTraceValue = nullptr;
-    scriptDebugServer().compileScript(injectedScript.scriptState(), expression, sourceURL, persistScript, &scriptIdValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
-    if (!scriptIdValue && !exceptionDetailsText) {
-        *errorString = "Script compilation failed";
+    v8::Isolate* isolate = scriptDebugServer().isolate();
+    ScriptState::Scope scope(injectedScript.scriptState());
+    v8::Local<v8::String> source = v8String(isolate, expression);
+    v8::TryCatch tryCatch;
+    v8::Local<v8::Script> script;
+    if (!v8Call(V8ScriptRunner::compileScript(source, sourceURL, String(), TextPosition(), isolate), script, tryCatch)) {
+        v8::Local<v8::Message> message = tryCatch.Message();
+        if (!message.IsEmpty())
+            exceptionDetails = createExceptionDetails(isolate, message);
+        else
+            *errorString = "Script compilation failed";
         return;
     }
-    *scriptId = scriptIdValue;
-    if (!scriptIdValue.isEmpty())
+
+    if (!persistScript)
         return;
 
-    exceptionDetails = ExceptionDetails::create().setText(exceptionDetailsText);
-    exceptionDetails->setLine(lineNumberValue);
-    exceptionDetails->setColumn(columnNumberValue);
-    if (stackTraceValue && stackTraceValue->size() > 0)
-        exceptionDetails->setStackTrace(stackTraceValue->buildInspectorArray());
+    String scriptValueId = String::number(script->GetUnboundScript()->GetId());
+    m_compiledScripts.Set(scriptValueId, script);
+    *scriptId = scriptValueId;
 }
 
 void InspectorDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, const int* executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
@@ -948,25 +952,38 @@ void InspectorDebuggerAgent::runScript(ErrorString* errorString, const ScriptId&
         muteConsole();
     }
 
-    ScriptValue value;
-    bool wasThrownValue;
-    String exceptionDetailsText;
-    int lineNumberValue = 0;
-    int columnNumberValue = 0;
-    RefPtrWillBeRawPtr<ScriptCallStack> stackTraceValue = nullptr;
-    scriptDebugServer().runScript(injectedScript.scriptState(), scriptId, &value, &wasThrownValue, &exceptionDetailsText, &lineNumberValue, &columnNumberValue, &stackTraceValue);
-    if (value.isEmpty()) {
+    if (!m_compiledScripts.Contains(scriptId)) {
         *errorString = "Script execution failed";
         return;
     }
-    result = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
-    if (wasThrownValue) {
-        exceptionDetails = ExceptionDetails::create().setText(exceptionDetailsText);
-        exceptionDetails->setLine(lineNumberValue);
-        exceptionDetails->setColumn(columnNumberValue);
-        if (stackTraceValue && stackTraceValue->size() > 0)
-            exceptionDetails->setStackTrace(stackTraceValue->buildInspectorArray());
+
+    v8::Isolate* isolate = scriptDebugServer().isolate();
+    ScriptState* scriptState = injectedScript.scriptState();
+    ScriptState::Scope scope(scriptState);
+    v8::Local<v8::Script> script = v8::Local<v8::Script>::New(isolate, m_compiledScripts.Remove(scriptId));
+
+    if (script.IsEmpty() || !scriptState->contextIsValid()) {
+        *errorString = "Script execution failed";
+        return;
     }
+    v8::TryCatch tryCatch;
+    v8::Local<v8::Value> value;
+    ScriptValue scriptValue;
+    if (v8Call(V8ScriptRunner::runCompiledScript(isolate, script, scriptState->executionContext()), value, tryCatch)) {
+        scriptValue = ScriptValue(scriptState, value);
+    } else {
+        scriptValue = ScriptValue(scriptState, tryCatch.Exception());
+        v8::Local<v8::Message> message = tryCatch.Message();
+        if (!message.IsEmpty())
+            exceptionDetails = createExceptionDetails(isolate, message);
+    }
+
+    if (scriptValue.isEmpty()) {
+        *errorString = "Script execution failed";
+        return;
+    }
+
+    result = injectedScript.wrapObject(scriptValue, objectGroup ? *objectGroup : "");
 
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         unmuteConsole();
@@ -1619,6 +1636,7 @@ void InspectorDebuggerAgent::clear()
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
     m_asyncOperationNotifications.clear();
+    m_compiledScripts.Clear();
     clearStepIntoAsync();
 }
 
@@ -1684,6 +1702,17 @@ DEFINE_TRACE(InspectorDebuggerAgent)
     visitor->trace(m_asyncCallTrackingListeners);
 #endif
     InspectorBaseAgent::trace(visitor);
+}
+
+PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> InspectorDebuggerAgent::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
+{
+    RefPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toCoreStringWithUndefinedOrNullCheck(message->Get()));
+    exceptionDetails->setLine(message->GetLineNumber());
+    exceptionDetails->setColumn(message->GetStartColumn());
+    v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
+    if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
+        exceptionDetails->setStackTrace(createScriptCallStack(isolate, messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorArray());
+    return exceptionDetails.release();
 }
 
 } // namespace blink

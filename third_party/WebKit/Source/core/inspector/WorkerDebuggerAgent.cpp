@@ -68,7 +68,7 @@ PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerSc
 }
 
 WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager)
+    : InspectorDebuggerAgent(injectedScriptManager, scriptDebugServer->isolate())
     , m_scriptDebugServer(scriptDebugServer)
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {

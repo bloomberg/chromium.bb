@@ -142,40 +142,6 @@ void PageScriptDebugServer::interruptMainThreadAndRun(PassOwnPtr<Task> task)
         s_instance->interruptAndRun(task);
 }
 
-void PageScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
-{
-    ExecutionContext* executionContext = scriptState->executionContext();
-    RefPtrWillBeRawPtr<LocalFrame> protect(toDocument(executionContext)->frame());
-    ScriptDebugServer::compileScript(scriptState, expression, sourceURL, persistScript, scriptId, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
-    if (!scriptId->isNull())
-        m_compiledScriptURLs.set(*scriptId, sourceURL);
-}
-
-void PageScriptDebugServer::clearCompiledScripts()
-{
-    ScriptDebugServer::clearCompiledScripts();
-    m_compiledScriptURLs.clear();
-}
-
-void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
-{
-    String sourceURL = m_compiledScriptURLs.take(scriptId);
-
-    ExecutionContext* executionContext = scriptState->executionContext();
-    LocalFrame* frame = toDocument(executionContext)->frame();
-    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt()));
-    InspectorInstrumentationCookie cookie;
-    if (frame)
-        cookie = InspectorInstrumentation::willEvaluateScript(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt());
-
-    RefPtrWillBeRawPtr<LocalFrame> protect(frame);
-    ScriptDebugServer::runScript(scriptState, scriptId, result, wasThrown, exceptionDetailsText, lineNumber, columnNumber, stackTrace);
-
-    if (frame)
-        InspectorInstrumentation::didEvaluateScript(cookie);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
-}
-
 ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context> context)
 {
     v8::HandleScope scope(context->GetIsolate());

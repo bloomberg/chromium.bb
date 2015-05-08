@@ -53,6 +53,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void enable(ErrorString*) final;
+    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>*, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
+    void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, const int* executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
+
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCommitLoadForLocalFrame(LocalFrame*) override;
@@ -80,6 +83,7 @@ private:
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     int m_debuggerId;
+    HashMap<String, String> m_compiledScriptURLs;
 };
 
 } // namespace blink

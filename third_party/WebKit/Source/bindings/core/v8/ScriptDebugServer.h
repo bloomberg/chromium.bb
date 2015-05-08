@@ -31,13 +31,12 @@
 #ifndef ScriptDebugServer_h
 #define ScriptDebugServer_h
 
-#include "bindings/core/v8/V8GlobalValueMap.h"
 #include "core/CoreExport.h"
+#include "core/InspectorTypeBuilder.h"
 #include "core/inspector/ScriptBreakpoint.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptDebugListener.h"
-#include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
+
 #include <v8-debug.h>
 #include <v8.h>
 
@@ -118,15 +117,10 @@ public:
     v8::Local<v8::Value> getInternalProperties(v8::Local<v8::Object>&);
     v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue);
 
-    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
-    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace);
-
     v8::Isolate* isolate() const { return m_isolate; }
 
 protected:
     ScriptDebugServer(v8::Isolate*, PassOwnPtr<Client>);
-
-    virtual void clearCompiledScripts();
 
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
     virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
@@ -163,7 +157,6 @@ private:
     v8::Isolate* m_isolate;
     OwnPtr<Client> m_client;
     bool m_breakpointsActivated;
-    V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;
     v8::UniquePersistent<v8::Context> m_debuggerContext;

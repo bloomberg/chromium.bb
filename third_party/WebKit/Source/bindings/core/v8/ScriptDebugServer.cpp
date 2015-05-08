@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/core/v8/ScriptDebugServer.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8JavaScriptCallFrame.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
@@ -85,7 +84,6 @@ ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate, PassOwnPtr<Client> cl
     : m_isolate(isolate)
     , m_client(client)
     , m_breakpointsActivated(true)
-    , m_compiledScripts(isolate)
     , m_runningNestedMessageLoop(false)
     , m_taskQueue(adoptPtr(new ThreadSafeTaskQueue))
 {
@@ -112,7 +110,6 @@ void ScriptDebugServer::disable()
 {
     ASSERT(enabled());
     clearBreakpoints();
-    clearCompiledScripts();
     m_debuggerScript.Reset();
     m_debuggerContext.Reset();
     v8::Debug::SetDebugEventListener(nullptr);
@@ -765,71 +762,6 @@ v8::MaybeLocal<v8::Value> ScriptDebugServer::setFunctionVariableValue(v8::Local<
 bool ScriptDebugServer::isPaused()
 {
     return m_pausedScriptState;
-}
-
-void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
-{
-    if (!scriptState->contextIsValid())
-        return;
-    ScriptState::Scope scope(scriptState);
-
-    v8::Local<v8::String> source = v8String(m_isolate, expression);
-    v8::TryCatch tryCatch;
-    v8::Local<v8::Script> script;
-    if (!v8Call(V8ScriptRunner::compileScript(source, sourceURL, String(), TextPosition(), m_isolate), script, tryCatch)) {
-        v8::Local<v8::Message> message = tryCatch.Message();
-        if (!message.IsEmpty()) {
-            *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
-            *lineNumber = message->GetLineNumber();
-            *columnNumber = message->GetStartColumn();
-            v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
-            if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
-                *stackTrace = createScriptCallStack(m_isolate, messageStackTrace, messageStackTrace->GetFrameCount());
-        }
-        return;
-    }
-    if (!persistScript)
-        return;
-
-    *scriptId = String::number(script->GetUnboundScript()->GetId());
-    m_compiledScripts.Set(*scriptId, script);
-}
-
-void ScriptDebugServer::clearCompiledScripts()
-{
-    m_compiledScripts.Clear();
-}
-
-void ScriptDebugServer::runScript(ScriptState* scriptState, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace)
-{
-    if (!m_compiledScripts.Contains(scriptId))
-        return;
-    v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Script> script = v8::Local<v8::Script>::New(m_isolate, m_compiledScripts.Remove(scriptId));
-    if (script.IsEmpty())
-        return;
-
-    if (!scriptState->contextIsValid())
-        return;
-    ScriptState::Scope scope(scriptState);
-    v8::TryCatch tryCatch;
-    v8::Local<v8::Value> value;
-    *wasThrown = false;
-    if (v8Call(V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext()), value, tryCatch)) {
-        *result = ScriptValue(scriptState, value);
-    } else {
-        *wasThrown = true;
-        *result = ScriptValue(scriptState, tryCatch.Exception());
-        v8::Local<v8::Message> message = tryCatch.Message();
-        if (!message.IsEmpty()) {
-            *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
-            *lineNumber = message->GetLineNumber();
-            *columnNumber = message->GetStartColumn();
-            v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
-            if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
-                *stackTrace = createScriptCallStack(m_isolate, messageStackTrace, messageStackTrace->GetFrameCount());
-        }
-    }
 }
 
 } // namespace blink

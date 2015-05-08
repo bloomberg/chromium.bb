@@ -64,12 +64,8 @@ public:
     static PageScriptDebugServer* instance();
     static void interruptMainThreadAndRun(PassOwnPtr<Task>);
 
-    void compileScript(ScriptState*, const String& expression, const String& sourceURL, bool persistScript, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
-    void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
-
 private:
     ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
-    void clearCompiledScripts() override;
     void runMessageLoopOnPause(v8::Local<v8::Context>) override;
     void quitMessageLoopOnPause() override;
     static WTF::Mutex& creationMutex();
@@ -78,7 +74,6 @@ private:
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     RawPtrWillBeMember<LocalFrame> m_pausedFrame;
-    HashMap<String, String> m_compiledScriptURLs;
 
     static PageScriptDebugServer* s_instance;
 };
