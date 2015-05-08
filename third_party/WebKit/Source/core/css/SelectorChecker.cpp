@@ -371,7 +371,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::Descendant:
         if (context.selector->relationIsAffectedByPseudoContent()) {
             for (Element* element = context.element; element; element = element->parentElement()) {
-                if (matchForShadowDistributed(nextContext, element, result) == SelectorMatches)
+                if (matchForShadowDistributed(nextContext, *element, result) == SelectorMatches)
                     return SelectorMatches;
             }
             return SelectorFailsCompletely;
@@ -393,7 +393,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::Child:
         {
             if (context.selector->relationIsAffectedByPseudoContent())
-                return matchForShadowDistributed(nextContext, context.element, result);
+                return matchForShadowDistributed(nextContext, *context.element, result);
 
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
@@ -460,7 +460,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         {
             if (context.selector->relationIsAffectedByPseudoContent()) {
                 for (Element* element = context.element; element; element = parentOrShadowHostButDisallowEscapingUserAgentShadowTree(*element)) {
-                    if (matchForShadowDistributed(nextContext, element, result) == SelectorMatches)
+                    if (matchForShadowDistributed(nextContext, *element, result) == SelectorMatches)
                         return SelectorMatches;
                 }
                 return SelectorFailsCompletely;
@@ -486,17 +486,18 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     return SelectorFailsCompletely;
 }
 
-SelectorChecker::Match SelectorChecker::matchForShadowDistributed(SelectorCheckingContext& nextContext, const Element* element, MatchResult* result) const
+SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const SelectorCheckingContext& context, const Element& element, MatchResult* result) const
 {
-    ASSERT(element);
     WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
-    collectDestinationInsertionPoints(*element, insertionPoints);
-    for (size_t i = 0; i < insertionPoints.size(); ++i) {
-        nextContext.element = insertionPoints[i];
+    collectDestinationInsertionPoints(element, insertionPoints);
+    SelectorCheckingContext nextContext(context);
+    nextContext.isSubSelector = false;
+    nextContext.elementStyle = 0;
+    for (const auto& insertionPoint : insertionPoints) {
+        nextContext.element = insertionPoint;
+        // TODO(esprehn): Why does SharingRules have a special case?
         if (m_mode == SharingRules)
-            nextContext.scope = insertionPoints[i]->containingShadowRoot();
-        nextContext.isSubSelector = false;
-        nextContext.elementStyle = 0;
+            nextContext.scope = insertionPoint->containingShadowRoot();
         if (matchSelector(nextContext, result) == SelectorMatches)
             return SelectorMatches;
     }

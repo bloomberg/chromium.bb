@@ -108,7 +108,7 @@ private:
     Match matchSelector(const SelectorCheckingContext&, MatchResult* = 0) const;
     Match matchForSubSelector(const SelectorCheckingContext&, MatchResult*) const;
     Match matchForRelation(const SelectorCheckingContext&, MatchResult*) const;
-    Match matchForShadowDistributed(SelectorCheckingContext& nextContext, const Element*, MatchResult* = 0) const;
+    Match matchForShadowDistributed(const SelectorCheckingContext&, const Element&, MatchResult*) const;
     Match matchForPseudoShadow(const SelectorCheckingContext&, const ContainerNode*, MatchResult*) const;
     bool checkPseudoClass(const SelectorCheckingContext&, unsigned* specificity) const;
     bool checkPseudoElement(const SelectorCheckingContext&) const;
