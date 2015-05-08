@@ -89,6 +89,9 @@ class BufferQueueTest : public ::testing::Test {
     return output_surface_->in_flight_surfaces_;
   }
 
+  const BufferQueue::AllocatedSurface& displayed_frame() {
+    return output_surface_->displayed_surface_;
+  }
   const BufferQueue::AllocatedSurface& last_frame() {
     return output_surface_->in_flight_surfaces_.back();
   }
@@ -98,7 +101,8 @@ class BufferQueueTest : public ::testing::Test {
   const gfx::Size size() { return output_surface_->size_; }
 
   int CountBuffers() {
-    int n = available_surfaces().size() + in_flight_surfaces().size();
+    int n = available_surfaces().size() + in_flight_surfaces().size() +
+            (displayed_frame().texture ? 1 : 0);
     if (current_surface())
       n++;
     return n;
@@ -108,6 +112,7 @@ class BufferQueueTest : public ::testing::Test {
   void CheckUnique() {
     std::set<unsigned> buffers;
     EXPECT_TRUE(InsertUnique(&buffers, current_surface()));
+    EXPECT_TRUE(InsertUnique(&buffers, displayed_frame().image));
     for (size_t i = 0; i < available_surfaces().size(); i++)
       EXPECT_TRUE(InsertUnique(&buffers, available_surfaces()[i].image));
     for (std::deque<BufferQueue::AllocatedSurface>::const_iterator it =
@@ -312,22 +317,27 @@ TEST_F(BufferQueueTest, CheckDoubleBuffering) {
   output_surface_->BindFramebuffer();
   EXPECT_EQ(1, CountBuffers());
   EXPECT_NE(0U, current_surface());
+  EXPECT_FALSE(displayed_frame().texture);
   SwapBuffers();
   EXPECT_EQ(1U, in_flight_surfaces().size());
   output_surface_->PageFlipComplete();
-  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_EQ(0U, in_flight_surfaces().size());
+  EXPECT_TRUE(displayed_frame().texture);
   output_surface_->BindFramebuffer();
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
   EXPECT_NE(0U, current_surface());
-  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_EQ(0U, in_flight_surfaces().size());
+  EXPECT_TRUE(displayed_frame().texture);
   SwapBuffers();
   CheckUnique();
-  EXPECT_EQ(2U, in_flight_surfaces().size());
+  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_TRUE(displayed_frame().texture);
   output_surface_->PageFlipComplete();
   CheckUnique();
-  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_EQ(0U, in_flight_surfaces().size());
   EXPECT_EQ(1U, available_surfaces().size());
+  EXPECT_TRUE(displayed_frame().texture);
   output_surface_->BindFramebuffer();
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
@@ -339,6 +349,7 @@ TEST_F(BufferQueueTest, CheckTripleBuffering) {
 
   // This bit is the same sequence tested in the doublebuffering case.
   output_surface_->BindFramebuffer();
+  EXPECT_FALSE(displayed_frame().texture);
   SwapBuffers();
   output_surface_->PageFlipComplete();
   output_surface_->BindFramebuffer();
@@ -346,18 +357,86 @@ TEST_F(BufferQueueTest, CheckTripleBuffering) {
 
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
-  EXPECT_EQ(2U, in_flight_surfaces().size());
+  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_TRUE(displayed_frame().texture);
   output_surface_->BindFramebuffer();
   EXPECT_EQ(3, CountBuffers());
   CheckUnique();
   EXPECT_NE(0U, current_surface());
-  EXPECT_EQ(2U, in_flight_surfaces().size());
+  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_TRUE(displayed_frame().texture);
   output_surface_->PageFlipComplete();
   EXPECT_EQ(3, CountBuffers());
   CheckUnique();
   EXPECT_NE(0U, current_surface());
-  EXPECT_EQ(1U, in_flight_surfaces().size());
+  EXPECT_EQ(0U, in_flight_surfaces().size());
+  EXPECT_TRUE(displayed_frame().texture);
   EXPECT_EQ(1U, available_surfaces().size());
+}
+
+TEST_F(BufferQueueTest, CheckCorrectBufferOrdering) {
+  const size_t kSwapCount = 3;
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    output_surface_->BindFramebuffer();
+    SwapBuffers();
+  }
+
+  EXPECT_EQ(kSwapCount, in_flight_surfaces().size());
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    unsigned int next_texture_id = in_flight_surfaces().front().texture;
+    output_surface_->PageFlipComplete();
+    EXPECT_EQ(displayed_frame().texture, next_texture_id);
+  }
+}
+
+TEST_F(BufferQueueTest, ReshapeWithInFlightSurfaces) {
+  const size_t kSwapCount = 3;
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    output_surface_->BindFramebuffer();
+    SwapBuffers();
+  }
+
+  output_surface_->Reshape(gfx::Size(10, 20), 1.0f);
+  EXPECT_EQ(3u, in_flight_surfaces().size());
+
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    output_surface_->PageFlipComplete();
+    EXPECT_EQ(0u, displayed_frame().texture);
+  }
+
+  // The dummy surfacess left should be discarded.
+  EXPECT_EQ(0u, available_surfaces().size());
+}
+
+TEST_F(BufferQueueTest, SwapAfterReshape) {
+  const size_t kSwapCount = 3;
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    output_surface_->BindFramebuffer();
+    SwapBuffers();
+  }
+
+  output_surface_->Reshape(gfx::Size(10, 20), 1.0f);
+
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    output_surface_->BindFramebuffer();
+    SwapBuffers();
+  }
+
+  EXPECT_EQ(2 * kSwapCount, in_flight_surfaces().size());
+
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    output_surface_->PageFlipComplete();
+    EXPECT_EQ(0u, displayed_frame().texture);
+  }
+
+  CheckUnique();
+
+  for (size_t i = 0; i < kSwapCount; ++i) {
+    unsigned int next_texture_id = in_flight_surfaces().front().texture;
+    output_surface_->PageFlipComplete();
+    EXPECT_EQ(displayed_frame().texture, next_texture_id);
+    EXPECT_NE(0u, displayed_frame().texture);
+  }
 }
 
 }  // namespace
