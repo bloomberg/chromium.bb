@@ -42,6 +42,11 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
  private:
   friend class test::DownloadNotificationItemTest;
 
+  enum NotificationUpdateType {
+    ADD_NEW,
+    UPDATE_EXISTING
+  };
+
   class NotificationWatcher : public NotificationDelegate {
    public:
     explicit NotificationWatcher(DownloadNotificationItem* item);
@@ -78,7 +83,8 @@ class DownloadNotificationItem : public content::DownloadItem::Observer {
   void OnDownloadRemoved(content::DownloadItem* item) override;
   void OnDownloadDestroyed(content::DownloadItem* item) override;
 
-  void UpdateNotificationData();
+  void CloseNotificationByUser();
+  void UpdateNotificationData(NotificationUpdateType type);
   void SetNotificationImage(int resource_id);
 
   NotificationUIManager* notification_ui_manager() const;
