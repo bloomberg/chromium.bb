@@ -48,6 +48,9 @@ class LargeIconService : public KeyedService {
     base::CancelableTaskTracker* tracker);
 
  private:
+  // For testing.
+  friend class TestLargeIconService;
+
   // Resizes |bitmap_result| to |desired_size_in_pixel|x|desired_size_in_pixel|.
   // Stores the resized bitmap data in |resized_bitmap_result| and returns true
   // if successful.

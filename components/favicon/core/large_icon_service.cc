@@ -30,6 +30,9 @@ base::CancelableTaskTracker::TaskId
         int desired_size_in_pixel,
         const favicon_base::LargeIconCallback& callback,
         base::CancelableTaskTracker* tracker) {
+  DCHECK_LE(1, min_source_size_in_pixel);
+  DCHECK_LE(0, desired_size_in_pixel);
+
   // TODO(beaudoin): For now this is just a wrapper around
   //   GetLargestRawFaviconForPageURL. Add the logic required to select the best
   //   possible large icon. Also add logic to fetch-on-demand when the URL of

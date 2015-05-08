@@ -41,6 +41,13 @@ FallbackIconStyle::FallbackIconStyle()
 FallbackIconStyle::~FallbackIconStyle() {
 }
 
+bool FallbackIconStyle::operator==(const FallbackIconStyle& other) const {
+  return background_color == other.background_color &&
+      text_color == other.text_color &&
+      font_size_ratio == other.font_size_ratio &&
+      roundness == other.roundness;
+}
+
 void MatchFallbackIconTextColorAgainstBackgroundColor(
     FallbackIconStyle* style) {
   int luminance = color_utils::GetLuminanceForColor(style->background_color);

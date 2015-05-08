@@ -165,6 +165,7 @@
     'favicon_unittest_sources': [
       'favicon/content/content_favicon_driver_unittest.cc',
       'favicon/core/favicon_handler_unittest.cc',
+      'favicon/core/large_icon_service_unittest.cc',
     ],
     'undo_unittest_sources': [
       'undo/bookmark_undo_service_test.cc',

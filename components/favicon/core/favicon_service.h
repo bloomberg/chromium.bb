@@ -117,7 +117,7 @@ class FaviconService : public KeyedService {
       base::CancelableTaskTracker* tracker);
 
   // See HistoryService::GetLargestFaviconForPageURL().
-  base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
+  virtual base::CancelableTaskTracker::TaskId GetLargestRawFaviconForPageURL(
       const GURL& page_url,
       const std::vector<int>& icon_types,
       int minimum_size_in_pixels,

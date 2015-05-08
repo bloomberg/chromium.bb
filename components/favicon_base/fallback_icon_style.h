@@ -30,6 +30,8 @@ struct FallbackIconStyle {
 
   // The roundness of the icon's corners. 0 => square icon, 1 => circle icon.
   double roundness;
+
+  bool operator==(const FallbackIconStyle& other) const;
 };
 
 // Reassigns |style|'s |text_color| to matches well against |background_color|.
