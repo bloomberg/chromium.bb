@@ -66,6 +66,18 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
     case v8::Isolate::kLegacyConst:
         UseCounter::count(callingExecutionContext(isolate), UseCounter::LegacyConst);
         break;
+    case v8::Isolate::kMarkDequeOverflow:
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::MarkDequeOverflow);
+        break;
+    case v8::Isolate::kStoreBufferOverflow:
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::StoreBufferOverflow);
+        break;
+    case v8::Isolate::kSlotsBufferOverflow:
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::SlotsBufferOverflow);
+        break;
+    case v8::Isolate::kObjectObserve:
+        UseCounter::count(callingExecutionContext(isolate), UseCounter::ObjectObserve);
+        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.
