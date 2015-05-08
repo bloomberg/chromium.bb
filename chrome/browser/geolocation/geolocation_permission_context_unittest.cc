@@ -32,7 +32,6 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -225,9 +224,8 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
   content::WebContents* new_tab = CreateTestWebContents();
   new_tab->GetController().LoadURL(
       url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  content::NavigationEntry* entry = new_tab->GetController().GetPendingEntry();
   content::RenderFrameHostTester::For(new_tab->GetMainFrame())
-      ->SendNavigate(extra_tabs_.size() + 1, entry->GetUniqueID(), true, url);
+      ->SendNavigate(extra_tabs_.size() + 1, url);
 
   // Set up required helpers, and make this be as "tabby" as the code requires.
 #if defined(ENABLE_EXTENSIONS)

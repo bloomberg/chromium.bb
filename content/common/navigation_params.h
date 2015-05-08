@@ -169,8 +169,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           base::Time request_time,
                           const PageState& page_state,
                           int32 page_id,
-                          int nav_entry_id,
-                          bool intended_as_new_entry,
                           int pending_history_list_offset,
                           int current_history_list_offset,
                           int current_history_list_length,
@@ -204,18 +202,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // succeeds, then this page_id will be reflected in the resultant
   // FrameHostMsg_DidCommitProvisionalLoad message.
   int32 page_id;
-
-  // For browser-initiated navigations, this is the unique id of the
-  // NavigationEntry being navigated to. (For renderer-initiated navigations it
-  // is 0.) If the load succeeds, then this nav_entry_id will be reflected in
-  // the resulting FrameHostMsg_DidCommitProvisionalLoad message.
-  int nav_entry_id;
-
-  // For browser-initiated navigations, this is true if this is a new entry
-  // being navigated to. This is false otherwise. TODO(avi): Remove this when
-  // the pending entry situation is made sane and the browser keeps them around
-  // long enough to match them via nav_entry_id, above.
-  bool intended_as_new_entry;
 
   // For history navigations, this is the offset in the history list of the
   // pending load. For non-history navigations, this will be ignored.

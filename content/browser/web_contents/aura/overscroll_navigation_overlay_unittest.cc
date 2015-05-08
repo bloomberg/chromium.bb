@@ -253,9 +253,8 @@ TEST_F(OverscrollNavigationOverlayTest, CancelAfterSuccessfulNavigation) {
   EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
 
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  NavigationEntry* pending = contents()->GetController().GetPendingEntry();
   main_test_rfh()->SendNavigate(
-      0, pending->GetUniqueID(), false, pending->GetURL());
+      1, contents()->GetController().GetPendingEntry()->GetURL());
   EXPECT_EQ(contents()->GetURL(), third());
 }
 
@@ -269,9 +268,8 @@ TEST_F(OverscrollNavigationOverlayTest, Navigation_PaintUpdate) {
   // for the previous page, so we should still be observing.
   EXPECT_TRUE(GetOverlay()->web_contents());
 
-  NavigationEntry* pending = contents()->GetController().GetPendingEntry();
   main_test_rfh()->SendNavigate(
-      0, pending->GetUniqueID(), false, pending->GetURL());
+      1, contents()->GetController().GetPendingEntry()->GetURL());
   ReceivePaintUpdate();
 
   // Navigation was committed and the paint update was received - we should no
@@ -293,9 +291,8 @@ TEST_F(OverscrollNavigationOverlayTest, Navigation_LoadingUpdate) {
   contents()->TestSetIsLoading(true);
   contents()->TestSetIsLoading(false);
   EXPECT_FALSE(GetOverlay()->web_contents());
-  NavigationEntry* pending = contents()->GetController().GetPendingEntry();
   main_test_rfh()->SendNavigate(
-      0, pending->GetUniqueID(), false, pending->GetURL());
+      1, contents()->GetController().GetPendingEntry()->GetURL());
   EXPECT_EQ(contents()->GetURL(), third());
 }
 

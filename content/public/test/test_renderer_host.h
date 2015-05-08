@@ -71,27 +71,17 @@ class RenderFrameHostTester {
   virtual RenderFrameHost* AppendChild(const std::string& frame_name) = 0;
 
   // Calls OnDidCommitProvisionalLoad on the RenderFrameHost with the given
-  // information with various sets of parameters. These are helper functions for
-  // simulating the most common types of loads.
-  //
-  // Guidance for calling these:
-  // - nav_entry_id should be 0 if simulating a renderer-initiated navigation;
-  //   if simulating a browser-initiated one, pass the GetUniqueID() value of
-  //   the NavigationController's PendingEntry.
-  // - did_create_new_entry should be true if simulating a navigation that
-  //   created a new navigation entry; false for history navigations, reloads,
-  //   and other navigations that don't affect the history list.
-  virtual void SendNavigate(int page_id,
-                            int nav_entry_id,
-                            bool did_create_new_entry,
-                            const GURL& url) = 0;
-  virtual void SendFailedNavigate(int page_id,
-                                  int nav_entry_id,
-                                  bool did_create_new_entry,
-                                  const GURL& url) = 0;
+  // information. Sets the rest of the parameters in the message to the
+  // "typical" values. This is a helper function for simulating the most common
+  // types of loads.
+  virtual void SendNavigate(int page_id, const GURL& url) = 0;
+  virtual void SendFailedNavigate(int page_id, const GURL& url) = 0;
+
+  // Calls OnDidCommitProvisionalLoad on the RenderFrameHost with the given
+  // information, including a custom PageTransition.  Sets the rest of the
+  // parameters in the message to the "typical" values. This is a helper
+  // function for simulating the most common types of loads.
   virtual void SendNavigateWithTransition(int page_id,
-                                          int nav_entry_id,
-                                          bool did_create_new_entry,
                                           const GURL& url,
                                           ui::PageTransition transition) = 0;
 

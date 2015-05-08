@@ -821,13 +821,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
-    // For site-per-process, both ClassifyNavigation methods get it wrong (see
-    // http://crbug.com/464014) so don't worry about a mismatch if that's the
-    // case.
-    DCHECK_EQ(details->type, ClassifyNavigationWithoutPageID(rfh, params));
-  }
 
   // is_in_page must be computed before the entry gets committed.
   details->is_in_page = AreURLsInPageNavigation(rfh->GetLastCommittedURL(),
@@ -1040,30 +1033,19 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
       existing_entry != pending_entry_ &&
       pending_entry_->GetPageID() == -1 &&
       existing_entry == GetLastCommittedEntry() &&
-      !params.was_within_same_page) {
-    // In order to prevent unrelated pending entries from interfering with
-    // this classification, make sure that the URL committed matches the URLs
-    // of both the existing entry and the pending entry. There might have been
-    // a redirection, though, so allow both the existing and pending entries
-    // to match either the final URL that committed, or the original one
-    // before redirection.
-    GURL original_url;
-    if (params.redirects.size())
-      original_url = params.redirects[0];
-
-    if ((params.url == existing_entry->GetURL() ||
-         original_url == existing_entry->GetURL()) &&
-        (params.url == pending_entry_->GetURL() ||
-         original_url == pending_entry_->GetURL())) {
-      // In this case, we have a pending entry for a URL but Blink didn't do a
-      // new navigation. This happens when you press enter in the URL bar to
-      // reload. We will create a pending entry, but Blink will convert it to a
-      // reload since it's the same page and not create a new entry for it (the
-      // user doesn't want to have a new back/forward entry when they do this).
-      // If this matches the last committed entry, we want to just ignore the
-      // pending entry and go back to where we were (the "existing entry").
-      return NAVIGATION_TYPE_SAME_PAGE;
-    }
+      !params.was_within_same_page &&
+      params.url == existing_entry->GetURL() &&
+      (params.url == pending_entry_->GetURL() ||
+       (params.redirects.size() &&
+        params.redirects[0] == pending_entry_->GetURL()))) {
+    // In this case, we have a pending entry for a URL but Blink didn't do a new
+    // navigation. This happens when you press enter in the URL bar to reload.
+    // We will create a pending entry, but Blink will convert it to a reload
+    // since it's the same page and not create a new entry for it (the user
+    // doesn't want to have a new back/forward entry when they do this). If this
+    // matches the last committed entry, we want to just ignore the pending
+    // entry and go back to where we were (the "existing entry").
+    return NAVIGATION_TYPE_SAME_PAGE;
   }
 
   // Any toplevel navigations with the same base (minus the reference fragment)
@@ -1071,121 +1053,6 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   // the time this doesn't matter since WebKit doesn't tell us about subframe
   // navigations that don't actually navigate, but it can happen when there is
   // an encoding override (it always sends a navigation request).
-  if (AreURLsInPageNavigation(existing_entry->GetURL(), params.url,
-                              params.was_within_same_page, rfh)) {
-    return NAVIGATION_TYPE_IN_PAGE;
-  }
-
-  // Since we weeded out "new" navigations above, we know this is an existing
-  // (back/forward) navigation.
-  return NAVIGATION_TYPE_EXISTING_PAGE;
-}
-
-NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
-    RenderFrameHostImpl* rfh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) const {
-  if (params.did_create_new_entry) {
-    // A new entry. We may or may not have a pending entry for the page, and
-    // this may or may not be the main frame.
-    if (ui::PageTransitionIsMainFrame(params.transition)) {
-      // TODO(avi): I want to use |if (!rfh->GetParent())| here but lots of unit
-      // tests fake auto subframe commits by sending the main frame a
-      // PAGE_TRANSITION_AUTO_SUBFRAME transition. Fix those, and adjust here.
-      return NAVIGATION_TYPE_NEW_PAGE;
-    }
-
-    // When this is a new subframe navigation, we should have a committed page
-    // in which it's a subframe. This may not be the case when an iframe is
-    // navigated on a popup navigated to about:blank (the iframe would be
-    // written into the popup by script on the main page). For these cases,
-    // there isn't any navigation stuff we can do, so just ignore it.
-    if (!GetLastCommittedEntry())
-      return NAVIGATION_TYPE_NAV_IGNORE;
-
-    // Valid subframe navigation.
-    return NAVIGATION_TYPE_NEW_SUBFRAME;
-  }
-
-  // We only clear the session history when navigating to a new page.
-  DCHECK(!params.history_list_was_cleared);
-
-  if (!ui::PageTransitionIsMainFrame(params.transition)) {
-    // All manual subframes would be did_create_new_entry and handled above, so
-    // we know this is auto.
-    if (GetLastCommittedEntry()) {
-      return NAVIGATION_TYPE_AUTO_SUBFRAME;
-    } else {
-      // We ignore subframes created in non-committed pages; we'd appreciate if
-      // people stopped doing that.
-      return NAVIGATION_TYPE_NAV_IGNORE;
-    }
-  }
-
-  if (params.nav_entry_id == 0) {
-    // This is a renderer-initiated navigation (nav_entry_id == 0), but didn't
-    // create a new page.
-
-    // Just like above in the did_create_new_entry case, it's possible to
-    // scribble onto an uncommitted page. Again, there isn't any navigation
-    // stuff that we can do, so ignore it here as well.
-    if (!GetLastCommittedEntry())
-      return NAVIGATION_TYPE_NAV_IGNORE;
-
-    if (params.was_within_same_page) {
-      // This is history.replaceState(), which is renderer-initiated yet within
-      // the same page.
-      return NAVIGATION_TYPE_IN_PAGE;
-    } else {
-      // This is history.reload() or a client-side redirect.
-      return NAVIGATION_TYPE_EXISTING_PAGE;
-    }
-  }
-
-  if (pending_entry_ && pending_entry_index_ == -1 &&
-      pending_entry_->GetUniqueID() == params.nav_entry_id) {
-    // In this case, we have a pending entry for a load of a new URL but Blink
-    // didn't do a new navigation (params.did_create_new_entry). This happens
-    // when you press enter in the URL bar to reload. We will create a pending
-    // entry, but Blink will convert it to a reload since it's the same page and
-    // not create a new entry for it (the user doesn't want to have a new
-    // back/forward entry when they do this). Therefore we want to just ignore
-    // the pending entry and go back to where we were (the "existing entry").
-    return NAVIGATION_TYPE_SAME_PAGE;
-  }
-
-  if (params.intended_as_new_entry) {
-    // This was intended to be a navigation to a new entry but the pending entry
-    // got cleared in the meanwhile. Classify as EXISTING_PAGE because we may or
-    // may not have a pending entry.
-    return NAVIGATION_TYPE_EXISTING_PAGE;
-  }
-
-  if (params.url_is_unreachable && failed_pending_entry_id_ != 0 &&
-      params.nav_entry_id == failed_pending_entry_id_) {
-    // If the renderer was going to a new pending entry that got cleared because
-    // of an error, this is the case of the user trying to retry a failed load
-    // by pressing return. Classify as EXISTING_PAGE because we probably don't
-    // have a pending entry.
-    return NAVIGATION_TYPE_EXISTING_PAGE;
-  }
-
-  // Now we know that the notification is for an existing page. Find that entry.
-  int existing_entry_index = GetEntryIndexWithUniqueID(params.nav_entry_id);
-  if (existing_entry_index == -1) {
-    // The page was not found. It could have been pruned because of the limit on
-    // back/forward entries (not likely since we'll usually tell it to navigate
-    // to such entries). It could also mean that the renderer is smoking crack.
-    // TODO(avi): Crash the renderer like we do in the old ClassifyNavigation?
-    NOTREACHED() << "Could not find nav entry with id " << params.nav_entry_id;
-    return NAVIGATION_TYPE_NAV_IGNORE;
-  }
-
-  // Any top-level navigations with the same base (minus the reference fragment)
-  // are in-page navigations. (We weeded out subframe navigations above.) Most
-  // of the time this doesn't matter since Blink doesn't tell us about subframe
-  // navigations that don't actually navigate, but it can happen when there is
-  // an encoding override (it always sends a navigation request).
-  NavigationEntryImpl* existing_entry = entries_[existing_entry_index].get();
   if (AreURLsInPageNavigation(existing_entry->GetURL(), params.url,
                               params.was_within_same_page, rfh)) {
     return NAVIGATION_TYPE_IN_PAGE;
@@ -1959,15 +1826,6 @@ int NavigationControllerImpl::GetEntryIndexWithPageID(
   for (int i = static_cast<int>(entries_.size()) - 1; i >= 0; --i) {
     if ((entries_[i]->site_instance() == instance) &&
         (entries_[i]->GetPageID() == page_id))
-      return i;
-  }
-  return -1;
-}
-
-int NavigationControllerImpl::GetEntryIndexWithUniqueID(
-    int nav_entry_id) const {
-  for (int i = static_cast<int>(entries_.size()) - 1; i >= 0; --i) {
-    if (entries_[i]->GetUniqueID() == nav_entry_id)
       return i;
   }
   return -1;

@@ -2690,7 +2690,18 @@ void RenderFrameImpl::didCommitProvisionalLoad(
           render_view_->history_list_offset_ + 1;
     }
   } else {
-    if (navigation_state->request_params().page_id != -1) {
+    // Inspect the navigation_state on this frame to see if the navigation
+    // corresponds to a session history navigation...  Note: |frame| may or
+    // may not be the toplevel frame, but for the case of capturing session
+    // history, the first committed frame suffices.  We keep track of whether
+    // we've seen this commit before so that only capture session history once
+    // per navigation.
+    //
+    // Note that we need to check if the page ID changed. In the case of a
+    // reload, the page ID doesn't change, and UpdateSessionHistory gets the
+    // previous URL and the current page ID, which would be wrong.
+    if (navigation_state->request_params().page_id != -1 &&
+        navigation_state->request_params().page_id != render_view_->page_id_) {
       // This is a successful session history navigation!
       render_view_->page_id_ = navigation_state->request_params().page_id;
 
@@ -3857,12 +3868,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.http_status_code = response.httpStatusCode();
   params.url_is_unreachable = ds->hasUnreachableURL();
   params.is_post = false;
-  params.intended_as_new_entry =
-      navigation_state->request_params().intended_as_new_entry;
-  params.did_create_new_entry = commit_type == blink::WebStandardCommit;
   params.post_id = -1;
   params.page_id = render_view_->page_id_;
-  params.nav_entry_id = navigation_state->request_params().nav_entry_id;
   // We need to track the RenderViewHost routing_id because of downstream
   // dependencies (crbug.com/392171 DownloadRequestHandle, SaveFileManager,
   // ResourceDispatcherHostImpl, MediaStreamUIProxy,
@@ -4466,10 +4473,6 @@ void RenderFrameImpl::NavigateInternal(
 
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(request_params.page_id, -1);
-    // We must know the nav entry ID of the page we are navigating back to,
-    // which should be the case because history navigations are routed via the
-    // browser.
-    DCHECK_NE(0, request_params.nav_entry_id);
     scoped_ptr<HistoryEntry> entry =
         PageStateToHistoryEntry(request_params.page_state);
     if (entry) {
