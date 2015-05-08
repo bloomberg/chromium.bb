@@ -94,11 +94,7 @@ static int returnFortyTwo()
 
 TEST(FunctionalTest, Basic)
 {
-    Function<int()> emptyFunction;
-    EXPECT_TRUE(emptyFunction.isNull());
-
     OwnPtr<Function<int()>> returnFortyTwoFunction = bind(returnFortyTwo);
-    EXPECT_FALSE(returnFortyTwoFunction->isNull());
     EXPECT_EQ(42, (*returnFortyTwoFunction)());
 }
 

@@ -54,7 +54,7 @@ public:
         m_observedType = type;
         m_callbackCount += 1;
 
-        if (m_closure && !m_closure->isNull())
+        if (m_closure)
             (*m_closure)();
     }
 
