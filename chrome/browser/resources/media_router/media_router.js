@@ -73,14 +73,14 @@ cr.define('media_router', function() {
    * Creates a media route.
    * Called when the user requests to create a media route.
    *
-   * @param {{detail: {sinkId: string, castMode: number}}} data
+   * @param {{detail: {sinkId: string, selectedCastModeValue: number}}} data
    * Parameters in |data|.detail:
    *   sinkId - sink ID selected by the user.
-   *   castMode - cast mode selected by the user.
+   *   selectedCastModeValue - cast mode selected by the user.
    */
   function onCreateRoute(data) {
     media_router.browserApi.requestRoute(data.detail.sinkId,
-                                         data.detail.castMode);
+                                         data.detail.selectedCastModeValue);
   }
 
   /**

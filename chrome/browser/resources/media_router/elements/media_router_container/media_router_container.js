@@ -219,7 +219,7 @@ Polymer('media-router-container', {
       this.showRouteDetailsView();
     } else {
       this.fire('create-route', {
-        sink: sink,
+        sinkId: sink.id,
         selectedCastModeValue: this.selectedCastModeValue_
       });
     }

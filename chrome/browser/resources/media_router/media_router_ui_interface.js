@@ -101,11 +101,11 @@ cr.define('media_router.browserApi', function() {
   /**
    * Requests that a media route be started with the given sink.
    *
-   * @param {!media_router.Sink} sink
+   * @param {string} sinkId The sink ID.
    * @param {number} selectedCastMode The value of the cast mode the user
    *   selected, or -1 if the user has not explicitly selected a mode.
    */
-  function requestRoute(sink, selectedCastMode) {
+  function requestRoute(sinkId, selectedCastMode) {
     // TODO(imcheng): Implement.
   }
 
