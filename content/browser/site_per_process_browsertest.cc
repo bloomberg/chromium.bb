@@ -2395,42 +2395,4 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
       DepictFrameTree(root));
 }
 
-// Test that opening a cross-site window with child frames doesn't crash either
-// renderer in --site-per-process. This was previously broken because frame
-// swaps weren't being performed on main frames, so it would crash when trying
-// to mirror the child frames. https://crbug.com/475003
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       OpenCrossSiteWindowWithFrames) {
-  ASSERT_EQ(1u, Shell::windows().size());
-  Shell* main_window = Shell::windows()[0];
-
-  // Navigate the main window.
-  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
-  NavigateToURL(main_window, main_url);
-  EXPECT_EQ(main_window->web_contents()->GetLastCommittedURL(), main_url);
-
-  // Load a cross-site page into a new window.
-  GURL cross_url =
-      embedded_test_server()->GetURL("foo.com", "/site_per_process_main.html");
-  std::string script = "window.open('" + cross_url.spec() + "')";
-  EXPECT_TRUE(ExecuteScript(main_window->web_contents(), script));
-  ASSERT_EQ(2u, Shell::windows().size());
-  Shell* cross_window = Shell::windows()[1];
-  WaitForLoadStop(cross_window->web_contents());
-  EXPECT_EQ(cross_window->web_contents()->GetLastCommittedURL(), cross_url);
-
-  // Make sure the main window is still live. To create a synchronization point
-  // and ensure that the renderer has processed all the messages for updating
-  // the frame tree, execute a simple bit of JS first.
-  EXPECT_TRUE(ExecuteScript(main_window->web_contents(), "true"));
-  EXPECT_TRUE(static_cast<WebContentsImpl*>(main_window->web_contents())
-                  ->GetMainFrame()
-                  ->IsRenderFrameLive());
-  // And check the cross-site window too.
-  EXPECT_TRUE(ExecuteScript(cross_window->web_contents(), "true"));
-  EXPECT_TRUE(static_cast<WebContentsImpl*>(cross_window->web_contents())
-                  ->GetMainFrame()
-                  ->IsRenderFrameLive());
-}
-
 }  // namespace content

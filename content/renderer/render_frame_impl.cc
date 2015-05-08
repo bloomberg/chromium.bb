@@ -1227,7 +1227,7 @@ void RenderFrameImpl::OnSwapOut(
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
   if (proxy) {
-    if (!is_main_frame || is_site_per_process) {
+    if (!is_main_frame) {
       frame_->swap(proxy->web_frame());
 
       if (is_loading)
