@@ -70,6 +70,11 @@ EVENTS_BASE_EXPORT bool DomCodeToControlCharacter(DomCode dom_code,
                                                   KeyboardCode* key_code)
     WARN_UNUSED_RESULT;
 
+// Returns the DomKey value associated with an ASCII/Unicode character.
+// All printable characters and most other character codes use
+// DomKey::CHARACTER, but a few ASCII C0 codes have their own DomKey.
+EVENTS_BASE_EXPORT DomKey CharacterToDomKey(uint32 character);
+
 // Returns a Windows-based VKEY for a non-printable DOM Level 3 |key|.
 // The returned VKEY is non-located (e.g. VKEY_SHIFT).
 EVENTS_BASE_EXPORT KeyboardCode

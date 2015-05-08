@@ -805,8 +805,7 @@ void KeyEvent::ApplyLayout() const {
   // returns 'a' for VKEY_A even if the key is actually bound to 'à' in X11.
   // GetCharacterFromXEvent returns 'à' in that case.
   if (!IsControlDown() && native_event()) {
-    character_ = GetCharacterFromXEvent(native_event());
-    // TODO(kpschoedel): set key_ field for X11.
+    GetMeaningFromXEvent(native_event(), &key_, &character_);
     return;
   }
 #elif defined(USE_OZONE)

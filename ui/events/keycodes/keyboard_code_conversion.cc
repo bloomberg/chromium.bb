@@ -428,6 +428,21 @@ bool DomCodeToControlCharacter(DomCode dom_code,
   }
 }
 
+DomKey CharacterToDomKey(uint32 character) {
+  switch (character) {
+    case 0x08:
+      return DomKey::BACKSPACE;
+    case 0x09:
+      return DomKey::TAB;
+    case 0x0D:
+      return DomKey::ENTER;
+    case 0x1B:
+      return DomKey::ESCAPE;
+    default:
+      return DomKey::CHARACTER;
+  }
+}
+
 // Returns a Windows-based VKEY for a non-printable DOM Level 3 |key|.
 // The returned VKEY is non-positional (e.g. VKEY_SHIFT).
 KeyboardCode NonPrintableDomKeyToKeyboardCode(DomKey dom_key) {

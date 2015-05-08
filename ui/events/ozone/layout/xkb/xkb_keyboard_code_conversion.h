@@ -18,11 +18,6 @@ namespace ui {
 
 enum class DomKey;
 
-// Returns the DomKey associated with a non-character xkb_keysym_t.
-// Returns DomKey::NONE for unrecognized keysyms, which includes
-// all printable characters.
-DomKey NonPrintableXkbKeySymToDomKey(xkb_keysym_t keysym);
-
 // Returns the dead key combining character associated with an xkb_keysym_t,
 // or 0 if the keysym is not recognized.
 base::char16 DeadXkbKeySymToCombiningCharacter(xkb_keysym_t keysym);

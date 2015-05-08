@@ -19,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
 #include "ui/events/x/keysym_to_unicode.h"
 
 #define VKEY_UNSUPPORTED VKEY_UNKNOWN
@@ -897,6 +898,23 @@ uint16 GetCharacterFromXEvent(const XEvent* xev) {
   KeySym keysym = XK_VoidSymbol;
   XLookupString(const_cast<XKeyEvent*>(xkey), NULL, 0, &keysym, NULL);
   return GetUnicodeCharacterFromXKeySym(keysym);
+}
+
+void GetMeaningFromXEvent(const XEvent* xev, DomKey* key, base::char16* ch) {
+  XEvent xkeyevent = {0};
+  const XKeyEvent* xkey = NULL;
+  if (xev->type == GenericEvent) {
+    // Convert the XI2 key event into a core key event so that we can
+    // continue to use XLookupString() until crbug.com/367732 is complete.
+    InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
+    xkey = &xkeyevent.xkey;
+  } else {
+    xkey = &xev->xkey;
+  }
+  KeySym keysym = XK_VoidSymbol;
+  XLookupString(const_cast<XKeyEvent*>(xkey), NULL, 0, &keysym, NULL);
+  *ch = GetUnicodeCharacterFromXKeySym(keysym);
+  *key = XKeySymToDomKey(keysym, *ch);
 }
 
 KeyboardCode DefaultKeyboardCodeFromHardwareKeycode(

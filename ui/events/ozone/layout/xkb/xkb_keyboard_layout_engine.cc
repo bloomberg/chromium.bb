@@ -18,7 +18,7 @@
 #include "ui/events/keycodes/dom3/dom_key.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/events/ozone/layout/layout_util.h"
+#include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_code_conversion.h"
 
 namespace ui {
@@ -28,22 +28,6 @@ namespace {
 typedef base::Callback<void(const std::string&,
                             scoped_ptr<char, base::FreeDeleter>)>
     LoadKeymapCallback;
-
-DomKey CharacterToDomKey(base::char16 character) {
-  switch (character) {
-    case 0x08:
-      return DomKey::BACKSPACE;
-    case 0x09:
-      return DomKey::TAB;
-    case 0x0A:
-    case 0x0D:
-      return DomKey::ENTER;
-    case 0x1B:
-      return DomKey::ESCAPE;
-    default:
-      return DomKey::CHARACTER;
-  }
-}
 
 KeyboardCode AlphanumericKeyboardCode(base::char16 character) {
   // Plain ASCII letters and digits map directly to VKEY values.
@@ -765,7 +749,7 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
     return false;
   *platform_keycode = xkb_keysym;
   // Classify the keysym and convert to DOM and VKEY representations.
-  *dom_key = NonPrintableXkbKeySymToDomKey(xkb_keysym);
+  *dom_key = NonPrintableXKeySymToDomKey(xkb_keysym);
   if (*dom_key == DomKey::NONE) {
     *dom_key = CharacterToDomKey(*character);
     *key_code = AlphanumericKeyboardCode(*character);
@@ -870,7 +854,7 @@ KeyboardCode XkbKeyboardLayoutEngine::DifficultKeyboardCode(
     return VKEY_UNKNOWN;
 
   // If the plain key is non-printable, that determines the VKEY.
-  DomKey plain_key = NonPrintableXkbKeySymToDomKey(plain_keysym);
+  DomKey plain_key = NonPrintableXKeySymToDomKey(plain_keysym);
   if (plain_key != ui::DomKey::NONE)
     return NonPrintableDomKeyToKeyboardCode(dom_key);
 

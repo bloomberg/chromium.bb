@@ -76,6 +76,14 @@ component("events_base") {
 
     deps += [ "//ui/gfx/x" ]
   }
+
+  if (use_x11 || use_ozone) {
+    sources += [
+      "keycodes/keyboard_code_conversion_xkb.cc",
+      "keycodes/keyboard_code_conversion_xkb.h",
+      "keycodes/xkb_keysym.h",
+    ]
+  }
 }
 
 component("events") {

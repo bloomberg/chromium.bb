@@ -81,6 +81,13 @@
             '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
+        ['use_x11==1 or use_xkbcommon==1', {
+          'sources': [
+            'keycodes/keyboard_code_conversion_xkb.cc',
+            'keycodes/keyboard_code_conversion_xkb.h',
+            'keycodes/xkb_keysym.h',
+          ],
+        }],
       ],
     },
     {
