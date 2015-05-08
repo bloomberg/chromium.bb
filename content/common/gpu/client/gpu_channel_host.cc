@@ -68,6 +68,7 @@ GpuChannelHost::GpuChannelHost(
 
 void GpuChannelHost::Connect(const IPC::ChannelHandle& channel_handle,
                              base::WaitableEvent* shutdown_event) {
+  DCHECK(factory_->IsMainThread());
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
   scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
@@ -106,6 +107,12 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
   // TODO: Can we just always use sync_filter_ since we setup the channel
   //       without a main listener?
   if (factory_->IsMainThread()) {
+    // channel_ is only modified on the main thread, so we don't need to take a
+    // lock here.
+    if (!channel_) {
+      DVLOG(1) << "GpuChannelHost::Send failed: Channel already destroyed";
+      return false;
+    }
     // http://crbug.com/125264
     base::ThreadRestrictions::ScopedAllowWait allow_wait;
     bool result = channel_->Send(message.release());
@@ -273,9 +280,8 @@ void GpuChannelHost::DestroyCommandBuffer(
 }
 
 void GpuChannelHost::DestroyChannel() {
-  // channel_ must be destroyed on the main thread.
-  if (channel_.get() && !factory_->IsMainThread())
-    factory_->GetMainLoop()->DeleteSoon(FROM_HERE, channel_.release());
+  DCHECK(factory_->IsMainThread());
+  AutoLock lock(context_lock_);
   channel_.reset();
 }
 
@@ -305,8 +311,15 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
 #if defined(OS_WIN)
   // Windows needs to explicitly duplicate the handle out to another process.
   base::SharedMemoryHandle target_handle;
+  base::ProcessId peer_pid;
+  {
+    AutoLock lock(context_lock_);
+    if (!channel_)
+      return base::SharedMemory::NULLHandle();
+    peer_pid = channel_->GetPeerPID();
+  }
   if (!BrokerDuplicateHandle(source_handle,
-                             channel_->GetPeerPID(),
+                             peer_pid,
                              &target_handle,
                              FILE_GENERIC_READ | FILE_GENERIC_WRITE,
                              0)) {
@@ -358,7 +371,11 @@ int32 GpuChannelHost::GenerateRouteID() {
 }
 
 GpuChannelHost::~GpuChannelHost() {
-  DestroyChannel();
+#if DCHECK_IS_ON()
+  AutoLock lock(context_lock_);
+  DCHECK(!channel_)
+      << "GpuChannelHost::DestroyChannel must be called before destruction.";
+#endif
 }
 
 GpuChannelHost::MessageFilter::MessageFilter()

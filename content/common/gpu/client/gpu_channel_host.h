@@ -151,7 +151,8 @@ class GpuChannelHost : public IPC::Sender,
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);
 
-  // Destroy this channel.
+  // Destroy this channel. Must be called on the main thread, before
+  // destruction.
   void DestroyChannel();
 
   // Add a route for the current message loop.
@@ -246,7 +247,6 @@ class GpuChannelHost : public IPC::Sender,
 
   const gpu::GPUInfo gpu_info_;
 
-  scoped_ptr<IPC::SyncChannel> channel_;
   scoped_refptr<MessageFilter> channel_filter_;
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
@@ -263,8 +263,9 @@ class GpuChannelHost : public IPC::Sender,
   // Route IDs are allocated in sequence.
   base::AtomicSequenceNumber next_route_id_;
 
-  // Protects proxies_.
+  // Protects channel_ and proxies_.
   mutable base::Lock context_lock_;
+  scoped_ptr<IPC::SyncChannel> channel_;
   // Used to look up a proxy from its routing id.
   typedef base::hash_map<int, CommandBufferProxyImpl*> ProxyMap;
   ProxyMap proxies_;

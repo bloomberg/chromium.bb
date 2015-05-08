@@ -790,6 +790,7 @@ void RenderThreadImpl::Shutdown() {
 
   // Context providers must be released prior to destroying the GPU channel.
   gpu_va_context_provider_ = nullptr;
+  shared_main_thread_contexts_ = nullptr;
 
   if (gpu_channel_.get())
     gpu_channel_->DestroyChannel();
@@ -1605,6 +1606,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
       return gpu_channel_.get();
 
     // Recreate the channel if it has been lost.
+    gpu_channel_->DestroyChannel();
     gpu_channel_ = NULL;
   }
 
