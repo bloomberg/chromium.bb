@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.00",
+  "version": "8.01",
   "entries": [
     {
       "id": 1,
@@ -1295,6 +1295,19 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_egl_khr_wait_sync"
+      ]
+    },
+    {
+      "id": 111,
+      "description": "Discard Framebuffer breaks WebGL on Mali-400 Linux",
+      "cr_bugs": [485814],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": ".*Mali-400.*",
+      "features": [
+        "disable_discard_framebuffer"
       ]
     }
   ]
