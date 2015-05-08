@@ -29,30 +29,52 @@ from chromite.lib import workon_helper
 
 
 def main(argv):
-  parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument(
-      'command',
-      choices=('start', 'stop', 'info', 'list', 'list-all', 'iterate'),
-      help='cros_workon command to run.')
-  parser.add_argument('--board', default=cros_build_lib.GetDefaultBoard(),
+  shared = commandline.SharedParser()
+  shared.add_argument('--board', default=cros_build_lib.GetDefaultBoard(),
                       help='The board to set package keywords for.')
-  parser.add_argument('--brick', help='The brick to set package keywords for.')
-  parser.add_argument('--host', default=False, action='store_true',
+  shared.add_argument('--brick', help='The brick to set package keywords for.')
+  shared.add_argument('--host', default=False, action='store_true',
                       help='Uses the host instead of board')
-  parser.add_argument('--remote', default='',
+  shared.add_argument('--remote', default='',
                       help='For non-workon projects, the git remote to use.')
-  parser.add_argument('--revision', default='',
+  shared.add_argument('--revision', default='',
                       help='Use to override the manifest defined default '
                            'revision used for a project')
-  parser.add_argument('--command', default='git status', dest='iterate_command',
+  shared.add_argument('--command', default='git status', dest='iterate_command',
                       help='The command to be run by forall.')
-  parser.add_argument('--workon_only', default=False, action='store_true',
+  shared.add_argument('--workon_only', default=False, action='store_true',
                       help='Apply to packages that have a workon ebuild only')
-  parser.add_argument('--all', default=False, action='store_true',
+  shared.add_argument('--all', default=False, action='store_true',
                       help='Apply to all possible packages for the '
                            'given command (overrides workon_only)')
-  parser.add_argument('packages', nargs='*',
+
+  parser = commandline.ArgumentParser(description=__doc__, parents=[shared,])
+
+  # Add the shared 'packages' argument after creating the main parser so that
+  # it is only bound/shared with the subcommands and doesn't confuse argparse.
+  shared.add_argument('packages', nargs='*',
                       help='The packages to run command against.')
+
+  commands = parser.add_subparsers(dest='command', title='commands')
+  commands.add_parser(
+      'start', parents=[shared,],
+      help='Moves an ebuild to live (intended to support development)')
+  commands.add_parser(
+      'stop', parents=[shared,],
+      help='Moves an ebuild to stable (use last known good)')
+  commands.add_parser(
+      'info', parents=[shared,],
+      help='Print package name, repo name, and source directory.')
+  commands.add_parser(
+      'list', parents=[shared,],
+      help='List of live ebuilds (workon ebuilds if --all)')
+  commands.add_parser(
+      'list-all', parents=[shared,],
+      help='List all of the live ebuilds for all setup boards')
+  commands.add_parser(
+      'iterate', parents=[shared,],
+      help='For each ebuild, cd to the source dir and run a command')
+
   options = parser.parse_args(argv)
   options.Freeze()
 

@@ -881,6 +881,14 @@ class FilteringParser(OptionParser):
     return accepted, removed
 
 
+class SharedParser(argparse.ArgumentParser):
+  """A type of parser that may be used as a shared parent for subparsers."""
+
+  def __init__(self, **kwargs):
+    kwargs.setdefault('add_help', False)
+    argparse.ArgumentParser.__init__(self, **kwargs)
+
+
 class ArgumentParser(BaseParser, argparse.ArgumentParser):
   """Custom argument parser for use by chromite.
 
