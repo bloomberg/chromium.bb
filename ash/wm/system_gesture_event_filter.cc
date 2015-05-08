@@ -58,7 +58,7 @@ void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   if (event->type() == ui::ET_GESTURE_WIN8_EDGE_SWIPE &&
-      shelf_gesture_handler_->ProcessGestureEvent(*event)) {
+      shelf_gesture_handler_->ProcessGestureEvent(*event, target)) {
     // Do not stop propagation, since the immersive fullscreen controller may
     // need to handle this event.
     return;

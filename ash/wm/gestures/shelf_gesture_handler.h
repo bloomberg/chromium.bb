@@ -8,9 +8,13 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace ui {
 class GestureEvent;
-}
+}  // namespace ui
 
 namespace ash {
 
@@ -24,7 +28,11 @@ class ShelfGestureHandler {
   // Processes a gesture event and updates the status of the shelf when
   // appropriate. Returns true of the gesture has been handled and it should not
   // be processed any farther, false otherwise.
-  bool ProcessGestureEvent(const ui::GestureEvent& event);
+  // The caller must provide the |event_target_window| because the caller has
+  // knowledge of the type of the |event.target()| whether it's a |views::View|
+  // or an |aura::Window|.
+  bool ProcessGestureEvent(const ui::GestureEvent& event,
+                           const aura::Window* event_target_window);
 
  private:
   bool drag_in_progress_;

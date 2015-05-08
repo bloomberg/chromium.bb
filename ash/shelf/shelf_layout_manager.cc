@@ -139,8 +139,9 @@ void ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
 
 void ShelfLayoutManager::AutoHideEventFilter::OnGestureEvent(
     ui::GestureEvent* event) {
-  if (shelf_->IsShelfWindow(static_cast<aura::Window*>(event->target()))) {
-    if (gesture_handler_.ProcessGestureEvent(*event))
+  aura::Window* target_window = static_cast<aura::Window*>(event->target());
+  if (shelf_->IsShelfWindow(target_window)) {
+    if (gesture_handler_.ProcessGestureEvent(*event, target_window))
       event->StopPropagation();
   }
 }

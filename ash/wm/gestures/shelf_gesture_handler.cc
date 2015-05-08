@@ -28,7 +28,9 @@ ShelfGestureHandler::ShelfGestureHandler()
 ShelfGestureHandler::~ShelfGestureHandler() {
 }
 
-bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
+bool ShelfGestureHandler::ProcessGestureEvent(
+    const ui::GestureEvent& event,
+    const aura::Window* event_target_window) {
   Shell* shell = Shell::GetInstance();
   if (!shell->session_state_delegate()->NumberOfLoggedInUsers() ||
       shell->session_state_delegate()->IsScreenLocked()) {
@@ -36,9 +38,8 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
     return false;
   }
 
-  // TODO(oshima): Find the root window controller from event's location.
-  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
-
+  RootWindowController* controller =
+      RootWindowController::ForWindow(event_target_window);
   ShelfLayoutManager* shelf = controller->GetShelfLayoutManager();
 
   if (event.type() == ui::ET_GESTURE_WIN8_EDGE_SWIPE) {

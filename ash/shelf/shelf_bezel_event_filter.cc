@@ -32,7 +32,7 @@ void ShelfBezelEventFilter::OnGestureEvent(
   if ((!screen.Contains(point_in_screen) &&
        IsShelfOnBezel(screen, point_in_screen)) ||
       in_touch_drag_) {
-    if (gesture_handler_.ProcessGestureEvent(*event)) {
+    if (gesture_handler_.ProcessGestureEvent(*event, target)) {
       switch (event->type()) {
         case ui::ET_GESTURE_SCROLL_BEGIN:
           in_touch_drag_ = true;

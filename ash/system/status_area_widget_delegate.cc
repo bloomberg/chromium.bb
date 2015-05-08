@@ -79,7 +79,10 @@ const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
 }
 
 void StatusAreaWidgetDelegate::OnGestureEvent(ui::GestureEvent* event) {
-  if (gesture_handler_.ProcessGestureEvent(*event))
+  aura::Window* target_window = static_cast<views::View*>(event->target())
+                                    ->GetWidget()
+                                    ->GetNativeWindow();
+  if (gesture_handler_.ProcessGestureEvent(*event, target_window))
     event->StopPropagation();
   else
     views::AccessiblePaneView::OnGestureEvent(event);
