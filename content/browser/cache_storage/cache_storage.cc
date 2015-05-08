@@ -575,14 +575,14 @@ void CacheStorage::CreateCacheDidCreateCache(
     const scoped_refptr<CacheStorageCache>& cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.CreateCacheStorageResult",
+                        cache != nullptr);
+
   if (!cache.get()) {
     callback.Run(scoped_refptr<CacheStorageCache>(),
                  CACHE_STORAGE_ERROR_STORAGE);
     return;
   }
-
-  UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.CreateCacheStorageResult",
-                        cache != nullptr);
 
   cache_map_.insert(std::make_pair(cache_name, cache->AsWeakPtr()));
   ordered_cache_names_.push_back(cache_name);
