@@ -361,7 +361,12 @@ void VideoEncoderResource::OnPluginMsgEncodeReply(
     PP_Resource video_frame,
     const ResourceMessageReplyParams& params,
     uint32_t frame_id) {
-  DCHECK_NE(encode_callbacks_.size(), 0U);
+  // We need to ensure there are still callbacks to be called before
+  // processing this message. We might receive a EncodeReply message
+  // after having sent a Close message to the renderer. In this case,
+  // we don't have any callback left to call.
+  if (encode_callbacks_.empty())
+    return;
   encoder_last_error_ = params.result();
 
   EncodeMap::iterator it = encode_callbacks_.find(video_frame);

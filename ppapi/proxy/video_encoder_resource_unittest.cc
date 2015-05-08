@@ -1136,6 +1136,14 @@ TEST_F(VideoEncoderResourceTest, Close) {
     ASSERT_EQ(PP_ERROR_ABORTED, encode_cb2.result());
     ASSERT_TRUE(get_bitstream_buffer_cb.called());
     ASSERT_EQ(PP_ERROR_ABORTED, get_bitstream_buffer_cb.result());
+
+    // Verify that a remaining encode response from the renderer is
+    // discarded.
+    ResourceMessageCallParams params;
+    uint32_t frame_id;
+    bool force_frame;
+    ASSERT_TRUE(CheckEncodeMsg(&params, &frame_id, &force_frame));
+    SendEncodeReply(params, frame_id);
   }
 }
 
