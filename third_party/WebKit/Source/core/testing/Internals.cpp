@@ -2346,6 +2346,8 @@ ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, Exc
 
 bool Internals::isUseCounted(Document* document, int useCounterId)
 {
+    if (useCounterId < 0 || useCounterId >= UseCounter::NumberOfFeatures)
+        return false;
     return UseCounter::isCounted(*document, static_cast<UseCounter::Feature>(useCounterId));
 }
 
