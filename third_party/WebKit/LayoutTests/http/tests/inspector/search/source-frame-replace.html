@@ -1,0 +1,102 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../sources-test.js"></script>
+<script src="resources/search.js"></script>
+<script>
+function test()
+{
+    function replaceAndDumpChange(sourceFrame, searchConfig, replacement, replaceAll)
+    {
+        var modifiers = [];
+        if (searchConfig.isRegex)
+            modifiers.push("regex");
+        if (searchConfig.caseSensitive)
+            modifiers.push("caseSensitive");
+        if (replaceAll)
+            modifiers.push("replaceAll");
+        var modifiersString = modifiers.length ?  " (" + modifiers.join(", ") + ")" : "";
+
+        InspectorTest.addResult("Running replace test for /" + searchConfig.query + "/" + replacement + "/ " + modifiersString + ":");
+
+        editor = sourceFrame._textEditor;
+        var oldLines = [];
+        for (var i = 0; i < editor.linesCount; ++i)
+            oldLines.push(editor.line(i));
+        var searchableView = WebInspector.panels.sources.sourcesView().searchableView();
+        searchableView.showSearchField();
+
+        searchableView._caseSensitiveButton.setToggled(searchConfig.caseSensitive);
+        searchableView._regexButton.setToggled(searchConfig.isRegex);
+        searchableView._searchInputElement.value = searchConfig.query;
+        searchableView._replaceCheckboxElement.checked = true;
+        searchableView._updateSecondRowVisibility();
+        searchableView._replaceInputElement.value = replacement;
+        searchableView._performSearch(true, true);
+        if (replaceAll)
+            searchableView._replaceAll()
+         else
+            searchableView._replace();
+
+        var newLines = [];
+        for (var i = 0; i < editor.linesCount; ++i)
+            newLines.push(editor.line(i));
+
+        for (var i = 0; i < newLines.length; ++i) {
+            if (oldLines[i] === newLines[i])
+                continue;
+            var oldLine = oldLines[i];
+            var newLine = newLines[i];
+
+            var prefixLength = 0;
+            for (var j = 0; j < oldLine.length && j < newLine.length && newLine[j] === oldLine[j]; ++j)
+                ++prefixLength;
+            var postfixLength = 0;
+            for (var j = 0; j < oldLine.length && j < newLine.length && newLine[newLine.length - j - 1] === oldLine[oldLine.length - j - 1]; ++j)
+                ++postfixLength;
+            var prefix = oldLine.substring(0, prefixLength);
+            var removed = oldLine.substring(prefixLength, oldLine.length - postfixLength);
+            var added = newLine.substring(prefixLength, newLine.length - postfixLength);
+            var postfix = oldLine.substring(oldLine.length - postfixLength);
+            InspectorTest.addResult("  - " + prefix + "#" + removed + "#" + added + "#" + postfix);
+        }
+    }
+
+    WebInspector.SourcesPanel.show();
+    InspectorTest.showScriptSource("search.js", didShowScriptSource);
+
+    function didShowScriptSource(sourceFrame)
+    {
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("REPLACEME1", true, false);
+        replaceAndDumpChange(sourceFrame, searchConfig, "REPLACED", false);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("REPLACEME2", true, false);
+        replaceAndDumpChange(sourceFrame, searchConfig, "REPLACED", true);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("replaceMe1", false, false);
+        replaceAndDumpChange(sourceFrame, searchConfig, "replaced", false);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("replaceMe2", false, false);
+        replaceAndDumpChange(sourceFrame, searchConfig, "replaced", true);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("(REPLACE)ME[38]", true, true);
+        replaceAndDumpChange(sourceFrame, searchConfig, "$1D", false);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("(REPLACE)ME[45]", true, true);
+        replaceAndDumpChange(sourceFrame, searchConfig, "$1D", true);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("(replac)eMe[38]", false, true);
+        replaceAndDumpChange(sourceFrame, searchConfig, "$1d", false);
+
+        var searchConfig = new WebInspector.SearchableView.SearchConfig("(replace)Me[45]", false, true);
+        replaceAndDumpChange(sourceFrame, searchConfig, "$1d", true);
+        InspectorTest.completeTest();
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests different types of search-and-replace in SourceFrame</p>
+</body>
+</html>
