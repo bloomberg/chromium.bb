@@ -789,7 +789,8 @@ class ProxyService::PacRequest
         resolve_job_(NULL),
         config_id_(ProxyConfig::kInvalidConfigID),
         config_source_(PROXY_CONFIG_SOURCE_UNKNOWN),
-        net_log_(net_log) {
+        net_log_(net_log),
+        creation_time_(TimeTicks::Now()) {
     DCHECK(!user_callback.is_null());
   }
 
@@ -802,7 +803,6 @@ class ProxyService::PacRequest
 
     config_id_ = service_->config_.id();
     config_source_ = service_->config_.source();
-    proxy_resolve_start_time_ = TimeTicks::Now();
 
     return resolver()->GetProxyForURL(
         url_, results_,
@@ -870,7 +870,7 @@ class ProxyService::PacRequest
     results_->config_id_ = config_id_;
     results_->config_source_ = config_source_;
     results_->did_use_pac_script_ = true;
-    results_->proxy_resolve_start_time_ = proxy_resolve_start_time_;
+    results_->proxy_resolve_start_time_ = creation_time_;
     results_->proxy_resolve_end_time_ = TimeTicks::Now();
 
     // Reset the state associated with in-progress-resolve.
@@ -921,9 +921,9 @@ class ProxyService::PacRequest
   ProxyConfig::ID config_id_;  // The config id when the resolve was started.
   ProxyConfigSource config_source_;  // The source of proxy settings.
   BoundNetLog net_log_;
-  // Time when the PAC is started.  Cached here since resetting ProxyInfo also
-  // clears the proxy times.
-  TimeTicks proxy_resolve_start_time_;
+  // Time when the request was created.  Stored here rather than in |results_|
+  // because the time in |results_| will be cleared.
+  TimeTicks creation_time_;
 };
 
 // ProxyService ---------------------------------------------------------------
