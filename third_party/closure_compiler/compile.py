@@ -73,6 +73,8 @@ class Checker(object):
     "-XX:+TieredCompilation"
   ]
 
+  _MAP_FILE_FORMAT = "%s.map"
+
   def __init__(self, verbose=False, strict=False):
     """
     Args:
@@ -86,7 +88,7 @@ class Checker(object):
     self._strict = strict
     self._error_filter = error_filter.PromiseErrorFilter()
 
-  def _clean_up(self):
+  def _nuke_temp_files(self):
     """Deletes any temp files this class knows about."""
     if not self._temp_files:
       return
@@ -190,7 +192,7 @@ class Checker(object):
     first_declared_in = lambda e: " first declared in " not in e
     return self._error_filter.filter(filter(first_declared_in, errors))
 
-  def _fix_up_error(self, error):
+  def _clean_up_error(self, error):
     """Reverse the effects that funky <include> preprocessing steps have on
     errors messages.
 
@@ -249,7 +251,7 @@ class Checker(object):
 
     if out_file:
       args += ["--js_output_file=%s" % out_file]
-      args += ["--create_source_map=%s.map" % out_file]
+      args += ["--create_source_map=%s" % (self._MAP_FILE_FORMAT % out_file)]
 
     if externs:
       args += ["--externs=%s" % e for e in externs]
@@ -274,8 +276,14 @@ class Checker(object):
     else:
       # Not a summary. Running the jar failed. Bail.
       self._log_error(stderr)
-      self._clean_up()
+      self._nuke_temp_files()
       sys.exit(1)
+
+    if errors and out_file:
+      if os.path.exists(out_file):
+        os.remove(out_file)
+      if os.path.exists(self._MAP_FILE_FORMAT % out_file):
+        os.remove(self._MAP_FILE_FORMAT % out_file)
 
     return errors, stderr
 
@@ -320,17 +328,17 @@ class Checker(object):
                                         out_file=out_file, externs=externs,
                                         output_wrapper=output_wrapper)
     filtered_errors = self._filter_errors(errors)
-    fixed_errors = map(self._fix_up_error, filtered_errors)
-    output = self._format_errors(fixed_errors)
+    cleaned_errors = map(self._clean_up_error, filtered_errors)
+    output = self._format_errors(cleaned_errors)
 
-    if fixed_errors:
+    if cleaned_errors:
       prefix = "\n" if output else ""
       self._log_error("Error in: %s%s%s" % (source_file, prefix, output))
     elif output:
       self._log_debug("Output: %s" % output)
 
-    self._clean_up()
-    return bool(fixed_errors), stderr
+    self._nuke_temp_files()
+    return bool(cleaned_errors), stderr
 
   def check_multiple(self, sources, out_file=None, output_wrapper=None):
     """Closure compile a set of files and check for errors.
@@ -347,7 +355,7 @@ class Checker(object):
     """
     errors, stderr = self._run_js_check(sources, out_file=out_file,
                                         output_wrapper=output_wrapper)
-    self._clean_up()
+    self._nuke_temp_files()
     return bool(errors), stderr
 
 
