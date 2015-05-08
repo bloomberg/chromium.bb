@@ -1975,15 +1975,6 @@ crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 
 crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
 
-crbug.com/484706 fast/repaint/focus-continuations.html [ NeedsRebaseline ]
-crbug.com/484706 virtual/slimmingpaint/fast/repaint/focus-continuations.html [ NeedsRebaseline ]
-crbug.com/484706 fast/table/border-collapsing/cached-change-row-border-color.html [ NeedsRebaseline ]
-crbug.com/484706 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-color.html [ NeedsRebaseline ]
-crbug.com/484706 inspector/tracing/scroll-invalidations.html [ NeedsRebaseline ]
-crbug.com/484706 inspector/tracing/timeline-paint.html [ NeedsRebaseline ]
-crbug.com/484706 virtual/deferred/inspector/tracing/scroll-invalidations.html [ NeedsRebaseline ]
-crbug.com/484706 virtual/deferred/inspector/tracing/timeline-paint.html [ NeedsRebaseline ]
-
 crbug.com/484706 svg/animations/viewspec-checkaspectparams.html [ ImageOnlyFailure ]
 crbug.com/484706 virtual/slimmingpaint/svg/animations/viewspec-checkaspectparams.html [ Skip ]
 

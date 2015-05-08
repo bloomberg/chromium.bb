@@ -2,7 +2,7 @@ Tests invalidations produced by scrolling a page with position: fixed elements.
 
 Scroll invalidations[
     {
-        cause : {reason: Scroll with viewport-constrained element, stackTrace: undefined}
+        cause : {reason: Scroll with viewport-constrained element, stackTrace: .../inspector/tracing/scroll-invalidations.html:11}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
