@@ -32,6 +32,8 @@ source_set("test_support") {
     "base/chrome_test_suite.h",
     "base/chrome_unit_test_suite.cc",
     "base/chrome_unit_test_suite.h",
+    "base/dialog_test_browser_window.cc",
+    "base/dialog_test_browser_window.h",
     "base/find_in_page_observer.cc",
     "base/find_in_page_observer.h",
     "base/history_index_restore_observer.cc",
@@ -849,6 +851,12 @@ if (!is_android) {
         "../browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc",
         "../browser/media/chrome_webrtc_getmediadevices_browsertest.cc",
       ]
+    }
+    if (enable_media_router) {
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_media_router_webui_sources,
+              ".",
+              "//chrome")
     }
     if (is_win) {
       deps += [

@@ -839,6 +839,9 @@
       'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
       'browser/ui/app_list/speech_recognizer_browsertest.cc',
     ],
+    'chrome_browser_tests_media_router_webui_sources': [
+      'browser/ui/webui/media_router/media_router_dialog_controller_browsertest.cc',
+    ],
     # Javascript sources. These are combined with the .cc files in the GYP build
     # and are handled by a rule, but in the GN build theyr're in a separate
     # action so need to be separated out.
@@ -2236,6 +2239,9 @@
             'browser/media/chrome_webrtc_disable_encryption_flag_browsertest.cc',
             'browser/media/chrome_webrtc_getmediadevices_browsertest.cc',
          ],
+        }],
+        ['enable_media_router==1', {
+          'sources': [ '<@(chrome_browser_tests_media_router_webui_sources)' ],
         }],
         ['OS=="win"', {
           'sources': [

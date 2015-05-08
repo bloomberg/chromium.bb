@@ -4,6 +4,10 @@
 
 {
   'sources': [
+    '../../ui/webui/media_router/media_cast_mode_unittest.cc',
+    '../../ui/webui/media_router/media_router_test.cc',
+    '../../ui/webui/media_router/media_router_test.h',
+    '../../ui/webui/media_router/media_router_dialog_controller_unittest.cc',
     'issue_manager_unittest.cc',
     'issue_unittest.cc',
     'media_route_unittest.cc',
