@@ -165,10 +165,10 @@ void SessionRestoreStatsCollector::AddTabs(
     const std::vector<SessionRestoreDelegate::RestoredTab>& tabs) {
   tab_count_ += tabs.size();
   for (auto& tab : tabs) {
-    RegisterForNotifications(&tab.contents->GetController());
-    if (tab.is_active) {
+    RegisterForNotifications(&tab.contents()->GetController());
+    if (tab.is_active()) {
       RenderWidgetHost* render_widget_host =
-          GetRenderWidgetHost(&tab.contents->GetController());
+          GetRenderWidgetHost(&tab.contents()->GetController());
       render_widget_hosts_loading_.insert(render_widget_host);
     }
   }

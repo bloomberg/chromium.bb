@@ -17,9 +17,27 @@ class WebContents;
 // stats collector.
 class SessionRestoreDelegate {
  public:
-  struct RestoredTab {
-    content::WebContents* contents;
-    bool is_active;
+  class RestoredTab {
+   public:
+    RestoredTab(content::WebContents* contents,
+                bool is_active,
+                bool is_app,
+                bool is_pinned);
+
+    bool operator<(const RestoredTab& right) const;
+
+    content::WebContents* contents() const { return contents_; }
+    bool is_active() const { return is_active_; }
+    bool is_app() const { return is_app_; }
+    bool is_internal_page() const { return is_internal_page_; }
+    bool is_pinned() const { return is_pinned_; }
+
+   private:
+    content::WebContents* contents_;
+    bool is_active_;
+    bool is_app_;            // Browser window is an app.
+    bool is_internal_page_;  // Internal web UI page, like NTP or Settings.
+    bool is_pinned_;
   };
 
   static void RestoreTabs(const std::vector<RestoredTab>& tabs,

@@ -98,6 +98,10 @@ class SessionRestore {
   static CallbackSubscription RegisterOnSessionRestoredCallback(
       const base::Callback<void(int)>& callback);
 
+  // Returns true if smart session restore is enabled (ie. background tabs are
+  // sorted before being loaded).
+  static bool SmartLoadingEnabled();
+
  private:
   SessionRestore();
 

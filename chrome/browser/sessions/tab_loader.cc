@@ -85,11 +85,11 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   // Add the tabs to the list of tabs loading/to load and register them for
   // notifications.
   for (auto& restored_tab : tabs) {
-    if (!restored_tab.is_active)
-      tabs_to_load_.push_back(&restored_tab.contents->GetController());
+    if (!restored_tab.is_active())
+      tabs_to_load_.push_back(&restored_tab.contents()->GetController());
     else
-      tabs_loading_.insert(&restored_tab.contents->GetController());
-    RegisterForNotifications(&restored_tab.contents->GetController());
+      tabs_loading_.insert(&restored_tab.contents()->GetController());
+    RegisterForNotifications(&restored_tab.contents()->GetController());
   }
   // When multiple profiles are using the same TabLoader, another profile might
   // already have started loading. In that case, the tabs scheduled for loading

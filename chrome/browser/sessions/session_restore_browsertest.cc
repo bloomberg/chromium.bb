@@ -212,6 +212,55 @@ class SessionRestoreTest : public InProcessBrowserTest {
   const BrowserList* active_browser_list_;
 };
 
+// Activates the smart restore behaviour and can track the loading of tabs.
+class SmartSessionRestoreTest : public SessionRestoreTest,
+                                public content::NotificationObserver {
+ public:
+  SmartSessionRestoreTest() {}
+  void StartObserving(int num_tabs) {
+    num_tabs_ = num_tabs;
+    registrar_.Add(this, content::NOTIFICATION_LOAD_START,
+                   content::NotificationService::AllSources());
+  }
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    switch (type) {
+      case content::NOTIFICATION_LOAD_START: {
+        content::NavigationController* controller =
+            content::Source<content::NavigationController>(source).ptr();
+        web_contents_.push_back(controller->GetWebContents());
+        if (web_contents_.size() == static_cast<size_t>(num_tabs_))
+          message_loop_runner_->Quit();
+        break;
+      }
+    }
+  }
+  const std::vector<content::WebContents*>& web_contents() const {
+    return web_contents_;
+  }
+
+  void WaitForAllTabsToStartLoading() {
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceFieldTrials, "SessionRestoreBackgroundLoading/Smart/");
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  // Ordered by load start order.
+  std::vector<content::WebContents*> web_contents_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  int num_tabs_;
+
+  DISALLOW_COPY_AND_ASSIGN(SmartSessionRestoreTest);
+};
+
 // Verifies that restored tabs have a root window. This is important
 // otherwise the wrong information is communicated to the renderer.
 // (http://crbug.com/342672).
@@ -1279,4 +1328,77 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, active_browser_list_->size());
   EXPECT_EQ(1, new_browser->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, CorrectLoadingOrder) {
+  ASSERT_TRUE(SessionRestore::SmartLoadingEnabled());
+
+  const int NumTabs = 6;
+
+  // Start observing the loading of tabs, to make sure the order is correct.
+  StartObserving(NumTabs);
+
+  struct TabInfo {
+    GURL url;
+    bool pinned;
+    int expected_load_order;
+  };
+
+  TabInfo tab_info[NumTabs] = {
+      // This will be the foreground tab and will always load first.
+      {GURL("http://google.com/1"), false, 1},
+      {GURL("http://google.com/2"), false, 3},
+      // Internal page, should load last.
+      {GURL(chrome::kChromeUINewTabURL), false, 6},
+      {GURL("http://google.com/4"), false, 4},
+      {GURL("http://google.com/5"), true, 2},  // Pinned, should load second.
+      {GURL("http://google.com/6"), false, 5},
+  };
+
+  // Set up the restore data.
+  std::vector<const sessions::SessionWindow*> session;
+  sessions::SessionWindow window;
+  sessions::SessionTab tab[NumTabs];
+
+  for (int i = 0; i < NumTabs; i++) {
+    SerializedNavigationEntry nav =
+        SerializedNavigationEntryTestHelper::CreateNavigation(
+            tab_info[i].url.spec(), tab_info[i].url.spec().c_str());
+    sync_pb::SessionTab sync_data;
+    sync_data.set_tab_visual_index(0);
+    sync_data.set_current_navigation_index(0);
+    sync_data.add_navigation()->CopyFrom(nav.ToSyncData());
+    sync_data.set_pinned(tab_info[i].pinned);
+    tab[i].SetFromSyncData(sync_data, base::Time::Now());
+    window.tabs.push_back(tab + i);
+  }
+
+  session.push_back(&window);
+  Profile* profile = browser()->profile();
+  ui_test_utils::BrowserAddedObserver window_observer;
+  std::vector<Browser*> browsers = SessionRestore::RestoreForeignSessionWindows(
+      profile, browser()->host_desktop_type(), session.begin(), session.end());
+
+  ASSERT_EQ(1u, browsers.size());
+  ASSERT_TRUE(browsers[0]);
+  ASSERT_EQ(NumTabs, browsers[0]->tab_strip_model()->count());
+
+  WaitForAllTabsToStartLoading();
+
+  ASSERT_EQ(static_cast<size_t>(NumTabs), web_contents().size());
+
+  // Make sure that contents are loaded in the correct order, ie. each tab rank
+  // is higher that its preceding one.
+  std::map<GURL, int> ranks;
+  for (auto t : tab_info)
+    ranks[t.url] = t.expected_load_order;
+  for (size_t i = 1; i < web_contents().size(); i++) {
+    int current_rank = ranks[web_contents()[i]->GetLastCommittedURL()];
+    int previous_rank = ranks[web_contents()[i - 1]->GetLastCommittedURL()];
+    ASSERT_LT(previous_rank, current_rank);
+  }
+
+  // The SessionWindow destructor deletes the tabs, so we have to clear them
+  // here to avoid a crash.
+  window.tabs.clear();
 }
