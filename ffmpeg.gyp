@@ -391,9 +391,6 @@
               'sources': [
                 '<(shared_generated_dir)/ffmpegsumo.def',
               ],
-              'include_dirs': [
-                'chromium/include/win',
-              ],
               # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
               'msvs_disabled_warnings': [
                 4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
@@ -500,17 +497,12 @@
             'intermediate_dir': '<(INTERMEDIATE_DIR)',
           },
           'type': 'none',
-          'sources': [
-            # Adds C99 types for Visual C++.
-            'chromium/include/win/inttypes.h',
-          ],
           'dependencies': [
             'ffmpegsumo',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
               '<(platform_config_root)',
-              'chromium/include/win',
               '.',
             ],
             'link_settings': {

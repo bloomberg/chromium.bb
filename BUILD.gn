@@ -346,9 +346,6 @@ if (build_ffmpegsumo) {
         "vsnprintf=avpriv_vsnprintf",
       ]
 
-      include_dirs += [
-        "chromium/include/win"
-      ]
       # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
       cflags += [
         "/wd4996", # 'function': was declared deprecated
@@ -400,7 +397,6 @@ if (is_win) {
   config("ffmpeg_win_dependent_config") {
     include_dirs = [
       platform_config_root,
-      "chromium/include/win",
       ".",
     ]
     libs = [ rebase_path("$target_gen_dir/ffmpegsumo.lib", root_build_dir) ]
