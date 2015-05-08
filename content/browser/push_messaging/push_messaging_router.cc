@@ -15,6 +15,18 @@
 
 namespace content {
 
+namespace {
+
+void RunDeliverCallback(
+    const PushMessagingRouter::DeliverMessageCallback& deliver_message_callback,
+    PushDeliveryStatus delivery_status) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(deliver_message_callback, delivery_status));
+}
+
+}  // namespace
+
 // static
 void PushMessagingRouter::DeliverMessage(
     BrowserContext* browser_context,
@@ -65,24 +77,39 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
     const scoped_refptr<ServiceWorkerRegistration>&
         service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (service_worker_status == SERVICE_WORKER_OK) {
-    // Hold on to the service worker registration in the callback to keep it
-    // alive until the callback dies. Otherwise the registration could be
-    // released when this method returns - before the event is delivered to the
-    // service worker.
-    base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
-        base::Bind(&PushMessagingRouter::DeliverMessageEnd,
-                   deliver_message_callback,
-                   service_worker_registration);
-    service_worker_registration->active_version()->DispatchPushEvent(
-        dispatch_event_callback, data);
-  } else {
-    // TODO(mvanouwerkerk): UMA logging.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(deliver_message_callback,
-                                       PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER));
+  // TODO(mvanouwerkerk): UMA logging.
+  if (service_worker_status != SERVICE_WORKER_OK) {
+    RunDeliverCallback(deliver_message_callback,
+                PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER);
+    return;
   }
+
+  ServiceWorkerVersion* version = service_worker_registration->active_version();
+  if (!version) {
+    // Using NO_SERVICE_WORKER status will unsubscribe with GCM, so don't use it
+    // if we have a waiting version in the hopper. On the other hand, if there
+    // is no waiting version, it's an unexpected error case: we should have been
+    // informed the registration went away (but we may not have been:
+    // crbug.com/402458)
+    // TODO(falken): Promote the waiting version instead of returning error.
+    if (service_worker_registration->waiting_version()) {
+      RunDeliverCallback(deliver_message_callback,
+                  PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR);
+    } else {
+      RunDeliverCallback(deliver_message_callback,
+                  PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER);
+    }
+    return;
+  }
+
+  // Hold on to the service worker registration in the callback to keep it
+  // alive until the callback dies. Otherwise the registration could be
+  // released when this method returns - before the event is delivered to the
+  // service worker.
+  base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
+      base::Bind(&PushMessagingRouter::DeliverMessageEnd,
+                 deliver_message_callback, service_worker_registration);
+  version->DispatchPushEvent(dispatch_event_callback, data);
 }
 
 // static
@@ -124,10 +151,7 @@ void PushMessagingRouter::DeliverMessageEnd(
       delivery_status = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
       break;
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(deliver_message_callback, delivery_status));
+  RunDeliverCallback(deliver_message_callback, delivery_status);
 }
 
 }  // namespace content
