@@ -48,6 +48,10 @@ class WebViewPlugin : public blink::WebPlugin,
 
     // Called when the WebViewPlugin is destroyed.
     virtual void PluginDestroyed() = 0;
+
+    // Called to enable JavaScript pass-through to a throttled plugin, which is
+    // loaded but idle. Doesn't work for blocked plugins, which is not loaded.
+    virtual v8::Local<v8::Object> GetV8ScriptableObject(v8::Isolate*) const = 0;
   };
 
   // Convenience method to set up a new WebViewPlugin using |preferences|
@@ -72,10 +76,7 @@ class WebViewPlugin : public blink::WebPlugin,
   virtual bool initialize(blink::WebPluginContainer*);
   virtual void destroy();
 
-  virtual NPObject* scriptableObject();
-  virtual struct _NPP* pluginNPP();
-
-  virtual bool getFormValue(blink::WebString& value);
+  virtual v8::Local<v8::Object> v8ScriptableObject(v8::Isolate* isolate);
 
   virtual void layoutIfNeeded() override;
   virtual void paint(blink::WebCanvas* canvas,

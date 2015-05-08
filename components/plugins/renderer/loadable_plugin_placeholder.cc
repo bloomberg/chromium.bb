@@ -247,6 +247,17 @@ void LoadablePluginPlaceholder::PluginDestroyed() {
   PluginPlaceholder::PluginDestroyed();
 }
 
+v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
+    v8::Isolate* isolate) const {
+#if defined(ENABLE_PLUGINS)
+  // Pass through JavaScript access to the underlying throttled plugin.
+  if (premade_throttler_ && premade_throttler_->GetWebPlugin()) {
+    return premade_throttler_->GetWebPlugin()->v8ScriptableObject(isolate);
+  }
+#endif
+  return v8::Local<v8::Object>();
+}
+
 void LoadablePluginPlaceholder::WasShown() {
   if (is_blocked_for_background_tab_) {
     is_blocked_for_background_tab_ = false;

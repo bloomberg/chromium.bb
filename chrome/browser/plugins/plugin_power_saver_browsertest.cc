@@ -37,37 +37,39 @@ std::string RunTestScript(base::StringPiece test_script,
   return result;
 }
 
-void VerifyPluginIsPlaceholderOnly(content::WebContents* contents,
-                                   const char* element_id) {
+// This also tests that we have JavaScript access to the underlying plugin.
+bool PluginLoaded(content::WebContents* contents, const char* element_id) {
   std::string result = RunTestScript(
       "if (plugin.postMessage === undefined) {"
-      "  window.domAutomationController.send('placeholder');"
+      "  window.domAutomationController.send('poster_only');"
       "} else {"
       "  window.domAutomationController.send('plugin_loaded');"
       "}",
       contents, element_id);
-  EXPECT_EQ("placeholder", result);
+  EXPECT_NE("error", result);
+  return result == "plugin_loaded";
 }
 
-void VerifyPluginIsPeripheral(content::WebContents* contents,
-                              const char* element_id) {
+// Also waits for the placeholder UI overlay to finish loading.
+void VerifyPluginIsThrottled(content::WebContents* contents,
+                             const char* element_id) {
   std::string result = RunTestScript(
       "function handleEvent(event) {"
-      "  if (event.data.isPeripheral !== undefined && "
-      "      event.data.source === 'getPowerSaverStatusResponse') {"
-      "    window.domAutomationController.send("
-      "        event.data.isPeripheral ? 'peripheral' : 'essential');"
+      "  if (event.data.isPeripheral && event.data.isThrottled && "
+      "      event.data.isHiddenForPlaceholder) {"
+      "    window.domAutomationController.send('throttled');"
       "    plugin.removeEventListener('message', handleEvent);"
       "  }"
       "}"
-      "if (plugin.postMessage === undefined) {"
-      "  window.domAutomationController.send('peripheral');"
-      "} else {"
-      "  plugin.addEventListener('message', handleEvent);"
+      "plugin.addEventListener('message', handleEvent);"
+      "if (plugin.postMessage !== undefined) {"
       "  plugin.postMessage('getPowerSaverStatus');"
       "}",
       contents, element_id);
-  EXPECT_EQ("peripheral", result);
+  EXPECT_EQ("throttled", result);
+
+  // Page should continue to have JavaScript access to all throttled plugins.
+  EXPECT_TRUE(PluginLoaded(contents, element_id));
 }
 
 void VerifyPluginMarkedEssential(content::WebContents* contents,
@@ -85,6 +87,7 @@ void VerifyPluginMarkedEssential(content::WebContents* contents,
       "}",
       contents, element_id);
   EXPECT_EQ("essential", result);
+  EXPECT_TRUE(PluginLoaded(contents, element_id));
 }
 
 }  // namespace
@@ -135,13 +138,12 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallSameOrigin) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
 }
 
-// Flaky: https://crbug.com/485160
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, DISABLED_SmallCrossOrigin) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
   LoadHTML(
       "<object id='plugin' data='http://otherorigin.com/fake.swf' "
       "    type='application/x-ppapi-tests' width='400' height='100'>"
       "</object>");
-  VerifyPluginIsPeripheral(GetActiveWebContents(), "plugin");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 
   SimulateClickAndAwaitMarkedEssential("plugin", gfx::Point(50, 50));
 }
@@ -172,11 +174,11 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
       "    width='400' height='500'"
       "    poster='snapshot1x.png 1x, snapshot2x.png 2x'></embed>");
 
-  VerifyPluginIsPlaceholderOnly(GetActiveWebContents(), "plugin_src");
-  VerifyPluginIsPlaceholderOnly(GetActiveWebContents(), "plugin_srcset");
-  VerifyPluginIsPlaceholderOnly(GetActiveWebContents(), "plugin_legacy_syntax");
-  VerifyPluginIsPlaceholderOnly(GetActiveWebContents(), "plugin_embed_src");
-  VerifyPluginIsPlaceholderOnly(GetActiveWebContents(), "plugin_embed_srcset");
+  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_src"));
+  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_srcset"));
+  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_legacy_syntax"));
+  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_embed_src"));
+  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_embed_srcset"));
 }
 
 // flaky: crbug.com/481687
@@ -185,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
   LoadHTML(
       "<object id='plugin' type='application/x-ppapi-tests' "
       "    width='400' height='100' poster='snapshot1x.png'></object>");
-  VerifyPluginIsPlaceholderOnly(GetActiveWebContents(), "plugin");
+  EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin"));
 
   SimulateClickAndAwaitMarkedEssential("plugin", gfx::Point(50, 50));
 }
@@ -208,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOriginObscured) {
       "      type='application/x-ppapi-tests' width='400' height='500'>"
       "  </object>"
       "</div>");
-  VerifyPluginIsPeripheral(GetActiveWebContents(), "plugin");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
@@ -227,12 +229,12 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
   EXPECT_TRUE(
       content::WaitForRenderFrameReady(background_contents->GetMainFrame()));
 
-  VerifyPluginIsPlaceholderOnly(background_contents, "same_origin");
-  VerifyPluginIsPlaceholderOnly(background_contents, "small_cross_origin");
+  EXPECT_FALSE(PluginLoaded(background_contents, "same_origin"));
+  EXPECT_FALSE(PluginLoaded(background_contents, "small_cross_origin"));
 
   browser()->tab_strip_model()->SelectNextTab();
   EXPECT_EQ(background_contents, GetActiveWebContents());
 
   VerifyPluginMarkedEssential(background_contents, "same_origin");
-  VerifyPluginIsPeripheral(background_contents, "small_cross_origin");
+  VerifyPluginIsThrottled(background_contents, "small_cross_origin");
 }

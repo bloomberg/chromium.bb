@@ -42,6 +42,11 @@ void PluginPlaceholder::PluginDestroyed() {
   plugin_ = NULL;
 }
 
+v8::Local<v8::Object> PluginPlaceholder::GetV8ScriptableObject(
+    v8::Isolate* isolate) const {
+  return v8::Local<v8::Object>();
+}
+
 void PluginPlaceholder::OnDestruct() {
   frame_ = NULL;
 }

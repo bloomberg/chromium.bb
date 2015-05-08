@@ -128,11 +128,12 @@ void WebViewPlugin::destroy() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-NPObject* WebViewPlugin::scriptableObject() { return NULL; }
+v8::Local<v8::Object> WebViewPlugin::v8ScriptableObject(v8::Isolate* isolate) {
+  if (!delegate_)
+    return v8::Local<v8::Object>();
 
-struct _NPP* WebViewPlugin::pluginNPP() { return NULL; }
-
-bool WebViewPlugin::getFormValue(WebString& value) { return false; }
+  return delegate_->GetV8ScriptableObject(isolate);
+}
 
 void WebViewPlugin::layoutIfNeeded() {
   web_view_->layout();

@@ -83,6 +83,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
  private:
   // WebViewPlugin::Delegate methods:
   void PluginDestroyed() override;
+  v8::Local<v8::Object> GetV8ScriptableObject(
+      v8::Isolate* isolate) const override;
 
   // RenderFrameObserver methods:
   void WasShown() override;
