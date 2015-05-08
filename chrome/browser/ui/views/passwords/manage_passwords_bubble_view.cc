@@ -166,7 +166,7 @@ void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
   layout->StartRowWithPadding(
       0, SINGLE_VIEW_COLUMN_SET, 0, views::kRelatedControlSmallVerticalSpacing);
   layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
 }  // namespace
@@ -426,6 +426,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(title_label);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Credential row.
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);

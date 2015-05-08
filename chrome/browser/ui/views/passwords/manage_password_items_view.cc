@@ -10,13 +10,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -63,15 +61,6 @@ void BuildColumnSetIfNeeded(views::GridLayout* layout, int column_set_id) {
                           0);
   }
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
-}
-
-void AddBorderRow(views::GridLayout* layout, SkColor color) {
-  BuildColumnSetIfNeeded(layout, ONE_COLUMN_SET);
-  layout->StartRowWithPadding(0, ONE_COLUMN_SET, 0,
-                              views::kRelatedControlVerticalSpacing);
-  views::Separator* border = new views::Separator(views::Separator::HORIZONTAL);
-  border->SetColor(color);
-  layout->AddView(border);
 }
 
 views::Label* GenerateUsernameLabel(const autofill::PasswordForm& form) {
@@ -225,12 +214,8 @@ ManagePasswordItemsView::~ManagePasswordItemsView() = default;
 void ManagePasswordItemsView::AddRows() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
-  SkColor color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor);
-  AddBorderRow(layout, color);
   for (auto& row : password_forms_rows_) {
     row.AddRow(layout);
-    AddBorderRow(layout, color);
   }
   GetLayoutManager()->Layout(this);
 }
