@@ -71,6 +71,10 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/PlatformScreen.h"
 #include "public/platform/Platform.h"
+#include <algorithm>
+
+using std::min;
+using std::max;
 
 namespace blink {
 
@@ -247,6 +251,33 @@ static bool allowsBeforeUnloadListeners(LocalDOMWindow* window)
 unsigned LocalDOMWindow::pendingUnloadEventListeners() const
 {
     return windowsWithUnloadEventListeners().count(const_cast<LocalDOMWindow*>(this));
+}
+
+// This function:
+// 1) Constrains the window rect to the minimum window size and no bigger than the int rect's dimensions.
+// 2) Constrains the window rect to within the top and left boundaries of the available screen rect.
+// 3) Constrains the window rect to within the bottom and right boundaries of the available screen rect.
+// 4) Translate the window rect coordinates to be within the coordinate space of the screen.
+IntRect LocalDOMWindow::adjustWindowRect(LocalFrame& frame, const IntRect& pendingChanges)
+{
+    FrameHost* host = frame.host();
+    ASSERT(host);
+
+    IntRect screen = screenAvailableRect(frame.view());
+    IntRect window = pendingChanges;
+
+    IntSize minimumSize = host->chrome().client().minimumWindowSize();
+    // Let size 0 pass through, since that indicates default size, not minimum size.
+    if (window.width())
+        window.setWidth(min(max(minimumSize.width(), window.width()), screen.width()));
+    if (window.height())
+        window.setHeight(min(max(minimumSize.height(), window.height()), screen.height()));
+
+    // Constrain the window position within the valid screen area.
+    window.setX(max(screen.x(), min(window.x(), screen.maxX() - window.width())));
+    window.setY(max(screen.y(), min(window.y(), screen.maxY() - window.height())));
+
+    return window;
 }
 
 bool LocalDOMWindow::allowPopUp(LocalFrame& firstFrame)
@@ -1224,7 +1255,7 @@ void LocalDOMWindow::moveBy(int x, int y, bool hasX, bool hasY) const
     IntRect windowRect = host->chrome().windowRect();
     windowRect.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chrome().setWindowRect(windowRect);
+    host->chrome().setWindowRect(adjustWindowRect(*frame(), windowRect));
 }
 
 void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
@@ -1242,7 +1273,7 @@ void LocalDOMWindow::moveTo(int x, int y, bool hasX, bool hasY) const
     IntRect windowRect = host->chrome().windowRect();
     windowRect.setLocation(IntPoint(hasX ? x : windowRect.x(), hasY ? y : windowRect.y()));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    host->chrome().setWindowRect(windowRect);
+    host->chrome().setWindowRect(adjustWindowRect(*frame(), windowRect));
 }
 
 void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
@@ -1260,7 +1291,7 @@ void LocalDOMWindow::resizeBy(int x, int y, bool hasX, bool hasY) const
     IntRect fr = host->chrome().windowRect();
     IntSize dest = fr.size() + IntSize(x, y);
     IntRect update(fr.location(), dest);
-    host->chrome().setWindowRect(update);
+    host->chrome().setWindowRect(adjustWindowRect(*frame(), update));
 }
 
 void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeight) const
@@ -1278,7 +1309,7 @@ void LocalDOMWindow::resizeTo(int width, int height, bool hasWidth, bool hasHeig
     IntRect fr = host->chrome().windowRect();
     IntSize dest = IntSize(hasWidth ? width : fr.width(), hasHeight ? height : fr.height());
     IntRect update(fr.location(), dest);
-    host->chrome().setWindowRect(update);
+    host->chrome().setWindowRect(adjustWindowRect(*frame(), update));
 }
 
 int LocalDOMWindow::requestAnimationFrame(FrameRequestCallback* callback)
@@ -1486,7 +1517,7 @@ PassRefPtrWillBeRawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, 
     }
 
     WindowFeatures windowFeatures(windowFeaturesString);
-    Frame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *frame());
+    LocalFrame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *frame());
     return result ? result->domWindow() : nullptr;
 }
 

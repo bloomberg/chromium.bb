@@ -154,6 +154,8 @@ public:
 
     unsigned pendingUnloadEventListeners() const;
 
+    static IntRect adjustWindowRect(LocalFrame&, const IntRect& pendingChanges);
+
     bool allowPopUp(); // Call on first window, not target window.
     static bool allowPopUp(LocalFrame& firstFrame);
 

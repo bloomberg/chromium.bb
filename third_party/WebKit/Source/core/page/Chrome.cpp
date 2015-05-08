@@ -38,13 +38,11 @@
 #include "core/page/WindowFeatures.h"
 #include "platform/FileChooser.h"
 #include "platform/Logging.h"
-#include "platform/PlatformScreen.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/WebScreenInfo.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
-#include <algorithm>
 
 namespace blink {
 
@@ -86,23 +84,9 @@ void Chrome::contentsSizeChanged(LocalFrame* frame, const IntSize& size) const
     m_client->contentsSizeChanged(frame, size);
 }
 
-void Chrome::setWindowRect(const IntRect& pendingRect) const
+void Chrome::setWindowRect(const IntRect& rect) const
 {
-    IntRect screen = screenAvailableRect(*this);
-    IntRect window = pendingRect;
-
-    IntSize minimumSize = m_client->minimumWindowSize();
-    // Let size 0 pass through, since that indicates default size, not minimum size.
-    if (window.width())
-        window.setWidth(std::min(std::max(minimumSize.width(), window.width()), screen.width()));
-    if (window.height())
-        window.setHeight(std::min(std::max(minimumSize.height(), window.height()), screen.height()));
-
-    // Constrain the window position within the valid screen area.
-    window.setX(std::max(screen.x(), std::min(window.x(), screen.maxX() - window.width())));
-    window.setY(std::max(screen.y(), std::min(window.y(), screen.maxY() - window.height())));
-
-    m_client->setWindowRect(window);
+    m_client->setWindowRect(rect);
 }
 
 IntRect Chrome::windowRect() const

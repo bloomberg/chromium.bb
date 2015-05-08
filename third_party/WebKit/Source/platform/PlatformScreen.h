@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class HostWindow;
 class Widget;
 
 PLATFORM_EXPORT int screenDepth(Widget*);
@@ -41,7 +40,7 @@ PLATFORM_EXPORT int screenDepthPerComponent(Widget*);
 PLATFORM_EXPORT bool screenIsMonochrome(Widget*);
 
 PLATFORM_EXPORT IntRect screenRect(Widget*);
-PLATFORM_EXPORT IntRect screenAvailableRect(const HostWindow&);
+PLATFORM_EXPORT IntRect screenAvailableRect(Widget*);
 
 PLATFORM_EXPORT uint16_t screenOrientationAngle(Widget*);
 PLATFORM_EXPORT WebScreenOrientationType screenOrientationType(Widget*);

@@ -28,7 +28,6 @@
 #include "core/page/CreateWindow.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/FrameClient.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -48,7 +47,7 @@
 
 namespace blink {
 
-static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
+static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeAuxiliary);
@@ -63,7 +62,9 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
                         host->chrome().focus();
                 }
             }
-            return frame;
+            created = false;
+            // FIXME: Make this work with RemoteFrames.
+            return frame->isLocalFrame() ? toLocalFrame(frame) : nullptr;
         }
     }
 
@@ -74,20 +75,24 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
         return nullptr;
     }
 
-    if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows())
-        return openerFrame.tree().top();
+    if (openerFrame.settings() && !openerFrame.settings()->supportsMultipleWindows()) {
+        created = false;
+        if (!openerFrame.tree().top()->isLocalFrame())
+            return nullptr;
+        return toLocalFrame(openerFrame.tree().top());
+    }
 
-    FrameHost* oldHost = openerFrame.host();
-    if (!oldHost)
+    Page* oldPage = openerFrame.page();
+    if (!oldPage)
         return nullptr;
 
-    Page* page = oldHost->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
-    if (!page)
+    Page* page = oldPage->chrome().client().createWindow(&openerFrame, request, features, policy, shouldSendReferrer);
+    if (!page || !page->mainFrame()->isLocalFrame())
         return nullptr;
     FrameHost* host = &page->frameHost();
 
     ASSERT(page->mainFrame());
-    Frame& frame = *page->mainFrame();
+    LocalFrame& frame = *page->deprecatedLocalMainFrame();
 
     if (request.frameName() != "_blank")
         frame.tree().setName(request.frameName());
@@ -110,18 +115,19 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (features.heightSet)
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
-    host->chrome().setWindowRect(windowRect);
+    // Ensure minimum size as well as being within valid screen area.
+    IntRect newWindowRect = LocalDOMWindow::adjustWindowRect(frame, windowRect);
+
+    host->chrome().setWindowRect(newWindowRect);
     host->chrome().show(policy);
 
-    // TODO(japhet): There's currently no way to set sandbox flags on a RemoteFrame and have it propagate
-    // to the real frame in a different process. See crbug.com/483584.
-    if (frame.isLocalFrame())
-        toLocalFrame(&frame)->loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
+    frame.loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
 
+    created = true;
     return &frame;
 }
 
-Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
+LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
     LocalDOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame)
 {
     LocalFrame* activeFrame = callingWindow.frame();
@@ -144,25 +150,27 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
     // so we need to ensure the proper referrer is set now.
     frameRequest.resourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(activeFrame->document()->referrerPolicy(), completedURL, activeFrame->document()->outgoingReferrer()));
 
+    bool hasUserGesture = UserGestureIndicator::processingUserGesture();
+
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
-    Frame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer);
+    bool created;
+    LocalFrame* newFrame = createWindow(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
     if (!newFrame)
         return nullptr;
 
-    newFrame->client()->setOpener(&openerFrame);
+    newFrame->loader().setOpener(&openerFrame);
 
-    if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
+    if (newFrame->localDOMWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
 
-    // TODO(dcheng): Special case for window.open("about:blank") to ensure it loads synchronously into
-    // a new window. This is our historical behavior, and it's consistent with the creation of
-    // a new iframe with src="about:blank". Perhaps we could get rid of this if we started reporting
-    // the initial empty document's url as about:blank? See crbug.com/471239.
-    if (newFrame->isLocalFrame() && newFrame->isMainFrame() && !toLocalFrame(newFrame)->loader().stateMachine()->committedFirstRealDocumentLoad() && (completedURL.isEmpty() || completedURL.isAboutBlankURL()))
-        toLocalFrame(newFrame)->loader().load(FrameLoadRequest(callingWindow.document(), completedURL));
-    else
+    if (created) {
+        FrameLoadRequest request(callingWindow.document(), completedURL);
+        request.resourceRequest().setHasUserGesture(hasUserGesture);
+        newFrame->loader().load(request);
+    } else if (!urlString.isEmpty()) {
         newFrame->navigate(*callingWindow.document(), completedURL, false);
+    }
     return newFrame;
 }
 
@@ -181,17 +189,17 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
         policy = NavigationPolicyNewForegroundTab;
 
     WindowFeatures features;
-    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer);
+    bool created;
+    LocalFrame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, created);
     if (!newFrame)
         return;
-    if (shouldSendReferrer == MaybeSendReferrer)
-        newFrame->client()->setOpener(&openerFrame);
-
-    // TODO(japhet): Form submissions on RemoteFrames don't work yet.
+    if (shouldSendReferrer == MaybeSendReferrer) {
+        newFrame->loader().setOpener(&openerFrame);
+        newFrame->document()->setReferrerPolicy(openerFrame.document()->referrerPolicy());
+    }
     FrameLoadRequest newRequest(0, request.resourceRequest());
     newRequest.setFormState(request.formState());
-    if (newFrame->isLocalFrame())
-        toLocalFrame(newFrame)->loader().load(newRequest);
+    newFrame->loader().load(newRequest);
 }
 
 } // namespace blink

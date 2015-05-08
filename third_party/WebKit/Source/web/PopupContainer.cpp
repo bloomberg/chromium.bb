@@ -200,7 +200,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
     IntRect widgetRectInScreen;
     // If the popup would extend past the bottom of the screen, open upwards
     // instead.
-    IntRect screen =  m_frameView->root()->hostWindow() ? screenAvailableRect(*m_frameView->root()->hostWindow()) : IntRect();
+    IntRect screen = screenAvailableRect(m_frameView.get());
     // Use popupInitialCoordinate.x() + rightOffset because RTL position
     // needs to be considered.
     float pageScaleFactor = m_frameView->frame().page()->pageScaleFactor();
