@@ -131,11 +131,7 @@ RenderFrameProxy::~RenderFrameProxy() {
 
   render_view()->UnregisterRenderFrameProxy(this);
 
-  FrameMap::iterator it = g_frame_map.Get().find(web_frame_);
-  CHECK(it != g_frame_map.Get().end());
-  CHECK_EQ(it->second, this);
-  g_frame_map.Get().erase(it);
-
+  CHECK(!web_frame_);
   RenderThread::Get()->RemoveRoute(routing_id_);
   g_routing_id_proxy_map.Get().erase(routing_id_);
 }
@@ -319,6 +315,16 @@ void RenderFrameProxy::frameDetached() {
   }
 
   web_frame_->close();
+
+  // Remove the entry in the WebFrame->RenderFrameProxy map, as the |web_frame_|
+  // is no longer valid.
+  FrameMap::iterator it = g_frame_map.Get().find(web_frame_);
+  CHECK(it != g_frame_map.Get().end());
+  CHECK_EQ(it->second, this);
+  g_frame_map.Get().erase(it);
+
+  web_frame_ = nullptr;
+
   delete this;
 }
 

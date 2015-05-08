@@ -730,8 +730,13 @@ RenderFrameImpl::~RenderFrameImpl() {
     render_view_->UnregisterVideoHoleFrame(this);
 #endif
 
-  if (render_frame_proxy_)
-    delete render_frame_proxy_;
+  // RenderFrameProxy is only "owned" by RenderFrameImpl in the case it is the
+  // main frame. Ensure it is deleted along with this object.
+  if (!is_subframe_ && render_frame_proxy_) {
+    // The following method calls back into this object and clears
+    // |render_frame_proxy_|.
+    render_frame_proxy_->frameDetached();
+  }
 
   render_view_->UnregisterRenderFrame(this);
   g_routing_id_frame_map.Get().erase(routing_id_);
