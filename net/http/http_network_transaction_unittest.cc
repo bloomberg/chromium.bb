@@ -11971,6 +11971,172 @@ TEST_P(AltSvcCertificateVerificationTest, NewConnectionInvalid) {
   Run(false, false);
 }
 
+// Alternative service requires HTTP/2 (or SPDY), but HTTP/1.1 is negotiated
+// with the alternative server.  That connection should not be used.
+TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
+  HostPortPair origin("origin.example.org", 443);
+  HostPortPair alternative("alternative.example.org", 443);
+
+  // Negotiate HTTP/1.1 with alternative.example.org.
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(kProtoHTTP11);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  // No data should be read from the alternative, because HTTP/1.1 is
+  // negotiated.
+  StaticSocketDataProvider data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  // This test documents that an alternate Job should not be used if HTTP/1.1 is
+  // negotiated.  In order to test this, a failed connection to the origin is
+  // mocked.  This way the request relies on the alternate Job.
+  StaticSocketDataProvider data_refused;
+  data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
+  session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
+
+  // Set up alternative service for origin.
+  session_deps_.use_alternate_protocols = true;
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session->http_server_properties();
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), alternative);
+  http_server_properties->SetAlternativeService(origin, alternative_service,
+                                                1.0);
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://origin.example.org:443");
+  request.load_flags = 0;
+  TestCompletionCallback callback;
+
+  // HTTP/2 (or SPDY) is required for alternative service, if HTTP/1.1 is
+  // negotiated, the alternate Job should fail with ERR_NPN_NEGOTIATION_FAILED.
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_NPN_NEGOTIATION_FAILED, callback.GetResult(rv));
+}
+
+// Alternative service requires HTTP/2 (or SPDY), but there is already a
+// HTTP/1.1 socket open to the alternative server.  That socket should not be
+// used.
+TEST_P(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
+  HostPortPair origin("origin.example.org", 443);
+  HostPortPair alternative("alternative.example.org", 443);
+  std::string origin_url = "https://origin.example.org:443";
+  std::string alternative_url = "https://alternative.example.org:443";
+
+  // Negotiate HTTP/1.1 with alternative.example.org.
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.SetNextProto(kProtoHTTP11);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  // HTTP/1.1 data for |request1| and |request2|.
+  MockWrite http_writes[] = {
+      MockWrite(
+          "GET / HTTP/1.1\r\n"
+          "Host: alternative.example.org\r\n"
+          "Connection: keep-alive\r\n\r\n"),
+      MockWrite(
+          "GET / HTTP/1.1\r\n"
+          "Host: alternative.example.org\r\n"
+          "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead http_reads[] = {
+      MockRead(
+          "HTTP/1.1 200 OK\r\n"
+          "Content-Type: text/html; charset=iso-8859-1\r\n"
+          "Content-Length: 40\r\n\r\n"
+          "first HTTP/1.1 response from alternative"),
+      MockRead(
+          "HTTP/1.1 200 OK\r\n"
+          "Content-Type: text/html; charset=iso-8859-1\r\n"
+          "Content-Length: 41\r\n\r\n"
+          "second HTTP/1.1 response from alternative"),
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
+  // This test documents that an alternate Job should not pool to an already
+  // existing HTTP/1.1 connection.  In order to test this, a failed connection
+  // to the origin is mocked.  This way |request2| relies on the alternate Job.
+  StaticSocketDataProvider data_refused;
+  data_refused.set_connect_data(MockConnect(ASYNC, ERR_CONNECTION_REFUSED));
+  session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
+
+  // Set up alternative service for origin.
+  session_deps_.use_alternate_protocols = true;
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session->http_server_properties();
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), alternative);
+  http_server_properties->SetAlternativeService(origin, alternative_service,
+                                                1.0);
+
+  // First transaction to alternative to open an HTTP/1.1 socket.
+  scoped_ptr<HttpTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL(alternative_url);
+  request1.load_flags = 0;
+  TestCompletionCallback callback1;
+
+  int rv = trans1->Start(&request1, callback1.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback1.GetResult(rv));
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers.get());
+  EXPECT_EQ("HTTP/1.1 200 OK", response1->headers->GetStatusLine());
+  EXPECT_TRUE(response1->was_npn_negotiated);
+  EXPECT_FALSE(response1->was_fetched_via_spdy);
+  std::string response_data1;
+  ASSERT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  EXPECT_EQ("first HTTP/1.1 response from alternative", response_data1);
+
+  // Request for origin.example.org, which has an alternative service.  This
+  // will start two Jobs: the alternative looks for connections to pool to,
+  // finds one which is HTTP/1.1, and should ignore it, and should not try to
+  // open other connections to alternative server.  The Job to origin fails, so
+  // this request fails.
+  scoped_ptr<HttpTransaction> trans2(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL(origin_url);
+  request2.load_flags = 0;
+  TestCompletionCallback callback2;
+
+  rv = trans2->Start(&request2, callback2.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_CONNECTION_REFUSED, callback2.GetResult(rv));
+
+  // Another transaction to alternative.  This is to test that the HTTP/1.1
+  // socket is still open and in the pool.
+  scoped_ptr<HttpTransaction> trans3(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  HttpRequestInfo request3;
+  request3.method = "GET";
+  request3.url = GURL(alternative_url);
+  request3.load_flags = 0;
+  TestCompletionCallback callback3;
+
+  rv = trans3->Start(&request3, callback3.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback3.GetResult(rv));
+  const HttpResponseInfo* response3 = trans3->GetResponseInfo();
+  ASSERT_TRUE(response3);
+  ASSERT_TRUE(response3->headers.get());
+  EXPECT_EQ("HTTP/1.1 200 OK", response3->headers->GetStatusLine());
+  EXPECT_TRUE(response3->was_npn_negotiated);
+  EXPECT_FALSE(response3->was_fetched_via_spdy);
+  std::string response_data3;
+  ASSERT_EQ(OK, ReadTransaction(trans3.get(), &response_data3));
+  EXPECT_EQ("second HTTP/1.1 response from alternative", response_data3);
+}
+
 TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
   const std::string https_url = "https://www.example.org:8080/";
   const std::string http_url = "http://www.example.org:8080/";

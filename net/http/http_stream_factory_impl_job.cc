@@ -1010,6 +1010,12 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return result;
   }
 
+  if (IsSpdyAlternate() && !using_spdy_) {
+    job_status_ = STATUS_BROKEN;
+    MaybeMarkAlternativeServiceBroken();
+    return ERR_NPN_NEGOTIATION_FAILED;
+  }
+
   if (!ssl_started && result < 0 && IsAlternate()) {
     job_status_ = STATUS_BROKEN;
     // TODO(bnc): if (result == ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN), then
@@ -1097,6 +1103,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "462811 HttpStreamFactoryImpl::Job::DoCreateStream"));
   DCHECK(connection_->socket() || existing_spdy_session_.get() || using_quic_);
+  if (IsAlternate())
+    DCHECK(IsSpdyAlternate());
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
 
@@ -1107,6 +1115,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     SetSocketMotivation();
 
   if (!using_spdy_) {
+    DCHECK(!IsSpdyAlternate());
     // We may get ftp scheme when fetching ftp resources through proxy.
     bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https()) &&
                        (request_info_.url.SchemeIs("http") ||
