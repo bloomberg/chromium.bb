@@ -98,6 +98,9 @@ component("wtf") {
 }
 
 test("wtf_unittests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+
   sources = gypi_values.wtf_unittest_files
 
   sources += [ "testing/RunAllTests.cpp" ]
