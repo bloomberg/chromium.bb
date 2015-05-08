@@ -13,6 +13,19 @@ using blink::WebInputEvent;
 using blink::WebGestureEvent;
 
 namespace content {
+namespace {
+
+// Actions on an axis are disallowed if the perpendicular axis has a filter set
+// and no filter is set for the queried axis.
+bool IsYAxisActionDisallowed(TouchAction action) {
+  return ((action & TOUCH_ACTION_PAN_X) && !(action & TOUCH_ACTION_PAN_Y));
+}
+
+bool IsXAxisActionDisallowed(TouchAction action) {
+  return ((action & TOUCH_ACTION_PAN_Y) && !(action & TOUCH_ACTION_PAN_X));
+}
+
+}  // namespace
 
 TouchActionFilter::TouchActionFilter() :
   drop_scroll_gesture_events_(false),
@@ -25,20 +38,22 @@ TouchActionFilter::TouchActionFilter() :
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
-  switch(gesture_event->type) {
+  switch (gesture_event->type) {
     case WebInputEvent::GestureScrollBegin:
       DCHECK(!drop_scroll_gesture_events_);
       drop_scroll_gesture_events_ = ShouldSuppressScroll(*gesture_event);
       return drop_scroll_gesture_events_;
 
     case WebInputEvent::GestureScrollUpdate:
-      if (drop_scroll_gesture_events_)
+      if (drop_scroll_gesture_events_) {
         return true;
-      else {
-        if (allowed_touch_action_ == TOUCH_ACTION_PAN_X) {
+      } else {
+        // Scrolls restricted to a specific axis shouldn't permit movement
+        // in the perpendicular axis.
+        if (IsYAxisActionDisallowed(allowed_touch_action_)) {
           gesture_event->data.scrollUpdate.deltaY = 0;
           gesture_event->data.scrollUpdate.velocityY = 0;
-        } else if (allowed_touch_action_ == TOUCH_ACTION_PAN_Y) {
+        } else if (IsXAxisActionDisallowed(allowed_touch_action_)) {
           gesture_event->data.scrollUpdate.deltaX = 0;
           gesture_event->data.scrollUpdate.velocityX = 0;
         }
@@ -52,9 +67,11 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       DCHECK(gesture_event->data.flingStart.velocityX ||
              gesture_event->data.flingStart.velocityY);
       if (!drop_scroll_gesture_events_) {
-        if (allowed_touch_action_ == TOUCH_ACTION_PAN_X)
+        // Flings restricted to a specific axis shouldn't permit velocity
+        // in the perpendicular axis.
+        if (IsYAxisActionDisallowed(allowed_touch_action_))
           gesture_event->data.flingStart.velocityY = 0;
-        if (allowed_touch_action_ == TOUCH_ACTION_PAN_Y)
+        else if (IsXAxisActionDisallowed(allowed_touch_action_))
           gesture_event->data.flingStart.velocityX = 0;
         // As the renderer expects a scroll-ending event, but does not expect a
         // zero-velocity fling, convert the now zero-velocity fling accordingly.
@@ -184,9 +201,27 @@ bool TouchActionFilter::ShouldSuppressScroll(
   // Determine the primary initial axis of the scroll, and check whether
   // panning along that axis is permitted.
   if (fabs(gesture_event.data.scrollBegin.deltaXHint) >
-      fabs(gesture_event.data.scrollBegin.deltaYHint))
-    return !(allowed_touch_action_ & TOUCH_ACTION_PAN_X);
-  return !(allowed_touch_action_ & TOUCH_ACTION_PAN_Y);
+      fabs(gesture_event.data.scrollBegin.deltaYHint)) {
+    if (gesture_event.data.scrollBegin.deltaXHint > 0 &&
+        allowed_touch_action_ & TOUCH_ACTION_PAN_LEFT) {
+      return false;
+    } else if (gesture_event.data.scrollBegin.deltaXHint < 0 &&
+               allowed_touch_action_ & TOUCH_ACTION_PAN_RIGHT) {
+      return false;
+    } else {
+      return true;
+    }
+  } else {
+    if (gesture_event.data.scrollBegin.deltaYHint > 0 &&
+        allowed_touch_action_ & TOUCH_ACTION_PAN_UP) {
+      return false;
+    } else if (gesture_event.data.scrollBegin.deltaYHint < 0 &&
+               allowed_touch_action_ & TOUCH_ACTION_PAN_DOWN) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }
 
 TouchAction TouchActionFilter::Intersect(TouchAction ta1, TouchAction ta2) {
@@ -203,4 +238,4 @@ TouchAction TouchActionFilter::Intersect(TouchAction ta1, TouchAction ta2) {
   return static_cast<TouchAction>(ta1 & ta2);
 }
 
-}
+}  // namespace content
