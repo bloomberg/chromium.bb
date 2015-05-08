@@ -91,6 +91,9 @@ const char kDisablePreferCompositingToLCDText[] =
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
+// Disables Delay Agnostic AEC in WebRTC.
+const char kDisableDelayAgnosticAec[]       = "disable-delay-agnostic-aec";
+
 // Disables delegated renderer.
 const char kDisableDelegatedRenderer[]      = "disable-delegated-renderer";
 

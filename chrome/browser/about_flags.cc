@@ -2270,6 +2270,13 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
+    "disable-delay-agnostic-aec",
+    IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_NAME,
+    IDS_FLAGS_DISABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kDisableDelayAgnosticAec)
+  },
+  {
     "enable-delay-agnostic-aec",
     IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_NAME,
     IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION,

@@ -10126,6 +10126,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_AutoDisable2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it is automatically disabled
+    due to a permission increase (e.g., after an extension upgrade).
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_AutoDisable3"
     enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
@@ -10137,16 +10147,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     ExtensionService::RecordPermissionMessagesHistogram with the argument
     AutoDisable. For Sync users, this may be reported for each device, depending
     on whether the Sync update or the extension auto-update happen first.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_AutoDisable2"
-    enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when it is automatically disabled
-    due to a permission increase (e.g., after an extension upgrade).
   </summary>
 </histogram>
 
@@ -10164,6 +10164,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_Install2" enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was installed.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_Install3" enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
@@ -10172,14 +10180,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     places where this histogram may be emitted, look for calls to
     ExtensionService::RecordPermissionMessagesHistogram with the argument
     Install. For Sync users, this is reported for each device.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_Install2" enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when it was installed.
   </summary>
 </histogram>
 
@@ -10199,6 +10199,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_InstallAbort2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation was aborted, not
+    including installation errors and user cancels.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_InstallAbort3"
     enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
@@ -10210,16 +10220,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     histogram may be emitted, look for calls to
     ExtensionService::RecordPermissionMessagesHistogram with the argument
     InstallAbort.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_InstallAbort2"
-    enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when installation was aborted, not
-    including installation errors and user cancels.
   </summary>
 </histogram>
 
@@ -10238,6 +10238,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_InstallCancel2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation was canceled.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_InstallCancel3"
     enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
@@ -10247,15 +10256,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     find places where this histogram may be emitted, look for calls to
     ExtensionService::RecordPermissionMessagesHistogram with the argument
     InstallCancel.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_InstallCancel2"
-    enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when installation was canceled.
   </summary>
 </histogram>
 
@@ -10303,6 +10303,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_ReEnable2" enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was re-enabled from a
+    confirmation prompt.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_ReEnable3" enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
@@ -10311,15 +10320,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     confirmation prompt. To find places where this histogram may be emitted,
     look for calls to ExtensionService::RecordPermissionMessagesHistogram with
     the argument ReEnable.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_ReEnable2" enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when it was re-enabled from a
-    confirmation prompt.
   </summary>
 </histogram>
 
@@ -10339,6 +10339,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_ReEnableAbort2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when the re-enable prompt was
+    aborted, not including installation errors and manual user cancels.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_ReEnableAbort3"
     enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
@@ -10353,33 +10363,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Extensions.Permissions_ReEnableAbort2"
-    enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when the re-enable prompt was
-    aborted, not including installation errors and manual user cancels.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.Permissions_ReEnableCancel"
     enum="ExtensionPermission">
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_ReEnableCancel2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when the re-enable was canceled from
-    the confirmation prompt. To find places where this histogram may be emitted,
-    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
-    the argument ReEnableCancel.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_ReEnableCancel3"
-    enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
@@ -10400,6 +10388,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_ReEnableCancel3"
+    enum="ExtensionPermission3">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when the re-enable was canceled from
+    the confirmation prompt. To find places where this histogram may be emitted,
+    look for calls to ExtensionService::RecordPermissionMessagesHistogram with
+    the argument ReEnableCancel.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_Uninstall" enum="ExtensionPermission">
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_Uninstall2.
@@ -10414,6 +10414,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_Uninstall2" enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was uninstalled.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_Uninstall3" enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
@@ -10422,14 +10430,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     places where this histogram may be emitted, look for calls to
     ExtensionService::RecordPermissionMessagesHistogram with the argument
     Uninstall. For Sync users, this is reported for each device.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_Uninstall2" enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when it was uninstalled.
   </summary>
 </histogram>
 
@@ -10449,6 +10449,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_WebStoreInstall2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when it was installed through the
+    web store.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_WebStoreInstall3"
     enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
@@ -10459,16 +10469,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     calls to ExtensionService::RecordPermissionMessagesHistogram with the
     argument WebStoreInstall. Contrary to the more-general Permissions_Install3
     histogram, this one is NOT reported for each device.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_WebStoreInstall2"
-    enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when it was installed through the
-    web store.
   </summary>
 </histogram>
 
@@ -10489,6 +10489,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_WebStoreInstallAbort2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was aborted, not including installation errors and user cancels.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_WebStoreInstallAbort3"
     enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
@@ -10500,16 +10510,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     where this histogram may be emitted, look for calls to
     ExtensionService::RecordPermissionMessagesHistogram with the argument
     WebStoreInstallAbort.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_WebStoreInstallAbort2"
-    enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when installation from the web store
-    was aborted, not including installation errors and user cancels.
   </summary>
 </histogram>
 
@@ -10529,6 +10529,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Permissions_WebStoreInstallCancel2"
+    enum="ExtensionPermission2">
+  <owner>kalman@chromium.org</owner>
+  <owner>rpaquay@chromium.org</owner>
+  <summary>
+    The permissions present in an extension when installation from the web store
+    was canceled.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.Permissions_WebStoreInstallCancel3"
     enum="ExtensionPermission3">
   <owner>kalman@chromium.org</owner>
@@ -10538,16 +10548,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     was canceled. To find places where this histogram may be emitted, look for
     calls to ExtensionService::RecordPermissionMessagesHistogram with the
     argument WebStoreInstallCancel.
-  </summary>
-</histogram>
-
-<histogram name="Extensions.Permissions_WebStoreInstallCancel2"
-    enum="ExtensionPermission2">
-  <owner>kalman@chromium.org</owner>
-  <owner>rpaquay@chromium.org</owner>
-  <summary>
-    The permissions present in an extension when installation from the web store
-    was canceled.
   </summary>
 </histogram>
 
@@ -56396,6 +56396,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1142515376" label="enable-nacl"/>
   <int value="1150622273" label="enable-apps-file-associations"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
+  <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1181056275" label="enable-cloud-backup"/>
   <int value="1185424279" label="enable-media-router"/>
   <int value="1192302892" label="gesture-typing"/>

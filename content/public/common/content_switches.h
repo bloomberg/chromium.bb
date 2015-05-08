@@ -36,6 +36,7 @@ CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char kDisablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
+CONTENT_EXPORT extern const char kDisableDelayAgnosticAec[];
 CONTENT_EXPORT extern const char kDisableDelegatedRenderer[];
 extern const char kDisableDirectNPAPIRequests[];
 CONTENT_EXPORT extern const char kDisableDistanceFieldText[];

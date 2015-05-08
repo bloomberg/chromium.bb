@@ -80,6 +80,8 @@ bool IsDelayAgnosticAecEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDelayAgnosticAec))
     return true;
+  if (command_line->HasSwitch(switches::kDisableDelayAgnosticAec))
+    return false;
 
   return (group_name == "Enabled" || group_name == "DefaultEnabled");
 }
