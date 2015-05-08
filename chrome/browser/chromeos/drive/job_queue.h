@@ -18,13 +18,17 @@ class JobQueue {
  public:
   // Creates a queue that allows |num_max_concurrent_jobs| concurrent job
   // execution and has |num_priority_levels| levels of priority.
-  JobQueue(size_t num_max_concurrent_jobs, size_t num_priority_levels);
+  JobQueue(size_t num_max_concurrent_jobs,
+           size_t num_priority_levels,
+           size_t max_batch_size);
   ~JobQueue();
 
   // Pushes a job |id| of |priority|. The job with the smallest priority value
   // is popped first (lower values are higher priority). In the same priority,
-  // the queue is "first-in first-out".
-  void Push(JobID id, int priority);
+  // the queue is "first-in first-out". If multiple jobs with |batchable| = true
+  // are pushed continuously, there will be popped at the same time unless the
+  // sum of |job_size| exceeds |max_batch_size_|.
+  void Push(JobID id, int priority, bool batchable, uint64 job_size);
 
   // Pops the first job which meets |accepted_priority| (i.e. the first job in
   // the queue with equal or higher priority (lower value)), and the limit of
@@ -34,7 +38,11 @@ class JobQueue {
   // (higher priority) in the queue is picked even if a job with priority 1 was
   // pushed earlier. If there is no job with priority 0, the first job with
   // priority 1 in the queue is picked.
-  bool PopForRun(int accepted_priority, JobID* id);
+  //
+  // If the first found job and following jobs are batchable, these jobs are
+  // popped out at the same time unless the total size of jobs exceeds
+  // |max_batch_size_|.
+  void PopForRun(int accepted_priority, std::vector<JobID>* jobs);
 
   // Gets queued jobs with the given priority.
   void GetQueuedJobs(int priority, std::vector<JobID>* jobs) const;
@@ -53,8 +61,20 @@ class JobQueue {
   void Remove(JobID id);
 
  private:
+  // JobID and additional properties that are needed to determine which tasks it
+  // runs next.
+  struct Item {
+    Item();
+    Item(JobID id, bool batchable, uint64 size);
+    ~Item();
+    JobID id;
+    bool batchable;
+    uint64 size;
+  };
+
   size_t num_max_concurrent_jobs_;
-  std::vector<std::deque<JobID> > queue_;
+  std::vector<std::deque<Item>> queue_;
+  size_t max_batch_size_;
   std::set<JobID> running_;
 
   DISALLOW_COPY_AND_ASSIGN(JobQueue);

@@ -32,6 +32,7 @@ namespace {
 // sufficient number of times. crbug.com/269918
 const int kMaxThrottleCount = 4;
 const int kMaxRetryCount = 2 * kMaxThrottleCount;
+const size_t kMaxBatchSize = 1024 * 1024 * 10;
 
 // GetDefaultValue returns a value constructed by the default constructor.
 template<typename T> struct DefaultValueCreator {
@@ -188,7 +189,8 @@ JobScheduler::JobScheduler(PrefService* pref_service,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (int i = 0; i < NUM_QUEUES; ++i)
-    queue_[i].reset(new JobQueue(kMaxJobCount[i], NUM_CONTEXT_TYPES));
+    queue_[i].reset(
+        new JobQueue(kMaxJobCount[i], NUM_CONTEXT_TYPES, kMaxBatchSize));
 
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
@@ -740,7 +742,8 @@ void JobScheduler::QueueJob(JobID job_id) {
   const JobInfo& job_info = job_entry->job_info;
 
   const QueueType queue_type = GetJobQueueType(job_info.job_type);
-  queue_[queue_type]->Push(job_id, job_entry->context.type);
+  queue_[queue_type]->Push(job_id, job_entry->context.type, false,
+                           job_info.num_total_bytes);
 
   // Temporary histogram for crbug.com/229650.
   if (job_info.job_type == TYPE_DOWNLOAD_FILE ||
@@ -794,11 +797,15 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
   }
 
   // Run the job with the highest priority in the queue.
-  JobID job_id = -1;
-  if (!queue_[queue_type]->PopForRun(accepted_priority, &job_id))
+  std::vector<JobID> job_ids;
+  queue_[queue_type]->PopForRun(accepted_priority, &job_ids);
+  if (job_ids.empty())
     return;
 
-  JobEntry* entry = job_map_.Lookup(job_id);
+  // TODO(hirono): Currently all requests are not batchable. So the queue always
+  // return just 1 job.
+  DCHECK_EQ(1u, job_ids.size());
+  JobEntry* entry = job_map_.Lookup(job_ids.front());
   DCHECK(entry);
 
   JobInfo* job_info = &entry->job_info;
