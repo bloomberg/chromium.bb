@@ -22,9 +22,8 @@ remoting.gcd = remoting.gcd || {};
  *   id: string,
  *   robotAccountEmail: string,
  *   robotAccountAuthorizationCode: string,
- *   deviceDraft: {
- *     id: string
- *   }
+ *   deviceId: string,
+ *   deviceDraft: Object
  * }}
  */
 remoting.gcd.RegistrationTicket;

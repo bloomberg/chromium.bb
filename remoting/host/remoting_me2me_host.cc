@@ -333,6 +333,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool use_service_account_;
   bool enable_vp9_;
   int64_t frame_recorder_buffer_size_;
+  std::string gcd_device_id_;
 
   scoped_ptr<PolicyWatcher> policy_watcher_;
   PolicyState policy_state_;
@@ -986,6 +987,10 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
     frame_recorder_buffer_size_ = 1024LL * frame_recorder_buffer_kb;
   }
 
+  if (!config.GetString(kGcdDeviceIdConfigPath, &gcd_device_id_)) {
+    gcd_device_id_.clear();
+  }
+
   return true;
 }
 
@@ -1316,7 +1321,8 @@ void HostProcess::InitializeSignaling() {
                                              oauth_refresh_token_,
                                              use_service_account_));
   scoped_ptr<OAuthTokenGetter> oauth_token_getter(new OAuthTokenGetter(
-      oauth_credentials.Pass(), context_->url_request_context_getter(), false));
+      oauth_credentials.Pass(), context_->url_request_context_getter(), false,
+      gcd_device_id_.empty()));
   signaling_connector_.reset(new SignalingConnector(
       xmpp_signal_strategy, dns_blackhole_checker.Pass(),
       oauth_token_getter.Pass(),

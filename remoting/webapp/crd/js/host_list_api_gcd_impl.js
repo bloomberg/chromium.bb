@@ -52,7 +52,8 @@ remoting.HostListApiGcdImpl.prototype.register = function(
       then(function(/**remoting.gcd.RegistrationTicket*/ ticket) {
         return {
           authCode: ticket.robotAccountAuthorizationCode,
-          email: ticket.robotAccountEmail
+          email: ticket.robotAccountEmail,
+          gcdId: ticket.deviceId
         };
       }).
       catch(function(error) {

@@ -173,7 +173,7 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
   // Register the host and extract an auth code from the host response
   // and, optionally an email address for the robot account.
   /** @type {!Promise<remoting.HostListApi.RegisterResult>} */
-  var regResultPromise = Promise.all([
+  var registerResultPromise = Promise.all([
     hostClientIdPromise,
     hostNamePromise,
     keyPairPromise
@@ -190,21 +190,21 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
   });
 
   // Get XMPP creditials.
-  var xmppCredsPromise = regResultPromise.then(function(regResult) {
-    base.debug.assert(regResult.authCode != '');
-    if (regResult.email) {
+  var xmppCredsPromise = registerResultPromise.then(function(registerResult) {
+    base.debug.assert(registerResult.authCode != '');
+    if (registerResult.email) {
       // Use auth code and email supplied by GCD.
       return that.hostDaemonFacade_.getRefreshTokenFromAuthCode(
-          regResult.authCode).then(function(token) {
+          registerResult.authCode).then(function(token) {
             return {
-              userEmail: regResult.email,
+              userEmail: registerResult.email,
               refreshToken: token
             };
           });
     } else {
       // Use auth code supplied by Chromoting registry.
       return that.hostDaemonFacade_.getCredentialsFromAuthCode(
-          regResult.authCode);
+          registerResult.authCode);
     }
   });
 
@@ -216,7 +216,8 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
     xmppCredsPromise,
     keyPairPromise,
     hostOwnerPromise,
-    remoting.identity.getEmail()
+    remoting.identity.getEmail(),
+    registerResultPromise
   ]).then(function(/** Array */ a) {
     var hostName = /** @type {string} */ (a[0]);
     var hostSecretHash = /** @type {string} */ (a[1]);
@@ -224,6 +225,8 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
     var keyPair = /** @type {remoting.KeyPair} */ (a[3]);
     var hostOwner = /** @type {string} */ (a[4]);
     var hostOwnerEmail = /** @type {string} */ (a[5]);
+    var registerResult =
+        /** @type {remoting.HostListApi.RegisterResult} */ (a[6]);
     var hostConfig = {
       xmpp_login: xmppCreds.userEmail,
       oauth_refresh_token: xmppCreds.refreshToken,
@@ -235,6 +238,9 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
     };
     if (hostOwnerEmail != hostOwner) {
       hostConfig['host_owner_email'] = hostOwnerEmail;
+    }
+    if (registerResult.gcdId) {
+      hostConfig['gcd_device_id'] = registerResult.gcdId;
     }
     return hostConfig;
   });

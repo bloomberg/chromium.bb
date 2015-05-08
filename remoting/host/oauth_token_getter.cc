@@ -36,12 +36,13 @@ OAuthTokenGetter::OAuthTokenGetter(
     scoped_ptr<OAuthCredentials> oauth_credentials,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
-    bool auto_refresh)
+    bool auto_refresh,
+    bool verify_email)
     : oauth_credentials_(oauth_credentials.Pass()),
       gaia_oauth_client_(
           new gaia::GaiaOAuthClient(url_request_context_getter.get())),
       url_request_context_getter_(url_request_context_getter),
-      refreshing_oauth_token_(false) {
+      verify_email_(verify_email) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer<OAuthTokenGetter>());
   }
@@ -74,12 +75,12 @@ void OAuthTokenGetter::OnRefreshTokenResponse(
                           &OAuthTokenGetter::RefreshOAuthToken);
   }
 
-  if (verified_email_.empty()) {
+  if (verify_email_ && !email_verified_) {
     gaia_oauth_client_->GetUserEmail(access_token, kMaxRetries, this);
   } else {
     refreshing_oauth_token_ = false;
-    NotifyCallbacks(
-        OAuthTokenGetter::SUCCESS, verified_email_, oauth_access_token_);
+    NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_credentials_->login,
+                    oauth_access_token_);
   }
 }
 
@@ -95,7 +96,7 @@ void OAuthTokenGetter::OnGetUserEmailResponse(const std::string& user_email) {
     return;
   }
 
-  verified_email_ = user_email;
+  email_verified_ = true;
   refreshing_oauth_token_ = false;
 
   // Now that we've refreshed the token and verified that it's for the correct
@@ -123,7 +124,7 @@ void OAuthTokenGetter::OnOAuthError() {
   // Throw away invalid credentials and force a refresh.
   oauth_access_token_.clear();
   auth_token_expiry_time_ = base::Time();
-  verified_email_.clear();
+  email_verified_ = false;
 
   NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string(), std::string());
 }
@@ -140,8 +141,8 @@ void OAuthTokenGetter::OnNetworkError(int response_code) {
 void OAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
   DCHECK(CalledOnValidThread());
   bool need_new_auth_token = auth_token_expiry_time_.is_null() ||
-      base::Time::Now() >= auth_token_expiry_time_ ||
-      verified_email_.empty();
+                             base::Time::Now() >= auth_token_expiry_time_ ||
+                             (verify_email_ && !email_verified_);
 
   if (need_new_auth_token) {
     pending_callbacks_.push(on_access_token);

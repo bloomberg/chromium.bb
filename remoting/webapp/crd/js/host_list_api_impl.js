@@ -44,7 +44,7 @@ remoting.HostListApiImpl.prototype.register = function(
       var result = /** @type {!Object} */ (response.getJson());
       var data = base.getObjectAttr(result, 'data');
       var authCode = base.getStringAttr(data, 'authorizationCode');
-      return { authCode: authCode, email: '' };
+      return { authCode: authCode, email: '', gcdId: '' };
     } else {
       console.log(
           'Failed to register the host. Status: ' + response.status +

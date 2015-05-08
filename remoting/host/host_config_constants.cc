@@ -21,5 +21,6 @@ const char kPrivateKeyConfigPath[] = "private_key";
 const char kUsageStatsConsentConfigPath[] = "usage_stats_consent";
 const char kEnableVp9ConfigPath[] = "enable_vp9";
 const char kFrameRecorderBufferKbConfigPath[] = "frame-recorder-buffer-kb";
+const char kGcdDeviceIdConfigPath[] = "gcd_device_id";
 
 }  // namespace remoting

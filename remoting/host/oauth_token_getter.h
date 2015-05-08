@@ -62,7 +62,8 @@ class OAuthTokenGetter :
   OAuthTokenGetter(scoped_ptr<OAuthCredentials> oauth_credentials,
                    const scoped_refptr<net::URLRequestContextGetter>&
                        url_request_context_getter,
-                   bool auto_refresh);
+                   bool auto_refresh,
+                   bool verify_email);
   ~OAuthTokenGetter() override;
 
   // Call |on_access_token| with an access token, or the failure status.
@@ -87,10 +88,11 @@ class OAuthTokenGetter :
   scoped_ptr<OAuthCredentials> oauth_credentials_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  const bool verify_email_;
 
-  bool refreshing_oauth_token_;
+  bool refreshing_oauth_token_ = false;
+  bool email_verified_ = false;
   std::string oauth_access_token_;
-  std::string verified_email_;
   base::Time auth_token_expiry_time_;
   std::queue<OAuthTokenGetter::TokenCallback> pending_callbacks_;
   scoped_ptr<base::OneShotTimer<OAuthTokenGetter> > refresh_timer_;

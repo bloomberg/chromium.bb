@@ -99,13 +99,24 @@ remoting.HostListApi.setInstance = function(newInstance) {
 })();
 
 /**
- * A pair of an OAuth2 auth code and a robot account email.  Depending
- * on the specifics of the registration process, either could be the
- * empty string.
+ * Information returned from the registry/GCD server when registering
+ * a device.  GCD will fill in all three fields; the Chromoting
+ * registry will only return an auth code; other fields will be empty.
+ *
+ * The fields are:
+ *
+ * authCode: An OAuth2 authorization code that can be exchanged for a
+ *     refresh token.
+ *
+ * email: The email/XMPP address of the robot account associated
+ *     with this device.
+ *
+ * gcmId: The ID string assigned to this device by GCD.
  *
  * @typedef {{
  *   authCode: string,
- *   email: string
+ *   email: string,
+ *   gcdId: string
  * }}
  */
 remoting.HostListApi.RegisterResult;

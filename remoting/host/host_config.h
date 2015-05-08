@@ -44,6 +44,8 @@ extern const char kUsageStatsConsentConfigPath[];
 extern const char kEnableVp9ConfigPath[];
 // Number of Kibibytes of frame data to allow each client to record.
 extern const char kFrameRecorderBufferKbConfigPath[];
+// The GCD device ID of this host (if registered with GCD).
+extern const char kGcdDeviceIdConfigPath[];
 
 // Helpers for serializing/deserializing Host configuration dictonaries.
 scoped_ptr<base::DictionaryValue> HostConfigFromJson(
