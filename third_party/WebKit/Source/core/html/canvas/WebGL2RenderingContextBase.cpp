@@ -1349,7 +1349,7 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
         return ScriptValue::createNull(scriptState);
     switch (pname) {
     case GL_SHADING_LANGUAGE_VERSION:
-        return WebGLAny(scriptState, "WebGL GLSL ES 2.0 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
+        return WebGLAny(scriptState, "WebGL GLSL ES 3.0 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
     case GL_VERSION:
         return WebGLAny(scriptState, "WebGL 2.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
 
