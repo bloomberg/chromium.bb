@@ -378,7 +378,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     ##############################################################
 
     self.Fail('deqp/data/gles3/shaders/arrays.html', bug=483282)
-    self.Fail('deqp/data/gles3/shaders/conditionals.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constants.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constant_expressions.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/conversions.html', bug=483282)
@@ -388,14 +387,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/qualification_order.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/scoping.html', bug=483282)
-    self.Fail('deqp/data/gles3/shaders/swizzles.html', bug=483282)
 
     self.Fail('deqp/functional/gles3/textureformat.html', bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback.html', bug=483282)
     self.Fail('deqp/functional/gles3/uniformbuffers.html', bug=483282)
 
     self.Fail('conformance2/attribs/gl-vertex-attrib.html', bug=483282)
+    self.Fail('conformance2/attribs/gl-vertex-attrib-i-render.html', bug=483282)
     self.Fail('conformance2/attribs/gl-vertexattribipointer.html', bug=483282)
+    self.Fail('conformance2/attribs/gl-vertexattribipointer-offsets.html',
+        bug=483282)
 
     self.Fail('conformance2/context/constants-and-properties-2.html',
         bug=483282)
@@ -410,7 +411,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/core/texture-npot.html', bug=483282)
 
     self.Fail('conformance2/glsl3/misplaced-version-directive.html', bug=483282)
-    self.Fail('conformance2/glsl3/shader-linking.html', bug=483282)
 
     self.Fail('conformance2/state/gl-get-calls.html', bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
@@ -420,4 +420,3 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html', bug=483282)
     self.Fail('conformance2/buffers/getBufferSubData.html', bug=483282)
-
