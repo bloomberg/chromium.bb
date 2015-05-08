@@ -70,22 +70,6 @@ scoped_ptr<ProvidedFileSystemObserver::Changes> ParseChanges(
   return results;
 }
 
-// Converts the file system source from the IDL type to a native type.
-chromeos::file_system_provider::Source ParseSource(
-    const api::file_system_provider::FileSystemSource& source) {
-  switch (source) {
-    case api::file_system_provider::FILE_SYSTEM_SOURCE_FILE:
-      return chromeos::file_system_provider::SOURCE_FILE;
-    case api::file_system_provider::FILE_SYSTEM_SOURCE_DEVICE:
-      return chromeos::file_system_provider::SOURCE_DEVICE;
-    case api::file_system_provider::FILE_SYSTEM_SOURCE_NETWORK:
-      return chromeos::file_system_provider::SOURCE_NETWORK;
-    case api::file_system_provider::FILE_SYSTEM_SOURCE_NONE:
-      return chromeos::file_system_provider::SOURCE_UNKNOWN;
-  }
-  return chromeos::file_system_provider::SOURCE_UNKNOWN;
-}
-
 // Fills the IDL's FileSystemInfo with FSP's ProvidedFileSystemInfo and
 // Watchers.
 void FillFileSystemInfo(const ProvidedFileSystemInfo& file_system_info,
@@ -99,20 +83,6 @@ void FillFileSystemInfo(const ProvidedFileSystemInfo& file_system_info,
   output->display_name = file_system_info.display_name();
   output->writable = file_system_info.writable();
   output->opened_files_limit = file_system_info.opened_files_limit();
-  switch (file_system_info.source()) {
-    case chromeos::file_system_provider::SOURCE_FILE:
-      output->source = api::file_system_provider::FILE_SYSTEM_SOURCE_FILE;
-      break;
-    case chromeos::file_system_provider::SOURCE_DEVICE:
-      output->source = api::file_system_provider::FILE_SYSTEM_SOURCE_DEVICE;
-      break;
-    case chromeos::file_system_provider::SOURCE_NETWORK:
-      output->source = api::file_system_provider::FILE_SYSTEM_SOURCE_NETWORK;
-      break;
-    case chromeos::file_system_provider::SOURCE_UNKNOWN:
-      output->source = api::file_system_provider::FILE_SYSTEM_SOURCE_NONE;
-      break;
-  }
 
   std::vector<linked_ptr<Watcher>> watcher_items;
   for (const auto& watcher : watchers) {
@@ -182,7 +152,6 @@ bool FileSystemProviderMountFunction::RunSync() {
                                    ? *params->options.opened_files_limit.get()
                                    : 0;
   options.supports_notify_tag = params->options.supports_notify_tag;
-  options.source = ParseSource(params->options.source);
 
   const base::File::Error result =
       service->MountFileSystem(extension_id(), options);

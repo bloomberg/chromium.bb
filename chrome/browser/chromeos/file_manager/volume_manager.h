@@ -57,14 +57,6 @@ enum VolumeType {
   NUM_VOLUME_TYPE,
 };
 
-// Source of a volume's data.
-enum VolumeSource {
-  VOLUME_SOURCE_UNKNOWN,
-  VOLUME_SOURCE_FILE,
-  VOLUME_SOURCE_DEVICE,
-  VOLUME_SOURCE_NETWORK
-};
-
 // Says how was the mount performed, whether due to user interaction, or
 // automatic. User interaction includes both hardware (pluggins a USB stick)
 // or software (mounting a ZIP archive) interaction.
@@ -105,7 +97,6 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   const std::string& volume_id() const { return volume_id_; }
   const std::string& file_system_id() const { return file_system_id_; }
   const std::string& extension_id() const { return extension_id_; }
-  const VolumeSource volume_source() const { return volume_source_; }
   VolumeType type() const { return type_; }
   chromeos::DeviceType device_type() const { return device_type_; }
   const base::FilePath& source_path() const { return source_path_; }
@@ -135,9 +126,6 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   // The ID of an extension providing the file system. If other type, then equal
   // to an empty string.
   std::string extension_id_;
-
-  // The source of the file system's data.
-  VolumeSource volume_source_;
 
   // The type of mounted volume.
   VolumeType type_;

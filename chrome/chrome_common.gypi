@@ -207,6 +207,8 @@
     'chrome_common_extensions_chromeos_sources': [
       'common/extensions/api/file_browser_handlers/file_browser_handler.cc',
       'common/extensions/api/file_browser_handlers/file_browser_handler.h',
+      'common/extensions/api/file_system_provider/file_system_provider_handler.cc',
+      'common/extensions/api/file_system_provider/file_system_provider_handler.h',
       'common/extensions/api/input_ime/input_components_handler.cc',
       'common/extensions/api/input_ime/input_components_handler.h',
     ],
@@ -374,6 +376,9 @@
               'sources': [ '<@(chrome_common_extensions_chromeos_sources)' ],
             }],
           ],
+        }],
+        ['enable_extensions==1 and chromeos==1', {
+          'sources': [ '<@(chrome_common_extensions_chromeos_sources)' ],
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [ '<@(chrome_common_win_mac_sources)' ],

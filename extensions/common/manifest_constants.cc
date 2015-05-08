@@ -184,6 +184,9 @@ const char kWebviewAccessibleResources[] = "accessible_resources";
 const char kWebviewName[] = "name";
 const char kWebviewPartitions[] = "partitions";
 const char kWhitelist[] = "whitelist";
+#if defined(OS_CHROMEOS)
+const char kFileSystemProvider[] = "file_system_provider";
+#endif
 
 }  // namespace manifest_keys
 

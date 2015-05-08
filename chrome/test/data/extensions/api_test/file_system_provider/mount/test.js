@@ -68,7 +68,6 @@ chrome.test.runTests([
         {
           fileSystemId: fileSystemId,
           displayName: 'caramel-candy.zip',
-          source: 'FILE'
         },
         chrome.test.callbackPass(function() {
           chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
@@ -137,23 +136,6 @@ chrome.test.runTests([
     tryNextOne();
   },
 
-  // Tests if fileManagerPrivate.addProvidedFileSystem() fails if the extension
-  // does not listen to onMountRequested() event.
-  function requestMountWithoutListener() {
-    chrome.fileManagerPrivate.getProvidingExtensions(
-        chrome.test.callbackPass(function(extensions) {
-          chrome.test.assertEq(extensions.length, 1);
-          chrome.test.assertEq(chrome.runtime.id, extensions[0].extensionId);
-          chrome.test.assertEq(
-              chrome.runtime.getManifest().name, extensions[0].name);
-          chrome.test.assertFalse(extensions[0].canConfigure);
-          chrome.test.assertFalse(extensions[0].canAdd);
-        }));
-    chrome.fileManagerPrivate.addProvidedFileSystem(
-        chrome.runtime.id,
-        chrome.test.callbackFail('Failed to request a new mount.'));
-  },
-
   // Tests if fileManagerPrivate.addProvidedFileSystem() emits the
   // onMountRequested() event.
   function requestMountSuccess() {
@@ -171,8 +153,9 @@ chrome.test.runTests([
           chrome.test.assertEq(chrome.runtime.id, extensions[0].extensionId);
           chrome.test.assertEq(
               chrome.runtime.getManifest().name, extensions[0].name);
-          chrome.test.assertFalse(extensions[0].canConfigure);
-          chrome.test.assertTrue(extensions[0].canAdd);
+          chrome.test.assertFalse(extensions[0].configurable);
+          chrome.test.assertTrue(extensions[0].multipleMounts);
+          chrome.test.assertEq('network', extensions[0].source);
         }));
 
     chrome.fileManagerPrivate.addProvidedFileSystem(

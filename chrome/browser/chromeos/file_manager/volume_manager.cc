@@ -150,7 +150,6 @@ Volume* Volume::CreateForDrive(Profile* profile) {
   volume->type_ = VOLUME_TYPE_GOOGLE_DRIVE;
   volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
   volume->source_path_ = drive_path;
-  volume->volume_source_ = VOLUME_SOURCE_NETWORK;
   volume->mount_path_ = drive_path;
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->is_parent_ = false;
@@ -166,7 +165,6 @@ Volume* Volume::CreateForDownloads(const base::FilePath& downloads_path) {
   volume->type_ = VOLUME_TYPE_DOWNLOADS_DIRECTORY;
   volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
   // Keep source_path empty.
-  volume->volume_source_ = VOLUME_SOURCE_DEVICE;
   volume->mount_path_ = downloads_path;
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->is_parent_ = false;
@@ -183,10 +181,6 @@ Volume* Volume::CreateForRemovable(
   Volume* const volume = new Volume;
   volume->type_ = MountTypeToVolumeType(mount_point.mount_type);
   volume->source_path_ = base::FilePath(mount_point.source_path);
-  volume->volume_source_ =
-      mount_point.mount_type == chromeos::MOUNT_TYPE_ARCHIVE
-          ? VOLUME_SOURCE_FILE
-          : VOLUME_SOURCE_DEVICE;
   volume->mount_path_ = base::FilePath(mount_point.mount_path);
   volume->mount_condition_ = mount_point.mount_condition;
   volume->volume_label_ = volume->mount_path().BaseName().AsUTF8Unsafe();
@@ -215,20 +209,6 @@ Volume* Volume::CreateForProvidedFileSystem(
   Volume* const volume = new Volume;
   volume->file_system_id_ = file_system_info.file_system_id();
   volume->extension_id_ = file_system_info.extension_id();
-  switch (file_system_info.source()) {
-    case chromeos::file_system_provider::SOURCE_UNKNOWN:
-      volume->volume_source_ = VOLUME_SOURCE_UNKNOWN;
-      break;
-    case chromeos::file_system_provider::SOURCE_FILE:
-      volume->volume_source_ = VOLUME_SOURCE_FILE;
-      break;
-    case chromeos::file_system_provider::SOURCE_DEVICE:
-      volume->volume_source_ = VOLUME_SOURCE_DEVICE;
-      break;
-    case chromeos::file_system_provider::SOURCE_NETWORK:
-      volume->volume_source_ = VOLUME_SOURCE_NETWORK;
-      break;
-  }
   volume->volume_label_ = file_system_info.display_name();
   volume->type_ = VOLUME_TYPE_PROVIDED;
   volume->mount_path_ = file_system_info.mount_path();
@@ -254,7 +234,6 @@ Volume* Volume::CreateForMTP(const base::FilePath& mount_path,
   volume->volume_id_ = kMtpVolumeIdPrefix + label;
   volume->volume_label_ = label;
   volume->source_path_ = mount_path;
-  volume->volume_source_ = VOLUME_SOURCE_DEVICE;
   volume->device_type_ = chromeos::DEVICE_TYPE_MOBILE;
   return volume;
 }
@@ -268,7 +247,6 @@ Volume* Volume::CreateForTesting(const base::FilePath& path,
   volume->type_ = volume_type;
   volume->device_type_ = device_type;
   // Keep source_path empty.
-  volume->volume_source_ = VOLUME_SOURCE_DEVICE;
   volume->mount_path_ = path;
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->is_parent_ = false;

@@ -13,6 +13,11 @@
     },
     "fileManagerPrivate"
   ],
+  "file_system_provider": {
+    "configurable": true,
+    "multiple_mounts": false,
+    "source": "device"
+  },
   "app": {
     "background": {
       "scripts": [

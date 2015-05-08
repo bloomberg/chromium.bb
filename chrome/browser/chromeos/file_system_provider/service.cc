@@ -43,8 +43,7 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
 
 }  // namespace
 
-ProvidingExtensionInfo::ProvidingExtensionInfo()
-    : can_configure(false), can_add(false) {
+ProvidingExtensionInfo::ProvidingExtensionInfo() {
 }
 
 ProvidingExtensionInfo::~ProvidingExtensionInfo() {
@@ -309,10 +308,6 @@ std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
       extensions::ExtensionRegistry::Get(profile_);
   DCHECK(registry);
 
-  extensions::EventRouter* const router =
-      extensions::EventRouter::Get(profile_);
-  DCHECK(router);
-
   std::vector<ProvidingExtensionInfo> result;
   for (const auto& extension : registry->enabled_extensions()) {
     if (!extension->permissions_data()->HasAPIPermission(
@@ -323,13 +318,11 @@ std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
     ProvidingExtensionInfo info;
     info.extension_id = extension->id();
     info.name = extension->name();
-    info.can_configure = router->ExtensionHasEventListener(
-        extension->id(), extensions::api::file_system_provider::
-                             OnConfigureRequested::kEventName);
-    info.can_add = router->ExtensionHasEventListener(
-        extension->id(),
-        extensions::api::file_system_provider::OnMountRequested::kEventName);
-
+    const extensions::FileSystemProviderCapabilities* capabilities =
+        extensions::FileSystemProviderCapabilities::Get(extension.get());
+    info.capabilities = capabilities
+                            ? *capabilities
+                            : extensions::FileSystemProviderCapabilities();
     result.push_back(info);
   }
 

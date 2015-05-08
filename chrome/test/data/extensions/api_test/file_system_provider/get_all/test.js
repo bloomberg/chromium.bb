@@ -86,8 +86,6 @@ function runTests() {
                                     fileSystems[0].displayName);
                                 chrome.test.assertTrue(
                                     fileSystems[0].writable);
-                                chrome.test.assertEq(
-                                    'NETWORK', fileSystems[0].source);
                                 chrome.test.assertEq(2,
                                     fileSystems[0].openedFilesLimit);
                               }));
@@ -102,8 +100,6 @@ function runTests() {
                                     test_util.FILE_SYSTEM_NAME,
                                     fileSystem.displayName);
                                 chrome.test.assertTrue(fileSystem.writable);
-                                chrome.test.assertEq(
-                                    'NETWORK', fileSystem.source);
                                 chrome.test.assertEq(2,
                                     fileSystem.openedFilesLimit);
                                 }));
@@ -117,7 +113,7 @@ function runTests() {
                 function(error) {
                   chrome.test.fail(error.name);
                 });
-          }), {writable: true, openedFilesLimit: 2, source: 'NETWORK'});
+          }), {writable: true, openedFilesLimit: 2});
     },
 
     // Verifies that after unmounting, the file system is not available in

@@ -41,22 +41,6 @@ namespace fileSystemProvider {
     DELETED
   };
 
-  // Source of the file system data.
-  enum FileSystemSource {
-    // The file system is handling a file, eg. an archive file obtained via the
-    // <code>onLaunched</code> event and the <code>file_handlers</code> manifest
-    // entry.
-    FILE,
-
-    // The file system contents are fetched from an external device, such as a
-    // USB device, but not via <code>file_handlers</code>.
-    DEVICE,
-
-    // The file system is network based. The contents are obtained from another
-    // server or local network. Eg. cloud services.
-    NETWORK
-  };
-
   // Represents metadata of a file or a directory.
   dictionary EntryMetadata {
     // True if it is a directory.
@@ -125,9 +109,6 @@ namespace fileSystemProvider {
     // List of currently opened files.
     OpenedFile[] openedFiles;
 
-    // Source of the file system data.
-    FileSystemSource? source;
-
     // Whether the file system supports the <code>tag</code> field for observing
     // directories.
     [nodoc] boolean? supportsNotifyTag;
@@ -152,9 +133,6 @@ namespace fileSystemProvider {
     // The maximum number of files that can be opened at once. If not specified,
     // or 0, then not limited.
     long? openedFilesLimit;
-
-    // Source of the file system data.
-    FileSystemSource? source;
 
     // Whether the file system supports the <code>tag</code> field for observed
     // directories. Required in order to enable the internal cache.

@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
+#include "chrome/common/extensions/api/file_system_provider/file_system_provider_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -57,8 +58,7 @@ struct ProvidingExtensionInfo {
 
   std::string extension_id;
   std::string name;
-  bool can_configure;
-  bool can_add;
+  extensions::FileSystemProviderCapabilities capabilities;
 };
 
 // Manages and registers the file system provider service. Maintains provided

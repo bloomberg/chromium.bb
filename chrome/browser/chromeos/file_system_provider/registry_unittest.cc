@@ -29,7 +29,6 @@ const char kPersistentOrigin[] =
     "chrome-extension://efgefgefgefgefgefgefgefgefgefgefgefge/";
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kDisplayName[] = "Camera Pictures";
-const Source kSource = SOURCE_NETWORK;
 
 // The dot in the file system ID is there in order to check that saving to
 // preferences works correctly. File System ID is used as a key in
@@ -45,7 +44,6 @@ void RememberFakeFileSystem(TestingProfile* profile,
                             const std::string& file_system_id,
                             const std::string& display_name,
                             bool writable,
-                            Source source,
                             bool supports_notify_tag,
                             int opened_files_limit,
                             const Watcher& watcher) {
@@ -62,8 +60,6 @@ void RememberFakeFileSystem(TestingProfile* profile,
                                              kFileSystemId);
   file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName, kDisplayName);
   file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable, writable);
-  file_system->SetStringWithoutPathExpansion(kPrefKeySource,
-                                             SourceToString(source));
   file_system->SetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
                                               supports_notify_tag);
   file_system->SetIntegerWithoutPathExpansion(kPrefKeyOpenedFilesLimit,
@@ -128,9 +124,8 @@ class FileSystemProviderRegistryTest : public testing::Test {
 TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
   // Create a fake entry in the preferences.
   RememberFakeFileSystem(profile_, kExtensionId, kFileSystemId, kDisplayName,
-                         true /* writable */, kSource,
-                         true /* supports_notify_tag */, kOpenedFilesLimit,
-                         fake_watcher_);
+                         true /* writable */, true /* supports_notify_tag */,
+                         kOpenedFilesLimit, fake_watcher_);
 
   scoped_ptr<RegistryInterface::RestoredFileSystems> restored_file_systems =
       registry_->RestoreFileSystems(kExtensionId);
@@ -142,7 +137,6 @@ TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
   EXPECT_EQ(kFileSystemId, restored_file_system.options.file_system_id);
   EXPECT_EQ(kDisplayName, restored_file_system.options.display_name);
   EXPECT_TRUE(restored_file_system.options.writable);
-  EXPECT_EQ(kSource, restored_file_system.options.source);
   EXPECT_TRUE(restored_file_system.options.supports_notify_tag);
   EXPECT_EQ(kOpenedFilesLimit, restored_file_system.options.opened_files_limit);
 
@@ -159,7 +153,6 @@ TEST_F(FileSystemProviderRegistryTest, RestoreFileSystems) {
 TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   MountOptions options(kFileSystemId, kDisplayName);
   options.writable = true;
-  options.source = kSource;
   options.supports_notify_tag = true;
   options.opened_files_limit = kOpenedFilesLimit;
 
@@ -205,11 +198,6 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
   EXPECT_TRUE(
       file_system->GetBooleanWithoutPathExpansion(kPrefKeyWritable, &writable));
   EXPECT_TRUE(writable);
-
-  std::string source_as_string;
-  EXPECT_TRUE(file_system->GetStringWithoutPathExpansion(kPrefKeySource,
-                                                         &source_as_string));
-  EXPECT_EQ("network", source_as_string);
 
   bool supports_notify_tag = false;
   EXPECT_TRUE(file_system->GetBooleanWithoutPathExpansion(
@@ -260,9 +248,8 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
 TEST_F(FileSystemProviderRegistryTest, ForgetFileSystem) {
   // Create a fake file systems in the preferences.
   RememberFakeFileSystem(profile_, kExtensionId, kFileSystemId, kDisplayName,
-                         true /* writable */, kSource,
-                         true /* supports_notify_tag */, kOpenedFilesLimit,
-                         fake_watcher_);
+                         true /* writable */, true /* supports_notify_tag */,
+                         kOpenedFilesLimit, fake_watcher_);
 
   registry_->ForgetFileSystem(kExtensionId, kFileSystemId);
 
@@ -327,29 +314,6 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
   EXPECT_TRUE(watcher->GetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
                                                      &last_tag));
   EXPECT_EQ(fake_watcher_.last_tag, last_tag);
-}
-
-TEST_F(FileSystemProviderRegistryTest, SourceToString) {
-  {
-    Source result = SOURCE_UNKNOWN;
-    EXPECT_TRUE(StringToSource(SourceToString(SOURCE_FILE), &result));
-    EXPECT_EQ(SOURCE_FILE, result);
-  }
-  {
-    Source result = SOURCE_UNKNOWN;
-    EXPECT_TRUE(StringToSource(SourceToString(SOURCE_DEVICE), &result));
-    EXPECT_EQ(SOURCE_DEVICE, result);
-  }
-  {
-    Source result = SOURCE_UNKNOWN;
-    EXPECT_TRUE(StringToSource(SourceToString(SOURCE_NETWORK), &result));
-    EXPECT_EQ(SOURCE_NETWORK, result);
-  }
-  {
-    Source result = SOURCE_FILE;
-    EXPECT_TRUE(StringToSource(SourceToString(SOURCE_UNKNOWN), &result));
-    EXPECT_EQ(SOURCE_UNKNOWN, result);
-  }
 }
 
 }  // namespace file_system_provider

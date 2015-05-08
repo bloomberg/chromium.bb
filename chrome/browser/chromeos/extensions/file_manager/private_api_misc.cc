@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -446,8 +447,22 @@ FileManagerPrivateGetProvidingExtensionsFunction::Run() {
         new ProvidingExtension);
     providing_extension->extension_id = info.extension_id;
     providing_extension->name = info.name;
-    providing_extension->can_configure = info.can_configure;
-    providing_extension->can_add = info.can_add;
+    providing_extension->configurable = info.capabilities.configurable();
+    providing_extension->multiple_mounts = info.capabilities.multiple_mounts();
+    switch (info.capabilities.source()) {
+      case SOURCE_FILE:
+        providing_extension->source =
+            api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_FILE;
+        break;
+      case SOURCE_DEVICE:
+        providing_extension->source =
+            api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_DEVICE;
+        break;
+      case SOURCE_NETWORK:
+        providing_extension->source =
+            api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_NETWORK;
+        break;
+    }
     providing_extensions.push_back(providing_extension);
   }
 
@@ -493,7 +508,6 @@ FileManagerPrivateConfigureProvidedFileSystemFunction::Run() {
   using file_manager::Volume;
   VolumeManager* const volume_manager =
       VolumeManager::Get(chrome_details_.GetProfile());
-  LOG(ERROR) << "LOOKING FOR: " << params->volume_id;
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume.get())

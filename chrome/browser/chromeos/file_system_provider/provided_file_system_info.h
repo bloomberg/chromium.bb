@@ -12,9 +12,6 @@
 namespace chromeos {
 namespace file_system_provider {
 
-// Source of the file system's contents.
-enum Source { SOURCE_UNKNOWN, SOURCE_FILE, SOURCE_DEVICE, SOURCE_NETWORK };
-
 // Options for creating the provided file system info.
 struct MountOptions {
   MountOptions();
@@ -26,7 +23,6 @@ struct MountOptions {
   std::string file_system_id;
   std::string display_name;
   bool writable;
-  Source source;
   bool supports_notify_tag;
   int opened_files_limit;
 };
@@ -46,7 +42,6 @@ class ProvidedFileSystemInfo {
   const std::string& file_system_id() const { return file_system_id_; }
   const std::string& display_name() const { return display_name_; }
   bool writable() const { return writable_; }
-  Source source() const { return source_; }
   bool supports_notify_tag() const { return supports_notify_tag_; }
   int opened_files_limit() const { return opened_files_limit_; }
   const base::FilePath& mount_path() const { return mount_path_; }
@@ -63,9 +58,6 @@ class ProvidedFileSystemInfo {
 
   // Whether the file system is writable or just read-only.
   bool writable_;
-
-  // Source of the file system's contents. By default SOURCE_UNKNOWN.
-  Source source_;
 
   // Supports tags for file/directory change notifications.
   bool supports_notify_tag_;

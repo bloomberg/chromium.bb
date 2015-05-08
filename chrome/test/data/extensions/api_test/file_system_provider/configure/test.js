@@ -20,22 +20,6 @@ function setUp(callback) {
 function runTests() {
   chrome.test.runTests([
     // Verify that the configuration flag is propagated properly.
-    function configureNotConfigurable() {
-      chrome.fileManagerPrivate.getProvidingExtensions(
-          chrome.test.callbackPass(function(extensions) {
-            chrome.test.assertEq(extensions.length, 1);
-            chrome.test.assertEq(chrome.runtime.id, extensions[0].extensionId);
-            chrome.test.assertEq(
-                chrome.runtime.getManifest().name, extensions[0].name);
-            chrome.test.assertFalse(extensions[0].canConfigure);
-            chrome.test.assertFalse(extensions[0].canAdd);
-          }));
-
-      chrome.fileManagerPrivate.configureProvidedFileSystem(test_util.volumeId,
-          chrome.test.callbackFail('Failed to complete configuration.'));
-    },
-
-    // Verify that the configuration flag is propagated properly.
     function configureConfigurable() {
       var onConfigureRequested = chrome.test.callbackPass(
           function(options, onSuccess, onError) {
@@ -52,8 +36,9 @@ function runTests() {
             chrome.test.assertEq(chrome.runtime.id, extensions[0].extensionId);
             chrome.test.assertEq(
                 chrome.runtime.getManifest().name, extensions[0].name);
-            chrome.test.assertTrue(extensions[0].canConfigure);
-            chrome.test.assertFalse(extensions[0].canAdd);
+            chrome.test.assertTrue(extensions[0].configurable);
+            chrome.test.assertFalse(extensions[0].multipleMounts);
+            chrome.test.assertEq('device', extensions[0].source);
           }));
 
       chrome.fileManagerPrivate.configureProvidedFileSystem(test_util.volumeId,

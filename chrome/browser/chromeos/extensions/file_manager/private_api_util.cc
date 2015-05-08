@@ -182,23 +182,6 @@ void VolumeToVolumeMetadata(
         new std::string(volume.source_path().AsUTF8Unsafe()));
   }
 
-  switch (volume.volume_source()) {
-    case VOLUME_SOURCE_UNKNOWN:
-      volume_metadata->volume_source = file_manager_private::VOLUME_SOURCE_NONE;
-      break;
-    case VOLUME_SOURCE_FILE:
-      volume_metadata->volume_source = file_manager_private::VOLUME_SOURCE_FILE;
-      break;
-    case VOLUME_SOURCE_DEVICE:
-      volume_metadata->volume_source =
-          file_manager_private::VOLUME_SOURCE_DEVICE;
-      break;
-    case VOLUME_SOURCE_NETWORK:
-      volume_metadata->volume_source =
-          file_manager_private::VOLUME_SOURCE_NETWORK;
-      break;
-  }
-
   if (volume.type() == VOLUME_TYPE_PROVIDED) {
     volume_metadata->extension_id.reset(new std::string(volume.extension_id()));
     volume_metadata->file_system_id.reset(

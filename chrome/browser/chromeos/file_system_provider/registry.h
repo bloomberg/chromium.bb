@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
+#include "chrome/common/extensions/api/file_system_provider/file_system_provider_handler.h"
 
 class Profile;
 
@@ -24,7 +25,6 @@ namespace file_system_provider {
 extern const char kPrefKeyFileSystemId[];
 extern const char kPrefKeyDisplayName[];
 extern const char kPrefKeyWritable[];
-extern const char kPrefKeySource[];
 extern const char kPrefKeySupportsNotifyTag[];
 extern const char kPrefKeyWatchers[];
 extern const char kPrefKeyWatcherEntryPath[];
@@ -37,11 +37,6 @@ class ProvidedFileSystemInfo;
 
 // Registers preferences to remember registered file systems between reboots.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-// Converts a file system's data source value back and forth between Source and
-// std::string types.
-std::string SourceToString(Source source);
-bool StringToSource(const std::string& source, Source* result);
 
 // Remembers and restores file systems in a persistent storage.
 class Registry : public RegistryInterface {
