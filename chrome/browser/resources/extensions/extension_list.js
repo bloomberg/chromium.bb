@@ -1115,7 +1115,7 @@ cr.define('extensions', function() {
      * Hides the extension options overlay for the extension with id
      * |extensionId|. If there is an overlay showing for a different extension,
      * nothing happens.
-     * @param {string} extension id to hide.
+     * @param {string} extensionId ID of the extension to hide.
      * @private
      */
     hideEmbeddedExtensionOptions_: function(extensionId) {
