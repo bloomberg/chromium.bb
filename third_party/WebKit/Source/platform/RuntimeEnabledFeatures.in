@@ -52,7 +52,6 @@ Database status=stable
 DecodeToYUV status=experimental
 DeviceLight status=experimental
 DisplayList2dCanvas status=stable
-DocumentScrollingElement status=experimental
 ForceDisplayList2dCanvas
 EncryptedMedia status=stable
 ExecCommandInJavaScript status=test

@@ -148,7 +148,7 @@ interface Document : Node {
     // FIXME: The x and y arguments should be of type double.
     Element? elementFromPoint(long x, long y);
     sequence<Element> elementsFromPoint(long x, long y);
-    [RuntimeEnabled=DocumentScrollingElement] readonly attribute Element? scrollingElement;
+    readonly attribute Element? scrollingElement;
 
     // Selection API
     // http://w3c.github.io/selection-api/#extensions-to-document-interface

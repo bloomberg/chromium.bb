@@ -813,6 +813,7 @@ interface Document
     getter referrer
     getter rootElement
     getter scripts
+    getter scrollingElement
     getter selectedStylesheetSet
     getter styleSheets
     getter title
