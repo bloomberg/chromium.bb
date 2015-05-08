@@ -238,10 +238,10 @@ crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-018.html [ Failure ]
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-019.html [ Failure ]
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-020.html [ Failure ]
+crbug.com/360889 crbug.com/399417 media/video-scales-in-media-document.html [ Pass Crash ]
+crbug.com/360889 crbug.com/399417 virtual/slimmingpaint/media/video-scales-in-media-document.html [ Pass Crash ]
 
 # Requires subpixel precision for offset/client/scroll properties
-crbug.com/360889 crbug.com/399417 media/video-scales-in-media-document.html [ Failure Crash ]
-crbug.com/360889 crbug.com/399417 virtual/slimmingpaint/media/video-scales-in-media-document.html [ Skip ]
 crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Pass Failure ]
 crbug.com/360889 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Skip ]
 crbug.com/360889 [ Win ] fast/text/whitespace/nowrap-line-break-after-white-space.html [ Pass Failure ]
