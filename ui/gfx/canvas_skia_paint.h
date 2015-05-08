@@ -8,7 +8,9 @@
 // This file provides an easy way to include the appropriate CanvasPaint
 // header file on your platform.
 
-#if defined(__APPLE__)
+#if defined(WIN32)
+#include "ui/gfx/canvas_paint_win.h"
+#elif defined(__APPLE__)
 #include "ui/gfx/canvas_paint_mac.h"
 #else
 #error "No canvas paint for this platform"

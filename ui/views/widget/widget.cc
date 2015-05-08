@@ -1172,6 +1172,15 @@ bool Widget::HasFocusManager() const {
   return !!focus_manager_.get();
 }
 
+bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
+  ui::Compositor* compositor = GetCompositor();
+  if (!compositor)
+    return false;
+
+  compositor->ScheduleRedrawRect(dirty_region);
+  return true;
+}
+
 void Widget::OnNativeWidgetPaint(const ui::PaintContext& context) {
   // On Linux Aura, we can get here during Init() because of the
   // SetInitialBounds call.

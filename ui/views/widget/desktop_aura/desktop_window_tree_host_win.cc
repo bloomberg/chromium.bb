@@ -898,10 +898,15 @@ void DesktopWindowTreeHostWin::HandleInputLanguageChange(
       input_method()->OnInputLocaleChanged();
 }
 
-void DesktopWindowTreeHostWin::HandlePaintAccelerated(
+bool DesktopWindowTreeHostWin::HandlePaintAccelerated(
     const gfx::Rect& invalid_rect) {
+  return native_widget_delegate_->OnNativeWidgetPaintAccelerated(invalid_rect);
+}
+
+void DesktopWindowTreeHostWin::HandlePaint(gfx::Canvas* canvas) {
+  // It appears possible to get WM_PAINT after WM_DESTROY.
   if (compositor())
-    compositor()->ScheduleRedrawRect(invalid_rect);
+    compositor()->ScheduleRedrawRect(gfx::Rect());
 }
 
 bool DesktopWindowTreeHostWin::HandleTooltipNotify(int w_param,

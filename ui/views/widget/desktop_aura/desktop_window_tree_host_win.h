@@ -184,7 +184,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
                         LRESULT* result) override;
   void HandleInputLanguageChange(DWORD character_set,
                                  HKL input_language_id) override;
-  void HandlePaintAccelerated(const gfx::Rect& invalid_rect) override;
+  bool HandlePaintAccelerated(const gfx::Rect& invalid_rect) override;
+  void HandlePaint(gfx::Canvas* canvas) override;
   bool HandleTooltipNotify(int w_param,
                            NMHDR* l_param,
                            LRESULT* l_result) override;

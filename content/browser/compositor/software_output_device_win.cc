@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"
 
