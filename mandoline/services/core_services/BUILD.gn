@@ -28,5 +28,9 @@ mojo_native_application("core_services") {
     "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
 
-  data_deps = [ "//components/clipboard" ]
+  data_deps = [
+    "//components/clipboard",
+    "//components/view_manager",
+    "//mandoline/ui/browser:window_manager",
+  ]
 }
