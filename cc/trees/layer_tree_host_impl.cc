@@ -1220,31 +1220,15 @@ void LayerTreeHostImpl::DidModifyTilePriorities() {
   client_->SetNeedsPrepareTilesOnImplThread();
 }
 
-void LayerTreeHostImpl::GetValidTilePrioritiesPictureLayerImpls(
-    const LayerTreeImpl* tree,
-    std::vector<PictureLayerImpl*>* layers) const {
-  DCHECK(layers->empty());
-
-  if (!tree)
-    return;
-
-  layers->reserve(tree->picture_layers().size());
-  for (auto& layer : tree->picture_layers()) {
-    if (layer->HasValidTilePriorities())
-      layers->push_back(layer);
-  }
-}
-
 scoped_ptr<RasterTilePriorityQueue> LayerTreeHostImpl::BuildRasterQueue(
     TreePriority tree_priority,
     RasterTilePriorityQueue::Type type) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildRasterQueue");
 
-  std::vector<PictureLayerImpl*> active_layers;
-  std::vector<PictureLayerImpl*> pending_layers;
-  GetValidTilePrioritiesPictureLayerImpls(active_tree_.get(), &active_layers);
-  GetValidTilePrioritiesPictureLayerImpls(pending_tree_.get(), &pending_layers);
-  return RasterTilePriorityQueue::Create(active_layers, pending_layers,
+  return RasterTilePriorityQueue::Create(active_tree_->picture_layers(),
+                                         pending_tree_
+                                             ? pending_tree_->picture_layers()
+                                             : std::vector<PictureLayerImpl*>(),
                                          tree_priority, type);
 }
 

@@ -497,10 +497,6 @@ class CC_EXPORT LayerTreeHostImpl
   void InsertSwapPromiseMonitor(SwapPromiseMonitor* monitor);
   void RemoveSwapPromiseMonitor(SwapPromiseMonitor* monitor);
 
-  void GetValidTilePrioritiesPictureLayerImpls(
-      const LayerTreeImpl* tree,
-      std::vector<PictureLayerImpl*>* layers) const;
-
   // TODO(weiliangc): Replace RequiresHighResToDraw with scheduler waits for
   // ReadyToDraw. crbug.com/469175
   void SetRequiresHighResToDraw() { requires_high_res_to_draw_ = true; }

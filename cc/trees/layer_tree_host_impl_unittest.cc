@@ -7409,6 +7409,44 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
 }
 
+TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
+  host_impl_->CreatePendingTree();
+
+  Region empty_invalidation;
+  scoped_refptr<RasterSource> pile_with_tiles(
+      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
+          gfx::Size(10, 10)));
+
+  scoped_ptr<FakePictureLayerImpl> layer =
+      FakePictureLayerImpl::Create(host_impl_->pending_tree(), 11);
+  layer->SetBounds(gfx::Size(10, 10));
+  layer->set_gpu_raster_max_texture_size(host_impl_->device_viewport_size());
+  layer->SetDrawsContent(true);
+  layer->tilings()->AddTiling(1.0f, pile_with_tiles);
+  layer->UpdateRasterSource(pile_with_tiles, &empty_invalidation, nullptr);
+  layer->tilings()->tiling_at(0)->set_resolution(
+      TileResolution::HIGH_RESOLUTION);
+  layer->tilings()->tiling_at(0)->CreateAllTilesForTesting();
+  layer->tilings()->tiling_at(0)->ComputeTilePriorityRects(
+      gfx::Rect(gfx::Size(10, 10)), 1.f, 1.0, Occlusion());
+  host_impl_->pending_tree()->SetRootLayer(layer.Pass());
+
+  FakePictureLayerImpl* root_layer = static_cast<FakePictureLayerImpl*>(
+      host_impl_->pending_tree()->root_layer());
+
+  root_layer->set_has_valid_tile_priorities(true);
+  scoped_ptr<RasterTilePriorityQueue> non_empty_raster_priority_queue_all =
+      host_impl_->BuildRasterQueue(TreePriority::SAME_PRIORITY_FOR_BOTH_TREES,
+                                   RasterTilePriorityQueue::Type::ALL);
+  EXPECT_FALSE(non_empty_raster_priority_queue_all->IsEmpty());
+
+  root_layer->set_has_valid_tile_priorities(false);
+  scoped_ptr<RasterTilePriorityQueue> empty_raster_priority_queue_all =
+      host_impl_->BuildRasterQueue(TreePriority::SAME_PRIORITY_FOR_BOTH_TREES,
+                                   RasterTilePriorityQueue::Type::ALL);
+  EXPECT_TRUE(empty_raster_priority_queue_all->IsEmpty());
+}
+
 TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
   host_impl_->CreatePendingTree();
   host_impl_->ActivateSyncTree();

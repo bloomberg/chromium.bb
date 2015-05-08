@@ -14,6 +14,9 @@ void AppendTilingSetRequiredQueues(
     const std::vector<PictureLayerImpl*>& layers,
     ScopedPtrVector<TilingSetRasterQueueRequired>* queues) {
   for (auto* layer : layers) {
+    if (!layer->HasValidTilePriorities())
+      continue;
+
     scoped_ptr<TilingSetRasterQueueRequired> tiling_set_queue(
         new TilingSetRasterQueueRequired(
             layer->picture_layer_tiling_set(),
@@ -45,6 +48,9 @@ void RasterTilePriorityQueueRequired::Build(
 void RasterTilePriorityQueueRequired::BuildRequiredForDraw(
     const std::vector<PictureLayerImpl*>& active_layers) {
   for (const auto& layer : active_layers) {
+    if (!layer->HasValidTilePriorities())
+      continue;
+
     scoped_ptr<TilingSetRasterQueueRequired> tiling_set_queue(
         new TilingSetRasterQueueRequired(layer->picture_layer_tiling_set(),
                                          Type::REQUIRED_FOR_DRAW));

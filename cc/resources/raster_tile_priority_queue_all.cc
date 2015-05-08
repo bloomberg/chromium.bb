@@ -58,6 +58,9 @@ void CreateTilingSetRasterQueues(
   DCHECK(queues->empty());
 
   for (auto* layer : layers) {
+    if (!layer->HasValidTilePriorities())
+      continue;
+
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
     bool prioritize_low_res = tree_priority == SMOOTHNESS_TAKES_PRIORITY;
     scoped_ptr<TilingSetRasterQueueAll> tiling_set_queue = make_scoped_ptr(
