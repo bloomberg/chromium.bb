@@ -69,7 +69,7 @@ struct input_method {
 	struct wl_listener destroy_listener;
 
 	struct weston_seat *seat;
-	struct text_input *model;
+	struct text_input *input;
 
 	struct wl_list link;
 
@@ -85,7 +85,7 @@ struct input_method {
 struct input_method_context {
 	struct wl_resource *resource;
 
-	struct text_input *model;
+	struct text_input *input;
 	struct input_method *input_method;
 
 	struct wl_resource *keyboard;
@@ -109,7 +109,7 @@ struct text_backend {
 };
 
 static void
-input_method_context_create(struct text_input *model,
+input_method_context_create(struct text_input *input,
 			    struct input_method *input_method);
 static void
 input_method_context_end_keyboard_grab(struct input_method_context *context);
@@ -120,7 +120,7 @@ input_method_init_seat(struct weston_seat *seat);
 static void
 deactivate_input_method(struct input_method *input_method)
 {
-	struct text_input *text_input = input_method->model;
+	struct text_input *text_input = input_method->input;
 	struct weston_compositor *ec = text_input->ec;
 
 	if (input_method->context && input_method->input_method_binding) {
@@ -130,7 +130,7 @@ deactivate_input_method(struct input_method *input_method)
 	}
 
 	wl_list_remove(&input_method->link);
-	input_method->model = NULL;
+	input_method->input = NULL;
 	input_method->context = NULL;
 
 	if (wl_list_empty(&text_input->input_methods) &&
@@ -186,13 +186,13 @@ text_input_activate(struct wl_client *client,
 	struct weston_compositor *ec = text_input->ec;
 	struct text_input *current;
 
-	if (input_method->model == text_input)
+	if (input_method->input == text_input)
 		return;
 
-	if (input_method->model)
+	if (input_method->input)
 		deactivate_input_method(input_method);
 
-	input_method->model = text_input;
+	input_method->input = text_input;
 	wl_list_insert(&text_input->input_methods, &input_method->link);
 	input_method_init_seat(weston_seat);
 
@@ -224,7 +224,7 @@ text_input_deactivate(struct wl_client *client,
 {
 	struct weston_seat *weston_seat = wl_resource_get_user_data(seat);
 
-	if (weston_seat->input_method->model)
+	if (weston_seat->input_method->input)
 		deactivate_input_method(weston_seat->input_method);
 }
 
@@ -462,8 +462,8 @@ input_method_context_commit_string(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_commit_string(context->model->resource,
+	if (context->input)
+		wl_text_input_send_commit_string(context->input->resource,
 						 serial, text);
 }
 
@@ -477,8 +477,8 @@ input_method_context_preedit_string(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_preedit_string(context->model->resource,
+	if (context->input)
+		wl_text_input_send_preedit_string(context->input->resource,
 						  serial, text, commit);
 }
 
@@ -492,8 +492,8 @@ input_method_context_preedit_styling(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_preedit_styling(context->model->resource,
+	if (context->input)
+		wl_text_input_send_preedit_styling(context->input->resource,
 						   index, length, style);
 }
 
@@ -505,8 +505,8 @@ input_method_context_preedit_cursor(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_preedit_cursor(context->model->resource,
+	if (context->input)
+		wl_text_input_send_preedit_cursor(context->input->resource,
 						  cursor);
 }
 
@@ -519,8 +519,8 @@ input_method_context_delete_surrounding_text(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_delete_surrounding_text(context->model->resource,
+	if (context->input)
+		wl_text_input_send_delete_surrounding_text(context->input->resource,
 							   index, length);
 }
 
@@ -533,8 +533,8 @@ input_method_context_cursor_position(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_cursor_position(context->model->resource,
+	if (context->input)
+		wl_text_input_send_cursor_position(context->input->resource,
 						   index, anchor);
 }
 
@@ -546,8 +546,8 @@ input_method_context_modifiers_map(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_modifiers_map(context->model->resource, map);
+	if (context->input)
+		wl_text_input_send_modifiers_map(context->input->resource, map);
 }
 
 static void
@@ -562,8 +562,8 @@ input_method_context_keysym(struct wl_client *client,
 	struct input_method_context *context =
 		wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_keysym(context->model->resource,
+	if (context->input)
+		wl_text_input_send_keysym(context->input->resource,
 					  serial, time, sym, state, modifiers);
 }
 
@@ -692,8 +692,8 @@ input_method_context_language(struct wl_client *client,
 {
 	struct input_method_context *context = wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_language(context->model->resource,
+	if (context->input)
+		wl_text_input_send_language(context->input->resource,
 					    serial, language);
 }
 
@@ -705,8 +705,8 @@ input_method_context_text_direction(struct wl_client *client,
 {
 	struct input_method_context *context = wl_resource_get_user_data(resource);
 
-	if (context->model)
-		wl_text_input_send_text_direction(context->model->resource,
+	if (context->input)
+		wl_text_input_send_text_direction(context->input->resource,
 						  serial, direction);
 }
 
@@ -744,7 +744,7 @@ destroy_input_method_context(struct wl_resource *resource)
 }
 
 static void
-input_method_context_create(struct text_input *model,
+input_method_context_create(struct text_input *input,
 			    struct input_method *input_method)
 {
 	struct input_method_context *context;
@@ -765,7 +765,7 @@ input_method_context_create(struct text_input *model,
 				       &input_method_context_implementation,
 				       context, destroy_input_method_context);
 
-	context->model = model;
+	context->input = input;
 	context->input_method = input_method;
 	input_method->context = context;
 
@@ -843,7 +843,7 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 	struct input_method *input_method =
 		container_of(listener, struct input_method, destroy_listener);
 
-	if (input_method->model)
+	if (input_method->input)
 		deactivate_input_method(input_method);
 
 	wl_global_destroy(input_method->input_method_global);
@@ -860,10 +860,10 @@ handle_keyboard_focus(struct wl_listener *listener, void *data)
 		container_of(listener, struct input_method, keyboard_focus_listener);
 	struct weston_surface *surface = keyboard->focus;
 
-	if (!input_method->model)
+	if (!input_method->input)
 		return;
 
-	if (!surface || input_method->model->surface != surface)
+	if (!surface || input_method->input->surface != surface)
 		deactivate_input_method(input_method);
 }
 
@@ -948,7 +948,7 @@ handle_seat_created(struct wl_listener *listener,
 		return;
 
 	input_method->seat = seat;
-	input_method->model = NULL;
+	input_method->input = NULL;
 	input_method->focus_listener_initialized = 0;
 	input_method->context = NULL;
 	input_method->text_backend = text_backend;

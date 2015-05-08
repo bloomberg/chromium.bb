@@ -28,9 +28,9 @@
 
   <interface name="wl_input_method_context" version="1">
     <description summary="input method context">
-      Corresponds to a text model on input method side. An input method context
-      is created on text model activation on the input method side. It allows to
-      receive information about the text model from the application via events.
+      Corresponds to a text input on input method side. An input method context
+      is created on text input activation on the input method side. It allows to
+      receive information about the text input from the application via events.
       Input method contexts do not keep state after deactivation and should be
       destroyed after deactivation is handled.
 
@@ -220,18 +220,18 @@
       An input method object is responsible to compose text in response to
       input from hardware or virtual keyboards. There is one input method
       object per seat. On activate there is a new input method context object
-      created which allows the input method to communicate with the text model.
+      created which allows the input method to communicate with the text input.
     </description>
     <event name="activate">
       <description summary="activate event">
-        A text model was activated. Creates an input method context object
-        which allows communication with the text model.
+        A text input was activated. Creates an input method context object
+        which allows communication with the text input.
       </description>
       <arg name="id" type="new_id" interface="wl_input_method_context"/>
     </event>
     <event name="deactivate">
       <description summary="deactivate event">
-        The text model corresponding to the context argument was deactivated.
+        The text input corresponding to the context argument was deactivated.
         The input method context should be destroyed after deactivation is
         handled.
       </description>
@@ -257,7 +257,7 @@
 
     <request name="set_toplevel">
       <description summary="set the surface type as a keyboard">
-	A keyboard surface is only shown, when a text model is active
+        A keyboard surface is only shown when a text input is active.
       </description>
       <arg name="output" type="object" interface="wl_output"/>
       <arg name="position" type="uint"/>
@@ -266,7 +266,7 @@
     <request name="set_overlay_panel">
       <description summary="set the surface type as an overlay panel">
         An overlay panel is shown near the input cursor above the application
-        window when a text model is active.
+        window when a text input is active.
       </description>
     </request>
   </interface>
