@@ -85,4 +85,5 @@ class NoDevicesError(base_error.BaseError):
   """Exception for having no devices attached."""
 
   def __init__(self):
-    super(NoDevicesError, self).__init__('No devices attached.')
+    super(NoDevicesError, self).__init__(
+        'No devices attached.', is_infra_error=True)
