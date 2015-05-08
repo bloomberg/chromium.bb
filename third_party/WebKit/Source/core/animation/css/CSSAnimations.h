@@ -31,7 +31,7 @@
 #ifndef CSSAnimations_h
 #define CSSAnimations_h
 
-#include "core/animation/InertAnimation.h"
+#include "core/animation/InertEffect.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSAnimationUpdate.h"

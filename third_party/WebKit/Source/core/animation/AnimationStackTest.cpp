@@ -56,11 +56,11 @@ protected:
         return AnimatableValueKeyframeEffectModel::create(keyframes);
     }
 
-    PassRefPtrWillBeRawPtr<InertAnimation> makeInertAnimation(PassRefPtrWillBeRawPtr<EffectModel> effect)
+    PassRefPtrWillBeRawPtr<InertEffect> makeInertEffect(PassRefPtrWillBeRawPtr<EffectModel> effect)
     {
         Timing timing;
         timing.fillMode = Timing::FillModeBoth;
-        return InertAnimation::create(effect, timing, false, 0);
+        return InertEffect::create(effect, timing, false, 0);
     }
 
     PassRefPtrWillBeRawPtr<KeyframeEffect> makeKeyframeEffect(PassRefPtrWillBeRawPtr<EffectModel> effect, double duration = 10)
@@ -96,9 +96,9 @@ TEST_F(AnimationAnimationStackTest, NewAnimations)
 {
     play(makeKeyframeEffect(makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 15);
     play(makeKeyframeEffect(makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(2))).get(), 10);
-    WillBeHeapVector<RawPtrWillBeMember<InertAnimation>> newAnimations;
-    RefPtrWillBeRawPtr<InertAnimation> inert1 = makeInertAnimation(makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(3)));
-    RefPtrWillBeRawPtr<InertAnimation> inert2 = makeInertAnimation(makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(4)));
+    WillBeHeapVector<RawPtrWillBeMember<InertEffect>> newAnimations;
+    RefPtrWillBeRawPtr<InertEffect> inert1 = makeInertEffect(makeEffectModel(CSSPropertyFontSize, AnimatableDouble::create(3)));
+    RefPtrWillBeRawPtr<InertEffect> inert2 = makeInertEffect(makeEffectModel(CSSPropertyZIndex, AnimatableDouble::create(4)));
     newAnimations.append(inert1.get());
     newAnimations.append(inert2.get());
     ActiveInterpolationMap result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), &newAnimations, 0, KeyframeEffect::DefaultPriority, 10);

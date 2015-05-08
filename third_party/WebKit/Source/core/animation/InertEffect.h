@@ -28,48 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/animation/InertAnimation.h"
-#include "core/animation/Interpolation.h"
+#ifndef InertEffect_h
+#define InertEffect_h
+
+#include "core/CoreExport.h"
+#include "core/animation/AnimationEffect.h"
+#include "core/animation/EffectModel.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InertAnimation> InertAnimation::create(PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, bool paused, double inheritedTime)
-{
-    return adoptRefWillBeNoop(new InertAnimation(effect, timing, paused, inheritedTime));
-}
+class CORE_EXPORT InertEffect final : public AnimationEffect {
+public:
+    static PassRefPtrWillBeRawPtr<InertEffect> create(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
+    void sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&);
+    EffectModel* model() const { return m_model.get(); }
+    bool paused() const { return m_paused; }
 
-InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, bool paused, double inheritedTime)
-    : AnimationEffect(timing)
-    , m_model(model)
-    , m_paused(paused)
-    , m_inheritedTime(inheritedTime)
-{
-}
+    DECLARE_VIRTUAL_TRACE();
 
-void InertAnimation::sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& result)
-{
-    updateInheritedTime(m_inheritedTime, TimingUpdateOnDemand);
-    if (!isInEffect()) {
-        result.clear();
-        return;
-    }
+protected:
+    virtual void updateChildrenAndEffects() const override { }
+    virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
 
-    double iteration = currentIteration();
-    ASSERT(iteration >= 0);
-    // FIXME: Handle iteration values which overflow int.
-    return m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), result);
-}
-
-double InertAnimation::calculateTimeToEffectChange(bool, double, double) const
-{
-    return std::numeric_limits<double>::infinity();
-}
-
-DEFINE_TRACE(InertAnimation)
-{
-    visitor->trace(m_model);
-    AnimationEffect::trace(visitor);
-}
+private:
+    InertEffect(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
+    RefPtrWillBeMember<EffectModel> m_model;
+    bool m_paused;
+    double m_inheritedTime;
+};
 
 } // namespace blink
+
+#endif

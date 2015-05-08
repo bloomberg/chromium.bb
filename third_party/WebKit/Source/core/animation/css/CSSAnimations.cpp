@@ -261,7 +261,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
 
                     if (keyframesRule != runningAnimation->styleRule || keyframesRule->version() != runningAnimation->styleRuleVersion || runningAnimation->specifiedTiming != specifiedTiming) {
                         ASSERT(!isAnimationStyleChange);
-                        update->updateAnimation(animationName, animation, InertAnimation::create(
+                        update->updateAnimation(animationName, animation, InertEffect::create(
                             createKeyframeEffectModel(resolver, animatingElement, element, &style, parentStyle, animationName, keyframeTimingFunction.get()),
                             timing, isPaused, animation->unlimitedCurrentTimeInternal()), specifiedTiming, keyframesRule);
                     } else if (!isAnimationStyleChange && animation->source() && animation->source()->isAnimation()) {
@@ -283,7 +283,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
             }
 
             ASSERT(!isAnimationStyleChange);
-            update->startAnimation(animationName, InertAnimation::create(
+            update->startAnimation(animationName, InertEffect::create(
                 createKeyframeEffectModel(resolver, animatingElement, element, &style, parentStyle, animationName, keyframeTimingFunction.get()),
                 timing, isPaused, 0), specifiedTiming, keyframesRule);
         }
@@ -357,7 +357,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     }
 
     for (const auto& entry : update->newAnimations()) {
-        const InertAnimation* inertAnimation = entry.effect.get();
+        const InertEffect* inertAnimation = entry.effect.get();
         OwnPtrWillBeRawPtr<AnimationEventDelegate> eventDelegate = adoptPtrWillBeNoop(new AnimationEventDelegate(element, entry.name));
         RefPtrWillBeRawPtr<KeyframeEffect> effect = KeyframeEffect::create(element, inertAnimation->model(), inertAnimation->specifiedTiming(), KeyframeEffect::DefaultPriority, eventDelegate.release());
         effect->setName(inertAnimation->name());
@@ -409,7 +409,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         runningTransition.to = newTransition.to;
 
         CSSPropertyID id = newTransition.id;
-        InertAnimation* inertAnimation = newTransition.effect.get();
+        InertEffect* inertAnimation = newTransition.effect.get();
         OwnPtrWillBeRawPtr<TransitionEventDelegate> eventDelegate = adoptPtrWillBeNoop(new TransitionEventDelegate(element, newTransition.eventId));
 
         RefPtrWillBeRawPtr<EffectModel> model = inertAnimation->model();
@@ -430,7 +430,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             newFrames[0]->clearPropertyValue(id);
             newFrames[1]->clearPropertyValue(id);
 
-            RefPtrWillBeRawPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->model(), oldAnimation->specifiedTiming(), false, inheritedTime);
+            RefPtrWillBeRawPtr<InertEffect> inertAnimationForSampling = InertEffect::create(oldAnimation->model(), oldAnimation->specifiedTiming(), false, inheritedTime);
             OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> sample = nullptr;
             inertAnimationForSampling->sample(sample);
             if (sample && sample->size() == 1) {
@@ -508,7 +508,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, CSSPr
     keyframes.append(endKeyframe);
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> model = AnimatableValueKeyframeEffectModel::create(keyframes);
-    update->startTransition(id, eventId, from.get(), to.get(), InertAnimation::create(model, timing, false, 0));
+    update->startTransition(id, eventId, from.get(), to.get(), InertEffect::create(model, timing, false, 0));
     ASSERT(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
 }
 
@@ -612,11 +612,11 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
         return;
     }
 
-    WillBeHeapVector<RawPtrWillBeMember<InertAnimation>> newEffects;
+    WillBeHeapVector<RawPtrWillBeMember<InertEffect>> newEffects;
     for (const auto& newAnimation : update->newAnimations())
         newEffects.append(newAnimation.effect.get());
     for (const auto& updatedAnimation : update->animationsWithUpdates())
-        newEffects.append(updatedAnimation.effect.get()); // Animations with updates use a temporary InertAnimation for the current frame.
+        newEffects.append(updatedAnimation.effect.get()); // Animations with updates use a temporary InertEffect for the current frame.
 
     ActiveInterpolationMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newEffects, &update->suppressedAnimationAnimations(), KeyframeEffect::DefaultPriority, timelineCurrentTime));
     update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
@@ -631,7 +631,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
     if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
         activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, KeyframeEffect::TransitionPriority, timelineCurrentTime);
     } else {
-        WillBeHeapVector<RawPtrWillBeMember<InertAnimation>> newTransitions;
+        WillBeHeapVector<RawPtrWillBeMember<InertEffect>> newTransitions;
         for (const auto& entry : update->newTransitions())
             newTransitions.append(entry.value.effect.get());
 

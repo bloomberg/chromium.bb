@@ -28,36 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InertAnimation_h
-#define InertAnimation_h
-
-#include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/EffectModel.h"
-#include "wtf/RefPtr.h"
+#include "config.h"
+#include "core/animation/InertEffect.h"
+#include "core/animation/Interpolation.h"
 
 namespace blink {
 
-class CORE_EXPORT InertAnimation final : public AnimationEffect {
-public:
-    static PassRefPtrWillBeRawPtr<InertAnimation> create(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
-    void sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>&);
-    EffectModel* model() const { return m_model.get(); }
-    bool paused() const { return m_paused; }
+PassRefPtrWillBeRawPtr<InertEffect> InertEffect::create(PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, bool paused, double inheritedTime)
+{
+    return adoptRefWillBeNoop(new InertEffect(effect, timing, paused, inheritedTime));
+}
 
-    DECLARE_VIRTUAL_TRACE();
+InertEffect::InertEffect(PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, bool paused, double inheritedTime)
+    : AnimationEffect(timing)
+    , m_model(model)
+    , m_paused(paused)
+    , m_inheritedTime(inheritedTime)
+{
+}
 
-protected:
-    virtual void updateChildrenAndEffects() const override { }
-    virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
+void InertEffect::sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>>& result)
+{
+    updateInheritedTime(m_inheritedTime, TimingUpdateOnDemand);
+    if (!isInEffect()) {
+        result.clear();
+        return;
+    }
 
-private:
-    InertAnimation(PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, bool paused, double inheritedTime);
-    RefPtrWillBeMember<EffectModel> m_model;
-    bool m_paused;
-    double m_inheritedTime;
-};
+    double iteration = currentIteration();
+    ASSERT(iteration >= 0);
+    // FIXME: Handle iteration values which overflow int.
+    return m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), result);
+}
+
+double InertEffect::calculateTimeToEffectChange(bool, double, double) const
+{
+    return std::numeric_limits<double>::infinity();
+}
+
+DEFINE_TRACE(InertEffect)
+{
+    visitor->trace(m_model);
+    AnimationEffect::trace(visitor);
+}
 
 } // namespace blink
-
-#endif

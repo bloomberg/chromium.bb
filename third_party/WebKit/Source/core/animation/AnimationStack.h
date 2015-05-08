@@ -45,7 +45,7 @@ namespace blink {
 
 using ActiveInterpolationMap = WillBeHeapHashMap<PropertyHandle, RefPtrWillBeMember<Interpolation>>;
 
-class InertAnimation;
+class InertEffect;
 
 class CORE_EXPORT AnimationStack {
     DISALLOW_ALLOCATION();
@@ -56,7 +56,7 @@ public:
     void add(PassOwnPtrWillBeRawPtr<SampledEffect> effect) { m_effects.append(effect); }
     bool isEmpty() const { return m_effects.isEmpty(); }
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
-    static ActiveInterpolationMap activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, double timelineCurrentTime);
+    static ActiveInterpolationMap activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertEffect>>* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const Animation>>* suppressedAnimations, KeyframeEffect::Priority, double timelineCurrentTime);
 
     bool getAnimatedBoundingBox(FloatBox&, CSSPropertyID) const;
     DECLARE_TRACE();

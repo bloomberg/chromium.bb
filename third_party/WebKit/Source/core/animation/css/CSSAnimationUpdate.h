@@ -19,7 +19,7 @@
 namespace blink {
 
 class Animation;
-class InertAnimation;
+class InertEffect;
 
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
@@ -33,7 +33,7 @@ public:
         {
         }
 
-        NewAnimation(AtomicString name, PassRefPtrWillBeRawPtr<InertAnimation> effect, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+        NewAnimation(AtomicString name, PassRefPtrWillBeRawPtr<InertEffect> effect, Timing timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : name(name)
             , effect(effect)
             , timing(timing)
@@ -49,7 +49,7 @@ public:
         }
 
         AtomicString name;
-        RefPtrWillBeMember<InertAnimation> effect;
+        RefPtrWillBeMember<InertEffect> effect;
         Timing timing;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -63,7 +63,7 @@ public:
         {
         }
 
-        UpdatedAnimation(AtomicString name, Animation* animation, PassRefPtrWillBeRawPtr<InertAnimation> effect, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+        UpdatedAnimation(AtomicString name, Animation* animation, PassRefPtrWillBeRawPtr<InertEffect> effect, Timing specifiedTiming, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
             : name(name)
             , animation(animation)
             , effect(effect)
@@ -82,7 +82,7 @@ public:
 
         AtomicString name;
         RawPtrWillBeMember<Animation> animation;
-        RefPtrWillBeMember<InertAnimation> effect;
+        RefPtrWillBeMember<InertEffect> effect;
         Timing specifiedTiming;
         RefPtrWillBeMember<StyleRuleKeyframes> styleRule;
         unsigned styleRuleVersion;
@@ -130,7 +130,7 @@ public:
         CompositableStyleSnapshot snapshot;
     };
 
-    void startAnimation(const AtomicString& animationName, PassRefPtrWillBeRawPtr<InertAnimation> effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
+    void startAnimation(const AtomicString& animationName, PassRefPtrWillBeRawPtr<InertEffect> effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         effect->setName(animationName);
         m_newAnimations.append(NewAnimation(animationName, effect, timing, styleRule));
@@ -146,7 +146,7 @@ public:
     {
         m_animationsWithPauseToggled.append(name);
     }
-    void updateAnimation(const AtomicString& name, Animation* animation, PassRefPtrWillBeRawPtr<InertAnimation> effect, const Timing& specifiedTiming,
+    void updateAnimation(const AtomicString& name, Animation* animation, PassRefPtrWillBeRawPtr<InertEffect> effect, const Timing& specifiedTiming,
         PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         m_animationsWithUpdates.append(UpdatedAnimation(name, animation, effect, specifiedTiming, styleRule));
@@ -168,7 +168,7 @@ public:
         m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(animation, model, snapshot));
     }
 
-    void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertAnimation> effect)
+    void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertEffect> effect)
     {
         effect->setName(getPropertyName(id));
         NewTransition newTransition;
@@ -204,7 +204,7 @@ public:
         CSSPropertyID eventId;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
-        RefPtrWillBeMember<InertAnimation> effect;
+        RefPtrWillBeMember<InertEffect> effect;
     };
     using NewTransitionMap = WillBeHeapHashMap<CSSPropertyID, NewTransition>;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
