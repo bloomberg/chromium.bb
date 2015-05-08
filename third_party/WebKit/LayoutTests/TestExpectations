@@ -240,8 +240,6 @@ crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-020.html [ Failure ]
 
 # Requires subpixel precision for offset/client/scroll properties
-crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
-crbug.com/360889 virtual/slimmingpaint/fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Skip ]
 crbug.com/360889 crbug.com/399417 media/video-scales-in-media-document.html [ Failure Crash ]
 crbug.com/360889 crbug.com/399417 virtual/slimmingpaint/media/video-scales-in-media-document.html [ Skip ]
 crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Pass Failure ]
