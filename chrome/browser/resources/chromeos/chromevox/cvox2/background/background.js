@@ -275,8 +275,12 @@ Background.prototype = {
           current = cursors.Range.fromNode(node);
         break;
       case 'doDefault':
-        if (this.currentRange_)
-          this.currentRange_.getStart().getNode().doDefault();
+        if (this.currentRange_) {
+          var actionNode = this.currentRange_.getStart().getNode();
+          if (actionNode.role == chrome.automation.RoleType.inlineTextBox)
+            actionNode = actionNode.parent;
+          actionNode.doDefault();
+        }
         break;
       case 'continuousRead':
         global.isReadingContinuously = true;
