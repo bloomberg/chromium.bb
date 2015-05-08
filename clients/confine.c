@@ -44,6 +44,11 @@
 #include "shared/helpers.h"
 #include "shared/xalloc.h"
 
+#define NUM_COMPLEX_REGION_RECTS 9
+
+static int32_t option_complex_confine_region;
+static int32_t option_help;
+
 struct confine {
 	struct display *display;
 	struct window *window;
@@ -63,6 +68,10 @@ struct confine {
 	struct task cursor_timeout_task;
 
 	bool pointer_confined;
+
+	bool complex_confine_region_enabled;
+	bool complex_confine_region_dirty;
+	struct rectangle complex_confine_region[NUM_COMPLEX_REGION_RECTS];
 };
 
 static void
@@ -141,6 +150,97 @@ draw_line(struct confine *confine, cairo_t *cr,
 }
 
 static void
+calculate_complex_confine_region(struct confine *confine)
+{
+	struct rectangle allocation;
+	int32_t x, y, w, h;
+	struct rectangle *rs = confine->complex_confine_region;
+
+	if (!confine->complex_confine_region_dirty)
+		return;
+
+	widget_get_allocation(confine->widget, &allocation);
+	x = allocation.x;
+	y = allocation.y;
+	w = allocation.width;
+	h = allocation.height;
+
+	/*
+	 * The code below constructs a region made up of rectangles that
+	 * is then used to set up both an illustrative shaded region in the
+	 * widget and a confine region used when confining the pointer.
+	 */
+
+	rs[0].x = x + (int)round(w * 0.05);
+	rs[0].y = y + (int)round(h * 0.15);
+	rs[0].width = (int)round(w * 0.35);
+	rs[0].height = (int)round(h * 0.7);
+
+	rs[1].x = rs[0].x + rs[0].width;
+	rs[1].y = y + (int)round(h * 0.45);
+	rs[1].width = (int)round(w * 0.09);
+	rs[1].height = (int)round(h * 0.1);
+
+	rs[2].x = rs[1].x + rs[1].width;
+	rs[2].y = y + (int)round(h * 0.48);
+	rs[2].width = (int)round(w * 0.02);
+	rs[2].height = (int)round(h * 0.04);
+
+	rs[3].x = rs[2].x + rs[2].width;
+	rs[3].y = y + (int)round(h * 0.45);
+	rs[3].width = (int)round(w * 0.09);
+	rs[3].height = (int)round(h * 0.1);
+
+	rs[4].x = rs[3].x + rs[3].width;
+	rs[4].y = y + (int)round(h * 0.15);
+	rs[4].width = (int)round(w * 0.35);
+	rs[4].height = (int)round(h * 0.7);
+
+	rs[5].x = x + (int)round(w * 0.05);
+	rs[5].y = y + (int)round(h * 0.05);
+	rs[5].width = rs[0].width + rs[1].width + rs[2].width +
+		rs[3].width + rs[4].width;
+	rs[5].height = (int)round(h * 0.10);
+
+	rs[6].x = x + (int)round(w * 0.1);
+	rs[6].y = rs[4].y + rs[4].height + (int)round(h * 0.02);
+	rs[6].width = (int)round(w * 0.8);
+	rs[6].height = (int)round(h * 0.03);
+
+	rs[7].x = x + (int)round(w * 0.05);
+	rs[7].y = rs[6].y + rs[6].height;
+	rs[7].width = (int)round(w * 0.9);
+	rs[7].height = (int)round(h * 0.03);
+
+	rs[8].x = x + (int)round(w * 0.1);
+	rs[8].y = rs[7].y + rs[7].height;
+	rs[8].width = (int)round(w * 0.8);
+	rs[8].height = (int)round(h * 0.03);
+
+	confine->complex_confine_region_dirty = false;
+}
+
+static void
+draw_complex_confine_region_mask(struct confine *confine, cairo_t *cr)
+{
+	int i;
+
+	calculate_complex_confine_region(confine);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+	for (i = 0; i < NUM_COMPLEX_REGION_RECTS; i++) {
+		cairo_rectangle(cr,
+				confine->complex_confine_region[i].x,
+				confine->complex_confine_region[i].y,
+				confine->complex_confine_region[i].width,
+				confine->complex_confine_region[i].height);
+		cairo_set_source_rgba(cr, 0.14, 0.14, 0.14, 0.9);
+		cairo_fill(cr);
+	}
+}
+
+static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct confine *confine = data;
@@ -161,6 +261,10 @@ redraw_handler(struct widget *widget, void *data)
 			allocation.height);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_fill(cr);
+
+	if (confine->complex_confine_region_enabled) {
+		draw_complex_confine_region_mask(confine, cr);
+	}
 
 	draw_line(confine, cr, &allocation);
 
@@ -205,6 +309,14 @@ toggle_pointer_confine(struct confine *confine, struct input *input)
 {
 	if (confine->pointer_confined) {
 		window_unconfine_pointer(confine->window);
+	} else if (confine->complex_confine_region_enabled) {
+		calculate_complex_confine_region(confine);
+		window_confine_pointer_to_rectangles(
+				confine->window,
+				input,
+				confine->complex_confine_region,
+				NUM_COMPLEX_REGION_RECTS);
+
 	} else {
 		window_confine_pointer_to_widget(confine->window,
 						 confine->widget,
@@ -266,6 +378,9 @@ resize_handler(struct widget *widget,
 	struct confine *confine = data;
 
 	confine->reset = 1;
+
+	if (confine->complex_confine_region_enabled)
+		confine->complex_confine_region_dirty = true;
 }
 
 static void
@@ -356,11 +471,30 @@ confine_destroy(struct confine *confine)
 	free(confine);
 }
 
+static const struct weston_option confine_options[] = {
+	{ WESTON_OPTION_BOOLEAN, "complex-confine-region", 0, &option_complex_confine_region },
+	{ WESTON_OPTION_BOOLEAN, "help", 0, &option_help },
+};
+
+static void
+print_help(const char *argv0)
+{
+	printf("Usage: %s [--complex-confine-region]\n", argv0);
+}
+
 int
 main(int argc, char *argv[])
 {
 	struct display *display;
 	struct confine *confine;
+
+	if (parse_options(confine_options,
+			  ARRAY_LENGTH(confine_options),
+			  &argc, argv) > 1 ||
+	    option_help) {
+		print_help(argv[0]);
+		return 0;
+	}
 
 	display = display_create(&argc, argv);
 	if (display == NULL) {
@@ -369,6 +503,11 @@ main(int argc, char *argv[])
 	}
 
 	confine = confine_create(display);
+
+	if (option_complex_confine_region) {
+		confine->complex_confine_region_dirty = true;
+		confine->complex_confine_region_enabled = true;
+	}
 
 	display_run(display);
 
