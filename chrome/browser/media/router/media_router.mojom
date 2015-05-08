@@ -24,8 +24,6 @@ struct MediaRoute {
   // Human readable description of this route, e.g.
   // "Tab casting".
   string description;
-  // An icon that is associated with this media source.
-  string? icon_url;
   // Specifies that the route is requested locally.
   bool is_local;
 };

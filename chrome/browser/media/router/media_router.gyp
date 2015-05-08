@@ -9,6 +9,7 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)',
+        '<(DEPTH)/third_party/mojo/src',
       ],
       'dependencies': [
         ':media_router_mojo',
@@ -29,6 +30,8 @@
         'media_router_impl.h',
         'media_router_impl_factory.cc',
         'media_router_impl_factory.h',
+        'media_router_type_converters.cc',
+        'media_router_type_converters.h',
         'media_routes_observer.cc',
         'media_routes_observer.h',
         'media_sink.cc',

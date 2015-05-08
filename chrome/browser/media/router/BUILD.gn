@@ -14,8 +14,10 @@ source_set("router") {
 
 source_set("router_core") {
   deps = [
+    ":mojo_bindings",
     "//base",
     "//components/keyed_service/core",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
   ]
   sources = [
@@ -30,6 +32,8 @@ source_set("router_core") {
     "media_router.h",
     "media_router_impl.cc",
     "media_router_impl.h",
+    "media_router_type_converters.cc",
+    "media_router_type_converters.h",
     "media_routes_observer.cc",
     "media_routes_observer.h",
     "media_sink.cc",
@@ -63,9 +67,11 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
   sources = [
     "media_route_unittest.cc",
+    "media_router_type_converters_unittest.cc",
     "media_sink_unittest.cc",
     "media_source_unittest.cc",
     "route_id_manager_unittest.cc",
