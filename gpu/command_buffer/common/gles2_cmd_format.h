@@ -96,12 +96,6 @@ struct SizedResult {
     return sizeof(T) * num_results + sizeof(uint32_t);  // NOLINT
   }
 
-  // Returns the total size in bytes of the SizedResult for a given size of
-  // results.
-  static size_t ComputeSizeFromBytes(size_t size_of_result_in_bytes) {
-    return size_of_result_in_bytes + sizeof(uint32_t);  // NOLINT
-  }
-
   // Returns the maximum number of results for a given buffer size.
   static uint32_t ComputeMaxResults(size_t size_of_buffer) {
     return (size_of_buffer >= sizeof(uint32_t)) ?

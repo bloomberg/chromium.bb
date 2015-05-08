@@ -114,6 +114,7 @@ GL_APICALL void         GL_APIENTRY glGetTransformFeedbackVarying (GLidProgram p
 GL_APICALL GLuint       GL_APIENTRY glGetUniformBlockIndex (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetUniformfv (GLidProgram program, GLintUniformLocation location, GLfloat* params);
 GL_APICALL void         GL_APIENTRY glGetUniformiv (GLidProgram program, GLintUniformLocation location, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetUniformuiv (GLidProgram program, GLintUniformLocation location, GLuint* params);
 GL_APICALL void         GL_APIENTRY glGetUniformIndices (GLidProgram program, GLsizeiNotNegative count, const char* const* names, GLuint* indices);
 GL_APICALL GLint        GL_APIENTRY glGetUniformLocation (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenumVertexAttribute pname, GLfloat* params);

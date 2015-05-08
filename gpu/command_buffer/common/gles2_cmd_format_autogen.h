@@ -5573,6 +5573,61 @@ static_assert(offsetof(GetUniformiv, params_shm_id) == 12,
 static_assert(offsetof(GetUniformiv, params_shm_offset) == 16,
               "offset of GetUniformiv params_shm_offset should be 16");
 
+struct GetUniformuiv {
+  typedef GetUniformuiv ValueType;
+  static const CommandId kCmdId = kGetUniformuiv;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLuint> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            GLint _location,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    SetHeader();
+    program = _program;
+    location = _location;
+    params_shm_id = _params_shm_id;
+    params_shm_offset = _params_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            GLint _location,
+            uint32_t _params_shm_id,
+            uint32_t _params_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_program, _location, _params_shm_id, _params_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  int32_t location;
+  uint32_t params_shm_id;
+  uint32_t params_shm_offset;
+};
+
+static_assert(sizeof(GetUniformuiv) == 20,
+              "size of GetUniformuiv should be 20");
+static_assert(offsetof(GetUniformuiv, header) == 0,
+              "offset of GetUniformuiv header should be 0");
+static_assert(offsetof(GetUniformuiv, program) == 4,
+              "offset of GetUniformuiv program should be 4");
+static_assert(offsetof(GetUniformuiv, location) == 8,
+              "offset of GetUniformuiv location should be 8");
+static_assert(offsetof(GetUniformuiv, params_shm_id) == 12,
+              "offset of GetUniformuiv params_shm_id should be 12");
+static_assert(offsetof(GetUniformuiv, params_shm_offset) == 16,
+              "offset of GetUniformuiv params_shm_offset should be 16");
+
 struct GetUniformIndices {
   typedef GetUniformIndices ValueType;
   static const CommandId kCmdId = kGetUniformIndices;

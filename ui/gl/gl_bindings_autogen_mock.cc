@@ -1532,6 +1532,13 @@ void GL_BINDING_CALL MockGLInterface::Mock_glGetUniformiv(GLuint program,
   interface_->GetUniformiv(program, location, params);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glGetUniformuiv(GLuint program,
+                                                           GLint location,
+                                                           GLuint* params) {
+  MakeFunctionUnique("glGetUniformuiv");
+  interface_->GetUniformuiv(program, location, params);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glGetVertexAttribPointerv(GLuint index,
                                                 GLenum pname,
@@ -2985,6 +2992,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glGetUniformfv);
   if (strcmp(name, "glGetUniformiv") == 0)
     return reinterpret_cast<void*>(Mock_glGetUniformiv);
+  if (strcmp(name, "glGetUniformuiv") == 0)
+    return reinterpret_cast<void*>(Mock_glGetUniformuiv);
   if (strcmp(name, "glGetVertexAttribPointerv") == 0)
     return reinterpret_cast<void*>(Mock_glGetVertexAttribPointerv);
   if (strcmp(name, "glGetVertexAttribfv") == 0)

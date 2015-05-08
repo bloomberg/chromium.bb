@@ -421,6 +421,7 @@ void glGetUniformIndicesFn(GLuint program,
                            GLuint* uniformIndices) override;
 void glGetUniformivFn(GLuint program, GLint location, GLint* params) override;
 GLint glGetUniformLocationFn(GLuint program, const char* name) override;
+void glGetUniformuivFn(GLuint program, GLint location, GLuint* params) override;
 void glGetVertexAttribfvFn(GLuint index,
                            GLenum pname,
                            GLfloat* params) override;

@@ -301,6 +301,7 @@ virtual void GetTransformFeedbackVarying(GLuint program,
 virtual GLuint GetUniformBlockIndex(GLuint program, const char* name) = 0;
 virtual void GetUniformfv(GLuint program, GLint location, GLfloat* params) = 0;
 virtual void GetUniformiv(GLuint program, GLint location, GLint* params) = 0;
+virtual void GetUniformuiv(GLuint program, GLint location, GLuint* params) = 0;
 virtual void GetUniformIndices(GLuint program,
                                GLsizei count,
                                const char* const* names,

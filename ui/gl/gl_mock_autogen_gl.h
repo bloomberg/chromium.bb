@@ -133,7 +133,7 @@ MOCK_METHOD9(CompressedTexSubImage2D,
                   GLsizei imageSize,
                   const void* data));
 // TODO(zmo): crbug.com/456340
-// glCompressedTexSubImage3D cannot be mocked because it has 11 args
+// glCompressedTexSubImage3D cannot be mocked because it has 11 args.
 MOCK_METHOD5(CopyBufferSubData,
              void(GLenum readTarget,
                   GLenum writeTarget,
@@ -409,6 +409,8 @@ MOCK_METHOD4(GetUniformIndices,
                   GLuint* uniformIndices));
 MOCK_METHOD3(GetUniformiv, void(GLuint program, GLint location, GLint* params));
 MOCK_METHOD2(GetUniformLocation, GLint(GLuint program, const char* name));
+MOCK_METHOD3(GetUniformuiv,
+             void(GLuint program, GLint location, GLuint* params));
 MOCK_METHOD3(GetVertexAttribfv,
              void(GLuint index, GLenum pname, GLfloat* params));
 MOCK_METHOD3(GetVertexAttribiv,
@@ -589,7 +591,7 @@ MOCK_METHOD9(TexSubImage2D,
                   GLenum type,
                   const void* pixels));
 // TODO(zmo): crbug.com/456340
-// glTexSubImage3D cannot be mocked because it has 11 args
+// glTexSubImage3D cannot be mocked because it has 11 args.
 MOCK_METHOD4(TransformFeedbackVaryings,
              void(GLuint program,
                   GLsizei count,

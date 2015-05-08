@@ -508,6 +508,9 @@ typedef void(GL_BINDING_CALL* glGetUniformivProc)(GLuint program,
                                                   GLint* params);
 typedef GLint(GL_BINDING_CALL* glGetUniformLocationProc)(GLuint program,
                                                          const char* name);
+typedef void(GL_BINDING_CALL* glGetUniformuivProc)(GLuint program,
+                                                   GLint location,
+                                                   GLuint* params);
 typedef void(GL_BINDING_CALL* glGetVertexAttribfvProc)(GLuint index,
                                                        GLenum pname,
                                                        GLfloat* params);
@@ -1110,6 +1113,7 @@ struct ProcsGL {
   glGetUniformIndicesProc glGetUniformIndicesFn;
   glGetUniformivProc glGetUniformivFn;
   glGetUniformLocationProc glGetUniformLocationFn;
+  glGetUniformuivProc glGetUniformuivFn;
   glGetVertexAttribfvProc glGetVertexAttribfvFn;
   glGetVertexAttribivProc glGetVertexAttribivFn;
   glGetVertexAttribPointervProc glGetVertexAttribPointervFn;
@@ -1677,6 +1681,9 @@ class GL_EXPORT GLApi {
                                 GLint location,
                                 GLint* params) = 0;
   virtual GLint glGetUniformLocationFn(GLuint program, const char* name) = 0;
+  virtual void glGetUniformuivFn(GLuint program,
+                                 GLint location,
+                                 GLuint* params) = 0;
   virtual void glGetVertexAttribfvFn(GLuint index,
                                      GLenum pname,
                                      GLfloat* params) = 0;
@@ -2239,6 +2246,7 @@ class GL_EXPORT GLApi {
 #define glGetUniformIndices ::gfx::g_current_gl_context->glGetUniformIndicesFn
 #define glGetUniformiv ::gfx::g_current_gl_context->glGetUniformivFn
 #define glGetUniformLocation ::gfx::g_current_gl_context->glGetUniformLocationFn
+#define glGetUniformuiv ::gfx::g_current_gl_context->glGetUniformuivFn
 #define glGetVertexAttribfv ::gfx::g_current_gl_context->glGetVertexAttribfvFn
 #define glGetVertexAttribiv ::gfx::g_current_gl_context->glGetVertexAttribivFn
 #define glGetVertexAttribPointerv \

@@ -2708,6 +2708,12 @@ _FUNCTION_INFO = {
     'data_transfer_methods': ['shm'],
     'result': ['SizedResult<GLint>'],
   },
+  'GetUniformuiv': {
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
+    'result': ['SizedResult<GLuint>'],
+    'unsafe': True,
+  },
   'GetUniformIndices': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],

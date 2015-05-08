@@ -554,6 +554,8 @@ Mock_glGetUniformfv(GLuint program, GLint location, GLfloat* params);
 static void GL_BINDING_CALL
 Mock_glGetUniformiv(GLuint program, GLint location, GLint* params);
 static void GL_BINDING_CALL
+Mock_glGetUniformuiv(GLuint program, GLint location, GLuint* params);
+static void GL_BINDING_CALL
 Mock_glGetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer);
 static void GL_BINDING_CALL
 Mock_glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params);

@@ -401,6 +401,8 @@ void GetUniformfv(GLuint program, GLint location, GLfloat* params) override;
 
 void GetUniformiv(GLuint program, GLint location, GLint* params) override;
 
+void GetUniformuiv(GLuint program, GLint location, GLuint* params) override;
+
 void GetUniformIndices(GLuint program,
                        GLsizei count,
                        const char* const* names,

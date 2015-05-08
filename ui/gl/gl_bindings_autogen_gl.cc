@@ -246,6 +246,7 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glGetUniformivProc>(GetGLProcAddress("glGetUniformiv"));
   fn.glGetUniformLocationFn = reinterpret_cast<glGetUniformLocationProc>(
       GetGLProcAddress("glGetUniformLocation"));
+  fn.glGetUniformuivFn = 0;
   fn.glGetVertexAttribfvFn = reinterpret_cast<glGetVertexAttribfvProc>(
       GetGLProcAddress("glGetVertexAttribfv"));
   fn.glGetVertexAttribivFn = reinterpret_cast<glGetVertexAttribivProc>(
@@ -1433,6 +1434,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGetUniformIndicesFn = reinterpret_cast<glGetUniformIndicesProc>(
         GetGLProcAddress("glGetUniformIndices"));
     DCHECK(fn.glGetUniformIndicesFn);
+  }
+
+  debug_fn.glGetUniformuivFn = 0;
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+    fn.glGetUniformuivFn = reinterpret_cast<glGetUniformuivProc>(
+        GetGLProcAddress("glGetUniformuiv"));
+    DCHECK(fn.glGetUniformuivFn);
   }
 
   debug_fn.glInsertEventMarkerEXTFn = 0;
@@ -3516,6 +3524,14 @@ Debug_glGetUniformLocation(GLuint program, const char* name) {
 }
 
 static void GL_BINDING_CALL
+Debug_glGetUniformuiv(GLuint program, GLint location, GLuint* params) {
+  GL_SERVICE_LOG("glGetUniformuiv"
+                 << "(" << program << ", " << location << ", "
+                 << static_cast<const void*>(params) << ")");
+  g_driver_gl.debug_fn.glGetUniformuivFn(program, location, params);
+}
+
+static void GL_BINDING_CALL
 Debug_glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
   GL_SERVICE_LOG("glGetVertexAttribfv"
                  << "(" << index << ", " << GLEnums::GetStringEnum(pname)
@@ -5353,6 +5369,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetUniformLocationFn = fn.glGetUniformLocationFn;
     fn.glGetUniformLocationFn = Debug_glGetUniformLocation;
   }
+  if (!debug_fn.glGetUniformuivFn) {
+    debug_fn.glGetUniformuivFn = fn.glGetUniformuivFn;
+    fn.glGetUniformuivFn = Debug_glGetUniformuiv;
+  }
   if (!debug_fn.glGetVertexAttribfvFn) {
     debug_fn.glGetVertexAttribfvFn = fn.glGetVertexAttribfvFn;
     fn.glGetVertexAttribfvFn = Debug_glGetVertexAttribfv;
@@ -6808,6 +6828,12 @@ void GLApiBase::glGetUniformivFn(GLuint program,
 
 GLint GLApiBase::glGetUniformLocationFn(GLuint program, const char* name) {
   return driver_->fn.glGetUniformLocationFn(program, name);
+}
+
+void GLApiBase::glGetUniformuivFn(GLuint program,
+                                  GLint location,
+                                  GLuint* params) {
+  driver_->fn.glGetUniformuivFn(program, location, params);
 }
 
 void GLApiBase::glGetVertexAttribfvFn(GLuint index,
@@ -8643,6 +8669,13 @@ void TraceGLApi::glGetUniformivFn(GLuint program,
 GLint TraceGLApi::glGetUniformLocationFn(GLuint program, const char* name) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetUniformLocation")
   return gl_api_->glGetUniformLocationFn(program, name);
+}
+
+void TraceGLApi::glGetUniformuivFn(GLuint program,
+                                   GLint location,
+                                   GLuint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetUniformuiv")
+  gl_api_->glGetUniformuivFn(program, location, params);
 }
 
 void TraceGLApi::glGetVertexAttribfvFn(GLuint index,
@@ -10773,6 +10806,13 @@ GLint NoContextGLApi::glGetUniformLocationFn(GLuint program, const char* name) {
   LOG(ERROR)
       << "Trying to call glGetUniformLocation() without current GL context";
   return 0;
+}
+
+void NoContextGLApi::glGetUniformuivFn(GLuint program,
+                                       GLint location,
+                                       GLuint* params) {
+  NOTREACHED() << "Trying to call glGetUniformuiv() without current GL context";
+  LOG(ERROR) << "Trying to call glGetUniformuiv() without current GL context";
 }
 
 void NoContextGLApi::glGetVertexAttribfvFn(GLuint index,

@@ -619,6 +619,11 @@ void MojoGLES2Impl::GetUniformiv(GLuint program,
   MojoGLES2MakeCurrent(context_);
   glGetUniformiv(program, location, params);
 }
+void MojoGLES2Impl::GetUniformuiv(GLuint program,
+                                  GLint location,
+                                  GLuint* params) {
+  NOTREACHED() << "Unimplemented GetUniformuiv.";
+}
 void MojoGLES2Impl::GetUniformIndices(GLuint program,
                                       GLsizei count,
                                       const char* const* names,

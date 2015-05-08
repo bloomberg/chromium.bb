@@ -1675,6 +1675,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Validates the program and location for a glGetUniform call and returns
   // a SizeResult setup to receive the result. Returns true if glGetUniform
   // should be called.
+  template <class T>
   bool GetUniformSetup(GLuint program,
                        GLint fake_location,
                        uint32 shm_id,
@@ -1682,7 +1683,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                        error::Error* error,
                        GLint* real_location,
                        GLuint* service_id,
-                       void** result,
+                       SizedResult<T>** result,
                        GLenum* result_type,
                        GLsizei* result_size);
 
@@ -10239,6 +10240,7 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
   return error::kNoError;
 }
 
+template <class T>
 bool GLES2DecoderImpl::GetUniformSetup(GLuint program_id,
                                        GLint fake_location,
                                        uint32 shm_id,
@@ -10246,19 +10248,20 @@ bool GLES2DecoderImpl::GetUniformSetup(GLuint program_id,
                                        error::Error* error,
                                        GLint* real_location,
                                        GLuint* service_id,
-                                       void** result_pointer,
+                                       SizedResult<T>** result_pointer,
                                        GLenum* result_type,
                                        GLsizei* result_size) {
   DCHECK(error);
   DCHECK(service_id);
   DCHECK(result_pointer);
   DCHECK(result_type);
+  DCHECK(result_size);
   DCHECK(real_location);
   *error = error::kNoError;
   // Make sure we have enough room for the result on failure.
-  SizedResult<GLint>* result;
-  result = GetSharedMemoryAs<SizedResult<GLint>*>(
-      shm_id, shm_offset, SizedResult<GLint>::ComputeSize(0));
+  SizedResult<T>* result;
+  result = GetSharedMemoryAs<SizedResult<T>*>(
+      shm_id, shm_offset, SizedResult<T>::ComputeSize(0));
   if (!result) {
     *error = error::kOutOfBounds;
     return false;
@@ -10288,19 +10291,19 @@ bool GLES2DecoderImpl::GetUniformSetup(GLuint program_id,
     return false;
   }
   GLenum type = uniform_info->type;
-  GLsizei size = GLES2Util::GetGLDataTypeSizeForUniforms(type);
-  if (size == 0) {
+  uint32 num_elements = GLES2Util::GetElementCountForUniformType(type);
+  if (num_elements == 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glGetUniform", "unknown type");
     return false;
   }
-  result = GetSharedMemoryAs<SizedResult<GLint>*>(
-      shm_id, shm_offset, SizedResult<GLint>::ComputeSizeFromBytes(size));
+  result = GetSharedMemoryAs<SizedResult<T>*>(
+      shm_id, shm_offset, SizedResult<T>::ComputeSize(num_elements));
   if (!result) {
     *error = error::kOutOfBounds;
     return false;
   }
-  result->size = size;
-  *result_size = size;
+  result->SetNumResults(num_elements);
+  *result_size = num_elements * sizeof(T);
   *result_type = type;
   return true;
 }
@@ -10316,13 +10319,38 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(uint32 immediate_data_size,
   GLsizei result_size;
   GLint real_location = -1;
   Error error;
-  void* result;
-  if (GetUniformSetup(program, fake_location, c.params_shm_id,
-                      c.params_shm_offset, &error, &real_location, &service_id,
-                      &result, &result_type, &result_size)) {
+  cmds::GetUniformiv::Result* result;
+  if (GetUniformSetup<GLint>(program, fake_location, c.params_shm_id,
+                             c.params_shm_offset, &error, &real_location,
+                             &service_id, &result, &result_type,
+                             &result_size)) {
     glGetUniformiv(
-        service_id, real_location,
-        static_cast<cmds::GetUniformiv::Result*>(result)->GetData());
+        service_id, real_location, result->GetData());
+  }
+  return error;
+}
+
+error::Error GLES2DecoderImpl::HandleGetUniformuiv(uint32 immediate_data_size,
+                                                   const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+
+  const gles2::cmds::GetUniformuiv& c =
+      *static_cast<const gles2::cmds::GetUniformuiv*>(cmd_data);
+  GLuint program = c.program;
+  GLint fake_location = c.location;
+  GLuint service_id;
+  GLenum result_type;
+  GLsizei result_size;
+  GLint real_location = -1;
+  Error error;
+  cmds::GetUniformuiv::Result* result;
+  if (GetUniformSetup<GLuint>(program, fake_location, c.params_shm_id,
+                              c.params_shm_offset, &error, &real_location,
+                              &service_id, &result, &result_type,
+                              &result_size)) {
+    glGetUniformuiv(
+        service_id, real_location, result->GetData());
   }
   return error;
 }
@@ -10336,17 +10364,16 @@ error::Error GLES2DecoderImpl::HandleGetUniformfv(uint32 immediate_data_size,
   GLuint service_id;
   GLint real_location = -1;
   Error error;
-  typedef cmds::GetUniformfv::Result Result;
-  Result* result;
+  cmds::GetUniformfv::Result* result;
   GLenum result_type;
   GLsizei result_size;
-  if (GetUniformSetup(program, fake_location, c.params_shm_id,
-                      c.params_shm_offset, &error, &real_location, &service_id,
-                      reinterpret_cast<void**>(&result), &result_type,
-                      &result_size)) {
+  if (GetUniformSetup<GLfloat>(program, fake_location, c.params_shm_id,
+                               c.params_shm_offset, &error, &real_location,
+                               &service_id, &result, &result_type,
+                               &result_size)) {
     if (result_type == GL_BOOL || result_type == GL_BOOL_VEC2 ||
         result_type == GL_BOOL_VEC3 || result_type == GL_BOOL_VEC4) {
-      GLsizei num_values = result_size / sizeof(Result::Type);
+      GLsizei num_values = result_size / sizeof(GLfloat);
       scoped_ptr<GLint[]> temp(new GLint[num_values]);
       glGetUniformiv(service_id, real_location, temp.get());
       GLfloat* dst = result->GetData();

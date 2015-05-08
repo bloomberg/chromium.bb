@@ -219,8 +219,8 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformivSucceeds) {
   EXPECT_CALL(*gl_, GetUniformiv(kServiceProgramId, kUniform2RealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
-            result->size);
+  EXPECT_EQ(GLES2Util::GetElementCountForUniformType(kUniform2Type),
+            static_cast<uint32>(result->GetNumResults()));
 }
 
 TEST_P(GLES2DecoderWithShaderTest, GetUniformivArrayElementSucceeds) {
@@ -236,8 +236,8 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformivArrayElementSucceeds) {
               GetUniformiv(kServiceProgramId, kUniform2ElementRealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
-            result->size);
+  EXPECT_EQ(GLES2Util::GetElementCountForUniformType(kUniform2Type),
+            static_cast<uint32>(result->GetNumResults()));
 }
 
 TEST_P(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
@@ -315,6 +315,121 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformivBadSharedMemoryFails) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 };
 
+TEST_P(GLES2DecoderWithShaderTest, GetUniformuivSucceeds) {
+  GetUniformuiv::Result* result =
+      static_cast<GetUniformuiv::Result*>(shared_memory_address_);
+  result->size = 0;
+  GetUniformuiv cmd;
+  cmd.Init(client_program_id_,
+           kUniform2FakeLocation,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_CALL(*gl_, GetUniformuiv(kServiceProgramId, kUniform2RealLocation, _))
+      .Times(1);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GLES2Util::GetElementCountForUniformType(kUniform2Type),
+            static_cast<uint32>(result->GetNumResults()));
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformuivArrayElementSucceeds) {
+  GetUniformuiv::Result* result =
+      static_cast<GetUniformuiv::Result*>(shared_memory_address_);
+  result->size = 0;
+  GetUniformuiv cmd;
+  cmd.Init(client_program_id_,
+           kUniform2ElementFakeLocation,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_CALL(*gl_,
+              GetUniformuiv(kServiceProgramId, kUniform2ElementRealLocation, _))
+      .Times(1);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GLES2Util::GetElementCountForUniformType(kUniform2Type),
+            static_cast<uint32>(result->GetNumResults()));
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformuivBadProgramFails) {
+  GetUniformuiv::Result* result =
+      static_cast<GetUniformuiv::Result*>(shared_memory_address_);
+  result->size = 0;
+  GetUniformuiv cmd;
+  // non-existant program
+  cmd.Init(kInvalidClientId,
+           kUniform2FakeLocation,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_CALL(*gl_, GetUniformuiv(_, _, _)).Times(0);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0U, result->size);
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+// Valid id that is not a program. The GL spec requires a different error for
+// this case.
+#if GLES2_TEST_SHADER_VS_PROGRAM_IDS
+  result->size = kInitialResult;
+  cmd.Init(client_shader_id_,
+           kUniform2FakeLocation,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0U, result->size);
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+#endif  // GLES2_TEST_SHADER_VS_PROGRAM_IDS
+  // Unlinked program
+  EXPECT_CALL(*gl_, CreateProgram())
+      .Times(1)
+      .WillOnce(Return(kNewServiceId))
+      .RetiresOnSaturation();
+  CreateProgram cmd2;
+  cmd2.Init(kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd2));
+  result->size = kInitialResult;
+  cmd.Init(kNewClientId,
+           kUniform2FakeLocation,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0U, result->size);
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformuivBadLocationFails) {
+  GetUniformuiv::Result* result =
+      static_cast<GetUniformuiv::Result*>(shared_memory_address_);
+  result->size = 0;
+  GetUniformuiv cmd;
+  // invalid location
+  cmd.Init(client_program_id_,
+           kInvalidUniformLocation,
+           kSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_CALL(*gl_, GetUniformuiv(_, _, _)).Times(0);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0U, result->size);
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_P(GLES2DecoderWithShaderTest, GetUniformuivBadSharedMemoryFails) {
+  GetUniformuiv cmd;
+  cmd.Init(client_program_id_,
+           kUniform2FakeLocation,
+           kInvalidSharedMemoryId,
+           kSharedMemoryOffset);
+  EXPECT_CALL(*gl_, GetUniformuiv(_, _, _)).Times(0);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  cmd.Init(client_program_id_,
+           kUniform2FakeLocation,
+           kSharedMemoryId,
+           kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+};
+
 TEST_P(GLES2DecoderWithShaderTest, GetUniformfvSucceeds) {
   GetUniformfv::Result* result =
       static_cast<GetUniformfv::Result*>(shared_memory_address_);
@@ -327,8 +442,8 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformfvSucceeds) {
   EXPECT_CALL(*gl_, GetUniformfv(kServiceProgramId, kUniform2RealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
-            result->size);
+  EXPECT_EQ(GLES2Util::GetElementCountForUniformType(kUniform2Type),
+            static_cast<uint32>(result->GetNumResults()));
 }
 
 TEST_P(GLES2DecoderWithShaderTest, GetUniformfvArrayElementSucceeds) {
@@ -344,8 +459,8 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformfvArrayElementSucceeds) {
               GetUniformfv(kServiceProgramId, kUniform2ElementRealLocation, _))
       .Times(1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GLES2Util::GetGLDataTypeSizeForUniforms(kUniform2Type),
-            result->size);
+  EXPECT_EQ(GLES2Util::GetElementCountForUniformType(kUniform2Type),
+            static_cast<uint32>(result->GetNumResults()));
 }
 
 TEST_P(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
