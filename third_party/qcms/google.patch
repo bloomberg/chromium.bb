@@ -1,5 +1,5 @@
 diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
-index 36b7011..18b286d 100644
+index 36b7011..0deab10 100644
 --- a/third_party/qcms/src/iccread.c
 +++ b/third_party/qcms/src/iccread.c
 @@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
@@ -43,7 +43,7 @@ index 36b7011..18b286d 100644
  
  static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
  {
-@@ -344,6 +355,211 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
+@@ -344,6 +355,215 @@ static struct tag *find_tag(struct tag_index index, uint32_t tag_id)
  	return tag;
  }
  
@@ -77,6 +77,10 @@ index 36b7011..18b286d 100644
 +		return true;
 +	// Only support table data, not equation.
 +	if (vcgt_type != 0)
++		return true;
++	// Limit the table to a sensible size; 10-bit gamma is a reasonable
++	// maximum for hardware correction.
++	if (elements > 1024)
 +		return true;
 +
 +	// Empty table is invalid.
@@ -255,7 +259,7 @@ index 36b7011..18b286d 100644
  #define XYZ_TYPE		0x58595a20 // 'XYZ '
  #define CURVE_TYPE		0x63757276 // 'curv'
  #define PARAMETRIC_CURVE_TYPE	0x70617261 // 'para'
-@@ -402,7 +618,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
+@@ -402,7 +622,7 @@ static struct XYZNumber read_tag_XYZType(struct mem_source *src, struct tag_inde
  // present that are not part of the tag_index.
  static struct curveType *read_curveType(struct mem_source *src, uint32_t offset, uint32_t *len)
  {
@@ -264,7 +268,7 @@ index 36b7011..18b286d 100644
  	struct curveType *curve = NULL;
  	uint32_t type = read_u32(src, offset);
  	uint32_t count;
-@@ -484,19 +700,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
+@@ -484,19 +704,23 @@ static void read_nested_curveType(struct mem_source *src, struct curveType *(*cu
  	uint32_t channel_offset = 0;
  	int i;
  	for (i = 0; i < num_channels; i++) {
@@ -290,7 +294,7 @@ index 36b7011..18b286d 100644
  }
  
  static void mAB_release(struct lutmABType *lut)
-@@ -540,7 +760,7 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
+@@ -540,7 +764,7 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
  	// We require 3in/out channels since we only support RGB->XYZ (or RGB->LAB)
  	// XXX: If we remove this restriction make sure that the number of channels
  	//      is less or equal to the maximum number of mAB curves in qcmsint.h
@@ -299,7 +303,7 @@ index 36b7011..18b286d 100644
  	if (num_in_channels != 3 || num_out_channels != 3)
  		return NULL;
  
-@@ -570,6 +790,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
+@@ -570,6 +794,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
  		// clut_size can not overflow since lg(256^num_in_channels) = 24 bits.
  		for (i = 0; i < num_in_channels; i++) {
  			clut_size *= read_u8(src, clut_offset + i);
@@ -309,7 +313,7 @@ index 36b7011..18b286d 100644
  		}
  	} else {
  		clut_size = 0;
-@@ -590,6 +813,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
+@@ -590,6 +817,9 @@ static struct lutmABType *read_tag_lutmABType(struct mem_source *src, struct tag
  
  	for (i = 0; i < num_in_channels; i++) {
  		lut->num_grid_points[i] = read_u8(src, clut_offset + i);
@@ -319,7 +323,7 @@ index 36b7011..18b286d 100644
  	}
  
  	// Reverse the processing of transformation elements for mBA type.
-@@ -657,7 +883,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -657,7 +887,7 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  	uint16_t num_input_table_entries;
  	uint16_t num_output_table_entries;
  	uint8_t in_chan, grid_points, out_chan;
@@ -328,7 +332,7 @@ index 36b7011..18b286d 100644
  	uint32_t clut_size;
  	size_t entry_size;
  	struct lutType *lut;
-@@ -672,6 +898,10 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -672,6 +902,10 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  	} else if (type == LUT16_TYPE) {
  		num_input_table_entries  = read_u16(src, offset + 48);
  		num_output_table_entries = read_u16(src, offset + 50);
@@ -339,7 +343,7 @@ index 36b7011..18b286d 100644
  		entry_size = 2;
  	} else {
  		assert(0); // the caller checks that this doesn't happen
-@@ -685,15 +915,18 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -685,15 +919,18 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  
  	clut_size = pow(grid_points, in_chan);
  	if (clut_size > MAX_CLUT_SIZE) {
@@ -358,7 +362,7 @@ index 36b7011..18b286d 100644
  		return NULL;
  	}
  
-@@ -704,9 +937,9 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
+@@ -704,9 +941,9 @@ static struct lutType *read_tag_lutType(struct mem_source *src, struct tag_index
  
  	lut->num_input_table_entries  = num_input_table_entries;
  	lut->num_output_table_entries = num_output_table_entries;
@@ -371,7 +375,7 @@ index 36b7011..18b286d 100644
  	lut->e00 = read_s15Fixed16Number(src, offset+12);
  	lut->e01 = read_s15Fixed16Number(src, offset+16);
  	lut->e02 = read_s15Fixed16Number(src, offset+20);
-@@ -979,11 +1212,13 @@ qcms_profile* qcms_profile_sRGB(void)
+@@ -979,11 +1216,13 @@ qcms_profile* qcms_profile_sRGB(void)
  		return NO_MEM_PROFILE;
  
  	profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024);
@@ -386,7 +390,7 @@ index 36b7011..18b286d 100644
  /* qcms_profile_from_memory does not hold a reference to the memory passed in */
  qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  {
-@@ -997,6 +1232,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+@@ -997,6 +1236,9 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	source.size = size;
  	source.valid = true;
  
@@ -396,7 +400,7 @@ index 36b7011..18b286d 100644
  	length = read_u32(src, 0);
  	if (length <= size) {
  		// shrink the area that we can read if appropriate
-@@ -1028,12 +1266,26 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
+@@ -1028,12 +1270,26 @@ qcms_profile* qcms_profile_from_memory(const void *mem, size_t size)
  	if (!src->valid || !index.tags)
  		goto invalid_tag_table;
  
@@ -423,7 +427,7 @@ index 36b7011..18b286d 100644
  	if (profile->class == DISPLAY_DEVICE_PROFILE || profile->class == INPUT_DEVICE_PROFILE ||
              profile->class == OUTPUT_DEVICE_PROFILE  || profile->class == COLOR_SPACE_PROFILE) {
  		if (profile->color_space == RGB_SIGNATURE) {
-@@ -1098,6 +1350,16 @@ invalid_profile:
+@@ -1098,6 +1354,16 @@ invalid_profile:
  	return INVALID_PROFILE;
  }
  
@@ -440,7 +444,7 @@ index 36b7011..18b286d 100644
  qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
  {
  	return profile->rendering_intent;
-@@ -1114,6 +1376,18 @@ static void lut_release(struct lutType *lut)
+@@ -1114,6 +1380,18 @@ static void lut_release(struct lutType *lut)
  	free(lut);
  }
  
@@ -459,7 +463,7 @@ index 36b7011..18b286d 100644
  void qcms_profile_release(qcms_profile *profile)
  {
  	if (profile->output_table_r)
-@@ -1133,6 +1407,9 @@ void qcms_profile_release(qcms_profile *profile)
+@@ -1133,6 +1411,9 @@ void qcms_profile_release(qcms_profile *profile)
  	if (profile->mBA)
  		mAB_release(profile->mBA);
  

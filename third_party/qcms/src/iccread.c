@@ -386,6 +386,10 @@ qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src, struc
 	// Only support table data, not equation.
 	if (vcgt_type != 0)
 		return true;
+	// Limit the table to a sensible size; 10-bit gamma is a reasonable
+	// maximum for hardware correction.
+	if (elements > 1024)
+		return true;
 
 	// Empty table is invalid.
 	if (!elements)

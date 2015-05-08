@@ -65,5 +65,7 @@ google.patch contains the following modifications. Apply with
    - https://code.google.com/p/chromium/issues/detail?id=471749
  - Consolidate loop over channels and elements in VCGT parser
    - https://code.google.com/p/chromium/issues/detail?id=471749
+ - Limit vcgt table to a maximum of 1024 entries
+   - https://code.google.com/p/chromium/issues/detail?id=471749
 To regenerate google.patch:
   git diff b8456f38 src > google.patch
