@@ -40,6 +40,11 @@ class WebUIMojo
     void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                   int world_id) override;
     void DidFinishDocumentLoad() override;
+    // MainFrameObserver is inline owned by WebUIMojo and should not be
+    // destroyed when the main RenderFrame is deleted. Overriding the
+    // OnDestruct method allows this object to remain alive and be cleaned
+    // up as part of WebUIMojo deletion.
+    void OnDestruct() override;
 
    private:
     WebUIMojo* web_ui_mojo_;

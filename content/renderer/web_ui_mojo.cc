@@ -45,6 +45,9 @@ void WebUIMojo::MainFrameObserver::DidFinishDocumentLoad() {
   web_ui_mojo_->OnDidFinishDocumentLoad();
 }
 
+void WebUIMojo::MainFrameObserver::OnDestruct() {
+}
+
 WebUIMojo::WebUIMojo(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<WebUIMojo>(render_view),
