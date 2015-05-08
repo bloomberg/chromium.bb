@@ -15,7 +15,7 @@
 
 namespace blink {
 
-DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type displayItemType, const FloatRect& bounds)
+DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type displayItemType, const FloatRect& cullRect)
     : m_context(context)
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
@@ -43,10 +43,20 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
 
 #ifndef NDEBUG
     // Enable recording to check if any painter is still doing unnecessary painting when we can use cache.
-    context.beginRecording(bounds);
+    context.beginRecording(cullRect);
 #else
     if (!m_canUseCachedDrawing)
-        context.beginRecording(bounds);
+        context.beginRecording(cullRect);
+#endif
+
+#if ENABLE(ASSERT)
+    if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() && !m_canUseCachedDrawing) {
+        // Skia depends on the cull rect containing all of the display item commands. When strict
+        // cull rect clipping is enabled, make this explicit. This allows us to identify potential
+        // incorrect cull rects that might otherwise be masked due to Skia internal optimizations.
+        context.save();
+        context.clipRect(enclosingIntRect(cullRect), NotAntiAliased, SkRegion::kIntersect_Op);
+    }
 #endif
 }
 
@@ -60,6 +70,9 @@ DrawingRecorder::~DrawingRecorder()
         return;
 
 #if ENABLE(ASSERT)
+    if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() && !m_canUseCachedDrawing) {
+        m_context.restore();
+    }
     ASSERT(m_checkedCachedDrawing);
     m_context.setInDrawingRecorder(false);
     ASSERT(m_displayItemPosition == m_context.displayItemList()->newDisplayItemsSize());
