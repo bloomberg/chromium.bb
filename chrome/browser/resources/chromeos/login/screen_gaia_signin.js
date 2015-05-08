@@ -404,8 +404,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       // Reset SAML
       this.classList.toggle('full-width', false);
-      if (Oobe.getInstance().currentScreen === this)
-        Oobe.getInstance().updateScreenSize(this);
       this.samlPasswordConfirmAttempt_ = 0;
 
       this.updateAuthExtension(data);
@@ -432,6 +430,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         params.gaiaPath = data.gaiaEndpoint;
 
       $('login-header-bar').newGaiaFlow = this.isNewGaiaFlow;
+
+      // Screen size could have been changed because of 'new-gaia-flow' or
+      // 'full-width' classes.
+      if (Oobe.getInstance().currentScreen === this)
+        Oobe.getInstance().updateScreenSize(this);
 
       if (data.forceReload ||
           JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
