@@ -448,6 +448,7 @@ function unflag(flag)
 {
     var shouldFlag = false;
     TestNavigator.flagTest(parentOfType(flag, 'tbody'), shouldFlag);
+    TestNavigator.updateFlaggedTestTextBox();
 }
 
 function testLinkWithExpandButton(test)
@@ -575,6 +576,7 @@ function imageResultsCell(testObject, testPrefix, actual) {
 function tableRow(testObject)
 {
     var row = '<tbody class="' + (testObject.is_unexpected ? '' : 'expected') + '"';
+    row += ' data-testname="' + testObject.name + '"';
     if (testObject.reftest_type && testObject.reftest_type.indexOf('!=') != -1)
         row += ' mismatchreftest=true';
     row += '><tr>';
@@ -667,14 +669,23 @@ function flagAll(headerLink)
 {
     var tests = visibleTests(parentOfType(headerLink, 'div'));
     forEach(tests, function(test) {
-        var shouldFlag = true;
-        TestNavigator.flagTest(test, shouldFlag);
-    })
+        TestNavigator.flagTest(test, true);
+    });
+    TestNavigator.updateFlaggedTestTextBox();
+}
+
+function unflagAll(headerLink)
+{
+    var tests = visibleTests(parentOfType(headerLink, 'div'));
+    forEach(tests, function(test) {
+        TestNavigator.flagTest(test, false);
+    });
+    TestNavigator.updateFlaggedTestTextBox();
 }
 
 function testListHeaderHtml(header)
 {
-    return '<h1>' + header + ' (<span class=test-list-count></span>): <a href="#" class=flag-all onclick="flagAll(this)">flag all</a></h1>';
+    return '<h1>' + header + ' (<span class=test-list-count></span>): [<a href="#" class=flag-all onclick="flagAll(this)">flag all</a>] [<a href="#" class=flag-all onclick="unflagAll(this)">unflag all</a>]</h1>';
 }
 
 function testList(tests, header, tableId)
@@ -691,7 +702,7 @@ function testList(tests, header, tableId)
     for (var i = 0; i < tests.length; i++) {
         var testObject = tests[i];
         var test = testObject.name;
-        html += '<tbody class="' + ((testObject.is_unexpected || tableId == 'stderr-table') ? '' : 'expected') + '"><tr><td>' +
+        html += '<tbody class="' + ((testObject.is_unexpected || tableId == 'stderr-table') ? '' : 'expected') + '" data-testname="' + test + '"><tr><td>' +
             ((tableId == 'passes-table') ? testLink(test) : testLinkWithExpandButton(test)) +
         '</td><td>';
 
@@ -1087,12 +1098,13 @@ TestNavigator._toggleCurrentTestFlagged = function()
 {
     var testLink = TestNavigator.currentTest;
     TestNavigator.flagTest(testLink, !testLink.classList.contains('flagged'));
+    TestNavigator.updateFlaggedTestTextBox();
 }
 
 // FIXME: Test navigator shouldn't know anything about flagging. It should probably call out to TestFlagger or something.
 TestNavigator.flagTest = function(testTbody, shouldFlag)
 {
-    var testName = testTbody.querySelector('.test-link').innerText;
+    var testName = testTbody.getAttribute('data-testname');
 
     if (shouldFlag) {
         testTbody.classList.add('flagged');
@@ -1101,8 +1113,6 @@ TestNavigator.flagTest = function(testTbody, shouldFlag)
         testTbody.classList.remove('flagged');
         delete TestNavigator.flaggedTests[testName];
     }
-
-    TestNavigator.updateFlaggedTests();
 }
 
 TestNavigator._createFlaggedTestContainer = function()
@@ -1117,7 +1127,7 @@ TestNavigator._createFlaggedTestContainer = function()
     document.body.appendChild(flaggedTestContainer);
 }
 
-TestNavigator.updateFlaggedTests = function()
+TestNavigator.updateFlaggedTestTextBox = function()
 {
     var flaggedTestTextbox = document.getElementById('flagged-tests');
     var flaggedTests = Object.keys(this.flaggedTests);
@@ -1245,7 +1255,7 @@ function updateAllOptions()
 function handleToggleUseNewlines()
 {
     OptionWriter.save();
-    TestNavigator.updateFlaggedTests();
+    TestNavigator.updateFlaggedTestTextBox();
 }
 
 function handleToggleImagesChange()

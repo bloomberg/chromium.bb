@@ -683,7 +683,7 @@ function runTests()
             assertTrue(flaggedTestsTextbox.innerText == 'foo/bar.html\nfoo/bar1.html');
 
             document.getElementById('use-newlines').checked = false;
-            TestNavigator.updateFlaggedTests();
+            TestNavigator.updateFlaggedTestTextBox();
             assertTrue(flaggedTestsTextbox.innerText == 'foo/bar.html foo/bar1.html');
 
             eventSender.keyDown('f'); // unflag
@@ -711,22 +711,22 @@ function runTests()
     subtree['bar-missing.html'].is_missing_text = true;
     runTest(results, function() {
         var titles = document.getElementsByTagName('h1');
-        assertTrue(titles[0].textContent == 'Tests that crashed (1): flag all');
-        assertTrue(titles[1].textContent == 'Tests that failed text/pixel/audio diff (3): flag all');
-        assertTrue(titles[2].textContent == 'Tests that had no expected results (probably new) (1): flag all');
-        assertTrue(titles[3].textContent == 'Tests that timed out (0): flag all');
-        assertTrue(titles[4].textContent == 'Tests that had stderr output (1): flag all');
-        assertTrue(titles[5].textContent == 'Tests expected to fail but passed (1): flag all');
+        assertTrue(titles[0].textContent == 'Tests that crashed (1): [flag all] [unflag all]');
+        assertTrue(titles[1].textContent == 'Tests that failed text/pixel/audio diff (3): [flag all] [unflag all]');
+        assertTrue(titles[2].textContent == 'Tests that had no expected results (probably new) (1): [flag all] [unflag all]');
+        assertTrue(titles[3].textContent == 'Tests that timed out (0): [flag all] [unflag all]');
+        assertTrue(titles[4].textContent == 'Tests that had stderr output (1): [flag all] [unflag all]');
+        assertTrue(titles[5].textContent == 'Tests expected to fail but passed (1): [flag all] [unflag all]');
 
         document.getElementById('show-expected-failures').checked = true;
         document.getElementById('show-expected-failures').onchange();
 
-        assertTrue(titles[0].textContent == 'Tests that crashed (2): flag all');
-        assertTrue(titles[1].textContent == 'Tests that failed text/pixel/audio diff (5): flag all');
-        assertTrue(titles[2].textContent == 'Tests that had no expected results (probably new) (1): flag all');
-        assertTrue(titles[3].textContent == 'Tests that timed out (1): flag all');
-        assertTrue(titles[4].textContent == 'Tests that had stderr output (1): flag all');
-        assertTrue(titles[5].textContent == 'Tests expected to fail but passed (1): flag all');
+        assertTrue(titles[0].textContent == 'Tests that crashed (2): [flag all] [unflag all]');
+        assertTrue(titles[1].textContent == 'Tests that failed text/pixel/audio diff (5): [flag all] [unflag all]');
+        assertTrue(titles[2].textContent == 'Tests that had no expected results (probably new) (1): [flag all] [unflag all]');
+        assertTrue(titles[3].textContent == 'Tests that timed out (1): [flag all] [unflag all]');
+        assertTrue(titles[4].textContent == 'Tests that had stderr output (1): [flag all] [unflag all]');
+        assertTrue(titles[5].textContent == 'Tests expected to fail but passed (1): [flag all] [unflag all]');
     });
 
     results = mockResults();
@@ -737,8 +737,8 @@ function runTests()
     subtree['bar-3.html'] = mockExpectation('PASS TEXT', 'TEXT PASS');
     runTest(results, function() {
         var titles = document.getElementsByTagName('h1');
-        assertTrue(titles[0].textContent == 'Tests that failed text/pixel/audio diff (1): flag all');
-        assertTrue(titles[1].textContent =='Flaky tests (failed the first run and passed on retry) (1): flag all');
+        assertTrue(titles[0].textContent == 'Tests that failed text/pixel/audio diff (1): [flag all] [unflag all]');
+        assertTrue(titles[1].textContent =='Flaky tests (failed the first run and passed on retry) (1): [flag all] [unflag all]');
 
         assertTrue(document.querySelectorAll('#results-table tbody').length == 2);
         assertTrue(document.querySelectorAll('#flaky-tests-table tbody').length == 2);
