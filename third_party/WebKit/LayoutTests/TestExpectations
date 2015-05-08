@@ -1975,9 +1975,6 @@ crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 
 crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
 
-crbug.com/484706 svg/animations/viewspec-checkaspectparams.html [ ImageOnlyFailure ]
-crbug.com/484706 virtual/slimmingpaint/svg/animations/viewspec-checkaspectparams.html [ Skip ]
-
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
 
 # Temporarily disabled due to a change in HTMLMediaElement behavior, I'll
