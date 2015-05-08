@@ -25,6 +25,7 @@
 #include "media/midi/midi_port_info.h"
 
 namespace media {
+namespace midi {
 
 namespace {
 
@@ -1016,4 +1017,5 @@ MidiManager* MidiManager::Create() {
   return new MidiManagerAlsa();
 }
 
+}  // namespace midi
 }  // namespace media

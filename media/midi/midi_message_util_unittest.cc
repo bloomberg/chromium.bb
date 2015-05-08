@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
+namespace midi {
 namespace {
 
 const uint8 kGMOn[] = { 0xf0, 0x7e, 0x7f, 0x09, 0x01, 0xf7 };
@@ -31,4 +32,5 @@ TEST(GetMidiMessageLengthTest, BasicTest) {
 }
 
 }  // namespace
+}  // namespace midi
 }  // namespace media

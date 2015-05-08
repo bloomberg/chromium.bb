@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
+namespace midi {
 
 namespace {
 
@@ -271,4 +272,5 @@ TEST_F(MidiManagerTest, CreateMidiManager) {
 
 }  // namespace
 
+}  // namespace midi
 }  // namespace media

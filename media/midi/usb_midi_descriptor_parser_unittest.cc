@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
+namespace midi {
 
 namespace {
 
@@ -120,4 +121,5 @@ TEST(UsbMidiDescriptorParserTest, ParseDeviceInfo) {
 
 }  // namespace
 
+}  // namespace midi
 }  // namespace media

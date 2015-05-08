@@ -12,6 +12,7 @@
 #include "media/midi/midi_export.h"
 
 namespace media {
+namespace midi {
 
 enum MidiPortState {
   MIDI_PORT_DISCONNECTED,
@@ -40,6 +41,7 @@ struct MIDI_EXPORT MidiPortInfo final {
 
 using MidiPortInfoList = std::vector<MidiPortInfo>;
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_PORT_INFO_H_

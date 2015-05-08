@@ -14,6 +14,7 @@
 #include "media/midi/midi_manager.h"
 
 namespace media {
+namespace midi {
 
 class MidiServiceWinDelegate {
  public:
@@ -66,6 +67,7 @@ class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
   DISALLOW_COPY_AND_ASSIGN(MidiManagerWin);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_WIN_H_

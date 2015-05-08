@@ -10,6 +10,7 @@
 #include "media/midi/midi_message_util.h"
 
 namespace media {
+namespace midi {
 namespace {
 
 const uint8 kSysEx = 0xf0;
@@ -121,4 +122,5 @@ void MidiMessageQueue::Get(std::vector<uint8>* message) {
   }
 }
 
+}  // namespace midi
 }  // namespace media

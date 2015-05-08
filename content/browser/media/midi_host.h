@@ -19,29 +19,32 @@
 #include "media/midi/midi_port_info.h"
 
 namespace media {
+namespace midi {
 class MidiManager;
 class MidiMessageQueue;
+}
 }
 
 namespace content {
 
-class CONTENT_EXPORT MidiHost
-    : public BrowserMessageFilter,
-      public media::MidiManagerClient {
+class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
+                                public media::midi::MidiManagerClient {
  public:
   // Called from UI thread from the owner of this object.
-  MidiHost(int renderer_process_id, media::MidiManager* midi_manager);
+  MidiHost(int renderer_process_id, media::midi::MidiManager* midi_manager);
 
   // BrowserMessageFilter implementation.
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // MidiManagerClient implementation.
-  void CompleteStartSession(media::MidiResult result) override;
-  void AddInputPort(const media::MidiPortInfo& info) override;
-  void AddOutputPort(const media::MidiPortInfo& info) override;
-  void SetInputPortState(uint32 port, media::MidiPortState state) override;
-  void SetOutputPortState(uint32 port, media::MidiPortState state) override;
+  void CompleteStartSession(media::midi::MidiResult result) override;
+  void AddInputPort(const media::midi::MidiPortInfo& info) override;
+  void AddOutputPort(const media::midi::MidiPortInfo& info) override;
+  void SetInputPortState(uint32 port,
+                         media::midi::MidiPortState state) override;
+  void SetOutputPortState(uint32 port,
+                          media::midi::MidiPortState state) override;
   void ReceiveMidiData(uint32 port,
                        const uint8* data,
                        size_t length,
@@ -87,10 +90,10 @@ class CONTENT_EXPORT MidiHost
   // does not support MIDI.  If not supported then a call to
   // OnRequestAccess() will always refuse access and a call to
   // OnSendData() will do nothing.
-  media::MidiManager* const midi_manager_;
+  media::midi::MidiManager* const midi_manager_;
 
   // Buffers where data sent from each MIDI input port is stored.
-  ScopedVector<media::MidiMessageQueue> received_messages_queues_;
+  ScopedVector<media::midi::MidiMessageQueue> received_messages_queues_;
 
   // Protects access to |received_messages_queues_|;
   base::Lock messages_queues_lock_;

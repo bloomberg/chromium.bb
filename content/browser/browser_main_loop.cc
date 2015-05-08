@@ -1116,7 +1116,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   {
     TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:MidiManager");
-    midi_manager_.reset(media::MidiManager::Create());
+    midi_manager_.reset(media::midi::MidiManager::Create());
   }
 
 #if defined(OS_LINUX) && defined(USE_UDEV)

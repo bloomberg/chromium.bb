@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 
 namespace media {
+namespace midi {
 
 MidiManager::MidiManager()
     : initialized_(false),
@@ -194,4 +195,5 @@ void MidiManager::AddInitialPorts(MidiManagerClient* client) {
     client->AddOutputPort(info);
 }
 
+}  // namespace midi
 }  // namespace media

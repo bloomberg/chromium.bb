@@ -21,6 +21,7 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
+namespace midi {
 
 // A MidiManagerClient registers with the MidiManager to receive MIDI data.
 // See MidiManager::RequestAccess() and MidiManager::ReleaseAccess()
@@ -183,6 +184,7 @@ class MIDI_EXPORT MidiManager {
   DISALLOW_COPY_AND_ASSIGN(MidiManager);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_H_

@@ -15,13 +15,14 @@
 #include "media/midi/usb_midi_descriptor_parser.h"
 
 namespace media {
+namespace midi {
 
 UsbMidiDeviceAndroid::UsbMidiDeviceAndroid(ObjectRef raw_device,
                                            UsbMidiDeviceDelegate* delegate)
     : raw_device_(raw_device), delegate_(delegate) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  midi::Java_UsbMidiDeviceAndroid_registerSelf(env, raw_device_.obj(),
-                                               reinterpret_cast<jlong>(this));
+  Java_UsbMidiDeviceAndroid_registerSelf(env, raw_device_.obj(),
+                                         reinterpret_cast<jlong>(this));
 
   GetDescriptorsInternal();
   InitDeviceInfo();
@@ -29,7 +30,7 @@ UsbMidiDeviceAndroid::UsbMidiDeviceAndroid(ObjectRef raw_device,
 
 UsbMidiDeviceAndroid::~UsbMidiDeviceAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  midi::Java_UsbMidiDeviceAndroid_close(env, raw_device_.obj());
+  Java_UsbMidiDeviceAndroid_close(env, raw_device_.obj());
 }
 
 std::vector<uint8> UsbMidiDeviceAndroid::GetDescriptors() {
@@ -55,8 +56,8 @@ void UsbMidiDeviceAndroid::Send(int endpoint_number,
   ScopedJavaLocalRef<jbyteArray> data_to_pass =
       base::android::ToJavaByteArray(env, head, data.size());
 
-  midi::Java_UsbMidiDeviceAndroid_send(env, raw_device_.obj(), endpoint_number,
-                                       data_to_pass.obj());
+  Java_UsbMidiDeviceAndroid_send(env, raw_device_.obj(), endpoint_number,
+                                 data_to_pass.obj());
 }
 
 void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
@@ -72,13 +73,13 @@ void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
 }
 
 bool UsbMidiDeviceAndroid::RegisterUsbMidiDevice(JNIEnv* env) {
-  return midi::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 void UsbMidiDeviceAndroid::GetDescriptorsInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jbyteArray> descriptors =
-      midi::Java_UsbMidiDeviceAndroid_getDescriptors(env, raw_device_.obj());
+      Java_UsbMidiDeviceAndroid_getDescriptors(env, raw_device_.obj());
 
   base::android::JavaByteArrayToByteVector(env, descriptors.obj(),
                                            &descriptors_);
@@ -111,8 +112,8 @@ void UsbMidiDeviceAndroid::InitDeviceInfo() {
 std::vector<uint8> UsbMidiDeviceAndroid::GetStringDescriptor(int index) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jbyteArray> descriptors =
-      midi::Java_UsbMidiDeviceAndroid_getStringDescriptor(
-          env, raw_device_.obj(), index);
+      Java_UsbMidiDeviceAndroid_getStringDescriptor(env, raw_device_.obj(),
+                                                    index);
 
   std::vector<uint8> ret;
   base::android::JavaByteArrayToByteVector(env, descriptors.obj(), &ret);
@@ -142,4 +143,5 @@ std::string UsbMidiDeviceAndroid::GetString(int index,
   return result;
 }
 
+}  // namespace midi
 }  // namespace media

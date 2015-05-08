@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 
 namespace media {
+namespace midi {
 
 namespace {
 
@@ -285,4 +286,5 @@ void UsbMidiDescriptorParser::Clear() {
   incomplete_jacks_.clear();
 }
 
+}  // namespace midi
 }  // namespace media

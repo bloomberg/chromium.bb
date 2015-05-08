@@ -10,6 +10,7 @@
 #include "media/midi/midi_manager.h"
 
 namespace media {
+namespace midi {
 
 MidiScheduler::MidiScheduler(MidiManager* manager)
   : manager_(manager),
@@ -52,4 +53,5 @@ void MidiScheduler::InvokeClosure(MidiManagerClient* client,
   manager_->AccumulateMidiBytesSent(client, length);
 }
 
+}  // namespace midi
 }  // namespace media

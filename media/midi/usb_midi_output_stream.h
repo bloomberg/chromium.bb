@@ -12,6 +12,7 @@
 #include "media/midi/usb_midi_jack.h"
 
 namespace media {
+namespace midi {
 
 // UsbMidiOutputStream converts MIDI data to USB-MIDI data.
 // See "USB Device Class Definition for MIDI Devices" Release 1.0,
@@ -52,6 +53,7 @@ class USB_MIDI_EXPORT UsbMidiOutputStream {
   DISALLOW_COPY_AND_ASSIGN(UsbMidiOutputStream);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_USB_MIDI_OUTPUT_STREAM_H_

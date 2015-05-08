@@ -23,6 +23,7 @@
 #include "media/midi/usb_midi_output_stream.h"
 
 namespace media {
+namespace midi {
 
 class MidiScheduler;
 
@@ -90,6 +91,7 @@ class USB_MIDI_EXPORT MidiManagerUsb
   DISALLOW_COPY_AND_ASSIGN(MidiManagerUsb);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_USB_H_

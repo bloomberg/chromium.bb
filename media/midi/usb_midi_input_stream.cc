@@ -13,6 +13,7 @@
 #include "media/midi/usb_midi_jack.h"
 
 namespace media {
+namespace midi {
 
 UsbMidiInputStream::JackUniqueKey::JackUniqueKey(UsbMidiDevice* device,
                                                  int endpoint_number,
@@ -90,4 +91,5 @@ void UsbMidiInputStream::ProcessOnePacket(UsbMidiDevice* device,
     delegate_->OnReceivedData(it->second, &packet[1], packet_size, time);
 }
 
+}  // namespace midi
 }  // namespace media

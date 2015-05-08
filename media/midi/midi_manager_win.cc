@@ -47,6 +47,7 @@
 #include "media/midi/midi_port_info.h"
 
 namespace media {
+namespace midi {
 namespace {
 
 static const size_t kBufferLength = 32 * 1024;
@@ -1166,4 +1167,5 @@ MidiManager* MidiManager::Create() {
   return new MidiManagerWin();
 }
 
+}  // namespace midi
 }  // namespace media

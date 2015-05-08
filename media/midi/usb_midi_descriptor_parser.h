@@ -13,6 +13,7 @@
 #include "media/midi/usb_midi_jack.h"
 
 namespace media {
+namespace midi {
 
 class UsbMidiDevice;
 
@@ -76,7 +77,7 @@ class USB_MIDI_EXPORT UsbMidiDescriptorParser {
   DISALLOW_COPY_AND_ASSIGN(UsbMidiDescriptorParser);
 };
 
-
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_USB_MIDI_DESCRIPTOR_PARSER_H_

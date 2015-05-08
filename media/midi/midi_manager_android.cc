@@ -7,10 +7,12 @@
 #include "media/midi/usb_midi_device_factory_android.h"
 
 namespace media {
+namespace midi {
 
 MidiManager* MidiManager::Create() {
   return new MidiManagerUsb(
       scoped_ptr<UsbMidiDevice::Factory>(new UsbMidiDeviceFactoryAndroid));
 }
 
+}  // namespace midi
 }  // namespace media

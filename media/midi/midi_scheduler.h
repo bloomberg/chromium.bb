@@ -10,6 +10,7 @@
 #include "media/midi/midi_export.h"
 
 namespace media {
+namespace midi {
 
 class MidiManager;
 class MidiManagerClient;
@@ -40,6 +41,7 @@ class MIDI_EXPORT MidiScheduler final {
   DISALLOW_COPY_AND_ASSIGN(MidiScheduler);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_SCHEDULER_H_

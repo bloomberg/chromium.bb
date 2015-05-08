@@ -19,9 +19,6 @@
 #include "media/midi/midi_message_queue.h"
 #include "media/midi/midi_message_util.h"
 
-using media::MidiManager;
-using media::MidiPortInfoList;
-
 namespace content {
 namespace {
 
@@ -45,10 +42,11 @@ bool IsSystemRealTimeMessage(uint8 data) {
 
 }  // namespace
 
-using media::kSysExByte;
-using media::kEndOfSysExByte;
+using media::midi::kSysExByte;
+using media::midi::kEndOfSysExByte;
 
-MidiHost::MidiHost(int renderer_process_id, media::MidiManager* midi_manager)
+MidiHost::MidiHost(int renderer_process_id,
+                   media::midi::MidiManager* midi_manager)
     : BrowserMessageFilter(MidiMsgStart),
       renderer_process_id_(renderer_process_id),
       has_sys_ex_permission_(false),
@@ -133,9 +131,9 @@ void MidiHost::OnEndSession() {
   midi_manager_->EndSession(this);
 }
 
-void MidiHost::CompleteStartSession(media::MidiResult result) {
+void MidiHost::CompleteStartSession(media::midi::MidiResult result) {
   DCHECK(is_session_requested_);
-  if (result == media::MIDI_OK) {
+  if (result == media::midi::MIDI_OK) {
     // ChildSecurityPolicy is set just before OnStartSession by
     // MidiDispatcherHost. So we can safely cache the policy.
     has_sys_ex_permission_ = ChildProcessSecurityPolicyImpl::GetInstance()->
@@ -144,24 +142,26 @@ void MidiHost::CompleteStartSession(media::MidiResult result) {
   Send(new MidiMsg_SessionStarted(result));
 }
 
-void MidiHost::AddInputPort(const media::MidiPortInfo& info) {
+void MidiHost::AddInputPort(const media::midi::MidiPortInfo& info) {
   base::AutoLock auto_lock(messages_queues_lock_);
   // MidiMessageQueue is created later in ReceiveMidiData().
   received_messages_queues_.push_back(nullptr);
   Send(new MidiMsg_AddInputPort(info));
 }
 
-void MidiHost::AddOutputPort(const media::MidiPortInfo& info) {
+void MidiHost::AddOutputPort(const media::midi::MidiPortInfo& info) {
   base::AutoLock auto_lock(output_port_count_lock_);
   output_port_count_++;
   Send(new MidiMsg_AddOutputPort(info));
 }
 
-void MidiHost::SetInputPortState(uint32 port, media::MidiPortState state) {
+void MidiHost::SetInputPortState(uint32 port,
+                                 media::midi::MidiPortState state) {
   Send(new MidiMsg_SetInputPortState(port, state));
 }
 
-void MidiHost::SetOutputPortState(uint32 port, media::MidiPortState state) {
+void MidiHost::SetOutputPortState(uint32 port,
+                                  media::midi::MidiPortState state) {
   Send(new MidiMsg_SetOutputPortState(port, state));
 }
 
@@ -178,7 +178,7 @@ void MidiHost::ReceiveMidiData(
 
   // Lazy initialization
   if (received_messages_queues_[port] == nullptr)
-    received_messages_queues_[port] = new media::MidiMessageQueue(true);
+    received_messages_queues_[port] = new media::midi::MidiMessageQueue(true);
 
   received_messages_queues_[port]->Add(data, length);
   std::vector<uint8> message;
@@ -242,7 +242,7 @@ bool MidiHost::IsValidWebMIDIData(const std::vector<uint8>& data) {
       in_sysex = true;
       continue;  // Found SysEX
     }
-    waiting_data_length = media::GetMidiMessageLength(current);
+    waiting_data_length = media::midi::GetMidiMessageLength(current);
     if (waiting_data_length == 0)
       return false;  // Error: |current| should have been a valid status byte.
     --waiting_data_length;  // Found status byte

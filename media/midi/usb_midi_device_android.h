@@ -16,6 +16,7 @@
 #include "media/midi/usb_midi_export.h"
 
 namespace media {
+namespace midi {
 
 class USB_MIDI_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
  public:
@@ -59,6 +60,7 @@ class USB_MIDI_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
   DISALLOW_IMPLICIT_CONSTRUCTORS(UsbMidiDeviceAndroid);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_USB_MIDI_DEVICE_ANDROID_H_

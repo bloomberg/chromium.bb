@@ -22,6 +22,7 @@
 #include "media/midi/midi_manager.h"
 
 namespace media {
+namespace midi {
 
 class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
  public:
@@ -326,6 +327,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   DISALLOW_COPY_AND_ASSIGN(MidiManagerAlsa);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_MIDI_MANAGER_ALSA_H_

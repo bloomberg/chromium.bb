@@ -67,9 +67,9 @@ struct MidiEvent {
   double timestamp;
 };
 
-class FakeMidiManager : public media::MidiManager {
+class FakeMidiManager : public media::midi::MidiManager {
  public:
-  void DispatchSendMidiData(media::MidiManagerClient* client,
+  void DispatchSendMidiData(media::midi::MidiManagerClient* client,
                             uint32 port_index,
                             const std::vector<uint8>& data,
                             double timestamp) override {
@@ -83,8 +83,9 @@ class FakeMidiManager : public media::MidiManager {
 
 class MidiHostForTesting : public MidiHost {
  public:
-  MidiHostForTesting(int renderer_process_id, media::MidiManager* midi_manager)
-    : MidiHost(renderer_process_id, midi_manager) {}
+  MidiHostForTesting(int renderer_process_id,
+                     media::midi::MidiManager* midi_manager)
+      : MidiHost(renderer_process_id, midi_manager) {}
 
  private:
   ~MidiHostForTesting() override {}
@@ -110,8 +111,8 @@ class MidiHostTest : public testing::Test {
     const std::string manufacturer("yukatan");
     const std::string name("doki-doki-pi-pine");
     const std::string version("3.14159265359");
-    media::MidiPortState state = media::MIDI_PORT_CONNECTED;
-    media::MidiPortInfo info(id, manufacturer, name, version, state);
+    media::midi::MidiPortState state = media::midi::MIDI_PORT_CONNECTED;
+    media::midi::MidiPortInfo info(id, manufacturer, name, version, state);
 
     host_->AddOutputPort(info);
   }

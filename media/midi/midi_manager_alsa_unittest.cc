@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
+namespace midi {
 
 class MidiManagerAlsaTest : public ::testing::Test {
  protected:
@@ -592,4 +593,5 @@ TEST_F(MidiManagerAlsaTest, ToMidiPortState) {
 
 // TODO(agoode): Test old -> new state event generation, using mocks.
 
+}  // namespace midi
 }  // namespace media

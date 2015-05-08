@@ -5,6 +5,7 @@
 #include "media/midi/midi_port_info.h"
 
 namespace media {
+namespace midi {
 
 MidiPortInfo::MidiPortInfo() {}
 
@@ -28,4 +29,5 @@ MidiPortInfo::MidiPortInfo(const MidiPortInfo& info)
       version(info.version),
       state(info.state) {}
 
+}  // namespace midi
 }  // namespace media

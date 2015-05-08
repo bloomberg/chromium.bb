@@ -23,6 +23,7 @@ using std::string;
 // (if possible).
 
 namespace media {
+namespace midi {
 
 namespace {
 
@@ -382,4 +383,5 @@ void MidiManagerMac::SendMidiData(MidiManagerClient* client,
   client->AccumulateMidiBytesSent(data.size());
 }
 
+}  // namespace midi
 }  // namespace media

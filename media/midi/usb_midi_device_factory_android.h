@@ -17,6 +17,7 @@
 #include "media/midi/usb_midi_export.h"
 
 namespace media {
+namespace midi {
 
 // This class enumerates UsbMidiDevices.
 class USB_MIDI_EXPORT UsbMidiDeviceFactoryAndroid
@@ -46,6 +47,7 @@ class USB_MIDI_EXPORT UsbMidiDeviceFactoryAndroid
   DISALLOW_COPY_AND_ASSIGN(UsbMidiDeviceFactoryAndroid);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_USB_MIDI_DEVICE_FACTORY_ANDROID_H_

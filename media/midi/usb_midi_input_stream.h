@@ -15,6 +15,7 @@
 #include "media/midi/usb_midi_jack.h"
 
 namespace media {
+namespace midi {
 
 class UsbMidiDevice;
 
@@ -81,6 +82,7 @@ class USB_MIDI_EXPORT UsbMidiInputStream {
   DISALLOW_COPY_AND_ASSIGN(UsbMidiInputStream);
 };
 
+}  // namespace midi
 }  // namespace media
 
 #endif  // MEDIA_MIDI_USB_MIDI_INPUT_STREAM_H_

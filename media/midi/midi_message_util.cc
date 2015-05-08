@@ -5,6 +5,7 @@
 #include "media/midi/midi_message_util.h"
 
 namespace media {
+namespace midi {
 
 size_t GetMidiMessageLength(uint8 status_byte) {
   if (status_byte < 0x80)
@@ -31,4 +32,5 @@ size_t GetMidiMessageLength(uint8 status_byte) {
   return 1;
 }
 
+}  // namespace midi
 }  // namespace media

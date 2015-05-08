@@ -17,6 +17,7 @@
 #include "media/midi/usb_midi_output_stream.h"
 
 namespace media {
+namespace midi {
 
 MidiManagerUsb::MidiManagerUsb(scoped_ptr<UsbMidiDevice::Factory> factory)
     : device_factory_(factory.Pass()) {
@@ -158,4 +159,5 @@ bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {
   return true;
 }
 
+}  // namespace midi
 }  // namespace media

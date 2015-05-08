@@ -18,6 +18,7 @@
 #include "media/midi/usb_midi_device_android.h"
 
 namespace media {
+namespace midi {
 
 namespace {
 
@@ -30,7 +31,7 @@ UsbMidiDeviceFactoryAndroid::UsbMidiDeviceFactoryAndroid() : delegate_(NULL) {}
 UsbMidiDeviceFactoryAndroid::~UsbMidiDeviceFactoryAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!raw_factory_.is_null())
-    midi::Java_UsbMidiDeviceFactoryAndroid_close(
+    Java_UsbMidiDeviceFactoryAndroid_close(
         env, raw_factory_.obj(), base::android::GetApplicationContext());
 }
 
@@ -40,13 +41,13 @@ void UsbMidiDeviceFactoryAndroid::EnumerateDevices(
   DCHECK(!delegate_);
   JNIEnv* env = base::android::AttachCurrentThread();
   uintptr_t pointer = reinterpret_cast<uintptr_t>(this);
-  raw_factory_.Reset(midi::Java_UsbMidiDeviceFactoryAndroid_create(
+  raw_factory_.Reset(Java_UsbMidiDeviceFactoryAndroid_create(
       env, base::android::GetApplicationContext(), pointer));
 
   delegate_ = delegate;
   callback_ = callback;
 
-  if (midi::Java_UsbMidiDeviceFactoryAndroid_enumerateDevices(
+  if (Java_UsbMidiDeviceFactoryAndroid_enumerateDevices(
           env, raw_factory_.obj(), base::android::GetApplicationContext())) {
     // Asynchronous operation.
     return;
@@ -92,7 +93,8 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceDetached(
 }
 
 bool UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory(JNIEnv* env) {
-  return midi::RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
+}  // namespace midi
 }  // namespace media

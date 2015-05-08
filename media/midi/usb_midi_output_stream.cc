@@ -9,6 +9,7 @@
 #include "media/midi/usb_midi_device.h"
 
 namespace media {
+namespace midi {
 
 UsbMidiOutputStream::UsbMidiOutputStream(const UsbMidiJack& jack)
     : jack_(jack), pending_size_(0), is_sending_sysex_(false) {}
@@ -190,4 +191,5 @@ bool UsbMidiOutputStream::PushChannelMessage(const std::vector<uint8>& data,
   return true;
 }
 
+}  // namespace midi
 }  // namespace media
