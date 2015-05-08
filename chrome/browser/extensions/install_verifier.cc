@@ -109,10 +109,6 @@ bool ShouldFetchSignature() {
   return GetStatus() >= BOOTSTRAP;
 }
 
-bool ShouldEnforce() {
-  return GetStatus() >= ENFORCE;
-}
-
 enum InitResult {
   INIT_NO_PREF = 0,
   INIT_UNPARSEABLE_PREF,
@@ -182,6 +178,11 @@ InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
 }
 
 InstallVerifier::~InstallVerifier() {}
+
+// static
+bool InstallVerifier::ShouldEnforce() {
+  return GetStatus() >= ENFORCE;
+}
 
 // static
 bool InstallVerifier::NeedsVerification(const Extension& extension) {

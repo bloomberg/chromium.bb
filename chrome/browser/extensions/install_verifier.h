@@ -45,6 +45,9 @@ class InstallVerifier : public ManagementPolicy::Provider {
   InstallVerifier(ExtensionPrefs* prefs, content::BrowserContext* context);
   ~InstallVerifier() override;
 
+  // Returns whether install verification should be enforced.
+  static bool ShouldEnforce();
+
   // Returns whether |extension| is of a type that needs verification.
   static bool NeedsVerification(const Extension& extension);
 

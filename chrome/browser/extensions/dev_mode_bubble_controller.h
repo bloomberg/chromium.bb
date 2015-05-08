@@ -19,9 +19,6 @@ class DevModeBubbleController : public ExtensionMessageBubbleController {
   // used during testing.
   static void ClearProfileListForTesting();
 
-  // Returns true if the extension is considered a Developer Mode extension.
-  static bool IsDevModeExtension(const Extension* extension);
-
   explicit DevModeBubbleController(Profile* profile);
   ~DevModeBubbleController() override;
 
