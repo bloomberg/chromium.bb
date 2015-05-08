@@ -665,6 +665,7 @@ if (is_linux && !is_chromeos) {
   }
 
   executable("filter_fuzz_stub") {
+    testonly = true
     sources = [
       "tools/filter_fuzz_stub/filter_fuzz_stub.cc",
     ]
@@ -672,6 +673,7 @@ if (is_linux && !is_chromeos) {
     deps = [
       ":skia",
       "//base",
+      "//base/test:test_support",
     ]
   }
 }

@@ -4,6 +4,7 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -71,6 +72,9 @@ bool ReadAndRunTestCase(const char* filename, SkBitmap& bitmap,
 
 int main(int argc, char** argv) {
   int ret = 0;
+
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator;
+  base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(BitmapSize, BitmapSize);

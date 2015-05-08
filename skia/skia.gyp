@@ -137,6 +137,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
         'skia.gyp:skia',
       ],
       'sources': [
