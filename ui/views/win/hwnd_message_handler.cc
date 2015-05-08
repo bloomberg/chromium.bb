@@ -27,7 +27,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/path.h"
@@ -204,34 +203,6 @@ void EnableMenuItemByCommand(HMENU menu, UINT command, bool enabled) {
 // DWMCompositionChanged message.
 BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
   SendMessage(window, WM_DWMCOMPOSITIONCHANGED, 0, 0);
-  return TRUE;
-}
-
-// See comments in OnNCPaint() for details of this struct.
-struct ClipState {
-  // The window being painted.
-  HWND parent;
-
-  // DC painting to.
-  HDC dc;
-
-  // Origin of the window in terms of the screen.
-  int x;
-  int y;
-};
-
-// See comments in OnNCPaint() for details of this function.
-static BOOL CALLBACK ClipDCToChild(HWND window, LPARAM param) {
-  ClipState* clip_state = reinterpret_cast<ClipState*>(param);
-  if (GetParent(window) == clip_state->parent && IsWindowVisible(window)) {
-    RECT bounds;
-    GetWindowRect(window, &bounds);
-    ExcludeClipRect(clip_state->dc,
-      bounds.left - clip_state->x,
-      bounds.top - clip_state->y,
-      bounds.right - clip_state->x,
-      bounds.bottom - clip_state->y);
-  }
   return TRUE;
 }
 
@@ -2083,19 +2054,6 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
     OffsetRect(&dirty_region, -window_rect.left, -window_rect.top);
   }
 
-  // In theory GetDCEx should do what we want, but I couldn't get it to work.
-  // In particular the docs mentiond DCX_CLIPCHILDREN, but as far as I can tell
-  // it doesn't work at all. So, instead we get the DC for the window then
-  // manually clip out the children.
-  HDC dc = GetWindowDC(hwnd());
-  ClipState clip_state;
-  clip_state.x = window_rect.left;
-  clip_state.y = window_rect.top;
-  clip_state.parent = hwnd();
-  clip_state.dc = dc;
-  EnumChildWindows(hwnd(), &ClipDCToChild,
-                   reinterpret_cast<LPARAM>(&clip_state));
-
   gfx::Rect old_paint_region = invalid_rect_;
   if (!old_paint_region.IsEmpty()) {
     // The root view has a region that needs to be painted. Include it in the
@@ -2107,21 +2065,8 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
   }
 
   SchedulePaintInRect(gfx::Rect(dirty_region));
+  delegate_->HandlePaintAccelerated(gfx::Rect(dirty_region));
 
-  // gfx::CanvasSkiaPaint's destructor does the actual painting. As such, wrap
-  // the following in a block to force paint to occur so that we can release
-  // the dc.
-  if (!delegate_->HandlePaintAccelerated(gfx::Rect(dirty_region))) {
-    gfx::CanvasSkiaPaint canvas(dc,
-                                true,
-                                dirty_region.left,
-                                dirty_region.top,
-                                dirty_region.right - dirty_region.left,
-                                dirty_region.bottom - dirty_region.top);
-    delegate_->HandlePaint(&canvas);
-  }
-
-  ReleaseDC(hwnd(), dc);
   // When using a custom frame, we want to avoid calling DefWindowProc() since
   // that may render artifacts.
   SetMsgHandled(delegate_->IsUsingCustomFrame());
@@ -2178,11 +2123,8 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
   HDC display_dc = BeginPaint(hwnd(), &ps);
   CHECK(display_dc);
 
-  // Try to paint accelerated first.
-  if (!IsRectEmpty(&ps.rcPaint) &&
-      !delegate_->HandlePaintAccelerated(gfx::Rect(ps.rcPaint))) {
-    delegate_->HandlePaint(NULL);
-  }
+  if (!IsRectEmpty(&ps.rcPaint))
+    delegate_->HandlePaintAccelerated(gfx::Rect(ps.rcPaint));
 
   EndPaint(hwnd(), &ps);
 }
