@@ -582,10 +582,6 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(SkCanvas* canvas,
       status = "off (viewport)";
       color = SK_ColorYELLOW;
       break;
-    case GpuRasterizationStatus::MSAA_CONTENT:
-      status = "MSAA (content)";
-      color = SK_ColorCYAN;
-      break;
     case GpuRasterizationStatus::OFF_CONTENT:
       status = "off (content)";
       color = SK_ColorYELLOW;

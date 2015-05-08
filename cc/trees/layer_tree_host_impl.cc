@@ -193,7 +193,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       content_is_suitable_for_gpu_rasterization_(true),
       has_gpu_rasterization_trigger_(false),
       use_gpu_rasterization_(false),
-      use_msaa_(false),
       gpu_rasterization_status_(GpuRasterizationStatus::OFF_DEVICE),
       input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
@@ -1602,19 +1601,9 @@ void LayerTreeHostImpl::FinishAllRendering() {
 
 void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   bool use_gpu = false;
-  bool use_msaa = false;
-  bool using_msaa_for_complex_content =
-      renderer() && settings_.gpu_rasterization_msaa_sample_count > 0 &&
-      GetRendererCapabilities().max_msaa_samples >=
-          settings_.gpu_rasterization_msaa_sample_count;
   if (settings_.gpu_rasterization_forced) {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON_FORCED;
-    use_msaa = !content_is_suitable_for_gpu_rasterization_ &&
-               using_msaa_for_complex_content;
-    if (use_msaa) {
-      gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
-    }
   } else if (!settings_.gpu_rasterization_enabled) {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
   } else if (!has_gpu_rasterization_trigger_) {
@@ -1622,20 +1611,16 @@ void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   } else if (content_is_suitable_for_gpu_rasterization_) {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON;
-  } else if (using_msaa_for_complex_content) {
-    use_gpu = use_msaa = true;
-    gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
   } else {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_CONTENT;
   }
 
-  if (use_gpu == use_gpu_rasterization_ && use_msaa == use_msaa_)
+  if (use_gpu == use_gpu_rasterization_)
     return;
 
   // Note that this must happen first, in case the rest of the calls want to
   // query the new state of |use_gpu_rasterization_|.
   use_gpu_rasterization_ = use_gpu;
-  use_msaa_ = use_msaa;
 
   // Clean up and replace existing tile manager with another one that uses
   // appropriate rasterizer.
@@ -1654,7 +1639,6 @@ void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
 
 const RendererCapabilitiesImpl&
 LayerTreeHostImpl::GetRendererCapabilities() const {
-  CHECK(renderer_);
   return renderer_->Capabilities();
 }
 
@@ -2006,7 +1990,6 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   }
   DCHECK(renderer_);
 
-  // Since the new renderer may be capable of MSAA, update status here.
   UpdateGpuRasterizationStatus();
   renderer_->SetVisible(visible_);
   SetFullRootLayerDamage();
@@ -2077,13 +2060,10 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
-    int msaa_sample_count =
-        use_msaa_ ? settings_.gpu_rasterization_msaa_sample_count : 0;
-
     *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
         task_runner, task_graph_runner, context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
-        msaa_sample_count);
+        settings_.gpu_rasterization_msaa_sample_count);
     return;
   }
 

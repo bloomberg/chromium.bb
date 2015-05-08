@@ -39,7 +39,6 @@ struct RendererCapabilitiesImpl {
   bool using_image;
   bool using_discard_framebuffer;
   bool allow_rasterize_on_demand;
-  int max_msaa_samples;
 
   RendererCapabilities MainThreadCapabilities() const;
 };

@@ -51,7 +51,6 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/gpu_rasterization_enabled_settings.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/render_pass_test_common.h"
@@ -7684,67 +7683,6 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
   EXPECT_FALSE(controller.begin_frame_args().IsValid());
   host_impl_->WillBeginImplFrame(begin_frame_args);
   EXPECT_TRUE(controller.begin_frame_args().IsValid());
-}
-
-TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusModes) {
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
-
-  host_impl_->set_has_gpu_rasterization_trigger(true);
-  host_impl_->set_content_is_suitable_for_gpu_rasterization(true);
-  host_impl_->UpdateGpuRasterizationStatus();
-  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-
-  host_impl_->set_has_gpu_rasterization_trigger(false);
-  host_impl_->set_content_is_suitable_for_gpu_rasterization(true);
-  host_impl_->UpdateGpuRasterizationStatus();
-  EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
-            host_impl_->gpu_rasterization_status());
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
-
-  host_impl_->set_has_gpu_rasterization_trigger(true);
-  host_impl_->set_content_is_suitable_for_gpu_rasterization(false);
-  host_impl_->UpdateGpuRasterizationStatus();
-  EXPECT_EQ(GpuRasterizationStatus::OFF_CONTENT,
-            host_impl_->gpu_rasterization_status());
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
-  EXPECT_FALSE(host_impl_->use_msaa());
-
-  scoped_ptr<TestWebGraphicsContext3D> context_with_msaa =
-      TestWebGraphicsContext3D::Create();
-  context_with_msaa->SetMaxSamples(8);
-
-  LayerTreeSettings msaaSettings = GpuRasterizationEnabledSettings();
-  msaaSettings.gpu_rasterization_msaa_sample_count = 4;
-  EXPECT_TRUE(CreateHostImpl(
-      msaaSettings, FakeOutputSurface::Create3d(context_with_msaa.Pass())));
-  host_impl_->set_has_gpu_rasterization_trigger(true);
-  host_impl_->set_content_is_suitable_for_gpu_rasterization(false);
-  host_impl_->UpdateGpuRasterizationStatus();
-  EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
-            host_impl_->gpu_rasterization_status());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-  EXPECT_TRUE(host_impl_->use_msaa());
-
-  LayerTreeSettings settings = DefaultSettings();
-  settings.gpu_rasterization_enabled = false;
-  EXPECT_TRUE(CreateHostImpl(settings, FakeOutputSurface::Create3d()));
-  host_impl_->set_has_gpu_rasterization_trigger(true);
-  host_impl_->set_content_is_suitable_for_gpu_rasterization(true);
-  host_impl_->UpdateGpuRasterizationStatus();
-  EXPECT_EQ(GpuRasterizationStatus::OFF_DEVICE,
-            host_impl_->gpu_rasterization_status());
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
-
-  settings.gpu_rasterization_forced = true;
-  EXPECT_TRUE(CreateHostImpl(settings, FakeOutputSurface::Create3d()));
-
-  host_impl_->set_has_gpu_rasterization_trigger(false);
-  host_impl_->set_content_is_suitable_for_gpu_rasterization(false);
-  host_impl_->UpdateGpuRasterizationStatus();
-  EXPECT_EQ(GpuRasterizationStatus::ON_FORCED,
-            host_impl_->gpu_rasterization_status());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 }
 
 }  // namespace

@@ -327,11 +327,7 @@ int GpuRasterizationMSAASampleCount() {
       *base::CommandLine::ForCurrentProcess();
 
   if (!command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount))
-#if defined(OS_ANDROID)
-    return 4;
-#else
-    return 8;
-#endif
+    return 0;
   std::string string_value = command_line.GetSwitchValueASCII(
       switches::kGpuRasterizationMSAASampleCount);
   int msaa_sample_count = 0;
