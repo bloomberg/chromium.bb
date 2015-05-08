@@ -1236,7 +1236,28 @@ void ExistingUserController::OnOAuth2TokensFetched(
     OnAuthFailure(AuthFailure(AuthFailure::FAILED_TO_INITIALIZE_TOKEN));
     return;
   }
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    if (!token_handle_util_.get()) {
+      token_handle_util_.reset(
+          new TokenHandleUtil(user_manager::UserManager::Get()));
+    }
+    if (!token_handle_util_->HasToken(user_context.GetUserID())) {
+      token_handle_util_->GetTokenHandle(
+          user_context.GetUserID(), user_context.GetAccessToken(),
+          base::Bind(&ExistingUserController::OnTokenHandleObtained,
+                     weak_factory_.GetWeakPtr()));
+    }
+  }
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+}
+
+void ExistingUserController::OnTokenHandleObtained(
+    const user_manager::UserID& id,
+    TokenHandleUtil::TokenHandleStatus status) {
+  if (status != TokenHandleUtil::VALID) {
+    LOG(ERROR) << "OAuth2 token handle fetch failed.";
+    return;
+  }
 }
 
 }  // namespace chromeos

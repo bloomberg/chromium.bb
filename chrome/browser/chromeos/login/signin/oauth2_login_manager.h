@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_verifier.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h"
-#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -217,10 +216,6 @@ class OAuth2LoginManager : public KeyedService,
   void RecordSessionRestoreOutcome(SessionRestoreOutcome outcome,
                                    SessionRestoreState state);
 
-  // Callback from TokenHandleUtil, used to release util.
-  void OnTokenHandleComplete(const user_manager::UserID& user_id,
-                             TokenHandleUtil::TokenHandleStatus status);
-
   // Records |outcome| of merge verification check. |is_pre_merge| specifies
   // if this is pre or post merge session verification.
   static void RecordCookiesCheckOutcome(
@@ -237,7 +232,6 @@ class OAuth2LoginManager : public KeyedService,
   scoped_ptr<OAuth2TokenFetcher> oauth2_token_fetcher_;
   scoped_ptr<OAuth2LoginVerifier> login_verifier_;
   scoped_ptr<gaia::GaiaOAuthClient> account_info_fetcher_;
-  scoped_ptr<TokenHandleUtil> token_handle_util_;
 
   // OAuth2 refresh token.
   std::string refresh_token_;
@@ -253,8 +247,6 @@ class OAuth2LoginManager : public KeyedService,
   // TODO(zelidrag|gspencer): Figure out how to get rid of ProfileHelper so we
   // can change the line below to ObserverList<Observer, true>.
   ObserverList<Observer, false> observer_list_;
-
-  base::WeakPtrFactory<OAuth2LoginManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginManager);
 };
