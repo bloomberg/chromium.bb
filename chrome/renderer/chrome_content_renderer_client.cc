@@ -1322,12 +1322,16 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebFrame* frame,
   return false;
 }
 
-#if defined(ENABLE_EXTENSIONS)
 bool ChromeContentRendererClient::ShouldForwardToGuestContainer(
     const IPC::Message& msg) {
-  return extensions::GuestViewContainer::HandlesMessage(msg);
-}
+  if (IPC_MESSAGE_CLASS(msg) == GuestViewMsgStart)
+    return true;
+#if defined(ENABLE_EXTENSIONS)
+  return IPC_MESSAGE_CLASS(msg) == ExtensionsGuestViewMsgStart;
+#else
+  return false;
 #endif
+}
 
 bool ChromeContentRendererClient::WillSendRequest(
     blink::WebFrame* frame,

@@ -46,13 +46,15 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   static std::vector<MimeHandlerViewContainer*> FromRenderFrame(
       content::RenderFrame* render_frame);
 
+  // GuestViewContainer implementation.
+  bool OnMessage(const IPC::Message& message) override;
+  void OnReady() override;
+
   // BrowserPluginDelegate implementation.
-  void Ready() override;
   void DidFinishLoading() override;
   void DidReceiveData(const char* data, int data_length) override;
   void DidResizeElement(const gfx::Size& old_size,
                         const gfx::Size& new_size) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate*) override;
 
   // WebURLLoaderClient overrides.

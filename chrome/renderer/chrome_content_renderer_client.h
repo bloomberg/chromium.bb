@@ -113,9 +113,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                   bool is_initial_navigation,
                   bool is_server_redirect,
                   bool* send_referrer) override;
-#if defined(ENABLE_EXTENSIONS)
   bool ShouldForwardToGuestContainer(const IPC::Message& msg) override;
-#endif
   bool WillSendRequest(blink::WebFrame* frame,
                        ui::PageTransition transition_type,
                        const GURL& url,

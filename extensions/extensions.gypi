@@ -867,6 +867,8 @@
       'renderer/guest_view/extensions_guest_view_container.h',
       'renderer/guest_view/guest_view_container.cc',
       'renderer/guest_view/guest_view_container.h',
+      'renderer/guest_view/guest_view_request.cc',
+      'renderer/guest_view/guest_view_request.h',
       'renderer/guest_view/guest_view_internal_custom_bindings.cc',
       'renderer/guest_view/guest_view_internal_custom_bindings.h',
       'renderer/guest_view/mime_handler_view/mime_handler_view_container.cc',

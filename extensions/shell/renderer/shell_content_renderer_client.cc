@@ -19,6 +19,7 @@
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
+#include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if !defined(DISABLE_NACL)
@@ -97,7 +98,8 @@ blink::WebPlugin* ShellContentRendererClient::CreatePluginReplacement(
 
 bool ShellContentRendererClient::ShouldForwardToGuestContainer(
     const IPC::Message& msg) {
-  return GuestViewContainer::HandlesMessage(msg);
+  return (IPC_MESSAGE_CLASS(msg) == GuestViewMsgStart) ||
+      (IPC_MESSAGE_CLASS(msg) == ExtensionsGuestViewMsgStart);
 }
 
 bool ShellContentRendererClient::WillSendRequest(
