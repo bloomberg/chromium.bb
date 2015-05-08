@@ -155,8 +155,7 @@ class OzonePlatformGbm : public OzonePlatform {
     gpu_platform_support_host_.reset(
         new DrmGpuPlatformSupportHost(cursor_.get()));
     display_manager_.reset(new DrmDisplayHostManager(
-        gpu_platform_support_host_.get(), device_manager_.get(),
-        GetPrimaryDisplayCardPath()));
+        gpu_platform_support_host_.get(), device_manager_.get()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(

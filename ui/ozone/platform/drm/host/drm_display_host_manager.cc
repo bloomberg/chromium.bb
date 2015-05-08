@@ -4,9 +4,12 @@
 
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 
+#include <fcntl.h>
 #include <stdio.h>
+#include <xf86drm.h>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
@@ -26,6 +29,8 @@ namespace {
 
 typedef base::Callback<void(const base::FilePath&, scoped_ptr<DrmDeviceHandle>)>
     OnOpenDeviceReplyCallback;
+
+const char kDefaultGraphicsCardPattern[] = "/dev/dri/card%d";
 
 const char* kDisplayActionString[] = {
     "ADD",
@@ -51,6 +56,33 @@ void CloseDeviceOnWorkerThread(
   reply_runner->PostTask(FROM_HERE, callback);
 }
 
+base::FilePath GetPrimaryDisplayCardPath() {
+  struct drm_mode_card_res res;
+  for (int i = 0; /* end on first card# that does not exist */; i++) {
+    std::string card_path = base::StringPrintf(kDefaultGraphicsCardPattern, i);
+
+    if (access(card_path.c_str(), F_OK) != 0)
+      break;
+
+    int fd = open(card_path.c_str(), O_RDWR | O_CLOEXEC);
+    if (fd < 0) {
+      VPLOG(1) << "Failed to open '" << card_path << "'";
+      continue;
+    }
+
+    memset(&res, 0, sizeof(struct drm_mode_card_res));
+    int ret = drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res);
+    close(fd);
+    if (ret == 0 && res.count_crtcs > 0) {
+      return base::FilePath(card_path);
+    }
+
+    VPLOG_IF(1, ret) << "Failed to get DRM resources for '" << card_path << "'";
+  }
+
+  return base::FilePath();
+}
+
 class FindDisplaySnapshotById {
  public:
   FindDisplaySnapshotById(int64_t display_id) : display_id_(display_id) {}
@@ -65,14 +97,12 @@ class FindDisplaySnapshotById {
 
 }  // namespace
 
-DrmDisplayHostManager::DrmDisplayHostManager(
-    DrmGpuPlatformSupportHost* proxy,
-    DeviceManager* device_manager,
-    const base::FilePath& primary_graphics_card_path)
+DrmDisplayHostManager::DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
+                                             DeviceManager* device_manager)
     : proxy_(proxy),
       device_manager_(device_manager),
       delegate_(nullptr),
-      primary_graphics_card_path_(primary_graphics_card_path),
+      primary_graphics_card_path_(GetPrimaryDisplayCardPath()),
       has_dummy_display_(false),
       task_pending_(false),
       weak_ptr_factory_(this) {

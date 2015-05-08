@@ -32,8 +32,7 @@ class DrmDisplayHostManager : public DeviceEventObserver,
                               public GpuPlatformSupportHost {
  public:
   DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
-                        DeviceManager* device_manager,
-                        const base::FilePath& primary_graphics_card_path);
+                        DeviceManager* device_manager);
   ~DrmDisplayHostManager() override;
 
   DisplaySnapshot* GetDisplay(int64_t display_id);

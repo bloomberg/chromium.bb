@@ -4,22 +4,17 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
 
-#include <fcntl.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/mman.h>
-#include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "base/strings/stringprintf.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
 
 namespace {
-
-const char kDefaultGraphicsCardPattern[] = "/dev/dri/card%d";
 
 bool IsCrtcInUse(uint32_t crtc,
                  const ScopedVector<HardwareDisplayControllerInfo>& displays) {
@@ -122,33 +117,6 @@ void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
   screen_manager->ConfigureDisplayController(
       drm, displays[0]->crtc()->crtc_id, displays[0]->connector()->connector_id,
       gfx::Point(), displays[0]->connector()->modes[0]);
-}
-
-base::FilePath GetPrimaryDisplayCardPath() {
-  struct drm_mode_card_res res;
-  for (int i = 0; /* end on first card# that does not exist */; i++) {
-    std::string card_path = base::StringPrintf(kDefaultGraphicsCardPattern, i);
-
-    if (access(card_path.c_str(), F_OK) != 0)
-      break;
-
-    int fd = open(card_path.c_str(), O_RDWR | O_CLOEXEC);
-    if (fd < 0) {
-      VPLOG(1) << "Failed to open '" << card_path << "'";
-      continue;
-    }
-
-    memset(&res, 0, sizeof(struct drm_mode_card_res));
-    int ret = drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res);
-    close(fd);
-    if (ret == 0 && res.count_crtcs > 0) {
-      return base::FilePath(card_path);
-    }
-
-    VPLOG_IF(1, ret) << "Failed to get DRM resources for '" << card_path << "'";
-  }
-
-  return base::FilePath();
 }
 
 }  // namespace ui

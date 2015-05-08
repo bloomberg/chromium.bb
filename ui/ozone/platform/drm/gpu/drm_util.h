@@ -46,8 +46,6 @@ bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
 void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
                                          ScreenManager* screen_manager);
 
-base::FilePath GetPrimaryDisplayCardPath();
-
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_GPU_DRM_UTIL_H_
