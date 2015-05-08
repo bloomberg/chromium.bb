@@ -24,6 +24,13 @@ cr.define('extensions', function() {
     showOverlay_: null,
 
     /**
+     * The id of the extension that this options page display.
+     * @type {string}
+     * @private
+     */
+    extensionId_: '',
+
+    /**
      * Initialize the page.
      * @param {function(HTMLDivElement)} showOverlay The function to show or
      *     hide the ExtensionOptionsOverlay; this should take a single parameter
@@ -65,9 +72,6 @@ cr.define('extensions', function() {
         $('extension-options-overlay-guest').removeChild(extensionoptions);
 
       $('extension-options-overlay-icon').removeAttribute('src');
-
-      // Remove the options query string.
-      uber.replaceState({}, '');
     },
 
     /**
@@ -84,10 +88,10 @@ cr.define('extensions', function() {
      * chrome/renderer/resources/extensions/extension_options.js
      * to dependencies.
      */
-    setExtensionAndShowOverlay: function(extensionId,
-                                         extensionName,
-                                         extensionIcon,
-                                         shownCallback) {
+    setExtensionAndShow: function(extensionId,
+                                  extensionName,
+                                  extensionIcon,
+                                  shownCallback) {
       var overlay = $('extension-options-overlay');
       var overlayHeader = $('extension-options-overlay-header');
       var overlayGuest = $('extension-options-overlay-guest');
@@ -100,6 +104,7 @@ cr.define('extensions', function() {
 
       var extensionoptions = new window.ExtensionOptions();
       extensionoptions.extension = extensionId;
+      this.extensionId_ = extensionId;
 
       // The <extensionoptions> content's size needs to be restricted to the
       // bounds of the overlay window. The overlay gives a minWidth and
@@ -189,6 +194,21 @@ cr.define('extensions', function() {
       overlayGuest.style.height = '';
 
       overlayGuest.appendChild(extensionoptions);
+    },
+
+    /**
+     * Dispatches a 'cancelOverlay' event on the $('overlay') element.
+     */
+    close: function() {
+      cr.dispatchSimpleEvent($('overlay'), 'cancelOverlay');
+    },
+
+    /**
+     * Returns extension id that this options page set.
+     * @return {string}
+     */
+    getExtensionId: function() {
+      return this.extensionId_;
     },
 
     /**

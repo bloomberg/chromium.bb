@@ -286,6 +286,9 @@ cr.define('extensions', function() {
             assertNotReached();
         }
 
+        if (eventData.event_type == EventType.UNLOADED)
+          this.hideEmbeddedExtensionOptions_(eventData.item_id);
+
         if (eventData.event_type == EventType.INSTALLED ||
             eventData.event_type == EventType.UNINSTALLED) {
           this.delegate_.onExtensionCountChanged();
@@ -1090,19 +1093,38 @@ cr.define('extensions', function() {
         if (cr.ui.FocusOutlineManager.forDocument(document).visible)
           overlay.setInitialFocus();
       };
-      overlay.setExtensionAndShowOverlay(extensionId, extension.name,
-                                         extension.iconUrl, shownCallback);
+      overlay.setExtensionAndShow(extensionId, extension.name,
+                                  extension.iconUrl, shownCallback);
       this.optionsShown_ = true;
 
       var self = this;
       $('overlay').addEventListener('cancelOverlay', function f() {
         self.optionsShown_ = false;
         $('overlay').removeEventListener('cancelOverlay', f);
+
+        // Remove the options query string.
+        uber.replaceState({}, '');
       });
 
       // TODO(dbeam): why do we need to focus <extensionoptions> before and
       // after its showing animation? Makes very little sense to me.
       overlay.setInitialFocus();
+    },
+
+    /**
+     * Hides the extension options overlay for the extension with id
+     * |extensionId|. If there is an overlay showing for a different extension,
+     * nothing happens.
+     * @param {string} extension id to hide.
+     * @private
+     */
+    hideEmbeddedExtensionOptions_: function(extensionId) {
+      if (!this.optionsShown_)
+        return;
+
+      var overlay = extensions.ExtensionOptionsOverlay.getInstance();
+      if (overlay.getExtensionId() == extensionId)
+        overlay.close();
     },
 
     /**

@@ -369,8 +369,8 @@ TEST_F('InstallGoodExtensionSettingsWebUITest', 'testAccessibility',
 TEST_F('InstallGoodExtensionSettingsWebUITest', 'showOptions', function() {
   var showExtensionOptions = function() {
     var optionsOverlay = extensions.ExtensionOptionsOverlay.getInstance();
-    optionsOverlay.setExtensionAndShowOverlay(GOOD_CRX_ID, 'GOOD!', '',
-                                              this.nextStep.bind(this));
+    optionsOverlay.setExtensionAndShow(GOOD_CRX_ID, 'GOOD!', '',
+                                       this.nextStep.bind(this));
 
     // Preferred size changes don't happen in browser tests. Just fake it.
     document.querySelector('extensionoptions').onpreferredsizechanged(
