@@ -255,7 +255,6 @@ void RenderViewTest::SetUp() {
   // This needs to pass the mock render thread to the view.
   RenderViewImpl* view =
       RenderViewImpl::Create(view_params, compositor_deps_.get(), false);
-  view->AddRef();
   view_ = view;
 }
 
