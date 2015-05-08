@@ -130,7 +130,7 @@ bool AnimationStack::getAnimatedBoundingBox(FloatBox& box, CSSPropertyID propert
             double endRange = 1;
             timing.timingFunction->range(&startRange, &endRange);
             FloatBox expandingBox(originalBox);
-            if (!CompositorAnimations::instance()->getAnimatedBoundingBox(expandingBox, *effect->effect(), startRange, endRange))
+            if (!CompositorAnimations::instance()->getAnimatedBoundingBox(expandingBox, *effect->model(), startRange, endRange))
                 return false;
             box.expandTo(expandingBox);
         }

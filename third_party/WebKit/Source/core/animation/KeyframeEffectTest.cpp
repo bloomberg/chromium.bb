@@ -93,7 +93,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     Element* target = animation->target();
     EXPECT_EQ(*element.get(), *target);
 
-    const KeyframeVector keyframes = toKeyframeEffectModelBase(animation->effect())->getFrames();
+    const KeyframeVector keyframes = toKeyframeEffectModelBase(animation->model())->getFrames();
 
     EXPECT_EQ(0, keyframes[0]->offset());
     EXPECT_EQ(1, keyframes[1]->offset());

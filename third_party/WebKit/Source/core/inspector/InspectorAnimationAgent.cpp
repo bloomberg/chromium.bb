@@ -69,19 +69,19 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
     }
 }
 
-static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation(KeyframeEffect* animation, bool isTransition)
+static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation(KeyframeEffect* effect, bool isTransition)
 {
     ComputedTimingProperties computedTiming;
-    animation->computedTiming(computedTiming);
+    effect->computedTiming(computedTiming);
     double delay = computedTiming.delay();
     double duration = computedTiming.duration().getAsUnrestrictedDouble();
-    String easing = animation->specifiedTiming().timingFunction->toString();
+    String easing = effect->specifiedTiming().timingFunction->toString();
 
     if (isTransition) {
         // Obtain keyframes and convert keyframes back to delay
-        ASSERT(animation->effect()->isKeyframeEffectModel());
-        const KeyframeEffectModelBase* effect = toKeyframeEffectModelBase(animation->effect());
-        WillBeHeapVector<RefPtrWillBeMember<Keyframe> > keyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(effect->getFrames());
+        ASSERT(effect->model()->isKeyframeEffectModel());
+        const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
+        WillBeHeapVector<RefPtrWillBeMember<Keyframe> > keyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
         if (keyframes.size() == 3) {
             delay = keyframes.at(1)->offset() * duration;
             duration -= delay;
@@ -100,8 +100,8 @@ static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation
         .setDuration(duration)
         .setDirection(computedTiming.direction())
         .setFill(computedTiming.fill())
-        .setName(animation->name())
-        .setBackendNodeId(DOMNodeIds::idForNode(animation->target()))
+        .setName(effect->name())
+        .setBackendNodeId(DOMNodeIds::idForNode(effect->target()))
         .setEasing(easing);
     return animationObject.release();
 }
@@ -131,7 +131,7 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRule
     RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
     for (const auto& styleKeyframe : styleKeyframes) {
-        WillBeHeapVector<RefPtrWillBeMember<Keyframe>> normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(toKeyframeEffectModelBase(toKeyframeEffect(player.source())->effect())->getFrames());
+        WillBeHeapVector<RefPtrWillBeMember<Keyframe>> normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(toKeyframeEffectModelBase(toKeyframeEffect(player.source())->model())->getFrames());
         TimingFunction* easing = nullptr;
         for (const auto& keyframe : normalizedKeyframes) {
             if (styleKeyframe->keys().contains(keyframe->offset()))
@@ -149,10 +149,10 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForStyleRule
 
 static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const KeyframeEffect* animation)
 {
-    if (!animation->effect()->isKeyframeEffectModel())
+    if (!animation->model()->isKeyframeEffectModel())
         return nullptr;
-    const KeyframeEffectModelBase* effect = toKeyframeEffectModelBase(animation->effect());
-    WillBeHeapVector<RefPtrWillBeMember<Keyframe> > normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(effect->getFrames());
+    const KeyframeEffectModelBase* model = toKeyframeEffectModelBase(animation->model());
+    WillBeHeapVector<RefPtrWillBeMember<Keyframe> > normalizedKeyframes = KeyframeEffectModelBase::normalizedKeyframesForInspector(model->getFrames());
     RefPtr<TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle> > keyframes = TypeBuilder::Array<TypeBuilder::Animation::KeyframeStyle>::create();
 
     for (const auto& keyframe : normalizedKeyframes) {
@@ -263,31 +263,31 @@ void InspectorAnimationAgent::setCurrentTime(ErrorString*, double currentTime)
 
 void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& playerId, double duration, double delay)
 {
-    Animation* player = assertAnimation(errorString, playerId);
-    if (!player)
+    Animation* animation = assertAnimation(errorString, playerId);
+    if (!animation)
         return;
 
     AnimationType type = m_idToAnimationType.get(playerId);
     if (type == AnimationType::CSSTransition) {
-        KeyframeEffect* animation = toKeyframeEffect(player->source());
-        KeyframeEffectModelBase* effect = toKeyframeEffectModelBase(animation->effect());
-        const AnimatableValueKeyframeEffectModel* oldEffect = toAnimatableValueKeyframeEffectModel(effect);
+        KeyframeEffect* effect = toKeyframeEffect(animation->source());
+        KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
+        const AnimatableValueKeyframeEffectModel* oldModel = toAnimatableValueKeyframeEffectModel(model);
         // Refer to CSSAnimations::calculateTransitionUpdateForProperty() for the structure of transitions.
-        const KeyframeVector& frames = oldEffect->getFrames();
+        const KeyframeVector& frames = oldModel->getFrames();
         ASSERT(frames.size() == 3);
         KeyframeVector newFrames;
         for (int i = 0; i < 3; i++)
             newFrames.append(toAnimatableValueKeyframe(frames[i]->clone().get()));
         // Update delay, represented by the distance between the first two keyframes.
         newFrames[1]->setOffset(delay / (delay + duration));
-        effect->setFrames(newFrames);
+        model->setFrames(newFrames);
 
-        RefPtrWillBeRawPtr<AnimationEffectTiming> timing = player->source()->timing();
+        RefPtrWillBeRawPtr<AnimationEffectTiming> timing = animation->source()->timing();
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration + delay);
         timing->setDuration(unrestrictedDuration);
     } else if (type == AnimationType::WebAnimation) {
-        RefPtrWillBeRawPtr<AnimationEffectTiming> timing = player->source()->timing();
+        RefPtrWillBeRawPtr<AnimationEffectTiming> timing = animation->source()->timing();
         UnrestrictedDoubleOrString unrestrictedDuration;
         unrestrictedDuration.setUnrestrictedDouble(duration);
         timing->setDuration(unrestrictedDuration);

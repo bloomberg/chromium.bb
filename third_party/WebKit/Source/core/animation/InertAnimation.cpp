@@ -39,9 +39,9 @@ PassRefPtrWillBeRawPtr<InertAnimation> InertAnimation::create(PassRefPtrWillBeRa
     return adoptRefWillBeNoop(new InertAnimation(effect, timing, paused, inheritedTime));
 }
 
-InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, bool paused, double inheritedTime)
+InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, bool paused, double inheritedTime)
     : AnimationEffect(timing)
-    , m_effect(effect)
+    , m_model(model)
     , m_paused(paused)
     , m_inheritedTime(inheritedTime)
 {
@@ -58,7 +58,7 @@ void InertAnimation::sample(OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMemb
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    return m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), result);
+    return m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), result);
 }
 
 double InertAnimation::calculateTimeToEffectChange(bool, double, double) const
@@ -68,7 +68,7 @@ double InertAnimation::calculateTimeToEffectChange(bool, double, double) const
 
 DEFINE_TRACE(InertAnimation)
 {
-    visitor->trace(m_effect);
+    visitor->trace(m_model);
     AnimationEffect::trace(visitor);
 }
 

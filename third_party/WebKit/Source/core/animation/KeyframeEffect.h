@@ -64,9 +64,9 @@ public:
     virtual bool isAnimation() const override { return true; }
 
     bool affects(PropertyHandle) const;
-    const EffectModel* effect() const { return m_effect.get(); }
-    EffectModel* effect() { return m_effect.get(); }
-    void setEffect(PassRefPtrWillBeRawPtr<EffectModel> effect) { m_effect = effect; }
+    const EffectModel* model() const { return m_model.get(); }
+    EffectModel* model() { return m_model.get(); }
+    void setModel(PassRefPtrWillBeRawPtr<EffectModel> model) { m_model = model; }
     Priority priority() const { return m_priority; }
     Element* target() const { return m_target; }
 
@@ -106,7 +106,7 @@ private:
     KeyframeEffect(Element*, PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, Priority, PassOwnPtrWillBeRawPtr<EventDelegate>);
 
     RawPtrWillBeMember<Element> m_target;
-    RefPtrWillBeMember<EffectModel> m_effect;
+    RefPtrWillBeMember<EffectModel> m_model;
     RawPtrWillBeMember<SampledEffect> m_sampledEffect;
 
     Priority m_priority;

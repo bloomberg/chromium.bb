@@ -111,9 +111,9 @@ public:
         {
         }
 
-        UpdatedAnimationStyle(Animation* animation, KeyframeEffectModelBase* effect, const UpdatedAnimationStyle::CompositableStyleSnapshot& snapshot)
+        UpdatedAnimationStyle(Animation* animation, KeyframeEffectModelBase* model, const UpdatedAnimationStyle::CompositableStyleSnapshot& snapshot)
             : animation(animation)
-            , effect(effect)
+            , model(model)
             , snapshot(snapshot)
         {
         }
@@ -121,12 +121,12 @@ public:
         DEFINE_INLINE_TRACE()
         {
             visitor->trace(animation);
-            visitor->trace(effect);
+            visitor->trace(model);
             visitor->trace(snapshot);
         }
 
         RawPtrWillBeMember<Animation> animation;
-        RawPtrWillBeMember<KeyframeEffectModelBase> effect;
+        RawPtrWillBeMember<KeyframeEffectModelBase> model;
         CompositableStyleSnapshot snapshot;
     };
 
@@ -152,20 +152,20 @@ public:
         m_animationsWithUpdates.append(UpdatedAnimation(name, animation, effect, specifiedTiming, styleRule));
         m_suppressedAnimations.add(animation);
     }
-    void updateAnimationStyle(Animation* animation, KeyframeEffectModelBase* effect, LayoutObject* layoutObject, const ComputedStyle& newStyle)
+    void updateAnimationStyle(Animation* animation, KeyframeEffectModelBase* model, LayoutObject* layoutObject, const ComputedStyle& newStyle)
     {
         UpdatedAnimationStyle::CompositableStyleSnapshot snapshot;
         if (layoutObject) {
             const ComputedStyle& oldStyle = layoutObject->styleRef();
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyOpacity, oldStyle, newStyle) && effect->affects(PropertyHandle(CSSPropertyOpacity)))
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyOpacity, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyOpacity)))
                 snapshot.opacity = CSSAnimatableValueFactory::create(CSSPropertyOpacity, newStyle);
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyTransform, oldStyle, newStyle) && effect->affects(PropertyHandle(CSSPropertyTransform)))
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyTransform, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyTransform)))
                 snapshot.transform = CSSAnimatableValueFactory::create(CSSPropertyTransform, newStyle);
-            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyWebkitFilter, oldStyle, newStyle) && effect->affects(PropertyHandle(CSSPropertyWebkitFilter)))
+            if (!CSSPropertyEquality::propertiesEqual(CSSPropertyWebkitFilter, oldStyle, newStyle) && model->affects(PropertyHandle(CSSPropertyWebkitFilter)))
                 snapshot.webkitFilter = CSSAnimatableValueFactory::create(CSSPropertyWebkitFilter, newStyle);
         }
 
-        m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(animation, effect, snapshot));
+        m_animationsWithStyleUpdates.append(UpdatedAnimationStyle(animation, model, snapshot));
     }
 
     void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertAnimation> effect)

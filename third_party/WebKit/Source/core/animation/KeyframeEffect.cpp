@@ -49,9 +49,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* target, PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, Priority priority, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
+PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* target, PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, Priority priority, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
 {
-    return adoptRefWillBeNoop(new KeyframeEffect(target, effect, timing, priority, eventDelegate));
+    return adoptRefWillBeNoop(new KeyframeEffect(target, model, timing, priority, eventDelegate));
 }
 
 PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState& exceptionState)
@@ -76,10 +76,10 @@ PassRefPtrWillBeRawPtr<KeyframeEffect> KeyframeEffect::create(Element* element, 
     return create(element, EffectInput::convert(element, keyframeDictionaryVector, exceptionState), Timing());
 }
 
-KeyframeEffect::KeyframeEffect(Element* target, PassRefPtrWillBeRawPtr<EffectModel> effect, const Timing& timing, Priority priority, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
+KeyframeEffect::KeyframeEffect(Element* target, PassRefPtrWillBeRawPtr<EffectModel> model, const Timing& timing, Priority priority, PassOwnPtrWillBeRawPtr<EventDelegate> eventDelegate)
     : AnimationEffect(timing, eventDelegate)
     , m_target(target)
-    , m_effect(effect)
+    , m_model(model)
     , m_sampledEffect(nullptr)
     , m_priority(priority)
 {
@@ -133,7 +133,7 @@ void KeyframeEffect::applyEffects()
 {
     ASSERT(isInEffect());
     ASSERT(animation());
-    if (!m_target || !m_effect)
+    if (!m_target || !m_model)
         return;
 
     // Cancel composited animation of transform if a motion path has been introduced on the element.
@@ -148,7 +148,7 @@ void KeyframeEffect::applyEffects()
     ASSERT(iteration >= 0);
     OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations = m_sampledEffect ? m_sampledEffect->mutableInterpolations() : nullptr;
     // FIXME: Handle iteration values which overflow int.
-    m_effect->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), interpolations);
+    m_model->sample(static_cast<int>(iteration), timeFraction(), iterationDuration(), interpolations);
     if (m_sampledEffect) {
         m_sampledEffect->setInterpolations(interpolations.release());
     } else if (interpolations && !interpolations->isEmpty()) {
@@ -178,7 +178,7 @@ void KeyframeEffect::clearEffects()
 
 void KeyframeEffect::updateChildrenAndEffects() const
 {
-    if (!m_effect)
+    if (!m_model)
         return;
     if (isInEffect())
         const_cast<KeyframeEffect*>(this)->applyEffects();
@@ -240,12 +240,12 @@ void KeyframeEffect::notifyElementDestroyed()
 
 bool KeyframeEffect::isCandidateForAnimationOnCompositor(double animationPlaybackRate) const
 {
-    if (!effect()
+    if (!model()
         || !m_target
         || (m_target->computedStyle() && m_target->computedStyle()->hasMotionPath()))
         return false;
 
-    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *m_target, animation(), *effect(), animationPlaybackRate);
+    return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *m_target, animation(), *model(), animationPlaybackRate);
 }
 
 bool KeyframeEffect::maybeStartAnimationOnCompositor(int group, double startTime, double currentTime, double animationPlaybackRate)
@@ -255,7 +255,7 @@ bool KeyframeEffect::maybeStartAnimationOnCompositor(int group, double startTime
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *animation(), *effect(), m_compositorAnimationIds, animationPlaybackRate))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *animation(), *model(), m_compositorAnimationIds, animationPlaybackRate))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;
@@ -273,7 +273,7 @@ bool KeyframeEffect::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
 
 bool KeyframeEffect::affects(PropertyHandle property) const
 {
-    return m_effect && m_effect->affects(property);
+    return m_model && m_model->affects(property);
 }
 
 bool KeyframeEffect::cancelAnimationOnCompositor()
@@ -301,8 +301,8 @@ void KeyframeEffect::restartAnimationOnCompositor()
 
 void KeyframeEffect::cancelIncompatibleAnimationsOnCompositor()
 {
-    if (m_target && animation() && effect())
-        CompositorAnimations::instance()->cancelIncompatibleAnimationsOnCompositor(*m_target, *animation(), *effect());
+    if (m_target && animation() && model())
+        CompositorAnimations::instance()->cancelIncompatibleAnimationsOnCompositor(*m_target, *animation(), *model());
 }
 
 void KeyframeEffect::pauseAnimationForTestingOnCompositor(double pauseTime)
@@ -333,7 +333,7 @@ void KeyframeEffect::attachCompositedLayers()
 DEFINE_TRACE(KeyframeEffect)
 {
     visitor->trace(m_target);
-    visitor->trace(m_effect);
+    visitor->trace(m_model);
     visitor->trace(m_sampledEffect);
     AnimationEffect::trace(visitor);
 }
