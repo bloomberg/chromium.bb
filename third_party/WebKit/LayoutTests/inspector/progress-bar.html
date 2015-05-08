@@ -20,7 +20,6 @@ InspectorTest.MockProgressIndicator.prototype = {
     done: function()
     {
         InspectorTest.addResult("progress indicator: done");
-        this.dispatchEventToListeners(WebInspector.Progress.Events.Done);
     },
 
     setTotalWork: function(totalWork)
@@ -59,41 +58,19 @@ InspectorTest.MockProgressIndicator.prototype = {
             totalWork = Math.round(totalWork * roundFactor) / roundFactor;
 
         InspectorTest.addResult("progress: `" + this._title + "' " + worked + " out of " + totalWork + " done.");
-    },
-    
-    addEventListener: function(eventType, listener, thisObject) { },
-
-    __proto__: WebInspector.Object.prototype
+    }    
 }
 
 }
 
 var test = function()
-{
-    function installProgressListeners(progressName, progress)
-    {
-        function onDone()
-        {
-            InspectorTest.addResult("Progress " + progressName + " dispatched Done event.");
-        }
-
-        function onCanceled()
-        {
-            InspectorTest.addResult("Progress " + progressName + " dispatched Canceled event.");
-        }
-
-        progress.addEventListener(WebInspector.Progress.Events.Done, onDone);
-        progress.addEventListener(WebInspector.Progress.Events.Canceled, onCanceled);
-    }
-    
+{    
     InspectorTest.runTestSuite([
         function testOneSubProgress(next)
         {
             var indicator = new InspectorTest.MockProgressIndicator();
             var composite = new WebInspector.CompositeProgress(indicator);
             var subProgress = composite.createSubProgress();
-            installProgressListeners("composite", composite);
-            installProgressListeners("subProgress", subProgress);
 
             InspectorTest.addResult("Testing CompositeProgress with a single subprogress:");
             indicator.dump();
@@ -115,9 +92,6 @@ var test = function()
             var composite = new WebInspector.CompositeProgress(indicator);
             var subProgress1 = composite.createSubProgress();
             var subProgress2 = composite.createSubProgress(3);
-            installProgressListeners("composite", composite);
-            installProgressListeners("subProgress1", subProgress1);
-            installProgressListeners("subProgress2", subProgress2);
 
             InspectorTest.addResult("Testing CompositeProgress with multiple subprogresses:");
             indicator.dump();
@@ -151,8 +125,6 @@ var test = function()
             var indicator = new InspectorTest.MockProgressIndicator();
             var composite = new WebInspector.CompositeProgress(indicator);
             var subProgress = composite.createSubProgress();
-            installProgressListeners("composite", composite);
-            installProgressListeners("subProgress", subProgress);
 
             InspectorTest.addResult("Testing isCanceled:");
             InspectorTest.assertTrue(!subProgress.isCanceled(), "progress should not be canceled");
@@ -168,11 +140,6 @@ var test = function()
             var subProgress01 = composite0.createSubProgress();
             var composite1 = new WebInspector.CompositeProgress(subProgress01);
             var subProgress11 = composite1.createSubProgress(10); // Weight should have no effect.
-
-            installProgressListeners("composite0", composite0);
-            installProgressListeners("composite1", composite1);
-            installProgressListeners("subProgress01", subProgress01);
-            installProgressListeners("subProgress11", subProgress11);
 
             InspectorTest.addResult("Testing nested subprogresses:");
             indicator.dump();
