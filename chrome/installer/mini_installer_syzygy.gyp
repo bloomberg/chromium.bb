@@ -21,7 +21,9 @@
           'targets': [
             {
               'target_name': 'mini_installer_syzygy',
+              'type': 'executable',
               'product_name': 'mini_installer',
+
               'variables': {
                 'chrome_dll_project': [
                   '../chrome_syzygy.gyp:chrome_dll_syzygy',
