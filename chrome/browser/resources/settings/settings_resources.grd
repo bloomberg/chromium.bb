@@ -64,8 +64,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS"
                  file="settings_page/settings_page.css"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_STYLE_HTML"
-                 file="settings_page/settings_page_header_style.html"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_CSS"
+                 file="settings_page/settings_page_header.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_HTML"
                  file="settings_page/settings_page_header.html"

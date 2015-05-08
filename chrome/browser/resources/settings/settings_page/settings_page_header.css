@@ -1,0 +1,28 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host,
+.breadcrumbs {
+  align-items: center;
+  display: flex;
+}
+
+h1 {
+  font-size: 18px;
+  margin: 0;
+}
+
+paper-material {
+  -webkit-padding-start: 80px;
+  background-color: white;
+  display: flex;
+  height: 95px;
+  width: 100%;
+  z-index: 10;
+}
+
+.icon-container {
+  -webkit-margin-start: -40px;
+  width: 40px;
+}

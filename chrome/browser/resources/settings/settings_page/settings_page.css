@@ -6,7 +6,7 @@
  * @fileoverview
  * Common styles for Settings pages.
  */
-:host > paper-shadow {
+:host > paper-material {
   -webkit-padding-start: 80px;
   background-color: white;
   padding-bottom: 40px;
@@ -18,7 +18,7 @@ cr-settings-page-header {
   min-height: 24px;
 }
 
-core-label {
+cr-settings-checkbox {
   -webkit-margin-end: 10px;
   -webkit-margin-start: 0;
   margin-bottom: 10px;

@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview
- * 'cr-settings-page-header' shows a basic heading with a 'core-icon'.
+ * 'cr-settings-page-header' shows a basic heading with a 'iron-icon'.
  *
  * Example:
  *
@@ -14,38 +14,85 @@
  * @group Chrome Settings Elements
  * @element cr-settings-page-header
  */
-Polymer('cr-settings-page-header', {
-  publish: {
+Polymer({
+  is: 'cr-settings-page-header',
+
+  properties: {
     /**
      * The current stack of pages being viewed. I.e., may contain subpages.
-     *
-     * @attribute pageStack
-     * @type Array<HTMLElement>
-     * @default null
+     * @type {!Array<!HTMLElement>}
      */
-    pageStack: null,
+    pageStack: {
+      type: Array,
+      value: function() { return []; },
+    },
 
     /**
      * The currently selected page.
-     *
-     * @attribute selectedPage
-     * @type HTMLElement
-     * @default null
+     * @type {?HTMLElement}
      */
-    selectedPage: null,
+    selectedPage: {
+      type: Object,
+      observer: 'selectedPageChanged_',
+    },
 
-    computed: {
-      currentPage: 'pageStack[pageStack.length - 1]',
-      parentPages: 'getParentPages_(pageStack)',
-      topPage: 'pageStack[0]'
-    }
+    /**
+     * The icon of the page at the root of the stack.
+     * @private
+     */
+    topPageIcon_: {
+      type: String,
+      computed: 'getTopPageIcon_(pageStack)',
+    },
+
+    /**
+     * The parent pages of the current page.
+     * @private {!Array<!HTMLElement>}
+     */
+    parentPages_: {
+      type: Array,
+      computed: 'getParentPages_(pageStack)',
+    },
+
+    /**
+     * The title of the current page.
+     * @private
+     */
+    currentPageTitle_: {
+      type: String,
+      computed: 'getCurrentPageTitle_(pageStack)',
+    },
   },
 
-  ready: function() {
-    this.pageStack = [];
+  /**
+   * @param {!Array<!HTMLElement>} pageStack
+   * @return {string} The icon for the top page in the stack.
+   * @private
+   */
+  getTopPageIcon_: function(pageStack) {
+    return pageStack[0].icon;
   },
 
-  selectedPageChanged: function() {
+  /**
+   * @param {!HTMLElement} page
+   * @return {string} A url link to the given page.
+   * @private
+   */
+  urlFor_: function(page) {
+    return page.route ? urlFor(page.route) : '';
+  },
+
+  /**
+   * @param {!Array<!HTMLElement>} pageStack
+   * @return {string} The title of the current page.
+   * @private
+   */
+  getCurrentPageTitle_: function(pageStack) {
+    return pageStack[0].pageTitle;
+  },
+
+  /** @private */
+  selectedPageChanged_: function() {
     if (this.selectedPage.subpage) {
       // NOTE: Must reassign pageStack rather than doing push() so that the
       // computed property (parentPages) will be notified of the update.
