@@ -1,6 +1,6 @@
 <html>
 <head>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script>
     function check(expect, actual) {
       var console = document.getElementById('console');
@@ -20,7 +20,7 @@
       textarea.addEventListener('keydown', function (e) {
         textarea.style['overflow'] = 'hidden';
       });
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         textarea.focus();
         if (textInputController.setComposition) {
           // Emulates start input method conversion.

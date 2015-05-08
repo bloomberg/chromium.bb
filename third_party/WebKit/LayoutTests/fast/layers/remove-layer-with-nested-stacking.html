@@ -5,11 +5,11 @@ The square should be a uniform shade of green.
         <span style="display: inline-block; width: 100px; height: 50px; background-color: green; opacity: 0.5;"></span>
     </div>
 </span>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         document.getElementById("inner").style.float = "none";
         if (window.testRunner)
             testRunner.notifyDone();

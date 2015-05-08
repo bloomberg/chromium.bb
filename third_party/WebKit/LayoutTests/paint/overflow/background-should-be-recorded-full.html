@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 body {
     margin: 0;
@@ -18,7 +18,7 @@ body {
 </style>
 <div id="big-black-box"></div>
 <script>
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
    window.scrollTo(0, 10000);
 }, true);
 </script>

@@ -13,7 +13,7 @@ function display(callback)
             testElements[i].style.backgroundColor = "blue";
         }
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 

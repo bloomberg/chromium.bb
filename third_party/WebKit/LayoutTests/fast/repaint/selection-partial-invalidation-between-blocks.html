@@ -7,7 +7,7 @@
     <td id="secondCell">Second cell</td>
  </tr>
 </table>
-<script src="../../resources/run-after-display.js" type="text/javascript"></script>
+<script src="../../resources/run-after-layout-and-paint.js" type="text/javascript"></script>
 <script src="resources/text-based-repaint.js" type="text/javascript"></script>
 <script>
 window.testIsAsync = true;
@@ -22,5 +22,5 @@ function repaintTest() {
     selection.setBaseAndExtent(firstCell, 0, firstCell, 1);
     finishRepaintTest();
 }
-runAfterDisplay(runRepaintTest);
+runAfterLayoutAndPaint(runRepaintTest);
 </script>

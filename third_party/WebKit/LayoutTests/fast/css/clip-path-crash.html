@@ -8,14 +8,14 @@
 from { -webkit-clip-path: inset(0); }
 to   { -webkit-clip-path: inset(20%);</style>
 </style>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
 onload = function() {
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         if (window.testRunner)
             testRunner.notifyDone();
     });

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <script>
       function repaintTest() {
         window.resizeTo(400, 300);
-      }
+      }, true);
     </script>
   </head>
-  <body onload="forceStyleRecalc();repaintTest();;">
+  <body onload="runAfterLayoutAndPaint(repaintTest, true)">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <!-- http://crbug.com/307161
            The mask should get resized on window resize.

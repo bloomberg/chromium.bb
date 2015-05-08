@@ -4,10 +4,10 @@
 <div id="target" style="height:450px;">
     <div style="height:50%; overflow-x:scroll;"></div>
 </div>
-<script src="resources/display-then-call.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
     function changeSize() {
         document.getElementById('target').style.height = '250px';
     }
-    displayThenCall(changeSize);
+    runAfterLayoutAndPaint(changeSize, true);
 </script>

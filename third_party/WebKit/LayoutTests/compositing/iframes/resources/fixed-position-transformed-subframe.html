@@ -29,7 +29,7 @@
         -webkit-perspective: 1px;
     }
   </style>
-  <script src="../../../resources/run-after-display.js"></script>
+  <script src="../../../resources/run-after-layout-and-paint.js"></script>
   <script>
     if (window.testRunner) {
       testRunner.dumpAsTextWithPixelResults();
@@ -45,7 +45,7 @@
       window.scrollTo(0, 150);
  
       if (window.testRunner) {
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
           testRunner.notifyDone();
         });
       }

@@ -1,4 +1,4 @@
-<script src="../resources/run-after-display.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
@@ -6,7 +6,7 @@
     function onPause()
     {
         var videoElement = document.getElementById("fr").contentDocument.querySelector("video");
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
             videoElement.currentTime = videoElement.duration * 0.50;
         });
     }

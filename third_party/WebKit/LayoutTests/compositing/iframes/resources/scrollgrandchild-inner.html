@@ -1,6 +1,6 @@
 <html>
 <head>
-  <script src="../../../resources/run-after-display.js"></script>
+  <script src="../../../resources/run-after-layout-and-paint.js"></script>
   <style>
     body {
       height: 1000px;
@@ -32,7 +32,7 @@
 
     function doTest()
     {
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         // Scroll red box off screen and scroll green box into same place.
         window.scrollTo(0, 400);
         if (window.testRunner)

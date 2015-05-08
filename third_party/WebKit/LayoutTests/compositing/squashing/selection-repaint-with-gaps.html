@@ -20,7 +20,7 @@
      width: 40px;
    }
 </style>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
   
 <!-- This test checks whether repaint rects for selection on squashed layers is correct. -->
   
@@ -40,7 +40,7 @@
         testRunner.waitUntilDone();
     }
 
-    runAfterDisplay(function()
+    runAfterLayoutAndPaint(function()
     {
         if (window.internals)
             window.internals.startTrackingRepaints(document);

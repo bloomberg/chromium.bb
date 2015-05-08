@@ -12,7 +12,7 @@ a:hover:visited { background-color: green }
 <a id="anchor" href="">Should have a green background when hovered</a>
 <script>
 if (window.testRunner) {
-    testRunner.displayAsyncThen(function(){
+    testRunner.layoutAndPaintAsyncThen(function(){
         if (window.eventSender);
             eventSender.mouseMoveTo(anchor.offsetLeft + 1, anchor.offsetTop + 1);
         window.testRunner.notifyDone();

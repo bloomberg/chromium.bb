@@ -12,7 +12,7 @@
     display: none;
 }
 </style>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 
 var left = 10;
@@ -23,7 +23,7 @@ if (window.testRunner) {
 }
 
 function repaintTest() {
-    runAfterDisplay(runTest);
+    runAfterLayoutAndPaint(runTest);
 };
 
 function runTest() {

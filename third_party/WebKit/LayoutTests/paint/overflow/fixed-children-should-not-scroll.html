@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 #bloat {
     height: 10000px;
@@ -32,7 +32,7 @@
     <div id="fixed-child"></div>
 </div>
 <script>
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
    window.scrollTo(0, 100);
 }, true);
 </script>

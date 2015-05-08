@@ -14,11 +14,11 @@
     </style>
 </head>
 
-<body onload="forceStyleRecalc();repaintTest();">
+<body onload="runAfterLayoutAndPaint(repaintTest, true);">
 <div></div>
 
 <script>var zoomCount = 4;</script>
-<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 
 </body>

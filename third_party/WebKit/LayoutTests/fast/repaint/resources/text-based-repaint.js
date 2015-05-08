@@ -4,6 +4,10 @@ window.testIsAsync = false;
 window.outputRepaintRects = true;
 window.generateMinimumRepaint = false; // See comments about 'Minimum repaint' below.
 
+// All repaint tests are asynchronous.
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
 function runRepaintTest()
 {
     if (!window.testRunner || !window.internals) {
@@ -22,9 +26,6 @@ function runRepaintTest()
     else
         testRunner.dumpAsText();
 
-    // All repaint tests are asynchronous.
-    testRunner.waitUntilDone();
-
     function continueRepaintTest()
     {
         window.internals.startTrackingRepaints(document);
@@ -41,7 +42,7 @@ function runRepaintTest()
             continueRepaintTest();
         });
     } else {
-        testRunner.displayAsyncThen(continueRepaintTest);
+        testRunner.layoutAndPaintAsyncThen(continueRepaintTest);
     };
 }
 
@@ -49,16 +50,6 @@ function runRepaintAndPixelTest()
 {
     window.enablePixelTesting = true;
     runRepaintTest();
-}
-
-function runAfterDisplay(callback)
-{
-    if (!window.testRunner) {
-        setTimeout(callback, 500);
-    } else {
-        testRunner.waitUntilDone();
-        testRunner.displayAsyncThen(callback);
-    }
 }
 
 function forceStyleRecalc()
@@ -109,7 +100,7 @@ function finishRepaintTest()
             repaintTestDone();
         });
     } else {
-        testRunner.displayAsyncThen(repaintTestDone);
+        repaintTestDone();
     }
 }
 

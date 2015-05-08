@@ -1,4 +1,4 @@
-<script src="../../resources/run-after-display.js" type="text/javascript"></script>
+<script src="../../resources/run-after-layout-and-paint.js" type="text/javascript"></script>
 <script type="text/javascript">
 
 function step1() {
@@ -19,7 +19,7 @@ function step2() {
     var text = body.firstChild;
     sel.collapse(text, text.length);
     // Wait for the caret to paint.
-    runAfterDisplay(repaintTest);
+    runAfterLayoutAndPaint(repaintTest);
 }
 
 function repaintTest() {

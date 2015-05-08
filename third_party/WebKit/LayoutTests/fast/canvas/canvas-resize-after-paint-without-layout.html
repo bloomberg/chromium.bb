@@ -12,7 +12,7 @@
         height: 300px;
       }
     </style>
-    <script src="../../resources/run-after-display.js"></script>
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <script>
       if (window.testRunner) {
         testRunner.dumpAsTextWithPixelResults();
@@ -24,7 +24,7 @@
         var ctx = canvas.getContext('2d');
         ctx.fillStyle = 'red';
         ctx.fillRect(0, 0, 300, 300);
-        runAfterDisplay(repaintTest);
+        runAfterLayoutAndPaint(repaintTest);
       }
 
       function repaintTest() {

@@ -21,7 +21,7 @@ body, html {
     padding: 0px;
 }
 </style>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 var testData = [
     // left of #container, initial left of #test, final left of #test
@@ -41,7 +41,7 @@ if (window.testRunner) {
 function repaintTest() {
     document.getElementById('container').style.left = testData[testIndex][0];
     document.getElementById('test').style.left = testData[testIndex][1];
-    runAfterDisplay(runTest);
+    runAfterLayoutAndPaint(runTest);
 };
 
 function runTest() {

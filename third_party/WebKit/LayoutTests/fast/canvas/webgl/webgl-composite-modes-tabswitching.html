@@ -125,7 +125,7 @@ function repaintOnVisiblePage() {
 function setPageVisible() {
     if (window.testRunner) {
         testRunner.setPageVisibility("visible");
-        testRunner.displayAsyncThen(repaintOnVisiblePage);
+        testRunner.layoutAndPaintAsyncThen(repaintOnVisiblePage);
     } else {
         setTimeout(repaintOnVisiblePage, 50);
     }
@@ -137,7 +137,7 @@ function repaintOnHiddenPage() {
     }
     // Although page is hidden, WebGL must draw this frame.
     drawAll(30);
-    // testRunner.displayAsyncThen doesn't work when page is hidden.
+    // testRunner.layoutAndPaintAsyncThen doesn't work when page is hidden.
     setTimeout(setPageVisible, 50);
 }
 
@@ -145,7 +145,7 @@ function runRepaintTest() {
     drawAll(0);
     if (window.testRunner) {
         testRunner.waitUntilDone();
-        testRunner.displayAsyncThen(repaintOnHiddenPage);
+        testRunner.layoutAndPaintAsyncThen(repaintOnHiddenPage);
     } else {
         setTimeout(repaintOnHiddenPage, 50);
     }

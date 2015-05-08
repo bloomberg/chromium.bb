@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="forceStyleRecalc();repaintTest();">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runAfterLayoutAndPaint(repaintTest, true);">
     <!-- This test verifies that foreignObject content does not have the zoom factor applied twice. -->
 
     <foreignObject width="800" height="600">
@@ -19,7 +19,7 @@
 
     <defs>
         <script>var zoomCount = 4;</script>
-        <script xlink:href="../../../fast/repaint/resources/text-based-repaint.js"/>
+        <script xlink:href="../../../resources/run-after-layout-and-paint.js"/>
         <script xlink:href="../resources/testPageZoom.js"/>
     </defs>
 </svg>

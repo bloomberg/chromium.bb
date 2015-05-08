@@ -18,6 +18,6 @@
     onload = function() {
         // Force painting, then change style, which in turn will trigger another repaint.
         if (window.testRunner)
-            testRunner.displayAsyncThen(changeStyle);
+            testRunner.layoutAndPaintAsyncThen(changeStyle);
     }
 </script>

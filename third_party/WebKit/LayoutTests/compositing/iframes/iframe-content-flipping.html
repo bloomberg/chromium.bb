@@ -15,14 +15,14 @@
     }
     
   </style>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script type="text/javascript" charset="utf-8">
     function doTest()
     {
       if (window.testRunner)
         testRunner.waitUntilDone();
 
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         document.getElementById('iframe').className = 'composited';
         if (window.testRunner)
           testRunner.notifyDone();

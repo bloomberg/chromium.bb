@@ -1,6 +1,6 @@
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="resources/text-based-repaint.js"></script>
 <style type="text/css">
     #test1 div {
@@ -51,7 +51,7 @@
     window.testIsAsync = true;
     function repaintTest()
     {
-        runAfterDisplay(finishRepaintTest);
+        runAfterLayoutAndPaint(finishRepaintTest);
     }
 
     function start() {

@@ -26,14 +26,14 @@
     </style>
 </head>
 
-<body onload="forceStyleRecalc();repaintTest();">
+<body onload="runAfterLayoutAndPaint(repaintTest, true);">
 <div class="png"></div>
 <div class="svg"></div>
 <div class="gradient"></div>
 <img src="resources/circle.svg"></img>
 
 <script>var zoomCount = 3; window.shouldZoomOut = true;</script>
-<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 
 </body>

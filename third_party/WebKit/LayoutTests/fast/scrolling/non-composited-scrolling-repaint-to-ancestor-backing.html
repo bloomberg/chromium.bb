@@ -29,7 +29,7 @@
 <script>
     if (window.testRunner) {
         testRunner.waitUntilDone();
-        testRunner.displayAsyncThen(function() {
+        testRunner.layoutAndPaintAsyncThen(function() {
             document.getElementById('container').scrollTop = 1000;
             testRunner.notifyDone();
         });

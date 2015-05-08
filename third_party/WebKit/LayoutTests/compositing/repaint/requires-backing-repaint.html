@@ -2,7 +2,7 @@
 
 <html>
 <head>
-    <script src="../../resources/run-after-display.js"></script>
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <style>
         .bar {
             width: 200px;
@@ -43,7 +43,7 @@
             var overflow = document.getElementById('overflow');
             overflow.scrollTop = 50;
 
-            runAfterDisplay(function() {
+            runAfterLayoutAndPaint(function() {
                 overflow.scrollTop = 75;
                 if (window.testRunner)
                     testRunner.notifyDone();

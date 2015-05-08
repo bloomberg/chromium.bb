@@ -23,7 +23,7 @@
         background-color: red;
     }
   </style>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script>
       if (window.testRunner) {
           testRunner.dumpAsTextWithPixelResults();
@@ -32,7 +32,7 @@
 
       function repaintTest()
       {
-          runAfterDisplay(function() {
+          runAfterLayoutAndPaint(function() {
               document.getElementById('change').style.backgroundColor = "green";
               if (window.testRunner)
                   testRunner.notifyDone();

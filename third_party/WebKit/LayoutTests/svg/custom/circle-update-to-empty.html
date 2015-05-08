@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner)
   testRunner.waitUntilDone();
 
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
   document.getElementById('c1').setAttribute('r', 0);
   document.getElementById('c2').setAttribute('r', -50);
   if (window.testRunner)

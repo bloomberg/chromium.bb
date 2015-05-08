@@ -190,15 +190,14 @@ function executeTest() {
 
 <script src="../../../resources/js-test.js"></script>
 <script>var zoomCount = 2;</script>
-<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 <script>
 if (window.testRunner) {
     window.jsTestIsAsync = true;
     window.postZoomCallback = executeTest;
     document.fonts.ready.then(function() {
-      forceStyleRecalc();
-      repaintTest()
+      runAfterLayoutAndPaint(repaintTest);
     });
 } else {
     debug("This test only works in DRT.");

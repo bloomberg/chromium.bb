@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <style type="text/css" media="screen">
     iframe {
         border: 10px solid black;
@@ -32,7 +32,7 @@
 
     function doTest()
     {
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         document.getElementById('iframe').className = 'composited';
 
         if (window.testRunner) {

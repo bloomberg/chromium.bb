@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <canvas id="c" width=100 height=100></canvas>
 <!-- Tests that resizing a canvas to very large dimensions after a composite does not crash -->
 <script>
@@ -18,6 +18,6 @@ function resize() {
 }
 
 // Force a composite at normal width/height to ensure we have a compositing layer for the canvas.
-runAfterDisplay(resize);
+runAfterLayoutAndPaint(resize);
 </script>
 

@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner) {
   testRunner.dumpAsTextWithPixelResults();
@@ -19,7 +19,7 @@ function repaintTest()
 }
 </script>
 </head>
-<body onload="runAfterDisplay(repaintTest);">
+<body onload="runAfterLayoutAndPaint(repaintTest);">
 <p><b>BUG ID:</b> <a href="https://bugs.webkit.org/show_bug.cgi?id=43341">Bugzilla bug 43341</a>
 Setting canvas width after canvas already rendered resets canvas data appropriately, but doesn't repaint immediately.
 <p id="success" style="background-color:palegreen; padding:3px;"><b>TEST PASS:</b> 

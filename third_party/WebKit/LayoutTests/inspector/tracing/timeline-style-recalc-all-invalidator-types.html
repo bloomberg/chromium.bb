@@ -11,7 +11,7 @@ function changeClassNameAndDisplay(callback)
         document.getElementById("testElementTwo").className = "red";
         var forceStyleRecalc = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -22,7 +22,7 @@ function changeIdWithoutStyleChangeAndDisplay(callback)
         document.getElementById("testElementTwo").id = "testElementNoMatchingStyles2";
         var forceStyleRecalc = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -33,7 +33,7 @@ function changeIdAndDisplay(callback)
         document.getElementById("testElementNoMatchingStyles2").id = "testElementFive";
         var forceStyleRecalc = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -44,7 +44,7 @@ function changeStyleAttributeAndDisplay(callback)
         document.getElementById("testElementFive").setAttribute("style", "color: pink");
         var forceStyleRecalc = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -55,7 +55,7 @@ function changeAttributeAndDisplay(callback)
         document.getElementById("testElementFive").setAttribute("dir", "rtl");
         var forceStyleRecalc = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -68,7 +68,7 @@ function changePseudoAndDisplay(callback)
         requestAnimationFrame(function() {
             var forceStyleRecalc = document.body.offsetTop;
             if (window.testRunner)
-                testRunner.displayAsyncThen(callback);
+                testRunner.layoutAndPaintAsyncThen(callback);
         });
     });
 }

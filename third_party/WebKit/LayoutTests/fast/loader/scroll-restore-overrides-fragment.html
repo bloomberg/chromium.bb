@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../../resources/js-test.js"></script>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
   #frag {
     background-color: #faa;
@@ -30,14 +30,14 @@
 
 jsTestIsAsync = true;
 if (location.hash == "") {
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     scrollTo(0, 0);
     location.hash = 'frag';
     scrollTo(0, 600);
     location.href = "resources/empty-document-goes-back.html";
   });
 } else {
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     shouldBe(String(scrollY), '600');
     history.back();
     finishJSTest();

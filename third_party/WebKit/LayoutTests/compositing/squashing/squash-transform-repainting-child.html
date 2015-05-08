@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 .composited {
 transform: translatez(0);
@@ -62,7 +62,7 @@ div:hover {
 
     function runTest()
     {
-        runAfterDisplay(executeTestCases);
+        runAfterLayoutAndPaint(executeTestCases);
     }
 
     function executeTestCases()

@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <style type="text/css" media="screen">
     body {
         height: 1500px;
@@ -35,7 +35,7 @@
     function doTest()
     {
         if (window.testRunner) {
-            runAfterDisplay(function() {
+            runAfterLayoutAndPaint(function() {
               document.getElementById('box').className = 'composited';
               document.getElementById('layers').innerHTML = window.internals.layerTreeAsText(document);
               testRunner.notifyDone();

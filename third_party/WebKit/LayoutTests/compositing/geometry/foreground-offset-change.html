@@ -1,6 +1,6 @@
 <html>
 <head>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <style>
     #clipper {
       width: 550px;
@@ -55,7 +55,7 @@
 
     function doTest()
     {
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         document.getElementById("stretch").style.left = "-100px";
         if (window.testRunner)
           testRunner.notifyDone();

@@ -13,11 +13,11 @@
 }
 </style>
 <div id="test" style="display: none"></div>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script type="text/javascript">
     if (window.testRunner)
         testRunner.waitUntilDone();
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         document.getElementById("test").style.display = "block";
         if (window.testRunner)
             testRunner.notifyDone();

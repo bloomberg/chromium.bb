@@ -5,7 +5,7 @@ window.enablePixelTesting = true;
 window.jsTestIsAsync = true;
 </script>
 <script src="../../resources/js-test.js"></script>
-<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script type="text/javascript">
     function repaintTest() {
         // Test initial reported offsetWidth is 0, as we're not in the tree yet.
@@ -31,7 +31,7 @@ window.jsTestIsAsync = true;
     }
 </script>
 </head>
-<body style="margin: 0px" onload="forceStyleRecalc();repaintTest();">
+<body style="margin: 0px" onload="runAfterLayoutAndPaint(repaintTest);">
 
 <p id="description"></p>
 <div id="console"></div>

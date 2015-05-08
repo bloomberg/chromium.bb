@@ -7,10 +7,10 @@ if (window.testRunner) {
   testRunner.dumpAsText();
 
   internals.settings.setCaretBrowsingEnabled(false);
-  testRunner.displayAsyncThen(function() {
+  testRunner.layoutAndPaintAsyncThen(function() {
     internals.settings.setCaretBrowsingEnabled(true);
     document.body.innerHTML += 'PASS';
-    testRunner.displayAsyncThen(function() {
+    testRunner.layoutAndPaintAsyncThen(function() {
       testRunner.notifyDone();
     });
   });

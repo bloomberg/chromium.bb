@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <script src="resources/text-based-repaint.js"></script>
 <script>
-document.querySelector('#outer').focus();
 function repaintTest()
 {
   document.querySelector('#outer').blur();
 }
-onload = runRepaintTest();
+onload = function()
+{
+  document.querySelector('#outer').focus();
+  runRepaintTest();
+};
 </script>
 <style>
 body { height: 200px; }

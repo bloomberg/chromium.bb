@@ -8,7 +8,7 @@ function scrollAndDisplay(callback)
 {
     scrollTo(0, 200);
     if (window.testRunner)
-        testRunner.displayAsyncThen(callback);
+        testRunner.layoutAndPaintAsyncThen(callback);
 }
 
 function test()

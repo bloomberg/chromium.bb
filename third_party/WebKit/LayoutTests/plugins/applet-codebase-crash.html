@@ -2,12 +2,12 @@
 <html>
 <head>
 <body>
-<script src="../resources/run-after-display.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </script>
 <applet code="index.html" codebase="http://%A1{A+;">
 PASS if no crash
 <script>
-  runAfterDisplay(function() {}, true);
+  runAfterLayoutAndPaint(function() {}, true);
   if (window.testRunner)
       testRunner.dumpAsText();
 </script>

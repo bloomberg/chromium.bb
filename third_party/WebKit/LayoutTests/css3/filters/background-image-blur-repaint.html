@@ -18,7 +18,7 @@
       }
     }
     if (window.testRunner) {
-      testRunner.displayAsyncThen(shrinkBox);
+      testRunner.layoutAndPaintAsyncThen(shrinkBox);
     } else {
       setTimeout(shrinkBox, 500);
     }

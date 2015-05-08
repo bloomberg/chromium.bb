@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 window.testIsAsync = true;
 window.onload = runRepaintTest;
 
 function repaintTest() {
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     document.querySelector('#r').setAttribute('fill', 'green');
     if (window.testRunner)
       finishRepaintTest();

@@ -13,7 +13,7 @@ function display(callback)
         var forceLayout = document.body.offsetTop;
         element.parentElement.removeChild(element);
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -25,7 +25,7 @@ function updateSubframeAndDisplay(callback)
         var forceLayout = frames[0].document.body.offsetTop;
         element.parentElement.removeChild(element);
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 

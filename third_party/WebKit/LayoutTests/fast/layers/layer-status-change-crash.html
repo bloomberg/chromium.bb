@@ -7,10 +7,10 @@ if (window.testRunner) {
   testRunner.dumpAsText();
 
   var div = document.getElementById('div');
-  testRunner.displayAsyncThen(function() {
+  testRunner.layoutAndPaintAsyncThen(function() {
     div.style.position = 'relative';
     div.style.backgroundColor = 'blue';
-    testRunner.displayAsyncThen(function() {
+    testRunner.layoutAndPaintAsyncThen(function() {
       div.textContent += ' PASS';
       testRunner.notifyDone();
     });

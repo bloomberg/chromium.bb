@@ -11,7 +11,7 @@ function doActions(callback)
 {
     document.getElementById("a").style.visibility = "visible";
     requestAnimationFrame(function() {
-        testRunner.displayAsyncThen(callback);
+        testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 

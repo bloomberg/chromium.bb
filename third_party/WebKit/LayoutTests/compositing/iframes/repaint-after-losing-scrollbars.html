@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <!-- Tests that overflow controls are repainted after compositing is disabled. There should be three green squares and no visible overflow controls -->
 <style>
 .composited {
@@ -40,6 +40,6 @@ function test() {
         testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
     }
-    runAfterDisplay(finishTest);
+    runAfterLayoutAndPaint(finishTest);
 }
 </script>

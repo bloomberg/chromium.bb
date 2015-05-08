@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <script>
         function repaintTest() {
             document.getElementById('behind').setAttribute('fill', 'green');
@@ -11,7 +11,7 @@
         }
     </script>
 </head>
-<body onload="forceStyleRecalc();repaintTest();">
+<body onload="runAfterLayoutAndPaint(repaintTest, true)">
 Test for WK104207: This test passes if there are 4 green squares each with a smooth black circle in the top-left corner.<br/>
     <svg xmlns="http://www.w3.org/2000/svg" width="400" height="450">
         <!-- Test invalidating content behind the dynamic content. -->

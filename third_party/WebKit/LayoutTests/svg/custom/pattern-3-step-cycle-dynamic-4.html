@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
 <script>
 if (window.testRunner) {
   testRunner.dumpAsText();
   testRunner.waitUntilDone();
   window.onload = function() {
-    testRunner.displayAsyncThen(function() {
+    testRunner.layoutAndPaintAsyncThen(function() {
       mutateTree();
-      testRunner.displayAsyncThen(function() {
+      testRunner.layoutAndPaintAsyncThen(function() {
         testRunner.notifyDone();
       });
     });

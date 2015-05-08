@@ -6,7 +6,7 @@
 
 <pre>FAIL</pre>
 
-<script src="../../../resources/run-after-display.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
@@ -26,7 +26,7 @@ window.onerror = function() {
 
 requestAnimationFrame(function() {
     postMessage();
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         setTimeout(function() {
             if (window.testRunner)
                 testRunner.notifyDone();

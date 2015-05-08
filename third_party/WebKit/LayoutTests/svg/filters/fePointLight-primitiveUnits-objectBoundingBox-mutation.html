@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner)
   testRunner.waitUntilDone();
 
 window.onload = function() {
   // Wait for a frame, then mutate the filter.
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     var pointLight = document.getElementById('light');
     pointLight.setAttribute('x', '0.5');
     pointLight.setAttribute('y', '0.5');
@@ -14,7 +14,7 @@ window.onload = function() {
     // Change primitive units after having updated light position.
     document.querySelector('filter').setAttribute('primitiveUnits', 'objectBoundingBox');
     if (window.testRunner)
-      runAfterDisplay(function() { testRunner.notifyDone(); });
+      runAfterLayoutAndPaint(function() { testRunner.notifyDone(); });
   });
 };
 </script>

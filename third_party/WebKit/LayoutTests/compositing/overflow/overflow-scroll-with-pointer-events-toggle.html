@@ -20,7 +20,7 @@
 </div>
 
 <script src='../../resources/js-test.js'></script>
-<script src='../../resources/run-after-display.js'></script>
+<script src='../../resources/run-after-layout-and-paint.js'></script>
 
 <script type='text/javascript'>
 jsTestIsAsync = true;
@@ -48,7 +48,7 @@ onload = function() {
 
   // removing 'pointer-events: none' should cause composited scrolling
   document.getElementById('scroller').style.pointerEvents = '';
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     documentLayerTree = JSON.parse(window.internals.layerTreeAsText(document));
     shouldBe('isUsingCompositedScrolling(documentLayerTree)', 'true');
     finishJSTest();

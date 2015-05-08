@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="forceStyleRecalc();repaintTest();">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runAfterLayoutAndPaint(repaintTest, true)">
   <g style="transform: translate(50px, 50px);">
     <rect width="100" height="100" fill="green"/>
   </g>
@@ -21,7 +21,7 @@
 
   <defs>
     <script>var zoomCount = 2;</script>
-    <script xlink:href="../../../fast/repaint/resources/text-based-repaint.js"/>
+    <script xlink:href="../../../resources/run-after-layout-and-paint.js"/>
     <script xlink:href="../resources/testPageZoom.js"/>
   </defs>  
 </svg>

@@ -11,7 +11,7 @@ function changeStylesAndDisplay(callback)
         document.getElementById("testElementTwo").className = "red";
         var forceStyleRecalc = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -31,7 +31,7 @@ function changeMultipleStylesAndDisplay(callback)
         elementThree.className = "snow";
         var forceStyleRecalc3 = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -52,7 +52,7 @@ function changeMultipleSubframeStylesAndDisplay(callback)
         elementThree.className = "snow";
         var forceStyleRecalc3 = innerDocument.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 

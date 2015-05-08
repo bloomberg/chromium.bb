@@ -5,23 +5,23 @@
 //   Usage:
 //     if (window.testRunner)
 //       testRunner.waitUntilDone();
-//     runAfterDisplay(function() {
+//     runAfterLayoutAndPaint(function() {
 //       ... // some code which modifies style/layout
 //       if (window.testRunner)
 //         testRunner.notifyDone();
 //       // Or to ensure the next paint is executed before the test finishes:
 //       // if (window.testRunner)
-//       //   runAfterDisplay(function() { testRunner.notifyDone() });
+//       //   runAfterAfterLayoutAndPaint(function() { testRunner.notifyDone() });
 //       // Or notifyDone any time later if needed.
 //     });
 //
 // - autoNotifyDone mode, for new tests which just need to change style/layout and finish:
 //   Usage:
-//     runAfterDisplay(function() {
+//     runAfterLayoutAndPaint(function() {
 //       ... // some code which modifies style/layout
 //     }, true);
 
-function runAfterDisplay(callback, autoNotifyDone) {
+function runAfterLayoutAndPaint(callback, autoNotifyDone) {
     if (!window.testRunner) {
         // For manual test. Delay 500ms to allow us to see the visual change
         // caused by the callback.
@@ -32,12 +32,9 @@ function runAfterDisplay(callback, autoNotifyDone) {
     if (autoNotifyDone)
         testRunner.waitUntilDone();
 
-    testRunner.displayAsyncThen(function() {
+    testRunner.layoutAndPaintAsyncThen(function() {
         callback();
-        if (autoNotifyDone) {
-            testRunner.displayAsyncThen(function() {
-                testRunner.notifyDone();
-            });
-        }
+        if (autoNotifyDone)
+            testRunner.notifyDone();
     });
 }

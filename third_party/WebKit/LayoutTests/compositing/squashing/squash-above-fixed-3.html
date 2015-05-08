@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 
 #backgroundFixed {
@@ -76,14 +76,14 @@ body {
         // Case 2
         window.internals.startTrackingRepaints(document);
         window.scrollTo(0, 10);
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
           document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
           window.internals.stopTrackingRepaints(document);
 
           // Case 3
           window.internals.startTrackingRepaints(document);
           window.scrollTo(0, 110);
-          runAfterDisplay(function() {
+          runAfterLayoutAndPaint(function() {
             document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
             window.internals.stopTrackingRepaints(document);
 

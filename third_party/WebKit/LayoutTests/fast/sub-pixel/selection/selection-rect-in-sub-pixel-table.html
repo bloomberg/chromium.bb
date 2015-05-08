@@ -10,7 +10,7 @@ body {
   font: 82% arial,sans-serif;
 }
 </style>
-<script src="../../../resources/run-after-display.js" type="text/javascript"></script>
+<script src="../../../resources/run-after-layout-and-paint.js" type="text/javascript"></script>
 <script>
 if (window.testRunner) {
     testRunner.waitUntilDone();
@@ -23,7 +23,7 @@ function repaintTest() {
 }
 </script>
 </head>
-<body onload="runAfterDisplay(repaintTest)">
+<body onload="runAfterLayoutAndPaint(repaintTest)">
 <table style="position: absolute; top: 1.5px;">
   <tr>
   <td>

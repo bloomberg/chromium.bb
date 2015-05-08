@@ -70,7 +70,7 @@ function startTestAfterFirstPaint() {
 
     if (window.testRunner) {
         testRunner.waitUntilDone();
-        testRunner.displayAsyncThen(asyncTest);
+        testRunner.layoutAndPaintAsyncThen(asyncTest);
     } else {
         window.requestAnimationFrame(asyncTest);
     }

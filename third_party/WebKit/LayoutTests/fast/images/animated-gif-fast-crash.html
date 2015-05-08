@@ -16,7 +16,7 @@ var count = 3;
 function displayOneFrame() {
   delay();
   if (--count >= 0)
-    testRunner.displayAsyncThen(displayOneFrame);
+    testRunner.layoutAndPaintAsyncThen(displayOneFrame);
   else
     testRunner.notifyDone();
 }

@@ -1,4 +1,4 @@
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <body style="overflow: hidden;">
     <p>
         Test for <i><a href="rdar://problem/10098679">&lt;rdar://problem/10098679></a>
@@ -23,6 +23,6 @@
         window.scrollBy(1, 0);
         if (window.testRunner)
             testRunner.dumpAsText();
-        runAfterDisplay(test, true);
+        runAfterLayoutAndPaint(test, true);
     </script>
 </body>

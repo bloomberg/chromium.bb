@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src=../../resources/run-after-display.js></script>
+<script src=../../resources/run-after-layout-and-paint.js></script>
 <script>
 if (window.testRunner)
   testRunner.waitUntilDone();
@@ -10,7 +10,7 @@ function insertSVGImage() {
     image.setAttribute('height', 64);
     image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'resources/rgb.svg');
     image.onload = function() {
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         if (window.testRunner)
           testRunner.notifyDone();
       });
@@ -20,7 +20,7 @@ function insertSVGImage() {
 
 function startTest() {
   if (window.testRunner)
-    testRunner.displayAsyncThen(insertSVGImage);
+    testRunner.layoutAndPaintAsyncThen(insertSVGImage);
   else
     requestAnimationFrame(insertSVGImage);
 }

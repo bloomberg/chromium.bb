@@ -12,7 +12,7 @@ html {
 }
 </style>
 <div style="height:700px"></div>
-<script src="../resources/run-after-display.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script>
 var styleElement = document.createElement("style");
 var sheet = document.head.appendChild(styleElement).sheet;
@@ -22,7 +22,7 @@ function addRule(selector, css){
     }).join(";");
     sheet.insertRule(selector + "{" + propText + "}", sheet.cssRules.length);
 };
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
     addRule("::-webkit-scrollbar-thumb", {background: "rgba(13,53,178,0.8)",});
 }, true);
 </script>

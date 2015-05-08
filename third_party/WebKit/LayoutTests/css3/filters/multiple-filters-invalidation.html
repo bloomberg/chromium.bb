@@ -14,7 +14,7 @@ html {
 <body>
 <div id="rect"></div>
 </body>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 function changeBackground() {
     document.getElementById("rect").style.background = "green";
@@ -27,6 +27,6 @@ if (window.testRunner) {
     testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
 }
-runAfterDisplay(changeBackground);
+runAfterLayoutAndPaint(changeBackground);
 </script>
 </html>

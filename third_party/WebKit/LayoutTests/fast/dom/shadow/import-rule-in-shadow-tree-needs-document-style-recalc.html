@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../../resources/run-after-display.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script>
 onload = function() {
     var host = document.getElementById('host');
@@ -29,7 +29,7 @@ onload = function() {
 
     if (window.testRunner)
         testRunner.waitUntilDone();
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         if (window.testRunner)
             testRunner.notifyDone();
     });

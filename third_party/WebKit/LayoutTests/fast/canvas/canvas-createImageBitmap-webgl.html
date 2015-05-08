@@ -41,7 +41,7 @@
         gl.clear(gl.COLOR_BUFFER_BIT);
         createImageBitmapAndCheck(webgl_canvas, false).then(function() {
             if (window.testRunner) {
-                testRunner.displayAsyncThen(asyncTest);
+                testRunner.layoutAndPaintAsyncThen(asyncTest);
             } else {
                 window.requestAnimationFrame(asyncTest);
             }

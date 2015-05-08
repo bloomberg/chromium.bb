@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Test for http://bugs.webkit.org/show_bug.cgi?id=79490</title>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script>
     if (window.testRunner) {
         testRunner.waitUntilDone();
@@ -16,7 +16,7 @@
   </script>
 </head>
 
-<body style="margin: 0; padding: 0; overflow: hidden;" onload="runAfterDisplay(repaintTest);">
+<body style="margin: 0; padding: 0; overflow: hidden;" onload="runAfterLayoutAndPaint(repaintTest);">
   <div id="resize-target" style="width: 400px; height: 400px; position: absolute;">
     <!-- After window resizing, this DIV element should not be visible -->
     <div style="width: 100px; min-height: 50%; background-color: red; display: inline-block;"></div>

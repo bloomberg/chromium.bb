@@ -1,4 +1,4 @@
-<script src="../resources/run-after-display.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <style>
 #parent {
     height: 300px;
@@ -25,9 +25,9 @@ if (window.testRunner)
         testRunner.waitUntilDone();
 
 // The target element should be displayed as red, not gray.
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
     target.scrollIntoView(true);
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         testRunner.notifyDone();
     });
 });

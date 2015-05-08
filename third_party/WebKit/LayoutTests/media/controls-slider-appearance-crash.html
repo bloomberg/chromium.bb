@@ -25,6 +25,6 @@ description("This test ensures that applying media control slider thumb appearan
 <script>
 if (window.testRunner) {
     testRunner.waitUntilDone();
-    testRunner.displayAsyncThen(function() { testRunner.notifyDone(); });
+    testRunner.layoutAndPaintAsyncThen(function() { testRunner.notifyDone(); });
 }
 </script>

@@ -10,7 +10,7 @@
   <source src="opera/track/webvtt/rendering/reftest/media/white.mp4" type="video/mp4">
 </video>
 <script>
-// Without testRunner.displayAsyncThen there is no guarantee for when the first
+// Without testRunner.layoutAndPaintAsyncThen there is no guarantee for when the first
 // cue layout is done, so make no attempt to work without testRunner.
 testRunner.waitUntilDone();
 
@@ -21,7 +21,7 @@ track.addCue(new VTTCue(0, 1, "text"));
 track.mode = "showing";
 
 video.onloadeddata = function() {
-  testRunner.displayAsyncThen(function() {
+  testRunner.layoutAndPaintAsyncThen(function() {
     // Remove the controls. The cue should not move.
     video.controls = false;
     testRunner.notifyDone();

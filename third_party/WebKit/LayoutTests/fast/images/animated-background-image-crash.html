@@ -9,7 +9,7 @@
                         url(resources/animated2.gif) bottom right no-repeat;
         }
     </style>
-    <script src="../../resources/run-after-display.js"></script>
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <script>
         function step1()
         {
@@ -25,7 +25,7 @@
                 testRunner.dumpAsText();
                 testRunner.waitUntilDone();
             }
-            runAfterDisplay(step1);
+            runAfterLayoutAndPaint(step1);
         }
     </script>
 </head>

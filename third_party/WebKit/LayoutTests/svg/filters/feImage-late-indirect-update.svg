@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="forceStyleRecalc();repaintTest();">
-<script xlink:href="../../fast/repaint/resources/text-based-repaint.js"></script>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runAfterLayoutAndPaint(repaintTest, true);">
+<script xlink:href="../../resources/run-after-layout-and-paint.js"></script>
 <defs>
     <linearGradient id="gradient" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
         <stop id="stop" stop-color="red" offset="0"/>

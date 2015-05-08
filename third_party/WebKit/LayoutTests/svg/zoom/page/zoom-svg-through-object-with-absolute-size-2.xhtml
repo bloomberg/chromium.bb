@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 </head>
-<body onload="forceStyleRecalc();repaintTest();">
+<body onload="runAfterLayoutAndPaint(repaintTest, true);">
 
 <table align="center" border="0" cellspacing="0" cellpadding="10">
   <tr>
@@ -36,7 +36,7 @@
 </table>
 
 <script>var zoomCount = 2; window.shouldZoomOut = true;</script>
-<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 </body>
 </html>

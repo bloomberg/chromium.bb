@@ -1,4 +1,4 @@
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 .parent {
     position: relative;
@@ -25,7 +25,7 @@
 <script>
 if (window.testRunner)
     testRunner.waitUntilDone();
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
     var children = document.getElementsByClassName("child");
     children[0].style.backgroundColor = "rgba(0,255,0,0.5)";
     children[1].style.backgroundColor = "rgba(0,255,0,0.5)";

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner) {
   testRunner.dumpAsText();
@@ -12,7 +12,7 @@ onload = function() {
   if (newWindow.internals)
     newWindow.internals.settings.setViewportEnabled(true);
   newWindow.onload = function() {
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
       document.getElementById('output').textContent =
           '\nviewport meta: ' + newWindow.document.querySelector('meta').outerHTML
           + '\nimage style: ' + newWindow.document.querySelector('img').getAttribute('style')

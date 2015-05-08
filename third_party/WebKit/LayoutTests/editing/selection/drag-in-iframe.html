@@ -26,8 +26,9 @@
         
             // Dump pixel results before we drop so we can see where the drag caret is painted.
             testRunner.notifyDone();
-        
-            eventSender.mouseUp();
+
+            // Pixel dumping is asynchronous. We still have chance to send mouseUp.
+            setTimeout(function() { eventSender.mouseUp(); }, 0);
         }
         
         function test()

@@ -118,7 +118,7 @@
         }
         window.onload = function() {
             if (window.testRunner && window.internals) {
-                window.testRunner.displayAsyncThen(function() {
+                window.testRunner.layoutAndPaintAsyncThen(function() {
                     assert(window.internals.isUseCounted(document, 753), "has -webkit-canvas UseCounter: "); // 753 == UseCounter::Feature::WebkitCanvas
                     testRunner.notifyDone();
                 });

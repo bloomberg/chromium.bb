@@ -8,13 +8,13 @@ div {
 }
 </style>
 </head>
-<body style='margin: 0px' onload="forceStyleRecalc();repaintTest();">
+<body style='margin: 0px' onload="runAfterLayoutAndPaint(repaintTest, true);">
 <div>
   <img style='width:100%; height:100%' src='../../as-image/resources/green-relative-size-rect.svg'>
 </div>
 
 <script>var zoomCount = 1; window.shouldZoomOut = true;</script>
-<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 
 </body>

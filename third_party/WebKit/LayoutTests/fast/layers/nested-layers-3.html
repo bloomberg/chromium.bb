@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 function test()
 {
@@ -9,7 +9,7 @@ function test()
         testRunner.waitUntilDone();
         testRunner.dumpAsText();
     }
-    runAfterDisplay(finish);
+    runAfterLayoutAndPaint(finish);
 }
 
 function finish()

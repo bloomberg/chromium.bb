@@ -37,10 +37,10 @@
                 height: 1000px;
             }
         </style>
-        <script src="../../resources/run-after-display.js"></script>
+        <script src="../../resources/run-after-layout-and-paint.js"></script>
         <script type="text/javascript">
             function repaintTest() {
-                runAfterDisplay(function() {
+                runAfterLayoutAndPaint(function() {
                     window.scrollTo(0, 100);
                     if (window.testRunner)
                         testRunner.notifyDone();

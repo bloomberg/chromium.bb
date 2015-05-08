@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 div {
   position: absolute;
@@ -62,7 +62,7 @@ div:hover {
     {
         if (!window.internals)
             return;
-        runAfterDisplay(executeTestCases);
+        runAfterLayoutAndPaint(executeTestCases);
     }
 
     function executeTestCases()

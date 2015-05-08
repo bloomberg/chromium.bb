@@ -8,13 +8,13 @@ div {
 }
 </style>
 </head>
-<body style='margin: 0px' onload="forceStyleRecalc();repaintTest();">
+<body style='margin: 0px' onload="runAfterLayoutAndPaint(repaintTest, true);">
 <div>
   <img src='../../as-image/resources/green-fixed-size-rect.svg'>
 </div>
 
 <script>var zoomCount = 4;</script>
-<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 
 </body>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 html, body {
   margin: 0px;
@@ -20,9 +20,9 @@ if (window.testRunner) {
 <script>
 var element = document.getElementById('composited');
 element.style.transform = 'translateZ(0)';
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
     element.style.transform = '';
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         if (window.testRunner)
             testRunner.notifyDone();
     });

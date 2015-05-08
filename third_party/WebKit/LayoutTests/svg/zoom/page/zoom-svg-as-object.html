@@ -13,12 +13,12 @@ object {
 }
 </style>
 </head>
-<body onload="forceStyleRecalc();repaintTest();">
+<body onload="runAfterLayoutAndPaint(repaintTest, true);">
 <object data="resources/zoom-svg-as-object.svg" type="image/svg+xml"/>
 </body>
 
 <script>var zoomCount = 1; window.shouldZoomOut = true;</script>
-<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 
 </html>

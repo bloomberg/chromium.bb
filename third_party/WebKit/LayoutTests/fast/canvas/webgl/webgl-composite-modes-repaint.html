@@ -125,7 +125,7 @@ function repaintTest() {
 function runRepaintTest() {
     if (window.testRunner) {
         testRunner.waitUntilDone();
-        testRunner.displayAsyncThen(repaintTest);
+        testRunner.layoutAndPaintAsyncThen(repaintTest);
     } else {
         setTimeout(repaintTest, 100);
     }

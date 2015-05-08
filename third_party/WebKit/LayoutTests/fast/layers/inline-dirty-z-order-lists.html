@@ -9,11 +9,11 @@
     <div id="inner" style="position: absolute; height: 50px; width: 50px; background-color: blue;">
     </div>
 </span>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         document.getElementById("outer").style.removeProperty("z-index");
         document.getElementById("inner").style.display = "none";
         if (window.testRunner)

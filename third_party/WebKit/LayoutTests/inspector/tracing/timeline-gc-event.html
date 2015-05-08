@@ -8,7 +8,7 @@ function produceGarbageForGCEvents(callback)
 {
     if (window.testRunner) {
         window.gc();
-        testRunner.displayAsyncThen(callback);
+        testRunner.layoutAndPaintAsyncThen(callback);
     }
 }
 

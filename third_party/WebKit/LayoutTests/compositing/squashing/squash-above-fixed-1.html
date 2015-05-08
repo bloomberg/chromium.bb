@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 .composited {
   transform: translatez(0);
@@ -77,7 +77,7 @@ body {
                 // Case 2
                 window.internals.startTrackingRepaints(document);
                 window.scrollTo(0, 80);
-                runAfterDisplay(function() {
+                runAfterLayoutAndPaint(function() {
                     document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
                     window.internals.stopTrackingRepaints(document);
 
@@ -93,7 +93,7 @@ body {
                 // Case 3
                 window.internals.startTrackingRepaints(document);
                 window.scrollTo(0, 120);
-                runAfterDisplay(function() {
+                runAfterLayoutAndPaint(function() {
                     document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
                     window.internals.stopTrackingRepaints(document);
 
@@ -109,7 +109,7 @@ body {
                 // Case 4
                 window.internals.startTrackingRepaints(document);
                 window.scrollTo(0, 170);
-                runAfterDisplay(function() {
+                runAfterLayoutAndPaint(function() {
                     document.getElementById('Case4').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
                     window.internals.stopTrackingRepaints(document);
 

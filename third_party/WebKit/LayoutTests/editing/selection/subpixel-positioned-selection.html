@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner)
   testRunner.waitUntilDone();
@@ -12,7 +12,7 @@ function test(start, end) {
       testRunner.notifyDone();
     return;
   }
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     test(start + 1, end - 1);
   });
 }

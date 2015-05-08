@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 #main {
   display: flex;
@@ -22,7 +22,7 @@
 if (window.testRunner)
   testRunner.waitUntilDone();
 
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
   document.body.appendChild(document.createElement('div'));
   document.body.offsetLeft;
 
@@ -31,6 +31,6 @@ runAfterDisplay(function() {
   c.getScreenCTM();
 
   if (window.testRunner)
-    testRunner.displayAsyncThen(function() { testRunner.notifyDone(); });
+    testRunner.layoutAndPaintAsyncThen(function() { testRunner.notifyDone(); });
 });
 </script>

@@ -1,14 +1,14 @@
 <html>
 <head>
     <title>Test HTML Page</title>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 function test()
 {
     if (window.testRunner) {
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
             testRunner.notifyDone();
         });
     }

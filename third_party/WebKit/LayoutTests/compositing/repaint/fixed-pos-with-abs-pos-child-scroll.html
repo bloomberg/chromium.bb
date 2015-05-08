@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 
 <style>
   #fixed {
@@ -36,10 +36,10 @@
 
     window.scrollTo(0, 500);
 
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
       window.scrollTo(0, 0);
 
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         if (window.internals)
           document.getElementById('layers').textContent = 
             window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);

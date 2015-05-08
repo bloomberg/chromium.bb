@@ -11,7 +11,7 @@ function changeStylesAndDisplay(callback)
         document.getElementById("testElementTwo").style.color = "blue";
         var forceLayout = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -33,7 +33,7 @@ function changeMultipleStylesAndDisplay(callback)
         var forceStyleRecalc3 = document.body.offsetTop;
 
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -44,7 +44,7 @@ function changeSubframeStylesAndDisplay(callback)
         frames[0].document.body.children[0].style.width = "200px";
         var forceLayout = frames[0].document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 

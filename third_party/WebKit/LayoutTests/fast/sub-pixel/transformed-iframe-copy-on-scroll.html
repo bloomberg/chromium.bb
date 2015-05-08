@@ -16,7 +16,7 @@
   transform: rotate3d(0, 0, 1, 45deg);
 }
 </style>
-<script src="../../resources/run-after-display.js" type="text/javascript"></script>
+<script src="../../resources/run-after-layout-and-paint.js" type="text/javascript"></script>
 <script>
 if (window.testRunner) {
   testRunner.waitUntilDone();
@@ -44,7 +44,7 @@ function repaintTest() {
 }
 </script>
 </head>
-<body onload="setupIframes();runAfterDisplay(repaintTest);">
+<body onload="setupIframes();runAfterLayoutAndPaint(repaintTest);">
   <p>The iframes below should remain grey with no repaint artifacts when scrolling.</p>
   <div>
     <div class="container">

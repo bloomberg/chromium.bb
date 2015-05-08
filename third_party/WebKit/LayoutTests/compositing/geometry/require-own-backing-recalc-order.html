@@ -52,7 +52,7 @@
 }
 </style>
 
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
@@ -60,7 +60,7 @@
     window.onload = function() {
         var paintingLayer = document.getElementById("painting-layer");
         paintingLayer.style.display = "block";
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
             var compositingChild2 = document.getElementById("compositing-child2");
             compositingChild2.style.transform = "translateZ(0)";
             if (window.testRunner)

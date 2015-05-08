@@ -2,7 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="resources/link-highlight-helper.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
@@ -26,9 +26,9 @@ function runTest() {
 
     if (window.eventSender && window.testRunner) {
         eventSender.gestureShowPress(x, y);
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
             document.getElementById("targetFrame").contentDocument.getElementById('divToControlCompositing').style.webkitTransform = "";
-            runAfterDisplay(function() {
+            runAfterLayoutAndPaint(function() {
                 document.getElementById("targetFrame").contentWindow.scrollTo(0, 20);
                 testRunner.notifyDone();
             });

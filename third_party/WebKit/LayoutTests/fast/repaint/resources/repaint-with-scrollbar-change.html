@@ -24,7 +24,7 @@ input {
     bottom: 0;
 }
 </style>
-<script src="../../../resources/run-after-display.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <script src="text-based-repaint.js"></script>
 <body>
 <div id="container">
@@ -42,5 +42,5 @@ if (window.testRunner)
     window.testRunner.waitUntilDone();
 
 window.scrollTo(0, 4000);
-runAfterDisplay(runRepaintTest);
+runAfterLayoutAndPaint(runRepaintTest);
 </script>

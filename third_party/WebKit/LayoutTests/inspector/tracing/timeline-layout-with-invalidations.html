@@ -12,7 +12,7 @@ function display(callback)
         document.getElementById("testElement").style.width = "110px";
         var forceLayout2 = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 
@@ -24,7 +24,7 @@ function updateSubframeAndDisplay(callback)
         frames[0].document.body.children[0].style.width = "20px";
         var forceLayout2 = frames[0].document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 

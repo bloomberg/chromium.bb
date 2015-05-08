@@ -9,7 +9,7 @@
     }
   </style>
 
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script>
     if (window.testRunner) {
         testRunner.dumpAsText();
@@ -20,10 +20,10 @@
 
     function onLoad()
     {
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         paintCount = 0;
         document.getElementById('testPlugin').invalidateRect(0, 0, 200, 200);
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
           if (paintCount > 0)
               document.getElementById('result').innerHTML = "SUCCESS";
           if (window.testRunner)

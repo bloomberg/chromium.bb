@@ -10,7 +10,7 @@
 <div style="position: relative; left: 10px; top: 70px; transform: translateZ(0);">
 This test is not successful if this message appears.
 </div>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 function runTest() {
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
@@ -22,9 +22,9 @@ function runTest() {
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);
         // Force display of highlight before navigating to second page.
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
             window.location = 'resources/gesture-tapHighlight-simple-navigate-destination.html';
-            runAfterDisplay(function() {
+            runAfterLayoutAndPaint(function() {
                 testRunner.notifyDone();
             });
         });

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="../resources/run-after-display.js"></script>
+  <script src="../resources/run-after-layout-and-paint.js"></script>
   <style>
     #indicator {
       position: absolute;
@@ -28,7 +28,7 @@
       testRunner.waitUntilDone();
     }
     function doTest() {
-      runAfterDisplay(function() {
+      runAfterLayoutAndPaint(function() {
         // The change in clip style should be reflected immediately in the size
         // of the composited clipper layer. After changing the clip, it should
         // entirely cover the indicator.

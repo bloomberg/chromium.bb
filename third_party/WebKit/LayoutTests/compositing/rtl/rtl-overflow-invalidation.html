@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
     body {
         direction: rtl;
@@ -29,7 +29,7 @@
             testRunner.waitUntilDone();
             testRunner.dumpAsTextWithPixelResults();
         }
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
             // This test passes if this element is repainted correctly, even
             // on a page that is composited and has horizontal overflow.
             var elem = document.getElementById("layer");

@@ -10,7 +10,7 @@ div {
 }
     </style>
   </head>
-  <body onload="forceStyleRecalc();repaintTest();">
+  <body onload="runAfterLayoutAndPaint(repaintTest, true);">
     <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
       <defs>
         <clipPath id="clip1">
@@ -44,7 +44,7 @@ div {
     <div style="transform: translate(110px, 110px); top: 0px; left: 0px; -webkit-clip-path: url(#clip4);"></div>
 
     <script>var zoomCount = 4; window.shouldZoomOut = false;</script>
-    <script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
+    <script src="../../../resources/run-after-layout-and-paint.js"></script>
     <script src="../resources/testPageZoom.js"></script>
   </body>
 </html>

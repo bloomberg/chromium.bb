@@ -2,7 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 /* Don't test active state.  Technically sending a second showPress before
    the first has been completed is illegal, so whether or not blink clears the
@@ -36,7 +36,7 @@ function runTest() {
     if (window.eventSender) {
         // Generate valid link highlight.
         eventSender.gestureShowPress(x, y);
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
             // Generate tap in region with no valid target ... this should cancel the first tap.
             eventSender.gestureShowPress(150, 150);
             testRunner.notifyDone();

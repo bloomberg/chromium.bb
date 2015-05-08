@@ -1,8 +1,8 @@
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
     if (window.testRunner)
         testRunner.waitUntilDone();
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         var span = document.getElementById("span");
         getSelection().setBaseAndExtent(span, 0, span, 1);
         if (window.testRunner)

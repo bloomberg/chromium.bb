@@ -46,7 +46,7 @@ function showImages(callback)
     function addImages()
     {
         if (nextImageIndex >= images.length) {
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
             return;
         }
 
@@ -55,7 +55,7 @@ function showImages(callback)
         document.body.appendChild(imgContainer);
 
         var imgElement = document.createElement("img");
-        imgElement.addEventListener("load", testRunner.displayAsyncThen.bind(testRunner, addImages));
+        imgElement.addEventListener("load", testRunner.layoutAndPaintAsyncThen.bind(testRunner, addImages));
         imgContainer.appendChild(imgElement);
 
         var backgroundElement = document.createElement("div");

@@ -10,7 +10,7 @@
     }
 </script>
 <script type="text/javascript" src="../repaint/resources/text-based-repaint.js"></script>
-<script type="text/javascript" src="../../resources/run-after-display.js"></script>
+<script type="text/javascript" src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
     .left {
         float: left;
@@ -34,7 +34,7 @@
         position: inherit;
     }
 </style>
-<body onload="runAfterDisplay(runRepaintTest);">
+<body onload="runAfterLayoutAndPaint(runRepaintTest);">
     <p> When you scroll down the red square should have no painting glitches. </p>
     <div class="left"></div>
     <div class="right">

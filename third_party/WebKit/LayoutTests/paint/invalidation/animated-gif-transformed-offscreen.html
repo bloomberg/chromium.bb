@@ -14,14 +14,14 @@ window.testIsAsync = true;
 // 1. Load the image
 // 2. Move the image offscreen
 // 3. Start tracking paint invalidation rects
-// 4. Call displayAsyncThen (via runRepaintTest, which does this for us) to draw a frame
+// 4. Call layoutAndPaintAsyncThen (via runRepaintTest, which does this for us) to draw a frame
 // 5. Wait longer than 100ms, so that the timer between the first and second animated GIF
 //    frame expires and a paint invalidation is issued on the animated GIF. (100ms is the
 //    length of the first frame of the animation in the GIF file.)
 // 6. Stop tracking paint invalidation rects (finishRepaintTest does this for us)
 
 // These steps differ from a standard repaint test in that step 3 precedes step 4.
-// This is critical because displayAsyncThen may take longer than the 100ms of the timer,
+// This is critical because layoutAndPaintAsyncThen may take longer than the 100ms of the timer,
 // so we may miss it.
 
 function repaintTest() {

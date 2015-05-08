@@ -17,7 +17,7 @@ body {
 }
 
 </style>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 function test()
 {
@@ -25,7 +25,7 @@ function test()
         testRunner.waitUntilDone();
         testRunner.dumpAsTextWithPixelResults();
     }
-    runAfterDisplay(function() {
+    runAfterLayoutAndPaint(function() {
         document.body.scrollTop = 2000;
         if (window.testRunner) {
             testRunner.notifyDone();

@@ -11,7 +11,7 @@
       border: 20px solid black;
     }
   </style>
-  <script src="../../resources/run-after-display.js"></script>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script type="text/javascript" charset="utf-8">
 
     if (window.testRunner) {
@@ -163,7 +163,7 @@
 
       appleImage = new Image();
       appleImage.onload = function() {
-        runAfterDisplay(repaintTest);
+        runAfterLayoutAndPaint(repaintTest);
       }
       appleImage.src = "resources/apple.gif";
     }

@@ -7,7 +7,7 @@
 <script src="resources/desktop-gl-constants.js" type="text/javascript"></script>
 <script src="../../../resources/js-test.js"></script>
 <script src="resources/webgl-test.js"></script>
-<script src="../../../resources/run-after-display.js"></script>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body>
 <div id="description"></div>
@@ -15,6 +15,7 @@
 <canvas id="canvas" style="width: 50px; height: 50px;"> </canvas>
 <canvas id="canvas2d" width="40" height="40"> </canvas>
 <script>
+jsTestIsAsync = true;
 if (window.initNonKhronosFramework) {
   window.initNonKhronosFramework(true);
 }
@@ -134,7 +135,7 @@ if (!gl) {
   debug("change display size of canvas and see that viewport does not change");
   canvas.style.width = "100px";
   canvas.style.height = "25px";
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     if (canvas.clientWidth == 100 &&
         canvas.clientHeight == 25) {
       shouldBe('getViewport()', '"0,0,300,150"');

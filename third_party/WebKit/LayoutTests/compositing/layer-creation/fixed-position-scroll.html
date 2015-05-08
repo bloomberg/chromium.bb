@@ -31,7 +31,7 @@
         transform: translateZ(0);
       }
     </style>
-    <script src="../../resources/run-after-display.js"></script>
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <script type="text/javascript" charset="utf-8">
       if (window.testRunner) {
         testRunner.dumpAsTextWithPixelResults();
@@ -42,7 +42,7 @@
       {
         window.scrollBy(0,-2048);
         window.scrollBy(0,160);
-        runAfterDisplay(function() {
+        runAfterLayoutAndPaint(function() {
           window.scrollBy(0,-96);
           if (window.testRunner)
             testRunner.notifyDone();

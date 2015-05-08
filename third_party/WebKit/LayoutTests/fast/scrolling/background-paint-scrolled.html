@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <style>
 #box {
   position: absolute;
@@ -19,11 +19,11 @@ if (window.testRunner) {
   testRunner.waitUntilDone();
 }
 
-runAfterDisplay(function() {
+runAfterLayoutAndPaint(function() {
   var box = document.querySelector("#box");
   scrollTo(0, 100);
   box.style.backgroundColor = "green";
-  runAfterDisplay(function() {
+  runAfterLayoutAndPaint(function() {
     scrollTo(0, 0);
     if (window.testRunner)
       testRunner.notifyDone();

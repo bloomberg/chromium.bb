@@ -12,7 +12,7 @@ function multipleStyleRecalcsAndDisplay(callback)
         document.getElementById("testElementOne").className = "snow";
         var forceStyleRecalc2 = document.body.offsetTop;
         if (window.testRunner)
-            testRunner.displayAsyncThen(callback);
+            testRunner.layoutAndPaintAsyncThen(callback);
     });
 }
 

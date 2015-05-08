@@ -4,10 +4,10 @@
 <div id="target" style="width:700px;">
     <div style="width:50%; height:400px; overflow-y:scroll;"></div>
 </div>
-<script src="resources/display-then-call.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
     function changeSize() {
         document.getElementById('target').style.width = '300px';
     }
-    displayThenCall(changeSize);
+    runAfterLayoutAndPaint(changeSize, true);
 </script>

@@ -17,7 +17,7 @@ function doActions(callback)
     img.addEventListener("load", onImageLoaded, false);
     function onImageLoaded()
     {
-        testRunner.displayAsyncThen(callback);
+        testRunner.layoutAndPaintAsyncThen(callback);
     }
 }
 

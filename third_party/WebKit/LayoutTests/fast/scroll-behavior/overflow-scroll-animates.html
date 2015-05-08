@@ -41,7 +41,7 @@ function nextConfig() {
 
     element.addEventListener("scroll", onElementScroll);
 
-    testRunner.displayAsyncThen(function() {
+    testRunner.layoutAndPaintAsyncThen(function() {
         eventSender.mouseMoveTo(100, 100);
         eventSender.mouseScrollBy(0, -2, /* paged */ false,
             config.preciseDeltas);

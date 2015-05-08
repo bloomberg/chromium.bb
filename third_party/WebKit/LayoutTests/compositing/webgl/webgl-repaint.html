@@ -12,7 +12,7 @@ canvas {
     border: 1px solid black;
 }
 </style>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner)
     testRunner.overridePreference("WebKitWebGLEnabled", "1");
@@ -41,7 +41,7 @@ function init()
       testRunner.waitUntilDone();
       testRunner.dumpAsTextWithPixelResults();
   }
-  runAfterDisplay(drawGreen);
+  runAfterLayoutAndPaint(drawGreen);
 }
 
 function drawGreen()
