@@ -40,7 +40,6 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
                                  bool use_cached_picture,
                                  bool retain_individual_display_items)
     : items_(LargestDisplayItemSize(), kDefaultNumDisplayItemsToReserve),
-      recorder_(new SkPictureRecorder()),
       use_cached_picture_(use_cached_picture),
       retain_individual_display_items_(retain_individual_display_items),
       layer_rect_(layer_rect),
