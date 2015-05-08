@@ -192,6 +192,11 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	case XKB_KEY_Escape:
 		display_exit(confine->display);
 		break;
+	case XKB_KEY_BackSpace:
+		cairo_surface_destroy(confine->buffer);
+		confine->buffer = NULL;
+		window_schedule_redraw(confine->window);
+		break;
 	}
 }
 
