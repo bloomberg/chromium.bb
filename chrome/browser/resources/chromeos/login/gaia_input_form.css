@@ -7,35 +7,10 @@
   font-size: 16px;
 }
 
-#paperInputDecorator /deep/ .unfocused-underline {
-  background-color: rgb(212, 212, 212);
+#inputs::content gaia-input {
+  margin-bottom: 24px;
 }
 
-#paperInputDecorator /deep/ .focused-underline {
-  background-color: rgb(66, 133, 244);
-}
-
-#paperInputDecorator /deep/ ::-webkit-input-placeholder,
-#paperInputDecorator /deep/ .label-text {
-  color: rgba(0, 0, 0, 0.54);
-}
-
-#paperInputDecorator {
-  font-size: 15px;
+#inputs::content gaia-input:last-of-type {
   margin-bottom: 28px;
-  padding: 0;
-}
-
-#paperInputDecorator /deep/ #inputForm {
-  color: rgba(0, 0, 0, 0.87);
-}
-
-:host-context(html[dir=rtl]) #paperInputDecorator /deep/ #inputContainer {
-  flex-direction: row-reverse;
-}
-
-#paperInputDecorator /deep/ #emailDomain {
-  color: rgba(0, 0, 0, 0.54);
-  direction: ltr;
-  width: auto;
 }

@@ -52,11 +52,13 @@
             </p>
           </div>
           <div class="footer" flex vertical layout justified>
-            <gaia-input-form id="emailInput" inputType="email"
-                emailDomain="{{emailDomain}}"
-                i18n-values="errorMsg:offlineLoginInvalidEmail;
-                             inputLabel:offlineLoginEmail;
-                             buttonText:offlineLoginNextBtn">
+            <gaia-input-form i18n-values="buttonText:offlineLoginNextBtn"
+                on-submit="{{onEmailSubmitted}}">
+              <gaia-input id="emailInput" type="email" required
+                  domain="{{emailDomain}}"
+                  i18n-values="error:offlineLoginInvalidEmail;
+                               label:offlineLoginEmail">
+              </gaia-input>
             </gaia-input-form>
             <img self-center src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
                 alt="">
@@ -67,11 +69,13 @@
         <gaia-card>
           <gaia-header class="header" id="passwordHeader">
           </gaia-header>
-          <gaia-input-form id="passwordInput" class="footer"
-              inputType="password"
-              i18n-values="errorMsg:offlineLoginInvalidPassword;
-                           inputLabel:offlineLoginPassword;
-                           buttonText:offlineLoginNextBtn">
+          <gaia-input-form class="footer"
+              i18n-values="buttonText:offlineLoginNextBtn"
+              on-submit="{{onPasswordSubmitted}}">
+            <gaia-input id="passwordInput" type="password" required
+                i18n-values="error:offlineLoginInvalidPassword;
+                             label:offlineLoginPassword">
+            </gaia-input>
             <gaia-paper-button noink class="link-button"
                 i18n-content="offlineLoginForgotPasswordBtn"
                 on-tap="{{onForgotPasswordClicked}}">

@@ -1,0 +1,34 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+paper-input-decorator /deep/ .unfocused-underline {
+  background-color: rgb(212, 212, 212);
+}
+
+paper-input-decorator /deep/ .focused-underline {
+  background-color: rgb(66, 133, 244);
+}
+
+paper-input-decorator /deep/ ::-webkit-input-placeholder,
+paper-input-decorator /deep/ .label-text {
+  color: rgba(0, 0, 0, 0.54) !important;
+}
+
+paper-input-decorator {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 15px;
+  padding: 0;
+}
+
+:host-context(html[dir=rtl]) input {
+  flex-direction: row-reverse;
+}
+
+#domainLabel {
+  color: rgba(0, 0, 0, 0.54);
+  direction: ltr;
+  width: auto;
+}
+

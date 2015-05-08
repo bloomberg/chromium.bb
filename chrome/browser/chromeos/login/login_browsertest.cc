@@ -157,13 +157,13 @@ class LoginTest : public chromeos::LoginManagerTest {
     const std::string email_input =
         "document.querySelector('#offline-gaia /deep/ #emailInput')";
     const std::string email_next_button =
-        "document.querySelector('#offline-gaia /deep/ #emailInput "
+        "document.querySelector('#offline-gaia /deep/ #emailSection "
         "/deep/ .blue-button')";
     const std::string password_input =
         "document.querySelector('#offline-gaia /deep/ "
         "#passwordInput')";
     const std::string password_next_button =
-        "document.querySelector('#offline-gaia /deep/ #passwordInput"
+        "document.querySelector('#offline-gaia /deep/ #passwordSection"
         " /deep/ .blue-button')";
 
     content::DOMMessageQueue message_queue;
@@ -177,7 +177,7 @@ class LoginTest : public chromeos::LoginManagerTest {
         "window.domAutomationController.send('switchToPassword');"
         "})";
     ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
-    std::string set_email = email_input + ".inputValue = '$Email'";
+    std::string set_email = email_input + ".value = '$Email'";
     ReplaceSubstringsAfterOffset(&set_email, 0, "$Email", user_email);
     ASSERT_TRUE(content::ExecuteScript(web_contents(), set_email));
     ASSERT_TRUE(content::ExecuteScript(web_contents(),
@@ -188,7 +188,7 @@ class LoginTest : public chromeos::LoginManagerTest {
       LOG(ERROR) << message;
     } while (message != "\"switchToPassword\"");
 
-    std::string set_password = password_input + ".inputValue = '$Password'";
+    std::string set_password = password_input + ".value = '$Password'";
     ReplaceSubstringsAfterOffset(&set_password, 0, "$Password", password);
     ASSERT_TRUE(content::ExecuteScript(web_contents(), set_password));
     ASSERT_TRUE(content::ExecuteScript(web_contents(),

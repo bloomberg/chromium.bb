@@ -1,45 +1,32 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/polymer/layout.html">
-<link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
 
 <!--
   A simple input form with a button. Being used for typing email or password.
+  User should put one or more <gaia-input>s inside.
 
   Example:
-    <gaia-input-form id="emailInput" inputType="email"
+    <gaia-input-form buttonText="Submit">
+      <gaia-input label="Email" type="email"></gaia-input>
+      <gaia-input label="Password" type="password"></gaia-input>
+      <gaia-input label="OTP"></gaia-input>
     </gaia-input-form>
 
   Attributes:
-    'inputType'  - type of the input (e.g. email, password).
-    'inputLabel' - label displayed on the input. (e.g. Enter you email).
-    'errorMsg'   - error message which should be displayed when input is
-                 incorrect.
     'buttonText' - text on the button.
-    'emailDomain' - autocomplete domain for the inputType="email".
 
   Events:
-    'buttonclick' - fired on button click.
+    'submit' - fired on button click or "Enter" press inside input field.
 
   Methods:
-    'focus'         - focuses input field.
-    'setValid'      - accept boolean argument |isValid|. Set validity state on
-                      the form.
-    'checkValidity' - returns current validity state of the input form. Calls
-                      setValid at the end.
+    'focus' - focuses input field.
 -->
 <polymer-element name="gaia-input-form" vertical start-justified layout
-    attributes="inputType errorMsg inputLabel buttonText emailDomain">
+    attributes="buttonText"
+    on-keydown="{{onKeyDown}}">
   <template>
     <link rel="stylesheet" href="gaia_input_form.css">
-    <paper-input-decorator id="paperInputDecorator" error="{{errorMsg}}"
-                           label="{{inputLabel}}" on-tap="{{onTap}}"
-                           floatingLabel autoValidate>
-      <div id="inputContainer" horizontal layout>
-        <input id="inputForm" is="core-input" on-keydown="{{onKeyDown}}"
-            value="{{inputValue}}" required type="{{inputType}}" flex>
-        <span id="emailDomain" hidden?="{{!emailDomain}}">{{emailDomain}}</span>
-      </div>
-    </paper-input-decorator>
+    <content id="inputs" select="gaia-input"></content>
     <div horizontal justified layout center reverse>
       <gaia-raised-on-focus-button id="button" class="blue-button"
           on-tap="{{onButtonClicked}}" self-end>

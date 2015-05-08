@@ -1,0 +1,45 @@
+<link rel="import" href="chrome://resources/polymer/core-input/core-input.html">
+<link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
+<link rel="import" href="chrome://resources/polymer/polymer/layout.html">
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+
+<!--
+  Material desing input field, that supports different input types and email
+  validation and matches GAIA's visual style.
+
+  Examples:
+    <gaia-input value="Simple text input" required></gaia-input>
+    <gaia-input type="email" domain="example.com"></gaia-input>
+
+  Attributes:
+    'label' - same as <paper-input>'s 'label'.
+    'value' - same as <input>'s 'value'.
+    'type' - same as <input>'s 'type'.
+    'domain' - optional attribute for email input. The domain is displayed in
+               the end of input field, if user is not provided any.
+    'error' - error message displayed in case if 'isInvalid' is true.
+    'isInvalid' - whether input data is invalid. Note: it is not changed
+                  automatically. Can be changed manually or with checkValidity()
+                  method.
+    'required' - whether empty field is invalid.
+
+  Methods:
+    'focus'         - focuses input field.
+    'checkValidity' - returns current validity state of the input form. Updates
+                      'isInvalid' at the end.
+-->
+<polymer-element name="gaia-input" attributes="label value type domain required
+    error isInvalid">
+  <template>
+    <link rel="stylesheet" href="gaia_input.css">
+    <paper-input-decorator id="decorator" error="{{error}}" label="{{label}}"
+        on-tap="{{onTap}}" isInvalid="{{isInvalid}}" floatingLabel autoValidate>
+      <div id="container" horizontal layout>
+        <input id="input" is="core-input" on-keydown="{{onKeyDown}}"
+            value="{{value}}" required?="{{required}}" flex>
+        <span id="domainLabel">{{domain}}</span>
+      </div>
+    </paper-input-decorator>
+  </template>
+</polymer-element>
+

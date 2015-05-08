@@ -35,31 +35,6 @@ Polymer('offline-gaia', (function() {
       }
     },
 
-    ready: function() {
-      var emailInput = this.$.emailInput;
-      var passwordInput = this.$.passwordInput;
-      emailInput.addEventListener('buttonClick', function() {
-        if (emailInput.checkValidity()) {
-          this.switchToPasswordCard(emailInput.inputValue);
-        } else {
-          emailInput.focus();
-        }
-      }.bind(this));
-
-      passwordInput.addEventListener('buttonClick', function() {
-        if (this.$.passwordInput.checkValidity()) {
-          var msg = {
-            'useOffline': true,
-            'email': this.$.passwordHeader.email,
-            'password': this.$.passwordInput.inputValue
-          };
-          this.$.passwordInput.inputValue = '';
-          this.fire('authCompleted', msg);
-        }
-      }.bind(this));
-
-    },
-
     setEmail: function(email) {
       // Reorder elements for proper animation for rtl languages.
       if (document.querySelector('html[dir=rtl]')) {
@@ -70,9 +45,9 @@ Polymer('offline-gaia', (function() {
         if (this.emailDomain)
           email = email.replace(this.emailDomain, '');
         this.switchToPasswordCard(email);
-        this.$.passwordInput.setValid(false);
+        this.$.passwordInput.isInvalid = true;
       } else {
-        this.$.emailInput.inputValue = '';
+        this.$.emailInput.value = '';
         this.switchToEmailCard();
       }
     },
@@ -82,15 +57,15 @@ Polymer('offline-gaia', (function() {
     },
 
     switchToEmailCard() {
-      this.$.passwordInput.inputValue = '';
-      this.$.passwordInput.setValid(true);
-      this.$.emailInput.setValid(true);
+      this.$.passwordInput.value = '';
+      this.$.passwordInput.isInvalid = false;
+      this.$.emailInput.isInvalid = false;
       this.$.backButton.hidden = true;
       this.$.animatedPages.selected = 'emailSection';
     },
 
     switchToPasswordCard(email) {
-      this.$.emailInput.inputValue = email;
+      this.$.emailInput.value = email;
       if (email.indexOf('@') === -1) {
         if (this.emailDomain)
           email = email + this.emailDomain;
@@ -100,6 +75,25 @@ Polymer('offline-gaia', (function() {
       this.$.passwordHeader.email = email;
       this.$.backButton.hidden = false;
       this.$.animatedPages.selected = 'passwordSection';
+    },
+
+    onEmailSubmitted: function() {
+      if (this.$.emailInput.checkValidity())
+        this.switchToPasswordCard(this.$.emailInput.value);
+      else
+        this.$.emailInput.focus();
+    },
+
+    onPasswordSubmitted: function() {
+      if (!this.$.passwordInput.checkValidity())
+        return;
+      var msg = {
+        'useOffline': true,
+        'email': this.$.passwordHeader.email,
+        'password': this.$.passwordInput.value
+      };
+      this.$.passwordInput.value = '';
+      this.fire('authCompleted', msg);
     }
   };
 })());
