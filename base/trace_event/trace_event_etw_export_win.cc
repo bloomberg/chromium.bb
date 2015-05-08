@@ -106,12 +106,14 @@ TraceEventETWExport* TraceEventETWExport::GetInstance() {
 
 // static
 void TraceEventETWExport::EnableETWExport() {
-  GetInstance()->ETWExportEnabled_ = true;
+  if (GetInstance())
+    GetInstance()->ETWExportEnabled_ = true;
 }
 
 // static
 void TraceEventETWExport::DisableETWExport() {
-  GetInstance()->ETWExportEnabled_ = false;
+  if (GetInstance())
+    GetInstance()->ETWExportEnabled_ = false;
 }
 
 // static
@@ -126,7 +128,8 @@ void TraceEventETWExport::AddEvent(
     const unsigned long long* arg_values,
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values) {
   // We bail early in case exporting is disabled or no consumer is listening.
-  if (!GetInstance()->ETWExportEnabled_ || !EventEnabledChromeEvent())
+  if (!GetInstance() || !GetInstance()->ETWExportEnabled_ ||
+      !EventEnabledChromeEvent())
     return;
 
   std::string phase_string;
@@ -224,7 +227,8 @@ void TraceEventETWExport::AddCustomEvent(const char* name,
                                          const char* arg_value_2,
                                          const char* arg_name_3,
                                          const char* arg_value_3) {
-  if (!GetInstance()->ETWExportEnabled_ || !EventEnabledChromeEvent())
+  if (!GetInstance() || !GetInstance()->ETWExportEnabled_ ||
+      !EventEnabledChromeEvent())
     return;
 
   EventWriteChromeEvent(name, phase, arg_name_1, arg_value_1, arg_name_2,

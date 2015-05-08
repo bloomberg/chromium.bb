@@ -29,7 +29,9 @@ class BASE_EXPORT TraceEventETWExport {
   static void EnableETWExport();
   static void DisableETWExport();
 
-  static bool isETWExportEnabled() { return GetInstance()->ETWExportEnabled_; }
+  static bool isETWExportEnabled() {
+    return (GetInstance() && GetInstance()->ETWExportEnabled_);
+  }
 
   // Exports an event to ETW. This is mainly used in
   // TraceLog::AddTraceEventWithThreadIdAndTimestamp to export internal events.
