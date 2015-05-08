@@ -272,9 +272,11 @@ void RlzLibTest::SimulateHomepageUsage() {
       content::RenderFrameHostTester::For(main_rfh());
 
   // Simulate a navigation to homepage first.
-  rfht->SendNavigateWithTransition(0, home_url, ui::PAGE_TRANSITION_HOME_PAGE);
+  rfht->SendNavigateWithTransition(
+      0, 0, true, home_url, ui::PAGE_TRANSITION_HOME_PAGE);
   // Then simulate a search from homepage.
-  rfht->SendNavigateWithTransition(1, search_url, ui::PAGE_TRANSITION_LINK);
+  rfht->SendNavigateWithTransition(
+      1, 0, true, search_url, ui::PAGE_TRANSITION_LINK);
 }
 
 void RlzLibTest::SimulateAppListUsage() {

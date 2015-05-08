@@ -412,6 +412,7 @@ StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
 
 RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     base::TimeTicks navigation_start,
+    bool intended_as_new_entry,
     int pending_history_list_offset,
     int current_history_list_offset,
     int current_history_list_length) const {
@@ -436,8 +437,9 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
   return RequestNavigationParams(
       GetIsOverridingUserAgent(), navigation_start, redirects,
       GetCanLoadLocalResources(), base::Time::Now(), GetPageState(),
-      GetPageID(), pending_offset_to_send, current_offset_to_send,
-      current_length_to_send, should_clear_history_list());
+      GetPageID(), GetUniqueID(), intended_as_new_entry, pending_offset_to_send,
+      current_offset_to_send, current_length_to_send,
+      should_clear_history_list());
 }
 
 void NavigationEntryImpl::ResetForCommit() {

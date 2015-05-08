@@ -163,16 +163,19 @@ void RenderViewHostTestHarness::Reload() {
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   DCHECK(entry);
   controller().Reload(false);
-  RenderFrameHostTester::For(main_rfh())->SendNavigateWithTransition(
-      entry->GetPageID(), entry->GetURL(), ui::PAGE_TRANSITION_RELOAD);
+  RenderFrameHostTester::For(main_rfh())
+      ->SendNavigateWithTransition(entry->GetPageID(), entry->GetUniqueID(),
+                                   false, entry->GetURL(),
+                                   ui::PAGE_TRANSITION_RELOAD);
 }
 
 void RenderViewHostTestHarness::FailedReload() {
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   DCHECK(entry);
   controller().Reload(false);
-  RenderFrameHostTester::For(main_rfh())->SendFailedNavigate(entry->GetPageID(),
-                                                             entry->GetURL());
+  RenderFrameHostTester::For(main_rfh())
+      ->SendFailedNavigate(entry->GetPageID(), entry->GetUniqueID(), false,
+                           entry->GetURL());
 }
 
 void RenderViewHostTestHarness::SetUp() {

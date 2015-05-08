@@ -61,10 +61,14 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
       user_response_ = CANCEL;
   }
 
-  void Navigate(const char* url, int page_id) {
-    WebContentsTester::For(web_contents())->TestDidNavigate(
-        web_contents()->GetMainFrame(), page_id, GURL(url),
-        ui::PAGE_TRANSITION_TYPED);
+  void Navigate(const char* url,
+                int page_id,
+                int nav_entry_id,
+                bool did_create_new_entry) {
+    WebContentsTester::For(web_contents())
+        ->TestDidNavigate(web_contents()->GetMainFrame(), page_id, nav_entry_id,
+                          did_create_new_entry, GURL(url),
+                          ui::PAGE_TRANSITION_TYPED);
   }
 
   void ShowInterstitial(const char* url) {
@@ -91,7 +95,7 @@ void TestOfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {
 
 TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   // Start a load.
-  Navigate(kURL1, 1);
+  Navigate(kURL1, 1, 0, true);
   // Load next page.
   controller().LoadURL(GURL(kURL2), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
@@ -113,14 +117,14 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   EXPECT_EQ(kURL2, web_contents()->GetVisibleURL().spec());
 
   // Commit navigation and the interstitial page is gone.
-  Navigate(kURL2, 2);
+  Navigate(kURL2, 2, 0, true);
   EXPECT_FALSE(GetOfflineLoadPage());
 }
 
 // Tests showing an offline page and not proceeding.
 TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   // Start a load.
-  Navigate(kURL1, 1);
+  Navigate(kURL1, 1, 0, true);
   controller().LoadURL(GURL(kURL2), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
 

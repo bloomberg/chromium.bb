@@ -124,6 +124,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_MEMBER(page_id)
+  IPC_STRUCT_TRAITS_MEMBER(nav_entry_id)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(base_url)
   IPC_STRUCT_TRAITS_MEMBER(referrer)
@@ -141,6 +142,15 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
                              content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_PARENT(content::FrameNavigateParams)
+
+  // This is the value from the browser (copied from the navigation request)
+  // indicating whether it intended to make a new entry. TODO(avi): Remove this
+  // when the pending entry situation is made sane and the browser keeps them
+  // around long enough to match them via nav_entry_id.
+  IPC_STRUCT_MEMBER(bool, intended_as_new_entry)
+
+  // Whether this commit created a new entry.
+  IPC_STRUCT_MEMBER(bool, did_create_new_entry)
 
   // Information regarding the security of the connection (empty if the
   // connection was not secure).
@@ -273,6 +283,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(request_time)
   IPC_STRUCT_TRAITS_MEMBER(page_state)
   IPC_STRUCT_TRAITS_MEMBER(page_id)
+  IPC_STRUCT_TRAITS_MEMBER(nav_entry_id)
+  IPC_STRUCT_TRAITS_MEMBER(intended_as_new_entry)
   IPC_STRUCT_TRAITS_MEMBER(pending_history_list_offset)
   IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
   IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
