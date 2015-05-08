@@ -4,4 +4,5 @@ TEST COMPLETE
 This test checks that the context menu is shown on a two finger tap gesture.
 
 Testing
-PASS
+PASS (ContextMenu event seen)
+Event sequence: mouseover mouseenter mousemove mousedown contextmenu

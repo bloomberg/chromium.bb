@@ -3102,7 +3102,16 @@ bool EventHandler::sendContextMenuEventForKey()
 
 bool EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestResults& targetedEvent)
 {
-    unsigned modifiers = targetedEvent.event().modifiers();
+    const PlatformGestureEvent& gestureEvent = targetedEvent.event();
+    unsigned modifiers = gestureEvent.modifiers();
+
+    // Send MouseMoved event prior to handling (https://crbug.com/485290).
+    PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
+        NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
+        static_cast<PlatformEvent::Modifiers>(modifiers),
+        PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
+    dispatchMouseEvent(EventTypeNames::mousemove, targetedEvent.hitTestResult().innerNode(), 0, fakeMouseMove, true);
+
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
 
     if (m_frame->settings()->showContextMenuOnMouseUp())

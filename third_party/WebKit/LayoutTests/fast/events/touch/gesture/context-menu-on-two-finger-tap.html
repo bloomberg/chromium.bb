@@ -7,13 +7,25 @@
 <p>This test checks that the context menu is shown on a two finger tap gesture.</p>
 <div id="text">Testing</div>
 <div id="result">FAIL</div>
+<div id="eventSequence">Event sequence:</div>
 <script>
+"use strict";
+
 function test()
 {
     if (window.testRunner)
         testRunner.dumpAsText();
 
-    document.oncontextmenu = function() { document.getElementById("result").innerHTML = "PASS"; }
+    document.oncontextmenu = function() {
+        document.getElementById("result").innerHTML = "PASS (ContextMenu event seen)";
+    }
+
+    for (let evtType of ["contextmenu", "mouseover", "mousemove", "mouseout",
+            "mouseenter", "mouseleave", "mouseup", "mousedown"]) {
+        document.addEventListener(evtType, function(e) {
+            document.getElementById("eventSequence").innerHTML += " " + e.type;
+        });
+    }
 
     var text = document.getElementById("text");
 
