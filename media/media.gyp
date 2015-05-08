@@ -1942,6 +1942,19 @@
             'media_unittests.isolate',
           ],
         },
+        {
+          'target_name': 'audio_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'audio_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'audio_unittests.isolate',
+          ],
+        },
       ],
     }],
   ],
