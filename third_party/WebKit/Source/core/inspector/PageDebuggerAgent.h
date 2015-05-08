@@ -52,6 +52,7 @@ public:
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
+    void enable(ErrorString*) final;
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCommitLoadForLocalFrame(LocalFrame*) override;
@@ -72,6 +73,7 @@ private:
     void overlaySteppedOver() override;
 
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
+    bool canExecuteScripts() const;
 
     PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
     RawPtrWillBeMember<PageScriptDebugServer> m_pageScriptDebugServer;

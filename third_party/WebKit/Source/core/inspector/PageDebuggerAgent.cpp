@@ -72,8 +72,24 @@ DEFINE_TRACE(PageDebuggerAgent)
     InspectorDebuggerAgent::trace(visitor);
 }
 
+bool PageDebuggerAgent::canExecuteScripts() const
+{
+    ScriptController& scriptController = m_pageAgent->inspectedFrame()->script();
+    return scriptController.canExecuteScripts(NotAboutToExecuteScript);
+}
+
+void PageDebuggerAgent::enable(ErrorString* errorString)
+{
+    if (!canExecuteScripts()) {
+        *errorString = "Script execution is prohibited";
+        return;
+    }
+    InspectorDebuggerAgent::enable(errorString);
+}
+
 void PageDebuggerAgent::enable()
 {
+    ASSERT(canExecuteScripts());
     InspectorDebuggerAgent::enable();
     m_instrumentingAgents->setPageDebuggerAgent(this);
 }

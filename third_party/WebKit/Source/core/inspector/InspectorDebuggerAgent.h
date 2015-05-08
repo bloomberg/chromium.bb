@@ -94,7 +94,7 @@ public:
     void addMessageToConsole(ConsoleMessage*);
 
     // Part of the protocol.
-    void enable(ErrorString*) final;
+    void enable(ErrorString*) override;
     void setBreakpointsActive(ErrorString*, bool active) final;
     void setSkipAllPauses(ErrorString*, bool skipped) final;
 
