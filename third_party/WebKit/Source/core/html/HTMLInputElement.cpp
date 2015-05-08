@@ -758,6 +758,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         UseCounter::count(document(), UseCounter::MinAttribute);
     } else if (name == maxAttr) {
         m_inputTypeView->minOrMaxAttributeChanged();
+        m_inputType->sanitizeValueInResponseToMinOrMaxAttributeChange();
         setNeedsValidityCheck();
         UseCounter::count(document(), UseCounter::MaxAttribute);
     } else if (name == multipleAttr) {
