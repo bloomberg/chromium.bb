@@ -79,6 +79,8 @@ void TouchSelectionController::OnSelectionBoundsChanged(
 
   if (!activate_selection_automatically_ &&
       !activate_insertion_automatically_) {
+    DCHECK(!is_insertion_active_);
+    DCHECK(!is_selection_active_);
     DCHECK_EQ(INPUT_EVENT_TYPE_NONE, response_pending_input_event_);
     return;
   }
@@ -173,7 +175,8 @@ void TouchSelectionController::AllowShowingFromCurrentSelection() {
 
 void TouchSelectionController::OnTapEvent() {
   response_pending_input_event_ = TAP;
-  activate_selection_automatically_ = false;
+  if (!is_selection_active_)
+    activate_selection_automatically_ = false;
   ShowInsertionHandleAutomatically();
   if (selection_empty_ && !show_on_tap_for_empty_editable_)
     DeactivateInsertion();

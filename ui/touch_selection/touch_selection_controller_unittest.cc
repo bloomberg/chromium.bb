@@ -924,6 +924,14 @@ TEST_F(TouchSelectionControllerTest, NoSelectionAfterLongpressThenTap) {
   controller().OnLongPressEvent();
   ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+
+  // Tapping again shouldn't have any effect on subsequent selection events.
+  controller().OnTapEvent();
+  end_rect.Offset(10, 10);
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_MOVED));
+  ClearSelection();
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_CLEARED));
 }
 
 TEST_F(TouchSelectionControllerTest, AllowShowingFromCurrentSelection) {
