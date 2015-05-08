@@ -513,17 +513,21 @@ void ResourcePrefetchPredictor::OnSubresourceResponse(
   nav_it->second->push_back(response);
 }
 
-void ResourcePrefetchPredictor::OnNavigationComplete(
-    const NavigationID& navigation_id) {
+base::TimeDelta ResourcePrefetchPredictor::OnNavigationComplete(
+    const NavigationID& nav_id_without_timing_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   NavigationMap::iterator nav_it =
-      inflight_navigations_.find(navigation_id);
+      inflight_navigations_.find(nav_id_without_timing_info);
   if (nav_it == inflight_navigations_.end()) {
     RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL);
-    return;
+    return base::TimeDelta();
   }
   RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_TRACKED_URL);
+
+  // Get and use the navigation ID stored in |inflight_navigations_| because it
+  // has the timing infomation.
+  const NavigationID navigation_id(nav_it->first);
 
   // Report any stats.
   base::TimeDelta plt = base::TimeTicks::Now() - navigation_id.creation_time;
@@ -580,6 +584,8 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
               base::Bind(&ResourcePrefetchPredictor::OnVisitCountLookup,
                          AsWeakPtr()))),
       &history_lookup_consumer_);
+
+  return plt;
 }
 
 bool ResourcePrefetchPredictor::GetPrefetchData(

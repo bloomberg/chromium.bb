@@ -382,7 +382,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
                               std::string(),
                               false);
   predictor_->RecordURLRequest(main_frame);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
 
   // Now add a few subresources.
   URLRequestSummary resource1 = CreateURLRequestSummary(
@@ -440,7 +440,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
                               std::string(),
                               false);
   predictor_->RecordURLRequest(main_frame);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
 
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/style1.css",
@@ -522,8 +522,8 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
                       SetArgPointee<1>(test_host_data_)));
   ResetPredictor();
   InitializePredictor();
-  EXPECT_EQ(3, static_cast<int>(predictor_->url_table_cache_->size()));
-  EXPECT_EQ(2, static_cast<int>(predictor_->host_table_cache_->size()));
+  EXPECT_EQ(3U, predictor_->url_table_cache_->size());
+  EXPECT_EQ(2U, predictor_->host_table_cache_->size());
 
   URLRequestSummary main_frame =
       CreateURLRequestSummary(1,
@@ -534,7 +534,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
                               std::string(),
                               false);
   predictor_->RecordURLRequest(main_frame);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
 
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, 1, "http://www.google.com",  "http://google.com/style1.css",
@@ -646,8 +646,8 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
                       SetArgPointee<1>(test_host_data_)));
   ResetPredictor();
   InitializePredictor();
-  EXPECT_EQ(3, static_cast<int>(predictor_->url_table_cache_->size()));
-  EXPECT_EQ(2, static_cast<int>(predictor_->host_table_cache_->size()));
+  EXPECT_EQ(3U, predictor_->url_table_cache_->size());
+  EXPECT_EQ(2U, predictor_->host_table_cache_->size());
 
   URLRequestSummary main_frame =
       CreateURLRequestSummary(1,
@@ -658,7 +658,7 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
                               std::string(),
                               false);
   predictor_->RecordURLRequest(main_frame);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
 
   URLRequestSummary resource1 = CreateURLRequestSummary(
       1, 1, "http://www.nike.com",  "http://nike.com/style1.css",
@@ -746,8 +746,8 @@ TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {
       DeleteData(ContainerEq(urls_to_delete), ContainerEq(hosts_to_delete)));
 
   predictor_->DeleteUrls(rows);
-  EXPECT_EQ(2, static_cast<int>(predictor_->url_table_cache_->size()));
-  EXPECT_EQ(1, static_cast<int>(predictor_->host_table_cache_->size()));
+  EXPECT_EQ(2U, predictor_->url_table_cache_->size());
+  EXPECT_EQ(1U, predictor_->host_table_cache_->size());
 
   EXPECT_CALL(*mock_tables_.get(), DeleteAllData());
 
@@ -783,11 +783,11 @@ TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRequest) {
                               false);
 
   predictor_->OnMainFrameRequest(summary1);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
   predictor_->OnMainFrameRequest(summary2);
-  EXPECT_EQ(2, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(2U, predictor_->inflight_navigations_.size());
   predictor_->OnMainFrameRequest(summary3);
-  EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(3U, predictor_->inflight_navigations_.size());
 
   // Insert anther with same navigation id. It should replace.
   URLRequestSummary summary4 =
@@ -808,13 +808,13 @@ TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRequest) {
                               false);
 
   predictor_->OnMainFrameRequest(summary4);
-  EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(3U, predictor_->inflight_navigations_.size());
 
   // Change this creation time so that it will go away on the next insert.
   summary5.navigation_id.creation_time = base::TimeTicks::Now() -
       base::TimeDelta::FromDays(1);
   predictor_->OnMainFrameRequest(summary5);
-  EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(3U, predictor_->inflight_navigations_.size());
 
   URLRequestSummary summary6 =
       CreateURLRequestSummary(3,
@@ -825,7 +825,7 @@ TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRequest) {
                               std::string(),
                               false);
   predictor_->OnMainFrameRequest(summary6);
-  EXPECT_EQ(3, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(3U, predictor_->inflight_navigations_.size());
 
   EXPECT_TRUE(predictor_->inflight_navigations_.find(summary3.navigation_id) !=
               predictor_->inflight_navigations_.end());
@@ -865,14 +865,14 @@ TEST_F(ResourcePrefetchPredictorTest, OnMainFrameRedirect) {
   EXPECT_TRUE(predictor_->inflight_navigations_.empty());
 
   predictor_->OnMainFrameRequest(summary1);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
   predictor_->OnMainFrameRequest(summary2);
-  EXPECT_EQ(2, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(2U, predictor_->inflight_navigations_.size());
 
   predictor_->OnMainFrameRedirect(summary3);
-  EXPECT_EQ(2, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(2U, predictor_->inflight_navigations_.size());
   predictor_->OnMainFrameRedirect(summary1);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
   predictor_->OnMainFrameRedirect(summary2);
   EXPECT_TRUE(predictor_->inflight_navigations_.empty());
 }
@@ -895,7 +895,7 @@ TEST_F(ResourcePrefetchPredictorTest, OnSubresourceResponse) {
                               std::string(),
                               false);
   predictor_->OnMainFrameRequest(main_frame1);
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
 
   // Now add a few subresources.
   URLRequestSummary resource2 = CreateURLRequestSummary(
@@ -908,9 +908,9 @@ TEST_F(ResourcePrefetchPredictorTest, OnSubresourceResponse) {
   predictor_->OnSubresourceResponse(resource2);
   predictor_->OnSubresourceResponse(resource3);
 
-  EXPECT_EQ(1, static_cast<int>(predictor_->inflight_navigations_.size()));
-  EXPECT_EQ(3, static_cast<int>(
-      predictor_->inflight_navigations_[main_frame1.navigation_id]->size()));
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
+  EXPECT_EQ(3U,
+      predictor_->inflight_navigations_[main_frame1.navigation_id]->size());
   EXPECT_TRUE(URLRequestSummaryAreEqual(
       resource1,
       predictor_->inflight_navigations_[main_frame1.navigation_id]->at(0)));
@@ -920,6 +920,51 @@ TEST_F(ResourcePrefetchPredictorTest, OnSubresourceResponse) {
   EXPECT_TRUE(URLRequestSummaryAreEqual(
       resource3,
       predictor_->inflight_navigations_[main_frame1.navigation_id]->at(2)));
+}
+
+TEST_F(ResourcePrefetchPredictorTest, GetCorrectPLT) {
+  // Single navigation but history count is low, so should not record.
+  AddUrlToHistory("http://www.google.com", 1);
+
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(1,
+                              1,
+                              "http://www.google.com",
+                              "http://www.google.com",
+                              content::RESOURCE_TYPE_MAIN_FRAME,
+                              std::string(),
+                              false);
+  predictor_->RecordURLRequest(main_frame);
+  EXPECT_EQ(1U, predictor_->inflight_navigations_.size());
+
+  // Reset the creation time in |main_frame.navigation_id|. The correct creation
+  // time is stored in |inflight_navigations_| and should be used later.
+  main_frame.navigation_id.creation_time = base::TimeTicks();
+  EXPECT_TRUE(main_frame.navigation_id.creation_time.is_null());
+
+  // Now add a subresource.
+  URLRequestSummary resource1 = CreateURLRequestSummary(
+      1, 1, "http://www.google.com",  "http://google.com/style1.css",
+      content::RESOURCE_TYPE_STYLESHEET, "text/css", false);
+  predictor_->RecordURLResponse(resource1);
+
+  PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
+  host_data.resources.push_back(ResourceRow(std::string(),
+                                            "http://google.com/style1.css",
+                                            content::RESOURCE_TYPE_STYLESHEET,
+                                            1,
+                                            0,
+                                            0,
+                                            1.0));
+  EXPECT_CALL(*mock_tables_.get(), UpdateData(empty_url_data_, host_data));
+
+  // The page load time will be collected by RPP_HISTOGRAM_MEDIUM_TIMES, which
+  // has a upper bound of 3 minutes.
+  base::TimeDelta plt =
+      predictor_->OnNavigationComplete(main_frame.navigation_id);
+  EXPECT_LT(plt, base::TimeDelta::FromSeconds(180));
+
+  profile_->BlockUntilHistoryProcessesPendingRequests();
 }
 
 }  // namespace predictors

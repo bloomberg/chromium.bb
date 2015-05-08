@@ -118,6 +118,7 @@ void ResourcePrefetchPredictorObserver::OnRequestStarted(
   summary.navigation_id.render_process_id = child_id;
   summary.navigation_id.render_frame_id = frame_id;
   summary.navigation_id.main_frame_url = request->first_party_for_cookies();
+  summary.navigation_id.creation_time = request->creation_time();
   summary.resource_url = request->original_url();
   summary.resource_type = resource_type;
 

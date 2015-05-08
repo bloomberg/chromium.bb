@@ -141,6 +141,7 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRedirect);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            OnSubresourceResponse);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetCorrectPLT);
 
   enum InitializationState {
     NOT_INITIALIZED = 0,
@@ -190,9 +191,11 @@ class ResourcePrefetchPredictor
   void OnSubresourceResponse(const URLRequestSummary& response);
 
   // Called when onload completes for a navigation. We treat this point as the
-  // "completion" of the navigation. The resources requested by the page upto
-  // this point are the only ones considered for prefetching.
-  void OnNavigationComplete(const NavigationID& navigation_id);
+  // "completion" of the navigation. The resources requested by the page up to
+  // this point are the only ones considered for prefetching. Return the page
+  // load time for testing.
+  base::TimeDelta OnNavigationComplete(
+      const NavigationID& nav_id_without_timing_info);
 
   // Returns true if there is PrefetchData that can be used for the
   // navigation and fills in the |prefetch_data| to resources that need to be
