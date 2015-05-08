@@ -160,7 +160,7 @@
     },
 
     _computeInputContentClass: function(noLabelFloat, focused, _inputHasContent, _inputIsInvalid) {
-      var cls = 'input-content relative';
+      var cls = 'input-content';
       if (!noLabelFloat) {
         if (_inputHasContent) {
           cls += ' label-is-floating';
@@ -179,7 +179,7 @@
     },
 
     _computeUnderlineClass: function(focused, _inputIsInvalid) {
-      var cls = 'relative';
+      var cls = 'underline';
       if (_inputIsInvalid) {
         cls += ' is-invalid';
       } else if (focused) {

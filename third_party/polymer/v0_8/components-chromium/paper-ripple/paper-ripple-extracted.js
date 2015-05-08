@@ -230,10 +230,11 @@
         dx = this.xNow - (this.containerMetrics.width / 2);
         dy = this.yNow - (this.containerMetrics.height / 2);
 
-        Polymer.Base.translate3d(this.waveContainer, dx + 'px', dy + 'px', 0);
 
         // 2d transform for safari because of border-radius and overflow:hidden clipping bug.
         // https://bugs.webkit.org/show_bug.cgi?id=98538
+        this.waveContainer.style.webkitTransform = 'translate(' + dx + 'px, ' + dy + 'px)';
+        this.waveContainer.style.transform = 'translate3d(' + dx + 'px, ' + dy + 'px, 0)';
         this.wave.style.webkitTransform = 'scale(' + scale + ',' + scale + ')';
         this.wave.style.transform = 'scale3d(' + scale + ',' + scale + ',1)';
       },

@@ -17,6 +17,8 @@
     "paper-menu": "PolymerElements/paper-menu#^0.8.0",
     "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
     "paper-styles": "PolymerElements/paper-styles#^0.8.0",
-    "paper-toggle-button": "PolymerElements/paper-toggle-button#^0.8.0"
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^0.8.0",
+
+    "more-routing": "PolymerLabs/more-routing#^0.8.0"
   }
 }

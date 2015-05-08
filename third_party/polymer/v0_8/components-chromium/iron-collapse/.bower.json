@@ -1,6 +1,6 @@
 {
   "name": "iron-collapse",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "authors": [
     "The Polymer Authors"
   ],
@@ -28,11 +28,11 @@
     "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
     "paper-styles": "PolymerElements/paper-styles#^0.8.0"
   },
-  "_release": "0.8.2",
+  "_release": "0.8.3",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.2",
-    "commit": "235ac1fbc638795b8ca0026b42304fba29afd45c"
+    "tag": "v0.8.3",
+    "commit": "783e5ea589e9c4cf23755471a9ad2e1e9e597a65"
   },
   "_source": "git://github.com/PolymerElements/iron-collapse.git",
   "_target": "^0.8.0",

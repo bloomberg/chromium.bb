@@ -1,6 +1,6 @@
 {
   "name": "iron-input",
-  "version": "0.8.1",
+  "version": "0.8.3",
   "authors": "The Polymer Authors",
   "keywords": [
     "web-components",
@@ -27,11 +27,11 @@
     "web-component-tester": "Polymer/web-component-tester#^2.2.3",
     "webcomponentsjs": "Polymer/webcomponentsjs#^0.6.0"
   },
-  "_release": "0.8.1",
+  "_release": "0.8.3",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.1",
-    "commit": "2aab343ceb47fd96e58c7898ae114deb7fefd20d"
+    "tag": "v0.8.3",
+    "commit": "6ab99b7e7bb9923911671c0d757492d1964e8120"
   },
   "_source": "git://github.com/PolymerElements/iron-input.git",
   "_target": "^0.8.0",

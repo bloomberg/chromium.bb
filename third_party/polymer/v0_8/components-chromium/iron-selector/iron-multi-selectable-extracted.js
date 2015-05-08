@@ -53,7 +53,7 @@
        * `value` will be toggled; otherwise the `value` will be selected.
        *
        * @method select
-       * @param {String} value the value to select.
+       * @param {string} value the value to select.
        */
       select: function(value) {
         if (this.multi) {

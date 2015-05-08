@@ -1,39 +1,40 @@
 
 
-    Polymer({
+  Polymer({
 
-      behaviors: [
-        Polymer.PaperButtonBehavior
-      ],
+    is: 'paper-button',
 
-      properties: {
+    behaviors: [
+      Polymer.PaperButtonBehavior
+    ],
 
-        /**
-         * If true, the button should be styled with a shadow.
-         *
-         * @attribute raised
-         * @type boolean
-         * @default false
-         */
-        raised: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false,
-          observer: '_buttonStateChanged'
-        }
+    properties: {
 
-      },
-
-      ready: function() {
-        if (!this.hasAttribute('role')) {
-          this.setAttribute('role', 'button');
-        }
-      },
-
-      _buttonStateChanged: function() {
-        this._calculateElevation();
+      /**
+       * If true, the button should be styled with a shadow.
+       *
+       * @attribute raised
+       * @type boolean
+       * @default false
+       */
+      raised: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false,
+        observer: '_buttonStateChanged'
       }
 
-    });
+    },
 
-  
+    ready: function() {
+      if (!this.hasAttribute('role')) {
+        this.setAttribute('role', 'button');
+      }
+    },
+
+    _buttonStateChanged: function() {
+      this._calculateElevation();
+    }
+
+  });
+

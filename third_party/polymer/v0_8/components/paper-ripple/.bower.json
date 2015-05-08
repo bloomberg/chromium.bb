@@ -1,5 +1,6 @@
 {
   "name": "paper-ripple",
+  "version": "0.8.3",
   "private": true,
   "dependencies": {
     "polymer": "polymer/polymer#v0.8.0-rc.7"
@@ -14,12 +15,11 @@
     "web-component-tester": "~2.2.3"
   },
   "homepage": "https://github.com/PolymerElements/paper-ripple",
-  "version": "0.8.2",
-  "_release": "0.8.2",
+  "_release": "0.8.3",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.2",
-    "commit": "7f1399055ff05cc37e3b577d97d00d664816e1d2"
+    "tag": "v0.8.3",
+    "commit": "dae4d3e1df6748aed651dfa2012121674d0b6b05"
   },
   "_source": "git://github.com/PolymerElements/paper-ripple.git",
   "_target": "^0.8.0",

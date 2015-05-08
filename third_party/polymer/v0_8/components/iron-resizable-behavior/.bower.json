@@ -1,6 +1,6 @@
 {
   "name": "iron-resizable-behavior",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "main": "iron-resizable-behavior.html",
   "authors": [
@@ -16,11 +16,11 @@
     "web-component-tester": "*"
   },
   "homepage": "https://github.com/polymerelements/iron-resizable-behavior",
-  "_release": "0.8.0",
+  "_release": "0.8.1",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.0",
-    "commit": "c7b09f87758efc6c6483e2854b992aab4042be51"
+    "tag": "v0.8.1",
+    "commit": "50415abf3c9acc0be0d5bec8e021beb9a52288ce"
   },
   "_source": "git://github.com/polymerelements/iron-resizable-behavior.git",
   "_target": "^0.8.0",

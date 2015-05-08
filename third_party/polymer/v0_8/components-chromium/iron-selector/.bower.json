@@ -1,6 +1,6 @@
 {
   "name": "iron-selector",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "private": true,
   "main": [
     "iron-selector.html"
@@ -18,14 +18,14 @@
     "web-component-tester": "Polymer/web-component-tester#^2.2.3",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0"
   },
-  "homepage": "https://github.com/polymerelements/iron-selector",
-  "_release": "0.8.4",
+  "homepage": "https://github.com/PolymerElements/iron-selector",
+  "_release": "0.8.5",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.4",
-    "commit": "a094802a4e03ceb0b574accfcde9654b4334efc0"
+    "tag": "v0.8.5",
+    "commit": "6b56de55e3e7f8ed108c9c227c85bc2a2f360d0d"
   },
-  "_source": "git://github.com/polymerelements/iron-selector.git",
+  "_source": "git://github.com/PolymerElements/iron-selector.git",
   "_target": "^0.8.0",
-  "_originalSource": "polymerelements/iron-selector"
+  "_originalSource": "PolymerElements/iron-selector"
 }

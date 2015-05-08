@@ -21,7 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * set this to the name of the attribute.
        *
        * @attribute attrForSelected
-       * @type String
+       * @type {string}
        */
       attrForSelected: {
         type: String,
@@ -32,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Gets or sets the selected element. The default is to use the index of the item.
        *
        * @attribute selected
-       * @type String
+       * @type {string}
        */
       selected: {
         type: String,
@@ -43,7 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Returns the currently selected item.
        *
        * @attribute selectedItem
-       * @type Object
+       * @type {Object}
        */
       selectedItem: {
         type: Object,
@@ -57,7 +57,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Set to empty string to listen to no events.
        *
        * @attribute activateEvent
-       * @type String
+       * @type {string}
        * @default 'click'
        */
       activateEvent: {
@@ -71,7 +71,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * are selectable.
        *
        * @attribute selectable
-       * @type String
+       * @type {string}
        */
       selectable: String,
 
@@ -79,7 +79,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * The class to set on elements when selected.
        *
        * @attribute selectedClass
-       * @type String
+       * @type {string}
        */
       selectedClass: {
         type: String,
@@ -90,7 +90,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * The attribute to set on elements when selected.
        *
        * @attribute selectedAttribute
-       * @type String
+       * @type {string}
        */
       selectedAttribute: {
         type: String,
@@ -154,7 +154,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * Selects the given value.
      *
      * @method select
-     * @param {String} value the value to select.
+     * @param {string} value the value to select.
      */
     select: function(value) {
       this.selected = value;

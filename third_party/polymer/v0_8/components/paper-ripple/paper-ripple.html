@@ -16,21 +16,21 @@ Example:
 
     <paper-ripple></paper-ripple>
 
-`paper-ripple` listens to "down" and "up" events so it would display ripple
+`paper-ripple` listens to "mousedown" and "mouseup" events so it would display ripple
 effect when touches on it.  You can also defeat the default behavior and
 manually route the down and up actions to the ripple element.  Note that it is
-important if you call downAction() you will have to make sure to call upAction()
-so that `paper-ripple` would end the animation loop.
+important if you call mousedownAction() you will have to make sure to call
+mouseupAction() so that `paper-ripple` would end the animation loop.
 
 Example:
 
     <paper-ripple id="ripple" style="pointer-events: none;"></paper-ripple>
     ...
     downAction: function(e) {
-      this.$.ripple.downAction({x: e.x, y: e.y});
+      this.$.ripple.mousedownAction({x: e.x, y: e.y});
     },
     upAction: function(e) {
-      this.$.ripple.upAction();
+      this.$.ripple.mouseupAction();
     }
 
 Styling ripple effect:
@@ -84,7 +84,7 @@ animation finishes to perform some action.
       /* This resolves a rendering issue in Chrome 40 where the
          ripple is not properly clipped by its parent (which may have
          rounded corners. See: http://jsbin.com/temexa/4 */
-      -webkit-transform: translate3d(0, 0, 0);
+      -webkit-transform: translate(0, 0);
       transform: translate3d(0, 0, 0);
     }
 
@@ -366,10 +366,11 @@ animation finishes to perform some action.
         dx = this.xNow - (this.containerMetrics.width / 2);
         dy = this.yNow - (this.containerMetrics.height / 2);
 
-        Polymer.Base.translate3d(this.waveContainer, dx + 'px', dy + 'px', 0);
 
         // 2d transform for safari because of border-radius and overflow:hidden clipping bug.
         // https://bugs.webkit.org/show_bug.cgi?id=98538
+        this.waveContainer.style.webkitTransform = 'translate(' + dx + 'px, ' + dy + 'px)';
+        this.waveContainer.style.transform = 'translate3d(' + dx + 'px, ' + dy + 'px, 0)';
         this.wave.style.webkitTransform = 'scale(' + scale + ',' + scale + ')';
         this.wave.style.transform = 'scale3d(' + scale + ',' + scale + ',1)';
       },
@@ -617,4 +618,3 @@ animation finishes to perform some action.
     });
   })();
 </script>
-

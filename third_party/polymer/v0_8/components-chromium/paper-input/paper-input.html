@@ -8,6 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="paper-input-behavior.html">
 <link rel="import" href="paper-input-container.html">
 <link rel="import" href="paper-input-error.html">
 <link rel="import" href="paper-input-char-counter.html">
@@ -20,13 +21,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <template>
 
-    <paper-input-container no-label-float$="[[noLabelFloat]]" auto-validate$="[[autoValidate]]">
+    <paper-input-container no-label-float$="[[noLabelFloat]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]">
 
       <template is="x-if" if="[[label]]">
         <label>[[parent.label]]</label>
       </template>
 
-      <input is="iron-input" id="input" bind-value="{{value}}" prevent-invalid-input="[[preventInvalidInput]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]">
+      <input is="iron-input" id="input" bind-value="{{value}}" prevent-invalid-input="[[preventInvalidInput]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" disabled$="[[disabled]]">
 
       <template is="x-if" if="[[errorMessage]]">
         <paper-input-error>[[parent.errorMessage]]</paper-input-error>

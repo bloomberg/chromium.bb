@@ -1,0 +1,66 @@
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="route.html">
+<link rel="import" href="routing.html">
+
+<script>
+
+  MoreRouting.ContextAware = {
+
+    /** @override */
+    ready: function() {
+      this._makeRoutingReady();
+    },
+
+    /**
+     * Calls `routingReady`, and ensures that it is called in a top-down manner.
+     *
+     * We need to be sure that parent nodes have `routingReady` triggered before
+     * their children so that they can properly configure nested routes.
+     *
+     * Unfortunately, `ready` is sometimes bottom-up, sometimes top-down.
+     * Ideally, this wouldn't be necessary.
+     *
+     * @see https://github.com/Polymer/polymer/pull/1448
+     */
+    _makeRoutingReady: function() {
+      if (this.routingIsReady) return;
+
+      var node = this;
+      while (node = Polymer.dom(node).parentNode) {
+        if (typeof node._makeRoutingReady === 'function') break;
+      }
+      if (node) node._makeRoutingReady();
+
+      this.parentRoute = this._findParentRoute();
+      this.routingIsReady = true;
+      if (typeof this.routingReady === 'function') this.routingReady();
+    },
+
+    _findParentRoute: function() {
+      var node = this;
+      while (node) {
+        node = Polymer.dom(node).parentNode;
+        if (node && node.nodeType !== Node.ELEMENT_NODE) {
+          node = node.host;
+        }
+
+        var route = node && node.moreRouteContext;
+        if (route instanceof MoreRouting.Route) {
+          return route;
+        }
+      }
+      return null;
+    },
+
+  };
+
+</script>

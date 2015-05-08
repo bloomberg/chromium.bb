@@ -1,6 +1,6 @@
 {
   "name": "paper-button",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "authors": [
     "The Polymer Authors"
   ],
@@ -34,11 +34,11 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
     "web-component-tester": "*"
   },
-  "_release": "0.8.2",
+  "_release": "0.8.3",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.2",
-    "commit": "64f95d9fe781c34efe30ec73ad93078e45857e85"
+    "tag": "v0.8.3",
+    "commit": "9361301aeb12a97f7729f0e7cd8641b7e568bc6f"
   },
   "_source": "git://github.com/PolymerElements/paper-button.git",
   "_target": "^0.8.0",

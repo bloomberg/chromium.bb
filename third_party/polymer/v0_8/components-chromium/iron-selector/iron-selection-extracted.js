@@ -1,5 +1,9 @@
 
 
+  /**
+   * @param {!Function} selectCallback
+   * @constructor
+   */
   Polymer.IronSelection = function(selectCallback) {
     this.selection = [];
     this.selectCallback = selectCallback;
@@ -37,7 +41,7 @@
      * Indicates if a given item is selected.
      *
      * @method isSelected
-     * @param {any} item The item whose selection state should be checked.
+     * @param {*} item The item whose selection state should be checked.
      * @returns Returns true if `item` is selected.
      */
     isSelected: function(item) {
@@ -48,8 +52,8 @@
      * Sets the selection state for a given item to either selected or deselected.
      *
      * @method setItemSelected
-     * @param {any} item The item to select.
-     * @param {Boolean} isSelected True for selected, false for deselected.
+     * @param {*} item The item to select.
+     * @param {boolean} isSelected True for selected, false for deselected.
      */
     setItemSelected: function(item, isSelected) {
       if (item != null) {
@@ -73,7 +77,7 @@
      * the `item` will be selected.
      *
      * @method select
-     * @param {any} item The item to select.
+     * @param {*} item The item to select.
      */
     select: function(item) {
       if (this.multi) {
@@ -88,7 +92,7 @@
      * Toggles the selection state for `item`.
      *
      * @method toggle
-     * @param {any} item The item to toggle.
+     * @param {*} item The item to toggle.
      */
     toggle: function(item) {
       this.setItemSelected(item, !this.isSelected(item));

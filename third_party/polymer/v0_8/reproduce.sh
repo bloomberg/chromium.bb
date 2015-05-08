@@ -26,6 +26,7 @@ rm -rf components/{iron-component-page,webcomponentsjs}
 # Test and demo directories aren't needed.
 rm -rf components/*/{test,demo}
 rm -rf components/polymer/explainer
+rm -rf components/observe-js/{examples,conf,benchmark}
 
 # Make checkperms.py happy.
 find components/iron-selector -type f -exec chmod -x {} \;

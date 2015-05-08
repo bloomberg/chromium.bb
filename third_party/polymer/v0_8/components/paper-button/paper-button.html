@@ -116,44 +116,47 @@ The opacity of the ripple is not customizable via CSS.
 
   </template>
 
-  <script>
+</dom-module>
 
-    Polymer({
+<script>
 
-      behaviors: [
-        Polymer.PaperButtonBehavior
-      ],
+  Polymer({
 
-      properties: {
+    is: 'paper-button',
 
-        /**
-         * If true, the button should be styled with a shadow.
-         *
-         * @attribute raised
-         * @type boolean
-         * @default false
-         */
-        raised: {
-          type: Boolean,
-          reflectToAttribute: true,
-          value: false,
-          observer: '_buttonStateChanged'
-        }
+    behaviors: [
+      Polymer.PaperButtonBehavior
+    ],
 
-      },
+    properties: {
 
-      ready: function() {
-        if (!this.hasAttribute('role')) {
-          this.setAttribute('role', 'button');
-        }
-      },
-
-      _buttonStateChanged: function() {
-        this._calculateElevation();
+      /**
+       * If true, the button should be styled with a shadow.
+       *
+       * @attribute raised
+       * @type boolean
+       * @default false
+       */
+      raised: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false,
+        observer: '_buttonStateChanged'
       }
 
-    });
+    },
 
-  </script>
+    ready: function() {
+      if (!this.hasAttribute('role')) {
+        this.setAttribute('role', 'button');
+      }
+    },
 
-</dom-module>
+    _buttonStateChanged: function() {
+      this._calculateElevation();
+    }
+
+  });
+
+</script>
+

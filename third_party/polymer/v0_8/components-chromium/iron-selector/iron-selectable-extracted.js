@@ -9,7 +9,7 @@
        * set this to the name of the attribute.
        *
        * @attribute attrForSelected
-       * @type String
+       * @type {string}
        */
       attrForSelected: {
         type: String,
@@ -20,7 +20,7 @@
        * Gets or sets the selected element. The default is to use the index of the item.
        *
        * @attribute selected
-       * @type String
+       * @type {string}
        */
       selected: {
         type: String,
@@ -31,7 +31,7 @@
        * Returns the currently selected item.
        *
        * @attribute selectedItem
-       * @type Object
+       * @type {Object}
        */
       selectedItem: {
         type: Object,
@@ -45,7 +45,7 @@
        * Set to empty string to listen to no events.
        *
        * @attribute activateEvent
-       * @type String
+       * @type {string}
        * @default 'click'
        */
       activateEvent: {
@@ -59,7 +59,7 @@
        * are selectable.
        *
        * @attribute selectable
-       * @type String
+       * @type {string}
        */
       selectable: String,
 
@@ -67,7 +67,7 @@
        * The class to set on elements when selected.
        *
        * @attribute selectedClass
-       * @type String
+       * @type {string}
        */
       selectedClass: {
         type: String,
@@ -78,7 +78,7 @@
        * The attribute to set on elements when selected.
        *
        * @attribute selectedAttribute
-       * @type String
+       * @type {string}
        */
       selectedAttribute: {
         type: String,
@@ -142,7 +142,7 @@
      * Selects the given value.
      *
      * @method select
-     * @param {String} value the value to select.
+     * @param {string} value the value to select.
      */
     select: function(value) {
       this.selected = value;

@@ -1,6 +1,6 @@
 {
   "name": "paper-input",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "authors": [
     "The Polymer Authors"
   ],
@@ -32,11 +32,11 @@
     "web-component-tester": "Polymer/web-component-tester#^2.2.3",
     "webcomponentsjs": "Polymer/webcomponentsjs#^0.6.0"
   },
-  "_release": "0.8.1",
+  "_release": "0.8.2",
   "_resolution": {
     "type": "version",
-    "tag": "v0.8.1",
-    "commit": "a761e0a4f9abac125d7c150e71633fd6bdc07616"
+    "tag": "v0.8.2",
+    "commit": "59028225a51c6add666503f73a32f7e2e30491e4"
   },
   "_source": "git://github.com/PolymerElements/paper-input.git",
   "_target": "^0.8.0",

@@ -29,6 +29,7 @@
       opened: {
         type: Boolean,
         value: false,
+        notify: true,
         observer: 'openedChanged'
       }
 

@@ -22,9 +22,8 @@
       /**
        * Fired when the narrow layout changes.
        *
-       * @event paper-responsive-change
-       * @param {Object} detail
-       * @param {boolean} detail.narrow true if the panel is in narrow layout.
+       * @event paper-responsive-change {{narrow: boolean}} detail -
+       *     narrow: true if the panel is in narrow layout.
        */
 
       /**
@@ -34,10 +33,9 @@
        * This event is fired both when a panel is selected and deselected.
        * The `isSelected` detail property contains the selection state.
        *
-       * @event paper-select
-       * @param {Object} detail
-       * @param {boolean} detail.isSelected true for selection and false for deselection
-       * @param {Object} detail.item the panel that the event refers to
+       * @event paper-select {{isSelected: boolean, item: Object}} detail -
+       *     isSelected: True for selection and false for deselection.
+       *     item: The panel that the event refers to.
        */
 
       properties: {
@@ -75,6 +73,7 @@
 
         // Whether the user is dragging the drawer interactively.
         dragging: {
+          type: Boolean,
           value: false
         },
 
@@ -93,6 +92,7 @@
         // How many pixels on the side of the screen are sensitive to edge
         // swipes and peek.
         edgeSwipeSensitivity: {
+          type: Number,
           value: 30
         },
 
@@ -111,6 +111,7 @@
 
         // Whether the browser has support for the transform CSS property.
         hasTransform: {
+          type: Boolean,
           value: function() {
             return 'transform' in this.style;
           }
@@ -118,6 +119,7 @@
 
         // Whether the browser has support for the will-change CSS property.
         hasWillChange: {
+          type: Boolean,
           value: function() {
             return 'willChange' in this.style;
           }
@@ -138,7 +140,10 @@
         },
 
         // Whether the drawer is peeking out from the edge.
-        peeking: false,
+        peeking: {
+          type: Boolean,
+          value: false
+        },
 
         /**
          * Max-width when the panel changes to narrow layout.
@@ -183,19 +188,25 @@
          * automatically be hidden in wide layout.
          */
         drawerToggleAttribute: {
+          type: String,
           value: 'paper-drawer-toggle'
         },
 
         /**
          * Whether the transition is enabled.
          */
-        transition: false,
+        transition: {
+          type: Boolean,
+          value: false
+        },
 
         /**
          * Starting X coordinate of a tracking gesture. It is non-null only between trackStart and
          * trackEnd events.
+         * @type {?number}
          */
         _startX: {
+          type: Number,
           value: null
         }
 

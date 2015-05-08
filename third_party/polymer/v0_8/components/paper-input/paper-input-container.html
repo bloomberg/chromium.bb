@@ -51,6 +51,11 @@ For example:
       --mixin(--paper-input-container);
     }
 
+    :host([disabled]) {
+      pointer-events: none;
+      opacity: 0.33;
+    }
+
     .floated-label-placeholder {
       mixin(--paper-input-container-label-font);
     }
@@ -89,6 +94,12 @@ For example:
     .unfocused-line {
       height: 1px;
       background: var(--paper-input-container-color);
+    }
+
+    :host([disabled]) .unfocused-line {
+      border-bottom: 1px dashed;
+      border-color: var(--paper-input-container-color);
+      background: transparent;
     }
 
     .input-content ::content label,
@@ -164,6 +175,11 @@ For example:
 
     .add-on-content.is-highlighted ::content * {
       color: var(--paper-input-container-focus-color);
+    }
+
+    .input-content,
+    .underline {
+      position: relative;
     }
 
   </style>
@@ -353,7 +369,7 @@ For example:
     },
 
     _computeInputContentClass: function(noLabelFloat, focused, _inputHasContent, _inputIsInvalid) {
-      var cls = 'input-content relative';
+      var cls = 'input-content';
       if (!noLabelFloat) {
         if (_inputHasContent) {
           cls += ' label-is-floating';
@@ -372,7 +388,7 @@ For example:
     },
 
     _computeUnderlineClass: function(focused, _inputIsInvalid) {
-      var cls = 'relative';
+      var cls = 'underline';
       if (_inputIsInvalid) {
         cls += ' is-invalid';
       } else if (focused) {

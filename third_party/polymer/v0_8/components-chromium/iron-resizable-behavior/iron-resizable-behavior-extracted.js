@@ -18,6 +18,7 @@
   Polymer.IronResizableBehavior = {
     properties: {
       _parentResizable: {
+        type: Object,
         observer: '_parentResizableChanged'
       }
     },
@@ -90,27 +91,15 @@
      * that should be notified of a resize change.
      */
     stopResizeNotificationsFor: function(target) {
-      index = this._interestedResizables.indexOf(target);
+      var index = this._interestedResizables.indexOf(target);
 
       if (index > -1) {
         this._interestedResizables.splice(index, 1);
       }
     },
 
-    /**
-     * User should implement to introduce filtering when notifying children.
-     * Generally, children that are hidden by the resizable (e.g. non-active
-     * pages) need not be notified during resize, since they will be notified
-     * again when becoming un-hidden.
-     *
-     * Return `true` if the resizable passed as argument should be notified of
-     * resize.
-     *
-     * @method resizerShouldNotify
-     * @param {Element} el
-     */
-    // TODO(cdata): Currently behaviors cannot define "abstract" methods..
-    //resizerShouldNotify: function(el) { return true; },
+    // TODO(cdata): Currently behaviors cannot define "abstract" methods.
+    // resizerShouldNotify: function(el) { return true; },
 
     _parentResizableChanged: function(parentResizable) {
       if (parentResizable) {

@@ -1,0 +1,46 @@
+{
+  "name": "more-routing",
+  "version": "0.8.0-rc1",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "description": "A composable suite of objects and elements to make routing with web components a breeze.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "routing",
+    "router"
+  ],
+  "main": "more-routing.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerLabs/more-routing/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7",
+    "observe-js": "Polymer/observe-js#0.5.6-rc1"
+  },
+  "devDependencies": {
+    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.5",
+    "iron-selector": "PolymerElements/iron-selector#^0.8.2",
+    "paper-styles": "PolymerElements/paper-styles#^0.8.9",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^0.8.1",
+    "web-component-tester": "*"
+  },
+  "resolutions": {
+    "observe-js": "0.5.6-rc1"
+  },
+  "_release": "0.8.0-rc1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.0-rc1",
+    "commit": "751ec450f5e8e8f5f5323dc6f16c43586eb9d142"
+  },
+  "_source": "git://github.com/PolymerLabs/more-routing.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerLabs/more-routing"
+}

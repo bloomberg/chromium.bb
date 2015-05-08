@@ -49,6 +49,11 @@ For example:
       --mixin(--paper-input-container);
     }
 
+    :host([disabled]) {
+      pointer-events: none;
+      opacity: 0.33;
+    }
+
     .floated-label-placeholder {
       mixin(--paper-input-container-label-font);
     }
@@ -87,6 +92,12 @@ For example:
     .unfocused-line {
       height: 1px;
       background: var(--paper-input-container-color);
+    }
+
+    :host([disabled]) .unfocused-line {
+      border-bottom: 1px dashed;
+      border-color: var(--paper-input-container-color);
+      background: transparent;
     }
 
     .input-content ::content label,
@@ -162,6 +173,11 @@ For example:
 
     .add-on-content.is-highlighted ::content * {
       color: var(--paper-input-container-focus-color);
+    }
+
+    .input-content,
+    .underline {
+      position: relative;
     }
 
   </style>
