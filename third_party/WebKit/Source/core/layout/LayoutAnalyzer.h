@@ -61,8 +61,6 @@ public:
         m_counters[counter] += delta;
     }
 
-    void recordCounters();
-
     PassRefPtr<TracedValue> toTracedValue();
 
 private:

@@ -889,8 +889,6 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
 
-    if (m_analyzer)
-        m_analyzer->recordCounters();
     TRACE_EVENT_END1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
         "counters", analyzerCounters());
 }
