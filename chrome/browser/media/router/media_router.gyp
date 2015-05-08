@@ -12,6 +12,8 @@
         '<(DEPTH)/third_party/mojo/src',
       ],
       'dependencies': [
+        # media_router_type_converters.h needs the generated file.
+        ':media_router_mojo_gen',
         ':media_router_mojo',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/url/url.gyp:url_lib',
