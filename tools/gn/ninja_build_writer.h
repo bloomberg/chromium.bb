@@ -6,6 +6,7 @@
 #define TOOLS_GN_NINJA_BUILD_WRITER_H_
 
 #include <iosfwd>
+#include <set>
 #include <vector>
 
 #include "tools/gn/path_output.h"
@@ -44,8 +45,12 @@ class NinjaBuildWriter {
   void WriteSubninjas();
   bool WritePhonyAndAllRules(Err* err);
 
-  void WritePhonyRule(const Target* target, const OutputFile& target_file,
-                      const std::string& phony_name);
+  // Writes a phony rule for the given target with the given name. Adds the new
+  // name to the given set. If the name is already in the set, does nothing.
+  void WritePhonyRule(const Target* target,
+                      const OutputFile& target_file,
+                      const std::string& phony_name,
+                      std::set<std::string>* written_rules);
 
   const BuildSettings* build_settings_;
   std::vector<const Settings*> all_settings_;

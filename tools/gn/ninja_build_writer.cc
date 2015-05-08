@@ -186,6 +186,12 @@ void NinjaBuildWriter::WriteSubninjas() {
 bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
   std::string all_rules;
 
+  // Track rules as we generate them so we don't accidentally write a phony
+  // rule that collides with something else.
+  // GN internally generates an "all" target, so don't duplicate it.
+  std::set<std::string> written_rules;
+  written_rules.insert("all");
+
   // Write phony rules for all uniquely-named targets in the default toolchain.
   // Don't do other toolchains or we'll get naming conflicts, and if the name
   // isn't unique, also skip it. The exception is for the toplevel targets
@@ -214,6 +220,12 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
     // even if there are non-executable targets with the same name.
     if (target->output_type() == Target::EXECUTABLE)
       exe_count[label.name()]++;
+
+    // Add the files to the list of generated targets so we don't write phony
+    // rules that collide.
+    std::string target_file(target->dependency_output_file().value());
+    NormalizePath(&target_file);
+    written_rules.insert(target_file);
   }
 
   for (const auto& target : default_toolchain_targets_) {
@@ -229,7 +241,7 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
     // Write the long name "foo/bar:baz" for the target "//foo/bar:baz".
     std::string long_name = label.GetUserVisibleName(false);
     base::TrimString(long_name, "/", &long_name);
-    WritePhonyRule(target, target_file, long_name);
+    WritePhonyRule(target, target_file, long_name, &written_rules);
 
     // Write the directory name with no target name if they match
     // (e.g. "//foo/bar:bar" -> "foo/bar").
@@ -239,7 +251,7 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
       // That may have generated a name the same as the short name of the
       // target which we already wrote.
       if (medium_name != label.name())
-        WritePhonyRule(target, target_file, medium_name);
+        WritePhonyRule(target, target_file, medium_name, &written_rules);
     }
 
     // Write short names for ones which are either completely unique or there
@@ -247,7 +259,7 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
     if (small_name_count[label.name()] == 1 ||
         (target->output_type() == Target::EXECUTABLE &&
          exe_count[label.name()] == 1)) {
-      WritePhonyRule(target, target_file, label.name());
+      WritePhonyRule(target, target_file, label.name(), &written_rules);
     }
 
     if (!all_rules.empty())
@@ -260,7 +272,7 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
   for (const auto& toplevel_target : toplevel_targets) {
     if (small_name_count[toplevel_target->label().name()] > 1) {
       WritePhonyRule(toplevel_target, toplevel_target->dependency_output_file(),
-                     toplevel_target->label().name());
+                     toplevel_target->label().name(), &written_rules);
     }
   }
 
@@ -289,9 +301,14 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
 
 void NinjaBuildWriter::WritePhonyRule(const Target* target,
                                       const OutputFile& target_file,
-                                      const std::string& phony_name) {
+                                      const std::string& phony_name,
+                                      std::set<std::string>* written_rules) {
   if (target_file.value() == phony_name)
     return;  // No need for a phony rule.
+
+  if (written_rules->find(phony_name) != written_rules->end())
+    return;  // Already exists.
+  written_rules->insert(phony_name);
 
   EscapeOptions ninja_escape;
   ninja_escape.mode = ESCAPE_NINJA;
