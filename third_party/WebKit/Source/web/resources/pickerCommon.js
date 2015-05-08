@@ -309,3 +309,10 @@ Picker.prototype.chooseOtherColor = function() {
 };
 
 Picker.prototype.cleanup = function() {};
+
+window.addEventListener("keyup", function(event) {
+    // JAWS dispatches extra Alt events and unless we handle them they move the
+    // focus and close the popup.
+    if (event.keyIdentifier === "Alt")
+        event.preventDefault();
+}, true);
