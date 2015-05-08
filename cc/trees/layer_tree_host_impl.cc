@@ -76,7 +76,6 @@
 #include "cc/trees/tree_synchronizer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -190,6 +189,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     int id)
     : client_(client),
       proxy_(proxy),
+      current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
       content_is_suitable_for_gpu_rasterization_(true),
       has_gpu_rasterization_trigger_(false),
       use_gpu_rasterization_(false),
@@ -220,7 +220,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       max_memory_needed_bytes_(0),
       device_scale_factor_(1.f),
       resourceless_software_draw_(false),
-      begin_impl_frame_interval_(BeginFrameArgs::DefaultInterval()),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
@@ -393,6 +392,10 @@ bool LayerTreeHostImpl::CanDraw() const {
 }
 
 void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time) {
+  // mithro(TODO): Enable these checks.
+  // DCHECK(!current_begin_frame_tracker_.HasFinished());
+  // DCHECK(monotonic_time == current_begin_frame_tracker_.Current().frame_time)
+  //  << "Called animate with unknown frame time!?";
   if (input_handler_client_)
     input_handler_client_->Animate(monotonic_time);
   AnimatePageScale(monotonic_time);
@@ -1669,16 +1672,7 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
 }
 
 void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
-  // Sample the frame time now. This time will be used for updating animations
-  // when we draw.
-  DCHECK(!current_begin_frame_args_.IsValid());
-  current_begin_frame_args_ = args;
-  // TODO(mithro): Stop overriding the frame time once the usage of frame
-  // timing is unified.
-  current_begin_frame_args_.frame_time = gfx::FrameTime::Now();
-
-  // Cache the begin impl frame interval
-  begin_impl_frame_interval_ = args.interval;
+  current_begin_frame_tracker_.Start(args);
 
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager
@@ -1692,8 +1686,7 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
 }
 
 void LayerTreeHostImpl::DidFinishImplFrame() {
-  DCHECK(current_begin_frame_args_.IsValid());
-  current_begin_frame_args_ = BeginFrameArgs();
+  current_begin_frame_tracker_.Finish();
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {
@@ -3116,8 +3109,9 @@ void LayerTreeHostImpl::AddVideoFrameController(
     VideoFrameController* controller) {
   bool was_empty = video_frame_controllers_.empty();
   video_frame_controllers_.insert(controller);
-  if (current_begin_frame_args_.IsValid())
-    controller->OnBeginFrame(current_begin_frame_args_);
+  if (current_begin_frame_tracker_.DangerousMethodHasStarted() &&
+      !current_begin_frame_tracker_.DangerousMethodHasFinished())
+    controller->OnBeginFrame(current_begin_frame_tracker_.Current());
   if (was_empty)
     client_->SetVideoNeedsBeginFrames(true);
 }
@@ -3144,14 +3138,13 @@ TreePriority LayerTreeHostImpl::GetTreePriority() const {
 }
 
 BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
-  // Try to use the current frame time to keep animations non-jittery.  But if
-  // we're not in a frame (because this is during an input event or a delayed
-  // task), fall back to physical time.  This should still be monotonic.
-  if (current_begin_frame_args_.IsValid())
-    return current_begin_frame_args_;
-  return BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, gfx::FrameTime::Now(), base::TimeTicks(),
-      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
+  // TODO(mithro): Replace call with current_begin_frame_tracker_.Current()
+  // once all calls which happens outside impl frames are fixed.
+  return current_begin_frame_tracker_.DangerousMethodCurrentOrLast();
+}
+
+base::TimeDelta LayerTreeHostImpl::CurrentBeginFrameInterval() const {
+  return current_begin_frame_tracker_.Interval();
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>

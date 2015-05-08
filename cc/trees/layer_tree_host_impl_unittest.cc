@@ -180,6 +180,9 @@ class LayerTreeHostImplTest : public testing::Test,
         task_graph_runner_.get(), 0);
     bool init = host_impl_->InitializeRenderer(output_surface.Pass());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
+    // Set the BeginFrameArgs so that methods which use it are able to.
+    host_impl_->WillBeginImplFrame(
+        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
     return init;
   }
 
@@ -5050,6 +5053,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
           settings, this, &proxy_, &stats_instrumentation_,
           shared_bitmap_manager_.get(), NULL, task_graph_runner_.get(), 0);
   layer_tree_host_impl->InitializeRenderer(output_surface.Pass());
+  layer_tree_host_impl->WillBeginImplFrame(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
   layer_tree_host_impl->SetViewportSize(gfx::Size(500, 500));
 
   scoped_ptr<LayerImpl> root =
@@ -5338,6 +5343,8 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
       settings, client, proxy, stats_instrumentation, manager, NULL, NULL, 0);
   my_host_impl->InitializeRenderer(output_surface.Pass());
+  my_host_impl->WillBeginImplFrame(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
   my_host_impl->SetViewportSize(gfx::Size(100, 100));
 
   /*
@@ -7656,6 +7663,8 @@ class FakeVideoFrameController : public VideoFrameController {
 };
 
 TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
+  host_impl_->DidFinishImplFrame();
+
   BeginFrameArgs begin_frame_args =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
   FakeVideoFrameController controller;
@@ -7668,6 +7677,8 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
 }
 
 TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
+  host_impl_->DidFinishImplFrame();
+
   BeginFrameArgs begin_frame_args =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
   FakeVideoFrameController controller;

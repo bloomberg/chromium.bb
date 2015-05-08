@@ -16,6 +16,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/vsync_parameter_observer.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
@@ -206,9 +207,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   base::TimeDelta estimated_parent_draw_time_;
 
   std::deque<BeginFrameArgs> begin_retro_frame_args_;
-  BeginFrameArgs begin_impl_frame_args_;
   SchedulerStateMachine::BeginImplFrameDeadlineMode
       begin_impl_frame_deadline_mode_;
+  BeginFrameTracker begin_impl_frame_tracker_;
 
   base::Closure begin_retro_frame_closure_;
   base::Closure begin_impl_frame_deadline_closure_;
@@ -235,7 +236,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   void BeginRetroFrame();
   void BeginImplFrameWithDeadline(const BeginFrameArgs& args);
   void BeginImplFrameSynchronous(const BeginFrameArgs& args);
-  void BeginImplFrame();
+  void BeginImplFrame(const BeginFrameArgs& args);
   void FinishImplFrame();
   void OnBeginImplFrameDeadline();
   void PollToAdvanceCommitState();

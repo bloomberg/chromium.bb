@@ -61,14 +61,15 @@ void FakeLayerTreeHostImpl::CreatePendingTree() {
 }
 
 BeginFrameArgs FakeLayerTreeHostImpl::CurrentBeginFrameArgs() const {
-  if (!current_begin_frame_args_.IsValid())
-    return LayerTreeHostImpl::CurrentBeginFrameArgs();
-  return current_begin_frame_args_;
+  return current_begin_frame_tracker_.DangerousMethodCurrentOrLast();
 }
 
 void FakeLayerTreeHostImpl::SetCurrentBeginFrameArgs(
     const BeginFrameArgs& args) {
-  current_begin_frame_args_ = args;
+  if (!current_begin_frame_tracker_.DangerousMethodHasFinished()) {
+    current_begin_frame_tracker_.Finish();
+  }
+  current_begin_frame_tracker_.Start(args);
 }
 
 int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
