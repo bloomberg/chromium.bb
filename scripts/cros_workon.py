@@ -116,7 +116,10 @@ def main(argv):
       helper.StopWorkingOnPackages(options.packages, use_all=options.all,
                                    use_workon_only=options.workon_only)
     elif options.command == 'info':
-      cros_build_lib.Die('%s is not implemented.', options.command)
+      triples = helper.GetPackageInfo(options.packages, use_all=options.all,
+                                      use_workon_only=options.workon_only)
+      for package, repos, paths in triples:
+        print(package, ','.join(repos), ','.join(paths))
     elif options.command == 'list':
       packages = helper.ListAtoms(
           use_all=options.all, use_workon_only=options.workon_only)

@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import glob
 import os
 import re
@@ -17,6 +18,49 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
+
+
+# A package is a canonical CP atom.
+# A package may have 0 or more repositories, given as strings.
+# Each repository may be mapped into our workspace at some path.
+PackageInfo = collections.namedtuple('PackageInfo',
+                                     ('package', 'repos', 'src_paths'))
+
+
+def _IsWorkonEbuild(include_chrome, ebuild_path, ebuild_contents=None):
+  """Returns True iff the ebuild at |ebuild_path| is a workon ebuild.
+
+  This means roughly that the ebuild is compatible with our cros_workon based
+  system.  For most packages, this means that it inherits the cros-workon
+  overlay.
+
+  Args:
+    include_chrome: True iff we should include Chrome and chromium-source
+        packages.
+    ebuild_path: path an ebuild in question.
+    ebuild_contents: None, or the contents of the ebuild at |ebuild_path|.
+        If None, _IsWorkonEbuild will read the contents of the ebuild when
+        necessary.
+
+  Returns:
+    True iff the ebuild can be used with cros_workon.
+  """
+  # TODO(rcui): remove special casing of chromeos-chrome here when we make it
+  # inherit from cros-workon / chromium-source class (chromium-os:19259).
+  if (include_chrome and
+      portage_util.EbuildToCP(ebuild_path) == constants.CHROME_CP):
+    return True
+
+  workon_eclasses = 'cros-workon'
+  if include_chrome:
+    workon_eclasses += '|chromium-source'
+
+  ebuild_contents = ebuild_contents or osutils.ReadFile(ebuild_path)
+  if re.search('^inherit .*(%s)' % workon_eclasses,
+               ebuild_contents, re.M):
+    return True
+
+  return False
 
 
 def _GetLinesFromFile(path, line_prefix, line_suffix):
@@ -315,19 +359,13 @@ class WorkonHelper(object):
 
       return self._GetCanonicalAtom(autocompleted_package)
 
-    # TODO(rcui): remove special casing of chromeos-chrome here when we make it
-    # inherit from cros-workon / chromium-source class (chromium-os:19259).
-    atom = portage_util.EbuildToCP(ebuild_path)
-    if atom == 'chromeos-base/chromeos-chrome':
-      return atom
-
-    ebuild_contents = osutils.ReadFile(ebuild_path)
-    if not re.search('^inherit .*(cros-workon|chromium-source)',
-                     ebuild_contents, re.M):
-      logging.warn('%s is not a cros-workon package', atom)
+    if not _IsWorkonEbuild(True, ebuild_path):
+      logging.warn(
+          '"%s" is a -9999 ebuild, but does not inherit from cros-workon?',
+          ebuild_path)
       return None
 
-    return atom
+    return portage_util.EbuildToCP(ebuild_path)
 
   def _GetCanonicalAtoms(self, packages):
     """Transforms a list of package name fragments into a list of CP atoms.
@@ -370,7 +408,8 @@ class WorkonHelper(object):
         package, self._sysroot, include_masked=True,
         extra_env={'ACCEPT_KEYWORDS': '~%s' % self._arch})
 
-  def _GetWorkonEbuilds(self, filter_workon=False, filter_on_arch=True):
+  def _GetWorkonEbuilds(self, filter_workon=False, filter_on_arch=True,
+                        include_chrome=True):
     """Get a list of of all cros-workon ebuilds in the current system.
 
     Args:
@@ -378,12 +417,14 @@ class WorkonHelper(object):
           packages which define only a workon ebuild (i.e. no stable version).
       filter_on_arch: True iff we should only return ebuilds which are marked
           as unstable for the architecture of the system we're interested in.
+      include_chrome: True iff we should also include chromeos-chrome and
+          related ebuilds.  These ebuilds can be worked on, but don't work
+          like normal cros-workon ebuilds.
 
     Returns:
       list of paths to ebuilds meeting the above criteria.
     """
     result = []
-    workon_pat = re.compile('^inherit .*(cros-workon|chromium-source)', re.M)
     if filter_on_arch:
       keyword_pat = re.compile(r'^KEYWORDS=".*~(\*|%s).*"$' % self._arch, re.M)
 
@@ -392,7 +433,8 @@ class WorkonHelper(object):
           os.path.join(overlay, '*-*', '*', '*-9999.ebuild'))
       for ebuild_path in ebuild_paths:
         ebuild_contents = osutils.ReadFile(ebuild_path)
-        if not workon_pat.search(ebuild_contents):
+        if not _IsWorkonEbuild(include_chrome, ebuild_path,
+                               ebuild_contents=ebuild_contents):
           continue
         if filter_on_arch and not keyword_pat.search(ebuild_contents):
           continue
@@ -555,6 +597,64 @@ class WorkonHelper(object):
       # honorable tradition.
       logging.info("Stopped working on '%s' for '%s'",
                    ' '.join(stopped_atoms), self._system)
+
+  def GetPackageInfo(self, packages, use_all=False, use_workon_only=False):
+    """Get information about packages.
+
+    Args:
+      packages: list of package name fragments.  These will be mapped to
+          canonical portage atoms via the same process as
+          StartWorkingOnPackages().
+      use_all: True iff instead of the provided package list, we should just
+          stop working on all currently worked on atoms for the system in
+          question.
+      use_workon_only: True iff instead of the provided package list, we should
+          stop working on all currently worked on atoms that define only a
+          -9999 ebuild.
+
+    Returns:
+      Returns a list of PackageInfo tuples.
+    """
+    if use_all or use_workon_only:
+      # You can't use info to find the source code from Chrome, since that
+      # workflow is different.
+      ebuilds = self._GetWorkonEbuilds(filter_workon=use_workon_only,
+                                       include_chrome=False)
+    else:
+      atoms = self._GetCanonicalAtoms(packages)
+      ebuilds = [self._FindEbuildForPackage(atom) for atom in atoms]
+
+    ebuild_to_repos = {}
+    for ebuild in ebuilds:
+      workon_vars = portage_util.EBuild.GetCrosWorkonVars(
+          ebuild, portage_util.EbuildToCP(ebuild))
+      projects = workon_vars.project if workon_vars else []
+      ebuild_to_repos[ebuild] = projects
+
+    repository_to_source_path = {}
+    repo_list_result = cros_build_lib.RunCommand(
+        'repo list', shell=True, enter_chroot=True, capture_output=True,
+        print_cmd=False)
+
+    for line in repo_list_result.output.splitlines():
+      pieces = line.split(' : ')
+      if len(pieces) != 2:
+        logging.debug('Ignoring malformed repo list output line: "%s"', line)
+        continue
+
+      source_path, repository = pieces
+      repository_to_source_path[repository] = source_path
+
+    result = []
+    for ebuild in ebuilds:
+      package = portage_util.EbuildToCP(ebuild)
+      repos = ebuild_to_repos.get(ebuild, [])
+      src_paths = [repository_to_source_path.get(repo) for repo in repos]
+      src_paths = [path for path in src_paths if path]
+      result.append(PackageInfo(package, repos, src_paths))
+
+    result.sort()
+    return result
 
   def RunCommandInAtomSourceDirectory(self, atom, command):
     """Run a command in the source directory of an atom.

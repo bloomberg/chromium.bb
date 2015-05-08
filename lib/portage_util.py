@@ -536,10 +536,12 @@ class EBuild(object):
       projects = settings['CROS_WORKON_PROJECT'].split(',')
     if 'CROS_WORKON_SRCPATH' in settings:
       srcpaths = settings['CROS_WORKON_SRCPATH'].split(',')
+
     if not (projects or srcpaths):
       raise EbuildFormatIncorrectException(
           ebuild_path,
           'Unable to determine CROS_WORKON_{PROJECT,SRCPATH} values.')
+
     localnames = settings['CROS_WORKON_LOCALNAME'].split(',')
     subdirs = settings['CROS_WORKON_SUBDIR'].split(',')
     live = settings['CROS_WORKON_ALWAYS_LIVE']
