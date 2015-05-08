@@ -84,6 +84,34 @@ class CONTENT_EXPORT DelegatedFrameHost
   DelegatedFrameHost(DelegatedFrameHostClient* client);
   ~DelegatedFrameHost() override;
 
+  // ui::CompositorObserver implementation.
+  void OnCompositingDidCommit(ui::Compositor* compositor) override;
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override;
+  void OnCompositingEnded(ui::Compositor* compositor) override;
+  void OnCompositingAborted(ui::Compositor* compositor) override;
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
+
+  // ui::CompositorVSyncManager::Observer implementation.
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override;
+
+  // ui::LayerOwnerObserver implementation.
+  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
+
+  // ImageTransportFactoryObserver implementation.
+  void OnLostResources() override;
+
+  // DelegatedFrameEvictorClient implementation.
+  void EvictDelegatedFrame() override;
+
+  // cc::DelegatedFrameProviderClient implementation.
+  void UnusedResourcesAreAvailable() override;
+
+  // cc::SurfaceFactoryClient implementation.
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+
   bool CanCopyToBitmap() const;
 
   // Public interface exposed to RenderWidgetHostView.
@@ -149,25 +177,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void UnlockResources();
   void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
 
-  // Overridden from ui::CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
-  void OnCompositingEnded(ui::Compositor* compositor) override;
-  void OnCompositingAborted(ui::Compositor* compositor) override;
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
-
-  // Overridden from ui::CompositorVSyncManager::Observer:
-  void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval) override;
-
-  // Overridden from ui::LayerOwnerObserver:
-  void OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) override;
-
-  // Overridden from ImageTransportFactoryObserver:
-  void OnLostResources() override;
-
   bool ShouldSkipFrame(gfx::Size size_in_dip) const;
 
   // Lazily grab a resize lock if the aura window size doesn't match the current
@@ -220,15 +229,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void SendDelegatedFrameAck(uint32 output_surface_id);
   void SurfaceDrawn(uint32 output_surface_id, cc::SurfaceDrawStatus drawn);
   void SendReturnedDelegatedResources(uint32 output_surface_id);
-
-  // DelegatedFrameEvictorClient implementation.
-  void EvictDelegatedFrame() override;
-
-  // cc::DelegatedFrameProviderClient implementation.
-  void UnusedResourcesAreAvailable() override;
-
-  // cc::SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
 
   // Called to consult the current |frame_subscriber_|, to determine and maybe
   // initiate a copy-into-video-frame request.

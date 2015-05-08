@@ -845,7 +845,10 @@ void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
     return;
   }
 
-  render_widget_host_->UpdateVSyncParameters(vsync_timebase_, vsync_interval_);
+  if (browser_compositor_) {
+    browser_compositor_->compositor()->vsync_manager()->UpdateVSyncParameters(
+        vsync_timebase_, vsync_interval_);
+  }
 }
 
 void RenderWidgetHostViewMac::SpeakText(const std::string& text) {
