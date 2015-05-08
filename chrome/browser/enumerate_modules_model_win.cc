@@ -103,6 +103,36 @@ bool ConvertToLongPath(const base::string16& short_path,
 
 }  // namespace
 
+ModuleEnumerator::Module::Module() {
+}
+
+ModuleEnumerator::Module::Module(const Module& rhs) = default;
+
+ModuleEnumerator::Module::Module(ModuleType type,
+                                 ModuleStatus status,
+                                 const base::string16& location,
+                                 const base::string16& name,
+                                 const base::string16& product_name,
+                                 const base::string16& description,
+                                 const base::string16& version,
+                                 const base::string16& digital_signer,
+                                 RecommendedAction recommended_action)
+    : type(type),
+      status(status),
+      location(location),
+      name(name),
+      product_name(product_name),
+      description(description),
+      version(version),
+      digital_signer(digital_signer),
+      recommended_action(recommended_action),
+      duplicate_count(0),
+      normalized(false) {
+}
+
+ModuleEnumerator::Module::~Module() {
+}
+
 // The browser process module blacklist. This lists modules that are known
 // to cause compatibility issues within the browser process. When adding to this
 // list, make sure that all paths are lower-case, in long pathname form, end

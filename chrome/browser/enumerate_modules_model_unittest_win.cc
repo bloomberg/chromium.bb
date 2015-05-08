@@ -191,7 +191,7 @@ const struct MatchingEntryList {
       "0.0", "1.0", kOs, ModuleEnumerator::SEE_LINK }
   }, {  // All empty fields doesn't produce a match.
     ModuleEnumerator::NOT_MATCHED,
-    { kType, kStatus, L"", L"", L"", L"", L""},
+    { kType, kStatus, L"", L"", L"", L"", L"", L"", ModuleEnumerator::NONE },
     { "a.dll", "", "", "", "", kOs, ModuleEnumerator::SEE_LINK }
   },
 };
