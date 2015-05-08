@@ -18,14 +18,12 @@ BASE_I18N_EXPORT extern const char kIcuDataFileName[];
 // Call this function to load ICU's data tables for the current process.  This
 // function should be called before ICU is used.
 BASE_I18N_EXPORT bool InitializeICU();
-#endif
 
-#if defined(OS_ANDROID)
-// Android uses a file descriptor passed by browser process to initialize ICU
-// in render processes.
+// Android and html_viewer use a file descriptor passed by browser process to
+// initialize ICU in render processes.
 BASE_I18N_EXPORT bool InitializeICUWithFileDescriptor(
-    int data_fd,
-    base::MemoryMappedFile::Region data_region);
+    PlatformFile data_fd,
+    MemoryMappedFile::Region data_region);
 #endif
 
 // In a test binary, the call above might occur twice.

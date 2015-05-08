@@ -59,10 +59,10 @@ bool g_check_called_once = true;
 #endif
 }
 
-#if defined(OS_ANDROID)
+#if !defined(OS_NACL)
 bool InitializeICUWithFileDescriptor(
-    int data_fd,
-    base::MemoryMappedFile::Region data_region) {
+    PlatformFile data_fd,
+    MemoryMappedFile::Region data_region) {
 #if !defined(NDEBUG)
   DCHECK(!g_check_called_once || !g_called_once);
   g_called_once = true;
@@ -72,9 +72,9 @@ bool InitializeICUWithFileDescriptor(
   // The ICU data is statically linked.
   return true;
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-  CR_DEFINE_STATIC_LOCAL(base::MemoryMappedFile, mapped_file, ());
+  CR_DEFINE_STATIC_LOCAL(MemoryMappedFile, mapped_file, ());
   if (!mapped_file.IsValid()) {
-    if (!mapped_file.Initialize(base::File(data_fd), data_region)) {
+    if (!mapped_file.Initialize(File(data_fd), data_region)) {
       LOG(ERROR) << "Couldn't mmap icu data file";
       return false;
     }
@@ -84,10 +84,8 @@ bool InitializeICUWithFileDescriptor(
   return err == U_ZERO_ERROR;
 #endif // ICU_UTIL_DATA_FILE
 }
-#endif
 
 
-#if !defined(OS_NACL)
 bool InitializeICU() {
 #if !defined(NDEBUG)
   DCHECK(!g_check_called_once || !g_called_once);
@@ -98,7 +96,7 @@ bool InitializeICU() {
 #if (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_SHARED)
   // We expect to find the ICU data module alongside the current module.
   FilePath data_path;
-  PathService::Get(base::DIR_MODULE, &data_path);
+  PathService::Get(DIR_MODULE, &data_path);
   data_path = data_path.AppendASCII(ICU_UTIL_DATA_SHARED_MODULE_NAME);
 
   HMODULE module = LoadLibrary(data_path.value().c_str());
@@ -128,24 +126,24 @@ bool InitializeICU() {
 
   // Chrome doesn't normally shut down ICU, so the mapped data shouldn't ever
   // be released.
-  CR_DEFINE_STATIC_LOCAL(base::MemoryMappedFile, mapped_file, ());
+  CR_DEFINE_STATIC_LOCAL(MemoryMappedFile, mapped_file, ());
   if (!mapped_file.IsValid()) {
 #if !defined(OS_MACOSX)
     FilePath data_path;
 #if defined(OS_WIN)
     // The data file will be in the same directory as the current module.
-    bool path_ok = PathService::Get(base::DIR_MODULE, &data_path);
+    bool path_ok = PathService::Get(DIR_MODULE, &data_path);
     wchar_t tmp_buffer[_MAX_PATH] = {0};
     wcscpy_s(tmp_buffer, data_path.value().c_str());
-    base::debug::Alias(tmp_buffer);
+    debug::Alias(tmp_buffer);
     CHECK(path_ok);  // TODO(scottmg): http://crbug.com/445616
 #elif defined(OS_ANDROID)
-    bool path_ok = PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
+    bool path_ok = PathService::Get(DIR_ANDROID_APP_DATA, &data_path);
 #else
     // For now, expect the data file to be alongside the executable.
     // This is sufficient while we work on unit tests, but will eventually
     // likely live in a data directory.
-    bool path_ok = PathService::Get(base::DIR_EXE, &data_path);
+    bool path_ok = PathService::Get(DIR_EXE, &data_path);
 #endif
     DCHECK(path_ok);
     data_path = data_path.AppendASCII(kIcuDataFileName);
@@ -154,15 +152,15 @@ bool InitializeICU() {
     // TODO(scottmg): http://crbug.com/445616
     wchar_t tmp_buffer2[_MAX_PATH] = {0};
     wcscpy_s(tmp_buffer2, data_path.value().c_str());
-    base::debug::Alias(tmp_buffer2);
+    debug::Alias(tmp_buffer2);
 #endif
 
 #else
     // Assume it is in the framework bundle's Resources directory.
-    base::ScopedCFTypeRef<CFStringRef> data_file_name(
+    ScopedCFTypeRef<CFStringRef> data_file_name(
         SysUTF8ToCFStringRef(kIcuDataFileName));
     FilePath data_path =
-      base::mac::PathForFrameworkBundleResource(data_file_name);
+      mac::PathForFrameworkBundleResource(data_file_name);
     if (data_path.empty()) {
       LOG(ERROR) << kIcuDataFileName << " not found in bundle";
       return false;
