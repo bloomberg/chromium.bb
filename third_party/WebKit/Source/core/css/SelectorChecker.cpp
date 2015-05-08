@@ -183,48 +183,48 @@ static bool isLastOfType(Element& element, const QualifiedName& type)
     return !ElementTraversal::nextSibling(element, HasTagName(type));
 }
 
-static int countElementsBefore(Element& element)
+static int nthChildIndex(Element& element)
 {
     if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
-        return nthIndexCache->nthChildIndex(element) - 1;
+        return nthIndexCache->nthChildIndex(element);
 
-    int count = 0;
+    int index = 1;
     for (const Element* sibling = ElementTraversal::previousSibling(element); sibling; sibling = ElementTraversal::previousSibling(*sibling))
-        count++;
+        index++;
 
-    return count;
+    return index;
 }
 
-static int countElementsOfTypeBefore(Element& element, const QualifiedName& type)
+static int nthOfTypeIndex(Element& element, const QualifiedName& type)
 {
     if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
-        return nthIndexCache->nthChildIndexOfType(element, type) - 1;
-    int count = 0;
+        return nthIndexCache->nthChildIndexOfType(element, type);
+    int index = 1;
     for (const Element* sibling = ElementTraversal::previousSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(type)))
-        ++count;
-    return count;
+        ++index;
+    return index;
 }
 
-static int countElementsAfter(Element& element)
+static int nthLastChildIndex(Element& element)
 {
     if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
-        return nthIndexCache->nthLastChildIndex(element) - 1;
+        return nthIndexCache->nthLastChildIndex(element);
 
-    int count = 0;
+    int index = 1;
     for (const Element* sibling = ElementTraversal::nextSibling(element); sibling; sibling = ElementTraversal::nextSibling(*sibling))
-        ++count;
-    return count;
+        ++index;
+    return index;
 }
 
-static int countElementsOfTypeAfter(Element& element, const QualifiedName& type)
+static int nthLastOfTypeIndex(Element& element, const QualifiedName& type)
 {
     if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
-        return nthIndexCache->nthLastChildIndexOfType(element, type) - 1;
+        return nthIndexCache->nthLastChildIndexOfType(element, type);
 
-    int count = 0;
+    int index = 1;
     for (const Element* sibling = ElementTraversal::nextSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::nextSibling(*sibling, HasTagName(type)))
-        ++count;
-    return count;
+        ++index;
+    return index;
 }
 
 bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult* result) const
@@ -811,7 +811,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return selector.matchNth(1 + countElementsBefore(element));
+            return selector.matchNth(nthChildIndex(element));
         }
         break;
     case CSSSelector::PseudoNthOfType:
@@ -820,7 +820,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return selector.matchNth(1 + countElementsOfTypeBefore(element, element.tagQName()));
+            return selector.matchNth(nthOfTypeIndex(element, element.tagQName()));
         }
         break;
     case CSSSelector::PseudoNthLastChild:
@@ -831,7 +831,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return selector.matchNth(1 + countElementsAfter(element));
+            return selector.matchNth(nthLastChildIndex(element));
         }
         break;
     case CSSSelector::PseudoNthLastOfType:
@@ -842,7 +842,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return selector.matchNth(1 + countElementsOfTypeAfter(element, element.tagQName()));
+            return selector.matchNth(nthLastOfTypeIndex(element, element.tagQName()));
         }
         break;
     case CSSSelector::PseudoTarget:
