@@ -84,8 +84,6 @@ PRUNE_DIRS = (VCS_METADATA_DIRS +
 ADDITIONAL_PATHS = (
     os.path.join('breakpad'),
     os.path.join('chrome', 'common', 'extensions', 'docs', 'examples'),
-    os.path.join('chrome', 'browser', 'resources', 'settings', 'routing',
-                 'more_routing'),
     os.path.join('chrome', 'test', 'chromeos', 'autotest'),
     os.path.join('chrome', 'test', 'data'),
     os.path.join('native_client'),
