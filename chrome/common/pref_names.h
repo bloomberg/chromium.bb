@@ -403,7 +403,7 @@ extern const char kLocalDiscoveryNotificationsEnabled[];
 extern const char kPreferenceResetTime[];
 
 extern const char kPushMessagingRegistrationCount[];
-extern const char kPushMessagingApplicationIdMap[];
+extern const char kPushMessagingAppIdentifierMap[];
 
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockEnabled[];

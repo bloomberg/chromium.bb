@@ -1205,7 +1205,7 @@ const char kPushMessagingRegistrationCount[] =
     "gcm.push_messaging_registration_count";
 
 // Maps from app ids to origin + Service Worker registration ID.
-const char kPushMessagingApplicationIdMap[] =
+const char kPushMessagingAppIdentifierMap[] =
     "gcm.push_messaging_application_id_map";
 
 // Whether a user is allowed to use Easy Unlock.

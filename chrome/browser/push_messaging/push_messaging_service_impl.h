@@ -24,7 +24,7 @@
 #endif
 
 class Profile;
-class PushMessagingApplicationId;
+class PushMessagingAppIdentifier;
 
 namespace gcm {
 class GCMDriver;
@@ -107,7 +107,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // OnMessage methods ---------------------------------------------------------
 
-  void DeliverMessageCallback(const std::string& app_id_guid,
+  void DeliverMessageCallback(const std::string& app_id,
                               const GURL& requesting_origin,
                               int64 service_worker_registration_id,
                               const gcm::GCMClient::IncomingMessage& message,
@@ -122,20 +122,20 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       content::PushRegistrationStatus status);
 
   void DidRegister(
-      const PushMessagingApplicationId& application_id,
+      const PushMessagingAppIdentifier& app_identifier,
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& registration_id,
       gcm::GCMClient::Result result);
 
   void DidRequestPermission(
-      const PushMessagingApplicationId& application_id,
+      const PushMessagingAppIdentifier& app_identifier,
       const std::string& sender_id,
       const content::PushMessagingService::RegisterCallback& callback,
       ContentSetting content_setting);
 
   // Unregister methods --------------------------------------------------------
 
-  void Unregister(const std::string& app_id_guid,
+  void Unregister(const std::string& app_id,
                   const std::string& sender_id,
                   const content::PushMessagingService::UnregisterCallback&);
 
@@ -145,10 +145,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // OnContentSettingChanged methods -------------------------------------------
 
-  void UnregisterBecausePermissionRevoked(const PushMessagingApplicationId& id,
-                                          const base::Closure& closure,
-                                          const std::string& sender_id,
-                                          bool success, bool not_found);
+  void UnregisterBecausePermissionRevoked(
+      const PushMessagingAppIdentifier& app_identifier,
+      const base::Closure& closure,
+      const std::string& sender_id,
+      bool success,
+      bool not_found);
 
   // Helper methods ------------------------------------------------------------
 
