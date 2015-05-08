@@ -1656,7 +1656,7 @@ void TestRunner::Reset() {
   can_open_windows_ = false;
   dump_resource_load_callbacks_ = false;
   dump_resource_request_callbacks_ = false;
-  dump_resource_reqponse_mime_types_ = false;
+  dump_resource_response_mime_types_ = false;
   dump_window_status_changes_ = false;
   dump_progress_finished_callback_ = false;
   dump_spell_check_callbacks_ = false;
@@ -1816,7 +1816,7 @@ bool TestRunner::shouldDumpResourceRequestCallbacks() const {
 }
 
 bool TestRunner::shouldDumpResourceResponseMIMETypes() const {
-  return test_is_running_ && dump_resource_reqponse_mime_types_;
+  return test_is_running_ && dump_resource_response_mime_types_;
 }
 
 WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
@@ -2645,7 +2645,7 @@ void TestRunner::DumpResourceRequestCallbacks() {
 }
 
 void TestRunner::DumpResourceResponseMIMETypes() {
-  dump_resource_reqponse_mime_types_ = true;
+  dump_resource_response_mime_types_ = true;
 }
 
 void TestRunner::SetImagesAllowed(bool allowed) {
