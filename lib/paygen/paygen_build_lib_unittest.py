@@ -1313,7 +1313,8 @@ The suite job has another 2:39:39.789250 till timeout.
     '''
 
     cros_build_lib.RunCommand(
-        expected_command + ['-c'], capture_output=True).AndReturn(
+        expected_command + ['-c'], capture_output=True,
+        combine_stdout_stderr=True).AndReturn(
             utils.CommandResult(returncode=0, output=job_id_output))
     cros_build_lib.RunCommand(
         expected_command + ['-m', '26960110']).AndReturn(utils.CommandResult(
@@ -1347,7 +1348,8 @@ The suite job has another 2:39:39.789250 till timeout.
         '--no_wait', 'False',
         '--suite_min_duts', '2']
     cros_build_lib.RunCommand(
-        expected_command + ['-c'], capture_output=True).AndReturn(
+        expected_command + ['-c'], capture_output=True,
+        combine_stdout_stderr=True).AndReturn(
             utils.CommandResult(returncode=0, output=''))
 
     self.mox.ReplayAll()

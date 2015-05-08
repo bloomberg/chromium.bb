@@ -989,8 +989,16 @@ def _HWTestStart(cmd, debug=True):
   else:
     max_retry = 10
     retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,)
-    result = retry_util.RunCommandWithRetries(max_retry, cmd, retry_on=retry_on,
-                                              capture_output=True)
+    try:
+      result = retry_util.RunCommandWithRetries(max_retry, cmd,
+                                                retry_on=retry_on,
+                                                capture_output=True,
+                                                combine_stdout_stderr=True)
+    except cros_build_lib.RunCommandError as e:
+      logging.error('%s', e.result.output)
+      raise
+
+    logging.info('%s', result.output)
     m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
                   result.output)
     if m:

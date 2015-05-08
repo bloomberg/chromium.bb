@@ -120,6 +120,7 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
       signal. By default, we retry on all non-negative exit codes.
     error_check: Optional callback to check the error output.  Return None to
       fall back to |retry_on|, or True/False to set the retry directly.
+    log_retries: Whether to log a warning when retriable errors occur.
     args: Positional args passed to RunCommand; see RunCommand for specifics.
     kwargs: Optional args passed to RunCommand; see RunCommand for specifics.
 
@@ -131,6 +132,7 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
   """
   values = kwargs.pop('retry_on', None)
   error_check = kwargs.pop('error_check', lambda x: None)
+  log_retries = kwargs.pop('log_retries', True)
 
   def ShouldRetry(exc):
     """Return whether we should retry on a given exception."""
@@ -140,10 +142,16 @@ def RetryCommand(functor, max_retry, *args, **kwargs):
       logging.info('Child process received signal %d; not retrying.',
                    -exc.result.returncode)
       return False
+
     ret = error_check(exc)
     if ret is not None:
       return ret
-    return values is None or exc.result.returncode in values
+
+    if values is None or exc.result.returncode in values:
+      if log_retries:
+        logging.warning('Command failed with retriable error.\n%s', exc)
+      return True
+    return False
 
   return GenericRetry(ShouldRetry, max_retry, functor, *args, **kwargs)
 

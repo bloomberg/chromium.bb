@@ -11,6 +11,7 @@ import mock
 import os
 from StringIO import StringIO
 
+from chromite.cbuildbot import autotest_rpc_errors
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -182,10 +183,27 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.assertCommandContains(['nacl_helper'], expected=False)
 
 
-class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
+class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase,
+                        cros_test_lib.OutputTestCase):
   """Test commands related to HWLab tests."""
 
   # pylint: disable=protected-access
+  CONNECTION_REFUSED = '''
+Connection refused
+'''
+  JOB_ID_OUTPUT = '''
+Autotest instance: cautotest
+02-23-2015 [06:26:51] Submitted create_suite_job rpc
+02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
+@@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
+'''
+  WAIT_RETRY_OUTPUT = '''
+Connection dropped
+'''
+  WAIT_OUTPUT = '''
+The suite job has another 3:09:50.012887 till timeout.
+The suite job has another 2:39:39.789250 till timeout.
+'''
 
   def setUp(self):
     self._build = 'test-build'
@@ -201,82 +219,127 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     self._max_retries = 3
     self._minimum_duts = 2
     self._suite_min_duts = 2
+    self.create_cmd = None
+    self.wait_cmd = None
 
-  def testRunHWTestSuiteMinimal(self):
-    """Test RunHWTestSuite without optional arguments."""
-    commands.RunHWTestSuite(self._build, self._suite, self._board, debug=False)
-    self.assertCommandCalled([
-        commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
-        'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
-        '--board', 'test-board', '-c',
-    ], capture_output=True)
+  def RunHWTestSuite(self, *args, **kwargs):
+    """Run the hardware test suite, printing logs to stdout."""
+    kwargs.setdefault('debug', False)
+    with cros_test_lib.LoggingCapturer() as logs:
+      try:
+        commands.RunHWTestSuite(self._build, self._suite, self._board,
+                                *args, **kwargs)
+      finally:
+        print(logs.messages)
 
-  def testRunHWTestSuiteMaximal(self):
-    """Test RunHWTestSuite with all arguments."""
+  def SetCmdResults(self, create_return_code=0, wait_return_code=0, args=()):
+    """Set the expected results from the specified commands.
 
-    job_id_output = '''
-Autotest instance: cautotest
-02-23-2015 [06:26:51] Submitted create_suite_job rpc
-02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
-@@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
-The suite job has another 3:09:50.012887 till timeout.
-The suite job has another 2:39:39.789250 till timeout.
-    '''
-
+    Args:
+      create_return_code: Return code from create command.
+      wait_return_code: Return code from wait command.
+      args: Additional args to pass to create and wait commands.
+    """
     base_cmd = [
         commands._AUTOTEST_RPC_CLIENT, commands._AUTOTEST_RPC_HOSTNAME,
         'RunSuite', '--build', 'test-build', '--suite_name', 'test-suite',
-        '--board', 'test-board', '--pool', 'test-pool', '--num', '42',
+        '--board', 'test-board'
+    ] + list(args)
+    self.create_cmd = base_cmd + ['-c']
+    self.wait_cmd = base_cmd + ['-m', '26960110']
+    conn_refused = autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST
+    create_results = iter([
+        self.rc.CmdResult(returncode=conn_refused,
+                          output=self.CONNECTION_REFUSED,
+                          error=''),
+        self.rc.CmdResult(returncode=create_return_code,
+                          output=self.JOB_ID_OUTPUT,
+                          error=''),
+    ])
+    self.rc.AddCmdResult(
+        self.create_cmd,
+        side_effect=lambda *args, **kwargs: create_results.next(),
+    )
+
+    conn_lost = autotest_rpc_errors.PROXY_CONNECTION_LOST
+    wait_results = iter([
+        self.rc.CmdResult(returncode=conn_lost,
+                          output=self.WAIT_RETRY_OUTPUT,
+                          error=''),
+        self.rc.CmdResult(returncode=wait_return_code,
+                          output=self.WAIT_OUTPUT,
+                          error=''),
+    ])
+    self.rc.AddCmdResult(
+        self.wait_cmd,
+        side_effect=lambda *args, **kwargs: wait_results.next(),
+    )
+
+  def testRunHWTestSuiteMinimal(self):
+    """Test RunHWTestSuite without optional arguments."""
+    self.SetCmdResults()
+    with self.OutputCapturer() as output:
+      self.RunHWTestSuite()
+    self.assertCommandCalled(self.create_cmd, capture_output=True,
+                             combine_stdout_stderr=True)
+    self.assertCommandCalled(self.wait_cmd)
+    self.assertIn(self.WAIT_RETRY_OUTPUT, '\n'.join(output.GetStdoutLines()))
+    self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
+    self.assertIn(self.CONNECTION_REFUSED, '\n'.join(output.GetStdoutLines()))
+    self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
+
+  def testRunHWTestSuiteMaximal(self):
+    """Test RunHWTestSuite with all arguments."""
+    self.SetCmdResults(args=[
+        '--pool', 'test-pool', '--num', '42',
         '--file_bugs', 'True', '--no_wait', 'True',
         '--priority', 'test-priority', '--timeout_mins', '23',
         '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
         '--suite_min_duts', '2'
-        ]
-    create_cmd = base_cmd + ['-c']
-    wait_cmd = base_cmd + ['-m', '26960110']
-    self.rc.AddCmdResult(create_cmd, returncode=0, output=job_id_output)
-    self.rc.AddCmdResult(wait_cmd, returncode=12)
-    self.rc.AddCmdResult(wait_cmd, returncode=0)
-
-    commands.RunHWTestSuite(self._build, self._suite, self._board,
-                            self._pool, self._num, self._file_bugs,
-                            self._wait_for_results, self._priority,
-                            self._timeout_mins, self._retry, self._max_retries,
-                            self._minimum_duts, self._suite_min_duts,
-                            debug=False)
-    self.assertCommandCalled(create_cmd, capture_output=True)
-    self.assertCommandCalled(wait_cmd)
-    self.assertCommandCalled(wait_cmd)
+    ])
+    with self.OutputCapturer() as output:
+      self.RunHWTestSuite(self._pool, self._num, self._file_bugs,
+                          self._wait_for_results, self._priority,
+                          self._timeout_mins, self._retry,
+                          self._max_retries,
+                          self._minimum_duts, self._suite_min_duts)
+    self.assertCommandCalled(self.create_cmd, capture_output=True,
+                             combine_stdout_stderr=True)
+    self.assertCommandCalled(self.wait_cmd)
+    self.assertIn(self.WAIT_RETRY_OUTPUT, '\n'.join(output.GetStdoutLines()))
+    self.assertIn(self.WAIT_OUTPUT, '\n'.join(output.GetStdoutLines()))
+    self.assertIn(self.CONNECTION_REFUSED, '\n'.join(output.GetStdoutLines()))
+    self.assertIn(self.JOB_ID_OUTPUT, '\n'.join(output.GetStdoutLines()))
 
   def testRunHWTestSuiteFailure(self):
     """Test RunHWTestSuite when ERROR is returned."""
-    self.rc.SetDefaultCmdResult(returncode=1)
-    self.assertRaises(failures_lib.TestFailure, commands.RunHWTestSuite,
-                      self._build, self._suite, self._board, debug=False)
+    self.rc.SetDefaultCmdResult(returncode=1, output=self.JOB_ID_OUTPUT)
+    with self.OutputCapturer():
+      self.assertRaises(failures_lib.TestFailure, self.RunHWTestSuite)
 
   def testRunHWTestSuiteTimedOut(self):
     """Test RunHWTestSuite when SUITE_TIMEOUT is returned."""
-    self.rc.SetDefaultCmdResult(returncode=4)
-    self.assertRaises(failures_lib.SuiteTimedOut, commands.RunHWTestSuite,
-                      self._build, self._suite, self._board, debug=False)
+    self.rc.SetDefaultCmdResult(returncode=4, output=self.JOB_ID_OUTPUT)
+    with self.OutputCapturer():
+      self.assertRaises(failures_lib.SuiteTimedOut, self.RunHWTestSuite)
 
   def testRunHWTestSuiteInfraFail(self):
     """Test RunHWTestSuite when INFRA_FAILURE is returned."""
-    self.rc.SetDefaultCmdResult(returncode=3)
-    self.assertRaises(failures_lib.TestLabFailure, commands.RunHWTestSuite,
-                      self._build, self._suite, self._board, debug=False)
+    self.rc.SetDefaultCmdResult(returncode=3, output=self.JOB_ID_OUTPUT)
+    with self.OutputCapturer():
+      self.assertRaises(failures_lib.TestLabFailure, self.RunHWTestSuite)
 
   def testRunHWTestBoardNotAvailable(self):
     """Test RunHWTestSuite when BOARD_NOT_AVAILABLE is returned."""
-    self.rc.SetDefaultCmdResult(returncode=5)
-    self.assertRaises(failures_lib.BoardNotAvailable, commands.RunHWTestSuite,
-                      self._build, self._suite, self._board, debug=False)
+    self.rc.SetDefaultCmdResult(returncode=5, output=self.JOB_ID_OUTPUT)
+    with self.OutputCapturer():
+      self.assertRaises(failures_lib.BoardNotAvailable, self.RunHWTestSuite)
 
   def testRunHWTestTestWarning(self):
     """Test RunHWTestSuite when WARNING is returned."""
-    self.rc.SetDefaultCmdResult(returncode=2)
-    self.assertRaises(failures_lib.TestWarning, commands.RunHWTestSuite,
-                      self._build, self._suite, self._board, debug=False)
+    self.rc.SetDefaultCmdResult(returncode=2, output=self.JOB_ID_OUTPUT)
+    with self.OutputCapturer():
+      self.assertRaises(failures_lib.TestWarning, self.RunHWTestSuite)
 
 
 class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
