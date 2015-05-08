@@ -151,21 +151,28 @@ testcase.tabindexFocusDirectorySelected = function() {
     // Check that the file list has the focus on launch.
     function(inAppId) {
       appId = inAppId;
-      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
+      Promise.all([
+        remoteCall.waitForElement(appId, ['#file-list:focus']),
+        remoteCall.waitForElement(appId, ['#drive-welcome-link']),
+     ]).then(this.next);
     },
-    function(element) {
-      remoteCall.waitForElement(appId, ['#drive-welcome-link']).then(this.next);
-    },
-    function(element) {
+    function(elements) {
       remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
     }, function(element) {
       chrome.test.assertEq('list', element.attributes['class']);
       // Select the directory named 'photos'.
       remoteCall.callRemoteTestUtil(
           'selectFile', appId, ['photos']).then(this.next);
-    // Press the Tab key.
     }, function(result) {
       chrome.test.assertTrue(result);
+      Promise.all([
+        remoteCall.waitForElement(
+            appId, ['#share-button:not([hidden]):not([disabled])']),
+        remoteCall.waitForElement(
+            appId, ['#delete-button:not([hidden]):not([disabled])']),
+     ]).then(this.next);
+    // Press the Tab key.
+    }, function(elements) {
       remoteCall.checkNextTabFocus(appId, 'share-button').then(this.next);
     }, function(result) {
       chrome.test.assertTrue(result);

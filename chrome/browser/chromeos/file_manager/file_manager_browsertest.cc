@@ -1153,9 +1153,16 @@ INSTANTIATE_TEST_CASE_P(
                                     "tabindexFocusDownloads"),
                       TestParameter(IN_GUEST_MODE, "tabindexFocusDownloads")));
 
-// http://crbug.com/469061
+// Slow tests are disabled on debug build. http://crbug.com/327719
+// Disabled under MSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#define MAYBE_TabindexFocusDirectorySelected \
+  DISABLED_TabindexFocusDirectorySelected
+#else
+#define MAYBE_TabindexFocusDirectorySelected TabindexFocusDirectorySelected
+#endif
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_TabindexFocusDirectorySelected,
+    MAYBE_TabindexFocusDirectorySelected,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDirectorySelected")));
