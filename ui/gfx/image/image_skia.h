@@ -156,7 +156,7 @@ class GFX_EXPORT ImageSkia {
   // If the image rep's bitmap is empty, ImageStorage is set to NULL.
   void Init(const gfx::ImageSkiaRep& image_rep);
 
-  SkBitmap& GetBitmap() const;
+  const SkBitmap& GetBitmap() const;
 
   // Checks if the current thread can read/modify the ImageSkia.
   bool CanRead() const;

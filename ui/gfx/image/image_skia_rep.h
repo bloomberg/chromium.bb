@@ -58,9 +58,6 @@ class GFX_EXPORT ImageSkiaRep {
   const SkBitmap& sk_bitmap() const { return bitmap_; }
 
  private:
-  friend class ImageSkia;
-  SkBitmap& mutable_sk_bitmap() { return bitmap_; }
-
   SkBitmap bitmap_;
 
   float scale_;

@@ -466,11 +466,11 @@ void ImageSkia::Init(const ImageSkiaRep& image_rep) {
   storage_->image_reps().push_back(image_rep);
 }
 
-SkBitmap& ImageSkia::GetBitmap() const {
+const SkBitmap& ImageSkia::GetBitmap() const {
   if (isNull()) {
     // Callers expect a ImageSkiaRep even if it is |isNull()|.
     // TODO(pkotwicz): Fix this.
-    return NullImageRep().mutable_sk_bitmap();
+    return NullImageRep().sk_bitmap();
   }
 
   // TODO(oshima): This made a few tests flaky on Windows.
@@ -481,8 +481,8 @@ SkBitmap& ImageSkia::GetBitmap() const {
 
   ImageSkiaReps::iterator it = storage_->FindRepresentation(1.0f, true);
   if (it != storage_->image_reps().end())
-    return it->mutable_sk_bitmap();
-  return NullImageRep().mutable_sk_bitmap();
+    return it->sk_bitmap();
+  return NullImageRep().sk_bitmap();
 }
 
 bool ImageSkia::CanRead() const {
