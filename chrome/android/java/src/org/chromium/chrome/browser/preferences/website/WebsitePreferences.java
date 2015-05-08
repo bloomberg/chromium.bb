@@ -413,6 +413,8 @@ public class WebsitePreferences extends PreferenceFragment
             ChromeSwitchPreference globalToggle = (ChromeSwitchPreference)
                     getPreferenceScreen().findPreference(READ_WRITE_TOGGLE_KEY);
             updateAllowedHeader(mAllowedSiteCount, !globalToggle.isChecked());
+
+            getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
             PrefServiceBridge.getInstance().setBlockThirdPartyCookiesEnabled(!((boolean) newValue));
         }
