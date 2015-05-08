@@ -9014,7 +9014,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
             "width, height, or depth invalid");
         return false;
       }
-      if (target != GL_TEXTURE_2D_ARRAY) {
+      if (target == GL_TEXTURE_3D) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, function_name,
             "target invalid for format");
@@ -9116,7 +9116,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
       {
         const int kBlockSize = 4;
         GLsizei tex_width, tex_height;
-        if (target != GL_TEXTURE_2D_ARRAY ||
+        if (target == GL_TEXTURE_3D ||
             !texture->GetLevelSize(target, level,
                                    &tex_width, &tex_height, nullptr) ||
             (xoffset % kBlockSize) || (yoffset % kBlockSize) ||
