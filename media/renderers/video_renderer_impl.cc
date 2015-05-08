@@ -9,7 +9,9 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -22,6 +24,20 @@
 
 namespace media {
 
+// TODO(dalecurtis): This experiment is temporary and should be removed once we
+// have enough data to support the primacy of the new video rendering path; see
+// http://crbug.com/485699 for details.
+static bool ShouldUseVideoRenderingPath() {
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("NewVideoRendererTrial");
+  const bool disabled_via_cli =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewVideoRenderer);
+  return !disabled_via_cli && !StartsWithASCII(group_name, "Disabled", true);
+}
+
 VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     VideoRendererSink* sink,
@@ -29,9 +45,7 @@ VideoRendererImpl::VideoRendererImpl(
     bool drop_frames,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
-      use_new_video_renderering_path_(
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableNewVideoRenderer)),
+      use_new_video_renderering_path_(ShouldUseVideoRenderingPath()),
       sink_(sink),
       sink_started_(false),
       video_frame_stream_(
