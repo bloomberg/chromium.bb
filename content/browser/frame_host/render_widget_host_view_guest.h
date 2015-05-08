@@ -139,8 +139,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void DispatchGestureEvent(ui::GestureEvent* event) override;
   void DispatchCancelTouchEvent(ui::TouchEvent* event) override;
 
-  SkColorType PreferredReadbackFormat() override;
-
  protected:
   friend class RenderWidgetHostView;
 

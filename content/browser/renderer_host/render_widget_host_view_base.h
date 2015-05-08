@@ -159,8 +159,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
 
-  virtual SkColorType PreferredReadbackFormat();
-
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node) {}
 
@@ -255,10 +253,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // output will be unscaled. |callback| is run with true on success,
   // false otherwise. A smaller region than |src_subrect| may be copied
   // if the underlying surface is smaller than |src_subrect|.
-  virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
-                                          const gfx::Size& dst_size,
-                                          ReadbackRequestCallback& callback,
-                                          const SkColorType color_type) = 0;
+  virtual void CopyFromCompositingSurface(
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      ReadbackRequestCallback& callback,
+      const SkColorType preferred_color_type) = 0;
 
   // Copies the contents of the compositing surface, populating the given
   // |target| with YV12 image data. |src_subrect| is specified in layer space

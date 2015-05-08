@@ -138,7 +138,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void CopyFromBackingStore(const gfx::Rect& src_rect,
                             const gfx::Size& accelerated_dst_size,
                             ReadbackRequestCallback& callback,
-                            const SkColorType color_type) override;
+                            const SkColorType preferred_color_type) override;
   bool CanCopyFromBackingStore() override;
 #if defined(OS_ANDROID)
   void LockBackingStore() override;
@@ -162,8 +162,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AddMouseEventCallback(const MouseEventCallback& callback) override;
   void RemoveMouseEventCallback(const MouseEventCallback& callback) override;
   void GetWebScreenInfo(blink::WebScreenInfo* result) override;
-
-  SkColorType PreferredReadbackFormat() override;
 
   // Forces redraw in the renderer and when the update reaches the browser
   // grabs snapshot from the compositor. Returns PNG-encoded snapshot.

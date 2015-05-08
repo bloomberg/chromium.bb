@@ -124,8 +124,8 @@ void TestRenderWidgetHostView::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     ReadbackRequestCallback& callback,
-    const SkColorType color_type) {
-  callback.Run(SkBitmap(), content::READBACK_NOT_SUPPORTED);
+    const SkColorType preferred_color_type) {
+  callback.Run(SkBitmap(), content::READBACK_FAILED);
 }
 
 void TestRenderWidgetHostView::CopyFromCompositingSurfaceToVideoFrame(

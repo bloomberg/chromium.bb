@@ -262,8 +262,8 @@ void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& /* dst_size */,
     ReadbackRequestCallback& callback,
-    const SkColorType color_type) {
-  callback.Run(SkBitmap(), READBACK_NOT_SUPPORTED);
+    const SkColorType preferred_color_type) {
+  callback.Run(SkBitmap(), READBACK_FAILED);
 }
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurfaceToVideoFrame(
@@ -297,10 +297,6 @@ gfx::NativeViewId RenderWidgetHostViewChildFrame::GetParentForWindowlessPlugin()
   return NULL;
 }
 #endif // defined(OS_WIN)
-
-SkColorType RenderWidgetHostViewChildFrame::PreferredReadbackFormat() {
-  return kN32_SkColorType;
-}
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(

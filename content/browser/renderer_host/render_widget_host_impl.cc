@@ -716,14 +716,15 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Rect& src_subrect,
     const gfx::Size& accelerated_dst_size,
     ReadbackRequestCallback& callback,
-    const SkColorType color_type) {
+    const SkColorType preferred_color_type) {
   if (view_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
     gfx::Rect accelerated_copy_rect = src_subrect.IsEmpty() ?
         gfx::Rect(view_->GetViewBounds().size()) : src_subrect;
-    view_->CopyFromCompositingSurface(
-        accelerated_copy_rect, accelerated_dst_size, callback, color_type);
+    view_->CopyFromCompositingSurface(accelerated_copy_rect,
+                                      accelerated_dst_size, callback,
+                                      preferred_color_type);
     return;
   }
 
@@ -2120,11 +2121,5 @@ gfx::NativeViewAccessible
   return delegate_ ? delegate_->GetParentNativeViewAccessible() : NULL;
 }
 #endif
-
-SkColorType RenderWidgetHostImpl::PreferredReadbackFormat() {
-  if (view_)
-    return view_->PreferredReadbackFormat();
-  return kN32_SkColorType;
-}
 
 }  // namespace content

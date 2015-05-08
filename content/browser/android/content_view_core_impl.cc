@@ -641,17 +641,17 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
 
 void ContentViewCoreImpl::GetScaledContentBitmap(
     float scale,
-    SkColorType color_type,
+    SkColorType preferred_color_type,
     gfx::Rect src_subrect,
     ReadbackRequestCallback& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  if (!view || color_type == kUnknown_SkColorType) {
+  if (!view || preferred_color_type == kUnknown_SkColorType) {
     result_callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
 
-  view->GetScaledContentBitmap(scale, color_type, src_subrect,
-      result_callback);
+  view->GetScaledContentBitmap(scale, preferred_color_type, src_subrect,
+                               result_callback);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {

@@ -434,11 +434,11 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
-    SkColorType color_type,
+    SkColorType preferred_color_type,
     gfx::Rect src_subrect,
     ReadbackRequestCallback& result_callback) {
   if (!host_ || host_->is_hidden() || !IsSurfaceAvailableForCopy()) {
-    result_callback.Run(SkBitmap(), READBACK_NOT_SUPPORTED);
+    result_callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
   gfx::Size bounds = layer_->bounds();
@@ -452,8 +452,8 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
   DCHECK_GT(device_scale_factor, 0);
   gfx::Size dst_size(
       gfx::ToCeiledSize(gfx::ScaleSize(bounds, scale / device_scale_factor)));
-  CopyFromCompositingSurface(
-      src_subrect, dst_size, result_callback, color_type);
+  CopyFromCompositingSurface(src_subrect, dst_size, result_callback,
+                             preferred_color_type);
 }
 
 scoped_refptr<cc::Layer> RenderWidgetHostViewAndroid::CreateDelegatedLayer()
@@ -918,7 +918,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     ReadbackRequestCallback& callback,
-    const SkColorType color_type) {
+    const SkColorType preferred_color_type) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
   if (!host_ || host_->is_hidden()) {
     callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
@@ -926,7 +926,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   }
   base::TimeTicks start_time = base::TimeTicks::Now();
   if (using_browser_compositor_ && !IsSurfaceAvailableForCopy()) {
-    callback.Run(SkBitmap(), READBACK_NOT_SUPPORTED);
+    callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
   const gfx::Display& display =
@@ -939,7 +939,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
   if (!using_browser_compositor_) {
     SynchronousCopyContents(src_subrect_in_pixel, dst_size_in_pixel, callback,
-                            color_type);
+                            preferred_color_type);
     UMA_HISTOGRAM_TIMES("Compositing.CopyFromSurfaceTimeSynchronous",
                         base::TimeTicks::Now() - start_time);
     return;
@@ -961,11 +961,8 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
   request = cc::CopyOutputRequest::CreateRequest(
       base::Bind(&RenderWidgetHostViewAndroid::
                      PrepareTextureCopyOutputResultForDelegatedReadback,
-                 dst_size_in_pixel,
-                 color_type,
-                 start_time,
-                 readback_layer,
-                 callback));
+                 dst_size_in_pixel, preferred_color_type, start_time,
+                 readback_layer, callback));
   if (!src_subrect_in_pixel.IsEmpty())
     request->set_area(src_subrect_in_pixel);
   readback_layer->RequestCopyOfOutput(request.Pass());
@@ -1894,6 +1891,8 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
                                                 output_size_in_pixel.height(),
                                                 color_type,
                                                 kOpaque_SkAlphaType))) {
+    scoped_callback_runner.Reset(
+        base::Bind(callback, SkBitmap(), READBACK_BITMAP_ALLOCATION_FAILURE));
     return;
   }
 

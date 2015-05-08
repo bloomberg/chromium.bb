@@ -80,10 +80,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                         const gfx::Range& range) override;
   void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
-  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
-                                  const gfx::Size& dst_size,
-                                  ReadbackRequestCallback& callback,
-                                  const SkColorType color_type) override;
+  void CopyFromCompositingSurface(
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      ReadbackRequestCallback& callback,
+      const SkColorType preferred_color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
@@ -131,8 +132,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 #endif
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) override;
-
-  SkColorType PreferredReadbackFormat() override;
 
  protected:
   friend class RenderWidgetHostView;

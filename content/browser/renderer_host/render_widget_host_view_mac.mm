@@ -1245,10 +1245,10 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     ReadbackRequestCallback& callback,
-    const SkColorType color_type) {
+    const SkColorType preferred_color_type) {
   if (delegated_frame_host_) {
     delegated_frame_host_->CopyFromCompositingSurface(
-        src_subrect, dst_size, callback, color_type);
+        src_subrect, dst_size, callback, preferred_color_type);
   }
 }
 
@@ -1712,10 +1712,6 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   render_widget_host_->PauseForPendingResizeOrRepaints();
   if (browser_compositor_)
     browser_compositor_->accelerated_widget_mac()->EndPumpingFrames();
-}
-
-SkColorType RenderWidgetHostViewMac::PreferredReadbackFormat() {
-  return kN32_SkColorType;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -316,7 +316,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& dst_size,
                                   ReadbackRequestCallback& callback,
-                                  SkColorType color_type) override;
+                                  SkColorType preferred_color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
@@ -347,8 +347,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
-
-  SkColorType PreferredReadbackFormat() override;
 
   // gfx::DisplayObserver implementation.
   void OnDisplayAdded(const gfx::Display& new_display) override;

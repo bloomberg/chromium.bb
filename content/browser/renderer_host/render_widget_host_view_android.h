@@ -125,10 +125,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void AcceleratedSurfaceInitialized(int route_id) override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void SetBackgroundColor(SkColor color) override;
-  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
-                                  const gfx::Size& dst_size,
-                                  ReadbackRequestCallback& callback,
-                                  const SkColorType color_type) override;
+  void CopyFromCompositingSurface(
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      ReadbackRequestCallback& callback,
+      const SkColorType preferred_color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
@@ -225,7 +226,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void WasResized();
 
   void GetScaledContentBitmap(float scale,
-                              SkColorType color_type,
+                              SkColorType preferred_color_type,
                               gfx::Rect src_subrect,
                               ReadbackRequestCallback& result_callback);
 

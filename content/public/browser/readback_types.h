@@ -20,10 +20,8 @@ namespace content {
 enum ReadbackResponse {
   READBACK_SUCCESS,
   READBACK_FAILED,
-  READBACK_FORMAT_NOT_SUPPORTED,
-  READBACK_NOT_SUPPORTED,
   READBACK_SURFACE_UNAVAILABLE,
-  READBACK_MEMORY_ALLOCATION_FAILURE,
+  READBACK_BITMAP_ALLOCATION_FAILURE,
 };
 
 typedef const base::Callback<void(const SkBitmap&, ReadbackResponse)>

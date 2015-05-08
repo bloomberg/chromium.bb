@@ -249,8 +249,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Get the screen info corresponding to this render widget.
   virtual void GetWebScreenInfo(blink::WebScreenInfo* result) = 0;
 
-  virtual SkColorType PreferredReadbackFormat() = 0;
-
  protected:
   friend class RenderWidgetHostImpl;
 

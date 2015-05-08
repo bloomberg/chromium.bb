@@ -104,7 +104,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& output_size,
                                   ReadbackRequestCallback& callback,
-                                  const SkColorType color_type);
+                                  const SkColorType preferred_color_type);
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,

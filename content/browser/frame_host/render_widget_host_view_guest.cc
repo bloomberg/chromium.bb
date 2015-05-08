@@ -552,10 +552,6 @@ void RenderWidgetHostViewGuest::ProcessGestures(
   }
 }
 
-SkColorType RenderWidgetHostViewGuest::PreferredReadbackFormat() {
-  return kN32_SkColorType;
-}
-
 RenderWidgetHostViewBase*
 RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
   return static_cast<RenderWidgetHostViewBase*>(
