@@ -310,7 +310,7 @@ IdlType.set_will_be_garbage_collected_types = classmethod(
 
 
 def gc_type(idl_type):
-    if idl_type.is_garbage_collected or idl_type.is_dictionary:
+    if idl_type.is_garbage_collected or idl_type.is_dictionary or idl_type.is_union_type:
         return 'GarbageCollectedObject'
     if idl_type.is_will_be_garbage_collected:
         return 'WillBeGarbageCollectedObject'
@@ -322,7 +322,8 @@ IdlTypeBase.gc_type = property(gc_type)
 def is_traceable(idl_type):
     return (idl_type.is_garbage_collected
             or idl_type.is_will_be_garbage_collected
-            or idl_type.is_dictionary)
+            or idl_type.is_dictionary
+            or idl_type.is_union_type)
 
 IdlTypeBase.is_traceable = property(is_traceable)
 IdlUnionType.is_traceable = property(
@@ -593,7 +594,7 @@ def v8_value_to_cpp_value_array_or_sequence(native_array_element_type, v8_value,
     else:
         ref_ptr_type = None
         this_cpp_type = native_array_element_type.cpp_type
-        if native_array_element_type.is_dictionary:
+        if native_array_element_type.is_dictionary or native_array_element_type.is_union_type:
             vector_type = 'HeapVector'
         else:
             vector_type = 'Vector'

@@ -59,7 +59,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary dictionaryArg;
     Vector<String> sequenceStringArg;
     Vector<Dictionary> sequenceDictionaryArg;
-    Vector<LongOrTestDictionary> sequenceLongOrTestDictionaryArg;
+    HeapVector<LongOrTestDictionary> sequenceLongOrTestDictionaryArg;
     Dictionary optionalDictionaryArg;
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
@@ -84,7 +84,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         sequenceDictionaryArg = toImplArray<Vector<Dictionary>>(info[5], 6, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        sequenceLongOrTestDictionaryArg = toImplArray<Vector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
+        sequenceLongOrTestDictionaryArg = toImplArray<HeapVector<LongOrTestDictionary>>(info[6], 7, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
         if (!isUndefinedOrNull(info[7]) && !info[7]->IsObject()) {

@@ -68,7 +68,7 @@ String UnionTypesTest::doubleOrInternalEnumArg(DoubleOrInternalEnum& doubleOrInt
     return String();
 }
 
-String UnionTypesTest::doubleOrStringArrayArg(Vector<DoubleOrString>& array)
+String UnionTypesTest::doubleOrStringArrayArg(HeapVector<DoubleOrString>& array)
 {
     if (!array.size())
         return "";
@@ -87,7 +87,7 @@ String UnionTypesTest::doubleOrStringArrayArg(Vector<DoubleOrString>& array)
     return builder.substring(0, builder.length() - 2);
 }
 
-String UnionTypesTest::doubleOrStringSequenceArg(Vector<DoubleOrString>& sequence)
+String UnionTypesTest::doubleOrStringSequenceArg(HeapVector<DoubleOrString>& sequence)
 {
     return doubleOrStringArrayArg(sequence);
 }

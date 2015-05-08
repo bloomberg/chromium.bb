@@ -24,8 +24,8 @@ public:
 
     String doubleOrStringArg(DoubleOrString&);
     String doubleOrInternalEnumArg(DoubleOrInternalEnum&);
-    String doubleOrStringArrayArg(Vector<DoubleOrString>&);
-    String doubleOrStringSequenceArg(Vector<DoubleOrString>&);
+    String doubleOrStringArrayArg(HeapVector<DoubleOrString>&);
+    String doubleOrStringSequenceArg(HeapVector<DoubleOrString>&);
 
     String nodeListOrElementArg(NodeListOrElement&);
     String nodeListOrElementOrNullArg(NodeListOrElement&);

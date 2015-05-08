@@ -86,7 +86,7 @@ Blob::~Blob()
 }
 
 // static
-Blob* Blob::create(const Vector<ArrayBufferOrArrayBufferViewOrBlobOrString>& blobParts, const BlobPropertyBag& options, ExceptionState& exceptionState)
+Blob* Blob::create(const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>& blobParts, const BlobPropertyBag& options, ExceptionState& exceptionState)
 {
     ASSERT(options.hasType());
     if (!options.type().containsOnlyASCII()) {

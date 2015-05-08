@@ -88,7 +88,7 @@ static PassOwnPtr<BlobData> createBlobDataForFileSystemURL(const KURL& fileSyste
 }
 
 // static
-File* File::create(const Vector<BlobOrStringOrArrayBufferViewOrArrayBuffer>& fileBits, const String& fileName, const FilePropertyBag& options, ExceptionState& exceptionState)
+File* File::create(const HeapVector<BlobOrStringOrArrayBufferViewOrArrayBuffer>& fileBits, const String& fileName, const FilePropertyBag& options, ExceptionState& exceptionState)
 {
     ASSERT(options.hasType());
     if (!options.type().containsOnlyASCII()) {

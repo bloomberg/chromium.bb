@@ -57,7 +57,7 @@ public:
         return new Blob(BlobDataHandle::create());
     }
 
-    static Blob* create(const Vector<ArrayBufferOrArrayBufferViewOrBlobOrString>&, const BlobPropertyBag&, ExceptionState&);
+    static Blob* create(const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrString>&, const BlobPropertyBag&, ExceptionState&);
 
     static Blob* create(PassRefPtr<BlobDataHandle> blobDataHandle)
     {
@@ -106,7 +106,7 @@ protected:
     explicit Blob(PassRefPtr<BlobDataHandle>);
 
     template<typename ItemType>
-    static void populateBlobData(BlobData* blobData, const Vector<ItemType>& parts, bool normalizeLineEndingsToNative)
+    static void populateBlobData(BlobData* blobData, const HeapVector<ItemType>& parts, bool normalizeLineEndingsToNative)
     {
         for (size_t i = 0; i < parts.size(); ++i) {
             const ItemType& item = parts[i];
