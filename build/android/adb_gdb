@@ -97,6 +97,7 @@ NDK_DIR=
 NO_PULL_LIBS=
 PACKAGE_NAME=
 PID=
+PORT=
 PRIVILEGED=
 PRIVILEGED_INDEX=
 PROGRAM_NAME="activity"
@@ -146,6 +147,9 @@ for opt; do
       ;;
     --pid=*)
       PID=$optarg
+      ;;
+    --port=*)
+      PORT=$optarg
       ;;
     --privileged)
       PRIVILEGED=true
@@ -329,6 +333,7 @@ Valid options:
   --gdb=<file>          Specify host gdb client binary.
   --target-arch=<name>  Specify NDK target arch.
   --adb=<file>          Specify host ADB binary.
+  --port=<port>         Specify the tcp port to use.
 
   --su-prefix=<prefix>  Prepend <prefix> to 'adb shell' commands that are
                         run by this script. This can be useful to use
@@ -933,7 +938,9 @@ adb shell $COMMAND_PREFIX cp $TMP_TARGET_GDBSERVER $TARGET_GDBSERVER
 adb shell rm $TMP_TARGET_GDBSERVER
 fail_panic "Could not copy gdbserver to the device!"
 
-PORT=5039
+if [ -z "$PORT" ]; then
+    PORT=5039
+fi
 HOST_PORT=$PORT
 TARGET_PORT=$PORT
 
