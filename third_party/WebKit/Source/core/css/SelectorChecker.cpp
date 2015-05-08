@@ -30,11 +30,12 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSSelectorList.h"
-#include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/NthIndexCache.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
@@ -52,9 +53,9 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutScrollbar.h"
-#include "core/style/ComputedStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
@@ -160,6 +161,70 @@ static bool shouldMatchHoverOrActive(const SelectorChecker::SelectorCheckingCont
     if (context.selector->relation() == CSSSelector::SubSelector && context.selector->tagHistory())
         return true;
     return context.element->isLink();
+}
+
+static bool isFirstChild(Element& element)
+{
+    return !ElementTraversal::previousSibling(element);
+}
+
+static bool isLastChild(Element& element)
+{
+    return !ElementTraversal::nextSibling(element);
+}
+
+static bool isFirstOfType(Element& element, const QualifiedName& type)
+{
+    return !ElementTraversal::previousSibling(element, HasTagName(type));
+}
+
+static bool isLastOfType(Element& element, const QualifiedName& type)
+{
+    return !ElementTraversal::nextSibling(element, HasTagName(type));
+}
+
+static int countElementsBefore(Element& element)
+{
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthChildIndex(element) - 1;
+
+    int count = 0;
+    for (const Element* sibling = ElementTraversal::previousSibling(element); sibling; sibling = ElementTraversal::previousSibling(*sibling))
+        count++;
+
+    return count;
+}
+
+static int countElementsOfTypeBefore(Element& element, const QualifiedName& type)
+{
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthChildIndexOfType(element, type) - 1;
+    int count = 0;
+    for (const Element* sibling = ElementTraversal::previousSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(type)))
+        ++count;
+    return count;
+}
+
+static int countElementsAfter(Element& element)
+{
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthLastChildIndex(element) - 1;
+
+    int count = 0;
+    for (const Element* sibling = ElementTraversal::nextSibling(element); sibling; sibling = ElementTraversal::nextSibling(*sibling))
+        ++count;
+    return count;
+}
+
+static int countElementsOfTypeAfter(Element& element, const QualifiedName& type)
+{
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthLastChildIndexOfType(element, type) - 1;
+
+    int count = 0;
+    for (const Element* sibling = ElementTraversal::nextSibling(element, HasTagName(type)); sibling; sibling = ElementTraversal::nextSibling(*sibling, HasTagName(type)))
+        ++count;
+    return count;
 }
 
 bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult* result) const
@@ -684,14 +749,14 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
                 parent->setChildrenAffectedByFirstChildRules();
                 element.setAffectedByFirstChildRules();
             }
-            return DOMSiblingTraversalStrategy::isFirstChild(element);
+            return isFirstChild(element);
         }
         break;
     case CSSSelector::PseudoFirstOfType:
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return DOMSiblingTraversalStrategy::isFirstOfType(element, element.tagQName());
+            return isFirstOfType(element, element.tagQName());
         }
         break;
     case CSSSelector::PseudoLastChild:
@@ -702,7 +767,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
             }
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return DOMSiblingTraversalStrategy::isLastChild(element);
+            return isLastChild(element);
         }
         break;
     case CSSSelector::PseudoLastOfType:
@@ -711,7 +776,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return DOMSiblingTraversalStrategy::isLastOfType(element, element.tagQName());
+            return isLastOfType(element, element.tagQName());
         }
         break;
     case CSSSelector::PseudoOnlyChild:
@@ -724,7 +789,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
             }
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return DOMSiblingTraversalStrategy::isFirstChild(element) && DOMSiblingTraversalStrategy::isLastChild(element);
+            return isFirstChild(element) && isLastChild(element);
         }
         break;
     case CSSSelector::PseudoOnlyOfType:
@@ -736,7 +801,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
             }
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return DOMSiblingTraversalStrategy::isFirstOfType(element, element.tagQName()) && DOMSiblingTraversalStrategy::isLastOfType(element, element.tagQName());
+            return isFirstOfType(element, element.tagQName()) && isLastOfType(element, element.tagQName());
         }
         break;
     case CSSSelector::PseudoNthChild:
@@ -745,7 +810,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsBefore(element));
+            return selector.matchNth(1 + countElementsBefore(element));
         }
         break;
     case CSSSelector::PseudoNthOfType:
@@ -754,7 +819,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
         if (ContainerNode* parent = element.parentElementOrDocumentFragment()) {
             if (m_mode == ResolvingStyle)
                 parent->setChildrenAffectedByForwardPositionalRules();
-            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsOfTypeBefore(element, element.tagQName()));
+            return selector.matchNth(1 + countElementsOfTypeBefore(element, element.tagQName()));
         }
         break;
     case CSSSelector::PseudoNthLastChild:
@@ -765,7 +830,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsAfter(element));
+            return selector.matchNth(1 + countElementsAfter(element));
         }
         break;
     case CSSSelector::PseudoNthLastOfType:
@@ -776,7 +841,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, u
                 parent->setChildrenAffectedByBackwardPositionalRules();
             if (!parent->isFinishedParsingChildren())
                 return false;
-            return selector.matchNth(1 + DOMSiblingTraversalStrategy::countElementsOfTypeAfter(element, element.tagQName()));
+            return selector.matchNth(1 + countElementsOfTypeAfter(element, element.tagQName()));
         }
         break;
     case CSSSelector::PseudoTarget:

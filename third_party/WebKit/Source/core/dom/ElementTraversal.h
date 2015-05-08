@@ -31,6 +31,14 @@
 
 namespace blink {
 
+class HasTagName {
+public:
+    explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) { }
+    bool operator() (const Element& element) const { return element.hasTagName(m_tagName); }
+private:
+    const QualifiedName m_tagName;
+};
+
 template <class ElementType>
 class Traversal {
 public:

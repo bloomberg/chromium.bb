@@ -1197,7 +1197,6 @@
             'css/SelectorChecker.h',
             'css/SelectorFilter.cpp',
             'css/SelectorFilter.h',
-            'css/SiblingTraversalStrategies.h',
             'css/StyleColor.h',
             'css/StyleMedia.cpp',
             'css/StyleMedia.h',

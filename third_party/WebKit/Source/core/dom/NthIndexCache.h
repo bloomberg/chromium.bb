@@ -16,13 +16,6 @@
 namespace blink {
 
 class Document;
-class HasTagName {
-public:
-    explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) { }
-    bool operator() (const Element& element) const { return element.hasTagName(m_tagName); }
-private:
-    const QualifiedName m_tagName;
-};
 
 class CORE_EXPORT NthIndexCache final {
     STACK_ALLOCATED();
