@@ -7,6 +7,8 @@ source_set("aura") {
   sources = [
     "aura_init.cc",
     "aura_init.h",
+    "input_method_mandoline.cc",
+    "input_method_mandoline.h",
     "native_widget_view_manager.cc",
     "native_widget_view_manager.h",
     "screen_mojo.cc",
@@ -18,13 +20,6 @@ source_set("aura") {
     "window_tree_host_mojo.cc",
     "window_tree_host_mojo.h",
   ]
-
-  if (is_linux) {
-    sources += [
-      "input_method_mojo_linux.cc",
-      "input_method_mojo_linux.h",
-    ]
-  }
 
   public_deps = [
     "//components/view_manager/public/cpp",
@@ -42,6 +37,7 @@ source_set("aura") {
     "//skia",
     "//mojo/cc",
     "//mojo/converters/geometry",
+    "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
     "//third_party/mojo/src/mojo/public/c/gles2",
     "//third_party/mojo/src/mojo/public/cpp/application",
@@ -53,10 +49,5 @@ source_set("aura") {
     "//ui/events:events_base",
     "//ui/gl",
     "//ui/views",
-  ]
-
-  data_deps = [
-    "//components/native_viewport",
-    "//components/surfaces",
   ]
 }

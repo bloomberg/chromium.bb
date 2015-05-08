@@ -39,6 +39,7 @@ class SurfaceContextFactory : public ui::ContextFactory {
                      const gfx::Size& size) override;
 
   SurfaceBinding surface_binding_;
+  uint32_t next_surface_id_namespace_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceContextFactory);
 };

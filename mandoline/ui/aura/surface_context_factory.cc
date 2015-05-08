@@ -28,7 +28,8 @@ class FakeReflector : public ui::Reflector {
 
 SurfaceContextFactory::SurfaceContextFactory(mojo::Shell* shell,
                                              mojo::View* view)
-    : surface_binding_(shell, view) {
+    : surface_binding_(shell, view),
+      next_surface_id_namespace_(1u) {
 }
 
 SurfaceContextFactory::~SurfaceContextFactory() {
@@ -88,8 +89,8 @@ cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {
 
 scoped_ptr<cc::SurfaceIdAllocator>
 SurfaceContextFactory::CreateSurfaceIdAllocator() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return make_scoped_ptr(
+      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
 }
 
 void SurfaceContextFactory::ResizeDisplay(ui::Compositor* compositor,

@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
-#include "components/view_manager/public/cpp/view_observer.h"
 #include "components/window_manager/window_manager_app.h"
 #include "components/window_manager/window_manager_delegate.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
@@ -21,11 +20,11 @@
 
 namespace mandoline {
 
+class BrowserUI;
 class MergedServiceProvider;
 
 class Browser : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
-                public mojo::ViewObserver,
                 public window_manager::WindowManagerDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost> {
  public:
@@ -50,12 +49,6 @@ class Browser : public mojo::ApplicationDelegate,
                mojo::ServiceProviderPtr exposed_services) override;
   void OnViewManagerDisconnected(mojo::ViewManager* view_manager) override;
 
-  // Overriden from mojo::ViewObserver:
-  void OnViewDestroyed(mojo::View* view) override;
-  void OnViewBoundsChanged(mojo::View* view,
-                           const mojo::Rect& old_bounds,
-                           const mojo::Rect& new_bounds) override;
-
   // Overridden from WindowManagerDelegate:
   void Embed(const mojo::String& url,
              mojo::InterfaceRequest<mojo::ServiceProvider> services,
@@ -67,6 +60,8 @@ class Browser : public mojo::ApplicationDelegate,
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
+
+  void LayoutContent();
 
   scoped_ptr<window_manager::WindowManagerApp> window_manager_app_;
 
@@ -81,6 +76,8 @@ class Browser : public mojo::ApplicationDelegate,
   scoped_ptr<MergedServiceProvider> merged_service_provider_;
 
   NavigatorHostImpl navigator_host_;
+
+  scoped_ptr<BrowserUI> ui_;
 
   base::WeakPtrFactory<Browser> weak_factory_;
 

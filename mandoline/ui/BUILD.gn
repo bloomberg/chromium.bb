@@ -5,10 +5,7 @@
 import("//third_party/mojo/src/mojo/public/mojo.gni")
 
 group("ui") {
-  if (!is_android) {
-    deps = [
-      "//mandoline/ui/aura",
-      "//mandoline/ui/browser",
-    ]
-  }
+  deps = [
+    "//mandoline/ui/browser",
+  ]
 }

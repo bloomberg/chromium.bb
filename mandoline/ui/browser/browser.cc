@@ -6,7 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/merged_service_provider.h"
+#include "mojo/application/application_runner_chromium.h"
+#include "third_party/mojo/src/mojo/public/c/system/main.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mandoline {
@@ -16,6 +19,7 @@ Browser::Browser()
       root_(nullptr),
       content_(nullptr),
       navigator_host_(this),
+      ui_(nullptr),
       weak_factory_(this) {
   exposed_services_impl_.AddService(this);
 }
@@ -29,6 +33,7 @@ base::WeakPtr<Browser> Browser::GetWeakPtr() {
 
 void Browser::Initialize(mojo::ApplicationImpl* app) {
   window_manager_app_->Initialize(app);
+  ui_.reset(BrowserUI::Create(this, app->shell()));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringVector args = command_line->GetArgs();
@@ -62,8 +67,12 @@ void Browser::OnEmbed(
   // Browser does not support being embedded more than once.
   CHECK(!root_);
 
+  // TODO(beng): still unhappy with the fact that both this class & the UI class
+  //             know so much about these views. Figure out how to shift more to
+  //             the UI class.
   root_ = root;
-  root_->AddObserver(this);
+  content_ = root->view_manager()->CreateView();
+  ui_->Init(root_, content_);
 
 #if defined(OS_ANDROID)
   // Resize to match the Nexus 5 aspect ratio:
@@ -72,8 +81,6 @@ void Browser::OnEmbed(
   window_manager_app_->SetViewportSize(gfx::Size(1280, 800));
 #endif
 
-  content_ = root->view_manager()->CreateView();
-  content_->SetBounds(root_->bounds());
   root_->AddChild(content_);
   content_->SetVisible(true);
 
@@ -121,16 +128,6 @@ void Browser::Create(mojo::ApplicationConnection* connection,
 void Browser::OnViewManagerDisconnected(
     mojo::ViewManager* view_manager) {
   root_ = nullptr;
-}
-
-void Browser::OnViewDestroyed(mojo::View* view) {
-  view->RemoveObserver(this);
-}
-
-void Browser::OnViewBoundsChanged(mojo::View* view,
-                                              const mojo::Rect& old_bounds,
-                                              const mojo::Rect& new_bounds) {
-  content_->SetBounds(new_bounds);
 }
 
 // Convenience method:

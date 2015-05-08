@@ -4,6 +4,7 @@
 
 #include "mandoline/ui/aura/native_widget_view_manager.h"
 
+#include "mandoline/ui/aura/input_method_mandoline.h"
 #include "mandoline/ui/aura/window_tree_host_mojo.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -11,18 +12,10 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_factory.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
-
-#if defined(OS_LINUX)
-#include "mandoline/ui/aura/input_method_mojo_linux.h"
-#endif
 
 namespace mandoline {
 namespace {
@@ -46,12 +39,8 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
  public:
   explicit MinimalInputEventFilter(aura::Window* root)
       : root_(root) {
-    ui::InitializeInputMethodForTesting();
-#if defined(OS_LINUX)
-    input_method_.reset(new InputMethodMojoLinux(this));
-#else
-    input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
-#endif
+    input_method_.reset(new InputMethodMandoline(this));
+    input_method_->OnFocus();
     root_->AddPreTargetHandler(this);
     root_->SetProperty(aura::client::kRootWindowInputMethodKey,
                        input_method_.get());

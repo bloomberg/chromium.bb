@@ -21,12 +21,9 @@ mojo_native_application("window_manager") {
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/application",
     "//mojo/common:common",
-    "//mojo/converters/geometry",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/utility",
     "//third_party/mojo/src/mojo/public/interfaces/application",
-    "//ui/gfx/geometry",
-    "//ui/mojo/events:interfaces",
   ]
 }
 
@@ -40,16 +37,33 @@ source_set("kiosk_wm_lib") {
     "navigator_host_impl.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "android/android_ui.cc",
+      "android/android_ui.h",
+    ]
+  } else {
+    sources += [
+      "desktop/desktop_ui.cc",
+      "desktop/desktop_ui.h",
+    ]
+  }
+
   deps = [
     "//base",
     "//components/view_manager/public/cpp",
     "//components/window_manager:lib",
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/converters/geometry",
+    "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/utility",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
   ]
+
+  if (!is_android) {
+    deps += [ "//mandoline/ui/aura" ]
+  }
 }
