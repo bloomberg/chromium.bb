@@ -21,7 +21,6 @@ class BrowserUI {
 
   // Called when the Browser UI is embedded within the specified view.
   virtual void Init(mojo::View* root, mojo::View* content) = 0;
-
 };
 
 }  // namespace mandoline

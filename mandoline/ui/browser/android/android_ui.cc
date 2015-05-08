@@ -4,14 +4,9 @@
 
 #include "mandoline/ui/browser/android/android_ui.h"
 
-namespace mojo {
-class Shell;
-class View;
-}
+#include "components/view_manager/public/cpp/view.h"
 
 namespace mandoline {
-
-class Browser;
 
 AndroidUI::AndroidUI(Browser* browser, mojo::Shell* shell)
     : browser_(browser),
@@ -20,7 +15,7 @@ AndroidUI::AndroidUI(Browser* browser, mojo::Shell* shell)
       content_(nullptr) {}
 AndroidUI::~AndroidUI() {}
 
-void AndroidUI::Init(mojo::View* root, mojo::View* content_) {
+void AndroidUI::Init(mojo::View* root, mojo::View* content) {
   root_ = root;
   content_ = content;
 

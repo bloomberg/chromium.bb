@@ -5,6 +5,9 @@
 #ifndef MANDOLINE_UI_BROWSER_ANDROID_ANDROID_UI_H_
 #define MANDOLINE_UI_BROWSER_ANDROID_ANDROID_UI_H_
 
+#include "base/macros.h"
+#include "mandoline/ui/browser/browser_ui.h"
+
 namespace mojo {
 class Shell;
 class View;
