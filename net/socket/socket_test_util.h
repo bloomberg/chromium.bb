@@ -198,6 +198,8 @@ class SocketDataProvider {
   virtual MockRead OnRead() = 0;
   virtual MockWriteResult OnWrite(const std::string& data) = 0;
   virtual void Reset() = 0;
+  virtual bool AllReadDataConsumed() const = 0;
+  virtual bool AllWriteDataConsumed() const = 0;
 
   // Accessor for the socket which is using the SocketDataProvider.
   AsyncSocket* socket() { return socket_; }
@@ -294,6 +296,8 @@ class StaticSocketDataProvider : public SocketDataProvider {
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
+  bool AllReadDataConsumed() const override;
+  bool AllWriteDataConsumed() const override;
 
   size_t read_index() const { return helper_.read_index(); }
   size_t write_index() const { return helper_.write_index(); }
@@ -499,6 +503,8 @@ class SequencedSocketData : public SocketDataProvider {
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
   void Reset() override;
+  bool AllReadDataConsumed() const override;
+  bool AllWriteDataConsumed() const override;
 
   // Returns true if all data has been read.
   bool at_read_eof() const;
