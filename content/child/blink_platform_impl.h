@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_BLINK_PLATFORM_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -40,6 +41,7 @@ class ThreadSafeSender;
 class WebBluetoothImpl;
 class WebCryptoImpl;
 class WebGeofencingProviderImpl;
+class WebMemoryDumpProviderAdapter;
 
 class CONTENT_EXPORT BlinkPlatformImpl
     : NON_EXPORTED_BASE(public blink::Platform) {
@@ -131,6 +133,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const unsigned char* category_group_enabled,
       const char* name,
       TraceEventHandle);
+  virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
+  virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
   virtual blink::WebData loadResource(const char* name);
   virtual blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name);
@@ -198,6 +202,9 @@ class CONTENT_EXPORT BlinkPlatformImpl
   webcrypto::WebCryptoImpl web_crypto_;
   scoped_ptr<WebGeofencingProviderImpl> geofencing_provider_;
   scoped_ptr<WebBluetoothImpl> bluetooth_;
+  base::ScopedPtrHashMap<blink::WebMemoryDumpProvider*,
+                         scoped_ptr<WebMemoryDumpProviderAdapter>>
+      memory_dump_providers_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
