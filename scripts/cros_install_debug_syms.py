@@ -28,6 +28,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import path_util
 from chromite.lib import gs
 
 if cros_build_lib.IsInsideChroot():
@@ -285,7 +286,7 @@ def main(argv):
 
   vartree = trees[sysroot]['vartree']
 
-  cache_dir = os.path.join(commandline.BaseParser.FindCacheDir(None, None),
+  cache_dir = os.path.join(path_util.FindCacheDir(),
                            'cros_install_debug_syms-v' + CACHE_VERSION)
 
   if options.clearcache:

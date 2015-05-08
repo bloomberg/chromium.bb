@@ -22,6 +22,7 @@ from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import retry_stats
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
@@ -267,9 +268,7 @@ class GSContext(object):
   def GetDefaultGSUtilBin(cls, cache_dir=None):
     if cls.DEFAULT_GSUTIL_BIN is None:
       if cache_dir is None:
-        # Import here to avoid circular imports (commandline imports gs).
-        from chromite.lib import commandline
-        cache_dir = commandline.GetCacheDir()
+        cache_dir = path_util.GetCacheDir()
       if cache_dir is not None:
         common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
         tar_cache = cache.TarballCache(common_path)

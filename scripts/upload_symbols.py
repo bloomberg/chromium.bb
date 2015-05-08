@@ -45,6 +45,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import path_util
 from chromite.lib import retry_util
 from chromite.lib import signals
 from chromite.lib import timeout_util
@@ -476,7 +477,7 @@ def SymbolFinder(tempdir, paths):
   Returns:
     Yield every viable sym file.
   """
-  cache_dir = commandline.GetCacheDir()
+  cache_dir = path_util.GetCacheDir()
   common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
   tar_cache = cache.TarballCache(common_path)
 

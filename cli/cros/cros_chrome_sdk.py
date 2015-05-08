@@ -16,12 +16,12 @@ import distutils.version
 from chromite.cli import command
 from chromite.lib import cache
 from chromite.lib import chrome_util
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import stats
 from chromite.cbuildbot import constants
 
@@ -238,11 +238,11 @@ class SDKFetcher(object):
       whether the version was indeed updated.
     """
     checkout_dir = self.chrome_src if self.chrome_src else os.getcwd()
-    checkout = commandline.DetermineCheckout(checkout_dir)
+    checkout = path_util.DetermineCheckout(checkout_dir)
     current = self.GetDefaultVersion() or '0'
     if checkout.chrome_src_dir:
       target = self._GetChromeLKGM(checkout.chrome_src_dir)
-    elif checkout.type == commandline.CHECKOUT_TYPE_REPO:
+    elif checkout.type == path_util.CHECKOUT_TYPE_REPO:
       target = self._GetRepoCheckoutVersion(checkout.root)
       if target != current:
         lv_cls = distutils.version.LooseVersion
@@ -804,7 +804,7 @@ class ChromeSDKCommand(command.CliCommand):
       cros_build_lib.Die('Already in an SDK shell.')
 
     src_path = self.options.chrome_src or os.getcwd()
-    checkout = commandline.DetermineCheckout(src_path)
+    checkout = path_util.DetermineCheckout(src_path)
     if not checkout.chrome_src_dir:
       cros_build_lib.Die('Chrome checkout not found at %s', src_path)
     self.options.chrome_src = checkout.chrome_src_dir
