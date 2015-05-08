@@ -13,10 +13,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 /**
  * Part of the test suite for the WebView's Java Bridge.
  *
@@ -107,57 +103,6 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
         assertEquals("\"undefined / undefined\"",
                 executeJavaScriptAndGetResult(getWebContents(),
                         "queryProperties(window.frames[0])"));
-    }
-
-    // Regression test for crbug.com/484927 -- make sure that existence of transient
-    // objects held by multiple RenderFrames doesn't cause an infinite loop when one
-    // of them gets removed.
-    @SmallTest
-    @Feature({"AndroidWebView", "Android-JavaBridge"})
-    public void testRemovingTransientObjectHolders() throws Throwable {
-        class Test {
-            private Object mInner = new Object();
-            // Expecting the inner object to be retrieved twice.
-            private CountDownLatch mLatch = new CountDownLatch(2);
-            @JavascriptInterface
-            public Object getInner() {
-                mLatch.countDown();
-                return mInner;
-            }
-            public void waitForInjection() throws Throwable {
-                if (!mLatch.await(5, TimeUnit.SECONDS)) {
-                    throw new TimeoutException();
-                }
-            }
-        }
-        final Test testObject = new Test();
-
-        injectObjectAndReload(testObject, "test");
-        loadDataSync(getWebContents().getNavigationController(),
-                "<html>"
-                + "<body onload='window.inner_ref = test.getInner()'>"
-                + "   <iframe id='frame' "
-                + "       srcdoc='<body onload=\"window.inner_ref = test.getInner()\"></body>'>"
-                + "   </iframe>"
-                + "</body></html>", "text/html", false);
-        testObject.waitForInjection();
-        // Just in case, check that the object wrappers are in place.
-        assertEquals("\"object\"",
-                executeJavaScriptAndGetResult(getWebContents(), "typeof inner_ref"));
-        assertEquals("\"object\"",
-                executeJavaScriptAndGetResult(getWebContents(),
-                        "typeof window.frames[0].inner_ref"));
-        // Remove the iframe, this will trigger a removal of RenderFrame, which was causing
-        // the bug condition, as the transient object still has a holder -- the main window.
-        assertEquals("{}",
-                executeJavaScriptAndGetResult(getWebContents(),
-                        "(function(){ "
-                        + "var f = document.getElementById('frame');"
-                        + "f.parentNode.removeChild(f); return f; })()"));
-        // Just in case, check that the remaining wrapper is still accessible.
-        assertEquals("\"object\"",
-                executeJavaScriptAndGetResult(getWebContents(),
-                        "typeof inner_ref"));
     }
 
     private String executeJavaScriptAndGetResult(final WebContents webContents,
