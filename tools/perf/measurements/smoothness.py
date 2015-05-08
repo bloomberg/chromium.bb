@@ -56,6 +56,14 @@ class Smoothness(page_test.PageTest):
     self._tbm.DidRunUserStory(tracing_controller)
 
 
+class Repaint(Smoothness):
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--enable-impl-side-painting',
+        '--enable-threaded-compositing',
+        '--enable-gpu-benchmarking'
+    ])
+
 class SmoothnessWithRestart(Smoothness):
   def __init__(self):
     super(SmoothnessWithRestart, self).__init__(

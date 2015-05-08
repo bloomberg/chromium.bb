@@ -5,7 +5,7 @@
 from telemetry import benchmark
 
 from benchmarks import silk_flags
-from measurements import repaint as repaint_measurement
+from measurements import smoothness
 import page_sets
 
 
@@ -32,7 +32,7 @@ class _Repaint(benchmark.Benchmark):
         options.mode, options.width, options.height)
 
   def CreatePageTest(self, options):
-    return repaint_measurement.Repaint()
+    return smoothness.Repaint()
 
 @benchmark.Enabled('android')
 class RepaintKeyMobileSites(_Repaint):

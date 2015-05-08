@@ -8,7 +8,7 @@ from telemetry.page import page as page_module
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
 
-from measurements import repaint
+from measurements import smoothness
 from page_sets import repaint_helpers
 
 
@@ -37,7 +37,7 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
   def testRepaint(self):
     ps = self.CreateEmptyPageSet()
     ps.AddUserStory(TestRepaintPage(ps, ps.base_dir))
-    measurement = repaint.Repaint()
+    measurement = smoothness.Repaint()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
 
@@ -61,4 +61,4 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('android')
   def testCleanUpTrace(self):
-    self.TestTracingCleanedUp(repaint.Repaint, self._options)
+    self.TestTracingCleanedUp(smoothness.Repaint, self._options)
