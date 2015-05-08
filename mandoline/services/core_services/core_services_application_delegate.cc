@@ -9,6 +9,7 @@
 #include "components/view_manager/view_manager_app.h"
 #include "mandoline/ui/browser/browser.h"
 #include "mojo/common/message_pump_mojo.h"
+#include "mojo/services/tracing/tracing_app.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "url/gurl.h"
@@ -120,6 +121,8 @@ void CoreServicesApplicationDelegate::StartApplication(
   scoped_ptr<mojo::ApplicationDelegate> delegate;
   if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
+  else if (url == "mojo://tracing/")
+    delegate.reset(new tracing::TracingApp);
   else if (url == "mojo://view_manager/")
     delegate.reset(new view_manager::ViewManagerApp);
   else if (url == "mojo://window_manager/")

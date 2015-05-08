@@ -14,6 +14,8 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
   mojo::shell::ApplicationManager* manager = context->application_manager();
   manager->RegisterApplicationPackageAlias(GURL("mojo:clipboard"),
                                            GURL("mojo:core_services"));
+  manager->RegisterApplicationPackageAlias(GURL("mojo:tracing"),
+                                           GURL("mojo:core_services"));
   manager->RegisterApplicationPackageAlias(GURL("mojo:view_manager"),
                                            GURL("mojo:core_services"));
   manager->RegisterApplicationPackageAlias(GURL("mojo:window_manager"),

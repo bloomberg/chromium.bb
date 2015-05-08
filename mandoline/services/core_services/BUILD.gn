@@ -23,6 +23,7 @@ mojo_native_application("core_services") {
     "//mojo/common",
     "//mojo/common:tracing_impl",
     "//mojo/environment:chromium",
+    "//mojo/services/tracing:lib",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
@@ -32,5 +33,6 @@ mojo_native_application("core_services") {
     "//components/clipboard",
     "//components/view_manager",
     "//mandoline/ui/browser:window_manager",
+    "//mojo/services/tracing:bindings",
   ]
 }
