@@ -88,6 +88,32 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffs
 
 bool BMPImageReader::decodeBMP(bool onlySize)
 {
+    // If |imageReader| decodes any pixels between construction and destruction
+    // of this object, calls setPixelsChanged() on the image reader's buffer.
+    //
+    // This method is used to call setPixelsChanged() because
+    // BMPImageReader::processRLEData() and BMPImageReader::processNonRLEData()
+    // have complex enough control flow to make instrumenting them to do this
+    // cumbersome.
+    class PixelChangedScoper {
+    public:
+        PixelChangedScoper(BMPImageReader* imageReader)
+            : m_imageReader(imageReader)
+            , m_coord(imageReader->m_coord)
+        {
+        }
+
+        ~PixelChangedScoper()
+        {
+            if (m_imageReader->m_coord != m_coord)
+                m_imageReader->m_buffer->setPixelsChanged(true);
+        }
+
+    private:
+        BMPImageReader* m_imageReader;
+        IntPoint m_coord;
+    };
+
     // Calculate size of info header.
     if (!m_infoHeader.biSize && !readInfoHeaderSize())
         return false;
@@ -129,6 +155,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
 
     // Decode the data.
     if (!m_decodingAndMask && !pastEndOfImage(0)) {
+        PixelChangedScoper pixelChangedScoper(this);
         if ((m_infoHeader.biCompression != RLE4) && (m_infoHeader.biCompression != RLE8) && (m_infoHeader.biCompression != RLE24)) {
             const ProcessingResult result = processNonRLEData(false, 0);
             if (result != Success)
@@ -150,6 +177,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
         m_decodingAndMask = true;
     }
     if (m_decodingAndMask) {
+        PixelChangedScoper pixelChangedScoper(this);
         const ProcessingResult result = processNonRLEData(false, 0);
         if (result != Success)
             return (result == Failure) ? m_parent->setFailed() : false;
@@ -615,6 +643,10 @@ bool BMPImageReader::processRLEData()
                 // Skip any remaining pixels in the image.
                 if ((m_coord.x() < m_parent->size().width()) || (m_isTopDown ? (m_coord.y() < (m_parent->size().height() - 1)) : (m_coord.y() > 0)))
                     m_buffer->setHasAlpha(true);
+                // There's no need to move |m_coord| here to trigger the caller
+                // to call setPixelsChanged().  If the only thing that's changed
+                // is the alpha state, that will be properly written into the
+                // underlying SkBitmap when we mark the frame complete.
                 return true;
 
             case 2: {  // Magic token: Delta

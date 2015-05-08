@@ -121,6 +121,7 @@ ImageFrame* ICOImageDecoder::frameBufferAtIndex(size_t index)
         decode(index, false);
         PlatformInstrumentation::didDecodeImage();
     }
+    buffer->notifyBitmapIfPixelsChanged();
     return buffer;
 }
 

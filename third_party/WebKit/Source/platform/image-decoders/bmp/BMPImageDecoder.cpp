@@ -81,6 +81,7 @@ ImageFrame* BMPImageDecoder::frameBufferAtIndex(size_t index)
         decode(false);
         PlatformInstrumentation::didDecodeImage();
     }
+    buffer->notifyBitmapIfPixelsChanged();
     return buffer;
 }
 

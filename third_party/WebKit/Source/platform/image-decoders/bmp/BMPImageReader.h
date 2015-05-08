@@ -79,6 +79,8 @@ public:
     bool decodeBMP(bool onlySize);
 
 private:
+    friend class PixelChangedScoper;
+
     // The various BMP compression types.  We don't currently decode all
     // these.
     enum CompressionType {
