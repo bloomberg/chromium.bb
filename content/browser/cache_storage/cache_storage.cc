@@ -560,7 +560,7 @@ void CacheStorage::OpenCacheImpl(const std::string& cache_name,
                                  const CacheAndErrorCallback& callback) {
   scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
   if (cache.get()) {
-    callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
+    callback.Run(cache, CACHE_STORAGE_OK);
     return;
   }
 
@@ -577,7 +577,7 @@ void CacheStorage::CreateCacheDidCreateCache(
 
   if (!cache.get()) {
     callback.Run(scoped_refptr<CacheStorageCache>(),
-                 CACHE_STORAGE_ERROR_CLOSING);
+                 CACHE_STORAGE_ERROR_STORAGE);
     return;
   }
 
@@ -602,14 +602,14 @@ void CacheStorage::CreateCacheDidWriteIndex(
 
   // TODO(jkarlin): Handle !success.
 
-  callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
+  callback.Run(cache, CACHE_STORAGE_OK);
 }
 
 void CacheStorage::HasCacheImpl(const std::string& cache_name,
                                 const BoolAndErrorCallback& callback) {
   bool has_cache = cache_map_.find(cache_name) != cache_map_.end();
 
-  callback.Run(has_cache, CACHE_STORAGE_ERROR_NO_ERROR);
+  callback.Run(has_cache, CACHE_STORAGE_OK);
 }
 
 void CacheStorage::DeleteCacheImpl(const std::string& cache_name,
@@ -668,12 +668,12 @@ void CacheStorage::DeleteCacheDidCleanUp(const BoolAndErrorCallback& callback,
                                          bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  callback.Run(true, CACHE_STORAGE_ERROR_NO_ERROR);
+  callback.Run(true, CACHE_STORAGE_OK);
 }
 
 void CacheStorage::EnumerateCachesImpl(
     const StringsAndErrorCallback& callback) {
-  callback.Run(ordered_cache_names_, CACHE_STORAGE_ERROR_NO_ERROR);
+  callback.Run(ordered_cache_names_, CACHE_STORAGE_OK);
 }
 
 void CacheStorage::MatchCacheImpl(
@@ -683,7 +683,7 @@ void CacheStorage::MatchCacheImpl(
   scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
 
   if (!cache.get()) {
-    callback.Run(CacheStorageCache::ERROR_TYPE_NOT_FOUND,
+    callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND,
                  scoped_ptr<ServiceWorkerResponse>(),
                  scoped_ptr<storage::BlobDataHandle>());
     return;
@@ -699,7 +699,7 @@ void CacheStorage::MatchCacheImpl(
 void CacheStorage::MatchCacheDidMatch(
     const scoped_refptr<CacheStorageCache>& cache,
     const CacheStorageCache::ResponseCallback& callback,
-    CacheStorageCache::ErrorType error,
+    CacheStorageError error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> handle) {
   callback.Run(error, response.Pass(), handle.Pass());
@@ -733,10 +733,10 @@ void CacheStorage::MatchAllCachesDidMatch(
     scoped_refptr<CacheStorageCache> cache,
     const base::Closure& barrier_closure,
     CacheStorageCache::ResponseCallback* callback,
-    CacheStorageCache::ErrorType error,
+    CacheStorageError error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> handle) {
-  if (callback->is_null() || error == CacheStorageCache::ERROR_TYPE_NOT_FOUND) {
+  if (callback->is_null() || error == CACHE_STORAGE_ERROR_NOT_FOUND) {
     barrier_closure.Run();
     return;
   }
@@ -749,7 +749,7 @@ void CacheStorage::MatchAllCachesDidMatch(
 void CacheStorage::MatchAllCachesDidMatchAll(
     scoped_ptr<CacheStorageCache::ResponseCallback> callback) {
   if (!callback->is_null()) {
-    callback->Run(CacheStorageCache::ERROR_TYPE_NOT_FOUND,
+    callback->Run(CACHE_STORAGE_ERROR_NOT_FOUND,
                   scoped_ptr<ServiceWorkerResponse>(),
                   scoped_ptr<storage::BlobDataHandle>());
   }
@@ -847,7 +847,7 @@ void CacheStorage::PendingStringsAndErrorCallback(
 
 void CacheStorage::PendingResponseCallback(
     const CacheStorageCache::ResponseCallback& callback,
-    CacheStorageCache::ErrorType error,
+    CacheStorageError error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
   base::WeakPtr<CacheStorage> cache_storage = weak_factory_.GetWeakPtr();

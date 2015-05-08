@@ -85,23 +85,23 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
   void OnCacheStorageHasCallback(int thread_id,
                                  int request_id,
                                  bool has_cache,
-                                 CacheStorage::CacheStorageError error);
+                                 CacheStorageError error);
   void OnCacheStorageOpenCallback(int thread_id,
                                   int request_id,
                                   const scoped_refptr<CacheStorageCache>& cache,
-                                  CacheStorage::CacheStorageError error);
+                                  CacheStorageError error);
   void OnCacheStorageDeleteCallback(int thread_id,
                                     int request_id,
                                     bool deleted,
-                                    CacheStorage::CacheStorageError error);
+                                    CacheStorageError error);
   void OnCacheStorageKeysCallback(int thread_id,
                                   int request_id,
                                   const std::vector<std::string>& strings,
-                                  CacheStorage::CacheStorageError error);
+                                  CacheStorageError error);
   void OnCacheStorageMatchCallback(
       int thread_id,
       int request_id,
-      CacheStorageCache::ErrorType error,
+      CacheStorageError error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
 
@@ -110,7 +110,7 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
       int thread_id,
       int request_id,
       const scoped_refptr<CacheStorageCache>& cache,
-      CacheStorageCache::ErrorType error,
+      CacheStorageError error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
   void OnCacheMatchAll(int thread_id,
@@ -121,12 +121,12 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
   void OnCacheKeysCallback(int thread_id,
                            int request_id,
                            const scoped_refptr<CacheStorageCache>& cache,
-                           CacheStorageCache::ErrorType error,
+                           CacheStorageError error,
                            scoped_ptr<CacheStorageCache::Requests> requests);
   void OnCacheBatchCallback(int thread_id,
                             int request_id,
                             const scoped_refptr<CacheStorageCache>& cache,
-                            CacheStorageCache::ErrorType error);
+                            CacheStorageError error);
 
   // Hangs onto a scoped_refptr for the cache if it isn't already doing so.
   // Returns a unique cache_id. Call DropCacheReference when the client is done

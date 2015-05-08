@@ -175,7 +175,7 @@ class CacheStorageCacheTest : public testing::Test {
  public:
   CacheStorageCacheTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        callback_error_(CacheStorageCache::ERROR_TYPE_OK),
+        callback_error_(CACHE_STORAGE_OK),
         callback_closed_(false) {}
 
   void SetUp() override {
@@ -274,7 +274,7 @@ class CacheStorageCacheTest : public testing::Test {
     // thread.
     loop->Run();
 
-    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool Match(const ServiceWorkerFetchRequest& request) {
@@ -286,7 +286,7 @@ class CacheStorageCacheTest : public testing::Test {
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool Delete(const ServiceWorkerFetchRequest& request) {
@@ -298,7 +298,7 @@ class CacheStorageCacheTest : public testing::Test {
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool Keys() {
@@ -309,7 +309,7 @@ class CacheStorageCacheTest : public testing::Test {
                             base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == CacheStorageCache::ERROR_TYPE_OK;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool Close() {
@@ -323,7 +323,7 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   void RequestsCallback(base::RunLoop* run_loop,
-                        CacheStorageCache::ErrorType error,
+                        CacheStorageError error,
                         scoped_ptr<CacheStorageCache::Requests> requests) {
     callback_error_ = error;
     callback_strings_.clear();
@@ -335,8 +335,7 @@ class CacheStorageCacheTest : public testing::Test {
       run_loop->Quit();
   }
 
-  void ErrorTypeCallback(base::RunLoop* run_loop,
-                         CacheStorageCache::ErrorType error) {
+  void ErrorTypeCallback(base::RunLoop* run_loop, CacheStorageError error) {
     callback_error_ = error;
     if (run_loop)
       run_loop->Quit();
@@ -345,7 +344,7 @@ class CacheStorageCacheTest : public testing::Test {
   void SequenceCallback(int sequence,
                         int* sequence_out,
                         base::RunLoop* run_loop,
-                        CacheStorageCache::ErrorType error) {
+                        CacheStorageError error) {
     *sequence_out = sequence;
     callback_error_ = error;
     if (run_loop)
@@ -354,16 +353,14 @@ class CacheStorageCacheTest : public testing::Test {
 
   void ResponseAndErrorCallback(
       base::RunLoop* run_loop,
-      CacheStorageCache::ErrorType error,
+      CacheStorageError error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> body_handle) {
     callback_error_ = error;
     callback_response_ = response.Pass();
     callback_response_data_.reset();
-    if (error == CacheStorageCache::ERROR_TYPE_OK &&
-        !callback_response_->blob_uuid.empty()) {
+    if (error == CACHE_STORAGE_OK && !callback_response_->blob_uuid.empty())
       callback_response_data_ = body_handle.Pass();
-    }
 
     if (run_loop)
       run_loop->Quit();
@@ -433,7 +430,7 @@ class CacheStorageCacheTest : public testing::Test {
   scoped_ptr<storage::BlobDataHandle> blob_handle_;
   std::string expected_blob_data_;
 
-  CacheStorageCache::ErrorType callback_error_;
+  CacheStorageError callback_error_;
   scoped_ptr<ServiceWorkerResponse> callback_response_;
   scoped_ptr<storage::BlobDataHandle> callback_response_data_;
   std::vector<std::string> callback_strings_;
@@ -488,7 +485,7 @@ TEST_F(CacheStorageCacheTest, PutBodyDropBlobRef) {
   blob_handle_.reset();
   loop->Run();
 
-  EXPECT_EQ(CacheStorageCache::ERROR_TYPE_OK, callback_error_);
+  EXPECT_EQ(CACHE_STORAGE_OK, callback_error_);
 }
 
 TEST_P(CacheStorageCacheTestP, PutReplace) {

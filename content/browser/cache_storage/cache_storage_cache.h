@@ -39,24 +39,14 @@ class TestCacheStorageCache;
 class CONTENT_EXPORT CacheStorageCache
     : public base::RefCounted<CacheStorageCache> {
  public:
-  // This enum is used in histograms, so do not change the ordering and always
-  // append new types to the end.
-  enum ErrorType {
-    ERROR_TYPE_OK = 0,
-    ERROR_TYPE_EXISTS,
-    ERROR_TYPE_STORAGE,
-    ERROR_TYPE_NOT_FOUND,
-    ERROR_TYPE_LAST = ERROR_TYPE_NOT_FOUND
-  };
-
-  typedef base::Callback<void(ErrorType)> ErrorCallback;
-  typedef base::Callback<void(ErrorType,
-                              scoped_ptr<ServiceWorkerResponse>,
-                              scoped_ptr<storage::BlobDataHandle>)>
-      ResponseCallback;
-  typedef std::vector<ServiceWorkerFetchRequest> Requests;
-  typedef base::Callback<void(ErrorType, scoped_ptr<Requests>)>
-      RequestsCallback;
+  using ErrorCallback = base::Callback<void(CacheStorageError)>;
+  using ResponseCallback =
+      base::Callback<void(CacheStorageError,
+                          scoped_ptr<ServiceWorkerResponse>,
+                          scoped_ptr<storage::BlobDataHandle>)>;
+  using Requests = std::vector<ServiceWorkerFetchRequest>;
+  using RequestsCallback =
+      base::Callback<void(CacheStorageError, scoped_ptr<Requests>)>;
 
   static scoped_refptr<CacheStorageCache> CreateMemoryCache(
       const GURL& origin,
@@ -87,7 +77,7 @@ class CONTENT_EXPORT CacheStorageCache
               const ErrorCallback& callback);
 
   // TODO(jkarlin): Have keys take an optional ServiceWorkerFetchRequest.
-  // Returns ErrorTypeOK and a vector of requests if there are no errors.
+  // Returns CACHE_STORAGE_OK and a vector of requests if there are no errors.
   void Keys(const RequestsCallback& callback);
 
   // Closes the backend. Future operations that require the backend
@@ -117,8 +107,8 @@ class CONTENT_EXPORT CacheStorageCache
     BACKEND_CLOSED          // Backend cannot be used.  All ops should fail.
   };
 
-  typedef std::vector<disk_cache::Entry*> Entries;
-  typedef scoped_ptr<disk_cache::Backend> ScopedBackendPtr;
+  using Entries = std::vector<disk_cache::Entry*>;
+  using ScopedBackendPtr = scoped_ptr<disk_cache::Backend>;
 
   CacheStorageCache(
       const GURL& origin,
@@ -142,7 +132,8 @@ class CONTENT_EXPORT CacheStorageCache
 
   // Put callbacks.
   void PutImpl(scoped_ptr<PutContext> put_context);
-  void PutDidDelete(scoped_ptr<PutContext> put_context, ErrorType delete_error);
+  void PutDidDelete(scoped_ptr<PutContext> put_context,
+                    CacheStorageError delete_error);
   void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv);
   void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                           int expected_bytes,
@@ -182,17 +173,18 @@ class CONTENT_EXPORT CacheStorageCache
                               int rv);
 
   void InitBackend();
-  void InitDone(ErrorType error);
+  void InitDone(CacheStorageError error);
 
   void PendingClosure(const base::Closure& callback);
-  void PendingErrorCallback(const ErrorCallback& callback, ErrorType error);
+  void PendingErrorCallback(const ErrorCallback& callback,
+                            CacheStorageError error);
   void PendingResponseCallback(
       const ResponseCallback& callback,
-      ErrorType error,
+      CacheStorageError error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
   void PendingRequestsCallback(const RequestsCallback& callback,
-                               ErrorType error,
+                               CacheStorageError error,
                                scoped_ptr<Requests> requests);
 
   // Be sure to check |backend_state_| before use.

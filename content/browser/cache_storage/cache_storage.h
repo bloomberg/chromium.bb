@@ -35,14 +35,6 @@ class CacheStorageScheduler;
 // on the IO thread. The asynchronous methods are executed serially.
 class CONTENT_EXPORT CacheStorage {
  public:
-  enum CacheStorageError {
-    CACHE_STORAGE_ERROR_NO_ERROR,
-    CACHE_STORAGE_ERROR_NOT_IMPLEMENTED,
-    CACHE_STORAGE_ERROR_NOT_FOUND,
-    CACHE_STORAGE_ERROR_EXISTS,
-    CACHE_STORAGE_ERROR_STORAGE,
-    CACHE_STORAGE_ERROR_CLOSING
-  };
   typedef std::vector<std::string> StringVector;
   typedef base::Callback<void(bool, CacheStorageError)> BoolAndErrorCallback;
   typedef base::Callback<void(const scoped_refptr<CacheStorageCache>&,
@@ -91,7 +83,7 @@ class CONTENT_EXPORT CacheStorage {
   // first response found. Note that if multiple caches have the same
   // request/response then it is not defined which cache's response will be
   // returned. If no response is found then |callback| is called with
-  // CacheStorageCache::ErrorTypeNotFound.
+  // CACHE_STORAGE_ERROR_NOT_FOUND.
   void MatchAllCaches(scoped_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCache::ResponseCallback& callback);
 
@@ -163,7 +155,7 @@ class CONTENT_EXPORT CacheStorage {
                       const CacheStorageCache::ResponseCallback& callback);
   void MatchCacheDidMatch(const scoped_refptr<CacheStorageCache>& cache,
                           const CacheStorageCache::ResponseCallback& callback,
-                          CacheStorageCache::ErrorType error,
+                          CacheStorageError error,
                           scoped_ptr<ServiceWorkerResponse> response,
                           scoped_ptr<storage::BlobDataHandle> handle);
 
@@ -173,7 +165,7 @@ class CONTENT_EXPORT CacheStorage {
   void MatchAllCachesDidMatch(scoped_refptr<CacheStorageCache> cache,
                               const base::Closure& barrier_closure,
                               CacheStorageCache::ResponseCallback* callback,
-                              CacheStorageCache::ErrorType error,
+                              CacheStorageError error,
                               scoped_ptr<ServiceWorkerResponse> response,
                               scoped_ptr<storage::BlobDataHandle> handle);
   void MatchAllCachesDidMatchAll(
@@ -195,7 +187,7 @@ class CONTENT_EXPORT CacheStorage {
                                       CacheStorageError error);
   void PendingResponseCallback(
       const CacheStorageCache::ResponseCallback& callback,
-      CacheStorageCache::ErrorType error,
+      CacheStorageError error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
 
