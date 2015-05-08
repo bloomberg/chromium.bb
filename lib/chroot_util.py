@@ -176,7 +176,7 @@ def InitializeSysroots(blueprint):
   sysroot.UpdateToolchain()
 
 
-def RunUnittests(sysroot, packages, extra_env=None):
+def RunUnittests(sysroot, packages, extra_env=None, verbose=False):
   """Runs the unit tests for |packages|.
 
   Args:
@@ -184,6 +184,7 @@ def RunUnittests(sysroot, packages, extra_env=None):
     packages: List of packages to test.
     extra_env: Python dictionary containing the extra environment variable to
       pass to the build command.
+    verbose: If True, show the output from emerge, even when the tests succeed.
 
   Raises:
     RunCommandError if the unit tests failed.
@@ -194,8 +195,11 @@ def RunUnittests(sysroot, packages, extra_env=None):
       'PKGDIR': os.path.join(sysroot, 'test-packages'),
   })
 
-  command = ([os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
-              '--sysroot=%s' % sysroot, '--nodeps', '--buildpkgonly'] +
-             list(packages))
+  command = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
+             '--sysroot=%s' % sysroot, '--nodeps', '--buildpkgonly']
+  if verbose:
+    command += ['--show-output']
 
-  cros_build_lib.SudoRunCommand(command, extra_env=env)
+  command += list(packages)
+
+  cros_build_lib.SudoRunCommand(command, extra_env=env, mute_output=False)
