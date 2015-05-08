@@ -380,13 +380,10 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
   UMA_HISTOGRAM_BOOLEAN("Windows.Tablet", base::win::IsTabletDevice());
 
-  // Set up a task to verify installed modules in the current process. Use a
-  // delay to reduce the impact on startup time.
-  content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::UI)->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&VerifyInstallation),
-          base::TimeDelta::FromSeconds(45));
+  // Set up a task to verify installed modules in the current process.
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, content::BrowserThread::GetBlockingPool(),
+      base::Bind(&VerifyInstallation));
 
   InitializeChromeElf();
 
