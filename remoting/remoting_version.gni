@@ -15,7 +15,7 @@ if (is_chrome_branded) {
 
 # Set these files as being input dependencies to the scripts, so the build will
 # be re-run if the files change.
-remoting_version_files = [
+_script_deps = [
   _remoting_version_abspath,
   _chrome_version_abspath,
   _remoting_branding_abspath,
@@ -35,7 +35,7 @@ version_major = exec_script(_version_py_abspath,
                               "-t \"@MAJOR@\"",
                             ],
                             "value",
-                            remoting_version_files)
+                            _script_deps)
 
 version_minor = exec_script(_version_py_abspath,
                             [
@@ -44,7 +44,7 @@ version_minor = exec_script(_version_py_abspath,
                               "-t \"@REMOTING_PATCH@\"",
                             ],
                             "value",
-                            remoting_version_files)
+                            _script_deps)
 
 version_short =
     "${version_major}.${version_minor}." + exec_script(_version_py_abspath,
@@ -56,7 +56,7 @@ version_short =
                                                          "-t \"@BUILD@\"",
                                                        ],
                                                        "value",
-                                                       remoting_version_files)
+                                                       _script_deps)
 
 version_full = "${version_short}." + exec_script(_version_py_abspath,
                                                  [
@@ -67,7 +67,7 @@ version_full = "${version_short}." + exec_script(_version_py_abspath,
                                                    "-t \"@PATCH@\"",
                                                  ],
                                                  "value",
-                                                 remoting_version_files)
+                                                 _script_deps)
 
 prefpane_bundle_name = exec_script(_version_py_abspath,
                                    [
@@ -76,7 +76,7 @@ prefpane_bundle_name = exec_script(_version_py_abspath,
                                      "-t \"@MAC_PREFPANE_BUNDLE_NAME@\"",
                                    ],
                                    "string",
-                                   remoting_version_files)
+                                   _script_deps)
 
 host_bundle_name = exec_script(_version_py_abspath,
                                [
@@ -85,4 +85,4 @@ host_bundle_name = exec_script(_version_py_abspath,
                                  "-t \"@MAC_HOST_BUNDLE_NAME@\"",
                                ],
                                "string",
-                               remoting_version_files)
+                               _script_deps)

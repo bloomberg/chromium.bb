@@ -169,7 +169,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
       raise
     else:
       pass
-  os.makedirs(destination, 0775)
+  os.mkdir(destination, 0775)
 
   if buildtype != 'Official' and buildtype != 'Release' and buildtype != 'Dev':
     raise Exception('Unknown buildtype: ' + buildtype)
