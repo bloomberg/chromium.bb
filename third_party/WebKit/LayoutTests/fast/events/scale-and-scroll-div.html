@@ -71,7 +71,6 @@
       function test() {
               scrollBox = document.getElementById("scrollbox");
 
-              testRunner.waitUntilDone();
               debug('Scrolling unscaled div');
               scaleWithEventSender(1.0);
               scroll(1.0);
@@ -84,8 +83,6 @@
               debug('Scrolling 2.0 scaled div');
               scaleWithEventSender(2.0);
               scroll(2.0);
-
-              testRunner.notifyDone();
       }
 
      function run_test() {

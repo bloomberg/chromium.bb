@@ -1,15 +1,11 @@
 <!DOCTYPE html>
-<html>
-<head>
 <script src="../../../resources/js-test.js"></script>
 <script src="../resources/common-interactive-validation-required.js"></script>
-</head>
-<body>
 <script>
-testInteractiveValidationRequired({
+onload = function() {
+  testInteractiveValidationRequired({
     'expectedValue' : '123456789',
     'inputType' : 'number',
-});
+  });
+};
 </script>
-</body>
-</html>

@@ -13,7 +13,6 @@ function testInteractiveValidationRequired(config) {
 
     if (queryValues['submitted']) {
         shouldBeEqualToString('queryValues["test"]', expectedValue);
-        window.jsTestIsAsync = true;
         finishJSTest();
         return;
     }
@@ -35,11 +34,12 @@ function testInteractiveValidationRequired(config) {
     debug('Submit with required value');
     document.getElementById('test').value = expectedValue;
     document.getElementById('submit').click();
-    testFailed('The form was not submitted.');
-    finishJSTest();
+    setTimeout(function() {
+        // This is executed only if the test runs not as expected.
+        testFailed('The form was not submitted.');
+        finishJSTest();
+    }, 1000);
 }
 
-if (window.testRunner)
-    testRunner.waitUntilDone();
-
+jsTestIsAsync = true;
 wasPostTestScriptParsed = true;
