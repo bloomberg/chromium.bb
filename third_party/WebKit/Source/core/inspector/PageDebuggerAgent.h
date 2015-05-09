@@ -35,6 +35,10 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlay.h"
 
+using blink::TypeBuilder::Debugger::ExceptionDetails;
+using blink::TypeBuilder::Debugger::ScriptId;
+using blink::TypeBuilder::Runtime::RemoteObject;
+
 namespace blink {
 
 class DocumentLoader;
@@ -67,7 +71,7 @@ protected:
 private:
     void startListeningScriptDebugServer() override;
     void stopListeningScriptDebugServer() override;
-    PageScriptDebugServer& scriptDebugServer() override;
+    ScriptDebugServer& scriptDebugServer() override;
     void muteConsole() override;
     void unmuteConsole() override;
 

@@ -32,7 +32,6 @@
 #include "bindings/core/v8/WorkerScriptDebugServer.h"
 
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/inspector/PerIsolateDebuggerClient.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -45,16 +44,10 @@ namespace blink {
 static const char* workerContextDebugId = "[worker]";
 
 WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope)
-    : ScriptDebugServer(v8::Isolate::GetCurrent(), adoptPtr(new PerIsolateDebuggerClient(v8::Isolate::GetCurrent())))
+    : PerIsolateDebuggerClient(v8::Isolate::GetCurrent(), adoptPtr(new ScriptDebugServer(v8::Isolate::GetCurrent(), this)))
     , m_listener(0)
     , m_workerGlobalScope(workerGlobalScope)
 {
-}
-
-DEFINE_TRACE(WorkerScriptDebugServer)
-{
-    visitor->trace(m_workerGlobalScope);
-    ScriptDebugServer::trace(visitor);
 }
 
 void WorkerScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context)
@@ -65,17 +58,17 @@ void WorkerScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context
 void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
 {
     ASSERT(!m_listener);
-    enable();
+    scriptDebugServer()->enable();
     m_listener = listener;
-    reportCompiledScripts(workerContextDebugId, listener);
+    scriptDebugServer()->reportCompiledScripts(workerContextDebugId, listener);
 }
 
 void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
 {
     ASSERT(m_listener == listener);
-    continueProgram();
+    scriptDebugServer()->continueProgram();
     m_listener = 0;
-    disable();
+    scriptDebugServer()->disable();
 }
 
 ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context>)
@@ -91,7 +84,7 @@ void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Local<v8::Context>)
     do {
         result = m_workerGlobalScope->thread()->runDebuggerTask();
     // Keep waiting until execution is resumed.
-    } while (result == MessageQueueMessageReceived && isPaused());
+    } while (result == MessageQueueMessageReceived && scriptDebugServer()->isPaused());
     m_workerGlobalScope->thread()->didLeaveNestedLoop();
 
     // The listener may have been removed in the nested loop.

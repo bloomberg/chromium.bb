@@ -31,14 +31,14 @@
 #ifndef WorkerScriptDebugServer_h
 #define WorkerScriptDebugServer_h
 
-#include "bindings/core/v8/ScriptDebugServer.h"
+#include "core/inspector/PerIsolateDebuggerClient.h"
 #include <v8.h>
 
 namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerScriptDebugServer final : public ScriptDebugServer {
+class WorkerScriptDebugServer final : public PerIsolateDebuggerClient {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerScriptDebugServer> create(WorkerGlobalScope* workerGlobalScope)
@@ -47,7 +47,6 @@ public:
     }
 
     ~WorkerScriptDebugServer() override { }
-    DECLARE_VIRTUAL_TRACE();
 
     static void setContextDebugData(v8::Local<v8::Context>);
     void addListener(ScriptDebugListener*);
@@ -56,9 +55,9 @@ public:
 private:
     explicit WorkerScriptDebugServer(WorkerGlobalScope*);
 
-    ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
-    void runMessageLoopOnPause(v8::Local<v8::Context>) override;
-    void quitMessageLoopOnPause() override;
+    ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>);
+    void runMessageLoopOnPause(v8::Local<v8::Context>);
+    void quitMessageLoopOnPause();
 
     ScriptDebugListener* m_listener;
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;

@@ -43,7 +43,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/PerIsolateDebuggerClient.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
@@ -63,7 +62,7 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> con
 PageScriptDebugServer* PageScriptDebugServer::s_instance = nullptr;
 
 PageScriptDebugServer::PageScriptDebugServer(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
-    : ScriptDebugServer(isolate, adoptPtr(new PerIsolateDebuggerClient(isolate)))
+    : PerIsolateDebuggerClient(isolate, adoptPtr(new ScriptDebugServer(isolate, this)))
     , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
 {
@@ -85,15 +84,6 @@ Mutex& PageScriptDebugServer::creationMutex()
     return mutex;
 }
 
-DEFINE_TRACE(PageScriptDebugServer)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_listenersMap);
-    visitor->trace(m_pausedFrame);
-#endif
-    ScriptDebugServer::trace(visitor);
-}
-
 void PageScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextDebugId)
 {
     String debugData = "[" + type + "," + String::number(contextDebugId) + "]";
@@ -109,10 +99,10 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFram
         return;
 
     if (m_listenersMap.isEmpty())
-        enable();
+        scriptDebugServer()->enable();
     m_listenersMap.set(localFrameRoot, listener);
     String contextDataSubstring = "," + String::number(contextDebugId) + "]";
-    reportCompiledScripts(contextDataSubstring, listener);
+    scriptDebugServer()->reportCompiledScripts(contextDataSubstring, listener);
 }
 
 void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
@@ -121,12 +111,12 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalF
         return;
 
     if (m_pausedFrame == localFrame)
-        continueProgram();
+        scriptDebugServer()->continueProgram();
 
     m_listenersMap.remove(localFrame);
 
     if (m_listenersMap.isEmpty())
-        disable();
+        scriptDebugServer()->disable();
 }
 
 PageScriptDebugServer* PageScriptDebugServer::instance()
@@ -135,11 +125,11 @@ PageScriptDebugServer* PageScriptDebugServer::instance()
     return s_instance;
 }
 
-void PageScriptDebugServer::interruptMainThreadAndRun(PassOwnPtr<Task> task)
+void PageScriptDebugServer::interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task> task)
 {
     MutexLocker locker(creationMutex());
     if (s_instance)
-        s_instance->interruptAndRun(task);
+        s_instance->scriptDebugServer()->interruptAndRun(task);
 }
 
 ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context> context)

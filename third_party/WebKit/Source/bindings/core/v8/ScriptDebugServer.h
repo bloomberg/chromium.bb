@@ -57,6 +57,9 @@ public:
     public:
         virtual ~Client() { }
         virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
+        virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
+        virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
+        virtual void quitMessageLoopOnPause() = 0;
     };
 
     void enable();
@@ -118,13 +121,7 @@ public:
     v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue);
 
     v8::Isolate* isolate() const { return m_isolate; }
-
-protected:
-    ScriptDebugServer(v8::Isolate*, PassOwnPtr<Client>);
-
-    virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
-    virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
-    virtual void quitMessageLoopOnPause() = 0;
+    explicit ScriptDebugServer(v8::Isolate*, Client*);
 
 private:
     void compileDebuggerScript();
@@ -155,7 +152,7 @@ private:
     void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 
     v8::Isolate* m_isolate;
-    OwnPtr<Client> m_client;
+    Client* m_client;
     bool m_breakpointsActivated;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;

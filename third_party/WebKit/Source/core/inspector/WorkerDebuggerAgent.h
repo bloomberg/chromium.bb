@@ -56,7 +56,7 @@ private:
 
     void startListeningScriptDebugServer() override;
     void stopListeningScriptDebugServer() override;
-    WorkerScriptDebugServer& scriptDebugServer() override;
+    ScriptDebugServer& scriptDebugServer() override;
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
     void muteConsole() override;
     void unmuteConsole() override;

@@ -106,7 +106,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_paused(false)
 {
-    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope, this);
+    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer->scriptDebugServer(), workerGlobalScope, this);
     m_workerRuntimeAgent = workerRuntimeAgent.get();
     m_agents.append(workerRuntimeAgent.release());
 
@@ -124,7 +124,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
     m_agents.append(InspectorTimelineAgent::create());
 
-    m_injectedScriptManager->injectedScriptHost()->init(workerConsoleAgentPtr, m_workerDebuggerAgent, nullptr, m_debugServer.get(), adoptPtr(new WorkerInjectedScriptHostClient()));
+    m_injectedScriptManager->injectedScriptHost()->init(workerConsoleAgentPtr, m_workerDebuggerAgent, nullptr, m_debugServer->scriptDebugServer(), adoptPtr(new WorkerInjectedScriptHostClient()));
 }
 
 WorkerInspectorController::~WorkerInspectorController()

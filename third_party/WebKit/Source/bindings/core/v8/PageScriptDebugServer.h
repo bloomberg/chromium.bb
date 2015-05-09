@@ -31,8 +31,8 @@
 #ifndef PageScriptDebugServer_h
 #define PageScriptDebugServer_h
 
-#include "bindings/core/v8/ScriptDebugServer.h"
 #include "core/CoreExport.h"
+#include "core/inspector/PerIsolateDebuggerClient.h"
 #include <v8.h>
 
 namespace WTF {
@@ -43,7 +43,7 @@ namespace blink {
 
 class Page;
 
-class CORE_EXPORT PageScriptDebugServer final : public ScriptDebugServer {
+class CORE_EXPORT PageScriptDebugServer final : public PerIsolateDebuggerClient {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
 public:
     class ClientMessageLoop {
@@ -55,19 +55,19 @@ public:
 
     PageScriptDebugServer(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
     ~PageScriptDebugServer() override;
-    DECLARE_VIRTUAL_TRACE();
 
     static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextDebugId);
     void addListener(ScriptDebugListener*, LocalFrame*, int contextDebugId);
     void removeListener(ScriptDebugListener*, LocalFrame*);
 
     static PageScriptDebugServer* instance();
-    static void interruptMainThreadAndRun(PassOwnPtr<Task>);
+    static void interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task>);
 
 private:
     ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
     void runMessageLoopOnPause(v8::Local<v8::Context>) override;
     void quitMessageLoopOnPause() override;
+
     static WTF::Mutex& creationMutex();
 
     using ListenersMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, ScriptDebugListener*>;

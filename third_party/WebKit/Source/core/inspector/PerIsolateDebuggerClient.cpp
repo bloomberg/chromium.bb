@@ -12,7 +12,9 @@
 
 namespace blink {
 
-PerIsolateDebuggerClient::PerIsolateDebuggerClient(v8::Isolate* isolate) : m_isolate(isolate)
+PerIsolateDebuggerClient::PerIsolateDebuggerClient(v8::Isolate* isolate, PassOwnPtr<ScriptDebugServer> scriptDebugServer)
+    : m_isolate(isolate)
+    , m_scriptDebugServer(scriptDebugServer)
 {
 }
 

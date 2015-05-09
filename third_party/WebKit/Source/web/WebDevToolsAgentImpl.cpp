@@ -137,7 +137,7 @@ public:
     {
         // Release render thread if necessary.
         if (s_instance && s_instance->m_running)
-            PageScriptDebugServer::instance()->continueProgram();
+            PageScriptDebugServer::instance()->scriptDebugServer()->continueProgram();
     }
 
 private:
@@ -249,7 +249,7 @@ public:
     }
 };
 
-class DebuggerTask : public PageScriptDebugServer::Task {
+class DebuggerTask : public ScriptDebugServer::Task {
 public:
     DebuggerTask(PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
         : m_descriptor(descriptor)
@@ -348,7 +348,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     ClientMessageLoopAdapter::ensurePageScriptDebugServerCreated(m_client);
     PageScriptDebugServer* scriptDebugServer = PageScriptDebugServer::instance();
 
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, scriptDebugServer, m_pageAgent));
+    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(injectedScriptManager, this, scriptDebugServer->scriptDebugServer(), m_pageAgent));
     m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
     m_agents.append(pageRuntimeAgentPtr.release());
 
@@ -470,7 +470,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         m_pageConsoleAgent.get(),
         debuggerAgent,
         bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
-        scriptDebugServer,
+        scriptDebugServer->scriptDebugServer(),
         adoptPtr(new PageInjectedScriptHostClient()));
 }
 
@@ -633,7 +633,7 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
     if (!m_attached)
         return;
     if (WebDevToolsAgent::shouldInterruptForMessage(message))
-        PageScriptDebugServer::instance()->runPendingTasks();
+        PageScriptDebugServer::instance()->scriptDebugServer()->runPendingTasks();
     else
         dispatchMessageFromFrontend(message);
 }

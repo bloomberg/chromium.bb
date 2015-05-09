@@ -9,14 +9,16 @@
 
 namespace blink {
 
-class PerIsolateDebuggerClient final : public ScriptDebugServer::Client {
+class PerIsolateDebuggerClient : public ScriptDebugServer::Client {
     WTF_MAKE_NONCOPYABLE(PerIsolateDebuggerClient);
 public:
-    explicit PerIsolateDebuggerClient(v8::Isolate*);
+    PerIsolateDebuggerClient(v8::Isolate*, PassOwnPtr<ScriptDebugServer>);
     ~PerIsolateDebuggerClient() override;
     v8::Local<v8::Object> compileDebuggerScript() override;
+    ScriptDebugServer* scriptDebugServer() const { return m_scriptDebugServer.get(); }
 private:
     v8::Isolate* m_isolate;
+    OwnPtr<ScriptDebugServer> m_scriptDebugServer;
 };
 
 } // namespace blink

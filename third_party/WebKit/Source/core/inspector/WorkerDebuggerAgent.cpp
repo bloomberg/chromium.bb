@@ -68,7 +68,7 @@ PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerSc
 }
 
 WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerScriptDebugServer* scriptDebugServer, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager, scriptDebugServer->isolate())
+    : InspectorDebuggerAgent(injectedScriptManager, scriptDebugServer->scriptDebugServer()->isolate())
     , m_scriptDebugServer(scriptDebugServer)
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {
@@ -91,17 +91,17 @@ void WorkerDebuggerAgent::interruptAndDispatchInspectorCommands()
 
 void WorkerDebuggerAgent::startListeningScriptDebugServer()
 {
-    scriptDebugServer().addListener(this);
+    m_scriptDebugServer->addListener(this);
 }
 
 void WorkerDebuggerAgent::stopListeningScriptDebugServer()
 {
-    scriptDebugServer().removeListener(this);
+    m_scriptDebugServer->removeListener(this);
 }
 
-WorkerScriptDebugServer& WorkerDebuggerAgent::scriptDebugServer()
+ScriptDebugServer& WorkerDebuggerAgent::scriptDebugServer()
 {
-    return *m_scriptDebugServer;
+    return *(m_scriptDebugServer->scriptDebugServer());
 }
 
 InjectedScript WorkerDebuggerAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)

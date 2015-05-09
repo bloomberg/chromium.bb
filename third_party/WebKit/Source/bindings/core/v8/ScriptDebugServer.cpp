@@ -80,7 +80,7 @@ v8::MaybeLocal<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* func
     return V8ScriptRunner::callInternalFunction(function, debuggerScript, argc, argv, m_isolate);
 }
 
-ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate, PassOwnPtr<Client> client)
+ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate, Client* client)
     : m_isolate(isolate)
     , m_client(client)
     , m_breakpointsActivated(true)
@@ -273,7 +273,7 @@ void ScriptDebugServer::breakProgram()
 void ScriptDebugServer::continueProgram()
 {
     if (isPaused())
-        quitMessageLoopOnPause();
+        m_client->quitMessageLoopOnPause();
     m_pausedScriptState.clear();
     m_executionState.Clear();
 }
@@ -522,7 +522,7 @@ void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::L
     if (m_runningNestedMessageLoop)
         return;
 
-    ScriptDebugListener* listener = getDebugListenerForContext(pausedScriptState->context());
+    ScriptDebugListener* listener = m_client->getDebugListenerForContext(pausedScriptState->context());
     if (!listener)
         return;
 
@@ -541,7 +541,7 @@ void ScriptDebugServer::handleProgramBreak(ScriptState* pausedScriptState, v8::L
     ScriptDebugListener::SkipPauseRequest result = listener->didPause(pausedScriptState, currentCallFrames(), ScriptValue(pausedScriptState, exception), breakpointIds, isPromiseRejection);
     if (result == ScriptDebugListener::NoSkip) {
         m_runningNestedMessageLoop = true;
-        runMessageLoopOnPause(pausedScriptState->context());
+        m_client->runMessageLoopOnPause(pausedScriptState->context());
         m_runningNestedMessageLoop = false;
     }
     m_pausedScriptState.clear();
@@ -589,7 +589,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
     v8::Local<v8::Context> eventContext = eventDetails.GetEventContext();
     ASSERT(!eventContext.IsEmpty());
 
-    ScriptDebugListener* listener = getDebugListenerForContext(eventContext);
+    ScriptDebugListener* listener = m_client->getDebugListenerForContext(eventContext);
     if (listener) {
         v8::HandleScope scope(m_isolate);
         if (event == v8::AfterCompile || event == v8::CompileError) {
