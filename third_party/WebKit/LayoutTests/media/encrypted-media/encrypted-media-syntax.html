@@ -916,16 +916,15 @@
                     func: function(mk) { return mk.setServerCertificate(new Uint8Array(0)); }
                 },
                 // Valid calls, but not supported by Clear Key.
-                // TODO(jrummell): Reenable once http://crbug.com/482222 fixed.
-//              {
-//                  exception: 'NotSupportedError',
-//                  func: function(mk) { var cert = new Uint8Array(200); assert_true(ArrayBuffer.isView(cert)); return mk.setServerCertificate(cert); }
-//              },
-//              {
-//                  // Pass in ArrayBuffer
-//                  exception: 'NotSupportedError',
-//                  func: function(mk) { var cert = new Uint8Array(200); assert_false(ArrayBuffer.isView(cert.buffer)); return mk.setServerCertificate(cert.buffer); }
-//              }
+                {
+                    exception: 'NotSupportedError',
+                    func: function(mk) { var cert = new Uint8Array(200); assert_true(ArrayBuffer.isView(cert)); return mk.setServerCertificate(cert); }
+                },
+                {
+                    // Pass in ArrayBuffer
+                    exception: 'NotSupportedError',
+                    func: function(mk) { var cert = new Uint8Array(200); assert_false(ArrayBuffer.isView(cert.buffer)); return mk.setServerCertificate(cert.buffer); }
+                }
             ];
 
             async_test(function(test)
