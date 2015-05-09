@@ -402,6 +402,16 @@ body.check-select #view-button.thumbnail {
   display: none;
 }
 
+#sort-button {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/sorting_white.png) 1x,
+      url(../images/files/ui/2x/sorting_white.png) 2x);
+}
+
+body.check-select #sort-button {
+  display: none;
+}
+
 #gear-button {
   background-image: -webkit-image-set(
       url(../images/files/ui/menu_white.png) 1x,
@@ -1819,7 +1829,8 @@ list.autocomplete-suggestions > [lead] {
   margin-top: 8px;
 }
 
-#gear-menu > cr-menu-item:not(.menuitem-button) {
+#gear-menu > cr-menu-item:not(.menuitem-button),
+#sort-menu > cr-menu-item {
   -webkit-margin-end: 50px;
 }
 

@@ -135,6 +135,7 @@
       <script src="foreground/js/file_transfer_controller.js"></script>
       <script src="foreground/js/file_watcher.js"></script>
       <script src="foreground/js/folder_shortcuts_data_model.js"></script>
+      <script src="foreground/js/sort_menu_controller.js"></script>
       <script src="foreground/js/gear_menu_controller.js"></script>
       <script src="foreground/js/import_controller.js"></script>
       <script src="foreground/js/launch_param.js"></script>
@@ -255,6 +256,11 @@
       <command id="zoom-out" shortcut="U+00BD-Ctrl">
       <command id="zoom-reset" shortcut="U+0030-Ctrl">
 
+      <command id="sort-by-name" i18n-values="label:NAME_COLUMN_LABEL">
+      <command id="sort-by-size" i18n-values="label:SIZE_COLUMN_LABEL">
+      <command id="sort-by-type" i18n-values="label:TYPE_COLUMN_LABEL">
+      <command id="sort-by-date" i18n-values="label:DATE_COLUMN_LABEL">
+
       <!-- Shortcuts to open inspector. (Ctrl+Shift+I/J/C/B) -->
       <command id="inspect-normal" shortcut="U+0049-Shift-Ctrl">
       <command id="inspect-console" shortcut="U+004A-Shift-Ctrl">
@@ -296,6 +302,17 @@
 
     <cr-menu id="directory-tree-context-menu" class="chrome-menu" >
       <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
+    </cr-menu>
+
+    <cr-menu id="sort-menu" class="chrome-menu" menu-item-selector="cr-menu-item">
+      <cr-menu-item id="sort-menu-sort-by-name"
+                    command="#sort-by-name"></cr-menu-item>
+      <cr-menu-item id="sort-menu-sort-by-size"
+                    command="#sort-by-size"></cr-menu-item>
+      <cr-menu-item id="sort-menu-sort-by-type"
+                    command="#sort-by-type"></cr-menu-item>
+      <cr-menu-item id="sort-menu-sort-by-date"
+                    command="#sort-by-date"></cr-menu-item>
     </cr-menu>
 
     <cr-menu id="gear-menu" class="chrome-menu" showShortcuts
@@ -400,7 +417,13 @@
               i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL">
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
       </button>
-      <button id="gear-button" class="icon-button" tabindex="16"
+      <button id="sort-button" class="icon-button" tabindex="16"
+              menu="#sort-menu"
+              i18n-values="aria-label:SORT_BUTTON_TOOLTIP"
+              aria-activedescendant="sort-menu">
+        <paper-ripple fit class="recenteringTouch circle"></paper-ripple>
+      </button>
+      <button id="gear-button" class="icon-button" tabindex="17"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu">
@@ -432,7 +455,7 @@
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents">
-          <tree id="directory-tree" tabindex="17"></tree>
+          <tree id="directory-tree" tabindex="18"></tree>
         </div>
         <div class="dialog-navigation-list-footer">
           <div id="progress-center" hidden>

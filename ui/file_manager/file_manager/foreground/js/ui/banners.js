@@ -205,7 +205,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
     more.textContent = str('DRIVE_LEARN_MORE');
     more.href = str('GOOGLE_DRIVE_OVERVIEW_URL');
   }
-  more.tabIndex = '19';  // See: go/filesapp-tabindex.
+  more.tabIndex = '20';  // See: go/filesapp-tabindex.
   more.id = 'drive-welcome-link';
   more.target = '_blank';
 

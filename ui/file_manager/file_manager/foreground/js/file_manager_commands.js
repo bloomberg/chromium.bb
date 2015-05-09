@@ -1192,6 +1192,54 @@ CommandHandler.COMMANDS_['zoom-reset'] = /** @type {Command} */ ({
 });
 
 /**
+ * Sort the file list by name (in ascending order).
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['sort-by-name'] = /** @type {Command} */ ({
+  execute: function(event, fileManager) {
+    if (fileManager.directoryModel.getFileList())
+      fileManager.directoryModel.getFileList().sort('name', 'asc');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+});
+
+/**
+ * Sort the file list by size (in descending order).
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['sort-by-size'] = /** @type {Command} */ ({
+  execute: function(event, fileManager) {
+    if (fileManager.directoryModel.getFileList())
+      fileManager.directoryModel.getFileList().sort('size', 'desc');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+});
+
+/**
+ * Sort the file list by type (in ascending order).
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['sort-by-type'] = /** @type {Command} */ ({
+  execute: function(event, fileManager) {
+    if (fileManager.directoryModel.getFileList())
+      fileManager.directoryModel.getFileList().sort('type', 'asc');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+});
+
+/**
+ * Sort the file list by date-modified (in descending order).
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['sort-by-date'] = /** @type {Command} */ ({
+  execute: function(event, fileManager) {
+    if (fileManager.directoryModel.getFileList())
+      fileManager.directoryModel.getFileList().sort('modificationTime', 'desc');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+});
+
+/**
  * Open inspector for foreground page.
  * @type {Command}
  */

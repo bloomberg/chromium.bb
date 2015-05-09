@@ -10,11 +10,11 @@
 testcase.restoreSortColumn = function() {
   var appId;
   var EXPECTED_FILES = TestEntryInfo.getExpectedRows([
-    ENTRIES.photos,
-    ENTRIES.world,
-    ENTRIES.desktop,
-    ENTRIES.hello,
-    ENTRIES.beautiful
+    ENTRIES.photos,     // 'photos' (directory)
+    ENTRIES.world,      // 'world.ogv', 59943 bytes
+    ENTRIES.beautiful,  // 'Beautiful Song.ogg', 13410 bytes
+    ENTRIES.desktop,    // 'My Desktop Background.png', 272 bytes
+    ENTRIES.hello,      // 'hello.txt', 51 bytes
   ]);
   StepsRunner.run([
     // Set up File Manager.
@@ -34,11 +34,11 @@ testcase.restoreSortColumn = function() {
       remoteCall.waitForElement(appId, '.table-header-sort-image-asc').
           then(this.next);
     },
-    // Sort by name.
+    // Sort by size (in descending order).
     function() {
       remoteCall.callRemoteTestUtil('fakeMouseClick',
                                     appId,
-                                    ['.table-header-cell:nth-of-type(1)'],
+                                    ['.table-header-cell:nth-of-type(2)'],
                                     this.next);
     },
     // Check the sorted style of the header.

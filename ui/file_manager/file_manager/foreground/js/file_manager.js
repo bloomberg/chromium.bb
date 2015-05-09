@@ -172,6 +172,13 @@ function FileManager() {
   this.spinnerController_ = null;
 
   /**
+   * Sort menu controller.
+   * @type {SortMenuController}
+   * @private
+   */
+  this.sortMenuController_ = null;
+
+  /**
    * Gear menu controller.
    * @type {GearMenuController}
    * @private
@@ -412,6 +419,9 @@ FileManager.prototype = /** @struct */ {
         this.spinnerController_,
         this.commandHandler,
         this.selectionHandler_);
+    this.sortMenuController_ = new SortMenuController(
+        this.ui_.sortButton,
+        assert(this.directoryModel_.getFileList()));
     this.gearMenuController_ = new GearMenuController(
         this.ui_.gearButton,
         this.ui_.gearMenu,

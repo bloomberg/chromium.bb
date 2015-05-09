@@ -168,6 +168,14 @@ function FileManagerUI(element, launchParam) {
   this.toggleViewButton = queryRequiredElement(this.element, '#view-button');
 
   /**
+   * The button to sort the file list.
+   * @type {!cr.ui.MenuButton}
+   * @const
+   */
+  this.sortButton = util.queryDecoratedElement(
+      '#sort-button', cr.ui.MenuButton);
+
+  /**
    * The button to open gear menu.
    * @type {!cr.ui.MenuButton}
    * @const

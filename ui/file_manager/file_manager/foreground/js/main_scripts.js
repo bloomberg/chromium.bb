@@ -109,6 +109,7 @@
 //<include src="file_transfer_controller.js">
 //<include src="file_watcher.js">
 //<include src="folder_shortcuts_data_model.js">
+//<include src="sort_menu_controller.js">
 //<include src="gear_menu_controller.js">
 //<include src="import_controller.js">
 //<include src="launch_param.js">

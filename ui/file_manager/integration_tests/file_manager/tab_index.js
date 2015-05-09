@@ -80,6 +80,9 @@ testcase.tabindexFocus = function() {
       remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
     }, function(result) {
       chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'sort-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
     }, function(result) {
       chrome.test.assertTrue(result);
@@ -122,6 +125,9 @@ testcase.tabindexFocusDownloads = function() {
     }, function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'sort-button').then(this.next);
     }, function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
@@ -183,6 +189,9 @@ testcase.tabindexFocusDirectorySelected = function() {
     }, function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'sort-button').then(this.next);
     }, function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
@@ -285,7 +294,7 @@ testcase.tabindexOpenDialogDownloads = function() {
       },
       ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'gear-button', 'directory-tree', 'file-list']));
+       'sort-button', 'gear-button', 'directory-tree', 'file-list']));
 };
 
 /**
@@ -300,7 +309,7 @@ testcase.tabindexOpenDialogDrive = function() {
       },
       ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'gear-button', 'directory-tree', 'file-list']));
+       'sort-button', 'gear-button', 'directory-tree', 'file-list']));
 };
 
 /**
@@ -315,8 +324,8 @@ testcase.tabindexSaveFileDialogDownloads = function() {
       'downloads', BASIC_LOCAL_ENTRY_SET, null,
       ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'gear-button', 'directory-tree', 'file-list', 'new-folder-button',
-       'filename-input-textbox']));
+       'sort-button', 'gear-button', 'directory-tree', 'file-list',
+       'new-folder-button', 'filename-input-textbox']));
 };
 
 /**
@@ -331,6 +340,6 @@ testcase.tabindexSaveFileDialogDrive = function() {
       'drive', BASIC_DRIVE_ENTRY_SET, null,
       ['#ok-button:not([disabled])'],
       ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'gear-button', 'directory-tree', 'file-list', 'new-folder-button',
-       'filename-input-textbox']));
+       'sort-button', 'gear-button', 'directory-tree', 'file-list',
+       'new-folder-button', 'filename-input-textbox']));
 };

@@ -108,6 +108,7 @@
           './progress_center_item_group.js',
           './scan_controller.js',
           './search_controller.js',
+          './sort_menu_controller.js',
           './spinner_controller.js',
           './share_client.js',
           './task_controller.js',
