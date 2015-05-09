@@ -205,14 +205,16 @@ extern const char kBrailleImeEngineId[];
 extern const char kConnectivityDiagnosticsPath[];
 extern const char kConnectivityDiagnosticsKioskPath[];
 extern const char kConnectivityDiagnosticsLauncherPath[];
+// The extension id of the first run dialog application.
+extern const char kFirstRunDialogId[];
 // Path to preinstalled speech synthesis extension.
 extern const char kSpeechSynthesisExtensionPath[];
 // The extension id of the speech synthesis extension.
 extern const char kSpeechSynthesisExtensionId[];
 // The extension id of the wallpaper manager application.
 extern const char kWallpaperManagerId[];
-// The extension id of the first run dialog application.
-extern const char kFirstRunDialogId[];
+// The app id of the webstore widget component app.
+extern const char kWebstoreWidgetAppId[];
 // The extension id of the new ZIP unpacker extension.
 extern const char kZIPUnpackerExtensionId[];
 #endif
