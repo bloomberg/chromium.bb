@@ -206,7 +206,8 @@ NaClListener::NaClListener() : shutdown_event_(true, false),
 #if defined(OS_POSIX)
                                number_of_cores_(-1),  // unknown/error
 #endif
-                               main_loop_(NULL) {
+                               main_loop_(NULL),
+                               is_started_(false) {
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   DCHECK(g_listener == NULL);
@@ -275,6 +276,8 @@ void NaClListener::Listen() {
 bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClListener, msg)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_AddPrefetchedResource,
+                          OnAddPrefetchedResource)
       IPC_MESSAGE_HANDLER(NaClProcessMsg_Start, OnStart)
       IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -307,7 +310,24 @@ bool NaClListener::OnOpenResource(
   return false;
 }
 
+void NaClListener::OnAddPrefetchedResource(
+    const nacl::NaClResourcePrefetchResult& prefetched_resource_file) {
+  DCHECK(!is_started_);
+  if (is_started_)
+    return;
+  bool result = prefetched_resource_files_.insert(std::make_pair(
+      prefetched_resource_file.file_key,
+      std::make_pair(
+          prefetched_resource_file.file,
+          prefetched_resource_file.file_path_metadata))).second;
+  if (!result) {
+    LOG(FATAL) << "Duplicated open_resource key: "
+               << prefetched_resource_file.file_key;
+  }
+}
+
 void NaClListener::OnStart(const nacl::NaClStartParams& params) {
+  is_started_ = true;
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   int urandom_fd = dup(base::GetUrandomFD());
   if (urandom_fd < 0) {
@@ -334,18 +354,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   IPC::ChannelHandle browser_handle;
   IPC::ChannelHandle ppapi_renderer_handle;
   IPC::ChannelHandle manifest_service_handle;
-
-  for (size_t i = 0; i < params.prefetched_resource_files.size(); ++i) {
-    bool result = prefetched_resource_files_.insert(std::make_pair(
-        params.prefetched_resource_files[i].file_key,
-        std::make_pair(
-            params.prefetched_resource_files[i].file,
-            params.prefetched_resource_files[i].file_path_metadata))).second;
-    if (!result) {
-      LOG(FATAL) << "Duplicated open_resource key: "
-                 << params.prefetched_resource_files[i].file_key;
-    }
-  }
 
   if (params.enable_ipc_proxy) {
     browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");

@@ -5,12 +5,16 @@
 #ifndef COMPONENTS_NACL_LOADER_NONSFI_NONSFI_LISTENER_H_
 #define COMPONENTS_NACL_LOADER_NONSFI_NONSFI_LISTENER_H_
 
+#include <map>
+#include <utility>
+
 #include "base/macros.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "components/nacl/common/nacl_types.h"
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
@@ -37,12 +41,16 @@ class NonSfiListener : public IPC::Listener {
 
  private:
   bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnAddPrefetchedResource(
+      const nacl::NaClResourcePrefetchResult& prefetched_resource_file);
   void OnStart(const nacl::NaClStartParams& params);
 
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
   scoped_ptr<IPC::SyncChannel> channel_;
   scoped_refptr<NaClTrustedListener> trusted_listener_;
+
+  scoped_ptr<std::map<std::string, int>> key_fd_map_;
 
   DISALLOW_COPY_AND_ASSIGN(NonSfiListener);
 };

@@ -74,6 +74,8 @@ class NaClListener : public IPC::Listener {
                       const std::string& key,
                       OpenResourceReplyCallback cb);
 
+  void OnAddPrefetchedResource(
+      const nacl::NaClResourcePrefetchResult& prefetched_resource_file);
   void OnStart(const nacl::NaClStartParams& params);
 
   // A channel back to the browser.
@@ -111,6 +113,8 @@ class NaClListener : public IPC::Listener {
     std::pair<IPC::PlatformFileForTransit,
               base::FilePath> > PrefetchedResourceFilesMap;
   PrefetchedResourceFilesMap prefetched_resource_files_;
+
+  bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClListener);
 };

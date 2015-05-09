@@ -35,7 +35,8 @@ namespace nacl {
 namespace nonsfi {
 
 NonSfiListener::NonSfiListener() : io_thread_("NaCl_IOThread"),
-                                   shutdown_event_(true, false) {
+                                   shutdown_event_(true, false),
+                                   key_fd_map_(new std::map<std::string, int>) {
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }
@@ -63,10 +64,25 @@ bool NonSfiListener::Send(IPC::Message* msg) {
 bool NonSfiListener::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NonSfiListener, msg)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_AddPrefetchedResource,
+                          OnAddPrefetchedResource)
       IPC_MESSAGE_HANDLER(NaClProcessMsg_Start, OnStart)
       IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void NonSfiListener::OnAddPrefetchedResource(
+    const nacl::NaClResourcePrefetchResult& prefetched_resource_file) {
+  CHECK(prefetched_resource_file.file_path_metadata.empty());
+  bool result = key_fd_map_->insert(std::make_pair(
+      prefetched_resource_file.file_key,
+      IPC::PlatformFileForTransitToPlatformFile(
+          prefetched_resource_file.file))).second;
+  if (!result) {
+    LOG(FATAL) << "Duplicated open_resource key: "
+               << prefetched_resource_file.file_key;
+  }
 }
 
 void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
@@ -161,15 +177,7 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   CHECK(params.nexe_file != IPC::InvalidPlatformFileForTransit());
   CHECK(params.nexe_file_path_metadata.empty());
 
-  std::map<std::string, int>* key_fd_map = new std::map<std::string, int>;
-  for (size_t i = 0; i < params.prefetched_resource_files.size(); ++i) {
-    CHECK(params.prefetched_resource_files[i].file_path_metadata.empty());
-    key_fd_map->insert(std::make_pair(
-        params.prefetched_resource_files[i].file_key,
-        IPC::PlatformFileForTransitToPlatformFile(
-            params.prefetched_resource_files[i].file)));
-  }
-  ppapi::RegisterPreopenedDescriptorsNonSfi(key_fd_map);
+  ppapi::RegisterPreopenedDescriptorsNonSfi(key_fd_map_.release());
 
   MainStart(IPC::PlatformFileForTransitToPlatformFile(params.nexe_file));
 }

@@ -14,7 +14,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -25,18 +24,10 @@ namespace nacl {
 
 namespace {
 
-// The maximum number of resource file handles NaClProcessMsg_Start message
-// can have. Currently IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage
-// is 7 and NaCl sends 5 handles for other purposes, hence 2.
-// TODO(yusukes): Remove |kMaxPreOpenResourceFiles|. Instead, send an arbitrary
-// number of FDs to the NaCl loader process with separate IPC messages.
-const size_t kMaxPreOpenResourceFiles = 2;
-
-#if defined(OS_POSIX)
-static_assert(kMaxPreOpenResourceFiles ==
-              IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage - 5,
-              "kMaxPreOpenResourceFiles is not up to date");
-#endif
+// The maximum number of resource file handles the browser process accepts. Use
+// 200 because ARC's nmf has ~128 resource files as of May 2015. This prevents
+// untrusted code filling the FD/handle table.
+const size_t kMaxPreOpenResourceFiles = 200;
 
 ppapi::PpapiPermissions GetNaClPermissions(
     uint32 permission_bits,

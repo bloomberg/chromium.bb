@@ -72,7 +72,6 @@ struct NaClStartParams {
   // Used only as a key for validation caching.
   base::FilePath nexe_file_path_metadata;
 
-  std::vector<NaClResourcePrefetchResult> prefetched_resource_files;
   IPC::PlatformFileForTransit imc_bootstrap_handle;
   IPC::PlatformFileForTransit irt_handle;
 #if defined(OS_MACOSX)

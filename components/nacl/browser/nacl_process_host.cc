@@ -931,14 +931,14 @@ bool NaClProcessHost::StartNaClExecution() {
   // resource files here even for SFI mode because the descriptors are not from
   // a renderer.
   for (size_t i = 0; i < prefetched_resource_files_.size(); ++i) {
-    params.prefetched_resource_files.push_back(
+    process_->Send(new NaClProcessMsg_AddPrefetchedResource(
         NaClResourcePrefetchResult(
             prefetched_resource_files_[i].file,
             // For the same reason as the comment below, always use an empty
             // base::FilePath for non-SFI mode.
             (uses_nonsfi_mode_ ? base::FilePath() :
              prefetched_resource_files_[i].file_path_metadata),
-            prefetched_resource_files_[i].file_key));
+            prefetched_resource_files_[i].file_key)));
   }
   prefetched_resource_files_.clear();
 
