@@ -703,10 +703,6 @@ public:
         PushSubscriptionId = 769,
         EncryptedMediaSecureOrigin = 770,
         EncryptedMediaInsecureOrigin = 771,
-        MarkDequeOverflow = 772,
-        StoreBufferOverflow = 773,
-        SlotsBufferOverflow = 774,
-        ObjectObserve = 775,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
