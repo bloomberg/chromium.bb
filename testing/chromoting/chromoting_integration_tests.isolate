@@ -85,12 +85,27 @@
         ],
       },
     }],
-    ['OS=="win" or OS=="mac"', {
+    ['OS=="win"', {
       'variables': {
         'command': [
           '../test_env.py',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
           '--gtest_filter=RemoteDesktopBrowserTest.MANUAL_Launch:RemoteDesktopBrowserTest.MANUAL_Auth',
+          '--run-manual',
+          '--ui-test-action-timeout=100000',
+          '--webapp-unpacked=<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
+          '--extension-name=Chromoting',
+          '--accounts-file=../../remoting/tools/internal/test_accounts.json',
+          '--account-type=gmail',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'command': [
+          '../test_env.py',
+          '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '--gtest_filter=RemoteDesktopBrowserTest.MANUAL_Launch',
           '--run-manual',
           '--ui-test-action-timeout=100000',
           '--webapp-unpacked=<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
@@ -106,7 +121,7 @@
           '<(PRODUCT_DIR)/kasko.dll',
         ],
       },
-    }],  
+    }],
   ],
   'includes': [
     '../../base/base.isolate',
