@@ -291,9 +291,20 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
         if (it->hasInlineBody()) {
           if (it->isCopyConstructor() &&
               !record->hasUserDeclaredCopyConstructor()) {
-            emitWarning(record_location,
-                        "Complex class/struct needs an explicit out-of-line "
-                        "copy constructor.");
+            // In general, implicit constructors are generated on demand.  But
+            // in the Windows component build, dllexport causes instantiation of
+            // the copy constructor which means that this fires on many more
+            // classes. For now, suppress this on dllexported classes.
+            // (This does mean that windows component builds will not emit this
+            // warning in some cases where it is emitted in other configs, but
+            // that's the better tradeoff at this point).
+            // TODO(dcheng): With the RecursiveASTVisitor, these warnings might
+            // be emitted on other platforms too, reevaluate if we want to keep
+            // surpressing this then http://crbug.com/467288
+            if (!record->hasAttr<DLLExportAttr>())
+              emitWarning(record_location,
+                          "Complex class/struct needs an explicit out-of-line "
+                          "copy constructor.");
           } else {
             emitWarning(it->getInnerLocStart(),
                         "Complex constructor has an inlined body.");
@@ -554,7 +565,7 @@ void FindBadConstructsConsumer::CountType(const Type* type,
       bool whitelisted_template = false;
 
       // HACK: I'm at a loss about how to get the syntax checker to get
-      // whether a template is exterened or not. For the first pass here,
+      // whether a template is externed or not. For the first pass here,
       // just do retarded string comparisons.
       if (TemplateDecl* decl = name.getAsTemplateDecl()) {
         std::string base_name = decl->getNameAsString();
