@@ -23,8 +23,10 @@ LLVM_WIN_REVISION = 'HEAD'
 
 # ASan on Windows is useful enough to use it even while the clang/win is still
 # in bringup. Use a pinned revision to make it slightly more stable.
-if (re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')) and
-    not 'LLVM_FORCE_HEAD_REVISION' in os.environ):
+use_head_revision = ('LLVM_FORCE_HEAD_REVISION' in os.environ or
+  not re.search(r'\b(asan)=1', os.environ.get('GYP_DEFINES', '')))
+
+if not use_head_revision:
   LLVM_WIN_REVISION = '235968'
 
 # Path constants. (All of these should be absolute paths.)
@@ -234,8 +236,20 @@ def UpdateClang(args):
     os.makedirs(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
 
+  # If building at head, define a macro that plugins can use for #ifdefing
+  # out code that builds at head, but not at CLANG_REVISION or vice versa.
+  cflags = cxxflags = ''
+
+  # TODO(thakis): Set this only conditionally if use_head_revision once posix
+  # and win clang are in sync. At the moment, the plugins only build at clang
+  # head on posix, but they build at both head and the pinned win version :-/
+  cflags += ' -DLLVM_FORCE_HEAD_REVISION'
+  cxxflags += ' -DLLVM_FORCE_HEAD_REVISION'
+
   cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Release',
                 '-DLLVM_ENABLE_ASSERTIONS=ON', SubversionCmakeArg(),
+                '-DCMAKE_C_FLAGS=' + cflags,
+                '-DCMAKE_CXX_FLAGS=' + cxxflags,
                 '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(
                     CHROMIUM_DIR, 'tools', 'clang'),
                 '-DCHROMIUM_TOOLS=%s' % ';'.join(args.tools)]
@@ -309,7 +323,8 @@ def main():
         stderr=stderr)
 
   parser = argparse.ArgumentParser(description='Build Clang.')
-  parser.add_argument('--tools', nargs='*', default=['plugins'])
+  parser.add_argument('--tools', nargs='*',
+                      default=['plugins', 'blink_gc_plugin'])
   # For now, this flag is only used for the non-Windows flow, but argparser gets
   # mad if it sees a flag it doesn't recognize.
   parser.add_argument('--if-needed', action='store_true')
