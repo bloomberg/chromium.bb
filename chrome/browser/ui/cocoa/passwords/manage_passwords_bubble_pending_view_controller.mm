@@ -7,11 +7,9 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/grit/generated_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -105,18 +103,16 @@ using namespace password_manager::mac::ui;
                 action:@selector(onSaveClicked:)] retain]);
 
   // Nope combobox.
-  SavePasswordRefusalComboboxModel comboboxModel(
-      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(
-          model_->GetProfile()->GetPrefs()));
+  SavePasswordRefusalComboboxModel comboboxModel;
   nopeButton_.reset([[BubbleCombobox alloc] initWithFrame:NSZeroRect
                                                 pullsDown:YES
                                                     model:&comboboxModel]);
   NSMenuItem* nopeItem =
-      [nopeButton_ itemAtIndex:comboboxModel.index_nope()];
+      [nopeButton_ itemAtIndex:SavePasswordRefusalComboboxModel::INDEX_NOPE];
   [nopeItem setTarget:self];
   [nopeItem setAction:@selector(onNopeClicked:)];
   NSMenuItem* neverItem = [nopeButton_
-      itemAtIndex:comboboxModel.index_never()];
+      itemAtIndex:SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE];
   [neverItem setTarget:self];
   [neverItem setAction:@selector(onNeverForThisSiteClicked:)];
 

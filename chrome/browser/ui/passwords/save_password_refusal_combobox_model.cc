@@ -7,16 +7,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SavePasswordRefusalComboboxModel::SavePasswordRefusalComboboxModel(
-    bool never_is_default)
-    : never_is_default_(never_is_default) {
+SavePasswordRefusalComboboxModel::SavePasswordRefusalComboboxModel() {
 #if !defined(OS_ANDROID)
   items_.push_back(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
   items_.push_back(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON));
-  if (never_is_default)
-    swap(items_[0], items_[1]);
 #endif
 }
 

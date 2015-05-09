@@ -2289,9 +2289,6 @@ const char kEasyUnlockLocalStateTpmKeys[] = "easy_unlock.public_tpm_keys";
 // their profile's Easy Unlock preferences.
 const char kEasyUnlockLocalStateUserPrefs[] = "easy_unlock.user_prefs";
 
-// The count of user's "Nope" for the password bubble.
-const char kPasswordBubbleNopesCount[] = "password_bubble.nopes";
-
 // Boolean that indicates whether elevation is needed to recover Chrome upgrade.
 const char kRecoveryComponentNeedsElevation[] =
     "recovery_component.needs_elevation";

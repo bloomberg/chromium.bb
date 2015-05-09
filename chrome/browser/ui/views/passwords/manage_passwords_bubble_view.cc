@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
@@ -404,9 +403,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   save_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::SmallFont));
 
-  combobox_model_.reset(new SavePasswordRefusalComboboxModel(
-      password_bubble_experiment::ShouldShowNeverForThisSiteDefault(
-          parent_->model()->GetProfile()->GetPrefs())));
+  combobox_model_.reset(new SavePasswordRefusalComboboxModel);
   refuse_combobox_.reset(new views::Combobox(combobox_model_.get()));
   refuse_combobox_->set_listener(this);
   refuse_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
@@ -466,13 +463,14 @@ void ManagePasswordsBubbleView::PendingView::StyledLabelLinkClicked(
 void ManagePasswordsBubbleView::PendingView::OnPerformAction(
     views::Combobox* source) {
   DCHECK_EQ(source, refuse_combobox_);
-  if (source->selected_index() == combobox_model_->index_nope()) {
-    parent_->model()->OnNopeClicked();
-    parent_->Close();
-  } else if (source->selected_index() == combobox_model_->index_never()) {
-    parent_->NotifyNeverForThisSiteClicked();
-  } else {
-    NOTREACHED();
+  switch (refuse_combobox_->selected_index()) {
+    case SavePasswordRefusalComboboxModel::INDEX_NOPE:
+      parent_->model()->OnNopeClicked();
+      parent_->Close();
+      break;
+    case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
+      parent_->NotifyNeverForThisSiteClicked();
+      break;
   }
 }
 

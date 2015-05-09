@@ -821,8 +821,6 @@ extern const char kEasyUnlockHardlockState[];
 extern const char kEasyUnlockLocalStateTpmKeys[];
 extern const char kEasyUnlockLocalStateUserPrefs[];
 
-extern const char kPasswordBubbleNopesCount[];
-
 extern const char kRecoveryComponentNeedsElevation[];
 
 extern const char kRegisteredSupervisedUserWhitelists[];
