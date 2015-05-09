@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file is created by generate_build_files.py. Do not edit manually.
+# This file is created by update_gypi_and_asm.py. Do not edit manually.
 
 {
   'targets': [
@@ -79,19 +79,6 @@
       ],
       'sources': [
         'src/crypto/cipher/cipher_test.c',
-      ],
-      # TODO(davidben): Fix size_t truncations in BoringSSL.
-      # https://crbug.com/429039
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    {
-      'target_name': 'boringssl_cmac_test',
-      'type': 'executable',
-      'dependencies': [
-        'boringssl.gyp:boringssl',
-      ],
-      'sources': [
-        'src/crypto/cmac/cmac_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -366,7 +353,6 @@
       'boringssl_bn_test',
       'boringssl_bytestring_test',
       'boringssl_cipher_test',
-      'boringssl_cmac_test',
       'boringssl_constant_time_test',
       'boringssl_dh_test',
       'boringssl_digest_test',

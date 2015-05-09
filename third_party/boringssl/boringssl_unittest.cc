@@ -157,6 +157,10 @@ TEST(BoringSSL, ByteString) {
   TestSimple("bytestring_test");
 }
 
+TEST(BoringSSL, ConstantTime) {
+  TestSimple("constant_time_test");
+}
+
 TEST(BoringSSL, Cipher) {
   base::FilePath data_file;
   ASSERT_TRUE(CryptoCipherTestPath(&data_file));
@@ -166,14 +170,6 @@ TEST(BoringSSL, Cipher) {
   args.push_back(data_file.value());
 
   TestProcess("cipher_test", args);
-}
-
-TEST(BoringSSL, CMAC) {
-  TestSimple("cmac_test");
-}
-
-TEST(BoringSSL, ConstantTime) {
-  TestSimple("constant_time_test");
 }
 
 TEST(BoringSSL, DH) {
