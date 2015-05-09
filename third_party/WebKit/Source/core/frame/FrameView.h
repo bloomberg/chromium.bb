@@ -228,9 +228,7 @@ public:
     Color documentBackgroundColor() const;
 
     void updateLayoutAndStyleForPainting();
-    void updateLayoutAndStyleIfNeededRecursive();
 
-    void invalidateTreeIfNeededRecursive();
     bool invalidateViewportConstrainedObjects();
 
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
@@ -244,8 +242,6 @@ public:
     bool scrollToFragment(const KURL&);
     bool scrollToAnchor(const String&);
     void maintainScrollPositionAtAnchor(Node*);
-
-    void scrollContentsIfNeededRecursive();
 
     // Methods to convert points and rects between the coordinate space of the layoutObject, and this view.
     IntRect convertFromLayoutObject(const LayoutObject&, const IntRect&) const;
@@ -620,6 +616,11 @@ protected:
 
 private:
     explicit FrameView(LocalFrame*);
+
+    void updateLayoutAndStyleForPaintingInternal();
+    void invalidateTreeIfNeededRecursive();
+    void scrollContentsIfNeededRecursive();
+    void updateLayoutAndStyleIfNeededRecursive();
 
     void reset();
     void init();

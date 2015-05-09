@@ -1323,7 +1323,7 @@ VisiblePosition WebLocalFrameImpl::visiblePositionForViewportPoint(const WebPoin
 {
     HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping;
     HitTestResult result(request, frame()->view()->viewportToContents(pointInViewport));
-    frame()->document()->layoutView()->layer()->hitTest(result);
+    frame()->document()->layoutView()->hitTest(result);
 
     if (Node* node = result.innerNode())
         return frame()->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);

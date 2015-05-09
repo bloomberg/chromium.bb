@@ -2517,6 +2517,14 @@ void FrameView::updateWidgetPositionsIfNeeded()
 
 void FrameView::updateLayoutAndStyleForPainting()
 {
+    frame().localFrameRoot()->view()->updateLayoutAndStyleForPaintingInternal();
+}
+
+void FrameView::updateLayoutAndStyleForPaintingInternal()
+{
+    // This must be called from the root frame, since it recurses down, not up. Otherwise the lifecycles of the frames might be out of sync.
+    ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
+
     // Updating layout can run script, which can tear down the FrameView.
     RefPtrWillBeRawPtr<FrameView> protector(this);
 
@@ -2545,7 +2553,7 @@ void FrameView::updateLayoutAndStyleForPainting()
 
 void FrameView::updateLayoutAndStyleIfNeededRecursive()
 {
-    // We have to crawl our entire tree looking for any FrameViews that need
+    // We have to crawl our entire subtree looking for any FrameViews that need
     // layout and make sure they are up to date.
     // Mac actually tests for intersection with the dirty region and tries not to
     // update layout for frames that are outside the dirty region.  Not only does this seem

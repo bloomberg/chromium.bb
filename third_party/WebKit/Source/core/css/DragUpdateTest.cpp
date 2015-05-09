@@ -31,11 +31,11 @@ TEST(DragUpdateTest, AffectedByDragUpdate)
         "<span></span>"
         "</div>", ASSERT_NO_EXCEPTION);
 
-    document.view()->updateLayoutAndStyleIfNeededRecursive();
+    document.view()->updateLayoutAndStyleForPainting();
     unsigned startCount = document.styleEngine().resolverAccessCount();
 
     document.documentElement()->layoutObject()->updateDragState(true);
-    document.view()->updateLayoutAndStyleIfNeededRecursive();
+    document.view()->updateLayoutAndStyleForPainting();
 
     unsigned accessCount = document.styleEngine().resolverAccessCount() - startCount;
 

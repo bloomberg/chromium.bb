@@ -461,7 +461,7 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
     static const char* bodyContent =
         "<div id='div' contenteditable='true'>1<img src='foo.png'>3</div>";
     setBodyInnerHTML(bodyContent);
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     Node* divNode = document().getElementById("div");
     RefPtrWillBeRawPtr<Range> range = Range::create(document(), divNode, 0, divNode, 3);
@@ -474,7 +474,7 @@ TEST_F(TextIteratorTest, SubrangeWithReplacedElements)
     static const char* bodyContent =
         "<div id='div' contenteditable='true'>1<img src='foo.png'>345</div>";
     setBodyInnerHTML(bodyContent);
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     Node* divNode = document().getElementById("div");
     RefPtrWillBeRawPtr<Range> entireRange = Range::create(document(), divNode, 0, divNode, 3);

@@ -53,7 +53,7 @@ void AffectedByFocusTest::SetUp()
 void AffectedByFocusTest::setHtmlInnerHTML(const char* htmlContent)
 {
     document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 }
 
 void AffectedByFocusTest::checkElements(ElementResult expected[], unsigned expectedCount) const
@@ -208,12 +208,12 @@ TEST_F(AffectedByFocusTest, AffectedByFocusUpdate)
         "<div></div>"
         "</div>");
 
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 
@@ -239,12 +239,12 @@ TEST_F(AffectedByFocusTest, ChildrenOrSiblingsAffectedByFocusUpdate)
         "<div></div>"
         "</div>");
 
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 
@@ -270,12 +270,12 @@ TEST_F(AffectedByFocusTest, InvalidationSetFocusUpdate)
         "<div class='a'></div>"
         "</div>");
 
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 
@@ -302,12 +302,12 @@ TEST_F(AffectedByFocusTest, NoInvalidationSetFocusUpdate)
         "<div class='a'></div>"
         "</div>");
 
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned startCount = document().styleEngine().resolverAccessCount();
 
     document().getElementById("d")->focus();
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     unsigned accessCount = document().styleEngine().resolverAccessCount() - startCount;
 

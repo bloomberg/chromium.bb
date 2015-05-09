@@ -1676,8 +1676,6 @@ bool DeprecatedPaintLayer::hitTest(const HitTestRequest& request, const HitTestL
     if (request.ignoreClipping())
         hitTestArea.unite(LayoutRect(layoutObject()->view()->documentRect()));
 
-    // Make sure advance document lifecycle to CompositingClean prior to hit testing.
-    compositor()->updateIfNeededRecursive();
     DeprecatedPaintLayer* insideLayer = hitTestLayer(this, 0, result, hitTestArea, hitTestLocation, false);
     if (!insideLayer) {
         // We didn't hit any layer. If we are the root layer and the mouse is -- or just was -- down,

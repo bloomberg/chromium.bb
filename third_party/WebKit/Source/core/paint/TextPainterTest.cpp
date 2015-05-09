@@ -41,7 +41,7 @@ private:
 TEST_F(TextPainterTest, TextPaintingStyle_Simple)
 {
     document().body()->setInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, false /* isPrinting */);
@@ -59,7 +59,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::CSS_PX);
     document().body()->setInlineStyleProperty(CSSPropertyTextShadow, "1px 2px 3px yellow");
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, false /* isPrinting */);
@@ -82,7 +82,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBlackText)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::CSS_PX);
     document().body()->setInlineStyleProperty(CSSPropertyTextShadow, "1px 2px 3px yellow");
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), true /* forceBlackText */, false /* isPrinting */);
@@ -100,7 +100,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_NoAdjustmentNee
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
     document().settings()->setShouldPrintBackgrounds(false);
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, true /* isPrinting */);
@@ -116,7 +116,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, "rgb(220, 220, 255)");
     document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
     document().settings()->setShouldPrintBackgrounds(false);
-    document().view()->updateLayoutAndStyleIfNeededRecursive();
+    document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, true /* isPrinting */);

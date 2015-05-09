@@ -2413,7 +2413,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     if (currentHitTest.innerNode()) {
         LocalFrame* mainFrame = m_frame->localFrameRoot();
         if (mainFrame && mainFrame->view())
-            mainFrame->view()->updateLayoutAndStyleIfNeededRecursive();
+            mainFrame->view()->updateLayoutAndStyleForPainting();
         adjustedPoint = frameView->rootFrameToContents(gestureEvent.position());
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     }
@@ -2440,7 +2440,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     if (currentHitTest.innerNode()) {
         LocalFrame* mainFrame = m_frame->localFrameRoot();
         if (mainFrame && mainFrame->view())
-            mainFrame->view()->updateLayoutAndStyleIfNeededRecursive();
+            mainFrame->view()->updateLayoutAndStyleForPainting();
         adjustedPoint = frameView->rootFrameToContents(gestureEvent.position());
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     }

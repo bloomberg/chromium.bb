@@ -124,7 +124,7 @@ bool WebAXObject::updateLayoutAndCheckValidity()
         Document* document = m_private->document();
         if (!document || !document->topDocument().view())
             return false;
-        document->topDocument().view()->updateLayoutAndStyleIfNeededRecursive();
+        document->view()->updateLayoutAndStyleForPainting();
     }
 
     // Doing a layout can cause this object to be invalid, so check again.

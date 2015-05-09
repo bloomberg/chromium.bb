@@ -93,7 +93,7 @@ bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     // that are higher up in the call stack, leading to crashes.
     // Note that Document::updateLayout calls its parent's updateLayout.
     // FIXME: It should be the caller's responsibility to ensure an up-to-date layout.
-    frameView()->updateLayoutAndStyleIfNeededRecursive();
+    frameView()->updateLayoutAndStyleForPainting();
     commitPendingSelection();
 
     bool hitLayer = layer()->hitTest(request, location, result);
