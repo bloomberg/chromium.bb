@@ -8,7 +8,10 @@
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -56,10 +59,10 @@ void ChromeContentRulesRegistry::Observe(
     case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
       content::WebContents* tab =
           content::Source<content::WebContents>(source).ptr();
-      // GetTabId() returns -1 for non-tab WebContents, which won't be
-      // in the map.  Similarly, tabs from other browser_contexts won't be in
-      // the map.
-      active_rules_.erase(ExtensionTabUtil::GetTabId(tab));
+      // Note that neither non-tab WebContents nor tabs from other browser
+      // contexts will be in the map.
+      active_rules_.erase(tab);
+      matching_css_selectors_.erase(tab);
       break;
     }
   }
@@ -68,41 +71,9 @@ void ChromeContentRulesRegistry::Observe(
 void ChromeContentRulesRegistry::Apply(
     content::WebContents* contents,
     const std::vector<std::string>& matching_css_selectors) {
-  const int tab_id = ExtensionTabUtil::GetTabId(contents);
-  RendererContentMatchData renderer_data;
-  renderer_data.page_url_matches = url_matcher_.MatchURL(contents->GetURL());
-  renderer_data.css_selectors.insert(matching_css_selectors.begin(),
-                                     matching_css_selectors.end());
-  std::set<ContentRule*> matching_rules = GetMatches(renderer_data);
-  if (matching_rules.empty() && !ContainsKey(active_rules_, tab_id))
-    return;
+  matching_css_selectors_[contents] = matching_css_selectors;
 
-  std::set<ContentRule*>& prev_matching_rules = active_rules_[tab_id];
-  ContentAction::ApplyInfo apply_info = {browser_context(), contents};
-  for (std::set<ContentRule*>::const_iterator it = matching_rules.begin();
-       it != matching_rules.end();
-       ++it) {
-    apply_info.priority = (*it)->priority();
-    if (!ContainsKey(prev_matching_rules, *it)) {
-      (*it)->actions().Apply((*it)->extension_id(), base::Time(), &apply_info);
-    } else {
-      (*it)->actions().Reapply(
-          (*it)->extension_id(), base::Time(), &apply_info);
-    }
-  }
-  for (std::set<ContentRule*>::const_iterator it = prev_matching_rules.begin();
-       it != prev_matching_rules.end();
-       ++it) {
-    if (!ContainsKey(matching_rules, *it)) {
-      apply_info.priority = (*it)->priority();
-      (*it)->actions().Revert((*it)->extension_id(), base::Time(), &apply_info);
-    }
-  }
-
-  if (matching_rules.empty())
-    active_rules_.erase(tab_id);
-  else
-    swap(matching_rules, prev_matching_rules);
+  EvaluateConditionsForTab(contents);
 }
 
 void ChromeContentRulesRegistry::DidNavigateMainFrame(
@@ -120,8 +91,8 @@ void ChromeContentRulesRegistry::DidNavigateMainFrame(
   // document's empty, so no CSS rules match.  The renderer will send
   // an ExtensionHostMsg_OnWatchedPageChange later if any CSS rules
   // match.
-  std::vector<std::string> no_css_selectors;
-  Apply(contents, no_css_selectors);
+  matching_css_selectors_[contents].clear();
+  EvaluateConditionsForTab(contents);
 }
 
 std::set<ContentRule*> ChromeContentRulesRegistry::GetMatches(
@@ -208,6 +179,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   url_matcher_.AddConditionSets(all_new_condition_sets);
 
   UpdateConditionCache();
+  EvaluateConditionsForAllTabs();
 
   return std::string();
 }
@@ -240,21 +212,12 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
     }
 
     // Remove the ContentRule from active_rules_.
-    for (std::map<int, std::set<ContentRule*> >::iterator it =
-             active_rules_.begin();
-         it != active_rules_.end();
-         ++it) {
-      if (ContainsKey(it->second, rule)) {
-        content::WebContents* tab;
-        if (!ExtensionTabUtil::GetTabById(
-                it->first, browser_context(), true, NULL, NULL, &tab, NULL)) {
-          LOG(DFATAL) << "Tab id " << it->first
-                      << " still in active_rules_, but tab has been destroyed";
-          continue;
-        }
-        ContentAction::ApplyInfo apply_info = {browser_context(), tab};
+    for (auto& tab_rules_pair : active_rules_) {
+      if (ContainsKey(tab_rules_pair.second, rule)) {
+        ContentAction::ApplyInfo apply_info =
+            {browser_context(), tab_rules_pair.first};
         rule->actions().Revert(rule->extension_id(), base::Time(), &apply_info);
-        it->second.erase(rule);
+        tab_rules_pair.second.erase(rule);
       }
     }
 
@@ -321,6 +284,57 @@ void ChromeContentRulesRegistry::UpdateConditionCache() {
 void ChromeContentRulesRegistry::InstructRenderProcess(
     content::RenderProcessHost* process) {
   process->Send(new ExtensionMsg_WatchPages(watched_css_selectors_));
+}
+
+void ChromeContentRulesRegistry::EvaluateConditionsForTab(
+    content::WebContents* tab) {
+  extensions::RendererContentMatchData renderer_data;
+  renderer_data.page_url_matches = url_matcher_.MatchURL(tab->GetURL());
+  renderer_data.css_selectors.insert(matching_css_selectors_[tab].begin(),
+                                     matching_css_selectors_[tab].end());
+  std::set<ContentRule*> matching_rules = GetMatches(renderer_data);
+  if (matching_rules.empty() && !ContainsKey(active_rules_, tab))
+    return;
+
+  std::set<ContentRule*>& prev_matching_rules = active_rules_[tab];
+  ContentAction::ApplyInfo apply_info = {browser_context(), tab};
+  for (std::set<ContentRule*>::const_iterator it = matching_rules.begin();
+       it != matching_rules.end();
+       ++it) {
+    apply_info.priority = (*it)->priority();
+    if (!ContainsKey(prev_matching_rules, *it)) {
+      (*it)->actions().Apply((*it)->extension_id(), base::Time(), &apply_info);
+    } else {
+      (*it)->actions().Reapply(
+          (*it)->extension_id(), base::Time(), &apply_info);
+    }
+  }
+  for (std::set<ContentRule*>::const_iterator it = prev_matching_rules.begin();
+       it != prev_matching_rules.end();
+       ++it) {
+    if (!ContainsKey(matching_rules, *it)) {
+      apply_info.priority = (*it)->priority();
+      (*it)->actions().Revert((*it)->extension_id(), base::Time(), &apply_info);
+    }
+  }
+
+  if (matching_rules.empty())
+    active_rules_.erase(tab);
+  else
+    swap(matching_rules, prev_matching_rules);
+}
+
+void ChromeContentRulesRegistry::EvaluateConditionsForAllTabs() {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
+    if (browser->profile() != Profile::FromBrowserContext(browser_context()))
+      continue;
+
+    for (int i = 0, tab_count = browser->tab_strip_model()->count();
+         i < tab_count;
+         ++i)
+      EvaluateConditionsForTab(browser->tab_strip_model()->GetWebContentsAt(i));
+  }
 }
 
 bool ChromeContentRulesRegistry::IsEmpty() const {

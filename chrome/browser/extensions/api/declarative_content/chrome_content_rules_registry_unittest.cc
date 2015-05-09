@@ -26,7 +26,8 @@ using content::WebContents;
 // ContentRulesRegistry.
 class DeclarativeChromeContentRulesRegistryTest : public testing::Test {
  protected:
-  static const std::map<int, std::set<ContentRule*> >& active_rules(
+  using RulesMap = std::map<content::WebContents*, std::set<ContentRule*>>;
+  static const RulesMap& active_rules(
       const ChromeContentRulesRegistry& registry) {
     return registry.active_rules_;
   }
