@@ -39,6 +39,10 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Callback when the player needs decoding resources.
   typedef base::Callback<void(int player_id)> RequestMediaResourcesCB;
 
+  // Virtual destructor.
+  // For most subclasses we can delete on the caller thread.
+  virtual void DeleteOnCorrectThread() { delete this; }
+
   // Passing an external java surface object to the player.
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) = 0;
 
@@ -102,6 +106,11 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // events. Otherwise, it also listens to the events from |j_media_player|.
   void AttachListener(jobject j_media_player);
   void DetachListener();
+
+  // When destroying a subclassed object on a non-UI thread
+  // it is still required to destroy the |listener_| related stuff
+  // on the UI thread.
+  void DestroyListenerOnUIThread();
   void SetAudible(bool is_audible);
 
   MediaPlayerManager* manager() { return manager_; }
