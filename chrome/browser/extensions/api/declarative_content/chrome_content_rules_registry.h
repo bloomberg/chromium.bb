@@ -118,19 +118,10 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
   // ExtensionMsg_WatchPages.
   void InstructRenderProcess(content::RenderProcessHost* process);
 
-  // Evaluates the conditions for |tab| based on the tab state and matching CSS
-  // selectors.
-  void EvaluateConditionsForTab(content::WebContents* tab);
-
-  // Evaluates the conditions for tabs in each browser window.
-  void EvaluateConditionsForAllTabs();
-
   typedef std::map<url_matcher::URLMatcherConditionSet::ID, ContentRule*>
       URLMatcherIdToRule;
-  typedef std::map<ContentRule::GlobalRuleId, linked_ptr<ContentRule>>
+  typedef std::map<ContentRule::GlobalRuleId, linked_ptr<ContentRule> >
       RulesMap;
-  typedef std::map<content::WebContents*, std::vector<std::string>>
-      CssSelectors;
 
   // Map that tells us which ContentRules may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
@@ -138,9 +129,9 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
 
   RulesMap content_rules_;
 
-  // Maps a WebContents to the set of rules that match on that WebContents.
-  // This lets us call Revert as appropriate.
-  std::map<content::WebContents*, std::set<ContentRule*>> active_rules_;
+  // Maps tab_id to the set of rules that match on that tab.  This
+  // lets us call Revert as appropriate.
+  std::map<int, std::set<ContentRule*> > active_rules_;
 
   // Matches URLs for the page_url condition.
   url_matcher::URLMatcher url_matcher_;
@@ -152,9 +143,6 @@ class ChromeContentRulesRegistry : public ContentRulesRegistry,
   content::NotificationRegistrar registrar_;
 
   scoped_refptr<InfoMap> extension_info_map_;
-
-  // Maps tab_id to the matching CSS selectors for the tab.
-  CssSelectors matching_css_selectors_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRulesRegistry);
 };
