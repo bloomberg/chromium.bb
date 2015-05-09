@@ -173,6 +173,9 @@ crbug.com/449242 virtual/slimmingpaint/fast/css/word-spacing-characters-complex-
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 crbug.com/438589 virtual/slimmingpaint/fast/repaint/obscured-background-no-repaint.html [ Skip ]
 
+crbug.com/485644 fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
+crbug.com/485644 virtual/slimmingpaint/fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
+
 # Crashing after V8 roll to 3.28.43.1.
 crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
 
@@ -313,7 +316,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/382491 virtual/slimmingpaint/fast/replaced/border-radius-clip.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/clip/nested-rounded-rect.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/clip/nestedTransparencyClip.html [ Skip ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ Skip ]
@@ -2031,7 +2033,5 @@ crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
 
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
-
-crbug.com/485644 virtual/slimmingpaint/media/video-controls-dont-show-on-focus-when-disabled.html [ Crash ]
 
 crbug.com/480652 virtual/slimmingpaint/svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
