@@ -417,11 +417,11 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     case CSSPropertyFlexFlow:
         return getShorthandValue(flexFlowShorthand());
     case CSSPropertyGridColumn:
-        return getShorthandValue(gridColumnShorthand());
+        return getShorthandValue(gridColumnShorthand(), " / ");
     case CSSPropertyGridRow:
-        return getShorthandValue(gridRowShorthand());
+        return getShorthandValue(gridRowShorthand(), " / ");
     case CSSPropertyGridArea:
-        return getShorthandValue(gridAreaShorthand());
+        return getShorthandValue(gridAreaShorthand(), " / ");
     case CSSPropertyFont:
         return fontValue();
     case CSSPropertyMargin:
@@ -751,7 +751,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
     return result.toString();
 }
 
-String StylePropertySerializer::getShorthandValue(const StylePropertyShorthand& shorthand) const
+String StylePropertySerializer::getShorthandValue(const StylePropertyShorthand& shorthand, String separator) const
 {
     String commonValue;
     StringBuilder result;
@@ -768,7 +768,7 @@ String StylePropertySerializer::getShorthandValue(const StylePropertyShorthand& 
             if (value->isInitialValue())
                 continue;
             if (!result.isEmpty())
-                result.append(' ');
+                result.append(separator);
             result.append(valueText);
         } else
             commonValue = String();

@@ -46,7 +46,7 @@ private:
     String getLayeredShorthandValue(const StylePropertyShorthand&, bool checkShorthandAvailable = false) const;
     String get4Values(const StylePropertyShorthand&) const;
     String borderSpacingValue(const StylePropertyShorthand&) const;
-    String getShorthandValue(const StylePropertyShorthand&) const;
+    String getShorthandValue(const StylePropertyShorthand&, String separator = " ") const;
     String fontValue() const;
     void appendFontLonghandValueIfExplicit(CSSPropertyID, StringBuilder& result, String& value) const;
     String backgroundRepeatPropertyValue() const;
