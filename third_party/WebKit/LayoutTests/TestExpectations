@@ -173,9 +173,6 @@ crbug.com/449242 virtual/slimmingpaint/fast/css/word-spacing-characters-complex-
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 crbug.com/438589 virtual/slimmingpaint/fast/repaint/obscured-background-no-repaint.html [ Skip ]
 
-crbug.com/485644 fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
-crbug.com/485644 virtual/slimmingpaint/fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
-
 # Crashing after V8 roll to 3.28.43.1.
 crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
 
