@@ -519,6 +519,8 @@ void PNGImageDecoder::complete()
 
 bool PNGImageDecoder::isComplete() const
 {
+    ASSERT(m_reader);
+
     if (m_frameBufferCache.isEmpty())
         return false;
 
