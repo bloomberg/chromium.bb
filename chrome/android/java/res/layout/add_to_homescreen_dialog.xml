@@ -11,22 +11,20 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="10dp"
-        android:layout_marginStart="10dp"
         android:contentDescription="@null"
         android:visibility="gone" />
     <ProgressBar
         android:id="@+id/spinny"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="10dp" />
+        android:layout_marginTop="10dp" />
     <EditText android:id="@+id/text"
         android:inputType="text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:textSize="18sp"
         android:singleLine="true"
         android:paddingTop="0dp"
         android:layout_marginTop="10dp"
-        android:layout_marginStart="52dp" />
+        android:layout_marginStart="48dp" />
 </FrameLayout>

@@ -59,6 +59,22 @@ public class AddToHomescreenDialog {
         final EditText input = (EditText) view.findViewById(R.id.text);
         input.setEnabled(false);
 
+        view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (progressBarView.getMeasuredHeight() == input.getMeasuredHeight()
+                        && input.getBackground() != null) {
+                    // Force the text field to align better with the icon by accounting for the
+                    // padding introduced by the background drawable.
+                    input.getLayoutParams().height =
+                            progressBarView.getMeasuredHeight() + input.getPaddingBottom();
+                    v.requestLayout();
+                    v.removeOnLayoutChangeListener(this);
+                }
+            }
+        });
+
         final ShortcutHelper shortcutHelper =
                 new ShortcutHelper(activity.getApplicationContext(), currentTab);
 
