@@ -518,7 +518,7 @@ _settings = dict(
 
 # packages -- Tuple of specific packages we want to build.  Most configs won't
 #             specify anything here and instead let build_packages calculate.
-  packages=(),
+  packages=[],
 
 # push_image -- Do we push a final release image to chromeos-images.
   push_image=False,
@@ -1287,7 +1287,7 @@ official = official_chrome.derive(
 _cros_sdk = full_prebuilts.add_config('chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
   # are bundled up for inclusion in the sdk.
-  boards=('x86-generic', 'arm-generic', 'amd64-generic', 'mipsel-o32-generic'),
+  boards=['x86-generic', 'arm-generic', 'amd64-generic', 'mipsel-o32-generic'],
   build_type=constants.CHROOT_BUILDER_TYPE,
   builder_class_name='sdk_builders.ChrootSdkBuilder',
   use_sdk=False,
@@ -2461,13 +2461,13 @@ internal_incremental.add_config('lakitu-incremental',
 )
 
 _toolchain_major.add_config('internal-toolchain-major', internal, official,
-  boards=('x86-alex', 'stumpy', 'daisy'),
+  boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
   description=_toolchain_major['description'] + ' (internal)',
 )
 
 _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
-  boards=('x86-alex', 'stumpy', 'daisy'),
+  boards=['x86-alex', 'stumpy', 'daisy'],
   build_tests=True,
   description=_toolchain_minor['description'] + ' (internal)',
 )
@@ -2576,14 +2576,14 @@ def _AddAFDOConfigs():
       base = non_testable_builder
     generate_config = BuildConfig(
         base,
-        boards=(board,),
+        boards=[board],
         afdo_generate_min=True,
         afdo_use=False,
         afdo_update_ebuild=True,
     )
     use_config = BuildConfig(
         base,
-        boards=(board,),
+        boards=[board],
         afdo_use=True,
     )
 
@@ -2796,13 +2796,20 @@ _release.add_config('whirlwind-release',
 
 ### Per-chipset release groups
 
-def _AddGroupConfig(name, base_board, group_boards=(),
-                    group_variant_boards=(), **kwargs):
+def _AddGroupConfig(name, base_board, group_boards=None,
+                    group_variant_boards=None, **kwargs):
   """Generate full & release group configs."""
+  def _boards_list(x):
+    # Make sure _boards_list is a valid list (not None or tuple)
+    return [] if x is None else list(x)
+
+  group_boards = _boards_list(group_boards)
+  group_variant_boards = _boards_list(group_variant_boards)
+
   for group in ('release', 'full'):
     configs = []
 
-    all_boards = [base_board] + list(group_boards) + list(group_variant_boards)
+    all_boards = [base_board] + group_boards + group_variant_boards
     desc = '%s; Group config (boards: %s)' % (
         _CONFIG['%s-%s' % (base_board, group)].description,
         ', '.join(all_boards))
@@ -3027,7 +3034,7 @@ _factory_release = _release.derive(
 _firmware = BuildConfig(
   images=[],
   factory_toolkit=False,
-  packages=('virtual/chromeos-firmware',),
+  packages=['virtual/chromeos-firmware'],
   usepkg_build_packages=True,
   sync_chrome=False,
   build_tests=False,
