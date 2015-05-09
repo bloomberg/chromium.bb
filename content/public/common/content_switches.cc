@@ -982,9 +982,8 @@ const char kEnableWin32kRendererLockDown[] =
     "enable-win32k-renderer-lockdown";
 
 // DirectWrite FontCache is shared by browser to renderers using shared memory.
-// This switch allows specifying suffix to shared memory section name to avoid
-// clashes between different instances of Chrome.
-const char kFontCacheSharedMemSuffix[] = "font-cache-shared-mem-suffix";
+// This switch allows us to pass the shared memory handle to the renderer.
+const char kFontCacheSharedHandle[] = "font-cache-shared-handle";
 
 // Sets the free memory thresholds below which the system is considered to be
 // under moderate and critical memory pressure. Used in the browser process,

@@ -1183,9 +1183,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 #if defined(OS_WIN)
   command_line->AppendSwitchASCII(switches::kDeviceScaleFactor,
                                   base::DoubleToString(gfx::GetDPIScale()));
-  command_line->AppendSwitchASCII(
-      switches::kFontCacheSharedMemSuffix,
-      base::UintToString(base::GetCurrentProcId()));
 #endif
 
   AppendCompositorCommandLineFlags(command_line);

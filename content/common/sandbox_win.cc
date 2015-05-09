@@ -11,9 +11,11 @@
 #include "base/debug/profiler.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
+#include "base/memory/shared_memory.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -24,6 +26,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/process_mitigations.h"
@@ -677,6 +680,22 @@ base::Process StartSandboxedProcess(
                   true,
                   sandbox::TargetPolicy::FILES_ALLOW_READONLY,
                   policy);
+
+      // If DirectWrite is enabled for font rendering then open the font cache
+      // section which is created by the browser and pass the handle to the
+      // renderer process. This is needed because renderer processes on
+      // Windows 8+ may be running in an AppContainer sandbox and hence their
+      // kernel object namespace may be partitioned.
+      std::string name(content::kFontCacheSharedSectionName);
+      name.append(base::UintToString(base::GetCurrentProcId()));
+
+      base::SharedMemory direct_write_font_cache_section;
+      if (direct_write_font_cache_section.Open(name, true)) {
+        void* shared_handle =
+            policy->AddHandleToShare(direct_write_font_cache_section.handle());
+        cmd_line->AppendSwitchASCII(switches::kFontCacheSharedHandle,
+            base::UintToString(reinterpret_cast<unsigned int>(shared_handle)));
+      }
     }
 #endif
   } else {

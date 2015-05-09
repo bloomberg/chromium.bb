@@ -921,17 +921,19 @@ bool FontCollectionLoader::IsFileCached(UINT32 font_key) {
 }
 
 bool FontCollectionLoader::LoadCacheFile() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kFontCacheSharedMemSuffix)) {
-    return false;
-  }
-  base::SharedMemory* shared_mem = new base::SharedMemory();
-  std::string name(content::kFontCacheSharedSectionName);
-  name.append(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  switches::kFontCacheSharedMemSuffix));
-  if (!shared_mem->Open(name.c_str(), true))
+  std::string font_cache_handle_string =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kFontCacheSharedHandle);
+  if (font_cache_handle_string.empty())
     return false;
 
+  base::SharedMemoryHandle font_cache_handle = NULL;
+  base::StringToUint(font_cache_handle_string,
+                     reinterpret_cast<unsigned int*>(&font_cache_handle));
+  DCHECK(font_cache_handle);
+
+  base::SharedMemory* shared_mem = new base::SharedMemory(
+      font_cache_handle, true);
   // Map while file
   shared_mem->Map(0);
 
