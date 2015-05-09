@@ -320,6 +320,7 @@ public:
         jpeg_create_decompress(&m_info);
 
         decoder_source_mgr* src = 0;
+        // FIXME: why would m_info.src be anything but null at decompressor creation time?
         if (!m_info.src) {
             src = (decoder_source_mgr*)fastZeroedMalloc(sizeof(decoder_source_mgr));
             if (!src) {
@@ -990,9 +991,8 @@ void JPEGImageDecoder::decode(bool onlySize)
     if (failed())
         return;
 
-    if (!m_reader) {
+    if (!m_reader)
         m_reader = adoptPtr(new JPEGImageReader(this));
-    }
 
     // If we couldn't decode the image but we've received all the data, decoding
     // has failed.
@@ -1000,6 +1000,7 @@ void JPEGImageDecoder::decode(bool onlySize)
         setFailed();
     // If we're done decoding the image, we don't need the JPEGImageReader
     // anymore.  (If we failed, |m_reader| has already been cleared.)
+    // FIXME: factor these cases into an isComplete() routine, refer to the PNG encoder.
     else if ((!m_frameBufferCache.isEmpty() && (m_frameBufferCache[0].status() == ImageFrame::FrameComplete)) || (hasImagePlanes() && !onlySize))
         m_reader.clear();
 }
