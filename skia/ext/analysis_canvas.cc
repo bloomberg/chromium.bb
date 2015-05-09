@@ -36,7 +36,8 @@ bool IsSolidColorPaint(const SkPaint& paint) {
 
   // getXfermode can return a NULL, but that is handled
   // gracefully by AsMode (NULL turns into kSrcOver mode).
-  SkXfermode::AsMode(paint.getXfermode(), &xfermode);
+  if (!SkXfermode::AsMode(paint.getXfermode(), &xfermode))
+    return false;
 
   // Paint is solid color if the following holds:
   // - Alpha is 1.0, style is fill, and there are no special effects
