@@ -6,12 +6,15 @@
 #include "core/dom/NthIndexCache.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/ElementTraversal.h"
 
 namespace blink {
 
 NthIndexCache::NthIndexCache(Document& document)
     : m_document(&document)
+#if ENABLE(ASSERT)
     , m_domTreeVersion(document.domTreeVersion())
+#endif
 {
     document.setNthIndexCache(this);
 }
@@ -22,7 +25,7 @@ NthIndexCache::~NthIndexCache()
     m_document->setNthIndexCache(nullptr);
 }
 
-NthIndexCache::NthIndexData& NthIndexCache::ensureNthIndexDataFor(Node& parent)
+NthIndexData& NthIndexCache::ensureNthIndexDataFor(Node& parent)
 {
     if (!m_parentMap)
         m_parentMap = adoptPtrWillBeNoop(new ParentMap());
@@ -48,7 +51,62 @@ NthIndexCache::IndexByType& NthIndexCache::ensureTypeIndexMap(Node& parent)
     return *addResult.storedValue->value;
 }
 
-unsigned NthIndexCache::NthIndexData::cacheNthIndices(Element& element)
+NthIndexData& NthIndexCache::nthIndexDataWithTagName(Element& element)
+{
+    IndexByType::AddResult addResult = ensureTypeIndexMap(*element.parentNode()).add(element.tagName(), nullptr);
+    if (addResult.isNewEntry)
+        addResult.storedValue->value = adoptPtrWillBeNoop(new NthIndexData());
+    return *addResult.storedValue->value;
+}
+
+unsigned NthIndexData::nthIndex(Element& element)
+{
+    if (element.isPseudoElement())
+        return 1;
+    if (!m_count)
+        return cacheNthIndices(element);
+
+    unsigned index = 0;
+    for (Element* sibling = &element; sibling; sibling = ElementTraversal::previousSibling(*sibling), index++) {
+        auto it = m_elementIndexMap.find(sibling);
+        if (it != m_elementIndexMap.end())
+            return it->value + index;
+    }
+    return index;
+}
+
+unsigned NthIndexData::nthIndexOfType(Element& element, const QualifiedName& type)
+{
+    if (element.isPseudoElement())
+        return 1;
+    if (!m_count)
+        return cacheNthIndicesOfType(element, type);
+    unsigned index = 0;
+    for (Element* sibling = &element; sibling; sibling = ElementTraversal::previousSibling(*sibling, HasTagName(type)), index++) {
+        auto it = m_elementIndexMap.find(sibling);
+        if (it != m_elementIndexMap.end())
+            return it->value + index;
+    }
+    return index;
+}
+
+unsigned NthIndexData::nthLastIndex(Element& element)
+{
+    if (element.isPseudoElement())
+        return 1;
+    unsigned index = nthIndex(element);
+    return m_count - index + 1;
+}
+
+unsigned NthIndexData::nthLastIndexOfType(Element& element, const QualifiedName& type)
+{
+    if (element.isPseudoElement())
+        return 1;
+    unsigned index = nthIndexOfType(element, type);
+    return m_count - index + 1;
+}
+
+unsigned NthIndexData::cacheNthIndices(Element& element)
 {
     ASSERT(!element.isPseudoElement());
     ASSERT(m_elementIndexMap.isEmpty());
@@ -71,7 +129,7 @@ unsigned NthIndexCache::NthIndexData::cacheNthIndices(Element& element)
     return index;
 }
 
-unsigned NthIndexCache::NthIndexData::cacheNthIndicesOfType(Element& element, const QualifiedName& type)
+unsigned NthIndexData::cacheNthIndicesOfType(Element& element, const QualifiedName& type)
 {
     ASSERT(!element.isPseudoElement());
     ASSERT(m_elementIndexMap.isEmpty());
@@ -94,15 +152,7 @@ unsigned NthIndexCache::NthIndexData::cacheNthIndicesOfType(Element& element, co
     return index;
 }
 
-NthIndexCache::NthIndexData& NthIndexCache::nthIndexDataWithTagName(Element& element)
-{
-    IndexByType::AddResult addResult = ensureTypeIndexMap(*element.parentNode()).add(element.tagName(), nullptr);
-    if (addResult.isNewEntry)
-        addResult.storedValue->value = adoptPtrWillBeNoop(new NthIndexData());
-    return *addResult.storedValue->value;
-}
-
-DEFINE_TRACE(NthIndexCache::NthIndexData)
+DEFINE_TRACE(NthIndexData)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_elementIndexMap);
@@ -110,7 +160,7 @@ DEFINE_TRACE(NthIndexCache::NthIndexData)
 }
 
 #if !ENABLE(OILPAN)
-NthIndexCache::NthIndexData::~NthIndexData()
+NthIndexData::~NthIndexData()
 {
 }
 #endif
