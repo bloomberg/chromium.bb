@@ -61,6 +61,9 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   PopulateExtensionInfoLogs(&response);
   PopulateDataReductionProxyLogs(&response);
 
+  if (ProfileManager::GetLastUsedProfile()->IsChild())
+    response["account_type"] = "child";
+
   callback.Run(&response);
 }
 
