@@ -53406,7 +53406,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="V8HTMLTextAreaElement_Autocapitalize_AttributeSetter"/>
   <int value="758" label="SVGHrefBaseVal"/>
   <int value="759" label="SVGHrefAnimVal"/>
-  <int value="760" label="AutocapitalizeAttribute"/>
+  <int value="760" label="V8CSSRuleList_Item_Method"/>
+  <int value="761" label="V8MediaList_Item_Method"/>
+  <int value="762" label="V8StyleSheetList_Item_Method"/>
+  <int value="763" label="StyleSheetListAnonymousNamedGetter"/>
+  <int value="764" label="AutocapitalizeAttribute"/>
+  <int value="765" label="FullscreenSecureOrigin"/>
+  <int value="766" label="FullscreenInsecureOrigin"/>
+  <int value="767" label="DialogInSandboxedContext"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
