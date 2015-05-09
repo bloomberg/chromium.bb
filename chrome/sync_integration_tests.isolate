@@ -116,5 +116,6 @@
     '../base/base.isolate',
     '../gin/v8.isolate',
     '../third_party/angle/angle.isolate',
+    'chrome.isolate',
   ],
 }
