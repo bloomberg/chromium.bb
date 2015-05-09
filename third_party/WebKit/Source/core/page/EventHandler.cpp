@@ -4062,6 +4062,20 @@ TouchAction EventHandler::intersectTouchAction(TouchAction action1, TouchAction 
     return action1 & action2;
 }
 
+// touch-action applies to all elements with both width AND height properties.
+// According to the CSS Box Model Spec (http://dev.w3.org/csswg/css-box/#the-width-and-height-properties)
+// width applies to all elements but non-replaced inline elements, table rows, and row groups and
+// height applies to all elements but non-replaced inline elements, table columns, and column groups.
+static inline bool supportsTouchAction(const LayoutObject& object)
+{
+    if (object.isInline() && !object.isReplaced())
+        return false;
+    if (object.isTableRow() || object.isLayoutTableCol())
+        return false;
+
+    return true;
+}
+
 TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
 {
     // Start by permitting all actions, then walk the elements supporting
@@ -4070,7 +4084,7 @@ TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
     TouchAction effectiveTouchAction = TouchActionAuto;
     for (const Node* curNode = &node; curNode; curNode = ComposedTreeTraversal::parent(*curNode)) {
         if (LayoutObject* layoutObject = curNode->layoutObject()) {
-            if (layoutObject->supportsTouchAction()) {
+            if (supportsTouchAction(*layoutObject)) {
                 TouchAction action = layoutObject->style()->touchAction();
                 effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);
                 if (effectiveTouchAction == TouchActionNone)
