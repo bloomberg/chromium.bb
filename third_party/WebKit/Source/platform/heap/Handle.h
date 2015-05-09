@@ -846,6 +846,31 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { retu
 
 #endif // ENABLE(OILPAN)
 
+// Abstraction for injecting calls to an object's 'dispose()' method
+// on leaving a stack scope, ensuring earlier release of resources
+// than waiting until the object is eventually GCed.
+template<typename T>
+class ScopedDisposal {
+    STACK_ALLOCATED();
+public:
+    ScopedDisposal(T* object)
+        : m_object(object)
+    {
+        static_assert(IsGarbageCollectedType<T>::value, "can only be used with garbage collected types");
+    }
+
+    ~ScopedDisposal()
+    {
+        if (m_object)
+            m_object->dispose();
+    }
+
+    void clear() { m_object.clear(); }
+
+private:
+    Member<T> m_object;
+};
+
 } // namespace blink
 
 namespace WTF {

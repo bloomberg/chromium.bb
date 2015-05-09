@@ -34,7 +34,7 @@
     Constructor(Uint8ClampedArray data, unsigned long width, optional unsigned long height),
     Exposed=(Window,Worker),
     RaisesException=Constructor,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface ImageData {
     readonly attribute long width;
     readonly attribute long height;

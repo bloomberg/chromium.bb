@@ -89,8 +89,8 @@ private:
 
 protected:
     // Pre-canned objects for testing
-    RefPtrWillBePersistent<ImageData> m_fullImageData;
-    RefPtrWillBePersistent<ImageData> m_partialImageData;
+    Persistent<ImageData> m_fullImageData;
+    Persistent<ImageData> m_partialImageData;
     FakeImageSource m_opaqueBitmap;
     FakeImageSource m_alphaBitmap;
     StringOrCanvasGradientOrCanvasPattern m_opaqueGradient;

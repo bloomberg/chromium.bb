@@ -358,7 +358,7 @@ public:
     void reshape(int width, int height);
 
     void markLayerComposited();
-    PassRefPtrWillBeRawPtr<ImageData> paintRenderingResultsToImageData(SourceDrawingBuffer);
+    ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer);
 
     void removeSharedObject(WebGLSharedObject*);
     void removeContextObject(WebGLContextObject*);

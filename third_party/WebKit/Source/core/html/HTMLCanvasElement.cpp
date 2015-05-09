@@ -485,14 +485,15 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
 
     String encodingMimeType = toEncodingMimeType(mimeType);
     if (!m_context) {
-        RefPtrWillBeRawPtr<ImageData> imageData = ImageData::create(m_size);
+        ImageData* imageData = ImageData::create(m_size);
+        ScopedDisposal<ImageData> disposer(imageData);
         return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
     }
 
     if (m_context->is3d()) {
         // Get non-premultiplied data because of inaccurate premultiplied alpha conversion of buffer()->toDataURL().
-        RefPtrWillBeRawPtr<ImageData> imageData =
-            toWebGLRenderingContextBase(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
+        ImageData* imageData = toWebGLRenderingContextBase(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
+        ScopedDisposal<ImageData> disposer(imageData);
         if (imageData)
             return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
         m_context->paintRenderingResultsToCanvas(sourceBuffer);

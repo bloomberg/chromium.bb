@@ -52,7 +52,6 @@ class GraphicsContext;
 class GraphicsContextStateSaver;
 class HTMLCanvasElement;
 class Image;
-class ImageData;
 class ImageBuffer;
 class ImageBufferSurface;
 class IntSize;

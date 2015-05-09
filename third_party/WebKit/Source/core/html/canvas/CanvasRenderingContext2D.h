@@ -159,9 +159,9 @@ public:
     PassRefPtrWillBeRawPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
     PassRefPtrWillBeRawPtr<CanvasPattern> createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ImageData> createImageData(PassRefPtrWillBeRawPtr<ImageData>) const;
-    PassRefPtrWillBeRawPtr<ImageData> createImageData(float width, float height, ExceptionState&) const;
-    PassRefPtrWillBeRawPtr<ImageData> getImageData(float sx, float sy, float sw, float sh, ExceptionState&) const;
+    ImageData* createImageData(ImageData*) const;
+    ImageData* createImageData(float width, float height, ExceptionState&) const;
+    ImageData* getImageData(float sx, float sy, float sw, float sh, ExceptionState&) const;
     void putImageData(ImageData*, float dx, float dy);
     void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 

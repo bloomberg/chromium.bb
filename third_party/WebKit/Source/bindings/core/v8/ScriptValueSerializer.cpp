@@ -1400,13 +1400,13 @@ bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
         return false;
     if (m_position + pixelDataLength > m_length)
         return false;
-    RefPtrWillBeRawPtr<ImageData> imageData = ImageData::create(IntSize(width, height));
+    ImageData* imageData = ImageData::create(IntSize(width, height));
     DOMUint8ClampedArray* pixelArray = imageData->data();
     ASSERT(pixelArray);
     ASSERT(pixelArray->length() >= pixelDataLength);
     memcpy(pixelArray->data(), m_buffer + m_position, pixelDataLength);
     m_position += pixelDataLength;
-    *value = toV8(imageData.release(), m_scriptState->context()->Global(), isolate());
+    *value = toV8(imageData, m_scriptState->context()->Global(), isolate());
     return true;
 }
 
