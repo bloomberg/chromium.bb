@@ -103,6 +103,10 @@ NET_ERROR(BLOCKED_ENROLLMENT_CHECK_PENDING, -24)
 // retry or a redirect, but the upload stream doesn't support that operation.
 NET_ERROR(UPLOAD_STREAM_REWIND_NOT_SUPPORTED, -25)
 
+// The request failed because the URLRequestContext is shutting down, or has
+// been shut down.
+NET_ERROR(CONTEXT_SHUT_DOWN, -26)
+
 // A connection was closed (corresponding to a TCP FIN).
 NET_ERROR(CONNECTION_CLOSED, -100)
 

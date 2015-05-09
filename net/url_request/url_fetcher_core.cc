@@ -469,6 +469,11 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
   }
 }
 
+void URLFetcherCore::OnContextShuttingDown() {
+  DCHECK(request_);
+  CancelRequestAndInformDelegate(ERR_CONTEXT_SHUT_DOWN);
+}
+
 void URLFetcherCore::CancelAll() {
   g_registry.Get().CancelAll();
 }
@@ -508,11 +513,17 @@ void URLFetcherCore::StartURLRequest() {
     return;
   }
 
+  if (!request_context_getter_->GetURLRequestContext()) {
+    CancelRequestAndInformDelegate(ERR_CONTEXT_SHUT_DOWN);
+    return;
+  }
+
   DCHECK(request_context_getter_.get());
   DCHECK(!request_.get());
 
   g_registry.Get().AddURLFetcherCore(this);
   current_response_bytes_ = 0;
+  request_context_getter_->AddObserver(this);
   request_ = request_context_getter_->GetURLRequestContext()->CreateRequest(
       original_url_, DEFAULT_PRIORITY, this);
   request_->set_stack_trace(stack_trace_);
@@ -600,10 +611,7 @@ void URLFetcherCore::StartURLRequest() {
 
 void URLFetcherCore::DidInitializeWriter(int result) {
   if (result != OK) {
-    CancelURLRequest(result);
-    delegate_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
+    CancelRequestAndInformDelegate(result);
     return;
   }
   StartURLRequestWhenAppropriate();
@@ -617,27 +625,33 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
 
   DCHECK(request_context_getter_.get());
 
-  int64 delay = 0;
-  if (!original_url_throttler_entry_.get()) {
-    URLRequestThrottlerManager* manager =
-        request_context_getter_->GetURLRequestContext()->throttler_manager();
-    if (manager) {
+  // Check if the request should be delayed, and if so, post a task to start it
+  // after the delay has expired.  Otherwise, start it now.
+
+  URLRequestContext* context = request_context_getter_->GetURLRequestContext();
+  // If the context has been shut down, or there's no ThrottlerManager, just
+  // start the request.  In the former case, StartURLRequest() will just inform
+  // the URLFetcher::Delegate the request has been canceled.
+  if (context && context->throttler_manager()) {
+    if (!original_url_throttler_entry_.get()) {
       original_url_throttler_entry_ =
-          manager->RegisterRequestUrl(original_url_);
+          context->throttler_manager()->RegisterRequestUrl(original_url_);
+    }
+
+    if (original_url_throttler_entry_.get()) {
+      int64 delay =
+          original_url_throttler_entry_->ReserveSendingTimeForNextRequest(
+              GetBackoffReleaseTime());
+      if (delay != 0) {
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE, base::Bind(&URLFetcherCore::StartURLRequest, this),
+            base::TimeDelta::FromMilliseconds(delay));
+        return;
+      }
     }
   }
-  if (original_url_throttler_entry_.get()) {
-    delay = original_url_throttler_entry_->ReserveSendingTimeForNextRequest(
-        GetBackoffReleaseTime());
-  }
 
-  if (delay == 0) {
-    StartURLRequest();
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&URLFetcherCore::StartURLRequest, this),
-        base::TimeDelta::FromMilliseconds(delay));
-  }
+  StartURLRequest();
 }
 
 void URLFetcherCore::CancelURLRequest(int error) {
@@ -703,10 +717,7 @@ void URLFetcherCore::NotifyMalformedContent() {
 
 void URLFetcherCore::DidFinishWriting(int result) {
   if (result != OK) {
-    CancelURLRequest(result);
-    delegate_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
+    CancelRequestAndInformDelegate(result);
     return;
   }
   // If the file was successfully closed, then the URL request is complete.
@@ -768,7 +779,15 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
   DCHECK(posted || !delegate_);
 }
 
+void URLFetcherCore::CancelRequestAndInformDelegate(int result) {
+  CancelURLRequest(result);
+  delegate_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
+}
+
 void URLFetcherCore::ReleaseRequest() {
+  request_context_getter_->RemoveObserver(this);
   upload_progress_checker_timer_.reset();
   request_.reset();
   g_registry.Get().RemoveURLFetcherCore(this);
@@ -827,11 +846,8 @@ int URLFetcherCore::WriteBuffer(scoped_refptr<DrainableIOBuffer> data) {
 void URLFetcherCore::DidWriteBuffer(scoped_refptr<DrainableIOBuffer> data,
                                     int result) {
   if (result < 0) {  // Handle errors.
-    CancelURLRequest(result);
     response_writer_->Finish(base::Bind(&EmptyCompletionCallback));
-    delegate_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&URLFetcherCore::InformDelegateFetchIsComplete, this));
+    CancelRequestAndInformDelegate(result);
     return;
   }
 

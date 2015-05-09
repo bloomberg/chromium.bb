@@ -20,6 +20,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context_getter_observer.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -36,9 +37,9 @@ class URLFetcherResponseWriter;
 class URLRequestContextGetter;
 class URLRequestThrottlerEntryInterface;
 
-class URLFetcherCore
-    : public base::RefCountedThreadSafe<URLFetcherCore>,
-      public URLRequest::Delegate {
+class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
+                       public URLRequest::Delegate,
+                       public URLRequestContextGetterObserver {
  public:
   URLFetcherCore(URLFetcher* fetcher,
                  const GURL& original_url,
@@ -133,6 +134,9 @@ class URLFetcherCore
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override;
 
+  // Overridden from URLRequestContextGetterObserver:
+  void OnContextShuttingDown() override;
+
   URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
   static int GetNumFetcherCores();
@@ -142,6 +146,7 @@ class URLFetcherCore
  private:
   friend class base::RefCountedThreadSafe<URLFetcherCore>;
 
+  // TODO(mmenke):  Remove this class.
   class Registry {
    public:
     Registry();
@@ -176,6 +181,10 @@ class URLFetcherCore
   void NotifyMalformedContent();
   void DidFinishWriting(int result);
   void RetryOrCompleteUrlFetch();
+
+  // Cancels the URLRequest and informs the delegate that it failed with the
+  // specified error. Must be called on network thread.
+  void CancelRequestAndInformDelegate(int result);
 
   // Deletes the request, removes it from the registry, and removes the
   // destruction observer.

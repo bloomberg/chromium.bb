@@ -1178,6 +1178,7 @@
       'url_request/url_request_context_builder.h',
       'url_request/url_request_context_getter.cc',
       'url_request/url_request_context_getter.h',
+      'url_request/url_request_context_getter_observer.h',
       'url_request/url_request_context_storage.cc',
       'url_request/url_request_context_storage.h',
       'url_request/url_request_data_job.cc',

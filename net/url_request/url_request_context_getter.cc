@@ -7,8 +7,21 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter_observer.h"
 
 namespace net {
+
+void URLRequestContextGetter::AddObserver(
+    URLRequestContextGetterObserver* observer) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  observer_list_.AddObserver(observer);
+}
+
+void URLRequestContextGetter::RemoveObserver(
+    URLRequestContextGetterObserver* observer) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+  observer_list_.RemoveObserver(observer);
+}
 
 URLRequestContextGetter::URLRequestContextGetter() {}
 
@@ -33,6 +46,16 @@ void URLRequestContextGetter::OnDestruct() const {
   }
   // If no IO message loop proxy was available, we will just leak memory.
   // This is also true if the IO thread is gone.
+}
+
+void URLRequestContextGetter::NotifyContextShuttingDown() {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+
+  // Once shutdown starts, this must always return NULL.
+  DCHECK(!GetURLRequestContext());
+
+  FOR_EACH_OBSERVER(URLRequestContextGetterObserver, observer_list_,
+                    OnContextShuttingDown());
 }
 
 TrivialURLRequestContextGetter::TrivialURLRequestContextGetter(

@@ -181,17 +181,13 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       const std::string& hanging_domain)
       : network_task_runner_(network_task_runner),
-        hanging_domain_(hanging_domain) {}
+        hanging_domain_(hanging_domain),
+        shutting_down_(false) {}
 
   // Sets callback to be invoked when the getter is destroyed.
   void set_on_destruction_callback(
       const base::Closure& on_destruction_callback) {
     on_destruction_callback_ = on_destruction_callback;
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return network_task_runner_;
   }
 
   // URLRequestContextGetter:
@@ -200,9 +196,17 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
     // in production code.
     EXPECT_TRUE(network_task_runner_->BelongsToCurrentThread());
 
+    if (shutting_down_)
+      return nullptr;
+
     if (!context_)
       context_.reset(new FetcherTestURLRequestContext(hanging_domain_));
     return context_.get();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
+    return network_task_runner_;
   }
 
   // Adds a throttler entry with the specified parameters.  Does this
@@ -242,6 +246,30 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
       entry->ReserveSendingTimeForNextRequest(base::TimeTicks());
   }
 
+  // Tells the getter to act as if the URLRequestContext is about to be shut
+  // down.
+  void Shutdown() {
+    if (!network_task_runner_->RunsTasksOnCurrentThread()) {
+      network_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&FetcherTestURLRequestContextGetter::Shutdown, this));
+      return;
+    }
+
+    shutting_down_ = true;
+    NotifyContextShuttingDown();
+    // Should now be safe to destroy the context.  Context will check it has no
+    // pending requests.
+    context_.reset();
+  }
+
+  // Convenience method to access the context as a FetcherTestURLRequestContext
+  // without going through GetURLRequestContext.
+  FetcherTestURLRequestContext* context() {
+    DCHECK(network_task_runner_->BelongsToCurrentThread());
+    return context_.get();
+  }
+
  protected:
   ~FetcherTestURLRequestContextGetter() override {
     // |context_| may only be deleted on the network thread. Fortunately,
@@ -255,6 +283,7 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
   const std::string hanging_domain_;
 
   scoped_ptr<FetcherTestURLRequestContext> context_;
+  bool shutting_down_;
 
   base::Closure on_destruction_callback_;
 
@@ -464,8 +493,9 @@ TEST_F(URLFetcherTest, CancelAll) {
 
   scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
       CreateSameThreadContextGetter());
-  MockHostResolver* mock_resolver =
-      context_getter->GetURLRequestContext()->mock_resolver();
+  // Force context creation.
+  context_getter->GetURLRequestContext();
+  MockHostResolver* mock_resolver = context_getter->context()->mock_resolver();
 
   WaitingURLFetcherDelegate delegate;
   delegate.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
@@ -485,8 +515,9 @@ TEST_F(URLFetcherTest, DontRetryOnNetworkChangedByDefault) {
 
   scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
       CreateSameThreadContextGetter());
-  MockHostResolver* mock_resolver =
-      context_getter->GetURLRequestContext()->mock_resolver();
+  // Force context creation.
+  context_getter->GetURLRequestContext();
+  MockHostResolver* mock_resolver = context_getter->context()->mock_resolver();
 
   WaitingURLFetcherDelegate delegate;
   delegate.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
@@ -517,8 +548,9 @@ TEST_F(URLFetcherTest, RetryOnNetworkChangedAndFail) {
 
   scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
       CreateSameThreadContextGetter());
-  MockHostResolver* mock_resolver =
-      context_getter->GetURLRequestContext()->mock_resolver();
+  // Force context creation.
+  context_getter->GetURLRequestContext();
+  MockHostResolver* mock_resolver = context_getter->context()->mock_resolver();
 
   WaitingURLFetcherDelegate delegate;
   delegate.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
@@ -563,8 +595,9 @@ TEST_F(URLFetcherTest, RetryOnNetworkChangedAndSucceed) {
 
   scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
       CreateSameThreadContextGetter());
-  MockHostResolver* mock_resolver =
-      context_getter->GetURLRequestContext()->mock_resolver();
+  // Force context creation.
+  context_getter->GetURLRequestContext();
+  MockHostResolver* mock_resolver = context_getter->context()->mock_resolver();
 
   WaitingURLFetcherDelegate delegate;
   delegate.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
@@ -1202,6 +1235,69 @@ TEST_F(URLFetcherTest, ReuseFetcherForSameURL) {
   std::string data;
   ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ("request2", data);
+}
+
+TEST_F(URLFetcherTest, ShutdownSameThread) {
+  scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
+      CreateSameThreadContextGetter());
+
+  // Create a fetcher and wait for it to create a request.
+  WaitingURLFetcherDelegate delegate1;
+  delegate1.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
+  delegate1.fetcher()->Start();
+  // Need to spin the loop to ensure the URLRequest is created and started.
+  base::RunLoop().RunUntilIdle();
+
+  // Create and start another fetcher, but don't wait for it to start. The task
+  // to start the request should be in the message loop.
+  WaitingURLFetcherDelegate delegate2;
+  delegate2.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
+  delegate2.fetcher()->Start();
+
+  // Check that shutting down the getter cancels the request synchronously,
+  // allowing the context to be destroyed.
+  context_getter->Shutdown();
+
+  // Wait for the first fetcher, make sure it failed.
+  delegate1.WaitForComplete();
+  EXPECT_FALSE(delegate1.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_CONTEXT_SHUT_DOWN, delegate1.fetcher()->GetStatus().error());
+
+  // Wait for the second fetcher, make sure it failed.
+  delegate2.WaitForComplete();
+  EXPECT_FALSE(delegate2.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_CONTEXT_SHUT_DOWN, delegate2.fetcher()->GetStatus().error());
+
+  // New fetchers should automatically fail without making new requests. This
+  // should follow the same path as the second fetcher, but best to be safe.
+  WaitingURLFetcherDelegate delegate3;
+  delegate3.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
+  delegate3.fetcher()->Start();
+  delegate3.WaitForComplete();
+  EXPECT_FALSE(delegate3.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_CONTEXT_SHUT_DOWN, delegate3.fetcher()->GetStatus().error());
+}
+
+TEST_F(URLFetcherTest, ShutdownCrossThread) {
+  scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
+      CreateCrossThreadContextGetter());
+
+  WaitingURLFetcherDelegate delegate1;
+  delegate1.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
+  delegate1.fetcher()->Start();
+  // Check that shutting the context getter lets the context be destroyed safely
+  // and cancels the request.
+  context_getter->Shutdown();
+  delegate1.WaitForComplete();
+  EXPECT_FALSE(delegate1.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_CONTEXT_SHUT_DOWN, delegate1.fetcher()->GetStatus().error());
+
+  // New requests should automatically fail without making new requests.
+  WaitingURLFetcherDelegate delegate2;
+  delegate2.CreateFetcher(hanging_url(), URLFetcher::GET, context_getter);
+  delegate2.StartFetcherAndWait();
+  EXPECT_FALSE(delegate2.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_CONTEXT_SHUT_DOWN, delegate2.fetcher()->GetStatus().error());
 }
 
 // Get a small file.
