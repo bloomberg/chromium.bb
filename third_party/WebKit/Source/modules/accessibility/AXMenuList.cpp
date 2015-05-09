@@ -73,6 +73,7 @@ void AXMenuList::clearChildren()
     // so call it on our popup.
     ASSERT(m_children.size() == 1);
     m_children[0]->clearChildren();
+    m_childrenDirty = false;
 }
 
 void AXMenuList::addChildren()
