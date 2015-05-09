@@ -64,7 +64,7 @@ config("config") {
   if (is_clang) {
     if (blink_gc_plugin && clang_use_chrome_plugins) {
       # TODO(GYP)
-      #'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.sh enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
+      #'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
     }
   }
 }
