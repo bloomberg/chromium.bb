@@ -304,12 +304,20 @@ void UDPSocketResourceBase::OnPluginMsgSendToReply(
 // static
 void UDPSocketResourceBase::SlotBecameAvailable(PP_Resource resource) {
   ProxyLock::AssertAcquired();
+  UDPSocketResourceBase* thiz = nullptr;
+  // We have to try to enter all subclasses of UDPSocketResourceBase. Currently,
+  // these are the public and private resources.
   thunk::EnterResourceNoLock<thunk::PPB_UDPSocket_API> enter(resource, false);
-  if (enter.failed())
-    return;
-  auto thiz(static_cast<UDPSocketResourceBase*>(enter.resource()));
+  if (enter.succeeded()) {
+    thiz = static_cast<UDPSocketResourceBase*>(enter.resource());
+  } else {
+    thunk::EnterResourceNoLock<thunk::PPB_UDPSocket_Private_API> enter_private(
+        resource, false);
+    if (enter_private.succeeded())
+      thiz = static_cast<UDPSocketResourceBase*>(enter_private.resource());
+  }
 
-  if (!thiz->closed_)
+  if (thiz && !thiz->closed_)
     thiz->Post(BROWSER, PpapiHostMsg_UDPSocket_RecvSlotAvailable());
 }
 
