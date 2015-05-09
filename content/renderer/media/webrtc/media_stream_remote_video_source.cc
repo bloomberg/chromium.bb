@@ -139,6 +139,7 @@ void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
     const media::VideoCaptureFormat& format,
+    const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!delegate_.get());

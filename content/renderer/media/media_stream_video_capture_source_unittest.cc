@@ -66,12 +66,15 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     webkit_source_id_ = webkit_source_.id();
   }
 
+  MockMediaConstraintFactory* constraint_factory() {
+    return &constraint_factory_;
+  }
+
   blink::WebMediaStreamTrack StartSource() {
-    MockMediaConstraintFactory factory;
     bool enabled = true;
     // CreateVideoTrack will trigger OnConstraintsApplied.
     return MediaStreamVideoTrack::CreateVideoTrack(
-        source_, factory.CreateWebMediaConstraints(),
+        source_, constraint_factory_.CreateWebMediaConstraints(),
         base::Bind(
             &MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
             base::Unretained(this)),
@@ -100,16 +103,28 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   MockVideoCapturerDelegate* delegate_; // owned by |source|.
   blink::WebString webkit_source_id_;
   bool source_stopped_;
+  MockMediaConstraintFactory constraint_factory_;
 };
 
-TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
+TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureFixedResolutionByDefault) {
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
 
+  // No constraints are being provided to the implementation, so expect only
+  // default values.
+  media::VideoCaptureParams expected_params;
+  expected_params.requested_format.frame_size.SetSize(
+      MediaStreamVideoSource::kDefaultWidth,
+      MediaStreamVideoSource::kDefaultHeight);
+  expected_params.requested_format.frame_rate =
+      MediaStreamVideoSource::kDefaultFrameRate;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  expected_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+
   EXPECT_CALL(mock_delegate(), StartCapture(
-      testing::Field(&media::VideoCaptureParams::resolution_change_policy,
-                     media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT),
+      expected_params,
       testing::_,
       testing::_,
       testing::_)).Times(1);
@@ -119,14 +134,88 @@ TEST_F(MediaStreamVideoCapturerSourceTest, TabCaptureAllowResolutionChange) {
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest,
-       DesktopCaptureAllowResolutionChange) {
+       DesktopCaptureAllowAnyResolutionChangeByDefault) {
   StreamDeviceInfo device_info;
   device_info.device.type = MEDIA_DESKTOP_VIDEO_CAPTURE;
   InitWithDeviceInfo(device_info);
 
+  // No constraints are being provided to the implementation, so expect only
+  // default values.
+  media::VideoCaptureParams expected_params;
+  expected_params.requested_format.frame_size.SetSize(
+      MediaStreamVideoSource::kDefaultWidth,
+      MediaStreamVideoSource::kDefaultHeight);
+  expected_params.requested_format.frame_rate =
+      MediaStreamVideoSource::kDefaultFrameRate;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  expected_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+
+  EXPECT_CALL(mock_delegate(), StartCapture(
+      expected_params,
+      testing::_,
+      testing::_,
+      testing::_)).Times(1);
+  blink::WebMediaStreamTrack track = StartSource();
+  // When the track goes out of scope, the source will be stopped.
+  EXPECT_CALL(mock_delegate(), StopCapture());
+}
+
+TEST_F(MediaStreamVideoCapturerSourceTest,
+       TabCaptureConstraintsImplyFixedAspectRatio) {
+  StreamDeviceInfo device_info;
+  device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
+  InitWithDeviceInfo(device_info);
+
+  // Specify max and min size constraints that have the same ~16:9 aspect ratio.
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxWidth, 1920);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxHeight, 1080);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinWidth, 854);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinHeight, 480);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxFrameRate,
+                                     60.0);
+
+  media::VideoCaptureParams expected_params;
+  expected_params.requested_format.frame_size.SetSize(1920, 1080);
+  expected_params.requested_format.frame_rate = 60.0;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  expected_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+
   EXPECT_CALL(mock_delegate(), StartCapture(
       testing::Field(&media::VideoCaptureParams::resolution_change_policy,
-                     media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT),
+                     media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO),
+      testing::_,
+      testing::_,
+      testing::_)).Times(1);
+  blink::WebMediaStreamTrack track = StartSource();
+  // When the track goes out of scope, the source will be stopped.
+  EXPECT_CALL(mock_delegate(), StopCapture());
+}
+
+TEST_F(MediaStreamVideoCapturerSourceTest,
+       TabCaptureConstraintsImplyAllowingAnyResolutionChange) {
+  StreamDeviceInfo device_info;
+  device_info.device.type = MEDIA_TAB_VIDEO_CAPTURE;
+  InitWithDeviceInfo(device_info);
+
+  // Specify max and min size constraints with different aspect ratios.
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxWidth, 1920);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxHeight, 1080);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinWidth, 0);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMinHeight, 0);
+  constraint_factory()->AddMandatory(MediaStreamVideoSource::kMaxFrameRate,
+                                     60.0);
+
+  media::VideoCaptureParams expected_params;
+  expected_params.requested_format.frame_size.SetSize(1920, 1080);
+  expected_params.requested_format.frame_rate = 60.0;
+  expected_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  expected_params.resolution_change_policy =
+      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+
+  EXPECT_CALL(mock_delegate(), StartCapture(
+      expected_params,
       testing::_,
       testing::_,
       testing::_)).Times(1);

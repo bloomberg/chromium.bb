@@ -464,8 +464,10 @@ void MediaStreamVideoSource::OnSupportedFormats(
   DCHECK_EQ(RETRIEVING_CAPABILITIES, state_);
 
   supported_formats_ = formats;
+  blink::WebMediaConstraints fulfilled_constraints;
   if (!FindBestFormatWithConstraints(supported_formats_,
-                                     &current_format_)) {
+                                     &current_format_,
+                                     &fulfilled_constraints)) {
     SetReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
     // This object can be deleted after calling FinalizeAddTrack. See comment
     // in the header file.
@@ -478,12 +480,14 @@ void MediaStreamVideoSource::OnSupportedFormats(
 
   StartSourceImpl(
       current_format_,
+      fulfilled_constraints,
       base::Bind(&VideoTrackAdapter::DeliverFrameOnIO, track_adapter_));
 }
 
 bool MediaStreamVideoSource::FindBestFormatWithConstraints(
     const media::VideoCaptureFormats& formats,
-    media::VideoCaptureFormat* best_format) {
+    media::VideoCaptureFormat* best_format,
+    blink::WebMediaConstraints* fulfilled_constraints) {
   DCHECK(CalledOnValidThread());
   // Find the first constraints that we can fulfill.
   for (const auto& request : requested_constraints_) {
@@ -494,6 +498,7 @@ bool MediaStreamVideoSource::FindBestFormatWithConstraints(
     // no mandatory constraints have been specified. That just means that
     // we will start with whatever format is native to the source.
     if (formats.empty() && !HasMandatoryConstraints(requested_constraints)) {
+      *fulfilled_constraints = requested_constraints;
       *best_format = media::VideoCaptureFormat();
       return true;
     }
@@ -502,6 +507,7 @@ bool MediaStreamVideoSource::FindBestFormatWithConstraints(
         FilterFormats(requested_constraints, formats, &unsatisfied_constraint);
     if (filtered_formats.size() > 0) {
       // A request with constraints that can be fulfilled.
+      *fulfilled_constraints = requested_constraints;
       GetBestCaptureFormat(filtered_formats,
                            requested_constraints,
                            best_format);

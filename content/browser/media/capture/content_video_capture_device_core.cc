@@ -152,7 +152,7 @@ void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
   // been set; or 2) The resolution change policy specifies dynamic frame
   // sizes.
   if (capture_size_.IsEmpty() || params_.resolution_change_policy ==
-      media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT) {
+      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT) {
     capture_size_ = source_size;
     // The capture size should not exceed the maximum frame size.
     if (capture_size_.width() > max_frame_size().width() ||

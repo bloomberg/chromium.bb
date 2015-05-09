@@ -433,6 +433,7 @@ void PepperMediaStreamVideoTrackHost::GetCurrentSupportedFormats(
 
 void PepperMediaStreamVideoTrackHost::StartSourceImpl(
     const media::VideoCaptureFormat& format,
+    const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   output_started_ = true;
   frame_deliverer_ = new FrameDeliverer(io_message_loop(), frame_callback);

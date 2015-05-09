@@ -91,6 +91,7 @@ void PpFrameWriter::GetCurrentSupportedFormats(
 
 void PpFrameWriter::StartSourceImpl(
     const media::VideoCaptureFormat& format,
+    const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!delegate_.get());

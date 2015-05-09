@@ -70,7 +70,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   static const char kMinAspectRatio[];  // minAspectRatio
   static const char kMaxAspectRatio[];  // maxAspectRatio
   static const char kMaxWidth[];  // maxWidth
-  static const char kMinWidth[];  // minWidthOnCaptureFormats
+  static const char kMinWidth[];  // minWidth
   static const char kMaxHeight[];  // maxHeight
   static const char kMinHeight[];  // minHeight
   static const char kMaxFrameRate[];  // maxFrameRate
@@ -107,12 +107,15 @@ class CONTENT_EXPORT MediaStreamVideoSource
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) = 0;
 
-  // An implementation must start capture frames using the resolution in
-  // |params|. When the source has started or the source failed to start
-  // OnStartDone must be called. An implementation must call
-  // |frame_callback| on the IO thread with the captured frames.
+  // An implementation must start capturing frames using the requested
+  // |format|. The fulfilled |constraints| are provided as additional context,
+  // and may be used to modify the behavior of the source. When the source has
+  // started or the source failed to start OnStartDone must be called. An
+  // implementation must call |frame_callback| on the IO thread with the
+  // captured frames.
   virtual void StartSourceImpl(
       const media::VideoCaptureFormat& format,
+      const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) = 0;
   void OnStartDone(MediaStreamRequestResult result);
 
@@ -133,12 +136,14 @@ class CONTENT_EXPORT MediaStreamVideoSource
  private:
   void OnSupportedFormats(const media::VideoCaptureFormats& formats);
 
-  // Finds the first constraints in |requested_constraints_| that can be
-  // fulfilled. |best_format| is set to the video resolution that can be
-  // fulfilled.
+  // Finds the first WebMediaConstraints in |requested_constraints_| that allows
+  // the use of one of the |formats|.  |best_format| and |fulfilled_constraints|
+  // are set to the results of this search-and-match operation.  Returns false
+  // if no WebMediaConstraints allow the use any of the |formats|.
   bool FindBestFormatWithConstraints(
       const media::VideoCaptureFormats& formats,
-      media::VideoCaptureFormat* best_format);
+      media::VideoCaptureFormat* best_format,
+      blink::WebMediaConstraints* fulfilled_constraints);
 
   // Trigger all cached callbacks from AddTrack. AddTrack is successful
   // if the capture delegate has started and the constraints provided in

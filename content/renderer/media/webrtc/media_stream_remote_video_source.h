@@ -36,6 +36,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
 
   void StartSourceImpl(
       const media::VideoCaptureFormat& format,
+      const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
 
   void StopSourceImpl() override;

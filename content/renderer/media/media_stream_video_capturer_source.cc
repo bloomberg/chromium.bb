@@ -7,10 +7,15 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "content/public/common/media_stream_request.h"
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/limits.h"
 #include "media/base/video_frame.h"
+
+namespace content {
 
 namespace {
 
@@ -32,9 +37,135 @@ const int kVideoFrameRates[] = {30, 60};
 // Hard upper-bound frame rate for tab/desktop capture.
 const double kMaxScreenCastFrameRate = 120.0;
 
-}  // namespace
+// Returns true if the value for width or height is reasonable.
+bool DimensionValueIsValid(int x) {
+  return x > 0 && x <= media::limits::kMaxDimension;
+}
 
-namespace content {
+// Returns true if the value for frame rate is reasonable.
+bool FrameRateValueIsValid(double frame_rate) {
+  return (frame_rate > (1.0 / 60.0)) &&  // Lower-bound: One frame per minute.
+      (frame_rate <= media::limits::kMaxFramesPerSecond);
+}
+
+// Returns true if the aspect ratio of |a| and |b| are equivalent to two
+// significant digits.
+bool AreNearlyEquivalentInAspectRatio(const gfx::Size& a, const gfx::Size& b) {
+  DCHECK(!a.IsEmpty());
+  DCHECK(!b.IsEmpty());
+  const int aspect_ratio_a = (100 * a.width()) / a.height();
+  const int aspect_ratio_b = (100 * b.width()) / b.height();
+  return aspect_ratio_a == aspect_ratio_b;
+}
+
+// Interprets the properties in |constraints| to override values in |params| and
+// determine the resolution change policy.
+void SetScreenCastParamsFromConstraints(
+    const blink::WebMediaConstraints& constraints,
+    MediaStreamType type,
+    media::VideoCaptureParams* params) {
+  // The default resolution change policies for tab versus desktop capture are
+  // the way they are for legacy reasons.
+  if (type == MEDIA_TAB_VIDEO_CAPTURE) {
+    params->resolution_change_policy =
+        media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+  } else if (type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
+    params->resolution_change_policy =
+        media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+  } else {
+    NOTREACHED();
+  }
+
+  // If the maximum frame resolution was provided in the constraints, use it if
+  // either: 1) none has been set yet; or 2) the maximum specificed is smaller
+  // than the current setting.
+  int width = 0;
+  int height = 0;
+  gfx::Size desired_max_frame_size;
+  if (GetConstraintValueAsInteger(constraints,
+                                  MediaStreamVideoSource::kMaxWidth,
+                                  &width) &&
+      GetConstraintValueAsInteger(constraints,
+                                  MediaStreamVideoSource::kMaxHeight,
+                                  &height) &&
+      DimensionValueIsValid(width) &&
+      DimensionValueIsValid(height)) {
+    desired_max_frame_size.SetSize(width, height);
+    if (params->requested_format.frame_size.IsEmpty() ||
+        desired_max_frame_size.width() <
+            params->requested_format.frame_size.width() ||
+        desired_max_frame_size.height() <
+            params->requested_format.frame_size.height()) {
+      params->requested_format.frame_size = desired_max_frame_size;
+    }
+  }
+
+  // Set the default frame resolution if none was provided.
+  if (params->requested_format.frame_size.IsEmpty()) {
+    params->requested_format.frame_size.SetSize(
+        MediaStreamVideoSource::kDefaultWidth,
+        MediaStreamVideoSource::kDefaultHeight);
+  }
+
+  // If the maximum frame rate was provided, use it if either: 1) none has been
+  // set yet; or 2) the maximum specificed is smaller than the current setting.
+  double frame_rate = 0.0;
+  if (GetConstraintValueAsDouble(constraints,
+                                 MediaStreamVideoSource::kMaxFrameRate,
+                                 &frame_rate) &&
+      FrameRateValueIsValid(frame_rate)) {
+    if (params->requested_format.frame_rate <= 0.0f ||
+        frame_rate < params->requested_format.frame_rate) {
+      params->requested_format.frame_rate = frame_rate;
+    }
+  }
+
+  // Set the default frame rate if none was provided.
+  if (params->requested_format.frame_rate <= 0.0f) {
+    params->requested_format.frame_rate =
+        MediaStreamVideoSource::kDefaultFrameRate;
+  }
+
+  // If the minimum frame resolution was provided, compare it to the maximum
+  // frame resolution to determine the intended resolution change policy.
+  if (!desired_max_frame_size.IsEmpty() &&
+      GetConstraintValueAsInteger(constraints,
+                                  MediaStreamVideoSource::kMinWidth,
+                                  &width) &&
+      GetConstraintValueAsInteger(constraints,
+                                  MediaStreamVideoSource::kMinHeight,
+                                  &height) &&
+      width <= desired_max_frame_size.width() &&
+      height <= desired_max_frame_size.height()) {
+    if (width == desired_max_frame_size.width() &&
+        height == desired_max_frame_size.height()) {
+      // Constraints explicitly require a single frame resolution.
+      params->resolution_change_policy =
+          media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+    } else if (DimensionValueIsValid(width) &&
+               DimensionValueIsValid(height) &&
+               AreNearlyEquivalentInAspectRatio(gfx::Size(width, height),
+                                                desired_max_frame_size)) {
+      // Constraints only mention a single aspect ratio.
+      params->resolution_change_policy =
+          media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+    } else {
+      // Constraints specify a minimum resolution that is smaller than the
+      // maximum resolution and has a different aspect ratio (possibly even
+      // 0x0). This indicates any frame resolution and aspect ratio is
+      // acceptable.
+      params->resolution_change_policy =
+          media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+    }
+  }
+
+  DVLOG(1) << "SetScreenCastParamsFromConstraints: "
+           << params->requested_format.ToString()
+           << " with resolution change policy "
+           << params->resolution_change_policy;
+}
+
+}  // namespace
 
 VideoCapturerDelegate::VideoCapturerDelegate(
     const StreamDeviceInfo& device_info)
@@ -246,13 +377,14 @@ void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     const media::VideoCaptureFormat& format,
+    const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   media::VideoCaptureParams new_params;
   new_params.requested_format = format;
   if (device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
       device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    new_params.resolution_change_policy =
-        media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT;
+    SetScreenCastParamsFromConstraints(
+        constraints, device_info().device.type, &new_params);
   }
   delegate_->StartCapture(
       new_params,

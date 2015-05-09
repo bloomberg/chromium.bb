@@ -58,6 +58,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
       const VideoCaptureDeviceFormatsCB& callback) override;
   void StartSourceImpl(
       const media::VideoCaptureFormat& format,
+      const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
 

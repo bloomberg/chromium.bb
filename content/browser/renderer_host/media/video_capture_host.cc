@@ -180,8 +180,11 @@ void VideoCaptureHost::OnStartCapture(int device_id,
            << ", format=" << params.requested_format.ToString()
            << "@" << params.requested_format.frame_rate
            << " (" << (params.resolution_change_policy ==
-                           media::RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT ?
-                           "variable" : "constant")
+                           media::RESOLUTION_POLICY_FIXED_RESOLUTION ?
+                           "fixed resolution" :
+                           (params.resolution_change_policy ==
+                                media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO ?
+                                "fixed aspect ratio" : "variable resolution"))
            << ")";
   VideoCaptureControllerID controller_id(device_id);
   if (entries_.find(controller_id) != entries_.end()) {

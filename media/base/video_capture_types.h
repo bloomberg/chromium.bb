@@ -34,19 +34,24 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_MAX,
 };
 
-// Policies for capture devices that has source content with dynamic resolution.
+// Policies for capture devices that have source content that varies in size.
+// It is up to the implementation how the captured content will be transformed
+// (e.g., scaling and/or letterboxing) in order to produce video frames that
+// strictly adheree to one of these policies.
 enum ResolutionChangePolicy {
   // Capture device outputs a fixed resolution all the time. The resolution of
   // the first frame is the resolution for all frames.
-  // It is implementation specific for the capture device to scale, letter-box
-  // and pillar-box. The only guarantee is that resolution will never change.
-  RESOLUTION_POLICY_FIXED,
+  RESOLUTION_POLICY_FIXED_RESOLUTION,
 
-  // Capture device outputs frames with dynamic resolution. The width and height
-  // will not exceed the maximum dimensions specified. The typical scenario is
-  // the frames will have the same aspect ratio as the original content and
-  // scaled down to fit inside the limit.
-  RESOLUTION_POLICY_DYNAMIC_WITHIN_LIMIT,
+  // Capture device is allowed to output frames of varying resolutions. The
+  // width and height will not exceed the maximum dimensions specified. The
+  // aspect ratio of the frames will match the aspect ratio of the maximum
+  // dimensions as closely as possible.
+  RESOLUTION_POLICY_FIXED_ASPECT_RATIO,
+
+  // Capture device is allowed to output frames of varying resolutions not
+  // exceeding the maximum dimensions specified.
+  RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
 
   RESOLUTION_POLICY_LAST,
 };
@@ -77,6 +82,12 @@ class MEDIA_EXPORT VideoCaptureFormat {
   // in media::Limits.
   bool IsValid() const;
 
+  bool operator==(const VideoCaptureFormat& other) const {
+    return frame_size == other.frame_size &&
+        frame_rate == other.frame_rate &&
+        pixel_format == other.pixel_format;
+  }
+
   gfx::Size frame_size;
   float frame_rate;
   VideoPixelFormat pixel_format;
@@ -91,6 +102,11 @@ typedef std::vector<VideoCaptureFormat> VideoCaptureFormats;
 class MEDIA_EXPORT VideoCaptureParams {
  public:
   VideoCaptureParams();
+
+  bool operator==(const VideoCaptureParams& other) const {
+    return requested_format == other.requested_format &&
+        resolution_change_policy == other.resolution_change_policy;
+  }
 
   // Requests a resolution and format at which the capture will occur.
   VideoCaptureFormat requested_format;
