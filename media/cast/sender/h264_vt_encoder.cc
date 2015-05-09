@@ -392,11 +392,10 @@ void H264VideoToolboxEncoder::ResetCompressionSession() {
       kCFBooleanTrue);
 #endif
 
-  // Certain encoders prefer kCVPixelFormatType_422YpCbCr8, which is not
-  // supported through VideoFrame. We can force 420 formats to be used instead.
-  const int formats[] = {
-      kCVPixelFormatType_420YpCbCr8Planar,
+  // Force 420v so that clients can easily use these buffers as GPU textures.
+  const int format[] = {
       CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange};
+
   // Keep these attachment settings in-sync with those in ConfigureSession().
   CFTypeRef attachments_keys[] = {kCVImageBufferColorPrimariesKey,
                                   kCVImageBufferTransferFunctionKey,
@@ -407,7 +406,7 @@ void H264VideoToolboxEncoder::ResetCompressionSession() {
   CFTypeRef buffer_attributes_keys[] = {kCVPixelBufferPixelFormatTypeKey,
                                         kCVBufferPropagatedAttachmentsKey};
   CFTypeRef buffer_attributes_values[] = {
-      ArrayWithIntegers(formats, arraysize(formats)).release(),
+      ArrayWithIntegers(format, arraysize(format)).release(),
       DictionaryWithKeysAndValues(attachments_keys, attachments_values,
                                   arraysize(attachments_keys)).release()};
   const base::ScopedCFTypeRef<CFDictionaryRef> buffer_attributes =
