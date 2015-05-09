@@ -97,19 +97,24 @@ bool BMPImageReader::decodeBMP(bool onlySize)
     // cumbersome.
     class PixelChangedScoper {
     public:
-        PixelChangedScoper(BMPImageReader* imageReader)
-            : m_imageReader(imageReader)
+        PixelChangedScoper(ImageDecoder* parentDecoder, BMPImageReader* imageReader)
+            : m_parentDecoder(parentDecoder)
+            , m_imageReader(imageReader)
             , m_coord(imageReader->m_coord)
         {
+            ASSERT(m_parentDecoder && m_imageReader);
         }
 
         ~PixelChangedScoper()
         {
+            if (m_parentDecoder->failed())
+                return; // Ignore since failure auto-deletes m_imageReader.
             if (m_imageReader->m_coord != m_coord)
                 m_imageReader->m_buffer->setPixelsChanged(true);
         }
 
     private:
+        ImageDecoder* m_parentDecoder;
         BMPImageReader* m_imageReader;
         IntPoint m_coord;
     };
@@ -155,7 +160,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
 
     // Decode the data.
     if (!m_decodingAndMask && !pastEndOfImage(0)) {
-        PixelChangedScoper pixelChangedScoper(this);
+        PixelChangedScoper pixelChangedScoper(m_parent, this);
         if ((m_infoHeader.biCompression != RLE4) && (m_infoHeader.biCompression != RLE8) && (m_infoHeader.biCompression != RLE24)) {
             const ProcessingResult result = processNonRLEData(false, 0);
             if (result != Success)
@@ -177,7 +182,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
         m_decodingAndMask = true;
     }
     if (m_decodingAndMask) {
-        PixelChangedScoper pixelChangedScoper(this);
+        PixelChangedScoper pixelChangedScoper(m_parent, this);
         const ProcessingResult result = processNonRLEData(false, 0);
         if (result != Success)
             return (result == Failure) ? m_parent->setFailed() : false;
