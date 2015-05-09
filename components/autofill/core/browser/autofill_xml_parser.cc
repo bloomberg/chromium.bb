@@ -4,10 +4,10 @@
 
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/autofill_server_field_info.h"
 #include "third_party/webrtc/libjingle/xmllite/qname.h"
 
@@ -130,9 +130,8 @@ void AutofillQueryXmlParser::ParseElementDescriptor(
 
 int AutofillQueryXmlParser::GetIntValue(buzz::XmlParseContext* context,
                                         const char* attribute) {
-  char* attr_end = NULL;
-  int value = strtol(attribute, &attr_end, 10);
-  if (attr_end != NULL && attr_end == attribute) {
+  int value = 0;
+  if (!base::StringToInt(attribute, &value)) {
     context->RaiseError(XML_ERROR_SYNTAX);
     return 0;
   }
@@ -170,9 +169,8 @@ void AutofillUploadXmlParser::StartElement(buzz::XmlParseContext* context,
 
 double AutofillUploadXmlParser::GetDoubleValue(buzz::XmlParseContext* context,
                                                const char* attribute) {
-  char* attr_end = NULL;
-  double value = strtod(attribute, &attr_end);
-  if (attr_end != NULL && attr_end == attribute) {
+  double value = 0;
+  if (!base::StringToDouble(attribute, &value)) {
     context->RaiseError(XML_ERROR_SYNTAX);
     return 0.0;
   }
