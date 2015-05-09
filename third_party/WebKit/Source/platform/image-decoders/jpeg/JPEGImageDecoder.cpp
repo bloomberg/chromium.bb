@@ -979,8 +979,6 @@ void JPEGImageDecoder::jpegComplete()
     if (m_frameBufferCache.isEmpty())
         return;
 
-    // Hand back an appropriately sized buffer, even if the image ended up being
-    // empty.
     ImageFrame& buffer = m_frameBufferCache[0];
     buffer.setHasAlpha(false);
     buffer.setStatus(ImageFrame::FrameComplete);
