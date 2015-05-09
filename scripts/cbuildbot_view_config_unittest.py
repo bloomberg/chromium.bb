@@ -13,6 +13,34 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.scripts import cbuildbot_view_config
 
+# pylint: disable=protected-access
+
+class HelpersTest(cros_test_lib.TestCase):
+  """Test some helper methods used when dumping.."""
+
+  def testHideDefaults(self):
+    """Verify the _HideDefaults method."""
+    default = {
+        'child_configs': [],
+        'a': 'base_a', 'b': 'base_b'
+    }
+    child = {
+        'child_configs': [],
+        'a': 'base_a', 'b': 'child_b'
+    }
+    parent = {
+        'child_configs': [child, child],
+        'a': 'base_a', 'b': 'child_b'
+    }
+
+    self.assertDictEqual(
+        cbuildbot_view_config._HideDefaults(child, default),
+        {'b': 'child_b'})
+
+    self.assertDictEqual(
+        cbuildbot_view_config._HideDefaults(parent, default),
+        {'child_configs': [{'b': 'child_b'}, {'b': 'child_b'}], 'b': 'child_b'})
+
 
 class JsonDumpTest(cros_test_lib.OutputTestCase):
   """Test the json dumping functionality of cbuildbot_view_config."""
@@ -82,7 +110,7 @@ class JsonCompareTest(cros_test_lib.TempDirTestCase,
     path = self._DumpTarget()
 
     # Tweak the config value for TARGET and run comparison.
-    config = cbuildbot_view_config.cbuildbot_config.GetConfig()
+    config = cbuildbot_view_config.generate_chromeos_config.GetConfig()
     orig_name = config[self.TARGET]['name']
     try:
       config[self.TARGET]['name'] = 'FOO'

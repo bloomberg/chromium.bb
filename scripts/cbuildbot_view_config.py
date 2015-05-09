@@ -9,7 +9,7 @@ from __future__ import print_function
 import json
 import pprint
 
-from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import generate_chromeos_config
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 
@@ -34,7 +34,7 @@ def _InjectDisplayPosition(config):
     my_config = items[1]
     # Allow configs to override the display_position.
     return (my_config.get('display_position', 1000000),
-            cbuildbot_config.GetDisplayPosition(my_config['name']),
+            generate_chromeos_config.GetDisplayPosition(my_config['name']),
             my_config['internal'], my_config['vm_tests'])
 
   source = sorted(config.iteritems(), key=_GetSortKey)
@@ -51,24 +51,24 @@ def _DumpConfigJson(cfg):
   print(json.dumps(cfg, cls=_JSONEncoder))
 
 
-def _HideDefaults(cfg):
+def _HideDefaults(cfg, default):
   """Hide the defaults from a given config entry.
 
   Args:
     cfg: A config entry.
+    default: Default values to hide, if matched.
 
   Returns:
     The same config entry, but without any defaults.
   """
   d = {}
-  child_configs = cfg.get('child_configs')
-  default = cbuildbot_config.GetDefault()
-  if child_configs:
-    default = child_configs[0].derive(grouped=False)
-    d['child_configs'] = [_HideDefaults(x) for x in child_configs]
   for k, v in cfg.iteritems():
-    if k != 'child_configs' and default.get(k) != v:
-      d[k] = v
+    if default.get(k) != v:
+      if k == 'child_configs':
+        d['child_configs'] = [_HideDefaults(child, default) for child in v]
+      else:
+        d[k] = v
+
   return d
 
 
@@ -159,14 +159,15 @@ def main(argv):
   if options.for_buildbot:
     convert = _InjectDisplayPosition
 
-  config = convert(cbuildbot_config.GetConfig())
+  config = convert(generate_chromeos_config.GetConfig())
 
   # Separate the defaults and show them at the top. We prefix the name with
   # an underscore so that it sorts to the top.
   if options.separate_defaults:
+    default = generate_chromeos_config.GetDefault()
     for k, v in config.iteritems():
-      config[k] = _HideDefaults(v)
-    config['_default'] = cbuildbot_config.GetDefault()
+      config[k] = _HideDefaults(v, default)
+    config['_default'] = default
 
   # If config_targets specified, only dump/load those.
   if options.config_targets:
