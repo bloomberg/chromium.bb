@@ -128,12 +128,12 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // |CalculateCurrentPressureLevel|.
   int moderate_pressure_repeat_count_;
 
+  // Ensures that this object is used from a single thread.
+  base::ThreadChecker thread_checker_;
+
   // Weak pointer factory to ourself used for scheduling calls to
   // CheckMemoryPressure/CheckMemoryPressureAndRecordStatistics via |timer_|.
   base::WeakPtrFactory<MemoryPressureMonitor> weak_ptr_factory_;
-
-  // Ensures that this object is used from a single thread.
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);
 };
