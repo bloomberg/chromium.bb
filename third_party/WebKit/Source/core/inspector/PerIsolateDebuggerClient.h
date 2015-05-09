@@ -6,19 +6,23 @@
 #define PerIsolateDebuggerClient_h
 
 #include "bindings/core/v8/ScriptDebugServer.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
 class PerIsolateDebuggerClient : public ScriptDebugServer::Client {
     WTF_MAKE_NONCOPYABLE(PerIsolateDebuggerClient);
 public:
-    PerIsolateDebuggerClient(v8::Isolate*, PassOwnPtr<ScriptDebugServer>);
+    PerIsolateDebuggerClient(v8::Isolate*, PassOwnPtrWillBeRawPtr<ScriptDebugServer>);
     ~PerIsolateDebuggerClient() override;
     v8::Local<v8::Object> compileDebuggerScript() override;
     ScriptDebugServer* scriptDebugServer() const { return m_scriptDebugServer.get(); }
+
+    DECLARE_VIRTUAL_TRACE();
+
 private:
     v8::Isolate* m_isolate;
-    OwnPtr<ScriptDebugServer> m_scriptDebugServer;
+    OwnPtrWillBeMember<ScriptDebugServer> m_scriptDebugServer;
 };
 
 } // namespace blink

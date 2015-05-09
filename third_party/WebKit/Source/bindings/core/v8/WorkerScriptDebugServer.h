@@ -32,25 +32,31 @@
 #define WorkerScriptDebugServer_h
 
 #include "core/inspector/PerIsolateDebuggerClient.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
+
 #include <v8.h>
 
 namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerScriptDebugServer final : public PerIsolateDebuggerClient {
+class WorkerScriptDebugServer final : public NoBaseWillBeGarbageCollectedFinalized<WorkerScriptDebugServer>, public PerIsolateDebuggerClient {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerScriptDebugServer);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerScriptDebugServer> create(WorkerGlobalScope* workerGlobalScope)
     {
         return adoptPtrWillBeNoop(new WorkerScriptDebugServer(workerGlobalScope));
     }
 
-    ~WorkerScriptDebugServer() override { }
+    ~WorkerScriptDebugServer() override;
 
     static void setContextDebugData(v8::Local<v8::Context>);
     void addListener(ScriptDebugListener*);
     void removeListener(ScriptDebugListener*);
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit WorkerScriptDebugServer(WorkerGlobalScope*);

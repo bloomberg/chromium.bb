@@ -35,7 +35,8 @@
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptDebugListener.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
 
 #include <v8-debug.h>
 #include <v8.h>
@@ -50,17 +51,24 @@ class JavaScriptCallFrame;
 class CORE_EXPORT ScriptDebugServer : public NoBaseWillBeGarbageCollectedFinalized<ScriptDebugServer> {
     WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
 public:
-    virtual ~ScriptDebugServer();
-    DECLARE_VIRTUAL_TRACE();
-
-    class Client {
+    class Client : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Client() { }
         virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
         virtual ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
         virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
         virtual void quitMessageLoopOnPause() = 0;
+
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
+
+    static PassOwnPtrWillBeRawPtr<ScriptDebugServer> create(v8::Isolate* isolate, Client* client)
+    {
+        return adoptPtrWillBeNoop(new ScriptDebugServer(isolate, client));
+    }
+
+    virtual ~ScriptDebugServer();
+    DECLARE_VIRTUAL_TRACE();
 
     void enable();
     void disable();
@@ -121,9 +129,10 @@ public:
     v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue);
 
     v8::Isolate* isolate() const { return m_isolate; }
-    explicit ScriptDebugServer(v8::Isolate*, Client*);
 
 private:
+    ScriptDebugServer(v8::Isolate*, Client*);
+
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Object> debuggerScriptLocal() const;

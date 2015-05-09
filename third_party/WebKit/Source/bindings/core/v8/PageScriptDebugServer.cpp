@@ -59,10 +59,12 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Local<v8::Context> con
     return toLocalFrame(toFrameIfNotDetached(context));
 }
 
+// TODO(Oilpan): avoid keeping a raw reference separate from the
+// owner one; does not enable heap-movable objects.
 PageScriptDebugServer* PageScriptDebugServer::s_instance = nullptr;
 
 PageScriptDebugServer::PageScriptDebugServer(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
-    : PerIsolateDebuggerClient(isolate, adoptPtr(new ScriptDebugServer(isolate, this)))
+    : PerIsolateDebuggerClient(isolate, ScriptDebugServer::create(isolate, this))
     , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
 {
@@ -82,6 +84,15 @@ Mutex& PageScriptDebugServer::creationMutex()
 {
     AtomicallyInitializedStaticReference(Mutex, mutex, (new Mutex));
     return mutex;
+}
+
+DEFINE_TRACE(PageScriptDebugServer)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_pausedFrame);
+    visitor->trace(m_listenersMap);
+#endif
+    PerIsolateDebuggerClient::trace(visitor);
 }
 
 void PageScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextDebugId)

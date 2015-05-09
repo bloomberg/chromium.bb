@@ -44,10 +44,20 @@ namespace blink {
 static const char* workerContextDebugId = "[worker]";
 
 WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope)
-    : PerIsolateDebuggerClient(v8::Isolate::GetCurrent(), adoptPtr(new ScriptDebugServer(v8::Isolate::GetCurrent(), this)))
-    , m_listener(0)
+    : PerIsolateDebuggerClient(v8::Isolate::GetCurrent(), ScriptDebugServer::create(v8::Isolate::GetCurrent(), this))
+    , m_listener(nullptr)
     , m_workerGlobalScope(workerGlobalScope)
 {
+}
+
+WorkerScriptDebugServer::~WorkerScriptDebugServer()
+{
+}
+
+DEFINE_TRACE(WorkerScriptDebugServer)
+{
+    visitor->trace(m_workerGlobalScope);
+    PerIsolateDebuggerClient::trace(visitor);
 }
 
 void WorkerScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context)

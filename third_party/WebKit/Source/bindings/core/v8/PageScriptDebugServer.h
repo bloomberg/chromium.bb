@@ -43,8 +43,9 @@ namespace blink {
 
 class Page;
 
-class CORE_EXPORT PageScriptDebugServer final : public PerIsolateDebuggerClient {
+class CORE_EXPORT PageScriptDebugServer final : public NoBaseWillBeGarbageCollectedFinalized<PageScriptDebugServer>, public PerIsolateDebuggerClient {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PageScriptDebugServer);
 public:
     class ClientMessageLoop {
     public:
@@ -53,7 +54,11 @@ public:
         virtual void quitNow() = 0;
     };
 
-    PageScriptDebugServer(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
+    static PassOwnPtrWillBeRawPtr<PageScriptDebugServer> create(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
+    {
+        return adoptPtrWillBeNoop(new PageScriptDebugServer(clientMessageLoop, isolate));
+    }
+
     ~PageScriptDebugServer() override;
 
     static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextDebugId);
@@ -63,7 +68,11 @@ public:
     static PageScriptDebugServer* instance();
     static void interruptMainThreadAndRun(PassOwnPtr<ScriptDebugServer::Task>);
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
+    PageScriptDebugServer(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
+
     ScriptDebugListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
     void runMessageLoopOnPause(v8::Local<v8::Context>) override;
     void quitMessageLoopOnPause() override;

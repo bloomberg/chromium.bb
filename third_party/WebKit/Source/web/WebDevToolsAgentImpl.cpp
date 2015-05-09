@@ -118,7 +118,7 @@ public:
         s_instance = instance.get();
         v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
         V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-        data->setScriptDebugServer(adoptPtrWillBeNoop(new PageScriptDebugServer(instance.release(), isolate)));
+        data->setScriptDebugServer(PageScriptDebugServer::create(instance.release(), isolate));
     }
 
     static void webViewImplClosed(WebViewImpl* view)
