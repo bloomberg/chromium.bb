@@ -366,6 +366,15 @@ bool FindBadConstructsConsumer::IsMethodInBannedOrTestingNamespace(
   return false;
 }
 
+SuppressibleDiagnosticBuilder
+FindBadConstructsConsumer::ReportIfSpellingLocNotIgnored(
+    SourceLocation loc,
+    unsigned diagnostic_id) {
+  return SuppressibleDiagnosticBuilder(
+      &diagnostic(), loc, diagnostic_id,
+      InBannedDirectory(instance().getSourceManager().getSpellingLoc(loc)));
+}
+
 // Checks that virtual methods are correctly annotated, and have no body in a
 // header file.
 void FindBadConstructsConsumer::CheckVirtualMethods(
@@ -431,13 +440,11 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     // Note this is just an educated guess: the assumption here is that any
     // macro for declaring methods will probably be at the start of the method's
     // source range.
-    if (!InBannedDirectory(manager.getSpellingLoc(method->getLocStart()))) {
-      diagnostic().Report(method->getLocStart(),
-                          diag_redundant_virtual_specifier_)
-          << "'virtual'"
-          << (override_attr ? static_cast<Attr*>(override_attr) : final_attr)
-          << FixItRemovalForVirtual(manager, lang_opts, method);
-    }
+    ReportIfSpellingLocNotIgnored(method->getLocStart(),
+                                  diag_redundant_virtual_specifier_)
+        << "'virtual'"
+        << (override_attr ? static_cast<Attr*>(override_attr) : final_attr)
+        << FixItRemovalForVirtual(manager, lang_opts, method);
   }
 
   // Complain if a method is an override and is not annotated with override or
@@ -484,29 +491,24 @@ void FindBadConstructsConsumer::CheckVirtualSpecifiers(
     // Again, only emit the warning if it doesn't originate from a macro in
     // a system header.
     if (loc.isValid()) {
-      if (!InBannedDirectory(manager.getSpellingLoc(loc))) {
-        diagnostic().Report(loc, diag_method_requires_override_)
-            << FixItHint::CreateInsertion(loc, " override");
-      }
+      ReportIfSpellingLocNotIgnored(loc, diag_method_requires_override_)
+          << FixItHint::CreateInsertion(loc, " override");
     } else {
-      if (!InBannedDirectory(manager.getSpellingLoc(range.getBegin())))
-        diagnostic().Report(range.getBegin(), diag_method_requires_override_);
+      ReportIfSpellingLocNotIgnored(range.getBegin(),
+                                    diag_method_requires_override_);
     }
   }
 
-  if (final_attr && override_attr &&
-      !InBannedDirectory(
-          manager.getSpellingLoc(override_attr->getLocation()))) {
-    diagnostic().Report(override_attr->getLocation(),
-                        diag_redundant_virtual_specifier_)
+  if (final_attr && override_attr) {
+    ReportIfSpellingLocNotIgnored(override_attr->getLocation(),
+                                  diag_redundant_virtual_specifier_)
         << override_attr << final_attr
         << FixItHint::CreateRemoval(override_attr->getRange());
   }
 
-  if (final_attr && !is_override &&
-      !InBannedDirectory(manager.getSpellingLoc(method->getLocStart()))) {
-    diagnostic().Report(method->getLocStart(),
-                        diag_base_method_virtual_and_final_)
+  if (final_attr && !is_override) {
+    ReportIfSpellingLocNotIgnored(method->getLocStart(),
+                                  diag_base_method_virtual_and_final_)
         << FixItRemovalForVirtual(manager, lang_opts, method)
         << FixItHint::CreateRemoval(final_attr->getRange());
   }
