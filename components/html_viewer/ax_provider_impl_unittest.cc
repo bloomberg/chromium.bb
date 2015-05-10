@@ -92,7 +92,14 @@ AxNodePtr CreateNode(int id,
 
 }  // namespace
 
-TEST_F(AxProviderImplTest, Basic) {
+
+// TODO(msw): This test crashes on Android; see http://crbug.com/486171
+#if defined(OS_ANDROID)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+TEST_F(AxProviderImplTest, MAYBE_Basic) {
   TestWebViewClient web_view_client;
   TestWebFrameClient web_frame_client;
   WebView* view = WebView::create(&web_view_client);
