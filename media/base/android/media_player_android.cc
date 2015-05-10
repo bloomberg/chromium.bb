@@ -81,11 +81,6 @@ void MediaPlayerAndroid::DetachListener() {
   listener_->ReleaseMediaPlayerListenerResources();
 }
 
-void MediaPlayerAndroid::DestroyListenerOnUIThread() {
-  weak_factory_.InvalidateWeakPtrs();
-  listener_.reset();
-}
-
 void MediaPlayerAndroid::SetAudible(bool is_audible) {
   if (is_audible_ != is_audible) {
     is_audible_ = is_audible;

@@ -4,10 +4,7 @@
 
 #include "content/browser/media/android/browser_demuxer_android.h"
 
-#include "base/command_line.h"
 #include "content/common/media/media_player_messages_android.h"
-#include "media/base/android/media_codec_player.h"
-#include "media/base/media_switches.h"
 
 namespace content {
 
@@ -55,32 +52,21 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
 };
 
 BrowserDemuxerAndroid::BrowserDemuxerAndroid()
-    : BrowserMessageFilter(MediaPlayerMsgStart) {
-  bool enable_media_thread =
-      base::CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableMediaThreadForMediaPlayback);
-
-  task_runner_ =
-      enable_media_thread ?
-      media::GetMediaTaskRunner().get() :
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get();
-
-}
+    : BrowserMessageFilter(MediaPlayerMsgStart) {}
 
 BrowserDemuxerAndroid::~BrowserDemuxerAndroid() {}
 
-base::TaskRunner* BrowserDemuxerAndroid::OverrideTaskRunnerForMessage(
-    const IPC::Message& message) {
-
+void BrowserDemuxerAndroid::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
   switch (message.type()) {
     case MediaPlayerHostMsg_DemuxerReady::ID:
     case MediaPlayerHostMsg_ReadFromDemuxerAck::ID:
     case MediaPlayerHostMsg_DurationChanged::ID:
     case MediaPlayerHostMsg_DemuxerSeekDone::ID:
-      return task_runner_;
+      *thread = BrowserThread::UI;
+      return;
   }
-
-  return nullptr;
 }
 
 bool BrowserDemuxerAndroid::OnMessageReceived(const IPC::Message& message) {
@@ -109,46 +95,29 @@ void BrowserDemuxerAndroid::AddDemuxerClient(
     media::DemuxerAndroidClient* client) {
   DVLOG(1) << __FUNCTION__ << " peer_pid=" << peer_pid()
            << " demuxer_client_id=" << demuxer_client_id;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
   demuxer_clients_.AddWithID(client, demuxer_client_id);
-
-  if (pending_configs_.count(demuxer_client_id)) {
-    client->OnDemuxerConfigsAvailable(pending_configs_[demuxer_client_id]);
-    pending_configs_.erase(demuxer_client_id);
-  }
 }
 
 void BrowserDemuxerAndroid::RemoveDemuxerClient(int demuxer_client_id) {
   DVLOG(1) << __FUNCTION__ << " peer_pid=" << peer_pid()
            << " demuxer_client_id=" << demuxer_client_id;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
   demuxer_clients_.Remove(demuxer_client_id);
 }
 
 void BrowserDemuxerAndroid::OnDemuxerReady(
     int demuxer_client_id,
     const media::DemuxerConfigs& configs) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
   media::DemuxerAndroidClient* client =
       demuxer_clients_.Lookup(demuxer_client_id);
-
   if (client)
     client->OnDemuxerConfigsAvailable(configs);
-  else
-    pending_configs_[demuxer_client_id] = configs;
 }
 
 void BrowserDemuxerAndroid::OnReadFromDemuxerAck(
     int demuxer_client_id,
     const media::DemuxerData& data) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
   media::DemuxerAndroidClient* client =
       demuxer_clients_.Lookup(demuxer_client_id);
-
   if (client)
     client->OnDemuxerDataAvailable(data);
 }
@@ -156,26 +125,18 @@ void BrowserDemuxerAndroid::OnReadFromDemuxerAck(
 void BrowserDemuxerAndroid::OnDemuxerSeekDone(
     int demuxer_client_id,
     const base::TimeDelta& actual_browser_seek_time) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
   media::DemuxerAndroidClient* client =
       demuxer_clients_.Lookup(demuxer_client_id);
-
   if (client)
     client->OnDemuxerSeekDone(actual_browser_seek_time);
 }
 
 void BrowserDemuxerAndroid::OnDurationChanged(int demuxer_client_id,
                                               const base::TimeDelta& duration) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
   media::DemuxerAndroidClient* client =
       demuxer_clients_.Lookup(demuxer_client_id);
-
   if (client)
     client->OnDemuxerDurationChanged(duration);
-  else
-    pending_configs_[demuxer_client_id].duration = duration;
 }
 
 }  // namespace content

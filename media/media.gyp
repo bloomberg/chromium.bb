@@ -1731,8 +1731,6 @@
             'base/android/media_client_android.h',
             'base/android/media_codec_bridge.cc',
             'base/android/media_codec_bridge.h',
-            'base/android/media_codec_player.cc',
-            'base/android/media_codec_player.h',
             'base/android/media_common_android.h',
             'base/android/media_decoder_job.cc',
             'base/android/media_decoder_job.h',

@@ -24,10 +24,6 @@ const char kIgnoreResolutionLimitsForAcceleratedVideoDecode[] =
 // Disables the infobar popup for accessing protected media identifier.
 const char kDisableInfobarForProtectedMediaIdentifier[] =
     "disable-infobar-for-protected-media-identifier";
-
-// Sets the MediaSource player that uses the separate media thread
-const char kEnableMediaThreadForMediaPlayback[] =
-    "enable-media-thread-for-media-playback";
 #endif
 
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)
