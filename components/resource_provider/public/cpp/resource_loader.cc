@@ -13,8 +13,8 @@
 namespace resource_provider {
 
 ResourceLoader::ResourceLoader(mojo::Shell* shell,
-                               const std::set<std::string>& paths,
-                               const LoadedCallback& callback) {
+                               const std::set<std::string>& paths)
+    : loaded_(false) {
   shell->ConnectToApplication("mojo:resource_provider",
                               GetProxy(&resource_provider_service_provider_),
                               nullptr);
@@ -24,14 +24,19 @@ ResourceLoader::ResourceLoader(mojo::Shell* shell,
   resource_provider_->GetResources(
       mojo::Array<mojo::String>::From(paths_vector),
       base::Bind(&ResourceLoader::OnGotResources, base::Unretained(this),
-                 paths_vector, callback));
+                 paths_vector));
 }
 
 ResourceLoader::~ResourceLoader() {
 }
 
+bool ResourceLoader::BlockUntilLoaded() {
+  CHECK(!loaded_);
+  resource_provider_.WaitForIncomingMethodCall();
+  return loaded_;
+}
+
 void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
-                                    const LoadedCallback& callback,
                                     mojo::Array<mojo::ScopedHandle> resources) {
   // We no longer need the connection to ResourceProvider.
   resource_provider_.reset();
@@ -39,16 +44,14 @@ void ResourceLoader::OnGotResources(const std::vector<std::string>& paths,
 
   CHECK(!resources.is_null());
   CHECK_EQ(resources.size(), paths.size());
-  std::map<std::string, MojoPlatformHandle> path_to_handle;
   for (size_t i = 0; i < resources.size(); ++i) {
     CHECK(resources[i].is_valid());
     MojoPlatformHandle platform_handle;
     CHECK(MojoExtractPlatformHandle(resources[i].release().value(),
                                     &platform_handle) == MOJO_RESULT_OK);
-    path_to_handle[paths[i]] = platform_handle;
+    resource_map_[paths[i]] = platform_handle;
   }
-
-  callback.Run(path_to_handle);
+  loaded_ = true;
 }
 
 }  // namespace resource_provider

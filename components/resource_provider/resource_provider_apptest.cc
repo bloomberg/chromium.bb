@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include "base/bind.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file.h"
 #include "base/run_loop.h"
@@ -57,13 +56,17 @@ class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
   // resources are returned. The return map maps from the path to the contents
   // of the file at the specified path.
   ResourceContentsMap GetResources(const std::set<std::string>& paths) {
+    ResourceLoader loader(application_impl()->shell(), paths);
+    loader.BlockUntilLoaded();
+    const ResourceLoader::ResourceMap& resource_loader_results(
+        loader.resource_map());
+
+    // Load the contents of each of the handles.
     ResourceContentsMap results;
-    base::RunLoop run_loop;
-    ResourceLoader loader(
-        application_impl()->shell(), paths,
-        base::Bind(&ResourceProviderApplicationTest::OnGotResources,
-                   base::Unretained(this), &run_loop, &results));
-    run_loop.Run();
+    for (auto& pair : resource_loader_results) {
+      base::File file(pair.second);
+      results[pair.first] = ReadFile(&file);
+    }
     return results;
   }
 
@@ -73,16 +76,6 @@ class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
   }
 
  private:
-  void OnGotResources(base::RunLoop* run_loop,
-                      ResourceContentsMap* contents_map,
-                      const ResourceLoader::ResourceMap& map) {
-    run_loop->Quit();
-    for (auto& pair : map) {
-      base::File file(pair.second);
-      (*contents_map)[pair.first] = ReadFile(&file);
-    }
-  }
-
   MOJO_DISALLOW_COPY_AND_ASSIGN(ResourceProviderApplicationTest);
 };
 

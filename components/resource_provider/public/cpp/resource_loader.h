@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "mojo/platform_handle/platform_handle.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
@@ -24,28 +23,38 @@ class Shell;
 
 namespace resource_provider {
 
-// ResourceLoader handles making a request to ResourceProvider and calling a
-// callback when the resources are available.
+// ResourceLoader handles making a request to ResourceProvider and blocking
+// until the resources are available. Expected use is to create a ResourceLoader
+// and shortly thereafter call BlockUntilLoaded() to wait until the resources
+// have been obtained.
 class ResourceLoader {
  public:
   using ResourceMap = std::map<std::string, MojoPlatformHandle>;
-  // TODO(sky): convert callback to something that owns handles.
-  using LoadedCallback = base::Callback<void(const ResourceMap&)>;
 
-  ResourceLoader(mojo::Shell* shell,
-                 const std::set<std::string>& paths,
-                 const LoadedCallback& callback);
+  ResourceLoader(mojo::Shell* shell, const std::set<std::string>& paths);
   ~ResourceLoader();
+
+  // Uses WaitForIncomingMessage() to block until the results are available, or
+  // an error occurs. Returns true if the resources were obtained, false on
+  // error.
+  bool BlockUntilLoaded();
+
+  const ResourceMap& resource_map() const { return resource_map_; }
+
+  bool loaded() const { return loaded_; }
 
  private:
   // Callback when resources have loaded.
   void OnGotResources(const std::vector<std::string>& paths,
-                      const LoadedCallback& callback,
                       mojo::Array<mojo::ScopedHandle> resources);
 
   mojo::ServiceProviderPtr resource_provider_service_provider_;
 
   ResourceProviderPtr resource_provider_;
+
+  ResourceMap resource_map_;
+
+  bool loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoader);
 };
