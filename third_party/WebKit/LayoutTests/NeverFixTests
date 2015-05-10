@@ -57,6 +57,10 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 [ Win Linux ] compositing/plugins/composited-plugin.html [ WontFix ]
 [ Win Linux ] compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
 [ Win Linux ] compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/slimmingpaint/compositing/plugins/1x1-composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/slimmingpaint/compositing/plugins/composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/slimmingpaint/compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
+[ Win Linux ] virtual/slimmingpaint/compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
 
 # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
@@ -64,6 +68,7 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Chromium does not support PDF content in <img> tags.
 [ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
+[ Win Linux ] virtual/slimmingpaint/compositing/images/direct-pdf-image.html [ WontFix ]
 
 # Pan-scroll tests are Windows-specific.
 [ Linux Mac ] fast/events/panScroll-click.html [ WontFix ]
@@ -145,7 +150,6 @@ virtual/slimmingpaint/fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
 media/stable [ WontFix ]
-virtual/slimmingpaint/media/stable [ WontFix ]
 
 # Only run fake-Android tests on Linux
 [ Mac Win ] virtual/android [ WontFix ]
@@ -195,6 +199,14 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 # aren't critical to run in this mode.
 virtual/threaded/printing/setPrinting.html [ WontFix ]
 virtual/threaded/printing/width-overflow.html [ WontFix ]
+
+# Reftests failing due to invisible differences caused by rounding.
+# Will remove when we enable slimming paint by default.
+virtual/slimmingpaint/fast/sub-pixel/sub-pixel-transparency-layer.html [ WontFix ]
+virtual/slimmingpaint/fast/repaint/absolute-position-and-opacity-changed.html [ WontFix ]
+virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ WontFix ]
+virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ WontFix ]
+virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ WontFix ]
 
 # Deferred suite doesn't have impl-side painting, so this doesn't make sense
 virtual/deferred/inspector/tracing/paint-command-log-nodes.html [ WontFix ]

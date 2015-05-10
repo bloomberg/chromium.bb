@@ -10,24 +10,13 @@ crbug.com/453972 [ Android ] virtual/slimmingpaint/fast/block [ Pass ]
 
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
-# These need a manual rebaseline after crbug.com/452967
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-html-body-background.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-html-background.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/452967 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/452967 virtual/slimmingpaint/fast/css/ZeroOpacityLayers.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/452967 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageOnlyFailure NeedsManualRebaseline ]
+crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/mask-box-image.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-html-background.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-html-body-background.html [ ImageOnlyFailure ]
+
 crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/pop-up-button-text-alignment-and-direction.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/008.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/009.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/012.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/013.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/014.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/018.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
 crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]
 
@@ -37,7 +26,7 @@ crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
-crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure NeedsManualRebaseline ]
+crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure ]
 
 crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Failure ]
 
@@ -46,11 +35,6 @@ crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-per
 # Slimming Paint printing failures
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Timeout Pass ]
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing.html [ Crash Timeout Pass ]
-
-# Some slimming paint reftest fail when the reference is run with slimming paint disabled.
-crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
-crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ ImageOnlyFailure ]
-crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ ImageOnlyFailure ]
 
 crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-crash.html [ Pass Crash ]
 
@@ -71,12 +55,12 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 
 # It is not possible to capture a marquee at exactly the same state 100% of the runs.
-crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
+crbug.com/445100 virtual/slimmingpaint/fast/block/float/marquee-shrink-to-avoid-floats.html [ Skip ]
 crbug.com/432129 fast/html/marquee-scroll.html [ Pass Failure ]
-crbug.com/432129 virtual/slimmingpaint/fast/html/marquee-scroll.html [ Pass Failure ]
+crbug.com/432129 virtual/slimmingpaint/fast/html/marquee-scroll.html [ Skip ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
-crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Pass Failure ]
+crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Skip ]
 
 crbug.com/427743 [ Mac ] virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ ImageOnlyFailure Crash ]
 
@@ -101,9 +85,9 @@ crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/339118 virtual/pointerevent/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/339118 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
-crbug.com/339118 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
+crbug.com/339118 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Skip ]
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
-crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure Pass ]
+crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Skip ]
 
 # The result here is flaky. So a rebaseline won't make these [ Pass Timeout ].
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure ]
@@ -131,12 +115,13 @@ crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Fail
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
+crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/children-opacity-huge.html [ Skip ]
+crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/children-opacity-no-overlap.html [ Skip ]
+crbug.com/240374 virtual/slimmingpaint/compositing/overlap-blending/reflection-opacity-huge.html [ Skip ]
 
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass Slow ]
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
-
-crbug.com/472569 virtual/slimmingpaint/fast/forms/select/popup-menu-appearance-zoom.html [ Failure ImageOnlyFailure Pass NeedsManualRebaseline ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
 # crbug.com/310679 [ Mac ] compositing/fixed-body-background-positioned.html [ Failure Pass ]
@@ -160,6 +145,10 @@ crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.h
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ImageOnlyFailure Pass ]
+crbug.com/338794 crbug.com/192172 virtual/slimmingpaint/compositing/rtl/rtl-iframe-absolute-overflow.html [ Skip ]
+crbug.com/338794 virtual/slimmingpaint/compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Skip ]
+crbug.com/338794 crbug.com/192172 virtual/slimmingpaint/compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Skip ]
+crbug.com/338794 crbug.com/192172 virtual/slimmingpaint/compositing/rtl/rtl-iframe-fixed-overflow.html [ Skip ]
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
@@ -239,7 +228,6 @@ crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-019.html [ Failure ]
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-020.html [ Failure ]
 crbug.com/399417 media/video-scales-in-media-document.html [ Pass Crash ]
-crbug.com/399417 virtual/slimmingpaint/media/video-scales-in-media-document.html [ Pass Crash ]
 
 # Requires subpixel precision for offset/client/scroll properties
 crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Pass Failure ]
@@ -268,6 +256,7 @@ crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ 
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
+crbug.com/318978 [ Linux ] virtual/slimmingpaint/compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
 crbug.com/318978 [ Linux ] virtual/slimmingpaint/fast/dom/Window/Plug-ins.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-about-blank.html [ Skip ]
@@ -310,20 +299,17 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/382491 virtual/slimmingpaint/fast/clip/nested-rounded-rect.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/clip/nestedTransparencyClip.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-1.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-2.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/transforms/skew-with-unitless-zero.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/transforms/transform-on-inline.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/transforms/transform-table-row.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/transforms/transformed-caret.html [ Skip ]
+crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-1.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-2.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/transforms/skew-with-unitless-zero.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/transforms/transformed-caret.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/compositing/squashing/squashing-print.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
 crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
-
-# ref-test failing due to missing --enable-slimming-paint virtual suite reference_args
-crbug.com/470713 virtual/slimmingpaint/fast/sub-pixel/sub-pixel-transparency-layer.html [ Skip ]
 
 crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/supported-shapes/circle/shape-outside-circle-027.html [ ImageOnlyFailure ]
 
@@ -336,6 +322,7 @@ crbug.com/389648 virtual/slimmingpaint/fast/text-autosizing/table-inflation-cras
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
+crbug.com/396775 virtual/slimmingpaint/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Skip ]
 
 crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout Failure ]
 crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
@@ -541,6 +528,7 @@ crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
+crbug.com/265650 virtual/slimmingpaint/compositing/repaint/transform-style-change.html [ Skip ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 crbug.com/266754 virtual/slimmingpaint/fast/ruby/ruby-svg-crash.html [ Skip ]
@@ -640,8 +628,6 @@ crbug.com/321237 [ Lion ] virtual/antialiasedtext/fast/text/international/comple
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Skip ]
-
-crbug.com/473411 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ ImageOnlyFailure ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
 # Windows, Mac and Android use a statically-linked BoringSSL.
@@ -796,9 +782,9 @@ crbug.com/313846 [ Release XP ] http/tests/images/bmp-partial-load.html [ ImageO
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
 crbug.com/390125 media/video-frame-accurate-seek.html [ NeedsManualRebaseline ]
-crbug.com/390125 virtual/slimmingpaint/media/video-frame-accurate-seek.html [ Skip ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
+crbug.com/245556 virtual/slimmingpaint/compositing/transitions/transform-on-large-layer.html [ Skip ]
 
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
@@ -824,6 +810,7 @@ crbug.com/460633 virtual/slimmingpaint/compositing/overflow/do-not-repaint-if-sc
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
+crbug.com/324369 virtual/slimmingpaint/compositing/video/video-reflection.html [ Skip ]
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
@@ -835,7 +822,6 @@ crbug.com/356834 fast/repaint/shift-relative-positioned-container-with-image-add
 crbug.com/356834 virtual/slimmingpaint/fast/repaint/shift-relative-positioned-container-with-image-addition.html [ Skip ]
 
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure ]
-crbug.com/306249 virtual/slimmingpaint/media/W3C/video/networkState/networkState_during_progress.html [ Skip ]
 
 crbug.com/345649 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
 crbug.com/345648 fast/repaint/selection-gap-overflow-scroll.html [ Pass Failure ]
@@ -971,8 +957,6 @@ crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Fai
 crbug.com/446408 [ Win Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 crbug.com/446408 [ Linux Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 
-crbug.com/470713 virtual/slimmingpaint/fast/block/float/float-not-removed-from-next-sibling4.html [ Skip ]
-
 # Heap buffer overflow failures on Linux ASAN
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]
@@ -1028,6 +1012,7 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
 crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
+crbug.com/357438 [ Mac Win ] virtual/slimmingpaint/compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
@@ -1052,6 +1037,7 @@ crbug.com/354785 [ Release Retina ] svg/as-background-image/animated-svg-animati
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]
+crbug.com/359960 virtual/slimmingpaint/compositing/iframes/scrolling-iframe.html [ Skip ]
 
 crbug.com/361133 fast/frames/remove-frame-during-load-event.html [ Pass Crash ]
 crbug.com/361133 virtual/slimmingpaint/fast/frames/remove-frame-during-load-event.html [ Skip ]
@@ -1064,11 +1050,13 @@ crbug.com/362047 [ Mac Linux ] mhtml/mhtml_in_iframe.html [ Crash Pass ]
 crbug.com/362073 [ Mac Debug ] fast/dom/shadow/input-color-in-content.html [ Crash Pass ]
 
 crbug.com/365400 [ Mac ] compositing/images/direct-pdf-image.html [ Failure ]
+crbug.com/365400 [ Mac ] virtual/slimmingpaint/compositing/images/direct-pdf-image.html [ Skip ]
 
 crbug.com/453940 fast/dom/HTMLImageElement/image-sizes-2x.html [ Pass Failure ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
+crbug.com/306222 virtual/slimmingpaint/fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 virtual/slimmingpaint/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
@@ -1140,10 +1128,6 @@ crbug.com/408123 fast/multicol/pagination-v-horizontal-bt.html [ Skip ]
 crbug.com/408123 fast/multicol/pagination-v-horizontal-tb.html [ Skip ]
 crbug.com/408123 fast/multicol/pagination-v-vertical-lr.html [ Skip ]
 crbug.com/408123 fast/multicol/pagination-v-vertical-rl.html [ Skip ]
-
-crbug.com/382491 virtual/slimmingpaint/fast/box-shadow/inset-with-extraordinary-radii-and-border.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/box-shadow/inset.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 crbug.com/467477 virtual/slimmingpaint/fast/multicol/vertical-rl/nested-columns.html [ Skip ]
@@ -1302,15 +1286,6 @@ crbug.com/408123 virtual/stable/fast/pagination/caret-range-outside-paged-y-rtl.
 crbug.com/408123 virtual/stable/fast/pagination/caret-range-outside-paged-y.html [ Skip ]
 crbug.com/408123 virtual/stable/fast/pagination/div-y-horizontal-tb-rtl.html [ Skip ]
 crbug.com/408123 virtual/stable/fast/pagination/div-y-horizontal-bt-rtl.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/caret-range-outside-paged-x-rtl-vertical-rl.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/caret-range-outside-paged-x-rtl.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/caret-range-outside-paged-x-vertical-rl.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/caret-range-outside-paged-x.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/caret-range-outside-paged-y-rtl-vertical-rl.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/caret-range-outside-paged-y-rtl.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/caret-range-outside-paged-y.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/div-y-horizontal-bt-rtl.html [ Skip ]
-crbug.com/408123 virtual/slimmingpaint/fast/pagination/div-y-horizontal-tb-rtl.html [ Skip ]
 
 crbug.com/419101 [ Win Debug ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ NeedsManualRebaseline ]
 
@@ -1322,7 +1297,6 @@ crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFail
 # crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
 crbug.com/394216 media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
-crbug.com/394216 virtual/slimmingpaint/media/video-seek-to-duration-with-playbackrate-zero.html [ Pass Timeout ]
 crbug.com/394225 [ Win ] fast/text/sub-pixel/text-scaling-webfont.html [ Crash Pass ]
 
 # Failures that need further investigation.
@@ -1332,12 +1306,12 @@ crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-compo
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
 
 crbug.com/436477 fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
-crbug.com/436477 virtual/slimmingpaint/fast/js/mozilla/strict/assign-to-callee-name.html [ NeedsManualRebaseline ]
+crbug.com/436477 virtual/slimmingpaint/fast/js/mozilla/strict/assign-to-callee-name.html [ Skip ]
 
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Failure ImageOnlyFailure ]
 
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
-crbug.com/373430 [ Linux Win7 ] virtual/slimmingpaint/fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
+crbug.com/373430 [ Linux Win7 ] virtual/slimmingpaint/fast/dom/Geolocation/error-clear-watch.html [ Skip ]
 
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
@@ -1349,7 +1323,7 @@ crbug.com/313438 svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsManualReba
 crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsManualRebaseline ]
 
 crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
-crbug.com/375565 [ Mac ] virtual/slimmingpaint/fast/repaint/caret-with-transformation.html [ Pass Failure ]
+crbug.com/375565 [ Mac ] virtual/slimmingpaint/fast/repaint/caret-with-transformation.html [ Skip ]
 
 crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
@@ -1357,8 +1331,6 @@ crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
 crbug.com/400829 media/video-object-fit.html [ ImageOnlyFailure ]
-crbug.com/400841 virtual/slimmingpaint/media/video-canvas-draw.html [ ImageOnlyFailure ]
-crbug.com/400829 virtual/slimmingpaint/media/video-object-fit.html [ ImageOnlyFailure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ ImageOnlyFailure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
@@ -1418,39 +1390,9 @@ crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
 crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
 
-crbug.com/382491 virtual/slimmingpaint/compositing/color-matching/image-color-matching.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/geometry/vertical-scroll-composited.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/iframes/scrolling-iframe.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/images/direct-pdf-image.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/layer-creation/incremental-destruction.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/lots-of-img-layers.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/overlap-blending/children-opacity-huge.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/overlap-blending/children-opacity-no-overlap.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/overlap-blending/reflection-opacity-huge.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/compositing/perpendicular-layer-sorting.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/plugins/1x1-composited-plugin.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/plugins/composited-plugin.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/plugins/large-to-small-composited-plugin.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/plugins/small-to-large-composited-plugin.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/repaint/newly-composited-on-scroll.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/repaint/requires-backing-repaint.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/repaint/resize-repaint.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/repaint/transform-style-change.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/rtl/rtl-iframe-absolute-overflow.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/rtl/rtl-iframe-fixed-overflow.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/scaling/tiled-layer-recursion.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/sibling-positioning.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/squashing/iframe-inside-squashed-layer.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/squashing/remove-squashed-layer-plus-move.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/compositing/squashing/squashing-print.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/transitions/transform-on-large-layer.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/video/video-reflection.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/compositing/visibility/visibility-image-layers.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/lots-of-img-layers-with-opacity.html [ Skip ]
-crbug.com/473411 virtual/slimmingpaint/compositing/plugins/invalidate_rect.html [ Skip ]
+crbug.com/473411 virtual/slimmingpaint/compositing/repaint/resize-repaint.html [ NeedsRebaseline ]
+crbug.com/473411 virtual/slimmingpaint/compositing/squashing/iframe-inside-squashed-layer.html [ NeedsRebaseline ]
+crbug.com/473411 virtual/slimmingpaint/compositing/squashing/remove-squashed-layer-plus-move.html [ NeedsRebaseline ]
 
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
@@ -1478,7 +1420,6 @@ crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass ]
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 # Will be converted to requestMediaKeySystemAccess() tests.
 crbug.com/425186 media/encrypted-media/encrypted-media-istypesupported.html [ Skip ]
-crbug.com/425186 virtual/slimmingpaint/media/encrypted-media/encrypted-media-istypesupported.html [ Skip ]
 
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 
@@ -1492,8 +1433,11 @@ crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Sl
 crbug.com/346357 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 
 crbug.com/420749 compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
+crbug.com/420749 virtual/slimmingpaint/compositing/visibility/visibility-image-layers.html [ Skip ]
 crbug.com/420749 compositing/geometry/vertical-scroll-composited.html [ NeedsManualRebaseline ]
+crbug.com/420749 virtual/slimmingpaint/compositing/geometry/vertical-scroll-composited.html [ Skip ]
 crbug.com/420749 compositing/color-matching/image-color-matching.html [ NeedsManualRebaseline ]
+crbug.com/420749 virtual/slimmingpaint/compositing/color-matching/image-color-matching.html [ Skip ]
 crbug.com/420749 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
@@ -1511,9 +1455,9 @@ crbug.com/412570 [ Win7 ] virtual/gpu/fast/canvas/setWidthResetAfterForcedRender
 crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 
 crbug.com/415620 media/media-controller-media-fragment-uri-initial-playback-position.html [ Pass Failure ]
-crbug.com/415620 virtual/slimmingpaint/media/media-controller-media-fragment-uri-initial-playback-position.html [ Skip ]
 
 crbug.com/417174 compositing/scaling/tiled-layer-recursion.html [ Pass ImageOnlyFailure ]
+crbug.com/417174 virtual/slimmingpaint/compositing/scaling/tiled-layer-recursion.html [ Skip ]
 
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Pass Failure ]
 
@@ -1538,23 +1482,6 @@ crbug.com/420008 [ Win ] inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] http/tests/inspector/tracing [ Pass Failure ]
 crbug.com/420008 [ Win ] virtual/deferred/inspector/tracing [ Pass Failure ]
 
-crbug.com/472306 virtual/slimmingpaint/fast/forms/input-text-scroll-left-on-blur.html [ Skip ]
-crbug.com/472306 virtual/slimmingpaint/fast/forms/textarea-scrolled-type.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/calendar-picker-appearance-minimum-date.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/calendar-picker-appearance-required.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/calendar-picker-appearance-step.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/calendar-picker-appearance.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/month-picker-appearance-step.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/month-picker-appearance.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/week-picker-appearance-step.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/calendar-picker/week-picker-appearance.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/search/search-appearance-basic.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/submit/submit-appearance-basic.html [ Skip ]
-crbug.com/382491 virtual/slimmingpaint/fast/forms/textarea/textarea-appearance-basic.html [ Skip ]
-
 # These are experiencing assertions in harfbuzz.
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
@@ -1573,6 +1500,7 @@ crbug.com/458601 virtual/slimmingpaint/css3/filters/huge-region.html [ Timeout ]
 
 # Two part change for layer intersection. Can be rebaselined after https://codereview.chromium.org/595593002/ lands
 crbug.com/116710 compositing/perpendicular-layer-sorting.html [ NeedsManualRebaseline ]
+crbug.com/116710 virtual/slimmingpaint/compositing/perpendicular-layer-sorting.html [ Skip ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsManualRebaseline ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsManualRebaseline ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsManualRebaseline ]
@@ -1833,9 +1761,8 @@ crbug.com/480769 [ Linux Release ] http/tests/inspector/service-workers/service-
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow ]
 crbug.com/480769 [ Release ] http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass ]
 
-crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-lr.html [ Skip ]
-crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-rl.html [ Skip ]
-crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Skip ]
+crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-lr.html [ ImageOnlyFailure ]
+crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-rl.html [ ImageOnlyFailure ]
 
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-1x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-2x.html [ Pass Failure ]
@@ -1889,8 +1816,6 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailur
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
 
-crbug.com/463302 virtual/slimmingpaint/fast/repaint/absolute-position-and-opacity-changed.html [ ImageOnlyFailure ]
-
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 
@@ -1932,7 +1857,6 @@ crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute
 crbug.com/469660 inspector/elements/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
 
 crbug.com/481779 media/encrypted-media/encrypted-media-syntax.html [ Slow ]
-crbug.com/481779 virtual/slimmingpaint/media/encrypted-media/encrypted-media-syntax.html [ Skip ]
 
 crbug.com/469683 animations/responsive-neutral-keyframes.html [ Slow ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure Timeout ]
@@ -1976,7 +1900,6 @@ crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass 
 # Temporarily disabled due to a change in HTMLMediaElement behavior, I'll
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
-crbug.com/475244 virtual/slimmingpaint/media/video-durationchange-on-ended.html [ Skip ]
 
 crbug.com/476913 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
 crbug.com/476913 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
@@ -1990,6 +1913,7 @@ crbug.com/479202 virtual/slimmingpaint/fast/forms/select/select-typeahead-with-s
 
 crbug.com/480652 fast/events/window-onerror-04.html [ NeedsManualRebaseline ]
 crbug.com/480652 svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
+crbug.com/480652 virtual/slimmingpaint/svg/dom/SVGViewSpec.html [ Skip ]
 crbug.com/480652 virtual/pointerevent/fast/events/window-onerror-04.html [ NeedsManualRebaseline ]
 crbug.com/480652 virtual/slimmingpaint/fast/events/window-onerror-04.html [ Skip ]
 
@@ -1999,7 +1923,7 @@ crbug.com/480652 virtual/slimmingpaint/fast/events/window-onerror-04.html [ Skip
 crbug.com/471405 [ Mac Win7 ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
 crbug.com/471405 [ XP ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ ImageOnlyFailure ]
 
-crbug.com/452967 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ NeedsManualRebaseline ]
+crbug.com/452967 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ NeedsRebaseline ]
 
 # These tests have very minor pixel differences that need to be investigated.
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-objectBoundingBox.svg [ ImageOnlyFailure Pass ]
@@ -2027,5 +1951,3 @@ crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
 
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
-
-crbug.com/480652 virtual/slimmingpaint/svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
