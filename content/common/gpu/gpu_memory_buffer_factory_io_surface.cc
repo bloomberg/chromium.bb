@@ -148,9 +148,8 @@ void GpuMemoryBufferFactoryIOSurface::DestroyGpuMemoryBuffer(
   base::AutoLock lock(io_surfaces_lock_);
 
   IOSurfaceMapKey key(id, client_id);
-  IOSurfaceMap::iterator it = io_surfaces_.find(key);
-  if (it != io_surfaces_.end())
-    io_surfaces_.erase(it);
+  DCHECK(io_surfaces_.find(key) != io_surfaces_.end());
+  io_surfaces_.erase(key);
 }
 
 gpu::ImageFactory* GpuMemoryBufferFactoryIOSurface::AsImageFactory() {

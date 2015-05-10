@@ -85,9 +85,8 @@ void GpuMemoryBufferFactorySurfaceTexture::DestroyGpuMemoryBuffer(
     base::AutoLock lock(surface_textures_lock_);
 
     SurfaceTextureMapKey key(id, client_id);
-    SurfaceTextureMap::iterator it = surface_textures_.find(key);
-    if (it != surface_textures_.end())
-      surface_textures_.erase(it);
+    DCHECK(surface_textures_.find(key) != surface_textures_.end());
+    surface_textures_.erase(key);
   }
 
   SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(id, client_id);
