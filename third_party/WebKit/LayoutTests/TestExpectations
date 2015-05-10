@@ -225,10 +225,6 @@ crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-
 crbug.com/484953 imported/web-platform-tests/shadow-dom/shadow-trees/satisfying-matching-criteria/test-020.html [ Failure ]
 crbug.com/399417 media/video-scales-in-media-document.html [ Pass Crash ]
 
-# Requires subpixel precision for offset/client/scroll properties
-crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Pass Failure ]
-crbug.com/360889 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Skip ]
-
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
