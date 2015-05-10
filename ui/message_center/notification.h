@@ -50,6 +50,7 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   std::vector<ButtonInfo> buttons;
   bool should_make_spoken_feedback_for_popup_updates;
   bool clickable;
+  std::vector<int> vibration_pattern;
   bool silent;
 };
 
@@ -103,6 +104,15 @@ class MESSAGE_CENTER_EXPORT Notification {
   // Begin unpacked values from optional_fields.
   int priority() const { return optional_fields_.priority; }
   void set_priority(int priority) { optional_fields_.priority = priority; }
+
+  // This vibration_pattern property currently has no effect on
+  // non-Android platforms.
+  const std::vector<int>& vibration_pattern() const {
+    return optional_fields_.vibration_pattern;
+  }
+  void set_vibration_pattern(const std::vector<int>& vibration_pattern) {
+    optional_fields_.vibration_pattern = vibration_pattern;
+  }
 
   // This property currently has no effect on non-Android platforms.
   bool silent() const { return optional_fields_.silent; }

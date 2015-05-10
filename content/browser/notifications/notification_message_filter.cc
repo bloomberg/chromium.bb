@@ -19,6 +19,26 @@
 
 namespace content {
 
+namespace {
+
+const int kMinimumVibrationDurationMs = 1;  // 1 millisecond
+const int kMaximumVibrationDurationMs = 10000;  // 10 seconds
+
+PlatformNotificationData SanitizeNotificationData(
+    const PlatformNotificationData& notification_data) {
+  PlatformNotificationData sanitized_data = notification_data;
+
+  // Make sure that the vibration values are within reasonable bounds.
+  for (int& pattern : sanitized_data.vibration_pattern) {
+    pattern = std::min(kMaximumVibrationDurationMs,
+        std::max(kMinimumVibrationDurationMs, pattern));
+  }
+
+  return sanitized_data;
+}
+
+}  // namespace
+
 NotificationMessageFilter::NotificationMessageFilter(
     int process_id,
     PlatformNotificationContextImpl* notification_context,
@@ -101,7 +121,7 @@ void NotificationMessageFilter::OnShowPlatformNotification(
   service->DisplayNotification(browser_context_,
                                origin,
                                icon,
-                               notification_data,
+                               SanitizeNotificationData(notification_data),
                                delegate.Pass(),
                                &close_closure);
 
@@ -125,7 +145,10 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   NotificationDatabaseData database_data;
   database_data.origin = origin;
   database_data.service_worker_registration_id = service_worker_registration_id;
-  database_data.notification_data = notification_data;
+
+  PlatformNotificationData sanitized_notification_data =
+      SanitizeNotificationData(notification_data);
+  database_data.notification_data = sanitized_notification_data;
 
   // TODO(peter): Significantly reduce the amount of information we need to
   // retain outside of the database for displaying notifications.
@@ -137,7 +160,7 @@ void NotificationMessageFilter::OnShowPersistentNotification(
                  request_id,
                  origin,
                  icon,
-                 notification_data));
+                 sanitized_notification_data));
 }
 
 void NotificationMessageFilter::DidWritePersistentNotificationData(

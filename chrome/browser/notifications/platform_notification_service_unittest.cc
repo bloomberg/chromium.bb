@@ -12,10 +12,13 @@
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
+
+const int kNotificationVibrationPattern[] = { 100, 200, 300 };
 
 #if !defined(OS_ANDROID)
 const int64_t kPersistentNotificationId = 42;
@@ -157,9 +160,14 @@ TEST_F(PlatformNotificationServiceTest, PersistentNotificationDisplay) {
 #endif  // !defined(OS_ANDROID)
 
 TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
+  std::vector<int> vibration_pattern(
+      kNotificationVibrationPattern,
+      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+
   content::PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16("My notification's title");
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
+  notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
 
   MockDesktopNotificationDelegate* delegate
@@ -179,6 +187,10 @@ TEST_F(PlatformNotificationServiceTest, DisplayPageNotificationMatches) {
       base::UTF16ToUTF8(notification.title()));
   EXPECT_EQ("Hello, world!",
       base::UTF16ToUTF8(notification.message()));
+
+  EXPECT_THAT(notification.vibration_pattern(),
+      testing::ElementsAreArray(kNotificationVibrationPattern));
+
   EXPECT_TRUE(notification.silent());
 }
 

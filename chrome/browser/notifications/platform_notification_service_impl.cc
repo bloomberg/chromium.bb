@@ -323,6 +323,7 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
       display_source, notification_data.tag, delegate);
 
   notification.set_context_message(display_source);
+  notification.set_vibration_pattern(notification_data.vibration_pattern);
   notification.set_silent(notification_data.silent);
 
   // Web Notifications do not timeout.

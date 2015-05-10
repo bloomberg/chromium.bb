@@ -130,6 +130,9 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   if (!icon_bitmap.isNull())
     icon = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
+  ScopedJavaLocalRef<jintArray> vibration_pattern =
+      base::android::ToJavaIntArray(env, notification.vibration_pattern());
+
   Java_NotificationUIManager_displayNotification(
       env,
       java_object_.obj(),
@@ -139,6 +142,7 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
       title.obj(),
       body.obj(),
       icon.obj(),
+      vibration_pattern.obj(),
       notification.silent());
 
   regenerated_notification_infos_[persistent_notification_id] =

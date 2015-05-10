@@ -293,6 +293,49 @@ public class NotificationUIManager {
     }
 
     /**
+     * Generates the notfiication defaults from vibrationPattern's size and silent.
+     *
+     * Use the system's default ringtone, vibration and indicator lights unless the notification
+     * has been marked as being silent.
+     * If a vibration pattern is set, the notification should use the provided pattern
+     * rather than the defaulting to system settings.
+     *
+     * @param vibrationPatternLength Vibration pattern's size for the Notification.
+     * @param silent Whether the default sound, vibration and lights should be suppressed.
+     * @return The generated notification's default value.
+    */
+    @VisibleForTesting
+    static int makeDefaults(int vibrationPatternLength, boolean silent) {
+        assert !silent || vibrationPatternLength == 0;
+
+        if (silent) return 0;
+
+        int defaults = Notification.DEFAULT_ALL;
+        if (vibrationPatternLength > 0) {
+            defaults &= ~Notification.DEFAULT_VIBRATE;
+        }
+        return defaults;
+    }
+
+    /**
+     * Generates the vibration pattern used in Android notification.
+     *
+     * Android takes a long array where the first entry indicates the number of milliseconds to wait
+     * prior to starting the vibration, whereas Chrome follows the syntax of the Web Vibration API.
+     *
+     * @param vibrationPattern Vibration pattern following the Web Vibration API syntax.
+     * @return Vibration pattern following the Android syntax.
+    */
+    @VisibleForTesting
+    static long[] makeVibrationPattern(int[] vibrationPattern) {
+        long[] pattern = new long[vibrationPattern.length + 1];
+        for (int i = 0; i < vibrationPattern.length; ++i) {
+            pattern[i + 1] = vibrationPattern[i];
+        }
+        return pattern;
+    }
+
+    /**
      * Displays a notification with the given details.
      *
      * @param persistentNotificationId The persistent id of the notification.
@@ -306,11 +349,13 @@ public class NotificationUIManager {
      *             text by the Android notification system.
      * @param icon Icon to be displayed in the notification. When this isn't a valid Bitmap, a
      *             default icon will be generated instead.
+     * @param vibrationPattern Vibration pattern following the Web Vibration syntax.
      * @param silent Whether the default sound, vibration and lights should be suppressed.
+     * @see https://developer.android.com/reference/android/app/Notification.html
      */
     @CalledByNative
     private void displayNotification(long persistentNotificationId, String origin, String tag,
-            String title, String body, Bitmap icon, boolean silent) {
+            String title, String body, Bitmap icon, int[] vibrationPattern, boolean silent) {
         if (icon == null || icon.getWidth() == 0) {
             icon = getIconGenerator().generateIconForUrl(origin, true);
         }
@@ -351,9 +396,10 @@ public class NotificationUIManager {
                 .setTicker(createTickerText(title, body))
                 .setSubText(origin);
 
-        // Use the system's default ringtone, vibration and indicator lights unless the notification
-        // has been marked as being silent, for example because it's low priority.
-        if (!silent) notificationBuilder.setDefaults(Notification.DEFAULT_ALL);
+        notificationBuilder.setDefaults(makeDefaults(vibrationPattern.length, silent));
+        if (vibrationPattern.length > 0) {
+            notificationBuilder.setVibrate(makeVibrationPattern(vibrationPattern));
+        }
 
         String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
         mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());

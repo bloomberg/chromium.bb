@@ -6,6 +6,7 @@
 #include "content/browser/notifications/notification_database_data.pb.h"
 #include "content/browser/notifications/notification_database_data_conversions.h"
 #include "content/public/browser/notification_database_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -19,9 +20,14 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
+const int kNotificationVibrationPattern[] = { 100, 200, 300 };
 const unsigned char kNotificationData[] = { 0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf };
 
 TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
+  std::vector<int> vibration_pattern(
+      kNotificationVibrationPattern,
+      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+
   std::vector<char> developer_data(
       kNotificationData, kNotificationData + arraysize(kNotificationData));
 
@@ -33,6 +39,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.body = base::ASCIIToUTF16(kNotificationBody);
   notification_data.tag = kNotificationTag;
   notification_data.icon = GURL(kNotificationIconUrl);
+  notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
   notification_data.data = developer_data;
 
@@ -68,6 +75,10 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   EXPECT_EQ(notification_data.body, copied_notification_data.body);
   EXPECT_EQ(notification_data.tag, copied_notification_data.tag);
   EXPECT_EQ(notification_data.icon, copied_notification_data.icon);
+
+  EXPECT_THAT(copied_notification_data.vibration_pattern,
+      testing::ElementsAreArray(kNotificationVibrationPattern));
+
   EXPECT_EQ(notification_data.silent, copied_notification_data.silent);
 
   ASSERT_EQ(developer_data.size(), copied_notification_data.data.size());

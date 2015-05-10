@@ -61,6 +61,14 @@
         });
       }
 
+      // Displays a persistent notification with vibrate field.
+      function DisplayPersistentNotificationVibrate() {
+        DisplayPersistentNotification('Title', {
+          body: 'Contents',
+          vibrate: [100, 200, 300]
+        });
+      }
+
       // Displays a persistent notification with a data: URL as its image.
       function DisplayPersistentNotificationDataUrlImage() {
         fetch('icon.png').then(function(response) {

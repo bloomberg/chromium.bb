@@ -46,6 +46,7 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       should_make_spoken_feedback_for_popup_updates(
           other.should_make_spoken_feedback_for_popup_updates),
       clickable(other.clickable),
+      vibration_pattern(other.vibration_pattern),
       silent(other.silent) {}
 
 RichNotificationData::~RichNotificationData() {}

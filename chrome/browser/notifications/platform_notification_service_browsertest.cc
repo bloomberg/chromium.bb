@@ -23,12 +23,15 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 // -----------------------------------------------------------------------------
 
 // Dimensions of the icon.png resource in the notification test data directory.
 const int kIconWidth = 100;
 const int kIconHeight = 100;
+
+const int kNotificationVibrationPattern[] = { 100, 200, 300 };
 
 class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
  public:
@@ -216,6 +219,28 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   EXPECT_EQ(kIconWidth, notification.icon().Width());
   EXPECT_EQ(kIconHeight, notification.icon().Height());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       WebNotificationOptionsVibrationPattern) {
+  std::string script_result;
+
+  InfoBarResponder accepting_responder(GetInfoBarService(), true);
+  ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
+  EXPECT_EQ("granted", script_result);
+
+  ASSERT_TRUE(RunScript("DisplayPersistentNotificationVibrate()",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  EXPECT_EQ("Title", base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ("Contents", base::UTF16ToUTF8(notification.message()));
+
+  EXPECT_THAT(notification.vibration_pattern(),
+      testing::ElementsAreArray(kNotificationVibrationPattern));
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,

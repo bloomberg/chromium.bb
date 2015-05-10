@@ -27,6 +27,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -382,5 +383,36 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
                 "SystemDownloadNotifier;https://example.com;42"));
         assertNull(NotificationUIManager.getOriginFromTag(
                 "NotificationUIManager;SystemDownloadNotifier;42"));
+    }
+
+    /**
+     * Verifies that the makeDefaults method returns the generated notification defaults.
+     */
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testMakeDefaults() throws Exception {
+        // 0 should be returned if silent is true and vibration's length is 0.
+        assertEquals(0, NotificationUIManager.makeDefaults(0, true));
+
+        // Notification.DEFAULT_ALL should be returned if silent is false and
+        // vibration's length is 0.
+        assertEquals(Notification.DEFAULT_ALL,
+                NotificationUIManager.makeDefaults(0, false));
+
+        // Notification.DEFAULT_ALL & ~Notification.DEFAULT_VIBRATE should be returned
+        // if silent is false and vibration's length is greater than 0.
+        assertEquals(Notification.DEFAULT_ALL & ~Notification.DEFAULT_VIBRATE,
+                NotificationUIManager.makeDefaults(10, false));
+    }
+
+    /**
+     * Verifies that the makeVibrationPattern method returns vibration pattern used
+     * in Android notification.
+     */
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testMakeVibrationPattern() throws Exception {
+        assertTrue(Arrays.equals(new long[] {0, 100, 200, 300},
+                NotificationUIManager.makeVibrationPattern(new int[] {100, 200, 300})));
     }
 }

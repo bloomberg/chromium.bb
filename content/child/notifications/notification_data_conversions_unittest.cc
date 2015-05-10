@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/platform_notification_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -20,9 +21,14 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
+const int kNotificationVibrationPattern[] = { 100, 200, 300 };
 const unsigned char kNotificationData[] = { 0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf };
 
 TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
+  std::vector<int> vibration_pattern(
+      kNotificationVibrationPattern,
+      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+
   std::vector<char> developer_data(
       kNotificationData, kNotificationData + arraysize(kNotificationData));
 
@@ -33,6 +39,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
       blink::WebString::fromUTF8(kNotificationBody),
       blink::WebString::fromUTF8(kNotificationTag),
       blink::WebURL(GURL(kNotificationIconUrl)),
+      blink::WebVector<int>(vibration_pattern),
       true /* silent */,
       blink::WebVector<char>(developer_data));
 
@@ -45,6 +52,9 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_EQ(kNotificationTag, platform_data.tag);
   EXPECT_EQ(kNotificationIconUrl, platform_data.icon.spec());
   EXPECT_TRUE(platform_data.silent);
+
+  EXPECT_THAT(platform_data.vibration_pattern,
+      testing::ElementsAreArray(kNotificationVibrationPattern));
 
   ASSERT_EQ(developer_data.size(), platform_data.data.size());
   for (size_t i = 0; i < developer_data.size(); ++i)
@@ -68,6 +78,10 @@ TEST(NotificationDataConversionsTest,
 }
 
 TEST(NotificationDataConversionsTest, ToWebNotificationData) {
+  std::vector<int> vibration_pattern(
+      kNotificationVibrationPattern,
+      kNotificationVibrationPattern + arraysize(kNotificationVibrationPattern));
+
   std::vector<char> developer_data(
       kNotificationData, kNotificationData + arraysize(kNotificationData));
 
@@ -79,6 +93,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
   platform_data.tag = kNotificationTag;
   platform_data.icon = GURL(kNotificationIconUrl);
+  platform_data.vibration_pattern = vibration_pattern;
   platform_data.silent = true;
   platform_data.data = developer_data;
 
@@ -90,6 +105,11 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   EXPECT_EQ(kNotificationBody, web_data.body);
   EXPECT_EQ(kNotificationTag, web_data.tag);
   EXPECT_EQ(kNotificationIconUrl, web_data.icon.string());
+
+  ASSERT_EQ(vibration_pattern.size(), web_data.vibrate.size());
+  for (size_t i = 0; i < vibration_pattern.size(); ++i)
+    EXPECT_EQ(vibration_pattern[i], web_data.vibrate[i]);
+
   EXPECT_TRUE(web_data.silent);
 
   ASSERT_EQ(developer_data.size(), web_data.data.size());
