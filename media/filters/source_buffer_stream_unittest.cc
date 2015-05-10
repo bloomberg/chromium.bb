@@ -3939,6 +3939,33 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoTinySplices) {
   CheckNoNextBuffer();
 }
 
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
+  video_config_ = TestVideoConfig::Invalid();
+  audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
+                           CHANNEL_LAYOUT_STEREO, 4000, NULL, 0, false, false,
+                           base::TimeDelta(), 0);
+  stream_.reset(new SourceBufferStream(audio_config_, log_cb(), true));
+  // Equivalent to 0.5ms per frame.
+  SetStreamInfo(2000, 2000);
+  Seek(0);
+
+  // Append four buffers with a 0.5ms duration each.
+  NewSegmentAppend(0, 4);
+  CheckExpectedRangesByTimestamp("{ [0,2) }");
+
+  // Overlap the range [0, 2) with [1.25, 2); this results in an overlap of
+  // 0.75ms between the ranges.
+  NewSegmentAppend_OffsetFirstBuffer(2, 2,
+                                     base::TimeDelta::FromMillisecondsD(0.25));
+  CheckExpectedRangesByTimestamp("{ [0,2) }");
+
+  // A splice frame should not be generated (indicated by the lack of a config
+  // change in the expected buffer string) since it requires at least 1ms of
+  // data to crossfade.
+  CheckExpectedBuffers("0K 0K 1K 1K 1K");
+  CheckNoNextBuffer();
+}
+
 TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Preroll) {
   SetAudioStream();
   Seek(0);

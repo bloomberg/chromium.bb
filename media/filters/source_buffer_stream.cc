@@ -1545,14 +1545,16 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
     }
   }
 
-  // Don't generate splice frames which represent less than two frames, since we
-  // need at least that much to generate a crossfade.  Per the spec, make this
-  // check using the sample rate of the overlapping buffers.
+  // Don't generate splice frames which represent less than a millisecond (which
+  // is frequently the extent of timestamp resolution for poorly encoded media)
+  // or less than two frames (need at least two to crossfade).
   const base::TimeDelta splice_duration =
       pre_splice_buffers.back()->timestamp() +
       pre_splice_buffers.back()->duration() - splice_timestamp;
-  const base::TimeDelta minimum_splice_duration = base::TimeDelta::FromSecondsD(
-      2.0 / audio_configs_[append_config_index_].samples_per_second());
+  const base::TimeDelta minimum_splice_duration = std::max(
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromSecondsD(
+          2.0 / audio_configs_[append_config_index_].samples_per_second()));
   if (splice_duration < minimum_splice_duration) {
     DVLOG(1) << "Can't generate splice: not enough samples for crossfade; have "
              << splice_duration.InMicroseconds() << " us, but need "
@@ -1560,6 +1562,9 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
     return;
   }
 
+  DVLOG(1) << "Generating splice frame @ " << new_buffers.front()->timestamp()
+           << ", splice duration: " << splice_duration.InMicroseconds()
+           << " us";
   new_buffers.front()->ConvertToSpliceBuffer(pre_splice_buffers);
 }
 
