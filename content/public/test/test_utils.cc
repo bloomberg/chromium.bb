@@ -126,9 +126,10 @@ void RunThisRunLoop(base::RunLoop* run_loop) {
 }
 
 void RunAllPendingInMessageLoop() {
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  RunMessageLoop();
+      FROM_HERE,  GetQuitTaskForRunLoop(&run_loop));
+  RunThisRunLoop(&run_loop);
 }
 
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {

@@ -11,7 +11,7 @@
 namespace extensions {
 
 ResultCatcher::ResultCatcher()
-    : browser_context_restriction_(NULL), waiting_(false) {
+    : browser_context_restriction_(NULL) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
                  content::NotificationService::AllSources());
@@ -29,9 +29,10 @@ bool ResultCatcher::GetNextResult() {
   // off as the test calls this, going to the run loop only when the queue is
   // empty.
   if (results_.empty()) {
-    waiting_ = true;
-    content::RunMessageLoop();
-    waiting_ = false;
+    base::RunLoop run_loop;
+    quit_closure_ = content::GetQuitTaskForRunLoop(&run_loop);
+    content::RunThisRunLoop(&run_loop);
+    quit_closure_ = base::Closure();
   }
 
   if (!results_.empty()) {
@@ -60,16 +61,18 @@ void ResultCatcher::Observe(int type,
       VLOG(1) << "Got EXTENSION_TEST_PASSED notification.";
       results_.push_back(true);
       messages_.push_back(std::string());
-      if (waiting_)
-        base::MessageLoopForUI::current()->Quit();
+      if (!quit_closure_.is_null()) {
+        quit_closure_.Run();
+      }
       break;
 
     case extensions::NOTIFICATION_EXTENSION_TEST_FAILED:
       VLOG(1) << "Got EXTENSION_TEST_FAILED notification.";
       results_.push_back(false);
       messages_.push_back(*(content::Details<std::string>(details).ptr()));
-      if (waiting_)
-        base::MessageLoopForUI::current()->Quit();
+      if (!quit_closure_.is_null()) {
+        quit_closure_.Run();
+      }
       break;
 
     default:
