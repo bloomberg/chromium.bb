@@ -1161,7 +1161,7 @@ INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexFocusDirectorySelected TabindexFocusDirectorySelected
 #endif
-INSTANTIATE_TEST_CASE_P(
+WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_TabindexFocusDirectorySelected,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
