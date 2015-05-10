@@ -69,6 +69,8 @@ def print_landmines():
   print 'Another clobber for missing NaCl gyp deps (crbug.com/427427).'
   print 'Clobber to fix GN not picking up increased ID range (crbug.com/444902)'
   print 'Remove NaCl toolchains from the output dir (crbug.com/456902)'
+  if platform() == 'ios':
+    print 'Clobber iOS to workaround Xcode deps bug (crbug.com/485435)'
 
 
 def main():
