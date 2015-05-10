@@ -468,7 +468,8 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   // top level context menu title of the extension.
   std::set<MenuItem::ExtensionKey> ids = menu_manager->ExtensionIds();
   std::vector<base::string16> sorted_menu_titles;
-  std::map<base::string16, std::string> map_ids;
+  std::map<base::string16, std::vector<const Extension*>>
+      title_to_extensions_map;
   for (std::set<MenuItem::ExtensionKey>::iterator iter = ids.begin();
        iter != ids.end();
        ++iter) {
@@ -479,7 +480,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
     if (extension && !extension->is_platform_app()) {
       base::string16 menu_title = extension_items_.GetTopLevelContextMenuTitle(
           *iter, printable_selection_text);
-      map_ids[menu_title] = iter->extension_id;
+      title_to_extensions_map[menu_title].push_back(extension);
       sorted_menu_titles.push_back(menu_title);
     }
   }
@@ -488,15 +489,20 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   l10n_util::SortStrings16(app_locale, &sorted_menu_titles);
+  sorted_menu_titles.erase(
+      std::unique(sorted_menu_titles.begin(), sorted_menu_titles.end()),
+      sorted_menu_titles.end());
 
   int index = 0;
   for (size_t i = 0; i < sorted_menu_titles.size(); ++i) {
-    const std::string& id = map_ids[sorted_menu_titles[i]];
-    const MenuItem::ExtensionKey extension_key(id);
-    extension_items_.AppendExtensionItems(extension_key,
-                                          printable_selection_text,
-                                          &index,
-                                          false);  // is_action_menu
+    std::vector<const Extension*>& extensions =
+        title_to_extensions_map[sorted_menu_titles[i]];
+    for (const auto& extension : extensions) {
+      MenuItem::ExtensionKey extension_key(extension->id());
+      extension_items_.AppendExtensionItems(extension_key,
+                                            printable_selection_text, &index,
+                                            false);  // is_action_menu
+    }
   }
 }
 
@@ -508,7 +514,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   if (extension) {
     // Only add extension items from this extension.
     int index = 0;
-    const MenuItem::ExtensionKey key(
+    MenuItem::ExtensionKey key(
         extension->id(),
         extensions::WebViewGuest::GetViewInstanceId(source_web_contents_));
     extension_items_.AppendExtensionItems(key,

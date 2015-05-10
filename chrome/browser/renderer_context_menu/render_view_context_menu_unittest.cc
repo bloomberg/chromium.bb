@@ -5,8 +5,13 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/extensions/menu_manager.h"
+#include "chrome/browser/extensions/menu_manager_factory.h"
+#include "chrome/browser/extensions/test_extension_environment.h"
+#include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -18,20 +23,13 @@
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "url/gurl.h"
 
+using extensions::Extension;
 using extensions::MenuItem;
+using extensions::MenuManager;
+using extensions::MenuManagerFactory;
 using extensions::URLPatternSet;
 
-class RenderViewContextMenuTest : public testing::Test {
- protected:
-  // Proxy defined here to minimize friend classes in RenderViewContextMenu
-  static bool ExtensionContextAndPatternMatch(
-      const content::ContextMenuParams& params,
-      MenuItem::ContextList contexts,
-      const URLPatternSet& patterns) {
-    return RenderViewContextMenu::ExtensionContextAndPatternMatch(params,
-        contexts, patterns);
-  }
-};
+namespace {
 
 // Generates a ContextMenuParams that matches the specified contexts.
 static content::ContextMenuParams CreateParams(int contexts) {
@@ -70,6 +68,49 @@ static content::ContextMenuParams CreateParams(int contexts) {
 
   return rv;
 }
+
+}  // namespace
+
+class RenderViewContextMenuTest : public testing::Test {
+ protected:
+  // Proxy defined here to minimize friend classes in RenderViewContextMenu
+  static bool ExtensionContextAndPatternMatch(
+      const content::ContextMenuParams& params,
+      MenuItem::ContextList contexts,
+      const URLPatternSet& patterns) {
+    return RenderViewContextMenu::ExtensionContextAndPatternMatch(
+        params, contexts, patterns);
+  }
+
+  // Returns a test item.
+  MenuItem* CreateTestItem(const Extension* extension, int uid) {
+    MenuItem::Type type = MenuItem::NORMAL;
+    MenuItem::ContextList contexts(MenuItem::ALL);
+    const MenuItem::ExtensionKey key(extension->id());
+    bool incognito = false;
+    MenuItem::Id id(incognito, key);
+    id.uid = uid;
+    return new MenuItem(id, "Added by an extension", false, true, type,
+                        contexts);
+  }
+
+  // Returns a test context menu.
+  TestRenderViewContextMenu* CreateContextMenu(
+      TestingProfile* profile,
+      content::WebContents* web_contents) {
+    content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+    params.unfiltered_link_url = params.link_url;
+    TestRenderViewContextMenu* menu =
+        new TestRenderViewContextMenu(web_contents->GetMainFrame(), params);
+    // TestingProfile (returned by profile()) does not provide a protocol
+    // registry.
+    scoped_ptr<ProtocolHandlerRegistry> registry_(
+        new ProtocolHandlerRegistry(profile, NULL));
+    menu->protocol_handler_registry_ = registry_.get();
+    menu->Init();
+    return menu;
+  }
+};
 
 // Generates a URLPatternSet with a single pattern
 static URLPatternSet CreatePatternSet(const std::string& pattern) {
@@ -238,6 +279,45 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
   EXPECT_TRUE(ExtensionContextAndPatternMatch(params, contexts, patterns));
+}
+
+TEST_F(RenderViewContextMenuTest, ItemWithSameTitleFromTwoExtensions) {
+  extensions::TestExtensionEnvironment env;
+  env.GetExtensionPrefs();  // Force creation before adding extensions.
+
+  MenuManager* menu_manager =  // Owned by env.profile().
+      static_cast<MenuManager*>(
+          (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+              env.profile(),
+              &MenuManagerFactory::BuildServiceInstanceForTesting)));
+
+  const Extension* extension1 =
+      env.MakeExtension(base::DictionaryValue(),
+                        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  const Extension* extension2 =
+      env.MakeExtension(base::DictionaryValue(),
+                        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+
+  // Create two items in two extensions with same title.
+  MenuItem* item1 = CreateTestItem(extension1, 1);
+  ASSERT_TRUE(menu_manager->AddContextItem(extension1, item1));
+  MenuItem* item2 = CreateTestItem(extension2, 2);
+  ASSERT_TRUE(menu_manager->AddContextItem(extension2, item2));
+
+  scoped_ptr<content::WebContents> web_contents = env.MakeTab();
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateContextMenu(env.profile(), web_contents.get()));
+
+  const ui::MenuModel& model = menu->menu_model();
+  base::string16 expected_title = base::ASCIIToUTF16("Added by an extension");
+  int num_items_found = 0;
+  for (int i = 0; i < model.GetItemCount(); ++i) {
+    if (expected_title == model.GetLabelAt(i))
+      ++num_items_found;
+  }
+
+  // Expect both items to be found.
+  ASSERT_EQ(2, num_items_found);
 }
 
 class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
