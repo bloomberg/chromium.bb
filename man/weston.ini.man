@@ -500,7 +500,7 @@ The terminal shell (string). Sets the $TERM variable.
 .RE
 .SH "XWAYLAND SECTION"
 .TP 7
-.BI "path=" "/usr/bin/Xorg"
+.BI "path=" "/usr/bin/Xwayland"
 sets the path to the xserver to run (string).
 .RE
 .RE
