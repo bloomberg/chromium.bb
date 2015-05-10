@@ -35,6 +35,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/Color.h"
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -247,10 +248,10 @@ enum AccessibilityButtonState {
 };
 
 enum AccessibilityTextDirection {
-    AccessibilityTextDirectionLeftToRight,
-    AccessibilityTextDirectionRightToLeft,
-    AccessibilityTextDirectionTopToBottom,
-    AccessibilityTextDirectionBottomToTop
+    AccessibilityTextDirectionLTR,
+    AccessibilityTextDirectionRTL,
+    AccessibilityTextDirectionTTB,
+    AccessibilityTextDirectionBTT
 };
 
 enum SortDirection {
@@ -280,6 +281,14 @@ enum InvalidState {
     InvalidStateSpelling,
     InvalidStateGrammar,
     InvalidStateOther
+};
+
+enum TextStyle {
+    TextStyleNone = 0,
+    TextStyleBold = 1 << 0,
+    TextStyleItalic = 1 << 1,
+    TextStyleUnderline = 1 << 2,
+    TextStyleLineThrough = 1 << 3
 };
 
 enum TextUnderElementMode {
@@ -542,13 +551,21 @@ public:
     //
 
     virtual const AtomicString& accessKey() const { return nullAtom; }
+    virtual RGBA32 backgroundColor() const { return Color::transparent; }
+    virtual RGBA32 color() const { return Color::black; }
+    // Used by objects of role ColorWellRole.
+    virtual RGBA32 colorValue() const { return Color::transparent; }
     virtual bool canvasHasFallbackContent() const { return false; }
+    // Font size is in pixels.
+    virtual float fontSize() const { return 0.0f; }
     virtual int headingLevel() const { return 0; }
     // 1-based, to match the aria-level spec.
     virtual unsigned hierarchicalLevel() const { return 0; }
     virtual AccessibilityOrientation orientation() const;
     virtual String text() const { return String(); }
+    virtual AccessibilityTextDirection textDirection() const { return AccessibilityTextDirectionLTR; }
     virtual int textLength() const { return 0; }
+    virtual TextStyle textStyle() const { return TextStyleNone; }
     virtual KURL url() const { return KURL(); }
 
     // Load inline text boxes for just this node, even if
@@ -561,7 +578,6 @@ public:
     virtual AXObject* previousOnLine() const { return nullptr; }
 
     // For an inline text box.
-    virtual AccessibilityTextDirection textDirection() const { return AccessibilityTextDirectionLeftToRight; }
     // The integer horizontal pixel offset of each character in the string; negative values for RTL.
     virtual void textCharacterOffsets(Vector<int>&) const { }
     // The start and end character offset of each word in the inline text box.
@@ -570,7 +586,6 @@ public:
     // Properties of interactive elements.
     virtual String actionVerb() const;
     virtual AccessibilityButtonState checkboxOrRadioValue() const;
-    virtual void colorValue(int& r, int& g, int& b) const { r = 0; g = 0; b = 0; }
     virtual InvalidState invalidState() const { return InvalidStateUndefined; }
     // Only used when invalidState() returns InvalidStateOther.
     virtual String ariaInvalidValue() const { return String(); }

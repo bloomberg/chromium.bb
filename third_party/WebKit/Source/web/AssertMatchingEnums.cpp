@@ -318,10 +318,10 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXStateSelected, AXSelectedState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateVertical, AXVerticalState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateVisited, AXVisitedState);
 
-STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionLR, AccessibilityTextDirectionLeftToRight);
-STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionRL, AccessibilityTextDirectionRightToLeft);
-STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionTB, AccessibilityTextDirectionTopToBottom);
-STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionBT, AccessibilityTextDirectionBottomToTop);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionLR, AccessibilityTextDirectionLTR);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionRL, AccessibilityTextDirectionRTL);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionTB, AccessibilityTextDirectionTTB);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextDirectionBT, AccessibilityTextDirectionBTT);
 
 STATIC_ASSERT_MATCHING_ENUM(WebAXSortDirectionUndefined, SortDirectionUndefined);
 STATIC_ASSERT_MATCHING_ENUM(WebAXSortDirectionNone, SortDirectionNone);
@@ -347,6 +347,12 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXInvalidStateTrue, InvalidStateTrue);
 STATIC_ASSERT_MATCHING_ENUM(WebAXInvalidStateSpelling, InvalidStateSpelling);
 STATIC_ASSERT_MATCHING_ENUM(WebAXInvalidStateGrammar, InvalidStateGrammar);
 STATIC_ASSERT_MATCHING_ENUM(WebAXInvalidStateOther, InvalidStateOther);
+
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextStyleNone, TextStyleNone);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextStyleBold, TextStyleBold);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextStyleItalic, TextStyleItalic);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextStyleUnderline, TextStyleUnderline);
+STATIC_ASSERT_MATCHING_ENUM(WebAXTextStyleLineThrough, TextStyleLineThrough);
 
 STATIC_ASSERT_MATCHING_ENUM(WebAXNameFromAttribute, AXNameFromAttribute);
 STATIC_ASSERT_MATCHING_ENUM(WebAXNameFromContents, AXNameFromContents);

@@ -110,7 +110,6 @@ public:
     BLINK_EXPORT bool isControl() const;
     BLINK_EXPORT bool isEnabled() const;
     BLINK_EXPORT WebAXExpanded isExpanded() const;
-    BLINK_EXPORT WebAXOrientation orientation() const;
     BLINK_EXPORT bool isFocused() const;
     BLINK_EXPORT bool isHovered() const;
     BLINK_EXPORT bool isIndeterminate() const;
@@ -128,6 +127,11 @@ public:
     BLINK_EXPORT bool isVisited() const;
 
     BLINK_EXPORT WebString accessKey() const;
+    BLINK_EXPORT unsigned backgroundColor() const;
+    BLINK_EXPORT unsigned color() const;
+    // Deprecated.
+    BLINK_EXPORT void colorValue(int& r, int& g, int& b) const;
+    BLINK_EXPORT unsigned colorValue() const;
     BLINK_EXPORT WebAXObject ariaActiveDescendant() const;
     BLINK_EXPORT WebString ariaAutoComplete() const;
     BLINK_EXPORT bool ariaControls(WebVector<WebAXObject>& controlsElements) const;
@@ -137,9 +141,9 @@ public:
     BLINK_EXPORT bool isMultiline() const;
     BLINK_EXPORT bool ariaOwns(WebVector<WebAXObject>& ownsElements) const;
     BLINK_EXPORT WebRect boundingBoxRect() const;
+    BLINK_EXPORT float fontSize() const;
     BLINK_EXPORT bool canvasHasFallbackContent() const;
     BLINK_EXPORT WebPoint clickPoint() const;
-    BLINK_EXPORT void colorValue(int& r, int& g, int& b) const;
     BLINK_EXPORT WebAXInvalidState invalidState() const;
     // Only used when invalidState() returns WebAXInvalidStateOther.
     BLINK_EXPORT WebString ariaInvalidValue() const;
@@ -148,13 +152,16 @@ public:
     BLINK_EXPORT int hierarchicalLevel() const;
     BLINK_EXPORT WebAXObject hitTest(const WebPoint&) const;
     BLINK_EXPORT WebString keyboardShortcut() const;
+    BLINK_EXPORT WebString language() const;
+    BLINK_EXPORT WebAXOrientation orientation() const;
     BLINK_EXPORT WebAXRole role() const;
     BLINK_EXPORT unsigned selectionEnd() const;
     BLINK_EXPORT unsigned selectionEndLineNumber() const;
     BLINK_EXPORT unsigned selectionStart() const;
     BLINK_EXPORT unsigned selectionStartLineNumber() const;
     BLINK_EXPORT WebString stringValue() const;
-    BLINK_EXPORT WebString language() const;
+    BLINK_EXPORT WebAXTextDirection textDirection() const;
+    BLINK_EXPORT WebAXTextStyle textStyle() const;
     BLINK_EXPORT WebURL url() const;
 
     // Deprecated text alternative calculation API. All of these will be replaced
@@ -272,7 +279,6 @@ public:
     BLINK_EXPORT WebAXObject previousOnLine() const;
 
     // For an inline text box.
-    BLINK_EXPORT WebAXTextDirection textDirection() const;
     BLINK_EXPORT void characterOffsets(WebVector<int>&) const;
     BLINK_EXPORT void wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) const;
 

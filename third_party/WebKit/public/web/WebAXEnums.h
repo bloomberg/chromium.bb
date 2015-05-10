@@ -217,7 +217,6 @@ enum WebAXState {
     WebAXStateVisited,
 };
 
-// Text direction, only used for role=WebAXRoleInlineTextBox.
 enum WebAXTextDirection {
     WebAXTextDirectionLR,
     WebAXTextDirectionRL,
@@ -270,6 +269,15 @@ enum WebAXInvalidState {
     WebAXInvalidStateSpelling,
     WebAXInvalidStateGrammar,
     WebAXInvalidStateOther
+};
+
+// Used for exposing text attributes.
+enum WebAXTextStyle {
+    WebAXTextStyleNone = 0,
+    WebAXTextStyleBold = 1 << 0,
+    WebAXTextStyleItalic = 1 << 1,
+    WebAXTextStyleUnderline = 1 << 2,
+    WebAXTextStyleLineThrough = 1 << 3
 };
 
 // The source of the accessible name of an element. This is needed

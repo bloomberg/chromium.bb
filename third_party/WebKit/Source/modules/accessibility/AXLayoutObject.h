@@ -101,9 +101,15 @@ protected:
 
     // Properties of static elements.
     virtual const AtomicString& accessKey() const override;
+    virtual RGBA32 backgroundColor() const override final;
+    virtual RGBA32 color() const override final;
+    // Font size is in pixels.
+    virtual float fontSize() const override final;
     virtual AccessibilityOrientation orientation() const override;
     virtual String text() const override;
+    virtual AccessibilityTextDirection textDirection() const override final;
     virtual int textLength() const override;
+    virtual TextStyle textStyle() const override final;
     virtual KURL url() const override;
 
     // Inline text boxes.

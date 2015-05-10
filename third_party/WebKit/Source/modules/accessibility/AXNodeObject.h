@@ -132,6 +132,7 @@ protected:
     virtual bool canSetValueAttribute() const override;
 
     // Properties of static elements.
+    virtual RGBA32 colorValue() const override final;
     virtual bool canvasHasFallbackContent() const override final;
     virtual bool deprecatedExposesTitleUIElement() const override;
     virtual int headingLevel() const override final;
@@ -141,7 +142,6 @@ protected:
 
     // Properties of interactive elements.
     virtual AccessibilityButtonState checkboxOrRadioValue() const override final;
-    virtual void colorValue(int& r, int& g, int& b) const override final;
     virtual InvalidState invalidState() const override final;
     // Only used when invalidState() returns InvalidStateOther.
     virtual String ariaInvalidValue() const override final;

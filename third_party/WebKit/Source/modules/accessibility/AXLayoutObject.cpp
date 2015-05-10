@@ -30,6 +30,7 @@
 #include "modules/accessibility/AXLayoutObject.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/CSSPropertyNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -62,6 +63,7 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -71,7 +73,9 @@
 #include "modules/accessibility/AXSVGRoot.h"
 #include "modules/accessibility/AXSpinButton.h"
 #include "modules/accessibility/AXTable.h"
+#include "platform/fonts/FontTraits.h"
 #include "platform/text/PlatformLocale.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/StdLibExtras.h"
 
 using blink::WebLocalizedString;
@@ -765,6 +769,45 @@ const AtomicString& AXLayoutObject::accessKey() const
     return toElement(node)->getAttribute(accesskeyAttr);
 }
 
+RGBA32 AXLayoutObject::backgroundColor() const
+{
+    if (!m_layoutObject)
+        return AXNodeObject::backgroundColor();
+
+    const ComputedStyle* style = m_layoutObject->style();
+    if (!style || !style->hasBackground())
+        return AXNodeObject::backgroundColor();
+
+    Color color = style->visitedDependentColor(CSSPropertyBackgroundColor);
+    return color.rgb();
+}
+
+RGBA32 AXLayoutObject::color() const
+{
+    if (!m_layoutObject || isColorWell())
+        return AXNodeObject::color();
+
+    const ComputedStyle* style = m_layoutObject->style();
+    if (!style)
+        return AXNodeObject::color();
+
+    Color color = style->visitedDependentColor(CSSPropertyColor);
+    return color.rgb();
+}
+
+// Font size is in pixels.
+float AXLayoutObject::fontSize() const
+{
+    if (!m_layoutObject)
+        return AXNodeObject::fontSize();
+
+    const ComputedStyle* style = m_layoutObject->style();
+    if (!style)
+        return AXNodeObject::fontSize();
+
+    return style->computedFontSize();
+}
+
 AccessibilityOrientation AXLayoutObject::orientation() const
 {
     const AtomicString& ariaOrientation = getAttribute(aria_orientationAttr);
@@ -848,12 +891,62 @@ String AXLayoutObject::text() const
     return AXNodeObject::text();
 }
 
+AccessibilityTextDirection AXLayoutObject::textDirection() const
+{
+    if (!m_layoutObject)
+        return AXNodeObject::textDirection();
+
+    const ComputedStyle* style = m_layoutObject->style();
+    if (!style)
+        return AXNodeObject::textDirection();
+
+    if (style->isHorizontalWritingMode()) {
+        switch (style->direction()) {
+        case LTR:
+            return AccessibilityTextDirectionLTR;
+        case RTL:
+            return AccessibilityTextDirectionRTL;
+        }
+    } else {
+        switch (style->direction()) {
+        case LTR:
+            return AccessibilityTextDirectionTTB;
+        case RTL:
+            return AccessibilityTextDirectionBTT;
+        }
+    }
+
+    return AXNodeObject::textDirection();
+}
+
 int AXLayoutObject::textLength() const
 {
     if (!isTextControl())
         return -1;
 
     return text().length();
+}
+
+TextStyle AXLayoutObject::textStyle() const
+{
+    if (!m_layoutObject)
+        return AXNodeObject::textStyle();
+
+    const ComputedStyle* style = m_layoutObject->style();
+    if (!style)
+        return AXNodeObject::textStyle();
+
+    unsigned textStyle = TextStyleNone;
+    if (style->fontWeight() == FontWeightBold)
+        textStyle |= TextStyleBold;
+    if (style->fontDescription().style() == FontStyleItalic)
+        textStyle |= TextStyleItalic;
+    if (style->textDecoration() == TextDecorationUnderline)
+        textStyle |= TextStyleUnderline;
+    if (style->textDecoration() == TextDecorationLineThrough)
+        textStyle |= TextStyleLineThrough;
+
+    return static_cast<TextStyle>(textStyle);
 }
 
 KURL AXLayoutObject::url() const

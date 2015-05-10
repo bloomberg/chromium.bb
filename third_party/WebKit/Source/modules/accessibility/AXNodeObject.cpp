@@ -1272,30 +1272,21 @@ AccessibilityButtonState AXNodeObject::checkboxOrRadioValue() const
     return AXObject::checkboxOrRadioValue();
 }
 
-void AXNodeObject::colorValue(int& r, int& g, int& b) const
+RGBA32 AXNodeObject::colorValue() const
 {
-    r = 0;
-    g = 0;
-    b = 0;
-
-    if (!isColorWell())
-        return;
-
-    if (!isHTMLInputElement(node()))
-        return;
+    if (!isHTMLInputElement(node()) || !isColorWell())
+        return AXObject::colorValue();
 
     HTMLInputElement* input = toHTMLInputElement(node());
     const AtomicString& type = input->getAttribute(typeAttr);
     if (!equalIgnoringCase(type, "color"))
-        return;
+        return AXObject::colorValue();
 
     // HTMLInputElement::value always returns a string parseable by Color.
     Color color;
     bool success = color.setFromString(input->value());
     ASSERT_UNUSED(success, success);
-    r = color.red();
-    g = color.green();
-    b = color.blue();
+    return color.rgb();
 }
 
 InvalidState AXNodeObject::invalidState() const

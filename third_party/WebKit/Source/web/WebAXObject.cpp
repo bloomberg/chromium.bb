@@ -406,14 +406,6 @@ bool WebAXObject::isSelectedOptionActive() const
     return m_private->isSelectedOptionActive();
 }
 
-WebAXOrientation WebAXObject::orientation() const
-{
-    if (isDetached())
-        return WebAXOrientationUndefined;
-
-    return static_cast<WebAXOrientation>(m_private->orientation());
-}
-
 bool WebAXObject::isVisible() const
 {
     if (isDetached())
@@ -436,6 +428,45 @@ WebString WebAXObject::accessKey() const
         return WebString();
 
     return WebString(m_private->accessKey());
+}
+
+unsigned WebAXObject::backgroundColor() const
+{
+    if (isDetached())
+        return 0;
+
+    // RGBA32 is an alias for unsigned int.
+    return m_private->backgroundColor();
+}
+
+unsigned WebAXObject::color() const
+{
+    if (isDetached())
+        return 0;
+
+    // RGBA32 is an alias for unsigned int.
+    return m_private->color();
+}
+
+// Deprecated.
+void WebAXObject::colorValue(int& r, int& g, int& b) const
+{
+    if (isDetached())
+        return;
+
+    unsigned color = m_private->colorValue();
+    r = (color >> 16) & 0xFF;
+    g = (color >> 8) & 0xFF;
+    b = color & 0xFF;
+}
+
+unsigned WebAXObject::colorValue() const
+{
+    if (isDetached())
+        return 0;
+
+    // RGBA32 is an alias for unsigned int.
+    return m_private->colorValue();
 }
 
 WebAXObject WebAXObject::ariaActiveDescendant() const
@@ -616,6 +647,14 @@ WebRect WebAXObject::boundingBoxRect() const
     return pixelSnappedIntRect(m_private->elementRect());
 }
 
+float WebAXObject::fontSize() const
+{
+    if (isDetached())
+        return 0.0f;
+
+    return m_private->fontSize();
+}
+
 bool WebAXObject::canvasHasFallbackContent() const
 {
     if (isDetached())
@@ -630,14 +669,6 @@ WebPoint WebAXObject::clickPoint() const
         return WebPoint();
 
     return WebPoint(m_private->clickPoint());
-}
-
-void WebAXObject::colorValue(int& r, int& g, int& b) const
-{
-    if (isDetached())
-        return;
-
-    m_private->colorValue(r, g, b);
 }
 
 WebAXInvalidState WebAXObject::invalidState() const
@@ -731,6 +762,14 @@ WebString WebAXObject::keyboardShortcut() const
     return String(modifierString + accessKey);
 }
 
+WebString WebAXObject::language() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->language();
+}
+
 bool WebAXObject::performDefaultAction() const
 {
     if (isDetached())
@@ -761,6 +800,14 @@ bool WebAXObject::decrement() const
         return true;
     }
     return false;
+}
+
+WebAXOrientation WebAXObject::orientation() const
+{
+    if (isDetached())
+        return WebAXOrientationUndefined;
+
+    return static_cast<WebAXOrientation>(m_private->orientation());
 }
 
 bool WebAXObject::press() const
@@ -849,12 +896,20 @@ WebString WebAXObject::stringValue() const
     return m_private->stringValue();
 }
 
-WebString WebAXObject::language() const
+WebAXTextDirection WebAXObject::textDirection() const
 {
     if (isDetached())
-        return WebString();
+        return WebAXTextDirectionLR;
 
-    return m_private->language();
+    return static_cast<WebAXTextDirection>(m_private->textDirection());
+}
+
+WebAXTextStyle WebAXObject::textStyle() const
+{
+    if (isDetached())
+        return WebAXTextStyleNone;
+
+    return static_cast<WebAXTextStyle>(m_private->textStyle());
 }
 
 WebURL WebAXObject::url() const
@@ -1397,14 +1452,6 @@ WebAXObject WebAXObject::previousOnLine() const
         return WebAXObject();
 
     return WebAXObject(m_private.get()->previousOnLine());
-}
-
-WebAXTextDirection WebAXObject::textDirection() const
-{
-    if (isDetached())
-        return WebAXTextDirectionLR;
-
-    return static_cast<WebAXTextDirection>(m_private->textDirection());
 }
 
 void WebAXObject::characterOffsets(WebVector<int>& offsets) const

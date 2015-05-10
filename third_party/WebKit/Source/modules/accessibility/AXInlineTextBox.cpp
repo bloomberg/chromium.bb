@@ -138,23 +138,25 @@ AXObject* AXInlineTextBox::computeParent() const
     return m_axObjectCache->getOrCreate(layoutText);
 }
 
+// In addition to LTR and RTL direction, edit fields also support
+// top to bottom and bottom to top via the CSS writing-mode property.
 AccessibilityTextDirection AXInlineTextBox::textDirection() const
 {
     if (!m_inlineTextBox)
-        return AccessibilityTextDirectionLeftToRight;
+        return AXObject::textDirection();
 
     switch (m_inlineTextBox->direction()) {
     case AbstractInlineTextBox::LeftToRight:
-        return AccessibilityTextDirectionLeftToRight;
+        return AccessibilityTextDirectionLTR;
     case AbstractInlineTextBox::RightToLeft:
-        return AccessibilityTextDirectionRightToLeft;
+        return AccessibilityTextDirectionRTL;
     case AbstractInlineTextBox::TopToBottom:
-        return AccessibilityTextDirectionTopToBottom;
+        return AccessibilityTextDirectionTTB;
     case AbstractInlineTextBox::BottomToTop:
-        return AccessibilityTextDirectionBottomToTop;
+        return AccessibilityTextDirectionBTT;
     }
 
-    return AccessibilityTextDirectionLeftToRight;
+    return AXObject::textDirection();
 }
 
 AXObject* AXInlineTextBox::nextOnLine() const
