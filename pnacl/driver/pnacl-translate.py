@@ -134,7 +134,7 @@ EXTRA_ENV = {
   # Whether to stream the bitcode from a single FD in unsandboxed mode
   # (otherwise it will use concurrent file reads when using multithreaded module
   # splitting)
-  'STREAM_BITCODE' : '1',
+  'STREAM_BITCODE' : '0',
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
   'BITCODE_STREAM_RATE' : '1000000000',
@@ -224,7 +224,7 @@ TranslatorPatterns = [
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
   ( '-(split-module|threads)=([0-9]+|auto|seq)', "env.set('SPLIT_MODULE', $1)"),
   ( '-split-module-sched=(.*)', "env.set('SPLIT_MODULE_SCHED', $0)"),
-  ( '-no-stream-bitcode', "env.set('STREAM_BITCODE', '0')"),
+  ( '-stream-bitcode', "env.set('STREAM_BITCODE', '1')"),
 
   # Treat general linker flags as inputs so they don't get re-ordered
   ( '-Wl,(.*)',        "env.append('INPUTS', *($0).split(','))"),
