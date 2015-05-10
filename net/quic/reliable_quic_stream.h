@@ -179,7 +179,10 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
                 scoped_refptr<ProxyAckNotifierDelegate> delegate_in);
     ~PendingData();
 
+    // Pending data to be written.
     std::string data;
+    // Index of the first byte in data still to be written.
+    size_t offset;
     // Delegate that should be notified when the pending data is acked.
     // Can be nullptr.
     scoped_refptr<ProxyAckNotifierDelegate> delegate;

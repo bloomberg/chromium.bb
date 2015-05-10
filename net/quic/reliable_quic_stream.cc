@@ -103,8 +103,9 @@ class ReliableQuicStream::ProxyAckNotifierDelegate
 };
 
 ReliableQuicStream::PendingData::PendingData(
-    string data_in, scoped_refptr<ProxyAckNotifierDelegate> delegate_in)
-    : data(data_in), delegate(delegate_in) {
+    string data_in,
+    scoped_refptr<ProxyAckNotifierDelegate> delegate_in)
+    : data(data_in), offset(0), delegate(delegate_in) {
 }
 
 ReliableQuicStream::PendingData::~PendingData() {
@@ -286,9 +287,21 @@ void ReliableQuicStream::OnCanWrite() {
     if (queued_data_.size() == 1 && fin_buffered_) {
       fin = true;
     }
-    struct iovec iov(MakeIovec(pending_data->data));
+    if (pending_data->offset > 0 &&
+        pending_data->offset >= pending_data->data.size()) {
+      // This should be impossible because offset tracks the amount of
+      // pending_data written thus far.
+      LOG(DFATAL) << "Pending offset is beyond available data. offset: "
+                  << pending_data->offset
+                  << " vs: " << pending_data->data.size();
+      return;
+    }
+    size_t remaining_len = pending_data->data.size() - pending_data->offset;
+    struct iovec iov = {
+        const_cast<char*>(pending_data->data.data()) + pending_data->offset,
+        remaining_len};
     QuicConsumedData consumed_data = WritevData(&iov, 1, fin, delegate);
-    if (consumed_data.bytes_consumed == pending_data->data.size() &&
+    if (consumed_data.bytes_consumed == remaining_len &&
         fin == consumed_data.fin_consumed) {
       queued_data_.pop_front();
       if (delegate != nullptr) {
@@ -296,7 +309,7 @@ void ReliableQuicStream::OnCanWrite() {
       }
     } else {
       if (consumed_data.bytes_consumed > 0) {
-        pending_data->data.erase(0, consumed_data.bytes_consumed);
+        pending_data->offset += consumed_data.bytes_consumed;
         if (delegate != nullptr) {
           delegate->WroteData(false);
         }
