@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
 
   net::QuicConfig config;
   net::tools::QuicSimpleServer server(config, net::QuicSupportedVersions());
+  server.SetStrikeRegisterNoStartupPeriod();
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {
