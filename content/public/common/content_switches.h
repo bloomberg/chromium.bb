@@ -90,6 +90,7 @@ CONTENT_EXPORT extern const char kDisableWebSecurity[];
 extern const char kDisableXSSAuditor[];
 CONTENT_EXPORT extern const char kDomAutomationController[];
 extern const char kEnable2dCanvasClipAntialiasing[];
+CONTENT_EXPORT extern const char kEnableAggressiveDOMStorageFlushing[];
 CONTENT_EXPORT extern const char kEnableBleedingEdgeRenderingFastPaths[];
 CONTENT_EXPORT extern const char kEnableCompositorAnimationTimelines[];
 CONTENT_EXPORT extern const char kEnableCredentialManagerAPI[];

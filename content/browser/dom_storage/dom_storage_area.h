@@ -35,6 +35,12 @@ class CONTENT_EXPORT DOMStorageArea
   static base::FilePath DatabaseFileNameFromOrigin(const GURL& origin);
   static GURL OriginFromDatabaseFileName(const base::FilePath& file_name);
 
+  // Commence aggressive flushing. This should be called early in the startup -
+  // before any localStorage writing. Currently scheduled writes will not be
+  // rescheduled and will be flushed at the scheduled time after which
+  // aggressive flushing will commence.
+  static void EnableAggressiveCommitDelay();
+
   // Local storage. Backed on disk if directory is nonempty.
   DOMStorageArea(const GURL& origin,
                  const base::FilePath& directory,
@@ -152,6 +158,8 @@ class CONTENT_EXPORT DOMStorageArea
   base::TimeDelta ComputeCommitDelay() const;
 
   void ShutdownInCommitSequence();
+
+  static bool s_aggressive_flushing_enabled_;
 
   int64 namespace_id_;
   std::string persistent_namespace_id_;

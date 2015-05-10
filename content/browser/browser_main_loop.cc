@@ -26,6 +26,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_inertial_sensor_service.h"
+#include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gamepad/gamepad_service.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -611,6 +612,13 @@ void BrowserMainLoop::MainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MemoryObserver");
     memory_observer_.reset(new MemoryObserver());
     base::MessageLoop::current()->AddTaskObserver(memory_observer_.get());
+  }
+
+  if (parsed_command_line_.HasSwitch(
+          switches::kEnableAggressiveDOMStorageFlushing)) {
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::Subsystem:EnableAggressiveCommitDelay");
+    DOMStorageArea::EnableAggressiveCommitDelay();
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize();

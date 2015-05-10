@@ -940,6 +940,10 @@ const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
 #endif
 
+// Enable the aggressive flushing of DOM Storage to minimize data loss.
+const char kEnableAggressiveDOMStorageFlushing[] =
+    "enable-aggressive-domstorage-flushing";
+
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
 
