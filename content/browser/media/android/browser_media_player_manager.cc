@@ -25,11 +25,13 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/android/media_codec_player.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
 #include "media/base/android/media_url_interceptor.h"
 #include "media/base/media_switches.h"
 
+using media::MediaCodecPlayer;
 using media::MediaPlayerAndroid;
 using media::MediaPlayerBridge;
 using media::MediaPlayerManager;
@@ -113,13 +115,24 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     }
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
-      return new MediaSourcePlayer(
-          media_player_params.player_id,
-          manager,
-          base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
-                     weak_ptr_factory_.GetWeakPtr()),
-          demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
-          media_player_params.frame_url);
+      if (base::CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableMediaThreadForMediaPlayback)) {
+        return new MediaCodecPlayer(
+            media_player_params.player_id,
+            manager,
+            base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
+                       weak_ptr_factory_.GetWeakPtr()),
+            demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
+            media_player_params.frame_url);
+      } else {
+        return new MediaSourcePlayer(
+            media_player_params.player_id,
+            manager,
+            base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
+                       weak_ptr_factory_.GetWeakPtr()),
+            demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
+            media_player_params.frame_url);
+      }
     }
   }
 
@@ -143,6 +156,11 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
   // (e.g. the WebContents may be destroyed before the render process). So
   // we cannot DCHECK(players_.empty()) here. Instead, all media players in
   // |players_| will be destroyed here because |player_| is a ScopedVector.
+
+  for (MediaPlayerAndroid* player : players_)
+    player->DeleteOnCorrectThread();
+
+  players_.weak_clear();
 }
 
 void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
@@ -530,7 +548,8 @@ void BrowserMediaPlayerManager::RemovePlayer(int player_id) {
       it != players_.end(); ++it) {
     if ((*it)->player_id() == player_id) {
       ReleaseMediaResources(player_id);
-      players_.erase(it);
+      (*it)->DeleteOnCorrectThread();
+      players_.weak_erase(it);
       audio_monitor_->RemovePlayer(render_frame_host_, player_id);
       break;
     }

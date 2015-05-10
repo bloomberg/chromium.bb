@@ -30,6 +30,11 @@ MediaPlayerAndroid::MediaPlayerAndroid(
 
 MediaPlayerAndroid::~MediaPlayerAndroid() {}
 
+// For most subclasses we can delete on the caller thread.
+void MediaPlayerAndroid::DeleteOnCorrectThread() {
+  delete this;
+}
+
 GURL MediaPlayerAndroid::GetUrl() {
   return GURL();
 }
@@ -79,6 +84,11 @@ void MediaPlayerAndroid::AttachListener(jobject j_media_player) {
 
 void MediaPlayerAndroid::DetachListener() {
   listener_->ReleaseMediaPlayerListenerResources();
+}
+
+void MediaPlayerAndroid::DestroyListenerOnUIThread() {
+  weak_factory_.InvalidateWeakPtrs();
+  listener_.reset();
 }
 
 void MediaPlayerAndroid::SetAudible(bool is_audible) {

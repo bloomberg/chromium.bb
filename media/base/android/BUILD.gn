@@ -23,6 +23,8 @@ source_set("android") {
     "media_client_android.h",
     "media_codec_bridge.cc",
     "media_codec_bridge.h",
+    "media_codec_player.cc",
+    "media_codec_player.h",
     "media_decoder_job.cc",
     "media_decoder_job.h",
     "media_drm_bridge.cc",
