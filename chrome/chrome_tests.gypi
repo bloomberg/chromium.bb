@@ -2758,9 +2758,6 @@
             'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
             'browser/sync/test/integration/two_client_dictionary_sync_test.cc',
           ],
-          'dependencies': [
-            'chrome',
-          ],
         }],
         ['OS=="win"', {
           'sources': [

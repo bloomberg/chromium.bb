@@ -77,13 +77,6 @@
         ],
       },
     }],
-    ['OS=="mac" and component=="shared_library"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/libchrome_main_dll.dylib',
-        ],
-      },
-    }],
     ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
