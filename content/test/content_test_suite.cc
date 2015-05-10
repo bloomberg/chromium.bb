@@ -68,7 +68,7 @@ class TestInitializationListener : public testing::EmptyTestEventListener {
 };
 
 #if defined(OS_ANDROID)
-class SurfaceTextureManagerImpl : public SurfaceTextureManager {
+class TestSurfaceTextureManager : public SurfaceTextureManager {
  public:
   // Overridden from SurfaceTextureManager:
   void RegisterSurfaceTexture(int surface_texture_id,
@@ -135,7 +135,7 @@ void ContentTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
 #if defined(OS_ANDROID)
-  SurfaceTextureManager::InitInstance(new SurfaceTextureManagerImpl);
+  SurfaceTextureManager::InitInstance(new TestSurfaceTextureManager);
 #endif
 }
 
