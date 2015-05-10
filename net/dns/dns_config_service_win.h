@@ -63,6 +63,9 @@ struct NET_EXPORT_PRIVATE DnsSystemSettings {
     RegDword level;
   };
 
+  DnsSystemSettings();
+  ~DnsSystemSettings();
+
   // Filled in by GetAdapterAddresses. Note that the alternative
   // GetNetworkParams does not include IPv6 addresses.
   scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> addresses;

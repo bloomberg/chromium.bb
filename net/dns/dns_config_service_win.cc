@@ -436,6 +436,21 @@ void ConfigureSuffixSearch(const DnsSystemSettings& settings,
 
 }  // namespace
 
+DnsSystemSettings::DnsSystemSettings()
+    : policy_search_list(),
+      tcpip_search_list(),
+      tcpip_domain(),
+      primary_dns_suffix(),
+      policy_devolution(),
+      dnscache_devolution(),
+      tcpip_devolution(),
+      append_to_multi_label_name(),
+      have_name_resolution_policy(false) {
+}
+
+DnsSystemSettings::~DnsSystemSettings() {
+}
+
 bool ParseSearchList(const base::string16& value,
                      std::vector<std::string>* output) {
   DCHECK(output);

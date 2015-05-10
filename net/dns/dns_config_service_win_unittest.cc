@@ -31,12 +31,9 @@ TEST(DnsConfigServiceWinTest, ParseSearchList) {
     { L",,", { NULL } },
   };
 
-  std::vector<std::string> actual_output, expected_output;
-  for (unsigned i = 0; i < arraysize(cases); ++i) {
-    const TestCase& t = cases[i];
-    actual_output.clear();
+  for (const auto& t : cases) {
+    std::vector<std::string> actual_output, expected_output;
     actual_output.push_back("UNSET");
-    expected_output.clear();
     for (const char* const* output = t.output; *output; ++output) {
       expected_output.push_back(*output);
     }
@@ -171,12 +168,10 @@ TEST(DnsConfigServiceWinTest, ConvertAdapterAddresses) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
-    const TestCase& t = cases[i];
-    internal::DnsSystemSettings settings = {
-      CreateAdapterAddresses(t.input_adapters),
-      // Default settings for the rest.
-    };
+  for (const auto& t : cases) {
+    internal::DnsSystemSettings settings;
+    settings.addresses = CreateAdapterAddresses(t.input_adapters);
+    // Default settings for the rest.
     std::vector<IPEndPoint> expected_nameservers;
     for (size_t j = 0; !t.expected_nameservers[j].empty(); ++j) {
       IPAddressNumber ip;
@@ -209,12 +204,19 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
   };
 
   const struct TestCase {
-    internal::DnsSystemSettings input_settings;
+    struct {
+      internal::DnsSystemSettings::RegString policy_search_list;
+      internal::DnsSystemSettings::RegString tcpip_search_list;
+      internal::DnsSystemSettings::RegString tcpip_domain;
+      internal::DnsSystemSettings::RegString primary_dns_suffix;
+      internal::DnsSystemSettings::DevolutionSetting policy_devolution;
+      internal::DnsSystemSettings::DevolutionSetting dnscache_devolution;
+      internal::DnsSystemSettings::DevolutionSetting tcpip_devolution;
+    } input_settings;
     std::string expected_search[5];
   } cases[] = {
     {  // Policy SearchList override.
       {
-        CreateAdapterAddresses(infos),
         { true, L"policy.searchlist.a,policy.searchlist.b" },
         { true, L"tcpip.searchlist.a,tcpip.searchlist.b" },
         { true, L"tcpip.domain" },
@@ -224,7 +226,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // User-specified SearchList override.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { true, L"tcpip.searchlist.a,tcpip.searchlist.b" },
         { true, L"tcpip.domain" },
@@ -234,7 +235,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Void SearchList. Using tcpip.domain
       {
-        CreateAdapterAddresses(infos),
         { true, L",bad.searchlist,parsed.as.empty" },
         { true, L"tcpip.searchlist,good.but.overridden" },
         { true, L"tcpip.domain" },
@@ -244,7 +244,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Void SearchList. Using primary.dns.suffix
       {
-        CreateAdapterAddresses(infos),
         { true, L",bad.searchlist,parsed.as.empty" },
         { true, L"tcpip.searchlist,good.but.overridden" },
         { true, L"tcpip.domain" },
@@ -254,7 +253,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Void SearchList. Using tcpip.domain when primary.dns.suffix is empty
       {
-        CreateAdapterAddresses(infos),
         { true, L",bad.searchlist,parsed.as.empty" },
         { true, L"tcpip.searchlist,good.but.overridden" },
         { true, L"tcpip.domain" },
@@ -264,7 +262,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Void SearchList. Using tcpip.domain when primary.dns.suffix is NULL
       {
-        CreateAdapterAddresses(infos),
         { true, L",bad.searchlist,parsed.as.empty" },
         { true, L"tcpip.searchlist,good.but.overridden" },
         { true, L"tcpip.domain" },
@@ -274,7 +271,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // No primary suffix. Devolution does not matter.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true },
@@ -285,7 +281,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Devolution enabled by policy, level by dnscache.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true, L"a.b.c.d.e" },
@@ -298,7 +293,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Devolution enabled by dnscache, level by policy.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true, L"a.b.c.d.e" },
@@ -311,7 +305,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Devolution enabled by default.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true, L"a.b.c.d.e" },
@@ -324,7 +317,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Devolution enabled at level = 2, but nothing to devolve.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true, L"a.b" },
@@ -338,7 +330,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     {  // Devolution disabled when no explicit level.
        // Windows XP and Vista use a default level = 2, but we don't.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true, L"a.b.c.d.e" },
@@ -351,7 +342,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Devolution disabled by policy level.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true, L"a.b.c.d.e" },
@@ -364,7 +354,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
     {  // Devolution disabled by user setting.
       {
-        CreateAdapterAddresses(infos),
         { false },
         { false },
         { true, L"a.b.c.d.e" },
@@ -377,11 +366,20 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
     },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
-    const TestCase& t = cases[i];
+  for (auto& t : cases) {
+    internal::DnsSystemSettings settings;
+    settings.addresses = CreateAdapterAddresses(infos);
+    settings.policy_search_list = t.input_settings.policy_search_list;
+    settings.tcpip_search_list = t.input_settings.tcpip_search_list;
+    settings.tcpip_domain = t.input_settings.tcpip_domain;
+    settings.primary_dns_suffix = t.input_settings.primary_dns_suffix;
+    settings.policy_devolution = t.input_settings.policy_devolution;
+    settings.dnscache_devolution = t.input_settings.dnscache_devolution;
+    settings.tcpip_devolution = t.input_settings.tcpip_devolution;
+
     DnsConfig config;
     EXPECT_EQ(internal::CONFIG_PARSE_WIN_OK,
-              internal::ConvertSettingsToDnsConfig(t.input_settings, &config));
+              internal::ConvertSettingsToDnsConfig(settings, &config));
     std::vector<std::string> expected_search;
     for (size_t j = 0; !t.expected_search[j].empty(); ++j) {
       expected_search.push_back(t.expected_search[j]);
@@ -408,16 +406,10 @@ TEST(DnsConfigServiceWinTest, AppendToMultiLabelName) {
     { { false, 0 }, default_value },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
-    const TestCase& t = cases[i];
-    internal::DnsSystemSettings settings = {
-      CreateAdapterAddresses(infos),
-      { false }, { false }, { false }, { false },
-      { { false }, { false } },
-      { { false }, { false } },
-      { { false }, { false } },
-      t.input,
-    };
+  for (const auto& t : cases) {
+    internal::DnsSystemSettings settings;
+    settings.addresses = CreateAdapterAddresses(infos);
+    settings.append_to_multi_label_name = t.input;
     DnsConfig config;
     EXPECT_EQ(internal::CONFIG_PARSE_WIN_OK,
               internal::ConvertSettingsToDnsConfig(settings, &config));
@@ -441,17 +433,10 @@ TEST(DnsConfigServiceWinTest, HaveNRPT) {
     { true, true, internal::CONFIG_PARSE_WIN_UNHANDLED_OPTIONS },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
-    const TestCase& t = cases[i];
-    internal::DnsSystemSettings settings = {
-      CreateAdapterAddresses(infos),
-      { false }, { false }, { false }, { false },
-      { { false }, { false } },
-      { { false }, { false } },
-      { { false }, { false } },
-      { false },
-      t.have_nrpt,
-    };
+  for (const auto& t : cases) {
+    internal::DnsSystemSettings settings;
+    settings.addresses = CreateAdapterAddresses(infos);
+    settings.have_name_resolution_policy = t.have_nrpt;
     DnsConfig config;
     EXPECT_EQ(t.result,
               internal::ConvertSettingsToDnsConfig(settings, &config));
