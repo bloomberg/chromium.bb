@@ -2245,12 +2245,6 @@
         ],
       }],
 
-      ['OS=="win"', {
-        # The Blink GC plugin doesn't currently work on Windows.
-        # TODO(hans): One day, this will work. (crbug.com/82385)
-        'blink_gc_plugin%': 0,
-      }],
-
       # On valgrind bots, override the optimizer settings so we don't inline too
       # much and make the stacks harder to figure out.
       #
