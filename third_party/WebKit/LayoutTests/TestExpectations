@@ -1386,10 +1386,6 @@ crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
 crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
 
-crbug.com/473411 virtual/slimmingpaint/compositing/repaint/resize-repaint.html [ NeedsRebaseline ]
-crbug.com/473411 virtual/slimmingpaint/compositing/squashing/iframe-inside-squashed-layer.html [ NeedsRebaseline ]
-crbug.com/473411 virtual/slimmingpaint/compositing/squashing/remove-squashed-layer-plus-move.html [ NeedsRebaseline ]
-
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
@@ -1912,11 +1908,6 @@ crbug.com/480652 svg/dom/SVGViewSpec.html [ NeedsManualRebaseline ]
 crbug.com/480652 virtual/slimmingpaint/svg/dom/SVGViewSpec.html [ Skip ]
 crbug.com/480652 virtual/pointerevent/fast/events/window-onerror-04.html [ NeedsManualRebaseline ]
 crbug.com/480652 virtual/slimmingpaint/fast/events/window-onerror-04.html [ Skip ]
-
-#---------------------------
-# Slimming Paint for SVG expectations.
-#---------------------------
-crbug.com/452967 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ NeedsRebaseline ]
 
 # These tests have very minor pixel differences that need to be investigated.
 crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-filterUnits-objectBoundingBox-primitiveUnits-objectBoundingBox.svg [ ImageOnlyFailure Pass ]
