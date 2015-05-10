@@ -26,11 +26,7 @@ crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
-crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure ]
-
 crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Failure ]
-
-crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ Pass ImageOnlyFailure ]
 
 # Slimming Paint printing failures
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Timeout Pass ]
@@ -1920,9 +1916,6 @@ crbug.com/480652 virtual/slimmingpaint/fast/events/window-onerror-04.html [ Skip
 #---------------------------
 # Slimming Paint for SVG expectations.
 #---------------------------
-crbug.com/471405 [ Mac Win7 ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ Failure ]
-crbug.com/471405 [ XP ] virtual/slimmingpaint/svg/text/text-with-geometric-precision.svg [ ImageOnlyFailure ]
-
 crbug.com/452967 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [ NeedsRebaseline ]
 
 # These tests have very minor pixel differences that need to be investigated.
