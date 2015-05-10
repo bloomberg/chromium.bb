@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -17,7 +16,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,9 +106,7 @@ bool NPAPIRemovalInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   InfoBarService::WebContentsFromInfoBar(infobar())
       ->OpenURL(content::OpenURLParams(
-          google_util::AppendGoogleLocaleParam(
-              GURL(kLearnMoreUrl), g_browser_process->GetApplicationLocale()),
-          content::Referrer(),
+          GURL(kLearnMoreUrl), content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           ui::PAGE_TRANSITION_LINK, false));
   return true;
