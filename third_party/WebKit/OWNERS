@@ -11,6 +11,7 @@ philipj@opera.com
 
 # For .gyp* / *.gn* changes only.
 dpranke@chromium.org
+thakis@chromium.org
 
 per-file .gitignore=*
 per-file DEPS=*
