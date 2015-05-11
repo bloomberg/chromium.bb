@@ -498,6 +498,8 @@ void TestService::PerformAction(
                                 base::Unretained(this),
                                 method_call, response_sender));
     return;
+  } else if (action == "InvalidateProperty") {
+    SendPropertyInvalidatedSignal();
   }
 
   scoped_ptr<Response> response = Response::FromMethodCall(method_call);
@@ -704,6 +706,37 @@ void TestService::SendPropertyChangedSignalInternal(const std::string& name) {
   dict_entry_writer.AppendVariantOfString(name);
   array_writer.CloseContainer(&dict_entry_writer);
   writer.CloseContainer(&array_writer);
+
+  MessageWriter invalidated_array_writer(NULL);
+
+  writer.OpenArray("s", &invalidated_array_writer);
+  writer.CloseContainer(&invalidated_array_writer);
+
+  exported_object_->SendSignal(&signal);
+}
+
+void TestService::SendPropertyInvalidatedSignal() {
+  message_loop()->PostTask(
+      FROM_HERE, base::Bind(&TestService::SendPropertyInvalidatedSignalInternal,
+                            base::Unretained(this)));
+}
+
+void TestService::SendPropertyInvalidatedSignalInternal() {
+  Signal signal(kPropertiesInterface, kPropertiesChanged);
+  MessageWriter writer(&signal);
+  writer.AppendString("org.chromium.TestInterface");
+
+  MessageWriter array_writer(NULL);
+  MessageWriter dict_entry_writer(NULL);
+
+  writer.OpenArray("{sv}", &array_writer);
+  writer.CloseContainer(&array_writer);
+
+  MessageWriter invalidated_array_writer(NULL);
+
+  writer.OpenArray("s", &invalidated_array_writer);
+  invalidated_array_writer.AppendString("Name");
+  writer.CloseContainer(&invalidated_array_writer);
 
   exported_object_->SendSignal(&signal);
 }

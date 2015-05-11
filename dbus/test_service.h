@@ -167,6 +167,12 @@ class TestService : public base::Thread {
   // Helper function for SendPropertyChangedSignal().
   void SendPropertyChangedSignalInternal(const std::string& name);
 
+  // Sends a property invalidated signal for the name property.
+  void SendPropertyInvalidatedSignal();
+
+  // Helper function for SendPropertyInvalidatedSignal().
+  void SendPropertyInvalidatedSignalInternal();
+
   // Helper function for RequestOwnership().
   void RequestOwnershipInternal(base::Callback<void(bool)> callback);
 

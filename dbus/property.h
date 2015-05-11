@@ -134,7 +134,7 @@ class PropertySet;
 // used by PropertySet.
 class PropertyBase {
  public:
-  PropertyBase() : property_set_(NULL) {}
+  PropertyBase() : property_set_(nullptr), is_valid_(false) {}
 
   // Initializes the |property_set| and property |name| so that method
   // calls may be made from this class. This method is called by
@@ -155,6 +155,12 @@ class PropertyBase {
   //     }
   //   }
   const std::string& name() const { return name_; }
+
+  // Returns true if property is valid, false otherwise.
+  bool is_valid() const { return is_valid_; }
+
+  // Allows to mark Property as valid or invalid.
+  void set_valid(bool is_valid) { is_valid_ = is_valid; }
 
   // Method used by PropertySet to retrieve the value from a MessageReader,
   // no knowledge of the contained type is required, this method returns
@@ -180,6 +186,8 @@ class PropertyBase {
   // Pointer to the PropertySet instance that this instance is a member of,
   // no ownership is taken and |property_set_| must outlive this class.
   PropertySet* property_set_;
+
+  bool is_valid_;
 
   // Name of the property.
   std::string name_;
@@ -302,6 +310,10 @@ class CHROME_DBUS_EXPORT PropertySet {
   }
 
  private:
+  // Invalidates properties by reading an array of names, from
+  // |message_reader|. Returns false if message is in incorrect format.
+  bool InvalidatePropertiesFromReader(MessageReader* reader);
+
   // Pointer to object proxy for making method calls, no ownership is taken
   // so this must outlive this class.
   ObjectProxy* object_proxy_;

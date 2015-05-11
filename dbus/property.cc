@@ -21,9 +21,9 @@ namespace dbus {
 void PropertyBase::Init(PropertySet* property_set, const std::string& name) {
   DCHECK(!property_set_);
   property_set_ = property_set;
+  is_valid_ = false;
   name_ = name;
 }
-
 
 //
 // PropertySet implementation.
@@ -78,10 +78,10 @@ void PropertySet::ChangedReceived(Signal* signal) {
                  << "expected dictionary: " << signal->ToString();
   }
 
-  // TODO(keybuk): dbus properties api has invalidated properties array
-  // on the end, we don't handle this right now because I don't know of
-  // any service that sends it - or what they expect us to do with it.
-  // Add later when we need it.
+  if (!InvalidatePropertiesFromReader(&reader)) {
+    LOG(WARNING) << "Property changed signal has wrong parameters: "
+                 << "expected array to invalidate: " << signal->ToString();
+  }
 }
 
 void PropertySet::ChangedConnected(const std::string& interface_name,
@@ -115,8 +115,15 @@ void PropertySet::OnGet(PropertyBase* property, GetCallback callback,
   }
 
   MessageReader reader(response);
-  if (property->PopValueFromReader(&reader))
+  if (property->PopValueFromReader(&reader)) {
+    property->set_valid(true);
     NotifyPropertyChanged(property->name());
+  } else {
+    if (property->is_valid()) {
+      property->set_valid(false);
+      NotifyPropertyChanged(property->name());
+    }
+  }
 
   if (!callback.is_null())
     callback.Run(response);
@@ -199,13 +206,42 @@ bool PropertySet::UpdatePropertyFromReader(MessageReader* reader) {
 
   PropertyBase* property = it->second;
   if (property->PopValueFromReader(reader)) {
+    property->set_valid(true);
     NotifyPropertyChanged(name);
     return true;
   } else {
+    if (property->is_valid()) {
+      property->set_valid(false);
+      NotifyPropertyChanged(property->name());
+    }
     return false;
   }
 }
 
+bool PropertySet::InvalidatePropertiesFromReader(MessageReader* reader) {
+  DCHECK(reader);
+  MessageReader array_reader(NULL);
+  if (!reader->PopArray(&array_reader))
+    return false;
+
+  while (array_reader.HasMoreData()) {
+    std::string name;
+    if (!array_reader.PopString(&name))
+      return false;
+
+    PropertiesMap::iterator it = properties_map_.find(name);
+    if (it == properties_map_.end())
+      continue;
+
+    PropertyBase* property = it->second;
+    if (property->is_valid()) {
+      property->set_valid(false);
+      NotifyPropertyChanged(property->name());
+    }
+  }
+
+  return true;
+}
 
 void PropertySet::NotifyPropertyChanged(const std::string& name) {
   if (!property_changed_callback_.is_null())

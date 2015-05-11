@@ -27,8 +27,7 @@ namespace dbus {
 // Property<>.
 class PropertyTest : public testing::Test {
  public:
-  PropertyTest() {
-  }
+  PropertyTest() {}
 
   struct Properties : public PropertySet {
     Property<std::string> name;
@@ -110,6 +109,10 @@ class PropertyTest : public testing::Test {
     run_loop_->Quit();
   }
 
+  // Generic method callback, that might be used together with
+  // WaitForMethodCallback to test wether method was succesfully called.
+  void MethodCallback(Response* response) { run_loop_->Quit(); }
+
  protected:
   // Called when a property value is updated.
   void OnPropertyChanged(const std::string& name) {
@@ -133,6 +136,12 @@ class PropertyTest : public testing::Test {
   // Waits for initial values to be set.
   void WaitForGetAll() {
     WaitForUpdates(kExpectedSignalUpdates);
+  }
+
+  // Waits until MethodCallback is called.
+  void WaitForMethodCallback() {
+    run_loop_.reset(new base::RunLoop);
+    run_loop_->Run();
   }
 
   // Waits for the callback. |id| is the string bound to the callback when
@@ -159,9 +168,14 @@ class PropertyTest : public testing::Test {
 };
 
 TEST_F(PropertyTest, InitialValues) {
+  EXPECT_FALSE(properties_->name.is_valid());
+  EXPECT_FALSE(properties_->version.is_valid());
+
   WaitForGetAll();
 
+  EXPECT_TRUE(properties_->name.is_valid());
   EXPECT_EQ("TestService", properties_->name.value());
+  EXPECT_TRUE(properties_->version.is_valid());
   EXPECT_EQ(10, properties_->version.value());
 
   std::vector<std::string> methods = properties_->methods.value();
@@ -276,6 +290,38 @@ TEST_F(PropertyTest, Set) {
   WaitForUpdates(1);
 
   EXPECT_EQ("NewService", properties_->name.value());
+}
+
+TEST_F(PropertyTest, Invalidate) {
+  WaitForGetAll();
+
+  EXPECT_TRUE(properties_->name.is_valid());
+
+  // Invalidate name.
+  MethodCall method_call("org.chromium.TestInterface", "PerformAction");
+  MessageWriter writer(&method_call);
+  writer.AppendString("InvalidateProperty");
+  writer.AppendObjectPath(ObjectPath("/org/chromium/TestService"));
+  object_proxy_->CallMethod(
+      &method_call, ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(&PropertyTest::MethodCallback, base::Unretained(this)));
+  WaitForMethodCallback();
+
+  // TestService sends a property update.
+  WaitForUpdates(1);
+
+  EXPECT_FALSE(properties_->name.is_valid());
+
+  // Set name to something valid.
+  properties_->name.Set("NewService",
+                        base::Bind(&PropertyTest::PropertyCallback,
+                                   base::Unretained(this), "Set"));
+  WaitForCallback("Set");
+
+  // TestService sends a property update.
+  WaitForUpdates(1);
+
+  EXPECT_TRUE(properties_->name.is_valid());
 }
 
 TEST(PropertyTestStatic, ReadWriteStringMap) {
