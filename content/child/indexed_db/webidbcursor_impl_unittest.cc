@@ -128,6 +128,7 @@ class WebIDBCursorImplTest : public testing::Test {
   }
 
  protected:
+  base::MessageLoop message_loop_;
   WebIDBKey null_key_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_ptr<MockDispatcher> dispatcher_;

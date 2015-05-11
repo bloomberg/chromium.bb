@@ -124,6 +124,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
   void VisualStateSwapPromiseDidNotSwap(
       cc::SwapPromise::DidNotSwapReason reason);
 
+  base::MessageLoop message_loop_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   scoped_refptr<TestSyncMessageFilter> sync_message_filter_;
   std::vector<IPC::Message> messages_;
