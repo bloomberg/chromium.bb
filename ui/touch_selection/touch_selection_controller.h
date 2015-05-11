@@ -36,6 +36,12 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionControllerClient {
 class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
     : public TouchHandleClient {
  public:
+  enum ActiveStatus {
+    INACTIVE,
+    INSERTION_ACTIVE,
+    SELECTION_ACTIVE,
+  };
+
   TouchSelectionController(TouchSelectionControllerClient* client,
                            base::TimeDelta tap_timeout,
                            float tap_slop,
@@ -97,6 +103,11 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   const gfx::PointF& GetStartPosition() const;
   const gfx::PointF& GetEndPosition() const;
 
+  const SelectionBound& start() const { return start_; }
+  const SelectionBound& end() const { return end_; }
+
+  ActiveStatus active_status() const { return active_status_; }
+
  private:
   enum InputEventType { TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
 
@@ -146,13 +157,13 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   TouchHandleOrientation start_orientation_;
   TouchHandleOrientation end_orientation_;
 
+  ActiveStatus active_status_;
+
   scoped_ptr<TouchHandle> insertion_handle_;
-  bool is_insertion_active_;
   bool activate_insertion_automatically_;
 
   scoped_ptr<TouchHandle> start_selection_handle_;
   scoped_ptr<TouchHandle> end_selection_handle_;
-  bool is_selection_active_;
   bool activate_selection_automatically_;
 
   bool selection_empty_;

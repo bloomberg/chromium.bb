@@ -12,9 +12,13 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../aura/aura.gyp:aura',
+        '../aura_extra/aura_extra.gyp:aura_extra',
         '../base/ui_base.gyp:ui_base',
+        '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../events/events.gyp:gesture_detection',
+        '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
       ],
       'defines': [
@@ -24,6 +28,8 @@
         'selection_event_type.h',
         'touch_handle.cc',
         'touch_handle.h',
+        'touch_handle_drawable_aura.cc',
+        'touch_handle_drawable_aura.h',
         'touch_handle_orientation.h',
         'touch_selection_controller.cc',
         'touch_selection_controller.h',
@@ -31,6 +37,20 @@
       ],
       'include_dirs': [
         '../..',
+      ],
+      'conditions': [
+        ['use_aura==0', {
+          'dependencies!': [
+            '../aura/aura.gyp:aura',
+            '../aura_extra/aura_extra.gyp:aura_extra',
+            '../compositor/compositor.gyp:compositor',
+            '../gfx/gfx.gyp:gfx',
+          ],
+          'sources!': [
+            'touch_handle_drawable_aura.cc',
+            'touch_handle_drawable_aura.h',
+          ],
+        }],
       ],
     },
     {

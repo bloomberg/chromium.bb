@@ -36,6 +36,8 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
 
  private:
   bool* intersects_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTouchHandleDrawable);
 };
 
 }  // namespace
@@ -205,6 +207,8 @@ class TouchSelectionControllerTest : public testing::Test,
   bool animation_enabled_;
   bool dragging_enabled_;
   scoped_ptr<TouchSelectionController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerTest);
 };
 
 TEST_F(TouchSelectionControllerTest, InsertionBasic) {
@@ -433,7 +437,6 @@ TEST_F(TouchSelectionControllerTest, InsertionTapped) {
 
   MockMotionEvent event(MockMotionEvent::ACTION_DOWN, event_time, 0, 0);
   EXPECT_TRUE(controller().WillHandleTouchEvent(event));
-  //TODO(AKV): this test case has to be modified once crbug.com/394093 is fixed.
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_DRAG_STARTED));
 
   event = MockMotionEvent(MockMotionEvent::ACTION_UP, event_time, 0, 0);

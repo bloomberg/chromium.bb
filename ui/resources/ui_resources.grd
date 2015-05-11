@@ -500,6 +500,9 @@
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP" file="common/aura_scrollbar_thumb_base_pressed_top.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP_LEFT" file="common/aura_scrollbar_thumb_base_pressed_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLLBAR_THUMB_BASE_PRESSED_TOP_RIGHT" file="common/aura_scrollbar_thumb_base_pressed_top_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_CENTER" file="common/text_selection_handle_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_LEFT" file="common/text_selection_handle_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_RIGHT" file="common/text_selection_handle_right.png" />
       </if>
       <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_HOVER_BOTTOM" file="common/textbutton_hover_bottom.png" />
@@ -529,11 +532,6 @@
         <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_TOP" file="common/textbutton_raised_top.png" />
         <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_TOP_LEFT" file="common/textbutton_raised_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_TOP_RIGHT" file="common/textbutton_raised_top_right.png" />
-      </if>
-      <if expr="toolkit_views">
-        <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_CENTER" file="common/text_selection_handle_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_LEFT" file="common/text_selection_handle_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_RIGHT" file="common/text_selection_handle_right.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
       <if expr="toolkit_views">
