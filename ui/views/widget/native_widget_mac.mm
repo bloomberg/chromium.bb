@@ -581,13 +581,13 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
   BridgedNativeWidget* bridge =
       NativeWidgetMac::GetBridgeForNativeWindow([native_view window]);
   if (!bridge)
-    return NULL;
+    return nullptr;
 
-  for (BridgedNativeWidget* parent;
-       (parent = bridge->parent());
-       bridge = parent) {
-  }
-  return bridge->native_widget_mac();
+  NativeWidgetPrivate* ancestor =
+      bridge->parent() ? GetTopLevelNativeWidget(
+                             [bridge->parent()->GetNSWindow() contentView])
+                       : nullptr;
+  return ancestor ? ancestor : bridge->native_widget_mac();
 }
 
 // static

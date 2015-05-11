@@ -6,16 +6,19 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/native_widget_private.h"
 
 namespace views {
 namespace test {
@@ -362,6 +365,65 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
   id hit = [widget->GetNativeWindow() accessibilityHitTest:midpoint];
   id title = [hit accessibilityAttributeValue:NSAccessibilityTitleAttribute];
   EXPECT_NSEQ(title, @"Green");
+}
+
+// Tests creating a views::Widget parented off a native NSWindow.
+TEST_F(NativeWidgetMacTest, NonWidgetParent) {
+  NSRect parent_nsrect = NSMakeRect(100, 100, 300, 200);
+  base::scoped_nsobject<NSWindow> native_parent(
+      [[NSWindow alloc] initWithContentRect:parent_nsrect
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO]);
+  [native_parent setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
+  [native_parent makeKeyAndOrderFront:nil];
+
+  // Note: Don't use WidgetTest::CreateChildPlatformWidget because that makes
+  // windows of TYPE_CONTROL which are automatically made visible. But still
+  // mark it as a child to test window positioning.
+  Widget* child = new Widget;
+  Widget::InitParams init_params;
+  init_params.parent = [native_parent contentView];
+  init_params.child = true;
+  child->Init(init_params);
+
+  TestWidgetObserver child_observer(child);
+
+  // GetTopLevelNativeWidget() only goes as far as there exists a Widget (i.e.
+  // must stop at |child|.
+  internal::NativeWidgetPrivate* top_level_widget =
+      internal::NativeWidgetPrivate::GetTopLevelNativeWidget(
+          child->GetNativeView());
+  EXPECT_EQ(child, top_level_widget->GetWidget());
+
+  // To verify the parent, we need to use NativeWidgetMac APIs.
+  BridgedNativeWidget* bridged_native_widget =
+      NativeWidgetMac::GetBridgeForNativeWindow(child->GetNativeWindow());
+  EXPECT_EQ(native_parent, bridged_native_widget->parent()->GetNSWindow());
+
+  child->SetBounds(gfx::Rect(50, 50, 200, 100));
+  EXPECT_FALSE(child->IsVisible());
+  EXPECT_EQ(0u, [[native_parent childWindows] count]);
+
+  child->Show();
+  EXPECT_TRUE(child->IsVisible());
+  EXPECT_EQ(1u, [[native_parent childWindows] count]);
+  EXPECT_EQ(child->GetNativeWindow(),
+            [[native_parent childWindows] objectAtIndex:0]);
+  EXPECT_EQ(native_parent, [child->GetNativeWindow() parentWindow]);
+
+  // Child should be positioned on screen relative to the parent, but note we
+  // positioned the parent in Cooca coordinates, so we need to convert.
+  gfx::Point parent_origin = gfx::ScreenRectFromNSRect(parent_nsrect).origin();
+  EXPECT_EQ(gfx::Rect(150, parent_origin.y() + 50, 200, 100),
+            child->GetWindowBoundsInScreen());
+
+  // Closing the parent should close and destroy the child.
+  EXPECT_FALSE(child_observer.widget_closed());
+  [native_parent close];
+  EXPECT_TRUE(child_observer.widget_closed());
+
+  EXPECT_EQ(0u, [[native_parent childWindows] count]);
 }
 
 }  // namespace test

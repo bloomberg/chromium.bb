@@ -21,6 +21,7 @@
 #import "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
+#import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/ime/null_input_method.h"
@@ -155,14 +156,17 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
   if (params.parent) {
     // Disallow creating child windows of views not currently in an NSWindow.
     CHECK([params.parent window]);
-    BridgedNativeWidget* parent =
+    BridgedNativeWidget* bridged_native_widget_parent =
         NativeWidgetMac::GetBridgeForNativeWindow([params.parent window]);
-    // The parent could be an NSWindow without an associated Widget. That could
-    // work by observing NSWindowWillCloseNotification, but for now it's not
-    // supported, and there might not be a use-case for that.
-    CHECK(parent);
-    parent_ = parent;
-    parent->child_windows_.push_back(this);
+    // If the parent is another BridgedNativeWidget, just add to the collection
+    // of child windows it owns and manages. Otherwise, create an adapter to
+    // anchor the child widget and observe when the parent NSWindow is closed.
+    if (bridged_native_widget_parent) {
+      parent_ = bridged_native_widget_parent;
+      bridged_native_widget_parent->child_windows_.push_back(this);
+    } else {
+      parent_ = new WidgetOwnerNSWindowAdapter(this, params.parent);
+    }
   }
 
   // Set a meaningful initial bounds. Note that except for frameless widgets
@@ -233,7 +237,7 @@ void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
       GetWindowSizeForClientSize(window_, clamped_content_size));
 
   if (parent_ && !PositionWindowInScreenCoordinates(widget, widget_type_))
-    actual_new_bounds.Offset(parent_->GetRestoredBounds().OffsetFromOrigin());
+    actual_new_bounds.Offset(parent_->GetChildWindowOffset());
 
   [window_ setFrame:gfx::ScreenRectToNSRect(actual_new_bounds)
             display:YES
@@ -278,17 +282,13 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
   }
 
   DCHECK(wants_to_be_visible_);
-
-  // If there's a hidden ancestor, return and wait for it to become visible.
-  for (BridgedNativeWidget* ancestor = parent();
-       ancestor;
-       ancestor = ancestor->parent()) {
-    if (!ancestor->window_visible_)
-      return;
-  }
+  // If the parent (or an ancestor) is hidden, return and wait for it to become
+  // visible.
+  if (parent() && !parent()->IsVisibleParent())
+    return;
 
   if (native_widget_mac_->GetWidget()->IsModal()) {
-    NSWindow* parent_window = parent_->ns_window();
+    NSWindow* parent_window = parent_->GetNSWindow();
     DCHECK(parent_window);
 
     [NSApp beginSheet:window_
@@ -307,8 +307,8 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
     // parent window. So, if there's a parent, order above that. Otherwise, this
     // will order above all windows at the same level.
     NSInteger parent_window_number = 0;
-    if (parent())
-      parent_window_number = [parent()->ns_window() windowNumber];
+    if (parent_)
+      parent_window_number = [parent_->GetNSWindow() windowNumber];
 
     [window_ orderWindow:NSWindowAbove
               relativeTo:parent_window_number];
@@ -361,8 +361,10 @@ void BridgedNativeWidget::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidget::OnWindowWillClose() {
-  if (parent_)
+  if (parent_) {
     parent_->RemoveChildWindow(this);
+    parent_ = nullptr;
+  }
   [window_ setDelegate:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:window_delegate_];
   native_widget_mac_->OnWindowWillClose();
@@ -464,7 +466,7 @@ void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
     wants_to_be_visible_ = true;
 
     if (parent_)
-      [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
+      [parent_->GetNSWindow() addChildWindow:window_ ordered:NSWindowAbove];
   } else {
     mouse_capture_.reset();  // Capture on hidden windows is not permitted.
 
@@ -472,7 +474,7 @@ void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
     // list. Cocoa's childWindow management breaks down when child windows are
     // hidden.
     if (parent_)
-      [parent_->ns_window() removeChildWindow:window_];
+      [parent_->GetNSWindow() removeChildWindow:window_];
   }
 
   // TODO(tapted): Investigate whether we want this for Mac. This is what Aura
@@ -664,6 +666,34 @@ void BridgedNativeWidget::AcceleratedWidgetHitError() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, BridgedNativeWidgetOwner:
+
+NSWindow* BridgedNativeWidget::GetNSWindow() {
+  return window_;
+}
+
+gfx::Vector2d BridgedNativeWidget::GetChildWindowOffset() const {
+  return gfx::ScreenRectFromNSRect([window_ frame]).OffsetFromOrigin();
+}
+
+bool BridgedNativeWidget::IsVisibleParent() const {
+  return parent_ ? window_visible_ && parent_->IsVisibleParent()
+                 : window_visible_;
+}
+
+void BridgedNativeWidget::RemoveChildWindow(BridgedNativeWidget* child) {
+  auto location = std::find(
+      child_windows_.begin(), child_windows_.end(), child);
+  DCHECK(location != child_windows_.end());
+  child_windows_.erase(location);
+
+  // Note the child is sometimes removed already by AppKit. This depends on OS
+  // version, and possibly some unpredictable reference counting. Removing it
+  // here should be safe regardless.
+  [window_ removeChildWindow:child->window_];
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, private:
 
 void BridgedNativeWidget::RemoveOrDestroyChildren() {
@@ -676,19 +706,6 @@ void BridgedNativeWidget::RemoveOrDestroyChildren() {
         [child_windows_.back()->ns_window() retain]);
     [child close];
   }
-}
-
-void BridgedNativeWidget::RemoveChildWindow(BridgedNativeWidget* child) {
-  auto location = std::find(
-      child_windows_.begin(), child_windows_.end(), child);
-  DCHECK(location != child_windows_.end());
-  child_windows_.erase(location);
-  child->parent_ = nullptr;
-
-  // Note the child is sometimes removed already by AppKit. This depends on OS
-  // version, and possibly some unpredictable reference counting. Removing it
-  // here should be safe regardless.
-  [window_ removeChildWindow:child->window_];
 }
 
 void BridgedNativeWidget::NotifyVisibilityChangeDown() {

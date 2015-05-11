@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_owner.h"
 #import "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#import "ui/views/cocoa/bridged_native_widget_owner.h"
 #import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
 #import "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/input_method_delegate.h"
@@ -40,7 +41,8 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
                                          public internal::InputMethodDelegate,
                                          public CocoaMouseCaptureDelegate,
                                          public FocusChangeListener,
-                                         public ui::AcceleratedWidgetMacNSView {
+                                         public ui::AcceleratedWidgetMacNSView,
+                                         public BridgedNativeWidgetOwner {
  public:
   // Ways of changing the visibility of the bridged NSWindow.
   enum WindowVisibilityState {
@@ -151,7 +153,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // The parent widget specified in Widget::InitParams::parent. If non-null, the
   // parent will close children before the parent closes, and children will be
   // raised above their parent when window z-order changes.
-  BridgedNativeWidget* parent() { return parent_; }
+  BridgedNativeWidgetOwner* parent() { return parent_; }
   const std::vector<BridgedNativeWidget*>& child_windows() {
     return child_windows_;
   }
@@ -165,9 +167,6 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
  private:
   // Closes all child windows. BridgedNativeWidget children will be destroyed.
   void RemoveOrDestroyChildren();
-
-  // Remove the given |child| from |child_windows_|.
-  void RemoveChildWindow(BridgedNativeWidget* child);
 
   // Notify descendants of a visibility change.
   void NotifyVisibilityChangeDown();
@@ -217,6 +216,12 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
       const std::vector<ui::LatencyInfo>& latency_info) override;
   void AcceleratedWidgetHitError() override;
 
+  // Overridden from BridgedNativeWidgetOwner:
+  NSWindow* GetNSWindow() override;
+  gfx::Vector2d GetChildWindowOffset() const override;
+  bool IsVisibleParent() const override;
+  void RemoveChildWindow(BridgedNativeWidget* child) override;
+
   views::NativeWidgetMac* native_widget_mac_;  // Weak. Owns this.
   base::scoped_nsobject<NSWindow> window_;
   base::scoped_nsobject<ViewsNSWindowDelegate> window_delegate_;
@@ -226,7 +231,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   FocusManager* focus_manager_;  // Weak. Owned by our Widget.
   Widget::InitParams::Type widget_type_;
 
-  BridgedNativeWidget* parent_;  // Weak. If non-null, owns this.
+  BridgedNativeWidgetOwner* parent_;  // Weak. If non-null, owns this.
   std::vector<BridgedNativeWidget*> child_windows_;
 
   base::scoped_nsobject<NSView> compositor_superview_;
