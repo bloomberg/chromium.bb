@@ -515,7 +515,7 @@ group("both_gn_and_gyp") {
       "//storage/browser",
       "//third_party/brotli",
       "//third_party/flac",
-      "//third_party/hunspell",
+      "//third_party/hunspell_new",
       "//third_party/iccjpeg",
       "//third_party/libphonenumber",
       "//third_party/ots",

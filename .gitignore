@@ -304,7 +304,6 @@ v8.log
 /third_party/gperf
 /third_party/httpcomponents-client
 /third_party/httpcomponents-core
-/third_party/hunspell
 /third_party/hunspell_dictionaries
 /third_party/icu
 /third_party/jarjar

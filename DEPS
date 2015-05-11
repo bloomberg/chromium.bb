@@ -143,9 +143,6 @@ deps = {
   'src/third_party/libexif/sources':
    Var('chromium_git') + '/chromium/deps/libexif/sources.git' + '@' + 'ed98343daabd7b4497f97fda972e132e6877c48a',
 
-  'src/third_party/hunspell':
-   Var('chromium_git') + '/chromium/deps/hunspell.git' + '@' + 'c956c0e97af00ef789afb2f64d02c9a5a50e6eb1',
-
   'src/third_party/hunspell_dictionaries':
    Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '80796932b89ab36431399d76c5b8391ea471e30a', # from svn revision 294404
 
@@ -361,7 +358,6 @@ deps_os = {
     'src/native_client': None,
     'src/third_party/ffmpeg': None,
     'src/third_party/hunspell_dictionaries': None,
-    'src/third_party/hunspell': None,
     'src/third_party/webgl': None,
   },
   'mac': {
