@@ -524,8 +524,7 @@ bool FormStructure::EncodeQueryRequest(
   for (ScopedVector<FormStructure>::const_iterator it = forms.begin();
        it != forms.end();
        ++it) {
-    FormStructure* form = *it;
-    std::string signature(form->FormSignature());
+    std::string signature((*it)->FormSignature());
     if (processed_forms.find(signature) != processed_forms.end())
       continue;
     processed_forms.insert(signature);
@@ -533,13 +532,9 @@ bool FormStructure::EncodeQueryRequest(
         new buzz::XmlElement(buzz::QName(kXMLElementForm)));
     encompassing_xml_element->SetAttr(buzz::QName(kAttributeSignature),
                                       signature);
-    if (!form->form_name().empty()) {
-      encompassing_xml_element->SetAttr(buzz::QName(kAttributeName),
-                                        base::UTF16ToUTF8(form->form_name()));
-    }
 
-    if (!form->EncodeFormRequest(FormStructure::QUERY,
-                                 encompassing_xml_element.get()))
+    if (!(*it)->EncodeFormRequest(FormStructure::QUERY,
+                                  encompassing_xml_element.get()))
       continue;  // Malformed form, skip it.
 
     autofill_request_xml.AddElement(encompassing_xml_element.release());

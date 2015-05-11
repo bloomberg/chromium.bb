@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   const char kQueryRequest[] =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
-      "<form signature=\"15916856893790176210\" name=\"test_form\">"
+      "<form signature=\"15916856893790176210\">"
       "<field signature=\"2594484045\" name=\"one\" type=\"text\"/>"
       "<field signature=\"2750915947\" name=\"two\" type=\"text\"/>"
       "<field signature=\"3494787134\" name=\"three\" type=\"text\"/>"
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   const char kQueryRequest[] =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
-      "<form signature=\"8900697631820480876\" name=\"test_form\">"
+      "<form signature=\"8900697631820480876\">"
       "<field signature=\"2594484045\" name=\"one\" type=\"text\"/>"
       "<field signature=\"2750915947\" name=\"two\" type=\"text\"/>"
       "<field signature=\"116843943\" name=\"three\" type=\"password\"/>"

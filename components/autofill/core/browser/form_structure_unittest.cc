@@ -1425,7 +1425,6 @@ TEST(FormStructureTest, CVCCodeClash) {
 
 TEST(FormStructureTest, EncodeQueryRequest) {
   FormData form;
-  form.name = ASCIIToUTF16("shipping-form");
 
   FormFieldData field;
   field.form_control_type = "text";
@@ -1461,10 +1460,10 @@ TEST(FormStructureTest, EncodeQueryRequest) {
   forms.push_back(new FormStructure(form));
   std::vector<std::string> encoded_signatures;
   std::string encoded_xml;
-  const char kSignature1[] = "18299433261292307089";
+  const char kSignature1[] = "11337937696949187602";
   const char kResponse1[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
-      "<form signature=\"18299433261292307089\" name=\"shipping-form\">"
+      "<form signature=\"11337937696949187602\">"
       "<field signature=\"412125936\" name=\"name_on_card\" type=\"text\"/>"
       "<field signature=\"1917667676\" name=\"billing_address\" type=\"text\"/>"
       "<field signature=\"2226358947\" name=\"card_number\" type=\"text\"/>"
@@ -1500,17 +1499,17 @@ TEST(FormStructureTest, EncodeQueryRequest) {
                                                 &encoded_xml));
   ASSERT_EQ(2U, encoded_signatures.size());
   EXPECT_EQ(kSignature1, encoded_signatures[0]);
-  const char kSignature2[] = "12765336621163642783";
+  const char kSignature2[] = "8308881815906226214";
   EXPECT_EQ(kSignature2, encoded_signatures[1]);
   const char kResponse2[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
-      "<form signature=\"18299433261292307089\" name=\"shipping-form\">"
+      "<form signature=\"11337937696949187602\">"
       "<field signature=\"412125936\" name=\"name_on_card\" type=\"text\"/>"
       "<field signature=\"1917667676\" name=\"billing_address\" type=\"text\"/>"
       "<field signature=\"2226358947\" name=\"card_number\" type=\"text\"/>"
       "<field signature=\"747221617\" name=\"expiration_month\" type=\"text\"/>"
       "<field signature=\"4108155786\" name=\"expiration_year\" type=\"text\"/>"
-      "</form><form signature=\"12765336621163642783\" name=\"shipping-form\">"
+      "</form><form signature=\"8308881815906226214\">"
       "<field signature=\"412125936\" name=\"name_on_card\" type=\"text\"/>"
       "<field signature=\"1917667676\" name=\"billing_address\" type=\"text\"/>"
       "<field signature=\"2226358947\" name=\"card_number\" type=\"text\"/>"
@@ -1520,8 +1519,8 @@ TEST(FormStructureTest, EncodeQueryRequest) {
       "<field signature=\"509334676\" name=\"address\" type=\"text\"/>"
       "<field signature=\"509334676\" name=\"address\" type=\"text\"/>"
       "<field signature=\"509334676\" name=\"address\" type=\"text\"/>"
-      "<field signature=\"509334676\" name=\"address\" type=\"text\"/></form>"
-      "</autofillquery>";
+      "<field signature=\"509334676\" name=\"address\" type=\"text\"/>"
+      "</form></autofillquery>";
   EXPECT_EQ(kResponse2, encoded_xml);
 
   FormData malformed_form(form);
@@ -2483,7 +2482,7 @@ TEST(FormStructureTest, SkipFieldTest) {
   const char kSignature[] = "18006745212084723782";
   const char kResponse[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
-      "<form signature=\"18006745212084723782\" name=\"the-name\">"
+      "<form signature=\"18006745212084723782\">"
       "<field signature=\"239111655\" name=\"username\" type=\"text\"/>"
       "<field signature=\"420638584\" name=\"email\" type=\"text\"/></form>"
       "</autofillquery>";
@@ -2495,7 +2494,7 @@ TEST(FormStructureTest, SkipFieldTest) {
   EXPECT_EQ(kResponse, encoded_xml);
 }
 
-// Some of the names are missing from the form and one field.
+// One name is missing from one field.
 TEST(FormStructureTest, EncodeQueryRequest_MissingNames) {
   FormData form;
   // No name set for the form.
