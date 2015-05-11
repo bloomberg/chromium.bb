@@ -156,6 +156,7 @@ static void Init(JNIEnv* env,
   g_shell_runner.Get().reset(new MojoShellRunner(parameters));
 
   InitializeLogging();
+  mojo::runner::WaitForDebuggerIfNecessary();
 
   InitializeRedirection();
 

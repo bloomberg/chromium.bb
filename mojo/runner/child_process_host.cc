@@ -13,8 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
-#include "base/strings/string_split.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -102,6 +100,7 @@ bool ChildProcessHost::DoLaunch() {
       switches::kTraceToConsole,
       switches::kV,
       switches::kVModule,
+      switches::kWaitForDebugger,
   };
 
   const base::CommandLine* parent_command_line =
@@ -111,14 +110,6 @@ bool ChildProcessHost::DoLaunch() {
                                       arraysize(kForwardSwitches));
   child_command_line.AppendSwitchASCII(switches::kApp, name_);
   child_command_line.AppendSwitch(switches::kChildProcess);
-  if (parent_command_line->HasSwitch(switches::kWaitForDebugger)) {
-    std::vector<std::string> apps_to_debug;
-    base::SplitString(
-        parent_command_line->GetSwitchValueASCII(switches::kWaitForDebugger),
-        ',', &apps_to_debug);
-    if (apps_to_debug.empty() || ContainsValue(apps_to_debug, name_))
-      child_command_line.AppendSwitch(switches::kWaitForDebugger);
-  }
 
   auto args = parent_command_line->GetArgs();
   for (const auto& arg : args)

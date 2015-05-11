@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 
   mojo::runner::InitializeLogging();
+  mojo::runner::WaitForDebuggerIfNecessary();
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

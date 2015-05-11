@@ -9,8 +9,9 @@ namespace mojo {
 namespace runner {
 
 // Initialization routines shared by desktop and Android main functions.
-
 void InitializeLogging();
+
+void WaitForDebuggerIfNecessary();
 
 }  // namespace runner
 }  // namespace mojo
