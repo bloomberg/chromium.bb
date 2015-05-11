@@ -248,7 +248,10 @@ class SmartSessionRestoreTest : public SessionRestoreTest,
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kForceFieldTrials, "SessionRestoreBackgroundLoading/Smart/");
+        switches::kForceFieldTrials, "IntelligentSessionRestore/TestGroup/");
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceFieldTrialParams,
+        "IntelligentSessionRestore.TestGroup:PrioritizeTabs/simple");
   }
 
  private:
@@ -1331,7 +1334,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
 }
 
 IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, CorrectLoadingOrder) {
-  ASSERT_TRUE(SessionRestore::SmartLoadingEnabled());
+  ASSERT_EQ(SessionRestore::SMART_RESTORE_MODE_SIMPLE,
+            SessionRestore::GetSmartRestoreMode());
 
   const int NumTabs = 6;
 

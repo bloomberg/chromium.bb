@@ -298,7 +298,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     if (succeeded) {
       // Start Loading tabs.
-      if (SessionRestore::SmartLoadingEnabled())
+      if (SessionRestore::GetSmartRestoreMode() !=
+          SessionRestore::SMART_RESTORE_MODE_OFF)
         std::stable_sort(contents_created->begin(), contents_created->end());
       SessionRestoreDelegate::RestoreTabs(*contents_created, restore_started_);
     }
@@ -818,12 +819,14 @@ SessionRestore::CallbackSubscription
 }
 
 // static
-bool SessionRestore::SmartLoadingEnabled() {
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find("SessionRestoreBackgroundLoading");
-  if (!trial || trial->group_name() != "Smart")
-    return false;
-  return true;
+SessionRestore::SmartRestoreMode SessionRestore::GetSmartRestoreMode() {
+  std::string prioritize_tabs = variations::GetVariationParamValue(
+      "IntelligentSessionRestore", "PrioritizeTabs");
+  if (prioritize_tabs == "mru")
+    return SMART_RESTORE_MODE_MRU;
+  if (prioritize_tabs == "simple")
+    return SMART_RESTORE_MODE_SIMPLE;
+  return SMART_RESTORE_MODE_OFF;
 }
 
 // static

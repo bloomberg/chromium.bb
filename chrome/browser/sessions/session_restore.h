@@ -39,6 +39,12 @@ class SessionRestore {
     SYNCHRONOUS                  = 1 << 2,
   };
 
+  enum SmartRestoreMode {
+    SMART_RESTORE_MODE_OFF,     // No sorting of tabs.
+    SMART_RESTORE_MODE_SIMPLE,  // Tabs are sorted using predetermined criteria.
+    SMART_RESTORE_MODE_MRU      // Same as above but takes into account MRU.
+  };
+
   // Notification callback list.
   using CallbackList = base::CallbackList<void(int)>;
 
@@ -100,7 +106,7 @@ class SessionRestore {
 
   // Returns true if smart session restore is enabled (ie. background tabs are
   // sorted before being loaded).
-  static bool SmartLoadingEnabled();
+  static SmartRestoreMode GetSmartRestoreMode();
 
  private:
   SessionRestore();
