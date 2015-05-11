@@ -9,7 +9,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/posix/eintr_wrapper.h"
@@ -173,6 +172,7 @@ void File::Close() {
   if (!IsValid())
     return;
 
+  SCOPED_FILE_TRACE("Close");
   ThreadRestrictions::AssertIOAllowed();
   file_.reset();
 }
@@ -180,6 +180,8 @@ void File::Close() {
 int64 File::Seek(Whence whence, int64 offset) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
+
+  SCOPED_FILE_TRACE_WITH_SIZE("Seek", offset);
 
 #if defined(OS_ANDROID)
   COMPILE_ASSERT(sizeof(int64) == sizeof(off64_t), off64_t_64_bit);
@@ -197,6 +199,8 @@ int File::Read(int64 offset, char* data, int size) {
   DCHECK(IsValid());
   if (size < 0)
     return -1;
+
+  SCOPED_FILE_TRACE_WITH_SIZE("Read", size);
 
   int bytes_read = 0;
   int rv;
@@ -218,6 +222,8 @@ int File::ReadAtCurrentPos(char* data, int size) {
   if (size < 0)
     return -1;
 
+  SCOPED_FILE_TRACE_WITH_SIZE("ReadAtCurrentPos", size);
+
   int bytes_read = 0;
   int rv;
   do {
@@ -234,7 +240,7 @@ int File::ReadAtCurrentPos(char* data, int size) {
 int File::ReadNoBestEffort(int64 offset, char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-
+  SCOPED_FILE_TRACE_WITH_SIZE("ReadNoBestEffort", size);
   return HANDLE_EINTR(pread(file_.get(), data, size, offset));
 }
 
@@ -244,6 +250,7 @@ int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
   if (size < 0)
     return -1;
 
+  SCOPED_FILE_TRACE_WITH_SIZE("ReadAtCurrentPosNoBestEffort", size);
   return HANDLE_EINTR(read(file_.get(), data, size));
 }
 
@@ -256,6 +263,8 @@ int File::Write(int64 offset, const char* data, int size) {
   DCHECK(IsValid());
   if (size < 0)
     return -1;
+
+  SCOPED_FILE_TRACE_WITH_SIZE("Write", size);
 
   int bytes_written = 0;
   int rv;
@@ -277,6 +286,8 @@ int File::WriteAtCurrentPos(const char* data, int size) {
   if (size < 0)
     return -1;
 
+  SCOPED_FILE_TRACE_WITH_SIZE("WriteAtCurrentPos", size);
+
   int bytes_written = 0;
   int rv;
   do {
@@ -297,11 +308,14 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
   if (size < 0)
     return -1;
 
+  SCOPED_FILE_TRACE_WITH_SIZE("WriteAtCurrentPosNoBestEffort", size);
   return HANDLE_EINTR(write(file_.get(), data, size));
 }
 
 int64 File::GetLength() {
   DCHECK(IsValid());
+
+  SCOPED_FILE_TRACE("GetLength");
 
   stat_wrapper_t file_info;
   if (CallFstat(file_.get(), &file_info))
@@ -313,12 +327,16 @@ int64 File::GetLength() {
 bool File::SetLength(int64 length) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
+
+  SCOPED_FILE_TRACE_WITH_SIZE("SetLength", length);
   return !CallFtruncate(file_.get(), length);
 }
 
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
+
+  SCOPED_FILE_TRACE("SetTimes");
 
   timeval times[2];
   times[0] = last_access_time.ToTimeVal();
@@ -330,6 +348,8 @@ bool File::SetTimes(Time last_access_time, Time last_modified_time) {
 bool File::GetInfo(Info* info) {
   DCHECK(IsValid());
 
+  SCOPED_FILE_TRACE("GetInfo");
+
   stat_wrapper_t file_info;
   if (CallFstat(file_.get(), &file_info))
     return false;
@@ -339,16 +359,20 @@ bool File::GetInfo(Info* info) {
 }
 
 File::Error File::Lock() {
+  SCOPED_FILE_TRACE("Lock");
   return CallFctnlFlock(file_.get(), true);
 }
 
 File::Error File::Unlock() {
+  SCOPED_FILE_TRACE("Unlock");
   return CallFctnlFlock(file_.get(), false);
 }
 
 File File::Duplicate() {
   if (!IsValid())
     return File();
+
+  SCOPED_FILE_TRACE("Duplicate");
 
   PlatformFile other_fd = dup(GetPlatformFile());
   if (other_fd == -1)
@@ -442,7 +466,7 @@ void File::MemoryCheckingScopedFD::UpdateChecksum() {
 // NaCl doesn't implement system calls to open files directly.
 #if !defined(OS_NACL)
 // TODO(erikkay): does it make sense to support FLAG_EXCLUSIVE_* here?
-void File::DoInitialize(const FilePath& name, uint32 flags) {
+void File::DoInitialize(uint32 flags) {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
 
@@ -497,7 +521,7 @@ void File::DoInitialize(const FilePath& name, uint32 flags) {
   mode |= S_IRGRP | S_IROTH;
 #endif
 
-  int descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
+  int descriptor = HANDLE_EINTR(open(path_.value().c_str(), open_flags, mode));
 
   if (flags & FLAG_OPEN_ALWAYS) {
     if (descriptor < 0) {
@@ -505,7 +529,7 @@ void File::DoInitialize(const FilePath& name, uint32 flags) {
       if (flags & FLAG_EXCLUSIVE_READ || flags & FLAG_EXCLUSIVE_WRITE)
         open_flags |= O_EXCL;   // together with O_CREAT implies O_NOFOLLOW
 
-      descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
+      descriptor = HANDLE_EINTR(open(path_.value().c_str(), open_flags, mode));
       if (descriptor >= 0)
         created_ = true;
     }
@@ -520,7 +544,7 @@ void File::DoInitialize(const FilePath& name, uint32 flags) {
     created_ = true;
 
   if (flags & FLAG_DELETE_ON_CLOSE)
-    unlink(name.value().c_str());
+    unlink(path_.value().c_str());
 
   async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
   error_details_ = FILE_OK;
@@ -531,6 +555,7 @@ void File::DoInitialize(const FilePath& name, uint32 flags) {
 bool File::DoFlush() {
   ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
+
 #if defined(OS_NACL)
   NOTIMPLEMENTED();  // NaCl doesn't implement fsync.
   return true;

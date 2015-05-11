@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/common/child_process_messages.h"
@@ -57,6 +58,9 @@ TracingControllerImpl::TracingControllerImpl()
       is_recording_(TraceLog::GetInstance()->IsEnabled()),
       is_monitoring_(false) {
   base::trace_event::MemoryDumpManager::GetInstance()->SetDelegate(this);
+
+  // Deliberately leaked, like this class.
+  base::FileTracing::SetProvider(new FileTracingProviderImpl);
 }
 
 TracingControllerImpl::~TracingControllerImpl() {

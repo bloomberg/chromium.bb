@@ -199,6 +199,7 @@ class TracingControllerImpl
   std::set<TracingUI*> tracing_uis_;
   scoped_refptr<TraceDataSink> trace_data_sink_;
   scoped_refptr<TraceDataSink> monitoring_data_sink_;
+
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };
 

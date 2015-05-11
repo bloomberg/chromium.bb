@@ -1442,6 +1442,8 @@
       'browser/time_zone_monitor_win.cc',
       'browser/tracing/etw_system_event_consumer_win.cc',
       'browser/tracing/etw_system_event_consumer_win.h',
+      'browser/tracing/file_tracing_provider_impl.cc',
+      'browser/tracing/file_tracing_provider_impl.h',
       'browser/tracing/trace_message_filter.cc',
       'browser/tracing/trace_message_filter.h',
       'browser/tracing/tracing_controller_impl.cc',
