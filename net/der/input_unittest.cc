@@ -12,6 +12,21 @@ namespace test {
 
 const uint8_t kInput[] = {'t', 'e', 's', 't'};
 
+TEST(InputTest, Equals) {
+  Input test(kInput, arraysize(kInput));
+  Input test2(kInput, arraysize(kInput));
+  EXPECT_TRUE(test.Equals(test2));
+
+  std::string input_copy(reinterpret_cast<const char*>(kInput),
+                         arraysize(kInput));
+  Input test_copy(input_copy);
+  EXPECT_TRUE(test.Equals(test_copy));
+
+  Input test_truncated(kInput, arraysize(kInput) - 1);
+  EXPECT_FALSE(test.Equals(test_truncated));
+  EXPECT_FALSE(test_truncated.Equals(test));
+}
+
 TEST(ByteReaderTest, NoReadPastEnd) {
   ByteReader reader(Input(nullptr, 0));
   uint8_t data;

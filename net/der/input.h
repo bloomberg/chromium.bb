@@ -50,6 +50,9 @@ class NET_EXPORT_PRIVATE Input {
   // Returns the length in bytes of an Input's data.
   size_t Length() const { return len_; }
 
+  // Return true if the Input's data and |other|'s data are byte-wise equal.
+  bool Equals(const Input& other) const;
+
   // Returns a pointer to the Input's data. This method is marked as "unsafe"
   // because access to the Input's data should be done through ByteReader
   // instead. This method should only be used where using a ByteReader truly

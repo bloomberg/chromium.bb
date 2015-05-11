@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include "base/logging.h"
 #include "net/der/input.h"
 
@@ -17,6 +19,12 @@ Input::Input(const uint8_t* data, size_t len) : data_(data), len_(len) {
 
 Input::Input(const std::string& s)
     : data_(reinterpret_cast<const uint8_t*>(s.data())), len_(s.size()) {
+}
+
+bool Input::Equals(const Input& other) const {
+  if (len_ != other.len_)
+    return false;
+  return memcmp(data_, other.data_, len_) == 0;
 }
 
 ByteReader::ByteReader(const Input& in)
