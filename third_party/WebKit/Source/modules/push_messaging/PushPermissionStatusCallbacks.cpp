@@ -6,7 +6,7 @@
 #include "modules/push_messaging/PushPermissionStatusCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/ExceptionCode.h"
+#include "modules/push_messaging/PushError.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -23,6 +23,16 @@ PushPermissionStatusCallbacks::~PushPermissionStatusCallbacks()
 void PushPermissionStatusCallbacks::onSuccess(WebPushPermissionStatus* status)
 {
     m_resolver->resolve(permissionString(*status));
+}
+
+void PushPermissionStatusCallbacks::onError(WebPushError* error)
+{
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+        PushError::dispose(error);
+        return;
+    }
+
+    m_resolver->reject(PushError::take(m_resolver.get(), error));
 }
 
 void PushPermissionStatusCallbacks::onError()

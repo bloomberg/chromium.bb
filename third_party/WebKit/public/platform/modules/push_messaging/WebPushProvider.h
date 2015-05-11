@@ -16,8 +16,20 @@ struct WebPushSubscription;
 struct WebPushSubscriptionOptions;
 
 using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription, WebPushError>;
-using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus, void>;
+using WebPushPermissionStatusCallbacksOriginal = WebCallbacks<WebPushPermissionStatus, WebPushError>;
 using WebPushUnsubscribeCallbacks = WebCallbacks<bool, WebPushError>;
+
+// TODO(miguelg): Remove this and rename WebPushPermissionStatusCallbacksOriginal to WebPushPermissionStatusCallbacks
+// once blinks rolls into chrome and the embedder is fixed to use onError(WebPushError*)
+class WebPushPermissionStatusCallbacks : public WebPushPermissionStatusCallbacksOriginal {
+public:
+    // This method is obsolete and replacedby onError(WebPushError*)
+    virtual void onError() = 0;
+
+    // WebPushPermissionStatusCallbacksOriginal:
+    virtual void onSuccess(WebPushPermissionStatus*) = 0;
+    virtual void onError(WebPushError*) = 0;
+};
 
 class WebPushProvider {
 public:

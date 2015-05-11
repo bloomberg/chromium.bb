@@ -21,6 +21,8 @@ DOMException* PushError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
         return DOMException::create(NetworkError, webError->message);
     case WebPushError::ErrorTypeNotFound:
         return DOMException::create(NotFoundError, webError->message);
+    case WebPushError::ErrorTypeNotSupported:
+        return DOMException::create(NotSupportedError, webError->message);
     case WebPushError::ErrorTypeUnknown:
         return DOMException::create(UnknownError, webError->message);
     }

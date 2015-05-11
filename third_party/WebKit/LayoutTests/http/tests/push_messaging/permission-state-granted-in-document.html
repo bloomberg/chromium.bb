@@ -17,7 +17,7 @@ async_test(function(test) {
             // If running manually, grant permission when prompted.
             if (window.testRunner)
                 testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
-            return serviceWorkerRegistration.pushManager.permissionState();
+            return serviceWorkerRegistration.pushManager.permissionState({userVisibleOnly: true});
         })
         .then(function(permissionStatus) {
             assert_equals(permissionStatus, 'granted');

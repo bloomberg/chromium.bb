@@ -14,6 +14,7 @@ struct WebPushError {
         ErrorTypeAbort = 0,
         ErrorTypeNetwork,
         ErrorTypeNotFound,
+        ErrorTypeNotSupported,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };

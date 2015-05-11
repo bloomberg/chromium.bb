@@ -13,10 +13,10 @@ self.addEventListener('message', function(workerEvent) {
     port.onmessage = function(event) {
         if (typeof event.data != 'object' || !event.data.command)
             return;
-
+        var options = event.data.options || {}
         switch (event.data.command) {
             case 'permissionState':
-                self.registration.pushManager.permissionState().then(function(permissionStatus) {
+                self.registration.pushManager.permissionState(options).then(function(permissionStatus) {
                     port.postMessage({ command: event.data.command,
                                        success: true,
                                        permission: permissionStatus });
@@ -24,7 +24,7 @@ self.addEventListener('message', function(workerEvent) {
                 break;
 
             case 'subscribe':
-                self.registration.pushManager.subscribe().then(function(subscription) {
+                self.registration.pushManager.subscribe(options).then(function(subscription) {
                     lastSeenSubscription = subscription;
                     port.postMessage({ command: event.data.command,
                                        success: true,

@@ -41,6 +41,8 @@ WebPushSubscriptionOptions toWebPushSubscriptionOptions(const PushSubscriptionOp
     WebPushSubscriptionOptions webOptions;
     webOptions.userVisibleOnly = options.userVisibleOnly();
 
+    // Backfill userVisible since it's still used by the chrome layer.
+    webOptions.userVisible = options.userVisibleOnly();
     return webOptions;
 }
 

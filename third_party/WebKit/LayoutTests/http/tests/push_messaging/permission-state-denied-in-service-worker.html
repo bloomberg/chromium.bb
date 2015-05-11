@@ -21,7 +21,7 @@ async_test(function(test) {
     var scope = 'resources/scope/' + location.pathname;
 
     getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
-        workerInfo.port.postMessage({command: 'permissionState'});
+        workerInfo.port.postMessage({command: 'permissionState', options: {userVisibleOnly: true}});
 
         workerInfo.port.addEventListener('message', function(event) {
             if (typeof event.data != 'object' || !event.data.command)
