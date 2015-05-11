@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -195,6 +196,9 @@ class BackgroundModeManager
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called when ExtensionSystem is ready.
+  void OnExtensionsReady();
+
   // Called when the kBackgroundModeEnabled preference changes.
   void OnBackgroundModeEnabledPrefChanged();
 
@@ -355,6 +359,8 @@ class BackgroundModeManager
 
   // Set to true when background mode is keeping Chrome alive.
   bool keeping_alive_;
+
+  base::WeakPtrFactory<BackgroundModeManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundModeManager);
 };

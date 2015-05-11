@@ -50,6 +50,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -253,7 +254,8 @@ BackgroundModeManager::BackgroundModeManager(
       keep_alive_for_startup_(false),
       keep_alive_for_test_(false),
       background_mode_suspended_(false),
-      keeping_alive_(false) {
+      keeping_alive_(false),
+      weak_factory_(this) {
   // We should never start up if there is no browser process or if we are
   // currently quitting.
   CHECK(g_browser_process != NULL);
@@ -350,9 +352,10 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
   // Check for the presence of background apps after all extensions have been
   // loaded, to handle the case where an extension has been manually removed
   // while Chrome was not running.
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile));
+  extensions::ExtensionSystem::Get(profile)->ready().Post(
+      FROM_HERE,
+      base::Bind(&BackgroundModeManager::OnExtensionsReady,
+        weak_factory_.GetWeakPtr()));
 
   bmd->applications_->AddObserver(this);
 
@@ -385,11 +388,6 @@ void BackgroundModeManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED:
-      // Extensions are loaded, so we don't need to manually keep the browser
-      // process alive any more when running in no-startup-window mode.
-      DecrementKeepAliveCountForStartup();
-      break;
     case chrome::NOTIFICATION_APP_TERMINATING:
       // Make sure we aren't still keeping the app alive (only happens if we
       // don't receive an EXTENSIONS_READY notification for some reason).
@@ -411,6 +409,12 @@ void BackgroundModeManager::Observe(
       NOTREACHED();
       break;
   }
+}
+
+void BackgroundModeManager::OnExtensionsReady() {
+  // Extensions are loaded, so we don't need to manually keep the browser
+  // process alive any more when running in no-startup-window mode.
+  DecrementKeepAliveCountForStartup();
 }
 
 void BackgroundModeManager::OnBackgroundModeEnabledPrefChanged() {
