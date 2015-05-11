@@ -5,12 +5,13 @@
 /**
  * The root of the file manager's view managing the DOM of Files.app.
  *
+ * @param {!ProvidersModel} providersModel Model for providers.
  * @param {!HTMLElement} element Top level element of Files.app.
  * @param {!LaunchParam} launchParam Launch param.
  * @constructor
  * @struct
  */
-function FileManagerUI(element, launchParam) {
+function FileManagerUI(providersModel, element, launchParam) {
   // Pre-populate the static localized strings.
   i18nTemplate.process(element.ownerDocument, loadTimeData);
 
@@ -96,7 +97,7 @@ function FileManagerUI(element, launchParam) {
    * @const
    */
   this.suggestAppsDialog = new SuggestAppsDialog(
-      this.element, launchParam.suggestAppsDialogState);
+      providersModel, this.element, launchParam.suggestAppsDialogState);
 
   /**
    * Conflict dialog.
@@ -262,7 +263,14 @@ function FileManagerUI(element, launchParam) {
    * @type {!DialogFooter}
    */
   this.dialogFooter = DialogFooter.findDialogFooter(
-      this.dialogType_, /** @type {!Document} */(this.element.ownerDocument));
+      this.dialogType_, /** @type {!Document} */ (this.element.ownerDocument));
+
+  /**
+   * @public {!ProvidersMenu}
+   * @const
+   */
+  this.providersMenu = new ProvidersMenu(providersModel,
+      util.queryDecoratedElement('#add-new-services-menu', cr.ui.Menu));
 
   // Initialize attributes.
   this.element.setAttribute('type', this.dialogType_);

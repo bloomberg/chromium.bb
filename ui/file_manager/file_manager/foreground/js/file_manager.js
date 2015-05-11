@@ -93,6 +93,13 @@ function FileManager() {
   this.folderShortcutsModel_ = null;
 
   /**
+   * Model for providers (providing extensions).
+   * @type {ProvidersModel}
+   * @private
+   */
+  this.providersModel_ = null;
+
+  /**
    * Handler for command events.
    * @type {CommandHandler}
    */
@@ -289,6 +296,12 @@ FileManager.prototype = /** @struct */ {
    */
   get folderShortcutsModel() {
     return this.folderShortcutsModel_;
+  },
+  /**
+   * @return {ProvidersModel}
+   */
+  get providersModel() {
+    return this.providersModel_;
   },
   /**
    * @return {DirectoryTree}
@@ -720,10 +733,14 @@ FileManager.prototype = /** @struct */ {
     this.metadataModel_ = MetadataModel.create(this.volumeManager_);
     this.thumbnailModel_ = new ThumbnailModel(this.metadataModel_);
 
+    // Create the providers model.
+    this.providersModel_ = new ProvidersModel(this.volumeManager_);
+
     // Create the root view of FileManager.
     assert(this.dialogDom_);
     assert(this.launchParams_);
-    this.ui_ = new FileManagerUI(this.dialogDom_, this.launchParams_);
+    this.ui_ = new FileManagerUI(
+        this.providersModel_, this.dialogDom_, this.launchParams_);
 
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {

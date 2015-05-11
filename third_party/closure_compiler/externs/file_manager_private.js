@@ -204,8 +204,9 @@ var DeviceEvent;
  * @typedef {{
  *   extensionId: string,
  *   name: string,
- *   canConfigure: boolean,
- *   canAdd: boolean
+ *   configurable: boolean,
+ *   multipleMounts: boolean,
+ *   source: string
  * }}
  */
 var ProvidingExtension;

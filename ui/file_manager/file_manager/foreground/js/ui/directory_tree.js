@@ -865,6 +865,10 @@ MenuItem.prototype.selectByEntry = function(entry) {
  * Executes the command.
  */
 MenuItem.prototype.activate = function() {
+  // Dispatch an event to update the menu (if updatable).
+  var updateEvent = new Event('update');
+  this.comboButton_.menu.dispatchEvent(updateEvent);
+
   this.comboButton_.showMenu();
 };
 

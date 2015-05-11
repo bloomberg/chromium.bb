@@ -1313,17 +1313,8 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
         function(result, itemId) {
           // If a new provider is installed, then launch it so the configuration
           // dialog is shown (if it's available).
-          if (result === SuggestAppsDialog.Result.SUCCESS) {
-            chrome.fileManagerPrivate.addProvidedFileSystem(
-                assert(itemId),
-                function() {
-                  if (chrome.runtime.lastError) {
-                    // TODO(mtomasz): Handle the error and let users uninstall
-                    // the extension easily.
-                    console.error(chrome.runtime.lastError.message);
-                  }
-                });
-          }
+          if (result === SuggestAppsDialog.Result.SUCCESS)
+            fileManager.providersModel.requestMount(assert(itemId));
         });
   },
   canExecute: CommandUtil.canExecuteAlways

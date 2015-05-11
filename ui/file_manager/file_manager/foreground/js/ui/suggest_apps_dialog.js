@@ -11,13 +11,20 @@
 /**
  * Creates dialog in DOM tree.
  *
+ * @param {!ProvidersModel} providersModel Model for providers.
  * @param {!HTMLElement} parentNode Node to be parent for this dialog.
  * @param {!SuggestAppDialogState} state Static state of suggest app dialog.
  * @constructor
  * @extends {FileManagerDialogBase}
  */
-function SuggestAppsDialog(parentNode, state) {
+function SuggestAppsDialog(providersModel, parentNode, state) {
   FileManagerDialogBase.call(this, parentNode);
+
+  /**
+   * @private {!ProvidersModel}
+   * @const
+   */
+  this.providersModel_ = providersModel;
 
   this.frame_.id = 'suggest-app-dialog';
 
@@ -150,18 +157,19 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
      *     argument is a list of installed item ids (null on error).
      */
     getInstalledItems: function(callback) {
-      chrome.fileManagerPrivate.getProvidingExtensions(function(items) {
-        if (chrome.runtime.lastError) {
-          console.error('Failed to get installed items: ' +
-                        chrome.runtime.lastError.message);
-          callback(null);
-          return;
-        }
-        callback(items.map(function(item) {
-          return item.extensionId;
+      // Return only installed providers. Returning other extensions/apps is
+      // redundant, as the suggest app for non-providers is executed only when
+      // there is no extension/app matching a file task. Hence, none of the
+      // suggested extensions/apps can be already installed.
+      this.providersModel_.getInstalledProviders().then(function(extensions) {
+        callback(extensions.map(function(extension) {
+          return extension.extensionId;
         }));
+      }).catch(function(error) {
+        console.error(error.stack || error);
+        callback(null);
       });
-    },
+    }.bind(this),
 
     /**
      * @param {function(?string)} callback Callback argument is the requested

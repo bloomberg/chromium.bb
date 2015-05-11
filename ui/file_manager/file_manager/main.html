@@ -158,6 +158,7 @@
       <script src="foreground/js/toolbar_controller.js"></script>
       <script src="foreground/js/thumbnail_loader.js"></script>
       <script src="foreground/js/list_thumbnail_loader.js"></script>
+      <script src="foreground/js/providers_model.js"></script>
       <script src="foreground/js/ui/banners.js"></script>
       <script src="foreground/js/ui/conflict_dialog.js"></script>
       <script src="foreground/js/ui/default_action_dialog.js"></script>
@@ -176,6 +177,7 @@
       <script src="foreground/js/ui/location_line.js"></script>
       <script src="foreground/js/ui/multi_profile_share_dialog.js"></script>
       <script src="foreground/js/ui/progress_center_panel.js"></script>
+      <script src="foreground/js/ui/providers_menu.js"></script>
       <script src="foreground/js/ui/scrollbar.js"></script>
       <script src="foreground/js/ui/search_box.js"></script>
       <script src="foreground/js/ui/share_dialog.js"></script>
@@ -347,10 +349,7 @@
     <cr-menu id="tasks-menu" class="chrome-menu">
     </cr-menu>
 
-    <cr-menu id="add-new-services-menu" class="chrome-menu">
-      <hr>
-      <cr-menu-item command="#install-new-extension"></cr-menu-item>
-    </cr-menu>
+    <cr-menu id="add-new-services-menu" class="chrome-menu"></cr-menu>
 
     <cr-menu id="text-context-menu" class="chrome-menu" showShortcuts>
       <cr-menu-item command="#cut"></cr-menu-item>

@@ -133,6 +133,7 @@
 //<include src="toolbar_controller.js">
 //<include src="thumbnail_loader.js">
 //<include src="list_thumbnail_loader.js">
+//<include src="providers_model.js">
 //<include src="ui/banners.js" >
 //<include src="ui/conflict_dialog.js">
 //<include src="ui/default_action_dialog.js">
@@ -151,6 +152,7 @@
 //<include src="ui/location_line.js">
 //<include src="ui/multi_profile_share_dialog.js">
 //<include src="ui/progress_center_panel.js">
+//<include src="ui/providers_menu.js">
 //<include src="ui/scrollbar.js">
 //<include src="ui/search_box.js">
 //<include src="ui/share_dialog.js">
