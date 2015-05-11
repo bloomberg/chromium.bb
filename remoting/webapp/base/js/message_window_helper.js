@@ -38,6 +38,9 @@ remoting.MessageWindowOptions = function() {
 
   /** @type {string} */
   this.frame = '';
+
+  /** @type {number} */
+  this.minimumWidth = 0;
 };
 
 /**
@@ -96,7 +99,7 @@ remoting.MessageWindow = function(options) {
 
   var windowAttributes = {
     bounds: {
-      width: 400,
+      width: options.minimumWidth || 400,
       height: 100
     },
     resizable: false,

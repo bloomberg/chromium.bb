@@ -50,7 +50,8 @@ remoting.LoadingWindow.show = function() {
     duration: kConnectionTimeout,
     onTimeout: remoting.LoadingWindow.onTimeout_,
     htmlFile: 'loading_window.html',
-    frame: 'none'
+    frame: 'none',
+    minimumWidth: 200
   });
   var transparencyWarning = '';
   if (remoting.platformIsMac()) {
