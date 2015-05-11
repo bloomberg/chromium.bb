@@ -49,6 +49,12 @@ class VideoFrameCompositorTest : public testing::Test,
     compositor_->SetVideoFrameProviderClient(nullptr);
   }
 
+  scoped_refptr<VideoFrame> CreateOpaqueFrame() {
+    gfx::Size size(8, 8);
+    return VideoFrame::CreateFrame(VideoFrame::YV12, size, gfx::Rect(size),
+                                   size, base::TimeDelta());
+  }
+
   VideoFrameCompositor* compositor() { return compositor_.get(); }
   int did_receive_frame_count() { return did_receive_frame_count_; }
   int natural_size_changed_count() { return natural_size_changed_count_; }
@@ -212,8 +218,7 @@ TEST_F(VideoFrameCompositorTest, NaturalSizeChanged) {
 
 TEST_F(VideoFrameCompositorTest, OpacityChanged) {
   gfx::Size size(8, 8);
-  scoped_refptr<VideoFrame> opaque_frame = VideoFrame::CreateFrame(
-      VideoFrame::YV12, size, gfx::Rect(size), size, base::TimeDelta());
+  scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   scoped_refptr<VideoFrame> not_opaque_frame = VideoFrame::CreateFrame(
       VideoFrame::YV12A, size, gfx::Rect(size), size, base::TimeDelta());
 
@@ -275,9 +280,7 @@ TEST_F(VideoFrameCompositorTest, OpacityChanged) {
 }
 
 TEST_F(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {
-  gfx::Size size(8, 8);
-  scoped_refptr<VideoFrame> opaque_frame = VideoFrame::CreateFrame(
-      VideoFrame::YV12, size, gfx::Rect(size), size, base::TimeDelta());
+  scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
 
   EXPECT_CALL(*this, Render(_, _, _)).WillRepeatedly(Return(opaque_frame));
   StartVideoRendererSink();
@@ -320,20 +323,14 @@ TEST_F(VideoFrameCompositorTest, VideoLayerShutdownWhileRendering) {
 }
 
 TEST_F(VideoFrameCompositorTest, StartFiresBackgroundRender) {
-  gfx::Size size(8, 8);
-  scoped_refptr<VideoFrame> opaque_frame = VideoFrame::CreateFrame(
-      VideoFrame::YV12, size, gfx::Rect(size), size, base::TimeDelta());
-
+  scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   EXPECT_CALL(*this, Render(_, _, true)).WillRepeatedly(Return(opaque_frame));
   StartVideoRendererSink();
   StopVideoRendererSink(true);
 }
 
 TEST_F(VideoFrameCompositorTest, BackgroundRenderTicks) {
-  gfx::Size size(8, 8);
-  scoped_refptr<VideoFrame> opaque_frame = VideoFrame::CreateFrame(
-      VideoFrame::YV12, size, gfx::Rect(size), size, base::TimeDelta());
-
+  scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   compositor_->set_background_rendering_for_testing(true);
 
   base::RunLoop run_loop;
@@ -351,6 +348,61 @@ TEST_F(VideoFrameCompositorTest, BackgroundRenderTicks) {
 
   // Background rendering should tick another render callback.
   StopVideoRendererSink(true);
+}
+
+TEST_F(VideoFrameCompositorTest, GetCurrentFrameAndUpdateIfStale) {
+  scoped_refptr<VideoFrame> opaque_frame_1 = CreateOpaqueFrame();
+  scoped_refptr<VideoFrame> opaque_frame_2 = CreateOpaqueFrame();
+  compositor_->set_background_rendering_for_testing(true);
+
+  // |current_frame_| should be null at this point since we don't have a client
+  // or a callback.
+  ASSERT_FALSE(compositor()->GetCurrentFrameAndUpdateIfStale());
+
+  // Starting the video renderer should return a single frame.
+  EXPECT_CALL(*this, Render(_, _, true)).WillOnce(Return(opaque_frame_1));
+  StartVideoRendererSink();
+
+  // Since we have a client, this call should not call background render, even
+  // if a lot of time has elapsed between calls.
+  tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(opaque_frame_1, compositor()->GetCurrentFrameAndUpdateIfStale());
+
+  // An update current frame call should stop background rendering.
+  EXPECT_CALL(*this, Render(_, _, false)).WillOnce(Return(opaque_frame_2));
+  EXPECT_TRUE(
+      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
+
+  // This call should still not call background render.
+  ASSERT_EQ(opaque_frame_2, compositor()->GetCurrentFrameAndUpdateIfStale());
+
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // Clear our client, which means no mock function calls for Client.
+  compositor()->SetVideoFrameProviderClient(nullptr);
+
+  // This call should still not call background render, because we aren't in the
+  // background rendering state yet.
+  ASSERT_EQ(opaque_frame_2, compositor()->GetCurrentFrameAndUpdateIfStale());
+
+  // Wait for background rendering to tick again.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, Render(_, _, true))
+      .WillOnce(
+           DoAll(RunClosure(run_loop.QuitClosure()), Return(opaque_frame_1)))
+      .WillOnce(Return(opaque_frame_2));
+  run_loop.Run();
+
+  // This call should still not call background render, because not enough time
+  // has elapsed since the last background render call.
+  ASSERT_EQ(opaque_frame_1, compositor()->GetCurrentFrameAndUpdateIfStale());
+
+  // Advancing the tick clock should allow a new frame to be requested.
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  ASSERT_EQ(opaque_frame_2, compositor()->GetCurrentFrameAndUpdateIfStale());
+
+  // Background rendering should tick another render callback.
+  StopVideoRendererSink(false);
 }
 
 }  // namespace media

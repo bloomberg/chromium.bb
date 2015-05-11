@@ -165,6 +165,29 @@ void VideoFrameCompositor::PaintFrameUsingOldRenderingPath(
     client_->DidReceiveFrame();
 }
 
+scoped_refptr<VideoFrame>
+VideoFrameCompositor::GetCurrentFrameAndUpdateIfStale() {
+  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
+  if (client_ || !rendering_ || !is_background_rendering_)
+    return current_frame_;
+
+  DCHECK(!last_background_render_.is_null());
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  const base::TimeDelta interval = now - last_background_render_;
+
+  // Cap updates to 250Hz which should be more than enough for everyone.
+  if (interval < base::TimeDelta::FromMilliseconds(4))
+    return current_frame_;
+
+  // Update the interval based on the time between calls and call background
+  // render which will give this information to the client.
+  last_interval_ = interval;
+  BackgroundRender();
+
+  return current_frame_;
+}
+
 bool VideoFrameCompositor::ProcessNewFrame(
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
@@ -191,6 +214,7 @@ bool VideoFrameCompositor::ProcessNewFrame(
 void VideoFrameCompositor::BackgroundRender() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   const base::TimeTicks now = tick_clock_->NowTicks();
+  last_background_render_ = now;
   CallRender(now, now + last_interval_, true);
 }
 

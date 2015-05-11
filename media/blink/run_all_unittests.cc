@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
@@ -81,6 +82,12 @@ void BlinkMediaTestSuite::Initialize() {
   gin::V8Initializer::LoadV8Snapshot();
 #endif
 
+  // Dummy task runner is initialized here because the blink::initialize creates
+  // IsolateHolder which needs the current task runner handle. There should be
+  // no task posted to this task runner.
+  scoped_ptr<base::MessageLoop> message_loop;
+  if (!base::MessageLoop::current())
+    message_loop.reset(new base::MessageLoop());
   blink::initialize(blink_platform_support_.get());
 }
 

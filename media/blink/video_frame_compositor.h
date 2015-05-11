@@ -88,6 +88,19 @@ class MEDIA_EXPORT VideoFrameCompositor
   void PaintFrameUsingOldRenderingPath(
       const scoped_refptr<VideoFrame>& frame) override;
 
+  // Returns |current_frame_| if |client_| is set.  If no |client_| is set,
+  // |is_background_rendering_| is true, and |callback_| is set, it requests a
+  // new frame from |callback_|, using the elapsed time between calls to this
+  // function as the render interval; defaulting to 16.6ms if no prior calls
+  // have been made.  A cap of 250Hz (4ms) is in place to prevent clients from
+  // accidentally (or intentionally) spamming the rendering pipeline.
+  //
+  // This method is primarily to facilitate canvas and WebGL based applications
+  // where the <video> tag is invisible (possibly not even in the DOM) and thus
+  // does not receive a |client_|.  In this case, frame acquisition is driven by
+  // the frequency of canvas or WebGL paints requested via JavaScript.
+  scoped_refptr<VideoFrame> GetCurrentFrameAndUpdateIfStale();
+
   void set_tick_clock_for_testing(scoped_ptr<base::TickClock> tick_clock) {
     tick_clock_ = tick_clock.Pass();
   }
@@ -146,6 +159,7 @@ class MEDIA_EXPORT VideoFrameCompositor
   bool rendered_last_frame_;
   bool is_background_rendering_;
   base::TimeDelta last_interval_;
+  base::TimeTicks last_background_render_;
 
   // These values are updated and read from the media and compositor threads.
   base::Lock lock_;
