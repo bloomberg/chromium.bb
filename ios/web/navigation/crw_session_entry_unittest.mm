@@ -123,32 +123,32 @@ TEST_F(CRWSessionEntryTest, InitWithCoder) {
   [decoder onSelector:@selector(decodeBytesForKey:returnedLength:)
       callBlockExpectation:block];
   [[[decoder expect] andReturn:virtualUrl]
-      decodeObjectForKey:@"virtualUrl"];
+      decodeObjectForKey:web::kSessionEntryURLDeperecatedKey];
   [[[decoder expect] andReturn:referrer]
-      decodeObjectForKey:@"referrer"];
+      decodeObjectForKey:web::kSessionEntryReferrerURLDeprecatedKey];
   [[[decoder expect] andReturn:title]
-      decodeObjectForKey:@"title"];
+      decodeObjectForKey:web::kSessionEntryTitleKey];
   const web::PageScrollState& scrollState =
       [sessionEntry_ navigationItem]->GetPageScrollState();
   NSDictionary* serializedScrollState =
       [CRWSessionEntry dictionaryFromScrollState:scrollState];
   [[[decoder expect] andReturn:serializedScrollState]
-      decodeObjectForKey:@"state"];
+      decodeObjectForKey:web::kSessionEntryPageScrollStateKey];
   BOOL useDesktopUserAgent =
       [sessionEntry_ navigationItem]->IsOverridingUserAgent();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(useDesktopUserAgent)]
-      decodeBoolForKey:@"useDesktopUserAgent"];
+      decodeBoolForKey:web::kSessionEntryUseDesktopUserAgentKey];
   NSDictionary* requestHeaders =
       [sessionEntry_ navigationItem]->GetHttpRequestHeaders();
   [[[decoder expect] andReturn:requestHeaders]
-      decodeObjectForKey:@"httpHeaders"];
+      decodeObjectForKey:web::kSessionEntryHTTPRequestHeadersKey];
   [[[decoder expect]
       andReturn:[sessionEntry_ navigationItemImpl]->GetPostData()]
-      decodeObjectForKey:@"POSTData"];
+      decodeObjectForKey:web::kSessionEntryPOSTDataKey];
   BOOL skipResubmitDataConfirmation =
       [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipResubmitDataConfirmation)]
-      decodeBoolForKey:@"skipResubmitDataConfirmation"];
+      decodeBoolForKey:web::kSessionEntrySkipResubmitConfirmationKey];
 
   base::scoped_nsobject<CRWSessionEntry> newSessionEntry(
       [[CRWSessionEntry alloc] initWithCoder:decoder]);
@@ -177,9 +177,9 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
   decodeBytesForKeyBlock block =  ^ const uint8_t* (NSString* key,
                                                     NSUInteger* length) {
       const std::string *value = &emptyString;
-      if ([key isEqualToString:@"virtualUrlString"])
+      if ([key isEqualToString:web::kSessionEntryURLKey])
         value = &virtualUrl;
-      else if ([key isEqualToString:@"referrerUrlString"])
+      else if ([key isEqualToString:web::kSessionEntryReferrerURLKey])
         value = &referrerUrl;
       else
         EXPECT_TRUE(false);
@@ -193,33 +193,33 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
   [[[decoder stub] andReturnValue:[NSNumber numberWithBool:YES]]
       containsValueForKey:[OCMArg any]];
   web::ReferrerPolicy expectedPolicy = item->GetReferrer().policy;
-  [[[decoder expect]
-      andReturnValue:OCMOCK_VALUE(expectedPolicy)]
-      decodeIntForKey:@"referrerPolicy"];
+  [[[decoder expect] andReturnValue:OCMOCK_VALUE(expectedPolicy)]
+      decodeIntForKey:web::kSessionEntryReferrerPolicyKey];
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(timestamp)]
-      decodeInt64ForKey:@"timestamp"];
+      decodeInt64ForKey:web::kSessionEntryTimestampKey];
   [[[decoder expect] andReturn:title]
-      decodeObjectForKey:@"title"];
+      decodeObjectForKey:web::kSessionEntryTitleKey];
   const web::PageScrollState& scrollState =
       [sessionEntry_ navigationItem]->GetPageScrollState();
   NSDictionary* serializedScrollState =
       [CRWSessionEntry dictionaryFromScrollState:scrollState];
   [[[decoder expect] andReturn:serializedScrollState]
-      decodeObjectForKey:@"state"];
+      decodeObjectForKey:web::kSessionEntryPageScrollStateKey];
   BOOL useDesktopUserAgent =
       [sessionEntry_ navigationItem]->IsOverridingUserAgent();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(useDesktopUserAgent)]
-      decodeBoolForKey:@"useDesktopUserAgent"];
+      decodeBoolForKey:web::kSessionEntryUseDesktopUserAgentKey];
   NSDictionary* requestHeaders =
       [sessionEntry_ navigationItem]->GetHttpRequestHeaders();
   [[[decoder expect] andReturn:requestHeaders]
-      decodeObjectForKey:@"httpHeaders"];
+      decodeObjectForKey:web::kSessionEntryHTTPRequestHeadersKey];
   NSData* POSTData = [sessionEntry_ navigationItemImpl]->GetPostData();
-  [[[decoder expect] andReturn:POSTData] decodeObjectForKey:@"POSTData"];
+  [[[decoder expect] andReturn:POSTData]
+      decodeObjectForKey:web::kSessionEntryPOSTDataKey];
   BOOL skipResubmitDataConfirmation =
       [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipResubmitDataConfirmation)]
-      decodeBoolForKey:@"skipResubmitDataConfirmation"];
+      decodeBoolForKey:web::kSessionEntrySkipResubmitConfirmationKey];
 
   base::scoped_nsobject<CRWSessionEntry> newSessionEntry(
       [[CRWSessionEntry alloc] initWithCoder:decoder]);
@@ -248,45 +248,46 @@ TEST_F(CRWSessionEntryTest, EncodeWithCoder) {
   base::scoped_nsobject<id> coder([[OCMockComplexTypeHelper alloc]
       initWithRepresentedObject:[OCMockObject mockForClass:[NSCoder class]]]);
 
-  encodeBytes_length_forKey_block block = ^(const uint8_t* bytes,
-                                            NSUInteger length,
-                                            NSString* key) {
-      if ([key isEqualToString:@"virtualUrlString"]) {
-        ASSERT_EQ(item->GetVirtualURL().spec(),
-                  std::string(reinterpret_cast<const char*>(bytes), length));
-        return;
-      } else if ([key isEqualToString:@"referrerUrlString"]) {
-        ASSERT_EQ(item->GetReferrer().url.spec(),
-                  std::string(reinterpret_cast<const char*>(bytes), length));
-        return;
-      }
-      FAIL();
-  };
+  encodeBytes_length_forKey_block block =
+      ^(const uint8_t* bytes, NSUInteger length, NSString* key) {
+        if ([key isEqualToString:web::kSessionEntryURLKey]) {
+          ASSERT_EQ(item->GetVirtualURL().spec(),
+                    std::string(reinterpret_cast<const char*>(bytes), length));
+          return;
+        } else if ([key isEqualToString:web::kSessionEntryReferrerURLKey]) {
+          ASSERT_EQ(item->GetReferrer().url.spec(),
+                    std::string(reinterpret_cast<const char*>(bytes), length));
+          return;
+        }
+        FAIL();
+      };
   [coder onSelector:@selector(encodeBytes:length:forKey:)
       callBlockExpectation:block];
   [[coder expect] encodeInt:item->GetReferrer().policy
-                     forKey:@"referrerPolicy"];
+                     forKey:web::kSessionEntryReferrerPolicyKey];
   [[coder expect] encodeInt64:item->GetTimestamp().ToInternalValue()
-                       forKey:@"timestamp"];
-  [[coder expect] encodeObject:title forKey:@"title"];
+                       forKey:web::kSessionEntryTimestampKey];
+  [[coder expect] encodeObject:title forKey:web::kSessionEntryTitleKey];
   const web::PageScrollState& scrollState =
       [sessionEntry_ navigationItem]->GetPageScrollState();
   NSDictionary* serializedScrollState =
       [CRWSessionEntry dictionaryFromScrollState:scrollState];
-  [[coder expect] encodeObject:serializedScrollState forKey:@"state"];
+  [[coder expect] encodeObject:serializedScrollState
+                        forKey:web::kSessionEntryPageScrollStateKey];
   BOOL useDesktopUserAgent =
       [sessionEntry_ navigationItem]->IsOverridingUserAgent();
-  [[coder expect] encodeBool:useDesktopUserAgent forKey:@"useDesktopUserAgent"];
+  [[coder expect] encodeBool:useDesktopUserAgent
+                      forKey:web::kSessionEntryUseDesktopUserAgentKey];
   NSDictionary* requestHeaders =
       [sessionEntry_ navigationItem]->GetHttpRequestHeaders();
   [[coder expect] encodeObject:requestHeaders
-                        forKey:@"httpHeaders"];
+                        forKey:web::kSessionEntryHTTPRequestHeadersKey];
   [[coder expect] encodeObject:[sessionEntry_ navigationItemImpl]->GetPostData()
-                        forKey:@"POSTData"];
+                        forKey:web::kSessionEntryPOSTDataKey];
   BOOL skipResubmitDataConfirmation =
       [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
   [[coder expect] encodeBool:skipResubmitDataConfirmation
-                      forKey:@"skipResubmitDataConfirmation"];
+                      forKey:web::kSessionEntrySkipResubmitConfirmationKey];
   [sessionEntry_ encodeWithCoder:coder];
   EXPECT_OCMOCK_VERIFY(coder);
 }

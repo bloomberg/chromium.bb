@@ -14,13 +14,28 @@
 #include "ios/web/public/web_state/page_scroll_state.h"
 #import "net/base/mac/url_conversions.h"
 
-namespace {
+namespace web {
 // Keys used to serialize web::PageScrollState properties.
-NSString* const kScrollOffsetXKey = @"scrollX";
-NSString* const kScrollOffsetYKey = @"scrollY";
-NSString* const kMinimumZoomScaleKey = @"minZoom";
-NSString* const kMaximumZoomScaleKey = @"maxZoom";
-NSString* const kZoomScaleKey = @"zoom";
+NSString* const kSessionEntryPageScrollStateKey = @"state";
+NSString* const kSessionEntryScrollOffsetXKey = @"scrollX";
+NSString* const kSessionEntryScrollOffsetYKey = @"scrollY";
+NSString* const kSessionEntryMinimumZoomScaleKey = @"minZoom";
+NSString* const kSessionEntryMaximumZoomScaleKey = @"maxZoom";
+NSString* const kSessionEntryZoomScaleKey = @"zoom";
+
+// Keys used to serialize navigation properties.
+NSString* const kSessionEntryURLKey = @"virtualUrlString";
+NSString* const kSessionEntryURLDeperecatedKey = @"virtualUrl";
+NSString* const kSessionEntryReferrerURLKey = @"referrerUrlString";
+NSString* const kSessionEntryReferrerURLDeprecatedKey = @"referrer";
+NSString* const kSessionEntryReferrerPolicyKey = @"referrerPolicy";
+NSString* const kSessionEntryTimestampKey = @"timestamp";
+NSString* const kSessionEntryTitleKey = @"title";
+NSString* const kSessionEntryPOSTDataKey = @"POSTData";
+NSString* const kSessionEntryHTTPRequestHeadersKey = @"httpHeaders";
+NSString* const kSessionEntrySkipResubmitConfirmationKey =
+    @"skipResubmitDataConfirmation";
+NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 }
 
 @interface CRWSessionEntry () {
@@ -71,51 +86,55 @@ NSString* const kZoomScaleKey = @"zoom";
     // Desktop chrome only persists virtualUrl_ and uses it to feed the url
     // when creating a NavigationEntry.
     GURL url;
-    if ([aDecoder containsValueForKey:@"virtualUrlString"]) {
+    if ([aDecoder containsValueForKey:web::kSessionEntryURLKey]) {
       url = GURL(
-          web::nscoder_util::DecodeString(aDecoder, @"virtualUrlString"));
+          web::nscoder_util::DecodeString(aDecoder, web::kSessionEntryURLKey));
     } else {
       // Backward compatibility.
-      url = net::GURLWithNSURL([aDecoder decodeObjectForKey:@"virtualUrl"]);
+      url = net::GURLWithNSURL(
+          [aDecoder decodeObjectForKey:web::kSessionEntryURLDeperecatedKey]);
     }
     _navigationItem->SetURL(url);
     self.originalUrl = url;
 
-    if ([aDecoder containsValueForKey:@"referrerUrlString"]) {
+    if ([aDecoder containsValueForKey:web::kSessionEntryReferrerURLKey]) {
       const std::string referrerString(web::nscoder_util::DecodeString(
-          aDecoder, @"referrerUrlString"));
-      web::ReferrerPolicy referrerPolicy =
-          static_cast<web::ReferrerPolicy>(
-              [aDecoder decodeIntForKey:@"referrerPolicy"]);
+          aDecoder, web::kSessionEntryReferrerURLKey));
+      web::ReferrerPolicy referrerPolicy = static_cast<web::ReferrerPolicy>(
+          [aDecoder decodeIntForKey:web::kSessionEntryReferrerPolicyKey]);
       _navigationItem->SetReferrer(
           web::Referrer(GURL(referrerString), referrerPolicy));
     } else {
       // Backward compatibility.
-      NSURL* referrer = [aDecoder decodeObjectForKey:@"referrer"];
+      NSURL* referrer = [aDecoder
+          decodeObjectForKey:web::kSessionEntryReferrerURLDeprecatedKey];
       _navigationItem->SetReferrer(web::Referrer(
           net::GURLWithNSURL(referrer), web::ReferrerPolicyDefault));
     }
 
-    if ([aDecoder containsValueForKey:@"timestamp"]) {
-      int64 us = [aDecoder decodeInt64ForKey:@"timestamp"];
+    if ([aDecoder containsValueForKey:web::kSessionEntryTimestampKey]) {
+      int64 us = [aDecoder decodeInt64ForKey:web::kSessionEntryTimestampKey];
       _navigationItem->SetTimestamp(base::Time::FromInternalValue(us));
     }
 
-    NSString* title = [aDecoder decodeObjectForKey:@"title"];
+    NSString* title = [aDecoder decodeObjectForKey:web::kSessionEntryTitleKey];
     // Use a transition type of reload so that we don't incorrectly increase
     // the typed count.  This is what desktop chrome does.
     _navigationItem->SetPageID(-1);
     _navigationItem->SetTitle(base::SysNSStringToUTF16(title));
     _navigationItem->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
     _navigationItem->SetPageScrollState([[self class]
-        scrollStateFromDictionary:[aDecoder decodeObjectForKey:@"state"]]);
-    _navigationItem->SetShouldSkipResubmitDataConfirmation(
-        [aDecoder decodeBoolForKey:@"skipResubmitDataConfirmation"]);
+        scrollStateFromDictionary:
+            [aDecoder
+                decodeObjectForKey:web::kSessionEntryPageScrollStateKey]]);
+    _navigationItem->SetShouldSkipResubmitDataConfirmation([aDecoder
+        decodeBoolForKey:web::kSessionEntrySkipResubmitConfirmationKey]);
     _navigationItem->SetIsOverridingUserAgent(
-        [aDecoder decodeBoolForKey:@"useDesktopUserAgent"]);
-    _navigationItem->SetPostData([aDecoder decodeObjectForKey:@"POSTData"]);
+        [aDecoder decodeBoolForKey:web::kSessionEntryUseDesktopUserAgentKey]);
+    _navigationItem->SetPostData(
+        [aDecoder decodeObjectForKey:web::kSessionEntryPOSTDataKey]);
     _navigationItem->AddHttpRequestHeaders(
-        [aDecoder decodeObjectForKey:@"httpHeaders"]);
+        [aDecoder decodeObjectForKey:web::kSessionEntryHTTPRequestHeadersKey]);
   }
   return self;
 }
@@ -123,27 +142,28 @@ NSString* const kZoomScaleKey = @"zoom";
 - (void)encodeWithCoder:(NSCoder*)aCoder {
   // Desktop Chrome doesn't persist |url_| or |originalUrl_|, only
   // |virtualUrl_|.
-  web::nscoder_util::EncodeString(aCoder, @"virtualUrlString",
+  web::nscoder_util::EncodeString(aCoder, web::kSessionEntryURLKey,
                                   _navigationItem->GetVirtualURL().spec());
-  web::nscoder_util::EncodeString(aCoder, @"referrerUrlString",
+  web::nscoder_util::EncodeString(aCoder, web::kSessionEntryReferrerURLKey,
                                   _navigationItem->GetReferrer().url.spec());
   [aCoder encodeInt:_navigationItem->GetReferrer().policy
-             forKey:@"referrerPolicy"];
+             forKey:web::kSessionEntryReferrerPolicyKey];
   [aCoder encodeInt64:_navigationItem->GetTimestamp().ToInternalValue()
-               forKey:@"timestamp"];
+               forKey:web::kSessionEntryTimestampKey];
 
   [aCoder encodeObject:base::SysUTF16ToNSString(_navigationItem->GetTitle())
-                forKey:@"title"];
+                forKey:web::kSessionEntryTitleKey];
   [aCoder encodeObject:[[self class] dictionaryFromScrollState:
                                          _navigationItem->GetPageScrollState()]
-                forKey:@"state"];
+                forKey:web::kSessionEntryPageScrollStateKey];
   [aCoder encodeBool:_navigationItem->ShouldSkipResubmitDataConfirmation()
-              forKey:@"skipResubmitDataConfirmation"];
+              forKey:web::kSessionEntrySkipResubmitConfirmationKey];
   [aCoder encodeBool:_navigationItem->IsOverridingUserAgent()
-              forKey:@"useDesktopUserAgent"];
-  [aCoder encodeObject:_navigationItem->GetPostData() forKey:@"POSTData"];
+              forKey:web::kSessionEntryUseDesktopUserAgentKey];
+  [aCoder encodeObject:_navigationItem->GetPostData()
+                forKey:web::kSessionEntryPOSTDataKey];
   [aCoder encodeObject:_navigationItem->GetHttpRequestHeaders()
-                forKey:@"httpHeaders"];
+                forKey:web::kSessionEntryHTTPRequestHeadersKey];
 }
 
 // TODO(ios): Shall we overwrite EqualTo:?
@@ -184,15 +204,15 @@ NSString* const kZoomScaleKey = @"zoom";
 + (web::PageScrollState)scrollStateFromDictionary:(NSDictionary*)dictionary {
   web::PageScrollState scrollState;
   NSNumber* serializedValue = nil;
-  if ((serializedValue = dictionary[kScrollOffsetXKey]))
+  if ((serializedValue = dictionary[web::kSessionEntryScrollOffsetXKey]))
     scrollState.set_scroll_offset_x([serializedValue doubleValue]);
-  if ((serializedValue = dictionary[kScrollOffsetYKey]))
+  if ((serializedValue = dictionary[web::kSessionEntryScrollOffsetYKey]))
     scrollState.set_scroll_offset_y([serializedValue doubleValue]);
-  if ((serializedValue = dictionary[kMinimumZoomScaleKey]))
+  if ((serializedValue = dictionary[web::kSessionEntryMinimumZoomScaleKey]))
     scrollState.set_minimum_zoom_scale([serializedValue doubleValue]);
-  if ((serializedValue = dictionary[kMaximumZoomScaleKey]))
+  if ((serializedValue = dictionary[web::kSessionEntryMaximumZoomScaleKey]))
     scrollState.set_maximum_zoom_scale([serializedValue doubleValue]);
-  if ((serializedValue = dictionary[kZoomScaleKey]))
+  if ((serializedValue = dictionary[web::kSessionEntryZoomScaleKey]))
     scrollState.set_zoom_scale([serializedValue doubleValue]);
   return scrollState;
 }
@@ -200,11 +220,11 @@ NSString* const kZoomScaleKey = @"zoom";
 + (NSDictionary*)dictionaryFromScrollState:
     (const web::PageScrollState&)scrollState {
   return @{
-    kScrollOffsetXKey : @(scrollState.scroll_offset_x()),
-    kScrollOffsetYKey : @(scrollState.scroll_offset_y()),
-    kMinimumZoomScaleKey : @(scrollState.minimum_zoom_scale()),
-    kMaximumZoomScaleKey : @(scrollState.maximum_zoom_scale()),
-    kZoomScaleKey : @(scrollState.zoom_scale())
+    web::kSessionEntryScrollOffsetXKey : @(scrollState.scroll_offset_x()),
+    web::kSessionEntryScrollOffsetYKey : @(scrollState.scroll_offset_y()),
+    web::kSessionEntryMinimumZoomScaleKey : @(scrollState.minimum_zoom_scale()),
+    web::kSessionEntryMaximumZoomScaleKey : @(scrollState.maximum_zoom_scale()),
+    web::kSessionEntryZoomScaleKey : @(scrollState.zoom_scale()),
   };
 }
 

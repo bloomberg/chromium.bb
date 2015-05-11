@@ -17,6 +17,40 @@ namespace web {
 class NavigationItem;
 class NavigationItemImpl;
 struct Referrer;
+
+// Keys used to serialize web::PageScrollState properties.
+extern NSString* const kSessionEntryPageScrollStateKey;
+extern NSString* const kSessionEntryScrollOffsetXKey;
+extern NSString* const kSessionEntryScrollOffsetYKey;
+extern NSString* const kSessionEntryMinimumZoomScaleKey;
+extern NSString* const kSessionEntryMaximumZoomScaleKey;
+extern NSString* const kSessionEntryZoomScaleKey;
+
+// Keys used to serialize navigation properties.
+
+// Current URL (std::string).
+extern NSString* const kSessionEntryURLKey;
+// Current URL. Deprecated, used for backward compatibility (NSURL).
+extern NSString* const kSessionEntryURLDeperecatedKey;
+// Page referrer URL (std::string).
+extern NSString* const kSessionEntryReferrerURLKey;
+// Page referrer URL (NSURL). Deprecated, used for backward compatibility.
+extern NSString* const kSessionEntryReferrerURLDeprecatedKey;
+// Page referrer policy (int).
+extern NSString* const kSessionEntryReferrerPolicyKey;
+// The time at which the last known local navigation has completed (int64_t).
+extern NSString* const kSessionEntryTimestampKey;
+// Page title (NSString).
+extern NSString* const kSessionEntryTitleKey;
+// POST request data (NSData).
+extern NSString* const kSessionEntryPOSTDataKey;
+// HTTP request headers (NSDictionary).
+extern NSString* const kSessionEntryHTTPRequestHeadersKey;
+// Whether or not to bypass showing the resubmit data confirmation when loading
+// a POST request (BOOL).
+extern NSString* const kSessionEntrySkipResubmitConfirmationKey;
+// Should desktop user agent be used (BOOL)?
+extern NSString* const kSessionEntryUseDesktopUserAgentKey;
 }
 
 // A CRWSessionEntry is similar to a NavigationEntry object in desktop Chrome.
