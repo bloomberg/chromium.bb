@@ -310,6 +310,8 @@ crbug.com/382491 virtual/slimmingpaint/compositing/squashing/squashing-print.htm
 crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
+crbug.com/382491 virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
 
 crbug.com/133097 crbug.com/399430 [ Mac ] fast/transforms/transformed-focused-text-input.html [ Pass ImageOnlyFailure ]
 
@@ -1556,8 +1558,6 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-z
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ ImageOnlyFailure ]
 
-crbug.com/448442 [ XP ] virtual/slimmingpaint/fast/borders/border-image-side-reduction.html [ ImageOnlyFailure ]
-
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
@@ -1793,8 +1793,6 @@ crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 # These need a manual rebaseline after crbug.com/459555
 crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
 crbug.com/459555 virtual/slimmingpaint/fast/js/reserved-words-as-property.html [ Skip ]
-
-crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure ]
 
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
