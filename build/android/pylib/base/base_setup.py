@@ -23,6 +23,8 @@ def GenerateDepsDirUsingIsolate(suite_name, isolate_file_path,
                         the test suites.
     deps_exclusion_list: A list of files that are listed as dependencies in the
                          .isolate files but should not be pushed to the device.
+  Returns:
+    The Isolator instance used to remap the dependencies, or None.
   """
   if isolate_file_path:
     if os.path.isabs(isolate_file_path):
@@ -51,6 +53,7 @@ def GenerateDepsDirUsingIsolate(suite_name, isolate_file_path,
   i.VerifyHardlinks()
   i.PurgeExcluded(deps_exclusion_list)
   i.MoveOutputDeps()
+  return i
 
 
 def PushDataDeps(device, device_dir, test_options):

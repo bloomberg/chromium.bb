@@ -207,7 +207,7 @@ def Setup(test_options, devices):
     test_package = exe_test_package
   logging.warning('Found target %s', test_package.suite_path)
 
-  base_setup.GenerateDepsDirUsingIsolate(test_options.suite_name,
+  i = base_setup.GenerateDepsDirUsingIsolate(test_options.suite_name,
                                          test_options.isolate_file_path,
                                          ISOLATE_FILE_PATHS,
                                          DEPS_EXCLUSION_LIST)
@@ -217,6 +217,8 @@ def Setup(test_options, devices):
         else device.GetExternalStoragePath())
     base_setup.PushDataDeps(device, device_dir, test_options)
   device_utils.DeviceUtils.parallel(devices).pMap(push_data_deps_to_device_dir)
+  if i:
+    i.Clear()
 
   tests = _GetTests(test_options, test_package, devices)
 

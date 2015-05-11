@@ -659,9 +659,6 @@ def _RunGTests(args, devices):
     if args.json_results_file:
       json_results.GenerateJsonResultsFile(results, args.json_results_file)
 
-  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
-    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
-
   return exit_code
 
 
