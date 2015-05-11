@@ -79,6 +79,7 @@ function repeatUntil(checkFunction) {
     return Promise.resolve(checkFunction()).then(function(result) {
       if (result instanceof pending) {
         if (Date.now() > logTime) {
+          console.warn(result.message);
           logTime += LOG_INTERVAL;
         }
         return wait(REPEAT_UNTIL_INTERVAL).then(step);
