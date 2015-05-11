@@ -31,8 +31,12 @@ do_testcase() {
     flags="$(cat "${3}")"
   fi
 
-  if [ "$(uname -s)" = "Darwin" ]; then
-    flags="${flags} -isysroot $(xcrun --show-sdk-path) -stdlib=libstdc++"
+  # TODO(thakis): Remove once the tests are standalone, http://crbug.com/486559
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    flags="${flags} -isysroot $(xcrun --show-sdk-path)"
+  fi
+  if [[ "$(uname -s)" == "Darwin" && "${flags}" != *-target* ]]; then
+    flags="${flags} -stdlib=libstdc++"
   fi
 
   flags="${flags} -Xclang -plugin-arg-find-bad-constructs \

@@ -7,7 +7,6 @@
 
 struct MyString {
   MyString();
-  ~MyString();
   MyString(const MyString&);
   MyString(MyString&&);
 };
@@ -15,14 +14,13 @@ struct MyString {
 template <class T>
 struct MyVector {
   MyVector();
-  ~MyVector();
   MyVector(const MyVector&);
   MyVector(MyVector&&);
 };
 
-// Note: this should warn for an implicit copy constructor too, but currently
-// doesn't, due to a plugin bug.
-class MissingCtorsArentOKInHeader {
+// For now, this should only warn on the missing constructor, not on the missing
+// copy and move constructors on dllexported classes.
+class __declspec(dllexport) MissingCtorsArentOKInHeader {
  public:
 
  private:
@@ -30,9 +28,7 @@ class MissingCtorsArentOKInHeader {
   MyVector<MyString> two_;
 };
 
-// Inline move ctors shouldn't be warned about. Similar to the previous test
-// case, this also incorrectly fails to warn for the implicit copy ctor.
-class InlineImplicitMoveCtorOK {
+class __declspec(dllexport) InlineImplicitMoveCtorOK {
  public:
   InlineImplicitMoveCtorOK();
 
@@ -46,12 +42,14 @@ class InlineImplicitMoveCtorOK {
   int six_;
 };
 
-class ExplicitlyDefaultedInlineAlsoWarns {
+class __declspec(dllexport) ExplicitlyDefaultedInlineAlsoWarns {
  public:
   ExplicitlyDefaultedInlineAlsoWarns() = default;
   ~ExplicitlyDefaultedInlineAlsoWarns() = default;
   ExplicitlyDefaultedInlineAlsoWarns(
       const ExplicitlyDefaultedInlineAlsoWarns&) = default;
+  ExplicitlyDefaultedInlineAlsoWarns(ExplicitlyDefaultedInlineAlsoWarns&&) =
+      default;
 
  private:
   MyVector<int> one_;

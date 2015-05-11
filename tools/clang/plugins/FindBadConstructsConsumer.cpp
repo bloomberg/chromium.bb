@@ -306,8 +306,15 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
                           "Complex class/struct needs an explicit out-of-line "
                           "copy constructor.");
           } else {
-            emitWarning(it->getInnerLocStart(),
-                        "Complex constructor has an inlined body.");
+            // See the comment in the previous branch about copy constructors.
+            // This does the same for implicit move constructors.
+            bool is_likely_compiler_generated_dllexport_move_ctor =
+                it->isMoveConstructor() &&
+                !record->hasUserDeclaredMoveConstructor() &&
+                record->hasAttr<DLLExportAttr>();
+            if (!is_likely_compiler_generated_dllexport_move_ctor)
+              emitWarning(it->getInnerLocStart(),
+                          "Complex constructor has an inlined body.");
           }
         } else if (it->isInlined() && !it->isInlineSpecified() &&
                    !it->isDeleted() && (!it->isCopyOrMoveConstructor() ||

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "missing_ctor.h"
+#include "missing_ctor_dllexport.h"
 
 // We don't warn on classes that use default ctors in cpp files.
 class MissingInCPPOK {
