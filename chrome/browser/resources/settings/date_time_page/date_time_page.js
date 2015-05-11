@@ -18,60 +18,57 @@
  * @group Chrome Settings Elements
  * @element cr-settings-date-time-page
  */
-Polymer('cr-settings-date-time-page', {
-  publish: {
+Polymer({
+  is: 'cr-settings-date-time-page',
+
+  properties: {
     /**
      * Preferences state.
-     *
-     * @attribute prefs
-     * @type CrSettingsPrefsElement
-     * @default null
+     * @type {?CrSettingsPrefsElement}
      */
-    prefs: null,
+    prefs: {
+      type: Object,
+      notify: true
+    },
 
     /**
      * Route for the page.
-     *
-     * @attribute route
-     * @type string
-     * @default ''
      */
-    route: '',
+    route: {
+      type: String,
+      value: ''
+    },
 
     /**
      * Whether the page is a subpage.
-     *
-     * @attribute subpage
-     * @type boolean
-     * @default false
      */
-    subpage: false,
+    subpage: {
+      type: Boolean,
+      value: false
+    }
 
     /**
      * ID of the page.
-     *
-     * @attribute PAGE_ID
-     * @const string
-     * @default 'date-time'
      */
-    PAGE_ID: 'date-time',
+    PAGE_ID: {
+      type: String,
+      value: 'date-time'
+    },
 
     /**
      * Title for the page header and navigation menu.
-     *
-     * @attribute pageTitle
-     * @type string
-     * @default 'Date & Time'
      */
-    pageTitle: 'Date & Time',
+    pageTitle: {
+      type: String,
+      value: function() { return loadTimeData.getString('dateTimePageTitle'); }
+    },
 
     /**
      * Name of the 'core-icon' to show.
-     *
-     * @attribute icon
-     * @type string
-     * @default 'device:access-time'
      */
-    icon: 'device:access-time',
+    icon: {
+      type: String,
+      value: 'device:access-time'
+    },
   },
 });

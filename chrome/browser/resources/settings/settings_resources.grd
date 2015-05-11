@@ -82,8 +82,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_JS"
                  file="settings_ui/settings_ui.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_STYLE_HTML"
-                 file="date_time_page/date_time_page_style.html"
+      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_CSS"
+                 file="date_time_page/date_time_page.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_DATE_TIME_PAGE_HTML"
                  file="date_time_page/date_time_page.html"

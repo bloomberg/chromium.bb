@@ -87,6 +87,9 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
 
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
+      "dateTimePageTitle",
+      IDS_SETTINGS_DATE_TIME_PAGE_TITLE);
+  html_source->AddLocalizedString(
       "dateTimeTimeZoneLabel",
       IDS_SETTINGS_DATE_TIME_TIME_ZONE_LABEL);
   html_source->AddLocalizedString(

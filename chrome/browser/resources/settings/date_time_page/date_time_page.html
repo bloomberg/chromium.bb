@@ -1,27 +1,22 @@
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
-<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
-<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
-<link rel="import" href="date_time_page_style.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v0_8/paper-material/paper-material.html">
 
-<polymer-element name="cr-settings-date-time-page">
+<dom-module id="cr-settings-date-time-page">
+  <link rel="import" type="css" href="date_time_page.css">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <template>
-    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <core-style ref="dateTimePageStyle"></core-style>
-    <paper-shadow layout vertical cross-fade>
-      <div horizontal layout center>
-        <core-label horizontal layout center>
-          <span class="time-zone-label" i18n-content="dateTimeTimeZoneLabel"></span>
-        </core-label>
+    <paper-material class="layout veritcal">
+      <div class="horizontal layout center">
+        <span class="time-zone-label" i18n-content="dateTimeTimeZoneLabel"></span>
       </div>
       <cr-settings-checkbox
           pref="{{prefs.settings.settings.clock.use_24hour_clock}}"
           i18n-values="label:dateTime24HourClockLabel">
       </cr-settings-checkbox>
       <span id="setAutomatically" i18n-content="dateTimeAutomaticallySet"></span>
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="date_time_page.js"></script>
-</polymer-element>
+</dom-module>
