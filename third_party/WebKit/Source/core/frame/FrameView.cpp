@@ -1621,19 +1621,26 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelectio
     if (!visibleSelection.isCaretOrRange())
         return false;
 
+    // Non-editable caret selections lack any kind of UI affordance, and
+    // needn't be tracked by the client.
+    if (visibleSelection.isCaret() && !visibleSelection.isContentEditable())
+        return false;
+
     VisiblePosition visibleStart(visibleSelection.visibleStart());
-    VisiblePosition visibleEnd(visibleSelection.visibleEnd());
-
     RenderedPosition renderedStart(visibleStart);
-    RenderedPosition renderedEnd(visibleEnd);
-
     renderedStart.positionInGraphicsLayerBacking(selection.start);
     if (!selection.start.layer)
         return false;
 
-    renderedEnd.positionInGraphicsLayerBacking(selection.end);
-    if (!selection.end.layer)
-        return false;
+    if (visibleSelection.isCaret()) {
+        selection.end = selection.start;
+    } else {
+        VisiblePosition visibleEnd(visibleSelection.visibleEnd());
+        RenderedPosition renderedEnd(visibleEnd);
+        renderedEnd.positionInGraphicsLayerBacking(selection.end);
+        if (!selection.end.layer)
+            return false;
+    }
 
     selection.type = visibleSelection.selectionType();
     selection.isEditable = visibleSelection.isContentEditable();
@@ -1641,8 +1648,8 @@ bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelectio
         if (HTMLTextFormControlElement* enclosingTextFormControlElement = enclosingTextFormControl(visibleSelection.rootEditableElement()))
             selection.isEmptyTextFormControl = enclosingTextFormControlElement->value().isEmpty();
     }
-    selection.start.isTextDirectionRTL = visibleStart.deepEquivalent().primaryDirection() == RTL;
-    selection.end.isTextDirectionRTL = visibleEnd.deepEquivalent().primaryDirection() == RTL;
+    selection.start.isTextDirectionRTL = visibleSelection.start().primaryDirection() == RTL;
+    selection.end.isTextDirectionRTL = visibleSelection.end().primaryDirection() == RTL;
 
     return true;
 }
