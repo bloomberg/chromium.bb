@@ -108,9 +108,7 @@ class JsonPrefStoreTest : public testing::Test {
   void TearDown() override {
     // Make sure all pending tasks have been processed (e.g., deleting the
     // JsonPrefStore may post write tasks).
-    message_loop_.task_runner()->PostTask(FROM_HERE,
-                                          MessageLoop::QuitWhenIdleClosure());
-    message_loop_.Run();
+    RunLoop().RunUntilIdle();
   }
 
   // The path to temporary directory used to contain the test operations.
@@ -127,7 +125,7 @@ class JsonPrefStoreTest : public testing::Test {
 
 // Test fallback behavior for a nonexistent file.
 TEST_F(JsonPrefStoreTest, NonExistentFile) {
-  base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
+  base::FilePath bogus_input_file = temp_dir_.path().AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       bogus_input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
@@ -138,9 +136,9 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
 
 // Test fallback behavior for a nonexistent file and alternate file.
 TEST_F(JsonPrefStoreTest, NonExistentFileAndAlternateFile) {
-  base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
+  base::FilePath bogus_input_file = temp_dir_.path().AppendASCII("read.txt");
   base::FilePath bogus_alternate_input_file =
-      data_dir_.AppendASCII("read_alternate.txt");
+      temp_dir_.path().AppendASCII("read_alternate.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   ASSERT_FALSE(PathExists(bogus_alternate_input_file));
   scoped_refptr<JsonPrefStore> pref_store =
@@ -321,7 +319,7 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
 
   // Write to file.
   pref_store->CommitPendingWrite();
-  MessageLoop::current()->RunUntilIdle();
+  RunLoop().RunUntilIdle();
 
   // Reload.
   pref_store = new JsonPrefStore(pref_file, message_loop_.task_runner(),
@@ -360,7 +358,7 @@ TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
 
 // Tests asynchronous reading of the file when there is no file.
 TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
-  base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
+  base::FilePath bogus_input_file = temp_dir_.path().AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
       bogus_input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
@@ -807,6 +805,127 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps) {
   ASSERT_EQ(1, samples->GetCount(2));
   ASSERT_EQ(1, samples->GetCount(3));
   ASSERT_EQ(6, samples->TotalCount());
+}
+
+class JsonPrefStoreLossyWriteTest : public JsonPrefStoreTest {
+ protected:
+  void SetUp() override {
+    JsonPrefStoreTest::SetUp();
+    test_file_ = temp_dir_.path().AppendASCII("test.json");
+  }
+
+  // Creates a JsonPrefStore with the given |file_writer|.
+  scoped_refptr<JsonPrefStore> CreatePrefStore() {
+    return new JsonPrefStore(test_file_, message_loop_.task_runner(),
+                             scoped_ptr<PrefFilter>());
+  }
+
+  // Return the ImportantFileWriter for a given JsonPrefStore.
+  ImportantFileWriter* GetImportantFileWriter(
+      scoped_refptr<JsonPrefStore> pref_store) {
+    return &(pref_store->writer_);
+  }
+
+  // Get the contents of kTestFile. Pumps the message loop before returning the
+  // result.
+  std::string GetTestFileContents() {
+    RunLoop().RunUntilIdle();
+    std::string file_contents;
+    ReadFileToString(test_file_, &file_contents);
+    return file_contents;
+  }
+
+ private:
+  base::FilePath test_file_;
+};
+
+TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteBasic) {
+  scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+
+  // Set a normal pref and check that it gets scheduled to be written.
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  pref_store->SetValue("normal", new base::StringValue("normal"),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  ASSERT_TRUE(file_writer->HasPendingWrite());
+  file_writer->DoScheduledWrite();
+  ASSERT_EQ("{\"normal\":\"normal\"}", GetTestFileContents());
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+
+  // Set a lossy pref and check that it is not scheduled to be written.
+  // SetValue/RemoveValue.
+  pref_store->SetValue("lossy", new base::StringValue("lossy"),
+                       WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  pref_store->RemoveValue("lossy", WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+
+  // SetValueSilently/RemoveValueSilently.
+  pref_store->SetValueSilently("lossy", new base::StringValue("lossy"),
+                               WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  pref_store->RemoveValueSilently("lossy",
+                                  WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+
+  // ReportValueChanged.
+  pref_store->SetValue("lossy", new base::StringValue("lossy"),
+                       WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  pref_store->ReportValueChanged("lossy",
+                                 WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+
+  // Call CommitPendingWrite and check that the lossy pref and the normal pref
+  // are there with the last values set above.
+  pref_store->CommitPendingWrite();
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  ASSERT_EQ("{\"lossy\":\"lossy\",\"normal\":\"normal\"}",
+            GetTestFileContents());
+}
+
+TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteMixedLossyFirst) {
+  scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+
+  // Set a lossy pref and check that it is not scheduled to be written.
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  pref_store->SetValue("lossy", new base::StringValue("lossy"),
+                       WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+
+  // Set a normal pref and check that it is scheduled to be written.
+  pref_store->SetValue("normal", new base::StringValue("normal"),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  ASSERT_TRUE(file_writer->HasPendingWrite());
+
+  // Call DoScheduledWrite and check both prefs get written.
+  file_writer->DoScheduledWrite();
+  ASSERT_EQ("{\"lossy\":\"lossy\",\"normal\":\"normal\"}",
+            GetTestFileContents());
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+}
+
+TEST_F(JsonPrefStoreLossyWriteTest, LossyWriteMixedLossySecond) {
+  scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store);
+
+  // Set a normal pref and check that it is scheduled to be written.
+  ASSERT_FALSE(file_writer->HasPendingWrite());
+  pref_store->SetValue("normal", new base::StringValue("normal"),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  ASSERT_TRUE(file_writer->HasPendingWrite());
+
+  // Set a lossy pref and check that the write is still scheduled.
+  pref_store->SetValue("lossy", new base::StringValue("lossy"),
+                       WriteablePrefStore::LOSSY_PREF_WRITE_FLAG);
+  ASSERT_TRUE(file_writer->HasPendingWrite());
+
+  // Call DoScheduledWrite and check both prefs get written.
+  file_writer->DoScheduledWrite();
+  ASSERT_EQ("{\"lossy\":\"lossy\",\"normal\":\"normal\"}",
+            GetTestFileContents());
+  ASSERT_FALSE(file_writer->HasPendingWrite());
 }
 
 }  // namespace base
