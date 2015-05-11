@@ -30,8 +30,7 @@ const char kBatchUploadRequestFormat[] =
     "Host: %s\n"
     "X-Goog-Upload-Protocol: multipart\n"
     "Content-Type: %s\n"
-    "\n"
-    "%s";
+    "\n";
 
 // Request header for specifying batch upload.
 const char kBatchUploadHeader[] = "X-Goog-Upload-Protocol: batch";
@@ -1278,8 +1277,8 @@ void BatchUploadRequest::MayCompletePrepare() {
     parts.back().type = kHttpContentType;
     parts.back().data = base::StringPrintf(
         kBatchUploadRequestFormat, method.c_str(), url.path().c_str(),
-        url_generator_.GetBatchUploadUrl().host().c_str(), type.c_str(),
-        data.c_str());
+        url_generator_.GetBatchUploadUrl().host().c_str(), type.c_str());
+    parts.back().data.append(data);
   }
 
   GenerateMultipartBody(MULTIPART_MIXED, boundary_, parts, &upload_content_);

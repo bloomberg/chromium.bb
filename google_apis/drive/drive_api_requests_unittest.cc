@@ -58,6 +58,43 @@ void AppendContent(std::string* out,
   out->append(*content);
 }
 
+class TestBatchableRequest : public BatchableRequestBase {
+ public:
+  TestBatchableRequest(RequestSender* sender,
+                       const GURL url,
+                       const std::string& content_type,
+                       const std::string& content_data,
+                       const base::Closure& callback)
+      : BatchableRequestBase(sender),
+        url_(url),
+        content_type_(content_type),
+        content_data_(content_data),
+        callback_(callback) {}
+  GURL GetURL() const override { return url_; }
+  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override {
+    callback_.Run();
+  }
+  void ProcessURLFetchResults(DriveApiErrorCode code,
+                              const std::string& body) override {
+    callback_.Run();
+  }
+  net::URLFetcher::RequestType GetRequestType() const override {
+    return net::URLFetcher::PUT;
+  }
+  bool GetContentData(std::string* upload_content_type,
+                      std::string* upload_content) override {
+    upload_content_type->assign(content_type_);
+    upload_content->assign(content_data_);
+    return true;
+  }
+
+ private:
+  GURL url_;
+  std::string content_type_;
+  std::string content_data_;
+  base::Closure callback_;
+};
+
 }  // namespace
 
 class DriveApiRequestsTest : public testing::Test {
@@ -2018,6 +2055,44 @@ TEST_F(DriveApiRequestsTest, EmptyBatchUploadRequest) {
   scoped_ptr<drive::BatchUploadRequest> request(new drive::BatchUploadRequest(
       request_sender_.get(), *url_generator_));
   EXPECT_DEATH(request->Commit(), "");
+}
+
+TEST_F(DriveApiRequestsTest, BatchUploadRequestWithBodyIncludingZero) {
+  // Create batch request.
+  drive::BatchUploadRequest* const request =
+      new drive::BatchUploadRequest(request_sender_.get(), *url_generator_);
+  request->SetBoundaryForTesting("OUTERBOUNDARY");
+  request_sender_->StartRequestWithRetry(request);
+
+  // Create child request.
+  {
+    base::RunLoop loop;
+    TestBatchableRequest* child_request = new TestBatchableRequest(
+        request_sender_.get(), GURL("http://example.com/test"),
+        "application/binary",
+        std::string("Apple\0Orange\0", 13),
+        loop.QuitClosure());
+    request->AddRequest(child_request);
+    request->Commit();
+    loop.Run();
+  }
+
+  EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
+  EXPECT_EQ("batch", http_request_.headers["X-Goog-Upload-Protocol"]);
+  EXPECT_EQ("multipart/mixed; boundary=OUTERBOUNDARY",
+            http_request_.headers["Content-Type"]);
+  EXPECT_EQ(
+      "--OUTERBOUNDARY\n"
+      "Content-Type: application/http\n"
+      "\n"
+      "PUT /test HTTP/1.1\n"
+      "Host: 127.0.0.1\n"
+      "X-Goog-Upload-Protocol: multipart\n"
+      "Content-Type: application/binary\n"
+      "\n"
+      + std::string("Apple\0Orange\0", 13) + "\n"
+      "--OUTERBOUNDARY--",
+      http_request_.content);
 }
 
 TEST(ParseMultipartResponseTest, Empty) {
