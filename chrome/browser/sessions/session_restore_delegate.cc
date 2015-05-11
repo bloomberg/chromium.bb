@@ -8,6 +8,7 @@
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -64,6 +65,23 @@ bool SessionRestoreDelegate::RestoredTab::operator<(
 void SessionRestoreDelegate::RestoreTabs(
     const std::vector<RestoredTab>& tabs,
     const base::TimeTicks& restore_started) {
-  SessionRestoreStatsCollector::TrackTabs(tabs, restore_started);
-  TabLoader::RestoreTabs(tabs, restore_started);
+  // This experiment allows us to have comparative numbers for session restore
+  // metrics. It will be removed once those numbers are obtained.
+  // TODO(georgesak): Remove this experiment when stats are collected.
+  base::FieldTrial* trial =
+      base::FieldTrialList::Find("IntelligentSessionRestore");
+  if (!trial || trial->group_name() != "DontRestoreBackgroundTabs") {
+    SessionRestoreStatsCollector::TrackTabs(tabs, restore_started);
+    TabLoader::RestoreTabs(tabs, restore_started);
+  } else {
+    SessionRestoreStatsCollector::TrackActiveTabs(tabs, restore_started);
+    for (auto& restored_tab : tabs) {
+      if (!restored_tab.is_active()) {
+        favicon::ContentFaviconDriver* favicon_driver =
+            favicon::ContentFaviconDriver::FromWebContents(
+                restored_tab.contents());
+        favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
+      }
+    }
+  }
 }

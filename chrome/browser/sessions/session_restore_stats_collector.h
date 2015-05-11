@@ -30,6 +30,12 @@ class SessionRestoreStatsCollector
       const std::vector<SessionRestoreDelegate::RestoredTab>& tabs,
       const base::TimeTicks& restore_started);
 
+  // Called to start tracking only active tabs. If a restore is already
+  // occuring, the tabs are added to the existing list of tracked tabs.
+  static void TrackActiveTabs(
+      const std::vector<SessionRestoreDelegate::RestoredTab>& tabs,
+      const base::TimeTicks& restore_started);
+
  private:
   friend class base::RefCounted<SessionRestoreStatsCollector>;
 

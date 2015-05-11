@@ -27,6 +27,21 @@ void SessionRestoreStatsCollector::TrackTabs(
   shared_collector_->AddTabs(tabs);
 }
 
+// static
+void SessionRestoreStatsCollector::TrackActiveTabs(
+    const std::vector<SessionRestoreDelegate::RestoredTab>& tabs,
+    const base::TimeTicks& restore_started) {
+  if (!shared_collector_)
+    shared_collector_ = new SessionRestoreStatsCollector(restore_started);
+
+  std::vector<SessionRestoreDelegate::RestoredTab> active_tabs;
+  for (auto tab : tabs) {
+    if (tab.is_active())
+      active_tabs.push_back(tab);
+  }
+  shared_collector_->AddTabs(active_tabs);
+}
+
 SessionRestoreStatsCollector::SessionRestoreStatsCollector(
     const base::TimeTicks& restore_started)
     : got_first_foreground_load_(false),
