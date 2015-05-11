@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//mojo/generate_mojo_shell_assets_list.gni")
 import("//third_party/mojo/src/mojo/public/mojo.gni")
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
@@ -29,7 +30,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-executable("mojo_runner") {
+source_set("mojo_runner_lib") {
   sources = []
 
   deps = [
@@ -48,14 +49,11 @@ executable("mojo_runner") {
     ]
   } else {
     sources += [
+      "android/context_init.h",
       "android/library_loader.cc",
       "android/main.cc",
       "android/main.h",
     ]
-
-    # On android, the executable is also the native library used by the apk.
-    # It means dynamic symbols must be preserved and exported.
-    ldflags = [ "-Wl,--export-dynamic" ]
 
     deps += [
       ":jni_headers",
@@ -63,6 +61,22 @@ executable("mojo_runner") {
       "//mojo/shell",
       "//ui/gl",
     ]
+  }
+}
+
+executable("mojo_runner") {
+  deps = [
+    ":mojo_runner_lib",
+  ]
+
+  if (is_android) {
+    sources = [
+      "android/context_init.cc",
+    ]
+
+    # On android, the executable is also the native library used by the apk.
+    # It means dynamic symbols must be preserved and exported.
+    ldflags = [ "-Wl,--export-dynamic" ]
   }
 }
 
@@ -250,6 +264,7 @@ if (is_android) {
     ]
 
     deps = [
+      ":resources",
       "//base:base_java",
     ]
   }
@@ -265,11 +280,21 @@ if (is_android) {
   copy_ex("copy_mojo_runner_assets") {
     clear_dir = true
     dest = mojo_runner_assets_dir
+    deps = [
+      ":copy_mojo_runner",
+    ]
     sources = [
       "$root_out_dir/lib.stripped/libbootstrap.so",
       "$root_out_dir/network_service.mojo",
       "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
     ]
+  }
+
+  generate_mojo_shell_assets_list("build_mojo_runner_assets") {
+    deps = [
+      ":copy_mojo_runner_assets",
+    ]
+    dir = mojo_runner_assets_dir
   }
 
   copy("copy_mojo_runner") {
@@ -300,14 +325,20 @@ if (is_android) {
     asset_location = mojo_runner_assets_dir
 
     deps = [
-      ":copy_mojo_runner",
-      ":copy_mojo_runner_assets",
+      ":build_mojo_runner_assets",
       ":java",
       ":resources",
       "//base:base_java",
       "//components/native_viewport:native_viewport_java",
       "//third_party/android_tools:google_play_services_default_resources",
     ]
+  }
+
+  generate_mojo_shell_assets_list("build_mojo_runner_test_assets") {
+    deps = [
+      ":copy_mojo_runner_test_assets",
+    ]
+    dir = mojo_runner_test_assets_dir
   }
 
   android_library("mojo_runner_tests_java") {
@@ -374,7 +405,7 @@ test("tests") {
     deps += [ ":jni_headers" ]
 
     apk_deps = [
-      ":copy_mojo_runner_test_assets",
+      ":build_mojo_runner_test_assets",
       ":mojo_runner_tests_java",
     ]
 

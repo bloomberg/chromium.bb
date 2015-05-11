@@ -7,8 +7,9 @@ assert(is_android)
 import("//third_party/mojo/src/mojo/public/mojo.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//mojo/generate_mojo_shell_assets_list.gni")
 
-mojo_runner_assets_dir = "$root_build_dir/mojo_runner_assets"
+mandoline_assets_dir = "$root_build_dir/mandoline_assets"
 
 group("android") {
   deps = [
@@ -16,18 +17,74 @@ group("android") {
   ]
 }
 
+executable("mandoline_runner") {
+  deps = [
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/runner:mojo_runner_lib",
+  ]
+
+  sources = [
+    "../core_services_initialization.cc",
+    "mandoline_context_init.cc",
+  ]
+
+  # On android, the executable is also the native library used by the apk.
+  # It means dynamic symbols must be preserved and exported.
+  ldflags = [ "-Wl,--export-dynamic" ]
+}
+
+copy("copy_mandoline_runner") {
+  deps = [
+    ":mandoline_runner",
+  ]
+  sources = [
+    "$root_out_dir/exe.stripped/mandoline_runner",
+  ]
+  outputs = [
+    "$root_out_dir/lib.stripped/libmandoline_runner.so",
+  ]
+}
+
+copy_ex("copy_mandoline_assets") {
+  clear_dir = true
+  dest = mandoline_assets_dir
+  deps = [
+    "//components/html_viewer",
+    "//components/resource_provider",
+    "//components/surfaces",
+    "//mandoline/services/core_services",
+  ]
+  sources = [
+    "$root_out_dir/core_services.mojo",
+    "$root_out_dir/html_viewer",
+    "$root_out_dir/lib.stripped/libbootstrap.so",
+    "$root_out_dir/network_service.mojo",
+    "$root_out_dir/obj/mojo/runner/bootstrap_java.dex.jar",
+    "$root_out_dir/resource_provider.mojo",
+    "$root_out_dir/surfaces_service.mojo",
+  ]
+}
+
+generate_mojo_shell_assets_list("build_mandoline_assets") {
+  deps = [
+    ":copy_mandoline_assets",
+  ]
+  dir = mandoline_assets_dir
+}
+
 android_apk("mandoline_apk") {
   apk_name = "Mandoline"
 
   android_manifest = "apk/AndroidManifest.xml"
 
-  native_libs = [ "libmojo_runner.so" ]
+  native_libs = [ "libmandoline_runner.so" ]
 
-  asset_location = mojo_runner_assets_dir
+  asset_location = mandoline_assets_dir
 
   deps = [
-    "//mojo/runner:copy_mojo_runner",
-    "//mojo/runner:copy_mojo_runner_assets",
+    ":build_mandoline_assets",
+    ":copy_mandoline_runner",
     "//mojo/runner:java",
     "//mojo/runner:resources",
     "//base:base_java",

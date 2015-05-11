@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/module_args/v8.gni")
 import("//mojo/mojo_application_package.gni")
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/mojo.gni")
@@ -132,6 +133,8 @@ source_set("lib") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/native_theme",
+
+    # TODO(sky): we shouldn't be using ui_test_pak.
     "//ui/resources:ui_test_pak",
     "//url",
   ]
@@ -155,71 +158,36 @@ source_set("lib") {
   ]
 }
 
-if (is_android) {
-  import("//build/config/android/rules.gni")
+mojo_application_package("html_viewer") {
+  sources = [
+    "html_viewer.cc",
+    "ui_setup.h",
+    "ui_setup_android.cc",
+    "ui_setup_android.h",
+  ]
+  deps = [
+    ":lib",
+    "//components/resource_provider/public/cpp",
+    "//components/resource_provider/public/interfaces",
+    "//mojo/common",
+    "//mojo/platform_handle",
+    "//third_party/icu:icudata",
+    "//ui/resources:ui_test_pak",
+  ]
+  data_deps = [
+    "//mojo/services/network:network",
+    "//components/resource_provider",
+  ]
+  resources = [
+    "$root_out_dir/icudtl.dat",
+    "$root_out_dir/ui_test.pak",
+  ]
 
-  java_library_path = "$target_out_dir/java_library.dex.jar"
-
-  mojo_android_application("html_viewer") {
-    input_so = "$root_out_dir/lib.stripped/libhtml_viewer_lib.so"
-    input_dex_jar = java_library_path
-  }
-
-  shared_library("html_viewer_lib") {
-    sources = [
-      "android/android_hooks.cc",
-      "html_viewer.cc",
-      "ui_setup.h",
-      "ui_setup_android.cc",
-      "ui_setup_android.h",
+  if (v8_use_external_startup_data) {
+    resources += [
+      "$root_build_dir/natives_blob.bin",
+      "$root_build_dir/snapshot_blob.bin",
     ]
-
-    deps = [
-      ":html_viewer_jni_headers",
-      ":lib",
-      "//base",
-      "//ui/gfx:gfx_jni_headers",
-    ]
-
-    data_deps = [ "//mojo/services/network:network" ]
-  }
-
-  generate_jni("html_viewer_jni_headers") {
-    sources = [
-      "android/java/org/chromium/html_viewer/Main.java",
-    ]
-    jni_package = "components/html_viewer"
-  }
-
-  android_library("html_viewer_java_classes") {
-    java_files = [ "android/java/org/chromium/html_viewer/Main.java" ]
-
-    deps = [
-      "//base:base_java",
-    ]
-  }
-
-  android_standalone_library("java_library") {
-    dex_path = java_library_path
-
-    deps = [
-      ":html_viewer_java_classes",
-
-      # TODO(sky): this is WAY more than we need. We really only need
-      # DeviceDisplayInfo. Refactor to make this clearer.
-      "//ui/android:ui_java",
-    ]
-  }
-} else {
-  mojo_native_application("html_viewer") {
-    sources = [
-      "html_viewer.cc",
-    ]
-    deps = [
-      ":lib",
-      "//ui/resources:ui_test_pak",
-    ]
-    data_deps = [ "//mojo/services/network:network" ]
   }
 }
 

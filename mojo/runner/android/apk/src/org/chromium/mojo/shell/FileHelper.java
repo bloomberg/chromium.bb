@@ -101,6 +101,7 @@ class FileHelper {
             if (outputFile.exists()) {
                 return outputFile;
             }
+            outputFile.getParentFile().mkdirs();
         }
 
         BufferedInputStream inputStream = new BufferedInputStream(

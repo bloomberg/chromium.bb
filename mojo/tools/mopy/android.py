@@ -191,11 +191,13 @@ class AndroidShell(object):
     target_device: device to run on, if multiple devices are connected
   """
   def __init__(
-      self, shell_apk_path, local_dir=None, adb_path="adb", target_device=None):
+      self, shell_apk_path, local_dir=None, adb_path="adb", target_device=None,
+      target_package=MOJO_SHELL_PACKAGE_NAME):
     self.shell_apk_path = shell_apk_path
     self.adb_path = adb_path
     self.local_dir = local_dir
     self.target_device = target_device
+    self.target_package = target_package
 
   def _CreateADBCommand(self, args):
     adb_command = [self.adb_path]
@@ -325,13 +327,14 @@ class AndroidShell(object):
       raise Exception("Unable to run adb as root.")
     subprocess.check_call(
         self._CreateADBCommand(['install', '-r', self.shell_apk_path, '-i',
-         MOJO_SHELL_PACKAGE_NAME]))
+                                self.target_package]))
     atexit.register(self.StopShell)
 
     extra_shell_args = []
-    origin_url = origin if origin else self._StartHttpServerForDirectory(
-        self.local_dir, DEFAULT_BASE_PORT if fixed_port else 0)
-    extra_shell_args.append("--origin=" + origin_url)
+    if origin:
+      origin_url = origin if origin else self._StartHttpServerForDirectory(
+          self.local_dir, DEFAULT_BASE_PORT if fixed_port else 0)
+      extra_shell_args.append("--origin=" + origin_url)
 
     return extra_shell_args
 
@@ -346,7 +349,7 @@ class AndroidShell(object):
     The |arguments| list must contain the "--origin=" arg from PrepareShellRun.
     If |stdout| is not None, it should be a valid argument for subprocess.Popen.
     """
-    STDOUT_PIPE = "/data/data/%s/stdout.fifo" % MOJO_SHELL_PACKAGE_NAME
+    STDOUT_PIPE = "/data/data/%s/stdout.fifo" % self.target_package
 
     cmd = self._CreateADBCommand([
            'shell',
@@ -354,16 +357,15 @@ class AndroidShell(object):
            'start',
            '-S',
            '-a', 'android.intent.action.VIEW',
-           '-n', '%s/.MojoShellActivity' % MOJO_SHELL_PACKAGE_NAME])
+           '-n', '%s/%s.MojoShellActivity' % (self.target_package,
+                                              MOJO_SHELL_PACKAGE_NAME)])
 
     parameters = []
     if stdout or on_application_stop:
       subprocess.check_call(self._CreateADBCommand(
-          ['shell', 'rm', STDOUT_PIPE]))
+          ['shell', 'rm', '-f', STDOUT_PIPE]))
       parameters.append('--fifo-path=%s' % STDOUT_PIPE)
       self._ReadFifo(STDOUT_PIPE, stdout, on_application_stop)
-    # The origin has to be specified whether it's local or external.
-    assert any("--origin=" in arg for arg in arguments)
 
     # Extract map-origin arguments.
     map_parameters, other_parameters = _Split(arguments, _IsMapOrigin)
@@ -385,7 +387,7 @@ class AndroidShell(object):
     subprocess.check_call(self._CreateADBCommand(['shell',
                                                   'am',
                                                   'force-stop',
-                                                  MOJO_SHELL_PACKAGE_NAME]))
+                                                  self.target_package]))
 
   def CleanLogs(self):
     """

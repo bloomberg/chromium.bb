@@ -13,11 +13,13 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
-    <application android:name="MojoShellApplication"
+    <application android:name="org.chromium.mojo.shell.MojoShellApplication"
             android:label="Mandoline">
         <meta-data android:name="com.google.android.gms.version"
                    android:value="@integer/google_play_services_version" />
-        <activity android:name="MojoShellActivity"
+        <meta-data android:name="mojo_lib"
+                   android:value="libmandoline_runner.so" />
+        <activity android:name="org.chromium.mojo.shell.MojoShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"
                   android:configChanges="orientation|keyboardHidden|keyboard|screenSize"

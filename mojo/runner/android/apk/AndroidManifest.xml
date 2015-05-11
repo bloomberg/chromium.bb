@@ -17,6 +17,8 @@
             android:label="Mojo Shell">
         <meta-data android:name="com.google.android.gms.version"
                    android:value="@integer/google_play_services_version" />
+        <meta-data android:name="mojo_lib"
+                   android:value="libmojo_runner.so" />
         <activity android:name="MojoShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar"

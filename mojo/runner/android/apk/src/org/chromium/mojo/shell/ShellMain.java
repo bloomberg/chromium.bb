@@ -11,7 +11,11 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,11 +29,12 @@ public class ShellMain {
 
     // Directory where applications bundled with the shell will be extracted.
     private static final String LOCAL_APP_DIRECTORY = "local_apps";
-    // Individual applications bundled with the shell as assets.
-    private static final String NETWORK_LIBRARY_APP = "network_service.mojo";
     // The mojo_shell library is also an executable run in forked processes when running
     // multi-process.
     private static final String MOJO_SHELL_EXECUTABLE = "libmojo_runner.so";
+
+    // Name of the file containing the assets to extract. File format is a file per line.
+    private static final String ASSETS_LIST_NAME = "assets_list";
 
     /**
      * A guard flag for calling nativeInit() only once.
@@ -37,13 +42,39 @@ public class ShellMain {
     private static boolean sInitialized = false;
 
     /**
+     * Returns the names of the assets in ASSETS_LIST_NAME.
+     */
+    private static List<String> getAssetsList(Context context) throws IOException {
+        List<String> results = new ArrayList<String>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                context.getAssets().open(ASSETS_LIST_NAME), Charset.forName("UTF-8")));
+
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                // These two are read by the system and don't need to be extracted.
+                if (!line.isEmpty() && !line.equals("bootstrap_java.dex.jar")
+                        && !line.equals("libbootstrap.so")) {
+                    results.add(line);
+                }
+            }
+        } finally {
+            reader.close();
+        }
+        return results;
+    }
+
+    /**
      * Initializes the native system.
      **/
     static void ensureInitialized(Context applicationContext, String[] parameters) {
         if (sInitialized) return;
+        File localAppsDir = getLocalAppsDir(applicationContext);
         try {
-            FileHelper.extractFromAssets(applicationContext, NETWORK_LIBRARY_APP,
-                    getLocalAppsDir(applicationContext), false);
+            for (String assetPath : getAssetsList(applicationContext)) {
+                FileHelper.extractFromAssets(applicationContext, assetPath, localAppsDir, false);
+            }
             File mojoShell = new File(applicationContext.getApplicationInfo().nativeLibraryDir,
                     MOJO_SHELL_EXECUTABLE);
 
@@ -55,7 +86,7 @@ public class ShellMain {
 
             nativeInit(applicationContext, mojoShell.getAbsolutePath(),
                     parametersList.toArray(new String[parametersList.size()]),
-                    getLocalAppsDir(applicationContext).getAbsolutePath(),
+                    localAppsDir.getAbsolutePath(),
                     getTmpDir(applicationContext).getAbsolutePath());
             sInitialized = true;
         } catch (Exception e) {

@@ -29,7 +29,6 @@ def main():
                            dest='debug', action='store_false')
   parser.add_argument('--target-cpu', help='CPU architecture to run for.',
                       choices=['x64', 'x86', 'arm'])
-  parser.add_argument('--origin', help='Origin for mojo: URLs.')
   parser.add_argument('--target-device', help='Device to run on.')
   launcher_args, args = parser.parse_known_args()
 
@@ -39,9 +38,10 @@ def main():
                   apk_name="Mandoline.apk")
   paths = Paths(config)
   shell = AndroidShell(paths.target_mojo_shell_path, paths.build_dir,
-                       paths.adb_path, launcher_args.target_device)
+                       paths.adb_path, launcher_args.target_device,
+                       target_package='org.chromium.mandoline')
 
-  extra_shell_args = shell.PrepareShellRun(launcher_args.origin)
+  extra_shell_args = shell.PrepareShellRun()
   args.extend(extra_shell_args)
 
   shell.CleanLogs()

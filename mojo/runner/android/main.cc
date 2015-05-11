@@ -23,6 +23,7 @@
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/runner/android/android_handler_loader.h"
 #include "mojo/runner/android/background_application_loader.h"
+#include "mojo/runner/android/context_init.h"
 #include "mojo/runner/android/native_viewport_application_loader.h"
 #include "mojo/runner/android/ui_application_loader_android.h"
 #include "mojo/runner/context.h"
@@ -166,6 +167,7 @@ static void Init(JNIEnv* env,
   Context* shell_context = new Context();
   shell_context->SetShellFileRoot(base::FilePath(
       base::android::ConvertJavaStringToUTF8(env, j_local_apps_directory)));
+  InitContext(shell_context);
   g_context.Get().reset(shell_context);
 
   g_java_message_loop.Get().reset(new base::MessageLoopForUI);

@@ -14,9 +14,13 @@
 #include "components/html_viewer/discardable_memory_allocator.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/web_media_player_factory.h"
+#include "components/resource_provider/public/cpp/resource_loader.h"
+#include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "gin/v8_initializer.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/common/common_type_converters.h"
+#include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -48,6 +52,7 @@ using mojo::ShellPtr;
 using mojo::String;
 using mojo::URLLoaderPtr;
 using mojo::URLResponsePtr;
+using resource_provider::ResourceLoader;
 
 namespace html_viewer {
 
@@ -169,13 +174,32 @@ class HTMLViewer : public mojo::ApplicationDelegate,
  public:
   HTMLViewer()
       : discardable_memory_allocator_(kDesiredMaxMemory),
-        compositor_thread_("compositor thread") {}
+        compositor_thread_("compositor thread"),
+        is_headless_(false) {}
 
   ~HTMLViewer() override { blink::shutdown(); }
 
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
+    // TODO(sky): make this typesafe and not leak.
+    std::set<std::string> paths;
+    paths.insert("icudtl.dat");
+    paths.insert("ui_test.pak");
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+    paths.insert("natives_blob.bin");
+    paths.insert("snapshot_blob.bin");
+#endif
+    ResourceLoader resource_loader(app->shell(), paths);
+    if (!resource_loader.BlockUntilLoaded()) {
+      // Assume on error we're being shut down.
+      LOG(WARNING) << "html_viewer errored getting resources, exiting";
+      mojo::ApplicationImpl::Terminate();
+      return;
+    }
+
+    ResourceLoader::ResourceMap resource_map(resource_loader.resource_map());
+
     ui_setup_.reset(new UISetup);
     base::DiscardableMemoryAllocator::SetInstance(
         &discardable_memory_allocator_);
@@ -185,10 +209,13 @@ class HTMLViewer : public mojo::ApplicationDelegate,
         new BlinkPlatformImpl(app, renderer_scheduler_.get()));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     // Note: this requires file system access.
-    gin::V8Initializer::LoadV8Snapshot();
+    CHECK(gin::V8Initializer::LoadV8SnapshotFromFD(
+        resource_map["natives_blob.bin"], 0u, 0u,
+        resource_map["snapshot_blob.bin"], 0u, 0u));
 #endif
     blink::initialize(blink_platform_.get());
-    base::i18n::InitializeICU();
+    base::i18n::InitializeICUWithFileDescriptor(
+        resource_map["icudtl.dat"], base::MemoryMappedFile::Region::kWholeFile);
 
     ui::RegisterPathProvider();
 
@@ -205,11 +232,14 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 
     is_headless_ = command_line->HasSwitch(kIsHeadless);
     if (!is_headless_) {
-      // TODO(sky): consider putting this into the .so so that we don't need
-      // file system access.
-      base::FilePath ui_test_pak_path;
-      CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-      ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+      // TODO(sky): fix lifetime here.
+      MojoPlatformHandle platform_handle = resource_map["ui_test.pak"];
+      // TODO(sky): the first call should be for strings, not images.
+      ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
+          base::File(platform_handle).Pass(),
+          base::MemoryMappedFile::Region::kWholeFile);
+      ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
+          base::File(platform_handle).Pass(), ui::SCALE_FACTOR_100P);
     }
 
     compositor_thread_.Start();
