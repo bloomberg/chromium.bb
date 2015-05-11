@@ -47,7 +47,7 @@ public abstract class PathUtils {
                 }
                 return paths;
             }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, suffix);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, suffix);
     }
 
     /**
