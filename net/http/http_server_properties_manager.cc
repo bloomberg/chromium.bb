@@ -27,7 +27,7 @@ const int64 kUpdateCacheDelayMs = 1000;
 // Time to wait before starting an update the preferences from the
 // http_server_properties_impl_ cache. Scheduling another update during this
 // period will reset the timer.
-const int64 kUpdatePrefsDelayMs = 5000;
+const int64 kUpdatePrefsDelayMs = 60000;
 
 // "version" 0 indicates, http_server_properties doesn't have "version"
 // property.
