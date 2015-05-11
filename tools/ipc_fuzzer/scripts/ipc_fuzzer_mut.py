@@ -41,10 +41,15 @@ class MutationalFuzzer:
         chrome_application_directory, self.ipc_replay_binary)
 
   def set_corpus(self):
-    input_directory = self.args.input_dir
-    entries = os.listdir(input_directory)
+    # Corpus should be set per job as a fuzzer-specific environment variable.
+    corpus = os.getenv('IPC_CORPUS_DIR', 'default')
+    corpus_directory = os.path.join(self.args.input_dir, corpus)
+    if not os.path.exists(corpus_directory):
+      sys.exit('Corpus directory "%s" not found.' % corpus_directory)
+
+    entries = os.listdir(corpus_directory)
     entries = [i for i in entries if i.endswith(utils.IPCDUMP_EXTENSION)]
-    self.corpus = [os.path.join(input_directory, entry) for entry in entries]
+    self.corpus = [os.path.join(corpus_directory, entry) for entry in entries]
 
   def create_mutated_ipcdump_testcase(self):
     ipcdumps = ','.join(random.sample(self.corpus, IPCDUMP_MERGE_LIMIT))
