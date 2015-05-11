@@ -4,23 +4,54 @@
 
 package org.chromium.net.test;
 
+import org.chromium.base.Log;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A base class for simple test servers. */
 public abstract class BaseTestServer implements Runnable {
+    private static final String TAG = Log.makeTag("net.test");
+
     private AtomicBoolean mKeepRunning;
+    private final Object mLock;
+    private boolean mRunning;
 
     /** Creates a test server. */
     public BaseTestServer() {
         mKeepRunning = new AtomicBoolean(true);
+        mLock = new Object();
     }
 
     /** Accepts incoming connections until stopped via stop(). */
     public void run() {
-        mKeepRunning.set(true);
+        serverHasStarted();
 
-        while (mKeepRunning.get()) {
-            accept();
+        try {
+            while (mKeepRunning.get()) {
+                accept();
+            }
+        } finally {
+            serverHasStopped();
+        }
+    }
+
+    /** Waits for the server to start. */
+    public void waitForServerToStart() {
+        synchronized (mLock) {
+            while (!mRunning) {
+                try {
+                    mLock.wait();
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Interrupted while waiting for server to stop.", e);
+                }
+            }
+        }
+    }
+
+    private void serverHasStarted() {
+        synchronized (mLock) {
+            mRunning = true;
+            mLock.notifyAll();
         }
     }
 
@@ -33,5 +64,12 @@ public abstract class BaseTestServer implements Runnable {
     /** Stops the server. */
     public void stop() {
         mKeepRunning.set(false);
+    }
+
+    private void serverHasStopped() {
+        synchronized (mLock) {
+            mRunning = false;
+            mLock.notifyAll();
+        }
     }
 }

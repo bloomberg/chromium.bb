@@ -1399,6 +1399,7 @@
           },
           'dependencies': [
             'url_request_failed_job_java',
+            '../base/base.gyp:base_java'
           ],
           'includes': [ '../build/java.gypi' ],
         },

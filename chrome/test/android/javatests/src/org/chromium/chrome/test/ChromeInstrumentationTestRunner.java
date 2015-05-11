@@ -87,6 +87,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
         mHttpServer = new TestHttpServer(Environment.getExternalStorageDirectory(), 8000);
         mHttpServerThread = new Thread(mHttpServer);
         mHttpServerThread.start();
+        mHttpServer.waitForServerToStart();
     }
 
     private static class TestHttpServer extends BaseHttpTestServer {
