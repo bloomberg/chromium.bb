@@ -46,7 +46,10 @@ class COMPOSITOR_EXPORT ClipTransformRecorder {
     TRANSFORM,
   };
   const PaintContext& context_;
-  std::vector<Closer> closers_;
+  // If someone needs to do more than this many operations with a single
+  // ClipTransformRecorder then increase the size of the closers_ array.
+  Closer closers_[4];
+  size_t num_closers_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipTransformRecorder);
 };
