@@ -410,7 +410,9 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // its |lpValue| parameter persist until |DeleteProcThreadAttributeList| is
   // called; StartupInformation's destructor makes such a call.
   DWORD64 mitigations;
-  HANDLE inherit_handle_list[2];
+
+  std::vector<HANDLE> inherited_handle_list;
+
   base::string16 desktop = policy_base->GetAlternateDesktop();
   if (!desktop.empty()) {
     startup_info.startup_info()->lpDesktop =
@@ -434,18 +436,20 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
     HANDLE stdout_handle = policy_base->GetStdoutHandle();
     HANDLE stderr_handle = policy_base->GetStderrHandle();
-    int inherit_handle_count = 0;
+
     if (stdout_handle != INVALID_HANDLE_VALUE)
-      inherit_handle_list[inherit_handle_count++] = stdout_handle;
+      inherited_handle_list.push_back(stdout_handle);
+
     // Handles in the list must be unique.
     if (stderr_handle != stdout_handle && stderr_handle != INVALID_HANDLE_VALUE)
-      inherit_handle_list[inherit_handle_count++] = stderr_handle;
+      inherited_handle_list.push_back(stderr_handle);
 
-    HandleList handle_list = policy_base->GetHandlesBeingShared();
-    for (auto handle : handle_list)
-      inherit_handle_list[inherit_handle_count++] = handle;
+    HandleList policy_handle_list = policy_base->GetHandlesBeingShared();
 
-    if (inherit_handle_count)
+    for (auto handle : policy_handle_list)
+      inherited_handle_list.push_back(handle);
+
+    if (inherited_handle_list.size())
       ++attribute_count;
 
     if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
@@ -465,11 +469,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       }
     }
 
-    if (inherit_handle_count) {
+    if (inherited_handle_list.size()) {
       if (!startup_info.UpdateProcThreadAttribute(
               PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-              inherit_handle_list,
-              sizeof(inherit_handle_list[0]) * inherit_handle_count)) {
+              &inherited_handle_list[0],
+              sizeof(HANDLE) * inherited_handle_list.size())) {
         return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
       }
       startup_info.startup_info()->dwFlags |= STARTF_USESTDHANDLES;
