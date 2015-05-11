@@ -1,12 +1,14 @@
 {
   "Android GN": {
     "additional_compile_targets": [
-      "chrome_shell_apk"
+      "chrome_shell_apk",
+      "mandoline:all"
     ]
   },
   "Android GN (dbg)": {
     "additional_compile_targets": [
-      "chrome_shell_apk"
+      "chrome_shell_apk",
+      "mandoline:all"
     ]
   },
   "Android Tests": {
