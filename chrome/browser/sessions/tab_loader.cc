@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -195,6 +196,16 @@ void TabLoader::HandleTabClosedOrLoaded(NavigationController* controller) {
 
 void TabLoader::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // On Windows and Mac this mechanism is only experimentally enabled.
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+  // If memory pressure integration isn't explicitly enabled then ignore these
+  // calls.
+  std::string react_to_memory_pressure = variations::GetVariationParamValue(
+      "IntelligentSessionRestore", "ReactToMemoryPressure");
+  if (react_to_memory_pressure != "true")
+    return;
+#endif
+
   // When receiving a resource pressure level warning, we stop pre-loading more
   // tabs since we are running in danger of loading more tabs by throwing out
   // old ones.
