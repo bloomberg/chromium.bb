@@ -378,6 +378,12 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   DCHECK(surface_id_.is_null());
 }
 
+void RenderWidgetHostViewAndroid::Blur() {
+  host_->SetInputMethodActive(false);
+  host_->Blur();
+  if (overscroll_controller_)
+    overscroll_controller_->Disable();
+}
 
 bool RenderWidgetHostViewAndroid::OnMessageReceived(
     const IPC::Message& message) {
@@ -525,13 +531,6 @@ void RenderWidgetHostViewAndroid::Focus() {
   host_->SetInputMethodActive(true);
   if (overscroll_controller_)
     overscroll_controller_->Enable();
-}
-
-void RenderWidgetHostViewAndroid::Blur() {
-  host_->SetInputMethodActive(false);
-  host_->Blur();
-  if (overscroll_controller_)
-    overscroll_controller_->Disable();
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {

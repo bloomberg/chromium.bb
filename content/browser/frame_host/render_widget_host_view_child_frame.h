@@ -60,7 +60,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                    const gfx::Rect& bounds) override;
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
-  void Blur() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
   void TextInputTypeChanged(ui::TextInputType type,

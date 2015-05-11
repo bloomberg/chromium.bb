@@ -201,9 +201,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void MovePluginWindows(
       const std::vector<WebPluginGeometry>& moves) = 0;
 
-  // Take focus from the associated View component.
-  virtual void Blur() = 0;
-
   // Sets the cursor to the one associated with the specified cursor_type
   virtual void UpdateCursor(const WebCursor& cursor) = 0;
 

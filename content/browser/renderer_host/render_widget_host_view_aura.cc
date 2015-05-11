@@ -866,10 +866,6 @@ void RenderWidgetHostViewAura::Focus() {
     window_->Focus();
 }
 
-void RenderWidgetHostViewAura::Blur() {
-  window_->Blur();
-}
-
 bool RenderWidgetHostViewAura::HasFocus() const {
   return window_->HasFocus();
 }

@@ -994,11 +994,6 @@ void RenderWidgetHostViewMac::Focus() {
   [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
 }
 
-void RenderWidgetHostViewMac::Blur() {
-  UnlockMouse();
-  [[cocoa_view_ window] makeFirstResponder:nil];
-}
-
 bool RenderWidgetHostViewMac::HasFocus() const {
   return [[cocoa_view_ window] firstResponder] == cocoa_view_;
 }

@@ -96,7 +96,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override {
   }
   void Focus() override {}
-  void Blur() override {}
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override {}
   void TextInputTypeChanged(ui::TextInputType type,

@@ -77,6 +77,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               ContentViewCoreImpl* content_view_core);
   ~RenderWidgetHostViewAndroid() override;
 
+  void Blur();
+
   // RenderWidgetHostView implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
@@ -92,7 +94,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void MovePluginWindows(const std::vector<WebPluginGeometry>& moves) override;
   void Focus() override;
-  void Blur() override;
   bool HasFocus() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void Show() override;

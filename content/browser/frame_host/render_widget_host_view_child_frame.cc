@@ -130,9 +130,6 @@ void RenderWidgetHostViewChildFrame::MovePluginWindows(
     const std::vector<WebPluginGeometry>& moves) {
 }
 
-void RenderWidgetHostViewChildFrame::Blur() {
-}
-
 void RenderWidgetHostViewChildFrame::UpdateCursor(const WebCursor& cursor) {
 }
 
