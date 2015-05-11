@@ -2535,8 +2535,6 @@
         'webcore_html_files': [
             'html/ClassList.cpp',
             'html/ClassList.h',
-            'html/CrossOriginAttribute.cpp',
-            'html/CrossOriginAttribute.h',
             'html/DOMFormData.cpp',
             'html/DOMFormData.h',
             'html/DocumentNameCollection.cpp',

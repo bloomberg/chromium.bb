@@ -38,10 +38,10 @@ void prefetchDNS(const String& hostname)
         prescientNetworking->prefetchDNS(hostname);
 }
 
-void preconnect(const KURL& url, const CrossOriginAttributeValue crossOrigin)
+void preconnect(const KURL& url)
 {
     if (WebPrescientNetworking* prescientNetworking = Platform::current()->prescientNetworking())
-        prescientNetworking->preconnect(url, crossOrigin);
+        prescientNetworking->preconnect(url);
 }
 
 } // namespace blink

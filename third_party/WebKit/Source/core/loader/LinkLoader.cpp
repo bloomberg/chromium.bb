@@ -37,7 +37,6 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Settings.h"
-#include "core/html/CrossOriginAttribute.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/LinkHeader.h"
@@ -129,19 +128,14 @@ static void dnsPrefetchIfNeeded(const LinkRelAttribute& relAttribute, const KURL
     }
 }
 
-static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const CrossOriginAttributeValue crossOrigin)
+static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document)
 {
     if (relAttribute.isPreconnect() && href.isValid()) {
         ASSERT(RuntimeEnabledFeatures::linkPreconnectEnabled());
         Settings* settings = document.settings();
-        if (settings && settings->logDnsPrefetchAndPreconnect()) {
+        if (settings && settings->logDnsPrefetchAndPreconnect())
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preconnect triggered for " + href.host())));
-            if (crossOrigin != CrossOriginAttributeNotSet) {
-                document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel,
-                    String("Preconnect CORS setting is ") + String((crossOrigin == CrossOriginAttributeAnonymous) ? "anonymous" : "use-credentials")));
-            }
-        }
-        preconnect(href, crossOrigin);
+        preconnect(href);
     }
 }
 
@@ -191,7 +185,7 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
             dnsPrefetchIfNeeded(relAttribute, url, *document);
 
         if (RuntimeEnabledFeatures::linkPreconnectEnabled())
-            preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin());
+            preconnectIfNeeded(relAttribute, url, *document);
 
         // FIXME: Add more supported headers as needed.
     }
@@ -200,11 +194,10 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
 
 bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicString& crossOriginMode, const String& type, const String& as, const KURL& href, Document& document)
 {
-    // TODO(yoav): Convert all uses of the CrossOriginAttribute to CrossOriginAttributeValue. crbug.com/486689
     // FIXME(crbug.com/463266): We're ignoring type here. Maybe we shouldn't.
     dnsPrefetchIfNeeded(relAttribute, href, document);
 
-    preconnectIfNeeded(relAttribute, href, document, crossOriginAttributeValue(crossOriginMode));
+    preconnectIfNeeded(relAttribute, href, document);
 
     preloadIfNeeded(relAttribute, href, document, as);
 

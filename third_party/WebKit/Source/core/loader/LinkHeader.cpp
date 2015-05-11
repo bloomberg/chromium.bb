@@ -40,11 +40,6 @@ static bool isValidParameterValueChar(CharType chr)
     return !isWhitespace(chr) && !isValidParameterValueEnd(chr);
 }
 
-static bool isExtensionParameter(LinkHeader::LinkParameterName name)
-{
-    return name > LinkHeader::LinkParameterAnchor;
-}
-
 // Before:
 //
 // <cat.jpg>; rel=preload
@@ -121,8 +116,6 @@ static LinkHeader::LinkParameterName paramterNameFromString(String name)
         return LinkHeader::LinkParameterRel;
     else if (equalIgnoringCase(name, "anchor"))
         return LinkHeader::LinkParameterAnchor;
-    else if (equalIgnoringCase(name, "crossorigin"))
-        return LinkHeader::LinkParameterCrossOrigin;
     return LinkHeader::LinkParameterUnknown;
 }
 
@@ -144,10 +137,11 @@ static bool parseParameterName(CharType*& position, CharType* end, LinkHeader::L
     skipWhile<CharType, isValidParameterNameChar>(position, end);
     CharType* nameEnd = position;
     skipWhile<CharType, isWhitespace>(position, end);
-    bool hasEqual = skipExactly<CharType>(position, end, '=');
+    if (!skipExactly<CharType>(position, end, '='))
+        return false;
     skipWhile<CharType, isWhitespace>(position, end);
     name = paramterNameFromString(String(nameStart, nameEnd - nameStart));
-    return hasEqual || isExtensionParameter(name);
+    return true;
 }
 
 // Before:
@@ -206,10 +200,8 @@ static bool parseParameterValue(CharType*& position, CharType* end, String& valu
     }
     valueEnd = position;
     skipWhile<CharType, isWhitespace>(position, end);
-    if ((!completeQuotes && valueStart == valueEnd) || (position != end && !isValidParameterValueEnd(*position))) {
-        value = String("");
+    if ((!completeQuotes && valueStart == valueEnd) || (position != end && !isValidParameterValueEnd(*position)))
         return false;
-    }
     if (hasQuotes)
         ++valueStart;
     if (completeQuotes)
@@ -225,8 +217,6 @@ void LinkHeader::setValue(LinkParameterName name, String value)
         m_rel = value.lower();
     else if (name == LinkParameterAnchor)
         m_isValid = false;
-    else if (name == LinkParameterCrossOrigin)
-        m_crossOrigin = crossOriginAttributeValue(value);
 }
 
 template <typename CharType>
@@ -238,8 +228,7 @@ static void findNextHeader(CharType*& position, CharType* end)
 
 template <typename CharType>
 LinkHeader::LinkHeader(CharType*& position, CharType* end)
-    : m_crossOrigin(CrossOriginAttributeNotSet)
-    , m_isValid(true)
+    : m_isValid(true)
 {
     if (!parseURL(position, end, m_url)) {
         m_isValid = false;
@@ -261,7 +250,7 @@ LinkHeader::LinkHeader(CharType*& position, CharType* end)
         }
 
         String parameterValue;
-        if (!parseParameterValue(position, end, parameterValue) && !isExtensionParameter(parameterName)) {
+        if (!parseParameterValue(position, end, parameterValue)) {
             findNextHeader(position, end);
             m_isValid = false;
             return;
