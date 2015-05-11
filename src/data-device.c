@@ -591,8 +591,7 @@ weston_pointer_start_drag(struct weston_pointer *pointer,
 			      &drag->base.data_source_listener);
 	}
 
-	weston_pointer_set_focus(pointer, NULL,
-				 wl_fixed_from_int(0), wl_fixed_from_int(0));
+	weston_pointer_clear_focus(pointer);
 	weston_pointer_start_grab(pointer, &drag->grab);
 
 	return 0;

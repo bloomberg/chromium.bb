@@ -1716,6 +1716,8 @@ weston_compositor_pick_view(struct weston_compositor *compositor,
 		return view;
 	}
 
+	*vx = wl_fixed_from_int(-1000000);
+	*vy = wl_fixed_from_int(-1000000);
 	return NULL;
 }
 
@@ -1760,10 +1762,7 @@ weston_view_unmap(struct weston_view *view)
 		if (keyboard && keyboard->focus == view->surface)
 			weston_keyboard_set_focus(keyboard, NULL);
 		if (pointer && pointer->focus == view)
-			weston_pointer_set_focus(pointer,
-						 NULL,
-						 wl_fixed_from_int(0),
-						 wl_fixed_from_int(0));
+			weston_pointer_clear_focus(pointer);
 		if (touch && touch->focus == view)
 			weston_touch_set_focus(touch, NULL);
 	}

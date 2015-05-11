@@ -82,7 +82,7 @@ pointer_focus_view_destroyed(struct wl_listener *listener, void *data)
 		container_of(listener, struct weston_pointer,
 			     focus_view_listener);
 
-	weston_pointer_set_focus(pointer, NULL, 0, 0);
+	weston_pointer_clear_focus(pointer);
 }
 
 static void
@@ -92,7 +92,7 @@ pointer_focus_resource_destroyed(struct wl_listener *listener, void *data)
 		container_of(listener, struct weston_pointer,
 			     focus_resource_listener);
 
-	weston_pointer_set_focus(pointer, NULL, 0, 0);
+	weston_pointer_clear_focus(pointer);
 }
 
 static void
@@ -498,6 +498,9 @@ weston_pointer_create(struct weston_seat *seat)
 	wl_signal_add(&seat->compositor->output_destroyed_signal,
 		      &pointer->output_destroy_listener);
 
+	pointer->sx = wl_fixed_from_int(-1000000);
+	pointer->sy = wl_fixed_from_int(-1000000);
+
 	return pointer;
 }
 
@@ -628,6 +631,26 @@ seat_send_updated_caps(struct weston_seat *seat)
 	wl_signal_emit(&seat->updated_caps_signal, seat);
 }
 
+
+/** Clear the pointer focus
+ *
+ * \param pointer the pointer to clear focus for.
+ *
+ * This can be used to unset pointer focus and set the co-ordinates to the
+ * arbitrary values we use for the no focus case.
+ *
+ * There's no requirement to use this function.  For example, passing the
+ * results of a weston_compositor_pick_view() directly to
+ * weston_pointer_set_focus() will do the right thing when no view is found.
+ */
+WL_EXPORT void
+weston_pointer_clear_focus(struct weston_pointer *pointer)
+{
+	weston_pointer_set_focus(pointer, NULL,
+				 wl_fixed_from_int(-1000000),
+				 wl_fixed_from_int(-1000000));
+}
+
 WL_EXPORT void
 weston_pointer_set_focus(struct weston_pointer *pointer,
 			 struct weston_view *view,
@@ -698,6 +721,9 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 	pointer->focus_view_listener.notify = pointer_focus_view_destroyed;
 	pointer->sx = sx;
 	pointer->sy = sy;
+
+	assert(view || sx == wl_fixed_from_int(-1000000));
+	assert(view || sy == wl_fixed_from_int(-1000000));
 
 	wl_signal_emit(&pointer->focus_signal, pointer);
 }
@@ -2271,9 +2297,7 @@ weston_seat_release_pointer(struct weston_seat *seat)
 
 	seat->pointer_device_count--;
 	if (seat->pointer_device_count == 0) {
-		weston_pointer_set_focus(pointer, NULL,
-					 wl_fixed_from_int(0),
-					 wl_fixed_from_int(0));
+		weston_pointer_clear_focus(pointer);
 		weston_pointer_cancel_grab(pointer);
 
 		if (pointer->sprite)

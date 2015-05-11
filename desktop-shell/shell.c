@@ -3218,9 +3218,7 @@ popup_grab_focus(struct weston_pointer_grab *grab)
 	    wl_resource_get_client(view->surface->resource) == client) {
 		weston_pointer_set_focus(pointer, view, sx, sy);
 	} else {
-		weston_pointer_set_focus(pointer, NULL,
-					 wl_fixed_from_int(0),
-					 wl_fixed_from_int(0));
+		weston_pointer_clear_focus(pointer);
 	}
 }
 

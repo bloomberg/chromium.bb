@@ -589,9 +589,7 @@ exposay_transition_active(struct desktop_shell *shell)
 	if (pointer) {
 		weston_pointer_start_grab(pointer,
 		                          &shell->exposay.grab_ptr);
-		weston_pointer_set_focus(pointer, NULL,
-				         pointer->x,
-					 pointer->y);
+		weston_pointer_clear_focus(pointer);
 	}
 	wl_list_for_each(shell_output, &shell->output_list, link) {
 		enum exposay_layout_state state;
