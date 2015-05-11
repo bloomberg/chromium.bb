@@ -249,9 +249,12 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
         FloatSize viewportSize;
         if (!determineViewport(viewportSize))
             return 0;
+        float dimension = dimensionForLengthMode(mode, viewportSize);
+        if (!dimension)
+            return 0;
         // LengthTypePercentage is represented with 100% = 100.0.
         // Good for accuracy but could eventually be changed.
-        return value * 100 / dimensionForLengthMode(mode, viewportSize);
+        return value * 100 / dimension;
     }
     case LengthTypeEMS:
         return convertValueFromUserUnitsToEMS(computedStyleForLengthResolving(m_context), value);
