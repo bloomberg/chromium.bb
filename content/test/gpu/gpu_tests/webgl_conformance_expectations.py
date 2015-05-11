@@ -29,11 +29,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
   def SetExpectations(self):
     # Fails on all platforms
-    self.Fail(
-        'conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html',
-        bug=478570)
-    self.Fail('conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html',
-        bug=478570)
     self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/fragdata.html',
@@ -53,8 +48,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/' +
               'ternary-operators-in-global-initializers.html',
         ['win'], bug=415694)
-    self.Fail('conformance/glsl/misc/struct-specifiers-in-uniforms.html',
-        ['win'], bug=433412)
     self.Fail('conformance/glsl/bugs/' +
               'pow-of-small-constant-in-user-defined-function.html',
         ['win'], bug=485641)
