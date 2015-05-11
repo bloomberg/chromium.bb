@@ -1,5 +1,3 @@
-# This line is read by update.sh and other scripts in tools/clang/scripts
-# Note: The spaces are significant.
 set(LIBRARYNAME BlinkGCPlugin)
 
 set(plugin_sources
@@ -23,7 +21,7 @@ if(WIN32)
   endforeach()
   set_property(TARGET clang APPEND PROPERTY SOURCES ${absolute_sources})
 else()
-  add_llvm_loadable_module("lib${LIBRARYNAME} ${plugin_sources}")
+  add_llvm_loadable_module("lib${LIBRARYNAME}" ${plugin_sources})
   add_dependencies("lib${LIBRARYNAME}" clang)
 
   cr_install(TARGETS "lib${LIBRARYNAME}" LIBRARY DESTINATION lib)
