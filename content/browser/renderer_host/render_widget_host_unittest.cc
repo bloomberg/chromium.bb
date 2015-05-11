@@ -245,6 +245,9 @@ class TestView : public TestRenderWidgetHostView {
   void ClearMockPhysicalBackingSize() {
     use_fake_physical_backing_size_ = false;
   }
+  void SetScreenInfo(const blink::WebScreenInfo& screen_info) {
+    screen_info_ = screen_info;
+  }
 
   // RenderWidgetHostView override.
   gfx::Rect GetViewBounds() const override { return bounds_; }
@@ -270,6 +273,9 @@ class TestView : public TestRenderWidgetHostView {
       return mock_physical_backing_size_;
     return TestRenderWidgetHostView::GetPhysicalBackingSize();
   }
+  void GetScreenInfo(blink::WebScreenInfo* screen_info) override {
+    *screen_info = screen_info_;
+  }
 #if defined(USE_AURA)
   ~TestView() override {
     // Simulate the mouse exit event dispatched when an aura window is
@@ -292,6 +298,7 @@ class TestView : public TestRenderWidgetHostView {
   bool use_fake_physical_backing_size_;
   gfx::Size mock_physical_backing_size_;
   InputEventAckState ack_result_;
+  blink::WebScreenInfo screen_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
@@ -604,8 +611,8 @@ class RenderWidgetHostWithSourceTest
 // -----------------------------------------------------------------------------
 
 TEST_F(RenderWidgetHostTest, Resize) {
-  // The initial bounds is the empty rect, and the screen info hasn't been sent
-  // yet, so setting it to the same thing shouldn't send the resize message.
+  // The initial bounds is the empty rect, so setting it to the same thing
+  // shouldn't send the resize message.
   view_->set_bounds(gfx::Rect());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
@@ -717,6 +724,46 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+}
+
+// Test that a resize event is sent if WasResized() is called after a
+// WebScreenInfo change.
+TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
+  blink::WebScreenInfo screen_info;
+  screen_info.deviceScaleFactor = 1.f;
+  screen_info.rect = blink::WebRect(0, 0, 800, 600);
+  screen_info.availableRect = blink::WebRect(0, 0, 800, 600);
+  screen_info.orientationAngle = 0;
+  screen_info.orientationType = blink::WebScreenOrientationPortraitPrimary;
+
+  view_->SetScreenInfo(screen_info);
+  host_->WasResized();
+  EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  process_->sink().ClearMessages();
+
+  screen_info.orientationAngle = 180;
+  screen_info.orientationType = blink::WebScreenOrientationLandscapePrimary;
+
+  view_->SetScreenInfo(screen_info);
+  host_->WasResized();
+  EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  process_->sink().ClearMessages();
+
+  screen_info.deviceScaleFactor = 2.f;
+
+  view_->SetScreenInfo(screen_info);
+  host_->WasResized();
+  EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  process_->sink().ClearMessages();
+
+  // No screen change.
+  view_->SetScreenInfo(screen_info);
+  host_->WasResized();
+  EXPECT_FALSE(host_->resize_ack_pending_);
+  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 }
 
 // Test for crbug.com/25097.  If a renderer crashes between a resize and the

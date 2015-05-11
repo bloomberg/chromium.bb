@@ -170,7 +170,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_hidden_(hidden),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
-      screen_info_out_of_date_(false),
       auto_resize_enabled_(false),
       waiting_for_screen_rects_ack_(false),
       needs_repainting_on_restore_(false),
@@ -580,11 +579,7 @@ bool RenderWidgetHostImpl::GetResizeParams(
     ViewMsg_Resize_Params* resize_params) {
   *resize_params = ViewMsg_Resize_Params();
 
-  if (!screen_info_) {
-    screen_info_.reset(new blink::WebScreenInfo);
-    GetWebScreenInfo(screen_info_.get());
-  }
-  resize_params->screen_info = *screen_info_;
+  GetWebScreenInfo(&resize_params->screen_info);
   resize_params->resizer_rect = GetRootWindowResizerRect();
 
   if (view_) {
@@ -603,8 +598,8 @@ bool RenderWidgetHostImpl::GetResizeParams(
       old_resize_params_->new_size != resize_params->new_size ||
       (old_resize_params_->physical_backing_size.IsEmpty() &&
        !resize_params->physical_backing_size.IsEmpty());
-  bool dirty =
-      size_changed || screen_info_out_of_date_ ||
+  bool dirty = size_changed ||
+      old_resize_params_->screen_info != resize_params->screen_info ||
       old_resize_params_->physical_backing_size !=
           resize_params->physical_backing_size ||
       old_resize_params_->is_fullscreen_granted !=
@@ -1138,8 +1133,9 @@ void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
     view_->GetScreenInfo(result);
   else
     RenderWidgetHostViewBase::GetDefaultScreenInfo(result);
+  // TODO(sievers): find a way to make this done another way so the method
+  // can be const.
   latency_tracker_.set_device_scale_factor(result->deviceScaleFactor);
-  screen_info_out_of_date_ = false;
 }
 
 const NativeWebKeyboardEvent*
@@ -1154,13 +1150,7 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   // The resize message (which may not happen immediately) will carry with it
   // the screen info as well as the new size (if the screen has changed scale
   // factor).
-  InvalidateScreenInfo();
   WasResized();
-}
-
-void RenderWidgetHostImpl::InvalidateScreenInfo() {
-  screen_info_out_of_date_ = true;
-  screen_info_.reset();
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(

@@ -2528,9 +2528,6 @@ void RenderWidgetHostViewAura::OnShowContextMenu() {
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
-  if (HasDisplayPropertyChanged(window_))
-    host_->InvalidateScreenInfo();
-
   SnapToPhysicalPixelBoundary();
   // Don't recursively call SetBounds if this bounds update is the result of
   // a Window::SetBoundsInternal call.
