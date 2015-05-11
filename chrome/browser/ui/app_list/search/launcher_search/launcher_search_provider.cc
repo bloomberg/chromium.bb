@@ -30,6 +30,9 @@ LauncherSearchProvider::~LauncherSearchProvider() {
 
 void LauncherSearchProvider::Start(bool /*is_voice_query*/,
                                    const base::string16& query) {
+  // Clear previously added search results.
+  ClearResults();
+
   DelayQuery(base::Bind(&LauncherSearchProvider::StartInternal,
                         weak_ptr_factory_.GetWeakPtr(), query));
 }
@@ -39,7 +42,9 @@ void LauncherSearchProvider::Stop() {
   // order not to start query after Stop() is called.
   query_timer_.Stop();
 
-  // Clear all search results of the previous query.
+  // Clear all search results of the previous query. Since results are
+  // duplicated when being exported from the map, there are no external pointers
+  // to |extension_results_|, so it is safe to clear the map.
   STLDeleteValues(&extension_results_);
 
   Service* service = Service::Get(profile_);
