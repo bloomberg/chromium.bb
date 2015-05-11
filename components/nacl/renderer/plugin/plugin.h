@@ -80,6 +80,8 @@ class Plugin : public pp::Instance {
   // should include a time-out at which point we declare the
   // nacl_ready_state to be done, and let the normal crash detection
   // mechanism(s) take over.
+  // Please note that a call to this function takes over ownership of the
+  // file_info pointer.
   void LoadNaClModule(PP_NaClFileInfo file_info,
                       bool uses_nonsfi_mode,
                       PP_NaClAppProcessType process_type);
@@ -89,6 +91,8 @@ class Plugin : public pp::Instance {
   // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
   // Returns NULL or the NaClSubprocess of the new helper NaCl module.
+  // Please note that a call to this function takes over ownership of the
+  // file_info pointer.
   NaClSubprocess* LoadHelperNaClModule(const std::string& helper_url,
                                        PP_NaClFileInfo file_info,
                                        ErrorInfo* error_info);

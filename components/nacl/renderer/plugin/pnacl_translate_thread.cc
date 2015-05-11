@@ -178,14 +178,12 @@ void PnaclTranslateThread::DoTranslate() {
   PnaclResources::ResourceType compiler_type = pnacl_options_->use_subzero
                                                    ? PnaclResources::SUBZERO
                                                    : PnaclResources::LLC;
-  // On success, ownership of file_info is transferred.
+  // Ownership of file_info is transferred here.
   PP_NaClFileInfo file_info = resources_->TakeFileInfo(compiler_type);
   const std::string& url = resources_->GetUrl(compiler_type);
   NaClSubprocess* compiler_subprocess =
       plugin_->LoadHelperNaClModule(url, file_info, &error_info);
   if (compiler_subprocess == NULL) {
-    if (file_info.handle != PP_kInvalidFileHandle)
-      CloseFileHandle(file_info.handle);
     TranslateFailed(PP_NACL_ERROR_PNACL_LLC_SETUP,
                     "Compile process could not be created: " +
                     error_info.message());
@@ -352,12 +350,10 @@ bool PnaclTranslateThread::RunLdSubprocess() {
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
   int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
   PP_NaClFileInfo ld_file_info = resources_->TakeFileInfo(PnaclResources::LD);
-  // On success, ownership of ld_file_info is transferred.
+  // Ownership of ld_file_info is transferred here.
   nacl::scoped_ptr<NaClSubprocess> ld_subprocess(plugin_->LoadHelperNaClModule(
       resources_->GetUrl(PnaclResources::LD), ld_file_info, &error_info));
   if (ld_subprocess.get() == NULL) {
-    if (ld_file_info.handle != PP_kInvalidFileHandle)
-      CloseFileHandle(ld_file_info.handle);
     TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
                     "Link process could not be created: " +
                     error_info.message());
