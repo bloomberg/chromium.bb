@@ -122,7 +122,8 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath(), kProcessID));
   }
 
-  void SetUpWithHelper(EmbeddedWorkerTestHelper* helper) {
+  void SetUpWithHelper(EmbeddedWorkerTestHelper* helper,
+                       bool set_main_script_http_response_info = true) {
     helper_.reset(helper);
 
     registration_ = new ServiceWorkerRegistration(
@@ -146,15 +147,16 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(SERVICE_WORKER_OK, status);
 
-    net::HttpResponseInfo http_info;
-    http_info.ssl_info.cert =
-        net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                                "ok_cert.pem");
-    EXPECT_TRUE(http_info.ssl_info.is_valid());
-    http_info.ssl_info.security_bits = 0x100;
-    // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-    http_info.ssl_info.connection_status = 0x300039;
-    version_->SetMainScriptHttpResponseInfo(http_info);
+    if (set_main_script_http_response_info) {
+      net::HttpResponseInfo http_info;
+      http_info.ssl_info.cert =
+          net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+      EXPECT_TRUE(http_info.ssl_info.is_valid());
+      http_info.ssl_info.security_bits = 0x100;
+      // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+      http_info.ssl_info.connection_status = 0x300039;
+      version_->SetMainScriptHttpResponseInfo(http_info);
+    }
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(kProcessID, MSG_ROUTING_NONE, kProviderID,
@@ -617,6 +619,23 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   EXPECT_EQ(200, request_->GetResponseCode());
   EXPECT_EQ("PASS", url_request_delegate_.response_data());
   EXPECT_FALSE(HasInflightRequests());
+}
+
+// TODO(horo): Remove this test when crbug.com/485900 is fixed.
+TEST_F(ServiceWorkerURLRequestJobTest, MainScriptHTTPResponseInfoNotSet) {
+  // Shouldn't crash if MainScriptHttpResponseInfo is not set.
+  SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath(), kProcessID),
+                  false);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
+  request_->set_method("GET");
+  request_->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(200, request_->GetResponseCode());
+  EXPECT_EQ("", url_request_delegate_.response_data());
 }
 
 // TODO(kinuko): Add more tests with different response data and also for
