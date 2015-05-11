@@ -690,10 +690,6 @@ crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
 crbug.com/449264 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsManualRebaseline ]
 
-# This test needs to be updated to use a non-svg font.
-crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failure ]
-crbug.com/242735 virtual/slimmingpaint/fast/css/ex-unit-with-no-x-height.html [ Skip ]
-
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Linux Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 
