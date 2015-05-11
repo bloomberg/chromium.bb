@@ -239,13 +239,11 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
         base::TimeDelta::FromMilliseconds(250));
   }
 
-  // To avoid unnecessary work, only post this task if there is a chance of work
-  // to be done.  AttemptRead() may still ignore this call for other reasons.
-  if (!rendered_end_of_stream_ && !HaveReachedBufferingCap(effective_frames)) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&VideoRendererImpl::AttemptRead,
-                                      weak_factory_.GetWeakPtr()));
-  }
+  // Always post this task, it will acquire new frames if necessary and since it
+  // happens on another thread, even if we don't have room in the queue now, by
+  // the time it runs (may be delayed up to 50ms for complex decodes!) we might.
+  task_runner_->PostTask(FROM_HERE, base::Bind(&VideoRendererImpl::AttemptRead,
+                                               weak_factory_.GetWeakPtr()));
 
   return result;
 }
@@ -685,22 +683,17 @@ void VideoRendererImpl::MaybeStopSinkAfterFirstPaint() {
 
 bool VideoRendererImpl::HaveReachedBufferingCap() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return HaveReachedBufferingCap(use_new_video_renderering_path_
-                                     ? algorithm_->EffectiveFramesQueued()
-                                     : 0);
-}
+  const size_t kMaxVideoFrames = limits::kMaxVideoFrames;
 
-bool VideoRendererImpl::HaveReachedBufferingCap(size_t effective_frames) {
   if (use_new_video_renderering_path_) {
     // When the display rate is less than the frame rate, the effective frames
     // queued may be much smaller than the actual number of frames queued.  Here
     // we ensure that frames_queued() doesn't get excessive.
-    return effective_frames >= static_cast<size_t>(limits::kMaxVideoFrames) ||
-           algorithm_->frames_queued() >=
-               static_cast<size_t>(3 * limits::kMaxVideoFrames);
+    return algorithm_->EffectiveFramesQueued() >= kMaxVideoFrames ||
+           algorithm_->frames_queued() >= 3 * kMaxVideoFrames;
   }
 
-  return ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames);
+  return ready_frames_.size() >= kMaxVideoFrames;
 }
 
 void VideoRendererImpl::StartSink() {

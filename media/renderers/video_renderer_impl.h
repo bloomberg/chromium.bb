@@ -135,11 +135,8 @@ class MEDIA_EXPORT VideoRendererImpl
   // false it Stop() on |sink_|.
   void MaybeStopSinkAfterFirstPaint();
 
-  // Returns true if there is no more room for additional buffered frames.  The
-  // overloaded method is the same, but allows skipping an internal call to
-  // EffectiveFramesQueued() if that value is already known.
+  // Returns true if there is no more room for additional buffered frames.
   bool HaveReachedBufferingCap();
-  bool HaveReachedBufferingCap(size_t effective_frames);
 
   // Starts or stops |sink_| respectively. Do not call while |lock_| is held.
   void StartSink();
