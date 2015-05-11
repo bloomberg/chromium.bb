@@ -7,10 +7,21 @@
 """Copies files to a directory."""
 
 import optparse
+import os
 import shutil
 import sys
 
 from util import build_utils
+
+
+def _get_all_files(base):
+  """Returns a list of all the files in |base|. Each entry is relative to the
+  last path entry of |base|."""
+  result = []
+  dirname = os.path.dirname(base)
+  for root, _, files in os.walk(base):
+    result.extend([os.path.join(root[len(dirname):], f) for f in files])
+  return result
 
 
 def main(args):
@@ -38,13 +49,24 @@ def main(args):
   for file_arg in options.files:
     files += build_utils.ParseGypList(file_arg)
 
+  deps = []
+
   for f in files:
-    shutil.copy(f, options.dest)
+    if os.path.isdir(f):
+      if not options.clear:
+        print ('To avoid stale files you must use --clear when copying '
+               'directories')
+        sys.exit(-1)
+      shutil.copytree(f, os.path.join(options.dest, os.path.basename(f)))
+      deps.extend(_get_all_files(f))
+    else:
+      shutil.copy(f, options.dest)
+      deps.append(f)
 
   if options.depfile:
     build_utils.WriteDepfile(
         options.depfile,
-        files + build_utils.GetPythonDependencies())
+        deps + build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)
