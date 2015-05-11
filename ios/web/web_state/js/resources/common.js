@@ -428,14 +428,6 @@ new function() {
     if (trimmedName) {
       return __gCrWeb.common.trim(trimmedName);
     }
-    trimmedName = element.getAttribute('autocomplete');
-    if (trimmedName && trimmedName !== 'off') {
-      return __gCrWeb.common.trim(trimmedName);
-    }
-    trimmedName = element.getAttribute('placeholder');
-    if (trimmedName) {
-      return __gCrWeb.common.trim(trimmedName);
-    }
     return '';
   };
 
