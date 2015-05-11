@@ -83,6 +83,11 @@ LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, Layo
             m_layoutOffset.height() + (!isFlipped ? layoutObject.borderTop() + layoutObject.paddingTop() : layoutObject.borderBottom() + layoutObject.paddingBottom()));
         m_pageLogicalHeightChanged = pageLogicalHeightChanged;
         m_isPaginated = true;
+    } else if (m_layoutObject.isSVG() && !m_layoutObject.isSVGRoot()) {
+        // Pagination inside SVG is not allowed.
+        m_flowThread = nullptr;
+        m_pageLogicalHeightChanged = false;
+        m_isPaginated = false;
     } else {
         // If we don't establish a new page height, then propagate the old page height and offset down.
         m_pageLogicalHeight = m_next->m_pageLogicalHeight;

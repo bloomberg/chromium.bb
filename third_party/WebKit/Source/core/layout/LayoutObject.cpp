@@ -666,6 +666,8 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
     // Not in the middle of layout so have to find the thread the slow way.
     LayoutObject* curr = const_cast<LayoutObject*>(this);
     while (curr) {
+        if (curr->isSVG() && !curr->isSVGRoot())
+            return nullptr;
         if (curr->isLayoutFlowThread())
             return toLayoutFlowThread(curr);
         LayoutObject* containingBlock = curr->containingBlock();
