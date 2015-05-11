@@ -1363,10 +1363,6 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 
 void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
                                   TabRendererData::NetworkState state) {
-  // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("461137 Tab::AdvanceLoadingAnimation1"));
-
   if (state == TabRendererData::NETWORK_STATE_WAITING) {
     ++loading_animation_frame_;
     // Waiting steps backwards.
@@ -1382,16 +1378,8 @@ void Tab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
     immersive_loading_step_ = 0;
   }
   if (controller_->IsImmersiveStyle()) {
-    // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461137 Tab::AdvanceLoadingAnimation3"));
     SchedulePaintInRect(GetImmersiveBarRect());
   } else {
-    // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461137 Tab::AdvanceLoadingAnimation4"));
     ScheduleIconPaint();
   }
 }

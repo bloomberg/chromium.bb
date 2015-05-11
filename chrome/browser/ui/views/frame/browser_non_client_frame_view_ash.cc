@@ -204,11 +204,6 @@ int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
 }
 
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
-  // TODO(robliao): Remove ScopedTracker below once crbug.com/461137 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461137 BrowserNonClientFrameViewAsh::UpdateThrobber"));
-
   if (window_icon_)
     window_icon_->Update();
 }
