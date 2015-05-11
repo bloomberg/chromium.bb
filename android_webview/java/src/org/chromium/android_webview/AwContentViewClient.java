@@ -9,18 +9,20 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.provider.Browser;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
-import org.chromium.base.Log;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SelectActionMode;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+
+import java.net.URISyntaxException;
 
 /**
  * ContentViewClient implementation for WebView
@@ -60,8 +62,8 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
         // Perform generic parsing of the URI to turn it into an Intent.
         try {
             intent = Intent.parseUri(contentUrl, Intent.URI_INTENT_SCHEME);
-        } catch (Exception ex) {
-            Log.w(TAG, "Bad URI " + contentUrl, ex);
+        } catch (URISyntaxException ex) {
+            Log.w(TAG, "Bad URI " + contentUrl + ": " + ex.getMessage());
             return;
         }
         // Sanitize the Intent, ensuring web pages can not bypass browser

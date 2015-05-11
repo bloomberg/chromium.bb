@@ -27,6 +27,8 @@ import org.chromium.chrome.R;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
+import java.net.URISyntaxException;
+
 /**
  * Java side of Android implementation of the website settings UI.
  */
@@ -210,7 +212,7 @@ public class ConnectionInfoPopup implements OnClickListener {
                 i.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
                 i.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
                 mContext.startActivity(i);
-            } catch (Exception ex) {
+            } catch (URISyntaxException ex) {
                 // Do nothing intentionally.
             }
         }

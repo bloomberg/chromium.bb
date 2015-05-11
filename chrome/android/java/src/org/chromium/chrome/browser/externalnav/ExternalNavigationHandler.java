@@ -10,10 +10,10 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
+import android.util.Log;
 import android.webkit.WebView;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -78,8 +79,8 @@ public class ExternalNavigationHandler {
         // Perform generic parsing of the URI to turn it into an Intent.
         try {
             intent = Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
-        } catch (Exception ex) {
-            Log.w(TAG, "Bad URI " + params.getUrl(), ex);
+        } catch (URISyntaxException ex) {
+            Log.w(TAG, "Bad URI " + params.getUrl() + ": " + ex.getMessage());
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
@@ -282,7 +283,7 @@ public class ExternalNavigationHandler {
                 try {
                     currentUri = new URI(params.getUrl());
                     previousUri = new URI(params.getReferrerUrl());
-                } catch (Exception e) {
+                } catch (URISyntaxException e) {
                     currentUri = null;
                     previousUri = null;
                 }
@@ -294,7 +295,7 @@ public class ExternalNavigationHandler {
                     try {
                         previousIntent = Intent.parseUri(
                                 params.getReferrerUrl(), Intent.URI_INTENT_SCHEME);
-                    } catch (Exception e) {
+                    } catch (URISyntaxException e) {
                         previousIntent = null;
                     }
 
@@ -385,7 +386,7 @@ public class ExternalNavigationHandler {
         try {
             Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
             return intent.getPackage() != null || mDelegate.canResolveActivity(intent);
-        } catch (Exception ex) {
+        } catch (URISyntaxException ex) {
             // Ignore the error.
         }
         return false;

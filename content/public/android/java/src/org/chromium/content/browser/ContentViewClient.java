@@ -7,12 +7,14 @@ package org.chromium.content.browser;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.View;
 
-import org.chromium.base.Log;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+
+import java.net.URISyntaxException;
 
 /**
  *  Main callback class used by ContentView.
@@ -143,8 +145,8 @@ public class ContentViewClient {
         // Perform generic parsing of the URI to turn it into an Intent.
         try {
             intent = Intent.parseUri(intentUrl, Intent.URI_INTENT_SCHEME);
-        } catch (Exception ex) {
-            Log.w(TAG, "Bad URI " + intentUrl, ex);
+        } catch (URISyntaxException ex) {
+            Log.w(TAG, "Bad URI " + intentUrl + ": " + ex.getMessage());
             return;
         }
 
