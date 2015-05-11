@@ -23,6 +23,12 @@ namespace views {
 class VIEWS_EXPORT CustomButton : public Button,
                                   public gfx::AnimationDelegate {
  public:
+  // An enum describing the events on which a button should notify its listener.
+  enum NotifyAction {
+    NOTIFY_ON_PRESS,
+    NOTIFY_ON_RELEASE,
+  };
+
   // The menu button's class name.
   static const char kViewClassName[];
 
@@ -59,6 +65,11 @@ class VIEWS_EXPORT CustomButton : public Button,
   // See description above field.
   void set_animate_on_state_change(bool value) {
     animate_on_state_change_ = value;
+  }
+
+  // Sets the event on which the button should notify its listener.
+  void set_notify_action(NotifyAction notify_action) {
+    notify_action_ = notify_action;
   }
 
   void SetHotTracked(bool is_hot_tracked);
@@ -129,6 +140,9 @@ class VIEWS_EXPORT CustomButton : public Button,
 
   // See description above setter.
   bool request_focus_on_press_;
+
+  // The event on which the button should notify its listener.
+  NotifyAction notify_action_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButton);
 };

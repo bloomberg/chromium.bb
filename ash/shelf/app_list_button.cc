@@ -47,6 +47,7 @@ AppListButton::AppListButton(views::ButtonListener* listener,
   SetSize(gfx::Size(kShelfSize, kShelfSize));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
                       kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
+  set_notify_action(CustomButton::NOTIFY_ON_PRESS);
 }
 
 AppListButton::~AppListButton() {

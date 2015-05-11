@@ -128,6 +128,11 @@ bool CustomButton::OnMousePressed(const ui::MouseEvent& event) {
       SetState(STATE_PRESSED);
     if (request_focus_on_press_)
       RequestFocus();
+    if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_PRESS) {
+      NotifyClick(event);
+      // NOTE: We may be deleted at this point (by the listener's notification
+      // handler).
+    }
   }
   return true;
 }
@@ -152,7 +157,7 @@ void CustomButton::OnMouseReleased(const ui::MouseEvent& event) {
   }
 
   SetState(STATE_HOVERED);
-  if (IsTriggerableEvent(event)) {
+  if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_RELEASE) {
     NotifyClick(event);
     // NOTE: We may be deleted at this point (by the listener's notification
     // handler).
@@ -316,7 +321,8 @@ CustomButton::CustomButton(ButtonListener* listener)
       animate_on_state_change_(true),
       is_throbbing_(false),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
-      request_focus_on_press_(true) {
+      request_focus_on_press_(true),
+      notify_action_(NOTIFY_ON_RELEASE) {
   hover_animation_.reset(new gfx::ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
 }

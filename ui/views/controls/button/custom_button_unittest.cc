@@ -24,15 +24,25 @@ namespace views {
 
 namespace {
 
-class TestCustomButton : public CustomButton {
+class TestCustomButton : public CustomButton, public ButtonListener {
  public:
-  explicit TestCustomButton(ButtonListener* listener)
-      : CustomButton(listener) {
+  explicit TestCustomButton()
+      : CustomButton(this) {
   }
 
   ~TestCustomButton() override {}
 
+  void ButtonPressed(Button* sender, const ui::Event& event) override {
+    notified_ = true;
+  }
+
+  bool notified() { return notified_; }
+
+  void Reset() { notified_ = false; }
+
  private:
+  bool notified_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TestCustomButton);
 };
 
@@ -43,101 +53,141 @@ void PerformGesture(CustomButton* button, ui::EventType event_type) {
   button->OnGestureEvent(&gesture_event);
 }
 
-}  // namespace
+class CustomButtonTest : public ViewsTestBase {
+ public:
+  CustomButtonTest() {}
+  ~CustomButtonTest() override {}
 
-typedef ViewsTestBase CustomButtonTest;
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+
+    // Create a widget so that the CustomButton can query the hover state
+    // correctly.
+    widget_.reset(new Widget);
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 650, 650);
+    widget_->Init(params);
+    widget_->Show();
+
+    // Position the widget in a way so that it is under the cursor.
+    gfx::Point cursor = gfx::Screen::GetScreenFor(
+        widget_->GetNativeView())->GetCursorScreenPoint();
+    gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
+    widget_bounds.set_origin(cursor);
+    widget_->SetBounds(widget_bounds);
+
+    button_ = new TestCustomButton();
+    widget_->SetContentsView(button_);
+  }
+
+  Widget* widget() { return widget_.get(); }
+  TestCustomButton* button() { return button_; }
+
+ private:
+  scoped_ptr<Widget> widget_;
+  TestCustomButton* button_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomButtonTest);
+};
+
+}  // namespace
 
 // Tests that hover state changes correctly when visiblity/enableness changes.
 TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
-  // Create a widget so that the CustomButton can query the hover state
-  // correctly.
-  scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 650, 650);
-  widget->Init(params);
-  widget->Show();
-
   aura::test::TestCursorClient cursor_client(
-      widget->GetNativeView()->GetRootWindow());
-
-  // Position the widget in a way so that it is under the cursor.
-  gfx::Point cursor = gfx::Screen::GetScreenFor(
-      widget->GetNativeView())->GetCursorScreenPoint();
-  gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
-  widget_bounds.set_origin(cursor);
-  widget->SetBounds(widget_bounds);
-
-  TestCustomButton* button = new TestCustomButton(NULL);
-  widget->SetContentsView(button);
+      widget()->GetNativeView()->GetRootWindow());
 
   gfx::Point center(10, 10);
-  button->OnMousePressed(ui::MouseEvent(
+  button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(CustomButton::STATE_PRESSED, button->state());
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
 
-  button->OnMouseReleased(ui::MouseEvent(
+  button()->OnMouseReleased(ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_EQ(CustomButton::STATE_HOVERED, button->state());
+  EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
 
-  button->SetEnabled(false);
-  EXPECT_EQ(CustomButton::STATE_DISABLED, button->state());
+  button()->SetEnabled(false);
+  EXPECT_EQ(CustomButton::STATE_DISABLED, button()->state());
 
-  button->SetEnabled(true);
-  EXPECT_EQ(CustomButton::STATE_HOVERED, button->state());
+  button()->SetEnabled(true);
+  EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
 
-  button->SetVisible(false);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+  button()->SetVisible(false);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-  button->SetVisible(true);
-  EXPECT_EQ(CustomButton::STATE_HOVERED, button->state());
+  button()->SetVisible(true);
+  EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
 
   // In Aura views, no new hover effects are invoked if mouse events
   // are disabled.
   cursor_client.DisableMouseEvents();
 
-  button->SetEnabled(false);
-  EXPECT_EQ(CustomButton::STATE_DISABLED, button->state());
+  button()->SetEnabled(false);
+  EXPECT_EQ(CustomButton::STATE_DISABLED, button()->state());
 
-  button->SetEnabled(true);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+  button()->SetEnabled(true);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-  button->SetVisible(false);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+  button()->SetVisible(false);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-  button->SetVisible(true);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+  button()->SetVisible(true);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
+}
+
+// Tests the different types of NotifyActions.
+TEST_F(CustomButtonTest, NotifyAction) {
+  gfx::Point center(10, 10);
+
+  // By default the button should notify its listener on mouse release.
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
+  EXPECT_FALSE(button()->notified());
+
+  button()->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
+  EXPECT_TRUE(button()->notified());
+
+  // Set the notify action to its listener on mouse press.
+  button()->Reset();
+  button()->set_notify_action(CustomButton::NOTIFY_ON_PRESS);
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
+  EXPECT_TRUE(button()->notified());
+
+  // The button should no longer notify on mouse release.
+  button()->Reset();
+  button()->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_EQ(CustomButton::STATE_HOVERED, button()->state());
+  EXPECT_FALSE(button()->notified());
 }
 
 // Tests that gesture events correctly change the button state.
 TEST_F(CustomButtonTest, GestureEventsSetState) {
-  // Create a widget so that the CustomButton can query the hover state
-  // correctly.
-  scoped_ptr<Widget> widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 650, 650);
-  widget->Init(params);
-  widget->Show();
-
   aura::test::TestCursorClient cursor_client(
-      widget->GetNativeView()->GetRootWindow());
+      widget()->GetNativeView()->GetRootWindow());
 
-  TestCustomButton* button = new TestCustomButton(NULL);
-  widget->SetContentsView(button);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+  PerformGesture(button(), ui::ET_GESTURE_TAP_DOWN);
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
 
-  PerformGesture(button, ui::ET_GESTURE_TAP_DOWN);
-  EXPECT_EQ(CustomButton::STATE_PRESSED, button->state());
+  PerformGesture(button(), ui::ET_GESTURE_SHOW_PRESS);
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button()->state());
 
-  PerformGesture(button, ui::ET_GESTURE_SHOW_PRESS);
-  EXPECT_EQ(CustomButton::STATE_PRESSED, button->state());
-
-  PerformGesture(button, ui::ET_GESTURE_TAP_CANCEL);
-  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+  PerformGesture(button(), ui::ET_GESTURE_TAP_CANCEL);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button()->state());
 }
 
 // Ensure subclasses of CustomButton are correctly recognized as CustomButton.
