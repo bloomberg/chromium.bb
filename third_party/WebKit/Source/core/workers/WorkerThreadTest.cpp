@@ -83,7 +83,7 @@ public:
     WorkerThreadForTest(
         WorkerLoaderProxyProvider* mockWorkerLoaderProxyProvider,
         WorkerReportingProxy& mockWorkerReportingProxy,
-        PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> workerThreadStartupData)
+        PassOwnPtr<WorkerThreadStartupData> workerThreadStartupData)
         : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy, workerThreadStartupData)
         , m_thread(WebThreadSupportingGC::create("Test thread"))
     {
