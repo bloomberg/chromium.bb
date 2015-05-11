@@ -17,7 +17,7 @@
 }
 
 .share-dialog-webview-wrapper:not(.loaded) {
-  background: url(../images/common/spinner.svg) center/16px no-repeat;
+  background: url(chrome://resources/images/throbber.svg) center/16px no-repeat;
 }
 
 .share-dialog-webview {

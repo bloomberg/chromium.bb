@@ -118,7 +118,7 @@ list .row-delete-button:active {
 }
 
 .kiosk-app-icon.spinner {
-  background-image: url(chrome://resources/images/spinner.svg) !important;
+  background-image: url(chrome://resources/images/throbber.svg) !important;
 }
 
 .kiosk-app-name,

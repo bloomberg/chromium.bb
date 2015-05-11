@@ -194,8 +194,6 @@ without changes to the corresponding grd file. -->
                file="images/question_mark.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_SELECT"
                file="images/select.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_SPINNER"
-               file="images/spinner.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_THROBBER"
                file="images/throbber.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_TRASH"

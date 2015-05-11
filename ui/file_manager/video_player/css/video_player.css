@@ -40,7 +40,7 @@ body {
 }
 
 #spinner-container {
-  display: none;
+  display: block;
   height: 100%;
   left: 0;
   position: absolute;
@@ -53,7 +53,7 @@ body {
 }
 
 #spinner-container > .spinner {
-  background: 100% url(../../file_manager/foreground/images/common/spinner.svg);
+  background: url(chrome://resources/images/throbber.svg) center/100% no-repeat;
   height: 32px;
   left: 50%;
   margin-left: -16px;

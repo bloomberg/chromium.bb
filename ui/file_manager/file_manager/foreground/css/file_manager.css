@@ -906,7 +906,7 @@ html[dir='rtl'] .breadcrumbs .separator {
 }
 
 .spinner {
-  background: url(../images/common/spinner.svg) center/100% no-repeat;
+  background: url(chrome://resources/images/throbber.svg) center/100% no-repeat;
   height: 16px;
   left: 50%;
   margin-left: -8px;
