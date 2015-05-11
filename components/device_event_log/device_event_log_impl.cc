@@ -8,11 +8,9 @@
 #include <list>
 #include <set>
 
-#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_tokenizer.h"
@@ -249,14 +247,6 @@ void GetLogTypes(const std::string& types,
   }
 }
 
-// Update count and time for identical events to avoid log spam.
-void IncreaseLogEntryCount(const DeviceEventLogImpl::LogEntry& new_entry,
-                           DeviceEventLogImpl::LogEntry* cur_entry) {
-  ++cur_entry->count;
-  cur_entry->log_level = std::min(cur_entry->log_level, new_entry.log_level);
-  cur_entry->time = base::Time::Now();
-}
-
 }  // namespace
 
 // static
@@ -269,13 +259,8 @@ void DeviceEventLogImpl::SendToVLogOrErrorLog(const char* file,
   SendLogEntryToVLogOrErrorLog(entry);
 }
 
-DeviceEventLogImpl::DeviceEventLogImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    size_t max_entries)
-    : task_runner_(task_runner),
-      max_entries_(max_entries),
-      weak_ptr_factory_(this) {
-  DCHECK(task_runner_);
+DeviceEventLogImpl::DeviceEventLogImpl(size_t max_entries)
+    : max_entries_(max_entries) {
 }
 
 DeviceEventLogImpl::~DeviceEventLogImpl() {
@@ -287,47 +272,40 @@ void DeviceEventLogImpl::AddEntry(const char* file,
                                   LogLevel log_level,
                                   const std::string& event) {
   LogEntry entry(file, file_line, log_type, log_level, event);
-  if (!task_runner_->RunsTasksOnCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&DeviceEventLogImpl::AddLogEntry,
-                                      weak_ptr_factory_.GetWeakPtr(), entry));
-    return;
-  }
   AddLogEntry(entry);
 }
 
 void DeviceEventLogImpl::AddLogEntry(const LogEntry& entry) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (!entries_.empty()) {
     LogEntry& last = entries_.back();
     if (LogEntryMatches(last, entry)) {
-      IncreaseLogEntryCount(entry, &last);
+      // Update count and time for identical events to avoid log spam.
+      ++last.count;
+      last.log_level = std::min(last.log_level, entry.log_level);
+      last.time = base::Time::Now();
       return;
     }
   }
-  if (entries_.size() >= max_entries_)
-    RemoveEntry();
+  if (entries_.size() >= max_entries_) {
+    const size_t max_error_entries = max_entries_ / 2;
+    // Remove the first (oldest) non-error entry, or the oldest entry if more
+    // than half the entries are errors.
+    size_t error_count = 0;
+    for (LogEntryList::iterator iter = entries_.begin(); iter != entries_.end();
+         ++iter) {
+      if (iter->log_level != LOG_LEVEL_ERROR) {
+        entries_.erase(iter);
+        break;
+      }
+      if (++error_count > max_error_entries) {
+        // Too many error entries, remove the oldest entry.
+        entries_.pop_front();
+        break;
+      }
+    }
+  }
   entries_.push_back(entry);
   SendLogEntryToVLogOrErrorLog(entry);
-}
-
-void DeviceEventLogImpl::RemoveEntry() {
-  const size_t max_error_entries = max_entries_ / 2;
-  DCHECK(max_error_entries < entries_.size());
-  // Remove the first (oldest) non-error entry, or the oldest entry if more
-  // than half the entries are errors.
-  size_t error_count = 0;
-  for (LogEntryList::iterator iter = entries_.begin(); iter != entries_.end();
-       ++iter) {
-    if (iter->log_level != LOG_LEVEL_ERROR) {
-      entries_.erase(iter);
-      return;
-    }
-    if (++error_count > max_error_entries)
-      break;
-  }
-  // Too many error entries, remove the oldest entry.
-  entries_.pop_front();
 }
 
 std::string DeviceEventLogImpl::GetAsString(StringOrder order,
@@ -335,7 +313,6 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
                                             const std::string& types,
                                             LogLevel max_level,
                                             size_t max_events) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (entries_.empty())
     return "No Log Entries.";
 

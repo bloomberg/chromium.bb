@@ -109,7 +109,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/tpm_token_loader.h"
-#include "components/device_event_log/device_event_log.h"
 #include "components/metrics/metrics_service.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/session_manager/core/session_manager.h"
@@ -311,9 +310,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  // device_event_log must be initialized after the message loop.
-  device_event_log::Initialize(0 /* default max entries */);
-
   base::FilePath user_data_dir;
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {

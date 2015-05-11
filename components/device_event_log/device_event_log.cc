@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log_impl.h"
 
 namespace device_event_log {
@@ -29,12 +28,7 @@ void Initialize(size_t max_entries) {
   CHECK(!g_device_event_log);
   if (max_entries == 0)
     max_entries = kDefaultMaxEntries;
-  g_device_event_log =
-      new DeviceEventLogImpl(base::ThreadTaskRunnerHandle::Get(), max_entries);
-}
-
-bool IsInitialized() {
-  return !!g_device_event_log;
+  g_device_event_log = new DeviceEventLogImpl(max_entries);
 }
 
 void Shutdown() {
