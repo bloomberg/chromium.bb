@@ -33,7 +33,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   // Overridden from GpuChannelHostFactory:
   bool IsMainThread() override;
-  base::MessageLoop* GetMainLoop() override;
   scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
   CreateCommandBufferResult CreateViewCommandBuffer(

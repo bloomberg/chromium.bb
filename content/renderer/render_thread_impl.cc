@@ -1469,10 +1469,6 @@ bool RenderThreadImpl::IsMainThread() {
   return !!current();
 }
 
-base::MessageLoop* RenderThreadImpl::GetMainLoop() {
-  return message_loop();
-}
-
 scoped_refptr<base::MessageLoopProxy> RenderThreadImpl::GetIOLoopProxy() {
   return io_message_loop_proxy_;
 }

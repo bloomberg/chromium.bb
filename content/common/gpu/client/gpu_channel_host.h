@@ -80,7 +80,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual ~GpuChannelHostFactory() {}
 
   virtual bool IsMainThread() = 0;
-  virtual base::MessageLoop* GetMainLoop() = 0;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() = 0;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
   virtual CreateCommandBufferResult CreateViewCommandBuffer(

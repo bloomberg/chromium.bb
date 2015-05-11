@@ -305,10 +305,6 @@ bool BrowserGpuChannelHostFactory::IsMainThread() {
   return BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
-base::MessageLoop* BrowserGpuChannelHostFactory::GetMainLoop() {
-  return BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::UI);
-}
-
 scoped_refptr<base::MessageLoopProxy>
 BrowserGpuChannelHostFactory::GetIOLoopProxy() {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
