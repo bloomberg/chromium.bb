@@ -54,61 +54,48 @@ static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
 
 namespace cc {
 
+LayerTreeHost::InitParams::InitParams() {
+}
+
+LayerTreeHost::InitParams::~InitParams() {
+}
+
 scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
-    LayerTreeHostClient* client,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    TaskGraphRunner* task_graph_runner,
-    const LayerTreeSettings& settings,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
-  DCHECK(main_task_runner.get());
+    InitParams* params) {
+  DCHECK(params->main_task_runner.get());
   DCHECK(impl_task_runner.get());
-  scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(
-      client, shared_bitmap_manager, gpu_memory_buffer_manager,
-      task_graph_runner, settings));
-  layer_tree_host->InitializeThreaded(main_task_runner,
-                                      impl_task_runner,
-                                      external_begin_frame_source.Pass());
+  DCHECK(params->settings);
+  scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(params));
+  layer_tree_host->InitializeThreaded(
+      params->main_task_runner, impl_task_runner,
+      params->external_begin_frame_source.Pass());
   return layer_tree_host.Pass();
 }
 
 scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
-    LayerTreeHostClient* client,
     LayerTreeHostSingleThreadClient* single_thread_client,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    TaskGraphRunner* task_graph_runner,
-    const LayerTreeSettings& settings,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
-  scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(
-      client, shared_bitmap_manager, gpu_memory_buffer_manager,
-      task_graph_runner, settings));
-  layer_tree_host->InitializeSingleThreaded(single_thread_client,
-                                            main_task_runner,
-                                            external_begin_frame_source.Pass());
+    InitParams* params) {
+  DCHECK(params->settings);
+  scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(params));
+  layer_tree_host->InitializeSingleThreaded(
+      single_thread_client, params->main_task_runner,
+      params->external_begin_frame_source.Pass());
   return layer_tree_host.Pass();
 }
 
-LayerTreeHost::LayerTreeHost(
-    LayerTreeHostClient* client,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    TaskGraphRunner* task_graph_runner,
-    const LayerTreeSettings& settings)
+LayerTreeHost::LayerTreeHost(InitParams* params)
     : micro_benchmark_controller_(this),
       next_ui_resource_id_(1),
       inside_begin_main_frame_(false),
       needs_full_tree_sync_(true),
       needs_meta_info_recomputation_(true),
-      client_(client),
+      client_(params->client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
       output_surface_lost_(true),
-      settings_(settings),
-      debug_state_(settings.initial_debug_state),
+      settings_(*params->settings),
+      debug_state_(settings_.initial_debug_state),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
       top_controls_shown_ratio_(0.f),
@@ -127,9 +114,9 @@ LayerTreeHost::LayerTreeHost(
       in_paint_layer_contents_(false),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       next_commit_forces_redraw_(false),
-      shared_bitmap_manager_(shared_bitmap_manager),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      task_graph_runner_(task_graph_runner),
+      shared_bitmap_manager_(params->shared_bitmap_manager),
+      gpu_memory_buffer_manager_(params->gpu_memory_buffer_manager),
+      task_graph_runner_(params->task_graph_runner),
       surface_id_namespace_(0u),
       next_surface_sequence_(1u) {
   if (settings_.accelerated_animation_enabled)

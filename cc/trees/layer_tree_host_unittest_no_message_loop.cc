@@ -105,8 +105,11 @@ class LayerTreeHostNoMessageLoopTest
     settings.single_thread_proxy_scheduler = false;
     settings.verify_property_trees = true;
     settings.raster_enabled = false;
-    layer_tree_host_ = LayerTreeHost::CreateSingleThreaded(
-        this, this, nullptr, nullptr, nullptr, settings, nullptr, nullptr);
+
+    LayerTreeHost::InitParams params;
+    params.client = this;
+    params.settings = &settings;
+    layer_tree_host_ = LayerTreeHost::CreateSingleThreaded(this, &params);
     layer_tree_host_->SetViewportSize(size_);
     layer_tree_host_->SetRootLayer(root_layer_);
   }

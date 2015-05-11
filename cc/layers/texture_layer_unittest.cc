@@ -54,16 +54,26 @@ gpu::Mailbox MailboxFromChar(char value) {
 
 class MockLayerTreeHost : public LayerTreeHost {
  public:
-  explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, nullptr, nullptr, nullptr, LayerTreeSettings()) {
-    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
-                             nullptr);
+  static scoped_ptr<MockLayerTreeHost> Create(FakeLayerTreeHostClient* client) {
+    LayerTreeHost::InitParams params;
+    params.client = client;
+    LayerTreeSettings settings;
+    params.settings = &settings;
+    return make_scoped_ptr(new MockLayerTreeHost(client, &params));
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
   MOCK_METHOD0(SetNeedsUpdateLayers, void());
   MOCK_METHOD0(StartRateLimiter, void());
   MOCK_METHOD0(StopRateLimiter, void());
+
+ private:
+  MockLayerTreeHost(FakeLayerTreeHostClient* client,
+                    LayerTreeHost::InitParams* params)
+      : LayerTreeHost(params) {
+    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
+                             nullptr);
+  }
 };
 
 class FakeTextureLayerClient : public TextureLayerClient {
@@ -180,7 +190,7 @@ class TextureLayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
+    layer_tree_host_ = MockLayerTreeHost::Create(&fake_client_);
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
     layer_tree_host_->SetViewportSize(gfx::Size(10, 10));
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
@@ -908,7 +918,7 @@ class TextureLayerImplWithMailboxTest : public TextureLayerTest {
 
   void SetUp() override {
     TextureLayerTest::SetUp();
-    layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
+    layer_tree_host_ = MockLayerTreeHost::Create(&fake_client_);
     EXPECT_TRUE(host_impl_.InitializeRenderer(FakeOutputSurface::Create3d()));
   }
 

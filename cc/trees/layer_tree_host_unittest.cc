@@ -2431,9 +2431,9 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestCompositeImmediatelyStateTransitions);
 class LayerTreeHostWithProxy : public LayerTreeHost {
  public:
   LayerTreeHostWithProxy(FakeLayerTreeHostClient* client,
-                         const LayerTreeSettings& settings,
-                         scoped_ptr<FakeProxy> proxy)
-      : LayerTreeHost(client, NULL, NULL, NULL, settings) {
+                         scoped_ptr<FakeProxy> proxy,
+                         LayerTreeHost::InitParams* params)
+      : LayerTreeHost(params) {
     proxy->SetLayerTreeHost(this);
     client->SetLayerTreeHost(this);
     InitializeForTesting(proxy.Pass());
@@ -2453,7 +2453,10 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     settings.impl_side_painting = false;
     settings.max_partial_texture_updates = 10;
 
-    LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
+    LayerTreeHost::InitParams params;
+    params.client = &client;
+    params.settings = &settings;
+    LayerTreeHostWithProxy host(&client, proxy.Pass(), &params);
 
     EXPECT_EQ(0u, host.MaxPartialTextureUpdates());
   }
@@ -2471,7 +2474,10 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     settings.impl_side_painting = false;
     settings.max_partial_texture_updates = 10;
 
-    LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
+    LayerTreeHost::InitParams params;
+    params.client = &client;
+    params.settings = &settings;
+    LayerTreeHostWithProxy host(&client, proxy.Pass(), &params);
 
     EXPECT_EQ(5u, host.MaxPartialTextureUpdates());
   }
@@ -2489,7 +2495,10 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     settings.impl_side_painting = false;
     settings.max_partial_texture_updates = 10;
 
-    LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
+    LayerTreeHost::InitParams params;
+    params.client = &client;
+    params.settings = &settings;
+    LayerTreeHostWithProxy host(&client, proxy.Pass(), &params);
 
     EXPECT_EQ(10u, host.MaxPartialTextureUpdates());
   }
@@ -2505,9 +2514,13 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::ThreadTaskRunnerHandle::Get(), nullptr);
+  LayerTreeHost::InitParams params;
+  params.client = &client;
+  params.shared_bitmap_manager = shared_bitmap_manager.get();
+  params.settings = &settings;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client, &params);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2524,9 +2537,13 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::ThreadTaskRunnerHandle::Get(), nullptr);
+  LayerTreeHost::InitParams params;
+  params.client = &client;
+  params.shared_bitmap_manager = shared_bitmap_manager.get();
+  params.settings = &settings;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client, &params);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2543,9 +2560,13 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::ThreadTaskRunnerHandle::Get(), nullptr);
+  LayerTreeHost::InitParams params;
+  params.client = &client;
+  params.shared_bitmap_manager = shared_bitmap_manager.get();
+  params.settings = &settings;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client, &params);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2563,9 +2584,13 @@ TEST(LayerTreeHostTest,
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::ThreadTaskRunnerHandle::Get(), nullptr);
+  LayerTreeHost::InitParams params;
+  params.client = &client;
+  params.shared_bitmap_manager = shared_bitmap_manager.get();
+  params.settings = &settings;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client, &params);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 

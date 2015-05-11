@@ -58,8 +58,10 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
   // TODO(enne): Update this this compositor to use a synchronous scheduler.
   settings.single_thread_proxy_scheduler = false;
 
-  layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-      this, this, nullptr, nullptr, nullptr, settings, nullptr, nullptr);
+  cc::LayerTreeHost::InitParams params;
+  params.client = this;
+  params.settings = &settings;
+  layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   layer_tree_host_->SetRootLayer(root_layer_);
   layer_tree_host_->SetLayerTreeHostClientReady();
   layer_tree_host_->set_has_transparent_background(true);

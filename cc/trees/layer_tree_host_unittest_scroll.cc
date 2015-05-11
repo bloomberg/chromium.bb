@@ -1129,9 +1129,14 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   ASSERT_TRUE(impl_thread.task_runner().get());
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::CreateThreaded(
-      &client, shared_bitmap_manager.get(), NULL, NULL, settings,
-      base::ThreadTaskRunnerHandle::Get(), impl_thread.task_runner(), nullptr);
+
+  LayerTreeHost::InitParams params;
+  params.client = &client;
+  params.shared_bitmap_manager = shared_bitmap_manager.get();
+  params.settings = &settings;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  scoped_ptr<LayerTreeHost> layer_tree_host =
+      LayerTreeHost::CreateThreaded(impl_thread.task_runner(), &params);
 
   impl_thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&BindInputHandlerOnCompositorThread,

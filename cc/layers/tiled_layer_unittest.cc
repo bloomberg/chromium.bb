@@ -94,15 +94,19 @@ class TiledLayerTest : public testing::Test {
   void SetUp() override {
     impl_thread_.Start();
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    layer_tree_host_ = LayerTreeHost::CreateThreaded(
-        &synchonous_output_surface_client_, shared_bitmap_manager_.get(),
-        nullptr, nullptr, settings_, base::ThreadTaskRunnerHandle::Get(),
-        impl_thread_.task_runner(), nullptr);
-    synchonous_output_surface_client_.SetLayerTreeHost(layer_tree_host_.get());
+    LayerTreeHost::InitParams params;
+    params.client = &synchronous_output_surface_client_;
+    params.shared_bitmap_manager = shared_bitmap_manager_.get();
+    params.settings = &settings_;
+    params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+
+    layer_tree_host_ =
+        LayerTreeHost::CreateThreaded(impl_thread_.task_runner(), &params);
+    synchronous_output_surface_client_.SetLayerTreeHost(layer_tree_host_.get());
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);
     layer_tree_host_->SetLayerTreeHostClientReady();
-    CHECK(synchonous_output_surface_client_.EnsureOutputSurfaceCreated());
+    CHECK(synchronous_output_surface_client_.EnsureOutputSurfaceCreated());
 
     layer_tree_host_->SetRootLayer(Layer::Create());
 
@@ -241,7 +245,7 @@ class TiledLayerTest : public testing::Test {
   scoped_ptr<ResourceUpdateQueue> queue_;
   PriorityCalculator priority_calculator_;
   base::Thread impl_thread_;
-  SynchronousOutputSurfaceClient synchonous_output_surface_client_;
+  SynchronousOutputSurfaceClient synchronous_output_surface_client_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
   scoped_ptr<PrioritizedResourceManager> resource_manager_;

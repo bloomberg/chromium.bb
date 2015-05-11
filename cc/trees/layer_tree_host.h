@@ -71,26 +71,29 @@ struct ScrollAndScaleSet;
 
 class CC_EXPORT LayerTreeHost {
  public:
+  // TODO(sad): InitParams should be a movable type so that it can be
+  // std::move()d to the Create* functions.
+  struct CC_EXPORT InitParams {
+    LayerTreeHostClient* client = nullptr;
+    SharedBitmapManager* shared_bitmap_manager = nullptr;
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
+    TaskGraphRunner* task_graph_runner = nullptr;
+    LayerTreeSettings const* settings = nullptr;
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
+    scoped_ptr<BeginFrameSource> external_begin_frame_source;
+
+    InitParams();
+    ~InitParams();
+  };
+
   // The SharedBitmapManager will be used on the compositor thread.
   static scoped_ptr<LayerTreeHost> CreateThreaded(
-      LayerTreeHostClient* client,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      TaskGraphRunner* task_graph_runner,
-      const LayerTreeSettings& settings,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      InitParams* params);
 
   static scoped_ptr<LayerTreeHost> CreateSingleThreaded(
-      LayerTreeHostClient* client,
       LayerTreeHostSingleThreadClient* single_thread_client,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      TaskGraphRunner* task_graph_runner,
-      const LayerTreeSettings& settings,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_ptr<BeginFrameSource> external_begin_frame_source);
+      InitParams* params);
   virtual ~LayerTreeHost();
 
   void SetLayerTreeHostClientReady();
@@ -313,11 +316,7 @@ class CC_EXPORT LayerTreeHost {
   }
 
  protected:
-  LayerTreeHost(LayerTreeHostClient* client,
-                SharedBitmapManager* shared_bitmap_manager,
-                gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                TaskGraphRunner* task_graph_runner,
-                const LayerTreeSettings& settings);
+  explicit LayerTreeHost(InitParams* params);
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
@@ -330,6 +329,17 @@ class CC_EXPORT LayerTreeHost {
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;
   }
+
+  // shared_bitmap_manager(), gpu_memory_buffer_manager(), and
+  // task_graph_runner() return valid values only until the LayerTreeHostImpl is
+  // created in CreateLayerTreeHostImpl().
+  SharedBitmapManager* shared_bitmap_manager() const {
+    return shared_bitmap_manager_;
+  }
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() const {
+    return gpu_memory_buffer_manager_;
+  }
+  TaskGraphRunner* task_graph_runner() const { return task_graph_runner_; }
 
   MicroBenchmarkController micro_benchmark_controller_;
 

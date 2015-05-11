@@ -53,7 +53,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
  protected:
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                    const LayerTreeSettings& settings);
+                    LayerTreeHost::InitParams* params);
 
  private:
   FakeImplProxy proxy_;

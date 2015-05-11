@@ -481,16 +481,19 @@ void RenderWidgetCompositor::Initialize() {
         compositor_deps_->CreateExternalBeginFrameSource(widget_->routing_id());
   }
 
+  cc::LayerTreeHost::InitParams params;
+  params.client = this;
+  params.shared_bitmap_manager = shared_bitmap_manager;
+  params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
+  params.settings = &settings;
+  params.task_graph_runner = task_graph_runner;
+  params.main_task_runner = main_thread_compositor_task_runner;
+  params.external_begin_frame_source = external_begin_frame_source.Pass();
   if (compositor_thread_task_runner.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
-        this, shared_bitmap_manager, gpu_memory_buffer_manager,
-        task_graph_runner, settings, main_thread_compositor_task_runner,
-        compositor_thread_task_runner, external_begin_frame_source.Pass());
+        compositor_thread_task_runner, &params);
   } else {
-    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this, this, shared_bitmap_manager, gpu_memory_buffer_manager,
-        task_graph_runner, settings, main_thread_compositor_task_runner,
-        external_begin_frame_source.Pass());
+    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   }
   DCHECK(layer_tree_host_);
 }

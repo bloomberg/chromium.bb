@@ -64,8 +64,8 @@ LayerImpl* LayerImplForScrollAreaAndScrollbar(FakeLayerTreeHost* host,
 class FakeResourceTrackingLayerTreeHost : public FakeLayerTreeHost {
  public:
   FakeResourceTrackingLayerTreeHost(FakeLayerTreeHostClient* client,
-                                    const LayerTreeSettings& settings)
-      : FakeLayerTreeHost(client, settings),
+                                    LayerTreeHost::InitParams* params)
+      : FakeLayerTreeHost(client, params),
         next_id_(1),
         total_ui_resource_created_(0),
         total_ui_resource_deleted_(0) {
@@ -121,8 +121,13 @@ class ScrollbarLayerTest : public testing::Test {
  public:
   ScrollbarLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {
     layer_tree_settings_.single_thread_proxy_scheduler = false;
-    layer_tree_host_.reset(new FakeResourceTrackingLayerTreeHost(
-        &fake_client_, layer_tree_settings_));
+
+    LayerTreeHost::InitParams params;
+    params.client = &fake_client_;
+    params.settings = &layer_tree_settings_;
+
+    layer_tree_host_.reset(
+        new FakeResourceTrackingLayerTreeHost(&fake_client_, &params));
     fake_client_.SetLayerTreeHost(layer_tree_host_.get());
     // Force output surface creation for renderer capabilities.
     layer_tree_host_->Composite(base::TimeTicks());

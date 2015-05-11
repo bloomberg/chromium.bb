@@ -4,7 +4,7 @@
 
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
@@ -24,7 +24,7 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
     mojo::GpuPtr gpu_service)
     : widget_(NULL),
       view_(NULL),
-      main_thread_compositor_task_runner_(base::MessageLoopProxy::current()),
+      main_thread_compositor_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
   main_thread_bound_weak_ptr_ = weak_factory_.GetWeakPtr();
 
@@ -38,15 +38,16 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
   cc::TaskGraphRunner* task_graph_runner = nullptr;
 
+  cc::LayerTreeHost::InitParams params;
+  params.client = this;
+  params.shared_bitmap_manager = shared_bitmap_manager;
+  params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
+  params.settings = &settings;
+  params.task_graph_runner = task_graph_runner;
+  params.main_task_runner = main_thread_compositor_task_runner_;
+
   layer_tree_host_ =
-      cc::LayerTreeHost::CreateThreaded(this,
-                                        shared_bitmap_manager,
-                                        gpu_memory_buffer_manager,
-                                        task_graph_runner,
-                                        settings,
-                                        base::MessageLoopProxy::current(),
-                                        compositor_message_loop_proxy,
-                                        nullptr);
+      cc::LayerTreeHost::CreateThreaded(compositor_message_loop_proxy, &params);
   DCHECK(layer_tree_host_);
 
   if (surface && gpu_service) {

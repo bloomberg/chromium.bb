@@ -129,14 +129,18 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   MockContentLayerClient client;
   scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(&client);
 
-  scoped_ptr<LayerTreeHost> host1 = LayerTreeHost::CreateSingleThreaded(
-      &host_client1, &host_client1, shared_bitmap_manager.get(), nullptr,
-      nullptr, settings, base::ThreadTaskRunnerHandle::Get(), nullptr);
+  LayerTreeHost::InitParams params;
+  params.client = &host_client1;
+  params.shared_bitmap_manager = shared_bitmap_manager.get();
+  params.settings = &settings;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  scoped_ptr<LayerTreeHost> host1 =
+      LayerTreeHost::CreateSingleThreaded(&host_client1, &params);
   host_client1.SetLayerTreeHost(host1.get());
 
-  scoped_ptr<LayerTreeHost> host2 = LayerTreeHost::CreateSingleThreaded(
-      &host_client2, &host_client2, shared_bitmap_manager.get(), nullptr,
-      nullptr, settings, base::ThreadTaskRunnerHandle::Get(), nullptr);
+  params.client = &host_client2;
+  scoped_ptr<LayerTreeHost> host2 =
+      LayerTreeHost::CreateSingleThreaded(&host_client2, &params);
   host_client2.SetLayerTreeHost(host2.get());
 
   // The PictureLayer is put in one LayerTreeHost.

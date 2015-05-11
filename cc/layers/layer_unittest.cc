@@ -44,10 +44,11 @@ namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
  public:
-  explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, nullptr, nullptr, nullptr, LayerTreeSettings()) {
-    InitializeSingleThreaded(client, base::ThreadTaskRunnerHandle::Get(),
-                             nullptr);
+  MockLayerTreeHost(LayerTreeHostSingleThreadClient* single_thread_client,
+                    LayerTreeHost::InitParams* params)
+      : LayerTreeHost(params) {
+    InitializeSingleThreaded(single_thread_client,
+                             base::ThreadTaskRunnerHandle::Get(), nullptr);
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
@@ -68,7 +69,12 @@ class LayerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    layer_tree_host_.reset(new StrictMock<MockLayerTreeHost>(&fake_client_));
+    LayerTreeHost::InitParams params;
+    LayerTreeSettings settings;
+    params.client = &fake_client_;
+    params.settings = &settings;
+    layer_tree_host_.reset(
+        new StrictMock<MockLayerTreeHost>(&fake_client_, &params));
   }
 
   void TearDown() override {
@@ -937,18 +943,16 @@ class LayerTreeHostFactory {
         shared_bitmap_manager_(new TestSharedBitmapManager),
         gpu_memory_buffer_manager_(new TestGpuMemoryBufferManager) {}
 
-  scoped_ptr<LayerTreeHost> Create() {
-    return LayerTreeHost::CreateSingleThreaded(
-        &client_, &client_, shared_bitmap_manager_.get(),
-        gpu_memory_buffer_manager_.get(), nullptr, LayerTreeSettings(),
-        base::ThreadTaskRunnerHandle::Get(), nullptr);
-  }
+  scoped_ptr<LayerTreeHost> Create() { return Create(LayerTreeSettings()); }
 
   scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
-    return LayerTreeHost::CreateSingleThreaded(
-        &client_, &client_, shared_bitmap_manager_.get(),
-        gpu_memory_buffer_manager_.get(), nullptr, settings,
-        base::ThreadTaskRunnerHandle::Get(), nullptr);
+    LayerTreeHost::InitParams params;
+    params.client = &client_;
+    params.shared_bitmap_manager = shared_bitmap_manager_.get();
+    params.gpu_memory_buffer_manager = gpu_memory_buffer_manager_.get();
+    params.settings = &settings;
+    params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+    return LayerTreeHost::CreateSingleThreaded(&client_, &params);
   }
 
  private:
