@@ -10,7 +10,6 @@ import("//remoting/webapp/build_template.gni")
 group("webapp") {
   deps = [
     ":webapp_v1",
-    ":ar_sample_app",
   ]
 
   if (enable_nacl) {
@@ -18,17 +17,17 @@ group("webapp") {
   }
 }
 
-desktop_remoting_webapp("webapp_v1") {
+remoting_webapp("webapp_v1") {
   webapp_type = "v1"
-  output_dir = "remoting/remoting-webapp"
-  zip_path = "remoting/remoting-webapp.zip"
+  output_dir = "remoting.webapp"
+  zip_path = "remoting-webapp.zip"
   extra_files = []
 }
 
-desktop_remoting_webapp("webapp_v2") {
+remoting_webapp("webapp_v2") {
   webapp_type = "v2_pnacl"
-  output_dir = "remoting/remoting-webapp.v2"
-  zip_path = "remoting/remoting-webapp.v2.zip"
+  output_dir = "remoting.webapp.v2"
+  zip_path = "remoting-webapp.v2.zip"
   extra_files = [
     "crd/remoting_client_pnacl.nmf.jinja2",
     # TODO(garykac): Get correct path to this.
@@ -36,12 +35,91 @@ desktop_remoting_webapp("webapp_v2") {
   ]
 }
 
-app_remoting_webapp("ar_sample_app") {
-  app_key = "Sample_App"
-  app_id = "ljacajndfccfgnfohlgkdphmbnpkjflk"
-  app_client_id = "sample_client_id"
-  app_name = "App Remoting Client"
-  app_description = "App Remoting client"
-  app_capabilities = [ "GOOGLE_DRIVE" ]
-  manifest_key = "remotingdevbuild"
+group("html") {
+  deps = [
+    ":background_html",
+    ":main_html",
+    ":message_window_html",
+    ":wcs_sandbox_html",
+  ]
+}
+
+action("main_html") {
+  script = "build-html.py"
+
+  inputs = [ remoting_webapp_template_main ] + remoting_webapp_template_files +
+           remoting_webapp_crd_main_html_all_js_files
+
+  outputs = [
+    "$target_gen_dir/main.html",
+  ]
+
+  args = [
+    rebase_path("$target_gen_dir/main.html", root_build_dir),
+    rebase_path(remoting_webapp_template_main, root_build_dir),
+  ]
+  args += [
+    "--template-dir",
+    rebase_path(remoting_dir, root_build_dir),
+  ]
+  args += [ "--templates" ] +
+          rebase_path(remoting_webapp_template_files, remoting_dir)
+  args += [ "--js" ] +
+          rebase_path(remoting_webapp_crd_main_html_all_js_files, remoting_dir)
+}
+
+action("wcs_sandbox_html") {
+  script = "build-html.py"
+
+  inputs = [ remoting_webapp_template_wcs_sandbox ] +
+           remoting_webapp_wcs_sandbox_html_all_js_files
+
+  outputs = [
+    "$target_gen_dir/wcs_sandbox.html",
+  ]
+
+  args = [
+    rebase_path("$target_gen_dir/wcs_sandbox.html", root_build_dir),
+    rebase_path(remoting_webapp_template_wcs_sandbox, root_build_dir),
+  ]
+  args +=
+      [ "--js" ] +
+      rebase_path(remoting_webapp_wcs_sandbox_html_all_js_files, remoting_dir)
+}
+
+action("background_html") {
+  script = "build-html.py"
+
+  inputs = [ remoting_webapp_template_background ] +
+           remoting_webapp_background_html_all_js_files
+
+  outputs = [
+    "$target_gen_dir/background.html",
+  ]
+
+  args = [
+    rebase_path("$target_gen_dir/background.html", root_build_dir),
+    rebase_path(remoting_webapp_template_background, root_build_dir),
+  ]
+  args += [ "--js" ] + rebase_path(remoting_webapp_background_html_all_js_files,
+                                   remoting_dir)
+}
+
+action("message_window_html") {
+  script = "build-html.py"
+
+  inputs = [ remoting_webapp_template_message_window ] +
+           remoting_webapp_message_window_html_all_js_files
+
+  outputs = [
+    "$target_gen_dir/message_window.html",
+  ]
+
+  args = [
+    rebase_path("$target_gen_dir/message_window.html", root_build_dir),
+    rebase_path(remoting_webapp_template_message_window, root_build_dir),
+  ]
+  args +=
+      [ "--js" ] + rebase_path(remoting_webapp_message_window_html_all_js_files,
+                               remoting_dir)
 }
