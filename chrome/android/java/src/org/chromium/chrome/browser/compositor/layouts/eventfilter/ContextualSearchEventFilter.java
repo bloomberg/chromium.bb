@@ -179,14 +179,7 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
     public boolean onTouchEventInternal(MotionEvent e) {
         final int action = e.getActionMasked();
 
-        if (action == MotionEvent.ACTION_POINTER_DOWN
-                && e.getPointerCount() == 2
-                && !mSearchPanel.isMaximized()) {
-            // We don't want the Search Content View's zoom level to change when the Search Panel
-            // is expanded (that is, not maximized) so we'll forward the events to Panel to
-            // prevent it from happening.
-            setEventTarget(EventTarget.SEARCH_PANEL);
-        } else if (!mIsDeterminingEventTarget && action == MotionEvent.ACTION_DOWN) {
+        if (!mIsDeterminingEventTarget && action == MotionEvent.ACTION_DOWN) {
             mInitialEventY = e.getY();
             if (mSearchPanel.isYCoordinateInsideSearchContentView(mInitialEventY * mPxToDp)) {
                 // If the DOWN event happened inside the Search Content View, we'll need
@@ -262,17 +255,14 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
         }
 
         if (mHasChangedEventTarget) {
-            // TODO(pedrosimonetti): handle cases with multiple pointers.
-            float y = e.getY();
             // If the event target has changed since the beginning of the gesture, then we need
             // to send a ACTION_CANCEL to the previous event target to make sure it no longer
             // expects events.
-            propagateAndRecycleEvent(createEvent(e, MotionEvent.ACTION_CANCEL, y),
-                    mPreviousEventTarget);
+            propagateAndRecycleEvent(copyEvent(e, MotionEvent.ACTION_CANCEL), mPreviousEventTarget);
 
             // Similarly we need to send an ACTION_DOWN to the new event target so subsequent
             // events can be analyzed properly by the Gesture Detector.
-            MotionEvent syntheticActionDownEvent = createEvent(e, MotionEvent.ACTION_DOWN, y);
+            MotionEvent syntheticActionDownEvent = copyEvent(e, MotionEvent.ACTION_DOWN);
 
             // Store the synthetic ACTION_DOWN coordinates to prevent unwanted taps from
             // happening. See {@link ContextualSearchEventFilter#propagateEventToSearchContentView}.
@@ -304,7 +294,10 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
     /**
      * Propagates the given {@link MotionEvent} to the given {@link EventTarget}, recycling it
      * afterwards. This is intended for synthetic events only, those create by
-     * {@link MotionEvent#obtain} or the helper {@link ContextualSearchEventFilter#createEvent}.
+     * {@link MotionEvent#obtain} or the helper methods
+     * {@link ContextualSearchEventFilter#lockEventHorizontallty} and
+     * {@link ContextualSearchEventFilter#copyEvent}.
+     *
      * @param e The {@link MotionEvent} to be propagated.
      * @param target The {@link EventTarget} to propagate events to.
      */
@@ -333,17 +326,37 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
     @VisibleForTesting
     protected void propagateEventToSearchContentView(MotionEvent e) {
         MotionEvent event = e;
+        int action = event.getActionMasked();
         boolean isSyntheticEvent = false;
         if (mGestureOrientation == GestureOrientation.HORIZONTAL
                 && !mSearchPanel.isMaximized()) {
-            // Lock horizontal motion, ignoring all vertical changes, when the Panel is not
-            // maximized. This is to prevent the Search Result Page from scrolling when
-            // side swiping on the expanded Panel.
-            event = createEvent(e, e.getAction(), mInitialEventY);
+            // Ignores multitouch events to prevent the Search Result Page from from scrolling.
+            if (action == MotionEvent.ACTION_POINTER_UP
+                    || action == MotionEvent.ACTION_POINTER_DOWN) {
+                return;
+            }
+
+            // NOTE(pedrosimonetti): Lock horizontal motion, ignoring all vertical changes,
+            // when the Panel is not maximized. This is to prevent the Search Result Page
+            // from scrolling when side swiping on the expanded Panel. Also, note that the
+            // method {@link ContextualSearchEventFilter#lockEventHorizontallty} will always
+            // return an event with a single pointer, which is necessary to prevent
+            // the app from crashing when the motion involves multiple pointers.
+            // See: crbug.com/486901
+            event = MotionEvent.obtain(
+                    e.getDownTime(),
+                    e.getEventTime(),
+                    // NOTE(pedrosimonetti): Use getActionMasked() to make sure we're not
+                    // send any pointer information to the event, given that getAction()
+                    // may have the pointer Id associated to it.
+                    e.getActionMasked(),
+                    e.getX(),
+                    mInitialEventY,
+                    e.getMetaState());
+
             isSyntheticEvent = true;
         }
 
-        int action = event.getActionMasked();
         float searchContentViewOffsetYPx = mSearchPanel.getSearchContentViewOffsetY() / mPxToDp;
 
         // Adjust the offset to be relative to the Search Contents View.
@@ -377,17 +390,12 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
      * Creates a {@link MotionEvent} inheriting from a given |e| event.
      * @param e The {@link MotionEvent} to inherit properties from.
      * @param action The MotionEvent's Action to be used.
-     * @param y The y coordinate to be used.
      * @return A new {@link MotionEvent}.
      */
-    private MotionEvent createEvent(MotionEvent e, int action, float y) {
-        return MotionEvent.obtain(
-                e.getDownTime(),
-                e.getEventTime(),
-                action,
-                e.getX(),
-                y,
-                e.getMetaState());
+    private MotionEvent copyEvent(MotionEvent e, int action) {
+        MotionEvent event = MotionEvent.obtain(e);
+        event.setAction(action);
+        return event;
     }
 
     /**
@@ -422,8 +430,9 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
         // if it hasn't been determined yet or if changing the event target during the
         // middle of the gesture is supported. This will allow a smooth transition from
         // swiping the Panel and scrolling the Search Content View.
+        final boolean mayChangeEventTarget = mMayChangeEventTarget && e2.getPointerCount() == 1;
         if (mHasDeterminedGestureOrientation
-                && (!mHasDeterminedEventTarget || mMayChangeEventTarget)) {
+                && (!mHasDeterminedEventTarget || mayChangeEventTarget)) {
             determineEventTarget(distanceY);
         }
 
@@ -465,14 +474,21 @@ public class ContextualSearchEventFilter extends GestureEventFilter {
             // Only allow horizontal movements to be propagated to the Search Content View
             // when the Panel is expanded (that is, not maximized).
             shouldPropagateEventsToSearchPanel = isVertical;
+
+            // If the gesture is horizontal, then we know that the event target won't change.
+            if (!isVertical) mMayChangeEventTarget = false;
         }
 
-        mPreviousEventTarget = mEventTarget;
-        setEventTarget(shouldPropagateEventsToSearchPanel
-                ? EventTarget.SEARCH_PANEL : EventTarget.SEARCH_CONTENT_VIEW);
+        EventTarget target = shouldPropagateEventsToSearchPanel
+                ? EventTarget.SEARCH_PANEL : EventTarget.SEARCH_CONTENT_VIEW;
 
-        mHasChangedEventTarget = mEventTarget != mPreviousEventTarget
-                && mPreviousEventTarget != EventTarget.UNDETERMINED;
+        if (target != mEventTarget) {
+            mPreviousEventTarget = mEventTarget;
+            setEventTarget(target);
+
+            mHasChangedEventTarget = mEventTarget != mPreviousEventTarget
+                    && mPreviousEventTarget != EventTarget.UNDETERMINED;
+        }
     }
 
     /**
