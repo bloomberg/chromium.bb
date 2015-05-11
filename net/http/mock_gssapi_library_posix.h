@@ -11,16 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "net/http/http_auth_gssapi_posix.h"
 
-#if defined(OS_MACOSX) && defined(MAC_OS_X_VERSION_10_9) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_9
-// Including gssapi.h directly is deprecated in the 10.9 SDK.
-#include <GSS/gssapi.h>
-#elif defined(OS_FREEBSD)
-#include <gssapi/gssapi.h>
-#else
-#include <gssapi.h>
-#endif
-
 namespace net {
 
 namespace test {
