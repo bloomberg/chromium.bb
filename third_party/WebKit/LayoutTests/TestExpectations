@@ -1097,7 +1097,8 @@ crbug.com/361729 virtual/stable/fast/multicol/pagination-h-horizontal-bt.html [ 
 crbug.com/361729 virtual/stable/fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 
 crbug.com/437112 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
-crbug.com/437112 virtual/slimmingpaint/fast/canvas/canvas-scale-drawImage-shadow.html [ Skip ]
+
+crbug.com/486830 virtual/slimmingpaint/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure ]
 
 # BEGIN - Old multicol tests that should be removed once the old implementation is gone
 # Imperfect column balancing algorithm in the old implementation:
@@ -1934,7 +1935,6 @@ crbug.com/477743 virtual/slimmingpaint/svg/dom/references-in-shadow-trees.html [
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/filter-child-repaint.svg [ Failure ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/inner-svg-change-viewBox.svg [ Failure Crash ]
 crbug.com/477743 virtual/slimmingpaint/svg/repaint/paintorder-filtered.svg [ Failure ]
-crbug.com/477743 virtual/slimmingpaint/compositing/repaint/fixed-pos-with-abs-pos-child-scroll.html [ Failure ImageOnlyFailure ]
 #------------------------------------------
 
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
