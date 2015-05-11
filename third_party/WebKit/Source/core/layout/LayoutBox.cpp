@@ -895,7 +895,7 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta, ScrollOffsetClampin
 
 bool LayoutBox::needsPreferredWidthsRecalculation() const
 {
-    return style()->paddingStart().isPercent() || style()->paddingEnd().isPercent();
+    return style()->paddingStart().hasPercent() || style()->paddingEnd().hasPercent();
 }
 
 IntSize LayoutBox::scrolledContentOffset() const
@@ -2359,8 +2359,8 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
     // is specified. When we're printing, we also need this quirk if the body or root has a percentage
     // height since we don't set a height in LayoutView when we're printing. So without this quirk, the
     // height has nothing to be a percentage of, and it ends up being 0. That is bad.
-    bool paginatedContentNeedsBaseHeight = document().printing() && h.isPercent()
-        && (isDocumentElement() || (isBody() && document().documentElement()->layoutObject()->style()->logicalHeight().isPercent())) && !isInline();
+    bool paginatedContentNeedsBaseHeight = document().printing() && h.hasPercent()
+        && (isDocumentElement() || (isBody() && document().documentElement()->layoutObject()->style()->logicalHeight().hasPercent())) && !isInline();
     if (stretchesToViewport() || paginatedContentNeedsBaseHeight) {
         LayoutUnit margins = collapsedMarginBefore() + collapsedMarginAfter();
         LayoutUnit visibleHeight = view()->viewLogicalHeightForPercentages();
@@ -2428,7 +2428,7 @@ LayoutUnit LayoutBox::computeContentAndScrollbarLogicalHeightUsing(SizeType heig
     }
     if (height.isFixed())
         return height.value();
-    if (height.isPercent())
+    if (height.hasPercent())
         return computePercentageLogicalHeight(height);
     return -1;
 }
@@ -2506,7 +2506,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
     } else if (cbstyle.logicalHeight().isFixed()) {
         LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle.logicalHeight().value());
         availableHeight = std::max(LayoutUnit(), cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), -1));
-    } else if (cbstyle.logicalHeight().isPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
+    } else if (cbstyle.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         // We need to recur and compute the percentage height for our containing block.
         LayoutUnit heightWithScrollbar = cb->computePercentageLogicalHeight(cbstyle.logicalHeight());
         if (heightWithScrollbar != -1) {
@@ -2555,8 +2555,8 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidth(ShouldComputePreferred shouldC
 
 LayoutUnit LayoutBox::computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit logicalWidth, ShouldComputePreferred shouldComputePreferred) const
 {
-    LayoutUnit minLogicalWidth = (shouldComputePreferred == ComputePreferred && style()->logicalMinWidth().isPercent()) || style()->logicalMinWidth().isMaxSizeNone() ? logicalWidth : computeReplacedLogicalWidthUsing(MinSize, style()->logicalMinWidth());
-    LayoutUnit maxLogicalWidth = (shouldComputePreferred == ComputePreferred && style()->logicalMaxWidth().isPercent()) || style()->logicalMaxWidth().isMaxSizeNone() ? logicalWidth : computeReplacedLogicalWidthUsing(MaxSize, style()->logicalMaxWidth());
+    LayoutUnit minLogicalWidth = (shouldComputePreferred == ComputePreferred && style()->logicalMinWidth().hasPercent()) || style()->logicalMinWidth().isMaxSizeNone() ? logicalWidth : computeReplacedLogicalWidthUsing(MinSize, style()->logicalMinWidth());
+    LayoutUnit maxLogicalWidth = (shouldComputePreferred == ComputePreferred && style()->logicalMaxWidth().hasPercent()) || style()->logicalMaxWidth().isMaxSizeNone() ? logicalWidth : computeReplacedLogicalWidthUsing(MaxSize, style()->logicalMaxWidth());
     return std::max(minLogicalWidth, std::min(logicalWidth, maxLogicalWidth));
 }
 
@@ -2588,7 +2588,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(SizeType sizeType, const 
         // https://bugs.webkit.org/show_bug.cgi?id=91071
         if (logicalWidth.isIntrinsic())
             return computeIntrinsicLogicalWidthUsing(logicalWidth, cw, borderAndPaddingLogicalWidth()) - borderAndPaddingLogicalWidth();
-        if (cw > 0 || (!cw && (containerLogicalWidth.isFixed() || containerLogicalWidth.isPercent())))
+        if (cw > 0 || (!cw && (containerLogicalWidth.isFixed() || containerLogicalWidth.hasPercent())))
             return adjustContentBoxLogicalWidthForBoxSizing(minimumValueForLength(logicalWidth, cw));
         return LayoutUnit();
     }
@@ -2680,7 +2680,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
             // table cells using percentage heights.
             // FIXME: This needs to be made writing-mode-aware. If the cell and image are perpendicular writing-modes, this isn't right.
             // https://bugs.webkit.org/show_bug.cgi?id=46997
-            while (cb && !cb->isLayoutView() && (cb->style()->logicalHeight().isAuto() || cb->style()->logicalHeight().isPercent())) {
+            while (cb && !cb->isLayoutView() && (cb->style()->logicalHeight().isAuto() || cb->style()->logicalHeight().hasPercent())) {
                 if (cb->isTableCell()) {
                     // Don't let table cells squeeze percent-height replaced elements
                     // <http://bugs.webkit.org/show_bug.cgi?id=15359>
@@ -2717,13 +2717,13 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
     // We need to stop here, since we don't want to increase the height of the table
     // artificially.  We're going to rely on this cell getting expanded to some new
     // height, and then when we lay out again we'll use the calculation below.
-    if (isTableCell() && (h.isAuto() || h.isPercent())) {
+    if (isTableCell() && (h.isAuto() || h.hasPercent())) {
         if (hasOverrideLogicalContentHeight())
             return overrideLogicalContentHeight();
         return logicalHeight() - borderAndPaddingLogicalHeight();
     }
 
-    if (h.isPercent() && isOutOfFlowPositioned()) {
+    if (h.hasPercent() && isOutOfFlowPositioned()) {
         // FIXME: This is wrong if the containingBlock has a perpendicular writing mode.
         LayoutUnit availableHeight = containingBlockLogicalHeightForPositioned(containingBlock());
         return adjustContentBoxLogicalHeightForBoxSizing(valueForLength(h, availableHeight));
@@ -4262,7 +4262,7 @@ static bool logicalWidthIsResolvable(const LayoutBox& layoutBox)
         return true;
     if (box->hasOverrideContainingBlockLogicalWidth())
         return box->overrideContainingBlockContentLogicalWidth() != -1;
-    if (box->style()->logicalWidth().isPercent())
+    if (box->style()->logicalWidth().hasPercent())
         return logicalWidthIsResolvable(*box->containingBlock());
 
     return false;
@@ -4312,7 +4312,7 @@ bool LayoutBox::percentageLogicalHeightIsResolvableFromBlock(const LayoutBlock* 
     // height.
     if (cb->style()->logicalHeight().isFixed())
         return true;
-    if (cb->style()->logicalHeight().isPercent() && !isOutOfFlowPositionedWithSpecifiedHeight)
+    if (cb->style()->logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight)
         return percentageLogicalHeightIsResolvableFromBlock(cb->containingBlock(), cb->isOutOfFlowPositioned());
     if (cb->isLayoutView() || inQuirksMode || isOutOfFlowPositionedWithSpecifiedHeight)
         return true;
@@ -4355,8 +4355,8 @@ bool LayoutBox::hasUnsplittableScrollingOverflow() const
     // conditions, but it should work out to be good enough for common cases. Paginating overflow
     // with scrollbars present is not the end of the world and is what we used to do in the old model anyway.
     return !style()->logicalHeight().isIntrinsicOrAuto()
-        || (!style()->logicalMaxHeight().isIntrinsicOrAuto() && !style()->logicalMaxHeight().isMaxSizeNone() && (!style()->logicalMaxHeight().isPercent() || percentageLogicalHeightIsResolvable(this)))
-        || (!style()->logicalMinHeight().isIntrinsicOrAuto() && style()->logicalMinHeight().isPositive() && (!style()->logicalMinHeight().isPercent() || percentageLogicalHeightIsResolvable(this)));
+        || (!style()->logicalMaxHeight().isIntrinsicOrAuto() && !style()->logicalMaxHeight().isMaxSizeNone() && (!style()->logicalMaxHeight().hasPercent() || percentageLogicalHeightIsResolvable(this)))
+        || (!style()->logicalMinHeight().isIntrinsicOrAuto() && style()->logicalMinHeight().isPositive() && (!style()->logicalMinHeight().hasPercent() || percentageLogicalHeightIsResolvable(this)));
 }
 
 bool LayoutBox::isUnsplittableForPagination() const
@@ -4546,16 +4546,16 @@ LayoutPoint LayoutBox::topLeftLocation() const
 
 bool LayoutBox::hasRelativeLogicalWidth() const
 {
-    return style()->logicalWidth().isPercent()
-        || style()->logicalMinWidth().isPercent()
-        || style()->logicalMaxWidth().isPercent();
+    return style()->logicalWidth().hasPercent()
+        || style()->logicalMinWidth().hasPercent()
+        || style()->logicalMaxWidth().hasPercent();
 }
 
 bool LayoutBox::hasRelativeLogicalHeight() const
 {
-    return style()->logicalHeight().isPercent()
-        || style()->logicalMinHeight().isPercent()
-        || style()->logicalMaxHeight().isPercent();
+    return style()->logicalHeight().hasPercent()
+        || style()->logicalMinHeight().hasPercent()
+        || style()->logicalMaxHeight().hasPercent();
 }
 
 static void markBoxForRelayoutAfterSplit(LayoutBox* box)
@@ -4697,7 +4697,8 @@ inline bool LayoutBox::mustInvalidateFillLayersPaintOnWidthChange(const FillLaye
     if (layer.repeatX() != RepeatFill && layer.repeatX() != NoRepeatFill)
         return true;
 
-    if (layer.xPosition().isPercent() && !layer.xPosition().isZero())
+    // TODO(alancutter): Make this work correctly for calc lengths.
+    if (layer.xPosition().hasPercent() && !layer.xPosition().isZero())
         return true;
 
     if (layer.backgroundXOrigin() != LeftEdge)
@@ -4709,7 +4710,8 @@ inline bool LayoutBox::mustInvalidateFillLayersPaintOnWidthChange(const FillLaye
         return true;
 
     if (sizeType == SizeLength) {
-        if (layer.sizeLength().width().isPercent() && !layer.sizeLength().width().isZero())
+        // TODO(alancutter): Make this work correctly for calc lengths.
+        if (layer.sizeLength().width().hasPercent() && !layer.sizeLength().width().isZero())
             return true;
         if (img->isGeneratedImage() && layer.sizeLength().width().isAuto())
             return true;

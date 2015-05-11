@@ -159,7 +159,7 @@ float SVGLengthContext::valueForLength(const Length& length, const ComputedStyle
 float SVGLengthContext::valueForLength(const Length& length, float zoom, SVGLengthMode mode) const
 {
     float dimension = 0;
-    if (length.isPercent()) {
+    if (length.hasPercent()) {
         FloatSize viewportSize;
         determineViewport(viewportSize);
         // The viewport will be unaffected by zoom.

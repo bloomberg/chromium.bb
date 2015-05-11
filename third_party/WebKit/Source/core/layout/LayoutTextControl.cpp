@@ -246,7 +246,7 @@ void LayoutTextControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
     maxLogicalWidth = preferredContentLogicalWidth(const_cast<LayoutTextControl*>(this)->getAvgCharWidth(family));
     if (LayoutBox* innerEditorLayoutBox = innerEditorElement()->layoutBox())
         maxLogicalWidth += innerEditorLayoutBox->paddingStart() + innerEditorLayoutBox->paddingEnd();
-    if (!style()->logicalWidth().isPercent())
+    if (!style()->logicalWidth().hasPercent())
         minLogicalWidth = maxLogicalWidth;
 }
 

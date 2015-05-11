@@ -615,11 +615,11 @@ GridTrackSize LayoutGrid::gridTrackSize(GridTrackSizingDirection direction, size
 
     // If the logical width/height of the grid container is indefinite, percentage values are treated as <auto> (or in
     // the case of minmax() as min-content for the first position and max-content for the second).
-    if (minTrackBreadth.isPercentage() || maxTrackBreadth.isPercentage()) {
+    if (minTrackBreadth.hasPercentage() || maxTrackBreadth.hasPercentage()) {
         if (!hasDefiniteLogicalSize(direction)) {
-            if (minTrackBreadth.isPercentage())
+            if (minTrackBreadth.hasPercentage())
                 minTrackBreadth = Length(MinContent);
-            if (maxTrackBreadth.isPercentage())
+            if (maxTrackBreadth.hasPercentage())
                 maxTrackBreadth = Length(MaxContent);
         }
     }

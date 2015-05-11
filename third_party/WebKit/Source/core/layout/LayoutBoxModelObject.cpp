@@ -409,7 +409,7 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
     // For percentage heights: The percentage is calculated with respect to the height of the generated box's
     // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
     // on content height), and this element is not absolutely positioned, the value computes to 'auto'.
-    if (!logicalHeight.isPercent() || isOutOfFlowPositioned())
+    if (!logicalHeight.hasPercent() || isOutOfFlowPositioned())
         return 0;
 
     // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
@@ -478,13 +478,13 @@ LayoutSize LayoutBoxModelObject::relativePositionOffset() const
     // See <https://bugs.webkit.org/show_bug.cgi?id=26396>.
     if (!style()->top().isAuto()
         && (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight()
-            || !style()->top().isPercent()
+            || !style()->top().hasPercent()
             || containingBlock->stretchesToViewport()))
         offset.expand(0, valueForLength(style()->top(), containingBlock->availableHeight()));
 
     else if (!style()->bottom().isAuto()
         && (!containingBlock->hasAutoHeightOrContainingBlockWithAutoHeight()
-            || !style()->bottom().isPercent()
+            || !style()->bottom().hasPercent()
             || containingBlock->stretchesToViewport()))
         offset.expand(0, -valueForLength(style()->bottom(), containingBlock->availableHeight()));
 
@@ -565,7 +565,7 @@ int LayoutBoxModelObject::pixelSnappedOffsetHeight() const
 LayoutUnit LayoutBoxModelObject::computedCSSPadding(const Length& padding) const
 {
     LayoutUnit w = 0;
-    if (padding.isPercent())
+    if (padding.hasPercent())
         w = containingBlockLogicalWidthForContent();
     return minimumValueForLength(padding, w);
 }

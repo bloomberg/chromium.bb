@@ -105,7 +105,7 @@ void LayoutFileUploadControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogic
     }
     maxLogicalWidth = static_cast<int>(ceilf(std::max(minDefaultLabelWidth, defaultLabelWidth)));
 
-    if (!style()->width().isPercent())
+    if (!style()->width().hasPercent())
         minLogicalWidth = maxLogicalWidth;
 }
 

@@ -176,7 +176,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const ComputedSty
         return nullptr;
     }
 
-    if (offset.isPercent() && layoutObject && layoutObject->isBox() && layoutObject->isPositioned()) {
+    if (offset.hasPercent() && layoutObject && layoutObject->isBox() && layoutObject->isPositioned()) {
         LayoutUnit containingBlockSize = (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
             toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent() :
             toLayoutBox(layoutObject)->containingBlockLogicalHeightForGetComputedStyle();
@@ -200,7 +200,8 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
     RefPtrWillBeRawPtr<CSSPrimitiveValue> bottom = nullptr;
     RefPtrWillBeRawPtr<CSSPrimitiveValue> left = nullptr;
 
-    if (image.imageSlices().top().isPercent())
+    // TODO(alancutter): Make this code aware of calc lengths.
+    if (image.imageSlices().top().hasPercent())
         top = cssValuePool().createValue(image.imageSlices().top().value(), CSSPrimitiveValue::CSS_PERCENTAGE);
     else
         top = cssValuePool().createValue(image.imageSlices().top().value(), CSSPrimitiveValue::CSS_NUMBER);
@@ -211,7 +212,7 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
         bottom = top;
         left = top;
     } else {
-        if (image.imageSlices().right().isPercent())
+        if (image.imageSlices().right().hasPercent())
             right = cssValuePool().createValue(image.imageSlices().right().value(), CSSPrimitiveValue::CSS_PERCENTAGE);
         else
             right = cssValuePool().createValue(image.imageSlices().right().value(), CSSPrimitiveValue::CSS_NUMBER);
@@ -220,7 +221,7 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
             bottom = top;
             left = right;
         } else {
-            if (image.imageSlices().bottom().isPercent())
+            if (image.imageSlices().bottom().hasPercent())
                 bottom = cssValuePool().createValue(image.imageSlices().bottom().value(), CSSPrimitiveValue::CSS_PERCENTAGE);
             else
                 bottom = cssValuePool().createValue(image.imageSlices().bottom().value(), CSSPrimitiveValue::CSS_NUMBER);
@@ -228,7 +229,7 @@ static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> valueForNinePieceImageSl
             if (image.imageSlices().left() == image.imageSlices().right()) {
                 left = right;
             } else {
-                if (image.imageSlices().left().isPercent())
+                if (image.imageSlices().left().hasPercent())
                     left = cssValuePool().createValue(image.imageSlices().left().value(), CSSPrimitiveValue::CSS_PERCENTAGE);
                 else
                     left = cssValuePool().createValue(image.imageSlices().left().value(), CSSPrimitiveValue::CSS_NUMBER);
@@ -355,7 +356,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForReflection(const StyleReflection
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> offset = nullptr;
-    if (reflection->offset().isPercent())
+    // TODO(alancutter): Make this work correctly for calc lengths.
+    if (reflection->offset().hasPercent())
         offset = cssValuePool().createValue(reflection->offset().percent(), CSSPrimitiveValue::CSS_PERCENTAGE);
     else
         offset = zoomAdjustedPixelValue(reflection->offset().value(), style);
@@ -1730,7 +1732,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         if (marginRight.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(marginRight, style);
         float value;
-        if (marginRight.isPercent()) {
+        if (marginRight.hasPercent()) {
             // LayoutBox gives a marginRight() that is the distance between the right-edge of the child box
             // and the right-edge of the containing box, when display == BLOCK. Let's calculate the absolute
             // value of the specified margin-right % instead of relying on LayoutBox's marginRight() value.

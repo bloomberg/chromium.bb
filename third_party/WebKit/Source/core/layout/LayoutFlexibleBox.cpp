@@ -606,7 +606,7 @@ LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(LayoutBox& 
 
 bool LayoutFlexibleBox::mainAxisLengthIsIndefinite(const Length& flexBasis) const
 {
-    return flexBasis.isAuto() || (flexBasis.isPercent() && !mainAxisExtentIsDefinite());
+    return flexBasis.isAuto() || (flexBasis.hasPercent() && !mainAxisExtentIsDefinite());
 }
 
 bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(LayoutBox& child) const
@@ -871,7 +871,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
         bool hasClampedSize = !childFlexBaseSizeRequiresLayout(child);
         if (hasClampedSize) {
             const Length& flexBasis = flexBasisForChild(child);
-            bool flexBasisIsDefinite = flexBasis.isFixed() || (flexBasis.isPercent() && mainAxisExtentIsDefinite());
+            bool flexBasisIsDefinite = flexBasis.isFixed() || (flexBasis.hasPercent() && mainAxisExtentIsDefinite());
             if (flexBasisIsDefinite) {
                 LayoutUnit resolvedFlexBasis = computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis);
                 ASSERT(resolvedFlexBasis >= 0);

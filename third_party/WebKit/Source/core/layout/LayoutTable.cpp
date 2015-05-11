@@ -351,7 +351,7 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(const Length& 
             borders = borderAndPadding;
         }
         computedLogicalHeight = styleLogicalHeight.value() - borders;
-    } else if (styleLogicalHeight.isPercent()) {
+    } else if (styleLogicalHeight.hasPercent()) {
         computedLogicalHeight = computePercentageLogicalHeight(styleLogicalHeight);
     } else if (styleLogicalHeight.isIntrinsic()) {
         computedLogicalHeight = computeIntrinsicLogicalContentHeightUsing(styleLogicalHeight, logicalHeight() - borderAndPadding, borderAndPadding);

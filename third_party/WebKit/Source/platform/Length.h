@@ -243,7 +243,6 @@ public:
     }
 
     bool isAuto() const { return type() == Auto; }
-    bool isPercent() const { return type() == Percent || type() == Calculated; }
     bool isFixed() const { return type() == Fixed; }
     bool isIntrinsicOrAuto() const { return type() == Auto || isLegacyIntrinsic() || isIntrinsic(); }
     bool isLegacyIntrinsic() const { return type() == Intrinsic || type() == MinIntrinsic; }
@@ -256,6 +255,7 @@ public:
     bool isMaxContent() const { return type() == MaxContent; }
     bool isFillAvailable() const { return type() == FillAvailable; }
     bool isFitContent() const { return type() == FitContent; }
+    bool hasPercent() const { return type() == Percent || type() == Calculated; }
 
     Length blend(const Length& from, double progress, ValueRange range) const
     {

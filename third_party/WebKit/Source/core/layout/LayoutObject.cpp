@@ -730,7 +730,7 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     if (!object->hasOverflowClip())
         return false;
 
-    if (object->style()->width().isIntrinsicOrAuto() || object->style()->height().isIntrinsicOrAuto() || object->style()->height().isPercent())
+    if (object->style()->width().isIntrinsicOrAuto() || object->style()->height().isIntrinsicOrAuto() || object->style()->height().hasPercent())
         return false;
 
     // Table parts can't be relayout roots since the table is responsible for layouting all the parts.
@@ -941,7 +941,8 @@ bool LayoutObject::mustInvalidateFillLayersPaintOnHeightChange(const FillLayer& 
     if (layer.repeatY() != RepeatFill && layer.repeatY() != NoRepeatFill)
         return true;
 
-    if (layer.yPosition().isPercent() && !layer.yPosition().isZero())
+    // TODO(alancutter): Make this work correctly for calc lengths.
+    if (layer.yPosition().hasPercent() && !layer.yPosition().isZero())
         return true;
 
     if (layer.backgroundYOrigin() != TopEdge)
@@ -953,7 +954,8 @@ bool LayoutObject::mustInvalidateFillLayersPaintOnHeightChange(const FillLayer& 
         return true;
 
     if (sizeType == SizeLength) {
-        if (layer.sizeLength().height().isPercent() && !layer.sizeLength().height().isZero())
+        // TODO(alancutter): Make this work correctly for calc lengths.
+        if (layer.sizeLength().height().hasPercent() && !layer.sizeLength().height().isZero())
             return true;
         if (img->isGeneratedImage() && layer.sizeLength().height().isAuto())
             return true;

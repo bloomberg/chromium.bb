@@ -882,12 +882,12 @@ IntSize BoxPainter::calculateFillTileSize(const LayoutBoxModelObject& obj, const
 
         if (layerWidth.isFixed())
             tileSize.setWidth(layerWidth.value());
-        else if (layerWidth.isPercent())
+        else if (layerWidth.hasPercent())
             tileSize.setWidth(valueForLength(layerWidth, positioningAreaSize.width()));
 
         if (layerHeight.isFixed())
             tileSize.setHeight(layerHeight.value());
-        else if (layerHeight.isPercent())
+        else if (layerHeight.hasPercent())
             tileSize.setHeight(valueForLength(layerHeight, positioningAreaSize.height()));
 
         applySubPixelHeuristicForTileSize(tileSize, positioningAreaSize);

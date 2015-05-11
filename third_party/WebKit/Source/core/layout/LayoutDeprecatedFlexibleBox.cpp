@@ -331,7 +331,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 continue;
 
             SubtreeLayoutScope layoutScope(*child);
-            if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent())))
+            if (relayoutChildren || (child->isReplaced() && (child->style()->width().hasPercent() || child->style()->height().hasPercent())))
                 layoutScope.setChildNeedsLayout(child);
 
             // Compute the child's vertical margins.
@@ -630,7 +630,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             }
 
             SubtreeLayoutScope layoutScope(*child);
-            if (!haveLineClamp && (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))))
+            if (!haveLineClamp && (relayoutChildren || (child->isReplaced() && (child->style()->width().hasPercent() || child->style()->height().hasPercent()))))
                 layoutScope.setChildNeedsLayout(child);
 
             if (child->style()->visibility() == COLLAPSE) {
@@ -844,7 +844,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
             continue;
 
         child->clearOverrideSize();
-        if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))
+        if (relayoutChildren || (child->isReplaced() && (child->style()->width().hasPercent() || child->style()->height().hasPercent()))
             || (child->style()->height().isAuto() && child->isLayoutBlock())) {
             child->setChildNeedsLayout(MarkOnlyThis);
 
@@ -931,7 +931,7 @@ void LayoutDeprecatedFlexibleBox::clearLineClamp()
             continue;
 
         child->clearOverrideSize();
-        if ((child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))
+        if ((child->isReplaced() && (child->style()->width().hasPercent() || child->style()->height().hasPercent()))
             || (child->style()->height().isAuto() && child->isLayoutBlock())) {
             child->setChildNeedsLayout();
 
