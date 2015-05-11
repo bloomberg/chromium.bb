@@ -118,11 +118,6 @@ public:
         databaseClosed(m_database.get());
     }
 
-    virtual bool isCleanupTask() const override
-    {
-        return true;
-    }
-
 private:
     explicit NotifyDatabaseObserverOnCloseTask(Database* database)
         : m_database(database)
