@@ -36,7 +36,6 @@
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
-#include "content/renderer/gpu/compositor_software_output_device.h"
 #include "content/renderer/gpu/delegated_compositor_output_surface.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/mailbox_output_surface.h"
@@ -1036,7 +1035,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
   if (!context_provider.get()) {
     scoped_ptr<cc::SoftwareOutputDevice> software_device(
-        new CompositorSoftwareOutputDevice());
+        new cc::SoftwareOutputDevice());
 
     return scoped_ptr<cc::OutputSurface>(new CompositorOutputSurface(
         routing_id(), output_surface_id, nullptr, nullptr,

@@ -174,8 +174,6 @@
       'renderer/gpu/compositor_forwarding_message_filter.h',
       'renderer/gpu/compositor_output_surface.cc',
       'renderer/gpu/compositor_output_surface.h',
-      'renderer/gpu/compositor_software_output_device.cc',
-      'renderer/gpu/compositor_software_output_device.h',
       'renderer/gpu/delegated_compositor_output_surface.cc',
       'renderer/gpu/delegated_compositor_output_surface.h',
       'renderer/gpu/frame_swap_message_queue.cc',
