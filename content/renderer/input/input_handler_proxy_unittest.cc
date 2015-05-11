@@ -415,6 +415,17 @@ TEST_F(InputHandlerProxyTest, GesturePinch) {
 
   gesture_.type = WebInputEvent::GesturePinchUpdate;
   gesture_.data.pinchUpdate.scale = 0.5;
+  gesture_.data.pinchUpdate.zoomDisabled = true;
+  gesture_.x = 9;
+  gesture_.y = 6;
+  EXPECT_EQ(InputHandlerProxy::DROP_EVENT,
+            input_handler_->HandleInputEvent(gesture_));
+  gesture_.data.pinchUpdate.zoomDisabled = false;
+
+  VERIFY_AND_RESET_MOCKS();
+
+  gesture_.type = WebInputEvent::GesturePinchUpdate;
+  gesture_.data.pinchUpdate.scale = 0.5;
   gesture_.x = 9;
   gesture_.y = 6;
   EXPECT_CALL(mock_input_handler_, PinchGestureUpdate(.5, gfx::Point(9, 6)));

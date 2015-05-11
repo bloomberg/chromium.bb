@@ -92,13 +92,14 @@ namespace content {
 
 namespace {
 
-id MockGestureEvent(
-    NSEventType type, NSTimeInterval timestamp, double magnification) {
+id MockGestureEvent(NSEventType type, double magnification) {
   id event = [OCMockObject mockForClass:[NSEvent class]];
   NSPoint locationInWindow = NSMakePoint(0, 0);
   CGFloat deltaX = 0;
   CGFloat deltaY = 0;
+  NSTimeInterval timestamp = 1;
   NSUInteger modifierFlags = 0;
+
   [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(type)] type];
   [(NSEvent*)[[event stub]
       andReturnValue:OCMOCK_VALUE(locationInWindow)] locationInWindow];
@@ -866,7 +867,38 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   host->Shutdown();
 }
 
-TEST_F(RenderWidgetHostViewMacTest, PinchThresholding) {
+class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
+ public:
+  RenderWidgetHostViewMacPinchTest() : process_host_(NULL) {}
+
+  bool ZoomDisabledForPinchUpdateMessage() {
+    const IPC::Message* message = NULL;
+    // The first message may be a PinchBegin. Go for the second message if
+    // there are two.
+    switch (process_host_->sink().message_count()) {
+      case 1:
+        message = process_host_->sink().GetMessageAt(0);
+        break;
+      case 2:
+        message = process_host_->sink().GetMessageAt(1);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    DCHECK(message);
+    Tuple<IPC::WebInputEventPointer, ui::LatencyInfo, bool> data;
+    InputMsg_HandleInputEvent::Read(message, &data);
+    IPC::WebInputEventPointer ipc_event = get<0>(data);
+    const blink::WebGestureEvent* gesture_event =
+        static_cast<const blink::WebGestureEvent*>(ipc_event);
+    return gesture_event->data.pinchUpdate.zoomDisabled;
+  }
+
+  MockRenderProcessHost* process_host_;
+};
+
+TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   // This tests Lion+ functionality, so don't run the test pre-Lion.
   if (!base::mac::IsOSLionOrLater())
     return;
@@ -875,11 +907,10 @@ TEST_F(RenderWidgetHostViewMacTest, PinchThresholding) {
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.
   TestBrowserContext browser_context;
-  MockRenderProcessHost* process_host =
-      new MockRenderProcessHost(&browser_context);
+  process_host_ = new MockRenderProcessHost(&browser_context);
   MockRenderWidgetHostDelegate delegate;
   MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
-      &delegate, process_host, MSG_ROUTING_NONE);
+      &delegate, process_host_, MSG_ROUTING_NONE);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   // We'll use this IPC message to ack events.
@@ -892,87 +923,95 @@ TEST_F(RenderWidgetHostViewMacTest, PinchThresholding) {
   // Do a gesture that crosses the threshold.
   {
     NSEvent* pinchBeginEvent =
-        MockGestureEvent(NSEventTypeBeginGesture, 100.1, 0);
+        MockGestureEvent(NSEventTypeBeginGesture, 0);
     NSEvent* pinchUpdateEvents[3] = {
-        MockGestureEvent(NSEventTypeMagnify, 100.2, 0.25),
-        MockGestureEvent(NSEventTypeMagnify, 100.3, 0.25),
-        MockGestureEvent(NSEventTypeMagnify, 100.4, 0.25),
+        MockGestureEvent(NSEventTypeMagnify, 0.25),
+        MockGestureEvent(NSEventTypeMagnify, 0.25),
+        MockGestureEvent(NSEventTypeMagnify, 0.25),
     };
     NSEvent* pinchEndEvent =
-        MockGestureEvent(NSEventTypeEndGesture, 100.5, 0);
+        MockGestureEvent(NSEventTypeEndGesture, 0);
 
-    // No messages are sent for the pinch begin and the first update event.
     [view->cocoa_view() beginGestureWithEvent:pinchBeginEvent];
+    EXPECT_EQ(0U, process_host_->sink().message_count());
+
+    // No zoom is sent for the first update event.
     [view->cocoa_view() magnifyWithEvent:pinchUpdateEvents[0]];
-    ASSERT_EQ(0U, process_host->sink().message_count());
+    host->OnMessageReceived(*response);
+    EXPECT_EQ(2U, process_host_->sink().message_count());
+    EXPECT_TRUE(ZoomDisabledForPinchUpdateMessage());
+    process_host_->sink().ClearMessages();
 
-    // The second update event crosses the threshold of 0.4, and so a begin
-    // and update are sent.
+    // The second update event crosses the threshold of 0.4, and so zoom is no
+    // longer disabled.
     [view->cocoa_view() magnifyWithEvent:pinchUpdateEvents[1]];
-    ASSERT_EQ(2U, process_host->sink().message_count());
+    EXPECT_FALSE(ZoomDisabledForPinchUpdateMessage());
     host->OnMessageReceived(*response);
+    EXPECT_EQ(1U, process_host_->sink().message_count());
+    process_host_->sink().ClearMessages();
 
-    // The third update only causes one event to be sent.
+    // The third update still has zoom enabled.
     [view->cocoa_view() magnifyWithEvent:pinchUpdateEvents[2]];
-    ASSERT_EQ(3U, process_host->sink().message_count());
+    EXPECT_FALSE(ZoomDisabledForPinchUpdateMessage());
     host->OnMessageReceived(*response);
+    EXPECT_EQ(1U, process_host_->sink().message_count());
+    process_host_->sink().ClearMessages();
 
-    // As does the end.
     [view->cocoa_view() endGestureWithEvent:pinchEndEvent];
-    ASSERT_EQ(4U, process_host->sink().message_count());
-
-    process_host->sink().ClearMessages();
+    EXPECT_EQ(1U, process_host_->sink().message_count());
+    process_host_->sink().ClearMessages();
   }
 
-  // Do a gesture that doesn't cross the threshold, but happens within 1 second,
-  // so it should be sent to the renderer.
+  // Do a gesture that doesn't cross the threshold, but happens when we're not
+  // at page scale factor one, so it should be sent to the renderer.
   {
-    NSEvent* pinchBeginEvent =
-        MockGestureEvent(NSEventTypeBeginGesture, 101.0, 0);
-    NSEvent* pinchUpdateEvent =
-        MockGestureEvent(NSEventTypeMagnify, 101.1, 0.25);
-    NSEvent* pinchEndEvent =
-        MockGestureEvent(NSEventTypeEndGesture, 101.2, 0);
+    NSEvent* pinchBeginEvent = MockGestureEvent(NSEventTypeBeginGesture, 0);
+    NSEvent* pinchUpdateEvent = MockGestureEvent(NSEventTypeMagnify, 0.25);
+    NSEvent* pinchEndEvent = MockGestureEvent(NSEventTypeEndGesture, 0);
 
-    // No message comes for the begin event.
+    view->page_at_minimum_scale_ = false;
+
     [view->cocoa_view() beginGestureWithEvent:pinchBeginEvent];
-    ASSERT_EQ(0U, process_host->sink().message_count());
+    EXPECT_EQ(0U, process_host_->sink().message_count());
 
-    // Two messages come for the first update event.
+    // Expect that a zoom happen because the time threshold has not passed.
     [view->cocoa_view() magnifyWithEvent:pinchUpdateEvent];
-    ASSERT_EQ(2U, process_host->sink().message_count());
+    EXPECT_FALSE(ZoomDisabledForPinchUpdateMessage());
     host->OnMessageReceived(*response);
+    EXPECT_EQ(2U, process_host_->sink().message_count());
+    process_host_->sink().ClearMessages();
 
-    // The end event sends one message.
     [view->cocoa_view() endGestureWithEvent:pinchEndEvent];
-    ASSERT_EQ(3U, process_host->sink().message_count());
-
-    process_host->sink().ClearMessages();
+    EXPECT_EQ(1U, process_host_->sink().message_count());
+    process_host_->sink().ClearMessages();
   }
 
-  // Do a gesture that doesn't cross the threshold and happens more than one
-  // second later.
+  // Do a gesture again, after the page scale is no longer at one, and ensure
+  // that it is thresholded again.
   {
-    NSEvent* pinchBeginEvent =
-        MockGestureEvent(NSEventTypeBeginGesture, 103.0, 0);
-    NSEvent* pinchUpdateEvent =
-        MockGestureEvent(NSEventTypeMagnify, 103.1, 0.25);
-    NSEvent* pinchEndEvent =
-        MockGestureEvent(NSEventTypeEndGesture, 103.2, 0);
+    NSEvent* pinchBeginEvent = MockGestureEvent(NSEventTypeBeginGesture, 0);
+    NSEvent* pinchUpdateEvent = MockGestureEvent(NSEventTypeMagnify, 0.25);
+    NSEvent* pinchEndEvent = MockGestureEvent(NSEventTypeEndGesture, 0);
 
-    // No message comes for the begin event.
+    view->page_at_minimum_scale_ = true;
+
     [view->cocoa_view() beginGestureWithEvent:pinchBeginEvent];
-    ASSERT_EQ(0U, process_host->sink().message_count());
+    EXPECT_EQ(0U, process_host_->sink().message_count());
 
-    // Two messages come for the first update event.
+    // Get back to zoom one right after the begin event. This should still keep
+    // the thresholding in place (it is latched at the begin event).
+    view->page_at_minimum_scale_ = false;
+
+    // Expect that zoom be disabled because the time threshold has passed.
     [view->cocoa_view() magnifyWithEvent:pinchUpdateEvent];
-    ASSERT_EQ(0U, process_host->sink().message_count());
+    EXPECT_EQ(2U, process_host_->sink().message_count());
+    EXPECT_TRUE(ZoomDisabledForPinchUpdateMessage());
+    host->OnMessageReceived(*response);
+    process_host_->sink().ClearMessages();
 
-    // As does the end.
     [view->cocoa_view() endGestureWithEvent:pinchEndEvent];
-    ASSERT_EQ(0U, process_host->sink().message_count());
-
-    process_host->sink().ClearMessages();
+    EXPECT_EQ(1U, process_host_->sink().message_count());
+    process_host_->sink().ClearMessages();
   }
 
   // Clean up.

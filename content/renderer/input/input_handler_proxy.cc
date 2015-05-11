@@ -280,6 +280,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       if (gesture_pinch_on_impl_thread_) {
         const WebGestureEvent& gesture_event =
             static_cast<const WebGestureEvent&>(event);
+        if (gesture_event.data.pinchUpdate.zoomDisabled)
+            return DROP_EVENT;
         input_handler_->PinchGestureUpdate(
             gesture_event.data.pinchUpdate.scale,
             gfx::Point(gesture_event.x, gesture_event.y));

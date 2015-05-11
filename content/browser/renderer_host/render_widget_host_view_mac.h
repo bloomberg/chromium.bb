@@ -159,12 +159,13 @@ class Layer;
   scoped_ptr<blink::WebGestureEvent> gestureBeginEvent_;
 
   // To avoid accidental pinches, require that a certain zoom threshold be
-  // reached before forwarding it to the browser. Use |unusedPinchAmount_| to
+  // reached before forwarding it to the browser. Use |pinchUnusedAmount_| to
   // hold this value. If the user reaches this value, don't re-require the
-  // threshold be reached until a certain time has passed since the last
-  // zoom. Store the time of the last zoom in |lastUsedPinchEventTimestamp_|.
-  float unusedPinchAmount_;
-  NSTimeInterval lastUsedPinchEventTimestamp_;
+  // threshold be reached until the page has been zoomed back to page scale of
+  // one.
+  bool pinchHasReachedZoomThreshold_;
+  float pinchUnusedAmount_;
+  NSTimeInterval pinchLastGestureTimestamp_;
 
   // This is set if a GesturePinchBegin event has been sent in the lifetime of
   // |gestureBeginEvent_|. If set, a GesturePinchEnd will be sent when the
@@ -449,6 +450,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // help in recycling the internals of BrowserCompositorViewMac.
   scoped_ptr<BrowserCompositorMacPlaceholder>
       browser_compositor_placeholder_;
+
+  // Set when the currently-displayed frame is the minimum scale. Used to
+  // determine if pinch gestures need to be thresholded.
+  bool page_at_minimum_scale_;
 
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;
