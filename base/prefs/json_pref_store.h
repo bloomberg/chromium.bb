@@ -29,7 +29,6 @@ class Clock;
 class DictionaryValue;
 class FilePath;
 class HistogramBase;
-class JsonPrefStoreLossyWriteTest;
 class SequencedTaskRunner;
 class SequencedWorkerPool;
 class Value;
@@ -166,7 +165,6 @@ class BASE_PREFS_EXPORT JsonPrefStore
                            WriteCountHistogramTestMultiplePeriods);
   FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
                            WriteCountHistogramTestPeriodWithGaps);
-  friend class base::JsonPrefStoreLossyWriteTest;
 
   ~JsonPrefStore() override;
 
@@ -192,10 +190,6 @@ class BASE_PREFS_EXPORT JsonPrefStore
                         scoped_ptr<base::DictionaryValue> prefs,
                         bool schedule_write);
 
-  // Schedule a write with the file writer as long as |flags| doesn't contain
-  // WriteablePrefStore::LOSSY_PREF_WRITE_FLAG.
-  void ScheduleWrite(uint32 flags);
-
   const base::FilePath path_;
   const base::FilePath alternate_path_;
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
@@ -214,7 +208,6 @@ class BASE_PREFS_EXPORT JsonPrefStore
 
   bool initialized_;
   bool filtering_in_progress_;
-  bool pending_lossy_write_;
   PrefReadError read_error_;
 
   std::set<std::string> keys_need_empty_value_;
