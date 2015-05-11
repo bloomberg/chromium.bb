@@ -23,7 +23,9 @@ namespace chrome {
 
 extern const char kChromeVersion[];
 
+#if defined(OS_WIN)
 extern const char kChromeVersionEnvVar[];
+#endif
 
 extern const base::FilePath::CharType kBrowserProcessExecutableName[];
 extern const base::FilePath::CharType kHelperProcessExecutableName[];
@@ -51,16 +53,15 @@ extern const base::FilePath::CharType kFrameworkName[];
 extern const base::FilePath::CharType* const kHelperFlavorSuffixes[];
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
+extern const base::FilePath::CharType kBrowserResourcesDll[];
 extern const base::FilePath::CharType kMetroDriverDll[];
-extern const wchar_t kStatusTrayWindowClass[];
+extern const base::FilePath::CharType kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
-extern const wchar_t kCrashReportLog[];
-extern const wchar_t kTestingInterfaceDLL[];
+
 extern const char    kInitialProfile[];
 extern const char    kMultiProfileDirPrefix[];
 extern const base::FilePath::CharType kGuestProfileDir[];
 extern const base::FilePath::CharType kSystemProfileDir[];
-extern const wchar_t kBrowserResourcesDll[];
 
 // filenames
 extern const base::FilePath::CharType kAffiliationDatabaseFileName[];
@@ -73,13 +74,11 @@ extern const base::FilePath::CharType kExtensionActivityLogFilename[];
 extern const base::FilePath::CharType kExtensionsCookieFilename[];
 extern const base::FilePath::CharType kFirstRunSentinel[];
 extern const base::FilePath::CharType kGCMStoreDirname[];
-extern const base::FilePath::CharType kJumpListIconDirname[];
 extern const base::FilePath::CharType kLocalStateFilename[];
 extern const base::FilePath::CharType kLocalStorePoolName[];
 extern const base::FilePath::CharType kLoginDataFileName[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
 extern const base::FilePath::CharType kNetworkPersistentStateFilename[];
-extern const base::FilePath::CharType kNewTabThumbnailsFilename[];
 extern const base::FilePath::CharType kPreferencesFilename[];
 extern const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[];
 extern const base::FilePath::CharType kReadmeFilename[];
@@ -92,15 +91,20 @@ extern const base::FilePath::CharType kSingletonCookieFilename[];
 extern const base::FilePath::CharType kSingletonLockFilename[];
 extern const base::FilePath::CharType kSingletonSocketFilename[];
 extern const base::FilePath::CharType kSupervisedUserSettingsFilename[];
-extern const base::FilePath::CharType kSyncCredentialsFilename[];
 extern const base::FilePath::CharType kThemePackFilename[];
 extern const base::FilePath::CharType kWebAppDirname[];
+
+#if defined(OS_WIN)
+extern const base::FilePath::CharType kJumpListIconDirname[];
+#endif
 
 // File name of the Pepper Flash plugin on different platforms.
 extern const base::FilePath::CharType kPepperFlashPluginFilename[];
 
 // directory names
+#if defined(OS_WIN)
 extern const wchar_t kUserDataDirname[];
+#endif
 
 // Fraction of the total number of processes to be used for hosting
 // extensions. If we have more extensions than this percentage, we will start

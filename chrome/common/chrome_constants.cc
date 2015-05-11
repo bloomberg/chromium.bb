@@ -21,7 +21,9 @@
 
 namespace chrome {
 
+#if defined(OS_WIN)
 const char kChromeVersionEnvVar[] = "CHROME_VERSION";
+#endif
 
 // The following should not be used for UI strings; they are meant
 // for system strings only. UI changes should be made in the GRD.
@@ -124,17 +126,16 @@ const char* const kHelperFlavorSuffixes[] = {
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
+const base::FilePath::CharType kBrowserResourcesDll[] = FPL("chrome.dll");
 const base::FilePath::CharType kMetroDriverDll[] = FPL("metro_driver.dll");
-const wchar_t kStatusTrayWindowClass[] = L"Chrome_StatusTrayWindow";
+const base::FilePath::CharType kStatusTrayWindowClass[] =
+    FPL("Chrome_StatusTrayWindow");
 #endif  // defined(OS_WIN)
 
-const wchar_t kCrashReportLog[] = L"Reported Crashes.txt";
-const wchar_t kTestingInterfaceDLL[] = L"testing_interface.dll";
 const char    kInitialProfile[] = "Default";
 const char    kMultiProfileDirPrefix[] = "Profile ";
 const base::FilePath::CharType kGuestProfileDir[] = FPL("Guest Profile");
 const base::FilePath::CharType kSystemProfileDir[] = FPL("System Profile");
-const wchar_t kBrowserResourcesDll[] = L"chrome.dll";
 
 // filenames
 const base::FilePath::CharType kAffiliationDatabaseFileName[] =
@@ -152,15 +153,12 @@ const base::FilePath::CharType kExtensionsCookieFilename[] =
     FPL("Extension Cookies");
 const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
 const base::FilePath::CharType kGCMStoreDirname[] = FPL("GCM Store");
-const base::FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kLocalStorePoolName[] = FPL("LocalStorePool");
 const base::FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNetworkPersistentStateFilename[] =
     FPL("Network Persistent State");
-const base::FilePath::CharType kNewTabThumbnailsFilename[] =
-    FPL("Top Thumbnails");
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[] =
     FPL("Protected Preferences");
@@ -180,10 +178,12 @@ const base::FilePath::CharType kSingletonSocketFilename[] =
     FPL("SingletonSocket");
 const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
     FPL("Managed Mode Settings");
-const base::FilePath::CharType kSyncCredentialsFilename[] =
-    FPL("Sync Credentials");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
+
+#if defined(OS_WIN)
+const base::FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
+#endif
 
 // File name of the Pepper Flash plugin on different platforms.
 const base::FilePath::CharType kPepperFlashPluginFilename[] =
@@ -196,7 +196,9 @@ const base::FilePath::CharType kPepperFlashPluginFilename[] =
 #endif
 
 // directory names
+#if defined(OS_WIN)
 const wchar_t kUserDataDirname[] = L"User Data";
+#endif
 
 const float kMaxShareOfExtensionProcesses = 0.30f;
 

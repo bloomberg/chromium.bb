@@ -183,6 +183,12 @@ extern const char kOutputFile[];
 
 }  // namespace switches
 
+namespace env_vars {
+
+extern const char kGoogleUpdateIsMachineEnvVar[];
+
+}  // namespace env_vars
+
 extern const wchar_t kActiveSetupExe[];
 extern const wchar_t kAppLauncherGuid[];
 extern const wchar_t kChromeDll[];

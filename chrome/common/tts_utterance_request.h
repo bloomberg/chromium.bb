@@ -34,11 +34,4 @@ struct TtsVoice {
   bool is_default;
 };
 
-struct TtsUtteranceResponse {
-  TtsUtteranceResponse();
-  ~TtsUtteranceResponse();
-
-  int id;
-};
-
 #endif  // CHROME_COMMON_TTS_UTTERANCE_REQUEST_H_

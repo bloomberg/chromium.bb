@@ -208,8 +208,6 @@ class ServiceResolverImpl
   std::string service_name_;
   ResolveCompleteCallback callback_;
 
-  bool has_resolved_;
-
   bool metadata_resolved_;
   bool address_resolved_;
 
