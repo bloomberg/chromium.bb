@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_DISPATCHER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -39,12 +40,24 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId,
       blink::WebPresentationSessionClientCallbacks* callback);
+  virtual void sendString(
+      const blink::WebString& presentationUrl,
+      const blink::WebString& presentationId,
+      const blink::WebString& message);
+  virtual void sendArrayBuffer(
+      const blink::WebString& presentationUrl,
+      const blink::WebString& presentationId,
+      const uint8* data,
+      size_t length);
   virtual void closeSession(
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId);
 
-  // RenderFrameObserver
+  // RenderFrameObserver implementation.
   void DidChangeDefaultPresentation() override;
+  void DidCommitProvisionalLoad(
+      bool is_new_navigation,
+      bool is_same_page_navigation) override;
 
   void OnScreenAvailabilityChanged(
       const std::string& presentation_url,
@@ -67,9 +80,18 @@ class CONTENT_EXPORT PresentationDispatcher
       const std::string& presentation_url,
       bool watched);
 
+  void DoSendMessage(const presentation::SessionMessage& session_message);
+  void HandleSendMessageRequests(bool success);
+
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;
   presentation::PresentationServicePtr presentation_service_;
+
+  // Message requests are queued here and only one message at a time is sent
+  // over mojo channel.
+  using MessageRequestQueue =
+      std::queue<linked_ptr<presentation::SessionMessage>>;
+  MessageRequestQueue message_request_queue_;
 };
 
 }  // namespace content

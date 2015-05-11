@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/common/presentation/presentation_service.mojom.h"
+#include "content/public/common/presentation_constants.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/presentation/presentation_session_client.h"
@@ -132,6 +133,112 @@ void PresentationDispatcher::joinSession(
           base::Owned(callback)));
 }
 
+void PresentationDispatcher::sendString(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId,
+    const blink::WebString& message) {
+  if (message.utf8().size() > kMaxPresentationSessionMessageSize) {
+    // TODO(crbug.com/459008): Limit the size of individual messages to 64k
+    // for now. Consider throwing DOMException or splitting bigger messages
+    // into smaller chunks later.
+    LOG(WARNING) << "message size exceeded limit!";
+    return;
+  }
+
+  presentation::SessionMessage* session_message =
+      new presentation::SessionMessage();
+  session_message->presentation_url = presentationUrl.utf8();
+  session_message->presentation_id = presentationId.utf8();
+  session_message->type = presentation::PresentationMessageType::
+                          PRESENTATION_MESSAGE_TYPE_TEXT;
+  session_message->message = message.utf8();
+
+  message_request_queue_.push(make_linked_ptr(session_message));
+  // Start processing request if only one in the queue.
+  if (message_request_queue_.size() == 1) {
+    const linked_ptr<presentation::SessionMessage>& request =
+        message_request_queue_.front();
+    DoSendMessage(*request);
+  }
+}
+
+void PresentationDispatcher::sendArrayBuffer(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId,
+    const uint8* data,
+    size_t length) {
+  DCHECK(data);
+  if (length > kMaxPresentationSessionMessageSize) {
+    // TODO(crbug.com/459008): Same as in sendString().
+    LOG(WARNING) << "data size exceeded limit!";
+    return;
+  }
+
+  const std::vector<uint8> vector(data, data + length);
+  presentation::SessionMessage* session_message =
+      new presentation::SessionMessage();
+  session_message->presentation_url = presentationUrl.utf8();
+  session_message->presentation_id = presentationId.utf8();
+  session_message->type = presentation::PresentationMessageType::
+                          PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
+  session_message->data = mojo::Array<uint8>::From(vector);
+
+  message_request_queue_.push(make_linked_ptr(session_message));
+  // Start processing request if only one in the queue.
+  if (message_request_queue_.size() == 1) {
+    const linked_ptr<presentation::SessionMessage>& request =
+        message_request_queue_.front();
+    DoSendMessage(*request);
+  }
+}
+
+void PresentationDispatcher::DoSendMessage(
+    const presentation::SessionMessage& session_message) {
+  ConnectToPresentationServiceIfNeeded();
+
+  presentation::SessionMessagePtr message_request(
+      presentation::SessionMessage::New());
+  message_request->presentation_url = session_message.presentation_url;
+  message_request->presentation_id = session_message.presentation_id;
+  message_request->type = session_message.type;
+  if (session_message.type == presentation::PresentationMessageType::
+                              PRESENTATION_MESSAGE_TYPE_TEXT) {
+    message_request->message = session_message.message;
+  } else if (session_message.type == presentation::PresentationMessageType::
+                                      PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER) {
+    message_request->data = mojo::Array<uint8>::From(
+        session_message.data.storage());
+  }
+
+  presentation_service_->SendSessionMessage(
+      message_request.Pass(),
+      base::Bind(&PresentationDispatcher::HandleSendMessageRequests,
+                 base::Unretained(this)));
+}
+
+void PresentationDispatcher::HandleSendMessageRequests(bool success) {
+  // In normal cases, message_request_queue_ should not be empty at this point
+  // of time, but when DidCommitProvisionalLoad() is invoked before receiving
+  // the callback for previous send mojo call, queue would have been emptied.
+  if (message_request_queue_.empty())
+    return;
+
+  if (!success) {
+    // PresentationServiceImpl is informing that Frame has been detached or
+    // navigated away. Invalidate all pending requests.
+    MessageRequestQueue empty;
+    std::swap(message_request_queue_, empty);
+    return;
+  }
+
+  message_request_queue_.pop();
+  if (!message_request_queue_.empty()) {
+    const linked_ptr<presentation::SessionMessage>& request =
+        message_request_queue_.front();
+    DoSendMessage(*request);
+  }
+}
+
 void PresentationDispatcher::closeSession(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId) {
@@ -148,6 +255,19 @@ void PresentationDispatcher::DidChangeDefaultPresentation() {
   ConnectToPresentationServiceIfNeeded();
   presentation_service_->SetDefaultPresentationURL(
       presentation_url.spec(), mojo::String());
+}
+
+void PresentationDispatcher::DidCommitProvisionalLoad(
+    bool is_new_navigation,
+    bool is_same_page_navigation) {
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  // If not top-level navigation.
+  if (frame->parent() || is_same_page_navigation)
+    return;
+
+  // Remove all pending send message requests.
+  MessageRequestQueue empty;
+  std::swap(message_request_queue_, empty);
 }
 
 void PresentationDispatcher::OnScreenAvailabilityChanged(

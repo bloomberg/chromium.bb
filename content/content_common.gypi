@@ -99,6 +99,8 @@
       'public/common/persistent_notification_status.h',
       'public/common/platform_notification_data.cc',
       'public/common/platform_notification_data.h',
+      'public/common/presentation_constants.cc',
+      'public/common/presentation_constants.h',
       'public/common/process_type.h',
       'public/common/push_messaging_status.cc',
       'public/common/push_messaging_status.h',

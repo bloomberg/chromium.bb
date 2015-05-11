@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/presentation_constants.h"
 
 namespace {
 
@@ -39,7 +40,43 @@ presentation::SessionMessagePtr ToMojoSessionMessage(
   return output.Pass();
 }
 
-}  // namespace
+scoped_ptr<content::PresentationSessionMessage> GetPresentationSessionMessage(
+    presentation::SessionMessagePtr input) {
+  DCHECK(!input.is_null());
+  scoped_ptr<content::PresentationSessionMessage> output;
+  if (input->type == presentation::PresentationMessageType::
+                     PRESENTATION_MESSAGE_TYPE_TEXT) {
+    DCHECK(!input->message.is_null());
+    DCHECK(input->data.is_null());
+    // Return null PresentationSessionMessage if size exceeds.
+    if (input->message.size() > content::kMaxPresentationSessionMessageSize)
+      return output.Pass();
+
+    output = content::PresentationSessionMessage::CreateStringMessage(
+        input->presentation_url,
+        input->presentation_id,
+        make_scoped_ptr(new std::string));
+    input->message.Swap(output->message.get());
+
+  } else if (input->type == presentation::PresentationMessageType::
+              PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER) {
+    DCHECK(!input->data.is_null());
+    DCHECK(input->message.is_null());
+    // Return null PresentationSessionMessage if size exceeds.
+    if (input->data.size() > content::kMaxPresentationSessionMessageSize)
+      return output.Pass();
+
+    output = content::PresentationSessionMessage::CreateBinaryMessage(
+        input->presentation_url,
+        input->presentation_id,
+        make_scoped_ptr(new std::vector<uint8_t>));
+    input->data.Swap(output->data.get());
+  }
+
+  return output.Pass();
+}
+
+} // namespace
 
 namespace content {
 
@@ -338,6 +375,37 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
   DoSetDefaultPresentationUrl(new_default_url, default_presentation_id);
 }
 
+
+void PresentationServiceImpl::SendSessionMessage(
+    presentation::SessionMessagePtr session_message,
+    const SendMessageMojoCallback& callback) {
+  DVLOG(2) << "SendSessionMessage";
+  DCHECK(!session_message.is_null());
+  // send_message_callback_ should be null by now, otherwise resetting of
+  // send_message_callback_ with new callback will drop the old callback.
+  if (!delegate_ || send_message_callback_) {
+    callback.Run(false);
+    return;
+  }
+
+  send_message_callback_.reset(new SendMessageMojoCallback(callback));
+  delegate_->SendMessage(
+      render_process_id_,
+      render_frame_id_,
+      GetPresentationSessionMessage(session_message.Pass()),
+      base::Bind(&PresentationServiceImpl::OnSendMessageCallback,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void PresentationServiceImpl::OnSendMessageCallback() {
+  // It is possible that Reset() is invoked before receiving this callback.
+  // So, always check send_message_callback_ for non-null.
+  if (send_message_callback_) {
+    send_message_callback_->Run(true);
+    send_message_callback_.reset();
+  }
+}
+
 void PresentationServiceImpl::CloseSession(
     const mojo::String& presentation_url,
     const mojo::String& presentation_id) {
@@ -447,6 +515,12 @@ void PresentationServiceImpl::Reset() {
     on_session_messages_callback_->Run(
         mojo::Array<presentation::SessionMessagePtr>());
     on_session_messages_callback_.reset();
+  }
+  if (send_message_callback_) {
+    // Run the callback with false, indicating the renderer to stop sending
+    // the requests and invalidate all pending requests.
+    send_message_callback_->Run(false);
+    send_message_callback_.reset();
   }
 }
 

@@ -27,16 +27,16 @@ struct PresentationError {
 };
 
 enum PresentationMessageType {
-   TEXT,
-   ARRAY_BUFFER,
+    TEXT,
+    ARRAY_BUFFER,
 };
 
 struct SessionMessage {
-   string presentation_url;
-   string presentation_id;
-   PresentationMessageType type;
-   string? message;
-   array<uint8>? data;
+    string presentation_url;
+    string presentation_id;
+    PresentationMessageType type;
+    string? message;
+    array<uint8>? data;
 };
 
 interface PresentationService {
@@ -86,6 +86,13 @@ interface PresentationService {
     // silently and without user action.
     JoinSession(string presentation_url, string? presentation_id)
         => (PresentationSessionInfo? sessionInfo, PresentationError? error);
+
+    // Called when send() is called by the frame. The true in the
+    // result callback notifies that the service is ready for next message.
+    // The false in the result callback notifies the renderer to stop sending
+    // the send requests and invalidate all pending requests. This occurs
+    // for eg., when frame is deleted or navigated away.
+    SendSessionMessage(SessionMessage message_request) => (bool success);
 
     // Called when closeSession() is called by the frame.
     CloseSession(string presentation_url, string presentation_id);

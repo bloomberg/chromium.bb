@@ -67,6 +67,7 @@ class CONTENT_EXPORT PresentationServiceImpl
           presentation::PresentationSessionState)>;
   using SessionMessagesCallback =
       mojo::Callback<void(mojo::Array<presentation::SessionMessagePtr>)>;
+  using SendMessageMojoCallback = mojo::Callback<void(bool)>;
 
   // A helper data class used by PresentationServiceImpl to do bookkeeping
   // of currently registered screen availability listeners.
@@ -207,6 +208,9 @@ class CONTENT_EXPORT PresentationServiceImpl
       const mojo::String& presentation_url,
       const mojo::String& presentation_id,
       const NewSessionMojoCallback& callback) override;
+  void SendSessionMessage(
+      presentation::SessionMessagePtr session_message,
+      const SendMessageMojoCallback& callback) override;
   void CloseSession(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id) override;
@@ -252,7 +256,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   // and informs the PresentationServiceDelegate of such.
   void Reset();
 
-  // These two functions are bound as base::Callbacks and passed to
+  // These functions are bound as base::Callbacks and passed to
   // embedder's implementation of PresentationServiceDelegate for later
   // invocation.
   void OnStartOrJoinSessionSucceeded(
@@ -263,6 +267,7 @@ class CONTENT_EXPORT PresentationServiceImpl
       bool is_start_session,
       int request_session_id,
       const PresentationError& error);
+  void OnSendMessageCallback();
 
   // Requests delegate to start a session.
   void DoStartSession(
@@ -327,6 +332,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   // RAII binding of |this| to an Presentation interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
   scoped_ptr<mojo::Binding<presentation::PresentationService>> binding_;
+
+  // There can be only one send message request at a time.
+  scoped_ptr<SendMessageMojoCallback> send_message_callback_;
 
   scoped_ptr<SessionMessagesCallback> on_session_messages_callback_;
 

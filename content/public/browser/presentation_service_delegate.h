@@ -45,6 +45,7 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       base::Callback<void(const PresentationError&)>;
   using PresentationSessionMessageCallback = base::Callback<void(
       scoped_ptr<ScopedVector<PresentationSessionMessage>>)>;
+  using SendMessageCallback = base::Closure;
 
   virtual ~PresentationServiceDelegate() {}
 
@@ -144,6 +145,17 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_process_id,
       int render_frame_id,
       const PresentationSessionMessageCallback& message_cb) = 0;
+
+  // Sends a message (string or binary data) to a presentation session.
+  // |render_process_id|, |render_frame_id|: ID of originating frame.
+  // |message_request|: Contains Presentation URL, ID and message to be sent
+  // and delegate is responsible for deallocating the message_request.
+  // |send_message_cb|: Invoked after handling the send message request.
+  virtual void SendMessage(
+      int render_process_id,
+      int render_frame_id,
+      scoped_ptr<PresentationSessionMessage> message_request,
+      const SendMessageCallback& send_message_cb) = 0;
 };
 
 }  // namespace content
