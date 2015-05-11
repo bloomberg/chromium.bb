@@ -105,7 +105,7 @@ def UpdateChroot(brick=None, board=None, update_host_packages=True):
 
   # Update the host before updating the board.
   if update_host_packages:
-    Emerge(list(_HOST_PKGS), '/')
+    Emerge(list(_HOST_PKGS), '/', rebuild_deps=False)
 
   # Automatically discard all CONFIG_PROTECT'ed files. Those that are
   # protected should not be overwritten until the variable is changed.
