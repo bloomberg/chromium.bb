@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/util/edid_parser.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_display_mode.h"
-#include "ui/ozone/platform/drm/gpu/drm_util.h"
 
 #if !defined(DRM_MODE_CONNECTOR_DSI)
 #define DRM_MODE_CONNECTOR_DSI 16

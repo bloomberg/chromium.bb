@@ -16,6 +16,10 @@ pkg_config("libdrm") {
 
 source_set("drm_common") {
   sources = [
+    "common/drm_util.cc",
+    "common/drm_util.h",
+    "common/scoped_drm_types.cc",
+    "common/scoped_drm_types.h",
     "drm_surface_factory.cc",
     "drm_surface_factory.h",
     "gpu/crtc_controller.cc",
@@ -41,8 +45,6 @@ source_set("drm_common") {
     "gpu/drm_gpu_platform_support.h",
     "gpu/drm_surface.cc",
     "gpu/drm_surface.h",
-    "gpu/drm_util.cc",
-    "gpu/drm_util.h",
     "gpu/drm_vsync_provider.cc",
     "gpu/drm_vsync_provider.h",
     "gpu/drm_window.cc",
@@ -62,8 +64,6 @@ source_set("drm_common") {
     "gpu/page_flip_request.cc",
     "gpu/page_flip_request.h",
     "gpu/scanout_buffer.h",
-    "gpu/scoped_drm_types.cc",
-    "gpu/scoped_drm_types.h",
     "gpu/screen_manager.cc",
     "gpu/screen_manager.h",
     "host/channel_observer.h",

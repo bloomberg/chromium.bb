@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/ozone/ozone_export.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
-#include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
 
 namespace ui {
 

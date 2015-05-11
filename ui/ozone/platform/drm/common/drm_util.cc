@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/gpu/drm_util.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <xf86drmMode.h>
-
-#include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
 
@@ -101,22 +98,6 @@ bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {
          lhs.vsync_start == rhs.vsync_start && lhs.vsync_end == rhs.vsync_end &&
          lhs.vtotal == rhs.vtotal && lhs.vscan == rhs.vscan &&
          lhs.flags == rhs.flags && strcmp(lhs.name, rhs.name) == 0;
-}
-
-void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
-                                         ScreenManager* screen_manager) {
-  VLOG(2) << "Forcing initialization of primary display.";
-  ScopedVector<HardwareDisplayControllerInfo> displays =
-      GetAvailableDisplayControllerInfos(drm->get_fd());
-
-  if (displays.empty())
-    return;
-
-  screen_manager->AddDisplayController(drm, displays[0]->crtc()->crtc_id,
-                                       displays[0]->connector()->connector_id);
-  screen_manager->ConfigureDisplayController(
-      drm, displays[0]->crtc()->crtc_id, displays[0]->connector()->connector_id,
-      gfx::Point(), displays[0]->connector()->modes[0]);
 }
 
 }  // namespace ui

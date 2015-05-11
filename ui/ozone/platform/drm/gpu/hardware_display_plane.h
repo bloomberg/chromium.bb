@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "ui/ozone/ozone_export.h"
-#include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 namespace gfx {
 class Rect;

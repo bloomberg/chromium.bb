@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 #include <xf86drmMode.h>
 

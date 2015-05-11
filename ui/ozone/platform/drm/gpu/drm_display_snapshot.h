@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 namespace ui {
 

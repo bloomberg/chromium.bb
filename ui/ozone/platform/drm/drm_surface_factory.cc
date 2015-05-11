@@ -7,8 +7,8 @@
 #include <errno.h>
 
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_surface.h"
-#include "ui/ozone/platform/drm/gpu/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"

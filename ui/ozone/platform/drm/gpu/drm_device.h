@@ -19,8 +19,8 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_export.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
-#include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
 
 typedef struct _drmEventContext drmEventContext;
 typedef struct _drmModeModeInfo drmModeModeInfo;

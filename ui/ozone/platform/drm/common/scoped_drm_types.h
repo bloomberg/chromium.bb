@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_SCOPED_DRM_TYPES_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_SCOPED_DRM_TYPES_H_
+#ifndef UI_OZONE_PLATFORM_DRM_COMMON_SCOPED_DRM_TYPES_H_
+#define UI_OZONE_PLATFORM_DRM_COMMON_SCOPED_DRM_TYPES_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
@@ -77,4 +77,4 @@ typedef scoped_ptr<drmModeFB, DrmFramebufferDeleter> ScopedDrmFramebufferPtr;
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_SCOPED_DRM_TYPES_H_
+#endif  // UI_OZONE_PLATFORM_DRM_COMMON_SCOPED_DRM_TYPES_H_

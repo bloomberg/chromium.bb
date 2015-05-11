@@ -13,11 +13,11 @@
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/ozone/common/display_util.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_display_mode.h"
 #include "ui/ozone/platform/drm/gpu/drm_display_snapshot.h"
-#include "ui/ozone/platform/drm/gpu/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/public/ozone_switches.h"
 

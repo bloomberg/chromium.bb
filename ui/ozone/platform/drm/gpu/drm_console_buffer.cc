@@ -8,8 +8,8 @@
 #include <xf86drmMode.h>
 
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
 
 namespace ui {
 

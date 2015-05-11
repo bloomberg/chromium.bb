@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_UTIL_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_DRM_UTIL_H_
+#ifndef UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_
+#define UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
-#include "ui/ozone/platform/drm/gpu/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace ui {
-
-class DrmDevice;
-class ScreenManager;
 
 // Representation of the information required to initialize and configure a
 // native display.
@@ -43,9 +39,6 @@ ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
 
 bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
 
-void ForceInitializationOfPrimaryDisplay(const scoped_refptr<DrmDevice>& drm,
-                                         ScreenManager* screen_manager);
-
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_DRM_UTIL_H_
+#endif  // UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_

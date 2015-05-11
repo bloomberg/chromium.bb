@@ -19,7 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
-#include "ui/ozone/platform/drm/gpu/drm_util.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 
 #if defined(USE_DRM_ATOMIC)
