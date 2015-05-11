@@ -22,6 +22,8 @@ function ProvidersMenu(model, menu) {
    * @const
    */
   this.menu_ = menu;
+
+  this.menu_.menuItemSelector = "cr-menu-item";
   this.menu_.addSeparator();
 
   /**
@@ -57,6 +59,15 @@ ProvidersMenu.prototype.addExtension_ = function(extensionId, extensionName) {
   var item = this.menu_.addMenuItem({
     label: extensionName
   });
+
+  var icon = this.menu_.ownerDocument.createElement('div');
+  icon.className = 'menu-icon';
+  var iconImage = '-webkit-image-set(' +
+      'url(chrome://extension-icon/' + extensionId + '/16/1) 1x, ' +
+      'url(chrome://extension-icon/' + extensionId + '/32/1) 2x);';
+  icon.setAttribute('style', 'background-image: ' + iconImage);
+  item.insertBefore(icon, item.firstChild);
+
   item.addEventListener(
       'activate', this.onItemActivate_.bind(this, extensionId));
 
@@ -74,6 +85,10 @@ ProvidersMenu.prototype.onUpdate_ = function(event) {
     extensions.forEach(function(extension) {
       this.addExtension_(extension.extensionId, extension.extensionName);
     }.bind(this));
+
+    // Reposition the menu, so all items are always visible.
+    cr.ui.positionPopupAroundElement(event.menuButton, this.menu_,
+        event.menuButton.anchorType, event.menuButton.invertLeftRight);
   }.bind(this));
 };
 

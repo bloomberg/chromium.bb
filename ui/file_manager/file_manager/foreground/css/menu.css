@@ -40,3 +40,17 @@ cr-menu > [shortcutText]::after {
 html[dir='rtl'] cr-menu > [shortcutText]::after {
   float: left;
 }
+
+/* Icon on the left of the item label. */
+cr-menu-item .menu-icon {
+  -webkit-margin-end: 12px;
+  background: no-repeat 0 center;
+  display: inline-block;
+  float: left;
+  height: 32px;
+  width: 16px;
+}
+
+html[dir='rtl'] cr-menu-item .menu-icon {
+  float: right;
+}

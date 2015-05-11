@@ -324,9 +324,15 @@ tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
       url(../images/volumes/2x/hard_drive_active.png) 2x);
 }
 
-.tree-row:not([selected]) [volume-type-icon='provided'] {
+.tree-row:not([selected]) [volume-type-icon='provided'],
+cr-menu-item .menu-icon {
   /* Apply the rgb(90, 90, 90) mask. */
   -webkit-filter: contrast(0) brightness(0.7143);
+}
+
+cr-menu-item[selected] .menu-icon {
+  /* Apply the rgb(255, 255, 255) mask. */
+  -webkit-filter: contrast(0) brightness(2);
 }
 
 .tree-row [menu-button-icon='add-new-services'] {

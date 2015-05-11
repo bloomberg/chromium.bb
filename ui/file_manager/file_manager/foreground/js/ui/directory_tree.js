@@ -816,10 +816,10 @@ function MenuItem(modelItem, tree) {
   item.innerHTML = MENU_TREE_ITEM_INNER_HTML;
   item.label = modelItem.label;
 
-  item.comboButton_ = /** @type {!cr.ui.ComboButton} */(queryRequiredElement(
+  item.menuButton_ = /** @type {!cr.ui.MenuButton} */(queryRequiredElement(
         assert(item.firstElementChild), '.button'));
-  item.comboButton_.setAttribute('menu', item.modelItem_.menu);
-  cr.ui.MenuButton.decorate(item.comboButton_);
+  item.menuButton_.setAttribute('menu', item.modelItem_.menu);
+  cr.ui.MenuButton.decorate(item.menuButton_);
 
   var icon = queryRequiredElement(item, '.icon');
   icon.setAttribute('menu-button-icon', item.modelItem_.icon);
@@ -867,9 +867,10 @@ MenuItem.prototype.selectByEntry = function(entry) {
 MenuItem.prototype.activate = function() {
   // Dispatch an event to update the menu (if updatable).
   var updateEvent = new Event('update');
-  this.comboButton_.menu.dispatchEvent(updateEvent);
+  updateEvent.menuButton = this.menuButton_;
+  this.menuButton_.menu.dispatchEvent(updateEvent);
 
-  this.comboButton_.showMenu();
+  this.menuButton_.showMenu();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
