@@ -33,10 +33,6 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
- protected:
-  ClipDisplayItem(gfx::Rect clip_rect,
-                  const std::vector<SkRRect>& rounded_clip_rects);
-
  private:
   gfx::Rect clip_rect_;
   std::vector<SkRRect> rounded_clip_rects_;

@@ -31,9 +31,6 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
- protected:
-  explicit FloatClipDisplayItem(gfx::RectF clip_rect);
-
  private:
   gfx::RectF clip_rect_;
 };

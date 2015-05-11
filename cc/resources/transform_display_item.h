@@ -29,9 +29,6 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
- protected:
-  explicit TransformDisplayItem(const gfx::Transform& transform);
-
  private:
   gfx::Transform transform_;
 };

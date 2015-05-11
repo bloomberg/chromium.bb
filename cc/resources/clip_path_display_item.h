@@ -30,9 +30,6 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
- protected:
-  ClipPathDisplayItem(const SkPath& path, SkRegion::Op clip_op, bool antialias);
-
  private:
   SkPath clip_path_;
   SkRegion::Op clip_op_;

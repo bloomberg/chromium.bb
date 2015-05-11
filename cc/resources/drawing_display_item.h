@@ -33,9 +33,6 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
 
   void CloneTo(DrawingDisplayItem* item) const;
 
- protected:
-  explicit DrawingDisplayItem(skia::RefPtr<SkPicture> picture);
-
  private:
   skia::RefPtr<SkPicture> picture_;
 };

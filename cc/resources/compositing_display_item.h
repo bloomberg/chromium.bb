@@ -36,12 +36,6 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
- protected:
-  CompositingDisplayItem(uint8_t alpha,
-                         SkXfermode::Mode,
-                         SkRect* bounds,
-                         skia::RefPtr<SkColorFilter>);
-
  private:
   uint8_t alpha_;
   SkXfermode::Mode xfermode_;

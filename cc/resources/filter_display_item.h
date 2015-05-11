@@ -30,9 +30,6 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
- protected:
-  FilterDisplayItem(const FilterOperations& filters, gfx::RectF bounds);
-
  private:
   FilterOperations filters_;
   gfx::RectF bounds_;
