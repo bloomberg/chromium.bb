@@ -119,7 +119,6 @@ enum WebAXRole {
     WebAXRoleImageMap,
     WebAXRoleImage,
     WebAXRoleInlineTextBox,
-    WebAXRoleInputTime,
     WebAXRoleLabel,
     WebAXRoleLegend,
     WebAXRoleLink,

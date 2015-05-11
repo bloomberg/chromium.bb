@@ -103,7 +103,6 @@ enum AccessibilityRole {
     ImageMapRole, // No mapping to ARIA role
     ImageRole,
     InlineTextBoxRole, // No mapping to ARIA role
-    InputTimeRole, // No mapping to ARIA role
     LabelRole,
     LegendRole, // No mapping to ARIA role
     LinkRole,

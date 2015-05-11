@@ -646,9 +646,6 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (roleValue() == RubyRole)
         return false;
 
-    if (roleValue() == TimeRole)
-        return false;
-
     // if this element has aria attributes on it, it should not be ignored.
     if (supportsARIAAttributes())
         return false;

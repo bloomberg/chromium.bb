@@ -56,7 +56,7 @@ PASS elem.role is "AXRole: AXSlider"
 input_color_id
 PASS elem.role is "AXRole: AXColorWell"
 input_time_id
-PASS elem.role is "AXRole: AXUnknown"
+PASS elem.role is "AXRole: AXTime"
 input_reset_id
 PASS elem.role is "AXRole: AXButton"
 select_id

@@ -180,7 +180,6 @@ const InternalRoleEntry internalRoles[] = {
     { ImageMapRole, "ImageMap" },
     { ImageRole, "Image" },
     { InlineTextBoxRole, "InlineTextBox" },
-    { InputTimeRole, "InputTime" },
     { LabelRole, "Label" },
     { LegendRole, "Legend" },
     { LinkRole, "Link" },

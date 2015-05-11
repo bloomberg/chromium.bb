@@ -377,7 +377,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
         if (type == InputTypeNames::color)
             return ColorWellRole;
         if (type == InputTypeNames::time)
-            return InputTimeRole;
+            return TimeRole;
         return TextFieldRole;
     }
 
@@ -485,9 +485,6 @@ AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
 
     if (node()->hasTagName(figureTag))
         return FigureRole;
-
-    if (node()->nodeName() == "TIME")
-        return TimeRole;
 
     if (isEmbeddedObject())
         return EmbeddedObjectRole;
