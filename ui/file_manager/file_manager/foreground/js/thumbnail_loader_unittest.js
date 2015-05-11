@@ -67,9 +67,11 @@ function testLoadAsDataUrlFromImageClient(callback) {
   var fileSystem = new MockFileSystem('volume-id');
   var entry = new MockEntry(fileSystem, '/Test1.jpg');
   var thumbnailLoader = new ThumbnailLoader(entry);
-  reportPromise(thumbnailLoader.loadAsDataUrl().then(function(result) {
-    assertEquals('imageDataUrl', result.data);
-  }), callback);
+  reportPromise(
+      thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
+      .then(function(result) {
+        assertEquals('imageDataUrl', result.data);
+      }), callback);
 }
 
 function testLoadAsDataUrlFromExifThumbnail(callback) {
@@ -92,9 +94,11 @@ function testLoadAsDataUrlFromExifThumbnail(callback) {
   var fileSystem = new MockFileSystem('volume-id');
   var entry = new MockEntry(fileSystem, '/Test1.jpg');
   var thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
-  reportPromise(thumbnailLoader.loadAsDataUrl().then(function(result) {
-    assertEquals(metadata.thumbnail.url, result.data);
-  }), callback);
+  reportPromise(
+      thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
+      .then(function(result) {
+        assertEquals(metadata.thumbnail.url, result.data);
+      }), callback);
 }
 
 function testLoadAsDataUrlFromExifThumbnailRotate(callback) {
@@ -122,23 +126,26 @@ function testLoadAsDataUrlFromExifThumbnailRotate(callback) {
   var fileSystem = new MockFileSystem('volume-id');
   var entry = new MockEntry(fileSystem, '/Test1.jpg');
   var thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
-  reportPromise(thumbnailLoader.loadAsDataUrl().then(function(result) {
-    assertEquals(32, result.width);
-    assertEquals(64, result.height);
-    // For test image, transformed image should become equal to the following
-    // generated sample image.
-    assertEquals(generateSampleImageDataUrl(32, 64), result.data);
-  }), callback);
+  reportPromise(
+      thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
+      .then(function(result) {
+        assertEquals(32, result.width);
+        assertEquals(64, result.height);
+        // For test image, transformed image should become equal to the
+        // following generated sample image.
+        assertEquals(generateSampleImageDataUrl(32, 64), result.data);
+      }), callback);
 }
 
 function testLoadAsDataUrlFromExternal(callback) {
   var externalThumbnailUrl = 'https://external-thumbnail-url/';
+  var externalCroppedThumbnailUrl = 'https://external-cropped-thumbnail-url/';
   var externalThumbnailDataUrl = generateSampleImageDataUrl(32, 32);
 
   ImageLoaderClient.getInstance = function() {
     return {
       load: function(url, callback, opt_option) {
-        assertEquals(externalThumbnailUrl, url);
+        assertEquals(externalCroppedThumbnailUrl, url);
         callback({status: 'success', data: externalThumbnailDataUrl,
           width: 32, height: 32});
       }
@@ -147,14 +154,17 @@ function testLoadAsDataUrlFromExternal(callback) {
 
   var metadata = {
     external: {
-      thumbnailUrl: externalThumbnailUrl
+      thumbnailUrl: externalThumbnailUrl,
+      croppedThumbnailUrl: externalCroppedThumbnailUrl
     }
   };
 
   var fileSystem = new MockFileSystem('volume-id');
   var entry = new MockEntry(fileSystem, '/Test1.jpg');
   var thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
-  reportPromise(thumbnailLoader.loadAsDataUrl().then(function(result) {
-    assertEquals(externalThumbnailDataUrl, result.data);
-  }), callback);
+  reportPromise(
+      thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
+      .then(function(result) {
+        assertEquals(externalThumbnailDataUrl, result.data);
+      }), callback);
 }

@@ -283,10 +283,17 @@ GURL DriveApiUrlGenerator::GetPermissionsInsertUrl(
 
 GURL DriveApiUrlGenerator::GetThumbnailUrl(const std::string& resource_id,
                                            int width,
-                                           int height) const {
-  return base_download_url_.Resolve(
+                                           int height,
+                                           bool crop) const {
+  GURL url = base_download_url_.Resolve(
       base::StringPrintf(kDriveV2ThumbnailUrlFormat,
                          net::EscapePath(resource_id).c_str(), width, height));
+
+  // crop is "false" by default.
+  if (crop)
+    url = net::AppendOrReplaceQueryParameter(url, "crop", "true");
+
+  return url;
 }
 
 GURL DriveApiUrlGenerator::GetBatchUploadUrl() const {

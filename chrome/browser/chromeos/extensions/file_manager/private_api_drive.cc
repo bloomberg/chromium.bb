@@ -67,6 +67,10 @@ const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";
 const char kDriveConnectionReasonNoService[] = "no_service";
 
+// Maximum dimension of thumbnail in file manager. File manager shows 180x180
+// thumbnail. Given that we support hdpi devices, maximum dimension is 360.
+const int kFileManagerMaximumThumbnailDimension = 360;
+
 // Copies properties from |entry_proto| to |properties|. |shared_with_me| is
 // given from the running profile.
 void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
@@ -93,8 +97,14 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
             google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)));
     properties->thumbnail_url.reset(new std::string(
         url_generator.GetThumbnailUrl(entry_proto.resource_id(),
-                                      500 /* width */,
-                                      500 /* height */).spec()));
+                                      500 /* width */, 500 /* height */,
+                                      false /* not cropped */).spec()));
+    properties->cropped_thumbnail_url.reset(new std::string(
+        url_generator.GetThumbnailUrl(
+                          entry_proto.resource_id(),
+                          kFileManagerMaximumThumbnailDimension /* width */,
+                          kFileManagerMaximumThumbnailDimension /* height */,
+                          true /* cropped */).spec()));
   }
   if (file_specific_info.has_image_width()) {
     properties->image_width.reset(

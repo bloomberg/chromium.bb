@@ -19,6 +19,7 @@ var FileTask;
  *   size: (number|undefined),
  *   modificationTime: (number|undefined),
  *   thumbnailUrl: (string|undefined),
+ *   croppedThumbnailUrl: (string|undefined),
  *   externalFileUrl: (string|undefined),
  *   imageWidth: (number|undefined),
  *   imageHeight: (number|undefined),

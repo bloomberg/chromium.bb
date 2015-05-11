@@ -34,6 +34,7 @@ ThumbnailModel.prototype.get = function(entries) {
         'modificationTime',
         'customIconUrl',
         'thumbnailUrl',
+        'croppedThumbnailUrl',
         'present'
       ]).then(function(metadataList) {
         var contentRequestEntries = [];
@@ -49,6 +50,9 @@ ThumbnailModel.prototype.get = function(entries) {
             external: {
               thumbnailUrl: metadataList[i].thumbnailUrl,
               thumbnailUrlError: metadataList[i].thumbnailUrlError,
+              croppedThumbnailUrl: metadataList[i].croppedThumbnailUrl,
+              croppedThumbnailUrlError:
+                  metadataList[i].croppedThumbnailUrlError,
               customIconUrl: metadataList[i].customIconUrl,
               customIconUrlError: metadataList[i].customIconUrlError,
               present: metadataList[i].present,

@@ -360,7 +360,12 @@ TEST_F(DriveApiUrlGeneratorTest, GeneratePermissionsInsertUrl) {
 TEST_F(DriveApiUrlGeneratorTest, GenerateThumbnailUrl) {
   EXPECT_EQ(
       "https://download.example.com/p/thumb/0ADK06pfg?width=500&height=500",
-      url_generator_.GetThumbnailUrl("0ADK06pfg", 500, 500).spec());
+      url_generator_.GetThumbnailUrl("0ADK06pfg", 500, 500, false).spec());
+
+  EXPECT_EQ(
+      "https://download.example.com/p/thumb/"
+      "0ADK06pfg?width=360&height=360&crop=true",
+      url_generator_.GetThumbnailUrl("0ADK06pfg", 360, 360, true).spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, BatchUploadUrl) {

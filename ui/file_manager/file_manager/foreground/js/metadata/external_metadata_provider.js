@@ -21,6 +21,7 @@ ExternalMetadataProvider.PROPERTY_NAMES = [
   'availableOffline',
   'availableWhenMetered',
   'contentMimeType',
+  'croppedThumbnailUrl',
   'customIconUrl',
   'dirty',
   'externalFileUrl',
@@ -82,6 +83,7 @@ ExternalMetadataProvider.prototype.convertResults_ =
     item.availableOffline = properties.availableOffline;
     item.availableWhenMetered = properties.availableWhenMetered;
     item.contentMimeType = properties.contentMimeType || '';
+    item.croppedThumbnailUrl = properties.croppedThumbnailUrl;
     item.customIconUrl = properties.customIconUrl || '';
     item.dirty = properties.dirty;
     item.externalFileUrl = properties.externalFileUrl;

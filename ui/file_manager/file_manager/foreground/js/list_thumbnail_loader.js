@@ -421,7 +421,7 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
 
     return new this.thumbnailLoaderConstructor_(
         this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadatas[0])
-        .loadAsDataUrl();
+        .loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL);
   }.bind(this)).then(function(result) {
     return new ListThumbnailLoader.ThumbnailData(
         this.entry_.toURL(), result.data, result.width, result.height);

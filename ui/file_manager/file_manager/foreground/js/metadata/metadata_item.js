@@ -45,6 +45,12 @@ function MetadataItem() {
   this.thumbnailUrl;
 
   /**
+   * Cropped thumbnail URL obtained from external provider.
+   * @public {string|undefined}
+   */
+  this.croppedThumbnailUrl;
+
+  /**
    * @public {Error|undefined}
    */
   this.thumbnailUrlError;

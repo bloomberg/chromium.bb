@@ -63,6 +63,7 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
         if (opt_metadata.external && opt_metadata.external.thumbnailUrl &&
             (!opt_metadata.external.present || !FileType.isImage(entry))) {
           this.thumbnailUrl_ = opt_metadata.external.thumbnailUrl;
+          this.croppedThumbnailUrl_ = opt_metadata.external.croppedThumbnailUrl;
           this.loadTarget_ = ThumbnailLoader.LoadTarget.EXTERNAL_METADATA;
         }
         break;
@@ -248,18 +249,28 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
  * functionality to fit image to a box. This method is responsible for rotating
  * and flipping a thumbnail.
  *
+ * @param {ThumbnailLoader.FillMode} fillMode Only FIT and OVER_FILL is
+ *     supported. This takes effect only when external thumbnail source is used.
  * @return {!Promise<{data:string, width:number, height:number}>} A promise
  *     which is resolved when data url is fetched.
  */
-ThumbnailLoader.prototype.loadAsDataUrl = function() {
+ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
+  assert(fillMode === ThumbnailLoader.FillMode.FIT ||
+      fillMode === ThumbnailLoader.FillMode.OVER_FILL);
+
   return new Promise(function(resolve, reject) {
     // Load by using ImageLoaderClient.
     var modificationTime = this.metadata_ &&
                            this.metadata_.filesystem &&
                            this.metadata_.filesystem.modificationTime &&
                            this.metadata_.filesystem.modificationTime.getTime();
+    var thumbnailUrl =
+        fillMode === ThumbnailLoader.FillMode.OVER_FILL &&
+        this.croppedThumbnailUrl_ ?
+        this.croppedThumbnailUrl_ :
+        this.thumbnailUrl_;
     ImageLoaderClient.getInstance().load(
-        this.thumbnailUrl_,
+        thumbnailUrl,
         function(result) {
           if (result.status === 'success')
             resolve(result);

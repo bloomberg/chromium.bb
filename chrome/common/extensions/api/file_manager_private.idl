@@ -151,6 +151,7 @@ enum EntryPropertyName {
   size,
   modificationTime,
   thumbnailUrl,
+  croppedThumbnailUrl,
   imageWidth,
   imageHeight,
   imageRotation,
@@ -207,6 +208,9 @@ dictionary EntryProperties {
 
   // URL to the Drive thumbnail image for this file.
   DOMString? thumbnailUrl;
+
+  // URL to the Drive cropped thumbnail image for this file.
+  DOMString? croppedThumbnailUrl;
 
   // Width, if the entry is an image.
   long? imageWidth;
