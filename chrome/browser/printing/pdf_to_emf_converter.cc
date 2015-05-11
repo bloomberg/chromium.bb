@@ -60,7 +60,9 @@ typedef scoped_ptr<base::File, BrowserThread::DeleteOnFileThread>
 class LazyEmf : public MetafilePlayer {
  public:
   LazyEmf(const scoped_refptr<RefCountedTempDir>& temp_dir, ScopedTempFile file)
-      : temp_dir_(temp_dir), file_(file.Pass()) {}
+      : temp_dir_(temp_dir), file_(file.Pass()) {
+    CHECK(file_);
+  }
   ~LazyEmf() override { Close(); }
 
   bool SafePlayback(HDC hdc) const override;
@@ -133,7 +135,7 @@ class PdfToEmfUtilityProcessHostClient
     const PdfToEmfConverter::GetPageCallback& callback() const {
       return callback_;
     }
-    ScopedTempFile emf() { return emf_.Pass(); }
+    ScopedTempFile TakeEmf() { return emf_.Pass(); }
     void set_emf(ScopedTempFile emf) { emf_ = emf.Pass(); }
 
    private:
@@ -398,10 +400,16 @@ void PdfToEmfUtilityProcessHostClient::OnPageDone(bool success,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (get_page_callbacks_.empty())
     return OnFailed();
-  scoped_ptr<MetafilePlayer> emf;
   GetPageCallbackData& data = get_page_callbacks_.front();
-  if (success)
-    emf.reset(new LazyEmf(temp_dir_, data.emf().Pass()));
+  scoped_ptr<MetafilePlayer> emf;
+
+  if (success) {
+    ScopedTempFile temp_emf = data.TakeEmf();
+    if (!temp_emf)  // Unexpected message from utility process.
+      return OnFailed();
+    emf.reset(new LazyEmf(temp_dir_, temp_emf.Pass()));
+  }
+
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(&PdfToEmfConverterImpl::RunCallback,
