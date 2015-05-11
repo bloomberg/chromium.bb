@@ -5987,7 +5987,11 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
 
     // Texture only needs to be 1x1.
     glBindTexture(GL_TEXTURE_2D, validation_texture_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB,
+    // TODO(erikchen): When Chrome on Mac is linked against an OSX 10.9+ SDK, a
+    // multisample will fail if the color format of the source and destination
+    // do not match. Here, we assume that the source is GL_RGBA, and make the
+    // destination GL_RGBA. http://crbug.com/484203
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
         GL_UNSIGNED_BYTE, NULL);
 
     glBindFramebufferEXT(GL_FRAMEBUFFER, validation_fbo_);
