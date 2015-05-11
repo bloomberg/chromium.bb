@@ -32,6 +32,7 @@
 #define WebPrescientNetworking_h
 
 #include "WebCommon.h"
+#include "WebCrossOriginAttribute.h"
 #include "WebString.h"
 #include "WebURL.h"
 
@@ -46,6 +47,8 @@ public:
     virtual void prefetchDNS(const WebString& hostname) { }
 
     virtual void preconnect(const WebURL& url) { }
+
+    virtual void preconnect(const WebURL& url, const CrossOriginAttributeValue value) { }
 };
 
 } // namespace blink

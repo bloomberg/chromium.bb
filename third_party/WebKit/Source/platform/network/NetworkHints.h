@@ -29,12 +29,13 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebCrossOriginAttribute.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 PLATFORM_EXPORT void prefetchDNS(const String& hostname);
-PLATFORM_EXPORT void preconnect(const KURL&);
+PLATFORM_EXPORT void preconnect(const KURL&, const CrossOriginAttributeValue);
 
 } // namespace blink
 

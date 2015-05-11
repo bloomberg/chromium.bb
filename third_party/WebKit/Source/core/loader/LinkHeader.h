@@ -6,6 +6,7 @@
 #define LinkHeader_h
 
 #include "core/CoreExport.h"
+#include "core/html/CrossOriginAttribute.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -17,12 +18,14 @@ public:
 
     const String url() const { return m_url; };
     const String rel() const { return m_rel; };
+    CrossOriginAttributeValue crossOrigin() const { return m_crossOrigin; }
     bool valid() const { return m_isValid; };
 
     enum LinkParameterName {
         LinkParameterUnknown,
         LinkParameterRel,
         LinkParameterAnchor,
+        LinkParameterCrossOrigin,
     };
 
 private:
@@ -30,6 +33,7 @@ private:
 
     String m_url;
     String m_rel;
+    CrossOriginAttributeValue m_crossOrigin;
     bool m_isValid;
 };
 
