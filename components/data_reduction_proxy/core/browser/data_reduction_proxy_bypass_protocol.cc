@@ -90,13 +90,29 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
 
   // Empty implies either that the request was served from cache or that
   // request was served directly from the origin.
+  // TODO(sclittle): Add UMA to confirm that the |proxy_server| is never empty
+  // when the response has the Data Reduction Proxy via header.
   if (request->proxy_server().IsEmpty())
     return false;
 
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (!config_->WasDataReductionProxyUsed(request,
                                           &data_reduction_proxy_type_info)) {
-    return false;
+    if (!HasDataReductionProxyViaHeader(response_headers, nullptr))
+      return false;
+
+    // If the |proxy_server| doesn't match any of the currently configured Data
+    // Reduction Proxies, but it still has the Data Reduction Proxy via header,
+    // then apply the bypass logic regardless.
+    // TODO(sclittle): Add UMA to record how often this occurs, and remove this
+    // workaround once http://crbug.com/476610 is fixed.
+    data_reduction_proxy_type_info.proxy_servers.first = net::ProxyServer(
+        net::ProxyServer::SCHEME_HTTPS, request->proxy_server());
+    data_reduction_proxy_type_info.proxy_servers.second = net::ProxyServer(
+        net::ProxyServer::SCHEME_HTTP, request->proxy_server());
+    data_reduction_proxy_type_info.is_alternative = false;
+    data_reduction_proxy_type_info.is_fallback = false;
+    data_reduction_proxy_type_info.is_ssl = request->url().SchemeIsSecure();
   }
   // TODO(bengr): Implement bypass for CONNECT tunnel.
   if (data_reduction_proxy_type_info.is_ssl)
