@@ -205,13 +205,12 @@
         <include name="IDR_PDF_VIEWER_TOOLBAR_CSS" file="pdf/elements/viewer-toolbar/viewer-toolbar.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_TOOLBAR_HTML" file="pdf/elements/viewer-toolbar/viewer-toolbar.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_TOOLBAR_JS" file="pdf/elements/viewer-toolbar/viewer-toolbar.js" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_TRANSITION_CENTER_MIXIN_JS" file="pdf/elements/viewer-zoom-selector/viewer-transition-center-mixin.js" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_CSS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-button.css" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_HTML" file="pdf/elements/viewer-zoom-selector/viewer-zoom-button.html" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_JS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-button.js" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_CSS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-selector.css" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_HTML" file="pdf/elements/viewer-zoom-selector/viewer-zoom-selector.html" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_JS" file="pdf/elements/viewer-zoom-selector/viewer-zoom-selector.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_CSS" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_HTML" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_JS" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_CSS" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_HTML" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ZOOM_SELECTOR_JS" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-toolbar.js" type="BINDATA" />
 
         <!-- Button images. -->
         <include name="IDR_PDF_BUTTON_LOW_1" file="pdf/elements/viewer-button/img/lowDPI/button_fit_page.png" type="BINDATA" />

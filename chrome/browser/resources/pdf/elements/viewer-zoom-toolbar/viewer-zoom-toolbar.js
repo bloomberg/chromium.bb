@@ -4,7 +4,7 @@
 
 ANIMATION_INTERVAL = 50;
 
-Polymer('viewer-zoom-selector', {
+Polymer('viewer-zoom-toolbar', {
   /**
    * @type {number}
    * The minimum zoom percentage allowed.

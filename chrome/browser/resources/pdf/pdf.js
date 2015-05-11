@@ -148,15 +148,15 @@ function PDFViewer(browserApi) {
   }
 
   if (this.isMaterial_) {
-    this.zoomSelector_ = $('zoom-selector');
-    this.zoomSelector_.zoomMin = Viewport.ZOOM_FACTOR_RANGE.min * 100;
-    this.zoomSelector_.zoomMax = Viewport.ZOOM_FACTOR_RANGE.max * 100;
-    this.zoomSelector_.addEventListener('zoom', function(e) {
+    this.zoomToolbar_ = $('zoom-toolbar');
+    this.zoomToolbar_.zoomMin = Viewport.ZOOM_FACTOR_RANGE.min * 100;
+    this.zoomToolbar_.zoomMax = Viewport.ZOOM_FACTOR_RANGE.max * 100;
+    this.zoomToolbar_.addEventListener('zoom', function(e) {
       this.viewport_.setZoom(e.detail.zoom);
     }.bind(this));
-    this.zoomSelector_.addEventListener('fit-to-width',
+    this.zoomToolbar_.addEventListener('fit-to-width',
         this.viewport_.fitToWidth.bind(this.viewport_));
-    this.zoomSelector_.addEventListener('fit-to-page',
+    this.zoomToolbar_.addEventListener('fit-to-page',
         this.viewport_.fitToPage.bind(this.viewport_));
 
     this.materialToolbar_ = $('material-toolbar');
@@ -171,7 +171,7 @@ function PDFViewer(browserApi) {
     }.bind(this));
 
     this.uiManager_ =
-        new UiManager(window, this.materialToolbar_, this.zoomSelector_);
+        new UiManager(window, this.materialToolbar_, this.zoomToolbar_);
   }
 
   // Set up the ZoomManager.
@@ -570,7 +570,7 @@ PDFViewer.prototype = {
     var position = this.viewport_.position;
     var zoom = this.viewport_.zoom;
     if (this.isMaterial_)
-      this.zoomSelector_.zoomValue = 100 * zoom;
+      this.zoomToolbar_.zoomValue = 100 * zoom;
     this.plugin_.postMessage({
       type: 'viewport',
       zoom: zoom,

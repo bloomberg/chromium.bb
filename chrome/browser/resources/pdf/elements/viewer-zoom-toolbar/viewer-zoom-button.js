@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This object can be used by Polymer.mixin in order to expose show() and
-// hide() methods through core-transition-center.
-var transitionCenterMixin = {
+Polymer('viewer-zoom-button', {
   ready: function() {
     this.super();
-    this.state_ = { opened: false };
+    this.state_ = { opened: true };
   },
 
   show: function(delay) {
@@ -23,5 +21,10 @@ var transitionCenterMixin = {
   toggle_: function(delay) {
     delay = delay || 0;
     this.state_.opened = !this.state_.opened;
+  },
+
+  activeChanged: function() {
+    if (this.active)
+      this.active = false;
   }
-};
+});
