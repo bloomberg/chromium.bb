@@ -4,6 +4,7 @@
 
 /* Google Drive welcome banners.*/
 .drive-welcome-wrapper {
+  background-color: white;
   /* This image looks good in high DPI as is. */
   background-image: url(chrome://resources/images/clouds.png);
   background-repeat: repeat-x;
