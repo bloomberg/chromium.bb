@@ -610,6 +610,7 @@ const char kEapMethodLEAP[] = "LEAP";
 // Flimflam EAP phase 2 auth options.
 const char kEapPhase2AuthPEAPMD5[] = "auth=MD5";
 const char kEapPhase2AuthPEAPMSCHAPV2[] = "auth=MSCHAPV2";
+const char kEapPhase2AuthPEAPGTC[] = "auth=GTC";
 const char kEapPhase2AuthTTLSMD5[] = "autheap=MD5";  // crosbug/26822
 const char kEapPhase2AuthTTLSEAPMD5[] = "autheap=MD5";
 const char kEapPhase2AuthTTLSEAPMSCHAPV2[] = "autheap=MSCHAPV2";
@@ -617,6 +618,8 @@ const char kEapPhase2AuthTTLSMSCHAPV2[] = "auth=MSCHAPV2";
 const char kEapPhase2AuthTTLSMSCHAP[] = "auth=MSCHAP";
 const char kEapPhase2AuthTTLSPAP[] = "auth=PAP";
 const char kEapPhase2AuthTTLSCHAP[] = "auth=CHAP";
+const char kEapPhase2AuthTTLSGTC[] = "auth=GTC";
+const char kEapPhase2AuthTTLSEAPGTC[] = "autheap=GTC";
 
 // Flimflam VPN provider types.
 const char kProviderL2tpIpsec[] = "l2tpipsec";
