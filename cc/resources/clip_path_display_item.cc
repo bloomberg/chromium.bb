@@ -22,25 +22,16 @@ void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
   clip_path_ = clip_path;
   clip_op_ = clip_op;
   antialias_ = antialias;
+
+  size_t memory_usage = sizeof(SkPath) + sizeof(SkRegion::Op) + sizeof(bool);
+  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
+                      memory_usage);
 }
 
 void ClipPathDisplayItem::Raster(SkCanvas* canvas,
                                  SkDrawPictureCallback* callback) const {
   canvas->save();
   canvas->clipPath(clip_path_, clip_op_, antialias_);
-}
-
-bool ClipPathDisplayItem::IsSuitableForGpuRasterization() const {
-  return true;
-}
-
-int ClipPathDisplayItem::ApproximateOpCount() const {
-  return 1;
-}
-
-size_t ClipPathDisplayItem::PictureMemoryUsage() const {
-  size_t total_size = sizeof(SkPath) + sizeof(SkRegion::Op) + sizeof(bool);
-  return total_size;
 }
 
 void ClipPathDisplayItem::AsValueInto(
@@ -50,6 +41,8 @@ void ClipPathDisplayItem::AsValueInto(
 }
 
 EndClipPathDisplayItem::EndClipPathDisplayItem() {
+  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
+                      0 /* memory_usage */);
 }
 
 EndClipPathDisplayItem::~EndClipPathDisplayItem() {
@@ -58,18 +51,6 @@ EndClipPathDisplayItem::~EndClipPathDisplayItem() {
 void EndClipPathDisplayItem::Raster(SkCanvas* canvas,
                                     SkDrawPictureCallback* callback) const {
   canvas->restore();
-}
-
-bool EndClipPathDisplayItem::IsSuitableForGpuRasterization() const {
-  return true;
-}
-
-int EndClipPathDisplayItem::ApproximateOpCount() const {
-  return 0;
-}
-
-size_t EndClipPathDisplayItem::PictureMemoryUsage() const {
-  return 0;
 }
 
 void EndClipPathDisplayItem::AsValueInto(

@@ -30,10 +30,6 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
               skia::RefPtr<SkColorFilter> color_filter);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -54,10 +50,6 @@ class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

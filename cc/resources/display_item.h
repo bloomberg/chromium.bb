@@ -19,16 +19,31 @@ class CC_EXPORT DisplayItem {
  public:
   virtual ~DisplayItem() {}
 
+  void SetNew(bool is_suitable_for_gpu_rasterization,
+              int approximate_op_count,
+              size_t picture_memory_usage) {
+    is_suitable_for_gpu_rasterization_ = is_suitable_for_gpu_rasterization;
+    approximate_op_count_ = approximate_op_count;
+    picture_memory_usage_ =
+        picture_memory_usage + sizeof(bool) + sizeof(int) + sizeof(size_t);
+  }
+
   virtual void Raster(SkCanvas* canvas,
                       SkDrawPictureCallback* callback) const = 0;
-
-  virtual bool IsSuitableForGpuRasterization() const = 0;
-  virtual int ApproximateOpCount() const = 0;
-  virtual size_t PictureMemoryUsage() const = 0;
   virtual void AsValueInto(base::trace_event::TracedValue* array) const = 0;
+
+  bool is_suitable_for_gpu_rasterization() const {
+    return is_suitable_for_gpu_rasterization_;
+  }
+  int approximate_op_count() const { return approximate_op_count_; }
+  size_t picture_memory_usage() const { return picture_memory_usage_; }
 
  protected:
   DisplayItem();
+
+  bool is_suitable_for_gpu_rasterization_;
+  int approximate_op_count_;
+  size_t picture_memory_usage_;
 };
 
 }  // namespace cc

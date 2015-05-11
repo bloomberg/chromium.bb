@@ -122,8 +122,9 @@ void DisplayItemList::ProcessAppendedItems() {
   needs_process_ = false;
 #endif
   for (DisplayItem* item : items_) {
-    is_suitable_for_gpu_rasterization_ &= item->IsSuitableForGpuRasterization();
-    approximate_op_count_ += item->ApproximateOpCount();
+    is_suitable_for_gpu_rasterization_ &=
+        item->is_suitable_for_gpu_rasterization();
+    approximate_op_count_ += item->approximate_op_count();
 
     if (use_cached_picture_) {
       DCHECK(canvas_);
@@ -133,7 +134,7 @@ void DisplayItemList::ProcessAppendedItems() {
     if (retain_individual_display_items_) {
       // Warning: this double-counts SkPicture data if use_cached_picture_ is
       // also true.
-      picture_memory_usage_ += item->PictureMemoryUsage();
+      picture_memory_usage_ += item->picture_memory_usage();
     }
   }
 

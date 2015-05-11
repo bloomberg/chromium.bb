@@ -23,6 +23,13 @@ void ClipDisplayItem::SetNew(gfx::Rect clip_rect,
                              const std::vector<SkRRect>& rounded_clip_rects) {
   clip_rect_ = clip_rect;
   rounded_clip_rects_ = rounded_clip_rects;
+
+  size_t memory_usage = sizeof(gfx::Rect);
+  for (size_t i = 0; i < rounded_clip_rects_.size(); ++i) {
+    memory_usage += sizeof(rounded_clip_rects_[i]);
+  }
+  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
+                      memory_usage);
 }
 
 void ClipDisplayItem::Raster(SkCanvas* canvas,
@@ -39,22 +46,6 @@ void ClipDisplayItem::Raster(SkCanvas* canvas,
                         antialiased);
     }
   }
-}
-
-bool ClipDisplayItem::IsSuitableForGpuRasterization() const {
-  return true;
-}
-
-int ClipDisplayItem::ApproximateOpCount() const {
-  return 1;
-}
-
-size_t ClipDisplayItem::PictureMemoryUsage() const {
-  size_t total_size = sizeof(gfx::Rect);
-  for (size_t i = 0; i < rounded_clip_rects_.size(); ++i) {
-    total_size += sizeof(rounded_clip_rects_[i]);
-  }
-  return total_size;
 }
 
 void ClipDisplayItem::AsValueInto(base::trace_event::TracedValue* array) const {
@@ -84,6 +75,8 @@ void ClipDisplayItem::AsValueInto(base::trace_event::TracedValue* array) const {
 }
 
 EndClipDisplayItem::EndClipDisplayItem() {
+  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
+                      0 /* memory_usage */);
 }
 
 EndClipDisplayItem::~EndClipDisplayItem() {
@@ -92,18 +85,6 @@ EndClipDisplayItem::~EndClipDisplayItem() {
 void EndClipDisplayItem::Raster(SkCanvas* canvas,
                                 SkDrawPictureCallback* callback) const {
   canvas->restore();
-}
-
-bool EndClipDisplayItem::IsSuitableForGpuRasterization() const {
-  return true;
-}
-
-int EndClipDisplayItem::ApproximateOpCount() const {
-  return 0;
-}
-
-size_t EndClipDisplayItem::PictureMemoryUsage() const {
-  return 0;
 }
 
 void EndClipDisplayItem::AsValueInto(

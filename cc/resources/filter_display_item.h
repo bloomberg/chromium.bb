@@ -24,10 +24,6 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
   void SetNew(const FilterOperations& filters, const gfx::RectF& bounds);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -45,10 +41,6 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

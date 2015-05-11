@@ -25,10 +25,6 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   void SetNew(skia::RefPtr<SkPicture> picture);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
   void CloneTo(DrawingDisplayItem* item) const;

@@ -23,10 +23,6 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
   void SetNew(const gfx::Transform& transform);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -43,10 +39,6 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

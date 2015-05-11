@@ -27,10 +27,6 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
               const std::vector<SkRRect>& rounded_clip_rects);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -44,10 +40,6 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
   ~EndClipDisplayItem() override;
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

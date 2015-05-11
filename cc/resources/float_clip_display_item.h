@@ -25,10 +25,6 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
   void SetNew(const gfx::RectF& clip_rect);
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  private:
@@ -45,10 +41,6 @@ class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
-
-  bool IsSuitableForGpuRasterization() const override;
-  int ApproximateOpCount() const override;
-  size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
 

@@ -29,6 +29,12 @@ void CompositingDisplayItem::SetNew(uint8_t alpha,
   if (bounds)
     bounds_ = SkRect(*bounds);
   color_filter_ = cf;
+
+  // TODO(pdr): Include color_filter's memory here.
+  size_t memory_usage =
+      sizeof(float) + sizeof(bool) + sizeof(SkRect) + sizeof(SkXfermode::Mode);
+  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
+                      memory_usage);
 }
 
 void CompositingDisplayItem::Raster(SkCanvas* canvas,
@@ -38,20 +44,6 @@ void CompositingDisplayItem::Raster(SkCanvas* canvas,
   paint.setAlpha(alpha_);
   paint.setColorFilter(color_filter_.get());
   canvas->saveLayer(has_bounds_ ? &bounds_ : nullptr, &paint);
-}
-
-bool CompositingDisplayItem::IsSuitableForGpuRasterization() const {
-  return true;
-}
-
-int CompositingDisplayItem::ApproximateOpCount() const {
-  return 1;
-}
-
-size_t CompositingDisplayItem::PictureMemoryUsage() const {
-  // TODO(pdr): Include color_filter's memory here.
-  return sizeof(float) + sizeof(bool) + sizeof(SkRect) +
-         sizeof(SkXfermode::Mode);
 }
 
 void CompositingDisplayItem::AsValueInto(
@@ -66,6 +58,8 @@ void CompositingDisplayItem::AsValueInto(
 }
 
 EndCompositingDisplayItem::EndCompositingDisplayItem() {
+  DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
+                      0 /* memory_usage */);
 }
 
 EndCompositingDisplayItem::~EndCompositingDisplayItem() {
@@ -74,18 +68,6 @@ EndCompositingDisplayItem::~EndCompositingDisplayItem() {
 void EndCompositingDisplayItem::Raster(SkCanvas* canvas,
                                        SkDrawPictureCallback* callback) const {
   canvas->restore();
-}
-
-bool EndCompositingDisplayItem::IsSuitableForGpuRasterization() const {
-  return true;
-}
-
-int EndCompositingDisplayItem::ApproximateOpCount() const {
-  return 0;
-}
-
-size_t EndCompositingDisplayItem::PictureMemoryUsage() const {
-  return 0;
 }
 
 void EndCompositingDisplayItem::AsValueInto(

@@ -25,6 +25,9 @@ DrawingDisplayItem::~DrawingDisplayItem() {
 
 void DrawingDisplayItem::SetNew(skia::RefPtr<SkPicture> picture) {
   picture_ = picture.Pass();
+  DisplayItem::SetNew(picture_->suitableForGpuRasterization(NULL),
+                      picture_->approximateOpCount(),
+                      SkPictureUtils::ApproximateBytesUsed(picture_.get()));
 }
 
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
@@ -35,19 +38,6 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
     picture_->playback(canvas, callback);
   else
     canvas->drawPicture(picture_.get());
-}
-
-bool DrawingDisplayItem::IsSuitableForGpuRasterization() const {
-  return picture_->suitableForGpuRasterization(NULL);
-}
-
-int DrawingDisplayItem::ApproximateOpCount() const {
-  return picture_->approximateOpCount();
-}
-
-size_t DrawingDisplayItem::PictureMemoryUsage() const {
-  DCHECK(picture_);
-  return SkPictureUtils::ApproximateBytesUsed(picture_.get());
 }
 
 void DrawingDisplayItem::AsValueInto(
