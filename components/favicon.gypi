@@ -10,6 +10,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',

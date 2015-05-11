@@ -82,9 +82,9 @@ class MockFaviconService : public FaviconService {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockFaviconService);
-
   std::deque<favicon_base::FaviconRawBitmapResult> mock_result_queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockFaviconService);
 };
 
 // This class provides access to LargeIconService internals.
@@ -94,6 +94,11 @@ class TestLargeIconService : public LargeIconService {
       : LargeIconService(mock_favicon_service) {
   }
   ~TestLargeIconService() override {
+  }
+
+  // Using the current thread's task runner for testing.
+  scoped_refptr<base::TaskRunner> GetBackgroundTaskRunner() override {
+    return base::MessageLoop::current()->task_runner();
   }
 
  private:
@@ -152,7 +157,6 @@ class LargeIconServiceTest : public testing::Test {
 };
 
 TEST_F(LargeIconServiceTest, SameSize) {
-
   mock_favicon_service_->InjectResult(CreateTestBitmap(24, 24, kTestColor));
   expected_bitmap_ = CreateTestBitmap(24, 24, kTestColor);
   large_icon_service_->GetLargeIconOrFallbackStyle(

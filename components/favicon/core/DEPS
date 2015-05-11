@@ -2,6 +2,7 @@ include_rules = [
   "+components/bookmarks/browser",
   "+components/history/core/browser",
   "+components/keyed_service/core",
+  "+content/public/browser",
   "+skia",
   "+third_party/skia",
   "+third_party/skia/include",
