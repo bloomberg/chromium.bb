@@ -28,4 +28,10 @@ mojo_native_application("core_services") {
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
   ]
+
+  # TODO(erg): The android network service has some weirdness to let it link
+  # with java stuff. Someone who understand how that works should look at this.
+  if (!is_android) {
+    deps += [ "//mojo/services/network:lib" ]
+  }
 }

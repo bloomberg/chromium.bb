@@ -4,6 +4,7 @@ include_rules = [
   "+components/view_manager",
   "+mojo/application",
   "+mojo/common",
+  "+mojo/services/network",
   "+mojo/services/tracing",
   "+third_party/mojo_services/src/clipboard",
   "+third_party/mojo/src/mojo/public",

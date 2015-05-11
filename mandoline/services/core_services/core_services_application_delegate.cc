@@ -14,6 +14,10 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "url/gurl.h"
 
+#if !defined(OS_ANDROID)
+#include "mojo/services/network/network_service_delegate.h"
+#endif
+
 namespace core_services {
 
 class ApplicationThread;
@@ -121,6 +125,10 @@ void CoreServicesApplicationDelegate::StartApplication(
   scoped_ptr<mojo::ApplicationDelegate> delegate;
   if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
+#if !defined(OS_ANDROID)
+  else if (url == "mojo://network_service/")
+    delegate.reset(new NetworkServiceDelegate);
+#endif
   else if (url == "mojo://tracing/")
     delegate.reset(new tracing::TracingApp);
   else if (url == "mojo://view_manager/")
@@ -130,10 +138,16 @@ void CoreServicesApplicationDelegate::StartApplication(
   else
     NOTREACHED() << "This application package does not support " << url;
 
-  // We must use a MessagePumpMojo to awake on mojo messages.
   base::Thread::Options thread_options;
-  thread_options.message_pump_factory =
-      base::Bind(&mojo::common::MessagePumpMojo::Create);
+
+  // In the case of mojo:network_service, we must use an IO message loop.
+  if (url == "mojo://network_service/") {
+    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  } else {
+    // We must use a MessagePumpMojo to awake on mojo messages.
+    thread_options.message_pump_factory =
+        base::Bind(&mojo::common::MessagePumpMojo::Create);
+  }
 
   scoped_ptr<ApplicationThread> thread(
       new ApplicationThread(url, delegate.Pass(), request.Pass()));
