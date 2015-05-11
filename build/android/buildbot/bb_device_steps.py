@@ -95,9 +95,9 @@ INSTALLABLE_PACKAGES = dict((package.name, package) for package in (
                         'org.chromium.chromedriver_webview_shell')]))
 
 VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'components_browsertests',
-                   'gpu', 'python_unittests', 'telemetry_unittests',
-                   'telemetry_perf_unittests', 'ui', 'unit', 'webkit',
-                   'webkit_layout'])
+                   'gfx_unittests', 'gpu', 'python_unittests',
+                   'telemetry_unittests', 'telemetry_perf_unittests', 'ui',
+                   'unit', 'webkit', 'webkit_layout'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -571,6 +571,8 @@ def GetTestStepCmds():
       ('chrome_proxy', RunChromeProxyTests),
       ('components_browsertests',
           lambda options: RunTestSuites(options, ['components_browsertests'])),
+      ('gfx_unittests',
+          lambda options: RunTestSuites(options, ['gfx_unittests'])),
       ('gpu', RunGPUTests),
       ('python_unittests', RunPythonUnitTests),
       ('telemetry_unittests', RunTelemetryUnitTests),

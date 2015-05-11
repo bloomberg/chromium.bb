@@ -127,6 +127,7 @@ def GetBotStepMap():
   trial_tests = [
       'base_junit_tests',
       'components_browsertests',
+      'gfx_unittests',
   ]
   flakiness_server = (
       '--flakiness-server=%s' % constants.UPSTREAM_FLAKINESS_SERVER)
