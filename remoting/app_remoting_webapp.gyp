@@ -92,6 +92,7 @@
 
   'targets': [
     {
+      # GN version: //remoting/webapp:ar_sample_app
       # Sample AppRemoting app.
       'target_name': 'ar_sample_app',
       'app_key': 'Sample_App',

@@ -11,6 +11,7 @@
     'app_remoting_webapp_files.gypi',
   ],
 
+  # GN version: See remoting/webapp/build_template.gni
   'target_defaults': {
     'type': 'none',
 
@@ -119,7 +120,6 @@
           '<(ar_app_manifest_app)', # Manifest template
           'app_remoting',  # Web app type
           '<@(ar_webapp_files)',
-          '<@(ar_generated_html_files)',
           '--locales_listfile',
           '<(ar_webapp_locales_listfile)',
           '--jinja_paths',
