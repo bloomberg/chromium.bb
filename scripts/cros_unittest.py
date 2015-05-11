@@ -14,7 +14,7 @@ from chromite.lib import stats_unittest
 from chromite.scripts import cros
 
 
-class RunScriptTest(cros_test_lib.MockTempDirTestCase):
+class RunScriptTest(cros_test_lib.WorkspaceTestCase):
   """Test the main functionality."""
 
   def setUp(self):
@@ -43,6 +43,7 @@ class RunScriptTest(cros_test_lib.MockTempDirTestCase):
   def testDefaultLogLevelBrillo(self):
     """Test that the default log level is notice for brillo tools."""
     self.get_toolset_mock.return_value = 'brillo'
+    self.CreateWorkspace()
     arg_parser = self.PatchObject(commandline, 'ArgumentParser',
                                   return_value=commandline.ArgumentParser())
     cros.GetOptions({})

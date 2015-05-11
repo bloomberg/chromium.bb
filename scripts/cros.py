@@ -28,6 +28,9 @@ def GetOptions(my_commands):
   if command.GetToolset() == 'brillo':
     parser = commandline.ArgumentParser(caching=True,
                                         default_log_level='notice')
+    # For brillo commands, we want to store the logs to a file for error
+    # handling at logging level notice.
+    command.SetupFileLogger()
   else:
     parser = commandline.ArgumentParser(caching=True)
   if not command:

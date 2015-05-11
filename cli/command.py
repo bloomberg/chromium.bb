@@ -22,14 +22,36 @@ import glob
 import os
 import sys
 
+from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_import
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
+from chromite.lib import workspace_lib
 
 
 _commands = dict()
+
+
+def SetupFileLogger(filename='brillo.log', log_level=logging.DEBUG):
+  """Store log messages to a file.
+
+  In case of an error, this file can be made visible to the user.
+  """
+  workspace_path = workspace_lib.WorkspacePath()
+  if workspace_path is None:
+    return
+  path = os.path.join(workspace_path, 'build/logs', filename)
+  osutils.Touch(path, makedirs=True)
+  logger = logging.getLogger()
+  fh = logging.FileHandler(path, mode='w')
+  fh.setLevel(log_level)
+  fh.setFormatter(
+      logging.Formatter(fmt=constants.LOGGER_FMT,
+                        datefmt=constants.LOGGER_DATE_FMT))
+  logger.addHandler(fh)
 
 
 def UseProgressBar():
