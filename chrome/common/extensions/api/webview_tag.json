@@ -676,6 +676,23 @@
     ],
     "functions": [
       {
+        "name": "addContentScripts",
+        "type": "function",
+        "description": "<p>Adds content script injection rules to the <code>webview</code>. When the <code>webview</code> navigates to a page matching one or more rules, the associated scripts will be injected. You can programmatically add rules or update existing rules.</p><p>The following example adds two rules to the <code>webview</code>: 'myRule' and 'anotherRule'.</p><pre>webview.addContentScripts([\r  {\r    name: 'myRule',\r    matches: ['http://www.foo.com/*'],\r    css: { files: ['mystyles.css'] },\r    js: { files: ['jquery.js', 'myscript.js'] },\r    run_at: 'document_start'\r  },\r  {\r    name: 'anotherRule',\r    matches: ['http://www.bar.com/*'],\r    js: { code: \"document.body.style.backgroundColor = 'red';\" },\r    run_at: 'document_end'\r  }]);\r ...\r\r// Navigates webview.\rwebview.src = 'http://www.foo.com';</pre><p>You can defer addContentScripts call until you needs to inject scripts.</p><p>The following example shows how to overwrite an existing rule.</p><pre>webview.addContentScripts([{\r    name: 'rule',\r    matches: ['http://www.foo.com/*'],\r    js: { files: ['scriptA.js'] },\r    run_at: 'document_start'}]);\r\r// Do something.\rwebview.src = 'http://www.foo.com/*';\r ...\r// Overwrite 'rule' defined before.\rwebview.addContentScripts([{\r    name: 'rule',\r    matches: ['http://www.bar.com/*'],\r    js: { files: ['scriptB.js'] },\r    run_at: 'document_end'}]);</pre><p>If <code>webview</code> has been naviagted to the origin (e.g., foo.com) and calls <code>webview.addContentScripts</code> to add 'myRule', you need to wait for next navigation to make the scripts injected. If you want immediate injection, <code>executeScript</code> will do the right thing.</p><p>Rules are preserved even if the guest process crashes or is killed or even if the <code>webview</code> is reparented.</p><p>Refer to the <a href='/extensions/content_scripts'>content scripts</a> documentation for more details.</p>",
+        "parameters": [
+          {
+            "type": "array",
+            "name": "contentScriptList",
+            "items": {
+              "$ref": "ContentScriptDetails",
+              "name": "contentScriptDetails"
+            },
+            "description": "Details of the content scripts to add.",
+            "minItems": 1
+          }
+        ]
+      },
+      {
         "name": "back",
         "type": "function",
         "description": "Navigates backward one history entry if possible. Equivalent to <code>go(-1)</code>.",
@@ -728,41 +745,6 @@
             "optional": true,
             "description": "Called after the data has been successfully cleared.",
             "parameters": []
-          }
-        ]
-      },
-      {
-        "name": "addContentScripts",
-        "type": "function",
-        "description": "<p>Adds content script injection rules to the <code>webview</code>. When the <code>webview</code> navigates to a page matching one or more rules, the associated scripts will be injected. You can programmatically add rules or update existing rules.</p><p>The following example adds two rules to the <code>webview</code>: 'myRule' and 'anotherRule'.</p><pre>webview.addContentScripts([\r  {\r    name: 'myRule',\r    matches: ['http://www.foo.com/*'],\r    css: { files: ['mystyles.css'] },\r    js: { files: ['jquery.js', 'myscript.js'] },\r    run_at: 'document_start'\r  },\r  {\r    name: 'anotherRule',\r    matches: ['http://www.bar.com/*'],\r    js: { code: \"document.body.style.backgroundColor = 'red';\" },\r    run_at: 'document_end'\r  }]);\r ...\r\r// Navigates webview.\rwebview.src = 'http://www.foo.com';</pre><p>You can defer addContentScripts call until you needs to inject scripts.</p><p>The following example shows how to overwrite an existing rule.</p><pre>webview.addContentScripts([{\r    name: 'rule',\r    matches: ['http://www.foo.com/*'],\r    js: { files: ['scriptA.js'] },\r    run_at: 'document_start'}]);\r\r// Do something.\rwebview.src = 'http://www.foo.com/*';\r ...\r// Overwrite 'rule' defined before.\rwebview.addContentScripts([{\r    name: 'rule',\r    matches: ['http://www.bar.com/*'],\r    js: { files: ['scriptB.js'] },\r    run_at: 'document_end'}]);</pre><p>If <code>webview</code> has been naviagted to the origin (e.g., foo.com) and calls <code>webview.addContentScripts</code> to add 'myRule', you need to wait for next navigation to make the scripts injected. If you want immediate injection, <code>executeScript</code> will do the right thing.</p><p>Rules are preserved even if the guest process crashes or is killed or even if the <code>webview</code> is reparented.</p><p>Refer to the <a href='/extensions/content_scripts'>content scripts</a> documentation for more details.</p>",
-        "parameters": [
-          {
-            "type": "array",
-            "name": "contentScriptList",
-            "items": {
-              "$ref": "ContentScriptDetails",
-              "name": "contentScriptDetails",
-              "minimum": 1
-            },
-            "description": "Details of the content scripts to add."
-          }
-        ]
-      },
-      {
-        "name": "removeContentScripts",
-        "type": "function",
-        "description": "<p>Removes content scripts from a <code>webview</code>.</p><p>The following example removes \"myRule\" which was added before.</p><pre>webview.removeContentScripts(['myRule']);</pre><p>You can remove all the rules by calling:</p><pre>webview.removeContentScripts();</pre>",
-        "parameters": [
-          {
-            "type": "array",
-            "name": "scriptNameList",
-            "items": {
-              "type": "string",
-              "minimum": 0,
-              "description": "The name of a content script that will be removed."
-            },
-            "optional": true,
-            "description": "A list of names of content scripts that will be removed. If the list is empty, all the content scripts added to the <code>webview</code> will be removed."
           }
         ]
       },
@@ -956,6 +938,23 @@
         "type": "function",
         "description": "Reloads the current top-level page.",
         "parameters": []
+      },
+      {
+        "name": "removeContentScripts",
+        "type": "function",
+        "description": "<p>Removes content scripts from a <code>webview</code>.</p><p>The following example removes \"myRule\" which was added before.</p><pre>webview.removeContentScripts(['myRule']);</pre><p>You can remove all the rules by calling:</p><pre>webview.removeContentScripts();</pre>",
+        "parameters": [
+          {
+            "type": "array",
+            "name": "scriptNameList",
+            "items": {
+              "type": "string",
+              "description": "The name of a content script that will be removed."
+            },
+            "optional": true,
+            "description": "A list of names of content scripts that will be removed. If the list is empty, all the content scripts added to the <code>webview</code> will be removed."
+          }
+        ]
       },
       {
         "name": "setUserAgentOverride",

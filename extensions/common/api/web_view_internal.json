@@ -255,10 +255,10 @@
             "name": "contentScriptList",
             "items": {
               "$ref": "ContentScriptDetails",
-              "name": "contentScriptDetails",
-              "minimum": 1
+              "name": "contentScriptDetails"
             },
-            "description": "Details of the content scripts to add."
+            "description": "Details of the content scripts to add.",
+            "minItems": 1
           }
         ]
       },
@@ -277,7 +277,6 @@
             "name": "scriptNameList",
             "items": {
               "type": "string",
-              "minimum": 0,
               "description": "The name of a content script that will be removed."
             },
             "optional": true,
