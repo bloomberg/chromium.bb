@@ -224,8 +224,9 @@ base::string16 ComponentsUI::ServiceStatusToString(
     case update_client::CrxUpdateItem::State::kUpdatingDiff:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDT_DIFF);
     case update_client::CrxUpdateItem::State::kUpdating:
-    case update_client::CrxUpdateItem::State::kDownloaded:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATING);
+    case update_client::CrxUpdateItem::State::kDownloaded:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_DOWNLOADED);
     case update_client::CrxUpdateItem::State::kUpdated:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPDATED);
     case update_client::CrxUpdateItem::State::kUpToDate:
