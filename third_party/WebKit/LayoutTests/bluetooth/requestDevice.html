@@ -34,17 +34,6 @@ sequential_promise_test(function(t) {
       });
 }, 'Reject with NotFoundError.');
 
-sequential_promise_test(function(t) {
-  testRunner.setBluetoothMockDataSet('RejectRequestDevice_SecurityError');
-  return navigator.bluetooth.requestDevice()
-    .then(function() {
-      assert_unreached('Mock was set to reject.');
-    },
-      function(e) {
-        assert_equals(e.name, 'SecurityError');
-      });
-}, 'Reject with SecurityError.');
-
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('Single Empty Device');
   return navigator.bluetooth.requestDevice()
