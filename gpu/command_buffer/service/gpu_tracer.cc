@@ -66,7 +66,7 @@ void TraceOutputter::TraceDevice(GpuTracerSource source,
   TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP2(
       TRACE_DISABLED_BY_DEFAULT("gpu.device"),
       name.c_str(),
-      static_cast<int>(source),
+      local_trace_device_id_,
       named_thread_.thread_id(),
       start_time,
       "gl_category",
@@ -76,13 +76,14 @@ void TraceOutputter::TraceDevice(GpuTracerSource source,
   TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP2(
       TRACE_DISABLED_BY_DEFAULT("gpu.device"),
       name.c_str(),
-      static_cast<int>(source),
+      local_trace_device_id_,
       named_thread_.thread_id(),
       end_time,
       "gl_category",
       category.c_str(),
       "channel",
       kGpuTraceSourceNames[source]);
+  ++local_trace_device_id_;
 }
 
 void TraceOutputter::TraceServiceBegin(GpuTracerSource source,
@@ -91,18 +92,25 @@ void TraceOutputter::TraceServiceBegin(GpuTracerSource source,
   DCHECK(source >= 0 && source < NUM_TRACER_SOURCES);
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TTS2(
       TRACE_DISABLED_BY_DEFAULT("gpu.service"),
-      name.c_str(), static_cast<int>(source),
+      name.c_str(), local_trace_service_id_,
       "gl_category", category.c_str(),
       "channel", kGpuTraceSourceNames[source]);
+
+  trace_service_id_stack_[source].push(local_trace_service_id_);
+  ++local_trace_service_id_;
 }
 
 void TraceOutputter::TraceServiceEnd(GpuTracerSource source,
                                      const std::string& category,
                                      const std::string& name) {
   DCHECK(source >= 0 && source < NUM_TRACER_SOURCES);
+  DCHECK(!trace_service_id_stack_[source].empty());
+  const uint64 local_trace_id = trace_service_id_stack_[source].top();
+  trace_service_id_stack_[source].pop();
+
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TTS2(
       TRACE_DISABLED_BY_DEFAULT("gpu.service"),
-      name.c_str(), static_cast<int>(source),
+      name.c_str(), local_trace_id,
       "gl_category", category.c_str(),
       "channel", kGpuTraceSourceNames[source]);
 }

@@ -7,6 +7,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_TRACER_H_
 
 #include <deque>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -149,6 +150,10 @@ class TraceOutputter : public Outputter {
   ~TraceOutputter() override;
 
   base::Thread named_thread_;
+  uint64 local_trace_device_id_ = 0;
+  uint64 local_trace_service_id_ = 0;
+
+  std::stack<uint64> trace_service_id_stack_[NUM_TRACER_SOURCES];
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TraceOutputter);
