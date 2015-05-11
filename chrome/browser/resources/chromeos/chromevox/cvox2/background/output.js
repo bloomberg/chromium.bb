@@ -52,7 +52,7 @@ Output = function() {
   this.brailleBuffer_ = [];
   /** @type {!Array<Object>} */
   this.locations_ = [];
-  /** @type {function()} */
+  /** @type {function(?)} */
   this.speechEndCallback_;
 
   /**
@@ -614,7 +614,10 @@ Output.prototype = {
    * @param {function()} callback
    */
   onSpeechEnd: function(callback) {
-    this.speechEndCallback_ = callback;
+    this.speechEndCallback_ = function(opt_cleanupOnly) {
+      if (!opt_cleanupOnly)
+        callback();
+    }.bind(this);
     return this;
   },
 

@@ -134,6 +134,8 @@ ClassicCompatibility.prototype = {
         return 'previousLine';
       case 'forceClickOnCurrentItem':
         return 'doDefault';
+      case 'readFromHere':
+        return 'continuousRead';
       default:
         return classicCommand;
     }

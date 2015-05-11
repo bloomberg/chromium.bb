@@ -155,10 +155,13 @@ TEST_F('BackgroundTest', 'MANUAL_ContinuousRead', function() {
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
     cvox.ChromeVox.tts.expectSpeech('start');
     cvox.ChromeVox.tts.expectSpeechAfter('start', this.doCmd('continuousRead'));
-    cvox.ChromeVox.tts.expectSpeech('alpha Link');
-    cvox.ChromeVox.tts.expectSpeech('beta Link');
-    cvox.ChromeVox.tts.expectSpeech('Heading charlie', function() {});
-    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+    cvox.ChromeVox.tts.expectSpeech('alpha');
+    cvox.ChromeVox.tts.expectSpeech('Link');
+    cvox.ChromeVox.tts.expectSpeech('beta');
+    cvox.ChromeVox.tts.expectSpeech('Link');
+    cvox.ChromeVox.tts.expectSpeech('Heading 1');
+    cvox.ChromeVox.tts.expectSpeech('charlie');
+    cvox.ChromeVox.tts.finishExpectations();
   });
 });
 
