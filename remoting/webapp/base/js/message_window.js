@@ -130,7 +130,7 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
       chrome.app.window.current().onClosed.addListener(
           this.sendReply_.bind(this, event.source, messageId, 0));
 
-      base.resizeWindowToContent();
+      base.resizeWindowToContent(true);
       chrome.app.window.current().show();
       break;
 
