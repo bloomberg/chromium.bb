@@ -33,13 +33,17 @@
 
 namespace blink {
 
-// Flags for permitted touch actions, specified in http://www.w3.org/TR/pointerevents/#the-touch-action-css-property.
+// Flags for permitted touch actions, specified in http://w3c.github.io/pointerevents/#the-touch-action-css-property.
 enum WebTouchAction {
     WebTouchActionAuto = 0x0,
     WebTouchActionNone = 0x1,
-    WebTouchActionPanX = 0x2,
-    WebTouchActionPanY = 0x4,
-    WebTouchActionPinchZoom = 0x8,
+    WebTouchActionPanLeft = 0x2,
+    WebTouchActionPanRight = 0x4,
+    WebTouchActionPanX = WebTouchActionPanLeft | WebTouchActionPanRight,
+    WebTouchActionPanUp = 0x8,
+    WebTouchActionPanDown = 0x10,
+    WebTouchActionPanY = WebTouchActionPanUp | WebTouchActionPanDown,
+    WebTouchActionPinchZoom = 0x20,
 };
 inline WebTouchAction operator| (WebTouchAction a, WebTouchAction b) { return WebTouchAction(int(a) | int(b)); }
 inline WebTouchAction& operator|= (WebTouchAction& a, WebTouchAction b) { return a = a | b; }

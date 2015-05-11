@@ -957,6 +957,10 @@ scroll-event
 // touch-action
 pan-x
 pan-y
+pan-left
+pan-right
+pan-up
+pan-down
 manipulation
 
 // justify-items / justify-self

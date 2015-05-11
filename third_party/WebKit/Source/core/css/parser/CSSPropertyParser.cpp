@@ -7315,13 +7315,32 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTouchAction()
         return list.release();
     }
 
+    bool xSet = false;
+    bool ySet = false;
     while (value) {
         switch (value->id) {
         case CSSValuePanX:
-        case CSSValuePanY: {
-            RefPtrWillBeRawPtr<CSSValue> panValue = cssValuePool().createIdentifierValue(value->id);
-            if (list->hasValue(panValue.get()))
+        case CSSValuePanRight:
+        case CSSValuePanLeft: {
+            if (xSet)
                 return nullptr;
+            xSet = true;
+            if (value->id != CSSValuePanX && !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
+                return nullptr;
+
+            RefPtrWillBeRawPtr<CSSValue> panValue = cssValuePool().createIdentifierValue(value->id);
+            list->append(panValue.release());
+            break;
+        }
+        case CSSValuePanY:
+        case CSSValuePanDown:
+        case CSSValuePanUp: {
+            if (ySet)
+                return nullptr;
+            ySet = true;
+            if (value->id != CSSValuePanY && !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
+                return nullptr;
+            RefPtrWillBeRawPtr<CSSValue> panValue = cssValuePool().createIdentifierValue(value->id);
             list->append(panValue.release());
             break;
         }

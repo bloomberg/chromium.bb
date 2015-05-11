@@ -4352,8 +4352,16 @@ template<> inline CSSPrimitiveValue::operator TouchAction() const
         return TouchActionNone;
     case CSSValueAuto:
         return TouchActionAuto;
+    case CSSValuePanLeft:
+        return TouchActionPanLeft;
+    case CSSValuePanRight:
+        return TouchActionPanRight;
     case CSSValuePanX:
         return TouchActionPanX;
+    case CSSValuePanUp:
+        return TouchActionPanUp;
+    case CSSValuePanDown:
+        return TouchActionPanDown;
     case CSSValuePanY:
         return TouchActionPanY;
     case CSSValueManipulation:

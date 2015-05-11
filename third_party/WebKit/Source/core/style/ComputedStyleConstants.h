@@ -486,13 +486,17 @@ enum GridAutoFlow {
 
 enum DraggableRegionMode { DraggableRegionNone, DraggableRegionDrag, DraggableRegionNoDrag };
 
-static const size_t TouchActionBits = 4;
+static const size_t TouchActionBits = 6;
 enum TouchAction {
     TouchActionAuto = 0x0,
     TouchActionNone = 0x1,
-    TouchActionPanX = 0x2,
-    TouchActionPanY = 0x4,
-    TouchActionPinchZoom = 0x8,
+    TouchActionPanLeft = 0x2,
+    TouchActionPanRight = 0x4,
+    TouchActionPanX = TouchActionPanLeft | TouchActionPanRight,
+    TouchActionPanUp = 0x8,
+    TouchActionPanDown = 0x10,
+    TouchActionPanY = TouchActionPanUp | TouchActionPanDown,
+    TouchActionPinchZoom = 0x20,
 };
 inline TouchAction operator| (TouchAction a, TouchAction b) { return TouchAction(int(a) | int(b)); }
 inline TouchAction& operator|= (TouchAction& a, TouchAction b) { return a = a | b; }

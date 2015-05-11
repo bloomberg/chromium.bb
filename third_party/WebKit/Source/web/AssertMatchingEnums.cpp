@@ -656,7 +656,11 @@ STATIC_ASSERT_MATCHING_ENUM(WebCustomHandlersDeclined, NavigatorContentUtilsClie
 
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionNone, TouchActionNone);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionAuto, TouchActionAuto);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanLeft, TouchActionPanLeft);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanRight, TouchActionPanRight);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanX, TouchActionPanX);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanUp, TouchActionPanUp);
+STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanDown, TouchActionPanDown);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanY, TouchActionPanY);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPinchZoom, TouchActionPinchZoom);
 
