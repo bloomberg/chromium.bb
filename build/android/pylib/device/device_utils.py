@@ -789,7 +789,7 @@ class DeviceUtils(object):
   def SendKeyEvent(self, keycode, timeout=None, retries=None):
     """Sends a keycode to the device.
 
-    See: http://developer.android.com/reference/android/view/KeyEvent.html
+    See the pylib.constants.keyevent module for suitable keycode values.
 
     Args:
       keycode: A integer keycode to send to the device.
