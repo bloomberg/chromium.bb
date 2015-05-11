@@ -47,6 +47,8 @@ class InstanceIDGetIDFunction : public InstanceIDApiFunction {
   ResponseAction DoWork() override;
 
  private:
+  void GetIDCompleted(const std::string& id);
+
   DISALLOW_COPY_AND_ASSIGN(InstanceIDGetIDFunction);
 };
 
@@ -64,6 +66,8 @@ class InstanceIDGetCreationTimeFunction : public InstanceIDApiFunction {
   ResponseAction DoWork() override;
 
  private:
+  void GetCreationTimeCompleted(const base::Time& creation_time);
+
   DISALLOW_COPY_AND_ASSIGN(InstanceIDGetCreationTimeFunction);
 };
 

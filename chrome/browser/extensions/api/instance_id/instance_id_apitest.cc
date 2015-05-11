@@ -12,11 +12,23 @@
 #include "chrome/browser/services/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "extensions/test/result_catcher.h"
 
 using extensions::ResultCatcher;
 
 namespace extensions {
+
+namespace {
+
+KeyedService* BuildFakeGCMProfileService(content::BrowserContext* context) {
+  gcm::FakeGCMProfileService* service =
+      new gcm::FakeGCMProfileService(Profile::FromBrowserContext(context));
+  service->SetDriverForTesting(new instance_id::FakeGCMDriverForInstanceID());
+  return service;
+}
+
+}  // namespace
 
 class InstanceIDApiTest : public ExtensionApiTest {
  public:
@@ -32,7 +44,7 @@ class InstanceIDApiTest : public ExtensionApiTest {
 
 void InstanceIDApiTest::SetUpOnMainThread() {
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
-      browser()->profile(), &gcm::FakeGCMProfileService::Build);
+      browser()->profile(), &BuildFakeGCMProfileService);
 
   ExtensionApiTest::SetUpOnMainThread();
 }

@@ -21,14 +21,13 @@ InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id)
 InstanceIDAndroid::~InstanceIDAndroid() {
 }
 
-std::string InstanceIDAndroid::GetID() {
+void InstanceIDAndroid::GetID(const GetIDCallback& callback) {
   NOTIMPLEMENTED();
-  return std::string();
 }
 
-base::Time InstanceIDAndroid::GetCreationTime() {
+void InstanceIDAndroid::GetCreationTime(
+    const GetCreationTimeCallback& callback) {
   NOTIMPLEMENTED();
-  return base::Time();
 }
 
 void InstanceIDAndroid::GetToken(

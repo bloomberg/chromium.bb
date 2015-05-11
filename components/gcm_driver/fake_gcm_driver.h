@@ -41,6 +41,7 @@ class FakeGCMDriver : public GCMDriver {
   base::Time GetLastTokenFetchTime() override;
   void SetLastTokenFetchTime(const base::Time& time) override;
   void WakeFromSuspendForHeartbeat(bool wake) override;
+  InstanceIDStore* GetInstanceIDStore() override;
 
  protected:
   // GCMDriver implementation:

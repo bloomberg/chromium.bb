@@ -27,6 +27,7 @@ void GCMStore::LoadResult::Reset() {
   last_checkin_accounts.clear();
   account_mappings.clear();
   success = false;
+  instance_id_data.clear();
 }
 
 GCMStore::GCMStore() {}

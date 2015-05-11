@@ -41,6 +41,9 @@ class InstanceID {
   // Asynchronous callbacks.
   typedef base::Callback<void(const std::string& app_id,
                               bool update_id)> TokenRefreshCallback;
+  typedef base::Callback<void(const std::string& id)> GetIDCallback;
+  typedef base::Callback<void(const base::Time& creation_time)>
+      GetCreationTimeCallback;
   typedef base::Callback<void(const std::string& token,
                               Result result)> GetTokenCallback;
   typedef base::Callback<void(Result result)> DeleteTokenCallback;
@@ -62,10 +65,10 @@ class InstanceID {
   void SetTokenRefreshCallback(const TokenRefreshCallback& callback);
 
   // Returns the Instance ID.
-  virtual std::string GetID() = 0;
+  virtual void GetID(const GetIDCallback& callback) = 0;
 
   // Returns the time when the InstanceID has been generated.
-  virtual base::Time GetCreationTime() = 0;
+  virtual void GetCreationTime(const GetCreationTimeCallback& callback) = 0;
 
   // Retrieves a token that allows the authorized entity to access the service
   // defined as "scope".

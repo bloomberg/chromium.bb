@@ -19,12 +19,12 @@ namespace instance_id {
 // InstanceID implementation for Android.
 class InstanceIDAndroid : public InstanceID {
  public:
-  explicit InstanceIDAndroid(const std::string& app_id);
+  InstanceIDAndroid(const std::string& app_id);
   ~InstanceIDAndroid() override;
 
   // InstanceID:
-  std::string GetID() override;
-  base::Time GetCreationTime() override;
+  void GetID(const GetIDCallback& callback) override;
+  void GetCreationTime(const GetCreationTimeCallback& callback) override;
   void GetToken(const std::string& audience,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,

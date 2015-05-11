@@ -12,6 +12,12 @@
 
 namespace gcm {
 
+InstanceIDStore::InstanceIDStore() {
+}
+
+InstanceIDStore::~InstanceIDStore() {
+}
+
 GCMDriver::GCMDriver() : weak_ptr_factory_(this) {
 }
 

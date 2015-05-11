@@ -53963,6 +53963,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="9" label="Loading account mapping failed"/>
   <int value="10" label="Loading last token time failed"/>
   <int value="11" label="Loading heartbeat intervals failed"/>
+  <int value="12" label="Loading Instance ID data failed"/>
 </enum>
 
 <enum name="GCMOutgoingMessageTTLCategory" type="int">

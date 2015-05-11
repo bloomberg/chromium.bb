@@ -126,6 +126,10 @@ class GCMClientImpl
   void RemoveAccountMapping(const std::string& account_id) override;
   void SetLastTokenFetchTime(const base::Time& time) override;
   void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) override;
+  void AddInstanceIDData(const std::string& app_id,
+                         const std::string& instance_id_data) override;
+  void RemoveInstanceIDData(const std::string& app_id) override;
+  std::string GetInstanceIDData(const std::string& app_id) override;
 
   // GCMStatsRecorder::Delegate implemenation.
   void OnActivityRecorded() override;
@@ -340,6 +344,9 @@ class GCMClientImpl
 
   // Time of the last successful checkin.
   base::Time last_checkin_time_;
+
+  // Cached instance ID data, key is app id.
+  std::map<std::string, std::string> instance_id_data_;
 
   // Factory for creating references when scheduling periodic checkin.
   base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_;

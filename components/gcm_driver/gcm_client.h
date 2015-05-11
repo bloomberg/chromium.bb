@@ -309,6 +309,17 @@ class GCMClient {
 
   // Updates the timer used by the HeartbeatManager for sending heartbeats.
   virtual void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) = 0;
+
+  // Adds the Instance ID data for a specific app to the persistent store.
+  virtual void AddInstanceIDData(const std::string& app_id,
+                                 const std::string& instance_id_data) = 0;
+
+  // Removes the Instance ID data for a specific app from the persistent store.
+  virtual void RemoveInstanceIDData(const std::string& app_id) = 0;
+
+  // Retrieves the Instance ID data for a specific app from the persistent
+  // store.
+  virtual std::string GetInstanceIDData(const std::string& app_id) = 0;
 };
 
 }  // namespace gcm

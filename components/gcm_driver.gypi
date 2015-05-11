@@ -167,6 +167,7 @@
       'target_name': 'instance_id_test_support',
       'type': 'static_library',
       'dependencies': [
+        'gcm_driver_test_support',
         'instance_id',
         '../testing/gtest.gyp:gtest',
       ],
@@ -175,8 +176,8 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
-        'gcm_driver/instance_id/fake_instance_id_driver.cc',
-        'gcm_driver/instance_id/fake_instance_id_driver.h',
+        'gcm_driver/instance_id/fake_gcm_driver_for_instance_id.cc',
+        'gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h',
       ],
     },
   ],

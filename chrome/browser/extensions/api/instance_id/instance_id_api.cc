@@ -81,8 +81,13 @@ InstanceIDGetIDFunction::InstanceIDGetIDFunction() {}
 InstanceIDGetIDFunction::~InstanceIDGetIDFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDGetIDFunction::DoWork() {
-  return RespondNow(
-      OneArgument(new base::StringValue(GetInstanceID()->GetID())));
+  GetInstanceID()->GetID(
+      base::Bind(&InstanceIDGetIDFunction::GetIDCompleted, this));
+  return RespondLater();
+}
+
+void InstanceIDGetIDFunction::GetIDCompleted(const std::string& id) {
+  Respond(OneArgument(new base::StringValue(id)));
 }
 
 InstanceIDGetCreationTimeFunction::InstanceIDGetCreationTimeFunction() {}
@@ -90,9 +95,15 @@ InstanceIDGetCreationTimeFunction::InstanceIDGetCreationTimeFunction() {}
 InstanceIDGetCreationTimeFunction::~InstanceIDGetCreationTimeFunction() {}
 
 ExtensionFunction::ResponseAction InstanceIDGetCreationTimeFunction::DoWork() {
-  return RespondNow(OneArgument(
-      new base::FundamentalValue(
-          GetInstanceID()->GetCreationTime().ToDoubleT())));
+  GetInstanceID()->GetCreationTime(
+      base::Bind(&InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted,
+                 this));
+  return RespondLater();
+}
+
+void InstanceIDGetCreationTimeFunction::GetCreationTimeCompleted(
+    const base::Time& creation_time) {
+  Respond(OneArgument(new base::FundamentalValue(creation_time.ToDoubleT())));
 }
 
 InstanceIDGetTokenFunction::InstanceIDGetTokenFunction() {}

@@ -348,6 +348,7 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
     device_checkin_info_.accounts_set = true;
   last_checkin_time_ = result->last_checkin_time;
   gservices_settings_.UpdateFromLoadResult(*result);
+  instance_id_data_ = result->instance_id_data;
   load_result_ = result.Pass();
   state_ = LOADED;
 
@@ -528,6 +529,31 @@ void GCMClientImpl::SetLastTokenFetchTime(const base::Time& time) {
 void GCMClientImpl::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
   DCHECK(mcs_client_);
   mcs_client_->UpdateHeartbeatTimer(timer.Pass());
+}
+
+void GCMClientImpl::AddInstanceIDData(const std::string& app_id,
+                                      const std::string& instance_id_data) {
+  instance_id_data_[app_id] = instance_id_data;
+  gcm_store_->AddInstanceIDData(
+      app_id,
+      instance_id_data,
+      base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GCMClientImpl::RemoveInstanceIDData(const std::string& app_id) {
+  instance_id_data_.erase(app_id);
+  gcm_store_->RemoveInstanceIDData(
+      app_id,
+      base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+std::string GCMClientImpl::GetInstanceIDData(const std::string& app_id) {
+  auto iter = instance_id_data_.find(app_id);
+  if (iter == instance_id_data_.end())
+    return std::string();
+  return iter->second;
 }
 
 void GCMClientImpl::StartCheckin() {

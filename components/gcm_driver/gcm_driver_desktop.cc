@@ -87,6 +87,10 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   void RemoveAccountMapping(const std::string& account_id);
   void SetLastTokenFetchTime(const base::Time& time);
   void WakeFromSuspendForHeartbeat(bool wake);
+  void AddInstanceIDData(const std::string& app_id,
+                         const std::string& instance_id_data);
+  void RemoveInstanceIDData(const std::string& app_id);
+  void GetInstanceIDData(const std::string& app_id);
 
   // For testing purpose. Can be called from UI thread. Use with care.
   GCMClient* gcm_client_for_testing() const { return gcm_client_.get(); }
@@ -341,6 +345,37 @@ void GCMDriverDesktop::IOWorker::SetLastTokenFetchTime(const base::Time& time) {
 
   if (gcm_client_.get())
     gcm_client_->SetLastTokenFetchTime(time);
+}
+
+void GCMDriverDesktop::IOWorker::AddInstanceIDData(
+    const std::string& app_id,
+    const std::string& instance_id_data) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+
+  if (gcm_client_.get())
+    gcm_client_->AddInstanceIDData(app_id, instance_id_data);
+}
+
+void GCMDriverDesktop::IOWorker::RemoveInstanceIDData(
+    const std::string& app_id) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+
+  if (gcm_client_.get())
+    gcm_client_->RemoveInstanceIDData(app_id);
+}
+
+void GCMDriverDesktop::IOWorker::GetInstanceIDData(
+    const std::string& app_id) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+
+  std::string instance_id_data;
+  if (gcm_client_.get())
+    instance_id_data = gcm_client_->GetInstanceIDData(app_id);
+
+  ui_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMDriverDesktop::GetInstanceIDDataFinished,
+                 service_, app_id, instance_id_data));
 }
 
 void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
@@ -657,6 +692,53 @@ void GCMDriverDesktop::SetLastTokenFetchTime(const base::Time& time) {
       base::Bind(&GCMDriverDesktop::IOWorker::SetLastTokenFetchTime,
                  base::Unretained(io_worker_.get()),
                  time));
+}
+
+InstanceIDStore* GCMDriverDesktop::GetInstanceIDStore() {
+  return this;
+}
+
+void GCMDriverDesktop::AddInstanceIDData(
+    const std::string& app_id,
+    const std::string& instance_id_data) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  io_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMDriverDesktop::IOWorker::AddInstanceIDData,
+                 base::Unretained(io_worker_.get()),
+                 app_id,
+                 instance_id_data));
+}
+
+void GCMDriverDesktop::RemoveInstanceIDData(const std::string& app_id) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  io_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMDriverDesktop::IOWorker::RemoveInstanceIDData,
+                 base::Unretained(io_worker_.get()),
+                 app_id));
+}
+
+void GCMDriverDesktop::GetInstanceIDData(
+    const std::string& app_id,
+    const GetInstanceIDDataCallback& callback) {
+  DCHECK(!get_instance_id_data_callbacks_.count(app_id));
+  get_instance_id_data_callbacks_[app_id] = callback;
+  io_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMDriverDesktop::IOWorker::GetInstanceIDData,
+                 base::Unretained(io_worker_.get()),
+                 app_id));
+}
+
+void GCMDriverDesktop::GetInstanceIDDataFinished(
+    const std::string& app_id,
+    const std::string& instance_id_data) {
+  DCHECK(get_instance_id_data_callbacks_.count(app_id));
+  get_instance_id_data_callbacks_[app_id].Run(instance_id_data);
+  get_instance_id_data_callbacks_.erase(app_id);
 }
 
 void GCMDriverDesktop::WakeFromSuspendForHeartbeat(bool wake) {

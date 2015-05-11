@@ -102,6 +102,13 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   void RemoveHeartbeatInterval(const std::string& scope,
                                const UpdateCallback& callback) override;
 
+  // Instance ID data.
+  void AddInstanceIDData(const std::string& app_id,
+                         const std::string& instance_id_data,
+                         const UpdateCallback& callback) override;
+  void RemoveInstanceIDData(const std::string& app_id,
+                            const UpdateCallback& callback) override;
+
   // Injects a value to database. Only to be used for testing.
   void SetValueForTesting(const std::string& key,
                           const std::string& value,

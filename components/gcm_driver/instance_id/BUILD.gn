@@ -34,12 +34,13 @@ source_set("instance_id") {
 source_set("test_support") {
   testonly = true
   sources = [
-    "fake_instance_id_driver.cc",
-    "fake_instance_id_driver.h",
+    "fake_gcm_driver_for_instance_id.cc",
+    "fake_gcm_driver_for_instance_id.h",
   ]
 
   deps = [
     ":instance_id",
+    "//components/gcm_driver:test_support",
     "//testing/gtest",
   ]
 }

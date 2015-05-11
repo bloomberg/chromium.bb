@@ -22,6 +22,26 @@ class GCMAppHandler;
 class GCMConnectionObserver;
 struct AccountMapping;
 
+// Provides the capability to set/get InstanceID data in the GCM store.
+class InstanceIDStore {
+ public:
+  typedef base::Callback<void(const std::string& instance_id_data)>
+      GetInstanceIDDataCallback;
+
+  InstanceIDStore();
+  virtual ~InstanceIDStore();
+
+  virtual void AddInstanceIDData(const std::string& app_id,
+                                 const std::string& instance_id_data) = 0;
+  virtual void RemoveInstanceIDData(const std::string& app_id) = 0;
+  virtual void GetInstanceIDData(
+      const std::string& app_id,
+      const GetInstanceIDDataCallback& callback) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InstanceIDStore);
+};
+
 // Bridge between GCM users in Chrome and the platform-specific implementation.
 class GCMDriver {
  public:
@@ -145,6 +165,9 @@ class GCMDriver {
   // Sets whether or not GCM should try to wake the system from suspend in order
   // to send a heartbeat message.
   virtual void WakeFromSuspendForHeartbeat(bool wake) = 0;
+
+  // Supports saving the Instance ID data in the GCM store.
+  virtual InstanceIDStore* GetInstanceIDStore() = 0;
 
  protected:
   // Ensures that the GCM service starts (if necessary conditions are met).
