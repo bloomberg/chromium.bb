@@ -93,10 +93,19 @@ ClassicCompatibility.prototype = {
         case 'Search':
           evt.searchKeyHeld = true;
           break;
+        case 'Space':
+          evt.keyCode = 32;
+          break;
         case 'Left Arrow':
+          evt.keyCode = 37;
+          break;
+        case 'Up Arrow':
           evt.keyCode = 38;
           break;
         case 'Right Arrow':
+          evt.keyCode = 39;
+          break;
+        case 'Down Arrow':
           evt.keyCode = 40;
           break;
         default:
@@ -116,11 +125,15 @@ ClassicCompatibility.prototype = {
   getNextCommand_: function(classicCommand) {
     switch (classicCommand) {
       case 'right':
-      case 'forward':
         return 'nextElement';
+      case 'forward':
+        return 'nextLine';
       case 'left':
-      case 'backward':
         return 'previousElement';
+      case 'backward':
+        return 'previousLine';
+      case 'forceClickOnCurrentItem':
+        return 'doDefault';
       default:
         return classicCommand;
     }
