@@ -659,7 +659,7 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
 #endif
   if (secondary_url.SchemeIs(kChromeUIScheme) &&
       content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
-      primary_url.SchemeIsSecure()) {
+      primary_url.SchemeIsCryptographic()) {
     return true;
   }
 #if defined(ENABLE_EXTENSIONS)

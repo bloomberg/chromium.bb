@@ -115,7 +115,7 @@ TEST(WalletServiceUrl, IsUsingProd) {
 }
 
 TEST(WalletServiceUrl, IsSignInContinueUrl) {
-  EXPECT_TRUE(GetSignInContinueUrl().SchemeIsSecure());
+  EXPECT_TRUE(GetSignInContinueUrl().SchemeIsCryptographic());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
