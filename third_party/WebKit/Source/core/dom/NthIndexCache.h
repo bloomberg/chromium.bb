@@ -5,6 +5,7 @@
 #ifndef NthIndexCache_h
 #define NthIndexCache_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -15,7 +16,7 @@ namespace blink {
 
 class Document;
 
-class NthIndexData final : public NoBaseWillBeGarbageCollected<NthIndexData> {
+class CORE_EXPORT NthIndexData final : public NoBaseWillBeGarbageCollected<NthIndexData> {
     WTF_MAKE_NONCOPYABLE(NthIndexData);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NthIndexData);
 public:
@@ -36,7 +37,7 @@ private:
     DECLARE_TRACE();
 };
 
-class NthIndexCache final {
+class CORE_EXPORT NthIndexCache final {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(NthIndexCache);
 public:
