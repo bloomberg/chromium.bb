@@ -8,7 +8,12 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+
+#if defined(USE_NSS_CERTS)
+#include <keythi.h>
+#include "crypto/nss_key_util.h"
 #include "crypto/rsa_private_key.h"
+#endif
 
 namespace ownership {
 
@@ -54,7 +59,21 @@ bool OwnerKeyUtilImpl::ImportPublicKey(std::vector<uint8>* output) {
 crypto::RSAPrivateKey* OwnerKeyUtilImpl::FindPrivateKeyInSlot(
     const std::vector<uint8>& key,
     PK11SlotInfo* slot) {
-  return crypto::RSAPrivateKey::FindFromPublicKeyInfoInSlot(key, slot);
+  if (!slot)
+    return nullptr;
+
+  crypto::ScopedSECKEYPrivateKey private_key(
+      crypto::FindNSSKeyFromPublicKeyInfoInSlot(key, slot));
+  if (!private_key || SECKEY_GetPrivateKeyType(private_key.get()) != rsaKey)
+    return nullptr;
+#if defined(USE_OPENSSL)
+  // TODO(davidben): This assumes that crypto::RSAPrivateKey also uses NSS.
+  // https://crbug.com/478777
+  NOTIMPLEMENTED();
+  return nullptr;
+#else
+  return crypto::RSAPrivateKey::CreateFromKey(private_key.get());
+#endif
 }
 #endif  // defined(USE_NSS_CERTS)
 

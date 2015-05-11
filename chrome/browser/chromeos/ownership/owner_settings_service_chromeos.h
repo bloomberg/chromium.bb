@@ -135,7 +135,9 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
   // OwnerSettingsService protected interface overrides:
 
-  // Reloads private key from profile's NSS slots, responds via |callback|.
+  // Reloads private key from profile's NSS slots, responds via |callback|. On
+  // success, |private_key| is non-null, but if the private key doesn't exist,
+  // |private_key->key()| may be null.
   void ReloadKeypairImpl(const base::Callback<
       void(const scoped_refptr<ownership::PublicKey>& public_key,
            const scoped_refptr<ownership::PrivateKey>& private_key)>& callback)

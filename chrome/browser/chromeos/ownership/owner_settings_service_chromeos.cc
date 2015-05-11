@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 
+#include <keyhi.h>
+
 #include <algorithm>
 #include <string>
 
@@ -29,9 +31,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
-#include "crypto/rsa_private_key.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/signature_creator.h"
 
@@ -72,9 +74,14 @@ void LoadPrivateKeyByPublicKey(
   crypto::ScopedPK11Slot private_slot = crypto::GetPrivateSlotForChromeOSUser(
       username_hash, base::Callback<void(crypto::ScopedPK11Slot)>());
 
-  // If private slot is already available, this will check it. If not,
-  // we'll get called again later when the TPM Token is ready, and the
-  // slot will be available then.
+  // If private slot is already available, this will check it. If not, we'll get
+  // called again later when the TPM Token is ready, and the slot will be
+  // available then. FindPrivateKeyInSlot internally checks for a null slot if
+  // needbe.
+  //
+  // TODO(davidben): The null check should be in the caller rather than
+  // internally in the OwnerKeyUtil implementation. The tests currently get a
+  // null private_slot and expect the mock OwnerKeyUtil to still be called.
   scoped_refptr<PrivateKey> private_key(
       new PrivateKey(owner_key_util->FindPrivateKeyInSlot(public_key->data(),
                                                           private_slot.get())));
@@ -124,10 +131,9 @@ bool DoesPrivateKeyExistAsyncHelper(
   std::vector<uint8> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key))
     return false;
-  scoped_ptr<crypto::RSAPrivateKey> key(
-      crypto::RSAPrivateKey::FindFromPublicKeyInfo(public_key));
-  bool is_owner = key.get() != NULL;
-  return is_owner;
+  crypto::ScopedSECKEYPrivateKey key =
+      crypto::FindNSSKeyFromPublicKeyInfo(public_key);
+  return key && SECKEY_GetPrivateKeyType(key.get()) == rsaKey;
 }
 
 // Checks whether NSS slots with private key are mounted or

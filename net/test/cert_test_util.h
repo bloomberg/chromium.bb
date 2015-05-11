@@ -12,8 +12,6 @@
 #include "net/cert/x509_certificate.h"
 
 #if defined(USE_NSS_CERTS)
-#include "base/memory/scoped_ptr.h"
-
 // From <pk11pub.h>
 typedef struct PK11SlotInfoStr PK11SlotInfo;
 #endif
@@ -31,13 +29,12 @@ namespace net {
 class EVRootCAMetadata;
 
 #if defined(USE_NSS_CERTS)
-// Imports a private key from file |key_filename| in |dir|. The file must
-// contain a PKCS#8 PrivateKeyInfo in DER encoding. The key is imported to
-// |slot|.
-scoped_ptr<crypto::RSAPrivateKey> ImportSensitiveKeyFromFile(
-    const base::FilePath& dir,
-    const std::string& key_filename,
-    PK11SlotInfo* slot);
+// Imports a private key from file |key_filename| in |dir| into |slot|. The file
+// must contain a PKCS#8 PrivateKeyInfo in DER encoding. Returns true on success
+// and false on failure.
+bool ImportSensitiveKeyFromFile(const base::FilePath& dir,
+                                const std::string& key_filename,
+                                PK11SlotInfo* slot);
 
 bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,
                             PK11SlotInfo* slot);

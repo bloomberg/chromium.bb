@@ -67,6 +67,8 @@
       'p224_spake.cc',
       'p224_spake.h',
       'nss_crypto_module_delegate.h',
+      'nss_key_util.cc',
+      'nss_key_util.h',
       'nss_util.cc',
       'nss_util.h',
       'nss_util_internal.h',

@@ -50,6 +50,8 @@ component("crypto") {
     "mock_apple_keychain.h",
     "mock_apple_keychain_ios.cc",
     "mock_apple_keychain_mac.cc",
+    "nss_key_util.cc",
+    "nss_key_util.h",
     "nss_util.cc",
     "nss_util.h",
     "nss_util_internal.h",
@@ -171,10 +173,12 @@ component("crypto") {
     ]
   }
 
-  # Remove nss_util when NSS is used for neither the internal crypto library
-  # nor the platform certificate library.
+  # Some files are built when NSS is used at all, either for the internal crypto
+  # library or the platform certificate library.
   if (use_openssl && !use_nss_certs) {
     sources -= [
+      "nss_key_util.cc",
+      "nss_key_util.h",
       "nss_util.cc",
       "nss_util.h",
       "nss_util_internal.h",
@@ -226,12 +230,12 @@ test("crypto_unittests") {
     "ghash_unittest.cc",
     "hkdf_unittest.cc",
     "hmac_unittest.cc",
+    "nss_key_util_unittest.cc",
     "nss_util_unittest.cc",
     "openssl_bio_string_unittest.cc",
     "p224_spake_unittest.cc",
     "p224_unittest.cc",
     "random_unittest.cc",
-    "rsa_private_key_nss_unittest.cc",
     "rsa_private_key_unittest.cc",
     "secure_hash_unittest.cc",
     "sha2_unittest.cc",
@@ -240,15 +244,16 @@ test("crypto_unittests") {
     "symmetric_key_unittest.cc",
   ]
 
-  # Remove nss_util when NSS is used for neither the internal crypto library
-  # nor the platform certificate library.
+  # Some files are built when NSS is used at all, either for the internal crypto
+  # library or the platform certificate library.
   if (use_openssl && !use_nss_certs) {
-    sources -= [ "nss_util_unittest.cc" ]
+    sources -= [
+      "nss_key_util_unittest.cc",
+      "nss_util_unittest.cc",
+    ]
   }
 
-  if (use_openssl) {
-    sources -= [ "rsa_private_key_nss_unittest.cc" ]
-  } else {
+  if (!use_openssl) {
     sources -= [ "openssl_bio_string_unittest.cc" ]
   }
 

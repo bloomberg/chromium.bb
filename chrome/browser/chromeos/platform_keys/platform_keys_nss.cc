@@ -31,7 +31,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "crypto/rsa_private_key.h"
+#include "crypto/nss_key_util.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
@@ -400,25 +401,34 @@ GetTokensState::GetTokensState(const GetTokensCallback& callback)
 // Does the actual key generation on a worker thread. Used by
 // GenerateRSAKeyWithDB().
 void GenerateRSAKeyOnWorkerThread(scoped_ptr<GenerateRSAKeyState> state) {
-  scoped_ptr<crypto::RSAPrivateKey> rsa_key(
-      crypto::RSAPrivateKey::CreateSensitive(state->slot_.get(),
-                                             state->modulus_length_bits_));
-  if (!rsa_key) {
+  if (!state->slot_) {
+    LOG(ERROR) << "No slot.";
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  crypto::ScopedSECKEYPublicKey public_key;
+  crypto::ScopedSECKEYPrivateKey private_key;
+  if (!crypto::GenerateRSAKeyPairNSS(
+          state->slot_.get(), state->modulus_length_bits_, true /* permanent */,
+          &public_key, &private_key)) {
     LOG(ERROR) << "Couldn't create key.";
     state->OnError(FROM_HERE, kErrorInternal);
     return;
   }
 
-  std::vector<uint8> public_key_spki_der;
-  if (!rsa_key->ExportPublicKey(&public_key_spki_der)) {
-    // TODO(pneubeck): Remove rsa_key from storage.
+  crypto::ScopedSECItem public_key_der(
+      SECKEY_EncodeDERSubjectPublicKeyInfo(public_key.get()));
+  if (!public_key_der) {
+    // TODO(pneubeck): Remove private_key and public_key from storage.
     LOG(ERROR) << "Couldn't export public key.";
     state->OnError(FROM_HERE, kErrorInternal);
     return;
   }
   state->CallBack(
       FROM_HERE,
-      std::string(public_key_spki_der.begin(), public_key_spki_der.end()),
+      std::string(reinterpret_cast<const char*>(public_key_der->data),
+                  public_key_der->len),
       std::string() /* no error */);
 }
 
@@ -442,13 +452,13 @@ void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
       public_key_uint8, public_key_uint8 + state->public_key_.size());
 
   // TODO(pneubeck): This searches all slots. Change to look only at |slot_|.
-  scoped_ptr<crypto::RSAPrivateKey> rsa_key(
-      crypto::RSAPrivateKey::FindFromPublicKeyInfo(public_key_vector));
+  crypto::ScopedSECKEYPrivateKey rsa_key(
+      crypto::FindNSSKeyFromPublicKeyInfo(public_key_vector));
 
   // Fail if the key was not found. If a specific slot was requested, also fail
   // if the key was found in the wrong slot.
-  if (!rsa_key ||
-      (state->slot_ && rsa_key->key()->pkcs11Slot != state->slot_)) {
+  if (!rsa_key || SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey ||
+      (state->slot_ && rsa_key->pkcs11Slot != state->slot_)) {
     state->OnError(FROM_HERE, kErrorKeyNotFound);
     return;
   }
@@ -464,7 +474,7 @@ void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
                      state->data_.size()};
 
     // Compute signature of hash.
-    int signature_len = PK11_SignatureLen(rsa_key->key());
+    int signature_len = PK11_SignatureLen(rsa_key.get());
     if (signature_len <= 0) {
       state->OnError(FROM_HERE, kErrorInternal);
       return;
@@ -473,7 +483,7 @@ void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
     std::vector<unsigned char> signature(signature_len);
     SECItem signature_output = {
         siBuffer, vector_as_array(&signature), signature.size()};
-    if (PK11_Sign(rsa_key->key(), &signature_output, &input) == SECSuccess)
+    if (PK11_Sign(rsa_key.get(), &signature_output, &input) == SECSuccess)
       signature_str.assign(signature.begin(), signature.end());
   } else {
     SECOidTag sign_alg_tag = SEC_OID_UNKNOWN;
@@ -499,7 +509,7 @@ void SignRSAOnWorkerThread(scoped_ptr<SignRSAState> state) {
     if (SEC_SignData(
             &sign_result,
             reinterpret_cast<const unsigned char*>(state->data_.data()),
-            state->data_.size(), rsa_key->key(), sign_alg_tag) == SECSuccess) {
+            state->data_.size(), rsa_key.get(), sign_alg_tag) == SECSuccess) {
       signature_str.assign(sign_result.data,
                            sign_result.data + sign_result.len);
     }

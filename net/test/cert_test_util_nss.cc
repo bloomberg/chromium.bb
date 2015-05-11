@@ -9,30 +9,22 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"
-#include "crypto/rsa_private_key.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/cert/cert_type.h"
 
 namespace net {
 
-scoped_ptr<crypto::RSAPrivateKey> ImportSensitiveKeyFromFile(
-    const base::FilePath& dir,
-    const std::string& key_filename,
-    PK11SlotInfo* slot) {
-#if defined(USE_OPENSSL)
-  // TODO(davidben): Port RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo away
-  // from RSAPrivateKey so it doesn't make assumptions about the internal crypto
-  // library. Instead, return a ScopedSECKEYPrivateKey or have this function
-  // just return bool. https://crbug.com/478777
-  NOTIMPLEMENTED();
-  return nullptr;
-#else
+bool ImportSensitiveKeyFromFile(const base::FilePath& dir,
+                                const std::string& key_filename,
+                                PK11SlotInfo* slot) {
   base::FilePath key_path = dir.AppendASCII(key_filename);
   std::string key_pkcs8;
   bool success = base::ReadFileToString(key_path, &key_pkcs8);
   if (!success) {
     LOG(ERROR) << "Failed to read file " << key_path.value();
-    return scoped_ptr<crypto::RSAPrivateKey>();
+    return false;
   }
 
   const uint8* key_pkcs8_begin =
@@ -40,13 +32,12 @@ scoped_ptr<crypto::RSAPrivateKey> ImportSensitiveKeyFromFile(
   std::vector<uint8> key_vector(key_pkcs8_begin,
                                 key_pkcs8_begin + key_pkcs8.length());
 
-  scoped_ptr<crypto::RSAPrivateKey> private_key(
-      crypto::RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(slot,
-                                                               key_vector));
+  crypto::ScopedSECKEYPrivateKey private_key(
+      crypto::ImportNSSKeyFromPrivateKeyInfo(slot, key_vector,
+                                             true /* permanent */));
   LOG_IF(ERROR, !private_key) << "Could not create key from file "
                               << key_path.value();
-  return private_key.Pass();
-#endif
+  return private_key;
 }
 
 bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,
