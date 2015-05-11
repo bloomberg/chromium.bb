@@ -208,6 +208,15 @@ class StartPageService::StartPageWebContentsDelegate
     return new_tab_params.target_contents;
   }
 
+  bool PreHandleGestureEvent(content::WebContents* /*source*/,
+                             const blink::WebGestureEvent& event) override {
+    // Disable pinch zooming on the start page web contents.
+    return event.type == blink::WebGestureEvent::GesturePinchBegin ||
+           event.type == blink::WebGestureEvent::GesturePinchUpdate ||
+           event.type == blink::WebGestureEvent::GesturePinchEnd;
+  }
+
+
  private:
   Profile* profile_;
 
