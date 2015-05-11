@@ -132,8 +132,6 @@
         'canvas_notimplemented.cc',
         'canvas_paint_mac.h',
         'canvas_paint_mac.mm',
-        'canvas_paint_win.cc',
-        'canvas_paint_win.h',
         'canvas_skia.cc',
         'canvas_skia_paint.h',
         'codec/jpeg_codec.cc',

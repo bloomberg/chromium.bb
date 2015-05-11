@@ -20,10 +20,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
-#if defined(OS_WIN)
-#include "ui/gfx/canvas_skia_paint.h"
-#endif
-
 namespace gfx {
 
 Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
