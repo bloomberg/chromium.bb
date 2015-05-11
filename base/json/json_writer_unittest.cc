@@ -12,58 +12,49 @@ TEST(JSONWriterTest, BasicTypes) {
   std::string output_js;
 
   // Test null.
-  Value* root = Value::CreateNullValue();
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  scoped_ptr<Value> root(Value::CreateNullValue());
+  EXPECT_TRUE(JSONWriter::Write(root.get(), &output_js));
   EXPECT_EQ("null", output_js);
-  delete root;
 
   // Test empty dict.
-  root = new DictionaryValue;
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  DictionaryValue dict;
+  EXPECT_TRUE(JSONWriter::Write(&dict, &output_js));
   EXPECT_EQ("{}", output_js);
-  delete root;
 
   // Test empty list.
-  root = new ListValue;
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  ListValue list;
+  EXPECT_TRUE(JSONWriter::Write(&list, &output_js));
   EXPECT_EQ("[]", output_js);
-  delete root;
 
   // Test integer values.
-  root = new FundamentalValue(42);
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  FundamentalValue int_value(42);
+  EXPECT_TRUE(JSONWriter::Write(&int_value, &output_js));
   EXPECT_EQ("42", output_js);
-  delete root;
 
   // Test boolean values.
-  root = new FundamentalValue(true);
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  FundamentalValue bool_value(true);
+  EXPECT_TRUE(JSONWriter::Write(&bool_value, &output_js));
   EXPECT_EQ("true", output_js);
-  delete root;
 
   // Test Real values should always have a decimal or an 'e'.
-  root = new FundamentalValue(1.0);
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  FundamentalValue double_value(1.0);
+  EXPECT_TRUE(JSONWriter::Write(&double_value, &output_js));
   EXPECT_EQ("1.0", output_js);
-  delete root;
 
   // Test Real values in the the range (-1, 1) must have leading zeros
-  root = new FundamentalValue(0.2);
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  FundamentalValue double_value2(0.2);
+  EXPECT_TRUE(JSONWriter::Write(&double_value2, &output_js));
   EXPECT_EQ("0.2", output_js);
-  delete root;
 
   // Test Real values in the the range (-1, 1) must have leading zeros
-  root = new FundamentalValue(-0.8);
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  FundamentalValue double_value3(-0.8);
+  EXPECT_TRUE(JSONWriter::Write(&double_value3, &output_js));
   EXPECT_EQ("-0.8", output_js);
-  delete root;
 
   // Test String values.
-  root = new StringValue("foo");
-  EXPECT_TRUE(JSONWriter::Write(root, &output_js));
+  StringValue string_value("foo");
+  EXPECT_TRUE(JSONWriter::Write(&string_value, &output_js));
   EXPECT_EQ("\"foo\"", output_js);
-  delete root;
 }
 
 
@@ -128,18 +119,17 @@ TEST(JSONWriterTest, BinaryValues) {
 
   // Binary values should return errors unless suppressed via the
   // OPTIONS_OMIT_BINARY_VALUES flag.
-  Value* root = BinaryValue::CreateWithCopiedBuffer("asdf", 4);
-  EXPECT_FALSE(JSONWriter::Write(root, &output_js));
+  scoped_ptr<Value> root(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
+  EXPECT_FALSE(JSONWriter::Write(root.get(), &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
-      root, JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &output_js));
+      root.get(), JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &output_js));
   EXPECT_TRUE(output_js.empty());
-  delete root;
 
   ListValue binary_list;
   binary_list.Append(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
-  binary_list.Append(new FundamentalValue(5));
+  binary_list.Append(make_scoped_ptr(new FundamentalValue(5)));
   binary_list.Append(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
-  binary_list.Append(new FundamentalValue(2));
+  binary_list.Append(make_scoped_ptr(new FundamentalValue(2)));
   binary_list.Append(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
   EXPECT_FALSE(JSONWriter::Write(&binary_list, &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
