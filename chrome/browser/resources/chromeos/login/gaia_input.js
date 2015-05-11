@@ -53,7 +53,7 @@ Polymer('gaia-input', (function() {
 
     domainChanged: function() {
       this.setDomainVisibility();
-    }
+    },
   };
 })());
 

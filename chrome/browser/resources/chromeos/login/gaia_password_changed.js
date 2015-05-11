@@ -36,11 +36,7 @@ Polymer('gaia-password-changed', {
   },
 
   set disabled(value) {
-    var controls = this.$.animatedPages.querySelectorAll(
-        ':host /deep/ .footer /deep/ [role="button"]');
-    for (var i = 0, control; control = controls[i]; ++i) {
-      control.disabled = value;
-    }
+    this.$.oldPasswordInput.disabled = value;
   },
 
   onForgotPasswordClicked: function() {

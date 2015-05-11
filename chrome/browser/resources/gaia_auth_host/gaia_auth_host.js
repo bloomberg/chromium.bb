@@ -371,7 +371,7 @@ cr.define('cr.login', function() {
 
       if (msg.method == 'confirmPassword') {
         if (this.confirmPasswordCallback_)
-          this.confirmPasswordCallback_(msg.passwordCount);
+          this.confirmPasswordCallback_(msg.email, msg.passwordCount);
         else
           console.error('GaiaAuthHost: Invalid confirmPasswordCallback_.');
         return;

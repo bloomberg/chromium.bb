@@ -1593,8 +1593,17 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">
     Complete sign-in
   </message>
+  <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE_NEW_GAIA_FLOW" desc="Title for the confirm password dialog.">
+    Please re-enter your password to update your Chromebook profile.
+  </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_LABEL" desc="Label for the password field on the confirm password dialog.">
     Please re-enter your password
+  </message>
+  <message name="IDS_LOGIN_CONFIRM_PASSWORD_LABEL_NEW_GAIA_FLOW" desc="Label for the password field on the confirm password dialog.">
+    Confirm your password
+  </message>
+  <message name="IDS_LOGIN_CONFIRM_PASSWORD_INCORRECT_PASSWORD" desc="Error that is shown when incorrect password was supplied.">
+    Incorrect password
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON" desc="Label for the confirm button on the confirm password dialog.">
     Confirm
@@ -1604,6 +1613,15 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT" desc="Error text to show when the password typed by the user could not be verified.">
     Sorry, your password could not be verified. Please try again.
+  </message>
+  <message name="IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_TITLE" desc="Text to show in confirmation cancel dialog.">
+    Cancel account setup?
+  </message>
+  <message name="IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_NO" desc="Text to show on button to decline cancelation.">
+    No
+  </message>
+  <message name="IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_YES" desc="Text to show on button to accept cancelation.">
+    Yes
   </message>
   <message name="IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS" desc="Message to show when the authentication could not be completed because the user's account details could not be retrieved.">
     Oops, couldn't sign you in. Sign-in failed because your account details could not be retrieved.

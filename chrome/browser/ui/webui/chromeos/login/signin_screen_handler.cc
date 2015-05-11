@@ -444,18 +444,31 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);
 
-  builder->Add("samlNotice",
-               StartupUtils::IsWebviewSigninEnabled()
-                   ? IDS_LOGIN_SAML_NOTICE_NEW_GAIA_FLOW
-                   : IDS_LOGIN_SAML_NOTICE);
-
-  builder->Add("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE);
-  builder->Add("confirmPasswordLabel", IDS_LOGIN_CONFIRM_PASSWORD_LABEL);
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE_NEW_GAIA_FLOW);
+    builder->Add("confirmPasswordTitle",
+                 IDS_LOGIN_CONFIRM_PASSWORD_TITLE_NEW_GAIA_FLOW);
+    builder->Add("confirmPasswordLabel",
+                 IDS_LOGIN_CONFIRM_PASSWORD_LABEL_NEW_GAIA_FLOW);
+  } else {
+    builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE);
+    builder->Add("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE);
+    builder->Add("confirmPasswordLabel", IDS_LOGIN_CONFIRM_PASSWORD_LABEL);
+  }
   builder->Add("confirmPasswordConfirmButton",
                IDS_LOGIN_CONFIRM_PASSWORD_CONFIRM_BUTTON);
   builder->Add("confirmPasswordText", IDS_LOGIN_CONFIRM_PASSWORD_TEXT);
   builder->Add("confirmPasswordErrorText",
                IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT);
+
+  builder->Add("confirmPasswordIncorrectPassword",
+               IDS_LOGIN_CONFIRM_PASSWORD_INCORRECT_PASSWORD);
+  builder->Add("accountSetupCancelDialogTitle",
+               IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_TITLE);
+  builder->Add("accountSetupCancelDialogNo",
+               IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_NO);
+  builder->Add("accountSetupCancelDialogYes",
+               IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_YES);
 
   builder->Add("fatalEnrollmentError",
                IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR);

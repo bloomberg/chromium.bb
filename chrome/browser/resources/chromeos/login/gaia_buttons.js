@@ -5,14 +5,14 @@
 
 Polymer('gaia-paper-button', {
   onKeyDown: function(e) {
-    if (e.keyCode == 13 || e.keyCode == 32)
+    if (!this.disabled && (e.keyCode == 13 || e.keyCode == 32))
       this.fire('tap');
   }
 });
 
 Polymer('gaia-core-icon-button', {
   onKeyDown: function(e) {
-    if (e.keyCode == 13 || e.keyCode == 32)
+    if (!this.disabled && (e.keyCode == 13 || e.keyCode == 32))
       this.fire('tap');
   }
 });

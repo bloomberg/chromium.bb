@@ -12,6 +12,13 @@ Polymer('gaia-input-form', (function() {
     onKeyDown: function(e) {
       if (e.keyCode == 13 && !this.$.button.disabled)
         this.onButtonClicked();
-    }
+    },
+
+    set disabled(value) {
+      var controls = this.querySelectorAll(
+          ':host /deep/ [role="button"], :host /deep/ [is="core-input"]');
+      for (var i = 0, control; control = controls[i]; ++i)
+        control.disabled = value;
+    },
   };
 })());

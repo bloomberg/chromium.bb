@@ -651,10 +651,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Invoked when the user has successfully authenticated via SAML, the
      * principals API was not used and the auth host needs the user to confirm
      * the scraped password.
+     * @param {string} email The authenticated user's e-mail.
      * @param {number} passwordCount The number of passwords that were scraped.
      * @private
      */
-    onAuthConfirmPassword_: function(passwordCount) {
+    onAuthConfirmPassword_: function(email, passwordCount) {
       this.loading = true;
       Oobe.getInstance().headerHidden = false;
 
@@ -663,6 +664,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (this.samlPasswordConfirmAttempt_ < 2) {
         login.ConfirmPasswordScreen.show(
+            email,
             this.samlPasswordConfirmAttempt_,
             this.onConfirmPasswordCollected_.bind(this));
       } else {

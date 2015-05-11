@@ -506,7 +506,8 @@ cr.define('cr.login', function() {
       // TODO(xiyuan): Change to synchronous call when iframe based code
       // is removed.
       var invokeConfirmPassword = (function() {
-        this.confirmPasswordCallback(this.samlHandler_.scrapedPasswordCount);
+        this.confirmPasswordCallback(this.email_,
+                                     this.samlHandler_.scrapedPasswordCount);
       }).bind(this);
       window.setTimeout(invokeConfirmPassword, 0);
       return;
@@ -552,7 +553,8 @@ cr.define('cr.login', function() {
       if (this.confirmPasswordCallback) {
         // Confirm scraped password. The flow follows in
         // verifyConfirmedPassword.
-        this.confirmPasswordCallback(this.samlHandler_.scrapedPasswordCount);
+        this.confirmPasswordCallback(this.email_,
+                                     this.samlHandler_.scrapedPasswordCount);
         return;
       }
     }

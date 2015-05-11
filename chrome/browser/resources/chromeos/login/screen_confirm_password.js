@@ -24,6 +24,14 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
           'keydown', this.onPasswordFieldKeyDown_.bind(this));
       $('confirm-password-confirm-button').addEventListener(
           'click', this.onConfirmPassword_.bind(this));
+
+      $('saml-confirm-password').addEventListener('cancel', function(e) {
+          Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+          Oobe.resetSigninUI(true);
+      });
+      $('saml-confirm-password').addEventListener('passwordEnter', function(e) {
+        this.callback_(e.detail.password);
+      }.bind(this));
     },
 
     get defaultControl() {
@@ -34,6 +42,18 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
     onBeforeShow: function(data) {
       $('login-header-bar').signinUIState =
           SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM;
+    },
+
+    /** @override */
+    onAfterShow: function(data) {
+      if (Oobe.isNewGaiaFlow())
+        $('saml-confirm-password').focus();
+    },
+
+    /** @override */
+    onBeforeHide: function() {
+      if (Oobe.isNewGaiaFlow())
+        $('saml-confirm-password').reset();
     },
 
     /**
@@ -53,15 +73,25 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
 
     /**
      * Shows the confirm password screen.
+     * @param {string} email The authenticated user's e-mail.
      * @param {number} attemptCount Number of attempts tried, starting at 0.
      * @param {function(string)} callback The callback to be invoked when the
      *     screen is dismissed.
      */
-    show: function(attemptCount, callback) {
+    show: function(email, attemptCount, callback) {
       this.callback_ = callback;
       this.classList.toggle('error', attemptCount > 0);
-
-      $('confirm-password-input').value = '';
+      if (Oobe.isNewGaiaFlow()) {
+        $('saml-confirm-password-contents').hidden = true;
+        var samlConfirmPassword = $('saml-confirm-password');
+        samlConfirmPassword.reset();
+        samlConfirmPassword.hidden = false;
+        samlConfirmPassword.email = email;
+        if (attemptCount > 0)
+          samlConfirmPassword.invalidate();
+      } else {
+       $('confirm-password-input').value = '';
+      }
       Oobe.showScreen({id: SCREEN_CONFIRM_PASSWORD});
       $('progress-dots').hidden = true;
     }

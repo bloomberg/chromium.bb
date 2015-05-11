@@ -37,6 +37,14 @@
   min-width: 90px;
 }
 
+::content /deep/ .dialog-action-button {
+  color: rgb(66, 133, 244);
+}
+
+::content /deep/ .dialog-action-button:focus {
+  background: rgb(217, 221, 234);
+}
+
 ::content /deep/ .link-button {
   color: rgb(66, 133, 244);
   font-size: 14px;
@@ -53,7 +61,11 @@
   padding: 0;
 }
 
-::content /deep/ p.gaia-body-text {
+::content /deep/ div.gaia-body-text {
+  margin-bottom: 24px;
+}
+
+::content /deep/ div.gaia-body-text p {
   color: rgba(0, 0, 0, 0.87);
   font-size: 14px;
   line-height: 20px;
@@ -74,7 +86,7 @@
   margin-bottom: 0;
 }
 
-#bottom-overlay {
+.overlay {
   background-color: rgba(0, 0, 0, 0.5);
   display: none;
   height: 100%;
@@ -94,6 +106,7 @@
   background-color: rgb(255, 184, 9);
 }
 
+:host(.full-disabled) #full-overlay,
 :host(.disabled) #bottom-overlay,
 :host(.disabled) #progress-bar {
   display: block;
