@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
@@ -18,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "google_apis/gcm/base/encryptor.h"
@@ -1027,7 +1027,7 @@ GCMStoreImpl::GCMStoreImpl(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_ptr<Encryptor> encryptor)
     : backend_(new Backend(path,
-                           base::MessageLoopProxy::current(),
+                           base::ThreadTaskRunnerHandle::Get(),
                            encryptor.Pass())),
       blocking_task_runner_(blocking_task_runner),
       weak_ptr_factory_(this) {

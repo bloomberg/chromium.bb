@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -93,7 +94,7 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
  public:
   OAuth2AccessTokenFetcherImplTest()
       : request_context_getter_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
+            base::ThreadTaskRunnerHandle::Get())),
         fetcher_(&consumer_, request_context_getter_.get(), "refresh_token") {
     base::RunLoop().RunUntilIdle();
   }

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -179,7 +180,7 @@ void OAuth2TokenServiceRequestTest::SetUp() {
   oauth2_service_.reset(new MockOAuth2TokenService);
   oauth2_service_->AddAccount(kAccountId);
   provider_ =
-      new Provider(base::MessageLoopProxy::current(), oauth2_service_.get());
+      new Provider(base::ThreadTaskRunnerHandle::Get(), oauth2_service_.get());
 }
 
 void OAuth2TokenServiceRequestTest::TearDown() {

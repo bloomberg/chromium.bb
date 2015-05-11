@@ -6,7 +6,7 @@
 #define GOOGLE_APIS_DRIVE_TASK_UTIL_H_
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace google_apis {
 
@@ -116,7 +116,7 @@ CallbackType CreateComposedCallback(
 template<typename CallbackType>
 CallbackType CreateRelayCallback(const CallbackType& callback) {
   return CreateComposedCallback(
-      base::Bind(&RunTaskWithTaskRunner, base::MessageLoopProxy::current()),
+      base::Bind(&RunTaskWithTaskRunner, base::ThreadTaskRunnerHandle::Get()),
       callback);
 }
 

@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/default_clock.h"
@@ -146,8 +147,8 @@ class MyTestURLRequestContext : public net::TestURLRequestContext {
 class MyTestURLRequestContextGetter : public net::TestURLRequestContextGetter {
  public:
   explicit MyTestURLRequestContextGetter(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
-      : TestURLRequestContextGetter(io_message_loop_proxy) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      : TestURLRequestContextGetter(io_task_runner) {}
 
   net::TestURLRequestContext* GetURLRequestContext() override {
     // Construct |context_| lazily so it gets constructed on the right
