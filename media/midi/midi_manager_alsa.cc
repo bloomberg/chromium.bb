@@ -37,6 +37,14 @@ namespace {
 // realtime messages with respect to sysex.
 const size_t kSendBufferSize = 256;
 
+// Minimum client id for which we will have ALSA card devices for. When we
+// are searching for card devices (used to get the path, id, and manufacturer),
+// we don't want to get confused by kernel clients that do not have a card.
+// See seq_clientmgr.c in the ALSA code for this.
+// TODO(agoode): Add proper client -> card export from the kernel to avoid
+//               hardcoding.
+const int kMinimumClientIdForCards = 16;
+
 // ALSA constants.
 const char kAlsaHw[] = "hw";
 
@@ -46,6 +54,23 @@ const char kUdevSubsystemSound[] = "sound";
 const char kUdevPropertySoundInitialized[] = "SOUND_INITIALIZED";
 const char kUdevActionChange[] = "change";
 const char kUdevActionRemove[] = "remove";
+
+const char kUdevIdVendor[] = "ID_VENDOR";
+const char kUdevIdVendorEnc[] = "ID_VENDOR_ENC";
+const char kUdevIdVendorFromDatabase[] = "ID_VENDOR_FROM_DATABASE";
+const char kUdevIdVendorId[] = "ID_VENDOR_ID";
+const char kUdevIdModelId[] = "ID_MODEL_ID";
+const char kUdevIdBus[] = "ID_BUS";
+const char kUdevIdPath[] = "ID_PATH";
+const char kUdevIdUsbInterfaceNum[] = "ID_USB_INTERFACE_NUM";
+const char kUdevIdSerialShort[] = "ID_SERIAL_SHORT";
+
+const char kSysattrVendorName[] = "vendor_name";
+const char kSysattrVendor[] = "vendor";
+const char kSysattrModel[] = "model";
+const char kSysattrGuid[] = "guid";
+
+const char kCardSyspath[] = "/card";
 
 // Constants for the capabilities we search for in inputs and outputs.
 // See http://www.alsa-project.org/alsa-doc/alsa-lib/seq.html.
@@ -65,6 +90,45 @@ int AddrToInt(int client, int port) {
   return (client << 8) | port;
 }
 
+// Returns true if this client has an ALSA card associated with it.
+bool IsCardClient(snd_seq_client_type_t type, int client_id) {
+  return (type == SND_SEQ_KERNEL_CLIENT) &&
+         (client_id >= kMinimumClientIdForCards);
+}
+
+// TODO(agoode): Move this to device/udev_linux.
+const std::string UdevDeviceGetPropertyOrSysattr(
+    struct udev_device* udev_device,
+    const char* property_key,
+    const char* sysattr_key) {
+  // First try the property.
+  std::string value =
+      device::UdevDeviceGetPropertyValue(udev_device, property_key);
+
+  // If no property, look for sysattrs and walk up the parent devices too.
+  while (value.empty() && udev_device) {
+    value = device::UdevDeviceGetSysattrValue(udev_device, sysattr_key);
+    udev_device = device::udev_device_get_parent(udev_device);
+  }
+  return value;
+}
+
+int GetCardNumber(udev_device* dev) {
+  const char* syspath = device::udev_device_get_syspath(dev);
+  if (!syspath)
+    return -1;
+
+  std::string syspath_str(syspath);
+  size_t i = syspath_str.rfind(kCardSyspath);
+  if (i == std::string::npos)
+    return -1;
+
+  int number;
+  if (!base::StringToInt(syspath_str.substr(i + strlen(kCardSyspath)), &number))
+    return -1;
+  return number;
+}
+
 void SetStringIfNonEmpty(base::DictionaryValue* value,
                          const std::string& path,
                          const std::string& in_value) {
@@ -79,6 +143,8 @@ MidiManagerAlsa::MidiManagerAlsa()
       out_client_(NULL),
       out_client_id_(-1),
       in_port_id_(-1),
+      alsa_cards_deleter_(&alsa_cards_),
+      alsa_card_midi_count_(0),
       decoder_(NULL),
       udev_(device::udev_new()),
       send_thread_("MidiSendThread"),
@@ -495,7 +561,8 @@ uint32 MidiManagerAlsa::MidiPortState::Insert(scoped_ptr<MidiPort> port) {
   return web_port_index;
 }
 
-MidiManagerAlsa::AlsaSeqState::AlsaSeqState() : clients_deleter_(&clients_) {
+MidiManagerAlsa::AlsaSeqState::AlsaSeqState()
+    : clients_deleter_(&clients_), card_client_count_(0) {
 }
 
 MidiManagerAlsa::AlsaSeqState::~AlsaSeqState() {
@@ -506,6 +573,8 @@ void MidiManagerAlsa::AlsaSeqState::ClientStart(int client_id,
                                                 snd_seq_client_type_t type) {
   ClientExit(client_id);
   clients_[client_id] = new Client(client_name, type);
+  if (IsCardClient(type, client_id))
+    ++card_client_count_;
 }
 
 bool MidiManagerAlsa::AlsaSeqState::ClientStarted(int client_id) {
@@ -515,6 +584,8 @@ bool MidiManagerAlsa::AlsaSeqState::ClientStarted(int client_id) {
 void MidiManagerAlsa::AlsaSeqState::ClientExit(int client_id) {
   auto it = clients_.find(client_id);
   if (it != clients_.end()) {
+    if (IsCardClient(it->second->type(), client_id))
+      --card_client_count_;
     delete it->second;
     clients_.erase(it);
   }
@@ -547,11 +618,14 @@ snd_seq_client_type_t MidiManagerAlsa::AlsaSeqState::ClientType(
 }
 
 scoped_ptr<MidiManagerAlsa::TemporaryMidiPortState>
-MidiManagerAlsa::AlsaSeqState::ToMidiPortState() {
+MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
   scoped_ptr<MidiManagerAlsa::TemporaryMidiPortState> midi_ports(
       new TemporaryMidiPortState);
-  // TODO(agoode): Use information from udev as well.
+  // TODO(agoode): Use more information from udev, to allow hardware matching.
+  // See http://crbug.com/486471.
+  auto card_it = alsa_cards.begin();
 
+  int card_midi_device = -1;
   for (const auto& client_pair : clients_) {
     int client_id = client_pair.first;
     const auto& client = client_pair.second;
@@ -566,6 +640,21 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState() {
     std::string card_name;
     std::string card_longname;
     int midi_device = -1;
+
+    if (IsCardClient(client->type(), client_id)) {
+      auto& card = card_it->second;
+      if (card_midi_device == -1)
+        card_midi_device = 0;
+
+      manufacturer = card->manufacturer();
+      midi_device = card_midi_device;
+
+      ++card_midi_device;
+      if (card_midi_device >= card->midi_device_count()) {
+        card_midi_device = -1;
+        ++card_it;
+      }
+    }
 
     for (const auto& port_pair : *client) {
       int port_id = port_pair.first;
@@ -662,8 +751,53 @@ MidiManagerAlsa::AlsaSeqState::Client::end() const {
   return ports_.end();
 }
 
+MidiManagerAlsa::AlsaCard::AlsaCard(udev_device* dev,
+                                    const std::string& alsa_name,
+                                    const std::string& alsa_longname,
+                                    const std::string& alsa_driver,
+                                    int midi_device_count)
+    : alsa_name_(alsa_name),
+      alsa_longname_(alsa_longname),
+      alsa_driver_(alsa_driver),
+      midi_device_count_(midi_device_count) {
+  // Try to get the vendor string. Sometimes it is encoded.
+  std::string vendor = device::UdevDecodeString(
+      device::UdevDeviceGetPropertyValue(dev, kUdevIdVendorEnc));
+  // Sometimes it is not encoded.
+  if (vendor.empty())
+    vendor =
+        UdevDeviceGetPropertyOrSysattr(dev, kUdevIdVendor, kSysattrVendorName);
+  // Also get the vendor string from the hardware database.
+  std::string vendor_from_database =
+      device::UdevDeviceGetPropertyValue(dev, kUdevIdVendorFromDatabase);
+
+  // Get the device path.
+  path_ = device::UdevDeviceGetPropertyValue(dev, kUdevIdPath);
+  // Get the bus.
+  bus_ = device::UdevDeviceGetPropertyValue(dev, kUdevIdBus);
+
+  // Get the "serial" number. (Often untrustable or missing.)
+  serial_ =
+      UdevDeviceGetPropertyOrSysattr(dev, kUdevIdSerialShort, kSysattrGuid);
+
+  // Get the vendor id, by either property or sysattr.
+  vendor_id_ =
+      UdevDeviceGetPropertyOrSysattr(dev, kUdevIdVendorId, kSysattrVendor);
+  // Get the model id, by either property or sysattr.
+  model_id_ =
+      UdevDeviceGetPropertyOrSysattr(dev, kUdevIdModelId, kSysattrModel);
+  // Get the usb interface number.
+  usb_interface_num_ =
+      device::UdevDeviceGetPropertyValue(dev, kUdevIdUsbInterfaceNum);
+  manufacturer_ = ExtractManufacturerString(
+      vendor, vendor_id_, vendor_from_database, alsa_name, alsa_longname);
+}
+
+MidiManagerAlsa::AlsaCard::~AlsaCard() {
+}
+
 // static
-std::string MidiManagerAlsa::ExtractManufacturerString(
+std::string MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
     const std::string& udev_id_vendor,
     const std::string& udev_id_vendor_id,
     const std::string& udev_id_vendor_from_database,
@@ -923,15 +1057,108 @@ void MidiManagerAlsa::ProcessUdevEvent(udev_device* dev) {
     action = kUdevActionChange;
 
   if (strcmp(action, kUdevActionChange) == 0) {
-    // TODO(agoode): add
+    AddCard(dev);
+    // Generate Web MIDI events.
+    UpdatePortStateAndGenerateEvents();
   } else if (strcmp(action, kUdevActionRemove) == 0) {
-    // TODO(agoode): remove
+    RemoveCard(GetCardNumber(dev));
+    // Generate Web MIDI events.
+    UpdatePortStateAndGenerateEvents();
   }
 }
 
+void MidiManagerAlsa::AddCard(udev_device* dev) {
+  int number = GetCardNumber(dev);
+  if (number == -1)
+    return;
+
+  RemoveCard(number);
+
+  snd_ctl_card_info_t* card;
+  snd_hwdep_info_t* hwdep;
+  snd_ctl_card_info_alloca(&card);
+  snd_hwdep_info_alloca(&hwdep);
+  const std::string id = base::StringPrintf("hw:CARD=%i", number);
+  snd_ctl_t* handle;
+  int err = snd_ctl_open(&handle, id.c_str(), 0);
+  if (err != 0) {
+    VLOG(1) << "snd_ctl_open fails: " << snd_strerror(err);
+    return;
+  }
+  err = snd_ctl_card_info(handle, card);
+  if (err != 0) {
+    VLOG(1) << "snd_ctl_card_info fails: " << snd_strerror(err);
+    snd_ctl_close(handle);
+    return;
+  }
+  std::string name = snd_ctl_card_info_get_name(card);
+  std::string longname = snd_ctl_card_info_get_longname(card);
+  std::string driver = snd_ctl_card_info_get_driver(card);
+
+  // Count rawmidi devices (not subdevices).
+  int midi_count = 0;
+  for (int device = -1;
+       !snd_ctl_rawmidi_next_device(handle, &device) && device >= 0;)
+    ++midi_count;
+
+  // Count any hwdep synths that become MIDI devices outside of rawmidi.
+  //
+  // Explanation:
+  // Any kernel driver can create an ALSA client (visible to us).
+  // With modern hardware, only rawmidi devices do this. Kernel
+  // drivers create rawmidi devices and the rawmidi subsystem makes
+  // the seq clients. But the OPL3 driver is special, it does not
+  // make a rawmidi device but a seq client directly. (This is the
+  // only one to worry about in the kernel code, as of 2015-03-23.)
+  //
+  // OPL3 is very old (but still possible to get in new
+  // hardware). It is unlikely that new drivers would not use
+  // rawmidi and defeat our heuristic.
+  //
+  // Longer term, support should be added in the kernel to expose a
+  // direct link from card->client (or client->card) so that all
+  // these heuristics will be obsolete.  Once that is there, we can
+  // assume our old heuristics will work on old kernels and the new
+  // robust code will be used on new. Then we will not need to worry
+  // about changes to kernel internals breaking our code.
+  // See the TODO above at kMinimumClientIdForCards.
+  for (int device = -1;
+       !snd_ctl_hwdep_next_device(handle, &device) && device >= 0;) {
+    err = snd_ctl_hwdep_info(handle, hwdep);
+    if (err != 0) {
+      VLOG(1) << "snd_ctl_hwdep_info fails: " << snd_strerror(err);
+      continue;
+    }
+    snd_hwdep_iface_t iface = snd_hwdep_info_get_iface(hwdep);
+    if (iface == SND_HWDEP_IFACE_OPL2 || iface == SND_HWDEP_IFACE_OPL3 ||
+        iface == SND_HWDEP_IFACE_OPL4)
+      ++midi_count;
+  }
+  snd_ctl_close(handle);
+
+  if (midi_count > 0)
+    alsa_cards_[number] = new AlsaCard(dev, name, longname, driver, midi_count);
+  alsa_card_midi_count_ += midi_count;
+}
+
+void MidiManagerAlsa::RemoveCard(int number) {
+  auto it = alsa_cards_.find(number);
+  if (it == alsa_cards_.end())
+    return;
+
+  alsa_card_midi_count_ -= it->second->midi_device_count();
+  delete it->second;
+  alsa_cards_.erase(it);
+}
+
 void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
+  // Verify that our information from ALSA and udev are in sync. If
+  // not, we cannot generate events right now.
+  if (alsa_card_midi_count_ != alsa_seq_state_.card_client_count())
+    return;
+
   // Generate new port state.
-  auto new_port_state = alsa_seq_state_.ToMidiPortState();
+  auto new_port_state = alsa_seq_state_.ToMidiPortState(alsa_cards_);
 
   // Disconnect any connected old ports that are now missing.
   for (auto* old_port : port_state_) {

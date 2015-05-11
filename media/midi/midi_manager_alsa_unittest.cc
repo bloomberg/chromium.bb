@@ -120,54 +120,58 @@ class MidiManagerAlsaTest : public ::testing::Test {
   MidiManagerAlsa::MidiPortState midi_port_state_1_;
   MidiManagerAlsa::TemporaryMidiPortState temporary_midi_port_state_0_;
   MidiManagerAlsa::AlsaSeqState alsa_seq_state_0_;
+  MidiManagerAlsa::AlsaCardMap alsa_cards_;
 };
 
 // Tests that ExtractManufacturerString works as expected.
 TEST_F(MidiManagerAlsaTest, ExtractManufacturer) {
-  EXPECT_EQ("My\\x20Vendor", MidiManagerAlsa::ExtractManufacturerString(
-                                 "My\\x20Vendor", "1234", "My Vendor, Inc.",
-                                 "Card", "My Vendor Inc Card at bus"));
-  EXPECT_EQ("My Vendor", MidiManagerAlsa::ExtractManufacturerString(
+  EXPECT_EQ("My\\x20Vendor",
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
+                "My\\x20Vendor", "1234", "My Vendor, Inc.", "Card",
+                "My Vendor Inc Card at bus"));
+  EXPECT_EQ("My Vendor", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                              "My Vendor", "1234", "My Vendor, Inc.", "Card",
                              "My Vendor Inc Card at bus"));
-  EXPECT_EQ("My Vendor, Inc.", MidiManagerAlsa::ExtractManufacturerString(
-                                   "1234", "1234", "My Vendor, Inc.", "Card",
-                                   "My Vendor Inc Card at bus"));
+  EXPECT_EQ("My Vendor, Inc.",
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
+                "1234", "1234", "My Vendor, Inc.", "Card",
+                "My Vendor Inc Card at bus"));
   EXPECT_EQ("My Vendor Inc",
-            MidiManagerAlsa::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "1234", "1234", "", "Card", "My Vendor Inc Card at bus"));
   EXPECT_EQ("My Vendor Inc",
-            MidiManagerAlsa::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "", "", "", "Card", "My Vendor Inc Card at bus"));
-  EXPECT_EQ("", MidiManagerAlsa::ExtractManufacturerString("1234", "1234", "",
-                                                           "Card", "Longname"));
+  EXPECT_EQ("", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
+                    "1234", "1234", "", "Card", "Longname"));
   EXPECT_EQ("Keystation\\x20Mini\\x2032",
-            MidiManagerAlsa::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "Keystation\\x20Mini\\x2032", "129d",
                 "Evolution Electronics, Ltd", "Keystation Mini 32",
                 "Keystation Mini 32 Keystation Mini 32 at"
                 " usb-0000:00:14.0-2.4.4, full speed"));
   EXPECT_EQ("Keystation Mini 32",
-            MidiManagerAlsa::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "Keystation Mini 32", "129d", "Evolution Electronics, Ltd",
                 "Keystation Mini 32",
                 "Keystation Mini 32 Keystation Mini 32 at"
                 " usb-0000:00:14.0-2.4.4, full speed"));
-  EXPECT_EQ("Keystation Mini 32", MidiManagerAlsa::ExtractManufacturerString(
-                                      "", "", "", "Keystation Mini 32",
-                                      "Keystation Mini 32 Keystation Mini 32 at"
-                                      " usb-0000:00:14.0-2.4.4, full speed"));
-  EXPECT_EQ("", MidiManagerAlsa::ExtractManufacturerString(
+  EXPECT_EQ("Keystation Mini 32",
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
+                "", "", "", "Keystation Mini 32",
+                "Keystation Mini 32 Keystation Mini 32 at"
+                " usb-0000:00:14.0-2.4.4, full speed"));
+  EXPECT_EQ("", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                     "", "", "", "Serial MIDI (UART16550A)",
                     "Serial MIDI (UART16550A) [Soundcanvas] at 0x3f8, irq 4"));
-  EXPECT_EQ("", MidiManagerAlsa::ExtractManufacturerString(
+  EXPECT_EQ("", MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                     "", "", "", "VirMIDI", "Virtual MIDI Card 1"));
   EXPECT_EQ("C-Media Electronics Inc",
-            MidiManagerAlsa::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "", "0x13f6", "C-Media Electronics Inc", "C-Media CMI8738 MIDI",
                 "C-Media CMI8738 (model 55) at 0xd000, irq 19"));
   EXPECT_EQ("C-Media Electronics Inc",
-            MidiManagerAlsa::ExtractManufacturerString(
+            MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
                 "", "0x13f6", "C-Media Electronics Inc", "C-Media CMI8738 FM",
                 "C-Media CMI8738 (model 55) at 0xd000, irq 19"));
 }
@@ -523,72 +527,140 @@ TEST_F(MidiManagerAlsaTest, FindDisconnected3) {
 // Tests AlsaSeqState -> MidiPortState.
 TEST_F(MidiManagerAlsaTest, ToMidiPortState) {
   // Empty state.
-  EXPECT_EQ(0, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(0,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Still empty, because there are no ports yet.
   alsa_seq_state_0_.ClientStart(0, "0", SND_SEQ_KERNEL_CLIENT);
-  EXPECT_EQ(0, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(0,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add a port, now it has 1 item when converted.
   alsa_seq_state_0_.PortStart(
       0, 0, "0:0", MidiManagerAlsa::AlsaSeqState::PortDirection::kInput, true);
-  EXPECT_EQ(1, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(1,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Close client. This closes its ports and returns count to 0.
   alsa_seq_state_0_.ClientExit(0);
-  EXPECT_EQ(0, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(0,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add another port, without client. This does nothing.
   alsa_seq_state_0_.PortStart(
       0, 0, "0:0", MidiManagerAlsa::AlsaSeqState::PortDirection::kInput, true);
-  EXPECT_EQ(0, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(0,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Close client again. This does nothing.
   alsa_seq_state_0_.ClientExit(0);
-  EXPECT_EQ(0, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(0,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add duplex port. This will add 2 ports when converted.
   alsa_seq_state_0_.ClientStart(0, "0", SND_SEQ_KERNEL_CLIENT);
   alsa_seq_state_0_.PortStart(
       0, 0, "0:0", MidiManagerAlsa::AlsaSeqState::PortDirection::kDuplex, true);
-  EXPECT_EQ(2, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(2,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add an output port. Now we are at 3.
   alsa_seq_state_0_.PortStart(
       0, 1, "0:1", MidiManagerAlsa::AlsaSeqState::PortDirection::kOutput, true);
-  EXPECT_EQ(3, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(3,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add another client. Still at 3.
   alsa_seq_state_0_.ClientStart(1, "1", SND_SEQ_KERNEL_CLIENT);
-  EXPECT_EQ(3, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(3,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add a port. Now at 4.
   alsa_seq_state_0_.PortStart(
       1, 0, "1:0", MidiManagerAlsa::AlsaSeqState::PortDirection::kInput, true);
-  EXPECT_EQ(4, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(4,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add a duplicate port. Still at 4.
   alsa_seq_state_0_.PortStart(
       1, 0, "1:0", MidiManagerAlsa::AlsaSeqState::PortDirection::kInput, true);
-  EXPECT_EQ(4, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(4,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Add a duplicate client. This will close the ports from the previous client.
   alsa_seq_state_0_.ClientStart(1, "1", SND_SEQ_KERNEL_CLIENT);
-  EXPECT_EQ(3, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(3,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Remove a duplex port. This reduces count by 2.
   alsa_seq_state_0_.PortExit(0, 0);
-  EXPECT_EQ(1, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(1,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Remove a non-existent port. No change.
   alsa_seq_state_0_.PortExit(0, 0);
-  EXPECT_EQ(1, CountPorts(*alsa_seq_state_0_.ToMidiPortState().get()));
+  EXPECT_EQ(1,
+            CountPorts(*alsa_seq_state_0_.ToMidiPortState(alsa_cards_).get()));
 
   // Verify the last entry.
-  EXPECT_TRUE((*alsa_seq_state_0_.ToMidiPortState()->begin())
+  EXPECT_TRUE((*alsa_seq_state_0_.ToMidiPortState(alsa_cards_)->begin())
                   ->MatchConnected(MidiManagerAlsa::MidiPort(
                       "", "", 0, 1, -1, "0", "0:1", "", "",
                       MidiManagerAlsa::MidiPort::Type::kOutput)));
+}
+
+// Tests card_client_count of AlsaSeqState.
+TEST_F(MidiManagerAlsaTest, CardClientCount) {
+  EXPECT_EQ(0, alsa_seq_state_0_.card_client_count());
+
+  // Add a kernel client.
+  alsa_seq_state_0_.ClientStart(16, "16", SND_SEQ_KERNEL_CLIENT);
+  EXPECT_EQ(1, alsa_seq_state_0_.card_client_count());
+
+  // Add a duplicate kernel client.
+  alsa_seq_state_0_.ClientStart(16, "16", SND_SEQ_KERNEL_CLIENT);
+  EXPECT_EQ(1, alsa_seq_state_0_.card_client_count());
+
+  // Add a duplicate user client.
+  alsa_seq_state_0_.ClientStart(16, "16", SND_SEQ_USER_CLIENT);
+  EXPECT_EQ(0, alsa_seq_state_0_.card_client_count());
+
+  // Add 2 more kernel clients.
+  alsa_seq_state_0_.ClientStart(17, "17", SND_SEQ_KERNEL_CLIENT);
+  alsa_seq_state_0_.ClientStart(18, "18", SND_SEQ_KERNEL_CLIENT);
+  EXPECT_EQ(2, alsa_seq_state_0_.card_client_count());
+
+  // Add another user client.
+  alsa_seq_state_0_.ClientStart(101, "101", SND_SEQ_USER_CLIENT);
+  EXPECT_EQ(2, alsa_seq_state_0_.card_client_count());
+
+  // Remove kernel client.
+  alsa_seq_state_0_.ClientExit(17);
+  EXPECT_EQ(1, alsa_seq_state_0_.card_client_count());
+
+  // Remove user client.
+  alsa_seq_state_0_.ClientExit(16);
+  EXPECT_EQ(1, alsa_seq_state_0_.card_client_count());
+
+  // Remove kernel client.
+  alsa_seq_state_0_.ClientExit(18);
+  EXPECT_EQ(0, alsa_seq_state_0_.card_client_count());
+
+  // Add a duplicate kernel client.
+  alsa_seq_state_0_.ClientStart(101, "101", SND_SEQ_KERNEL_CLIENT);
+  EXPECT_EQ(1, alsa_seq_state_0_.card_client_count());
+
+  // Add a low kernel client.
+  alsa_seq_state_0_.ClientStart(1, "1", SND_SEQ_KERNEL_CLIENT);
+  EXPECT_EQ(1, alsa_seq_state_0_.card_client_count());
+
+  // Remove low kernel client.
+  alsa_seq_state_0_.ClientExit(1);
+  EXPECT_EQ(1, alsa_seq_state_0_.card_client_count());
+}
+
+TEST_F(MidiManagerAlsaTest, AlsaCards) {
+  // TODO(agoode): test add/remove of alsa cards.
 }
 
 // TODO(agoode): Test old -> new state event generation, using mocks.
