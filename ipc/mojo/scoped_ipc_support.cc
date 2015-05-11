@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 
@@ -22,79 +24,154 @@ class IPCSupportInitializer : public mojo::embedder::ProcessDelegate {
  public:
   IPCSupportInitializer()
       : init_count_(0),
-        shutting_down_(false) {
-  }
+        shutting_down_(false),
+        was_shut_down_(false),
+        observer_(nullptr),
+        weak_factory_(this) {}
 
-  ~IPCSupportInitializer() override {}
+  ~IPCSupportInitializer() override { DCHECK(!observer_); }
 
-  void Init(scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-    base::AutoLock locker(lock_);
-    DCHECK((init_count_ == 0 && !io_thread_task_runner_) ||
-           io_thread_task_runner_ == io_thread_task_runner);
+  void Init(scoped_refptr<base::TaskRunner> io_thread_task_runner);
+  void ShutDown();
 
-    if (shutting_down_) {
-      // If reinitialized before a pending shutdown task is executed, we
-      // effectively cancel the shutdown task.
-      DCHECK(init_count_ == 1);
-      shutting_down_ = false;
-      return;
-    }
-
-    init_count_++;
-    if (init_count_ == 1) {
-      io_thread_task_runner_ = io_thread_task_runner;
-      mojo::embedder::InitIPCSupport(mojo::embedder::ProcessType::NONE,
-                                     io_thread_task_runner_,
-                                     this, io_thread_task_runner_,
-                                     mojo::embedder::ScopedPlatformHandle());
-    }
-  }
-
-  void ShutDown() {
-    base::AutoLock locker(lock_);
-    DCHECK(init_count_ > 0);
-    DCHECK(!shutting_down_);
-
-    if (init_count_ > 1) {
-      init_count_--;
-      return;
-    }
-
-    shutting_down_ = true;
-    if (base::MessageLoop::current() &&
-        base::MessageLoop::current()->task_runner() == io_thread_task_runner_) {
-      base::AutoUnlock unlocker_(lock_);
-      ShutDownOnIOThread();
-    } else {
-      io_thread_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&IPCSupportInitializer::ShutDownOnIOThread,
-                     base::Unretained(this)));
-    }
-  }
+  // Forces the initializer to shut down even if scopers are still holding it.
+  void ForceShutdown();
 
  private:
-  void ShutDownOnIOThread() {
-    base::AutoLock locker(lock_);
-    if (shutting_down_) {
-      DCHECK(init_count_ == 1);
-      mojo::embedder::ShutdownIPCSupportOnIOThread();
-      init_count_ = 0;
-      shutting_down_ = false;
-      io_thread_task_runner_ = nullptr;
-   }
-  }
+  // This watches for destruction of the MessageLoop that IPCSupportInitializer
+  // uses for IO, and guarantees that the initializer is shut down if it still
+  // exists when the loop is being destroyed.
+  class MessageLoopObserver : public base::MessageLoop::DestructionObserver {
+   public:
+    MessageLoopObserver(
+        scoped_refptr<base::TaskRunner> initializer_task_runner,
+        base::WeakPtr<IPCSupportInitializer> weak_initializer)
+        : initializer_task_runner_(initializer_task_runner),
+          weak_initializer_(weak_initializer) {}
 
+    ~MessageLoopObserver() override {
+      base::MessageLoop::current()->RemoveDestructionObserver(this);
+    }
+
+   private:
+    // base::MessageLoop::DestructionObserver:
+    void WillDestroyCurrentMessageLoop() override {
+      initializer_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&IPCSupportInitializer::ForceShutdown, weak_initializer_));
+    }
+
+    scoped_refptr<base::TaskRunner> initializer_task_runner_;
+    base::WeakPtr<IPCSupportInitializer> weak_initializer_;
+
+    DISALLOW_COPY_AND_ASSIGN(MessageLoopObserver);
+  };
+
+  void ShutDownOnIOThread();
+
+  // mojo::embedder::ProcessDelegate:
   void OnShutdownComplete() override {}
+
+  static void WatchMessageLoopOnIOThread(MessageLoopObserver* observer);
 
   base::Lock lock_;
   size_t init_count_;
   bool shutting_down_;
 
+  // This is used to track whether shutdown has occurred yet, since we can be
+  // shut down by either the scoper or IO MessageLoop destruction.
+  bool was_shut_down_;
+
+  // The message loop destruction observer we have watching our IO loop. This
+  // is created on the initializer's own thread but is used and destroyed on the
+  // IO thread.
+  MessageLoopObserver* observer_;
+
   scoped_refptr<base::TaskRunner> io_thread_task_runner_;
+
+  base::WeakPtrFactory<IPCSupportInitializer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IPCSupportInitializer);
 };
+
+void IPCSupportInitializer::Init(
+    scoped_refptr<base::TaskRunner> io_thread_task_runner) {
+  base::AutoLock locker(lock_);
+  DCHECK((init_count_ == 0 && !io_thread_task_runner_) ||
+         io_thread_task_runner_ == io_thread_task_runner);
+
+  if (shutting_down_) {
+    // If reinitialized before a pending shutdown task is executed, we
+    // effectively cancel the shutdown task.
+    DCHECK(init_count_ == 1);
+    shutting_down_ = false;
+    return;
+  }
+
+  init_count_++;
+  if (init_count_ == 1) {
+    was_shut_down_ = false;
+    observer_ = new MessageLoopObserver(base::ThreadTaskRunnerHandle::Get(),
+                                        weak_factory_.GetWeakPtr());
+    io_thread_task_runner_ = io_thread_task_runner;
+    io_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&WatchMessageLoopOnIOThread, observer_));
+    mojo::embedder::InitIPCSupport(
+        mojo::embedder::ProcessType::NONE, io_thread_task_runner_, this,
+        io_thread_task_runner_, mojo::embedder::ScopedPlatformHandle());
+  }
+}
+
+void IPCSupportInitializer::ShutDown() {
+  {
+    base::AutoLock locker(lock_);
+    if (shutting_down_ || was_shut_down_)
+      return;
+    DCHECK(init_count_ > 0);
+    if (init_count_ > 1) {
+      init_count_--;
+      return;
+    }
+  }
+  ForceShutdown();
+}
+
+void IPCSupportInitializer::ForceShutdown() {
+  base::AutoLock locker(lock_);
+  if (shutting_down_ || was_shut_down_)
+    return;
+  shutting_down_ = true;
+  if (base::MessageLoop::current() &&
+      base::MessageLoop::current()->task_runner() == io_thread_task_runner_) {
+    base::AutoUnlock unlocker_(lock_);
+    ShutDownOnIOThread();
+  } else {
+    io_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&IPCSupportInitializer::ShutDownOnIOThread,
+                              base::Unretained(this)));
+  }
+}
+
+void IPCSupportInitializer::ShutDownOnIOThread() {
+  base::AutoLock locker(lock_);
+  if (shutting_down_ && !was_shut_down_) {
+    mojo::embedder::ShutdownIPCSupportOnIOThread();
+    init_count_ = 0;
+    shutting_down_ = false;
+    io_thread_task_runner_ = nullptr;
+    was_shut_down_ = true;
+    if (observer_) {
+      delete observer_;
+      observer_ = nullptr;
+    }
+  }
+}
+
+// static
+void IPCSupportInitializer::WatchMessageLoopOnIOThread(
+    MessageLoopObserver* observer) {
+  base::MessageLoop::current()->AddDestructionObserver(observer);
+}
 
 base::LazyInstance<IPCSupportInitializer>::Leaky ipc_support_initializer;
 

@@ -51,6 +51,12 @@ class IPC_MOJO_EXPORT ChannelMojo
       public MojoBootstrap::Delegate,
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
  public:
+  using CreateMessagingPipeCallback =
+      base::Callback<void(mojo::ScopedMessagePipeHandle)>;
+  using CreateMessagingPipeOnIOThreadCallback =
+      base::Callback<void(mojo::ScopedMessagePipeHandle,
+                          mojo::embedder::ChannelInfo*)>;
+
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -125,8 +131,8 @@ class IPC_MOJO_EXPORT ChannelMojo
               Mode mode,
               Listener* listener);
 
-  mojo::ScopedMessagePipeHandle CreateMessagingPipe(
-      mojo::embedder::ScopedPlatformHandle handle);
+  void CreateMessagingPipe(mojo::embedder::ScopedPlatformHandle handle,
+                           const CreateMessagingPipeCallback& callback);
   void InitMessageReader(mojo::ScopedMessagePipeHandle pipe, int32_t peer_pid);
 
   Listener* listener() const { return listener_; }
@@ -134,7 +140,12 @@ class IPC_MOJO_EXPORT ChannelMojo
 
  private:
   struct ChannelInfoDeleter {
+    explicit ChannelInfoDeleter(scoped_refptr<base::TaskRunner> io_runner);
+    ~ChannelInfoDeleter();
+
     void operator()(mojo::embedder::ChannelInfo* ptr) const;
+
+    scoped_refptr<base::TaskRunner> io_runner;
   };
 
   // ChannelMojo needs to kill its MessagePipeReader in delayed manner
@@ -143,6 +154,14 @@ class IPC_MOJO_EXPORT ChannelMojo
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
   void InitOnIOThread(ChannelMojo::Delegate* delegate);
+
+  static void CreateMessagingPipeOnIOThread(
+      mojo::embedder::ScopedPlatformHandle handle,
+      scoped_refptr<base::TaskRunner> callback_runner,
+      const CreateMessagingPipeOnIOThreadCallback& callback);
+  void OnMessagingPipeCreated(const CreateMessagingPipeCallback& callback,
+                              mojo::ScopedMessagePipeHandle handle,
+                              mojo::embedder::ChannelInfo* channel_info);
 
   scoped_ptr<MojoBootstrap> bootstrap_;
   base::WeakPtr<Delegate> delegate_;
