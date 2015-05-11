@@ -351,6 +351,9 @@ crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-in-fil
 crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-many-projects.html [ Failure Pass ]
 crbug.com/451577 [ Win ] http/tests/inspector/network/network-datareceived.html [ Slow ]
 
+crbug.com/481515 fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
+crbug.com/481515 virtual/slimmingpaint/fast/forms/select/popup-menu-appearance-styled.html [ ImageOnlyFailure NeedsManualRebaseline ]
+
 # Untriaged Mavericks failures
 
 # crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]

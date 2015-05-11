@@ -152,6 +152,34 @@ const char* fontWeightToString(FontWeight weight)
     return 0;
 }
 
+const char* fontVariantToString(FontVariant variant)
+{
+    switch (variant) {
+    case FontVariantNormal:
+        return "normal";
+    case FontVariantSmallCaps:
+        return "small-caps";
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return 0;
+}
+
+const char* fontStyleToString(FontStyle style)
+{
+    switch (style) {
+    case FontStyleNormal:
+        return "normal";
+    case FontStyleItalic:
+        return "italic";
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+    return 0;
+}
+
 void PopupMenuImpl::addElementStyle(HTMLElement& element, SharedBuffer* data)
 {
     const ComputedStyle* style = m_client->computedStyleForItem(element);
@@ -169,6 +197,8 @@ void PopupMenuImpl::addElementStyle(HTMLElement& element, SharedBuffer* data)
             PagePopupClient::addString(",\n", data);
     }
     PagePopupClient::addString("],\n", data);
+    addProperty("fontStyle", String(fontStyleToString(fontDescription.style())), data);
+    addProperty("fontVariant", String(fontVariantToString(fontDescription.variant())), data);
     addProperty("visibility", String(style->visibility() == HIDDEN ? "hidden" : "visible"), data);
     addProperty("display", String(style->display() == NONE ? "none" : "block"), data);
     addProperty("direction", String(style->direction() == RTL ? "rtl" : "ltr"), data);
