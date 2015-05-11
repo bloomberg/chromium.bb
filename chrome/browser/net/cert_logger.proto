@@ -39,6 +39,26 @@ message CertLoggerRequest {
   // pin contains the string forms of the pins that were matched against for
   // this host.
   repeated string pin = 5;
+
+  enum CertError {
+    ERR_CERT_REVOKED = 1;
+    ERR_CERT_INVALID = 2;
+    ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN = 3;
+    ERR_CERT_AUTHORITY_INVALID = 4;
+    ERR_CERT_COMMON_NAME_INVALID = 5;
+    ERR_CERT_NAME_CONSTRAINT_VIOLATION = 6;
+    ERR_CERT_WEAK_SIGNATURE_ALGORITHM = 7;
+    ERR_CERT_WEAK_KEY = 8;
+    ERR_CERT_DATE_INVALID = 9;
+    ERR_CERT_VALIDITY_TOO_LONG = 10;
+    ERR_CERT_UNABLE_TO_CHECK_REVOCATION = 11;
+    ERR_CERT_NO_REVOCATION_MECHANISM = 12;
+    ERR_CERT_NON_UNIQUE_NAME = 13;
+  };
+
+  // Certificate errors encountered (if any) when validating this
+  // certificate chain.
+  repeated CertError cert_error = 6;
 };
 
 // A wrapper proto containing an encrypted CertLoggerRequest

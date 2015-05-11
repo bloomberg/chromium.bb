@@ -28,6 +28,8 @@
 
 namespace {
 
+using chrome_browser_net::CertLoggerRequest;
+
 // Constants used for crypto
 static const uint8 kServerPublicKey[] = {
     0x51, 0xcc, 0x52, 0x67, 0x42, 0x47, 0x3b, 0x10, 0xe8, 0x63, 0x18,
@@ -82,6 +84,41 @@ bool EncryptSerializedReport(
   return true;
 }
 #endif
+
+void AddCertStatusToReportErrors(
+    net::CertStatus cert_status,
+    CertLoggerRequest* report) {
+  if (cert_status & net::CERT_STATUS_REVOKED)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_REVOKED);
+  if (cert_status & net::CERT_STATUS_INVALID)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_INVALID);
+  if (cert_status & net::CERT_STATUS_PINNED_KEY_MISSING)
+    report->add_cert_error(
+        CertLoggerRequest::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
+  if (cert_status & net::CERT_STATUS_AUTHORITY_INVALID)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_AUTHORITY_INVALID);
+  if (cert_status & net::CERT_STATUS_COMMON_NAME_INVALID)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_COMMON_NAME_INVALID);
+  if (cert_status & net::CERT_STATUS_NON_UNIQUE_NAME)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_NON_UNIQUE_NAME);
+  if (cert_status & net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION)
+    report->add_cert_error(
+        CertLoggerRequest::ERR_CERT_NAME_CONSTRAINT_VIOLATION);
+  if (cert_status & net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM)
+    report->add_cert_error(
+        CertLoggerRequest::ERR_CERT_WEAK_SIGNATURE_ALGORITHM);
+  if (cert_status & net::CERT_STATUS_WEAK_KEY)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_WEAK_KEY);
+  if (cert_status & net::CERT_STATUS_DATE_INVALID)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_DATE_INVALID);
+  if (cert_status & net::CERT_STATUS_VALIDITY_TOO_LONG)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_VALIDITY_TOO_LONG);
+  if (cert_status & net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION)
+    report->add_cert_error(
+        CertLoggerRequest::ERR_CERT_UNABLE_TO_CHECK_REVOCATION);
+  if (cert_status & net::CERT_STATUS_NO_REVOCATION_MECHANISM)
+    report->add_cert_error(CertLoggerRequest::ERR_CERT_NO_REVOCATION_MECHANISM);
+}
 
 }  // namespace
 
@@ -265,6 +302,8 @@ void CertificateErrorReporter::BuildReport(const std::string& hostname,
     *cert_chain += pem_encoded_chain[i];
 
   out_request->add_pin(ssl_info.pinning_failure_log);
+
+  AddCertStatusToReportErrors(ssl_info.cert_status, out_request);
 }
 
 void CertificateErrorReporter::RequestComplete(net::URLRequest* request) {

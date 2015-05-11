@@ -26,6 +26,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_element_reader.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
@@ -35,6 +36,7 @@
 
 using chrome_browser_net::CertificateErrorReporter;
 using content::BrowserThread;
+using net::CertStatus;
 using net::CompletionCallback;
 using net::SSLInfo;
 using net::NetworkDelegateImpl;
@@ -48,12 +50,21 @@ const char kSecondRequestHostname[] = "test2.mail.google.com";
 const char kDummyFailureLog[] = "dummy failure log";
 const char kTestCertFilename[] = "test_mail_google_com.pem";
 const uint32 kServerPublicKeyVersion = 1;
+const CertStatus kCertStatus =
+    net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_REVOKED;
+const size_t kNumCertErrors = 2;
+const chrome_browser_net::CertLoggerRequest::CertError kFirstReportedCertError =
+    chrome_browser_net::CertLoggerRequest::ERR_CERT_COMMON_NAME_INVALID;
+const chrome_browser_net::CertLoggerRequest::CertError
+    kSecondReportedCertError =
+        chrome_browser_net::CertLoggerRequest::ERR_CERT_REVOKED;
 
 SSLInfo GetTestSSLInfo() {
   SSLInfo info;
   info.cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), kTestCertFilename);
   info.is_issued_by_known_root = true;
+  info.cert_status = kCertStatus;
   info.pinning_failure_log = kDummyFailureLog;
   return info;
 }
@@ -120,6 +131,18 @@ void CheckUploadData(URLRequest* request,
   EXPECT_EQ(GetPEMEncodedChain(), uploaded_request.cert_chain());
   EXPECT_EQ(1, uploaded_request.pin().size());
   EXPECT_EQ(kDummyFailureLog, uploaded_request.pin().Get(0));
+  EXPECT_EQ(2, uploaded_request.cert_error().size());
+
+  std::set<chrome_browser_net::CertLoggerRequest::CertError> reported_errors;
+  reported_errors.insert(
+      static_cast<chrome_browser_net::CertLoggerRequest::CertError>(
+          uploaded_request.cert_error().Get(0)));
+  reported_errors.insert(
+      static_cast<chrome_browser_net::CertLoggerRequest::CertError>(
+          uploaded_request.cert_error().Get(1)));
+  EXPECT_EQ(kNumCertErrors, reported_errors.size());
+  EXPECT_EQ(1u, reported_errors.count(kFirstReportedCertError));
+  EXPECT_EQ(1u, reported_errors.count(kSecondReportedCertError));
 }
 
 // A network delegate that lets tests check that a certificate error
