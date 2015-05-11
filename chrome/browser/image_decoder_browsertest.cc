@@ -157,7 +157,8 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndDestroy) {
 // Note: This test is inherently racy because KillProcessObserver lives on the
 // UI thread but ImageDecoder does its work mainly on the IO thread. So the test
 // checks for both possible valid outcomes.
-IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndKillProcess) {
+// BUG(486194): Disabled due to flakyness.
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, DISABLED_StartAndKillProcess) {
   KillProcessObserver observer;
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
