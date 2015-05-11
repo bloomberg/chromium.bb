@@ -1811,9 +1811,6 @@
         'p2p_apis%' : 0,
 
         'gtest_target_type%': 'shared_library',
-
-        # Uses system APIs for decoding audio and video.
-        'use_libffmpeg%': '0',
       }],  # OS=="android"
       ['embedded==1', {
         'use_system_fontconfig%': 0,
