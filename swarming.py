@@ -786,7 +786,7 @@ def collect(
           exit_code = metadata['exit_codes'][0]
         else:
           exit_code = 'N/A'
-        print('%s: %s %d' %
+        print('%s: %s %s' %
             (metadata.get('bot_id') or 'N/A', metadata['id'], exit_code))
         for output in metadata['outputs']:
           if not output:
