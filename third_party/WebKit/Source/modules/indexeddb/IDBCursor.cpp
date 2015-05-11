@@ -39,8 +39,8 @@
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/WebIDBCallbacksImpl.h"
-#include "public/platform/WebIDBDatabase.h"
-#include "public/platform/WebIDBKeyRange.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
+#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
 #include <limits>
 
 using blink::WebIDBCursor;

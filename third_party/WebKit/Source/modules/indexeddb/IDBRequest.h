@@ -44,8 +44,8 @@
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebBlobInfo.h"
-#include "public/platform/WebIDBCursor.h"
-#include "public/platform/WebIDBTypes.h"
+#include "public/platform/modules/indexeddb/WebIDBCursor.h"
+#include "public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace blink {
 

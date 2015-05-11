@@ -27,9 +27,9 @@
 #define WebIDBDatabaseCallbacksImpl_h
 
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "public/platform/WebIDBDatabaseCallbacks.h"
-#include "public/platform/WebIDBDatabaseError.h"
 #include "public/platform/WebString.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

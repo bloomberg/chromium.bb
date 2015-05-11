@@ -10,6 +10,9 @@
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -23,55 +26,29 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
+#ifndef WebIDBFactory_h
+#define WebIDBFactory_h
 
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
+#include "public/platform/modules/indexeddb/WebIDBMetadata.h"
 
 namespace blink {
 
-void WebIDBKeyRange::assign(const WebIDBKeyRange& other)
-{
-    m_private = other.m_private;
-}
+class WebIDBDatabase;
+class WebIDBDatabaseCallbacks;
 
-void WebIDBKeyRange::assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen)
-{
-    if (!lower.isValid() && !upper.isValid())
-        m_private.reset();
-    else
-        m_private = IDBKeyRange::create(lower, upper, lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed, upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed);
-}
+class WebIDBFactory {
+public:
+    virtual ~WebIDBFactory() { }
 
-void WebIDBKeyRange::reset()
-{
-    m_private.reset();
-}
-
-WebIDBKey WebIDBKeyRange::lower() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->lower());
-}
-
-WebIDBKey WebIDBKeyRange::upper() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->upper());
-}
-
-bool WebIDBKeyRange::lowerOpen() const
-{
-    return m_private.get() && m_private->lowerOpen();
-}
-
-bool WebIDBKeyRange::upperOpen() const
-{
-    return m_private.get() && m_private->upperOpen();
-}
+    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier) { BLINK_ASSERT_NOT_REACHED(); }
+};
 
 } // namespace blink
+
+#endif // WebIDBFactory_h

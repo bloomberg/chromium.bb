@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,55 +23,29 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
+#ifndef WebIDBCursor_h
+#define WebIDBCursor_h
 
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace blink {
 
-void WebIDBKeyRange::assign(const WebIDBKeyRange& other)
-{
-    m_private = other.m_private;
-}
+class WebIDBCursor {
+public:
+    virtual ~WebIDBCursor() { }
 
-void WebIDBKeyRange::assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen)
-{
-    if (!lower.isValid() && !upper.isValid())
-        m_private.reset();
-    else
-        m_private = IDBKeyRange::create(lower, upper, lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed, upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed);
-}
+    virtual void advance(unsigned long, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void continueFunction(const WebIDBKey&, const WebIDBKey& primaryKey, WebIDBCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void postSuccessHandlerCallback() { } // Only used in frontend.
 
-void WebIDBKeyRange::reset()
-{
-    m_private.reset();
-}
-
-WebIDBKey WebIDBKeyRange::lower() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->lower());
-}
-
-WebIDBKey WebIDBKeyRange::upper() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->upper());
-}
-
-bool WebIDBKeyRange::lowerOpen() const
-{
-    return m_private.get() && m_private->lowerOpen();
-}
-
-bool WebIDBKeyRange::upperOpen() const
-{
-    return m_private.get() && m_private->upperOpen();
-}
+protected:
+    WebIDBCursor() { }
+};
 
 } // namespace blink
+
+#endif // WebIDBCursor_h

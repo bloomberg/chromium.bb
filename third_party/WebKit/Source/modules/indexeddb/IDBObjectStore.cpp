@@ -44,9 +44,9 @@
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
-#include "public/platform/WebIDBKey.h"
-#include "public/platform/WebIDBKeyRange.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
 #include <v8.h>
 
 using blink::WebBlobInfo;

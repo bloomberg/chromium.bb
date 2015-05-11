@@ -43,8 +43,8 @@
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebIDBKeyPath.h"
-#include "public/platform/WebIDBTypes.h"
+#include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
+#include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/Atomics.h"
 #include <limits>
 

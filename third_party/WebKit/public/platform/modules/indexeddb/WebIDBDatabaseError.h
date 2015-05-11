@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,6 +10,9 @@
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -23,55 +26,47 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
+#ifndef WebIDBDatabaseError_h
+#define WebIDBDatabaseError_h
 
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 
-void WebIDBKeyRange::assign(const WebIDBKeyRange& other)
-{
-    m_private = other.m_private;
-}
+class WebIDBDatabaseError {
+public:
+    explicit WebIDBDatabaseError(unsigned short code)
+        : m_code(code)
+    { }
 
-void WebIDBKeyRange::assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen)
-{
-    if (!lower.isValid() && !upper.isValid())
-        m_private.reset();
-    else
-        m_private = IDBKeyRange::create(lower, upper, lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed, upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed);
-}
+    WebIDBDatabaseError(unsigned short code, const WebString& message)
+        : m_code(code)
+        , m_message(message)
+    { }
 
-void WebIDBKeyRange::reset()
-{
-    m_private.reset();
-}
+    WebIDBDatabaseError(const WebIDBDatabaseError& error)
+        : m_code(error.m_code)
+        , m_message(error.m_message)
+    { }
 
-WebIDBKey WebIDBKeyRange::lower() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->lower());
-}
+    ~WebIDBDatabaseError() { }
 
-WebIDBKey WebIDBKeyRange::upper() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->upper());
-}
+    WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error)
+    {
+        m_code = error.m_code;
+        m_message = error.m_message;
+        return *this;
+    }
 
-bool WebIDBKeyRange::lowerOpen() const
-{
-    return m_private.get() && m_private->lowerOpen();
-}
+    unsigned short code() const { return m_code; }
+    const WebString& message() const { return m_message; }
 
-bool WebIDBKeyRange::upperOpen() const
-{
-    return m_private.get() && m_private->upperOpen();
-}
+private:
+    unsigned short m_code;
+    WebString m_message;
+};
 
 } // namespace blink
+
+#endif // WebIDBDatabaseError_h

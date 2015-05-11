@@ -39,7 +39,7 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
-#include "public/platform/WebIDBDatabase.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

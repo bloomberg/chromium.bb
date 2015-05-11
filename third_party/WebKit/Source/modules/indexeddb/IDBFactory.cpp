@@ -44,7 +44,7 @@
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebIDBFactory.h"
+#include "public/platform/modules/indexeddb/WebIDBFactory.h"
 
 namespace blink {
 

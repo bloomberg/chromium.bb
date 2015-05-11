@@ -35,10 +35,10 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/WebIDBCursor.h"
-#include "public/platform/WebIDBDatabase.h"
-#include "public/platform/WebIDBDatabaseError.h"
-#include "public/platform/WebIDBKey.h"
+#include "public/platform/modules/indexeddb/WebIDBCursor.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
+#include "public/platform/modules/indexeddb/WebIDBKey.h"
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;

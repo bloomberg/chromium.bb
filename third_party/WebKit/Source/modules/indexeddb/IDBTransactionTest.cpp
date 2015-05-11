@@ -37,7 +37,7 @@
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/WebIDBDatabase.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include <gtest/gtest.h>
 #include <v8.h>
 

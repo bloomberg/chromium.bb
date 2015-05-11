@@ -29,7 +29,7 @@
 #ifndef WebIDBCallbacksImpl_h
 #define WebIDBCallbacksImpl_h
 
-#include "public/platform/WebIDBCallbacks.h"
+#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

@@ -30,7 +30,7 @@
 #define IDBMetadata_h
 
 #include "modules/indexeddb/IDBKeyPath.h"
-#include "public/platform/WebIDBMetadata.h"
+#include "public/platform/modules/indexeddb/WebIDBMetadata.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBMetadata.h"
 
-#include "public/platform/WebIDBMetadata.h"
+#include "public/platform/modules/indexeddb/WebIDBMetadata.h"
 
 namespace blink {
 

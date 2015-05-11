@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,55 +23,61 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
-
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
+#ifndef WebIDBTypes_h
+#define WebIDBTypes_h
 
 namespace blink {
 
-void WebIDBKeyRange::assign(const WebIDBKeyRange& other)
-{
-    m_private = other.m_private;
-}
+enum WebIDBKeyType {
+    WebIDBKeyTypeInvalid = 0,
+    WebIDBKeyTypeArray,
+    WebIDBKeyTypeBinary,
+    WebIDBKeyTypeString,
+    WebIDBKeyTypeDate,
+    WebIDBKeyTypeNumber,
+    WebIDBKeyTypeNull,
+    WebIDBKeyTypeMin,
+};
 
-void WebIDBKeyRange::assign(const WebIDBKey& lower, const WebIDBKey& upper, bool lowerOpen, bool upperOpen)
-{
-    if (!lower.isValid() && !upper.isValid())
-        m_private.reset();
-    else
-        m_private = IDBKeyRange::create(lower, upper, lowerOpen ? IDBKeyRange::LowerBoundOpen : IDBKeyRange::LowerBoundClosed, upperOpen ? IDBKeyRange::UpperBoundOpen : IDBKeyRange::UpperBoundClosed);
-}
+enum WebIDBKeyPathType {
+    WebIDBKeyPathTypeNull = 0,
+    WebIDBKeyPathTypeString,
+    WebIDBKeyPathTypeArray,
+};
 
-void WebIDBKeyRange::reset()
-{
-    m_private.reset();
-}
+enum WebIDBDataLoss {
+    WebIDBDataLossNone = 0,
+    WebIDBDataLossTotal,
+};
 
-WebIDBKey WebIDBKeyRange::lower() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->lower());
-}
+enum WebIDBCursorDirection {
+    WebIDBCursorDirectionNext = 0,
+    WebIDBCursorDirectionNextNoDuplicate = 1,
+    WebIDBCursorDirectionPrev = 2,
+    WebIDBCursorDirectionPrevNoDuplicate = 3,
+    WebIDBCursorDirectionLast = WebIDBCursorDirectionPrevNoDuplicate
+};
 
-WebIDBKey WebIDBKeyRange::upper() const
-{
-    if (!m_private.get())
-        return WebIDBKey::createInvalid();
-    return WebIDBKey(m_private->upper());
-}
+enum WebIDBTaskType {
+    WebIDBTaskTypeNormal = 0,
+    WebIDBTaskTypePreemptive,
+    WebIDBTaskTypeLast = WebIDBTaskTypePreemptive
+};
 
-bool WebIDBKeyRange::lowerOpen() const
-{
-    return m_private.get() && m_private->lowerOpen();
-}
+enum WebIDBPutMode {
+    WebIDBPutModeAddOrUpdate,
+    WebIDBPutModeAddOnly,
+    WebIDBPutModeCursorUpdate,
+    WebIDBPutModeLast = WebIDBPutModeCursorUpdate
+};
 
-bool WebIDBKeyRange::upperOpen() const
-{
-    return m_private.get() && m_private->upperOpen();
-}
+enum WebIDBTransactionMode {
+    WebIDBTransactionModeReadOnly = 0,
+    WebIDBTransactionModeReadWrite,
+    WebIDBTransactionModeVersionChange,
+    WebIDBTransactionModeLast = WebIDBTransactionModeVersionChange
+};
 
 } // namespace blink
+
+#endif // WebIDBTypes_h

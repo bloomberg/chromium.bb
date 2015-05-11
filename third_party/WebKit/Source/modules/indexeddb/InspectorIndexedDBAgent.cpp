@@ -59,8 +59,8 @@
 #include "modules/indexeddb/IDBTransaction.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebIDBCursor.h"
-#include "public/platform/WebIDBTypes.h"
+#include "public/platform/modules/indexeddb/WebIDBCursor.h"
+#include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/Vector.h"
 
 using blink::TypeBuilder::Array;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,66 +23,61 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBKeyPath_h
-#define IDBKeyPath_h
+#ifndef WebIDBMetadata_h
+#define WebIDBMetadata_h
 
-#include "bindings/modules/v8/UnionTypesModules.h"
-#include "modules/ModulesExport.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-enum IDBKeyPathParseError {
-    IDBKeyPathParseErrorNone,
-    IDBKeyPathParseErrorStart,
-    IDBKeyPathParseErrorIdentifier,
-    IDBKeyPathParseErrorDot,
-};
+struct WebIDBMetadata {
+    enum {
+        NoIntVersion = -1
+    };
+    struct Index;
+    struct ObjectStore;
 
-MODULES_EXPORT void IDBParseKeyPath(const String&, Vector<String>&, IDBKeyPathParseError&);
+    WebString name;
+    // FIXME: Both version members need to be present while we support both the
+    // old setVersion and new upgradeneeded API. Once we no longer support
+    // setVersion, WebString version can be removed.
+    WebString version;
+    long long intVersion;
+    long long id;
+    long long maxObjectStoreId;
+    WebVector<ObjectStore> objectStores;
+    WebIDBMetadata()
+        : intVersion(NoIntVersion) { }
 
-class MODULES_EXPORT IDBKeyPath {
-public:
-    IDBKeyPath() : m_type(NullType) { }
-    explicit IDBKeyPath(const String&);
-    explicit IDBKeyPath(const Vector<String>& array);
-    explicit IDBKeyPath(const StringOrStringSequence& keyPath);
-    IDBKeyPath(const WebIDBKeyPath&);
-
-    operator WebIDBKeyPath() const;
-
-    enum Type {
-        NullType = 0,
-        StringType,
-        ArrayType
+    struct ObjectStore {
+        WebString name;
+        WebIDBKeyPath keyPath;
+        bool autoIncrement;
+        long long id;
+        long long maxIndexId;
+        WebVector<Index> indexes;
+        ObjectStore()
+            : keyPath(WebIDBKeyPath::createNull())
+            , autoIncrement(false) { }
     };
 
-    Type type() const { return m_type; }
+    struct Index {
+        WebString name;
+        WebIDBKeyPath keyPath;
+        bool unique;
+        bool multiEntry;
+        long long id;
+        Index()
+            : keyPath(WebIDBKeyPath::createNull())
+            , unique(false)
+            , multiEntry(false) { }
+    };
 
-    const Vector<String>& array() const
-    {
-        ASSERT(m_type == ArrayType);
-        return m_array;
-    }
-
-    const String& string() const
-    {
-        ASSERT(m_type == StringType);
-        return m_string;
-    }
-
-    bool isNull() const { return m_type == NullType; }
-    bool isValid() const;
-    bool operator==(const IDBKeyPath& other) const;
-
-private:
-    Type m_type;
-    String m_string;
-    Vector<String> m_array;
 };
 
 } // namespace blink
 
-#endif // IDBKeyPath_h
+#endif // WebIDBMetadata_h

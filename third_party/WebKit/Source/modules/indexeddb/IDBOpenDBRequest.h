@@ -28,7 +28,7 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBRequest.h"
-#include "public/platform/WebIDBDatabase.h"
+#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 
 namespace blink {
 
