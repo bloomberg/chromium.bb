@@ -407,7 +407,8 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     redirect_stdout: returns the stdout.
     redirect_stderr: holds stderr output until input is communicated.
     cwd: the working directory to run this cmd.
-    input: input to pipe into this command through stdin.
+    input: The data to pipe into this command through stdin.  If a file object
+      or file descriptor, stdin will be connected directly to that.
     enter_chroot: this command should be run from within the chroot.  If set,
       cwd must point to the scripts directory. If we are already inside the
       chroot, this command will be run as if |enter_chroot| is False.
@@ -505,8 +506,13 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     sys.stdout.flush()
     sys.stderr.flush()
 
-  if input:
+  # If input is a string, we'll create a pipe and send it through that.
+  # Otherwise we assume it's a file object that can be read from directly.
+  if isinstance(input, basestring):
     stdin = subprocess.PIPE
+  elif input is not None:
+    stdin = input
+    input = None
 
   if isinstance(cmd, basestring):
     if not shell:

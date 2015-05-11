@@ -195,6 +195,30 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.RunCommand,
                       ['/does/not/exist'], error_code_ok=True)
 
+  def testInputString(self):
+    """Verify input argument when it is a string."""
+    for data in ('', 'foo', 'bar\nhigh'):
+      result = cros_build_lib.RunCommand(['cat'], input=data)
+      self.assertEqual(result.output, data)
+
+  def testInputFileObject(self):
+    """Verify input argument when it is a file object."""
+    result = cros_build_lib.RunCommand(['cat'], input=open('/dev/null'))
+    self.assertEqual(result.output, '')
+
+    result = cros_build_lib.RunCommand(['cat'], input=open(__file__))
+    self.assertEqual(result.output, osutils.ReadFile(__file__))
+
+  def testInputFileDescriptor(self):
+    """Verify input argument when it is a file descriptor."""
+    with open('/dev/null') as f:
+      result = cros_build_lib.RunCommand(['cat'], input=f.fileno())
+      self.assertEqual(result.output, '')
+
+    with open(__file__) as f:
+      result = cros_build_lib.RunCommand(['cat'], input=f.fileno())
+      self.assertEqual(result.output, osutils.ReadFile(__file__))
+
 
 def _ForceLoggingLevel(functor):
   def inner(*args, **kwargs):
