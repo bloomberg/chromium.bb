@@ -19,24 +19,6 @@
         "value": ["googlegeolocationaccess.enabled", {"type":"boolean"}],
         "description": "If enabled, Google services can access the user's location. This preference's value is a boolean, defaulting to <code>false</code>."
       },
-      "spdyProxyEnabled": {
-        "nocompile": true,
-        "$ref": "types.private.ChromeDirectSetting",
-        "value": ["spdy_proxy.enabled", {"type":"boolean"}],
-        "description": "Flag to enable data usage reduction by sending requests via data reduction proxy. This preference's value is a boolean, defaulting to <code>false</code>."
-      },
-      "dataReductionDailyContentLength": {
-        "nocompile": true,
-        "$ref": "types.private.ChromeDirectSetting",
-        "value": ["data_reduction.daily_original_length", {"type":"array"}],
-        "description": "Each item contains the number uncompressed bytes through data reduction proxy per day."
-      },
-      "dataReductionDailyReceivedLength": {
-        "nocompile": true,
-        "$ref": "types.private.ChromeDirectSetting",
-        "value": ["data_reduction.daily_received_length", {"type":"array"}],
-        "description": "Each item contains the number of compressed bytes through data reduction proxy per day."
-      },
       "dataReductionUpdateDailyLengths": {
         "nocompile": true,
         "$ref": "types.private.ChromeDirectSetting",
