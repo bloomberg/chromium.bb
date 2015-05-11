@@ -278,6 +278,7 @@ var addTile = function(args) {
   if (args.rid) {
     var data = chrome.embeddedSearch.searchBox.getMostVisitedItemData(args.rid);
     data.tid = data.rid;
+    data.thumbnailUrls = [data.thumbnailUrl];
     data.faviconUrl = 'chrome-search://favicon/size/16@' +
         window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
     tiles.appendChild(renderTile(data));
@@ -356,26 +357,96 @@ var renderTile = function(data) {
     title.classList.add('multiline');
   }
 
-  var hasIcon = USE_ICONS && data.largeIconUrl;
-  var hasThumb = !USE_ICONS && data.thumbnailUrl;
-  var thumb = tile.querySelector('.mv-thumb');
-  if (hasIcon || hasThumb) {
-    var img = document.createElement('img');
-    img.title = data.title;
-    if (hasIcon) {
+  if (USE_ICONS) {
+    var thumb = tile.querySelector('.mv-thumb');
+    if (data.largeIconUrl) {
+      var img = document.createElement('img');
+      img.title = data.title;
       img.src = data.largeIconUrl;
       img.classList.add('large-icon');
-    } else {  // hasThumb
-      img.src = data.thumbnailUrl;
-      img.classList.add('thumbnail');
-    }
-    loadedCounter += 1;
-    img.addEventListener('load', countLoad);
-    if (data.largeIconUrl) {
+      loadedCounter += 1;
+      img.addEventListener('load', countLoad);
       img.addEventListener('load', function(ev) {
         thumb.classList.add('large-icon-outer');
       });
+      img.addEventListener('error', countLoad);
+      img.addEventListener('error', function(ev) {
+        thumb.classList.add('failed-img');
+        thumb.removeChild(img);
+        logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
+      });
+      thumb.appendChild(img);
+      logEvent(LOG_TYPE.NTP_THUMBNAIL_TILE);
+    } else {
+      thumb.classList.add('failed-img');
     }
+  } else { // THUMBNAILS
+    var thumb = tile.querySelector('.mv-thumb');
+    var img = document.createElement('img');
+    var loaded = false;
+
+    // We keep track of the outcome of loading possible thumbnails for this
+    // tile. Possible values:
+    //   - null: waiting for load/error
+    //   - false: error
+    //   - a string: URL that loaded correctly.
+    // This is populated by acceptImage/rejectImage and loadBestImage
+    // decides the best one to load.
+    var results = [];
+
+    var loadBestImage = function() {
+      if (loaded) {
+        return;
+      }
+      for (i = 0; i < results.length; ++i) {
+        if (results[i] === null) {
+          return;
+        }
+        if (results[i] != false) {
+          img.src = results[i];
+          loaded = true;
+          return;
+        }
+      }
+      thumb.classList.add('failed-img');
+      thumb.removeChild(img);
+      logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
+    };
+
+    var acceptImage = function(idx, url) {
+      return function(ev) {
+        results[idx] = url;
+        loadBestImage();
+      };
+    };
+
+    var rejectImage = function(idx) {
+      return function(ev) {
+        results[idx] = false;
+        loadBestImage();
+      };
+    };
+
+    // Get all thumbnailUrls for the tile.
+    // They are ordered from best one to be used to worst.
+    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
+      results.push(null);
+    }
+    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
+      if (data.thumbnailUrls[i]) {
+        var image = new Image();
+        image.src = data.thumbnailUrls[i];
+        image.onload = acceptImage(i, data.thumbnailUrls[i]);
+        image.onerror = rejectImage(i);
+      } else {
+        rejectImage(i)(null);
+      }
+    }
+
+    img.title = data.title;
+    img.classList.add('thumbnail');
+    loadedCounter += 1;
+    img.addEventListener('load', countLoad);
     img.addEventListener('error', countLoad);
     img.addEventListener('error', function(ev) {
       thumb.classList.add('failed-img');
@@ -384,11 +455,7 @@ var renderTile = function(data) {
     });
     thumb.appendChild(img);
     logEvent(LOG_TYPE.NTP_THUMBNAIL_TILE);
-  } else {
-    thumb.classList.add('failed-img');
-  }
 
-  if (!USE_ICONS) {
     var favicon = tile.querySelector('.mv-favicon');
     if (data.faviconUrl) {
       var fi = document.createElement('img');
