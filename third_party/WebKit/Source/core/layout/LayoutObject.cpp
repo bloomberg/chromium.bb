@@ -2334,11 +2334,6 @@ RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation() const
         || (document().settings() && document().settings()->shouldRespectImageOrientation() && isHTMLImageElement(node())) ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
-bool LayoutObject::hasEntirelyFixedBackground() const
-{
-    return m_style->hasEntirelyFixedBackground();
-}
-
 LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
 {
     if (paintInvalidationContainerSkipped)

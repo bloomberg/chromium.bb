@@ -813,7 +813,7 @@ IntRect LayoutView::unscaledDocumentRect() const
 bool LayoutView::rootBackgroundIsEntirelyFixed() const
 {
     if (LayoutObject* backgroundLayoutObject = this->backgroundLayoutObject())
-        return backgroundLayoutObject->hasEntirelyFixedBackground();
+        return backgroundLayoutObject->style()->hasEntirelyFixedBackground();
     return false;
 }
 
