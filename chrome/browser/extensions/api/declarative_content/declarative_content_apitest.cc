@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,32 +38,30 @@ const char kBackgroundHelpers[] =
     "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
     "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
     "var onPageChanged = chrome.declarativeContent.onPageChanged;\n"
-    "var Reply = window.domAutomationController.send.bind(\n"
+    "var reply = window.domAutomationController.send.bind(\n"
     "    window.domAutomationController);\n"
     "\n"
     "function setRules(rules, responseString) {\n"
     "  onPageChanged.removeRules(undefined, function() {\n"
     "    onPageChanged.addRules(rules, function() {\n"
     "      if (chrome.runtime.lastError) {\n"
-    "        Reply(chrome.runtime.lastError.message);\n"
+    "        reply(chrome.runtime.lastError.message);\n"
     "        return;\n"
     "      }\n"
-    "      Reply(responseString);\n"
+    "      reply(responseString);\n"
     "    });\n"
     "  });\n"
     "};\n";
 
 class DeclarativeContentApiTest : public ExtensionApiTest {
  public:
-  DeclarativeContentApiTest()
-      // Set the channel to "trunk" since declarativeContent is restricted
-      // to trunk.
-      : current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
-  }
-  ~DeclarativeContentApiTest() override {}
+  DeclarativeContentApiTest() {}
 
-  extensions::ScopedCurrentChannel current_channel_;
+ protected:
   TestExtensionDir ext_dir_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
@@ -122,10 +119,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
            "document.body.offsetTop;"));
 
   // Give the style match a chance to run and send back the matching-selector
-  // update.  This takes one time through the Blink message loop to apply the
-  // style to the new element, and a second to dedupe updates.
-  // FIXME: Remove this after https://codereview.chromium.org/145663012/
-  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
+  // update.
   ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
 
   EXPECT_TRUE(page_action->GetIsVisible(tab_id))
@@ -138,14 +132,88 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
            "document.body.offsetTop;"));
 
   // Give the style match a chance to run and send back the matching-selector
-  // update.  This takes one time through the Blink message loop to apply the
-  // style to the new element, and a second to dedupe updates.
-  // FIXME: Remove this after https://codereview.chromium.org/145663012/
-  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
+  // update.
   ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
 
   EXPECT_FALSE(page_action->GetIsVisible(tab_id))
       << "Removing the matching element should hide the page action again.";
+}
+
+// Tests that the rules are evaluated at the time they are added or removed.
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesEvaluatedOnAddRemove) {
+  ext_dir_.WriteManifest(kDeclarativeContentManifest);
+  ext_dir_.WriteFile(
+      FILE_PATH_LITERAL("background.js"),
+      "var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;\n"
+      "var ShowPageAction = chrome.declarativeContent.ShowPageAction;\n"
+      "var onPageChanged = chrome.declarativeContent.onPageChanged;\n"
+      "var reply = window.domAutomationController.send.bind(\n"
+      "    window.domAutomationController);\n"
+      "\n"
+      "function addRules(rules, responseString) {\n"
+      "  onPageChanged.addRules(rules, function() {\n"
+      "    if (chrome.runtime.lastError) {\n"
+      "      reply(chrome.runtime.lastError.message);\n"
+      "      return;\n"
+      "    }\n"
+      "    reply(responseString);\n"
+      "  });\n"
+      "};\n"
+      "\n"
+      "function removeRule(id, responseString) {\n"
+      "  onPageChanged.removeRules([id], function() {\n"
+      "    if (chrome.runtime.lastError) {\n"
+      "      reply(chrome.runtime.lastError.message);\n"
+      "      return;\n"
+      "    }\n"
+      "    reply(responseString);\n"
+      "  });\n"
+      "};\n");
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
+  const ExtensionAction* page_action =
+      ExtensionActionManager::Get(browser()->profile())->
+      GetPageAction(*extension);
+  ASSERT_TRUE(page_action);
+
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  NavigateInRenderer(tab, GURL("http://test1/"));
+
+  const std::string kAddTestRules =
+      "addRules([{\n"
+      "  id: '1',\n"
+      "  conditions: [new PageStateMatcher({\n"
+      "                   pageUrl: {hostPrefix: \"test1\"}})],\n"
+      "  actions: [new ShowPageAction()]\n"
+      "}, {\n"
+      "  id: '2',\n"
+      "  conditions: [new PageStateMatcher({\n"
+      "                   pageUrl: {hostPrefix: \"test2\"}})],\n"
+      "  actions: [new ShowPageAction()]\n"
+      "}], 'add_rules');\n";
+  EXPECT_EQ("add_rules",
+            ExecuteScriptInBackgroundPage(extension->id(), kAddTestRules));
+
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+
+  const std::string kRemoveTestRule1 = "removeRule('1', 'remove_rule1');\n";
+  EXPECT_EQ("remove_rule1",
+            ExecuteScriptInBackgroundPage(extension->id(), kRemoveTestRule1));
+
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
+
+  NavigateInRenderer(tab, GURL("http://test2/"));
+
+  EXPECT_TRUE(page_action->GetIsVisible(tab_id));
+
+  const std::string kRemoveTestRule2 = "removeRule('2', 'remove_rule2');\n";
+  EXPECT_EQ("remove_rule2",
+            ExecuteScriptInBackgroundPage(extension->id(), kRemoveTestRule2));
+
+  EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 
 // http://crbug.com/304373
