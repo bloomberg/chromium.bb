@@ -52928,7 +52928,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="325" label="SVGForeignObjectElement"/>
   <int value="326" label="PrefixedElementRequestPointerLock"/>
   <int value="327" label="SelectionSetPosition"/>
-  <int value="328" label="AnimationPlayerFinishEvent"/>
+  <int value="328" label="AnimationFinishEvent"/>
   <int value="329" label="SVGSVGElementInXMLDocument"/>
   <int value="330" label="CanvasRenderingContext2DSetAlpha"/>
   <int value="331" label="CanvasRenderingContext2DSetCompositeOperation"/>
@@ -53138,17 +53138,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="542" label="SRIElementWithUnparsableIntegrityAttribute"/>
   <int value="543" label="SRIElementWithIntegrityAttributeAndInsecureOrigin"/>
   <int value="544" label="SRIElementWithIntegrityAttributeAndInsecureResource"/>
-  <int value="545" label="V8AnimationPlayer_StartTime_AttributeGetter"/>
-  <int value="546" label="V8AnimationPlayer_StartTime_AttributeSetter"/>
-  <int value="547" label="V8AnimationPlayer_CurrentTime_AttributeGetter"/>
-  <int value="548" label="V8AnimationPlayer_CurrentTime_AttributeSetter"/>
-  <int value="549" label="V8AnimationPlayer_PlaybackRate_AttributeGetter"/>
-  <int value="550" label="V8AnimationPlayer_PlaybackRate_AttributeSetter"/>
-  <int value="551" label="V8AnimationPlayer_PlayState_AttributeGetter"/>
-  <int value="552" label="V8AnimationPlayer_Finish_Method"/>
-  <int value="553" label="V8AnimationPlayer_Play_Method"/>
-  <int value="554" label="V8AnimationPlayer_Pause_Method"/>
-  <int value="555" label="V8AnimationPlayer_Reverse_Method"/>
+  <int value="545" label="V8Animation_StartTime_AttributeGetter"/>
+  <int value="546" label="V8Animation_StartTime_AttributeSetter"/>
+  <int value="547" label="V8Animation_CurrentTime_AttributeGetter"/>
+  <int value="548" label="V8Animation_CurrentTime_AttributeSetter"/>
+  <int value="549" label="V8Animation_PlaybackRate_AttributeGetter"/>
+  <int value="550" label="V8Animation_PlaybackRate_AttributeSetter"/>
+  <int value="551" label="V8Animation_PlayState_AttributeGetter"/>
+  <int value="552" label="V8Animation_Finish_Method"/>
+  <int value="553" label="V8Animation_Play_Method"/>
+  <int value="554" label="V8Animation_Pause_Method"/>
+  <int value="555" label="V8Animation_Reverse_Method"/>
   <int value="556" label="BreakIterator"/>
   <int value="557" label="ScreenOrientationAngle"/>
   <int value="558" label="ScreenOrientationType"/>
@@ -53295,9 +53295,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="696" label="WindowFind"/>
   <int value="697" label="WindowScreenLeft"/>
   <int value="698" label="WindowScreenTop"/>
-  <int value="699" label="V8AnimationPlayer_Cancel_Method"/>
-  <int value="700" label="V8AnimationPlayer_Onfinish_AttributeGetter"/>
-  <int value="701" label="V8AnimationPlayer_Onfinish_AttributeSetter"/>
+  <int value="699" label="V8Animation_Cancel_Method"/>
+  <int value="700" label="V8Animation_Onfinish_AttributeGetter"/>
+  <int value="701" label="V8Animation_Onfinish_AttributeSetter"/>
   <int value="702" label="ElementOffsetParent"/>
   <int value="703" label="ElementOffsetTop"/>
   <int value="704" label="ElementOffsetLeft"/>
@@ -53366,6 +53366,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="765" label="FullscreenSecureOrigin"/>
   <int value="766" label="FullscreenInsecureOrigin"/>
   <int value="767" label="DialogInSandboxedContext"/>
+  <int value="768" label="SVGSMILAnimationInImageRegardlessOfCache"/>
+  <int value="769" label="PushSubscriptionId"/>
+  <int value="770" label="EncryptedMediaSecureOrigin"/>
+  <int value="771" label="EncryptedMediaInsecureOrigin"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
