@@ -267,7 +267,6 @@ TEST(GraphicsContextTest, RecordingCanvas)
     // endRecording finally makes the picture accessible
     RefPtr<const SkPicture> picture = context->endRecording();
     EXPECT_TRUE(picture);
-    EXPECT_TRUE(picture->unique());
 
     context->endRecording();
 }
