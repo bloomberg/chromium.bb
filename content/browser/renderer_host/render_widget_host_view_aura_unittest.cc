@@ -223,8 +223,10 @@ class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
     processed_touch_event_count_++;
   }
 
-  size_t processed_touch_event_count() {
-    return processed_touch_event_count_;
+  size_t GetAndResetProcessedTouchEventCount() {
+    size_t count = processed_touch_event_count_;
+    processed_touch_event_count_ = 0;
+    return count;
   }
 
  private:
@@ -1121,6 +1123,88 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
       base::Time::NowFromSystemTime() - base::Time());
   view_->OnTouchEvent(&release2);
   EXPECT_TRUE(press.synchronous_handling_disabled());
+  EXPECT_EQ(nullptr, view_->touch_event_);
+}
+
+// Checks that touch-event state is maintained correctly for multiple touch
+// points.
+TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
+  view_->InitAsFullscreen(parent_view_);
+  view_->Show();
+  view_->UseFakeDispatcher();
+  GetSentMessageCountAndResetSink();
+
+  ui::TouchEvent press0(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
+                        ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&press0);
+  SendInputEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
+  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
+
+  ui::TouchEvent move0(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
+                       ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&move0);
+  SendInputEventACK(blink::WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
+  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
+
+  // For the second touchstart, only the state of the second touch point is
+  // StatePressed, the state of the first touch point is StateStationary.
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 1,
+                        ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&press1);
+  SendInputEventACK(blink::WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
+  EXPECT_EQ(2U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
+
+  // For the touchmove of second point, the state of the second touch point is
+  // StateMoved, the state of the first touch point is StateStationary.
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(30, 30), 1,
+                       ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&move1);
+  SendInputEventACK(blink::WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
+  EXPECT_EQ(2U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
+
+  // For the touchmove of first point, the state of the first touch point is
+  // StateMoved, the state of the second touch point is StateStationary.
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 0,
+                       ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&move2);
+  SendInputEventACK(blink::WebInputEvent::TouchMove,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
+  EXPECT_EQ(2U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
+
+  ui::TouchEvent cancel0(ui::ET_TOUCH_CANCELLED, gfx::Point(10, 10), 0,
+                         ui::EventTimeForNow());
+
+  // For the touchcancel, only the state of the current touch point is
+  // StateCancelled, the state of the other touch point is StateStationary.
+  view_->OnTouchEvent(&cancel0);
+  EXPECT_EQ(blink::WebInputEvent::TouchCancel, view_-> touch_event_->type);
+  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
+
+  ui::TouchEvent cancel1(ui::ET_TOUCH_CANCELLED, gfx::Point(30, 30), 1,
+                         ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&cancel1);
+  EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
   EXPECT_EQ(nullptr, view_->touch_event_);
 }
 
@@ -3321,7 +3405,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
   SendInputEventACK(blink::WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  EXPECT_EQ(2U, view_->dispatcher_->processed_touch_event_count());
+  EXPECT_EQ(2U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 }
 
 // Tests that the scroll deltas stored within the overscroll controller get

@@ -277,6 +277,20 @@ bool IsFractionalScaleFactor(float scale_factor) {
   return (scale_factor - static_cast<int>(scale_factor)) > 0;
 }
 
+// Reset unchanged touch point to StateStationary for touchmove and
+// touchcancel.
+void MarkUnchangedTouchPointsAsStationary(
+    blink::WebTouchEvent* event,
+    int changed_touch_id) {
+  if (event->type == blink::WebInputEvent::TouchMove ||
+      event->type == blink::WebInputEvent::TouchCancel) {
+    for (size_t i = 0; i < event->touchesLength; ++i) {
+      if (event->touches[i].id != changed_touch_id)
+        event->touches[i].state = blink::WebTouchPoint::StateStationary;
+    }
+  }
+}
+
 }  // namespace
 
 // We need to watch for mouse events outside a Web Popup or its parent
@@ -1278,10 +1292,14 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
       break;
   }
 
-  // Only send acks for changed touches.
+  // Only send acks for one changed touch point.
+  bool sent_ack = false;
   for (size_t i = 0; i < touch.event.touchesLength; ++i) {
-    if (touch.event.touches[i].state == required_state)
+    if (touch.event.touches[i].state == required_state) {
+      DCHECK(!sent_ack);
       host->dispatcher()->ProcessedTouchEvent(window_, result);
+      sent_ack = true;
+    }
   }
 }
 
@@ -2180,6 +2198,10 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   // processed by the gesture recognizer before events currently awaiting
   // dispatch in the touch queue.
   event->DisableSynchronousHandling();
+
+  // Set unchanged touch point to StateStationary for touchmove and
+  // touchcancel to make sure only send one ack per WebTouchEvent.
+  MarkUnchangedTouchPointsAsStationary(&touch_event, event->touch_id());
   host_->ForwardTouchEventWithLatencyInfo(touch_event, *event->latency());
 }
 
