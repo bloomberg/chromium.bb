@@ -164,8 +164,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
 }
 
+// TODO(henrika): see crbug.com/486654 for details why this test fails.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       MANUAL_CanSetupCallAndSendDtmf) {
+                       DISABLED_CanSetupCallAndSendDtmf) {
   MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,abc\');");
 }
 
