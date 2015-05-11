@@ -572,6 +572,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // RenderProcessHost.
   virtual void OverrideRenderProcessMojoServices(ServiceRegistry* registry) {}
 
+  // Allows to override browser Mojo services exposed through the
+  // RenderFrameHost.
+  virtual void OverrideRenderFrameMojoServices(
+      ServiceRegistry* registry,
+      RenderFrameHost* render_frame_host) {}
+
   // Registers additional navigator.connect service factories available in a
   // particular NavigatorConnectContext.
   virtual void GetAdditionalNavigatorConnectServices(

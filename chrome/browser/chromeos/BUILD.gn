@@ -79,6 +79,7 @@ source_set("chromeos") {
     "//device/bluetooth",
     "//device/hid",
     "//media",
+    "//media/mojo/interfaces",
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
 

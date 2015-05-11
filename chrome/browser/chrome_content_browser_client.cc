@@ -120,6 +120,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "gin/v8_initializer.h"
@@ -141,6 +142,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -2329,6 +2331,16 @@ void ChromeContentBrowserClient::PreSpawnRenderer(
   }
 }
 #endif
+
+void ChromeContentBrowserClient::OverrideRenderFrameMojoServices(
+    content::ServiceRegistry* registry,
+    content::RenderFrameHost* render_frame_host) {
+#if defined(OS_CHROMEOS)
+  registry->AddService(
+      base::Bind(&chromeos::attestation::PlatformVerificationImpl::Create,
+                 render_frame_host));
+#endif
+}
 
 void ChromeContentBrowserClient::OpenURL(
     content::BrowserContext* browser_context,

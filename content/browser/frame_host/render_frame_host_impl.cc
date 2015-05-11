@@ -1570,6 +1570,9 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   GetServiceRegistry()->AddService<mojo::MediaRenderer>(
       base::Bind(&CreateMediaRendererService));
 #endif
+
+  GetContentClient()->browser()->OverrideRenderFrameMojoServices(
+      GetServiceRegistry(), this);
 }
 
 void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {

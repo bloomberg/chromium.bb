@@ -3146,6 +3146,7 @@
             '../components/components.gyp:web_resource',
             '../content/app/resources/content_resources.gyp:content_resources',
             '../media/media.gyp:media',
+            '../media/mojo/interfaces/mojo_bindings.gyp:platform_verification_api',
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../net/net.gyp:net_extras',
