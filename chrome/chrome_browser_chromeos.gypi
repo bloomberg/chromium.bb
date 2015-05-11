@@ -1188,7 +1188,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/display/display.gyp:display',
         '../ui/events/devices/events_devices.gyp:events_devices',
-        '../ui/events/events.gyp:dom4_keycode_converter',
+        '../ui/events/events.gyp:dom_keycode_converter',
         '../ui/events/platform/events_platform.gyp:events_platform',
         '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
         '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',

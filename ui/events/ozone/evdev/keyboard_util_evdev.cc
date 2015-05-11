@@ -6,7 +6,7 @@
 
 #include <linux/input.h>
 
-#include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace ui {
 

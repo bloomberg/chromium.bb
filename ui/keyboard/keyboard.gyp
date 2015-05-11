@@ -57,7 +57,7 @@
         '../base/ime/ui_base_ime.gyp:ui_base_ime',
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
-        '../events/events.gyp:dom4_keycode_converter',
+        '../events/events.gyp:dom_keycode_converter',
         '../events/events.gyp:events',
         '../events/events.gyp:events_base',
         '../gfx/gfx.gyp:gfx',

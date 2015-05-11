@@ -4,7 +4,7 @@
 
 #include "ui/events/ozone/layout/xkb/xkb_keyboard_code_conversion.h"
 
-#include "ui/events/keycodes/dom3/dom_key.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace ui {
 

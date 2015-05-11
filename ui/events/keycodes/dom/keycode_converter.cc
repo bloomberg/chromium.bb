@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 #include "base/logging.h"
-#include "ui/events/keycodes/dom3/dom_code.h"
-#include "ui/events/keycodes/dom3/dom_key.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace ui {
 
@@ -24,7 +24,7 @@ namespace {
 #define USB_KEYMAP(usb, xkb, win, mac, code, id) {usb, 0, code}
 #endif
 #define USB_KEYMAP_DECLARATION const KeycodeMapEntry usb_keycode_map[] =
-#include "ui/events/keycodes/dom4/keycode_converter_data.h"
+#include "ui/events/keycodes/dom/keycode_converter_data.inc"
 #undef USB_KEYMAP
 #undef USB_KEYMAP_DECLARATION
 
@@ -38,7 +38,7 @@ struct DomKeyMapEntry {
 
 #define DOM_KEY_MAP(key, id) {DomKey::id, key}
 #define DOM_KEY_MAP_DECLARATION const DomKeyMapEntry dom_key_map[] =
-#include "ui/events/keycodes/dom3/dom_key_data.h"
+#include "ui/events/keycodes/dom/dom_key_data.inc"
 #undef DOM_KEY_MAP
 #undef DOM_KEY_MAP_DECLARATION
 

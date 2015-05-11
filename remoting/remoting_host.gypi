@@ -45,7 +45,7 @@
             '../crypto/crypto.gyp:crypto',
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
-            '../ui/events/events.gyp:dom4_keycode_converter',
+            '../ui/events/events.gyp:dom_keycode_converter',
           ],
           'defines': [
             'HOST_BUNDLE_NAME="<(host_bundle_name)"',

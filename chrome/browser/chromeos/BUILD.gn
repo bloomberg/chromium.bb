@@ -110,7 +110,7 @@ source_set("chromeos") {
     "//ui/display",
     "//ui/events/devices",
     "//ui/events/platform",
-    "//ui/events:dom4_keycode_converter",
+    "//ui/events:dom_keycode_converter",
     "//ui/file_manager",
     "//ui/message_center",
     "//ui/oobe:oobe",

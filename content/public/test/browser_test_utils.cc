@@ -43,7 +43,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-#include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/resources/grit/webui_resources.h"
 
 #if defined(USE_AURA)

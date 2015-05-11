@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 using blink::WebKeyboardEvent;
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Source of data in this file:
-//  1. ui/events/keycodes/dom4/keycode_converter_data.h
+//  1. ui/events/keycodes/dom/keycode_converter_data.inc
 //  2. ui/events/keycodes/keyboard_codes.h
 //  3. third_party/WebKit/Source/core/platform/chromium/KeyboardCodes.h
 #ifndef CHROME_TEST_REMOTING_KEY_CODE_MAP_H_

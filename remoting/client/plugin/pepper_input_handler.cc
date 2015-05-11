@@ -15,7 +15,7 @@
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_stub.h"
-#include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace remoting {
 

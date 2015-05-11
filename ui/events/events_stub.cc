@@ -6,7 +6,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
 

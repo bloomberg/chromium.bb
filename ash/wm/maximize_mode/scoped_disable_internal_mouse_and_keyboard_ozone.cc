@@ -8,7 +8,7 @@
 
 #include "ash/shell.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 

@@ -9,7 +9,7 @@ namespace ui {
 
 #define DOM_KEY_MAP(key, id) id
 #define DOM_KEY_MAP_DECLARATION enum class DomKey
-#include "ui/events/keycodes/dom3/dom_key_data.h"
+#include "ui/events/keycodes/dom/dom_key_data.inc"
 #undef DOM_KEY_MAP
 #undef DOM_KEY_MAP_DECLARATION
 

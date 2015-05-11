@@ -2,7 +2,7 @@ include_rules = [
   "+ppapi",
   "+jingle/glue",
   "+net",
-  "+ui/events/keycodes/dom4",
+  "+ui/events/keycodes/dom",
 
   "+remoting/codec",
   "+remoting/protocol",

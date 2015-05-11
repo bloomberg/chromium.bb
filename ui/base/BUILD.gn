@@ -800,7 +800,7 @@ test("ui_base_unittests") {
   if (is_chromeos) {
     deps += [
       "//chromeos",
-      "//ui/events:dom4_keycode_converter",
+      "//ui/events:dom_keycode_converter",
     ]
   }
 }

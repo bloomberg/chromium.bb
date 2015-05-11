@@ -30,7 +30,7 @@
     '../third_party/npapi/npapi.gyp:npapi',
     '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
     '../ui/accessibility/accessibility.gyp:accessibility',
-    '../ui/events/events.gyp:dom4_keycode_converter',
+    '../ui/events/events.gyp:dom_keycode_converter',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/native_theme/native_theme.gyp:native_theme',

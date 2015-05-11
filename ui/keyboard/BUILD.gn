@@ -42,7 +42,7 @@ component("keyboard") {
     "//ui/base/ime",
     "//ui/compositor",
     "//ui/events",
-    "//ui/events:dom4_keycode_converter",
+    "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",

@@ -5,14 +5,14 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-static_library("dom4_keycode_converter") {
+static_library("dom_keycode_converter") {
   sources = [
-    "keycodes/dom3/dom_code.h",
-    "keycodes/dom3/dom_key.h",
-    "keycodes/dom3/dom_key_data.h",
-    "keycodes/dom4/keycode_converter.cc",
-    "keycodes/dom4/keycode_converter.h",
-    "keycodes/dom4/keycode_converter_data.h",
+    "keycodes/dom/dom_code.h",
+    "keycodes/dom/dom_key.h",
+    "keycodes/dom/dom_key_data.inc",
+    "keycodes/dom/keycode_converter.cc",
+    "keycodes/dom/keycode_converter.h",
+    "keycodes/dom/keycode_converter_data.inc",
   ]
 
   deps = [
@@ -52,7 +52,7 @@ component("events_base") {
   defines = [ "EVENTS_BASE_IMPLEMENTATION" ]
 
   deps = [
-    ":dom4_keycode_converter",
+    ":dom_keycode_converter",
     "//base/third_party/dynamic_annotations",
     "//skia",
   ]
@@ -124,7 +124,7 @@ component("events") {
     ":events_base",
   ]
   deps = [
-    ":dom4_keycode_converter",
+    ":dom_keycode_converter",
     ":gesture_detection",
     "//base/third_party/dynamic_annotations",
     "//skia",
@@ -307,7 +307,7 @@ test("events_unittests") {
     "gesture_detection/velocity_tracker_unittest.cc",
     "gestures/blink/web_gesture_curve_impl_unittest.cc",
     "gestures/fling_curve_unittest.cc",
-    "keycodes/dom4/keycode_converter_unittest.cc",
+    "keycodes/dom/keycode_converter_unittest.cc",
     "keycodes/keyboard_code_conversion_unittest.cc",
     "latency_info_unittest.cc",
     "platform/platform_event_source_unittest.cc",
@@ -315,7 +315,7 @@ test("events_unittests") {
   ]
 
   deps = [
-    ":dom4_keycode_converter",
+    ":dom_keycode_converter",
     ":events",
     ":events_base",
     ":gesture_detection",

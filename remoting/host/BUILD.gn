@@ -49,7 +49,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "//remoting/protocol",
       "//remoting/resources",
       "//ui/events/platform",
-      "//ui/events:dom4_keycode_converter",
+      "//ui/events:dom_keycode_converter",
     ]
 
     if (enable_configuration_policy) {

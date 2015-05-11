@@ -37,7 +37,7 @@ source_set("test_support") {
     "//ui/base",
     "//ui/base/ime",
     "//ui/base:test_support",
-    "//ui/events:dom4_keycode_converter",
+    "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events:test_support",
     "//ui/events:gesture_detection",

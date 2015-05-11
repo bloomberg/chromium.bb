@@ -119,7 +119,7 @@ component("events_ozone_evdev") {
     ":events_ozone_layout",
     "//base",
     "//ui/events",
-    "//ui/events:dom4_keycode_converter",
+    "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events/devices",
     "//ui/events/platform",
@@ -177,7 +177,7 @@ component("events_ozone_layout") {
 
   deps = [
     "//base",
-    "//ui/events:dom4_keycode_converter",
+    "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
   ]
 

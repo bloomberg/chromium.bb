@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
-#include "ui/events/keycodes/dom4/keycode_converter.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/ozone_export.h"
 

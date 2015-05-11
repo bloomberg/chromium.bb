@@ -13,7 +13,7 @@
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/event.h"
-#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/geometry/rect.h"

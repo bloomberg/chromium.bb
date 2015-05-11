@@ -50,7 +50,7 @@
       '../../gfx/gfx.gyp:gfx',
       '../../ozone/ozone.gyp:ozone_base',
       '../devices/events_devices.gyp:events_devices',
-      '../events.gyp:dom4_keycode_converter',
+      '../events.gyp:dom_keycode_converter',
       '../events.gyp:events',
       '../events.gyp:events_base',
       '../platform/events_platform.gyp:events_platform',
@@ -154,7 +154,7 @@
     'type': '<(component)',
     'dependencies': [
       '../../../base/base.gyp:base',
-      '../events.gyp:dom4_keycode_converter',
+      '../events.gyp:dom_keycode_converter',
       '../events.gyp:events_base',
     ],
     'defines': [

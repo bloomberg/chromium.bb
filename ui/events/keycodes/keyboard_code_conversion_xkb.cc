@@ -4,7 +4,7 @@
 
 #include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
 
-#include "ui/events/keycodes/dom3/dom_key.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
 namespace ui {

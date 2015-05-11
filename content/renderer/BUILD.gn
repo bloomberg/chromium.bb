@@ -57,7 +57,7 @@ source_set("renderer") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/events:events_base",
-    "//ui/events:dom4_keycode_converter",
+    "//ui/events:dom_keycode_converter",
     "//ui/gl",
     "//ui/native_theme",
     "//ui/surface",

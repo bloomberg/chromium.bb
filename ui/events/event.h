@@ -658,7 +658,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   KeyEvent(base::char16 character, KeyboardCode key_code, int flags);
 
   // Used for synthetic events with code of DOM KeyboardEvent (e.g. 'KeyA')
-  // See also: ui/events/keycodes/dom3/dom_values.txt
+  // See also: ui/events/keycodes/dom/dom_values.txt
   KeyEvent(EventType type,
            KeyboardCode key_code,
            DomCode code,

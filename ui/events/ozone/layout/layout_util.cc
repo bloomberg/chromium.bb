@@ -5,7 +5,7 @@
 #include "ui/events/ozone/layout/layout_util.h"
 
 #include "ui/events/event_constants.h"
-#include "ui/events/keycodes/dom3/dom_key.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace ui {
 

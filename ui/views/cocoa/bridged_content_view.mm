@@ -10,7 +10,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/paint_context.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
-#include "ui/events/keycodes/dom3/dom_code.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/geometry/rect.h"

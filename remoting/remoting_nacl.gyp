@@ -113,7 +113,7 @@
         'remoting_webrtc_nacl',
       ],
       'sources': [
-        '../ui/events/keycodes/dom4/keycode_converter.cc',
+        '../ui/events/keycodes/dom/keycode_converter.cc',
         '<@(remoting_base_sources)',
         '<@(remoting_codec_sources)',
         '<@(remoting_client_plugin_sources)',
