@@ -3891,6 +3891,7 @@
             'style/SVGComputedStyleTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
             'timing/MemoryInfoTest.cpp',
+            'workers/WorkerThreadTest.cpp',
             'xml/parser/SharedBufferReaderTest.cpp',
         ],
     }
