@@ -9,16 +9,12 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebLockOrientationError.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START ScreenOrientationMsgStart
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
-                              blink::WebScreenOrientationUndefined,
-                              blink::WebScreenOrientationLandscapeSecondary)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
                               blink::WebScreenOrientationLockDefault,
                               blink::WebScreenOrientationLockNatural)
@@ -26,12 +22,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
       blink::WebLockOrientationError,
       blink::WebLockOrientationErrorNotAvailable,
       blink::WebLockOrientationErrorCanceled)
-
-// The browser process informs the renderer process that the screen orientation
-// has changed. |orientation| contains the new screen orientation in degrees.
-// TODO(mlamouri): we could probably get rid of it.
-IPC_MESSAGE_CONTROL1(ScreenOrientationMsg_OrientationChange,
-                     blink::WebScreenOrientationType /* orientation */ )
 
 // The browser process' response to a ScreenOrientationHostMsg_LockRequest when
 // the lock actually succeeded. The |request_id| passed when receiving the
