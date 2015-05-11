@@ -74,18 +74,29 @@ class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
                  path_util.CHECKOUT_TYPE_GCLIENT,
                  'a/src')
 
-  def testGitSubmodule(self):
-    """Recognizes a chrome git submodule checkout."""
+  def testGitUnderGclient(self):
+    """Recognizes a chrome git checkout by gclient."""
     self.rc_mock.AddCmdResult(
         partial_mock.In('config'), output=constants.CHROMIUM_GOB_URL)
     dir_struct = [
         'a/.gclient',
-        'a/.repo',
+        'a/src/.git/',
+    ]
+    self.RunTest(dir_struct, 'a/src', 'a',
+                 path_util.CHECKOUT_TYPE_GCLIENT,
+                 'a/src')
+
+  def testGitUnderRepo(self):
+    """Recognizes a chrome git checkout by repo."""
+    self.rc_mock.AddCmdResult(
+        partial_mock.In('config'), output=constants.CHROMIUM_GOB_URL)
+    dir_struct = [
+        'a/.repo/',
         'a/b/.git/',
     ]
-    self.RunTest(dir_struct, 'a/b', 'a/b',
-                 path_util.CHECKOUT_TYPE_SUBMODULE,
-                 'a/b')
+    self.RunTest(dir_struct, 'a/b', 'a',
+                 path_util.CHECKOUT_TYPE_REPO,
+                 None)
 
   def testBadGit1(self):
     """.git is not a directory."""
@@ -132,12 +143,10 @@ class FindCacheDirTest(cros_test_lib.WorkspaceTestCase):
         'repo/.repo/',
         'repo/manifest/',
         'gclient/.gclient',
-        'submodule/.git/',
     ]
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, dir_struct)
     self.repo_root = os.path.join(self.tempdir, 'repo')
     self.gclient_root = os.path.join(self.tempdir, 'gclient')
-    self.submodule_root = os.path.join(self.tempdir, 'submodule')
     self.nocheckout_root = os.path.join(self.tempdir, 'nothing')
     self.CreateBootstrap('1.0.0')
     self.CreateWorkspace()
@@ -161,15 +170,6 @@ class FindCacheDirTest(cros_test_lib.WorkspaceTestCase):
     self.assertEquals(
         path_util.FindCacheDir(),
         os.path.join(self.gclient_root, path_util.CHROME_CACHE_DIR))
-
-  def testSubmoduleRoot(self):
-    """Test when we are inside a git submodule Chrome checkout."""
-    self.cwd_mock.return_value = self.submodule_root
-    self.rc_mock.AddCmdResult(
-        partial_mock.In('config'), output=constants.CHROMIUM_GOB_URL)
-    self.assertEquals(
-        path_util.FindCacheDir(),
-        os.path.join(self.submodule_root, path_util.CHROME_CACHE_DIR))
 
   def testTempdir(self):
     """Test when we are not in any checkout."""

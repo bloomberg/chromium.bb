@@ -24,7 +24,6 @@ CHROME_CACHE_DIR = '.cros_cache'
 CHECKOUT_TYPE_UNKNOWN = 'unknown'
 CHECKOUT_TYPE_GCLIENT = 'gclient'
 CHECKOUT_TYPE_REPO = 'repo'
-CHECKOUT_TYPE_SUBMODULE = 'submodule'
 CHECKOUT_TYPE_SDK_BOOTSTRAP = 'bootstrap'
 
 CheckoutInfo = collections.namedtuple(
@@ -246,13 +245,6 @@ class ChrootPathResolver(object):
     return self._ConvertPath(path, self._GetHostPath)
 
 
-def _IsChromiumGobSubmodule(path):
-  """Return True if |path| is a git submodule from Chromium."""
-  submodule_git = os.path.join(path, '.git')
-  return git.IsSubmoduleCheckoutRoot(submodule_git, 'origin',
-                                     constants.CHROMIUM_GOB_URL)
-
-
 def _IsSdkBootstrapCheckout(path):
   """Return True if |path| is an SDK bootstrap.
 
@@ -311,9 +303,6 @@ def DetermineCheckout(cwd):
       if os.path.exists(gclient_file):
         checkout_type = CHECKOUT_TYPE_GCLIENT
         break
-      if _IsChromiumGobSubmodule(path):
-        checkout_type = CHECKOUT_TYPE_SUBMODULE
-        break
       repo_dir = os.path.join(path, '.repo')
       if os.path.isdir(repo_dir):
         checkout_type = CHECKOUT_TYPE_REPO
@@ -326,8 +315,6 @@ def DetermineCheckout(cwd):
   chrome_src_dir = None
   if checkout_type == CHECKOUT_TYPE_GCLIENT:
     chrome_src_dir = os.path.join(root, 'src')
-  elif checkout_type == CHECKOUT_TYPE_SUBMODULE:
-    chrome_src_dir = root
 
   return CheckoutInfo(checkout_type, root, chrome_src_dir)
 
@@ -342,7 +329,7 @@ def FindCacheDir():
   elif checkout.type == CHECKOUT_TYPE_SDK_BOOTSTRAP:
     path = os.path.join(checkout.root, bootstrap_lib.SDK_CHECKOUTS,
                         GENERAL_CACHE_DIR)
-  elif checkout.type in (CHECKOUT_TYPE_GCLIENT, CHECKOUT_TYPE_SUBMODULE):
+  elif checkout.type == CHECKOUT_TYPE_GCLIENT:
     path = os.path.join(checkout.root, CHROME_CACHE_DIR)
   elif checkout.type == CHECKOUT_TYPE_UNKNOWN:
     # We could be in a workspace.
