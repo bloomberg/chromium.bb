@@ -143,7 +143,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
                                         browser->host_desktop_type());
 
   if (!browser || !browser->window()) {
-    // TODO(rpaquay): Error message?
+    if (error)
+      *error = keys::kNoCurrentWindowError;
     return NULL;
   }
 
@@ -160,7 +161,10 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
                                       NULL,
                                       &opener,
                                       NULL)) {
-      // TODO(rpaquay): Error message?
+      if (error) {
+        *error = ErrorUtils::FormatErrorMessage(keys::kTabNotFoundError,
+                                                base::IntToString(opener_id));
+      }
       return NULL;
     }
   }
