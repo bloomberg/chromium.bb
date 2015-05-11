@@ -283,12 +283,15 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   void ProcessPortStartEvent(const snd_seq_addr_t& addr);
   void ProcessClientExitEvent(const snd_seq_addr_t& addr);
   void ProcessPortExitEvent(const snd_seq_addr_t& addr);
+  void ProcessUdevEvent(udev_device* dev);
 
   // Updates port_state_ and Web MIDI state from alsa_seq_state_.
   void UpdatePortStateAndGenerateEvents();
 
   // Enumerates ports. Call once after subscribing to the announce port.
   void EnumerateAlsaPorts();
+  // Enumerates udev cards. Call once after initializing the udev monitor.
+  bool EnumerateUdevCards();
   // Returns true if successful.
   bool CreateAlsaOutputPort(uint32 port_index, int client_id, int port_id);
   void DeleteAlsaOutputPort(uint32 port_index);
@@ -317,6 +320,7 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
 
   // udev, for querying hardware devices.
   device::ScopedUdevPtr udev_;
+  device::ScopedUdevMonitorPtr udev_monitor_;
 
   base::Thread send_thread_;
   base::Thread event_thread_;

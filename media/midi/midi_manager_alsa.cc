@@ -5,6 +5,7 @@
 #include "media/midi/midi_manager_alsa.h"
 
 #include <alsa/asoundlib.h>
+#include <poll.h>
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
@@ -16,6 +17,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/safe_strerror_posix.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
@@ -37,6 +39,13 @@ const size_t kSendBufferSize = 256;
 
 // ALSA constants.
 const char kAlsaHw[] = "hw";
+
+// udev constants.
+const char kUdev[] = "udev";
+const char kUdevSubsystemSound[] = "sound";
+const char kUdevPropertySoundInitialized[] = "SOUND_INITIALIZED";
+const char kUdevActionChange[] = "change";
+const char kUdevActionRemove[] = "remove";
 
 // Constants for the capabilities we search for in inputs and outputs.
 // See http://www.alsa-project.org/alsa-doc/alsa-lib/seq.html.
@@ -112,7 +121,8 @@ void MidiManagerAlsa::StartInitialization() {
   // TODO(agoode): Move off I/O thread. See http://crbug.com/374341.
 
   // Create client handles.
-  int err = snd_seq_open(&in_client_, kAlsaHw, SND_SEQ_OPEN_INPUT, 0);
+  int err =
+      snd_seq_open(&in_client_, kAlsaHw, SND_SEQ_OPEN_INPUT, SND_SEQ_NONBLOCK);
   if (err != 0) {
     VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
@@ -165,7 +175,31 @@ void MidiManagerAlsa::StartInitialization() {
   }
 
   // Generate hotplug events for existing ports.
+  // TODO(agoode): Check the return value for failure.
   EnumerateAlsaPorts();
+
+  // Initialize udev monitor.
+  udev_monitor_.reset(
+      device::udev_monitor_new_from_netlink(udev_.get(), kUdev));
+  if (!udev_monitor_.get()) {
+    VLOG(1) << "udev_monitor_new_from_netlink fails";
+    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+  }
+  err = device::udev_monitor_filter_add_match_subsystem_devtype(
+      udev_monitor_.get(), kUdevSubsystemSound, nullptr);
+  if (err != 0) {
+    VLOG(1) << "udev_monitor_add_match_subsystem fails: "
+            << safe_strerror(-err);
+    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+  }
+  err = device::udev_monitor_enable_receiving(udev_monitor_.get());
+  if (err != 0) {
+    VLOG(1) << "udev_monitor_enable_receiving fails: " << safe_strerror(-err);
+    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+  }
+
+  // Generate hotplug events for existing udev devices.
+  EnumerateUdevCards();
 
   // Start processing events.
   event_thread_.Start();
@@ -239,7 +273,6 @@ scoped_ptr<base::Value> MidiManagerAlsa::MidiPort::Value() const {
     case Type::kInput:
       type = "input";
       break;
-
     case Type::kOutput:
       type = "output";
       break;
@@ -699,55 +732,86 @@ void MidiManagerAlsa::ScheduleEventLoop() {
 }
 
 void MidiManagerAlsa::EventLoop() {
-  // Read available incoming MIDI data.
-  snd_seq_event_t* event;
-  int err = snd_seq_event_input(in_client_, &event);
-  double timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  bool loop_again = true;
 
-  // Handle errors.
-  if (err == -ENOSPC) {
-    VLOG(1) << "snd_seq_event_input detected buffer overrun";
-    // We've lost events: check another way to see if we need to shut down.
-    base::AutoLock lock(shutdown_lock_);
-    if (!event_thread_shutdown_)
-      ScheduleEventLoop();
-    return;
-  } else if (err < 0) {
-    VLOG(1) << "snd_seq_event_input fails: " << snd_strerror(err);
-    // TODO(agoode): Use RecordAction() or similar to log this.
-    return;
-  }
+  struct pollfd pfd[2];
+  snd_seq_poll_descriptors(in_client_, &pfd[0], 1, POLLIN);
+  pfd[1].fd = device::udev_monitor_get_fd(udev_monitor_.get());
+  pfd[1].events = POLLIN;
 
-  // Handle announce events.
-  if (event->source.client == SND_SEQ_CLIENT_SYSTEM &&
-      event->source.port == SND_SEQ_PORT_SYSTEM_ANNOUNCE) {
-    switch (event->type) {
-      case SND_SEQ_EVENT_PORT_START:
-        // Don't use SND_SEQ_EVENT_CLIENT_START because the client name may not
-        // be set by the time we query it. It should be set by the time ports
-        // are made.
-        ProcessClientStartEvent(event->data.addr.client);
-        ProcessPortStartEvent(event->data.addr);
-        break;
-
-      case SND_SEQ_EVENT_CLIENT_EXIT:
-        // Check for disconnection of our "out" client. This means "shut down".
-        if (event->data.addr.client == out_client_id_)
-          return;
-
-        ProcessClientExitEvent(event->data.addr);
-        break;
-
-      case SND_SEQ_EVENT_PORT_EXIT:
-        ProcessPortExitEvent(event->data.addr);
-        break;
-    }
+  int err = HANDLE_EINTR(poll(pfd, arraysize(pfd), -1));
+  if (err < 0) {
+    VLOG(1) << "poll fails: " << safe_strerror(errno);
+    loop_again = false;
   } else {
-    ProcessSingleEvent(event, timestamp);
+    if (pfd[0].revents & POLLIN) {
+      // Read available incoming MIDI data.
+      int remaining;
+      double timestamp =
+          (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+      do {
+        snd_seq_event_t* event;
+        err = snd_seq_event_input(in_client_, &event);
+        remaining = snd_seq_event_input_pending(in_client_, 0);
+
+        if (err == -ENOSPC) {
+          // Handle out of space error.
+          VLOG(1) << "snd_seq_event_input detected buffer overrun";
+          // We've lost events: check another way to see if we need to shut
+          // down.
+          base::AutoLock lock(shutdown_lock_);
+          if (event_thread_shutdown_)
+            loop_again = false;
+        } else if (err == -EAGAIN) {
+          // We've read all the data.
+        } else if (err < 0) {
+          // Handle other errors.
+          VLOG(1) << "snd_seq_event_input fails: " << snd_strerror(err);
+          // TODO(agoode): Use RecordAction() or similar to log this.
+          loop_again = false;
+        } else if (event->source.client == SND_SEQ_CLIENT_SYSTEM &&
+                   event->source.port == SND_SEQ_PORT_SYSTEM_ANNOUNCE) {
+          // Handle announce events.
+          switch (event->type) {
+            case SND_SEQ_EVENT_PORT_START:
+              // Don't use SND_SEQ_EVENT_CLIENT_START because the
+              // client name may not be set by the time we query
+              // it. It should be set by the time ports are made.
+              ProcessClientStartEvent(event->data.addr.client);
+              ProcessPortStartEvent(event->data.addr);
+              break;
+            case SND_SEQ_EVENT_CLIENT_EXIT:
+              // Check for disconnection of our "out" client. This means "shut
+              // down".
+              if (event->data.addr.client == out_client_id_) {
+                loop_again = false;
+                remaining = 0;
+              } else
+                ProcessClientExitEvent(event->data.addr);
+              break;
+            case SND_SEQ_EVENT_PORT_EXIT:
+              ProcessPortExitEvent(event->data.addr);
+              break;
+          }
+        } else {
+          // Normal operation.
+          ProcessSingleEvent(event, timestamp);
+        }
+      } while (remaining > 0);
+    }
+    if (pfd[1].revents & POLLIN) {
+      device::ScopedUdevDevicePtr dev(
+          device::udev_monitor_receive_device(udev_monitor_.get()));
+      if (dev.get())
+        ProcessUdevEvent(dev.get());
+      else
+        VLOG(1) << "udev_monitor_receive_device fails";
+    }
   }
 
   // Do again.
-  ScheduleEventLoop();
+  if (loop_again)
+    ScheduleEventLoop();
 }
 
 void MidiManagerAlsa::ProcessSingleEvent(snd_seq_event_t* event,
@@ -845,6 +909,26 @@ void MidiManagerAlsa::ProcessPortExitEvent(const snd_seq_addr_t& addr) {
   UpdatePortStateAndGenerateEvents();
 }
 
+void MidiManagerAlsa::ProcessUdevEvent(udev_device* dev) {
+  // Only card devices have this property set, and only when they are
+  // fully initialized.
+  if (!device::udev_device_get_property_value(dev,
+                                              kUdevPropertySoundInitialized))
+    return;
+
+  // Get the action. If no action, then we are doing first time enumeration
+  // and the device is treated as new.
+  const char* action = device::udev_device_get_action(dev);
+  if (!action)
+    action = kUdevActionChange;
+
+  if (strcmp(action, kUdevActionChange) == 0) {
+    // TODO(agoode): add
+  } else if (strcmp(action, kUdevActionRemove) == 0) {
+    // TODO(agoode): remove
+  }
+}
+
 void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
   // Generate new port state.
   auto new_port_state = alsa_seq_state_.ToMidiPortState();
@@ -887,7 +971,6 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
                         new_port->port_id()))
             AddInputPort(info);
           break;
-
         case MidiPort::Type::kOutput:
           if (CreateAlsaOutputPort(web_port_index, new_port->client_id(),
                                    new_port->port_id()))
@@ -908,7 +991,6 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
                         (*old_port)->port_id()))
             SetInputPortState(web_port_index, MIDI_PORT_OPENED);
           break;
-
         case MidiPort::Type::kOutput:
           if (CreateAlsaOutputPort(web_port_index, (*old_port)->client_id(),
                                    (*old_port)->port_id()))
@@ -923,6 +1005,7 @@ void MidiManagerAlsa::UpdatePortStateAndGenerateEvents() {
   }
 }
 
+// TODO(agoode): return false on failure.
 void MidiManagerAlsa::EnumerateAlsaPorts() {
   snd_seq_client_info_t* client_info;
   snd_seq_client_info_alloca(&client_info);
@@ -943,6 +1026,43 @@ void MidiManagerAlsa::EnumerateAlsaPorts() {
       ProcessPortStartEvent(*addr);
     }
   }
+}
+
+bool MidiManagerAlsa::EnumerateUdevCards() {
+  int err;
+
+  device::ScopedUdevEnumeratePtr enumerate(
+      device::udev_enumerate_new(udev_.get()));
+  if (!enumerate.get()) {
+    VLOG(1) << "udev_enumerate_new fails";
+    return false;
+  }
+
+  err = device::udev_enumerate_add_match_subsystem(enumerate.get(),
+                                                   kUdevSubsystemSound);
+  if (err) {
+    VLOG(1) << "udev_enumerate_add_match_subsystem fails: "
+            << safe_strerror(-err);
+    return false;
+  }
+
+  err = device::udev_enumerate_scan_devices(enumerate.get());
+  if (err) {
+    VLOG(1) << "udev_enumerate_scan_devices fails: " << safe_strerror(-err);
+    return false;
+  }
+
+  udev_list_entry* list_entry;
+  auto* devices = device::udev_enumerate_get_list_entry(enumerate.get());
+  udev_list_entry_foreach(list_entry, devices) {
+    const char* path = device::udev_list_entry_get_name(list_entry);
+    device::ScopedUdevDevicePtr dev(
+        device::udev_device_new_from_syspath(udev_.get(), path));
+    if (dev.get())
+      ProcessUdevEvent(dev.get());
+  }
+
+  return true;
 }
 
 bool MidiManagerAlsa::CreateAlsaOutputPort(uint32 port_index,
