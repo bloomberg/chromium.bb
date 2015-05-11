@@ -11,6 +11,7 @@
 #include "content/common/gpu/client/grcontext_for_webgraphicscontext3d.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 
 using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
 
@@ -157,6 +158,14 @@ class GrContext* ContextProviderInProcess::GrContext() {
 
   gr_context_.reset(new GrContextForWebGraphicsContext3D(context3d_.get()));
   return gr_context_->get();
+}
+
+void ContextProviderInProcess::InvalidateGrContext(uint32_t state) {
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  if (gr_context_)
+    return gr_context_->get()->resetContext(state);
 }
 
 void ContextProviderInProcess::SetupLock() {

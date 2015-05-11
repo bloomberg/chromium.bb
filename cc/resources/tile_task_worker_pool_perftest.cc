@@ -90,6 +90,10 @@ class PerfContextProvider : public ContextProvider {
         reinterpret_cast<GrBackendContext>(null_interface.get())));
     return gr_context_.get();
   }
+  void InvalidateGrContext(uint32_t state) override {
+    if (gr_context_)
+      gr_context_.get()->resetContext(state);
+  }
   void SetupLock() override {}
   base::Lock* GetLock() override { return &context_lock_; }
   bool IsContextLost() override { return false; }

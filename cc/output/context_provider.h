@@ -44,6 +44,10 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
     CC_EXPORT Capabilities();
   };
 
+  // Invalidates the cached OpenGL state in GrContext.
+  // See skia GrContext::resetContext for details.
+  virtual void InvalidateGrContext(uint32_t state) = 0;
+
   // Sets up a lock so this context can be used from multiple threads.
   virtual void SetupLock() = 0;
 

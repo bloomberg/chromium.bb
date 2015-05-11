@@ -48,6 +48,7 @@ class InProcessContextProvider : public cc::ContextProvider {
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
+  void InvalidateGrContext(uint32_t state) override;
   void SetupLock() override;
   base::Lock* GetLock() override;
   bool IsContextLost() override;

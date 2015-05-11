@@ -43,6 +43,9 @@ class GrContext* ContextProviderMojo::GrContext() {
   return NULL;
 }
 
+void ContextProviderMojo::InvalidateGrContext(uint32_t state) {
+}
+
 cc::ContextProvider::Capabilities ContextProviderMojo::ContextCapabilities() {
   return capabilities_;
 }

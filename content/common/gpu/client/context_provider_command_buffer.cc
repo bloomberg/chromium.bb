@@ -143,6 +143,14 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   return gr_context_->get();
 }
 
+void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
+  if (gr_context_) {
+    DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+    DCHECK(context_thread_checker_.CalledOnValidThread());
+    gr_context_->get()->resetContext(state);
+  }
+}
+
 void ContextProviderCommandBuffer::SetupLock() {
   DCHECK(context3d_);
   context3d_->GetCommandBufferProxy()->SetLock(&context_lock_);

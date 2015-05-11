@@ -165,6 +165,13 @@ class GrContext* InProcessContextProvider::GrContext() {
   return gr_context_.get();
 }
 
+void InProcessContextProvider::InvalidateGrContext(uint32_t state) {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  if (gr_context_)
+    gr_context_.get()->resetContext(state);
+}
+
 void InProcessContextProvider::SetupLock() {
 }
 

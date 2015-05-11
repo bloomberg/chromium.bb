@@ -124,6 +124,11 @@ class GrContext* TestInProcessContextProvider::GrContext() {
   return gr_context_.get();
 }
 
+void TestInProcessContextProvider::InvalidateGrContext(uint32_t state) {
+  if (gr_context_)
+    gr_context_.get()->resetContext(state);
+}
+
 void TestInProcessContextProvider::SetupLock() {
 }
 
