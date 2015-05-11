@@ -76,7 +76,7 @@ def parseBool(boolStr):
 
   Returns a bool on success; raises ValueError on failure.
   """
-  lower = boolStr.tolower()
+  lower = boolStr.lower()
   if lower in ['0', 'false']: return False
   if lower in ['1', 'true']: return True
   raise ValueError('not a boolean string {!r}'.format(boolStr))
