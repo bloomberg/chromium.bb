@@ -15,6 +15,8 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif (OS_POSIX)
+#include <unistd.h>
 #endif
 
 namespace mojo {
