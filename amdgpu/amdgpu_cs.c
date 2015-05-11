@@ -678,9 +678,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		chunk_data[i].ib_data.ip_type = ibs_request->ip_type;
 		chunk_data[i].ib_data.ip_instance = ibs_request->ip_instance;
 		chunk_data[i].ib_data.ring = ibs_request->ring;
-
-		if (ib->flags & AMDGPU_CS_GFX_IB_CE)
-			chunk_data[i].ib_data.flags = AMDGPU_IB_FLAG_CE;
+		chunk_data[i].ib_data.flags = ib->flags;
 	}
 
 	pthread_mutex_lock(&context->sequence_mutex);

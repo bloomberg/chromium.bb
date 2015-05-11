@@ -186,7 +186,7 @@ static void amdgpu_command_submission_gfx(void)
 	ptr[3] = 1;
 	ib_info[0].ib_handle = ib_result_ce.handle;
 	ib_info[0].size = 4;
-	ib_info[0].flags = AMDGPU_CS_GFX_IB_CE;
+	ib_info[0].flags = AMDGPU_IB_FLAG_CE;
 
 	/* IT_WAIT_ON_CE_COUNTER */
 	ptr = ib_result.cpu;

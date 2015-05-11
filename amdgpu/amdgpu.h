@@ -57,12 +57,6 @@ struct drm_amdgpu_info_hw_ip;
 #define AMDGPU_TIMEOUT_INFINITE			0xffffffffffffffffull
 
 /**
- * The special flag for GFX submission to identify that this is CE IB
- * \sa amdgpu_cs_ib_info
-*/
-#define AMDGPU_CS_GFX_IB_CE			0x1
-
-/**
  * The special flag to mark that this IB will re-used
  * by client and should not be automatically return back
  * to free pool by libdrm_amdgpu when submission is completed.
