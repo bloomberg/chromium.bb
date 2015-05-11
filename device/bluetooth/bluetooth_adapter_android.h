@@ -23,10 +23,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
   // Create a BluetoothAdapterAndroid instance.
   static base::WeakPtr<BluetoothAdapterAndroid> CreateAdapter();
 
-  // Create a BluetoothAdapterAndroid instance without Bluetooth permission.
-  static base::WeakPtr<BluetoothAdapterAndroid>
-  CreateAdapterWithoutPermissionForTesting();
-
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJNI(JNIEnv* env);
 

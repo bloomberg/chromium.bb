@@ -5,7 +5,6 @@
 #include "device/bluetooth/bluetooth_adapter_android.h"
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_string.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -13,7 +12,6 @@
 #include "jni/BluetoothAdapter_jni.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF8;
 
 namespace device {
 
@@ -27,17 +25,6 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 base::WeakPtr<BluetoothAdapterAndroid>
 BluetoothAdapterAndroid::CreateAdapter() {
   BluetoothAdapterAndroid* adapter = new BluetoothAdapterAndroid();
-  adapter->j_bluetooth_adapter_.Reset(Java_BluetoothAdapter_create(
-      AttachCurrentThread(), base::android::GetApplicationContext()));
-  return adapter->weak_ptr_factory_.GetWeakPtr();
-}
-
-base::WeakPtr<BluetoothAdapterAndroid>
-BluetoothAdapterAndroid::CreateAdapterWithoutPermissionForTesting() {
-  BluetoothAdapterAndroid* adapter = new BluetoothAdapterAndroid();
-  adapter->j_bluetooth_adapter_.Reset(
-      Java_BluetoothAdapter_createWithoutPermissionForTesting(
-          AttachCurrentThread(), base::android::GetApplicationContext()));
   return adapter->weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -52,13 +39,11 @@ bool BluetoothAdapterAndroid::HasBluetoothPermission() const {
 }
 
 std::string BluetoothAdapterAndroid::GetAddress() const {
-  return ConvertJavaStringToUTF8(Java_BluetoothAdapter_getAddress(
-      AttachCurrentThread(), j_bluetooth_adapter_.obj()));
+  return address_;
 }
 
 std::string BluetoothAdapterAndroid::GetName() const {
-  return ConvertJavaStringToUTF8(Java_BluetoothAdapter_getName(
-      AttachCurrentThread(), j_bluetooth_adapter_.obj()));
+  return name_;
 }
 
 void BluetoothAdapterAndroid::SetName(const std::string& name,
@@ -73,13 +58,13 @@ bool BluetoothAdapterAndroid::IsInitialized() const {
 }
 
 bool BluetoothAdapterAndroid::IsPresent() const {
-  return Java_BluetoothAdapter_isPresent(AttachCurrentThread(),
-                                         j_bluetooth_adapter_.obj());
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool BluetoothAdapterAndroid::IsPowered() const {
-  return Java_BluetoothAdapter_isPowered(AttachCurrentThread(),
-                                         j_bluetooth_adapter_.obj());
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void BluetoothAdapterAndroid::SetPowered(bool powered,
@@ -89,8 +74,8 @@ void BluetoothAdapterAndroid::SetPowered(bool powered,
 }
 
 bool BluetoothAdapterAndroid::IsDiscoverable() const {
-  return Java_BluetoothAdapter_isDiscoverable(AttachCurrentThread(),
-                                              j_bluetooth_adapter_.obj());
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void BluetoothAdapterAndroid::SetDiscoverable(
@@ -101,8 +86,8 @@ void BluetoothAdapterAndroid::SetDiscoverable(
 }
 
 bool BluetoothAdapterAndroid::IsDiscovering() const {
-  return Java_BluetoothAdapter_isDiscovering(AttachCurrentThread(),
-                                             j_bluetooth_adapter_.obj());
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void BluetoothAdapterAndroid::CreateRfcommService(
@@ -138,6 +123,8 @@ void BluetoothAdapterAndroid::RegisterAdvertisement(
 }
 
 BluetoothAdapterAndroid::BluetoothAdapterAndroid() : weak_ptr_factory_(this) {
+  j_bluetooth_adapter_.Reset(Java_BluetoothAdapter_create(
+      AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
 BluetoothAdapterAndroid::~BluetoothAdapterAndroid() {
