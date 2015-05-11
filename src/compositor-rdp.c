@@ -33,6 +33,23 @@
 /* assume it's a early 1.1 version */
 #define FREERDP_VERSION_MAJOR 1
 #define FREERDP_VERSION_MINOR 1
+#define FREERDP_VERSION_REVISION 0
+#endif
+
+#define FREERDP_VERSION_NUMBER ((FREERDP_VERSION_MAJOR * 0x10000) + \
+		(FREERDP_VERSION_MINOR * 0x100) + FREERDP_VERSION_REVISION)
+
+#if FREERDP_VERSION_NUMBER >= 0x10201
+#define HAVE_SKIP_COMPRESSION
+#endif
+
+#if FREERDP_VERSION_NUMBER < 0x10202
+#define FREERDP_CB_RET_TYPE void
+#define FREERDP_CB_RETURN(V) return
+#else
+#define HAVE_NSC_RESET
+#define FREERDP_CB_RET_TYPE BOOL
+#define FREERDP_CB_RETURN(V) return TRUE
 #endif
 
 #include <freerdp/freerdp.h>
@@ -145,6 +162,11 @@ rdp_peer_refresh_rfx(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 	width = (damage->extents.x2 - damage->extents.x1);
 	height = (damage->extents.y2 - damage->extents.y1);
 
+#ifdef HAVE_SKIP_COMPRESSION
+	cmd->skipCompression = TRUE;
+#else
+	memset(cmd, 0, sizeof(*cmd));
+#endif
 	cmd->destLeft = damage->extents.x1;
 	cmd->destTop = damage->extents.y1;
 	cmd->destRight = damage->extents.x2;
@@ -197,6 +219,11 @@ rdp_peer_refresh_nsc(pixman_region32_t *damage, pixman_image_t *image, freerdp_p
 	width = (damage->extents.x2 - damage->extents.x1);
 	height = (damage->extents.y2 - damage->extents.y1);
 
+#ifdef HAVE_SKIP_COMPRESSION
+	cmd->skipCompression = TRUE;
+#else
+	memset(cmd, 0, sizeof(*cmd));
+#endif
 	cmd->destLeft = damage->extents.x1;
 	cmd->destTop = damage->extents.y1;
 	cmd->destRight = damage->extents.x2;
@@ -248,6 +275,7 @@ rdp_peer_refresh_raw(pixman_region32_t *region, pixman_image_t *image, freerdp_p
 	marker->frameAction = SURFACECMD_FRAMEACTION_BEGIN;
 	update->SurfaceFrameMarker(peer->context, marker);
 
+	memset(cmd, 0, sizeof(*cmd));
 	cmd->bpp = 32;
 	cmd->codecID = 0;
 
@@ -592,6 +620,7 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 		weston_seat_release_pointer(&context->item.seat);
 		weston_seat_release(&context->item.seat);
 	}
+
 	Stream_Free(context->encode_stream, TRUE);
 	nsc_context_free(context->nsc_context);
 	rfx_context_free(context->rfx_context);
@@ -757,23 +786,26 @@ static char *rdp_keyboard_types[] = {
 };
 
 static BOOL
-xf_peer_post_connect(freerdp_peer* client)
+xf_peer_activate(freerdp_peer* client)
 {
 	RdpPeerContext *peerCtx;
 	struct rdp_compositor *c;
 	struct rdp_output *output;
 	rdpSettings *settings;
 	rdpPointerUpdate *pointer;
+	struct rdp_peers_item *peersItem;
 	struct xkb_context *xkbContext;
 	struct xkb_rule_names xkbRuleNames;
 	struct xkb_keymap *keymap;
 	int i;
 	pixman_box32_t box;
 	pixman_region32_t damage;
+	char seat_name[50];
 
 
 	peerCtx = (RdpPeerContext *)client->context;
 	c = peerCtx->rdpCompositor;
+	peersItem = &peerCtx->item;
 	output = c->output;
 	settings = client->settings;
 
@@ -813,7 +845,16 @@ xf_peer_post_connect(freerdp_peer* client)
 		}
 	}
 
-	weston_log("kbd_layout:%x kbd_type:%x kbd_subType:%x kbd_functionKeys:%x\n",
+	rfx_context_reset(peerCtx->rfx_context);
+#ifdef HAVE_NSC_RESET
+	nsc_context_reset(peerCtx->nsc_context);
+#endif
+
+	if (peersItem->flags & RDP_PEER_ACTIVATED)
+		return TRUE;
+
+	/* when here it's the first reactivation, we need to setup a little more */
+	weston_log("kbd_layout:0x%x kbd_type:0x%x kbd_subType:0x%x kbd_functionKeys:0x%x\n",
 			settings->KeyboardLayout, settings->KeyboardType, settings->KeyboardSubType,
 			settings->KeyboardFunctionKey);
 
@@ -840,10 +881,17 @@ xf_peer_post_connect(freerdp_peer* client)
 
 		keymap = xkb_keymap_new_from_names(xkbContext, &xkbRuleNames, 0);
 	}
-	weston_seat_init_keyboard(&peerCtx->item.seat, keymap);
-	weston_seat_init_pointer(&peerCtx->item.seat);
 
-	peerCtx->item.flags |= RDP_PEER_ACTIVATED;
+	if (settings->ClientHostname)
+		snprintf(seat_name, sizeof(seat_name), "RDP %s", settings->ClientHostname);
+	else
+		snprintf(seat_name, sizeof(seat_name), "RDP peer @%s", settings->ClientAddress);
+
+	weston_seat_init(&peersItem->seat, &c->base, seat_name);
+	weston_seat_init_keyboard(&peersItem->seat, keymap);
+	weston_seat_init_pointer(&peersItem->seat);
+
+	peersItem->flags |= RDP_PEER_ACTIVATED;
 
 	/* disable pointer on the client side */
 	pointer = client->update->pointer;
@@ -864,15 +912,12 @@ xf_peer_post_connect(freerdp_peer* client)
 	return TRUE;
 }
 
-static BOOL
-xf_peer_activate(freerdp_peer *client)
+static BOOL xf_peer_post_connect(freerdp_peer *client)
 {
-	RdpPeerContext *context = (RdpPeerContext *)client->context;
-	rfx_context_reset(context->rfx_context);
 	return TRUE;
 }
 
-static void
+static FREERDP_CB_RET_TYPE
 xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 	wl_fixed_t wl_x, wl_y, axis;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
@@ -917,9 +962,11 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 					    WL_POINTER_AXIS_VERTICAL_SCROLL,
 					    axis);
 	}
+
+	FREERDP_CB_RETURN(TRUE);
 }
 
-static void
+static FREERDP_CB_RET_TYPE
 xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 	wl_fixed_t wl_x, wl_y;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
@@ -932,10 +979,12 @@ xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y) {
 		notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
 				wl_x, wl_y);
 	}
+
+	FREERDP_CB_RETURN(TRUE);
 }
 
 
-static void
+static FREERDP_CB_RET_TYPE
 xf_input_synchronize_event(rdpInput *input, UINT32 flags)
 {
 	freerdp_peer *client = input->context->peer;
@@ -954,16 +1003,20 @@ xf_input_synchronize_event(rdpInput *input, UINT32 flags)
 	rdp_peer_refresh_region(&damage, client);
 
 	pixman_region32_fini(&damage);
+	FREERDP_CB_RETURN(TRUE);
 }
 
 
-static void
+static FREERDP_CB_RET_TYPE
 xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 {
 	uint32_t scan_code, vk_code, full_code;
 	enum wl_keyboard_key_state keyState;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	int notify = 0;
+
+	if (!(peerContext->item.flags & RDP_PEER_ACTIVATED))
+		FREERDP_CB_RETURN(TRUE);
 
 	if (flags & KBD_FLAGS_DOWN) {
 		keyState = WL_KEYBOARD_KEY_STATE_PRESSED;
@@ -989,22 +1042,28 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 		notify_key(&peerContext->item.seat, weston_compositor_get_time(),
 					scan_code - 8, keyState, STATE_UPDATE_AUTOMATIC);
 	}
+
+	FREERDP_CB_RETURN(TRUE);
 }
 
-static void
+static FREERDP_CB_RET_TYPE
 xf_input_unicode_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 {
 	weston_log("Client sent a unicode keyboard event (flags:0x%X code:0x%X)\n", flags, code);
+	FREERDP_CB_RETURN(TRUE);
 }
 
 
-static void
+static FREERDP_CB_RET_TYPE
 xf_suppress_output(rdpContext *context, BYTE allow, RECTANGLE_16 *area) {
 	RdpPeerContext *peerContext = (RdpPeerContext *)context;
+
 	if (allow)
 		peerContext->item.flags |= RDP_PEER_OUTPUT_ENABLED;
 	else
 		peerContext->item.flags &= (~RDP_PEER_OUTPUT_ENABLED);
+
+	FREERDP_CB_RETURN(TRUE);
 }
 
 static int
@@ -1017,7 +1076,6 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	rdpSettings	*settings;
 	rdpInput *input;
 	RdpPeerContext *peerCtx;
-	char seat_name[32];
 
 	client->ContextSize = sizeof(RdpPeerContext);
 	client->ContextNew = (psPeerContextNew)rdp_peer_context_new;
@@ -1027,16 +1085,28 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	peerCtx = (RdpPeerContext *) client->context;
 	peerCtx->rdpCompositor = c;
 
+	client->Initialize(client);
+
 	settings = client->settings;
-	settings->RdpKeyFile = c->rdp_key;
+	/* configure security settings */
+	if (c->rdp_key)
+		settings->RdpKeyFile = strdup(c->rdp_key);
 	if (c->tls_enabled) {
-		settings->CertificateFile = c->server_cert;
-		settings->PrivateKeyFile = c->server_key;
+		settings->CertificateFile = strdup( c->server_cert);
+		settings->PrivateKeyFile = strdup(c->server_key);
 	} else {
 		settings->TlsSecurity = FALSE;
 	}
-
 	settings->NlaSecurity = FALSE;
+
+	settings->OsMajorType = OSMAJORTYPE_UNIX;
+	settings->OsMinorType = OSMINORTYPE_PSEUDO_XSERVER;
+	settings->ColorDepth = 32;
+	settings->RefreshRect = TRUE;
+	settings->RemoteFxCodec = TRUE;
+	settings->NSCodec = TRUE;
+	settings->FrameMarkerCommandEnabled = TRUE;
+	settings->SurfaceFrameMarkerEnabled = TRUE;
 
 	client->Capabilities = xf_peer_capabilities;
 	client->PostConnect = xf_peer_post_connect;
@@ -1050,13 +1120,6 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	input->ExtendedMouseEvent = xf_extendedMouseEvent;
 	input->KeyboardEvent = xf_input_keyboard_event;
 	input->UnicodeKeyboardEvent = xf_input_unicode_keyboard_event;
-
-	if (snprintf(seat_name, 32, "rdp:%d:%s", client->sockfd, client->hostname) >= 32)
-		seat_name[31] = '\0';
-
-	weston_seat_init(&peerCtx->item.seat, &c->base, seat_name);
-
-	client->Initialize(client);
 
 	if (!client->GetFileDescriptor(client, rfds, &rcount)) {
 		weston_log("unable to retrieve client fds\n");
@@ -1078,12 +1141,16 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 }
 
 
-static void
+static FREERDP_CB_RET_TYPE
 rdp_incoming_peer(freerdp_listener *instance, freerdp_peer *client)
 {
 	struct rdp_compositor *c = (struct rdp_compositor *)instance->param4;
-	if (rdp_peer_init(client, c) < 0)
-		return;
+	if (rdp_peer_init(client, c) < 0) {
+		weston_log("error when treating incoming peer");
+		FREERDP_CB_RETURN(FALSE);
+	}
+
+	FREERDP_CB_RETURN(TRUE);
 }
 
 static struct weston_compositor *
