@@ -99,6 +99,9 @@
         "test": "gfx_unittests"
       },
       {
+        "test": "gl_unittests"
+      },
+      {
         "test": "google_apis_unittests"
       },
       {
@@ -340,6 +343,9 @@
         "test": "gfx_unittests"
       },
       {
+        "test": "gl_unittests"
+      },
+      {
         "test": "google_apis_unittests"
       },
       {
@@ -505,6 +511,7 @@
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
+      "gl_unittests",
       "google_apis_unittests",
       "gpu_unittests",
       "interactive_ui_tests",
@@ -562,6 +569,7 @@
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
+      "gl_unittests",
       "google_apis_unittests",
       "gpu_unittests",
       "interactive_ui_tests",
@@ -712,6 +720,9 @@
       },
       {
         "test": "gfx_unittests"
+      },
+      {
+        "test": "gl_unittests"
       },
       {
         "test": "google_apis_unittests"
@@ -1138,6 +1149,7 @@
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
+      "gl_unittests",
       "google_apis_unittests",
       "gpu_unittests",
       "interactive_ui_tests",
@@ -1195,6 +1207,7 @@
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
+      "gl_unittests",
       "google_apis_unittests",
       "gpu_unittests",
       "interactive_ui_tests",
@@ -1330,6 +1343,9 @@
       },
       {
         "test": "gfx_unittests"
+      },
+      {
+        "test": "gl_unittests"
       },
       {
         "test": "google_apis_unittests"

@@ -193,6 +193,9 @@
         "test": "gfx_unittests"
       },
       {
+        "test": "gl_unittests"
+      },
+      {
         "test": "gn_unittests"
       },
       {
@@ -328,6 +331,7 @@
       "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
+      "gl_unittests",
       "gn_unittests",
       "google_apis_unittests",
       "gpu_unittests",
@@ -480,6 +484,9 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
+      },
+      {
+        "test": "gl_unittests"
       },
       {
         "test": "gn_unittests"
@@ -741,6 +748,9 @@
         "test": "gfx_unittests"
       },
       {
+        "test": "gl_unittests"
+      },
+      {
         "test": "gn_unittests"
       },
       {
@@ -990,6 +1000,9 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
+      },
+      {
+        "test": "gl_unittests"
       },
       {
         "test": "gn_unittests"
