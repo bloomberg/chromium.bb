@@ -32,12 +32,8 @@ void P2PSyncRefresher::OnSyncCycleCompleted() {
         snap.model_neutral_state().commit_request_types;
     SyncTest* test = sync_datatype_helper::test();
     for (int i = 0; i < test->num_clients(); ++i) {
-      if (sync_service_->profile() != test->GetProfile(i)) {
-        content::NotificationService::current()->Notify(
-            chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-            content::Source<Profile>(test->GetProfile(i)),
-            content::Details<const syncer::ModelTypeSet>(&model_types));
-      }
+      if (sync_service_->profile() != test->GetProfile(i))
+        test->TriggerSyncForModelTypes(i, model_types);
     }
   }
 }

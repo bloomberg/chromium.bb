@@ -77,10 +77,7 @@ class SingleClientWalletSyncTest : public SyncTest {
     // Note: we use the experiments type here as we want to be able to trigger a
     // sync cycle even when wallet is not enabled yet.
     const syncer::ModelTypeSet kExperimentsType(syncer::EXPERIMENTS);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
-        content::Source<Profile>(GetProfile(0)),
-        content::Details<const syncer::ModelTypeSet>(&kExperimentsType));
+    TriggerSyncForModelTypes(0, kExperimentsType);
   }
 
  private:

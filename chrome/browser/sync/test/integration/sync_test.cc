@@ -21,6 +21,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -61,6 +62,7 @@
 #include "components/os_crypt/os_crypt.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -1041,6 +1043,14 @@ void SyncTest::SetupNetwork(net::URLRequestContextGetter* context_getter) {
 
 fake_server::FakeServer* SyncTest::GetFakeServer() const {
   return fake_server_.get();
+}
+
+void SyncTest::TriggerSyncForModelTypes(int index,
+                                        syncer::ModelTypeSet model_types) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+      content::Source<Profile>(GetProfile(index)),
+      content::Details<const syncer::ModelTypeSet>(&model_types));
 }
 
 void SyncTest::SetPreexistingPreferencesFileContents(

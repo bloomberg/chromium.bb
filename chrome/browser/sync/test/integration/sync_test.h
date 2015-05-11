@@ -222,6 +222,9 @@ class SyncTest : public InProcessBrowserTest {
   // not being used.
   fake_server::FakeServer* GetFakeServer() const;
 
+  // Triggers a sync for the given |model_types| for the Profile at |index|.
+  void TriggerSyncForModelTypes(int index, syncer::ModelTypeSet model_types);
+
  protected:
   // Add custom switches needed for running the test.
   virtual void AddTestSwitches(base::CommandLine* cl);

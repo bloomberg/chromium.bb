@@ -156,6 +156,13 @@ bool AllModelsMatch() WARN_UNUSED_RESULT;
 // while checking.
 bool AwaitAllModelsMatch() WARN_UNUSED_RESULT;
 
+// Blocks the caller until the given |profile| contains |expected_count|
+// bookmarks with |title| or until waiting times out.
+bool AwaitCountBookmarksWithTitlesMatching(int profile,
+                                           const std::string& title,
+                                           int expected_count)
+    WARN_UNUSED_RESULT;
+
 // Checks if the bookmark model of profile |profile| contains any instances of
 // two bookmarks with the same URL under the same parent folder. Returns true
 // if even one instance is found.
