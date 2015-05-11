@@ -32,7 +32,7 @@ def Repaint(action_runner, mode='viewport', width=None, height=None):
 
   micro_benchmark_id = action_runner.EvaluateJavaScript(
       'window.benchmark_results.id')
-  if (not micro_benchmark_id):
+  if not micro_benchmark_id:
     raise page_test.MeasurementFailure(
         'Failed to schedule invalidation_benchmark.')
 

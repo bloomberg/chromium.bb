@@ -96,7 +96,7 @@ class StartupMetric(Metric):
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'foreground_tab_load_complete', 'ms',
           foreground_tab_load_complete))
-      if (foreground_tab_stats.request_start_ms > 0):
+      if foreground_tab_stats.request_start_ms > 0:
         results.AddValue(scalar.ScalarValue(
             results.current_page, 'foreground_tab_request_start', 'ms',
             foreground_tab_stats.request_start_ms - browser_main_entry_time_ms))
@@ -122,7 +122,7 @@ class StartupMetric(Metric):
 
     # Get tab load times.
     browser_main_entry_time_ms = self._GetBrowserMainEntryTime(tab)
-    if (browser_main_entry_time_ms is None):
+    if browser_main_entry_time_ms is None:
       print "Outdated Chrome version, browser main entry time not supported."
       return
     self._RecordTabLoadTimes(tab, browser_main_entry_time_ms, results)

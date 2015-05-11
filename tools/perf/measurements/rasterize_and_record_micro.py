@@ -51,7 +51,7 @@ class RasterizeAndRecordMicro(page_test.PageTest):
     """ % (self._record_repeat, self._rasterize_repeat))
 
     benchmark_id = tab.EvaluateJavaScript('window.benchmark_results.id')
-    if (not benchmark_id):
+    if not benchmark_id:
       raise page_test.MeasurementFailure(
           'Failed to schedule rasterize_and_record_micro')
 
@@ -66,7 +66,7 @@ class RasterizeAndRecordMicro(page_test.PageTest):
     rasterize_time = data['rasterize_time_ms']
     # TODO(schenney): Remove this workaround when reference builds get past
     # the change that adds this comment.
-    if ('picture_memory_usage' in data):
+    if 'picture_memory_usage' in data:
       picture_memory_usage = data['picture_memory_usage']
     else:
       picture_memory_usage = 0
@@ -119,7 +119,7 @@ class RasterizeAndRecordMicro(page_test.PageTest):
           data['total_picture_layers_off_screen']
       # TODO(schenney): Remove this workaround when reference builds get past
       # the change that adds this comment.
-      if ('total_pictures_in_pile_size' in data):
+      if 'total_pictures_in_pile_size' in data:
         total_pictures_in_pile_size = data['total_pictures_in_pile_size']
       else:
         total_pictures_in_pile_size = 0

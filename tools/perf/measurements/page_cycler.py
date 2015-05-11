@@ -139,8 +139,7 @@ class PageCycler(page_test.PageTest):
     keychain_metric.KeychainMetric().AddResults(tab, results)
 
   def IsRunCold(self, url):
-    return (self.ShouldRunCold(url) or
-            self._has_loaded_page[url] == 0)
+    return self.ShouldRunCold(url) or self._has_loaded_page[url] == 0
 
   def ShouldRunCold(self, url):
     # We do the warm runs first for two reasons.  The first is so we can
@@ -150,4 +149,4 @@ class PageCycler(page_test.PageTest):
     # contribute to the cold data and warm the catch for the following
     # warm run, and clearing the cache before the load of the following
     # URL would eliminate the intended warmup for the previous URL.
-    return (self._has_loaded_page[url] >= self._cold_run_start_index)
+    return self._has_loaded_page[url] >= self._cold_run_start_index
