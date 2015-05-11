@@ -15,7 +15,6 @@
       'animation/transform_operations_unittest.cc',
       'base/delayed_unique_notifier_unittest.cc',
       'base/float_quad_unittest.cc',
-      'base/histograms_unittest.cc',
       'base/math_util_unittest.cc',
       'base/region_unittest.cc',
       'base/rolling_time_delta_history_unittest.cc',

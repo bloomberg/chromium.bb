@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "cc/base/histograms.h"
 #include "cc/base/region.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/resources/display_item_list.h"
@@ -22,11 +21,6 @@ const int kPixelDistanceToRecord = 8000;
 // We don't perform solid color analysis on images that have more than 10 skia
 // operations.
 const int kOpCountThatIsOkToAnalyze = 10;
-
-DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedDisplayListRecordingSourceUpdateTimer,
-    "Compositing.DisplayListRecordingSource.UpdateUs",
-    "Compositing.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs");
 
 }  // namespace
 
@@ -57,7 +51,6 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     const gfx::Rect& visible_layer_rect,
     int frame_number,
     RecordingMode recording_mode) {
-  ScopedDisplayListRecordingSourceUpdateTimer timer;
   bool updated = false;
 
   if (size_ != layer_size) {
@@ -82,12 +75,6 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
 
     updated = true;
   }
-
-  // Count the area that is being invalidated.
-  Region recorded_invalidation(*invalidation);
-  recorded_invalidation.Intersect(recorded_viewport_);
-  for (Region::Iterator it(recorded_invalidation); it.has_rect(); it.next())
-    timer.AddArea(it.rect().size().GetArea());
 
   if (!updated && !invalidation->Intersects(recorded_viewport_))
     return false;

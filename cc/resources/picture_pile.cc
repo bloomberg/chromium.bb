@@ -8,7 +8,6 @@
 #include <limits>
 #include <vector>
 
-#include "cc/base/histograms.h"
 #include "cc/base/region.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "skia/ext/analysis_canvas.h"
@@ -150,11 +149,6 @@ const bool kDefaultClearCanvasSetting = false;
 const bool kDefaultClearCanvasSetting = true;
 #endif
 
-DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedPicturePileUpdateTimer,
-    "Compositing.PicturePile.UpdateUs",
-    "Compositing.PicturePile.UpdateInvalidatedAreaPerMs");
-
 }  // namespace
 
 namespace cc {
@@ -187,8 +181,6 @@ bool PicturePile::UpdateAndExpandInvalidation(
     const gfx::Rect& visible_layer_rect,
     int frame_number,
     RecordingSource::RecordingMode recording_mode) {
-  ScopedPicturePileUpdateTimer timer;
-
   gfx::Rect interest_rect = visible_layer_rect;
   interest_rect.Inset(-pixel_record_distance_, -pixel_record_distance_);
   recorded_viewport_ = interest_rect;
@@ -196,13 +188,6 @@ bool PicturePile::UpdateAndExpandInvalidation(
 
   bool updated = ApplyInvalidationAndResize(interest_rect, invalidation,
                                             layer_size, frame_number);
-
-  // Count the area that is being invalidated.
-  Region recorded_invalidation(*invalidation);
-  recorded_invalidation.Intersect(recorded_viewport_);
-  for (Region::Iterator it(recorded_invalidation); it.has_rect(); it.next())
-    timer.AddArea(it.rect().size().GetArea());
-
   std::vector<gfx::Rect> invalid_tiles;
   GetInvalidTileRects(interest_rect, &invalid_tiles);
   std::vector<gfx::Rect> record_rects;

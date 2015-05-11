@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/base/histograms.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/traced_value.h"
@@ -29,11 +28,6 @@ namespace {
 // Flag to indicate whether we should try and detect that
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
-
-DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedRasterTaskTimer,
-    "Compositing.RasterTask.RasterUs",
-    "Compositing.RasterTask.RasterPixelsPerMs");
 
 class RasterTaskImpl : public RasterTask {
  public:
@@ -109,8 +103,6 @@ class RasterTaskImpl : public RasterTask {
   void Raster(const RasterSource* raster_source) {
     frame_viewer_instrumentation::ScopedRasterTask raster_task(
         tile_id_, tile_resolution_, source_frame_number_, layer_id_);
-    ScopedRasterTaskTimer timer;
-    timer.SetArea(content_rect_.size().GetArea());
 
     DCHECK(raster_source);
 

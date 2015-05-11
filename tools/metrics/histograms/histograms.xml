@@ -3346,25 +3346,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram
-    name="Compositing.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
-    units="pixels/ms">
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Area of invalidated content, in pixels, divided by update (i.e. record), in
-    milliseconds. Recorded when display list recording source is updated.
-  </summary>
-</histogram>
-
-<histogram name="Compositing.DisplayListRecordingSource.UpdateUs"
-    units="microseconds">
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Time spent updating (i.e. recording) a display list, in microseconds.
-    Recorded when display list is updated.
-  </summary>
-</histogram>
-
 <histogram name="Compositing.NumActiveLayers">
   <owner>dneto@chromium.org</owner>
   <summary>
@@ -3378,39 +3359,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Total estimated memory used by SkPictures in the layer tree, in kilobytes.
     Recorded once per frame, before the frame is drawn.
-  </summary>
-</histogram>
-
-<histogram name="Compositing.PicturePile.UpdateInvalidatedAreaPerMs"
-    units="pixels/ms">
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Area of invalidated content, in pixels, divided by update (i.e. record), in
-    milliseconds. Recorded when picture pile is updated.
-  </summary>
-</histogram>
-
-<histogram name="Compositing.PicturePile.UpdateUs" units="microseconds">
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Time spent updating (i.e. recording) a picture pile, in microseconds.
-    Recorded when picture pile is updated.
-  </summary>
-</histogram>
-
-<histogram name="Compositing.RasterTask.RasterPixelsPerMs" units="pixels/ms">
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Rasterized area, in pixels, divided by rasterization time, in milliseconds,
-    of a compositor rasterization task. Recorded after the task finishes.
-  </summary>
-</histogram>
-
-<histogram name="Compositing.RasterTask.RasterUs" units="microseconds">
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Time spent completing a compositor rasterization task, in microseconds.
-    Recorded after the task finishes.
   </summary>
 </histogram>
 

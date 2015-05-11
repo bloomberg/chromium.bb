@@ -9,8 +9,6 @@ source_set("base") {
     "completion_event.h",
     "delayed_unique_notifier.cc",
     "delayed_unique_notifier.h",
-    "histograms.cc",
-    "histograms.h",
     "invalidation_region.cc",
     "invalidation_region.h",
     "math_util.cc",
