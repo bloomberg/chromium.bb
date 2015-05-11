@@ -178,6 +178,10 @@ def RunTestSuites(options, suites, suites_options=None):
     _RunTest(options, cmd, suite)
 
 
+def RunJunitSuite(suite):
+  RunCmd(['build/android/test_runner.py', 'junit', '-s', suite])
+
+
 def RunChromeDriverTests(options):
   """Run all the steps for running chromedriver tests."""
   bb_annotations.PrintNamedStep('chromedriver_annotation')
@@ -561,6 +565,8 @@ def RunPythonUnitTests(_options):
 
 def GetTestStepCmds():
   return [
+      ('base_junit_tests',
+          lambda _options: RunJunitSuite('base_junit_tests')),
       ('chromedriver', RunChromeDriverTests),
       ('chrome_proxy', RunChromeProxyTests),
       ('components_browsertests',
