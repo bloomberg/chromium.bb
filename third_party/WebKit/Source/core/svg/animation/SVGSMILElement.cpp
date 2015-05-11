@@ -943,9 +943,9 @@ SMILTime SVGSMILElement::nextProgressTime() const
 
 void SVGSMILElement::beginListChanged(SMILTime eventTime)
 {
-    if (m_isWaitingForFirstInterval)
+    if (m_isWaitingForFirstInterval) {
         resolveFirstInterval();
-    else {
+    } else if (this->restart() != RestartNever) {
         SMILTime newBegin = findInstanceTime(Begin, eventTime, true);
         if (newBegin.isFinite() && (m_interval.end <= eventTime || newBegin < m_interval.begin)) {
             // Begin time changed, re-resolve the interval.
