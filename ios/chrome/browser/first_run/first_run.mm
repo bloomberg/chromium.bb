@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/first_run/first_run.h"
 
-#import <Foundation/Foundation.h>
-
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -15,7 +13,7 @@
 namespace {
 
 // The absence of kSentinelFile file will tell us it is a first run.
-const char kSentinelFile[] = "First Run";
+const base::FilePath::CharType kSentinelFile[] = FILE_PATH_LITERAL("First Run");
 
 // RLZ ping delay pref name.
 const char kPingDelayPrefName[] = "distribution.ping_delay";
@@ -29,7 +27,7 @@ bool FirstRun::GetFirstRunSentinelFilePath(base::FilePath* path) {
   base::FilePath first_run_sentinel;
   if (!PathService::Get(ios::DIR_USER_DATA, &first_run_sentinel))
     return false;
-  *path = first_run_sentinel.AppendASCII(kSentinelFile);
+  *path = first_run_sentinel.Append(kSentinelFile);
   return true;
 }
 
