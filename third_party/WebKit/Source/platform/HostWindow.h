@@ -53,8 +53,6 @@ public:
     // Converts from the window coordinates to screen coordinates.
     virtual IntRect viewportToScreen(const IntRect&) const = 0;
 
-    virtual WebScreenInfo screenInfo() const = 0;
-
     virtual void scheduleAnimation() = 0;
 };
 

@@ -88,8 +88,6 @@
       'PlatformMouseEvent.h',
       'PlatformResourceLoader.cpp',
       'PlatformResourceLoader.h',
-      'PlatformScreen.cpp',
-      'PlatformScreen.h',
       'PlatformThreadData.cpp',
       'PlatformThreadData.h',
       'PlatformTouchEvent.h',

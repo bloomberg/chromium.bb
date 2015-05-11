@@ -29,7 +29,6 @@
 
 #include "SkColorPriv.h"
 #include "platform/PlatformExport.h"
-#include "platform/PlatformScreen.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ImageSource.h"
 #include "platform/image-decoders/ImageAnimation.h"

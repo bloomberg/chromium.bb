@@ -115,10 +115,7 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
     if (features.heightSet)
         windowRect.setHeight(features.height + (windowRect.height() - viewportSize.height()));
 
-    // Ensure minimum size as well as being within valid screen area.
-    IntRect newWindowRect = LocalDOMWindow::adjustWindowRect(frame, windowRect);
-
-    host->chrome().setWindowRect(newWindowRect);
+    host->chrome().setWindowRect(windowRect);
     host->chrome().show(policy);
 
     frame.loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());

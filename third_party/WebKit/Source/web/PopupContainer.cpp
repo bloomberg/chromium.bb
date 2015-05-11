@@ -43,7 +43,6 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
-#include "platform/PlatformScreen.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -200,7 +199,7 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
     IntRect widgetRectInScreen;
     // If the popup would extend past the bottom of the screen, open upwards
     // instead.
-    IntRect screen = screenAvailableRect(m_frameView.get());
+    IntRect screen = chromeClient().screenInfo().availableRect;
     // Use popupInitialCoordinate.x() + rightOffset because RTL position
     // needs to be considered.
     float pageScaleFactor = m_frameView->frame().page()->pageScaleFactor();

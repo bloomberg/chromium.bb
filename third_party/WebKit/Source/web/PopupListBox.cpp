@@ -40,7 +40,6 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
-#include "platform/PlatformScreen.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"

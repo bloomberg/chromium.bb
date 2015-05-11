@@ -415,11 +415,6 @@ IntRect WebPopupMenuImpl::viewportToScreen(const IntRect& rect) const
     return IntRect();
 }
 
-WebScreenInfo WebPopupMenuImpl::screenInfo() const
-{
-    return WebScreenInfo();
-}
-
 void WebPopupMenuImpl::popupClosed(PopupContainer* widget)
 {
     ASSERT(widget == m_widget);

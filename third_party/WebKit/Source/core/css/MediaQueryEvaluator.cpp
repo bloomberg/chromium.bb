@@ -51,7 +51,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutView.h"
 #include "core/style/ComputedStyle.h"
-#include "platform/PlatformScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebDisplayMode.h"

@@ -63,9 +63,9 @@ public:
     // HostWindow methods.
     virtual void invalidateRect(const IntRect&) override;
     virtual IntRect viewportToScreen(const IntRect&) const override;
-    virtual WebScreenInfo screenInfo() const override;
-
     virtual void scheduleAnimation() override;
+
+    WebScreenInfo screenInfo() const;
 
     void scheduleAnimationForFrame(LocalFrame* localRoot);
 

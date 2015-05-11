@@ -18,9 +18,10 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/style/ComputedStyle.h"
+#include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "platform/PlatformScreen.h"
+#include "core/style/ComputedStyle.h"
+#include "public/platform/WebScreenInfo.h"
 
 namespace blink {
 
@@ -48,7 +49,7 @@ int MediaValues::calculateViewportHeight(LocalFrame* frame) const
 int MediaValues::calculateDeviceWidth(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->settings() && frame->host());
-    int deviceWidth = static_cast<int>(screenRect(frame->view()).width());
+    int deviceWidth = frame->host()->chrome().screenInfo().rect.width;
     if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
         deviceWidth = lroundf(deviceWidth * frame->host()->deviceScaleFactor());
     return deviceWidth;
@@ -57,7 +58,7 @@ int MediaValues::calculateDeviceWidth(LocalFrame* frame) const
 int MediaValues::calculateDeviceHeight(LocalFrame* frame) const
 {
     ASSERT(frame && frame->view() && frame->settings() && frame->host());
-    int deviceHeight = static_cast<int>(screenRect(frame->view()).height());
+    int deviceHeight = frame->host()->chrome().screenInfo().rect.height;
     if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
         deviceHeight = lroundf(deviceHeight * frame->host()->deviceScaleFactor());
     return deviceHeight;
@@ -78,18 +79,18 @@ int MediaValues::calculateColorBitsPerComponent(LocalFrame* frame) const
 {
     ASSERT(frame && frame->page() && frame->page()->mainFrame());
     if (!frame->page()->mainFrame()->isLocalFrame()
-        || screenIsMonochrome(frame->page()->deprecatedLocalMainFrame()->view()))
+        || frame->host()->chrome().screenInfo().isMonochrome)
         return 0;
-    return screenDepthPerComponent(frame->view());
+    return frame->host()->chrome().screenInfo().depthPerComponent;
 }
 
 int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) const
 {
     ASSERT(frame && frame->page() && frame->page()->mainFrame());
     if (!frame->page()->mainFrame()->isLocalFrame()
-        || !screenIsMonochrome(frame->page()->deprecatedLocalMainFrame()->view()))
+        || !frame->host()->chrome().screenInfo().isMonochrome)
         return 0;
-    return screenDepthPerComponent(frame->view());
+    return frame->host()->chrome().screenInfo().depthPerComponent;
 }
 
 int MediaValues::calculateDefaultFontSize(LocalFrame* frame) const

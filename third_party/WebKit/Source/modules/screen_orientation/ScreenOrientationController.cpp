@@ -8,13 +8,15 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/PlatformScreen.h"
+#include "public/platform/WebScreenInfo.h"
 #include "public/platform/WebScreenOrientationClient.h"
 
 namespace blink {
@@ -50,7 +52,7 @@ const char* ScreenOrientationController::supplementName()
 }
 
 // Compute the screen orientation using the orientation angle and the screen width / height.
-WebScreenOrientationType ScreenOrientationController::computeOrientation(FrameView* view)
+WebScreenOrientationType ScreenOrientationController::computeOrientation(Chrome& chrome)
 {
     // Bypass orientation detection in layout tests to get consistent results.
     // FIXME: The screen dimension should be fixed when running the layout tests to avoid such
@@ -58,8 +60,8 @@ WebScreenOrientationType ScreenOrientationController::computeOrientation(FrameVi
     if (LayoutTestSupport::isRunningLayoutTest())
         return WebScreenOrientationPortraitPrimary;
 
-    IntRect rect = screenRect(view);
-    uint16_t rotation = screenOrientationAngle(view);
+    IntRect rect = chrome.screenInfo().rect;
+    uint16_t rotation = chrome.screenInfo().orientationAngle;
     bool isTallDisplay = rotation % 180 ? rect.height() < rect.width() : rect.height() > rect.width();
     switch (rotation) {
     case 0:
@@ -80,17 +82,18 @@ void ScreenOrientationController::updateOrientation()
 {
     ASSERT(m_orientation);
     ASSERT(frame());
+    ASSERT(frame()->host());
 
-    FrameView* view = frame()->view();
-    WebScreenOrientationType orientationType = screenOrientationType(view);
+    Chrome& chrome = frame()->host()->chrome();
+    WebScreenOrientationType orientationType = chrome.screenInfo().orientationType;
     if (orientationType == WebScreenOrientationUndefined) {
         // The embedder could not provide us with an orientation, deduce it ourselves.
-        orientationType = computeOrientation(view);
+        orientationType = computeOrientation(chrome);
     }
     ASSERT(orientationType != WebScreenOrientationUndefined);
 
     m_orientation->setType(orientationType);
-    m_orientation->setAngle(screenOrientationAngle(view));
+    m_orientation->setAngle(chrome.screenInfo().orientationAngle);
 }
 
 bool ScreenOrientationController::isActiveAndVisible() const
@@ -107,7 +110,7 @@ void ScreenOrientationController::pageVisibilityChanged()
 
     // The orientation type and angle are tied in a way that if the angle has
     // changed, the type must have changed.
-    unsigned short currentAngle = screenOrientationAngle(frame()->view());
+    unsigned short currentAngle = frame()->host()->chrome().screenInfo().orientationAngle;
 
     // FIXME: sendOrientationChangeEvent() currently send an event all the
     // children of the frame, so it should only be called on the frame on
