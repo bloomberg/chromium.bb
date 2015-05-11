@@ -901,19 +901,36 @@ class ChromiumOSDevice(RemoteDevice):
       # We know this exists because it responded to the mDNS, no need to ping.
       kwargs['ping'] = False
     super(ChromiumOSDevice, self).__init__(hostname, **kwargs)
+    self._orig_path = None
     self._path = None
     self._lsb_release = {}
 
   @property
-  def path(self):
-    """The $PATH variable on the device prepended with DEV_BIN_PATHS."""
-    if not self._path:
+  def orig_path(self):
+    """The $PATH variable on the device."""
+    if not self._orig_path:
       try:
         result = self.BaseRunCommand(['echo', "${PATH}"])
       except cros_build_lib.RunCommandError as e:
         logging.error('Failed to get $PATH on the device: %s', e.result.error)
         raise
-      self._path = '%s:%s' % (DEV_BIN_PATHS, result.output.strip())
+
+      self._orig_path = result.output.strip()
+
+    return self._orig_path
+
+  @property
+  def path(self):
+    """The $PATH variable on the device prepended with DEV_BIN_PATHS."""
+    if not self._path:
+      # If the remote path already has our dev paths (which is common), then
+      # there is no need for us to prepend.
+      orig_paths = self.orig_path.split(':')
+      for path in reversed(DEV_BIN_PATHS.split(':')):
+        if path not in orig_paths:
+          orig_paths.insert(0, path)
+
+      self._path = ':'.join(orig_paths)
 
     return self._path
 
@@ -1090,8 +1107,13 @@ class ChromiumOSDevice(RemoteDevice):
     """
     extra_env = kwargs.pop('extra_env', {})
     path_env = extra_env.get('PATH', None)
-    path_env = self.path if not path_env else '%s:%s' % (path_env, self.path)
-    extra_env['PATH'] = path_env
+    if path_env is None:
+      # Optimization: if the default path is already what we want, don't bother
+      # passing it through.
+      if self.orig_path != self.path:
+        path_env = self.path
+    if path_env is not None:
+      extra_env['PATH'] = path_env
     kwargs['extra_env'] = extra_env
     return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
 
