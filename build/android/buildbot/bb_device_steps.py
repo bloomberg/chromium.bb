@@ -94,10 +94,21 @@ INSTALLABLE_PACKAGES = dict((package.name, package) for package in (
                         'ChromeDriverWebViewShell.apk',
                         'org.chromium.chromedriver_webview_shell')]))
 
-VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'components_browsertests',
-                   'gfx_unittests', 'gpu', 'python_unittests',
-                   'telemetry_unittests', 'telemetry_perf_unittests', 'ui',
-                   'unit', 'webkit', 'webkit_layout'])
+VALID_TESTS = set([
+    'base_junit_tests',
+    'chromedriver',
+    'chrome_proxy',
+    'components_browsertests',
+    'gfx_unittests',
+    'gpu',
+    'python_unittests',
+    'telemetry_unittests',
+    'telemetry_perf_unittests',
+    'ui',
+    'unit',
+    'webkit',
+    'webkit_layout'
+])
 
 RunCmd = bb_utils.RunCmd
 
