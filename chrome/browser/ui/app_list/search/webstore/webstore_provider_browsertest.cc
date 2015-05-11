@@ -225,14 +225,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebstoreProviderTest);
 };
 
-// Flaky on CrOS and Windows: http://crbug.com/246136.
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, Basic) {
   struct {
     const char* query;
     const char* mock_server_response;
@@ -293,13 +286,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForShortQueries) {
   RunQueryAndVerify("abc", kOneResult, kParsedOneResult, 1);
 }
 
-// Flaky on CrOS and Windows: http://crbug.com/246136.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-#define MAYBE_SearchCache DISABLED_SearchCache
-#else
-#define MAYBE_SearchCache SearchCache
-#endif
-IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, MAYBE_SearchCache) {
+IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, SearchCache) {
   RunQueryAndVerify("foo", kOneResult, kParsedOneResult, 1);
 
   // No result is provided but the provider gets the result from the cache.
