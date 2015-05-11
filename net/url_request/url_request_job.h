@@ -19,6 +19,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/socket/connection_attempts.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -225,6 +226,11 @@ class NET_EXPORT URLRequestJob
   // exist at destruction time of the URLRequestJob, unless they have been
   // canceled by an explicit NetworkDelegate::NotifyURLRequestDestroyed() call.
   virtual void NotifyURLRequestDestroyed();
+
+  // Populates |out| with the connection attempts made at the socket layer in
+  // the course of executing the URLRequestJob. Should be called after the job
+  // has failed or the response headers have been received.
+  virtual void GetConnectionAttempts(ConnectionAttempts* out) const;
 
   // Given |policy|, |referrer|, and |redirect_destination|, returns the
   // referrer URL mandated by |request|'s referrer policy.

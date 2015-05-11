@@ -28,6 +28,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log.h"
+#include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -607,6 +608,11 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   const HostPortPair& proxy_server() const {
     return proxy_server_;
   }
+
+  // Gets the connection attempts made in the process of servicing this
+  // URLRequest. Only guaranteed to be valid if called after the request fails
+  // or after the response headers are received.
+  void GetConnectionAttempts(ConnectionAttempts* out) const;
 
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.

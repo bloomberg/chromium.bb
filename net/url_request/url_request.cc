@@ -1189,4 +1189,11 @@ const base::debug::StackTrace* URLRequest::stack_trace() const {
   return stack_trace_.get();
 }
 
+void URLRequest::GetConnectionAttempts(ConnectionAttempts* out) const {
+  if (job_)
+    job_->GetConnectionAttempts(out);
+  else
+    out->clear();
+}
+
 }  // namespace net

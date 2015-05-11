@@ -279,6 +279,13 @@ void URLRequestHttpJob::Kill() {
   URLRequestJob::Kill();
 }
 
+void URLRequestHttpJob::GetConnectionAttempts(ConnectionAttempts* out) const {
+  if (transaction_)
+    transaction_->GetConnectionAttempts(out);
+  else
+    out->clear();
+}
+
 void URLRequestHttpJob::NotifyBeforeSendProxyHeadersCallback(
     const ProxyInfo& proxy_info,
     HttpRequestHeaders* request_headers) {

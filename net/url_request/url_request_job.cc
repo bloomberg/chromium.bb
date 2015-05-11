@@ -273,6 +273,10 @@ void URLRequestJob::OnSuspend() {
 void URLRequestJob::NotifyURLRequestDestroyed() {
 }
 
+void URLRequestJob::GetConnectionAttempts(ConnectionAttempts* out) const {
+  out->clear();
+}
+
 // static
 GURL URLRequestJob::ComputeReferrerForRedirect(
     URLRequest::ReferrerPolicy policy,

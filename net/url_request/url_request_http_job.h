@@ -19,6 +19,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/filter/filter.h"
 #include "net/http/http_request_info.h"
+#include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_throttler_entry_interface.h"
 
@@ -52,6 +53,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void SetPriority(RequestPriority priority) override;
   void Start() override;
   void Kill() override;
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
   RequestPriority priority() const {
     return priority_;
