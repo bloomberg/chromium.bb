@@ -19,8 +19,7 @@
         ]
       }
     }],
-    ['disable_nacl==0 and OS=="linux" and '
-         '(target_arch=="x64" or target_arch=="ia32" or target_arch=="arm")', {
+    ['disable_nacl==0 and OS=="linux" and (target_arch=="x64" or target_arch=="ia32" or target_arch=="arm")', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/nacl_helper_nonsfi<(EXECUTABLE_SUFFIX)',
@@ -48,8 +47,7 @@
         ],
       },
     }],
-    ['disable_nacl==0 and '
-         '(OS=="win" or (OS=="linux" and target_arch=="x64"))', {
+    ['disable_nacl==0 and (OS=="win" or (OS=="linux" and target_arch=="x64"))', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',

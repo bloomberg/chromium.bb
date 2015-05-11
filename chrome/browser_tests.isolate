@@ -123,16 +123,14 @@
         ],
       },
     }],
-    [('disable_nacl==0 and (OS=="linux" or OS=="mac" or OS=="win") and '
-         '(target_arch=="x64" or target_arch=="ia32")'), {
+    ['disable_nacl==0 and (OS=="linux" or OS=="mac" or OS=="win") and (target_arch=="x64" or target_arch=="ia32")', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
         ],
       },
     }],
-    [('disable_nacl==0 and OS=="linux" and '
-      '(target_arch=="ia32" or target_arch=="x64" or target_arch=="arm")'), {
+    ['disable_nacl==0 and OS=="linux" and (target_arch=="ia32" or target_arch=="x64" or target_arch=="arm")', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_nonsfi.nmf',
@@ -148,8 +146,7 @@
         ],
       },
     }],
-    ['disable_nacl==0 and (OS=="win" or '
-         '((OS=="linux" or OS=="mac") and target_arch=="x64"))', {
+    ['disable_nacl==0 and (OS=="win" or ((OS=="linux" or OS=="mac") and target_arch=="x64"))', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/lib64/',
@@ -159,8 +156,7 @@
         ],
       },
     }],
-    ['disable_nacl==0 and target_arch=="ia32" and'
-         '(OS=="mac" or OS=="linux" or OS=="win")', {
+    ['disable_nacl==0 and target_arch=="ia32" and (OS=="mac" or OS=="linux" or OS=="win")', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/lib32/',
@@ -170,8 +166,7 @@
         ],
       },
     }],
-    ['disable_nacl==0 and OS=="linux" and '
-         '(target_arch=="x64" or target_arch=="ia32")', {
+    ['disable_nacl==0 and OS=="linux" and (target_arch=="x64" or target_arch=="ia32")', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_x32_nonsfi.nexe',
