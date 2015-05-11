@@ -4286,7 +4286,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     // handled by the browser so that ordinary renderer processes don't get
     // blessed with file permissions.
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
-    bool is_initial_navigation = render_view_->page_id_ == -1;
+    bool is_initial_navigation = render_view_->history_list_length_ == 0;
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
         (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
         url.SchemeIs(kViewSourceScheme) ||
