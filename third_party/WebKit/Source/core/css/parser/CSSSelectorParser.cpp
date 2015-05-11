@@ -278,7 +278,8 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
 
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(colons == 1 ? CSSSelector::PseudoClass : CSSSelector::PseudoElement);
-    selector->setValue(AtomicString(String(token.value()).lower()));
+    String value = token.value();
+    selector->setValue(AtomicString(value.is8Bit() ? value.lower() : value));
 
     if (token.type() == IdentToken) {
         range.consume();
