@@ -546,7 +546,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     if (m_pagePopup && pagePopup && m_pagePopup->hasSamePopupClient(pagePopup.get())) {
         // That click triggered a page popup that is the same as the one we just closed.
         // It needs to be closed.
-        closePagePopup(m_pagePopup.get());
+        cancelPagePopup();
     }
 
     // Dispatch the contextmenu event regardless of if the click was swallowed.
@@ -1654,6 +1654,12 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup->closePopup();
     m_pagePopup = nullptr;
     disablePopupMouseWheelEventListener();
+}
+
+void WebViewImpl::cancelPagePopup()
+{
+    if (m_pagePopup)
+        m_pagePopup->cancel();
 }
 
 void WebViewImpl::enablePopupMouseWheelEventListener()
@@ -3857,8 +3863,7 @@ void WebViewImpl::extractSmartClipData(WebRect rectInViewport, WebString& clipTe
 void WebViewImpl::hidePopups()
 {
     hideSelectPopup();
-    if (m_pagePopup)
-        closePagePopup(m_pagePopup.get());
+    cancelPagePopup();
 }
 
 void WebViewImpl::setIsTransparent(bool isTransparent)

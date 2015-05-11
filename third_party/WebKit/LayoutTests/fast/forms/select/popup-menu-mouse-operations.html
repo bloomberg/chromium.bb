@@ -18,7 +18,13 @@ var clickEventCounter = 0;
 menuElement.addEventListener('click', function() { clickEventCounter++; }, false);
 var mouseupEventCounter = 0;
 menuElement.addEventListener('mouseup', function() { mouseupEventCounter++; }, false);
-openPicker(menuElement, function () {
+
+function openPickerErrorCallback() {
+    testFailed('picker didn\'t open')
+    finishJSTest();
+}
+openPicker(menu, test1, openPickerErrorCallback);
+function test1() {
     picker = window.internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.value', '1');
     shouldBeEqualToString('menuElement.value', 'bar');
@@ -55,11 +61,33 @@ openPicker(menuElement, function () {
     shouldBe('clickEventCounter', '1');
     shouldBe('mouseupEventCounter', '1');
 
+    waitUntilClosing(function() {
+        openPicker(menu, test2, openPickerErrorCallback);
+    });
+}
+
+function test2() {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '2');
+    shouldBeEqualToString('internals.selectMenuListText(menu)', 'baz');
+
+    eventSender.keyDown('upArrow');
+    shouldBeEqualToString('picker._selectElement.value', '1');
+    shouldBeEqualToString('menu.value', 'baz');
+    shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
+
+    // click outside to close popup
+    eventSender.mouseMoveTo(300, 1);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menu.value', 'bar');
+    shouldBeEqualToString('internals.selectMenuListText(menu)', 'bar');
+
     finishJSTest();
-}, function () {
-    testFailed('picker didn\'t open')
-    finishJSTest();
-});
+}
+
+
 </script>
 </body>
 </html>

@@ -622,6 +622,8 @@ private:
     void enablePopupMouseWheelEventListener();
     void disablePopupMouseWheelEventListener();
 
+    void cancelPagePopup();
+
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebSpellCheckClient* m_spellCheckClient;
 

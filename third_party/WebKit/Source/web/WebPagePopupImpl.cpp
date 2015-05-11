@@ -411,16 +411,15 @@ void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEven
 {
     if (isMouseEventInWindow(event))
         PageWidgetEventHandler::handleMouseDown(mainFrame, event);
-    else if (m_popupClient)
-        m_popupClient->closePopup();
+    else
+        cancel();
 }
 
 bool WebPagePopupImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)
 {
     if (isMouseEventInWindow(event))
         return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
-    if (m_popupClient)
-        m_popupClient->closePopup();
+    cancel();
     return false;
 }
 
@@ -505,6 +504,12 @@ WebPoint WebPagePopupImpl::positionRelativeToOwner()
 {
     WebRect windowRect = m_webView->client()->rootWindowRect();
     return WebPoint(m_windowRectInScreen.x - windowRect.x, m_windowRectInScreen.y - windowRect.y);
+}
+
+void WebPagePopupImpl::cancel()
+{
+    if (m_popupClient)
+        m_popupClient->closePopup();
 }
 
 // WebPagePopup ----------------------------------------------------------------

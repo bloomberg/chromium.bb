@@ -69,6 +69,7 @@ public:
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
     virtual WebPoint positionRelativeToOwner() override;
     virtual void postMessage(const String& message) override;
+    void cancel();
 
 private:
     // WebWidget functions
