@@ -80,6 +80,7 @@ IdlType.is_typed_array = property(
 
 IdlType.is_wrapper_type = property(
     lambda self: (self.is_interface_type and
+                  not self.is_callback_interface and
                   self.base_type not in NON_WRAPPER_TYPES))
 
 
@@ -610,11 +611,6 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes, raw_type=True)
     idl_type = idl_type.preprocessed_type
 
-    if idl_type.base_type in ('void', 'object', 'EventHandler', 'EventListener'):
-        return {
-            'error_message': 'no V8 -> C++ conversion for IDL type: %s' % idl_type.name
-        }
-
     cpp_value = v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name, index, isolate, restricted_float=restricted_float)
 
     # Optional expression that returns a value to be assigned to the local variable.
@@ -649,7 +645,9 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
                 else:
                     check_expression = '!%s.prepare()' % variable_name
     elif not idl_type.v8_conversion_is_trivial:
-        raise Exception('unclassified V8 -> C++ conversion for IDL type: %s' % idl_type.name)
+        return {
+            'error_message': 'no V8 -> C++ conversion for IDL type: %s' % idl_type.name
+        }
     else:
         assign_expression = cpp_value
 
