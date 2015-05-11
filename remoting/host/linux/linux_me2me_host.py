@@ -509,8 +509,19 @@ class Desktop:
     logging.info(args)
     if not self.host_proc.pid:
       raise Exception("Could not start Chrome Remote Desktop host")
-    self.host_proc.stdin.write(json.dumps(host_config.data))
-    self.host_proc.stdin.close()
+
+    try:
+      self.host_proc.stdin.write(json.dumps(host_config.data))
+      self.host_proc.stdin.flush()
+    except IOError as e:
+      # This can occur in rare situations, for example, if the machine is
+      # heavily loaded and the host process dies quickly (maybe if the X
+      # connection failed), the host process might be gone before this code
+      # writes to the host's stdin. Catch and log the exception, allowing
+      # the process to be retried instead of exiting the script completely.
+      logging.error("Failed writing to host's stdin: " + str(e))
+    finally:
+      self.host_proc.stdin.close()
 
 
 def get_daemon_proc():
