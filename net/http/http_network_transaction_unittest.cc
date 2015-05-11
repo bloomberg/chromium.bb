@@ -12018,6 +12018,113 @@ TEST_P(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   EXPECT_EQ(ERR_NPN_NEGOTIATION_FAILED, callback.GetResult(rv));
 }
 
+// A request to a server with an alternative service fires two Jobs: one to the
+// origin, and an alternate one to the alternative server.  If the former
+// succeeds, the request should succeed,  even if the latter fails because
+// HTTP/1.1 is negotiated which is insufficient for alternative service.
+TEST_P(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
+  HostPortPair origin("origin.example.org", 443);
+  HostPortPair alternative("alternative.example.org", 443);
+
+  // Negotiate HTTP/1.1 with alternative.
+  SSLSocketDataProvider alternative_ssl(ASYNC, OK);
+  alternative_ssl.SetNextProto(kProtoHTTP11);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&alternative_ssl);
+
+  // No data should be read from the alternative, because HTTP/1.1 is
+  // negotiated.
+  StaticSocketDataProvider data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  // Negotiate HTTP/1.1 with origin.
+  SSLSocketDataProvider origin_ssl(ASYNC, OK);
+  origin_ssl.SetNextProto(kProtoHTTP11);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&origin_ssl);
+
+  MockWrite http_writes[] = {
+      MockWrite(
+          "GET / HTTP/1.1\r\n"
+          "Host: origin.example.org\r\n"
+          "Connection: keep-alive\r\n\r\n"),
+      MockWrite(
+          "GET /second HTTP/1.1\r\n"
+          "Host: origin.example.org\r\n"
+          "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Type: text/html\r\n"),
+      MockRead("Content-Length: 6\r\n\r\n"),
+      MockRead("foobar"),
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Type: text/html\r\n"),
+      MockRead("Content-Length: 7\r\n\r\n"),
+      MockRead("another"),
+  };
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&http_data);
+
+  // Set up alternative service for origin.
+  session_deps_.use_alternate_protocols = true;
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session->http_server_properties();
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), alternative);
+  http_server_properties->SetAlternativeService(origin, alternative_service,
+                                                1.0);
+
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, session.get());
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://origin.example.org:443");
+  request1.load_flags = 0;
+  TestCompletionCallback callback1;
+
+  int rv = trans1.Start(&request1, callback1.callback(), BoundNetLog());
+  rv = callback1.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response1 = trans1.GetResponseInfo();
+  ASSERT_TRUE(response1 != nullptr);
+  ASSERT_TRUE(response1->headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200 OK", response1->headers->GetStatusLine());
+
+  std::string response_data1;
+  ASSERT_EQ(OK, ReadTransaction(&trans1, &response_data1));
+  EXPECT_EQ("foobar", response_data1);
+
+  // Alternative should be marked as broken, because HTTP/1.1 is not sufficient
+  // for alternative service.
+  EXPECT_TRUE(
+      http_server_properties->IsAlternativeServiceBroken(alternative_service));
+
+  // Since |alternative_service| is broken, a second transaction to origin
+  // should not start an alternate Job.  It should pool to existing connection
+  // to origin.
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://origin.example.org:443/second");
+  request2.load_flags = 0;
+  TestCompletionCallback callback2;
+
+  rv = trans2.Start(&request2, callback2.callback(), BoundNetLog());
+  rv = callback2.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
+  ASSERT_TRUE(response2 != nullptr);
+  ASSERT_TRUE(response2->headers.get() != nullptr);
+  EXPECT_EQ("HTTP/1.1 200 OK", response2->headers->GetStatusLine());
+
+  std::string response_data2;
+  ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data2));
+  EXPECT_EQ("another", response_data2);
+}
+
 // Alternative service requires HTTP/2 (or SPDY), but there is already a
 // HTTP/1.1 socket open to the alternative server.  That socket should not be
 // used.
