@@ -667,14 +667,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
         // SetBounds grows the layer and exposes new content.
-        if (layer_tree_host()->settings().impl_side_painting) {
-          scaled_layer_->SetBounds(gfx::Size(4, 4));
-        } else {
-          // Changing the device scale factor causes a commit. It also changes
-          // the content bounds of |scaled_layer_|, which should not generate
-          // a second commit as a result.
-          layer_tree_host()->SetDeviceScaleFactor(4.f);
-        }
+        scaled_layer_->SetBounds(gfx::Size(4, 4));
         break;
       default:
         // No extra commits.
@@ -683,8 +676,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
   }
 
   void AfterTest() override {
-    EXPECT_EQ(gfx::Size(4, 4).ToString(),
-              scaled_layer_->content_bounds().ToString());
+    EXPECT_EQ(gfx::Size(4, 4).ToString(), scaled_layer_->bounds().ToString());
   }
 
  private:
@@ -738,12 +730,11 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
       default:
         // No extra commits.
         EXPECT_EQ(2, layer_tree_host()->source_frame_number());
+        break;
     }
   }
 
   void AfterTest() override {
-    EXPECT_EQ(gfx::Size(40, 40).ToString(),
-              scrollbar_->internal_content_bounds().ToString());
   }
 
  private:
@@ -1131,7 +1122,7 @@ class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
   scoped_refptr<Layer> child_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
+SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
     LayerTreeHostTestUndrawnLayersPushContentBoundsLater);
 
 // This test verifies that properties on the layer tree host are commited
@@ -1280,14 +1271,9 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    if (layer_tree_host()->settings().impl_side_painting) {
-      scoped_refptr<FakePictureLayer> layer =
-          FakePictureLayer::Create(&client_);
-      layer->set_always_update_resources(true);
-      scroll_layer_ = layer;
-    } else {
-      scroll_layer_ = FakeContentLayer::Create(&client_);
-    }
+    scoped_refptr<FakePictureLayer> layer = FakePictureLayer::Create(&client_);
+    layer->set_always_update_resources(true);
+    scroll_layer_ = layer;
 
     Layer* root_layer = layer_tree_host()->root_layer();
     scroll_layer_->SetScrollClipLayerId(root_layer->id());
@@ -1349,7 +1335,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   scoped_refptr<Layer> scroll_layer_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
+MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:

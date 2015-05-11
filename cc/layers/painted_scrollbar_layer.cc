@@ -12,6 +12,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/resources/ui_resource_bitmap.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "skia/ext/platform_canvas.h"
@@ -203,8 +204,16 @@ void PaintedScrollbarLayer::UpdateInternalContentScale() {
   if (layer_tree_host()
           ->settings()
           .layer_transforms_should_scale_layer_contents) {
+    gfx::Transform transform;
+    if (layer_tree_host()->using_only_property_trees()) {
+      transform = DrawTransformFromPropertyTrees(
+          this, layer_tree_host()->property_trees()->transform_tree);
+    } else {
+      transform = draw_transform();
+    }
+
     gfx::Vector2dF transform_scales =
-        MathUtil::ComputeTransform2dScaleComponents(draw_transform(), scale);
+        MathUtil::ComputeTransform2dScaleComponents(transform, scale);
     scale = std::max(transform_scales.x(), transform_scales.y());
   }
   bool changed = false;

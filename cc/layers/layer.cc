@@ -1078,8 +1078,16 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundColor(background_color_);
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
                                         : bounds_);
-  layer->SetContentBounds(content_bounds());
-  layer->SetContentsScale(contents_scale_x(), contents_scale_y());
+
+  // TODO(enne): This is needed because CDP does this.  Once main thread CDP
+  // goes away, content scale / bounds can be removed.
+  if (layer_tree_host()->settings().impl_side_painting) {
+    layer->SetContentsScale(1.f, 1.f);
+    layer->SetContentBounds(bounds());
+  } else {
+    layer->SetContentBounds(content_bounds());
+    layer->SetContentsScale(contents_scale_x(), contents_scale_y());
+  }
 
   if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
     layer->SetDebugInfo(TakeDebugInfo());

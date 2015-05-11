@@ -19,20 +19,15 @@ namespace cc {
 namespace {
 
 template <typename LayerType>
-void CalculateVisibleRects(
-    const std::vector<LayerType*>& layers_that_need_visible_rects,
-    const ClipTree& clip_tree,
-    const TransformTree& transform_tree) {
-  for (size_t i = 0; i < layers_that_need_visible_rects.size(); ++i) {
-    LayerType* layer = layers_that_need_visible_rects[i];
-
+void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
+                           const ClipTree& clip_tree,
+                           const TransformTree& transform_tree) {
+  for (auto& layer : visible_layer_list) {
     // TODO(ajuma): Compute content_scale rather than using it. Note that for
     // PictureLayer and PictureImageLayers, content_bounds == bounds and
     // content_scale_x == content_scale_y == 1.0, so once impl painting is on
     // everywhere, this code will be unnecessary.
-    gfx::Size layer_content_bounds = layer->content_bounds();
-    float contents_scale_x = layer->contents_scale_x();
-    float contents_scale_y = layer->contents_scale_y();
+    gfx::Size layer_bounds = layer->bounds();
     const bool has_clip = layer->clip_tree_index() > 0;
     const TransformNode* transform_node =
         transform_tree.Node(layer->transform_tree_index());
@@ -52,7 +47,6 @@ void CalculateVisibleRects(
 
       content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                   layer->offset_to_transform_parent().y());
-      content_to_target.Scale(1.0 / contents_scale_x, 1.0 / contents_scale_y);
 
       gfx::Rect clip_rect_in_target_space;
       gfx::Transform clip_to_target;
@@ -71,8 +65,7 @@ void CalculateVisibleRects(
           // An animated singular transform may become non-singular during the
           // animation, so we still need to compute a visible rect. In this
           // situation, we treat the entire layer as visible.
-          layer->set_visible_rect_from_property_trees(
-              gfx::Rect(layer_content_bounds));
+          layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
           continue;
         }
 
@@ -87,7 +80,7 @@ void CalculateVisibleRects(
                 clip_to_target, clip_node->data.combined_clip));
       }
 
-      gfx::Rect layer_content_rect = gfx::Rect(layer_content_bounds);
+      gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
       gfx::Rect layer_content_bounds_in_target_space =
           MathUtil::MapEnclosingClippedRect(content_to_target,
                                             layer_content_rect);
@@ -114,12 +107,10 @@ void CalculateVisibleRects(
         // An animated singular transform may become non-singular during the
         // animation, so we still need to compute a visible rect. In this
         // situation, we treat the entire layer as visible.
-        layer->set_visible_rect_from_property_trees(
-            gfx::Rect(layer_content_bounds));
+        layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
         continue;
       }
 
-      target_to_content.Scale(contents_scale_x, contents_scale_y);
       target_to_content.Translate(-layer->offset_to_transform_parent().x(),
                                   -layer->offset_to_transform_parent().y());
       target_to_content.PreconcatTransform(target_to_layer);
@@ -127,12 +118,11 @@ void CalculateVisibleRects(
       gfx::Rect visible_rect = MathUtil::ProjectEnclosingClippedRect(
           target_to_content, clip_rect_in_target_space);
 
-      visible_rect.Intersect(gfx::Rect(layer_content_bounds));
+      visible_rect.Intersect(gfx::Rect(layer_bounds));
 
       layer->set_visible_rect_from_property_trees(visible_rect);
     } else {
-      layer->set_visible_rect_from_property_trees(
-          gfx::Rect(layer_content_bounds));
+      layer->set_visible_rect_from_property_trees(gfx::Rect(layer_bounds));
     }
   }
 }
@@ -309,10 +299,12 @@ static bool LayerShouldBeSkipped(LayerType* layer,
 }
 
 template <typename LayerType>
-void FindLayersThatNeedVisibleRects(LayerType* layer,
-                                    const TransformTree& tree,
-                                    bool subtree_is_visible_from_ancestor,
-                                    std::vector<LayerType*>* layers_to_update) {
+void FindLayersThatNeedUpdates(
+    LayerType* layer,
+    const TransformTree& tree,
+    bool subtree_is_visible_from_ancestor,
+    typename LayerType::LayerListType* update_layer_list,
+    std::vector<LayerType*>* visible_layer_list) {
   bool layer_is_drawn =
       layer->HasCopyRequest() ||
       (subtree_is_visible_from_ancestor && !layer->hide_layer_and_subtree());
@@ -320,12 +312,24 @@ void FindLayersThatNeedVisibleRects(LayerType* layer,
   if (layer->parent() && SubtreeShouldBeSkipped(layer, layer_is_drawn))
     return;
 
-  if (!LayerShouldBeSkipped(layer, layer_is_drawn, tree))
-    layers_to_update->push_back(layer);
+  if (!LayerShouldBeSkipped(layer, layer_is_drawn, tree)) {
+    visible_layer_list->push_back(layer);
+    update_layer_list->push_back(layer);
+  }
+
+  // Append mask layers to the update layer list.  They don't have valid visible
+  // rects, so need to get added after the above calculation.  Replica layers
+  // don't need to be updated.
+  if (LayerType* mask_layer = layer->mask_layer())
+    update_layer_list->push_back(mask_layer);
+  if (LayerType* replica_layer = layer->replica_layer()) {
+    if (LayerType* mask_layer = replica_layer->mask_layer())
+      update_layer_list->push_back(mask_layer);
+  }
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    FindLayersThatNeedVisibleRects(layer->child_at(i), tree, layer_is_drawn,
-                                   layers_to_update);
+    FindLayersThatNeedUpdates(layer->child_at(i), tree, layer_is_drawn,
+                              update_layer_list, visible_layer_list);
   }
 }
 
@@ -429,19 +433,21 @@ void ComputeTransforms(TransformTree* transform_tree) {
 template <typename LayerType>
 void ComputeVisibleRectsUsingPropertyTreesInternal(
     LayerType* root_layer,
-    PropertyTrees* property_trees) {
+    PropertyTrees* property_trees,
+    typename LayerType::LayerListType* update_layer_list) {
   if (property_trees->transform_tree.needs_update())
     property_trees->clip_tree.set_needs_update(true);
   ComputeTransforms(&property_trees->transform_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
 
-  std::vector<LayerType*> layers_to_update;
   const bool subtree_is_visible_from_ancestor = true;
-  FindLayersThatNeedVisibleRects(root_layer, property_trees->transform_tree,
-                                 subtree_is_visible_from_ancestor,
-                                 &layers_to_update);
-  CalculateVisibleRects(layers_to_update, property_trees->clip_tree,
-                        property_trees->transform_tree);
+  std::vector<LayerType*> visible_layer_list;
+  FindLayersThatNeedUpdates(root_layer, property_trees->transform_tree,
+                            subtree_is_visible_from_ancestor, update_layer_list,
+                            &visible_layer_list);
+  CalculateVisibleRects<LayerType>(visible_layer_list,
+                                   property_trees->clip_tree,
+                                   property_trees->transform_tree);
 }
 
 void BuildPropertyTreesAndComputeVisibleRects(
@@ -451,11 +457,13 @@ void BuildPropertyTreesAndComputeVisibleRects(
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
-    PropertyTrees* property_trees) {
+    PropertyTrees* property_trees,
+    LayerList* update_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
-  ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees);
+  ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
+                                        update_layer_list);
 }
 
 void BuildPropertyTreesAndComputeVisibleRects(
@@ -465,21 +473,27 @@ void BuildPropertyTreesAndComputeVisibleRects(
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
-    PropertyTrees* property_trees) {
+    PropertyTrees* property_trees,
+    LayerImplList* update_layer_list) {
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
       viewport, device_transform, property_trees);
-  ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees);
+  ComputeVisibleRectsUsingPropertyTrees(root_layer, property_trees,
+                                        update_layer_list);
 }
 
 void ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
-                                           PropertyTrees* property_trees) {
-  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees);
+                                           PropertyTrees* property_trees,
+                                           LayerList* update_layer_list) {
+  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees,
+                                                update_layer_list);
 }
 
 void ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
-                                           PropertyTrees* property_trees) {
-  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees);
+                                           PropertyTrees* property_trees,
+                                           LayerImplList* update_layer_list) {
+  ComputeVisibleRectsUsingPropertyTreesInternal(root_layer, property_trees,
+                                                update_layer_list);
 }
 
 template <typename LayerType>
@@ -507,7 +521,6 @@ gfx::Transform DrawTransformFromPropertyTreesInternal(
     xform.Scale(target_node->data.sublayer_scale.x(),
                 target_node->data.sublayer_scale.y());
   }
-  xform.Scale(1.0 / layer->contents_scale_x(), 1.0 / layer->contents_scale_y());
   return xform;
 }
 
@@ -534,7 +547,6 @@ gfx::Transform ScreenSpaceTransformFromPropertyTreesInternal(
     if (layer->should_flatten_transform_from_property_tree())
       xform.FlattenTo2d();
   }
-  xform.Scale(1.0 / layer->contents_scale_x(), 1.0 / layer->contents_scale_y());
   return xform;
 }
 

@@ -1248,7 +1248,7 @@ static bool IsMetaInformationRecomputationNeeded(Layer* layer) {
 
 // Recursively walks the layer tree(if needed) to compute any information
 // that is needed before doing the main recursion.
-static void PreCalculateMetaInformation(
+static void PreCalculateMetaInformationInternal(
     Layer* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   ValidateRenderSurface(layer);
@@ -1270,7 +1270,7 @@ static void PreCalculateMetaInformation(
     Layer* child_layer = layer->child_at(i);
 
     PreCalculateMetaInformationRecursiveData data_for_child;
-    PreCalculateMetaInformation(child_layer, &data_for_child);
+    PreCalculateMetaInformationInternal(child_layer, &data_for_child);
 
     recursive_data->Merge(data_for_child);
   }
@@ -1303,7 +1303,7 @@ static void PreCalculateMetaInformation(
     layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
 }
 
-static void PreCalculateMetaInformation(
+static void PreCalculateMetaInformationInternal(
     LayerImpl* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   ValidateRenderSurface(layer);
@@ -1326,7 +1326,7 @@ static void PreCalculateMetaInformation(
     LayerImpl* child_layer = layer->child_at(i);
 
     PreCalculateMetaInformationRecursiveData data_for_child;
-    PreCalculateMetaInformation(child_layer, &data_for_child);
+    PreCalculateMetaInformationInternal(child_layer, &data_for_child);
 
     if (child_layer->scroll_parent())
       layer->draw_properties().has_child_with_a_scroll_parent = true;
@@ -1352,6 +1352,11 @@ static void PreCalculateMetaInformation(
       (recursive_data->num_layer_or_descendants_with_copy_request != 0);
   layer->draw_properties().layer_or_descendant_has_input_handler =
       (recursive_data->num_layer_or_descendants_with_input_handler != 0);
+}
+
+void LayerTreeHostCommon::PreCalculateMetaInformation(Layer* root_layer) {
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformationInternal(root_layer, &recursive_data);
 }
 
 template <typename LayerType>
@@ -2655,7 +2660,7 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
 
   ProcessCalcDrawPropsInputs(*inputs, &globals, &data_for_recursion);
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
+  PreCalculateMetaInformationInternal(inputs->root_layer, &recursive_data);
 
   const bool should_measure_property_tree_performance =
       inputs->verify_property_trees &&
@@ -2679,6 +2684,8 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
   }
 
   if (inputs->verify_property_trees) {
+    typename LayerType::LayerListType update_layer_list;
+
     // For testing purposes, sometimes property trees need to be built on the
     // compositor thread, so this can't just switch on Layer vs LayerImpl,
     // even though in practice only the main thread builds property trees.
@@ -2697,7 +2704,7 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
             inputs->root_layer, inputs->page_scale_application_layer,
             inputs->page_scale_factor, inputs->device_scale_factor,
             gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-            inputs->property_trees);
+            inputs->property_trees, &update_layer_list);
 
         if (should_measure_property_tree_performance) {
           TRACE_EVENT_END0(
@@ -2711,8 +2718,8 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
         TRACE_EVENT0(
             TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
             "LayerTreeHostCommon::ComputeJustVisibleRectsWithPropertyTrees");
-        ComputeVisibleRectsUsingPropertyTrees(inputs->root_layer,
-                                              inputs->property_trees);
+        ComputeVisibleRectsUsingPropertyTrees(
+            inputs->root_layer, inputs->property_trees, &update_layer_list);
         break;
       }
     }

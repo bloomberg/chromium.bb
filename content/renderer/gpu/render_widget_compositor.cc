@@ -311,7 +311,8 @@ void RenderWidgetCompositor::Initialize() {
   settings.use_pinch_virtual_viewport =
       cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport);
   settings.verify_property_trees =
-      cmd->HasSwitch(cc::switches::kEnablePropertyTreeVerification);
+      cmd->HasSwitch(cc::switches::kEnablePropertyTreeVerification) &&
+      settings.impl_side_painting;
   settings.renderer_settings.allow_antialiasing &=
       !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   settings.single_thread_proxy_scheduler =

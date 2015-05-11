@@ -315,6 +315,12 @@ class CC_EXPORT LayerTreeHost {
     return needs_meta_info_recomputation_;
   }
 
+  // If this is true, only property trees will be used for main thread CDP.
+  // CDP will not be run, and verify_property_trees will be ignored.
+  bool using_only_property_trees() const {
+    return settings().impl_side_painting;
+  }
+
  protected:
   explicit LayerTreeHost(InitParams* params);
   void InitializeThreaded(

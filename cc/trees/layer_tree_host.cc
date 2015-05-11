@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/atomic_sequence_num.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -37,6 +38,7 @@
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/ui_resource_request.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -756,36 +758,80 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
   TRACE_EVENT1("cc", "LayerTreeHost::UpdateLayers",
                "source_frame_number", source_frame_number());
 
-  RenderSurfaceLayerList update_list;
-  {
-    UpdateHudLayer();
+  RenderSurfaceLayerList render_surface_layer_list;
 
-    Layer* root_scroll = FindFirstScrollableLayer(root_layer);
-    Layer* page_scale_layer = page_scale_layer_.get();
-    if (!page_scale_layer && root_scroll)
-      page_scale_layer = root_scroll->parent();
+  UpdateHudLayer();
 
-    if (hud_layer_.get()) {
-      hud_layer_->PrepareForCalculateDrawProperties(
-          device_viewport_size(), device_scale_factor_);
+  Layer* root_scroll = FindFirstScrollableLayer(root_layer);
+  Layer* page_scale_layer = page_scale_layer_.get();
+  if (!page_scale_layer && root_scroll)
+    page_scale_layer = root_scroll->parent();
+
+  if (hud_layer_.get()) {
+    hud_layer_->PrepareForCalculateDrawProperties(device_viewport_size(),
+                                                  device_scale_factor_);
+  }
+
+  bool can_render_to_separate_surface = true;
+  // TODO(vmpstr): Passing 0 as the current render surface layer list id means
+  // that we won't be able to detect if a layer is part of
+  // |render_surface_layer_list|.  Change this if this information is
+  // required.
+  int render_surface_layer_list_id = 0;
+  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
+      root_layer, device_viewport_size(), gfx::Transform(),
+      device_scale_factor_, page_scale_factor_, page_scale_layer,
+      elastic_overscroll_, overscroll_elasticity_layer_.get(),
+      GetRendererCapabilities().max_texture_size, settings_.can_use_lcd_text,
+      settings_.layers_always_allowed_lcd_text, can_render_to_separate_surface,
+      settings_.layer_transforms_should_scale_layer_contents,
+      settings_.verify_property_trees, &render_surface_layer_list,
+      render_surface_layer_list_id, &property_trees_);
+
+  // This is a temporary state of affairs until impl-side painting is shipped
+  // everywhere and main thread property trees can be used in all cases.
+  // This code here implies that even if verify property trees is on,
+  // no verification will occur and only property trees will be used on the
+  // main thread.
+  if (using_only_property_trees()) {
+    TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
+
+    LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
+
+    bool preserves_2d_axis_alignment = false;
+    gfx::Transform identity_transform;
+    LayerList update_layer_list;
+
+    LayerTreeHostCommon::UpdateRenderSurfaces(
+        root_layer, can_render_to_separate_surface, identity_transform,
+        preserves_2d_axis_alignment);
+    {
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
+                   "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+      BuildPropertyTreesAndComputeVisibleRects(
+          root_layer, page_scale_layer, page_scale_factor_,
+          device_scale_factor_, gfx::Rect(device_viewport_size_),
+          identity_transform, &property_trees_, &update_layer_list);
     }
 
+    for (const auto& layer : update_layer_list)
+      layer->SavePaintProperties();
+
+    base::AutoReset<bool> painting(&in_paint_layer_contents_, true);
+    bool did_paint_content = false;
+    for (const auto& layer : update_layer_list) {
+      // TODO(enne): temporarily clobber draw properties visible rect.
+      layer->draw_properties().visible_content_rect =
+          layer->visible_rect_from_property_trees();
+      did_paint_content |= layer->Update(queue, nullptr);
+      content_is_suitable_for_gpu_rasterization_ &=
+          layer->IsSuitableForGpuRasterization();
+    }
+    return did_paint_content;
+  }
+
+  {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
-    bool can_render_to_separate_surface = true;
-    // TODO(vmpstr): Passing 0 as the current render surface layer list id means
-    // that we won't be able to detect if a layer is part of |update_list|.
-    // Change this if this information is required.
-    int render_surface_layer_list_id = 0;
-    LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
-        root_layer, device_viewport_size(), gfx::Transform(),
-        device_scale_factor_, page_scale_factor_, page_scale_layer,
-        elastic_overscroll_, overscroll_elasticity_layer_.get(),
-        GetRendererCapabilities().max_texture_size, settings_.can_use_lcd_text,
-        settings_.layers_always_allowed_lcd_text,
-        can_render_to_separate_surface,
-        settings_.layer_transforms_should_scale_layer_contents,
-        settings_.verify_property_trees, &update_list,
-        render_surface_layer_list_id, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 
@@ -794,8 +840,8 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
 
   bool did_paint_content = false;
   bool need_more_updates = false;
-  PaintLayerContents(
-      update_list, queue, &did_paint_content, &need_more_updates);
+  PaintLayerContents(render_surface_layer_list, queue, &did_paint_content,
+                     &need_more_updates);
   if (need_more_updates) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::posting prepaint task");
     prepaint_callback_.Reset(base::Bind(&LayerTreeHost::TriggerPrepaint,

@@ -120,6 +120,7 @@ class CC_EXPORT LayerTreeHostCommon {
                                   gfx::Transform* transform,
                                   bool* animation_preserves_axis_alignment);
   static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
+  static void PreCalculateMetaInformation(Layer* root_layer);
 
   typedef CalcDrawPropsInputs<LayerImpl, LayerImplList> CalcDrawPropsImplInputs;
   typedef CalcDrawPropsInputsForTesting<LayerImpl, LayerImplList>

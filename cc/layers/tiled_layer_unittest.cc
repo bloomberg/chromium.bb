@@ -87,8 +87,8 @@ class TiledLayerTest : public testing::Test {
         occlusion_(nullptr) {
     settings_.max_partial_texture_updates = std::numeric_limits<size_t>::max();
     settings_.layer_transforms_should_scale_layer_contents = true;
-    settings_.verify_property_trees = true;
     settings_.impl_side_painting = false;
+    settings_.verify_property_trees = false;
   }
 
   void SetUp() override {
@@ -185,6 +185,7 @@ class TiledLayerTest : public testing::Test {
     inputs.max_texture_size =
         layer_tree_host_->GetRendererCapabilities().max_texture_size;
     inputs.can_adjust_raster_scales = true;
+    inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 

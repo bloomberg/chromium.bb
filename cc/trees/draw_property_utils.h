@@ -6,6 +6,7 @@
 #define CC_TREES_DRAW_PROPERTY_UTILS_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer_lists.h"
 
 namespace gfx {
 class Rect;
@@ -42,7 +43,8 @@ BuildPropertyTreesAndComputeVisibleRects(Layer* root_layer,
                                          float device_scale_factor,
                                          const gfx::Rect& viewport,
                                          const gfx::Transform& device_transform,
-                                         PropertyTrees* property_trees);
+                                         PropertyTrees* property_trees,
+                                         LayerList* update_layer_list);
 
 void CC_EXPORT
 BuildPropertyTreesAndComputeVisibleRects(LayerImpl* root_layer,
@@ -51,15 +53,18 @@ BuildPropertyTreesAndComputeVisibleRects(LayerImpl* root_layer,
                                          float device_scale_factor,
                                          const gfx::Rect& viewport,
                                          const gfx::Transform& device_transform,
-                                         PropertyTrees* property_trees);
+                                         PropertyTrees* property_trees,
+                                         LayerImplList* update_layer_list);
 
 void CC_EXPORT
 ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
-                                      PropertyTrees* property_trees);
+                                      PropertyTrees* property_trees,
+                                      LayerList* update_layer_list);
 
 void CC_EXPORT
 ComputeVisibleRectsUsingPropertyTrees(LayerImpl* root_layer,
-                                      PropertyTrees* property_trees);
+                                      PropertyTrees* property_trees,
+                                      LayerImplList* update_layer_list);
 
 gfx::Transform CC_EXPORT
 DrawTransformFromPropertyTrees(const Layer* layer, const TransformTree& tree);

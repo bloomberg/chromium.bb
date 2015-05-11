@@ -15,7 +15,6 @@ class DrawProperties(page_test.PageTest):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
-        '--enable-property-tree-verification',
         '--enable-prefer-compositing-to-lcd-text',
     ])
 
@@ -26,7 +25,7 @@ class DrawProperties(page_test.PageTest):
         'disabled-by-default-cc.debug.cdp-perf')
     tab.browser.platform.tracing_controller.Start(options, category_filter)
 
-  def ComputeAverageAndSumOfDurations(self, timeline_model, name):
+  def ComputeAverageOfDurations(self, timeline_model, name):
     events = timeline_model.GetAllEventsOfName(name)
     event_durations = [d.duration for d in events]
     assert event_durations, 'Failed to find durations'
@@ -34,29 +33,15 @@ class DrawProperties(page_test.PageTest):
     duration_sum = sum(event_durations)
     duration_count = len(event_durations)
     duration_avg = duration_sum / duration_count
-    return (duration_avg, duration_sum)
+    return duration_avg
 
   def ValidateAndMeasurePage(self, page, tab, results):
     timeline_data = tab.browser.platform.tracing_controller.Stop()
     timeline_model = model.TimelineModel(timeline_data)
 
-    (cdp_avg, cdp_sum) = self.ComputeAverageAndSumOfDurations(
-        timeline_model,
-        'LayerTreeHostCommon::CalculateDrawProperties')
-
-    (pt_avg, pt_sum) = self.ComputeAverageAndSumOfDurations(
+    pt_avg = self.ComputeAverageOfDurations(
         timeline_model,
         'LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees')
-
-    reduction = 100.0 * (1.0 - (pt_sum / cdp_sum))
-
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'CDP_reduction', 'reduction%', reduction,
-        description='Reduction in CDP cost with property trees'))
-
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'CDP_avg_cost', 'ms', cdp_avg,
-        description='Average time spent in CDP'))
 
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'PT_avg_cost', 'ms', pt_avg,

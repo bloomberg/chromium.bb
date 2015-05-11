@@ -4529,6 +4529,7 @@ TEST_F(LayerTreeHostCommonTest,
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = parent.get();
   inputs.can_adjust_raster_scales = true;
+  inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
@@ -4669,6 +4670,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
+    inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -4712,7 +4714,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
-    inputs.property_trees->needs_rebuild = true;
+    inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_CONTENTS_SCALE_EQ(
@@ -4741,7 +4743,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
-    inputs.property_trees->needs_rebuild = true;
+    inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -4767,7 +4769,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScale) {
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_application_layer = root.get();
     inputs.can_adjust_raster_scales = true;
-    inputs.property_trees->needs_rebuild = true;
+    inputs.verify_property_trees = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor *
@@ -4855,7 +4857,8 @@ TEST_F(LayerTreeHostCommonTest,
       root.get(), root->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = root.get(),
+  inputs.page_scale_application_layer = root.get();
+  inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
@@ -5065,6 +5068,7 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = root.get();
   inputs.can_adjust_raster_scales = true;
+  inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_CONTENTS_SCALE_EQ(
@@ -5266,6 +5270,7 @@ TEST_F(LayerTreeHostCommonTest,
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_application_layer = root.get();
+  inputs.verify_property_trees = false;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_CONTENTS_SCALE_EQ(device_scale_factor * page_scale_factor,
@@ -5452,8 +5457,16 @@ TEST_F(LayerTreeHostCommonTest,
   root->reset_needs_push_properties_for_testing();
   child->reset_needs_push_properties_for_testing();
 
+  gfx::Size device_viewport_size = gfx::Size(100, 100);
+  RenderSurfaceLayerList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      root.get(), device_viewport_size, &render_surface_layer_list);
+  inputs.device_scale_factor = 1.f;
+  inputs.can_adjust_raster_scales = true;
+  inputs.verify_property_trees = false;
+
   // This will change both layers' content bounds.
-  ExecuteCalculateDrawProperties(root.get());
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   EXPECT_TRUE(root->needs_push_properties());
   EXPECT_TRUE(child->needs_push_properties());
 
@@ -5462,7 +5475,8 @@ TEST_F(LayerTreeHostCommonTest,
 
   // This will change only the child layer's contents scale and content bounds,
   // since the root layer is not a ContentsScalingLayer.
-  ExecuteCalculateDrawProperties(root.get(), 2.f);
+  inputs.device_scale_factor = 2.f;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   EXPECT_FALSE(root->needs_push_properties());
   EXPECT_TRUE(child->needs_push_properties());
 
@@ -5470,7 +5484,7 @@ TEST_F(LayerTreeHostCommonTest,
   child->reset_needs_push_properties_for_testing();
 
   // This will not change either layer's contents scale or content bounds.
-  ExecuteCalculateDrawProperties(root.get(), 2.f);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   EXPECT_FALSE(root->needs_push_properties());
   EXPECT_FALSE(child->needs_push_properties());
 }
