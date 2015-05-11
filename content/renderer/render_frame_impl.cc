@@ -2690,13 +2690,20 @@ void RenderFrameImpl::didCommitProvisionalLoad(
           render_view_->history_list_offset_ + 1;
     }
   } else {
-    if (navigation_state->request_params().page_id != -1) {
+    const RequestNavigationParams& request_params =
+        navigation_state->request_params();
+    if (request_params.page_id != -1) {
       // This is a successful session history navigation!
-      render_view_->page_id_ = navigation_state->request_params().page_id;
+      render_view_->page_id_ = request_params.page_id;
 
       render_view_->history_list_offset_ =
-          navigation_state->request_params().pending_history_list_offset;
+          request_params.pending_history_list_offset;
     }
+    // Page id is going away (http://crbug.com/369661); ensure that a
+    // replacement that doesn't use page id is equivalent in all cases.
+    CHECK_EQ(request_params.page_id != -1,
+             request_params.nav_entry_id != 0 &&
+             !request_params.intended_as_new_entry);
   }
 
   bool sent = Send(
