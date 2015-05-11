@@ -56,7 +56,7 @@ class RtpParserTest : public ::testing::Test {
     EXPECT_EQ(cast_header_.reference_frame_id,
               parsed_header.reference_frame_id);
 
-    EXPECT_TRUE(!!payload);
+    EXPECT_TRUE(payload);
     EXPECT_NE(static_cast<size_t>(-1), payload_size);
   }
 

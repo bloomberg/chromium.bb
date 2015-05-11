@@ -868,7 +868,7 @@ TEST_F(GestureProviderTest, FractionalScroll) {
 
   // Now move up slowly, mostly vertically but with a (fractional) bit of
   // horizontal motion.
-  for(int i = 1; i <= 10; i++) {
+  for (int i = 1; i <= 10; i++) {
     event = ObtainMotionEvent(event_time + kOneMicrosecond * i,
                               MotionEvent::ACTION_MOVE,
                               kFakeCoordX + delta_x * i,
@@ -925,7 +925,7 @@ TEST_F(GestureProviderTest, ScrollBeginValues) {
   EXPECT_TRUE(gesture_provider_->IsScrollInProgress());
 
   const GestureEventData* scroll_begin_gesture = GetActiveScrollBeginEvent();
-  ASSERT_TRUE(!!scroll_begin_gesture);
+  ASSERT_TRUE(scroll_begin_gesture);
   EXPECT_EQ(delta_x, scroll_begin_gesture->details.scroll_x_hint());
   EXPECT_EQ(delta_y, scroll_begin_gesture->details.scroll_y_hint());
 }

@@ -665,7 +665,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   {
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         child_resource_provider_.get(), id3);
-    EXPECT_TRUE(!!lock.GetGpuMemoryBuffer());
+    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
 
   GLuint external_texture_id = child_context_->createExternalTexture();
@@ -921,7 +921,7 @@ TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
     // point.
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         child_resource_provider_.get(), id2);
-    EXPECT_TRUE(!!lock.GetGpuMemoryBuffer());
+    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
 
   GLuint external_texture_id = child_context_->createExternalTexture();
@@ -3544,7 +3544,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   {
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         resource_provider.get(), id);
-    EXPECT_TRUE(!!lock.GetGpuMemoryBuffer());
+    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
 
   EXPECT_CALL(*context, NextTextureId())
@@ -3565,7 +3565,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   {
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         resource_provider.get(), id);
-    EXPECT_TRUE(!!lock.GetGpuMemoryBuffer());
+    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
 
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(1)
@@ -3631,7 +3631,7 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   {
     ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         resource_provider.get(), source_id);
-    EXPECT_TRUE(!!lock.GetGpuMemoryBuffer());
+    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
   Mock::VerifyAndClearExpectations(context);
 

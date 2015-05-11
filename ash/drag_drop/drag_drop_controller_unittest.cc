@@ -820,7 +820,7 @@ TEST_F(DragDropControllerTest, MAYBE_CaptureLostCancelsDragDrop) {
   }
   // Make sure the capture window won't handle mouse events.
   aura::Window* capture_window = drag_drop_tracker()->capture_window();
-  ASSERT_TRUE(!!capture_window);
+  ASSERT_TRUE(capture_window);
   EXPECT_EQ("0x0", capture_window->bounds().size().ToString());
   EXPECT_EQ(NULL,
             capture_window->GetEventHandlerForPoint(gfx::Point()));
@@ -972,7 +972,7 @@ class DragImageWindowObserver : public aura::WindowObserver {
   gfx::Point window_location_on_destroying_;
 };
 
-}
+}  // namespace
 
 // Verifies the drag image moves back to the position where drag is started
 // across displays when drag is cancelled.
@@ -1110,4 +1110,4 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
 }
 
 }  // namespace test
-}  // namespace aura
+}  // namespace ash

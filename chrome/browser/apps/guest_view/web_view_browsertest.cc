@@ -135,7 +135,7 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
 // context menu was shown.
 class ContextMenuCallCountObserver {
  public:
-  ContextMenuCallCountObserver ()
+  ContextMenuCallCountObserver()
       : num_times_shown_(0),
         menu_observer_(chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
                        base::Bind(&ContextMenuCallCountObserver::OnMenuShown,
@@ -2778,7 +2778,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_WebViewInBackgroundPage) {
 IN_PROC_BROWSER_TEST_F(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
   LoadAppWithGuest("web_view/simple");
 
-  ASSERT_TRUE(!!GetGuestWebContents());
+  ASSERT_TRUE(GetGuestWebContents());
   extensions::WebViewGuest* guest =
       extensions::WebViewGuest::FromWebContents(GetGuestWebContents());
   ASSERT_TRUE(guest->allow_transparency());

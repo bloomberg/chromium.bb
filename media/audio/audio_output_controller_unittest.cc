@@ -188,7 +188,7 @@ class AudioOutputControllerTest : public testing::Test {
 
   void ReadDivertedAudioData() {
     scoped_ptr<AudioBus> dest = AudioBus::Create(params_);
-    ASSERT_TRUE(!!mock_stream_.callback());
+    ASSERT_TRUE(mock_stream_.callback());
     const int frames_read =
         mock_stream_.callback()->OnMoreData(dest.get(), 0);
     EXPECT_LT(0, frames_read);

@@ -57,7 +57,7 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
         base::JSONReader::Read(upload_content,
                                base::JSON_ALLOW_TRAILING_COMMAS)));
-    ASSERT_TRUE(!!value.get());
+    ASSERT_TRUE(value.get());
     std::string method;
     EXPECT_TRUE(value->GetString("method", &method));
     EXPECT_EQ("spelling.check", method);
@@ -142,7 +142,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
   void CallOnURLFetchComplete() {
-    ASSERT_TRUE(!!fetcher_);
+    ASSERT_TRUE(fetcher_);
     fetcher_->delegate()->OnURLFetchComplete(fetcher_);
     fetcher_ = NULL;
   }

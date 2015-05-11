@@ -2154,7 +2154,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawCalledOnAllLayers) {
   EXPECT_TRUE(layer2->did_draw_called());
 
   EXPECT_NE(root->render_surface(), layer1->render_surface());
-  EXPECT_TRUE(!!layer1->render_surface());
+  EXPECT_TRUE(layer1->render_surface());
 }
 
 class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
@@ -2630,13 +2630,13 @@ TEST_F(LayerTreeHostImplTopControlsTest,
       gfx::Size(10, 50), gfx::Size(10, 50), gfx::Size(10, 100));
   DrawFrame();
 
-  LayerImpl *inner_scroll =
+  LayerImpl* inner_scroll =
       host_impl_->active_tree()->InnerViewportScrollLayer();
-  LayerImpl *inner_container =
+  LayerImpl* inner_container =
       host_impl_->active_tree()->InnerViewportContainerLayer();
-  LayerImpl *outer_scroll =
+  LayerImpl* outer_scroll =
       host_impl_->active_tree()->OuterViewportScrollLayer();
-  LayerImpl *outer_container =
+  LayerImpl* outer_container =
       host_impl_->active_tree()->OuterViewportContainerLayer();
 
   // Need SetDrawsContent so ScrollBegin's hit test finds an actual layer.

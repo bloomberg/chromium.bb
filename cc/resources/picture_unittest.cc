@@ -50,7 +50,7 @@ TEST(PictureTest, AsBase64String) {
   // Reconstruct the picture.
   scoped_refptr<Picture> one_rect_picture_check =
       Picture::CreateFromValue(serialized_one_rect.get());
-  EXPECT_TRUE(!!one_rect_picture_check.get());
+  EXPECT_TRUE(one_rect_picture_check);
 
   // Check for equivalence.
   unsigned char one_rect_buffer[4 * 100 * 100] = {0};
@@ -73,7 +73,7 @@ TEST(PictureTest, AsBase64String) {
   // Reconstruct the picture.
   scoped_refptr<Picture> two_rect_picture_check =
       Picture::CreateFromValue(serialized_two_rect.get());
-  EXPECT_TRUE(!!two_rect_picture_check.get());
+  EXPECT_TRUE(two_rect_picture_check);
 
   // Check for equivalence.
   unsigned char two_rect_buffer[4 * 100 * 100] = {0};
@@ -125,7 +125,7 @@ TEST(PictureTest, CreateFromSkpValue) {
   // Reconstruct the picture.
   scoped_refptr<Picture> one_rect_picture_check =
       Picture::CreateFromSkpValue(skp_value);
-  EXPECT_TRUE(!!one_rect_picture_check.get());
+  EXPECT_TRUE(one_rect_picture_check);
 
   EXPECT_EQ(100, one_rect_picture_check->LayerRect().width());
   EXPECT_EQ(200, one_rect_picture_check->LayerRect().height());

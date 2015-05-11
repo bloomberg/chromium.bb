@@ -4453,7 +4453,7 @@ class LayerInvalidateCausesDraw : public LayerTreeHostTest {
   LayerInvalidateCausesDraw() : num_commits_(0), num_draws_(0) {}
 
   void BeginTest() override {
-    ASSERT_TRUE(!!invalidate_layer_.get())
+    ASSERT_TRUE(invalidate_layer_)
         << "Derived tests must set this in SetupTree";
 
     // One initial commit.

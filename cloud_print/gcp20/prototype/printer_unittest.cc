@@ -17,7 +17,7 @@ TEST(Printer, ValidateCapabilities) {
   scoped_ptr<base::Value> value(
       base::JSONReader::ReadAndReturnError(printer.GetRawCdd(), 0,
                                            &error_code, &error_msg));
-  ASSERT_TRUE(!!value) << error_msg;
+  ASSERT_TRUE(value) << error_msg;
 
   base::DictionaryValue* dictionary_value = NULL;
   EXPECT_TRUE(value->GetAsDictionary(&dictionary_value)) << "Not a dictionary";

@@ -34,7 +34,7 @@ const char* GetStrategyName(VelocityTracker::Strategy strategy) {
     case VelocityTracker::WLSQ2_RECENT: return "WLSQ2_RECENT";
     case VelocityTracker::INT1: return "INT1";
     case VelocityTracker::INT2: return "INT2";
-  };
+  }
   NOTREACHED() << "Invalid strategy";
   return "";
 }
@@ -62,7 +62,7 @@ class VelocityTrackerTest : public testing::Test {
                                     TimeTicks t0,
                                     TimeDelta t,
                                     size_t samples) {
-    EXPECT_TRUE(!!samples);
+    EXPECT_TRUE(samples);
     if (!samples)
       return;
     const base::TimeDelta dt = t / samples;
@@ -77,7 +77,7 @@ class VelocityTrackerTest : public testing::Test {
                             TimeTicks t0,
                             TimeDelta t,
                             size_t samples) {
-    EXPECT_TRUE(!!samples);
+    EXPECT_TRUE(samples);
     if (!samples)
       return;
     const base::TimeDelta dt = t / samples;

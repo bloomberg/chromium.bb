@@ -225,7 +225,7 @@ TEST_F(TraceEventAnalyzerTest, BooleanOperators) {
 
   scoped_ptr<TraceAnalyzer>
       analyzer(TraceAnalyzer::Create(output_.json_output));
-  ASSERT_TRUE(!!analyzer.get());
+  ASSERT_TRUE(analyzer);
   analyzer->SetIgnoreMetadataEvents(true);
 
   TraceEventVector found;

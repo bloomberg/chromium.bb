@@ -1527,7 +1527,7 @@ TEST_F(TraceEventTestFixture, ThreadNames) {
 
     // See if this thread name is one of the threads we just created
     for (int j = 0; j < kNumThreads; j++) {
-      if(static_cast<int>(thread_ids[j]) != tmp_int)
+      if (static_cast<int>(thread_ids[j]) != tmp_int)
         continue;
 
       std::string expected_name = StringPrintf("Thread %d", j);
@@ -2214,7 +2214,7 @@ class TraceEventCallbackTest : public TraceEventTestFixture {
   }
   void TearDown() override {
     TraceLog::GetInstance()->SetDisabled();
-    ASSERT_TRUE(!!s_instance);
+    ASSERT_TRUE(s_instance);
     s_instance = NULL;
     TraceEventTestFixture::TearDown();
   }

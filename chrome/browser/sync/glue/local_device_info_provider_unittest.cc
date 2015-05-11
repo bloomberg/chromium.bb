@@ -72,7 +72,7 @@ TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
   InitializeProvider();
 
   const DeviceInfo* local_device_info = provider_->GetLocalDeviceInfo();
-  EXPECT_TRUE(!!local_device_info);
+  EXPECT_TRUE(local_device_info);
   EXPECT_EQ(std::string(kLocalDeviceGuid), local_device_info->guid());
   EXPECT_EQ(std::string(kSigninScopedDeviceId),
             local_device_info->signin_scoped_device_id());

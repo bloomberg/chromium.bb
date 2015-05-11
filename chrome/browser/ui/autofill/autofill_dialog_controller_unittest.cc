@@ -1129,7 +1129,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged());
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
-  ASSERT_TRUE(!!shipping_model);
+  ASSERT_TRUE(shipping_model);
   EXPECT_EQ(3, shipping_model->GetItemCount());
 
   // Set up some variant data.

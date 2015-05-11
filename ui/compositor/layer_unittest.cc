@@ -216,7 +216,7 @@ class LayerWithRealCompositorTest : public testing::Test {
 // LayerDelegate that paints colors to the layer.
 class TestLayerDelegate : public LayerDelegate {
  public:
-  explicit TestLayerDelegate() { reset(); }
+  TestLayerDelegate() { reset(); }
   ~TestLayerDelegate() override {}
 
   void AddColor(SkColor color) {
@@ -642,12 +642,12 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   layer->set_name(name);
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> debug_info =
     layer->TakeDebugInfo();
-  EXPECT_TRUE(!!debug_info.get());
+  EXPECT_TRUE(debug_info.get());
   std::string json;
   debug_info->AppendAsTraceFormat(&json);
   base::JSONReader json_reader;
   scoped_ptr<base::Value> debug_info_value(json_reader.ReadToValue(json));
-  EXPECT_TRUE(!!debug_info_value);
+  EXPECT_TRUE(debug_info_value);
   EXPECT_TRUE(debug_info_value->IsType(base::Value::TYPE_DICTIONARY));
   base::DictionaryValue* dictionary = 0;
   EXPECT_TRUE(debug_info_value->GetAsDictionary(&dictionary));

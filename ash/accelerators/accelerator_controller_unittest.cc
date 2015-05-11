@@ -293,7 +293,7 @@ TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestDoublePress) {
   ui::Accelerator release(press);
   release.set_type(ui::ET_KEY_RELEASED);
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
-  ASSERT_TRUE(!!ewh);
+  ASSERT_TRUE(ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
@@ -315,7 +315,7 @@ TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestSinglePress) {
   ui::Accelerator release(press);
   release.set_type(ui::ET_KEY_RELEASED);
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
-  ASSERT_TRUE(!!ewh);
+  ASSERT_TRUE(ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
@@ -332,7 +332,7 @@ TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestSinglePress) {
 // Shutdown ash with exit warning bubble open should not crash.
 TEST_F(AcceleratorControllerTest, LingeringExitWarningBubble) {
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
-  ASSERT_TRUE(!!ewh);
+  ASSERT_TRUE(ewh);
   StubForTest(ewh);
 
   // Trigger once to show the bubble.
@@ -921,7 +921,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 #if !defined(OS_WIN)
   // Exit
   ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
-  ASSERT_TRUE(!!ewh);
+  ASSERT_TRUE(ewh);
   StubForTest(ewh);
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));

@@ -162,7 +162,7 @@ std::map<uint16, LoggingEventCounts> GetEventCountForPacketEvents(
 // PacketReceiverCallback.
 class LoopBackPacketPipe : public test::PacketPipe {
  public:
-  LoopBackPacketPipe(const PacketReceiverCallback& packet_receiver)
+  explicit LoopBackPacketPipe(const PacketReceiverCallback& packet_receiver)
       : packet_receiver_(packet_receiver) {}
 
   ~LoopBackPacketPipe() final {}
@@ -276,7 +276,7 @@ class TestReceiverAudioCallback
                        bool is_continuous) {
     ++num_called_;
 
-    ASSERT_TRUE(!!audio_bus);
+    ASSERT_TRUE(audio_bus);
     ASSERT_FALSE(expected_frames_.empty());
     const scoped_ptr<ExpectedAudioFrame> expected_audio_frame(
         expected_frames_.front());
@@ -306,7 +306,7 @@ class TestReceiverAudioCallback
   }
 
   void CheckCodedAudioFrame(scoped_ptr<EncodedFrame> audio_frame) {
-    ASSERT_TRUE(!!audio_frame);
+    ASSERT_TRUE(audio_frame);
     ASSERT_FALSE(expected_frames_.empty());
     const ExpectedAudioFrame& expected_audio_frame =
         *(expected_frames_.front());
@@ -375,7 +375,7 @@ class TestReceiverVideoCallback
                        bool is_continuous) {
     ++num_called_;
 
-    ASSERT_TRUE(!!video_frame.get());
+    ASSERT_TRUE(video_frame.get());
     ASSERT_FALSE(expected_frame_.empty());
     ExpectedVideoFrame expected_video_frame = expected_frame_.front();
     expected_frame_.pop_front();

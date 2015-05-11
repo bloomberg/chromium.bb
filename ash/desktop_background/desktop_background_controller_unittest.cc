@@ -111,7 +111,7 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
         Shell::GetPrimaryRootWindowController()
             ->animating_wallpaper_controller()
             ->GetController(false);
-    EXPECT_TRUE(!!controller);
+    EXPECT_TRUE(controller);
     ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(controller->widget()));
   }
 
