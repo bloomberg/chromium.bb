@@ -740,12 +740,18 @@ void NaClProcessHost::ReplyToRenderer(
   }
 #endif
 
-  // Hereafter, we always send an IPC message with handles which, on Windows,
-  // are not closable in this process.
+  // First, create an |imc_channel_handle| for the renderer.
   IPC::PlatformFileForTransit imc_handle_for_renderer =
       IPC::TakeFileHandleForProcess(socket_for_renderer_.Pass(),
                                     nacl_host_message_filter_->PeerHandle());
+  if (imc_handle_for_renderer == IPC::InvalidPlatformFileForTransit()) {
+    // Failed to create the handle.
+    SendErrorToRenderer("imc_channel_handle creation failed.");
+    return;
+  }
 
+  // Hereafter, we always send an IPC message with handles including imc_handle
+  // created above which, on Windows, are not closable in this process.
   std::string error_message;
   base::SharedMemoryHandle crash_info_shmem_renderer_handle;
   if (!crash_info_shmem_.ShareToProcess(nacl_host_message_filter_->PeerHandle(),
