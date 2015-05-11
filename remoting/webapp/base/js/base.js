@@ -789,21 +789,16 @@ base.timestamp = function() {
  */
 base.resizeWindowToContent = function(opt_centerWindow) {
   var appWindow = chrome.app.window.current();
-  var outerBounds = appWindow.outerBounds;
-  var borderX = outerBounds.width - appWindow.innerBounds.width;
-  var borderY = outerBounds.height - appWindow.innerBounds.height;
-  var newWidth = document.documentElement.scrollWidth + borderX;
-  var newHeight = document.documentElement.scrollHeight + borderY;
-  appWindow.resizeTo(newWidth, newHeight);
-  var left = outerBounds.left;
-  var top = outerBounds.top;
+  var borderX = appWindow.outerBounds.width - appWindow.innerBounds.width;
+  var borderY = appWindow.outerBounds.height - appWindow.innerBounds.height;
+  var width = Math.ceil(document.documentElement.scrollWidth + borderX);
+  var height = Math.ceil(document.documentElement.scrollHeight + borderY);
+  appWindow.outerBounds.width = width;
+  appWindow.outerBounds.height = height;
   if (opt_centerWindow) {
     var screenWidth = screen.availWidth;
     var screenHeight = screen.availHeight;
-    left = (screenWidth - newWidth) / 2;
-    top = (screenHeight - newHeight) / 2;
+    appWindow.outerBounds.left = Math.round((screenWidth - width) / 2);
+    appWindow.outerBounds.top = Math.round((screenHeight - height) / 2);
   }
-  // Sometimes, resizing the window causes its position to be reset to (0, 0),
-  // so restore it explicitly, even if it doesn't need to be centered.
-  appWindow.moveTo(left, top);
 };

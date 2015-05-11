@@ -181,7 +181,8 @@ browserTest.Scrollbars.prototype.verifyScrollbarState_ =
  */
 browserTest.Scrollbars.prototype.resize_ = function(width, height) {
   var win = chrome.app.window.current();
-  win.resizeTo(width, height);
+  win.outerBounds.width = width;
+  win.outerBounds.height = height;
   // Chrome takes a while to update the scroll-bars, so don't resolve
   // immediately. Waiting for the onBoundsChanged event would be cleaner,
   // but isn't reliable.

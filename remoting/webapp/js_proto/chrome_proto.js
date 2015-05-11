@@ -377,17 +377,6 @@ AppWindow.prototype.drawAttention = function() {};
 AppWindow.prototype.focus = function() {};
 AppWindow.prototype.maximize = function() {};
 AppWindow.prototype.minimize = function() {};
-/**
- * @param {number} left
- * @param {number} top
- */
-AppWindow.prototype.moveTo = function(left, top) {};
-/**
- * @param {number} width
- * @param {number} height
- */
-AppWindow.prototype.resizeTo = function(width, height) {};
-
 AppWindow.prototype.restore = function() {};
 AppWindow.prototype.show = function() {};
 /** @return {boolean} */
