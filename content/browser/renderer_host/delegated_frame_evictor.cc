@@ -10,11 +10,13 @@ namespace content {
 
 DelegatedFrameEvictor::DelegatedFrameEvictor(
     DelegatedFrameEvictorClient* client)
-    : client_(client), has_frame_(false) {}
+    : client_(client), has_frame_(false), visible_(false) {
+}
 
 DelegatedFrameEvictor::~DelegatedFrameEvictor() { DiscardedFrame(); }
 
 void DelegatedFrameEvictor::SwappedFrame(bool visible) {
+  visible_ = visible;
   has_frame_ = true;
   RendererFrameManager::GetInstance()->AddFrame(this, visible);
 }
@@ -25,11 +27,14 @@ void DelegatedFrameEvictor::DiscardedFrame() {
 }
 
 void DelegatedFrameEvictor::SetVisible(bool visible) {
+  if (visible_ == visible)
+    return;
+  visible_ = visible;
   if (has_frame_) {
     if (visible) {
-      RendererFrameManager::GetInstance()->LockFrame(this);
+      LockFrame();
     } else {
-      RendererFrameManager::GetInstance()->UnlockFrame(this);
+      UnlockFrame();
     }
   }
 }

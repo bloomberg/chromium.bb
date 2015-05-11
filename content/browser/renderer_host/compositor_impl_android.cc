@@ -474,6 +474,7 @@ void CompositorImpl::SetVisible(bool visible) {
     CreateLayerTreeHost();
     ui_resource_provider_.SetLayerTreeHost(host_.get());
   }
+  root_window_->OnVisibilityChanged(visible);
 }
 
 void CompositorImpl::setDeviceScaleFactor(float factor) {

@@ -251,6 +251,24 @@ public class WindowAndroid {
     }
 
     /**
+     * For window instances associated with an activity, notifies any listeners
+     * that the activity has been paused.
+     */
+    protected void onActivityPaused() {
+        if (mNativeWindowAndroid == 0) return;
+        nativeOnActivityPaused(mNativeWindowAndroid);
+    }
+
+    /**
+     * For window instances associated with an activity, notifies any listeners
+     * that the activity has been paused.
+     */
+    protected void onActivityResumed() {
+        if (mNativeWindowAndroid == 0) return;
+        nativeOnActivityResumed(mNativeWindowAndroid);
+    }
+
+    /**
      * Responds to the intent result if the intent was created by the native window.
      * @param requestCode Request code of the requested intent.
      * @param resultCode Result code of the requested intent.
@@ -414,6 +432,8 @@ public class WindowAndroid {
     private native void nativeOnVSync(long nativeWindowAndroid,
                                       long vsyncTimeMicros,
                                       long vsyncPeriodMicros);
+    private native void nativeOnActivityPaused(long nativeWindowAndroid);
+    private native void nativeOnActivityResumed(long nativeWindowAndroid);
     private native void nativeDestroy(long nativeWindowAndroid);
 
 }

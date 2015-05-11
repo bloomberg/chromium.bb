@@ -549,23 +549,7 @@ void RenderWidgetHostViewAndroid::Show() {
     return;
 
   is_showing_ = true;
-  if (layer_.get())
-    layer_->SetHideLayerAndSubtree(false);
-
-  if (overscroll_controller_)
-    overscroll_controller_->Enable();
-
-  frame_evictor_->SetVisible(true);
-
-  if (!host_ || !host_->is_hidden())
-    return;
-
-  host_->WasShown(ui::LatencyInfo());
-
-  if (content_view_core_) {
-    StartObservingRootWindow();
-    RequestVSyncUpdate(BEGIN_FRAME);
-  }
+  ShowInternal();
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
@@ -573,24 +557,10 @@ void RenderWidgetHostViewAndroid::Hide() {
     return;
 
   is_showing_ = false;
-  if (layer_.get() && locks_on_frame_count_ == 0)
-    layer_->SetHideLayerAndSubtree(true);
 
-  if (overscroll_controller_)
-    overscroll_controller_->Disable();
-
-  frame_evictor_->SetVisible(false);
-
-  RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
-
-  if (!host_ || host_->is_hidden())
-    return;
-
-  // Inform the renderer that we are being hidden so it can reduce its resource
-  // utilization.
-  host_->WasHidden();
-
-  StopObservingRootWindow();
+  bool hide_frontbuffer = true;
+  bool stop_observing_root_window = true;
+  HideInternal(hide_frontbuffer, stop_observing_root_window);
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
@@ -1407,6 +1377,53 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceInitialized(int route_id) {
   accelerated_surface_route_id_ = route_id;
 }
 
+void RenderWidgetHostViewAndroid::ShowInternal() {
+  DCHECK(is_showing_);
+  if (!host_ || !host_->is_hidden())
+    return;
+
+  if (layer_.get())
+    layer_->SetHideLayerAndSubtree(false);
+
+  frame_evictor_->SetVisible(true);
+
+  if (overscroll_controller_)
+    overscroll_controller_->Enable();
+
+  host_->WasShown(ui::LatencyInfo());
+
+  if (content_view_core_) {
+    StartObservingRootWindow();
+    RequestVSyncUpdate(BEGIN_FRAME);
+  }
+}
+
+void RenderWidgetHostViewAndroid::HideInternal(
+    bool hide_frontbuffer,
+    bool stop_observing_root_window) {
+  if (hide_frontbuffer) {
+    if (layer_.get() && locks_on_frame_count_ == 0)
+      layer_->SetHideLayerAndSubtree(true);
+
+    frame_evictor_->SetVisible(false);
+  }
+
+  if (stop_observing_root_window)
+    StopObservingRootWindow();
+
+  if (!host_ || host_->is_hidden())
+    return;
+
+  if (overscroll_controller_)
+    overscroll_controller_->Disable();
+
+  RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
+
+  // Inform the renderer that we are being hidden so it can reduce its resource
+  // utilization.
+  host_->WasHidden();
+}
+
 void RenderWidgetHostViewAndroid::AttachLayers() {
   if (!content_view_core_)
     return;
@@ -1434,6 +1451,12 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
 void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32 requests) {
   bool should_request_vsync = !outstanding_vsync_requests_ && requests;
   outstanding_vsync_requests_ |= requests;
+
+  // If the host has been hidden, defer vsync requests until it is shown
+  // again via |Show()|.
+  if (!host_ || host_->is_hidden())
+    return;
+
   // Note that if we're not currently observing the root window, outstanding
   // vsync requests will be pushed if/when we resume observing in
   // |StartObservingRootWindow()|.
@@ -1443,6 +1466,7 @@ void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32 requests) {
 
 void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   DCHECK(content_view_core_window_android_);
+  DCHECK(is_showing_);
   if (observing_root_window_)
     return;
 
@@ -1755,7 +1779,8 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (!content_view_core_)
     return;
 
-  StartObservingRootWindow();
+  if (is_showing_)
+    StartObservingRootWindow();
 
   if (resize)
     WasResized();
@@ -1796,6 +1821,17 @@ void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
   RunAckCallbacks(cc::SurfaceDrawStatus::DRAWN);
 }
 
+void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
+  DCHECK(is_showing_);
+  if (visible) {
+    ShowInternal();
+  } else {
+    bool hide_frontbuffer = true;
+    bool stop_observing_root_window = false;
+    HideInternal(hide_frontbuffer, stop_observing_root_window);
+  }
+}
+
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(content_view_core_);
   if (!overscroll_controller_)
@@ -1812,7 +1848,7 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
 void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
                                           base::TimeDelta vsync_period) {
   TRACE_EVENT0("cc,benchmark", "RenderWidgetHostViewAndroid::OnVSync");
-  if (!host_)
+  if (!host_ || host_->is_hidden())
     return;
 
   if (outstanding_vsync_requests_ & FLUSH_INPUT) {
@@ -1836,6 +1872,20 @@ void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
 void RenderWidgetHostViewAndroid::OnAnimate(base::TimeTicks begin_frame_time) {
   if (Animate(begin_frame_time))
     SetNeedsAnimate();
+}
+
+void RenderWidgetHostViewAndroid::OnActivityPaused() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityPaused");
+  DCHECK(is_showing_);
+  bool hide_frontbuffer = false;
+  bool stop_observing_root_window = false;
+  HideInternal(hide_frontbuffer, stop_observing_root_window);
+}
+
+void RenderWidgetHostViewAndroid::OnActivityResumed() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewAndroid::OnActivityResumed");
+  DCHECK(is_showing_);
+  ShowInternal();
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {

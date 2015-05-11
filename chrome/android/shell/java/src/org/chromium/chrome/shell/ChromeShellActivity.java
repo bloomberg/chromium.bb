@@ -83,7 +83,8 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
             new ActivityWindowAndroidFactory() {
                 @Override
                 public ActivityWindowAndroid getActivityWindowAndroid(Activity activity) {
-                    return new ActivityWindowAndroid(activity);
+                    final boolean listenToActivityState = true;
+                    return new ActivityWindowAndroid(activity, listenToActivityState);
                 }
             };
 
@@ -278,9 +279,6 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
         super.onStop();
 
         if (mToolbar != null) mToolbar.hideSuggestions();
-
-        Tab activeTab = getActiveTab();
-        if (activeTab != null) activeTab.onActivityStop();
     }
 
     @Override

@@ -6,7 +6,9 @@ package org.chromium.chrome.browser;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
@@ -47,5 +49,52 @@ public class TabTest extends ChromeShellTestBase {
         loadUrl("javascript:document.title='" + newTitle + "';");
         mOnTitleUpdatedHelper.waitForCallback(currentCallCount);
         assertEquals("title does not update", newTitle, mTab.getTitle());
+    }
+
+    @SmallTest
+    @Feature({"Tab"})
+    public void testTabRestoredIfKilledWhileActivityStopped() {
+        launchChromeShellWithBlankPage();
+        final Tab tab = getActivity().getActiveTab();
+
+        // Ensure the tab is showing before stopping the activity.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tab.show(TabSelectionType.FROM_NEW);
+            }
+        });
+
+        assertFalse(tab.needsReload());
+        assertFalse(tab.isHidden());
+        assertFalse(tab.isShowingSadTab());
+
+        // Stop the activity and simulate a killed renderer.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getInstrumentation().callActivityOnPause(getActivity());
+                getInstrumentation().callActivityOnStop(getActivity());
+                tab.simulateRendererKilledForTesting(false);
+            }
+        });
+
+        assertTrue(tab.needsReload());
+        assertFalse(tab.isHidden());
+        assertFalse(tab.isShowingSadTab());
+
+        // Resume the activity.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getInstrumentation().callActivityOnStart(getActivity());
+                getInstrumentation().callActivityOnResume(getActivity());
+            }
+        });
+
+        // The tab should be restored and visible.
+        assertFalse(tab.isHidden());
+        assertFalse(tab.needsReload());
+        assertFalse(tab.isShowingSadTab());
     }
 }

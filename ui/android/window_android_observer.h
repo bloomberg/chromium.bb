@@ -12,11 +12,18 @@ namespace ui {
 class UI_ANDROID_EXPORT WindowAndroidObserver {
  public:
   virtual void OnCompositingDidCommit() = 0;
+  virtual void OnRootWindowVisibilityChanged(bool visible) = 0;
   virtual void OnAttachCompositor() = 0;
   virtual void OnDetachCompositor() = 0;
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) = 0;
   virtual void OnAnimate(base::TimeTicks frame_begin_time) {}
+
+  // Note that activity state callbacks will only be made if the WindowAndroid
+  // has been explicitly subscribed to receive them. The observer instance
+  // should account for whether or not this is the case.
+  virtual void OnActivityPaused() = 0;
+  virtual void OnActivityResumed() = 0;
 
  protected:
   virtual ~WindowAndroidObserver() {}

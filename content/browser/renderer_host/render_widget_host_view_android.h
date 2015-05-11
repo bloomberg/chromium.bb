@@ -175,11 +175,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // ui::WindowAndroidObserver implementation.
   void OnCompositingDidCommit() override;
+  void OnRootWindowVisibilityChanged(bool visible) override;
   void OnAttachCompositor() override;
   void OnDetachCompositor() override;
   void OnVSync(base::TimeTicks frame_time,
                base::TimeDelta vsync_period) override;
   void OnAnimate(base::TimeTicks begin_frame_time) override;
+  void OnActivityPaused() override;
+  void OnActivityResumed() override;
 
   // DelegatedFrameEvictor implementation
   void EvictDelegatedFrame() override;
@@ -269,6 +272,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const cc::CompositorFrameMetadata& frame_metadata);
   void ComputeContentsSize(const cc::CompositorFrameMetadata& frame_metadata);
 
+  void ShowInternal();
+  void HideInternal(bool hide_frontbuffer, bool stop_observing_root_window);
   void AttachLayers();
   void RemoveLayers();
 
