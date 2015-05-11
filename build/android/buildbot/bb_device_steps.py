@@ -190,6 +190,7 @@ def RunTestSuites(options, suites, suites_options=None):
 
 
 def RunJunitSuite(suite):
+  bb_annotations.PrintNamedStep(suite)
   RunCmd(['build/android/test_runner.py', 'junit', '-s', suite])
 
 
