@@ -1856,8 +1856,6 @@ crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute
 
 crbug.com/469660 inspector/elements/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
 
-crbug.com/481779 media/encrypted-media/encrypted-media-syntax.html [ Slow ]
-
 crbug.com/469683 animations/responsive-neutral-keyframes.html [ Slow ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure Timeout ]
 crbug.com/469767 webaudio/audiochannelmerger-disconnect.html [ Pass Failure ]
