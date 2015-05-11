@@ -190,14 +190,19 @@ class CacheStorageManagerTest : public testing::Test {
 
   bool CachePut(const scoped_refptr<CacheStorageCache>& cache,
                 const GURL& url) {
-    scoped_ptr<ServiceWorkerFetchRequest> request(
-        new ServiceWorkerFetchRequest());
-    scoped_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse());
-    request->url = url;
-    response->url = url;
+    ServiceWorkerFetchRequest request;
+    ServiceWorkerResponse response;
+    request.url = url;
+    response.url = url;
+
+    CacheStorageBatchOperation operation;
+    operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+    operation.request = request;
+    operation.response = response;
+
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-    cache->Put(
-        request.Pass(), response.Pass(),
+    cache->BatchOperation(
+        std::vector<CacheStorageBatchOperation>(1, operation),
         base::Bind(&CacheStorageManagerTest::CachePutCallback,
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();

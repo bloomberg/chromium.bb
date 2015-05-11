@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/barrier_closure.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -401,40 +402,6 @@ base::WeakPtr<CacheStorageCache> CacheStorageCache::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void CacheStorageCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
-                            scoped_ptr<ServiceWorkerResponse> response,
-                            const ErrorCallback& callback) {
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
-
-  if (!response->blob_uuid.empty()) {
-    if (!blob_storage_context_) {
-      callback.Run(CACHE_STORAGE_ERROR_STORAGE);
-      return;
-    }
-    blob_data_handle =
-        blob_storage_context_->GetBlobDataFromUUID(response->blob_uuid);
-    if (!blob_data_handle) {
-      callback.Run(CACHE_STORAGE_ERROR_STORAGE);
-      return;
-    }
-  }
-
-  ErrorCallback pending_callback =
-      base::Bind(&CacheStorageCache::PendingErrorCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
-
-  scoped_ptr<PutContext> put_context(new PutContext(
-      origin_, request.Pass(), response.Pass(), blob_data_handle.Pass(),
-      pending_callback, request_context_, quota_manager_proxy_));
-
-  if (backend_state_ == BACKEND_UNINITIALIZED)
-    InitBackend();
-
-  scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::PutImpl,
-                                           weak_ptr_factory_.GetWeakPtr(),
-                                           base::Passed(put_context.Pass())));
-}
-
 void CacheStorageCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
                               const ResponseCallback& callback) {
   switch (backend_state_) {
@@ -459,8 +426,9 @@ void CacheStorageCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
                  base::Passed(request.Pass()), pending_callback));
 }
 
-void CacheStorageCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
-                               const ErrorCallback& callback) {
+void CacheStorageCache::BatchOperation(
+    const std::vector<CacheStorageBatchOperation>& operations,
+    const ErrorCallback& callback) {
   switch (backend_state_) {
     case BACKEND_UNINITIALIZED:
       InitBackend();
@@ -472,12 +440,54 @@ void CacheStorageCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
       DCHECK(backend_);
       break;
   }
-  ErrorCallback pending_callback =
-      base::Bind(&CacheStorageCache::PendingErrorCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
-  scheduler_->ScheduleOperation(
-      base::Bind(&CacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(request.Pass()), pending_callback));
+
+  scoped_ptr<ErrorCallback> callback_copy(new ErrorCallback(callback));
+  ErrorCallback* callback_ptr = callback_copy.get();
+  base::Closure barrier_closure = base::BarrierClosure(
+      operations.size(), base::Bind(&CacheStorageCache::BatchDidAllOperations,
+                                    this, base::Passed(callback_copy.Pass())));
+  ErrorCallback completion_callback =
+      base::Bind(&CacheStorageCache::BatchDidOneOperation, this,
+                 barrier_closure, callback_ptr);
+
+  for (const auto& operation : operations) {
+    switch (operation.operation_type) {
+      case CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT:
+        Put(operation, completion_callback);
+        break;
+      case CACHE_STORAGE_CACHE_OPERATION_TYPE_DELETE:
+        DCHECK_EQ(1u, operations.size());
+        Delete(operation, completion_callback);
+        break;
+      case CACHE_STORAGE_CACHE_OPERATION_TYPE_UNDEFINED:
+        NOTREACHED();
+        // TODO(nhiroki): This should return "TypeError".
+        // http://crbug.com/425505
+        completion_callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+        break;
+    }
+  }
+}
+
+void CacheStorageCache::BatchDidOneOperation(
+    const base::Closure& barrier_closure,
+    ErrorCallback* callback,
+    CacheStorageError error) {
+  if (callback->is_null() || error == CACHE_STORAGE_OK) {
+    barrier_closure.Run();
+    return;
+  }
+  callback->Run(error);
+  callback->Reset();  // Only call the callback once.
+
+  barrier_closure.Run();
+}
+
+void CacheStorageCache::BatchDidAllOperations(
+    scoped_ptr<ErrorCallback> callback) {
+  if (callback->is_null())
+    return;
+  callback->Run(CACHE_STORAGE_OK);
 }
 
 void CacheStorageCache::Keys(const RequestsCallback& callback) {
@@ -746,6 +756,52 @@ void CacheStorageCache::MatchDoneWithBody(
                                        blob_data_handle.Pass());
 }
 
+void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
+                            const ErrorCallback& callback) {
+  DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
+  DCHECK_EQ(CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT, operation.operation_type);
+
+  scoped_ptr<ServiceWorkerFetchRequest> request(new ServiceWorkerFetchRequest(
+      operation.request.url, operation.request.method,
+      operation.request.headers, operation.request.referrer,
+      operation.request.is_reload));
+
+  // We don't support streaming for cache.
+  DCHECK(operation.response.stream_url.is_empty());
+  scoped_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse(
+      operation.response.url, operation.response.status_code,
+      operation.response.status_text, operation.response.response_type,
+      operation.response.headers, operation.response.blob_uuid,
+      operation.response.blob_size, operation.response.stream_url));
+
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+
+  if (!response->blob_uuid.empty()) {
+    if (!blob_storage_context_) {
+      callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+      return;
+    }
+    blob_data_handle =
+        blob_storage_context_->GetBlobDataFromUUID(response->blob_uuid);
+    if (!blob_data_handle) {
+      callback.Run(CACHE_STORAGE_ERROR_STORAGE);
+      return;
+    }
+  }
+
+  ErrorCallback pending_callback =
+      base::Bind(&CacheStorageCache::PendingErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+
+  scoped_ptr<PutContext> put_context(new PutContext(
+      origin_, request.Pass(), response.Pass(), blob_data_handle.Pass(),
+      pending_callback, request_context_, quota_manager_proxy_));
+
+  scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::PutImpl,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           base::Passed(put_context.Pass())));
+}
+
 void CacheStorageCache::PutImpl(scoped_ptr<PutContext> put_context) {
   DCHECK(backend_state_ != BACKEND_UNINITIALIZED);
   if (backend_state_ != BACKEND_OPEN) {
@@ -912,6 +968,25 @@ void CacheStorageCache::PutDidWriteBlobToCache(
   }
 
   put_context->callback.Run(CACHE_STORAGE_OK);
+}
+
+void CacheStorageCache::Delete(const CacheStorageBatchOperation& operation,
+                               const ErrorCallback& callback) {
+  DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
+  DCHECK_EQ(CACHE_STORAGE_CACHE_OPERATION_TYPE_DELETE,
+            operation.operation_type);
+
+  scoped_ptr<ServiceWorkerFetchRequest> request(new ServiceWorkerFetchRequest(
+      operation.request.url, operation.request.method,
+      operation.request.headers, operation.request.referrer,
+      operation.request.is_reload));
+
+  ErrorCallback pending_callback =
+      base::Bind(&CacheStorageCache::PendingErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+  scheduler_->ScheduleOperation(
+      base::Bind(&CacheStorageCache::DeleteImpl, weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(request.Pass()), pending_callback));
 }
 
 void CacheStorageCache::DeleteImpl(

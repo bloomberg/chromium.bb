@@ -64,17 +64,25 @@ class CONTENT_EXPORT CacheStorageCache
   void Match(scoped_ptr<ServiceWorkerFetchRequest> request,
              const ResponseCallback& callback);
 
-  // Puts the request and response object in the cache. The response body (if
-  // present) is stored in the cache, but not the request body. Returns
-  // ERROR_TYPE_OK on success.
-  void Put(scoped_ptr<ServiceWorkerFetchRequest> request,
-           scoped_ptr<ServiceWorkerResponse> response,
-           const ErrorCallback& callback);
-
-  // Returns ErrorNotFound if not found. Otherwise deletes and returns
-  // ERROR_TYPE_OK.
-  void Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
-              const ErrorCallback& callback);
+  // Runs given batch operations. This corresponds to the Batch Cache Operations
+  // algorithm in the spec.
+  //
+  // |operations| cannot mix PUT and DELETE operations and cannot contain
+  // multiple DELETE operations.
+  //
+  // In the case of the PUT operation, puts request and response objects in the
+  // cache and returns OK when all operations are successfully completed.
+  // In the case of the DELETE operation, returns ERROR_NOT_FOUND if a specified
+  // entry is not found. Otherwise deletes it and returns OK.
+  //
+  // TODO(nhiroki): This function should run all operations atomically.
+  // http://crbug.com/486637
+  void BatchOperation(const std::vector<CacheStorageBatchOperation>& operations,
+                      const ErrorCallback& callback);
+  void BatchDidOneOperation(const base::Closure& barrier_closure,
+                            ErrorCallback* callback,
+                            CacheStorageError error);
+  void BatchDidAllOperations(scoped_ptr<ErrorCallback> callback);
 
   // TODO(jkarlin): Have keys take an optional ServiceWorkerFetchRequest.
   // Returns CACHE_STORAGE_OK and a vector of requests if there are no errors.
@@ -130,7 +138,11 @@ class CONTENT_EXPORT CacheStorageCache
                                     int rv);
   void MatchDoneWithBody(scoped_ptr<MatchContext> match_context);
 
-  // Put callbacks.
+  // Puts the request and response object in the cache. The response body (if
+  // present) is stored in the cache, but not the request body. Returns OK on
+  // success.
+  void Put(const CacheStorageBatchOperation& operation,
+           const ErrorCallback& callback);
   void PutImpl(scoped_ptr<PutContext> put_context);
   void PutDidDelete(scoped_ptr<PutContext> put_context,
                     CacheStorageError delete_error);
@@ -143,7 +155,9 @@ class CONTENT_EXPORT CacheStorageCache
                               disk_cache::ScopedEntryPtr entry,
                               bool success);
 
-  // Delete callbacks
+  // Returns ERROR_NOT_FOUND if not found. Otherwise deletes and returns OK.
+  void Delete(const CacheStorageBatchOperation& operation,
+              const ErrorCallback& callback);
   void DeleteImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                   const ErrorCallback& callback);
   void DeleteDidOpenEntry(

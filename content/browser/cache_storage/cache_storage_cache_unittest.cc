@@ -252,21 +252,12 @@ class CacheStorageCacheTest : public testing::Test {
         request.is_reload));
   }
 
-  scoped_ptr<ServiceWorkerResponse> CopyFetchResponse(
-      const ServiceWorkerResponse& response) {
-    scoped_ptr<ServiceWorkerResponse> sw_response(new ServiceWorkerResponse(
-        response.url, response.status_code, response.status_text,
-        response.response_type, response.headers, response.blob_uuid,
-        response.blob_size, response.stream_url));
-    return sw_response.Pass();
-  }
-
-  bool Put(const ServiceWorkerFetchRequest& request,
-           const ServiceWorkerResponse& response) {
+  CacheStorageError BatchOperation(
+      const std::vector<CacheStorageBatchOperation>& operations) {
     scoped_ptr<base::RunLoop> loop(new base::RunLoop());
 
-    cache_->Put(
-        CopyFetchRequest(request), CopyFetchResponse(response),
+    cache_->BatchOperation(
+        operations,
         base::Bind(&CacheStorageCacheTest::ErrorTypeCallback,
                    base::Unretained(this), base::Unretained(loop.get())));
     // TODO(jkarlin): These functions should use base::RunLoop().RunUntilIdle()
@@ -274,7 +265,19 @@ class CacheStorageCacheTest : public testing::Test {
     // thread.
     loop->Run();
 
-    return callback_error_ == CACHE_STORAGE_OK;
+    return callback_error_;
+  }
+
+  bool Put(const ServiceWorkerFetchRequest& request,
+           const ServiceWorkerResponse& response) {
+    CacheStorageBatchOperation operation;
+    operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+    operation.request = request;
+    operation.response = response;
+
+    CacheStorageError error =
+        BatchOperation(std::vector<CacheStorageBatchOperation>(1, operation));
+    return error == CACHE_STORAGE_OK;
   }
 
   bool Match(const ServiceWorkerFetchRequest& request) {
@@ -290,15 +293,13 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   bool Delete(const ServiceWorkerFetchRequest& request) {
-    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
+    CacheStorageBatchOperation operation;
+    operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_DELETE;
+    operation.request = request;
 
-    cache_->Delete(
-        CopyFetchRequest(request),
-        base::Bind(&CacheStorageCacheTest::ErrorTypeCallback,
-                   base::Unretained(this), base::Unretained(loop.get())));
-    loop->Run();
-
-    return callback_error_ == CACHE_STORAGE_OK;
+    CacheStorageError error =
+        BatchOperation(std::vector<CacheStorageBatchOperation>(1, operation));
+    return error == CACHE_STORAGE_OK;
   }
 
   bool Keys() {
@@ -456,6 +457,44 @@ TEST_P(CacheStorageCacheTestP, PutBody) {
   EXPECT_TRUE(Put(body_request_, body_response_));
 }
 
+TEST_P(CacheStorageCacheTestP, PutBody_Multiple) {
+  CacheStorageBatchOperation operation1;
+  operation1.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation1.request = body_request_;
+  operation1.request.url = GURL("http://example.com/1");
+  operation1.response = body_response_;
+  operation1.response.url = GURL("http://example.com/1");
+
+  CacheStorageBatchOperation operation2;
+  operation2.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation2.request = body_request_;
+  operation2.request.url = GURL("http://example.com/2");
+  operation2.response = body_response_;
+  operation2.response.url = GURL("http://example.com/2");
+
+  CacheStorageBatchOperation operation3;
+  operation3.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation3.request = body_request_;
+  operation3.request.url = GURL("http://example.com/3");
+  operation3.response = body_response_;
+  operation3.response.url = GURL("http://example.com/3");
+
+  std::vector<CacheStorageBatchOperation> operations;
+  operations.push_back(operation1);
+  operations.push_back(operation2);
+  operations.push_back(operation3);
+
+  EXPECT_EQ(CACHE_STORAGE_OK, BatchOperation(operations));
+  EXPECT_TRUE(Match(operation1.request));
+  EXPECT_TRUE(Match(operation2.request));
+  EXPECT_TRUE(Match(operation3.request));
+}
+
+// TODO(nhiroki): Add a test for the case where one of PUT operations fails.
+// Currently there is no handy way to fail only one operation in a batch.
+// This could be easily achieved after adding some security checks in the
+// browser side (http://crbug.com/425505).
+
 TEST_P(CacheStorageCacheTestP, ResponseURLDiffersFromRequestURL) {
   no_body_response_.url = GURL("http://example.com/foobar");
   EXPECT_STRNE("http://example.com/foobar",
@@ -475,11 +514,16 @@ TEST_P(CacheStorageCacheTestP, ResponseURLEmpty) {
 }
 
 TEST_F(CacheStorageCacheTest, PutBodyDropBlobRef) {
+  CacheStorageBatchOperation operation;
+  operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation.request = body_request_;
+  operation.response = body_response_;
+
   scoped_ptr<base::RunLoop> loop(new base::RunLoop());
-  cache_->Put(CopyFetchRequest(body_request_),
-              CopyFetchResponse(body_response_),
-              base::Bind(&CacheStorageCacheTestP::ErrorTypeCallback,
-                         base::Unretained(this), base::Unretained(loop.get())));
+  cache_->BatchOperation(
+      std::vector<CacheStorageBatchOperation>(1, operation),
+      base::Bind(&CacheStorageCacheTestP::ErrorTypeCallback,
+                 base::Unretained(this), base::Unretained(loop.get())));
   // The handle should be held by the cache now so the deref here should be
   // okay.
   blob_handle_.reset();
@@ -500,6 +544,28 @@ TEST_P(CacheStorageCacheTestP, PutReplace) {
   EXPECT_TRUE(Put(body_request_, no_body_response_));
   EXPECT_TRUE(Match(body_request_));
   EXPECT_FALSE(callback_response_data_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutReplcaceInBatch) {
+  CacheStorageBatchOperation operation1;
+  operation1.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation1.request = body_request_;
+  operation1.response = no_body_response_;
+
+  CacheStorageBatchOperation operation2;
+  operation2.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation2.request = body_request_;
+  operation2.response = body_response_;
+
+  std::vector<CacheStorageBatchOperation> operations;
+  operations.push_back(operation1);
+  operations.push_back(operation2);
+
+  EXPECT_EQ(CACHE_STORAGE_OK, BatchOperation(operations));
+
+  // |operation2| should win.
+  EXPECT_TRUE(Match(operation2.request));
+  EXPECT_TRUE(callback_response_data_);
 }
 
 TEST_P(CacheStorageCacheTestP, MatchNoBody) {
@@ -761,23 +827,29 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
 
   int sequence_out = -1;
 
-  scoped_ptr<ServiceWorkerResponse> response1 =
-      CopyFetchResponse(body_response_);
+  CacheStorageBatchOperation operation1;
+  operation1.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation1.request = body_request_;
+  operation1.response = body_response_;
+
   scoped_ptr<base::RunLoop> close_loop1(new base::RunLoop());
-  cache_->Put(
-      CopyFetchRequest(body_request_), response1.Pass(),
+  cache_->BatchOperation(
+      std::vector<CacheStorageBatchOperation>(1, operation1),
       base::Bind(&CacheStorageCacheTest::SequenceCallback,
                  base::Unretained(this), 1, &sequence_out, close_loop1.get()));
 
   // Blocks on opening the cache entry.
   base::RunLoop().RunUntilIdle();
 
+  CacheStorageBatchOperation operation2;
+  operation2.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;
+  operation2.request = body_request_;
+  operation2.response = body_response_;
+
   delayable_backend->set_delay_open(false);
-  scoped_ptr<ServiceWorkerResponse> response2 =
-      CopyFetchResponse(body_response_);
   scoped_ptr<base::RunLoop> close_loop2(new base::RunLoop());
-  cache_->Put(
-      CopyFetchRequest(body_request_), response2.Pass(),
+  cache_->BatchOperation(
+      std::vector<CacheStorageBatchOperation>(1, operation2),
       base::Bind(&CacheStorageCacheTest::SequenceCallback,
                  base::Unretained(this), 2, &sequence_out, close_loop2.get()));
 

@@ -244,40 +244,10 @@ void CacheStorageDispatcherHost::OnCacheBatch(
         thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
-
-  const CacheStorageBatchOperation& operation = operations[0];
-
   scoped_refptr<CacheStorageCache> cache = it->second;
-  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
-      new ServiceWorkerFetchRequest(
-          operation.request.url, operation.request.method,
-          operation.request.headers, operation.request.referrer,
-          operation.request.is_reload));
-
-  if (operation.operation_type == CACHE_STORAGE_CACHE_OPERATION_TYPE_DELETE) {
-    cache->Delete(scoped_request.Pass(),
-                  base::Bind(&CacheStorageDispatcherHost::OnCacheBatchCallback,
+  cache->BatchOperation(
+      operations, base::Bind(&CacheStorageDispatcherHost::OnCacheBatchCallback,
                              this, thread_id, request_id, cache));
-    return;
-  }
-
-  if (operation.operation_type == CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT) {
-    // We don't support streaming for cache.
-    DCHECK(operation.response.stream_url.is_empty());
-    scoped_ptr<ServiceWorkerResponse> scoped_response(new ServiceWorkerResponse(
-        operation.response.url, operation.response.status_code,
-        operation.response.status_text, operation.response.response_type,
-        operation.response.headers, operation.response.blob_uuid,
-        operation.response.blob_size, operation.response.stream_url));
-    cache->Put(scoped_request.Pass(), scoped_response.Pass(),
-               base::Bind(&CacheStorageDispatcherHost::OnCacheBatchCallback,
-                          this, thread_id, request_id, cache));
-
-    return;
-  }
-
-  Send(new CacheStorageMsg_CacheBatchError(
-      thread_id, request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
 }
 
 void CacheStorageDispatcherHost::OnCacheClosed(int cache_id) {
