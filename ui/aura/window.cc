@@ -675,12 +675,6 @@ void Window::Focus() {
   client->FocusWindow(this);
 }
 
-void Window::Blur() {
-  client::FocusClient* client = client::GetFocusClient(this);
-  DCHECK(client);
-  client->FocusWindow(NULL);
-}
-
 bool Window::HasFocus() const {
   client::FocusClient* client = client::GetFocusClient(this);
   return client && client->GetFocusedWindow() == this;

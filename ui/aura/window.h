@@ -266,9 +266,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // that has a delegate set).  The toplevel window may be |this|.
   Window* GetToplevelWindow();
 
-  // Claims or relinquishes the claim to focus.
+  // Claims focus.
   void Focus();
-  void Blur();
 
   // Returns true if the Window is currently the focused window.
   bool HasFocus() const;
