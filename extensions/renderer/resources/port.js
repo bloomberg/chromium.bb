@@ -16,8 +16,8 @@ function Port(portId, opt_name) {
   var messageSchema = {name: 'message', type: 'any', optional: true};
   var options = {unmanaged: true};
 
-  this.onDisconnect = new Event(null, [portSchema], options);
   this.onMessage = new Event(null, [messageSchema, portSchema], options);
+  this.onDisconnect = new Event(null, [portSchema], options);
   this.onDestroy_ = null;
 }
 
@@ -49,14 +49,16 @@ Port.prototype.disconnect = function() {
 };
 
 Port.prototype.destroy_ = function() {
-  // Note: it's not necessary to destroy the onDisconnect/onMessage events
-  // because they're unmanaged.
   if (this.onDestroy_)
     this.onDestroy_();
+  // Destroy the onMessage/onDisconnect events in case the extension added
+  // listeners, but didn't remove them, when the port closed.
+  privates(this.onMessage).impl.destroy_();
+  privates(this.onDisconnect).impl.destroy_();
   messagingNatives.PortRelease(this.portId_);
 };
 
 exports.Port = utils.expose('Port', Port, {
   functions: ['disconnect', 'postMessage'],
-  properties: ['name', 'onDisconnect', 'onMessage']
+  properties: ['name', 'onMessage', 'onDisconnect']
 });
