@@ -61,18 +61,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void RevertDrag() override;
 
  private:
-  WorkspaceWindowResizer(wm::WindowState* window_state,
-                         const std::vector<aura::Window*>& attached_windows);
-
- private:
   friend class WorkspaceWindowResizerTest;
 
   // The edge to which the window should be snapped at the end of the drag.
-  enum SnapType {
-    SNAP_LEFT,
-    SNAP_RIGHT,
-    SNAP_NONE
-  };
+  enum SnapType { SNAP_LEFT, SNAP_RIGHT, SNAP_NONE };
+
+  WorkspaceWindowResizer(wm::WindowState* window_state,
+                         const std::vector<aura::Window*>& attached_windows);
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
   void LayoutAttachedWindows(gfx::Rect* bounds);
