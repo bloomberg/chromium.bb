@@ -107,9 +107,6 @@ gfx::Vector2dF TopControlsManager::ScrollBy(
   if (pinch_gesture_active_)
     return pending_delta;
 
-  if (!TopControlsHeight())
-    return pending_delta;
-
   if (permitted_state_ == SHOWN && pending_delta.y() > 0)
     return pending_delta;
   else if (permitted_state_ == HIDDEN && pending_delta.y() < 0)
