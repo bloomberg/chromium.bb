@@ -47,6 +47,8 @@
 #    application at runtime to access the package's resources.
 #  R_package - A custom Java package to generate the resource file R.java in.
 #    By default, the package given in AndroidManifest.xml will be used.
+#  include_all_resources - Set to 1 to include all resource IDs in all generated
+#    R.java files.
 #  use_chromium_linker - Enable the content dynamic linker that allows sharing the
 #    RELRO section of the native libraries between the different processes.
 #  load_library_from_zip_file - When using the dynamic linker, load the library
@@ -78,6 +80,7 @@
     'jar_name': 'chromium_apk_<(_target_name).jar',
     'resource_dir%':'<(DEPTH)/build/android/ant/empty/res',
     'R_package%':'',
+    'include_all_resources%': 0,
     'additional_R_text_files': [],
     'dependencies_res_zip_paths': [],
     'additional_res_packages': [],
@@ -610,6 +613,12 @@
           ['shared_resources == 1', {
             'process_resources_options+': ['--shared-resources']
           }],
+          ['R_package != ""', {
+            'process_resources_options+': ['--custom-package', '<(R_package)']
+          }],
+          ['include_all_resources == 1', {
+            'process_resources_options+': ['--include-all-resources']
+          }]
         ],
       },
       'inputs': [

@@ -323,6 +323,12 @@ template("write_build_config") {
           invoker.custom_package,
         ]
       }
+      if (defined(invoker.r_text)) {
+        args += [
+          "--r-text",
+          rebase_path(invoker.r_text, root_build_dir),
+        ]
+      }
     }
 
     if (is_apk) {
@@ -1005,6 +1011,7 @@ template("process_resources") {
 
   zip_path = invoker.zip_path
   srcjar_path = invoker.srcjar_path
+  r_text_path = invoker.r_text_path
   build_config = invoker.build_config
   resource_dirs = invoker.resource_dirs
   android_manifest = invoker.android_manifest
@@ -1022,6 +1029,7 @@ template("process_resources") {
       depfile,
       zip_path,
       srcjar_path,
+      r_text_path,
     ]
 
     sources_build_rel = exec_script("//build/android/gyp/find.py",
@@ -1050,8 +1058,11 @@ template("process_resources") {
       rebase_path(srcjar_path, root_build_dir),
       "--resource-zip-out",
       rebase_path(zip_path, root_build_dir),
+      "--r-text-out",
+      rebase_path(r_text_path, root_build_dir),
       "--dependencies-res-zips=@FileArg($rebase_build_config:resources:dependency_zips)",
       "--extra-res-packages=@FileArg($rebase_build_config:resources:extra_package_names)",
+      "--extra-r-text-files=@FileArg($rebase_build_config:resources:extra_r_text_files)",
     ]
 
     if (non_constant_id) {
@@ -1071,6 +1082,11 @@ template("process_resources") {
 
     if (defined(invoker.shared_resources) && invoker.shared_resources) {
       args += [ "--shared-resources" ]
+    }
+
+    if (defined(invoker.include_all_resources) &&
+        invoker.include_all_resources) {
+      args += [ "--include-all-resources" ]
     }
 
     if (defined(invoker.all_resources_zip_path)) {
