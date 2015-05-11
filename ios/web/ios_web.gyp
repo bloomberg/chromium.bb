@@ -131,7 +131,6 @@
         'public/web_state/crw_web_user_interface_delegate.h',
         'public/web_state/crw_web_view_proxy.h',
         'public/web_state/crw_web_view_scroll_view_proxy.h',
-        'public/web_state/js/crw_js_base_manager.h',
         'public/web_state/js/crw_js_injection_evaluator.h',
         'public/web_state/js/crw_js_injection_manager.h',
         'public/web_state/js/crw_js_injection_receiver.h',
