@@ -861,27 +861,44 @@ class RemoteDevice(object):
       **kwargs: keyword arguments to pass along with cmd. See
         RemoteAccess.RemoteSh documentation.
     """
-    new_cmd = cmd
     # Handle setting environment variables on the device by copying
     # and sourcing a temporary environment file.
     extra_env = kwargs.pop('extra_env', None)
     if extra_env:
-      env_list = ['export %s=%s' % (k, cros_build_lib.ShellQuote(v))
-                  for k, v in extra_env.iteritems()]
       remote_sudo = kwargs.pop('remote_sudo', False)
-      with tempfile.NamedTemporaryFile(dir=self.tempdir.tempdir,
-                                       prefix='env') as f:
-        logging.debug('Environment variables: %s', ' '.join(env_list))
-        osutils.WriteFile(f.name, '\n'.join(env_list))
-        self.CopyToWorkDir(f.name)
-        env_file = os.path.join(self.work_dir, os.path.basename(f.name))
-        new_cmd = ['.', '%s;' % env_file]
-        if remote_sudo and self.GetAgent().username != ROOT_ACCOUNT:
-          new_cmd += ['sudo', '-E']
+      if remote_sudo and self.GetAgent().username == ROOT_ACCOUNT:
+        remote_sudo = False
 
-        new_cmd += cmd
+      new_cmd = []
+      flat_vars = ['%s=%s' % (k, cros_build_lib.ShellQuote(v))
+                   for k, v in extra_env.iteritems()]
 
-    return self.BaseRunCommand(new_cmd, **kwargs)
+      # If the vars are too large for the command line, do it indirectly.
+      # We pick 32k somewhat arbitrarily -- the kernel should accept this
+      # and rarely should remote commands get near that size.
+      ARG_MAX = 32 * 1024
+
+      # What the command line would generally look like on the remote.
+      cmdline = ' '.join(flat_vars + cmd)
+      if len(cmdline) > ARG_MAX:
+        env_list = ['export %s' % x for x in flat_vars]
+        with tempfile.NamedTemporaryFile(dir=self.tempdir.tempdir,
+                                         prefix='env') as f:
+          logging.debug('Environment variables: %s', ' '.join(env_list))
+          osutils.WriteFile(f.name, '\n'.join(env_list))
+          self.CopyToWorkDir(f.name)
+          env_file = os.path.join(self.work_dir, os.path.basename(f.name))
+          new_cmd += ['.', '%s;' % env_file]
+          if remote_sudo:
+            new_cmd += ['sudo', '-E']
+      else:
+        if remote_sudo:
+          new_cmd += ['sudo']
+        new_cmd += flat_vars
+
+      cmd = new_cmd + cmd
+
+    return self.BaseRunCommand(cmd, **kwargs)
 
 
 class ChromiumOSDevice(RemoteDevice):

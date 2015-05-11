@@ -260,6 +260,25 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
       self.assertEqual(expected_output,
                        device.BaseRunCommand(['echo', 'foo']).output)
 
+  def testRunCommandShortCmdline(self):
+    """Verify short command lines execute env settings directly."""
+    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+      self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir',
+                       side_effect=Exception('should not be copying files'))
+      self.rsh_mock.AddCmdResult(partial_mock.In('runit'))
+      device.RunCommand(['runit'], extra_env={'VAR': 'val'})
+
+  def testRunCommandLongCmdline(self):
+    """Verify long command lines execute env settings via script."""
+    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+      self._SetupRemoteTempDir()
+      m = self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir')
+      self.rsh_mock.AddCmdResult(partial_mock.In('runit'))
+      device.RunCommand(['runit'], extra_env={'VAR': 'v' * 1024 * 1024})
+      # We'll assume that the test passed when it tries to copy a file to the
+      # remote side (the shell script to run indirectly).
+      self.assertEqual(m.call_count, 1)
+
   def testNoDeviceBaseDir(self):
     """Tests base_dir=None."""
     command = ['echo', 'foo']
