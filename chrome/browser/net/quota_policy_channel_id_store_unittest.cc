@@ -46,28 +46,6 @@ class QuotaPolicyChannelIDStoreTest : public testing::Test {
   }
 
  protected:
-  static base::Time GetTestCertExpirationTime() {
-    // Cert expiration time from 'dumpasn1 unittest.originbound.der':
-    // GeneralizedTime 19/11/2111 02:23:45 GMT
-    // base::Time::FromUTCExploded can't generate values past 2038 on 32-bit
-    // linux, so we use the raw value here.
-    return base::Time::FromInternalValue(GG_INT64_C(16121816625000000));
-  }
-
-  static base::Time GetTestCertCreationTime() {
-    // UTCTime 13/12/2011 02:23:45 GMT
-    base::Time::Exploded exploded_time;
-    exploded_time.year = 2011;
-    exploded_time.month = 12;
-    exploded_time.day_of_week = 0;  // Unused.
-    exploded_time.day_of_month = 13;
-    exploded_time.hour = 2;
-    exploded_time.minute = 23;
-    exploded_time.second = 45;
-    exploded_time.millisecond = 0;
-    return base::Time::FromUTCExploded(exploded_time);
-  }
-
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new QuotaPolicyChannelIDStore(
