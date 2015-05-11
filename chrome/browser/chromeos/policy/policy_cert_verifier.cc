@@ -76,7 +76,7 @@ int PolicyCertVerifier::Verify(
     net::CRLSet* crl_set,
     net::CertVerifyResult* verify_result,
     const net::CompletionCallback& completion_callback,
-    RequestHandle* out_req,
+    scoped_ptr<Request>* out_req,
     const net::BoundNetLog& net_log) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(delegate_);
@@ -90,11 +90,6 @@ int PolicyCertVerifier::Verify(
                         verify_result, wrapped_callback, out_req, net_log);
   MaybeSignalAnchorUse(error, anchor_used_callback_, *verify_result);
   return error;
-}
-
-void PolicyCertVerifier::CancelRequest(RequestHandle req) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  delegate_->CancelRequest(req);
 }
 
 bool PolicyCertVerifier::SupportsOCSPStapling() {

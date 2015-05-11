@@ -177,13 +177,9 @@ class MyTestCertVerifier : public net::CertVerifier {
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
-             RequestHandle* out_req,
+             scoped_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override {
     return net::OK;
-  }
-
-  void CancelRequest(RequestHandle req) override {
-    // Do nothing.
   }
 };
 

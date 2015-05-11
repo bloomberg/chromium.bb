@@ -43,7 +43,7 @@ int MockCertVerifier::Verify(X509Certificate* cert,
                              CRLSet* crl_set,
                              CertVerifyResult* verify_result,
                              const CompletionCallback& callback,
-                             RequestHandle* out_req,
+                             scoped_ptr<Request>* out_req,
                              const BoundNetLog& net_log) {
   RuleList::const_iterator it;
   for (it = rules_.begin(); it != rules_.end(); ++it) {
@@ -60,10 +60,6 @@ int MockCertVerifier::Verify(X509Certificate* cert,
   verify_result->verified_cert = cert;
   verify_result->cert_status = MapNetErrorToCertStatus(default_result_);
   return default_result_;
-}
-
-void MockCertVerifier::CancelRequest(RequestHandle req) {
-  NOTIMPLEMENTED();
 }
 
 void MockCertVerifier::AddResultForCert(X509Certificate* cert,

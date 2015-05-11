@@ -19,7 +19,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
@@ -80,7 +79,8 @@ class ProofVerifierChromium::Job {
   ProofVerifierChromium* proof_verifier_;
 
   // The underlying verifier used for verifying certificates.
-  scoped_ptr<SingleRequestCertVerifier> verifier_;
+  CertVerifier* verifier_;
+  scoped_ptr<CertVerifier::Request> cert_verifier_request_;
 
   TransportSecurityState* transport_security_state_;
 
@@ -107,7 +107,7 @@ ProofVerifierChromium::Job::Job(
     TransportSecurityState* transport_security_state,
     const BoundNetLog& net_log)
     : proof_verifier_(proof_verifier),
-      verifier_(new SingleRequestCertVerifier(cert_verifier)),
+      verifier_(cert_verifier),
       transport_security_state_(transport_security_state),
       next_state_(STATE_NONE),
       net_log_(net_log) {
@@ -228,11 +228,11 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
                            &verify_details_->cert_verify_result,
                            base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
                                       base::Unretained(this)),
-                           net_log_);
+                           &cert_verifier_request_, net_log_);
 }
 
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
-  verifier_.reset();
+  cert_verifier_request_.reset();
 
   const CertVerifyResult& cert_verify_result =
       verify_details_->cert_verify_result;

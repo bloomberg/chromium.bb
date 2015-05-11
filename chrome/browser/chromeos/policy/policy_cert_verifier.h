@@ -54,10 +54,8 @@ class PolicyCertVerifier : public net::CertVerifier,
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
-             RequestHandle* out_req,
+             scoped_ptr<Request>* out_req,
              const net::BoundNetLog& net_log) override;
-
-  void CancelRequest(RequestHandle req) override;
 
   bool SupportsOCSPStapling() override;
 

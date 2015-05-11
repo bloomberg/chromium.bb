@@ -31,7 +31,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_ev_whitelist.h"
 #include "net/cert/ct_verifier.h"
-#include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util_openssl.h"
 #include "net/http/transport_security_state.h"
@@ -473,7 +472,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   }
 
   // Shut down anything that may call us back.
-  verifier_.reset();
+  cert_verifier_request_.reset();
   transport_->socket()->Disconnect();
 
   // Null all callbacks, delete all buffers.
@@ -1090,19 +1089,18 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
     flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
   if (ssl_config_.rev_checking_required_local_anchors)
     flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
-  verifier_.reset(new SingleRequestCertVerifier(cert_verifier_));
-  return verifier_->Verify(
+  return cert_verifier_->Verify(
       server_cert_.get(), host_and_port_.host(), ocsp_response, flags,
       // TODO(davidben): Route the CRLSet through SSLConfig so
       // SSLClientSocket doesn't depend on SSLConfigService.
       SSLConfigService::GetCRLSet().get(), &server_cert_verify_result_,
       base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
                  base::Unretained(this)),
-      net_log_);
+      &cert_verifier_request_, net_log_);
 }
 
 int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
-  verifier_.reset();
+  cert_verifier_request_.reset();
 
   if (!start_cert_verification_time_.is_null()) {
     base::TimeDelta verify_time =

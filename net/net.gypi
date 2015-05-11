@@ -82,8 +82,6 @@
       'cert/signed_certificate_timestamp.cc',
       'cert/signed_certificate_timestamp.h',
       'cert/signed_tree_head.h',
-      'cert/single_request_cert_verifier.cc',
-      'cert/single_request_cert_verifier.h',
       'cert/x509_cert_types.cc',
       'cert/x509_cert_types.h',
       'cert/x509_certificate.cc',

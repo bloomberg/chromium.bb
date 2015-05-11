@@ -20,14 +20,14 @@ class X509Certificate;
 
 // CertVerifier represents a service for verifying certificates.
 //
-// CertVerifiers can handle multiple requests at a time. A simpler alternative
-// for consumers that only have 1 outstanding request at a time is to create a
-// SingleRequestCertVerifier wrapper around CertVerifier (which will
-// automatically cancel the single request when it goes out of scope).
+// CertVerifiers can handle multiple requests at a time.
 class NET_EXPORT CertVerifier {
  public:
-  // Opaque pointer type used to cancel outstanding requests.
-  typedef void* RequestHandle;
+  class Request {
+   public:
+    // Destruction of the Request cancels it.
+    virtual ~Request() {}
+  };
 
   enum VerifyFlags {
     // If set, enables online revocation checking via CRLs and OCSP for the
@@ -99,8 +99,8 @@ class NET_EXPORT CertVerifier {
   // could not be completed synchronously, in which case the result code will
   // be passed to the callback when available.
   //
-  // |*out_req| will be filled with a handle to the async request.
-  // This handle is not valid after the request has completed.
+  // |*out_req| will be filled with a pointer to the asynchronous request.
+  // Freeing this pointer before the request has completed will cancel it.
   //
   // TODO(rsleevi): Move CRLSet* out of the CertVerifier signature.
   virtual int Verify(X509Certificate* cert,
@@ -110,12 +110,8 @@ class NET_EXPORT CertVerifier {
                      CRLSet* crl_set,
                      CertVerifyResult* verify_result,
                      const CompletionCallback& callback,
-                     RequestHandle* out_req,
+                     scoped_ptr<Request>* out_req,
                      const BoundNetLog& net_log) = 0;
-
-  // Cancels the specified request. |req| is the handle returned by Verify().
-  // After a request is canceled, its completion callback will not be called.
-  virtual void CancelRequest(RequestHandle req) = 0;
 
   // Returns true if this CertVerifier supports stapled OCSP responses.
   virtual bool SupportsOCSPStapling();

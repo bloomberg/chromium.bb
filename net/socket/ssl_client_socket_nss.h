@@ -21,6 +21,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/base/nss_memio.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/x509_certificate.h"
@@ -41,7 +42,6 @@ class CertVerifier;
 class ChannelIDService;
 class CTVerifier;
 class ClientSocketHandle;
-class SingleRequestCertVerifier;
 class TransportSecurityState;
 class X509Certificate;
 
@@ -167,7 +167,7 @@ class SSLClientSocketNSS : public SSLClientSocket {
   CertVerifyResult server_cert_verify_result_;
 
   CertVerifier* const cert_verifier_;
-  scoped_ptr<SingleRequestCertVerifier> verifier_;
+  scoped_ptr<CertVerifier::Request> cert_verifier_request_;
 
   // Certificate Transparency: Verifier and result holder.
   ct::CTVerifyResult ct_verify_result_;
