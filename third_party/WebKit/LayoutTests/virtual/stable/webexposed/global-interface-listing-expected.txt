@@ -36,6 +36,10 @@ interface AnimationEvent
     getter animationName
     getter elapsedTime
     method constructor
+interface AppBannerPromptResult
+    getter outcome
+    getter platform
+    method constructor
 interface ApplicationCache
     attribute CHECKING
     attribute DOWNLOADING
@@ -237,6 +241,10 @@ interface BatteryManager
     setter onchargingtimechange
     setter ondischargingtimechange
     setter onlevelchange
+interface BeforeInstallPromptEvent
+    getter platforms
+    getter userChoice
+    method constructor
 interface BeforeUnloadEvent
     getter returnValue
     method constructor
