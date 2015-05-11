@@ -31,8 +31,9 @@
   justify-content: space-between;
 }
 
-#container-header.hide {
-  display: none;
+#drop-down-button {
+  margin-top: 10px;
+  z-index: 1;
 }
 
 .hide {
