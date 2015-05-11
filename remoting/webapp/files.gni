@@ -78,28 +78,28 @@ remoting_webapp_unittests_js_files = [
   "base/js/base_unittest.js",
   "base/js/base_event_hook_unittest.js",
   "base/js/base_inherits_unittest.js",
+  "base/js/client_session_unittest.js",
+  "base/js/dns_blackhole_checker_unittest.js",
+  "base/js/error_unittest.js",
+  "base/js/fallback_signal_strategy_unittest.js",
+  "base/js/identity_unittest.js",
   "base/js/ipc_unittest.js",
+  "base/js/l10n_unittest.js",
   "base/js/protocol_extension_manager_unittest.js",
+  "base/js/typecheck_unittest.js",
   "base/js/viewport_unittest.js",
+  "base/js/xhr_unittest.js",
+  "base/js/xmpp_connection_unittest.js",
+  "base/js/xmpp_login_handler_unittest.js",
+  "base/js/xmpp_stream_parser_unittest.js",
   "crd/js/apps_v2_migration_unittest.js",
-  "crd/js/client_session_unittest.js",
-  "crd/js/dns_blackhole_checker_unittest.js",
-  "crd/js/error_unittest.js",
-  "crd/js/fallback_signal_strategy_unittest.js",
   "crd/js/gcd_client_unittest.js",
   "crd/js/gcd_client_with_mock_xhr_unittest.js",
   "crd/js/host_controller_unittest.js",
   "crd/js/host_daemon_facade_unittest.js",
   "crd/js/host_table_entry_unittest.js",
-  "crd/js/identity_unittest.js",
-  "crd/js/l10n_unittest.js",
   "crd/js/menu_button_unittest.js",
   "crd/js/mock_xhr_unittest.js",
-  "crd/js/typecheck_unittest.js",
-  "crd/js/xhr_unittest.js",
-  "crd/js/xmpp_connection_unittest.js",
-  "crd/js/xmpp_login_handler_unittest.js",
-  "crd/js/xmpp_stream_parser_unittest.js",
 ]
 remoting_webapp_unittests_js_mock_files = [
   # Some proto files can be repurposed as simple mocks for the unittests.
@@ -133,7 +133,88 @@ remoting_webapp_unittests_all_files = [
 remoting_webapp_unittests_template_main = "crd/html/template_unittests.html"
 
 #
-# Webapp JavaScript file groups.
+# Shared webapp JavaScript file groups.
+#
+
+# Auth (Google account) JavaScript files.
+remoting_webapp_shared_js_auth_google_files = [
+  "base/js/auth_init.js",
+  "base/js/identity.js",
+  "base/js/oauth2.js",
+  "base/js/oauth2_api.js",
+  "base/js/oauth2_api_impl.js",
+]
+
+# Client JavaScript files.
+remoting_webapp_shared_js_client_files = [
+  "base/js/activity.js",
+  "base/js/client_plugin.js",
+  "base/js/client_plugin_host_desktop_impl.js",
+  "base/js/client_plugin_impl.js",
+  "base/js/client_session.js",
+  "base/js/client_session_factory.js",
+  "base/js/clipboard.js",
+  "base/js/connected_view.js",
+  "base/js/connection_info.js",
+  "base/js/credentials_provider.js",
+  "base/js/host_desktop.js",
+  "base/js/smart_reconnector.js",
+]
+
+# Remoting core JavaScript files.
+remoting_webapp_shared_js_core_files = [
+  "base/js/app_capabilities.js",
+  "base/js/application.js",
+  "base/js/base.js",
+  "base/js/ipc.js",
+  "base/js/modal_dialogs.js",
+  "base/js/platform.js",
+  "base/js/protocol_extension_manager.js",
+  "base/js/protocol_extension.js",
+  "base/js/error.js",
+  "base/js/plugin_settings.js",
+  "base/js/typecheck.js",
+  "base/js/xhr.js",
+]
+
+# Host JavaScript files.
+remoting_webapp_shared_js_host_files = [
+  "base/js/host.js",
+  "base/js/host_settings.js",
+]
+
+# Logging and stats JavaScript files.
+remoting_webapp_shared_js_logging_files = [
+  "base/js/format_iq.js",
+  "base/js/log_to_server.js",
+  "base/js/server_log_entry.js",
+  "base/js/stats_accumulator.js",
+]
+
+# Remoting signaling files.
+remoting_webapp_shared_js_signaling_files = [
+  "base/js/dns_blackhole_checker.js",
+  "base/js/fallback_signal_strategy.js",
+  "base/js/signal_strategy.js",
+  "base/js/tcp_socket.js",
+  "base/js/wcs_adapter.js",
+  "base/js/wcs_sandbox_container.js",
+  "base/js/xmpp_connection.js",
+  "base/js/xmpp_login_handler.js",
+  "base/js/xmpp_stream_parser.js",
+]
+
+# UI JavaScript files.
+remoting_webapp_shared_js_ui_files = [
+  "base/js/connection_stats.js",
+  "base/js/l10n.js",
+  "base/js/ui_mode.js",
+  "base/js/viewport.js",
+  "base/js/window_shape.js",
+]
+
+#
+# DesktopRemoting webapp JavaScript file groups.
 #
 
 # Auth (apps v1) JavaScript files.
@@ -150,62 +231,21 @@ remoting_webapp_js_auth_client2host_files = [
   "crd/js/third_party_token_fetcher.js",
 ]
 
-# Auth (Google account) JavaScript files.
-remoting_webapp_js_auth_google_files = [
-  "base/js/auth_init.js",
-  "crd/js/identity.js",
-  "crd/js/oauth2.js",
-  "crd/js/oauth2_api.js",
-  "crd/js/oauth2_api_impl.js",
-]
-
 # Cast extension handler JavaScript files.
 remoting_webapp_js_cast_extension_files = [ "crd/js/cast_extension_handler.js" ]
 
 # Client JavaScript files.
-remoting_webapp_js_client_files = [
-  "crd/js/activity.js",
-  "crd/js/client_plugin.js",
-  "crd/js/client_plugin_host_desktop_impl.js",
-  "crd/js/client_plugin_impl.js",
-  "crd/js/client_session.js",
-  "crd/js/client_session_factory.js",
-  "crd/js/clipboard.js",
-  "crd/js/connected_view.js",
-  "crd/js/connection_info.js",
-  "crd/js/credentials_provider.js",
-  "crd/js/host_desktop.js",
-  "crd/js/smart_reconnector.js",
-  "crd/js/video_frame_recorder.js",
-]
+remoting_webapp_js_client_files = [ "crd/js/video_frame_recorder.js" ]
 
 # Remoting core JavaScript files.
 remoting_webapp_js_core_files = [
-  "base/js/app_capabilities.js",
-  "base/js/application.js",
-  "base/js/base.js",
-  "base/js/ipc.js",
-  "base/js/modal_dialogs.js",
-  "base/js/platform.js",
-  "base/js/protocol_extension_manager.js",
-  "base/js/protocol_extension.js",
   "crd/js/apps_v2_migration.js",
-  "crd/js/error.js",
   "crd/js/event_handlers.js",
-  "crd/js/plugin_settings.js",
-  "crd/js/typecheck.js",
-  "crd/js/xhr.js",
   "crd/js/gcd_client.js",
 ]
 
 # Gnubby authentication JavaScript files.
 remoting_webapp_js_gnubby_auth_files = [ "crd/js/gnubby_auth_handler.js" ]
-
-# Host JavaScript files.
-remoting_webapp_js_host_files = [
-  "crd/js/host.js",
-  "crd/js/host_settings.js",
-]
 
 # Files for controlling the local machine as a host.
 # Includes both it2me and me2me files.
@@ -231,41 +271,6 @@ remoting_webapp_js_host_display_files = [
   "crd/js/local_host_section.js",
 ]
 
-# Logging and stats JavaScript files.
-remoting_webapp_js_logging_files = [
-  "crd/js/format_iq.js",
-  "crd/js/log_to_server.js",
-  "crd/js/server_log_entry.js",
-  "crd/js/stats_accumulator.js",
-]
-
-# Remoting signaling files.
-remoting_webapp_js_signaling_files = [
-  "crd/js/dns_blackhole_checker.js",
-  "crd/js/fallback_signal_strategy.js",
-  "crd/js/signal_strategy.js",
-  "crd/js/tcp_socket.js",
-  "crd/js/wcs_adapter.js",
-  "crd/js/wcs_sandbox_container.js",
-  "crd/js/xmpp_connection.js",
-  "crd/js/xmpp_login_handler.js",
-  "crd/js/xmpp_stream_parser.js",
-]
-
-# UI JavaScript files.
-remoting_webapp_js_ui_files = [
-  "base/js/viewport.js",
-  "base/js/window_shape.js",
-  "crd/js/connection_stats.js",
-  "crd/js/feedback.js",
-  "crd/js/l10n.js",
-  "crd/js/ui_mode.js",
-]
-
-#
-# DesktopRemoting-specific JS files.
-#
-
 # The CRD-specific JavaScript files required by main.html.
 remoting_webapp_crd_js_ui_files = [
   "crd/js/bump_scroller.js",
@@ -278,6 +283,7 @@ remoting_webapp_crd_js_ui_files = [
   "crd/js/desktop_remoting.js",
   "crd/js/desktop_remoting_activity.js",
   "crd/js/desktop_viewport.js",
+  "crd/js/feedback.js",
   "crd/js/fullscreen.js",
   "crd/js/fullscreen_v1.js",
   "crd/js/fullscreen_v2.js",
@@ -299,13 +305,18 @@ remoting_webapp_template_main = "crd/html/template_main.html"
 remoting_webapp_shared_main_html_js_files =
     # Include the core files first as it is required by the other files.
     # Otherwise, Jscompile will complain.
-    remoting_webapp_js_core_files + remoting_webapp_js_auth_client2host_files +
-    remoting_webapp_js_auth_google_files + remoting_webapp_js_client_files +
-    remoting_webapp_js_gnubby_auth_files +
-    remoting_webapp_js_cast_extension_files + remoting_webapp_js_host_files +
+    remoting_webapp_shared_js_core_files +
+    remoting_webapp_shared_js_auth_google_files +
+    remoting_webapp_shared_js_client_files +
+    remoting_webapp_shared_js_host_files +
+    remoting_webapp_shared_js_logging_files +
+    remoting_webapp_shared_js_ui_files +
+    remoting_webapp_shared_js_signaling_files +
+    remoting_webapp_js_auth_client2host_files +
+    remoting_webapp_js_client_files + remoting_webapp_js_gnubby_auth_files +
+    remoting_webapp_js_cast_extension_files +
     remoting_webapp_js_host_control_files +
-    remoting_webapp_js_host_display_files + remoting_webapp_js_logging_files +
-    remoting_webapp_js_ui_files + remoting_webapp_js_signaling_files
+    remoting_webapp_js_host_display_files
 
 # Uncomment this line to include browser test files in the web app
 # to expedite debugging or local development.
@@ -362,20 +373,20 @@ remoting_webapp_background_html_all_js_files =
     remoting_webapp_background_html_js_files
 remoting_webapp_background_html_all_js_files += [
   "base/js/base.js",
+  "base/js/client_session.js",
+  "base/js/error.js",
+  "base/js/identity.js",
   "base/js/ipc.js",
-  "crd/js/client_session.js",
-  "crd/js/error.js",
+  "base/js/l10n.js",
+  "base/js/oauth2.js",
+  "base/js/oauth2_api.js",
+  "base/js/oauth2_api_impl.js",
+  "base/js/plugin_settings.js",
+  "base/js/typecheck.js",
+  "base/js/xhr.js",
   "crd/js/host_installer.js",
   "crd/js/host_session.js",
-  "crd/js/identity.js",
   "crd/js/it2me_host_facade.js",
-  "crd/js/l10n.js",
-  "crd/js/oauth2.js",
-  "crd/js/oauth2_api.js",
-  "crd/js/oauth2_api_impl.js",
-  "crd/js/plugin_settings.js",
-  "crd/js/typecheck.js",
-  "crd/js/xhr.js",
 ]
 
 #
@@ -397,8 +408,8 @@ remoting_webapp_wcs_sandbox_html_js_files = [
 remoting_webapp_wcs_sandbox_html_all_js_files =
     remoting_webapp_wcs_sandbox_html_js_files
 remoting_webapp_wcs_sandbox_html_all_js_files += [
-  "crd/js/error.js",
-  "crd/js/plugin_settings.js",
+  "base/js/error.js",
+  "base/js/plugin_settings.js",
 ]
 
 #
