@@ -34,15 +34,16 @@ button {
 
 /* Follow same focus coloring as in widgets.css */
 /* Do not apply this style to restricted button state. */
-button.custom-appearance:not(.button-restricted):not(.button-fancy) {
+button.custom-appearance:not(.button-restricted):not(.button-fancy):not(
+    [is="gaia-icon-button"]) {
   -webkit-transition: border-color 200ms;
   border: 1px solid transparent;
   /* Don't grey out disabled buttons. */
   color: buttontext !important;
 }
 
-/* ':focus' used twice to increase specificity. */
-button.custom-appearance:focus:focus {
+/* ':focus' used three times to increase specificity. */
+button.custom-appearance:focus:focus:focus {
   border-color: rgb(77, 144, 254);
 }
 

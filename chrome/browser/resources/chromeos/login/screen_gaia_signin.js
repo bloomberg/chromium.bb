@@ -179,17 +179,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         e.preventDefault();
       });
 
-      $('back-button-item').addEventListener('mousedown', function(e) {
-        e.preventDefault();
-      });
-
       $('back-button-item').addEventListener('click', function(e) {
         $('back-button-item').hidden = true;
         $('signin-frame').back();
-        e.preventDefault();
-      });
-
-      $('close-button-item').addEventListener('mousedown', function(e) {
         e.preventDefault();
       });
 

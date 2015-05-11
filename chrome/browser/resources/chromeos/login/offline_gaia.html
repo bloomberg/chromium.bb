@@ -37,9 +37,6 @@
     attributes="enterpriseInfo emailDomain">
   <template>
     <link rel="stylesheet" href="offline_gaia.css">
-    <gaia-core-icon-button id="backButton" icon="arrow-back"
-        on-tap="{{onBack}}">
-    </gaia-core-icon-button>
     <core-animated-pages id="animatedPages" transitions="slide-from-right"
         valueattr="id"
         on-core-animated-pages-transition-end="{{onTransitionEnd}}" flex>
@@ -91,5 +88,8 @@
         </gaia-card>
       </section>
     </core-animated-pages>
+    <button id="backButton" is="gaia-icon-button" icon="arrow-back"
+        i18n-values="aria-label:backButton" on-click="{{onBack}}">
+    </button>
   </template>
 </polymer-element>

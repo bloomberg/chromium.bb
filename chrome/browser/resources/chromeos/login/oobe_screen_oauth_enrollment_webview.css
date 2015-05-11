@@ -122,8 +122,14 @@
   margin: 0 auto;
 }
 
+#oauth-enroll-cancel-button,
+#oauth-enroll-back-button {
+  position: absolute;
+  top: 10px;
+}
+
 #oauth-enroll-cancel-button {
-  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE);
+  color: rgba(0, 0, 0, .54);
   right: 10px;
 }
 
@@ -132,13 +138,17 @@ html[dir=rtl] #oauth-enroll-cancel-button {
   right: auto;
 }
 
+#oauth-enrollment.saml #oauth-enroll-cancel-button {
+  color: rgba(0, 0, 0, .54);
+}
+
 .oauth-enroll-state-signin #oauth-enroll-cancel-button,
 .oauth-enroll-state-working #oauth-enroll-cancel-button {
-  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
+  color: white;
 }
 
 #oauth-enroll-back-button {
-  background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON);
+  color: white;
   left: 10px;
 }
 

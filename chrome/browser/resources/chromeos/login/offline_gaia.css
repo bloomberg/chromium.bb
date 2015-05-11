@@ -11,15 +11,15 @@
 }
 
 #backButton {
-  color: rgb(255, 255, 255);
-  left: 0;
+  color: white;
+  left: 10px;
   position: absolute;
-  top: 0;
+  top: 10px;
   z-index: 1;
 }
 
 :host-context(html[dir=rtl]) #backButton {
   left: auto;
-  right: 0;
+  right: 10px;
   transform: scaleX(-1);
 }

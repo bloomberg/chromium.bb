@@ -118,17 +118,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       $('oauth-enroll-success-card').addEventListener(
           'buttonclick', doneCallback);
 
-      $('oauth-enroll-cancel-button').addEventListener('mousedown',
-                                                       function(e) {
-        e.preventDefault();
-      });
-
       $('oauth-enroll-cancel-button').addEventListener('click',
                                                        this.cancel.bind(this));
-
-      $('oauth-enroll-back-button').addEventListener('mousedown', function(e) {
-        e.preventDefault();
-      });
 
       $('oauth-enroll-back-button').addEventListener('click',
           (function(e) {

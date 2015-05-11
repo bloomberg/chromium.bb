@@ -1,6 +1,7 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-icon-button/core-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
+<link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
 <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 
 <!--
   Simple paper- and core-icon- buttons which also triggers 'tap' event on keys
@@ -13,11 +14,19 @@
   </template>
 </polymer-element>
 
-<polymer-element name="gaia-core-icon-button" extends="core-icon-button"
-    on-keydown="onKeyDown" tabindex="0">
+<!--
+  Decorator for a <button>. When applied to a <button>, the button looks like
+  an icon from a material-design icons set. Icon's name should be specified in
+  'icon' attribute.
+
+  Example:
+    <button is="gaia-icon-button" icon="close"></button>
+-->
+<polymer-element name="gaia-icon-button" extends="button" attributes="icon"
+    on-mousedown="{{onMouseDown}}">
   <template>
-    <link rel="stylesheet" href="gaia_core_icon_button.css">
-    <shadow></shadow>
+    <link rel="stylesheet" href="gaia_icon_button.css">
+    <core-icon icon="{{icon}}" fit></core-icon>
   </template>
 </polymer-element>
 
