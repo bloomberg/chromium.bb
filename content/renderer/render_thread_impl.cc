@@ -489,7 +489,6 @@ void RenderThreadImpl::Init() {
   ChildProcess::current()->set_main_thread(this);
 
   // In single process the single process is all there is.
-  suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
   webkit_shared_timer_suspended_ = false;
   widget_count_ = 0;
@@ -831,9 +830,6 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     }
   }
 
-  bool suspend_webkit_shared_timer = true;  // default value
-  std::swap(suspend_webkit_shared_timer, suspend_webkit_shared_timer_);
-
   bool notify_webkit_of_modal_loop = true;  // default value
   std::swap(notify_webkit_of_modal_loop, notify_webkit_of_modal_loop_);
 
@@ -842,11 +838,9 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
 #endif
 
   if (pumping_events) {
-    if (suspend_webkit_shared_timer) {
-      // TODO(alexclarke): Remove the shared timer.
-      blink_platform_impl_->SuspendSharedTimer();
-      renderer_scheduler_->SuspendTimerQueue();
-    }
+    // TODO(alexclarke): Remove the shared timer.
+    blink_platform_impl_->SuspendSharedTimer();
+    renderer_scheduler_->SuspendTimerQueue();
 
     if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
@@ -874,11 +868,9 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     if (notify_webkit_of_modal_loop)
       WebView::didExitModalLoop();
 
-    if (suspend_webkit_shared_timer) {
-      // TODO(alexclarke): Remove the shared timer.
-      blink_platform_impl_->ResumeSharedTimer();
-      renderer_scheduler_->ResumeTimerQueue();
-    }
+    // TODO(alexclarke): Remove the shared timer.
+    blink_platform_impl_->ResumeSharedTimer();
+    renderer_scheduler_->ResumeTimerQueue();
   }
 
   return rv;
@@ -1513,10 +1505,6 @@ CreateCommandBufferResult RenderThreadImpl::CreateViewCommandBuffer(
   return result;
 }
 
-void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
-  suspend_webkit_shared_timer_ = false;
-}
-
 void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }
@@ -1725,18 +1713,16 @@ void RenderThreadImpl::OnUpdateTimezone(const std::string& zone_id) {
 
 #if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
-  if (suspend_webkit_shared_timer_) {
-    EnsureWebKitInitialized();
-    // TODO(alexclarke): Remove the shared timer.
-    if (suspend) {
-      blink_platform_impl_->SuspendSharedTimer();
-      renderer_scheduler_->SuspendTimerQueue();
-    } else {
-      blink_platform_impl_->ResumeSharedTimer();
-      renderer_scheduler_->ResumeTimerQueue();
-    }
-    webkit_shared_timer_suspended_ = suspend;
+  EnsureWebKitInitialized();
+  // TODO(alexclarke): Remove the shared timer.
+  if (suspend) {
+    blink_platform_impl_->SuspendSharedTimer();
+    renderer_scheduler_->SuspendTimerQueue();
+  } else {
+    blink_platform_impl_->ResumeSharedTimer();
+    renderer_scheduler_->ResumeTimerQueue();
   }
+  webkit_shared_timer_suspended_ = suspend;
 }
 #endif
 
