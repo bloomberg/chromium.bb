@@ -28,10 +28,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ui/base/font_helper_chromeos.h"
-#endif
-
 namespace webui {
 
 std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
@@ -167,10 +163,6 @@ std::string GetFontFamily() {
           IDS_WEB_FONT_FAMILY_XP :
 #endif
           IDS_WEB_FONT_FAMILY);
-
-#if defined(OS_CHROMEOS)
-  ui::ReplaceNotoSansWithRobotoIfEnabled(&font_family);
-#endif
 
 // TODO(dnicoara) Remove Ozone check when PlatformFont support is introduced
 // into Ozone: crbug.com/320050

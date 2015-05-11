@@ -31,10 +31,6 @@ UI_BASE_EXPORT extern const char kEnableTouchEditing[];
 UI_BASE_EXPORT extern const char kLang[];
 UI_BASE_EXPORT extern const char kViewerConnect[];
 
-#if defined(OS_CHROMEOS)
-UI_BASE_EXPORT extern const char kDisableRobotoFontUI[];
-#endif
-
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_

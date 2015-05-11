@@ -14527,13 +14527,6 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION" desc="Description of about::flags option to disable bypass proxy for captive portal authorization on Chrome OS.">
           If proxy is configured, it usually prevents from authorization on different captive portals. This flag disables opening captive portal authorization dialog in a separate window, which ignores proxy settings.
         </message>
-
-        <message name="IDS_FLAGS_DISABLE_ROBOTO_FONT_UI_NAME" desc="Name of about::flags option to disable Roboto fonts in the Chrome OS UI.">
-          Disable the experiment to use Roboto fonts in the UI.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_ROBOTO_FONT_UI_DESCRIPTION" desc="Description of about::flags option to disable Roboto fonts in the Chrome OS UI.">
-          Disable Roboto fonts in the UI.
-        </message>
       </if>
 
       <!-- Strings for controlling the minimum SSL/TLS version in about:flags. -->

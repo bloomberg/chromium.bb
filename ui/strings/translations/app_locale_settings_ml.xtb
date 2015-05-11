@@ -13,7 +13,7 @@
   <translation id="IDS_WEB_FONT_FAMILY">Arial,AnjaliOldLipi,Rachana,Kartika,sans-serif</translation>
 </if>
 <if expr="chromeos">
-  <translation id="IDS_UI_FONT_FAMILY_CROS">Noto Sans UI, Noto Sans Malayalam UI, 13px</translation>
-  <translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI, Noto Sans Malayalam UI, sans-serif</translation>
+  <translation id="IDS_UI_FONT_FAMILY_CROS">Roboto, Noto Sans Malayalam UI, 13px</translation>
+  <translation id="IDS_WEB_FONT_FAMILY">Roboto, Noto Sans Malayalam UI, sans-serif</translation>
 </if>
 </translationbundle>
