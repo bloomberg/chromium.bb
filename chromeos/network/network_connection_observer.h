@@ -33,7 +33,7 @@ class CHROMEOS_EXPORT NetworkConnectionObserver {
   // calling NetworkConnectionHandler::DisconnectNetwork. Success or failure
   // for disconnect is not tracked here, observe NetworkStateHandler for state
   // changes instead.
-  virtual void DiconnectRequested(const std::string& service_path);
+  virtual void DisconnectRequested(const std::string& service_path);
 
  protected:
   virtual ~NetworkConnectionObserver();

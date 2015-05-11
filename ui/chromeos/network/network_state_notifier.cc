@@ -143,7 +143,8 @@ void NetworkStateNotifier::ConnectFailed(const std::string& service_path,
   ShowNetworkConnectError(error_name, service_path);
 }
 
-void NetworkStateNotifier::DiconnectRequested(const std::string& service_path) {
+void NetworkStateNotifier::DisconnectRequested(
+    const std::string& service_path) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkState(
           service_path);

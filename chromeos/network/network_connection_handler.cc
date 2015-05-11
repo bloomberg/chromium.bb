@@ -305,7 +305,7 @@ void NetworkConnectionHandler::DisconnectNetwork(
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG_USER("DisconnectNetwork", service_path);
   FOR_EACH_OBSERVER(NetworkConnectionObserver, observers_,
-                    DiconnectRequested(service_path));
+                    DisconnectRequested(service_path));
 
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);

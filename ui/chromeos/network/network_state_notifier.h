@@ -49,7 +49,7 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   void ConnectSucceeded(const std::string& service_path) override;
   void ConnectFailed(const std::string& service_path,
                      const std::string& error_name) override;
-  void DiconnectRequested(const std::string& service_path) override;
+  void DisconnectRequested(const std::string& service_path) override;
 
   // NetworkStateHandlerObserver
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;

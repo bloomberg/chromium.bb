@@ -71,7 +71,7 @@ class TestNetworkConnectionObserver : public NetworkConnectionObserver {
     results_[service_path] = error_name;
   }
 
-  void DiconnectRequested(const std::string& service_path) override {
+  void DisconnectRequested(const std::string& service_path) override {
     requests_.insert(service_path);
   }
 

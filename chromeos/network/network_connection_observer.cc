@@ -21,7 +21,7 @@ void NetworkConnectionObserver::ConnectFailed(const std::string& service_path,
                                               const std::string& error_name) {
 }
 
-void NetworkConnectionObserver::DiconnectRequested(
+void NetworkConnectionObserver::DisconnectRequested(
     const std::string& service_path) {
 }
 
