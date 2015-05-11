@@ -1582,8 +1582,7 @@ TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
 
 // Test input method focus changes affected by focus changes cross 2 top
 // windows.
-// Flaky: https://crbug.com/484836
-TEST_F(WidgetInputMethodInteractiveTest, DISABLED_TwoTopWindows) {
+TEST_F(WidgetInputMethodInteractiveTest, TwoTopWindows) {
   Widget* widget1 = CreateWidget();
   Widget* widget2 = CreateWidget();
   Textfield* textfield1 = new Textfield;
@@ -1591,8 +1590,11 @@ TEST_F(WidgetInputMethodInteractiveTest, DISABLED_TwoTopWindows) {
   textfield2->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   widget1->GetRootView()->AddChildView(textfield1);
   widget2->GetRootView()->AddChildView(textfield2);
-  widget1->Show();
-  widget2->Show();
+
+  // Do the initial shows synchronously. Otherwise, on X11, the window server
+  // messages may be interleaved with the activation requests below.
+  ShowSync(widget1);
+  ShowSync(widget2);
 
   textfield1->RequestFocus();
   textfield2->RequestFocus();
