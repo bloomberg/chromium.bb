@@ -4606,6 +4606,9 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_PROMPT_WARNING_AUTOFILL_PRIVATE" desc="Permission string for access to autofill settings.">
         Read and change autofill settings
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_PASSWORDS_PRIVATE" desc="Permission string for access to passwords settings.">
+        Read and change saved password settings
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">

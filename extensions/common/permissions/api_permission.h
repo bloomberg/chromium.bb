@@ -158,6 +158,7 @@ class APIPermission {
     kNotifications,
     kOverrideEscFullscreen,
     kPageCapture,
+    kPasswordsPrivate,
     kPointerLock,
     kPlatformKeys,
     kPlugin,

@@ -584,6 +584,18 @@
     "dependencies": ["permission:pageCapture"],
     "contexts": ["blessed_extension"]
   },
+  "passwordsPrivate": [{
+    "dependencies": ["permission:passwordsPrivate"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "trunk",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "permissions": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],

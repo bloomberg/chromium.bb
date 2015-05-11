@@ -52072,6 +52072,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="WEBRTCDESKTOPCAPTUREPRIVATE_CANCELCHOOSEDESKTOPMEDIA"/>
   <int value="1034" label="BLUETOOTHLOWENERGY_REGISTERADVERTISEMENT"/>
   <int value="1035" label="BLUETOOTHLOWENERGY_UNREGISTERADVERTISEMENT"/>
+  <int value="1036" label="PASSWORDSPRIVATE_CANPASSWORDACCOUNTBEMANAGED"/>
+  <int value="1037" label="PASSWORDSPRIVATE_REMOVESAVEDPASSWORD"/>
+  <int value="1038" label="PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTION"/>
+  <int value="1039" label="PASSWORDSPRIVATE_GETPLAINTEXTPASSWORD"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

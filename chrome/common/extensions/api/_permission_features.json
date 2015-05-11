@@ -755,6 +755,11 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "passwordsPrivate": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"],
+    "location": "component"
+  },
   "pointerLock": {
     "channel": "stable",
     "extension_types": ["platform_app"]

@@ -63,6 +63,7 @@
       'notifications.idl',
       'omnibox.json',
       'page_capture.json',
+      'passwords_private.idl',
       'permissions.json',
       'preferences_private.json',
       'reading_list_private.json',

@@ -504,6 +504,9 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_AUTOFILL_PRIVATE,
        {APIPermission::kAutofillPrivate},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_PASSWORDS_PRIVATE,
+       {APIPermission::kPasswordsPrivate},
+       {}},
 
       // Platform-app permission messages.
 

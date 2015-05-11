@@ -59,7 +59,7 @@ var AddressEntry;
 
 /**
  * @typedef {{
- *   field: number,
+ *   field: !chrome.autofillPrivate.AddressField,
  *   fieldName: string,
  *   isLongField: boolean,
  *   placeholder: (string|undefined)
