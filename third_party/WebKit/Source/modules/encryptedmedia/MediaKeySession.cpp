@@ -310,7 +310,6 @@ MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* me
 
 MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
     : ActiveDOMObject(scriptState->executionContext())
-    , m_keySystem(mediaKeys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_mediaKeys(mediaKeys)
     , m_sessionType(sessionType)

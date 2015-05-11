@@ -53,12 +53,8 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ActiveDOMO
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaKeys* create(ExecutionContext*, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
+    static MediaKeys* create(ExecutionContext*, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
     virtual ~MediaKeys();
-
-    // FIXME: This should be removed after crbug.com/425186 is fully
-    // implemented.
-    const String& keySystem() const { return m_keySystem; }
 
     MediaKeySession* createSession(ScriptState*, const String& sessionTypeString, ExceptionState&);
 
@@ -84,13 +80,12 @@ public:
     virtual void stop() override;
 
 private:
-    MediaKeys(ExecutionContext*, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
+    MediaKeys(ExecutionContext*, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
     class PendingAction;
 
     bool sessionTypeSupported(WebEncryptedMediaSessionType);
     void timerFired(Timer<MediaKeys>*);
 
-    const String m_keySystem;
     const WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
     OwnPtr<WebContentDecryptionModule> m_cdm;
 

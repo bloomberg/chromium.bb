@@ -82,26 +82,21 @@ private:
     const RefPtr<DOMArrayBuffer> m_data;
 };
 
-MediaKeys* MediaKeys::create(ExecutionContext* context, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
+MediaKeys* MediaKeys::create(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
 {
-    MediaKeys* mediaKeys = new MediaKeys(context, keySystem, supportedSessionTypes, cdm);
+    MediaKeys* mediaKeys = new MediaKeys(context, supportedSessionTypes, cdm);
     mediaKeys->suspendIfNeeded();
     return mediaKeys;
 }
 
-MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
+MediaKeys::MediaKeys(ExecutionContext* context, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
     : ActiveDOMObject(context)
-    , m_keySystem(keySystem)
     , m_supportedSessionTypes(supportedSessionTypes)
     , m_cdm(cdm)
     , m_mediaElement(nullptr)
     , m_timer(this, &MediaKeys::timerFired)
 {
     WTF_LOG(Media, "MediaKeys(%p)::MediaKeys", this);
-
-    // Step 4.4 of MediaKeys::create():
-    // 4.4.1 Set the keySystem attribute to keySystem.
-    ASSERT(!m_keySystem.isEmpty());
 }
 
 MediaKeys::~MediaKeys()

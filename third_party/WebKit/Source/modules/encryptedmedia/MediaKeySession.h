@@ -112,7 +112,6 @@ private:
     // Called by LoadSessionResult when the session has been loaded.
     void finishLoad();
 
-    String m_keySystem;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
     OwnPtr<WebContentDecryptionModuleSession> m_session;
 

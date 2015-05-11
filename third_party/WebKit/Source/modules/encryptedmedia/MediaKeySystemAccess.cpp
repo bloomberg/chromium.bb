@@ -35,9 +35,8 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
     WTF_MAKE_NONCOPYABLE(NewCdmResultPromise);
 
 public:
-    NewCdmResultPromise(ScriptState* scriptState, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes)
+    NewCdmResultPromise(ScriptState* scriptState, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes)
         : ContentDecryptionModuleResultPromise(scriptState)
-        , m_keySystem(keySystem)
         , m_supportedSessionTypes(supportedSessionTypes)
     {
     }
@@ -51,14 +50,13 @@ public:
     {
         // NOTE: Continued from step 2.8 of createMediaKeys().
         // 2.9. Let media keys be a new MediaKeys object.
-        MediaKeys* mediaKeys = MediaKeys::create(executionContext(), m_keySystem, m_supportedSessionTypes, adoptPtr(cdm));
+        MediaKeys* mediaKeys = MediaKeys::create(executionContext(), m_supportedSessionTypes, adoptPtr(cdm));
 
         // 2.10. Resolve promise with media keys.
         resolve(mediaKeys);
     }
 
 private:
-    const String m_keySystem;
     WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
 };
 
@@ -155,7 +153,7 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* scriptState)
     WebMediaKeySystemConfiguration configuration = m_access->getConfiguration();
 
     // 1. Let promise be a new promise.
-    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, m_keySystem, configuration.sessionTypes);
+    NewCdmResultPromise* helper = new NewCdmResultPromise(scriptState, configuration.sessionTypes);
     ScriptPromise promise = helper->promise();
 
     // 2. Asynchronously create and initialize the MediaKeys object.
