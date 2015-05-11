@@ -137,7 +137,7 @@ void ChromeSigninClient::OnSignedOut() {
     return;
 
   cache.SetLocalAuthCredentialsOfProfileAtIndex(index, std::string());
-  cache.SetUserNameOfProfileAtIndex(index, base::string16());
+  cache.SetAuthInfoOfProfileAtIndex(index, std::string(), base::string16());
   cache.SetProfileSigninRequiredAtIndex(index, false);
 }
 
@@ -195,13 +195,15 @@ ChromeSigninClient::AddCookieChangedCallback(
 }
 
 void ChromeSigninClient::OnSignedIn(const std::string& account_id,
+                                    const std::string& gaia_id,
                                     const std::string& username,
                                     const std::string& password) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
   if (index != std::string::npos) {
-    cache.SetUserNameOfProfileAtIndex(index, base::UTF8ToUTF16(username));
+    cache.SetAuthInfoOfProfileAtIndex(index, gaia_id,
+                                      base::UTF8ToUTF16(username));
     ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
   }
 }

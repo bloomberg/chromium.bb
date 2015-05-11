@@ -24,7 +24,7 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override;
 
   // ProfileInfoCacheObserver implementation:
-  void OnProfileUserNameChanged(const base::FilePath& profile_path) override;
+  void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
 
   // Returns true if the login handler should be shown in a new tab page
   // for the given |profile|. |profile| must not be NULL.

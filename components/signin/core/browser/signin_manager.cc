@@ -360,6 +360,8 @@ void SigninManager::OnSignedIn() {
                                 base::Time::Now().ToInternalValue());
   SetAuthenticatedAccountInfo(possibly_invalid_gaia_id_,
                               possibly_invalid_email_);
+  const std::string gaia_id = possibly_invalid_gaia_id_;
+
   possibly_invalid_account_id_.clear();
   possibly_invalid_gaia_id_.clear();
   possibly_invalid_email_.clear();
@@ -373,6 +375,7 @@ void SigninManager::OnSignedIn() {
                             password_));
 
   client_->OnSignedIn(GetAuthenticatedAccountId(),
+                      gaia_id,
                       GetAuthenticatedUsername(),
                       password_);
 

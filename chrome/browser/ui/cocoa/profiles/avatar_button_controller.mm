@@ -225,7 +225,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
   // profile is Guest.
   bool useGenericButton = (!browser_->profile()->IsGuestSession() &&
                            cache.GetNumberOfProfiles() == 1 &&
-                           cache.GetUserNameOfProfileAtIndex(0).empty());
+                           !cache.ProfileIsAuthenticatedAtIndex(0));
 
 
   NSString* buttonTitle = base::SysUTF16ToNSString(useGenericButton ?

@@ -458,7 +458,7 @@ void MessageCenterSettingsController::OnProfileNameChanged(
     const base::string16& old_profile_name) {
   RebuildNotifierGroups(true);
 }
-void MessageCenterSettingsController::OnProfileUserNameChanged(
+void MessageCenterSettingsController::OnProfileAuthInfoChanged(
     const base::FilePath& profile_path) {
   RebuildNotifierGroups(true);
 }

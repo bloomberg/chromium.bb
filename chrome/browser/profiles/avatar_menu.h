@@ -56,8 +56,9 @@ class AvatarMenu :
     // The name of this profile.
     base::string16 name;
 
-    // A string representing the sync state of the profile.
-    base::string16 sync_state;
+    // A string representing the username of the profile, if signed in.  Empty
+    // when not signed in.
+    base::string16 username;
 
     // Whether or not the current profile is signed in. If true, |sync_state| is
     // expected to be the email of the signed in user.
@@ -157,7 +158,7 @@ class AvatarMenu :
       const base::string16& profile_name) override;
   void OnProfileNameChanged(const base::FilePath& profile_path,
       const base::string16& old_profile_name) override;
-  void OnProfileUserNameChanged(const base::FilePath& profile_path) override;
+  void OnProfileAuthInfoChanged(const base::FilePath& profile_path) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;

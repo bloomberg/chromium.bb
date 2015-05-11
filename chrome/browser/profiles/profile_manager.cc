@@ -420,8 +420,8 @@ void ProfileManager::CreateProfileAsync(
     std::string icon_url_std = base::UTF16ToASCII(icon_url);
     if (profiles::IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
       // add profile to cache with user selected name and avatar
-      cache.AddProfileToCache(profile_path, name, base::string16(), icon_index,
-                              supervised_user_id);
+      cache.AddProfileToCache(profile_path, name, std::string(),
+                              base::string16(), icon_index, supervised_user_id);
     }
 
     if (!supervised_user_id.empty()) {
@@ -1203,9 +1203,8 @@ void ProfileManager::FinishDeletingProfile(
           profile)->DisableForUser();
     }
 
-    bool profile_is_signed_in = !cache.GetUserNameOfProfileAtIndex(
-        cache.GetIndexOfProfileWithPath(profile_dir)).empty();
-    ProfileMetrics::LogProfileDelete(profile_is_signed_in);
+    ProfileMetrics::LogProfileDelete(cache.ProfileIsAuthenticatedAtIndex(
+        cache.GetIndexOfProfileWithPath(profile_dir)));
     // Some platforms store passwords in keychains. They should be removed.
     scoped_refptr<password_manager::PasswordStore> password_store =
         PasswordStoreFactory::GetForProfile(
@@ -1257,13 +1256,18 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
 
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-  base::string16 username = base::UTF8ToUTF16(
-      signin_manager->GetAuthenticatedUsername());
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  AccountTrackerService::AccountInfo account_info =
+      account_tracker->GetAccountInfo(
+          signin_manager->GetAuthenticatedAccountId());
+  base::string16 username = base::UTF8ToUTF16(account_info.email);
 
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   if (profile_index != std::string::npos) {
-    // The ProfileInfoCache's username must match the Signin Manager's username.
-    cache.SetUserNameOfProfileAtIndex(profile_index, username);
+    // The ProfileInfoCache's info must match the Signin Manager.
+    cache.SetAuthInfoOfProfileAtIndex(profile_index, account_info.gaia,
+                                      username);
     return;
   }
 
@@ -1280,6 +1284,7 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
 
   cache.AddProfileToCache(profile->GetPath(),
                           profile_name,
+                          account_info.gaia,
                           username,
                           icon_index,
                           supervised_user_id);

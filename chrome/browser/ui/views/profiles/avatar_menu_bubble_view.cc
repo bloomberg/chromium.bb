@@ -230,7 +230,7 @@ class ProfileItemView : public views::CustomButton,
   AvatarMenu* menu_;
   views::ImageView* image_view_;
   views::Label* name_label_;
-  views::Label* sync_state_label_;
+  views::Label* username_label_;
   EditProfileLink* edit_link_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileItemView);
@@ -268,15 +268,15 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
   name_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(name_label_);
 
-  // Add a label to show the sync state.
-  sync_state_label_ = new views::Label(item_.sync_state);
+  // Add a label to show the username.
+  username_label_ = new views::Label(item_.username);
   if (item_.signed_in)
-    sync_state_label_->SetElideBehavior(gfx::ELIDE_EMAIL);
-  sync_state_label_->SetFontList(
+    username_label_->SetElideBehavior(gfx::ELIDE_EMAIL);
+  username_label_->SetFontList(
       rb->GetFontList(ui::ResourceBundle::SmallFont));
-  sync_state_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  sync_state_label_->SetEnabled(false);
-  AddChildView(sync_state_label_);
+  username_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  username_label_->SetEnabled(false);
+  AddChildView(username_label_);
 
   // Add an edit profile link.
   edit_link_ = new EditProfileLink(
@@ -290,7 +290,7 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
 
 gfx::Size ProfileItemView::GetPreferredSize() const {
   int text_width = std::max(name_label_->GetPreferredSize().width(),
-                            sync_state_label_->GetPreferredSize().width());
+                            username_label_->GetPreferredSize().width());
   text_width = std::max(edit_link_->GetPreferredSize().width(), text_width);
   text_width = std::min(kMaxItemTextWidth, text_width);
   return gfx::Size(profiles::kAvatarIconWidth + kIconMarginX + text_width,
@@ -316,7 +316,7 @@ void ProfileItemView::Layout() {
   int max_label_width = std::max(width() - label_x, 0);
   gfx::Size name_size = name_label_->GetPreferredSize();
   name_size.set_width(std::min(name_size.width(), max_label_width));
-  gfx::Size state_size = sync_state_label_->GetPreferredSize();
+  gfx::Size state_size = username_label_->GetPreferredSize();
   state_size.set_width(std::min(state_size.width(), max_label_width));
   gfx::Size edit_size = edit_link_->GetPreferredSize();
   edit_size.set_width(std::min(edit_size.width(), max_label_width));
@@ -328,7 +328,7 @@ void ProfileItemView::Layout() {
   name_label_->SetBounds(label_x, y, name_size.width(), name_size.height());
 
   int bottom = y + labels_height;
-  sync_state_label_->SetBounds(label_x, bottom - state_size.height(),
+  username_label_->SetBounds(label_x, bottom - state_size.height(),
                                state_size.width(), state_size.height());
   // The edit link overlaps the sync state label.
   edit_link_->SetBounds(label_x, bottom - edit_size.height(),
@@ -359,12 +359,12 @@ void ProfileItemView::OnHighlightStateChanged() {
   const SkColor color = IsHighlighted() ? kHighlightColor : parent_->color();
   set_background(views::Background::CreateSolidBackground(color));
   name_label_->SetBackgroundColor(color);
-  sync_state_label_->SetBackgroundColor(color);
+  username_label_->SetBackgroundColor(color);
   edit_link_->SetBackgroundColor(color);
 
   bool show_edit = IsHighlighted() && item_.active &&
       menu_->ShouldShowEditProfileLink();
-  sync_state_label_->SetVisible(!show_edit);
+  username_label_->SetVisible(!show_edit);
   edit_link_->SetVisible(show_edit);
   SchedulePaint();
 }

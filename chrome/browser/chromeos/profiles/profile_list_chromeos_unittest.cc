@@ -164,7 +164,7 @@ TEST_F(ProfileListChromeOSTest, DontShowSupervisedUsers) {
   // Add a managed user profile.
   ProfileInfoCache* cache = manager()->profile_info_cache();
   manager()->profile_info_cache()->AddProfileToCache(
-      cache->GetUserDataDir().AppendASCII("p2"), supervised_name,
+      cache->GetUserDataDir().AppendASCII("p2"), supervised_name, std::string(),
       base::string16(), 0, "TEST_ID");
 
   GetFakeChromeUserManager()->AddUser(base::UTF16ToASCII(supervised_name));

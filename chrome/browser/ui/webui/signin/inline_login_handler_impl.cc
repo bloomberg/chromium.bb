@@ -513,6 +513,7 @@ void InlineLoginHandlerImpl::DidCommitProvisionalLoadForFrame(
 // static
 bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
                                       CanOfferFor can_offer_for,
+                                      const std::string& gaia_id,
                                       const std::string& email,
                                       std::string* error_message) {
   if (error_message)
@@ -568,9 +569,14 @@ bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
       if (profile_manager) {
         ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
         for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+          // For backward compatibility, need to also check the username of the
+          // profile, since the GAIA ID may not have been set yet for the
+          // profile cache info.  It will get set once the profile is opened.
+          std::string profile_gaia_id = cache.GetGAIAIdOfProfileAtIndex(i);
           std::string profile_email =
               base::UTF16ToUTF8(cache.GetUserNameOfProfileAtIndex(i));
-          if (gaia::AreEmailsSame(email, profile_email)) {
+          if (gaia_id == profile_gaia_id ||
+              gaia::AreEmailsSame(email, profile_email)) {
             if (error_message) {
               error_message->assign(
                   l10n_util::GetStringUTF8(IDS_SYNC_USER_NAME_IN_USE_ERROR));
@@ -685,7 +691,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
 
   std::string error_msg;
   bool can_offer = CanOffer(Profile::FromWebUI(web_ui()), can_offer_for,
-      email, &error_msg);
+      gaia_id, email, &error_msg);
   if (!can_offer) {
     HandleLoginError(error_msg);
     return;

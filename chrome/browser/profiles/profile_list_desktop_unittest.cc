@@ -77,7 +77,7 @@ class ProfileListDesktopTest : public testing::Test {
     ProfileInfoCache* cache = manager()->profile_info_cache();
     cache->AddProfileToCache(
         cache->GetUserDataDir().AppendASCII(name), ASCIIToUTF16(name),
-        base::string16(), 0, "TEST_ID");
+        std::string(), base::string16(), 0, "TEST_ID");
   }
 
   int change_count() const { return mock_observer_->change_count(); }
@@ -338,8 +338,8 @@ TEST_F(ProfileListDesktopTest, SyncState) {
   // Add a managed user profile.
   ProfileInfoCache* cache = manager()->profile_info_cache();
   base::FilePath path = cache->GetUserDataDir().AppendASCII("p2");
-  cache->AddProfileToCache(path, ASCIIToUTF16("Test 2"), base::string16(), 0,
-                           "TEST_ID");
+  cache->AddProfileToCache(path, ASCIIToUTF16("Test 2"), std::string(),
+                           base::string16(), 0, "TEST_ID");
   cache->SetIsOmittedProfileAtIndex(cache->GetIndexOfProfileWithPath(path),
                                     false);
 
@@ -347,15 +347,15 @@ TEST_F(ProfileListDesktopTest, SyncState) {
   model->RebuildMenu();
   EXPECT_EQ(2U, model->GetNumberOfItems());
 
-  // Now check that the sync_state of a supervised user shows the supervised
+  // Now check that the username of a supervised user shows the supervised
   // user avatar label instead.
   base::string16 supervised_user_label =
       l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_AVATAR_LABEL);
   const AvatarMenu::Item& item1 = model->GetItemAt(0);
-  EXPECT_NE(item1.sync_state, supervised_user_label);
+  EXPECT_NE(item1.username, supervised_user_label);
 
   const AvatarMenu::Item& item2 = model->GetItemAt(1);
-  EXPECT_EQ(item2.sync_state, supervised_user_label);
+  EXPECT_EQ(item2.username, supervised_user_label);
 }
 
 }  // namespace

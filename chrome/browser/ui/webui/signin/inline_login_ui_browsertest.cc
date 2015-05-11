@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoProfile) {
   std::string error_message;
   EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
       NULL, InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
+      "12345", "user@gmail.com", &error_message));
   EXPECT_EQ("", error_message);
 }
 
@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
   EnableOneClick(true);
   EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", NULL));
+      "12345", "user@gmail.com", NULL));
 
   EnableOneClick(false);
 
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
 
   EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
+      "12345", "user@gmail.com", &error_message));
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferProfileConnected) {
@@ -280,13 +280,13 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferProfileConnected) {
 
   EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo@gmail.com", &error_message));
+      "12345", "foo@gmail.com", &error_message));
   EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo", &error_message));
+      "12345", "foo", &error_message));
   EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
+      "12345", "user@gmail.com", &error_message));
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
                                       base::UTF8ToUTF16("foo@gmail.com")),
             error_message);
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferUsernameNotAllowed) {
   std::string error_message;
   EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo@gmail.com", &error_message));
+      "12345", "foo@gmail.com", &error_message));
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED),
             error_message);
 }
@@ -312,10 +312,10 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferWithRejectedEmail) {
   std::string error_message;
   EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "foo@gmail.com", &error_message));
+      "12345", "foo@gmail.com", &error_message));
   EXPECT_TRUE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
+      "12345", "user@gmail.com", &error_message));
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoSigninCookies) {
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoSigninCookies) {
   std::string error_message;
   EXPECT_FALSE(InlineLoginHandlerImpl::CanOffer(
       browser()->profile(), InlineLoginHandlerImpl::CAN_OFFER_FOR_ALL,
-      "user@gmail.com", &error_message));
+      "12345", "user@gmail.com", &error_message));
   EXPECT_EQ("", error_message);
 }
 

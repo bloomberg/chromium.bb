@@ -266,7 +266,7 @@ void AvatarMenu::OnProfileNameChanged(const base::FilePath& profile_path,
   Update();
 }
 
-void AvatarMenu::OnProfileUserNameChanged(const base::FilePath& profile_path) {
+void AvatarMenu::OnProfileAuthInfoChanged(const base::FilePath& profile_path) {
   Update();
 }
 

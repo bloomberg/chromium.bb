@@ -44,6 +44,7 @@ const char kNameKey[] = "name";
 const char kShortcutNameKey[] = "shortcut_name";
 const char kGAIANameKey[] = "gaia_name";
 const char kGAIAGivenNameKey[] = "gaia_given_name";
+const char kGAIAIdKey[] = "gaia_id";
 const char kUserNameKey[] = "user_name";
 const char kIsUsingDefaultNameKey[] = "is_using_default_name";
 const char kIsUsingDefaultAvatarKey[] = "is_using_default_avatar";
@@ -197,7 +198,8 @@ ProfileInfoCache::~ProfileInfoCache() {
 void ProfileInfoCache::AddProfileToCache(
     const base::FilePath& profile_path,
     const base::string16& name,
-    const base::string16& username,
+    const std::string& gaia_id,
+    const base::string16& user_name,
     size_t icon_index,
     const std::string& supervised_user_id) {
   std::string key = CacheKeyFromProfilePath(profile_path);
@@ -206,7 +208,8 @@ void ProfileInfoCache::AddProfileToCache(
 
   scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue);
   info->SetString(kNameKey, name);
-  info->SetString(kUserNameKey, username);
+  info->SetString(kGAIAIdKey, gaia_id);
+  info->SetString(kUserNameKey, user_name);
   info->SetString(kAvatarIconKey,
       profiles::GetDefaultAvatarIconUrl(icon_index));
   // Default value for whether background apps are running is false.
@@ -369,6 +372,13 @@ base::string16 ProfileInfoCache::GetGAIAGivenNameOfProfileAtIndex(
   return name;
 }
 
+std::string ProfileInfoCache::GetGAIAIdOfProfileAtIndex(
+    size_t index) const {
+  std::string gaia_id;
+  GetInfoForProfileAtIndex(index)->GetString(kGAIAIdKey, &gaia_id);
+  return gaia_id;
+}
+
 const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
     size_t index) const {
   base::FilePath path = GetPathOfProfileAtIndex(index);
@@ -447,6 +457,15 @@ bool ProfileInfoCache::ProfileIsUsingDefaultNameAtIndex(size_t index) const {
   return value;
 }
 
+bool ProfileInfoCache::ProfileIsAuthenticatedAtIndex(size_t index) const {
+  // The profile is authenticated if the gaia_id of the info is not empty.
+  // If it is empty, also check if the user name is not empty.  This latter
+  // check is needed in case the profile has not been loaded yet and the
+  // gaia_id property has not yet been written.
+  return !GetGAIAIdOfProfileAtIndex(index).empty() ||
+      !GetUserNameOfProfileAtIndex(index).empty();
+}
+
 bool ProfileInfoCache::ProfileIsUsingDefaultAvatarAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultAvatarKey, &value);
@@ -521,22 +540,29 @@ void ProfileInfoCache::SetShortcutNameOfProfileAtIndex(
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-void ProfileInfoCache::SetUserNameOfProfileAtIndex(
+void ProfileInfoCache::SetAuthInfoOfProfileAtIndex(
     size_t index,
+    const std::string& gaia_id,
     const base::string16& user_name) {
-  if (user_name == GetUserNameOfProfileAtIndex(index))
+  // If both gaia_id and username are unchanged, abort early.
+  if (gaia_id == GetGAIAIdOfProfileAtIndex(index) &&
+      user_name == GetUserNameOfProfileAtIndex(index)) {
     return;
+  }
 
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
+
+  info->SetString(kGAIAIdKey, gaia_id);
   info->SetString(kUserNameKey, user_name);
+
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
 
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
-                    OnProfileUserNameChanged(profile_path));
+                    OnProfileAuthInfoChanged(profile_path));
 }
 
 void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,

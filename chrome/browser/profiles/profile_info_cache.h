@@ -46,7 +46,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // be shown in the menu.
   void AddProfileToCache(const base::FilePath& profile_path,
                          const base::string16& name,
-                         const base::string16& username,
+                         const std::string& gaia_id,
+                         const base::string16& user_name,
                          size_t icon_index,
                          const std::string& supervised_user_id);
   void DeleteProfileFromCache(const base::FilePath& profile_path);
@@ -71,6 +72,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   bool GetBackgroundStatusOfProfileAtIndex(size_t index) const override;
   base::string16 GetGAIANameOfProfileAtIndex(size_t index) const override;
   base::string16 GetGAIAGivenNameOfProfileAtIndex(size_t index) const override;
+  std::string GetGAIAIdOfProfileAtIndex(size_t index) const override;
   // Returns the GAIA picture for the given profile. This may return NULL
   // if the profile does not have a GAIA picture or if the picture must be
   // loaded from disk.
@@ -84,6 +86,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::string GetSupervisedUserIdOfProfileAtIndex(size_t index) const override;
   bool ProfileIsEphemeralAtIndex(size_t index) const override;
   bool ProfileIsUsingDefaultNameAtIndex(size_t index) const override;
+  bool ProfileIsAuthenticatedAtIndex(size_t index) const override;
   bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const override;
   bool ProfileIsAuthErrorAtIndex(size_t index) const;
 
@@ -94,7 +97,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
   void SetShortcutNameOfProfileAtIndex(size_t index,
                                        const base::string16& name);
-  void SetUserNameOfProfileAtIndex(size_t index,
+  void SetAuthInfoOfProfileAtIndex(size_t index,
+                                   const std::string& gaia_id,
                                    const base::string16& user_name);
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);

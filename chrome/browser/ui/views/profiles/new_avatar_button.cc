@@ -176,7 +176,7 @@ void NewAvatarButton::Update() {
   // the active profile is Guest.
   bool use_generic_button = (!browser_->profile()->IsGuestSession() &&
                              cache.GetNumberOfProfiles() == 1 &&
-                             cache.GetUserNameOfProfileAtIndex(0).empty());
+                             !cache.ProfileIsAuthenticatedAtIndex(0));
 
   SetText(use_generic_button ? base::string16() :
       profiles::GetAvatarButtonTextForProfile(browser_->profile()));

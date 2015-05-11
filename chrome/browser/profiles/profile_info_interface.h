@@ -52,6 +52,8 @@ class ProfileInfoInterface {
   virtual base::string16 GetGAIAGivenNameOfProfileAtIndex(
       size_t index) const = 0;
 
+  virtual std::string GetGAIAIdOfProfileAtIndex(size_t index) const = 0;
+
   virtual const gfx::Image* GetGAIAPictureOfProfileAtIndex(
       size_t index) const = 0;
 
@@ -86,6 +88,9 @@ class ProfileInfoInterface {
 
   // Returns true if the user has never manually selected a profile avatar.
   virtual bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const = 0;
+
+  // Returns true if the given profile is connected to an account.
+  virtual bool ProfileIsAuthenticatedAtIndex(size_t index) const = 0;
 
  protected:
   virtual ~ProfileInfoInterface() {}

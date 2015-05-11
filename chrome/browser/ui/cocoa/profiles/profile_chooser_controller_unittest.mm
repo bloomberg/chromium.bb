@@ -30,6 +30,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 
+const std::string kGaiaId = "gaiaid-user@gmail.com";
 const std::string kEmail = "user@gmail.com";
 const std::string kSecondaryEmail = "user2@gmail.com";
 const std::string kLoginToken = "oauth2_login_token";
@@ -314,7 +315,7 @@ TEST_F(ProfileChooserControllerTest,
       base::CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
@@ -337,7 +338,7 @@ TEST_F(ProfileChooserControllerTest,
       base::CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
@@ -360,7 +361,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
       base::CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
 
   // Mark that we are using the profile name on purpose, so that we don't
   // fallback to testing the algorithm that chooses which default name
@@ -474,7 +475,7 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockDisabled) {
       base::CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
   // The preference, not the email, determines whether the profile can lock.
   browser()->profile()->GetPrefs()->SetString(
       prefs::kGoogleServicesHostedDomain, "chromium.org");
@@ -500,7 +501,7 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockEnabled) {
       base::CommandLine::ForCurrentProcess());
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+  cache->SetAuthInfoOfProfileAtIndex(0, kGaiaId, base::ASCIIToUTF16(kEmail));
   // The preference, not the email, determines whether the profile can lock.
   browser()->profile()->GetPrefs()->SetString(
       prefs::kGoogleServicesHostedDomain, "google.com");

@@ -161,7 +161,7 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
     } else {
       if (info_cache.ProfileIsSupervisedAtIndex(i))
         counts->supervised++;
-      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty()) {
+      if (info_cache.ProfileIsAuthenticatedAtIndex(i)) {
         counts->signedin++;
         if (info_cache.IsUsingGAIAPictureOfProfileAtIndex(i))
           counts->gaia_icon++;

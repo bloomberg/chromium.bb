@@ -56,7 +56,8 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t index = info_cache.GetIndexOfProfileWithPath(profile()->GetPath());
     ASSERT_NE(std::string::npos, index);
-    info_cache.SetUserNameOfProfileAtIndex(index, base::UTF8ToUTF16(kTestUser));
+    info_cache.SetAuthInfoOfProfileAtIndex(index, kTestGaiaId,
+                                           base::UTF8ToUTF16(kTestUser));
     ExtensionApiTest::SetUpOnMainThread();
   }
 

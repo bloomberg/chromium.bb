@@ -87,6 +87,7 @@ class SigninClient : public KeyedService {
 
   // Called after Google signin has succeeded.
   virtual void OnSignedIn(const std::string& account_id,
+                          const std::string& gaia_id,
                           const std::string& username,
                           const std::string& password) {}
 

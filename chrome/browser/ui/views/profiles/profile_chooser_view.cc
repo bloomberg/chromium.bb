@@ -1206,7 +1206,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
         const gfx::ImageSkia warning_image = *rb->GetImageNamed(
             IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR).ToImageSkia();
         auth_error_email_button_ =
-            new RightAlignedIconLabelButton(this, avatar_item.sync_state);
+            new RightAlignedIconLabelButton(this, avatar_item.username);
         auth_error_email_button_->SetElideBehavior(gfx::ELIDE_EMAIL);
         auth_error_email_button_->SetImage(
             views::LabelButton::STATE_NORMAL, warning_image);
@@ -1222,7 +1222,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       } else {
         // Add a small padding between the email button and the profile name.
         layout->StartRowWithPadding(1, 0, 0, 2);
-        views::Label* email_label = new views::Label(avatar_item.sync_state);
+        views::Label* email_label = new views::Label(avatar_item.username);
         email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
         email_label->SetEnabled(false);
         layout->AddView(email_label);

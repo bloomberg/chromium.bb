@@ -167,7 +167,7 @@ const CGFloat kSupervisedUserSpacing = 26.0;
 
   // Repeat for the sync state/email.
   NSTextField* emailField = itemView.emailField;
-  emailField.stringValue = base::SysUTF16ToNSString(item.sync_state);
+  emailField.stringValue = base::SysUTF16ToNSString(item.username);
   delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:emailField];
   if (NSWidth([emailField frame]) > kMaxItemTextWidth) {
     delta.width -= (NSWidth([emailField frame]) - kMaxItemTextWidth);

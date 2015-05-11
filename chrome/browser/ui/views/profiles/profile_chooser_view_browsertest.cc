@@ -59,8 +59,8 @@ void SetupProfilesForLock(Profile* signed_in) {
   Profile* supervised = CreateTestingProfile("supervised");
   ProfileInfoCache* cache = &g_browser_process->profile_manager()->
       GetProfileInfoCache();
-  cache->SetUserNameOfProfileAtIndex(cache->GetIndexOfProfileWithPath(
-    signed_in->GetPath()), base::UTF8ToUTF16(signed_in_email));
+  cache->SetAuthInfoOfProfileAtIndex(cache->GetIndexOfProfileWithPath(
+    signed_in->GetPath()), "12345", base::UTF8ToUTF16(signed_in_email));
   signed_in->GetPrefs()->
       SetString(prefs::kGoogleServicesHostedDomain, "google.com");
   cache->SetSupervisedUserIdOfProfileAtIndex(cache->GetIndexOfProfileWithPath(

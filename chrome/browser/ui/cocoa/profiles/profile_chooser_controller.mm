@@ -1706,7 +1706,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                            frameOrigin:rect.origin
                                 action:linkSelector];
     } else {
-      link = [self linkButtonWithTitle:base::SysUTF16ToNSString(item.sync_state)
+      link = [self linkButtonWithTitle:base::SysUTF16ToNSString(item.username)
                            frameOrigin:rect.origin
                                 action:nil];
       if (HasAuthError(browser_->profile())) {
@@ -1720,7 +1720,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         [[link cell]
             accessibilitySetOverrideValue:l10n_util::GetNSStringF(
             IDS_PROFILES_ACCOUNT_BUTTON_AUTH_ERROR_ACCESSIBLE_NAME,
-            item.sync_state)
+            item.username)
                              forAttribute:NSAccessibilityTitleAttribute];
       } else {
         [link setEnabled:NO];

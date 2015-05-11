@@ -115,7 +115,7 @@ void NTPLoginHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void NTPLoginHandler::OnProfileUserNameChanged(
+void NTPLoginHandler::OnProfileAuthInfoChanged(
     const base::FilePath& profile_path) {
   UpdateLogin();
 }

@@ -59,6 +59,7 @@ class ChromeSigninClient
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) override;
   void OnSignedIn(const std::string& account_id,
+                  const std::string& gaia_id,
                   const std::string& username,
                   const std::string& password) override;
   void PostSignedIn(const std::string& account_id,

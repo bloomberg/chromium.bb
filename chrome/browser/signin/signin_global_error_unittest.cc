@@ -31,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const char kTestAccountId[] = "id-testuser@test.com";
+static const char kTestGaiaId[] = "gaiaid-testuser@test.com";
 static const char kTestUsername[] = "testuser@test.com";
 
 class SigninGlobalErrorTest : public testing::Test {
@@ -57,9 +58,9 @@ class SigninGlobalErrorTest : public testing::Test {
         ->SetAuthenticatedAccountInfo(kTestAccountId, kTestUsername);
     ProfileInfoCache& cache =
         profile_manager_.profile_manager()->GetProfileInfoCache();
-    cache.SetUserNameOfProfileAtIndex(
+    cache.SetAuthInfoOfProfileAtIndex(
         cache.GetIndexOfProfileWithPath(profile()->GetPath()),
-            base::UTF8ToUTF16(kTestUsername));
+            kTestGaiaId, base::UTF8ToUTF16(kTestUsername));
 
     global_error_ = SigninGlobalErrorFactory::GetForProfile(profile());
     error_controller_ = SigninErrorControllerFactory::GetForProfile(profile());

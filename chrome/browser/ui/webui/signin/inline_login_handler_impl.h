@@ -54,6 +54,7 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
 
   static bool CanOffer(Profile* profile,
                        CanOfferFor can_offer_for,
+                       const std::string& gaia_id,
                        const std::string& email,
                        std::string* error_message);
 
