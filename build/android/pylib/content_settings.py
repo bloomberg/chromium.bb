@@ -14,9 +14,6 @@ class ContentSettings(dict):
 
   def __init__(self, table, device):
     super(ContentSettings, self).__init__()
-    assert (device.build_version_sdk
-            >= constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN), (
-        'ContentSettings supported only on SDK 16 and later')
     self._table = table
     self._device = device
 

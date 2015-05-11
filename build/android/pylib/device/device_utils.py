@@ -1534,41 +1534,6 @@ class DeviceUtils(object):
     """
     return logcat_monitor.LogcatMonitor(self.adb, *args, **kwargs)
 
-  @decorators.WithTimeoutAndRetriesFromInstance()
-  def GetDevicePieWrapper(self, timeout=None, retries=None):
-    """Gets the absolute path to the run_pie wrapper on the device.
-
-    We have to build our device executables to be PIE, but they need to be able
-    to run on versions of android that don't support PIE (i.e. ICS and below).
-    To do so, we push a wrapper to the device that lets older android versions
-    run PIE executables. This method pushes that wrapper to the device if
-    necessary and returns the path to it.
-
-    This is exposed publicly to allow clients to write scripts using run_pie
-    (e.g. md5sum.CalculateDeviceMd5Sum).
-
-    Args:
-      timeout: timeout in seconds
-      retries: number of retries
-
-    Returns:
-      The path to the PIE wrapper on the device, or an empty string if the
-      device does not require the wrapper.
-    """
-    if 'run_pie' not in self._cache:
-      pie = ''
-      if (self.build_version_sdk <
-          constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN):
-        host_pie_path = os.path.join(constants.GetOutDirectory(), 'run_pie')
-        if not os.path.exists(host_pie_path):
-          raise device_errors.CommandFailedError('Please build run_pie')
-        pie = '%s/run_pie' % constants.TEST_EXECUTABLE_DIR
-        self.adb.Push(host_pie_path, pie)
-
-      self._cache['run_pie'] = pie
-
-    return self._cache['run_pie']
-
   def GetClientCache(self, client_name):
     """Returns client cache."""
     if client_name not in self._client_caches:

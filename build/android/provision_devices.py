@@ -247,7 +247,7 @@ def _PushAndLaunchAdbReboot(device, target):
   # Launch adb_reboot
   logging.info('  Launching adb_reboot ...')
   device.RunShellCommand(
-      [device.GetDevicePieWrapper(), '/data/local/tmp/adb_reboot'],
+      ['/data/local/tmp/adb_reboot'],
       check_return=True)
 
 

@@ -116,9 +116,8 @@ class TestPackageExecutable(TestPackage):
         constants.TEST_EXECUTABLE_DIR, '%s_deps' % self.suite_name)
 
     cmd = []
-    for wrapper in (device.GetDevicePieWrapper(), self.tool.GetTestWrapper()):
-      if wrapper:
-        cmd.append(wrapper)
+    if self.tool.GetTestWrapper():
+      cmd.append(self.tool.GetTestWrapper())
     cmd.extend([
         posixpath.join(constants.TEST_EXECUTABLE_DIR, self.suite_name),
         '--gtest_list_tests'])

@@ -18,7 +18,7 @@ MD5SUM_DEVICE_BIN_PATH = MD5SUM_DEVICE_LIB_PATH + 'md5sum_bin'
 
 MD5SUM_DEVICE_SCRIPT_FORMAT = (
     'test -f {path} -o -d {path} '
-    '&& LD_LIBRARY_PATH={md5sum_lib} {device_pie_wrapper} {md5sum_bin} {path}')
+    '&& LD_LIBRARY_PATH={md5sum_lib} {md5sum_bin} {path}')
 
 _STARTS_WITH_CHECKSUM_RE = re.compile(r'^\s*[0-9a-fA-f]{32}\s+')
 
@@ -65,11 +65,9 @@ def CalculateDeviceMd5Sums(paths, device):
   with tempfile.NamedTemporaryFile() as md5sum_script_file:
     with device_temp_file.DeviceTempFile(
         device.adb) as md5sum_device_script_file:
-      device_pie_wrapper = device.GetDevicePieWrapper()
       md5sum_script = (
           MD5SUM_DEVICE_SCRIPT_FORMAT.format(
               path=p, md5sum_lib=MD5SUM_DEVICE_LIB_PATH,
-              device_pie_wrapper=device_pie_wrapper,
               md5sum_bin=MD5SUM_DEVICE_BIN_PATH)
           for p in paths)
       md5sum_script_file.write('; '.join(md5sum_script))

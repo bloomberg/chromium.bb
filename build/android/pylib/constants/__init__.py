@@ -169,8 +169,6 @@ class ANDROID_SDK_VERSION_CODES(object):
   http://developer.android.com/reference/android/os/Build.VERSION_CODES.html
   """
 
-  ICE_CREAM_SANDWICH = 14
-  ICE_CREAM_SANDWICH_MR1 = 15
   JELLY_BEAN = 16
   JELLY_BEAN_MR1 = 17
   JELLY_BEAN_MR2 = 18
