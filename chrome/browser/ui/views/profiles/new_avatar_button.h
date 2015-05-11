@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_NEW_AVATAR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_NEW_AVATAR_BUTTON_H_
 
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/ui/views/profiles/avatar_base_button.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "ui/views/controls/button/label_button.h"
 
 class Browser;
 
 // Avatar button that displays the active profile's name in the caption area.
-class NewAvatarButton : public views::LabelButton,
-                        public ProfileInfoCacheObserver,
+class NewAvatarButton : public AvatarBaseButton,
+                        public views::LabelButton,
                         public SigninErrorController::Observer {
  public:
   // Different button styles that can be applied.
@@ -31,26 +31,15 @@ class NewAvatarButton : public views::LabelButton,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
 
+ protected:
+  // AvatarBaseButton:
+  void Update() override;
+
  private:
   friend class ProfileChooserViewExtensionsTest;
 
-  // ProfileInfoCacheObserver:
-  void OnProfileAdded(const base::FilePath& profile_path) override;
-  void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const base::string16& profile_name) override;
-  void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const base::string16& old_profile_name) override;
-  void OnProfileSupervisedUserIdChanged(
-      const base::FilePath& profile_path) override;
-
   // SigninErrorController::Observer:
   void OnErrorChanged() override;
-
-  // Called when the profile info cache has changed, which means we might
-  // have to update the icon/text of the button.
-  void Update();
-
-  Browser* browser_;
 
   // Whether the signed in profile has an authentication error. Used to display
   // an error icon next to the button text.

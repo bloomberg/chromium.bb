@@ -215,26 +215,6 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
     avatar_button_ = nullptr;
     frame_->GetRootView()->Layout();
   }
-
-  gfx::Image avatar;
-  gfx::Image taskbar_badge_avatar;
-  bool is_rectangle = false;
-
-  // Update the avatar button in the window frame and the taskbar overlay.
-  bool should_show_avatar_menu =
-      avatar_button_ || AvatarMenu::ShouldShowAvatarMenu();
-
-  if (!AvatarMenuButton::GetAvatarImages(
-          browser_view_->browser()->profile(), should_show_avatar_menu, &avatar,
-          &taskbar_badge_avatar, &is_rectangle)) {
-    return;
-  }
-
-  // Disable the menu when we should not show the menu.
-  if (avatar_button_ && !AvatarMenu::ShouldShowAvatarMenu())
-    avatar_button_->SetEnabled(false);
-  if (avatar_button_)
-    avatar_button_->SetAvatarIcon(avatar, is_rectangle);
 }
 
 void BrowserNonClientFrameView::UpdateNewAvatarButton(
