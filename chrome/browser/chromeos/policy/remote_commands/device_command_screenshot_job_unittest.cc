@@ -236,7 +236,8 @@ std::string DeviceCommandScreenshotTest::CreatePayloadFromResultCode(
     DeviceCommandScreenshotJob::ResultCode result_code) {
   std::string payload;
   base::DictionaryValue root_dict;
-  root_dict.Set(kResultFieldName, new base::FundamentalValue(result_code));
+  if (result_code != DeviceCommandScreenshotJob::SUCCESS)
+    root_dict.Set(kResultFieldName, new base::FundamentalValue(result_code));
   base::JSONWriter::Write(&root_dict, &payload);
   return payload;
 }
@@ -277,11 +278,13 @@ TEST_F(DeviceCommandScreenshotTest, Failure) {
       make_scoped_ptr(new MockScreenshotDelegate(error_code.Pass()))));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
-  bool success =
-      job->Run(base::TimeTicks::Now(),
-               base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
-                          base::Unretained(this), base::Unretained(job.get()),
-                          RemoteCommandJob::FAILED, ""));
+  bool success = job->Run(
+      base::TimeTicks::Now(),
+      base::Bind(&DeviceCommandScreenshotTest::VerifyResults,
+                 base::Unretained(this), base::Unretained(job.get()),
+                 RemoteCommandJob::FAILED,
+                 CreatePayloadFromResultCode(
+                     DeviceCommandScreenshotJob::FAILURE_AUTHENTICATION)));
   EXPECT_TRUE(success);
   run_loop_.Run();
 }

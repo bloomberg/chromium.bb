@@ -80,7 +80,8 @@ class DeviceCommandScreenshotJob::Payload
 
 DeviceCommandScreenshotJob::Payload::Payload(ResultCode result_code) {
   base::DictionaryValue root_dict;
-  root_dict.Set(kResultFieldName, new base::FundamentalValue(result_code));
+  if (result_code != SUCCESS)
+    root_dict.Set(kResultFieldName, new base::FundamentalValue(result_code));
   base::JSONWriter::Write(&root_dict, &payload_);
 }
 
@@ -112,10 +113,23 @@ void DeviceCommandScreenshotJob::OnSuccess() {
 }
 
 void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
-  // TODO(cschuet): Add payload delivery in the failure case.
-  // http://crbug.com/482865
+  ResultCode result_code;
+  switch (error_code) {
+    case UploadJob::AUTHENTICATION_ERROR:
+      result_code = FAILURE_AUTHENTICATION;
+      break;
+    case UploadJob::NETWORK_ERROR:
+    case UploadJob::SERVER_ERROR:
+      result_code = FAILURE_SERVER;
+      break;
+    case UploadJob::CONTENT_ENCODING_ERROR:
+      result_code = FAILURE_CLIENT;
+      break;
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(failed_callback_, nullptr));
+      FROM_HERE,
+      base::Bind(failed_callback_,
+                 base::Passed(make_scoped_ptr(new Payload(result_code)))));
 }
 
 bool DeviceCommandScreenshotJob::IsExpired(base::TimeTicks now) {
@@ -182,10 +196,11 @@ void DeviceCommandScreenshotJob::RunImpl(
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
   // Immediately fail if there are no attached screens.
-  // TODO(cschuet): Fix http://crbug.com/482865.
   if (root_windows.size() == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(failed_callback_, nullptr));
+        FROM_HERE,
+        base::Bind(failed_callback_, base::Passed(make_scoped_ptr(new Payload(
+                                         FAILURE_SCREENSHOT_ACQUISITION)))));
   }
 
   // Post tasks to the sequenced worker pool for taking screenshots on each

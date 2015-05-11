@@ -371,6 +371,10 @@ void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   const int response_code = source->GetResponseCode();
+  const bool success = response_code == net::HTTP_OK;
+  if (!success)
+    LOG(ERROR) << "POST request failed with HTTP status code " << response_code;
+
   if (response_code == net::HTTP_UNAUTHORIZED) {
     if (retry_ >= kMaxRetries) {
       upload_fetcher_.reset();
@@ -390,7 +394,6 @@ void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  const bool success = response_code == net::HTTP_OK;
   upload_fetcher_.reset();
   access_token_.clear();
   upload_fetcher_.reset();

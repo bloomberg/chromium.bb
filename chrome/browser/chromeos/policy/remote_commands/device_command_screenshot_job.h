@@ -46,14 +46,14 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
     // Failed to acquire screenshots, e.g. no attached screens.
     FAILURE_SCREENSHOT_ACQUISITION = 2,
 
-    // UploadJob failed to encode the PNG data.
-    FAILURE_CONTENT_ENCODING = 3,
-
     // Failed to authenticate to the remote server.
-    FAILURE_AUTHENTICATION = 4,
+    FAILURE_AUTHENTICATION = 3,
 
     // Failed due to an internal server error.
-    FAILURE_SERVER = 5
+    FAILURE_SERVER = 4,
+
+    // Failed due to a client-side error.
+    FAILURE_CLIENT = 5
   };
 
   // A delegate interface used by DeviceCommandScreenshotJob to retrieve its
