@@ -23,6 +23,16 @@ sys.path.insert(0, os.path.join(
 import source
 
 
+def _HasSameContent(filename, content):
+  '''Returns true if the given file is readable and has the given content.'''
+  try:
+    with open(filename) as file:
+      return file.read() == content
+  except:
+    # Ignore all errors and fall back on a safe bet.
+    return False
+
+
 def main():
   parser = optparse.OptionParser(description=__doc__)
   parser.add_option('-w', '--rewrite_prefix', action='append', default=[],
@@ -42,15 +52,17 @@ def main():
 
   path_rewriter = PathRewriter(options.prefix_map)
 
+  content = ''
+  for path in args:
+    js_deps = source.Source(source.GetFileContents(path))
+    path = path_rewriter.RewritePath(path)
+    content += 'goog.addDependency(\'%s\', %s, %s);\n' % (
+        path, sorted(js_deps.provides), sorted(js_deps.requires))
+  if _HasSameContent(options.output_file, content):
+    return
   # Write the generated deps file.
   with open(options.output_file, 'w') as output:
-    for path in args:
-      js_deps = source.Source(source.GetFileContents(path))
-      path = path_rewriter.RewritePath(path)
-      line = 'goog.addDependency(\'%s\', %s, %s);\n' % (
-          path, sorted(js_deps.provides), sorted(js_deps.requires))
-      output.write(line)
-
+    output.write(content)
 
 if __name__ == '__main__':
   main()

@@ -15,6 +15,16 @@ import sys
 import shutil
 
 
+def HasSameContent(filename, content):
+  '''Returns true if the given file is readable and has the given content.'''
+  try:
+    with open(filename) as file:
+      return file.read() == content
+  except:
+    # Ignore all errors and fall back on a safe bet.
+    return False
+
+
 def main ():
   parser = optparse.OptionParser()
   parser.set_usage(
@@ -55,8 +65,9 @@ def main ():
       p = subprocess.Popen(
           cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
       out, err = p.communicate()
-      with open(cxxoutfile, 'wb') as f:
-        f.write(out)
+      if not HasSameContent(cxxoutfile, out):
+        with open(cxxoutfile, 'wb') as f:
+          f.write(out)
       shutil.copyfile(inputfile, jsoutfile)
     except Exception, ex:
       if os.path.exists(cxxoutfile):
@@ -67,4 +78,4 @@ def main ():
 
 
 if __name__ == '__main__':
- sys.exit(main())
+  sys.exit(main())
