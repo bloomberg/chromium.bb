@@ -684,21 +684,6 @@ void WebTestProxyBase::LayoutAndPaintAsyncThen(const base::Closure& callback) {
   }
 }
 
-void WebTestProxyBase::DidDisplayAsync(const base::Closure& callback,
-                                       const SkBitmap& bitmap) {
-  // Verify we actually composited.
-  CHECK_NE(0, bitmap.info().fWidth);
-  CHECK_NE(0, bitmap.info().fHeight);
-  if (!callback.is_null())
-    callback.Run();
-}
-
-void WebTestProxyBase::DisplayAsyncThen(const base::Closure& callback) {
-  TRACE_EVENT0("shell", "WebTestProxyBase::DisplayAsyncThen");
-  CapturePixelsAsync(base::Bind(
-      &WebTestProxyBase::DidDisplayAsync, base::Unretained(this), callback));
-}
-
 void WebTestProxyBase::GetScreenOrientationForTesting(
     blink::WebScreenInfo& screen_info) {
   if (!screen_orientation_client_)

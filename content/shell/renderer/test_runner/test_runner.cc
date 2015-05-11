@@ -290,8 +290,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void RemoveWebPageOverlay();
   void LayoutAndPaintAsync();
   void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
-  void DisplayAsync();
-  void DisplayAsyncThen(v8::Local<v8::Function> callback);
   void GetManifestThen(v8::Local<v8::Function> callback);
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
@@ -539,8 +537,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::LayoutAndPaintAsync)
       .SetMethod("layoutAndPaintAsyncThen",
                  &TestRunnerBindings::LayoutAndPaintAsyncThen)
-      .SetMethod("displayAsync", &TestRunnerBindings::DisplayAsync)
-      .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
       .SetMethod("getManifestThen", &TestRunnerBindings::GetManifestThen)
       .SetMethod("capturePixelsAsyncThen",
                  &TestRunnerBindings::CapturePixelsAsyncThen)
@@ -1372,17 +1368,6 @@ void TestRunnerBindings::LayoutAndPaintAsyncThen(
     v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->LayoutAndPaintAsyncThen(callback);
-}
-
-void TestRunnerBindings::DisplayAsync() {
-  if (runner_)
-    runner_->DisplayAsync();
-}
-
-void TestRunnerBindings::DisplayAsyncThen(
-    v8::Local<v8::Function> callback) {
-  if (runner_)
-    runner_->DisplayAsyncThen(callback);
 }
 
 void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> callback) {
@@ -2875,18 +2860,6 @@ void TestRunner::LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback) {
   proxy_->LayoutAndPaintAsyncThen(base::Bind(&TestRunner::InvokeCallback,
                                              weak_factory_.GetWeakPtr(),
                                              base::Passed(&task)));
-}
-
-void TestRunner::DisplayAsync() {
-  proxy_->DisplayAsyncThen(base::Closure());
-}
-
-void TestRunner::DisplayAsyncThen(v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(
-      new InvokeCallbackTask(this, callback));
-  proxy_->DisplayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
-                                      weak_factory_.GetWeakPtr(),
-                                      base::Passed(&task)));
 }
 
 void TestRunner::GetManifestThen(v8::Local<v8::Function> callback) {
