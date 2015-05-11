@@ -143,6 +143,10 @@ BluetoothDevice::UUIDList BluetoothLowEnergyDeviceMac::GetUUIDs() const {
   return std::vector<device::BluetoothUUID>();
 }
 
+int16 BluetoothLowEnergyDeviceMac::GetInquiryRSSI() const {
+  return kUnknownPower;
+}
+
 bool BluetoothLowEnergyDeviceMac::ExpectingPinCode() const {
   return false;
 }

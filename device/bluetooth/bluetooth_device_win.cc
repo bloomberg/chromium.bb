@@ -188,6 +188,10 @@ BluetoothDevice::UUIDList BluetoothDeviceWin::GetUUIDs() const {
   return uuids_;
 }
 
+int16 BluetoothDeviceWin::GetInquiryRSSI() const {
+  return kUnknownPower;
+}
+
 bool BluetoothDeviceWin::ExpectingPinCode() const {
   NOTIMPLEMENTED();
   return false;

@@ -258,6 +258,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // services, for dual mode devices this may be collected from both./
   virtual UUIDList GetUUIDs() const = 0;
 
+  // The received signal strength, in dBm. This field is avaliable and valid
+  // only during discovery. If not during discovery, or RSSI wasn't reported,
+  // this method will return |kUnknownPower|.
+  virtual int16 GetInquiryRSSI() const = 0;
+
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;

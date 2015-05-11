@@ -266,6 +266,18 @@ BluetoothDeviceChromeOS::UUIDList BluetoothDeviceChromeOS::GetUUIDs() const {
   return uuids;
 }
 
+int16 BluetoothDeviceChromeOS::GetInquiryRSSI() const {
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+          GetProperties(object_path_);
+  DCHECK(properties);
+
+  if (!properties->rssi.is_valid())
+    return kUnknownPower;
+
+  return properties->rssi.value();
+}
+
 bool BluetoothDeviceChromeOS::ExpectingPinCode() const {
   return pairing_.get() && pairing_->ExpectingPinCode();
 }

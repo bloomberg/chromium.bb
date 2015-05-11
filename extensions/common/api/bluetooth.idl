@@ -71,6 +71,10 @@ namespace bluetooth {
     // GATT primary services. For dual mode devices this may be obtained from
     // both.
     DOMString[]? uuids;
+
+    // The received signal strength, in dBm. This field is avaliable and valid
+    // only during discovery. Outside of discovery it's value is not specified.
+    long? inquiryRssi;
   };
 
   // Callback from the <code>getDevice</code> method.
