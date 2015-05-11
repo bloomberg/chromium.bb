@@ -7,6 +7,16 @@ crbug.com/453972 [ Android ] virtual/slimmingpaint/ [ Skip ]
 crbug.com/453972 [ Mac ] virtual/slimmingpaint/fast/block [ Pass ]
 crbug.com/453972 [ Win ] virtual/slimmingpaint/fast/block [ Pass ]
 crbug.com/453972 [ Android ] virtual/slimmingpaint/fast/block [ Pass ]
+# On linux, run fast/ for the listed sub-directories only.
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast [ Skip ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/backgrounds [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/block [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/borders [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/gradients [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/repaint [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/text [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/transforms [ Pass ]
+crbug.com/453972 [ Linux ] virtual/slimmingpaint/fast/writing-mode [ Pass ]
 
 crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
