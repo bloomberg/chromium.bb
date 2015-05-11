@@ -79,8 +79,6 @@ class MyInstance : public pp::Instance {
       device_context_.ReplaceContents(&image);
       device_context_.Flush(
           callback_factory_.NewCallback(&MyInstance::OnFlush));
-    } else {
-      printf("NullImage\n");
     }
   }
 
@@ -92,7 +90,7 @@ class MyInstance : public pp::Instance {
     PP_GamepadsSampleData gamepad_data;
     gamepad_->Sample(pp_instance(), &gamepad_data);
 
-    if (gamepad_data.length > 1 && gamepad_data.items[0].connected) {
+    if (gamepad_data.length > 0 && gamepad_data.items[0].connected) {
       int width2 = size.width() / 2;
       int height2 = size.height() / 2;
       // Draw 2 axes

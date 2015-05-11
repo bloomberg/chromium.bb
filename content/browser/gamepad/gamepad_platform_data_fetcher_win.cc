@@ -97,6 +97,7 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
     WebGamepads* pads) {
   TRACE_EVENT0("GAMEPAD", "EnumerateDevices");
 
+  pads->length = 0;
   // Mark all disconnected pads DISCONNECTED.
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     if (!pads->items[i].connected)
