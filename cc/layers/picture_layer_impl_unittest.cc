@@ -4921,6 +4921,41 @@ TEST_F(PictureLayerImplTest, ScrollPastLiveTilesRectAndBack) {
   EXPECT_FALSE(active_layer_->HighResTiling()->live_tiles_rect().IsEmpty());
 }
 
+TEST_F(PictureLayerImplTest, ScrollPropagatesToPending) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
+
+  gfx::Size tile_size(102, 102);
+  gfx::Size layer_bounds(1000, 1000);
+  gfx::Size viewport_size(100, 100);
+
+  host_impl_.SetViewportSize(viewport_size);
+  host_impl_.SetDeviceScaleFactor(1.f);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupTrees(pending_pile, active_pile);
+
+  active_layer_->SetCurrentScrollOffset(gfx::ScrollOffset(0.0, 50.0));
+  host_impl_.active_tree()->UpdateDrawProperties(false);
+  EXPECT_EQ("0,50 100x100", active_layer_->HighResTiling()
+                                ->GetCurrentVisibleRectForTesting()
+                                .ToString());
+
+  EXPECT_EQ("0,0 100x100", pending_layer_->HighResTiling()
+                               ->GetCurrentVisibleRectForTesting()
+                               .ToString());
+  host_impl_.pending_tree()->UpdateDrawProperties(false);
+  EXPECT_EQ("0,50 100x100", pending_layer_->HighResTiling()
+                                ->GetCurrentVisibleRectForTesting()
+                                .ToString());
+}
+
 TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
