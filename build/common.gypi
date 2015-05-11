@@ -2245,6 +2245,12 @@
         ],
       }],
 
+      ['OS=="win" and target_arch=="x64"', {
+        # TODO(thakis): Enable on x64 once all warnings are fixed.
+        # http://crbug.com/486571
+        'blink_gc_plugin%': 0,
+      }],
+
       # On valgrind bots, override the optimizer settings so we don't inline too
       # much and make the stacks harder to figure out.
       #
