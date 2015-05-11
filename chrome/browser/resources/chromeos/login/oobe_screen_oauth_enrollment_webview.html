@@ -19,35 +19,39 @@
       </notification-card>
     </div>
     <div id="oauth-enroll-step-attribute-prompt">
-      <div class="oauth-enroll-step-content">
-        <span class="oauth-enroll-step-message">
-          <span id="oauth-enroll-attribute-prompt-message"></span>
-        </span>
-        <p>
-          <div class="oauth-enroll-textbox">
-            <label>
-              <span i18n-content="oauthEnrollAssetIdLabel"
-                    class="oauth-enroll-attribute-label"></span>
-              <p>
-                <input class="oauth-enroll-attribute-field"
-                       id="oauth-enroll-asset-id" maxlength="200"/>
-              </p>
-            </label>
+      <gaia-card id="oauth-enroll-attribute-prompt-card">
+        <div class="header" flex vertical layout end-justified start>
+          <h1 class="welcome-message" style="text-transform:capitalize"
+              i18n-content="oauthEnrollScreenTitle"></h1>
+          <p class="enterprise-info"
+              i18n-content="oauthEnrollDeviceInformation"></p>
+        </div>
+        <div class="footer" flex vertical layout justified>
+          <div class="oauth-enroll-step-message">
+            <span id="oauth-enroll-attribute-prompt-message"
+                  i18n-content="oauthEnrollAttributeExplanation"></span>
+            <a href="#" id="oauth-enroll-learn-more-link"
+               class="oauth-enroll-link"
+               i18n-content="oauthEnrollExplaneAttributeLink"></a>
+            <gaia-input-form i18n-values="buttonText:oauthEnrollNextBtn">
+              <gaia-input id="oauth-enroll-asset-id"
+                          type="text"
+                          i18n-values="label:oauthEnrollAssetIdLabel">
+              </gaia-input>
+              <gaia-input id="oauth-enroll-location"
+                          type="text"
+                          i18n-values="label:oauthEnrollLocationLabel">
+              </gaia-input>
+            </gaia-input-form>
           </div>
-        </p>
-        <p>
-          <div class="oauth-enroll-textbox">
-            <label>
-              <span i18n-content="oauthEnrollLocationLabel"
-                    class="oauth-enroll-attribute-label"></span>
-              <p>
-                <input class="oauth-enroll-attribute-field"
-                       id="oauth-enroll-location" maxlength="200"/>
-              </p>
-            </label>
+          <div horizontal layout justified>
+            <a href="#" id="oauth-enroll-skip-button"
+                        class="oauth-enroll-link"
+                        i18n-content="oauthEnrollSkip">
+            </a>
           </div>
-        </p>
-      </div>
+        </div>
+      </gaia-card>
     </div>
     <div id="oauth-enroll-step-attribute-prompt-error">
       <notification-card id="oauth-enroll-attribute-prompt-error-card"

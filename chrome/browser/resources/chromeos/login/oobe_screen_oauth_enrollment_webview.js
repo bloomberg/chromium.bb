@@ -84,7 +84,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                                           this.authenticator_.authDomain);
             }
             this.classList.toggle('saml', isSAML);
-            if (Oobe.getInstance().currentScreen === this)
+            if (Oobe.getInstance().currentScreen == this)
               Oobe.getInstance().updateScreenSize(this);
           }).bind(this));
 
@@ -136,6 +136,17 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
             $('oauth-enroll-auth-view').back();
             e.preventDefault();
           }).bind(this));
+
+      $('oauth-enroll-attribute-prompt-card').addEventListener('submit',
+          this.onAttributesSubmitted.bind(this));
+
+      $('oauth-enroll-learn-more-link').addEventListener('click',
+          function(event) {
+            chrome.send('oauthEnrollOnLearnMore');
+          });
+
+      $('oauth-enroll-skip-button').addEventListener('click',
+          this.onSkipButtonClicked.bind(this));
     },
 
     /**
@@ -163,16 +174,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         button.addEventListener('click', handler);
         buttons.push(button);
       }
-
-      makeButton(
-          'oauth-enroll-continue-button',
-          ['oauth-enroll-focus-on-attribute-prompt'],
-          loadTimeData.getString('oauthEnrollContinue'),
-          function() {
-            chrome.send('oauthEnrollAttributes',
-                       [$('oauth-enroll-asset-id').value,
-                        $('oauth-enroll-location').value]);
-          });
 
       return buttons;
     },
@@ -210,15 +211,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * location.
      */
     showAttributePromptStep: function(annotated_asset_id, annotated_location) {
-      /**
-       * innerHTML is used instead of textContent,
-       * because oauthEnrollAttributes contains text formatting (bold, italic).
-       */
-      $('oauth-enroll-attribute-prompt-message').innerHTML =
-          loadTimeData.getString('oauthEnrollAttributes');
-
       $('oauth-enroll-asset-id').value = annotated_asset_id;
       $('oauth-enroll-location').value = annotated_location;
+      $('oauth-enroll-back-button').hidden = true;
 
       this.showStep(STEP_ATTRIBUTE_PROMPT);
     },
@@ -282,7 +277,24 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     doRetry_: function() {
       chrome.send('oauthEnrollRetry');
+    },
+
+    /**
+     * Skips the device attribute update,
+     * shows the successful enrollment step.
+     */
+    onSkipButtonClicked: function() {
+      this.showStep(STEP_SUCCESS);
+    },
+
+    /**
+     * Uploads the device attributes to server. This goes to C++ side through
+     * |chrome| and launches the device attribute update negotiation.
+     */
+    onAttributesSubmitted: function() {
+      chrome.send('oauthEnrollAttributes',
+                  [$('oauth-enroll-asset-id').value,
+                   $('oauth-enroll-location').value]);
     }
   };
 });
-

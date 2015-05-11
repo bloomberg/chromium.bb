@@ -25,7 +25,6 @@
 }
 
 .oauth-enroll-state-error #oauth-enroll-step-error,
-.oauth-enroll-state-attribute-prompt #oauth-enroll-step-attribute-prompt,
 .oauth-enroll-state-success #oauth-enroll-step-success {
   display: table;
   height: 480px;
@@ -35,7 +34,9 @@
 .oauth-enroll-state-working #oauth-enroll-step-signin,
 .oauth-enroll-state-attribute-prompt-error
     #oauth-enroll-step-attribute-prompt-error,
-.oauth-enroll-state-signin #oauth-enroll-step-signin {
+.oauth-enroll-state-signin #oauth-enroll-step-signin,
+.oauth-enroll-state-attribute-prompt
+    #oauth-enroll-step-attribute-prompt {
   display: block;
   height: 100%;
   width: 100%;
@@ -69,7 +70,7 @@
 }
 
 .oauth-enroll-link {
-  color: rgb(37, 79, 155);
+  color: rgb(17, 85, 204);
   cursor: pointer;
   text-decoration: none;
 }
@@ -85,7 +86,6 @@
 .oauth-enroll-state-error.mode-manual #oauth-enroll-cancel-button,
 .oauth-enroll-state-error.mode-manual #oauth-enroll-done-button,
 .oauth-enroll-state-error #oauth-enroll-back-button,
-.oauth-enroll-state-attribute-prompt #oauth-enroll-continue-button,
 .oauth-enroll-state-success #oauth-enroll-done-button {
   display: inline;
 }
@@ -152,21 +152,6 @@ html[dir=rtl] #oauth-enroll-back-button {
   display: none;
 }
 
-.oauth-enroll-textbox {
-  display: inline-block;
-  position: relative;
-  top: 10px;
-  vertical-align: top;
-}
-
-.oauth-enroll-textbox.oauth-enroll-attribute-field[type='text'] {
-  border-color: black;
-  font-size: 16px;
-  position: relative;
-  width: 250px;
-}
-
-.oauth-enroll-textbox.auth-enroll-attribute-label {
-  display: inline;
-  position: relative;
+#oauth-enroll-attribute-prompt-message {
+  color: black;
 }

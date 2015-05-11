@@ -150,6 +150,8 @@ void EnrollmentScreenHandler::RegisterMessages() {
               &EnrollmentScreenHandler::HandleFrameLoadingCompleted);
   AddCallback("oauthEnrollAttributes",
               &EnrollmentScreenHandler::HandleDeviceAttributesProvided);
+  AddCallback("oauthEnrollOnLearnMore",
+              &EnrollmentScreenHandler::HandleOnLearnMore);
 }
 
 // EnrollmentScreenHandler
@@ -366,10 +368,18 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollBack", IDS_ENTERPRISE_ENROLLMENT_BACK);
   builder->Add("oauthEnrollDone", IDS_ENTERPRISE_ENROLLMENT_DONE);
   builder->Add("oauthEnrollContinue", IDS_ENTERPRISE_ENROLLMENT_CONTINUE);
+  builder->Add("oauthEnrollNextBtn", IDS_NEWGAIA_OFFLINE_NEXT_BUTTON_TEXT);
+  builder->Add("oauthEnrollSkip", IDS_ENTERPRISE_ENROLLMENT_SKIP);
   builder->Add("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS);
+  builder->Add("oauthEnrollDeviceInformation",
+               IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
   builder->Add("oauthEnrollAttributes", IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTES);
   builder->Add("oauthEnrollExplainLink",
                IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK);
+  builder->Add("oauthEnrollExplaneAttributeLink",
+               IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_ATTRIBUTE_LINK);
+  builder->Add("oauthEnrollAttributeExplanation",
+               IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION);
   builder->Add("oauthEnrollWorking", IDS_ENTERPRISE_ENROLLMENT_WORKING);
   builder->Add("oauthEnrollAssetIdLabel",
                IDS_ENTERPRISE_ENROLLMENT_ASSET_ID_LABEL);
@@ -540,6 +550,12 @@ void EnrollmentScreenHandler::HandleDeviceAttributesProvided(
     const std::string& asset_id,
     const std::string& location) {
   controller_->OnDeviceAttributeProvided(asset_id, location);
+}
+
+void EnrollmentScreenHandler::HandleOnLearnMore() {
+  if (!help_app_.get())
+    help_app_ = new HelpAppLauncher(GetNativeWindow());
+  help_app_->ShowHelpTopic(HelpAppLauncher::HELP_DEVICE_ATTRIBUTES);
 }
 
 void EnrollmentScreenHandler::ShowStep(const char* step) {
