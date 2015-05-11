@@ -5,7 +5,7 @@
 #ifndef SQL_TRANSACTION_H_
 #define SQL_TRANSACTION_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sql/sql_export.h"
 
 namespace sql {

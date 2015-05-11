@@ -198,7 +198,7 @@ TEST_F(SQLConnectionTest, GetLastInsertRowId) {
   ASSERT_TRUE(db().Execute("INSERT INTO foo (value) VALUES (12)"));
 
   // Last insert row ID should be valid.
-  int64 row = db().GetLastInsertRowId();
+  int64_t row = db().GetLastInsertRowId();
   EXPECT_LT(0, row);
 
   // It should be the primary key of the row we just inserted.

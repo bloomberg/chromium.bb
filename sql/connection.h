@@ -5,14 +5,15 @@
 #ifndef SQL_CONNECTION_H_
 #define SQL_CONNECTION_H_
 
+#include <stdint.h>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
@@ -372,7 +373,7 @@ class SQL_EXPORT Connection {
 
   // Returns sqlite's internal ID for the last inserted row. Valid only
   // immediately after an insert.
-  int64 GetLastInsertRowId() const;
+  int64_t GetLastInsertRowId() const;
 
   // Returns sqlite's count of the number of rows modified by the last
   // statement executed. Will be 0 if no statement has executed or the database

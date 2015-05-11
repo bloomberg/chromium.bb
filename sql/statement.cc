@@ -112,7 +112,7 @@ bool Statement::BindInt(int col, int val) {
   return CheckOk(sqlite3_bind_int(ref_->stmt(), col + 1, val));
 }
 
-bool Statement::BindInt64(int col, int64 val) {
+bool Statement::BindInt64(int col, int64_t val) {
   DCHECK(!stepped_);
   if (!is_valid())
     return false;
@@ -207,7 +207,7 @@ int Statement::ColumnInt(int col) const {
   return sqlite3_column_int(ref_->stmt(), col);
 }
 
-int64 Statement::ColumnInt64(int col) const {
+int64_t Statement::ColumnInt64(int col) const {
   if (!CheckValid())
     return 0;
 

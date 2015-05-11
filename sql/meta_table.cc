@@ -180,7 +180,7 @@ bool MetaTable::SetValue(const char* key, int value) {
   return s.Run();
 }
 
-bool MetaTable::SetValue(const char* key, int64 value) {
+bool MetaTable::SetValue(const char* key, int64_t value) {
   Statement s;
   PrepareSetStatement(&s, key);
   s.BindInt64(1, value);
@@ -205,7 +205,7 @@ bool MetaTable::GetValue(const char* key, int* value) {
   return true;
 }
 
-bool MetaTable::GetValue(const char* key, int64* value) {
+bool MetaTable::GetValue(const char* key, int64_t* value) {
   Statement s;
   if (!PrepareGetStatement(&s, key))
     return false;

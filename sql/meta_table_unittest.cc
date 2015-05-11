@@ -208,15 +208,15 @@ TEST_F(SQLMetaTableTest, IntValue) {
 
 TEST_F(SQLMetaTableTest, Int64Value) {
   const char kKey[] = "Int Key";
-  const int64 kFirstValue = 5000000017LL;
-  const int64 kSecondValue = 5000000023LL;
+  const int64_t kFirstValue = 5000000017LL;
+  const int64_t kSecondValue = 5000000023LL;
 
   // Initially, the value isn't there until set.
   {
     sql::MetaTable meta_table;
     EXPECT_TRUE(meta_table.Init(&db(), 1, 1));
 
-    int64 value;
+    int64_t value;
     EXPECT_FALSE(meta_table.GetValue(kKey, &value));
 
     EXPECT_TRUE(meta_table.SetValue(kKey, kFirstValue));
@@ -229,7 +229,7 @@ TEST_F(SQLMetaTableTest, Int64Value) {
     sql::MetaTable meta_table;
     EXPECT_TRUE(meta_table.Init(&db(), 1, 1));
 
-    int64 value;
+    int64_t value;
     EXPECT_TRUE(meta_table.GetValue(kKey, &value));
     EXPECT_EQ(kFirstValue, value);
 
@@ -241,7 +241,7 @@ TEST_F(SQLMetaTableTest, Int64Value) {
     sql::MetaTable meta_table;
     EXPECT_TRUE(meta_table.Init(&db(), 1, 1));
 
-    int64 value;
+    int64_t value;
     EXPECT_TRUE(meta_table.GetValue(kKey, &value));
     EXPECT_EQ(kSecondValue, value);
   }

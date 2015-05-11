@@ -228,7 +228,7 @@ Connection::~Connection() {
 
 bool Connection::Open(const base::FilePath& path) {
   if (!histogram_tag_.empty()) {
-    int64 size_64 = 0;
+    int64_t size_64 = 0;
     if (base::GetFileSize(path, &size_64)) {
       size_t sample = static_cast<size_t>(size_64 / 1024);
       std::string full_histogram_name = "Sqlite.SizeKB." + histogram_tag_;
@@ -835,7 +835,7 @@ bool Connection::DoesColumnExist(const char* table_name,
   return false;
 }
 
-int64 Connection::GetLastInsertRowId() const {
+int64_t Connection::GetLastInsertRowId() const {
   if (!db_) {
     DLOG_IF(FATAL, !poisoned_) << "Illegal use of connection without a db";
     return 0;

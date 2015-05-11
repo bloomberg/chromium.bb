@@ -85,7 +85,7 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
   if (1u != fread(header, sizeof(header), 1, file.get()))
     return false;
 
-  int64 db_size = 0;
+  int64_t db_size = 0;
   if (!base::GetFileSize(db_path, &db_size))
     return false;
 

@@ -5,9 +5,10 @@
 #ifndef SQL_META_TABLE_H_
 #define SQL_META_TABLE_H_
 
+#include <stdint.h>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sql/sql_export.h"
 
 namespace sql {
@@ -74,13 +75,13 @@ class SQL_EXPORT MetaTable {
   // Set the given arbitrary key with the given data. Returns true on success.
   bool SetValue(const char* key, const std::string& value);
   bool SetValue(const char* key, int value);
-  bool SetValue(const char* key, int64 value);
+  bool SetValue(const char* key, int64_t value);
 
   // Retrieves the value associated with the given key. This will use sqlite's
   // type conversion rules. It will return true on success.
   bool GetValue(const char* key, std::string* value);
   bool GetValue(const char* key, int* value);
-  bool GetValue(const char* key, int64* value);
+  bool GetValue(const char* key, int64_t* value);
 
   // Deletes the key from the table.
   bool DeleteKey(const char* key);

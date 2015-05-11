@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "sql/connection.h"
 
 // This is not strictly necessary for the operation of ScopedErrorIgnorer, but

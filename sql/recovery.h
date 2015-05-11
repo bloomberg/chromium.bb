@@ -5,8 +5,7 @@
 #ifndef SQL_RECOVERY_H_
 #define SQL_RECOVERY_H_
 
-#include "base/basictypes.h"
-
+#include "base/macros.h"
 #include "sql/connection.h"
 
 namespace base {
