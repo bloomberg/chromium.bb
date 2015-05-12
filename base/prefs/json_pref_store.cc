@@ -150,17 +150,10 @@ JsonPrefStore::JsonPrefStore(
     const base::FilePath& filename,
     const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
     scoped_ptr<PrefFilter> pref_filter)
-    : path_(filename),
-      sequenced_task_runner_(sequenced_task_runner),
-      prefs_(new base::DictionaryValue()),
-      read_only_(false),
-      writer_(filename, sequenced_task_runner),
-      pref_filter_(pref_filter.Pass()),
-      initialized_(false),
-      filtering_in_progress_(false),
-      read_error_(PREF_READ_ERROR_NONE),
-      write_count_histogram_(writer_.commit_interval(), path_) {
-  DCHECK(!path_.empty());
+    : JsonPrefStore(filename,
+                    base::FilePath(),
+                    sequenced_task_runner,
+                    pref_filter.Pass()) {
 }
 
 JsonPrefStore::JsonPrefStore(
@@ -177,6 +170,7 @@ JsonPrefStore::JsonPrefStore(
       pref_filter_(pref_filter.Pass()),
       initialized_(false),
       filtering_in_progress_(false),
+      pending_lossy_write_(false),
       read_error_(PREF_READ_ERROR_NONE),
       write_count_histogram_(writer_.commit_interval(), path_) {
   DCHECK(!path_.empty());
@@ -252,8 +246,7 @@ void JsonPrefStore::SetValueSilently(const std::string& key,
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, new_value.release());
-    if (!read_only_)
-      writer_.ScheduleWrite(this);
+    ScheduleWrite(flags);
   }
 }
 
@@ -268,8 +261,7 @@ void JsonPrefStore::RemoveValueSilently(const std::string& key, uint32 flags) {
   DCHECK(CalledOnValidThread());
 
   prefs_->RemovePath(key, NULL);
-  if (!read_only_)
-    writer_.ScheduleWrite(this);
+  ScheduleWrite(flags);
 }
 
 bool JsonPrefStore::ReadOnly() const {
@@ -309,6 +301,11 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
 void JsonPrefStore::CommitPendingWrite() {
   DCHECK(CalledOnValidThread());
 
+  // Schedule a write for any lossy writes that are outstanding to ensure that
+  // they get flushed when this function is called.
+  if (pending_lossy_write_)
+    writer_.ScheduleWrite(this);
+
   if (writer_.HasPendingWrite() && !read_only_)
     writer_.DoScheduledWrite();
 }
@@ -321,8 +318,7 @@ void JsonPrefStore::ReportValueChanged(const std::string& key, uint32 flags) {
 
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 
-  if (!read_only_)
-    writer_.ScheduleWrite(this);
+  ScheduleWrite(flags);
 }
 
 void JsonPrefStore::RegisterOnNextSuccessfulWriteCallback(
@@ -401,6 +397,8 @@ JsonPrefStore::~JsonPrefStore() {
 bool JsonPrefStore::SerializeData(std::string* output) {
   DCHECK(CalledOnValidThread());
 
+  pending_lossy_write_ = false;
+
   write_count_histogram_.RecordWriteOccured();
 
   if (pref_filter_)
@@ -432,8 +430,8 @@ void JsonPrefStore::FinalizeFileRead(bool initialization_successful,
 
   initialized_ = true;
 
-  if (schedule_write && !read_only_)
-    writer_.ScheduleWrite(this);
+  if (schedule_write)
+    ScheduleWrite(DEFAULT_PREF_WRITE_FLAGS);
 
   if (error_delegate_ && read_error_ != PREF_READ_ERROR_NONE)
     error_delegate_->OnError(read_error_);
@@ -443,6 +441,16 @@ void JsonPrefStore::FinalizeFileRead(bool initialization_successful,
                     OnInitializationCompleted(true));
 
   return;
+}
+
+void JsonPrefStore::ScheduleWrite(uint32 flags) {
+  if (read_only_)
+    return;
+
+  if (flags & LOSSY_PREF_WRITE_FLAG)
+    pending_lossy_write_ = true;
+  else
+    writer_.ScheduleWrite(this);
 }
 
 // NOTE: This value should NOT be changed without renaming the histogram
