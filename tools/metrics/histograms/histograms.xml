@@ -60016,8 +60016,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PluginGroup" type="int">
-  <int value="0" label="Adobe Reader"/>
-  <int value="1" label="Other Plugin"/>
+  <int value="0" label="Other Plugin"/>
+  <int value="1" label="Adobe Reader"/>
   <int value="2" label="Java"/>
   <int value="3" label="Quicktime"/>
   <int value="4" label="Shockwave"/>
