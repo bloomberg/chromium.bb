@@ -1207,6 +1207,58 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Ensure the renderer process does not get killed if the main frame URL's path
+// changes when going back in a subframe, since this is currently possible after
+// a replaceState in the main frame (thanks to https://crbug.com/373041).
+// See https:///crbug.com/486916.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       SubframeBackFromReplaceState) {
+  // Start at a page with a real iframe.
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_data_iframe.html"));
+  NavigateToURL(shell(), url1);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_NE(nullptr, root->child_at(0));
+
+  {
+    // Navigate in the iframe.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_2.html"));
+    NavigateFrameToURL(root->child_at(0), frame_url);
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.details().type);
+  }
+
+  {
+    // history.replaceState().
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script =
+        "history.replaceState({}, 'replaced', 'replaced')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+  }
+
+  {
+    // Go back in the iframe.
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+  }
+
+  // For now, we expect the main frame's URL to revert.  This won't happen once
+  // https://crbug.com/373041 is fixed.
+  EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
+
+  // Make sure the renderer process has not been killed.
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+}
+
 namespace {
 
 class FailureWatcher : public WebContentsObserver {

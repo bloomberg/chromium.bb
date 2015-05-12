@@ -1456,10 +1456,11 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
 
   // Update the current navigation entry in case we're going back/forward.
   if (entry_index != last_committed_entry_index_) {
-    // Make sure that a subframe commit isn't changing the main frame URL.
+    // Make sure that a subframe commit isn't changing the main frame's origin.
     // Otherwise the renderer process may be confused, leading to a URL spoof.
-    if (GetLastCommittedEntry()->GetURL() !=
-        GetEntryAtIndex(entry_index)->GetURL()) {
+    // We can't check the path since that may change (https://crbug.com/373041).
+    if (GetLastCommittedEntry()->GetURL().GetOrigin() !=
+        GetEntryAtIndex(entry_index)->GetURL().GetOrigin()) {
       bad_message::ReceivedBadMessage(rfh->GetProcess(),
                                       bad_message::NC_AUTO_SUBFRAME);
     }
