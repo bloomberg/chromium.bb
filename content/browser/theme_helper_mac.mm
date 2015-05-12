@@ -15,15 +15,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 
-// Declare notification names from the 10.7 SDK.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-NSString* NSPreferredScrollerStyleDidChangeNotification =
-    @"NSPreferredScrollerStyleDidChangeNotification";
-
-#endif
-
 @interface ScrollbarPrefsObserver : NSObject
 
 + (void)registerAsObserver;

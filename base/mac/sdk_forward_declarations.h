@@ -244,6 +244,8 @@ BASE_EXPORT extern NSString* const NSWindowDidExitFullScreenNotification;
 BASE_EXPORT extern NSString* const
     NSWindowDidChangeBackingPropertiesNotification;
 BASE_EXPORT extern NSString* const CBAdvertisementDataServiceDataKey;
+BASE_EXPORT extern NSString* const
+    NSPreferredScrollerStyleDidChangeNotification;
 #endif  // MAC_OS_X_VERSION_10_7
 
 #if !defined(MAC_OS_X_VERSION_10_9) || \
