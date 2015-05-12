@@ -70,7 +70,7 @@ void DrmSurface::PresentCanvas(const gfx::Rect& damage) {
       OverlayPlane(buffers_[front_buffer_ ^ 1]));
 
   UpdateNativeSurface(damage);
-  window_delegate_->SchedulePageFlip(false /* is_sync */,
+  window_delegate_->SchedulePageFlip(true /* is_sync */,
                                      base::Bind(&base::DoNothing));
 
   // Update our front buffer pointer.
