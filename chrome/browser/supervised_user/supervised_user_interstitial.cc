@@ -329,16 +329,8 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 #if defined(OS_ANDROID)
     ReportChildAccountFeedback(web_contents_, message, url_);
 #else
-    std::string bucket;
-#if defined(OS_CHROMEOS)
-    bucket = "UnicornCrOS";
-#else
-    bucket = "UnicornDesktop";
-#endif
-    chrome::ShowFeedbackPage(
-        chrome::FindBrowserWithWebContents(web_contents_),
-        message,
-        bucket);
+    chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),
+                             message, std::string());
 #endif
     return;
   }
