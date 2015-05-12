@@ -110,22 +110,17 @@ if (widevine_cdm_binary_files != []) {
 }
 
 if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
-  adapter_resource_file = "$target_gen_dir/widevinecdmadapter_version.rc"
-
-  # Produce the .rc file.
+  # Produce and compile the .rc file.
   process_version("widevinecdmadapter_resources") {
     visibility = [ ":*" ]
     sources = [
       "BRANDING",
       "widevinecdmadapter.ver",
     ]
-    output = adapter_resource_file
+    output = "$target_gen_dir/widevinecdmadapter_version.rc"
   }
 
   cdm_adapter("widevinecdmadapter") {
-    sources = [
-      adapter_resource_file,
-    ]
     deps = [
       ":widevinecdmadapter_resources",
       ":widevinecdm",

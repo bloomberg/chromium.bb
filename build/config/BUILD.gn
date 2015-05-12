@@ -41,9 +41,8 @@ declare_args() {
 #
 # For now we define these globally to match the current GYP build.
 config("feature_flags") {
-  # TODO(brettw) most of these need to be parameterized.
+  # TODO(brettw) this probably needs to be parameterized.
   defines = [
-    "CHROMIUM_BUILD",
     "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
   ]
 
@@ -238,6 +237,14 @@ config("feature_flags") {
   } else if (safe_browsing_mode == 2) {
     defines += [ "MOBILE_SAFE_BROWSING" ]
     defines += [ "SAFE_BROWSING_SERVICE" ]
+  }
+  if (is_official_build) {
+    defines += [ "OFFICIAL_BUILD" ]
+  }
+  if (is_chrome_branded) {
+    defines += [ "GOOGLE_CHROME_BUILD" ]
+  } else {
+    defines += [ "CHROMIUM_BUILD" ]
   }
 }
 
