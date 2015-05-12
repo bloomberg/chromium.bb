@@ -67,6 +67,12 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
     HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(callback);
   }
 
+  void ScheduleUpdatePrefsOnNetworkThread() {
+    // Picked a random Location as caller.
+    HttpServerPropertiesManager::ScheduleUpdatePrefsOnNetworkThread(
+        DETECTED_CORRUPTED_PREFS);
+  }
+
   MOCK_METHOD0(UpdateCacheFromPrefsOnPrefThread, void());
   MOCK_METHOD1(UpdatePrefsFromCacheOnNetworkThread, void(const base::Closure&));
   MOCK_METHOD6(UpdateCacheFromPrefsOnNetworkThread,

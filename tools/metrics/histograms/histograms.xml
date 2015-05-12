@@ -19551,6 +19551,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpServerProperties.UpdatePrefs"
+    enum="HttpServerPropertiesUpdatePrefsLocation">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The location in http_server_properties_manager.cc where UpdatePrefs was
+    called.
+  </summary>
+</histogram>
+
 <histogram name="Net.HttpSocketType" enum="HttpSocketType">
   <obsolete>
     Deprecated as of 03/2015.
@@ -54549,6 +54558,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="503" label="503: Service Unavailable"/>
   <int value="504" label="504: Gateway Timeout"/>
   <int value="505" label="505: HTTP Version Not Supported"/>
+</enum>
+
+<enum name="HttpServerPropertiesUpdatePrefsLocation" type="int">
+  <int value="0" label="SUPPORTS_SPDY"/>
+  <int value="1" label="HTTP_11_REQUIRED"/>
+  <int value="2" label="SET_ALTERNATIVE_SERVICE"/>
+  <int value="3" label="MARK_ALTERNATIVE_SERVICE_BROKEN"/>
+  <int value="4" label="MARK_ALTERNATIVE_SERVICE_RECENTLY_BROKEN"/>
+  <int value="5" label="CONFIRM_ALTERNATIVE_SERVICE"/>
+  <int value="6" label="CLEAR_ALTERNATIVE_SERVICE"/>
+  <int value="7" label="SET_SPDY_SETTING"/>
+  <int value="8" label="CLEAR_SPDY_SETTINGS"/>
+  <int value="9" label="CLEAR_ALL_SPDY_SETTINGS"/>
+  <int value="10" label="SET_SUPPORTS_QUIC"/>
+  <int value="11" label="SET_SERVER_NETWORK_STATS"/>
+  <int value="12" label="DETECTED_CORRUPTED_PREFS"/>
 </enum>
 
 <enum name="HttpSocketType" type="int">

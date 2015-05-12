@@ -123,6 +123,24 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   const ServerNetworkStatsMap& server_network_stats_map() const override;
 
  protected:
+  // The location where ScheduleUpdatePrefsOnNetworkThread was called.
+  enum Location {
+    SUPPORTS_SPDY = 0,
+    HTTP_11_REQUIRED = 1,
+    SET_ALTERNATIVE_SERVICE = 2,
+    MARK_ALTERNATIVE_SERVICE_BROKEN = 3,
+    MARK_ALTERNATIVE_SERVICE_RECENTLY_BROKEN = 4,
+    CONFIRM_ALTERNATIVE_SERVICE = 5,
+    CLEAR_ALTERNATIVE_SERVICE = 6,
+    SET_SPDY_SETTING = 7,
+    CLEAR_SPDY_SETTINGS = 8,
+    CLEAR_ALL_SPDY_SETTINGS = 9,
+    SET_SUPPORTS_QUIC = 10,
+    SET_SERVER_NETWORK_STATS = 11,
+    DETECTED_CORRUPTED_PREFS = 12,
+    NUM_LOCATIONS = 13,
+  };
+
   // --------------------
   // SPDY related methods
 
@@ -154,7 +172,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // These are used to delay updating the preferences when cached data in
   // |http_server_properties_impl_| is changing, and execute only one update per
   // simultaneous spdy_servers or spdy_settings or alternative_service changes.
-  void ScheduleUpdatePrefsOnNetworkThread();
+  // |location| specifies where this method is called from.
+  void ScheduleUpdatePrefsOnNetworkThread(Location location);
 
   // Starts the timers to update the prefs from cache. This are overridden in
   // tests to prevent the delay.
