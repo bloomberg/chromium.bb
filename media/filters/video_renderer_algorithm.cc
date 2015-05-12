@@ -94,7 +94,9 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   base::TimeDelta selected_frame_drift;
 
   // Step 4: Attempt to find the best frame by cadence.
-  int frame_to_render = FindBestFrameByCadence();
+  int cadence_overage = 0;
+  int frame_to_render =
+      FindBestFrameByCadence(first_frame_ ? nullptr : &cadence_overage);
   if (frame_to_render >= 0) {
     selected_frame_drift =
         CalculateAbsoluteDriftForFrame(deadline_min, frame_to_render);
@@ -119,6 +121,7 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     }
 
     if (frame_to_render >= 0) {
+      cadence_overage = 0;
       selected_frame_drift =
           CalculateAbsoluteDriftForFrame(deadline_min, frame_to_render);
     }
@@ -128,8 +131,10 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
   // least crappy option based on the drift from the deadline. If we're here the
   // selection is going to be bad because it means no suitable frame has any
   // coverage of the deadline interval.
-  if (frame_to_render < 0 || selected_frame_drift > max_acceptable_drift_)
+  if (frame_to_render < 0 || selected_frame_drift > max_acceptable_drift_) {
+    cadence_overage = 0;
     frame_to_render = FindBestFrameByDrift(deadline_min, &selected_frame_drift);
+  }
 
   last_render_had_glitch_ = selected_frame_drift > max_acceptable_drift_;
   DVLOG_IF(2, last_render_had_glitch_)
@@ -197,7 +202,22 @@ scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
 
   // Step 8: Congratulations, the frame selection gauntlet has been passed!
   last_frame_index_ = 0;
-  ++frame_queue_.front().render_count;
+
+  // If we ended up choosing a frame selected by cadence, carry over the overage
+  // values from the previous frame.  Overage is treated as having been
+  // displayed and dropped for each count.  If the frame wasn't selected by
+  // cadence, |cadence_overage| will be zero.
+  //
+  // We also don't want to start counting render counts until the first frame
+  // has reached its presentation time; which is considered to be when its
+  // start time is at most |render_interval_| / 2 before |deadline_min|.
+  if (!first_frame_ ||
+      deadline_min >= frame_queue_.front().start_time - render_interval_ / 2) {
+    frame_queue_.front().render_count += cadence_overage + 1;
+    frame_queue_.front().drop_count += cadence_overage;
+    first_frame_ = false;
+  }
+
   DCHECK(frame_queue_.front().frame);
   return frame_queue_.front().frame;
 }
@@ -261,6 +281,7 @@ void VideoRendererAlgorithm::Reset() {
   frame_queue_.clear();
   cadence_estimator_.Reset();
   frame_duration_calculator_.Reset();
+  first_frame_ = true;
 
   // Default to ATSC IS/191 recommendations for maximum acceptable drift before
   // we have enough frames to base the maximum on frame duration.
@@ -287,7 +308,7 @@ size_t VideoRendererAlgorithm::EffectiveFramesQueued() const {
   }
 
   // Find the first usable frame to start counting from.
-  const int start_index = FindBestFrameByCadenceInternal(nullptr);
+  const int start_index = FindBestFrameByCadence(nullptr);
   if (start_index < 0)
     return 0;
 
@@ -473,27 +494,12 @@ void VideoRendererAlgorithm::UpdateCadenceForFrames() {
   }
 }
 
-int VideoRendererAlgorithm::FindBestFrameByCadence() {
+int VideoRendererAlgorithm::FindBestFrameByCadence(
+    int* remaining_overage) const {
   DCHECK(!frame_queue_.empty());
   if (!cadence_estimator_.has_cadence())
     return -1;
 
-  int remaining_overage = 0;
-  const int best_frame =
-      FindBestFrameByCadenceInternal(&remaining_overage);
-  if (best_frame < 0)
-    return -1;
-
-  DCHECK_GE(remaining_overage, 0);
-
-  // Overage is treated as having been displayed and dropped for each count.
-  frame_queue_[best_frame].render_count += remaining_overage;
-  frame_queue_[best_frame].drop_count += remaining_overage;
-  return best_frame;
-}
-
-int VideoRendererAlgorithm::FindBestFrameByCadenceInternal(
-    int* remaining_overage) const {
   DCHECK(!frame_queue_.empty());
   DCHECK(cadence_estimator_.has_cadence());
   const ReadyFrame& current_frame = frame_queue_[last_frame_index_];

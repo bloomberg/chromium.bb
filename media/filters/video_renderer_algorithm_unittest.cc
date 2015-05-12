@@ -1165,4 +1165,51 @@ TEST_F(VideoRendererAlgorithmTest, EnqueueFrames) {
   EXPECT_EQ(1u, frames_dropped);
 }
 
+TEST_F(VideoRendererAlgorithmTest, CadenceForFutureFrames) {
+  TickGenerator tg(base::TimeTicks(), 50);
+  time_source_.StartTicking();
+
+  disable_cadence_hysteresis();
+
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(10)));
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(11)));
+  algorithm_.EnqueueFrame(CreateFrame(tg.interval(12)));
+  EXPECT_EQ(3u, frames_queued());
+
+  // Call Render() a few times to increment the render count.
+  for (int i = 0; i < 10; ++i) {
+    size_t frames_dropped = 0;
+    scoped_refptr<VideoFrame> rendered_frame =
+        RenderAndStep(&tg, &frames_dropped);
+    EXPECT_EQ(3u, frames_queued());
+    EXPECT_EQ(tg.interval(10), rendered_frame->timestamp());
+    ASSERT_TRUE(is_using_cadence());
+  }
+
+  // Add some noise to the tick generator so it our first frame
+  // doesn't line up evenly on a deadline.
+  tg.Reset(tg.current() + base::TimeDelta::FromMilliseconds(5));
+
+  // We're now at the first frame, cadence should be one, so
+  // it should only be displayed once.
+  size_t frames_dropped = 0;
+  scoped_refptr<VideoFrame> rendered_frame =
+      RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(3u, frames_queued());
+  EXPECT_EQ(tg.interval(10), rendered_frame->timestamp());
+  ASSERT_TRUE(is_using_cadence());
+
+  // Then the next frame should be displayed.
+  rendered_frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(2u, frames_queued());
+  EXPECT_EQ(tg.interval(11), rendered_frame->timestamp());
+  ASSERT_TRUE(is_using_cadence());
+
+  // Finally the last frame.
+  rendered_frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(1u, frames_queued());
+  EXPECT_EQ(tg.interval(12), rendered_frame->timestamp());
+  ASSERT_TRUE(is_using_cadence());
+}
+
 }  // namespace media

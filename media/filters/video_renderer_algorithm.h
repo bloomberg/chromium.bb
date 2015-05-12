@@ -194,20 +194,15 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
 
   // If |cadence_estimator_| has detected a valid cadence, attempts to find the
   // next frame which should be rendered.  Returns -1 if not enough frames are
-  // available for cadence selection or there is no cadence.  Will adjust the
-  // selected frame's ideal render count if the last rendered frame has been
-  // over selected.
-  int FindBestFrameByCadence();
-
-  // Similar to FindBestFrameByCadence(), but instead of adjusting the last
-  // rendered frame's ideal render count in the case of over selection.
-  // Optionally returns the number of times a prior frame was over displayed and
-  // ate into the returned frames ideal render count via |remaining_overage|.
+  // available for cadence selection or there is no cadence.
+  //
+  // Returns the number of times a prior frame was over displayed and ate into
+  // the returned frames ideal render count via |remaining_overage|.
   //
   // For example, if we have 2 frames and each has an ideal display count of 3,
   // but the first was displayed 4 times, the best frame is the second one, but
   // it should only be displayed twice instead of thrice, so it's overage is 1.
-  int FindBestFrameByCadenceInternal(int* remaining_overage) const;
+  int FindBestFrameByCadence(int* remaining_overage) const;
 
   // Iterates over |frame_queue_| and finds the frame which covers the most of
   // the deadline interval.  If multiple frames have coverage of the interval,
@@ -292,6 +287,10 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // Tracks frames dropped during enqueue when identical timestamps are added
   // to the queue.  Callers are told about these frames during Render().
   size_t frames_dropped_during_enqueue_;
+
+  // When cadence is present, we don't want to start counting against cadence
+  // until the first frame has reached its presentation time.
+  bool first_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererAlgorithm);
 };
