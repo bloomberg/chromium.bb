@@ -691,6 +691,29 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
   SendRequestAndExpectHttpResponse("hello world");
 }
 
+TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolForInsecureQuic) {
+  MockRead http_reads[] = {MockRead("HTTP/1.1 200 OK\r\n"),
+                           MockRead("Content-length: 11\r\n"),
+                           MockRead("Alternate-Protocol: 443:quic\r\n\r\n"),
+                           MockRead("hello world"),
+                           MockRead("HTTP/1.1 200 OK\r\n"),
+                           MockRead("Content-length: 11\r\n"),
+                           MockRead("Alternate-Protocol: 443:quic\r\n\r\n"),
+                           MockRead("hello world"),
+                           MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  params_.disable_insecure_quic = true;
+  CreateSessionWithNextProtos();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectHttpResponse("hello world");
+}
+
 TEST_P(QuicNetworkTransactionTest,
        DontUseAlternateProtocolWithBadProbabilityForQuic) {
   MockRead http_reads[] = {

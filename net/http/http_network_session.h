@@ -106,6 +106,7 @@ class NET_EXPORT HttpNetworkSession
     double alternative_service_probability_threshold;
 
     bool enable_quic;
+    bool disable_insecure_quic;
     bool enable_quic_for_proxies;
     bool enable_quic_port_selection;
     bool quic_always_require_handshake_confirmation;

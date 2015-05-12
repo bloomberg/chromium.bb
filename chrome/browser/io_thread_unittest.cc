@@ -200,6 +200,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
+  EXPECT_FALSE(params.disable_insecure_quic);
   EXPECT_TRUE(params.enable_quic_for_proxies);
   EXPECT_EQ(1350u, params.quic_max_packet_length);
   EXPECT_EQ(1.0, params.alternative_service_probability_threshold);
@@ -253,6 +254,15 @@ TEST_F(IOThreadTest, EnablePacingFromCommandLine) {
   net::QuicTagVector options;
   options.push_back(net::kPACE);
   EXPECT_EQ(options, params.quic_connection_options);
+}
+TEST_F(IOThreadTest, DisableInsecureQuicFromFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["disable_insecure_quic"] = "true";
+
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.disable_insecure_quic);
 }
 
 TEST_F(IOThreadTest, EnablePacingFromFieldTrialParams) {

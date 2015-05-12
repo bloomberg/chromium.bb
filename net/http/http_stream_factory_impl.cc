@@ -197,11 +197,17 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
   // QUIC, then remove the following two lines.
   if (alternative_service.host != origin.host())
     return kNoAlternativeService;
+
   if (!session_->params().enable_quic)
     return kNoAlternativeService;
 
   if (session_->quic_stream_factory()->IsQuicDisabled(origin.port()))
     return kNoAlternativeService;
+
+  if (session_->params().disable_insecure_quic &&
+      !original_url.SchemeIs("https")) {
+    return kNoAlternativeService;
+  }
 
   return alternative_service;
 }
