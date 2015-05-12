@@ -121,7 +121,14 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 
 		memset(&va, 0, sizeof(va));
 
-		bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr, alloc_buffer->alloc_size, alloc_buffer->phys_alignment);
+		bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr,
+						 alloc_buffer->alloc_size,
+						 alloc_buffer->phys_alignment);
+
+		if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS) {
+			amdgpu_bo_free_internal(bo);
+			return -ENOSPC;
+		}
 
 		va.in.handle = bo->handle;
 		va.in.operation = AMDGPU_VA_OP_MAP;
@@ -440,6 +447,12 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 
 	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr, bo->alloc_size, 1 << 20);
 
+	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS) {
+		pthread_mutex_unlock(&dev->bo_table_mutex);
+		amdgpu_bo_reference(&bo, NULL);
+		return -ENOSPC;
+	}
+
 	memset(&va, 0, sizeof(va));
 	va.in.handle = bo->handle;
 	va.in.operation = AMDGPU_VA_OP_MAP;
@@ -614,6 +627,11 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 	bo->alloc_size = size;
 	bo->handle = args.handle;
 	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(&dev->vamgr, size, 4 * 1024);
+
+	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS) {
+		amdgpu_bo_free_internal(bo);
+		return -ENOSPC;
+	}
 
 	memset(&va, 0, sizeof(va));
 	va.in.handle = bo->handle;

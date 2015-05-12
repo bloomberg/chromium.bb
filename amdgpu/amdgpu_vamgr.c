@@ -33,6 +33,7 @@ void amdgpu_vamgr_init(struct amdgpu_device *dev)
 	struct amdgpu_bo_va_mgr *vamgr = &dev->vamgr;
 
 	vamgr->va_offset = dev->dev_info.virtual_address_offset;
+	vamgr->va_max = dev->dev_info.virtual_address_max;
 	vamgr->va_alignment = dev->dev_info.virtual_address_alignment;
 
 	list_inithead(&vamgr->va_holes);
@@ -89,6 +90,12 @@ uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
         offset = mgr->va_offset;
         waste = offset % alignment;
         waste = waste ? alignment - waste : 0;
+
+	if (offset + waste + size > mgr->va_max) {
+		pthread_mutex_unlock(&mgr->bo_va_mutex);
+		return AMDGPU_INVALID_VA_ADDRESS;
+	}
+
         if (waste) {
                 n = calloc(1, sizeof(struct amdgpu_bo_va_hole));
                 n->size = waste;

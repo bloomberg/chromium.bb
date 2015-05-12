@@ -40,6 +40,8 @@
 #define ROUND_UP(x, y) ((((x)-1) | __round_mask(x, y))+1)
 #define ROUND_DOWN(x, y) ((x) & ~__round_mask(x, y))
 
+#define AMDGPU_INVALID_VA_ADDRESS	0xffffffffffffffff
+
 struct amdgpu_bo_va_hole {
 	struct list_head list;
 	uint64_t offset;
@@ -49,6 +51,7 @@ struct amdgpu_bo_va_hole {
 struct amdgpu_bo_va_mgr {
 	/* the start virtual address */
 	uint64_t va_offset;
+	uint64_t va_max;
 	struct list_head va_holes;
 	pthread_mutex_t bo_va_mutex;
 	uint32_t va_alignment;
