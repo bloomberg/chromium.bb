@@ -8,6 +8,7 @@
 // These functions are used by X11 targets and by Ozone/XKBcommon targets.
 
 #include "base/strings/string16.h"
+#include "ui/events/events_base_export.h"
 #include "ui/events/keycodes/xkb_keysym.h"
 
 namespace ui {
@@ -17,7 +18,7 @@ enum class DomKey;
 // Returns the DomKey associated with a non-character xkb_keysym_t.
 // Returns DomKey::NONE for unrecognized keysyms, which includes
 // all printable characters.
-DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym);
+EVENTS_BASE_EXPORT DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym);
 
 // TODO(kpschoedel) crbug.com/442757
 // Returns the dead key combining character associated with an xkb_keysym_t,
@@ -25,7 +26,8 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym);
 // base::char16 DeadXKeySymToCombiningCharacter(xkb_keysym_t keysym);
 
 // Return the DomKey determined by the XKB layout result (keysym, character).
-DomKey XKeySymToDomKey(xkb_keysym_t keysym, base::char16 character);
+EVENTS_BASE_EXPORT DomKey
+XKeySymToDomKey(xkb_keysym_t keysym, base::char16 character);
 
 }  // namespace ui
 
