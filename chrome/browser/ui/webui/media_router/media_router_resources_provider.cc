@@ -10,10 +10,6 @@
 namespace {
 
 void AddIcons(content::WebUIDataSource* html_source) {
-  html_source->AddResourcePath("elements/icon/chromecast-icon.png",
-                              IDR_MEDIA_ROUTER_CHROMECAST_ICON);
-  html_source->AddResourcePath("elements/icon/chromecast-icon2x.png",
-                              IDR_MEDIA_ROUTER_CHROMECAST_2X_ICON);
   html_source->AddResourcePath("elements/icon/close-gray.png",
                               IDR_CLOSE_GRAY_ICON);
   html_source->AddResourcePath("elements/icon/close-gray2x.png",
@@ -30,14 +26,6 @@ void AddIcons(content::WebUIDataSource* html_source) {
                               IDR_DROP_DOWN_ARROW_SHOWING_ICON);
   html_source->AddResourcePath("elements/icon/drop-down-arrow-showing2x.png",
                               IDR_DROP_DOWN_ARROW_SHOWING_2X_ICON);
-  html_source->AddResourcePath("elements/icon/generic-device.png",
-                              IDR_MEDIA_ROUTER_GENERIC_DEVICE_2X_ICON);
-  html_source->AddResourcePath("elements/icon/generic-device2x.png",
-                              IDR_MEDIA_ROUTER_GENERIC_DEVICE_2X_ICON);
-  html_source->AddResourcePath("elements/icon/hangouts-icon.png",
-                              IDR_MEDIA_ROUTER_HANGOUTS_2X_ICON);
-  html_source->AddResourcePath("elements/icon/hangouts-icon2x.png",
-                              IDR_MEDIA_ROUTER_HANGOUTS_2X_ICON);
   html_source->AddResourcePath("elements/icon/sad-face.png",
                               IDR_SAD_FACE_ICON);
   html_source->AddResourcePath("elements/icon/sad-face2x.png",
@@ -93,21 +81,6 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
       "elements/media_router_container/media_router_container.js",
       IDR_MEDIA_ROUTER_CONTAINER_JS);
-  html_source->AddResourcePath(
-      "elements/media_router_sink/media_router_sink.css",
-      IDR_MEDIA_ROUTER_SINK_CSS);
-  html_source->AddResourcePath(
-      "elements/media_router_sink/media_router_sink.html",
-      IDR_MEDIA_ROUTER_SINK_HTML);
-  html_source->AddResourcePath(
-      "elements/media_router_sink/media_router_sink.js",
-      IDR_MEDIA_ROUTER_SINK_JS);
-  html_source->AddResourcePath(
-      "elements/media_router_sink_picker/media_router_sink_picker.html",
-      IDR_MEDIA_ROUTER_SINK_PICKER_HTML);
-  html_source->AddResourcePath(
-      "elements/media_router_sink_picker/media_router_sink_picker.js",
-      IDR_MEDIA_ROUTER_SINK_PICKER_JS);
   html_source->AddResourcePath(
       "elements/route_details/route_details.css",
       IDR_ROUTE_DETAILS_CSS);

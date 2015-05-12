@@ -1,8 +1,11 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
+<link rel="import" href="chrome://resources/polymer/core-icons/hardware-icons.html">
+<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
+<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
 <link rel="import" href="../cast_mode_picker/cast_mode_picker.html">
 <link rel="import" href="../drop_down_button/drop_down_button.html">
 <link rel="import" href="../issue_banner/issue_banner.html">
-<link rel="import" href="../media_router_sink_picker/media_router_sink_picker.html">
 <link rel="import" href="../route_details/route_details.html">
 <polymer-element name="media-router-container">
 <template>
@@ -33,12 +36,28 @@
       on-back-click="{{showSinkPickerView}}"
       on-close-route-click="{{showSinkPickerView}}">
   </route-details>
-  <media-router-sink-picker id="sinks"
-      class="{{ {state: currentView_} | isSinkPickerHidden}}"
-      on-sink-click="{{onSinkClick}}"
-      sinkList="{{sinkList}}" routeList="{{routeList}}" sinkMap="{{sinkMap_}}"
-      routeMap="{{routeMap_}}" sinkToRouteMap="{{sinkToRouteMap_}}">
-  </media-router-sink-picker>
+  <!-- TODO(apacible): selectedAttribute here is a workaround for
+     https://github.com/Polymer/polymer/issues/946. Remove when core-menu
+     is updated. -->
+  <core-menu id="sink-list" selectedAttribute=""
+      class="{{ {state: currentView_} | isSinkPickerHidden}}">
+    <template repeat="{{sink in sinkList}}">
+      <paper-item class="sink" on-click="{{onSinkClick}}">
+        <!-- TODO(apacible): Show device icon based on device type. -->
+        <core-icon class="sink-icon" icon="hardware:chromecast"></core-icon>
+        <div>
+          {{sink.name}}
+          <template bind="{{sinkToRouteMap_[sink.id] as route}}">
+            <template if="{{route}}">
+              <div class="route">
+                {{route.title}}
+              </div>
+            </template>
+          </template>
+        </div>
+      </paper-item>
+    </template>
+  </core-menu>
 </template>
 <script src="media_router_container.js"></script>
 </polymer-element>

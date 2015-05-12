@@ -131,8 +131,8 @@ Polymer('media-router-container', {
   sinkMap_: null,
 
   /**
-   * Maps media_router.Sink.id to corresponding media_router.Route.id.
-   * @private {?Object<!string, ?string>}
+   * Maps media_router.Sink.id to corresponding media_router.Route.
+   * @private {?Object<!string, ?media_router.Route>}
    * @default null
    */
   sinkToRouteMap_: null,
@@ -261,17 +261,16 @@ Polymer('media-router-container', {
   },
 
   /**
-   * Called when an on-sink-click event bubbles up. Updates |currentRoute_|.
+   * Called when a sink is clicked. Updates |currentRoute_|.
    *
-   * @param {{detail: {route: ?media_router.Route, sink: !media_router.Sink}}}
-   *   data The information passed up with the event.
-   * Parameters in |data|.detail:
-   *   route - The existing route associated with |sink|.
-   *   sink - The sink that was clicked.
+   * @param {!Event} event The event object.
+   * @param {Object} detail The details of the event.
+   * @param {!Element} sender Reference to clicked node.
    */
-  onSinkClick: function(data) {
-    this.currentRoute_ = data.detail.route;
-    this.maybeCreateRoute(data.detail.sink, this.currentRoute_);
+  onSinkClick: function(event, detail, sender) {
+    var clickedSink = event.target.templateInstance.model.sink;
+    this.currentRoute_ = this.sinkToRouteMap_[clickedSink.id];
+    this.maybeCreateRoute(clickedSink, this.currentRoute_);
   },
 
   /**
@@ -286,7 +285,7 @@ Polymer('media-router-container', {
     // Rebuild |routeMap_| and |sinkToRouteMap_|.
     this.routeList.forEach(function(route) {
       this.routeMap_[route.id] = route;
-      this.sinkToRouteMap_[route.sinkId] = route.id;
+      this.sinkToRouteMap_[route.sinkId] = route;
     }, this);
   },
 
