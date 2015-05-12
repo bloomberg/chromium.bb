@@ -132,7 +132,10 @@ group("both_gn_and_gyp") {
     "//skia:skia_unittests",
     "//sql:sql_unittests",
     "//sync:sync_unit_tests",
-    "//third_party/WebKit/public:blink_tests",
+    "//third_party/WebKit/Source/platform:heap_unittests",
+    "//third_party/WebKit/Source/platform:platform_unittests",
+    "//third_party/WebKit/Source/web:webkit_unit_tests",
+    "//third_party/WebKit/Source/wtf:wtf_unittests",
     "//third_party/cacheinvalidation:cacheinvalidation_unittests",
     "//third_party/codesighs",
     "//third_party/mojo/src/mojo/edk/system:mojo_system_unittests",
@@ -542,6 +545,11 @@ group("both_gn_and_gyp") {
       "//extensions:extensions_browsertests",  # TODO(GYP)
       "//extensions:extensions_unittests",  # TODO(GYP)
       "//net:net_unittests",  # TODO(GYP)
+
+      # TODO(GYP): Re-enable this as soon as we can link Blink binaries on mac.
+      "//third_party/WebKit/Source/platform:heap_unittests",
+      "//third_party/WebKit/Source/platform:platform_unittests",
+      "//third_party/WebKit/Source/web:webkit_unit_tests",
       "//ui/app_list:app_list_unittests",  # TODO(GYP)
       "//ui/gfx:gfx_unittests",  # TODO(GYP)
     ]
@@ -717,6 +725,53 @@ group("gn_visibility") {
     # "//v8:v8_snapshot",  # TODO(GYP): visibility?
     # "//v8:postmortem-metadata",  # TODO(GYP): visibility?
   ]
+}
+
+if (!is_ios) {
+  # This group includes all of the targets needed to build and test Blink,
+  # including running the layout tests (see below).
+  group("blink_tests") {
+    testonly = true
+
+    deps = [
+      "//third_party/WebKit/public:all_blink",
+    ]
+
+    # NOTE: The following deps are needed to run the layout tests
+    # (run-webkit-tests) but there is no GN target for the layout tests,
+    # so we need to specify the dependencies here instead.
+    if (is_android) {
+      deps += [
+        "//breakpad:dump_syms($host_toolchain)",
+        "//breakpad:minidump_stackwalk($host_toolchain)",
+        "//content/shell/android:content_shell_apk",
+      ]
+    } else {
+      deps += [ "//content/shell:content_shell" ]
+    }
+
+    if (is_win) {
+      deps += [
+        #'../content/content_shell_and_tests.gyp:content_shell_crash_service', TODO(GYP)
+        #'../content/content_shell_and_tests.gyp:layout_test_helper', TODO(GYP)
+      ]
+    }
+
+    if (!is_win && !is_android) {
+      deps += [ "//breakpad:minidump_stackwalk" ]
+    }
+
+    if (is_mac) {
+      deps += [
+        "//breakpad:dump_syms($host_toolchain)",
+        #'../content/content_shell_and_tests.gyp:layout_test_helper', TODO(GYP)
+      ]
+    }
+
+    if (is_linux) {
+      deps += [ "//breakpad:dump_syms($host_toolchain)" ]
+    }
+  }
 }
 
 if (is_linux) {
