@@ -328,15 +328,6 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             animation->update(TimingUpdateOnDemand);
     }
 
-    for (const auto& entry : update->animationsWithUpdates()) {
-        KeyframeEffect* effect = toKeyframeEffect(entry.animation->source());
-
-        effect->setModel(entry.effect->model());
-        effect->updateSpecifiedTiming(entry.effect->specifiedTiming());
-
-        m_animations.find(entry.name)->value->update(entry);
-    }
-
     for (const auto& styleUpdate : update->animationsWithStyleUpdates()) {
         styleUpdate.model->forEachInterpolation([](Interpolation& interpolation) {
             if (interpolation.isStyleInterpolation() && toStyleInterpolation(interpolation).isDeferredLegacyStyleInterpolation())
@@ -354,6 +345,15 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             styleUpdate.animation->setOutdated();
             styleUpdate.animation->setCompositorPending(true);
         }
+    }
+
+    for (const auto& entry : update->animationsWithUpdates()) {
+        KeyframeEffect* effect = toKeyframeEffect(entry.animation->source());
+
+        effect->setModel(entry.effect->model());
+        effect->updateSpecifiedTiming(entry.effect->specifiedTiming());
+
+        m_animations.find(entry.name)->value->update(entry);
     }
 
     for (const auto& entry : update->newAnimations()) {
