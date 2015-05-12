@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file is created by generate_build_files.py. Do not edit manually.
+# This file is created by update_gypi_and_asm.py. Do not edit manually.
 
 {
   'variables': {
@@ -95,7 +95,6 @@
       'src/crypto/cipher/e_ssl3.c',
       'src/crypto/cipher/e_tls.c',
       'src/crypto/cipher/tls_cbc.c',
-      'src/crypto/cmac/cmac.c',
       'src/crypto/conf/conf.c',
       'src/crypto/cpu-arm.c',
       'src/crypto/cpu-intel.c',
@@ -185,7 +184,6 @@
       'src/crypto/sha/sha512.c',
       'src/crypto/stack/stack.c',
       'src/crypto/thread.c',
-      'src/crypto/thread_none.c',
       'src/crypto/thread_pthread.c',
       'src/crypto/thread_win.c',
       'src/crypto/time_support.c',

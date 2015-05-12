@@ -1,9 +1,7 @@
 #include "arm_arch.h"
 
 .text
-#if !defined(__clang__)
 .arch	armv8-a+crypto
-#endif
 .globl	gcm_init_v8
 .type	gcm_init_v8,%function
 .align	4
