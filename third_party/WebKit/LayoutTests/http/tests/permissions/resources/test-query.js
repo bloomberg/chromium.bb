@@ -70,19 +70,19 @@ async_test(function(test) {
 
 async_test(function(test) {
     navigator.permissions.query({name:'push'}).catch(function(e) {
-        // By default, the permission query is rejected if "userVisible" option
+        // By default, the permission query is rejected if "userVisibleOnly" option
         // isn't set or set to true.
         assert_equals(e.name, "NotSupportedError");
 
-        // Test for userVisible=false.
-        return navigator.permissions.query({name:'push', userVisible: false});
+        // Test for userVisibleOnly=false.
+        return navigator.permissions.query({name:'push', userVisibleOnly: false});
     }).catch(function(e) {
-        // By default, the permission query is rejected if "userVisible" option
+        // By default, the permission query is rejected if "userVisibleOnly" option
         // isn't set or set to true.
         assert_equals(e.name, "NotSupportedError");
 
-        // Test for userVisible=true.
-        return navigator.permissions.query({name:'push', userVisible: true});
+        // Test for userVisibleOnly=true.
+        return navigator.permissions.query({name:'push', userVisibleOnly: true});
     }).then(function(result) {
         assert_true(result instanceof PermissionStatus);
         assert_equals(result.status, 'denied');

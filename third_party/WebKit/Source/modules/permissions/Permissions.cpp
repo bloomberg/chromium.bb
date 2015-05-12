@@ -62,9 +62,9 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& ra
         type = WebPermissionTypeNotifications;
     } else if (name == "push") {
         PushPermissionDescriptor pushPermission = NativeValueTraits<PushPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-        // Only "userVisible" push is supported for now.
-        if (!pushPermission.userVisible()) {
-            resolver->reject(DOMException::create(NotSupportedError, "Push Permission without userVisible:true isn't supported yet."));
+        // Only "userVisibleOnly" push is supported for now.
+        if (!pushPermission.userVisibleOnly()) {
+            resolver->reject(DOMException::create(NotSupportedError, "Push Permission without userVisibleOnly:true isn't supported yet."));
             return promise;
         }
         type = WebPermissionTypePushNotifications;

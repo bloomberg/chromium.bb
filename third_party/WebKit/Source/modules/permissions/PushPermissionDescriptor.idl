@@ -4,5 +4,5 @@
 
 dictionary PushPermissionDescriptor : PermissionDescriptor {
     // See https://w3c.github.io/push-api/.
-    boolean userVisible = false;
+    boolean userVisibleOnly = false;
 };
