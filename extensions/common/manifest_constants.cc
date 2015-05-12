@@ -713,7 +713,14 @@ const char kWebRequestConflictsWithLazyBackground[] =
     "The 'webRequest' API cannot be used with event pages.";
 #if defined(OS_CHROMEOS)
 const char kIllegalPlugins[] =
-    "Extensions cannot install plugins on Chrome OS";
+    "Extensions cannot install plugins on Chrome OS.";
+const char kInvalidFileSystemProviderMissingCapabilities[] =
+    "The 'fileSystemProvider' permission requires the "
+    "'file_system_provider_capabilities' section to be specified in the "
+    "manifest.";
+const char kInvalidFileSystemProviderMissingPermission[] =
+    "The 'file_system_provider_capabilities' section requires the "
+    "'fileSystemProvider' permission to be specified in the manifest.";
 #endif
 
 }  // namespace manifest_errors

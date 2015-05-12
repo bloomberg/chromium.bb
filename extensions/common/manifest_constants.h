@@ -479,6 +479,8 @@ extern const char kUnrecognizedManifestProperty[];
 extern const char kWebRequestConflictsWithLazyBackground[];
 #if defined(OS_CHROMEOS)
 extern const char kIllegalPlugins[];
+extern const char kInvalidFileSystemProviderMissingCapabilities[];
+extern const char kInvalidFileSystemProviderMissingPermission[];
 #endif
 
 }  // namespace manifest_errors

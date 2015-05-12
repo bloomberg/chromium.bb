@@ -1326,6 +1326,7 @@
       'browser/ui/webui/chromeos/login/signin_userlist_unittest.cc',
       'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
       'common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc',
+      'common/extensions/api/file_system_provider/file_system_provider_handler_unittest.cc',
     ],
     'chrome_unit_tests_desktop_linux_sources': [
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',

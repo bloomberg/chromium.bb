@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -47,10 +48,30 @@ const FileSystemProviderCapabilities* FileSystemProviderCapabilities::Get(
 
 bool FileSystemProviderCapabilitiesHandler::Parse(Extension* extension,
                                                   base::string16* error) {
-  const base::DictionaryValue* section = NULL;
+  const bool has_permission = extensions::PermissionsParser::HasAPIPermission(
+      extension, extensions::APIPermission::ID::kFileSystemProvider);
+  const base::DictionaryValue* section = nullptr;
   extension->manifest()->GetDictionary(
       manifest_keys::kFileSystemProviderCapabilities, &section);
-  DCHECK(section);
+
+  if (has_permission && !section) {
+    *error = base::ASCIIToUTF16(
+        manifest_errors::kInvalidFileSystemProviderMissingCapabilities);
+    return false;
+  }
+
+  if (!has_permission && section) {
+    // If the permission is not specified, then the section has simply no
+    // effect, hence just a warning.
+    extension->AddInstallWarning(extensions::InstallWarning(
+        manifest_errors::kInvalidFileSystemProviderMissingPermission));
+    return true;
+  }
+
+  if (!has_permission && !section) {
+    // No permission and no capabilities, so ignore.
+    return true;
+  }
 
   api::manifest_types::FileSystemProviderCapabilities idl_capabilities;
   if (!api::manifest_types::FileSystemProviderCapabilities::Populate(
@@ -86,6 +107,11 @@ bool FileSystemProviderCapabilitiesHandler::Parse(Extension* extension,
 const std::vector<std::string> FileSystemProviderCapabilitiesHandler::Keys()
     const {
   return SingleKey(manifest_keys::kFileSystemProviderCapabilities);
+}
+
+bool FileSystemProviderCapabilitiesHandler::AlwaysParseForType(
+    Manifest::Type type) const {
+  return true;
 }
 
 }  // namespace extensions

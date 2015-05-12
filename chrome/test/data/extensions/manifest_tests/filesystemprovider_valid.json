@@ -1,0 +1,12 @@
+{
+  "name": "test",
+  "version": "1",
+  "permissions": [
+    "fileSystemProvider"
+  ],
+  "file_system_provider_capabilities": {
+    "configurable": false,
+    "multiple_mounts": false,
+    "source": "device"
+  }
+}

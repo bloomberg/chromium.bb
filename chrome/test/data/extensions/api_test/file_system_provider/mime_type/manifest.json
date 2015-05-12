@@ -18,6 +18,11 @@
       "types": ["text/secret-testing-mime-type"]
     }
   },
+  "file_system_provider_capabilities": {
+    "configurable": true,
+    "multiple_mounts": true,
+    "source": "device"
+  },
   "app": {
     "background": {
       "scripts": [

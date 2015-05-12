@@ -48,6 +48,7 @@ class FileSystemProviderCapabilitiesHandler : public ManifestHandler {
 
   // ManifestHandler overrides.
   bool Parse(Extension* extension, base::string16* error) override;
+  bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
   const std::vector<std::string> Keys() const override;
