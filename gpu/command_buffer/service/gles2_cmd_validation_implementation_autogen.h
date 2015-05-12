@@ -359,6 +359,11 @@ static const GLenum valid_get_tex_param_target_table[] = {
     GL_TEXTURE_CUBE_MAP,
 };
 
+static const GLenum valid_get_tex_param_target_table_es3[] = {
+    GL_TEXTURE_2D_ARRAY,
+    GL_TEXTURE_3D,
+};
+
 static const GLenum valid_hint_mode_table[] = {
     GL_FASTEST,
     GL_NICEST,
@@ -627,6 +632,22 @@ static const GLenum valid_texture_bind_target_table_es3[] = {
     GL_TEXTURE_2D_ARRAY,
 };
 
+static const GLenum valid_texture_compare_func_table[] = {
+    GL_LEQUAL,
+    GL_GEQUAL,
+    GL_LESS,
+    GL_GREATER,
+    GL_EQUAL,
+    GL_NOTEQUAL,
+    GL_ALWAYS,
+    GL_NEVER,
+};
+
+static const GLenum valid_texture_compare_mode_table[] = {
+    GL_NONE,
+    GL_COMPARE_REF_TO_TEXTURE,
+};
+
 static const GLenum valid_texture_format_table[] = {
     GL_ALPHA,
     GL_LUMINANCE,
@@ -816,6 +837,18 @@ static const GLenum valid_texture_parameter_table[] = {
     GL_TEXTURE_POOL_CHROMIUM,
     GL_TEXTURE_WRAP_S,
     GL_TEXTURE_WRAP_T,
+};
+
+static const GLenum valid_texture_parameter_table_es3[] = {
+    GL_TEXTURE_BASE_LEVEL,
+    GL_TEXTURE_COMPARE_FUNC,
+    GL_TEXTURE_COMPARE_MODE,
+    GL_TEXTURE_IMMUTABLE_FORMAT,
+    GL_TEXTURE_IMMUTABLE_LEVELS,
+    GL_TEXTURE_MAX_LEVEL,
+    GL_TEXTURE_MAX_LOD,
+    GL_TEXTURE_MIN_LOD,
+    GL_TEXTURE_WRAP_R,
 };
 
 static const GLenum valid_texture_pool_table[] = {
@@ -1011,6 +1044,10 @@ Validators::Validators()
                          arraysize(valid_texture_3_d_target_table)),
       texture_bind_target(valid_texture_bind_target_table,
                           arraysize(valid_texture_bind_target_table)),
+      texture_compare_func(valid_texture_compare_func_table,
+                           arraysize(valid_texture_compare_func_table)),
+      texture_compare_mode(valid_texture_compare_mode_table,
+                           arraysize(valid_texture_compare_mode_table)),
       texture_format(valid_texture_format_table,
                      arraysize(valid_texture_format_table)),
       texture_internal_format(valid_texture_internal_format_table,
@@ -1066,6 +1103,9 @@ void Validators::UpdateValuesES3() {
       arraysize(valid_compressed_texture_format_table_es3));
   g_l_state.AddValues(valid_g_l_state_table_es3,
                       arraysize(valid_g_l_state_table_es3));
+  get_tex_param_target.AddValues(
+      valid_get_tex_param_target_table_es3,
+      arraysize(valid_get_tex_param_target_table_es3));
   pixel_type.AddValues(valid_pixel_type_table_es3,
                        arraysize(valid_pixel_type_table_es3));
   texture_bind_target.AddValues(valid_texture_bind_target_table_es3,
@@ -1081,6 +1121,8 @@ void Validators::UpdateValuesES3() {
   texture_internal_format_storage.AddValues(
       valid_texture_internal_format_storage_table_es3,
       arraysize(valid_texture_internal_format_storage_table_es3));
+  texture_parameter.AddValues(valid_texture_parameter_table_es3,
+                              arraysize(valid_texture_parameter_table_es3));
 }
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_

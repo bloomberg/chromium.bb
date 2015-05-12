@@ -203,8 +203,6 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_TEXTURE_BINDING_RECTANGLE_ARB:
       return 1;
-    case GL_TEXTURE_IMMUTABLE_FORMAT_EXT:
-      return 1;
     case GL_UNPACK_ALIGNMENT:
       return 1;
     case GL_VIEWPORT:
@@ -306,9 +304,27 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_TEXTURE_MIN_FILTER:
       return 1;
+    case GL_TEXTURE_WRAP_R:
+      return 1;
     case GL_TEXTURE_WRAP_S:
       return 1;
     case GL_TEXTURE_WRAP_T:
+      return 1;
+    case GL_TEXTURE_COMPARE_FUNC:
+      return 1;
+    case GL_TEXTURE_COMPARE_MODE:
+      return 1;
+    case GL_TEXTURE_MAX_LOD:
+      return 1;
+    case GL_TEXTURE_MIN_LOD:
+      return 1;
+    case GL_TEXTURE_BASE_LEVEL:
+      return 1;
+    case GL_TEXTURE_MAX_LEVEL:
+      return 1;
+    case GL_TEXTURE_IMMUTABLE_FORMAT:
+      return 1;
+    case GL_TEXTURE_IMMUTABLE_LEVELS:
       return 1;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       return 1;

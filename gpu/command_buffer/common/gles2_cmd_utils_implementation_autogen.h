@@ -4898,6 +4898,8 @@ std::string GLES2Util::GetStringGetTexParamTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_TEXTURE_2D, "GL_TEXTURE_2D"},
       {GL_TEXTURE_CUBE_MAP, "GL_TEXTURE_CUBE_MAP"},
+      {GL_TEXTURE_2D_ARRAY, "GL_TEXTURE_2D_ARRAY"},
+      {GL_TEXTURE_3D, "GL_TEXTURE_3D"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);
@@ -5299,6 +5301,30 @@ std::string GLES2Util::GetStringTextureBindTarget(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringTextureCompareFunc(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_LEQUAL, "GL_LEQUAL"},
+      {GL_GEQUAL, "GL_GEQUAL"},
+      {GL_LESS, "GL_LESS"},
+      {GL_GREATER, "GL_GREATER"},
+      {GL_EQUAL, "GL_EQUAL"},
+      {GL_NOTEQUAL, "GL_NOTEQUAL"},
+      {GL_ALWAYS, "GL_ALWAYS"},
+      {GL_NEVER, "GL_NEVER"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringTextureCompareMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_NONE, "GL_NONE"},
+      {GL_COMPARE_REF_TO_TEXTURE, "GL_COMPARE_REF_TO_TEXTURE"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringTextureFormat(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_ALPHA, "GL_ALPHA"},
@@ -5490,6 +5516,15 @@ std::string GLES2Util::GetStringTextureParameter(uint32_t value) {
       {GL_TEXTURE_POOL_CHROMIUM, "GL_TEXTURE_POOL_CHROMIUM"},
       {GL_TEXTURE_WRAP_S, "GL_TEXTURE_WRAP_S"},
       {GL_TEXTURE_WRAP_T, "GL_TEXTURE_WRAP_T"},
+      {GL_TEXTURE_BASE_LEVEL, "GL_TEXTURE_BASE_LEVEL"},
+      {GL_TEXTURE_COMPARE_FUNC, "GL_TEXTURE_COMPARE_FUNC"},
+      {GL_TEXTURE_COMPARE_MODE, "GL_TEXTURE_COMPARE_MODE"},
+      {GL_TEXTURE_IMMUTABLE_FORMAT, "GL_TEXTURE_IMMUTABLE_FORMAT"},
+      {GL_TEXTURE_IMMUTABLE_LEVELS, "GL_TEXTURE_IMMUTABLE_LEVELS"},
+      {GL_TEXTURE_MAX_LEVEL, "GL_TEXTURE_MAX_LEVEL"},
+      {GL_TEXTURE_MAX_LOD, "GL_TEXTURE_MAX_LOD"},
+      {GL_TEXTURE_MIN_LOD, "GL_TEXTURE_MIN_LOD"},
+      {GL_TEXTURE_WRAP_R, "GL_TEXTURE_WRAP_R"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

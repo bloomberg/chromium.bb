@@ -29,14 +29,21 @@ struct TextureSignature {
   GLint level_;
   GLenum min_filter_;
   GLenum mag_filter_;
+  GLenum wrap_r_;
   GLenum wrap_s_;
   GLenum wrap_t_;
   GLenum usage_;
   GLenum internal_format_;
+  GLenum compare_func_;
+  GLenum compare_mode_;
   GLsizei width_;
   GLsizei height_;
   GLsizei depth_;
+  GLfloat max_lod_;
+  GLfloat min_lod_;
+  GLint base_level_;
   GLint border_;
+  GLint max_level_;
   GLenum format_;
   GLenum type_;
   bool has_image_;
@@ -52,14 +59,21 @@ struct TextureSignature {
                    GLint level,
                    GLenum min_filter,
                    GLenum mag_filter,
+                   GLenum wrap_r,
                    GLenum wrap_s,
                    GLenum wrap_t,
                    GLenum usage,
                    GLenum internal_format,
+                   GLenum compare_func,
+                   GLenum compare_mode,
                    GLsizei width,
                    GLsizei height,
                    GLsizei depth,
+                   GLfloat max_lod,
+                   GLfloat min_lod,
+                   GLint base_level,
                    GLint border,
+                   GLint max_level,
                    GLenum format,
                    GLenum type,
                    bool has_image,
@@ -71,14 +85,21 @@ struct TextureSignature {
     level_ = level;
     min_filter_ = min_filter;
     mag_filter_ = mag_filter;
+    wrap_r_ = wrap_r;
     wrap_s_ = wrap_s;
     wrap_t_ = wrap_t;
     usage_ = usage;
     internal_format_ = internal_format;
+    compare_func_ = compare_func;
+    compare_mode_ = compare_mode;
     width_ = width;
     height_ = height;
     depth_ = depth;
+    max_lod_ = max_lod;
+    min_lod_ = min_lod;
+    base_level_ = base_level;
     border_ = border;
+    max_level_ = max_level;
     format_ = format;
     type_ = type;
     has_image_ = has_image;
@@ -133,10 +154,17 @@ Texture::Texture(GLuint service_id)
       target_(0),
       min_filter_(GL_NEAREST_MIPMAP_LINEAR),
       mag_filter_(GL_LINEAR),
+      wrap_r_(GL_REPEAT),
       wrap_s_(GL_REPEAT),
       wrap_t_(GL_REPEAT),
       usage_(GL_NONE),
       pool_(GL_TEXTURE_POOL_UNMANAGED_CHROMIUM),
+      compare_func_(GL_LEQUAL),
+      compare_mode_(GL_NONE),
+      max_lod_(1000.0f),
+      min_lod_(-1000.0f),
+      base_level_(0),
+      max_level_(1000),
       max_level_set_(-1),
       texture_complete_(false),
       texture_mips_dirty_(false),
@@ -305,14 +333,21 @@ void Texture::AddToSignature(
                                   level,
                                   min_filter_,
                                   mag_filter_,
+                                  wrap_r_,
                                   wrap_s_,
                                   wrap_t_,
                                   usage_,
                                   info.internal_format,
+                                  compare_func_,
+                                  compare_mode_,
                                   info.width,
                                   info.height,
                                   info.depth,
+                                  max_lod_,
+                                  min_lod_,
+                                  base_level_,
                                   info.border,
+                                  max_level_,
                                   info.format,
                                   info.type,
                                   info.image.get() != NULL,
@@ -745,6 +780,12 @@ GLenum Texture::SetParameteri(
       pool_ = param;
       GetMemTracker()->TrackMemAlloc(estimated_size());
       break;
+    case GL_TEXTURE_WRAP_R:
+      if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      wrap_r_ = param;
+      break;
     case GL_TEXTURE_WRAP_S:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
         return GL_INVALID_ENUM;
@@ -756,6 +797,30 @@ GLenum Texture::SetParameteri(
         return GL_INVALID_ENUM;
       }
       wrap_t_ = param;
+      break;
+    case GL_TEXTURE_COMPARE_FUNC:
+      if (!feature_info->validators()->texture_compare_func.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      compare_func_ = param;
+      break;
+    case GL_TEXTURE_COMPARE_MODE:
+      if (!feature_info->validators()->texture_compare_mode.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      compare_mode_ = param;
+      break;
+    case GL_TEXTURE_BASE_LEVEL:
+      if (param < 0) {
+        return GL_INVALID_VALUE;
+      }
+      base_level_ = param;
+      break;
+    case GL_TEXTURE_MAX_LEVEL:
+      if (param < 0) {
+        return GL_INVALID_VALUE;
+      }
+      max_level_ = param;
       break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       if (param < 1) {
@@ -791,6 +856,12 @@ GLenum Texture::SetParameterf(
         GLint iparam = static_cast<GLint>(param);
         return SetParameteri(feature_info, pname, iparam);
       }
+    case GL_TEXTURE_MIN_LOD:
+      min_lod_ = param;
+      break;
+    case GL_TEXTURE_MAX_LOD:
+      max_lod_ = param;
+      break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       if (param < 1.f) {
         return GL_INVALID_VALUE;

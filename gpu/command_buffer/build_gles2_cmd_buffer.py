@@ -853,6 +853,10 @@ _NAMED_TYPE_INFO = {
       'GL_TEXTURE_2D',
       'GL_TEXTURE_CUBE_MAP',
     ],
+    'valid_es3': [
+      'GL_TEXTURE_2D_ARRAY',
+      'GL_TEXTURE_3D',
+    ],
     'invalid': [
       'GL_PROXY_TEXTURE_CUBE_MAP',
     ]
@@ -1218,6 +1222,17 @@ _NAMED_TYPE_INFO = {
       'GL_TEXTURE_WRAP_S',
       'GL_TEXTURE_WRAP_T',
     ],
+    'valid_es3': [
+      'GL_TEXTURE_BASE_LEVEL',
+      'GL_TEXTURE_COMPARE_FUNC',
+      'GL_TEXTURE_COMPARE_MODE',
+      'GL_TEXTURE_IMMUTABLE_FORMAT',
+      'GL_TEXTURE_IMMUTABLE_LEVELS',
+      'GL_TEXTURE_MAX_LEVEL',
+      'GL_TEXTURE_MAX_LOD',
+      'GL_TEXTURE_MIN_LOD',
+      'GL_TEXTURE_WRAP_R',
+    ],
     'invalid': [
       'GL_GENERATE_MIPMAP',
     ],
@@ -1253,6 +1268,26 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_NEAREST',
       'GL_LINEAR',
+    ],
+  },
+  'TextureCompareFunc': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_LEQUAL',
+      'GL_GEQUAL',
+      'GL_LESS',
+      'GL_GREATER',
+      'GL_EQUAL',
+      'GL_NOTEQUAL',
+      'GL_ALWAYS',
+      'GL_NEVER',
+    ],
+  },
+  'TextureCompareMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NONE',
+      'GL_COMPARE_REF_TO_TEXTURE',
     ],
   },
   'TextureUsage': {

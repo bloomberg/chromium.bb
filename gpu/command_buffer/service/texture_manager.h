@@ -48,6 +48,10 @@ class GPU_EXPORT Texture {
     return mag_filter_;
   }
 
+  GLenum wrap_r() const {
+    return wrap_r_;
+  }
+
   GLenum wrap_s() const {
     return wrap_s_;
   }
@@ -62,6 +66,30 @@ class GPU_EXPORT Texture {
 
   GLenum pool() const {
     return pool_;
+  }
+
+  GLenum compare_func() const {
+    return compare_func_;
+  }
+
+  GLenum compare_mode() const {
+    return compare_mode_;
+  }
+
+  GLfloat max_lod() const {
+    return max_lod_;
+  }
+
+  GLfloat min_lod() const {
+    return min_lod_;
+  }
+
+  GLint base_level() const {
+    return base_level_;
+  }
+
+  GLint max_level() const {
+    return max_level_;
   }
 
   int num_uncleared_mips() const {
@@ -318,6 +346,7 @@ class GPU_EXPORT Texture {
   // Parameters:
   //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP or
   //           GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_RECTANGLE_ARB
+  //           GL_TEXTURE_2D_ARRAY or GL_TEXTURE_3D (for GLES3)
   //   max_levels: The maximum levels this type of target can have.
   void SetTarget(
       const FeatureInfo* feature_info, GLenum target, GLint max_levels);
@@ -385,15 +414,23 @@ class GPU_EXPORT Texture {
   int num_npot_faces_;
 
   // The target. 0 if unset, otherwise GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP.
+  //             Or GL_TEXTURE_2D_ARRAY or GL_TEXTURE_3D (for GLES3).
   GLenum target_;
 
   // Texture parameters.
   GLenum min_filter_;
   GLenum mag_filter_;
+  GLenum wrap_r_;
   GLenum wrap_s_;
   GLenum wrap_t_;
   GLenum usage_;
   GLenum pool_;
+  GLenum compare_func_;
+  GLenum compare_mode_;
+  GLfloat max_lod_;
+  GLfloat min_lod_;
+  GLint base_level_;
+  GLint max_level_;
 
   // The maximum level that has been set.
   GLint max_level_set_;
@@ -605,6 +642,7 @@ class GPU_EXPORT TextureManager {
   // Sets the Texture's target
   // Parameters:
   //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
+  //           GL_TEXTURE_2D_ARRAY or GL_TEXTURE_3D (for GLES3)
   //   max_levels: The maximum levels this type of target can have.
   void SetTarget(
       TextureRef* ref,
