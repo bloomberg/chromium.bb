@@ -16,8 +16,7 @@ Local Modifications:
 Some files only have license headers in the master branch.
  - Added the same license headers to the versions brought down from the 'v4'
    branch src URL qcms/tree/v4
-google.patch contains the following modifications. Apply with
-   patch -p1 < google.patch.
+The following changes have been made since qcms was imported:
  - Add bgra output support.
  - Use HAVE_POSIX_MEMALIGN instead of HAS_POSIX_MEMALIG
    (https://bugzilla.mozilla.org/show_bug.cgi?id=692922)
@@ -67,5 +66,6 @@ google.patch contains the following modifications. Apply with
    - https://code.google.com/p/chromium/issues/detail?id=471749
  - Limit vcgt table to a maximum of 1024 entries
    - https://code.google.com/p/chromium/issues/detail?id=471749
-To regenerate google.patch:
-  git diff b8456f38 src > google.patch
+
+For the Chromium changes, since the import, in a patch format run:
+  git diff b8456f38 src
