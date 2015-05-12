@@ -539,10 +539,12 @@ void ThreadWatcherList::InitializeAndStartWatching(
   ThreadWatcherList* thread_watcher_list = new ThreadWatcherList();
   CHECK(thread_watcher_list);
 
-  // Disable ThreadWatcher in Canary channel.
+  // TODO(rtenneti): Because we don't generate crash dumps for ThreadWatcher in
+  // stable channel, disable ThreadWatcher in stable and unknown channels. We
+  // will also not collect histogram data in these channels until
+  // http://crbug.com/426203 is fixed.
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_STABLE ||
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
     return;
   }
