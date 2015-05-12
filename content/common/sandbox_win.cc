@@ -359,6 +359,27 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
     return false;
 #endif
 
+#if defined(SANITIZER_COVERAGE)
+  DWORD coverage_dir_size =
+      ::GetEnvironmentVariable(L"SANITIZER_COVERAGE_DIR", NULL, 0);
+  if (coverage_dir_size == 0) {
+    LOG(WARNING) << "SANITIZER_COVERAGE_DIR was not set, coverage won't work.";
+  } else {
+    std::wstring coverage_dir;
+    wchar_t* coverage_dir_str = WriteInto(&coverage_dir, coverage_dir_size);
+    coverage_dir_size = ::GetEnvironmentVariable(
+        L"SANITIZER_COVERAGE_DIR", coverage_dir_str, coverage_dir_size);
+    CHECK(coverage_dir.size() == coverage_dir_size);
+    base::FilePath sancov_path =
+        base::FilePath(coverage_dir).Append(L"*.sancov");
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+                             sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                             sancov_path.value().c_str());
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
+  }
+#endif
+
   AddGenericDllEvictionPolicy(policy);
   return true;
 }
