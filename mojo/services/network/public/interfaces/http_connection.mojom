@@ -20,7 +20,7 @@ interface HttpConnectionDelegate {
   // Called when an HTTP request is received.
   OnReceivedRequest(URLRequest request) => (URLResponse response);
 
-  // Called with an WebSocket request is received.
+  // Called when an WebSocket request is received.
   //
   // If the delegate decides to accept the request, it should respond with
   // non-null arguments in the callback. |send_stream| is a data pipe which

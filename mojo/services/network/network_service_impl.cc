@@ -5,6 +5,7 @@
 #include "mojo/services/network/network_service_impl.h"
 
 #include "mojo/services/network/cookie_store_impl.h"
+#include "mojo/services/network/http_server_impl.h"
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/tcp_bound_socket_impl.h"
 #include "mojo/services/network/udp_socket_impl.h"
@@ -75,8 +76,7 @@ void NetworkServiceImpl::CreateHttpServer(
     NetAddressPtr local_address,
     HttpServerDelegatePtr delegate,
     const CreateHttpServerCallback& callback) {
-  // TODO(yzshen): implement this.
-  callback.Run(MakeNetworkError(net::ERR_NOT_IMPLEMENTED), nullptr);
+  HttpServerImpl::Create(local_address.Pass(), delegate.Pass(), callback);
 }
 
 }  // namespace mojo
