@@ -129,7 +129,6 @@ ReducedReferrerGranularity
 RegionBasedColumns status=experimental
 RequestAutocomplete status=test
 ScreenOrientation status=stable
-ScriptedSpeech status=stable
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop
@@ -138,7 +137,6 @@ ServiceWorkerCache status=stable
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerNotifications status=stable
 ServiceWorkerOnFetch status=stable
-SessionStorage status=stable
 SharedWorker status=stable
 SlimmingPaint
 SlimmingPaintCompositorLayerization depends_on=SlimmingPaint
