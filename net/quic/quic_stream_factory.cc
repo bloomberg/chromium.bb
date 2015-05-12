@@ -578,8 +578,12 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.SetProofVerifier(
       new ProofVerifierChromium(cert_verifier, transport_security_state));
-  crypto_config_.SetChannelIDSource(
-      new ChannelIDSourceChromium(channel_id_service));
+  // TODO(rtenneti): http://crbug.com/487355. Temporary fix for b/20760730 until
+  // channel_id_service is supported in cronet.
+  if (channel_id_service) {
+    crypto_config_.SetChannelIDSource(
+        new ChannelIDSourceChromium(channel_id_service));
+  }
   base::CPU cpu;
   if (cpu.has_aesni() && cpu.has_avx())
     crypto_config_.PreferAesGcm();
