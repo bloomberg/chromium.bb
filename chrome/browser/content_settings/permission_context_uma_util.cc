@@ -8,6 +8,7 @@
 #include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/common/origin_util.h"
 #include "url/gurl.h"
 
 // UMA keys need to be statically initialized so plain function would not
@@ -80,7 +81,7 @@ const std::string GetRapporMetric(ContentSettingsType permission,
 void RecordPermissionAction(ContentSettingsType permission,
                             PermissionAction action,
                             const GURL& requesting_origin) {
-  bool secure_origin = requesting_origin.SchemeIsSecure();
+  bool secure_origin = content::IsOriginSecure(requesting_origin);
 
   switch (permission) {
       case CONTENT_SETTINGS_TYPE_GEOLOCATION:
@@ -138,7 +139,7 @@ void RecordPermissionAction(ContentSettingsType permission,
 
 void RecordPermissionRequest(ContentSettingsType permission,
                              const GURL& requesting_origin) {
-  bool secure_origin = requesting_origin.SchemeIsSecure();
+  bool secure_origin = content::IsOriginSecure(requesting_origin);
   content::PermissionType type;
   switch (permission) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:

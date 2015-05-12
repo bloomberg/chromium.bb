@@ -6,6 +6,7 @@
 
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/plugins_field_trial.h"
+#include "content/public/common/origin_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionMenuModel::PermissionMenuModel(
@@ -57,9 +58,9 @@ PermissionMenuModel::PermissionMenuModel(
        permission_.type == CONTENT_SETTINGS_TYPE_MOUSELOCK) &&
       url.SchemeIsFile();
 
-  // Media only support CONTENT_SETTTING_ALLOW for https.
+  // Media only supports CONTENT_SETTTING_ALLOW for secure origins.
   if ((permission_.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
-       url.SchemeIsSecure()) &&
+       content::IsOriginSecure(url)) &&
       !is_exclusive_access_on_file) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);

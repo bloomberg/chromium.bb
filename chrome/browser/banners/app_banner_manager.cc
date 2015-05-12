@@ -11,6 +11,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/origin_util.h"
 #include "net/base/load_flags.h"
 #include "ui/gfx/screen.h"
 
@@ -47,9 +48,9 @@ void AppBannerManager::DidFinishLoad(
     return;
   }
 
-  // A secure scheme is required to show banners, so exit early if we see the
+  // A secure origin is required to show banners, so exit early if we see the
   // URL is invalid.
-  if (!validated_url.SchemeIsSecure() && !gDisableSecureCheckForTesting)
+  if (!content::IsOriginSecure(validated_url) && !gDisableSecureCheckForTesting)
     return;
 
   // Kick off the data retrieval pipeline.

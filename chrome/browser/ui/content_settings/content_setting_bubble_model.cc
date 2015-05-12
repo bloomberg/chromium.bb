@@ -35,6 +35,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/origin_util.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -700,7 +701,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   int radio_block_label_id = 0;
   if (state_ & (TabSpecificContentSettings::MICROPHONE_BLOCKED |
                 TabSpecificContentSettings::CAMERA_BLOCKED)) {
-    if (url.SchemeIsSecure()) {
+    if (content::IsOriginSecure(url)) {
       radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
       radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_CAMERA_ALLOW;
       if (is_mic)
