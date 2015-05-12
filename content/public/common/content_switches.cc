@@ -379,6 +379,10 @@ const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 
+// Enables testing features of the Plugin Placeholder. For internal use only.
+const char kEnablePluginPlaceholderTesting[] =
+    "enable-plugin-placeholder-testing";
+
 // Make the values returned to window.performance.memory more granular and more
 // up to date in shared worker. Without this flag, the memory information is
 // still available, but it is bucketized and updated less frequently. This flag

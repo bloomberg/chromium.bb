@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -97,6 +98,7 @@ class PluginPowerSaverBrowserTest : virtual public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnablePluginPowerSaver);
     command_line->AppendSwitch(switches::kEnablePepperTesting);
+    command_line->AppendSwitch(switches::kEnablePluginPlaceholderTesting);
 
     ASSERT_TRUE(ppapi::RegisterPowerSaverTestPlugin(command_line));
   }
@@ -123,6 +125,22 @@ class PluginPowerSaverBrowserTest : virtual public InProcessBrowserTest {
   //    test has missed the above two events.
   void SimulateClickAndAwaitMarkedEssential(const char* element_id,
                                             const gfx::Point& point) {
+    // Waits for the placeholder to be ready to be clicked first.
+    std::string result = RunTestScript(
+        "function handleEvent(event) {"
+        "  if (event.data === 'placeholderLoaded') {"
+        "    window.domAutomationController.send('ready');"
+        "    plugin.removeEventListener('message', handleEvent);"
+        "  }"
+        "}"
+        "plugin.addEventListener('message', handleEvent);"
+        "if (plugin.hasAttribute('placeholderLoaded')) {"
+        "  window.domAutomationController.send('ready');"
+        "  plugin.removeEventListener('message', handleEvent);"
+        "}",
+        GetActiveWebContents(), element_id);
+    ASSERT_EQ("ready", result);
+
     content::SimulateMouseClickAt(GetActiveWebContents(), 0 /* modifiers */,
                                   blink::WebMouseEvent::ButtonLeft, point);
 
@@ -181,9 +199,8 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
   EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), "plugin_embed_srcset"));
 }
 
-// flaky: crbug.com/481687
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
-                       DISABLED_PluginMarkedEssentialAfterPosterClicked) {
+                       PluginMarkedEssentialAfterPosterClicked) {
   LoadHTML(
       "<object id='plugin' type='application/x-ppapi-tests' "
       "    width='400' height='100' poster='snapshot1x.png'></object>");

@@ -118,6 +118,7 @@ CONTENT_EXPORT extern const char kEnableNetworkInformation[];
 CONTENT_EXPORT extern const char kEnableOneCopy[];
 CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];
 CONTENT_EXPORT extern const char kEnablePinch[];
+CONTENT_EXPORT extern const char kEnablePluginPlaceholderTesting[];
 CONTENT_EXPORT extern const char kEnablePreciseMemoryInfo[];
 CONTENT_EXPORT extern const char kEnablePushMessagePayload[];
 CONTENT_EXPORT extern const char kEnablePushMessagingHasPermission[];

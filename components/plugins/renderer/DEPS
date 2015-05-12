@@ -2,6 +2,7 @@ include_rules = [
   "+gin",
   "+net",
 
+  "+content/public/child",
   "+content/public/renderer",
   "+content/public/common",
   "+content/public/test",
