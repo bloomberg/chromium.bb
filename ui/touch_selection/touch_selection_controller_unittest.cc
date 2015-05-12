@@ -946,6 +946,9 @@ TEST_F(TouchSelectionControllerTest, AllowShowingFromCurrentSelection) {
   ChangeSelection(start_rect, visible, end_rect, visible);
   EXPECT_EQ(gfx::PointF(), GetLastEventStart());
 
+  // A longpress should have no immediate effect.
+  controller().OnLongPressEvent();
+
   // Now explicitly allow showing from the previously supplied bounds.
   controller().AllowShowingFromCurrentSelection();
   EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
