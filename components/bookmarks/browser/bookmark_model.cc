@@ -313,10 +313,8 @@ favicon_base::IconType BookmarkModel::GetFaviconType(const BookmarkNode* node) {
 
 void BookmarkModel::SetTitle(const BookmarkNode* node,
                              const base::string16& title) {
-  if (!node) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(node);
+
   if (node->GetTitle() == title)
     return;
 
@@ -342,16 +340,7 @@ void BookmarkModel::SetTitle(const BookmarkNode* node,
 }
 
 void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
-  if (!node) {
-    NOTREACHED();
-    return;
-  }
-
-  // We cannot change the URL of a folder.
-  if (node->is_folder()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(node && !node->is_folder());
 
   if (node->url() == url)
     return;
@@ -467,20 +456,11 @@ void BookmarkModel::OnFaviconChanged(const std::set<GURL>& urls) {
   }
 }
 
-void BookmarkModel::SetDateAdded(const BookmarkNode* node,
-                                 Time date_added) {
-  if (!node) {
-    NOTREACHED();
-    return;
-  }
+void BookmarkModel::SetDateAdded(const BookmarkNode* node, Time date_added) {
+  DCHECK(node && !is_permanent_node(node));
 
   if (node->date_added() == date_added)
     return;
-
-  if (is_permanent_node(node)) {
-    NOTREACHED();
-    return;
-  }
 
   AsMutable(node)->set_date_added(date_added);
 
