@@ -175,8 +175,8 @@ bool MatchesAnySearchURL(const GURL& url,
 // --google-base-url to point at non-HTTPS servers, which eases testing.)
 bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
   return template_url->HasSearchTermsReplacementKey(url) &&
-      (url.SchemeIsSecure() ||
-       google_util::StartsWithCommandLineGoogleBaseURL(url));
+         (url.SchemeIsCryptographic() ||
+          google_util::StartsWithCommandLineGoogleBaseURL(url));
 }
 
 // Returns true if |url| can be used as an Instant URL for |profile|.
@@ -264,7 +264,7 @@ NewTabURLState IsValidNewTabURL(Profile* profile, const GURL& new_tab_url) {
     return NEW_TAB_URL_INCOGNITO;
   if (!new_tab_url.is_valid())
     return NEW_TAB_URL_NOT_SET;
-  if (!new_tab_url.SchemeIsSecure())
+  if (!new_tab_url.SchemeIsCryptographic())
     return NEW_TAB_URL_INSECURE;
   if (!IsURLAllowedForSupervisedUser(new_tab_url, profile))
     return NEW_TAB_URL_BLOCKED;
@@ -481,7 +481,7 @@ GURL GetInstantURL(Profile* profile, bool force_instant_results) {
   // Extended mode requires HTTPS.  Force it unless the base URL was overridden
   // on the command line, in which case we allow HTTP (see comments on
   // IsSuitableURLForInstant()).
-  if (!instant_url.SchemeIsSecure() &&
+  if (!instant_url.SchemeIsCryptographic() &&
       !google_util::StartsWithCommandLineGoogleBaseURL(instant_url)) {
     GURL::Replacements replacements;
     replacements.SetSchemeStr(url::kHttpsScheme);

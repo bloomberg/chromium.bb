@@ -173,7 +173,7 @@ void ProcessMirrorHeaderUIThread(
 #endif // !defined(OS_IOS)
 
 bool IsDriveOrigin(const GURL& url) {
-  if (!url.SchemeIsSecure())
+  if (!url.SchemeIsCryptographic())
     return false;
 
   const GURL kGoogleDriveURL("https://drive.google.com");

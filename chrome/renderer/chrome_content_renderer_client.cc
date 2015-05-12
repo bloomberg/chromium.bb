@@ -1023,8 +1023,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 
   bool is_photo_app =
       // Whitelisted apps must be served over https.
-      app_url.SchemeIs("https") &&
-      manifest_url.SchemeIs("https") &&
+      app_url.SchemeIsCryptographic() && manifest_url.SchemeIsCryptographic() &&
       (EndsWith(app_url_host, "plus.google.com", false) ||
        EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&
       manifest_url.DomainIs("ssl.gstatic.com") &&
@@ -1037,9 +1036,8 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   }
   bool is_hangouts_app =
       // Whitelisted apps must be served over secure scheme.
-      app_url.SchemeIs("https") &&
-      manifest_url.SchemeIsSecure() &&
-      manifest_url.SchemeIsFileSystem() &&
+      app_url.SchemeIsCryptographic() && manifest_url.SchemeIsFileSystem() &&
+      manifest_url.inner_url()->SchemeIsCryptographic() &&
       (EndsWith(app_url_host, "talkgadget.google.com", false) ||
        EndsWith(app_url_host, "plus.google.com", false) ||
        EndsWith(app_url_host, "plus.sandbox.google.com", false)) &&

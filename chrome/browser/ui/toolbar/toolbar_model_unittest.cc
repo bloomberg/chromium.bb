@@ -203,7 +203,7 @@ void ToolbarModelTest::NavigateAndCheckText(
   CommitPendingLoad(controller);
   // Fake a secure connection for HTTPS URLs, or the toolbar will refuse to
   // extract search terms.
-  if (url.SchemeIsSecure()) {
+  if (url.SchemeIsCryptographic()) {
     controller->GetVisibleEntry()->GetSSL().security_style =
         content::SECURITY_STYLE_AUTHENTICATED;
   }

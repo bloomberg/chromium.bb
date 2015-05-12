@@ -1312,7 +1312,7 @@ class ExtensionUpdaterTest : public testing::Test {
     net::HttpRequestHeaders fetch_headers;
     fetcher->GetExtraRequestHeaders(&fetch_headers);
     // If the download URL is not https, no credentials should be provided.
-    if (!test_url.SchemeIsSecure()) {
+    if (!test_url.SchemeIsCryptographic()) {
       // No cookies.
       EXPECT_EQ(kExpectedLoadFlags, fetcher->GetLoadFlags());
       // No Authorization header.
