@@ -116,8 +116,7 @@ FrameHost* Frame::host() const
 
 bool Frame::isMainFrame() const
 {
-    Page* page = this->page();
-    return page && this == page->mainFrame();
+    return !tree().parent();
 }
 
 bool Frame::isLocalRoot() const

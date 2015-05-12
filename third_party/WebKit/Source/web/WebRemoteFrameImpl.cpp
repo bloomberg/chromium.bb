@@ -193,6 +193,8 @@ void WebRemoteFrameImpl::removeChild(WebFrame* frame)
 
 WebDocument WebRemoteFrameImpl::document() const
 {
+    // TODO(dcheng): this should also ASSERT_NOT_REACHED, but a lot of
+    // code tries to access the document of a remote frame at the moment.
     return WebDocument();
 }
 
