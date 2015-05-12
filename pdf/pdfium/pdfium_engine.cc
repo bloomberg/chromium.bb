@@ -34,8 +34,6 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "printing/units.h"
-#include "third_party/pdfium/fpdfsdk/include/pdfwindow/PDFWindow.h"
-#include "third_party/pdfium/fpdfsdk/include/pdfwindow/PWL_FontMap.h"
 #include "third_party/pdfium/public/fpdf_edit.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
 #include "third_party/pdfium/public/fpdf_flatten.h"
@@ -146,12 +144,9 @@ PP_BrowserFont_Trusted_Weight WeightToBrowserFontTrustedWeight(int weight) {
 void EnumFonts(struct _FPDF_SYSFONTINFO* sysfontinfo, void* mapper) {
   FPDF_AddInstalledFont(mapper, "Arial", FXFONT_DEFAULT_CHARSET);
 
-  int i = 0;
-  while (CPWL_FontMap::defaultTTFMap[i].charset != -1) {
-    FPDF_AddInstalledFont(mapper,
-                          CPWL_FontMap::defaultTTFMap[i].fontname,
-                          CPWL_FontMap::defaultTTFMap[i].charset);
-    ++i;
+  const FPDF_CharsetFontMap* font_map = FPDF_GetDefaultTTFMap();
+  for (; font_map->charset != -1; ++font_map) {
+    FPDF_AddInstalledFont(mapper, font_map->fontname, font_map->charset);
   }
 }
 
