@@ -13,30 +13,25 @@
  * @group Chrome Settings Elements
  * @element cr-settings-ui
  */
-Polymer('cr-settings-ui', {
-  publish: {
+Polymer({
+  is: 'cr-settings-ui',
+
+  properties: {
     /**
      * Preferences state.
-     *
-     * @attribute prefs
-     * @type CrSettingsPrefsElement
-     * @default null
+     * @type {?CrSettingsPrefsElement}
      */
-    prefs: null,
+    prefs: Object,
 
     /**
      * Ordered list of settings pages available to the user. Do not edit
      * this variable directly.
-     *
-     * @attribute pages
-     * @type Array<!Object>
-     * @default null
+     * @type {!Array<!HTMLElement>}
      */
-    pages: null,
-  },
-
-  /** @override */
-  created: function() {
-    this.pages = [];
+    pages: {
+      type: Array,
+      value: function() { return []; },
+      notify: true,
+    },
   },
 });

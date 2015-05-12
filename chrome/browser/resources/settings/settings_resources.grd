@@ -73,8 +73,8 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_HEADER_JS"
                  file="settings_page/settings_page_header.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_UI_STYLE_HTML"
-                 file="settings_ui/settings_ui_style.html"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_UI_CSS"
+                 file="settings_ui/settings_ui.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_HTML"
                  file="settings_ui/settings_ui.html"
