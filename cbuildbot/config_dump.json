@@ -49583,6 +49583,43 @@
         ],
         "vm_tests": []
     },
+    "smaug-firmware": {
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "smaug"
+        ],
+        "build_tests": false,
+        "build_type": "canary",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Firmware Canary",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "factory_toolkit": false,
+        "hwqual": true,
+        "images": [],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "smaug-firmware",
+        "overlays": "both",
+        "packages": [
+            "virtual/chromeos-firmware"
+        ],
+        "push_image": true,
+        "sync_chrome": false,
+        "tests_supported": false,
+        "unittests": false,
+        "upload_hw_test_artifacts": false,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "smaug-full": {
         "archive_build_debug": true,
         "boards": [

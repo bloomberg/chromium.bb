@@ -3096,6 +3096,7 @@ _firmware_boards = frozenset([
   'rikku',
   'samus',
   'slippy',
+  'smaug',
   'squawks',
   'storm',
   'stout',
