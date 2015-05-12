@@ -668,16 +668,16 @@ static WebTouchPoint toWebTouchPoint(const Touch* touch, const LayoutObject* lay
     return point;
 }
 
-static bool hasTouchPointWithId(const WebTouchPoint* touchPoints, unsigned touchPointsLength, unsigned id)
+static unsigned indexOfTouchPointWithId(const WebTouchPoint* touchPoints, unsigned touchPointsLength, unsigned id)
 {
     for (unsigned i = 0; i < touchPointsLength; ++i) {
         if (touchPoints[i].id == static_cast<int>(id))
-            return true;
+            return i;
     }
-    return false;
+    return std::numeric_limits<unsigned>::max();
 }
 
-static void addTouchPointsIfNotYetAdded(const Widget* widget, WebTouchPoint::State state, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const LayoutObject* layoutObject)
+static void addTouchPointsUpdateStateIfNecessary(const Widget* widget, WebTouchPoint::State state, TouchList* touches, WebTouchPoint* touchPoints, unsigned* touchPointsLength, const LayoutObject* layoutObject)
 {
     unsigned initialTouchPointsLength = *touchPointsLength;
     for (unsigned i = 0; i < touches->length(); ++i) {
@@ -686,11 +686,13 @@ static void addTouchPointsIfNotYetAdded(const Widget* widget, WebTouchPoint::Sta
             return;
 
         const Touch* touch = touches->item(i);
-        if (hasTouchPointWithId(touchPoints, initialTouchPointsLength, touch->identifier()))
-            continue;
-
-        touchPoints[pointIndex] = toWebTouchPoint(touch, layoutObject, state);
-        ++(*touchPointsLength);
+        unsigned existingPointIndex = indexOfTouchPointWithId(touchPoints, initialTouchPointsLength, touch->identifier());
+        if (existingPointIndex != std::numeric_limits<unsigned>::max()) {
+            touchPoints[existingPointIndex].state = state;
+        } else {
+            touchPoints[pointIndex] = toWebTouchPoint(touch, layoutObject, state);
+            ++(*touchPointsLength);
+        }
     }
 }
 
@@ -715,8 +717,14 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const LayoutObj
     cancelable = event.cancelable();
     causesScrollingIfUncanceled = event.causesScrollingIfUncanceled();
 
-    addTouchPointsIfNotYetAdded(widget, toWebTouchPointState(event.type()), event.changedTouches(), touches, &touchesLength, layoutObject);
-    addTouchPointsIfNotYetAdded(widget, WebTouchPoint::StateStationary, event.touches(), touches, &touchesLength, layoutObject);
+    // Currently touches[] is empty, add stationary points as-is.
+    for (unsigned i = 0; i < event.touches()->length() && i < static_cast<unsigned>(WebTouchEvent::touchesLengthCap); ++i) {
+        touches[i] = toWebTouchPoint(event.touches()->item(i), layoutObject, WebTouchPoint::StateStationary);
+        ++touchesLength;
+    }
+    // If any existing points are also in the change list, we should update
+    // their state, otherwise just add the new points.
+    addTouchPointsUpdateStateIfNecessary(widget, toWebTouchPointState(event.type()), event.changedTouches(), touches, &touchesLength, layoutObject);
 }
 
 WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const LayoutObject* layoutObject, const GestureEvent& event)

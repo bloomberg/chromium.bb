@@ -164,6 +164,24 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
     }
 
+    // Test touchmove, different point yields same ordering.
+    {
+        RefPtrWillBeRawPtr<TouchList> activeTouchList = TouchList::create();
+        RefPtrWillBeRawPtr<TouchList> movedTouchList = TouchList::create();
+        activeTouchList->append(touch0);
+        activeTouchList->append(touch1);
+        movedTouchList->append(touch1);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(activeTouchList.get(), activeTouchList.get(), movedTouchList.get(), EventTypeNames::touchmove, domWindow, false, false, false, false, false, false);
+
+        WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
+        ASSERT_EQ(2u, webTouchBuilder.touchesLength);
+        EXPECT_EQ(WebInputEvent::TouchMove, webTouchBuilder.type);
+        EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[0].state);
+        EXPECT_EQ(WebTouchPoint::StateMoved, webTouchBuilder.touches[1].state);
+        EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
+        EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
+    }
+
     // Test touchend.
     {
         RefPtrWillBeRawPtr<TouchList> activeTouchList = TouchList::create();
@@ -175,10 +193,10 @@ TEST(WebInputEventConversionTest, WebTouchEventBuilder)
         WebTouchEventBuilder webTouchBuilder(view, documentLayoutView, *touchEvent);
         ASSERT_EQ(2u, webTouchBuilder.touchesLength);
         EXPECT_EQ(WebInputEvent::TouchEnd, webTouchBuilder.type);
-        EXPECT_EQ(WebTouchPoint::StateReleased, webTouchBuilder.touches[0].state);
-        EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[1].state);
-        EXPECT_EQ(p1.id, webTouchBuilder.touches[0].id);
-        EXPECT_EQ(p0.id, webTouchBuilder.touches[1].id);
+        EXPECT_EQ(WebTouchPoint::StateStationary, webTouchBuilder.touches[0].state);
+        EXPECT_EQ(WebTouchPoint::StateReleased, webTouchBuilder.touches[1].state);
+        EXPECT_EQ(p0.id, webTouchBuilder.touches[0].id);
+        EXPECT_EQ(p1.id, webTouchBuilder.touches[1].id);
     }
 
     // Test touchcancel.
