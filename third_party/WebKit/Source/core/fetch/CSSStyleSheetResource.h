@@ -42,7 +42,7 @@ public:
     virtual ~CSSStyleSheetResource();
     DECLARE_VIRTUAL_TRACE();
 
-    const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
+    const String sheetText(bool* hasValidMIMEType = 0) const;
 
     const AtomicString mimeType() const;
 
@@ -56,7 +56,7 @@ protected:
     virtual void destroyDecodedDataIfPossible() override;
 
 private:
-    bool canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const;
+    bool canUseSheet(bool* hasValidMIMEType) const;
     virtual void dispose() override;
     virtual void checkNotify() override;
 
