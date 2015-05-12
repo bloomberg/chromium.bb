@@ -66,7 +66,8 @@ class Blocker {
   void Block() {
     DCHECK(run_after_.is_null());
     event_.Wait();
-    run_after_.Run();
+    if (!run_after_.is_null())
+      run_after_.Run();
   }
 
   Unblocker GetUnblocker() { return Unblocker(this); }
