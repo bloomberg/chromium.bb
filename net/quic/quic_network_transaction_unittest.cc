@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "net/base/test_completion_callback.h"
+#include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -25,6 +26,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_framer.h"
@@ -42,10 +44,12 @@
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/ssl/ssl_config_service_defaults.h"
+#include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-//-----------------------------------------------------------------------------
+namespace net {
+namespace test {
 
 namespace {
 
@@ -60,9 +64,6 @@ static const char kQuicAlternateProtocolHttpsHeader[] =
     "Alternate-Protocol: 443:quic\r\n\r\n";
 
 }  // namespace
-
-namespace net {
-namespace test {
 
 // Helper class to encapsulate MockReads and MockWrites for QUIC.
 // Simplify ownership issues and the interaction with the MockSocketFactory.
@@ -1198,6 +1199,61 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   CreateSessionWithNextProtos();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectHttpResponse("hello world");
+}
+
+// Test that a secure request over an insecure QUIC connection fails with
+// the appropriate error code.  Note that this never happens in production,
+// because the handshake (which this test mocks) would fail in this scenario.
+TEST_P(QuicNetworkTransactionTest, SecureResourceOverInsecureQuic) {
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, 0);
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  request_.url = GURL("https://www.google.com:443");
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSessionWithNextProtos();
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC,
+            callback.GetResult(rv));
+}
+
+TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, 0);
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
+  ASSERT_TRUE(cert.get());
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = cert;
+  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
+
+  request_.url = GURL("https://www.google.com:443");
+  AddHangingNonAlternateProtocolSocketData();
+  CreateSessionWithNextProtos();
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
+  SendRequestAndExpectQuicResponse("hello!");
 }
 
 }  // namespace test
