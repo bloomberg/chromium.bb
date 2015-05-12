@@ -41,4 +41,9 @@ public abstract class AwWebContentsDelegate extends WebContentsDelegateAndroid {
     @Override
     @CalledByNative
     public abstract void navigationStateChanged(int flags);
+
+    // Not an override, because WebContentsDelegateAndroid maps this call
+    // into onLoad{Started|Stopped}.
+    @CalledByNative
+    public abstract void loadingStateChanged();
 }

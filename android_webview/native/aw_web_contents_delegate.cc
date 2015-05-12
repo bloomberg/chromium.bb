@@ -204,6 +204,18 @@ void AwWebContentsDelegate::ActivateContents(WebContents* contents) {
   }
 }
 
+void AwWebContentsDelegate::LoadingStateChanged(WebContents* source,
+                                                bool to_different_document) {
+  // Page title may have changed, need to inform the embedder.
+  // |source| may be null if loading has started.
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> java_delegate = GetJavaDelegate(env);
+  if (java_delegate.obj()) {
+    Java_AwWebContentsDelegate_loadingStateChanged(env, java_delegate.obj());
+  }
+}
+
 void AwWebContentsDelegate::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,

@@ -271,6 +271,11 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         }
     }
 
+    @Override
+    public void loadingStateChanged() {
+        mContentsClient.onReceivedTitle(mAwContents.getTitle());
+    }
+
     private static class GetDisplayNameTask extends AsyncTask<Void, Void, String[]> {
         final int mProcessId;
         final int mRenderId;

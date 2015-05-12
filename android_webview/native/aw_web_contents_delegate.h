@@ -50,6 +50,8 @@ class AwWebContentsDelegate
 
   void CloseContents(content::WebContents* source) override;
   void ActivateContents(content::WebContents* contents) override;
+  void LoadingStateChanged(content::WebContents* source,
+                           bool to_different_document) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,

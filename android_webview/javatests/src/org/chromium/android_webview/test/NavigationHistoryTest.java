@@ -320,4 +320,23 @@ public class NavigationHistoryTest extends AwTestBase {
             }
         });
     }
+
+    // See http://crbug.com/481570
+    @SmallTest
+    public void testTitleUpdatedWhenGoingBack() throws Throwable {
+        final TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        NavigationHistory list = getNavigationHistory(mAwContents);
+        assertEquals(0, list.getEntryCount());
+
+        final String page1Url = addPage1ToServer(mWebServer);
+        final String page2Url = addPage2ToServer(mWebServer);
+
+        loadUrlSync(mAwContents, onPageFinishedHelper, page1Url);
+        loadUrlSync(mAwContents, onPageFinishedHelper, page2Url);
+        assertEquals(PAGE_2_TITLE, mContentsClient.getUpdatedTitle());
+        HistoryUtils.goBackSync(getInstrumentation(), mAwContents.getWebContents(),
+                onPageFinishedHelper);
+        assertEquals(PAGE_1_TITLE, mContentsClient.getUpdatedTitle());
+    }
 }
