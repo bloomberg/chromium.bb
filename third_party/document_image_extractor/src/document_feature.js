@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.DocumentFeature');
+goog.provide('image.collections.extension.domextractor.DocumentFeature');
 
 goog.scope(function() {
 
@@ -13,11 +13,11 @@ goog.scope(function() {
  * @param {number} relevance Relevance of this feature to the document.
  * @constructor
  */
-image.collections.extension.DocumentFeature = function(relevance) {
+image.collections.extension.domextractor.DocumentFeature = function(relevance) {
   /** @private {number} */
   this.relevance_ = relevance;
 };
-var DocumentFeature = image.collections.extension.DocumentFeature;
+var DocumentFeature = image.collections.extension.domextractor.DocumentFeature;
 
 
 /**

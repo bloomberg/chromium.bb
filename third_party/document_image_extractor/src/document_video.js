@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.DocumentVideo');
+goog.provide('image.collections.extension.domextractor.DocumentVideo');
 
-goog.require('image.collections.extension.DocumentFeature');
+goog.require('image.collections.extension.domextractor.DocumentFeature');
+goog.require('image.collections.extension.domextractor.DomUtils');
 
 goog.scope(function() {
-var DocumentFeature = image.collections.extension.DocumentFeature;
+var DocumentFeature = image.collections.extension.domextractor.DocumentFeature;
 
 
 
@@ -15,21 +16,27 @@ var DocumentFeature = image.collections.extension.DocumentFeature;
  * A class representing a salient video in an HTML document.
  * @param {number} relevance
  * @param {string} url
- * @param {!goog.math.Size} size
+ * @param {!image.collections.extension.domextractor.Size} size
  * @extends {DocumentFeature}
  * @constructor
+ * @suppress {undefinedNames}
  */
-image.collections.extension.DocumentVideo = function(relevance, url, size) {
+image.collections.extension.domextractor.DocumentVideo =
+    function(relevance, url, size) {
   DocumentVideo.base(this, 'constructor', relevance);
 
   /** @private {string} Absolute video url. */
   this.url_ = url;
 
-  /** @private {!goog.math.Size} Video resolution in pixels */
+  /**
+   * @private {!image.collections.extension.domextractor.Size} Video resolution
+   *     in pixels
+   */
   this.size_ = size;
 };
-goog.inherits(image.collections.extension.DocumentVideo, DocumentFeature);
-var DocumentVideo = image.collections.extension.DocumentVideo;
+image.collections.extension.domextractor.DomUtils.inherits(
+    image.collections.extension.domextractor.DocumentVideo, DocumentFeature);
+var DocumentVideo = image.collections.extension.domextractor.DocumentVideo;
 
 
 /** @enum {string} */
@@ -50,7 +57,7 @@ DocumentVideo.prototype.getUrl = function() {
 
 /**
  * Returns the video resolution in pixels.
- * @return {!goog.math.Size}
+ * @return {!image.collections.extension.domextractor.Size}
  */
 DocumentVideo.prototype.getSize = function() {
   return this.size_;

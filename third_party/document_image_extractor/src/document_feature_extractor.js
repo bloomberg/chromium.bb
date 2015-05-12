@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.DocumentFeatureExtractor');
+goog.provide('image.collections.extension.domextractor.DocumentFeatureExtractor');
 
-goog.require('goog.asserts');
-goog.require('image.collections.extension.DocumentFeature');
-goog.require('image.collections.extension.ElementFilter');
+goog.require('image.collections.extension.domextractor.DocumentFeature');
+goog.require('image.collections.extension.domextractor.ElementFilter');
 
 goog.scope(function() {
-var DocumentFeature = image.collections.extension.DocumentFeature;
-var ElementFilter = image.collections.extension.ElementFilter;
+var DocumentFeature = image.collections.extension.domextractor.DocumentFeature;
+var ElementFilter = image.collections.extension.domextractor.ElementFilter;
 
 
 
@@ -18,12 +17,12 @@ var ElementFilter = image.collections.extension.ElementFilter;
  * A base class for document feature (title, snippet, image) extractors.
  * @constructor
  */
-image.collections.extension.DocumentFeatureExtractor = function() {
-  /** @protected {!Array.<!ElementFilter>} */
+image.collections.extension.domextractor.DocumentFeatureExtractor = function() {
+  /** @private {!Array.<!ElementFilter>} */
   this.filters_ = [];
 };
 var DocumentFeatureExtractor =
-    image.collections.extension.DocumentFeatureExtractor;
+    image.collections.extension.domextractor.DocumentFeatureExtractor;
 
 
 /**
@@ -93,7 +92,6 @@ DocumentFeatureExtractor.prototype.extractAllFromDocument = function(doc) {
  */
 DocumentFeatureExtractor.prototype.extractFromNodeList = function(
     nodeList, opt_context) {
-  goog.asserts.assert(goog.isArrayLike(nodeList));
   var result = [];
   var nodeListLength = nodeList.length;
   for (var j = 0; j < nodeListLength; ++j) {

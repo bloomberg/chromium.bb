@@ -2,44 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.AdElementFilter');
+goog.provide('image.collections.extension.domextractor.AdElementFilter');
 
-goog.require('goog.array');
-goog.require('goog.dom');
-goog.require('goog.dom.classlist');
-goog.require('image.collections.extension.ElementFilter');
+goog.require('image.collections.extension.domextractor.DomUtils');
+goog.require('image.collections.extension.domextractor.ElementFilter');
 
 goog.scope(function() {
-var ElementFilter = image.collections.extension.ElementFilter;
+var DomUtils = image.collections.extension.domextractor.DomUtils;
 
 
 
 /**
  * Filters out potential ad elements.
  * @constructor
- * @implements {ElementFilter}
+ * @implements {image.collections.extension.domextractor.ElementFilter}
  */
-image.collections.extension.AdElementFilter = function() {
+image.collections.extension.domextractor.AdElementFilter = function() {
   /** @private {!Array.<string>} */
   this.adWords_ = ['ad', 'advertisement', 'ads', 'sponsor', 'sponsored'];
 };
-var AdElementFilter = image.collections.extension.AdElementFilter;
+var AdElementFilter = image.collections.extension.domextractor.AdElementFilter;
 
 
 /** @override */
 AdElementFilter.prototype.filter = function(element) {
   var ancestorElement = element;
   while (ancestorElement) {
-    var classNames = goog.dom.classlist.get(ancestorElement);
+    var classNames = ancestorElement.classList;
     for (var i = 0; i < classNames.length; ++i) {
       var tokens = classNames[i].split(/\W+/);
       for (var j = 0; j < tokens.length; ++j) {
-        if (goog.array.contains(this.adWords_, tokens[j].toLowerCase())) {
+        if (this.adWords_.indexOf(tokens[j].toLowerCase()) >= 0) {
           return false;
         }
       }
     }
-    ancestorElement = goog.dom.getParentElement(ancestorElement);
+    ancestorElement = DomUtils.getParentElement(ancestorElement);
   }
   return true;
 };

@@ -2,50 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.DomController');
+goog.provide('image.collections.extension.domextractor.DomController');
 
-goog.require('goog.Timer');
-goog.require('goog.array');
-goog.require('goog.dom');
-goog.require('goog.events.EventType');
-goog.require('goog.log');
-goog.require('gws.collections.common.Constants');
-goog.require('image.collections.extension.Controller');
-goog.require('image.collections.extension.DocumentImage');
-goog.require('image.collections.extension.DocumentVideo');
-goog.require('image.collections.extension.DomEvent');
+goog.require('image.collections.extension.domextractor.DocumentImage');
+goog.require('image.collections.extension.domextractor.DocumentVideo');
+goog.require('image.collections.extension.domextractor.DomUtils');
 
 goog.scope(function() {
-var Constants = gws.collections.common.Constants;
-var DocumentImage = image.collections.extension.DocumentImage;
-var DocumentVideo = image.collections.extension.DocumentVideo;
-var DomEvent = image.collections.extension.DomEvent;
+var DocumentImage = image.collections.extension.domextractor.DocumentImage;
+var DocumentVideo = image.collections.extension.domextractor.DocumentVideo;
+var DomUtils = image.collections.extension.domextractor.DomUtils;
+
 
 
 /**
  * This class handles page DOM events and implements DOM manipulation.
  * It should be instantiated by a content script.
  * TODO(busaryev): preloading may not be the best choice for mobile clients.
- * @extends {image.collections.extension.Controller}
  * @constructor
  */
-image.collections.extension.DomController = function() {
-  DomController.base(this, 'constructor');
-
+image.collections.extension.domextractor.DomController = function() {
   /** @private {number} Number of DOM elements left. */
   this.numElementsToProcess_ = 0;
 
-  /** @private {number} The timeout id for goog.Timer.callOnce. */
-  this.timeoutId_ = -1;
+  /**
+   * Promise returned by initialize() call. Resolves when all elements have been
+   * processed, or alternatively when a timeout has been reached.
+   * @private {!Promise}
+   */
+  this.initializedPromise_ = Promise.resolve();
+
+  /** @private {?function()} Resolve function for the initialized promise. */
+  this.initializedPromiseResolve_ = null;
 };
-goog.inherits(image.collections.extension.DomController,
-              image.collections.extension.Controller);
-var DomController = image.collections.extension.DomController;
-
-
-/** @private {goog.log.Logger} */
-DomController.logger_ = goog.log.getLogger(
-    'image.collections.extension.DomController');
+var DomController = image.collections.extension.domextractor.DomController;
 
 
 /**
@@ -56,37 +46,38 @@ DomController.logger_ = goog.log.getLogger(
 DomController.LOAD_TIMEOUT_MS_ = 5000;
 
 
-/** @override */
-DomController.prototype.initialize = function(parentEventTarget) {
-  DomController.base(this, 'initialize', parentEventTarget);
-
-  this.eventHandler.
-      listen(parentEventTarget, DomEvent.Type.INITIALIZE_DOM,
-             this.handleInitializeDom_);
-};
-
-
 /**
- * @param {DomEvent} e
- * @private
+ * Initializes the DomController.
+ * @return {!Promise} A promise that resolves when all elements have been
+ *     processed, or alternatively after a timeout has expired.
  */
-DomController.prototype.handleInitializeDom_ = function(e) {
+DomController.prototype.initialize = function() {
   if (this.numElementsToProcess_ == 0) {
     // Find <meta> and <link> tags that specify canonical page images, compute
     // image sizes with preloading and store them in element attributes.
-    var doc = goog.dom.getDocument();
-    var metaElements = doc.getElementsByTagName('meta');
-    var linkElements = doc.getElementsByTagName('link');
+    var metaElements = document.getElementsByTagName('meta');
+    var linkElements = document.getElementsByTagName('link');
     this.numElementsToProcess_ = metaElements.length + linkElements.length;
     if (this.numElementsToProcess_ > 0) {
-      goog.array.forEach(metaElements, this.processMetaElement_, this);
-      goog.array.forEach(linkElements, this.processLinkElement_, this);
-      this.timeoutId_ = goog.Timer.callOnce(
-          goog.bind(this.dispatchEvent, this, DomEvent.Type.DOM_INITIALIZED),
+      this.initializedPromise_ =
+          new Promise(function(resolve, reject) {
+            this.initializedPromiseResolve_ = resolve;
+          }.bind(this));
+      for (var i = 0; i < metaElements.length; i++) {
+        this.processMetaElement_(metaElements[i]);
+      }
+      for (var i = 0; i < linkElements.length; i++) {
+        this.processLinkElement_(linkElements[i]);
+      }
+      setTimeout(this.initializedPromiseResolve_,
           DomController.LOAD_TIMEOUT_MS_);
+      return this.initializedPromise_;
     } else {
-      this.dispatchEvent(DomEvent.Type.DOM_INITIALIZED);
+      this.initializedPromise_ = Promise.resolve();
+      return this.initializedPromise_;
     }
+  } else {
+    return this.initializedPromise_;
   }
 };
 
@@ -94,17 +85,15 @@ DomController.prototype.handleInitializeDom_ = function(e) {
 /**
  * Tries to compute the size of the image specified in a <meta> element.
  * @param {Element} element The element to process.
- * @param {number} index Index of the element in the array.
- * @param {goog.array.ArrayLike} array The array.
  * @private
  */
-DomController.prototype.processMetaElement_ = function(element, index, array) {
+DomController.prototype.processMetaElement_ = function(element) {
   var url = '';
   if (element.hasAttribute('property')) {
     switch (element.getAttribute('property').toLowerCase()) {
       case 'og:image':
         url = element.getAttribute('content');
-        var siblings = goog.dom.getChildren(goog.dom.getParentElement(element));
+        var siblings = DomUtils.getParentElement(element).children;
         var width = this.getPropertyContent_(siblings, 'og:image:width');
         var height = this.getPropertyContent_(siblings, 'og:image:height');
         if (width > 0 && height > 0) {
@@ -113,7 +102,7 @@ DomController.prototype.processMetaElement_ = function(element, index, array) {
         }
         break;
       case 'og:video':
-        var children = goog.dom.getChildren(goog.dom.getParentElement(element));
+        var children = DomUtils.getParentElement(element).children;
         var width = this.getPropertyContent_(children, 'og:video:width');
         var height = this.getPropertyContent_(children, 'og:video:height');
         if (width > 0 && height > 0) {
@@ -141,11 +130,9 @@ DomController.prototype.processMetaElement_ = function(element, index, array) {
 /**
  * Tries to compute the size of the image specified in a <link> element.
  * @param {Element} element The element to process.
- * @param {number} index Index of the element in the array.
- * @param {goog.array.ArrayLike} array The array.
  * @private
  */
-DomController.prototype.processLinkElement_ = function(element, index, array) {
+DomController.prototype.processLinkElement_ = function(element) {
   var url = '';
   if (element.hasAttribute('rel')) {
     switch (element.getAttribute('rel').toLowerCase()) {
@@ -197,9 +184,9 @@ DomController.prototype.maybeComputeAndStoreImageSize_ = function(
   var CustomAttribute = DocumentImage.CustomAttribute;
   if (url && (!element.hasAttribute(CustomAttribute.WIDTH) ||
       !element.hasAttribute(CustomAttribute.HEIGHT))) {
-    this.computeImageSize_(url, goog.bind(this.storeImageSize_, this, element));
+    this.computeImageSize_(url, this.storeImageSize_.bind(this, element));
   } else {
-    this.maybeDispatchDomInitialized_();
+    this.maybeResolveInitializedPromise_();
   }
 };
 
@@ -212,42 +199,30 @@ DomController.prototype.maybeComputeAndStoreImageSize_ = function(
  */
 DomController.prototype.computeImageSize_ = function(url, callback) {
   var image = new Image();
-  this.eventHandler.listenOnce(image,
-      [goog.events.EventType.LOAD, goog.events.EventType.ERROR],
-      goog.bind(this.handleImageLoadOrError_, this, callback));
+
+  var that = this;
+  var handleImageLoadOrError = function(e) {
+    if (e.type == 'load') {
+      callback(image.naturalWidth, image.naturalHeight);
+    }
+    that.maybeResolveInitializedPromise_();
+    image.removeEventListener('load', handleImageLoadOrError);
+    image.removeEventListener('error', handleImageLoadOrError);
+  };
+
+  image.addEventListener('load', handleImageLoadOrError);
+  image.addEventListener('error', handleImageLoadOrError);
   image.src = url;
 };
 
 
 /**
- * Handles image LOAD and ERROR events.
- * @param {!function(number, number)} callback A callback.
- * @param {goog.events.Event} e Image event.
+ * Resolves the initialized promise if all elements have been processed.
  * @private
  */
-DomController.prototype.handleImageLoadOrError_ = function(callback, e) {
-  var image = /** @type {!Image} */ (e.target);
-  if (e.type == goog.events.EventType.LOAD) {
-    callback(image.naturalWidth, image.naturalHeight);
-  } else {
-    goog.log.warning(DomController.logger_,
-        'Failed to load image ' + image.src);
-  }
-  this.maybeDispatchDomInitialized_();
-};
-
-
-/**
- * Dispatches the DOM_INITIALIZED event if all elements have been processed.
- * @private
- */
-DomController.prototype.maybeDispatchDomInitialized_ = function() {
+DomController.prototype.maybeResolveInitializedPromise_ = function() {
   if (--this.numElementsToProcess_ == 0) {
-    if (this.timeoutId_ != -1) {
-      goog.Timer.clear(this.timeoutId_);
-      this.timeoutId_ = -1;
-    }
-    this.dispatchEvent(DomEvent.Type.DOM_INITIALIZED);
+    this.initializedPromiseResolve_();
   }
 };
 

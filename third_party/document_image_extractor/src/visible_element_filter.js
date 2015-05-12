@@ -2,45 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.VisibleElementFilter');
+goog.provide('image.collections.extension.domextractor.VisibleElementFilter');
 
-goog.require('goog.dom');
-goog.require('goog.style');
-goog.require('image.collections.extension.ElementFilter');
+goog.require('image.collections.extension.domextractor.DomUtils');
+goog.require('image.collections.extension.domextractor.ElementFilter');
 
 goog.scope(function() {
-var ElementFilter = image.collections.extension.ElementFilter;
+var DomUtils = image.collections.extension.domextractor.DomUtils;
 
 
 
 /**
  * Filters elements by visibility.
- * @implements {ElementFilter}
+ * @implements {image.collections.extension.domextractor.ElementFilter}
  * @constructor
  */
-image.collections.extension.VisibleElementFilter = function() {};
-var VisibleElementFilter = image.collections.extension.VisibleElementFilter;
+image.collections.extension.domextractor.VisibleElementFilter = function() {};
+var VisibleElementFilter =
+    image.collections.extension.domextractor.VisibleElementFilter;
 
 
 /** @override */
 VisibleElementFilter.prototype.filter = function(element) {
-  // TODO(busaryev): handle the overflow: hidden case.
   var ancestorElement = element;
   while (ancestorElement) {
-    if (goog.style.getComputedStyle(ancestorElement, 'display') == 'none') {
+    if (DomUtils.getComputedStyle(ancestorElement, 'display') == 'none') {
       return false;
     }
-    var size = goog.style.getSize(ancestorElement);
-    var overflow = goog.style.getComputedStyle(ancestorElement, 'overflow');
-    if ((overflow == 'hidden') && size.isEmpty()) {
+    var size = DomUtils.getSize(ancestorElement);
+    var overflow = DomUtils.getComputedStyle(ancestorElement, 'overflow');
+    if ((overflow == 'hidden') && size.area() == 0) {
       return false;
     }
-    if (goog.style.getComputedStyle(ancestorElement, 'visibility') ==
+    if (DomUtils.getComputedStyle(ancestorElement, 'visibility') ==
         'hidden') {
       return false;
     }
 
-    ancestorElement = goog.dom.getParentElement(ancestorElement);
+    ancestorElement = DomUtils.getParentElement(ancestorElement);
   }
   return true;
 };

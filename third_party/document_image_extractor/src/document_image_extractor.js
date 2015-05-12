@@ -2,56 +2,58 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.DocumentImageExtractor');
+goog.provide('image.collections.extension.domextractor.DocumentImageExtractor');
 
-goog.require('goog.Uri');
-goog.require('goog.asserts');
-goog.require('goog.dom');
-goog.require('goog.log');
-goog.require('goog.math.Size');
-goog.require('goog.object');
-goog.require('goog.string');
-goog.require('goog.style');
-goog.require('goog.uri.utils');
-goog.require('gws.collections.common.Constants');
-goog.require('image.collections.extension.AdElementFilter');
-goog.require('image.collections.extension.DocumentFeature');
-goog.require('image.collections.extension.DocumentFeatureExtractor');
-goog.require('image.collections.extension.DocumentImage');
-goog.require('image.collections.extension.VisibleElementFilter');
+goog.require('image.collections.extension.domextractor.AdElementFilter');
+goog.require('image.collections.extension.domextractor.DocumentFeature');
+goog.require('image.collections.extension.domextractor.DocumentFeatureExtractor');
+goog.require('image.collections.extension.domextractor.DocumentImage');
+goog.require('image.collections.extension.domextractor.DomUtils');
+goog.require('image.collections.extension.domextractor.Size');
+goog.require('image.collections.extension.domextractor.VisibleElementFilter');
 
 goog.scope(function() {
-var AdElementFilter = image.collections.extension.AdElementFilter;
-var Constants = gws.collections.common.Constants;
-var DocumentFeature = image.collections.extension.DocumentFeature;
+var AdElementFilter = image.collections.extension.domextractor.AdElementFilter;
+var DocumentFeature = image.collections.extension.domextractor.DocumentFeature;
 var DocumentFeatureExtractor =
-    image.collections.extension.DocumentFeatureExtractor;
-var DocumentImage = image.collections.extension.DocumentImage;
+    image.collections.extension.domextractor.DocumentFeatureExtractor;
+var DocumentImage = image.collections.extension.domextractor.DocumentImage;
 var CustomAttribute = DocumentImage.CustomAttribute;
-var VisibleElementFilter = image.collections.extension.VisibleElementFilter;
+var DomUtils = image.collections.extension.domextractor.DomUtils;
+var Size = image.collections.extension.domextractor.Size;
+var VisibleElementFilter =
+    image.collections.extension.domextractor.VisibleElementFilter;
 
+
+
+/** @const {number} The minimum width of extracted images. */
+var EXTRACT_MIN_WIDTH = 100;
+
+
+/** @const {number} The minimum height of extracted images. */
+var EXTRACT_MIN_HEIGHT = 100;
 
 
 /**
  * This class is used for extracting a salient image from an HTML document.
  * @extends {DocumentFeatureExtractor}
  * @constructor
+ * @suppress {undefinedNames}
  */
-image.collections.extension.DocumentImageExtractor = function() {
+image.collections.extension.domextractor.DocumentImageExtractor = function() {
   DocumentImageExtractor.base(this, 'constructor');
 
   this.addFilter(new AdElementFilter());
   this.addFilter(new VisibleElementFilter());
+
+  /** @private {!Element} Helper element for resolving URLs. */
+  this.helperAnchor_ = document.createElement('a');
 };
-goog.inherits(image.collections.extension.DocumentImageExtractor,
+DomUtils.inherits(
+    image.collections.extension.domextractor.DocumentImageExtractor,
     DocumentFeatureExtractor);
-var DocumentImageExtractor = image.collections.extension.DocumentImageExtractor;
-goog.addSingletonGetter(DocumentImageExtractor);
-
-
-/** @private {goog.log.Logger} Extractor logger. */
-DocumentImageExtractor.logger_ = goog.log.getLogger(
-    'image.collections.extension.DocumentImageExtractor');
+var DocumentImageExtractor =
+    image.collections.extension.domextractor.DocumentImageExtractor;
 
 
 /** @enum {number} */
@@ -77,8 +79,7 @@ var Parameters = DocumentImageExtractor.Parameters;
  * Map of image type to relevance multiplier.
  * @private {!Object.<string, number>}
  */
-DocumentImageExtractor.IMAGE_TYPE_RELEVANCE_MULTIPLIER_ =
-    goog.object.create('.gif', 0.5);
+DocumentImageExtractor.IMAGE_TYPE_RELEVANCE_MULTIPLIER_ = {'.gif': 0.5};
 
 
 
@@ -147,11 +148,10 @@ DocumentImageExtractor.prototype.extractFromElement = function(
   }
 
   var size = image.getDisplaySize() || image.getSize();
-  goog.asserts.assert(!goog.isNull(size));
   if (image.getUrl() != document.location.href) {
     // Ignore images that are too small.
-    if (size.width < Constants.EXTRACT_MIN_WIDTH ||
-        size.height < Constants.EXTRACT_MIN_HEIGHT) {
+    if (size.width < EXTRACT_MIN_WIDTH ||
+        size.height < EXTRACT_MIN_HEIGHT) {
       return null;
     }
   }
@@ -159,7 +159,7 @@ DocumentImageExtractor.prototype.extractFromElement = function(
   var relevance = image.getRelevance();
   relevance /= (1 + Math.exp(Parameters.AREA_MULTIPLIER * size.area()));
   // Demote images with bad aspect ratio.
-  var aspectRatio = size.aspectRatio();
+  var aspectRatio = size.width / size.height;
   if (aspectRatio < 1) {
     aspectRatio = 1 / aspectRatio;
   }
@@ -173,17 +173,11 @@ DocumentImageExtractor.prototype.extractFromElement = function(
   // - position (demote images on the border of the page).
 
   var url = image.getUrl();
-  try {
-    // Make sure that image url is absolute.
-    var documentUrl = goog.dom.getOwnerDocument(element).documentURI;
-    url = goog.Uri.resolve(documentUrl, url).toString();
-  } catch (e) {
-    goog.log.info(DocumentImageExtractor.logger_,
-        'Cannot resolve url: ' + url);
-    return null;
-  }
+  // Make sure that image url is absolute.
+  this.helperAnchor_.href = url;
+  url = this.helperAnchor_.href;
 
-  var imagePath = goog.string.makeSafe(goog.uri.utils.getPath(url));
+  var imagePath = decodeURIComponent(this.helperAnchor_.pathname || '');
   var lastDot = imagePath.lastIndexOf('.');
   if (lastDot > 0) {
     var imageType = imagePath.slice(lastDot);
@@ -267,31 +261,28 @@ DocumentImageExtractor.prototype.extractImageSrcImage_ = function(element) {
  * @param {string} urlAttributeName
  * @return {DocumentImage}
  * @private
+ * @suppress {missingProperties}
  */
 DocumentImageExtractor.prototype.extractCanonicalImage_ = function(
     element, relevance, attributeName, attribute, urlAttributeName) {
-  goog.asserts.assert(goog.isNumber(relevance));
-  goog.asserts.assert(goog.isString(attributeName));
-  goog.asserts.assert(goog.isString(attribute));
-
-  if (goog.string.caseInsensitiveEquals(
-      goog.string.makeSafe(element.getAttribute(attributeName)), attribute)) {
+  if (element.hasAttribute(attributeName) &&
+      element.getAttribute(attributeName).toLowerCase() ==
+      attribute.toLowerCase()) {
     var url = element.getAttribute(urlAttributeName);
-    if (!url || goog.string.startsWith(url, 'data:')) {
+    if (!url || url.startsWith('data:')) {
       return null;
     }
-    var width = goog.string.parseInt(
-        element.getAttribute(CustomAttribute.WIDTH));
-    var height = goog.string.parseInt(
-        element.getAttribute(CustomAttribute.HEIGHT));
+    var width = parseInt(element.getAttribute(CustomAttribute.WIDTH), 10);
+    var height = parseInt(element.getAttribute(CustomAttribute.HEIGHT), 10);
     if (width && height) {
       // For non-toplevel urls, demote the image if it is not in the document.
-      var ownerDocument = goog.dom.getOwnerDocument(element);
-      if (goog.uri.utils.getPath(ownerDocument.documentURI) != '/' &&
-          ownerDocument.body.innerHTML.indexOf(url) == -1) {
+      var ownerDocument = DomUtils.getOwnerDocument(element);
+      this.helperAnchor_.href = ownerDocument.documentURI;
+      var path = this.helperAnchor_.pathname;
+      if (path != '/' && ownerDocument.body.innerHTML.indexOf(url) == -1) {
         relevance *= Parameters.NON_TOPLEVEL_DEMOTION_FACTOR;
       }
-      var size = new goog.math.Size(width, height);
+      var size = new Size(width, height);
       return new DocumentImage(relevance, url, size);
     }
   }
@@ -303,20 +294,19 @@ DocumentImageExtractor.prototype.extractCanonicalImage_ = function(
  * @param {!Element} element
  * @return {DocumentImage}
  * @private
+ * @suppress {missingProperties}
  */
 DocumentImageExtractor.prototype.extractMicrodataImage_ = function(element) {
   var itemProp = element.getAttribute('itemprop');
   if (itemProp && itemProp.toLowerCase() == 'thumbnailurl') {
     var url = element.getAttribute('href') || element.getAttribute('content');
-    if (!url || goog.string.startsWith(url, 'data:')) {
+    if (!url || url.startsWith('data:')) {
       return null;
     }
-    var width = goog.string.parseInt(
-        element.getAttribute(CustomAttribute.WIDTH));
-    var height = goog.string.parseInt(
-        element.getAttribute(CustomAttribute.HEIGHT));
+    var width = parseInt(element.getAttribute(CustomAttribute.WIDTH), 10);
+    var height = parseInt(element.getAttribute(CustomAttribute.HEIGHT), 10);
     if (width && height) {
-      var size = new goog.math.Size(width, height);
+      var size = new Size(width, height);
       return new DocumentImage(Parameters.WEIGHT_MICRODATA, url, size);
     }
   }
@@ -330,7 +320,7 @@ DocumentImageExtractor.prototype.extractMicrodataImage_ = function(element) {
  * @private
  */
 DocumentImageExtractor.prototype.getElementRelevance_ = function(element) {
-  var offset = goog.style.getPageOffsetTop(element);
+  var offset = DomUtils.getPageOffsetTop(element);
   if (offset > Parameters.MAX_OFFSET) {
     return 0;
   }
@@ -345,13 +335,11 @@ DocumentImageExtractor.prototype.getElementRelevance_ = function(element) {
  * @private
  */
 DocumentImageExtractor.prototype.extractImage_ = function(element) {
-  goog.asserts.assert(element.tagName.toLowerCase() == 'img');
   var url = element.src;
   // We cannot handle data URIs.
-  if (url && !goog.string.startsWith(url, 'data:')) {
-    var naturalSize = new goog.math.Size(
-        element.naturalWidth, element.naturalHeight);
-    var displaySize = goog.style.getSize(element);
+  if (url && !url.startsWith('data:')) {
+    var naturalSize = new Size(element.naturalWidth, element.naturalHeight);
+    var displaySize = DomUtils.getSize(element);
     var size = naturalSize.area() < displaySize.area() ?
         naturalSize : displaySize;
     if (size.width && size.height) {
@@ -368,28 +356,29 @@ DocumentImageExtractor.prototype.extractImage_ = function(element) {
  * @param {!Element} element
  * @return {DocumentImage}
  * @private
+ * @suppress {missingProperties}
  */
 DocumentImageExtractor.prototype.extractBackgroundImage_ = function(element) {
-  var backgroundImage = goog.style.getComputedStyle(
+  var backgroundImage = DomUtils.getComputedStyle(
       element, 'background-image');
-  var backgroundRepeat = goog.style.getComputedStyle(
+  var backgroundRepeat = DomUtils.getComputedStyle(
       element, 'background-repeat');
-  var backgroundSize = goog.style.getComputedStyle(
+  var backgroundSize = DomUtils.getComputedStyle(
       element, 'background-size');
   if (backgroundImage &&
       (backgroundRepeat == 'no-repeat' || backgroundSize == 'cover') &&
-      goog.string.startsWith(backgroundImage, 'url(') &&
-      goog.string.endsWith(backgroundImage, ')')) {
+      backgroundImage.startsWith('url(') &&
+      backgroundImage.endsWith(')')) {
     var url = backgroundImage.substr(4, backgroundImage.length - 5);
-    if (url && !goog.string.startsWith(url, 'data:')) {
-      var size = goog.style.getSize(element);
+    if (url && !url.startsWith('data:')) {
+      var size = DomUtils.getSize(element);
       if (size.width && size.height) {
         var relevance = this.getElementRelevance_(element);
-        var children = goog.dom.getChildren(element);
+        var children = element.children;
         for (var i = 0; i < children.length; ++i) {
           var child = children[i];
-          if (goog.style.getComputedStyle(child, 'display') != 'none' &&
-              goog.style.getSize(child).area() > 0.1 * size.area()) {
+          if (DomUtils.getComputedStyle(child, 'display') != 'none' &&
+              DomUtils.getSize(child).area() > 0.1 * size.area()) {
             relevance *= 0.1;
             break;
           }

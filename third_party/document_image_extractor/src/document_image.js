@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.DocumentImage');
+goog.provide('image.collections.extension.domextractor.DocumentImage');
 
-goog.require('goog.asserts');
-goog.require('image.collections.extension.DocumentFeature');
+goog.require('image.collections.extension.domextractor.DocumentFeature');
+goog.require('image.collections.extension.domextractor.DomUtils');
 
 goog.scope(function() {
-var DocumentFeature = image.collections.extension.DocumentFeature;
+var DocumentFeature = image.collections.extension.domextractor.DocumentFeature;
 
 
 
@@ -16,32 +16,38 @@ var DocumentFeature = image.collections.extension.DocumentFeature;
  * A class representing a salient image in an HTML document.
  * @param {number} relevance
  * @param {string} url
- * @param {!goog.math.Size=} opt_size Natural size of image or null if image
- *     size is not available in the DOM tree.
- * @param {!goog.math.Size=} opt_displaySize Size at which the image is being
- *     shown. One of opt_size or opt_displaySize MUST be specified.
+ * @param {!image.collections.extension.domextractor.Size=} opt_size Natural
+ *     size of image or undefined if image size is not available in the DOM
+ *     tree.
+ * @param {!image.collections.extension.domextractor.Size=} opt_displaySize Size
+ *     at which the image is being shown. One of opt_size or opt_displaySize
+ *     MUST be specified.
  * @extends {DocumentFeature}
  * @constructor
+ * @suppress {undefinedNames}
  */
-image.collections.extension.DocumentImage = function(
+image.collections.extension.domextractor.DocumentImage = function(
     relevance, url, opt_size, opt_displaySize) {
   DocumentImage.base(this, 'constructor', relevance);
 
   /** @private {string} Absolute image url. */
   this.url_ = url;
 
-  /** @private {!goog.math.Size|undefined} Image resolution in pixels. */
+  /**
+   * @private {!image.collections.extension.domextractor.Size|undefined} Image
+   *     resolution in pixels.
+   */
   this.size_ = opt_size;
 
-  /** @private {!goog.math.Size|undefined} Displayed image resolution
-   *                                       in pixels.
+  /**
+   * @private {!image.collections.extension.domextractor.Size|undefined}
+   *      Displayed image resolution in pixels.
    */
   this.displaySize_ = opt_displaySize;
-
-  goog.asserts.assert(goog.isDef(opt_size) || goog.isDef(opt_displaySize));
 };
-goog.inherits(image.collections.extension.DocumentImage, DocumentFeature);
-var DocumentImage = image.collections.extension.DocumentImage;
+image.collections.extension.domextractor.DomUtils.inherits(
+    image.collections.extension.domextractor.DocumentImage, DocumentFeature);
+var DocumentImage = image.collections.extension.domextractor.DocumentImage;
 
 
 /**
@@ -67,7 +73,7 @@ DocumentImage.prototype.getUrl = function() {
 
 /**
  * Returns the image resolution in pixels.
- * @return {!goog.math.Size|undefined}
+ * @return {!image.collections.extension.domextractor.Size|undefined}
  */
 DocumentImage.prototype.getSize = function() {
   return this.size_;
@@ -76,7 +82,7 @@ DocumentImage.prototype.getSize = function() {
 
 /**
  * Returns the shown image resolution in pixels.
- * @return {!goog.math.Size|undefined}
+ * @return {!image.collections.extension.domextractor.Size|undefined}
  */
 DocumentImage.prototype.getDisplaySize = function() {
   return this.displaySize_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('image.collections.extension.ElementFilter');
+goog.provide('image.collections.extension.domextractor.ElementFilter');
 
 goog.scope(function() {
 
@@ -12,8 +12,8 @@ goog.scope(function() {
  * An element filter interface.
  * @interface
  */
-image.collections.extension.ElementFilter = function() {};
-var ElementFilter = image.collections.extension.ElementFilter;
+image.collections.extension.domextractor.ElementFilter = function() {};
+var ElementFilter = image.collections.extension.domextractor.ElementFilter;
 
 
 /**
