@@ -2533,6 +2533,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cast.Network.Down.Duration.In.Seconds" units="seconds">
+  <owner>cast-analytics@google.com</owner>
+  <summary>
+    Records the time the network has been down on a Cast device.  Recorded when
+    network goes up.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Network.Up.Duration.In.Minutes" units="minutes">
+  <owner>cast-analytics@google.com</owner>
+  <summary>
+    Records the time the network has been up on a Cast device.  Recorded when
+    network goes down.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.CastButtonShown" enum="BooleanEnabled">
   <owner>mfoltz@chromium.org</owner>
   <summary>
@@ -2607,6 +2623,41 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Indicates whether initialization of a video encode accelerator for Cast
     sender was successful.
+  </summary>
+</histogram>
+
+<histogram name="CastV2.Transport.Connect.Latency.Unknown" units="milliseconds">
+  <owner>cast-analytics@google.com</owner>
+  <summary>
+    The latency between when a Cast V2 connection is established and the first
+    message is received on that connection. &quot;Unknown&quot; is the peer
+    type, which is not known at this point in the CastV2 connection
+    establishment.  Naming conforms to the CastV2 sender-side histogram naming
+    convention &quot;CastV2.[action].[name].[peer_type]&quot;.
+  </summary>
+</histogram>
+
+<histogram name="CastV2.Transport.SslHandshake.Error.Unknown"
+    enum="NetErrorCodes">
+  <owner>cast-analytics@google.com</owner>
+  <summary>
+    On accepting a Cast V2 transport socket connection, if an error is
+    encountered, the error code is logged here. &quot;Unknown&quot; is the peer
+    type, which is not known at this point in the CastV2 connection
+    establishment.  &quot;SslHandshake.Error&quot; is the name of the action.
+    Naming conforms to the CastV2 sender-side histogram naming convention
+    &quot;CastV2.[action].[name].[peer_type]&quot;.
+  </summary>
+</histogram>
+
+<histogram name="CastV2.Transport.SslHandshake.Unknown" units="milliseconds">
+  <owner>cast-analytics@google.com</owner>
+  <summary>
+    The time taken to do the handshake during Cast V2 transport socket creation.
+    &quot;Unknown&quot; is the peer type, which is not known at this point in
+    the CastV2 connection establishment.  Naming conforms to the CastV2
+    sender-side histogram naming convention
+    &quot;CastV2.[action].[name].[peer_type]&quot;.
   </summary>
 </histogram>
 
@@ -24448,50 +24499,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Network.Wifi.Channel" enum="NetworkChannelType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>cast-analytics@google.com</owner>
   <summary>
     Chrome OS network usage metric.  The channel used for each successful WiFi
     connection.
   </summary>
 </histogram>
 
-<histogram name="Network.Wifi.Idle.NoiseLevel" units="negative dBm">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Network metric indicating the negative of the dBm noise level recorded at
-    the time the metric is collected.  Reported at least once per day and only
-    when the device is idle.
-  </summary>
-</histogram>
-
-<histogram name="Network.Wifi.Idle.SignalLevel" units="negative dBm">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Network metric indicating the negative of the dBm received signal level
-    recorded at the time the metric is collected.  Reported at least once per
-    day and only when the device is idle.
-  </summary>
-</histogram>
-
-<histogram name="Network.Wifi.Idle.SignalToNoiseRatio" units="negative dBm">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Network metric indicating signal minus noise in dBm recorded at the time the
-    metrics is collected.  Reported at least once per day and only when the
-    device is idle.
-  </summary>
-</histogram>
-
-<histogram name="Network.Wifi.NoiseLevel" units="negative dBm">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Network metric indicating the negative of the dBm noise level recorded at
-    the time the metric is collected.  Reported at least once per day.
-  </summary>
-</histogram>
-
 <histogram name="Network.Wifi.PhyMode" enum="NetworkPhyModeType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>cast-analytics@google.com</owner>
   <summary>
     Chrome OS network usage metric.  The channel type used for each successful
     WiFi connection.
@@ -24499,7 +24515,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Network.Wifi.RoundTripTime" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>cast-analytics@google.com</owner>
   <summary>
     Network metric reporting the average round trip time to the WiFi gateway.
     Recorded at least once per day.
@@ -24507,27 +24523,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Network.Wifi.Security" enum="NetworkSecurityType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>cast-analytics@google.com</owner>
   <summary>
     Chrome OS network usage metric.  The security setting for each successful
     WiFi connection.
-  </summary>
-</histogram>
-
-<histogram name="Network.Wifi.SignalLevel" units="negative dBm">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Network metric indicating the negative of the dBm received signal level
-    recorded at the time the metric is collected.  Reported at least once per
-    day.
-  </summary>
-</histogram>
-
-<histogram name="Network.Wifi.SignalToNoiseRatio" units="negative dBm">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Network metric indicating signal minus noise in dBm recorded at the time the
-    metrics is collected.  Reported at least once per day.
   </summary>
 </histogram>
 
@@ -26523,6 +26522,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Platform.CpuUsage" units="%">
   <owner>sonnyrao@chromium.org</owner>
+  <owner>cast-analytics@google.com</owner>
   <summary>
     Peak total (single core) CPU usage for the last sample interval.  The sample
     interval may vary from seconds to several minutes.
@@ -26617,22 +26617,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Platform.DiskUsageCache" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>KB in use in the /cache filesystem tree. Logged once a day.</summary>
-</histogram>
-
 <histogram name="Platform.DiskUsageChronos" units="KB">
   <owner>keescook@google.com</owner>
   <summary>
     Chrome OS KB in use in the /home/chronos filesystem tree. Logged once a day
     during log file cleanup.
   </summary>
-</histogram>
-
-<histogram name="Platform.DiskUsageData" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>KB in use in the /data filesystem tree. Logged once a day.</summary>
 </histogram>
 
 <histogram name="Platform.DiskUsageVar" units="KB">
@@ -26817,6 +26807,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Platform.MemoryBandwidth.ReadWrite" units="MB/s">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
+  <owner>cast-analytics@google.com</owner>
   <summary>
     Peak memory bandwith (read and write) usage during the last sample interval.
     The sample interval may vary from seconds to several minutes.
@@ -26931,6 +26922,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Platform.Storage.Flash.BadBlocks">
   <owner>dehrenberg@chromium.org</owner>
+  <owner>cast-analytics@google.com</owner>
   <summary>
     The number of blocks marked bad in an MTD partition. This is relevant for
     devices with raw NAND flash, such as Chromecast. Sampled once daily, if the
@@ -27696,14 +27688,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>sonnyrao@chromium.org</owner>
   <summary>
     Average pages/second swapped OUT over a 1s interval, sampled every 30s.
-  </summary>
-</histogram>
-
-<histogram name="Platform.Temperature.Junction" units="Celsius">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    Peak junction temperature for the last sample interval, read from TSEN on
-    the SoC.  The sample interval may vary from seconds to several minutes.
   </summary>
 </histogram>
 
