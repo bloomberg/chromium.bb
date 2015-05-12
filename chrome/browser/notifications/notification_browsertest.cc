@@ -636,31 +636,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(0U, settings.size());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestExitBrowserWithInfobar) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Exit the browser window, when the infobar appears.
-  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-  ASSERT_TRUE(RequestPermissionAndWait(browser()));
-}
-
-// Times out. http://crbug.com/168976
-IN_PROC_BROWSER_TEST_F(NotificationsTest,
-                       DISABLED_TestCrashTabWithPermissionInfobar) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Test crashing the tab with permission infobar doesn't crash Chrome.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      embedded_test_server()->GetURL("/empty.html"),
-      NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
-  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-  ASSERT_TRUE(RequestPermissionAndWait(browser()));
-  CrashTab(browser(), 0);
-}
-
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
