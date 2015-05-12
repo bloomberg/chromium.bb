@@ -41,8 +41,9 @@ html[dir='rtl'] cr-menu > [shortcutText]::after {
   float: left;
 }
 
-/* Icon on the left of the item label. */
-cr-menu-item .menu-icon {
+/* Icon on the left of the item label for cr.ui.ProvidersMenuItem.
+   TODO(mtomasz): Upstream to cr.ui.MenuItem. */
+cr-menu-item.providers-menu-item .menu-icon {
   -webkit-margin-end: 12px;
   background: no-repeat 0 center;
   display: inline-block;
@@ -51,6 +52,6 @@ cr-menu-item .menu-icon {
   width: 16px;
 }
 
-html[dir='rtl'] cr-menu-item .menu-icon {
+html[dir='rtl'] cr-menu-item.providers-menu-item .menu-icon {
   float: right;
 }

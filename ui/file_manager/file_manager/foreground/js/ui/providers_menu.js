@@ -2,6 +2,75 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.define('cr.ui', function() {
+  /**
+   * Extends cr.ui.MenuItem with a hi-dpi friendly icon on the left.
+   * TODO(mtomasz): Upstream to cr.ui.MenuItem.
+   * @constructor
+   * @extends {cr.ui.MenuItem}
+   */
+  var ProvidersMenuItem = cr.ui.define(cr.ui.MenuItem);
+
+  ProvidersMenuItem.prototype = {
+    __proto__: cr.ui.MenuItem.prototype,
+
+    /**
+     * @private {Element}
+     */
+    icon_: null,
+
+    /**
+     * @private {Element}
+     */
+    label_: null,
+
+    /**
+     * @override
+     */
+    decorate: function() {
+      cr.ui.MenuItem.call(this);
+      this.classList.add('providers-menu-item');
+      this.icon_ = this.ownerDocument.createElement('div');
+      this.icon_.className = 'menu-icon';
+      this.appendChild(this.icon_);
+      this.label_ = this.ownerDocument.createElement('span');
+      this.appendChild(this.label_);
+    },
+
+    /**
+     * @return {string}
+     */
+    get leftIconImage() {
+      return this.icon_.style.backgroundImage;
+    },
+
+    /**
+     * @param {string} image
+     */
+    set leftIconImage(image) {
+      this.icon_.setAttribute('style', 'background-image: ' + image);
+    },
+
+    /**
+     * @override
+     */
+    get label() {
+      return this.label_.textContent;
+    },
+
+    /**
+     * @override
+     */
+    set label(label) {
+      this.label_.textContent = label;
+    }
+  };
+
+  return {
+    ProvidersMenuItem: ProvidersMenuItem
+  }
+});
+
 /**
  * Fills out the menu for mounting or installing new providers.
  *
@@ -32,7 +101,7 @@ function ProvidersMenu(model, menu) {
    */
   this.separator_ = assert(this.menu_.firstElementChild);
 
-  var installItem = this.menu_.addMenuItem({});
+  var installItem = this.addMenuItem_();
   installItem.command = '#install-new-extension';
 
   this.menu_.addEventListener('update', this.onUpdate_.bind(this));
@@ -51,22 +120,27 @@ ProvidersMenu.prototype.clearExtensions_ = function() {
 };
 
 /**
+ * @return {cr.ui.ProvidersMenuItem}
+ */
+ProvidersMenu.prototype.addMenuItem_ = function() {
+  var menuItem = this.menu_.addMenuItem({});
+  cr.ui.decorate(/** @type {!Element} */ (menuItem), cr.ui.ProvidersMenuItem);
+  return /** @type {cr.ui.ProvidersMenuItem} */ (menuItem);
+};
+
+/**
  * @param {string} extensionId
  * @param {string} extensionName
  * @private
  */
 ProvidersMenu.prototype.addExtension_ = function(extensionId, extensionName) {
-  var item = this.menu_.addMenuItem({
-    label: extensionName
-  });
+  var item = this.addMenuItem_();
+  item.label = extensionName;
 
-  var icon = this.menu_.ownerDocument.createElement('div');
-  icon.className = 'menu-icon';
   var iconImage = '-webkit-image-set(' +
       'url(chrome://extension-icon/' + extensionId + '/16/1) 1x, ' +
       'url(chrome://extension-icon/' + extensionId + '/32/1) 2x);';
-  icon.setAttribute('style', 'background-image: ' + iconImage);
-  item.insertBefore(icon, item.firstChild);
+  item.leftIconImage = iconImage;
 
   item.addEventListener(
       'activate', this.onItemActivate_.bind(this, extensionId));
