@@ -50,8 +50,6 @@ class CopresenceService final : public BrowserContextKeyedAPI,
   // These accessors will always return an object (except during shutdown).
   // If the object doesn't exist, they will create one first.
   copresence::CopresenceManager* manager();
-  // TODO(ckehoe): Merge this with GetWhispernetClient() below.
-  audio_modem::WhispernetClient* whispernet_client();
 
   // A registry containing the app id's associated with every subscription.
   SubscriptionToAppMap& apps_by_subscription_id() {
