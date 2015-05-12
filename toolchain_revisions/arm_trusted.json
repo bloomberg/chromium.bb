@@ -5,16 +5,16 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "bd9e1004150e408ea8ce0909aba7ec4ea03b0e9d",
+          "hash": "8cace3e2a8dd455d39d7972c0359278582face8b",
           "log_url": null,
           "name": "sysroot_arm_trusted_precise.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/11632035b56f9e6856a06c7000642889f537543e/sysroot_arm_trusted_precise.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/b5365b48a73962904e04229ca3bf97948d03d034/sysroot_arm_trusted_precise.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": "11632035b56f9e6856a06c7000642889f537543e",
-  "revision_hash": "e7a192b3af85db57c12446f1ca0ae8da065e8836"
+  "revision": "b5365b48a73962904e04229ca3bf97948d03d034",
+  "revision_hash": "8bf9bda62a9540f72d4c10b1178cdf14db7c11d7"
 }
