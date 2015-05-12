@@ -181,6 +181,7 @@
         "chrome://resources/js/analytics.js",
         "common/js/async_util.js",
         "common/js/file_type.js",
+        "common/js/lru_cache.js",
         "common/js/metrics_base.js",
         "common/js/metrics_events.js",
         "common/js/metrics.js",

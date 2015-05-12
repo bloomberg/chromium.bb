@@ -127,6 +127,15 @@ LRUCache.prototype.peek = function(key) {
 };
 
 /**
+ * Returns true if the cache contains the key.
+ * @param {string} key
+ * @return {boolean}
+ */
+LRUCache.prototype.hasKey = function(key) {
+  return key in this.nodes_;
+};
+
+/**
  * Saves an item in this cache. The saved item will be the most recently used
  * item and won't be evicted soon. If an item with the same key already exists
  * in the cache, the existing item's value and size will be updated and the item

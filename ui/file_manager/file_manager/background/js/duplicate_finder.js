@@ -20,6 +20,13 @@ importer.DriveDuplicateFinder = function(tracker) {
 
   /** @private {Promise<string>} */
   this.driveIdPromise_ = null;
+
+  /**
+   * An bounded cache of most recently calculated file content hashcodes.
+   * @private {!LRUCache<!Promise<string>>}
+   */
+  this.hashCache_ = new LRUCache(
+      importer.DriveDuplicateFinder.MAX_CACHED_HASHCODES_);
 };
 
 /**
@@ -45,42 +52,57 @@ importer.DriveDuplicateFinder.HASH_EVENT_THRESHOLD_ = 5000;
 /** @private @const {number} */
 importer.DriveDuplicateFinder.SEARCH_EVENT_THRESHOLD_ = 1000;
 
+/** @private @const {number} */
+importer.DriveDuplicateFinder.MAX_CACHED_HASHCODES_ = 10000;
+
 /**
  * Computes the content hash for the given file entry.
  * @param {!FileEntry} entry
+ * @return {!Promise<string>} The computed hash.
  * @private
  */
 importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
-  return new Promise(
-      /** @this {importer.DriveDuplicateFinder} */
-      function(resolve, reject) {
-        var startTime = new Date().getTime();
-        chrome.fileManagerPrivate.computeChecksum(
-            entry.toURL(),
-            /**
-             * @param {string} result The content hash.
-             * @this {importer.DriveDuplicateFinder}
-             */
-            function(result) {
-              var elapsedTime = new Date().getTime() - startTime;
-              // Send the timing to GA only if it is sorta exceptionally long.
-              // A one second, CPU intensive operation, is pretty long.
-              if (elapsedTime >=
-                  importer.DriveDuplicateFinder.HASH_EVENT_THRESHOLD_) {
-                console.info(
-                    'Content hash computation took ' + elapsedTime + ' ms.');
-                this.tracker_.sendTiming(
-                   metrics.Categories.ACQUISITION,
-                   metrics.timing.Variables.COMPUTE_HASH,
-                   elapsedTime);
-              }
-              if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-              } else {
-                resolve(result);
-              }
-            }.bind(this));
-      }.bind(this));
+  return importer.createMetadataHashcode(entry).then(function(hashcode) {
+    // Cache key is the concatination of metadata hashcode and URL.
+    var cacheKey = hashcode + '|' + entry.toURL();
+    if (this.hashCache_.hasKey(cacheKey)) {
+      return this.hashCache_.get(cacheKey);
+    }
+
+    var hashPromise = new Promise(
+        /** @this {importer.DriveDuplicateFinder} */
+        function(resolve, reject) {
+          var startTime = new Date().getTime();
+          chrome.fileManagerPrivate.computeChecksum(
+              entry.toURL(),
+              /**
+               * @param {string} result The content hash.
+               * @this {importer.DriveDuplicateFinder}
+               */
+              function(result) {
+                var elapsedTime = new Date().getTime() - startTime;
+                // Send the timing to GA only if it is sorta exceptionally long.
+                // A one second, CPU intensive operation, is pretty long.
+                if (elapsedTime >=
+                    importer.DriveDuplicateFinder.HASH_EVENT_THRESHOLD_) {
+                  console.info(
+                      'Content hash computation took ' + elapsedTime + ' ms.');
+                  this.tracker_.sendTiming(
+                     metrics.Categories.ACQUISITION,
+                     metrics.timing.Variables.COMPUTE_HASH,
+                     elapsedTime);
+                }
+                if (chrome.runtime.lastError) {
+                  reject(chrome.runtime.lastError);
+                } else {
+                  resolve(result);
+                }
+              }.bind(this));
+        }.bind(this));
+
+    this.hashCache_.put(cacheKey, hashPromise);
+    return hashPromise;
+  }.bind(this));
 };
 
 /**
@@ -91,8 +113,9 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
  * @private
  */
 importer.DriveDuplicateFinder.prototype.findByHash_ = function(hash) {
-  return this.getDriveId_()
-      .then(this.searchFilesByHash_.bind(this, hash));
+  return /** @type {!Promise<Array<string>>} */ (
+      this.getDriveId_()
+          .then(this.searchFilesByHash_.bind(this, hash)));
 };
 
 /**
@@ -119,7 +142,8 @@ importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
  * A promise-based wrapper for chrome.fileManagerPrivate.searchFilesByHashes.
  * @param {string} hash The content hash to search for.
  * @param {string} volumeId The volume to search.
- * @return <!Promise<Array<string>>> A list of file URLs.
+ * @return {!Promise<Array<string>>} A list of file URLs.
+ * @private
  */
 importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
     function(hash, volumeId) {

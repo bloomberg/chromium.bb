@@ -121,7 +121,9 @@ importer.DefaultMediaScanner.prototype.scanDirectory = function(directory) {
       .then(
           /** @this {importer.DefaultMediaScanner} */
           function() {
-            console.info(scan.name + ': Finished.');
+            console.info(
+                scan.name + ': Finished directory scan. Details: ' +
+                JSON.stringify(scan.getStatistics()));
             this.notify_(importer.ScanEvent.FINALIZED, scan);
           }.bind(this));
 
@@ -155,7 +157,9 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries) {
       .then(
           /** @this {importer.DefaultMediaScanner} */
           function() {
-            console.info(scan.name + ': Finished.');
+            console.info(
+                scan.name + ': Finished file-selection scan. Details: ' +
+                JSON.stringify(scan.getStatistics()));
             this.notify_(importer.ScanEvent.FINALIZED, scan);
           }.bind(this));
 
