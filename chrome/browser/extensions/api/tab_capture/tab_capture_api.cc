@@ -34,7 +34,6 @@ namespace TabCapture = extensions::api::tab_capture;
 namespace GetCapturedTabs = TabCapture::GetCapturedTabs;
 
 namespace extensions {
-
 namespace {
 
 const char kCapturingSameTab[] = "Cannot capture a tab with an active stream.";
@@ -49,18 +48,20 @@ const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId";
 const char kMediaStreamSourceTab[] = "tab";
 
-// Whitelisted extensions that do not check for a browser action grant because
-// they provide API's.
-const char* const kWhitelist[] = {
-  "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
-  "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Trusted Tester
-  "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
-  "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
-  "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Trusted Tester (public)
-  "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Release
-};
-
 }  // namespace
+
+// Whitelisted extensions that do not check for a browser action grant because
+// they provide API's. If there are additional extension ids that need
+// whitelisting and are *not* the Chromecast extension, add them to a new
+// kWhitelist array.
+const char* const kChromecastExtensionIds[] = {
+    "enhhojjnijigcajfphajepfemndkmdlo",  // Dev
+    "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Dogfood
+    "fmfcbgogabcbclcofgocippekhfcmgfj",  // Staging
+    "hfaagokkkhdbgiakmmlclaapfelnkoah",  // Canary
+    "dliochdbjfkdbacpmhlcpmleaejidimm",  // Google Cast Beta
+    "boadgeojelhgndaghljhdicfkmllpafd",  // Google Cast Stable
+};
 
 bool TabCaptureCaptureFunction::RunSync() {
   scoped_ptr<api::tab_capture::Capture::Params> params =
@@ -91,8 +92,8 @@ bool TabCaptureCaptureFunction::RunSync() {
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
-      !SimpleFeature::IsIdInArray(
-          extension_id, kWhitelist, arraysize(kWhitelist))) {
+      !SimpleFeature::IsIdInArray(extension_id, kChromecastExtensionIds,
+                                  arraysize(kChromecastExtensionIds))) {
     error_ = kGrantError;
     return false;
   }
