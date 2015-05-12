@@ -61,8 +61,9 @@ KeyedService* EasyUnlockTpmKeyManagerFactory::BuildServiceInstanceFor(
   const user_manager::User* user = NULL;
   if (!chromeos::ProfileHelper::IsSigninProfile(profile))
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  return new EasyUnlockTpmKeyManager(user ? user->email() : std::string(),
-                                     GetLocalState());
+  return new EasyUnlockTpmKeyManager(
+      user ? user->email() : std::string(),
+      user ? user->username_hash() : std::string(), GetLocalState());
 }
 
 content::BrowserContext* EasyUnlockTpmKeyManagerFactory::GetBrowserContextToUse(

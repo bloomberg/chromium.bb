@@ -27,10 +27,14 @@ class EasyUnlockTpmKeyManager : public KeyedService {
   // Clears local state for user. Should be called when a user is removed.
   static void ResetLocalStateForUser(const std::string& user_id);
 
-  // |user_id|: Id for the user associated with the service. Empty for signin
+  // |user_id|: Id for the user associated with the service. Empty for sign-in
   //     service.
+  // |username_hash|: Username hash for the user associated with the service.
+  //     Empty for sign-in service.
   // |local_state|: The local state prefs.
-  EasyUnlockTpmKeyManager(const std::string& user_id, PrefService* local_state);
+  EasyUnlockTpmKeyManager(const std::string& user_id,
+                          const std::string& username_hash,
+                          PrefService* local_state);
   ~EasyUnlockTpmKeyManager() override;
 
   // Checks if the RSA public key is set in the local state. If not, creates
@@ -69,9 +73,12 @@ class EasyUnlockTpmKeyManager : public KeyedService {
       const std::string& data,
       const base::Callback<void(const std::string& data)> callback);
 
+  bool StartedCreatingTpmKeys() const;
+
  private:
   enum CreateTpmKeyState {
     CREATE_TPM_KEY_NOT_STARTED,
+    CREATE_TPM_KEY_WAITING_FOR_USER_SLOT,
     CREATE_TPM_KEY_WAITING_FOR_SYSTEM_SLOT,
     CREATE_TPM_KEY_GOT_SYSTEM_SLOT,
     CREATE_TPM_KEY_DONE
@@ -91,6 +98,12 @@ class EasyUnlockTpmKeyManager : public KeyedService {
   // called with |public_key|.
   void CreateKeyInSystemSlot(const std::string& public_key,
                              crypto::ScopedPK11Slot system_slot);
+
+  // Called when user TPM token initialization is done. After this happens,
+  // |this| may proceed with creating a user-specific TPM key for easy sign-in.
+  // Note that this is done solely to ensure user TPM initialization, which is
+  // done on IO thread, is not blocked by creating TPM keys in system slot.
+  void OnUserTPMInitialized(const std::string& public_key);
 
   // Called when TPM system slot is initialized and ready to be used.
   // It schedules data signing operation on a worker thread. The data is signed
@@ -116,6 +129,7 @@ class EasyUnlockTpmKeyManager : public KeyedService {
       const std::string& signature);
 
   std::string user_id_;
+  std::string username_hash_;
 
   PrefService* local_state_;
 
