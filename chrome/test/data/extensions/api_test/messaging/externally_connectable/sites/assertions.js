@@ -263,6 +263,46 @@ window.assertions = {
     });
   },
 
+  tryIllegalArguments: function() {
+    // Tests that illegal arguments to messaging functions throw exceptions.
+    // Regression test for crbug.com/472700, where they crashed the renderer.
+    function runIllegalFunction(fun) {
+      try {
+        fun();
+      } catch(e) {
+        return true;
+      }
+      console.error('Function did not throw exception: ' + fun);
+      sendToBrowser(false);
+      return false;
+    }
+    var result =
+        runIllegalFunction(chrome.runtime.connect) &&
+        runIllegalFunction(function() {
+          chrome.runtime.connect('');
+        }) &&
+        runIllegalFunction(function() {
+          chrome.runtime.connect(42);
+        }) &&
+        runIllegalFunction(function() {
+          chrome.runtime.connect('', 42);
+        }) &&
+        runIllegalFunction(function() {
+          chrome.runtime.connect({name: 'noname'});
+        }) &&
+        runIllegalFunction(chrome.runtime.sendMessage) &&
+        runIllegalFunction(function() {
+          chrome.runtime.sendMessage('');
+        }) &&
+        runIllegalFunction(function() {
+          chrome.runtime.sendMessage(42);
+        }) &&
+        runIllegalFunction(function() {
+          chrome.runtime.sendMessage('', 42);
+        }) &&
+        sendToBrowser(true);
+  },
+
   areAnyRuntimePropertiesDefined: function(names) {
     var result = false;
     if (chrome.runtime) {

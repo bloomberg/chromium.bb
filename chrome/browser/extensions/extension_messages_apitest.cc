@@ -879,6 +879,19 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, IllegalArguments) {
+  // Tests that malformed arguments to connect() don't crash.
+  // Regression test for crbug.com/472700.
+  InitializeTestServer();
+  LoadChromiumConnectableExtension();
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  bool result;
+  CHECK(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "assertions.tryIllegalArguments()", &result));
+  EXPECT_TRUE(result);
+}
+
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
                        FromIncognitoAllowExtension) {
   InitializeTestServer();

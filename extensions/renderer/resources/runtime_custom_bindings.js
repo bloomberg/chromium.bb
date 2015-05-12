@@ -158,8 +158,16 @@ binding.registerCustomHook(function(binding, id, contextType) {
     if (unloadEvent.wasDispatched)
       throw new Error('Error connecting to extension ' + targetId);
 
-    if (!targetId)
+    if (!targetId) {
+      // runtime.id is only defined inside extensions. If we're in a webpage,
+      // the best we can do at this point is to fail.
+      if (!runtime.id) {
+        throw new Error('chrome.runtime.connect() called from a webpage must ' +
+                        'specify an Extension ID (string) for its first ' +
+                        'argument');
+      }
       targetId = runtime.id;
+    }
 
     var name = '';
     if (connectInfo && connectInfo.name)
