@@ -14506,17 +14506,11 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_FLAGS_GESTURE_TYPING_DESCRIPTION" desc="Description of about::flags option to toggle gesture typing for the virtual keyboard">
           Enable/Disable gesture typing for the virtual keyboard.
         </message>
-        <message name="IDS_FLAGS_GESTURE_SELECTION_NAME" desc="Name of about::flags option to enable gesture selection for the virtual keyboard">
-          Gesture selection for the virtual keyboard.
+        <message name="IDS_FLAGS_GESTURE_EDITING_NAME" desc="Name of about::flags option to toggle gesture editing for the virtual keyboard">
+          Gesture editing for the virtual keyboard.
         </message>
-        <message name="IDS_FLAGS_GESTURE_SELECTION_DESCRIPTION" desc="Description of about::flags option to toggle gesture selection in the settings page for the virtual keyboard">
-          Enable/Disable gesture selection option in the settings page for the virtual keyboard.
-        </message>
-        <message name="IDS_FLAGS_GESTURE_DELETION_NAME" desc="Name of about::flags option to toggle gesture deletion for the virtual keyboard">
-          Gesture deletion for the virtual keyboard.
-        </message>
-        <message name="IDS_FLAGS_GESTURE_DELETION_DESCRIPTION" desc="Description of about::flags option to toggle gesture deletion in the settings page for the virtual keyboard">
-          Enable/Disable gesture deletion option in the settings page for the virtual keyboard.
+        <message name="IDS_FLAGS_GESTURE_EDITING_DESCRIPTION" desc="Description of about::flags option to toggle gesture editing in the settings page for the virtual keyboard">
+          Enable/Disable gesture editing option in the settings page for the virtual keyboard.
         </message>
         <message name="IDS_FLAGS_DISABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option to disable bypass proxy for captive portal authorization on Chrome OS.">
           Disable bypass proxy for Captive Portal Authorization

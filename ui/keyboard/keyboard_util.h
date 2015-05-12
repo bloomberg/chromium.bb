@@ -99,11 +99,8 @@ KEYBOARD_EXPORT bool IsFloatingVirtualKeyboardEnabled();
 // Returns true if gesture typing is enabled for virtual keyboard.
 KEYBOARD_EXPORT bool IsGestureTypingEnabled();
 
-// Returns true if gesture deletion is enabled for virtual keyboard.
-KEYBOARD_EXPORT bool IsGestureDeletionEnabled();
-
-// Returns true if gesture selection is enabled for virtual keyboard.
-KEYBOARD_EXPORT bool IsGestureSelectionEnabled();
+// Returns true if gesture editing option is enabled for virtual keyboard.
+KEYBOARD_EXPORT bool IsGestureEditingEnabled();
 
 // Returns true if material design is enabled for the keyboard.
 KEYBOARD_EXPORT bool IsMaterialDesignEnabled();

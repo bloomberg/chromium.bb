@@ -170,18 +170,11 @@ bool IsGestureTypingEnabled() {
   return keyboard_switch == switches::kGestureTypingEnabled;
 }
 
-bool IsGestureSelectionEnabled() {
+bool IsGestureEditingEnabled() {
   std::string keyboard_switch =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kGestureSelection);
-  return keyboard_switch != switches::kGestureSelectionDisabled;
-}
-
-bool IsGestureDeletionEnabled() {
-  std::string keyboard_switch =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kGestureDeletion);
-  return keyboard_switch != switches::kGestureDeletionDisabled;
+          switches::kGestureEditing);
+  return keyboard_switch == switches::kGestureEditingEnabled;
 }
 
 bool IsMaterialDesignEnabled() {

@@ -487,24 +487,14 @@ const Experiment::Choice kGestureTypingChoices[] = {
     keyboard::switches::kGestureTypingEnabled},
 };
 
-const Experiment::Choice kGestureSelectionChoices[] = {
+const Experiment::Choice kGestureEditingChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    keyboard::switches::kGestureSelection,
-    keyboard::switches::kGestureSelectionDisabled},
+    keyboard::switches::kGestureEditing,
+    keyboard::switches::kGestureEditingDisabled},
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    keyboard::switches::kGestureSelection,
-    keyboard::switches::kGestureSelectionEnabled},
-};
-
-const Experiment::Choice kGestureDeletionChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    keyboard::switches::kGestureDeletion,
-    keyboard::switches::kGestureDeletionDisabled},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    keyboard::switches::kGestureDeletion,
-    keyboard::switches::kGestureDeletionEnabled},
+    keyboard::switches::kGestureEditing,
+    keyboard::switches::kGestureEditingEnabled},
 };
 #endif
 
@@ -1481,18 +1471,11 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kGestureTypingChoices)
   },
   {
-    "gesture-selection",
-    IDS_FLAGS_GESTURE_SELECTION_NAME,
-    IDS_FLAGS_GESTURE_SELECTION_DESCRIPTION,
+    "gesture-editing",
+    IDS_FLAGS_GESTURE_EDITING_NAME,
+    IDS_FLAGS_GESTURE_EDITING_DESCRIPTION,
     kOsCrOS,
-    MULTI_VALUE_TYPE(kGestureSelectionChoices)
-  },
-  {
-    "gesture-deletion",
-    IDS_FLAGS_GESTURE_DELETION_NAME,
-    IDS_FLAGS_GESTURE_DELETION_DESCRIPTION,
-    kOsCrOS,
-    MULTI_VALUE_TYPE(kGestureDeletionChoices)
+    MULTI_VALUE_TYPE(kGestureEditingChoices)
   },
   {
     "disable-smart-virtual-keyboard",

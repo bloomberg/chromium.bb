@@ -20,13 +20,9 @@ const char kGestureTyping[] = "gesture-typing";
 const char kGestureTypingEnabled[] = "enabled";
 const char kGestureTypingDisabled[] = "disabled";
 
-const char kGestureSelection[] = "gesture-selection";
-const char kGestureSelectionEnabled[] = "enabled";
-const char kGestureSelectionDisabled[] = "disabled";
-
-const char kGestureDeletion[] = "gesture-deletion";
-const char kGestureDeletionEnabled[] = "enabled";
-const char kGestureDeletionDisabled[] = "disabled";
+const char kGestureEditing[] = "gesture-editing";
+const char kGestureEditingEnabled[] = "enabled";
+const char kGestureEditingDisabled[] = "disabled";
 
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
 const char kFloatingVirtualKeyboard[] = "floating-virtual-keyboard";

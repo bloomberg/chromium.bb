@@ -64,9 +64,7 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
   features->AppendString(
       GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
   features->AppendString(GenerateFeatureFlag(
-      "gestureselection", keyboard::IsGestureSelectionEnabled()));
-  features->AppendString(GenerateFeatureFlag(
-      "gesturedeletion", keyboard::IsGestureDeletionEnabled()));
+      "gestureediting", keyboard::IsGestureEditingEnabled()));
   features->AppendString(GenerateFeatureFlag(
       "materialdesign", keyboard::IsMaterialDesignEnabled()));
   features->AppendString(

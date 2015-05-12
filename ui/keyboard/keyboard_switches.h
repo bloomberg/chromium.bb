@@ -39,23 +39,15 @@ KEYBOARD_EXPORT extern const char kGestureTypingEnabled[];
 // Disables gesture typing for the virtual keyboard.
 KEYBOARD_EXPORT extern const char kGestureTypingDisabled[];
 
-// Gesture selection for the virtual keyboard.
-KEYBOARD_EXPORT extern const char kGestureSelection[];
+// Controls the appearance of the settings option to enable gesture editing
+// for the virtual keyboard.
+KEYBOARD_EXPORT extern const char kGestureEditing[];
 
-// Enables gesture selection for the virtual keyboard.
-KEYBOARD_EXPORT extern const char kGestureSelectionEnabled[];
+// Enables gesture editing for the virtual keyboard.
+KEYBOARD_EXPORT extern const char kGestureEditingEnabled[];
 
-// Disables gesture selection for the virtual keyboard.
-KEYBOARD_EXPORT extern const char kGestureSelectionDisabled[];
-
-// Gesture deletion for the virtual keyboard.
-KEYBOARD_EXPORT extern const char kGestureDeletion[];
-
-// Enables gesture deletion for the virtual keyboard.
-KEYBOARD_EXPORT extern const char kGestureDeletionEnabled[];
-
-// Disables gesture deletion for the virtual keyboard.
-KEYBOARD_EXPORT extern const char kGestureDeletionDisabled[];
+// Disables gesture editing for the virtual keyboard.
+KEYBOARD_EXPORT extern const char kGestureEditingDisabled[];
 
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
