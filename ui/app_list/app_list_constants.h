@@ -82,6 +82,7 @@ APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 
 APP_LIST_EXPORT extern const char kPageOpenedHistogram[];
 APP_LIST_EXPORT extern const char kSearchResultOpenDisplayTypeHistogram[];
+APP_LIST_EXPORT extern const char kSearchQueryLength[];
 
 #if defined(OS_LINUX)
 // The WM_CLASS name for the app launcher window on Linux.

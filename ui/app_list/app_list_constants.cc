@@ -128,6 +128,10 @@ const char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
 const char kSearchResultOpenDisplayTypeHistogram[] =
     "Apps.AppListSearchResultOpenDisplayType";
 
+// The UMA histogram that logs how long the search query was when a result was
+// opened.
+const char kSearchQueryLength[] = "Apps.AppListSearchQueryLength";
+
 #if defined(OS_LINUX)
 #if defined(GOOGLE_CHROME_BUILD)
 const char kAppListWMClass[] = "chrome_app_list";
