@@ -4,7 +4,5 @@
 
 // https://html.spec.whatwg.org/#the-picture-element
 
-[
-    RuntimeEnabled=Picture
-] interface HTMLPictureElement : HTMLElement {
+interface HTMLPictureElement : HTMLElement {
 };

@@ -109,7 +109,6 @@ PagePopup status=stable
 PathOpsSVGClipping
 Permissions status=stable
 PointerEvent
-Picture status=stable
 PreciseMemoryInfo
 // This feature is deprecated and replaced by EncryptedMedia.
 // See http://crbug.com/451117 for current status.

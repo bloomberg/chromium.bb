@@ -372,7 +372,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
         document().mediaQueryMatcher().addViewportListener(m_listener);
 
     bool imageWasModified = false;
-    if (RuntimeEnabledFeatures::pictureEnabled() && document().isActive()) {
+    if (document().isActive()) {
         ImageCandidate candidate = findBestFitImageFromPictureParent();
         if (!candidate.isEmpty()) {
             setBestFitURLAndDPRFromImageCandidate(candidate);
@@ -649,16 +649,14 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
         return;
 
     bool foundURL = false;
-    if (RuntimeEnabledFeatures::pictureEnabled()) {
-        ImageCandidate candidate = findBestFitImageFromPictureParent();
-        if (!candidate.isEmpty()) {
-            setBestFitURLAndDPRFromImageCandidate(candidate);
-            foundURL = true;
-        }
+    ImageCandidate candidate = findBestFitImageFromPictureParent();
+    if (!candidate.isEmpty()) {
+        setBestFitURLAndDPRFromImageCandidate(candidate);
+        foundURL = true;
     }
 
     if (!foundURL) {
-        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), sourceSize(*this), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
+        candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), sourceSize(*this), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
         setBestFitURLAndDPRFromImageCandidate(candidate);
     }
     if (m_intrinsicSizingViewportDependant && !m_listener) {

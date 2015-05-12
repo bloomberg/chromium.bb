@@ -249,8 +249,6 @@ private:
     template<typename NameType>
     void processSourceAttribute(const NameType& attributeName, const String& attributeValue)
     {
-        if (!RuntimeEnabledFeatures::pictureEnabled())
-            return;
         if (match(attributeName, srcsetAttr) && m_srcsetImageCandidate.isEmpty()) {
             m_srcsetAttributeValue = attributeValue;
             m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), m_sourceSize, attributeValue);
@@ -524,7 +522,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             }
         }
 
-        if (RuntimeEnabledFeatures::pictureEnabled() && (match(tagImpl, pictureTag))) {
+        if (match(tagImpl, pictureTag)) {
             m_inPicture = true;
             m_pictureSourceURL = String();
             return;
