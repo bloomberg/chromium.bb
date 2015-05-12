@@ -205,13 +205,7 @@ bool ExtensionApiTest::RunExtensionTestIncognitoNoFileAccess(
 }
 
 bool ExtensionApiTest::ExtensionSubtestsAreSkipped() {
-  // See http://crbug.com/177163 for details.
-#if defined(OS_WIN) && !defined(NDEBUG)
-  LOG(WARNING) << "Workaround for 177163, prematurely returning";
-  return true;
-#else
   return false;
-#endif
 }
 
 bool ExtensionApiTest::RunExtensionSubtest(const std::string& extension_name,
