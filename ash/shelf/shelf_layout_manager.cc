@@ -859,6 +859,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Rect(0, 0,
                 shelf_width - status_size.width(),
                 target_bounds->shelf_bounds_in_root.height()));
+
+  non_shelf_bounds_ = available_bounds;
+  non_shelf_bounds_.Subtract(target_bounds->shelf_bounds_in_root);
 }
 
 void ShelfLayoutManager::UpdateTargetBoundsForGesture(

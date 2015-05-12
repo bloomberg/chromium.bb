@@ -170,6 +170,19 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
       kShellWindowId_DockedContainer);
   docked_container->AddChild(window.get());
 
+  // Left-side dock should not affect popup alignment
+  EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
+  EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
+  EXPECT_FALSE(alignment_delegate()->IsTopDown());
+  EXPECT_FALSE(alignment_delegate()->IsFromLeft());
+
+  // Force dock to right-side
+  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,
+                                          Shell::GetPrimaryRootWindow());
+  Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM,
+                                          Shell::GetPrimaryRootWindow());
+
+  // Right-side dock should not affect popup alignment
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
   EXPECT_FALSE(alignment_delegate()->IsTopDown());

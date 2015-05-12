@@ -121,6 +121,9 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns the docked area bounds.
   const gfx::Rect& dock_bounds() const { return dock_bounds_; }
 
+  // Returns the bounds within the root window not occupied by the shelf.
+  const gfx::Rect& non_shelf_bounds() const { return non_shelf_bounds_; }
+
   // Stops any animations and sets the bounds of the shelf and status
   // widgets.
   void LayoutShelf();
@@ -398,6 +401,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The bounds of the dock.
   gfx::Rect dock_bounds_;
+
+  // The bounds within the root window not occupied by the shelf.
+  gfx::Rect non_shelf_bounds_;
 
   // The show hide animation duration override or 0 for default.
   int duration_override_in_ms_;
