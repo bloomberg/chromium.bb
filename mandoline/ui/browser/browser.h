@@ -61,8 +61,6 @@ class Browser : public mojo::ApplicationDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
 
-  void LayoutContent();
-
   scoped_ptr<window_manager::WindowManagerApp> window_manager_app_;
 
   // Only support being embedded once, so both application-level

@@ -20,6 +20,9 @@ class BrowserUI {
   static BrowserUI* Create(Browser* browser, mojo::Shell* shell);
 
   // Called when the Browser UI is embedded within the specified view.
+  // BrowserUI is destroyed prior to |root| being destroyed. That is, the
+  // BrowserUI implementations can assume |root| is never deleted out from under
+  // them.
   virtual void Init(mojo::View* root, mojo::View* content) = 0;
 };
 

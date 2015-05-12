@@ -31,6 +31,11 @@ base::WeakPtr<Browser> Browser::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+// Convenience method:
+void Browser::ReplaceContentWithURL(const mojo::String& url) {
+  Embed(url, nullptr, nullptr);
+}
+
 void Browser::Initialize(mojo::ApplicationImpl* app) {
   window_manager_app_->Initialize(app);
   ui_.reset(BrowserUI::Create(this, app->shell()));
@@ -94,6 +99,12 @@ void Browser::OnEmbed(
     Embed(default_url_, services.Pass(), exposed_services.Pass());
 }
 
+void Browser::OnViewManagerDisconnected(
+    mojo::ViewManager* view_manager) {
+  ui_.reset();
+  root_ = nullptr;
+}
+
 void Browser::Embed(const mojo::String& url,
                     mojo::InterfaceRequest<mojo::ServiceProvider> services,
                     mojo::ServiceProviderPtr exposed_services) {
@@ -123,16 +134,6 @@ void Browser::OnAcceleratorPressed(mojo::View* view,
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<mojo::NavigatorHost> request) {
   navigator_host_.Bind(request.Pass());
-}
-
-void Browser::OnViewManagerDisconnected(
-    mojo::ViewManager* view_manager) {
-  root_ = nullptr;
-}
-
-// Convenience method:
-void Browser::ReplaceContentWithURL(const mojo::String& url) {
-  Embed(url, nullptr, nullptr);
 }
 
 }  // namespace mandoline

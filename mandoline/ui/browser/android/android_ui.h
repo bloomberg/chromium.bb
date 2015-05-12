@@ -6,6 +6,7 @@
 #define MANDOLINE_UI_BROWSER_ANDROID_ANDROID_UI_H_
 
 #include "base/macros.h"
+#include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/ui/browser/browser_ui.h"
 
 namespace mojo {
@@ -17,7 +18,8 @@ namespace mandoline {
 
 class Browser;
 
-class AndroidUI : public BrowserUI {
+class AndroidUI : public BrowserUI,
+                  public mojo::ViewObserver {
  public:
   AndroidUI(Browser* browser, mojo::Shell* shell);
   ~AndroidUI() override;
@@ -25,6 +27,11 @@ class AndroidUI : public BrowserUI {
  private:
   // Overridden from BrowserUI:
   void Init(mojo::View* root, mojo::View* content) override;
+
+  // Overriden from mojo::ViewObserver:
+  virtual void OnViewBoundsChanged(mojo::View* view,
+                                   const mojo::Rect& old_bounds,
+                                   const mojo::Rect& new_bounds) override;
 
   Browser* browser_;
   mojo::Shell* shell_;
