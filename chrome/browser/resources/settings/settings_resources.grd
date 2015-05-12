@@ -115,6 +115,9 @@
       <structure name="IDR_SETTINGS_PREF_TRACKER_JS"
                  file="pref_tracker/pref_tracker.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_POLYMER_CONFIG_JS"
+                 file="polymer_config.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ROUTES_HTML"
                  file="routes.html"
                  type="chrome_html" />
