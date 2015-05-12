@@ -101,8 +101,9 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   child_write_fd_.Set(child_write);
 
   // Have the child inherit the write half.
-  if (!SetHandleInformation(child_write, HANDLE_FLAG_INHERIT,
-                            HANDLE_FLAG_INHERIT)) {
+  if (!::DuplicateHandle(::GetCurrentProcess(), child_write,
+                         ::GetCurrentProcess(), &child_write, 0, TRUE,
+                         DUPLICATE_SAME_ACCESS)) {
     PLOG(ERROR) << "Failed to enable pipe inheritance";
     return false;
   }
@@ -125,9 +126,11 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   process_ = base::LaunchProcess(python_command, launch_options);
   if (!process_.IsValid()) {
     LOG(ERROR) << "Failed to launch " << python_command.GetCommandLineString();
+    ::CloseHandle(child_write);
     return false;
   }
 
+  ::CloseHandle(child_write);
   return true;
 }
 
