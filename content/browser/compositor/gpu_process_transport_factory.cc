@@ -108,6 +108,9 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
     raster_thread_.reset(new RasterThread(task_graph_runner_.get()));
     raster_thread_->Start();
   }
+#if defined(OS_WIN)
+  software_backing_.reset(new OutputDeviceBacking);
+#endif
 }
 
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
@@ -130,11 +133,12 @@ GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
   return CreateContextCommon(gpu_channel_host, 0);
 }
 
-scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
+scoped_ptr<cc::SoftwareOutputDevice>
+GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
 #if defined(OS_WIN)
-  return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceWin(
-      compositor));
+  return scoped_ptr<cc::SoftwareOutputDevice>(
+      new SoftwareOutputDeviceWin(software_backing_.get(), compositor));
 #elif defined(USE_OZONE)
   return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceOzone(
       compositor));

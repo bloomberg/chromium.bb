@@ -22,6 +22,7 @@ class Thread;
 }
 
 namespace cc {
+class SoftwareOutputDevice;
 class SurfaceManager;
 }
 
@@ -29,6 +30,7 @@ namespace content {
 class BrowserCompositorOutputSurface;
 class CompositorSwapClient;
 class ContextProviderCommandBuffer;
+class OutputDeviceBacking;
 class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 
@@ -78,6 +80,8 @@ class GpuProcessTransportFactory
   struct PerCompositorData;
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
+  scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
+      ui::Compositor* compositor);
   void EstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
                              bool create_gpu_output_surface,
                              int num_attempts);
@@ -97,6 +101,10 @@ class GpuProcessTransportFactory
   uint32_t next_surface_id_namespace_;
   scoped_ptr<cc::TaskGraphRunner> task_graph_runner_;
   scoped_ptr<base::SimpleThread> raster_thread_;
+
+#if defined(OS_WIN)
+  scoped_ptr<OutputDeviceBacking> software_backing_;
+#endif
 
   // The contents of this map and its methods may only be used on the compositor
   // thread.
