@@ -198,6 +198,8 @@ class CC_EXPORT TilingSetRasterQueueAll {
   // ideal pending high res.
   base::StackVector<IterationStage, 6> stages_;
   TilingIterator iterators_[NUM_ITERATORS];
+
+  DISALLOW_COPY_AND_ASSIGN(TilingSetRasterQueueAll);
 };
 
 }  // namespace cc

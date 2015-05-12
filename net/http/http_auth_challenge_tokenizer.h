@@ -24,6 +24,7 @@ class NET_EXPORT_PRIVATE HttpAuthChallengeTokenizer {
  public:
   HttpAuthChallengeTokenizer(std::string::const_iterator begin,
                              std::string::const_iterator end);
+  ~HttpAuthChallengeTokenizer();
 
   // Get the original text.
   std::string challenge_text() const {

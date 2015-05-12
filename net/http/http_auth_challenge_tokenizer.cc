@@ -20,6 +20,9 @@ HttpAuthChallengeTokenizer::HttpAuthChallengeTokenizer(
   Init(begin, end);
 }
 
+HttpAuthChallengeTokenizer::~HttpAuthChallengeTokenizer() {
+}
+
 HttpUtil::NameValuePairsIterator HttpAuthChallengeTokenizer::param_pairs()
     const {
   return HttpUtil::NameValuePairsIterator(params_begin_, params_end_, ',');
