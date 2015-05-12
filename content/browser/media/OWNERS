@@ -11,3 +11,6 @@ per-file midi_*=toyoshim@chromium.org
 
 # For changes related to the tab media indicators.
 per-file audio_stream_monitor*=miu@chromium.org
+
+# For WebRTC browser tests, etc.
+per-file *webrtc*browsertest*=phoglund@chromium.org
