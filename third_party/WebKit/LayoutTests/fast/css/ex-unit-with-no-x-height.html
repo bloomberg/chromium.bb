@@ -27,13 +27,15 @@
 window.jsTestIsAsync = true;
 
 function measureExBox() {
-  return getComputedStyle(document.getElementById('ex')).width;
+  return parseInt(getComputedStyle(document.getElementById('ex')).width);
 }
 
 window.onload = function() {
-  description("This test ensures that the CSS 'ex' unit is treated as half the size of the CSS 'em' unit when a font has no x-height information.");
+  description("This test ensures that the CSS 'ex' unit is treated as half the size of the CSS 'em' unit when a font has no x-height information, or an x-height is synthesized.");
 
-  shouldBe("measureExBox();", "'50px'");
+  // We should either synthesize an xHeight or use half of the 'em' unit, but not 0.
+  // http://dev.w3.org/csswg/css-values-3/#font-relative-lengths
+  shouldBeGreaterThan("measureExBox()", "0");
   finishJSTest();
 }
 </script>
