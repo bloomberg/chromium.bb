@@ -56,27 +56,6 @@ class ServiceRuntime {
   void StartSelLdr(const SelLdrStartParams& params,
                    pp::CompletionCallback callback);
 
-  // If starting sel_ldr from a background thread, wait for sel_ldr to
-  // actually start. Returns |false| if timed out waiting for the process
-  // to start. Otherwise, returns |true| if StartSelLdr is complete
-  // (either successfully or unsuccessfully).
-  bool WaitForSelLdrStart();
-
-  // Signal to waiting threads that StartSelLdr is complete (either
-  // successfully or unsuccessfully).
-  void SignalStartSelLdrDone();
-
-  // If starting the nexe from a background thread, wait for the nexe to
-  // actually start. Returns |true| is the nexe started successfully.
-  bool WaitForNexeStart();
-
-  // Returns |true| if WaitForSelLdrStart() timed out.
-  bool SelLdrWaitTimedOut();
-
-  // Signal to waiting threads that LoadNexeAndStart is complete (either
-  // successfully or unsuccessfully).
-  void SignalNexeStarted(bool ok);
-
   // Establish an SrpcClient to the sel_ldr instance and start the nexe.
   // This function must be called on the main thread.
   // This function must only be called once.
@@ -103,14 +82,6 @@ class ServiceRuntime {
   bool main_service_runtime_;
   bool uses_nonsfi_mode_;
   nacl::scoped_ptr<SelLdrLauncherChrome> subprocess_;
-
-  // Mutex and CondVar to protect start_sel_ldr_done_ and nexe_started_.
-  NaClMutex mu_;
-  NaClCondVar cond_;
-  bool start_sel_ldr_done_;
-  bool sel_ldr_wait_timed_out_;
-  bool start_nexe_done_;
-  bool nexe_started_ok_;
 
   NaClHandle bootstrap_channel_;
 };

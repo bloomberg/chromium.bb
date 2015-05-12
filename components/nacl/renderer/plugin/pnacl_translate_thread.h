@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "components/nacl/renderer/plugin/plugin_error.h"
-#include "components/nacl/renderer/plugin/service_runtime.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -26,9 +25,7 @@ class DescWrapper;
 namespace plugin {
 
 class NaClSubprocess;
-class Plugin;
 class PnaclCoordinator;
-class PnaclResources;
 class TempFile;
 
 class PnaclTranslateThread {
@@ -36,19 +33,32 @@ class PnaclTranslateThread {
   PnaclTranslateThread();
   ~PnaclTranslateThread();
 
-  // Start the translation process. It will continue to run and consume data
-  // as it is passed in with PutBytes.
-  void RunTranslate(const pp::CompletionCallback& finish_callback,
-                    const std::vector<TempFile*>* obj_files,
-                    int num_threads,
-                    TempFile* nexe_file,
-                    nacl::DescWrapper* invalid_desc_wrapper,
-                    ErrorInfo* error_info,
-                    PnaclResources* resources,
-                    PP_PNaClOptions* pnacl_options,
-                    const std::string& architecture_attributes,
-                    PnaclCoordinator* coordinator,
-                    Plugin* plugin);
+  // Set up the state for RunCompile and RunLink. When an error is
+  // encountered, or RunLink is complete the finish_callback is run
+  // to notify the main thread.
+  void SetupState(const pp::CompletionCallback& finish_callback,
+                  NaClSubprocess* compiler_subprocess,
+                  NaClSubprocess* ld_subprocess,
+                  const std::vector<TempFile*>* obj_files,
+                  int num_threads,
+                  TempFile* nexe_file,
+                  nacl::DescWrapper* invalid_desc_wrapper,
+                  ErrorInfo* error_info,
+                  PP_PNaClOptions* pnacl_options,
+                  const std::string& architecture_attributes,
+                  PnaclCoordinator* coordinator);
+
+  // Create a compile thread and run/command the compiler_subprocess.
+  // It will continue to run and consume data as it is passed in with PutBytes.
+  // On success, runs compile_finished_callback.
+  // On error, runs finish_callback.
+  // The compiler_subprocess must already be loaded.
+  void RunCompile(const pp::CompletionCallback& compile_finished_callback);
+
+  // Create a link thread and run/command the ld_subprocess.
+  // On completion (success or error), runs finish_callback.
+  // The ld_subprocess must already be loaded.
+  void RunLink();
 
   // Kill the llc and/or ld subprocesses. This happens by closing the command
   // channel on the plugin side, which causes the trusted code in the nexe to
@@ -67,37 +77,49 @@ class PnaclTranslateThread {
 
   int64_t GetCompileTime() const { return compile_time_; }
 
-  // Returns true if RunTranslate() has been called, false otherwise.
-  bool started() const { return plugin_ != NULL; }
+  // Returns true if the translation process is initiated via SetupState.
+  bool started() const { return coordinator_ != NULL; }
 
  private:
-  // Helper thread entry point for translation. Takes a pointer to
-  // PnaclTranslateThread and calls DoTranslate().
-  static void WINAPI DoTranslateThread(void* arg);
-  // Runs the streaming translation. Called from the helper thread.
-  void DoTranslate() ;
+  // Helper thread entry point for compilation. Takes a pointer to
+  // PnaclTranslateThread and calls DoCompile().
+  static void WINAPI DoCompileThread(void* arg);
+  // Runs the streaming compilation. Called from the helper thread.
+  void DoCompile();
+
+  // Similar to DoCompile*, but for linking.
+  static void WINAPI DoLinkThread(void* arg);
+  void DoLink();
+
   // Signal that Pnacl translation failed, from the translation thread only.
   void TranslateFailed(PP_NaClError err_code,
                        const std::string& error_string);
-  // Run the LD subprocess, returning true on success.
-  // On failure, it returns false and runs the callback.
-  bool RunLdSubprocess();
 
+  // Callback to run when compile is completed and linking can start.
+  pp::CompletionCallback compile_finished_callback_;
 
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
 
   nacl::scoped_ptr<NaClThread> translate_thread_;
 
-  // Used to guard compiler_subprocess and ld_subprocess
+  // Used to guard compiler_subprocess, ld_subprocess,
+  // compiler_subprocess_active_, and ld_subprocess_active_
+  // (touched by the main thread and the translate thread).
   struct NaClMutex subprocess_mu_;
-  nacl::scoped_ptr<NaClSubprocess> compiler_subprocess_;
-  nacl::scoped_ptr<NaClSubprocess> ld_subprocess_;
-  // Used to ensure the subprocesses don't get shutdown more than once.
+  // The compiler_subprocess and ld_subprocess memory is owned by the
+  // coordinator so we do not delete them. However, the main thread delegates
+  // shutdown to this thread, since this thread may still be accessing the
+  // subprocesses. The *_subprocess_active flags indicate which subprocesses
+  // are active to ensure the subprocesses don't get shutdown more than once.
+  // The subprocess_mu_ must be held when shutting down the subprocesses
+  // or checking if it's already shut down (via the active flags).
+  // There are some accesses to the subprocesses without locks held
+  // (invoking SRPC methods client).
+  NaClSubprocess* compiler_subprocess_;
+  NaClSubprocess* ld_subprocess_;
   bool compiler_subprocess_active_;
   bool ld_subprocess_active_;
-
-  bool subprocesses_aborted_;
 
   // Condition variable to synchronize communication with the SRPC thread.
   // SRPC thread waits on this condvar if data_buffers_ is empty (meaning
@@ -121,11 +143,9 @@ class PnaclTranslateThread {
   TempFile* nexe_file_;
   nacl::DescWrapper* invalid_desc_wrapper_;
   ErrorInfo* coordinator_error_info_;
-  PnaclResources* resources_;
   PP_PNaClOptions* pnacl_options_;
   std::string architecture_attributes_;
   PnaclCoordinator* coordinator_;
-  Plugin* plugin_;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclTranslateThread);
 };

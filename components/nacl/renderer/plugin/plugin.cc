@@ -38,76 +38,10 @@ void Plugin::ShutDownSubprocesses() {
                  static_cast<void*>(this)));
 }
 
-bool Plugin::LoadHelperNaClModuleInternal(NaClSubprocess* subprocess,
-                                          const SelLdrStartParams& params) {
-  CHECK(!pp::Module::Get()->core()->IsMainThread());
-  ServiceRuntime* service_runtime =
-      new ServiceRuntime(this,
-                         pp_instance(),
-                         false,  // No main_service_runtime.
-                         false);  // No non-SFI mode (i.e. in SFI-mode).
-
-  // Now start the SelLdr instance.  This must be created on the main thread.
-  bool service_runtime_started = false;
-  pp::CompletionCallback sel_ldr_callback =
-      callback_factory_.NewCallback(&Plugin::SignalStartSelLdrDone,
-                                    &service_runtime_started,
-                                    service_runtime);
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&Plugin::StartSelLdrOnMainThread,
-                                    service_runtime, params,
-                                    sel_ldr_callback);
-  pp::Module::Get()->core()->CallOnMainThread(0, callback, 0);
-  if (!service_runtime->WaitForSelLdrStart()) {
-    PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule "
-                   "WaitForSelLdrStart timed out!\n"));
-    service_runtime->Shutdown();
-    // Don't delete service_runtime here; it could still be used by the pending
-    // SignalStartSelLdrDone callback.
-    return false;
-  }
-  PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule (service_runtime_started=%d)\n",
-                 service_runtime_started));
-  if (!service_runtime_started) {
-    service_runtime->Shutdown();
-    delete service_runtime;
-    return false;
-  }
-
-  // Now actually start the nexe.
-  //
-  // We can't use pp::BlockUntilComplete() inside an in-process plugin, so we
-  // have to roll our own blocking logic, similar to WaitForSelLdrStart()
-  // above, except without timeout logic.
-  pp::Module::Get()->core()->CallOnMainThread(
-      0,
-      callback_factory_.NewCallback(&Plugin::StartNexe, service_runtime));
-  if (!service_runtime->WaitForNexeStart()) {
-    service_runtime->Shutdown();
-    delete service_runtime;
-    return false;
-  }
-  subprocess->set_service_runtime(service_runtime);
-  return true;
-}
-
-void Plugin::StartSelLdrOnMainThread(int32_t pp_error,
-                                     ServiceRuntime* service_runtime,
-                                     const SelLdrStartParams& params,
-                                     pp::CompletionCallback callback) {
-  CHECK(pp_error == PP_OK);
+void Plugin::StartSelLdr(ServiceRuntime* service_runtime,
+                         const SelLdrStartParams& params,
+                         pp::CompletionCallback callback) {
   service_runtime->StartSelLdr(params, callback);
-}
-
-void Plugin::SignalStartSelLdrDone(int32_t pp_error,
-                                   bool* started,
-                                   ServiceRuntime* service_runtime) {
-  if (service_runtime->SelLdrWaitTimedOut()) {
-    delete service_runtime;
-  } else {
-    *started = (pp_error == PP_OK);
-    service_runtime->SignalStartSelLdrDone();
-  }
 }
 
 void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
@@ -142,8 +76,7 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   // callback here for |callback|.
   pp::CompletionCallback callback = callback_factory_.NewCallback(
       &Plugin::StartNexe, service_runtime);
-  StartSelLdrOnMainThread(
-      static_cast<int32_t>(PP_OK), service_runtime, params, callback);
+  StartSelLdr(service_runtime, params, callback);
 }
 
 void Plugin::StartNexe(int32_t pp_error, ServiceRuntime* service_runtime) {
@@ -153,53 +86,43 @@ void Plugin::StartNexe(int32_t pp_error, ServiceRuntime* service_runtime) {
   service_runtime->StartNexe();
 }
 
-NaClSubprocess* Plugin::LoadHelperNaClModule(const std::string& helper_url,
-                                             PP_NaClFileInfo file_info,
-                                             ErrorInfo* error_info) {
-  nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
-      new NaClSubprocess("helper module", NULL, NULL));
-  if (NULL == nacl_subprocess.get()) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_INIT,
-                          "unable to allocate helper subprocess.");
-    return NULL;
-  }
-
+void Plugin::LoadHelperNaClModule(const std::string& helper_url,
+                                  PP_NaClFileInfo file_info,
+                                  NaClSubprocess* subprocess_to_init,
+                                  pp::CompletionCallback callback) {
+  CHECK(pp::Module::Get()->core()->IsMainThread());
   // Do not report UMA stats for translator-related nexes.
   // TODO(sehr): define new UMA stats for translator related nexe events.
-  // NOTE: The PNaCl translator nexes are not built to use the IRT.  This is
-  // done to save on address space and swap space.
   SelLdrStartParams params(helper_url,
                            file_info,
                            PP_PNACL_TRANSLATOR_PROCESS_TYPE);
+  ServiceRuntime* service_runtime =
+      new ServiceRuntime(this, pp_instance(),
+                         false,   // Not main_service_runtime.
+                         false);  // No non-SFI mode (i.e. in SFI-mode).
+  subprocess_to_init->set_service_runtime(service_runtime);
+  pp::CompletionCallback sel_ldr_callback = callback_factory_.NewCallback(
+      &Plugin::StartHelperNexe, subprocess_to_init, callback);
+  StartSelLdr(service_runtime, params, sel_ldr_callback);
+}
 
-  // Helper NaCl modules always use the PNaCl manifest, as there is no
-  // corresponding NMF.
-  if (!LoadHelperNaClModuleInternal(nacl_subprocess.get(), params))
-    return NULL;
-
-  // We can block here in StartSrpcServices, since helper NaCl
-  // modules are spawned from a private thread.
-  //
-  // TODO(bsy): if helper module crashes, we should abort.
-  // crash_cb is not used here, so we are relying on crashes
-  // being detected in StartSrpcServices or later.
-  //
-  // NB: More refactoring might be needed, however, if helper
-  // NaCl modules have their own manifest.  Currently the
-  // manifest is a per-plugin-instance object, not a per
-  // NaClSubprocess object.
-  if (!nacl_subprocess->StartSrpcServices()) {
-    error_info->SetReport(PP_NACL_ERROR_SRPC_CONNECTION_FAIL,
-                          "SRPC connection failure for " +
-                          nacl_subprocess->description());
-    return NULL;
+void Plugin::StartHelperNexe(int32_t pp_error,
+                             NaClSubprocess* subprocess_to_init,
+                             pp::CompletionCallback callback) {
+  CHECK(pp::Module::Get()->core()->IsMainThread());
+  if (pp_error != PP_OK) {
+    callback.RunAndClear(pp_error);
+    return;
   }
-
-  PLUGIN_PRINTF(("Plugin::LoadHelperNaClModule (%s, %s)\n",
-                 helper_url.c_str(),
-                 nacl_subprocess.get()->detailed_description().c_str()));
-
-  return nacl_subprocess.release();
+  // TODO(jvoung): This operation blocks. That's bad because this is the
+  // main thread. However, we could make it so that StartHelperNexe isn't
+  // called until the blocking is minimized. There is a hook in
+  // sel_main_chrome which indicates when the nexe load is done. If we hook
+  // up that hook to StartSelLdr's callback, then we'll only
+  // call StartNexe once the nexe load is done instead of blocking here
+  // until the nexe load is done.
+  subprocess_to_init->service_runtime()->StartNexe();
+  callback.RunAndClear(PP_OK);
 }
 
 // All failures of this function will show up as "Missing Plugin-in", so

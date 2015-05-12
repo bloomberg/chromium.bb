@@ -80,22 +80,21 @@ class Plugin : public pp::Instance {
   // should include a time-out at which point we declare the
   // nacl_ready_state to be done, and let the normal crash detection
   // mechanism(s) take over.
-  // Please note that a call to this function takes over ownership of the
-  // file_info pointer.
+  // This function takes over ownership of the file_info.
   void LoadNaClModule(PP_NaClFileInfo file_info,
                       bool uses_nonsfi_mode,
                       PP_NaClAppProcessType process_type);
 
   // Load support.
   // A helper SRPC NaCl module can be loaded given a PP_NaClFileInfo.
-  // Blocks until the helper module signals initialization is done.
   // Does not update nacl_module_origin().
-  // Returns NULL or the NaClSubprocess of the new helper NaCl module.
-  // Please note that a call to this function takes over ownership of the
-  // file_info pointer.
-  NaClSubprocess* LoadHelperNaClModule(const std::string& helper_url,
-                                       PP_NaClFileInfo file_info,
-                                       ErrorInfo* error_info);
+  // Uses the given NaClSubprocess to contain the new SelLdr process.
+  // The given callback is called when the loading is complete.
+  // This function takes over ownership of the file_info.
+  void LoadHelperNaClModule(const std::string& helper_url,
+                            PP_NaClFileInfo file_info,
+                            NaClSubprocess* subprocess_to_init,
+                            pp::CompletionCallback callback);
 
   // Report an error that was encountered while loading a module.
   void ReportLoadError(const ErrorInfo& error_info);
@@ -114,28 +113,18 @@ class Plugin : public pp::Instance {
   // in this order, for the main nacl subprocess.
   void ShutDownSubprocesses();
 
-  // Loads and starts a helper (e.g. llc, ld) NaCl module.
-  // Only to be used from a background (non-main) thread for the PNaCl
-  // translator. This will fully initialize the |subprocess| if the load was
-  // successful.
-  bool LoadHelperNaClModuleInternal(NaClSubprocess* subprocess,
-                                    const SelLdrStartParams& params);
-
-  // Start sel_ldr from the main thread, given the start params.
-  // |pp_error| is set by CallOnMainThread (should be PP_OK).
-  void StartSelLdrOnMainThread(int32_t pp_error,
-                               ServiceRuntime* service_runtime,
-                               const SelLdrStartParams& params,
-                               pp::CompletionCallback callback);
-
-  // Signals that StartSelLdr has finished.
-  // This is invoked on the main thread.
-  void SignalStartSelLdrDone(int32_t pp_error,
-                             bool* started,
-                             ServiceRuntime* service_runtime);
+  // Start sel_ldr given the start params. This is invoked on the main thread.
+  void StartSelLdr(ServiceRuntime* service_runtime,
+                   const SelLdrStartParams& params,
+                   pp::CompletionCallback callback);
 
   // This is invoked on the main thread.
   void StartNexe(int32_t pp_error, ServiceRuntime* service_runtime);
+
+  // Continuation for LoadHelperNaClModule. This is invoked on the main thread.
+  void StartHelperNexe(int32_t pp_error,
+                       NaClSubprocess* subprocess_to_init,
+                       pp::CompletionCallback callback);
 
   // Callback used when getting the URL for the .nexe file.  If the URL loading
   // is successful, the file descriptor is opened and can be passed to sel_ldr

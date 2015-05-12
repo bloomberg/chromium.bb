@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
-#include "components/nacl/renderer/plugin/pnacl_resources.h"
 #include "components/nacl/renderer/plugin/sel_ldr_launcher_chrome.h"
 #include "components/nacl/renderer/plugin/srpc_client.h"
 #include "components/nacl/renderer/plugin/utility.h"
@@ -26,9 +25,6 @@
 #include "native_client/src/public/imc_types.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/platform/nacl_sync.h"
-#include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/shared/platform/nacl_sync_raii.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/pp_errors.h"
@@ -45,14 +41,8 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       pp_instance_(pp_instance),
       main_service_runtime_(main_service_runtime),
       uses_nonsfi_mode_(uses_nonsfi_mode),
-      start_sel_ldr_done_(false),
-      sel_ldr_wait_timed_out_(false),
-      start_nexe_done_(false),
-      nexe_started_ok_(false),
       bootstrap_channel_(NACL_INVALID_HANDLE) {
   NaClSrpcChannelInitialize(&command_channel_);
-  NaClXMutexCtor(&mu_);
-  NaClXCondVarCtor(&cond_);
 }
 
 bool ServiceRuntime::SetupCommandChannel() {
@@ -107,67 +97,11 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
   subprocess_.reset(tmp_subprocess.release());
 }
 
-bool ServiceRuntime::WaitForSelLdrStart() {
-  // Time to wait on condvar (for browser to create a new sel_ldr process on
-  // our behalf). Use 6 seconds to be *fairly* conservative.
-  //
-  // On surfaway, the CallOnMainThread above may never get scheduled
-  // to unblock this condvar, or the IPC reply from the browser to renderer
-  // might get canceled/dropped. However, it is currently important to
-  // avoid waiting indefinitely because ~PnaclCoordinator will attempt to
-  // join() the PnaclTranslateThread, and the PnaclTranslateThread is waiting
-  // for the signal before exiting.
-  static int64_t const kWaitTimeMicrosecs = 6 * NACL_MICROS_PER_UNIT;
-  int64_t left_to_wait = kWaitTimeMicrosecs;
-  int64_t deadline = NaClGetTimeOfDayMicroseconds() + left_to_wait;
-  nacl::MutexLocker take(&mu_);
-  while(!start_sel_ldr_done_ && left_to_wait > 0) {
-    struct nacl_abi_timespec left_timespec;
-    left_timespec.tv_sec = left_to_wait / NACL_MICROS_PER_UNIT;
-    left_timespec.tv_nsec =
-        (left_to_wait % NACL_MICROS_PER_UNIT) * NACL_NANOS_PER_MICRO;
-    NaClXCondVarTimedWaitRelative(&cond_, &mu_, &left_timespec);
-    int64_t now = NaClGetTimeOfDayMicroseconds();
-    left_to_wait = deadline - now;
-  }
-  if (left_to_wait <= 0)
-    sel_ldr_wait_timed_out_ = true;
-  return start_sel_ldr_done_;
-}
-
-void ServiceRuntime::SignalStartSelLdrDone() {
-  nacl::MutexLocker take(&mu_);
-  start_sel_ldr_done_ = true;
-  NaClXCondVarSignal(&cond_);
-}
-
-bool ServiceRuntime::SelLdrWaitTimedOut() {
-  nacl::MutexLocker take(&mu_);
-  return sel_ldr_wait_timed_out_;
-}
-
-bool ServiceRuntime::WaitForNexeStart() {
-  nacl::MutexLocker take(&mu_);
-  while (!start_nexe_done_)
-    NaClXCondVarWait(&cond_, &mu_);
-  return nexe_started_ok_;
-}
-
-void ServiceRuntime::SignalNexeStarted(bool ok) {
-  nacl::MutexLocker take(&mu_);
-  start_nexe_done_ = true;
-  nexe_started_ok_ = ok;
-  NaClXCondVarSignal(&cond_);
-}
-
 void ServiceRuntime::StartNexe() {
   bool ok = SetupCommandChannel();
   if (ok) {
     NaClLog(4, "ServiceRuntime::StartNexe (success)\n");
   }
-  // This only matters if a background thread is waiting, but we signal in all
-  // cases to simplify the code.
-  SignalNexeStarted(ok);
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
@@ -184,7 +118,7 @@ SrpcClient* ServiceRuntime::SetupAppChannel() {
     NaClLog(LOG_ERROR, "ServiceRuntime::SetupAppChannel (connect failed)\n");
     return NULL;
   } else {
-    NaClLog(4, "ServiceRuntime::SetupAppChannel (conect_desc=%p)\n",
+    NaClLog(4, "ServiceRuntime::SetupAppChannel (connect_desc=%p)\n",
             static_cast<void*>(connect_desc));
     SrpcClient* srpc_client = SrpcClient::New(connect_desc);
     NaClLog(4, "ServiceRuntime::SetupAppChannel (srpc_client=%p)\n",
@@ -213,9 +147,6 @@ ServiceRuntime::~ServiceRuntime() {
           static_cast<void*>(this));
   // We do this just in case Shutdown() was not called.
   subprocess_.reset(NULL);
-
-  NaClCondVarDtor(&cond_);
-  NaClMutexDtor(&mu_);
 }
 
 }  // namespace plugin

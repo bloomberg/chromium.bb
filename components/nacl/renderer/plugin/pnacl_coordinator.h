@@ -32,13 +32,13 @@ class TempFile;
 //     PnaclCoordinator* coord = BitcodeToNative(plugin,
 //                                               "http://foo.com/my.pexe",
 //                                               pnacl_options,
-//                                               TranslateNotifyCallback);
-// (2) TranslateNotifyCallback gets invoked when translation is complete.
+//                                               translate_notify_callback);
+// (2) translate_notify_callback gets invoked when translation is complete.
 //     If the translation was successful, the pp_error argument is PP_OK.
 //     Other values indicate errors.
 // (3) After finish_callback runs, get the file descriptor of the translated
 //     nexe, e.g.,
-//     fd = coord->ReleaseTranslatedFD();
+//     fd = coord->TakeTranslatedFileHandle();
 // (4) Load the nexe from "fd".
 // (5) delete coord.
 //
@@ -106,7 +106,10 @@ class PnaclCoordinator {
   // Once llc and ld nexes have been loaded and the two temporary files have
   // been created, this starts the translation.  Translation starts two
   // subprocesses, one for llc and one for ld.
-  void RunTranslate(int32_t pp_error);
+  void LoadCompiler();
+  void RunCompile(int32_t pp_error, int64_t compile_load_start_time);
+  void LoadLinker(int32_t pp_error);
+  void RunLink(int32_t pp_error, int64_t ld_load_start_time);
 
   // Invoked when translation is finished.
   void TranslateFinished(int32_t pp_error);
@@ -148,6 +151,8 @@ class PnaclCoordinator {
 
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
   nacl::scoped_ptr<PnaclResources> resources_;
+  NaClSubprocess compiler_subprocess_;
+  NaClSubprocess ld_subprocess_;
 
   // The URL for the pexe file.
   std::string pexe_url_;

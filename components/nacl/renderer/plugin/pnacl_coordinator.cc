@@ -97,6 +97,8 @@ PnaclCoordinator::PnaclCoordinator(
       plugin_(plugin),
       translate_notify_callback_(translate_notify_callback),
       translation_finished_reported_(false),
+      compiler_subprocess_("compiler.nexe", NULL, NULL),
+      ld_subprocess_("linker.nexe", NULL, NULL),
       pexe_url_(pexe_url),
       pnacl_options_(pnacl_options),
       architecture_attributes_(GetArchitectureAttributes(plugin)),
@@ -328,7 +330,15 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   temp_nexe_file_.reset(new TempFile(plugin_, nexe_handle));
   // Open the nexe file for connecting ld and sel_ldr.
   // Start translation when done with this last step of setup!
-  RunTranslate(temp_nexe_file_->Open(true));
+  int32_t pp_error = temp_nexe_file_->Open(true);
+  if (pp_error != PP_OK) {
+    ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_CREATE_TEMP,
+        std::string(
+            "PnaclCoordinator: Got bad temp file handle from writing nexe"));
+    return;
+  }
+  LoadCompiler();
 }
 
 void PnaclCoordinator::BitcodeStreamGotData(const void* data, int32_t length) {
@@ -404,20 +414,88 @@ pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
                                        bytes_compiled);
 }
 
-void PnaclCoordinator::RunTranslate(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::RunTranslate (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
+void PnaclCoordinator::LoadCompiler() {
+  PLUGIN_PRINTF(("PnaclCoordinator::LoadCompiler"));
+  int64_t compiler_load_start_time = NaClGetTimeOfDayMicroseconds();
+  pp::CompletionCallback load_finished = callback_factory_.NewCallback(
+      &PnaclCoordinator::RunCompile, compiler_load_start_time);
+  PnaclResources::ResourceType compiler_type = pnacl_options_.use_subzero
+                                                   ? PnaclResources::SUBZERO
+                                                   : PnaclResources::LLC;
+  // Transfer file_info ownership to the sel_ldr launcher.
+  PP_NaClFileInfo file_info = resources_->TakeFileInfo(compiler_type);
+  const std::string& url = resources_->GetUrl(compiler_type);
+  plugin_->LoadHelperNaClModule(url, file_info, &compiler_subprocess_,
+                                load_finished);
+}
+
+void PnaclCoordinator::RunCompile(int32_t pp_error,
+                                  int64_t compiler_load_start_time) {
+  PLUGIN_PRINTF(
+      ("PnaclCoordinator::RunCompile (pp_error=%" NACL_PRId32 ")\n", pp_error));
+  if (pp_error != PP_OK) {
+    ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_LLC_SETUP,
+        "PnaclCoordinator: Compiler process could not be created.");
+    return;
+  }
+  int64_t compiler_load_time_total =
+      NaClGetTimeOfDayMicroseconds() - compiler_load_start_time;
+  GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.LoadCompiler",
+                                       compiler_load_time_total);
+  GetNaClInterface()->LogTranslateTime(
+      pnacl_options_.use_subzero
+          ? "NaCl.Perf.PNaClLoadTime.LoadCompiler.Subzero"
+          : "NaCl.Perf.PNaClLoadTime.LoadCompiler.LLC",
+      compiler_load_time_total);
+
   // Invoke llc followed by ld off the main thread.  This allows use of
   // blocking RPCs that would otherwise block the JavaScript main thread.
   pp::CompletionCallback report_translate_finished =
       callback_factory_.NewCallback(&PnaclCoordinator::TranslateFinished);
-
+  pp::CompletionCallback compile_finished =
+      callback_factory_.NewCallback(&PnaclCoordinator::LoadLinker);
   CHECK(translate_thread_ != NULL);
-  translate_thread_->RunTranslate(report_translate_finished, &obj_files_,
-                                  num_threads_, temp_nexe_file_.get(),
-                                  invalid_desc_wrapper_.get(), &error_info_,
-                                  resources_.get(), &pnacl_options_,
-                                  architecture_attributes_, this, plugin_);
+  translate_thread_->SetupState(
+      report_translate_finished, &compiler_subprocess_, &ld_subprocess_,
+      &obj_files_, num_threads_, temp_nexe_file_.get(),
+      invalid_desc_wrapper_.get(), &error_info_, &pnacl_options_,
+      architecture_attributes_, this);
+  translate_thread_->RunCompile(compile_finished);
+}
+
+void PnaclCoordinator::LoadLinker(int32_t pp_error) {
+  PLUGIN_PRINTF(
+      ("PnaclCoordinator::LoadLinker (pp_error=%" NACL_PRId32 ")\n", pp_error));
+  // Errors in the previous step would have skipped to TranslateFinished
+  // so we only expect PP_OK here.
+  DCHECK(pp_error == PP_OK);
+  if (pp_error != PP_OK) {
+    return;
+  }
+  ErrorInfo error_info;
+  int64_t ld_load_start_time = NaClGetTimeOfDayMicroseconds();
+  pp::CompletionCallback load_finished = callback_factory_.NewCallback(
+      &PnaclCoordinator::RunLink, ld_load_start_time);
+  // Transfer file_info ownership to the sel_ldr launcher.
+  PP_NaClFileInfo ld_file_info = resources_->TakeFileInfo(PnaclResources::LD);
+  plugin_->LoadHelperNaClModule(resources_->GetUrl(PnaclResources::LD),
+                                ld_file_info, &ld_subprocess_, load_finished);
+}
+
+void PnaclCoordinator::RunLink(int32_t pp_error, int64_t ld_load_start_time) {
+  PLUGIN_PRINTF(
+      ("PnaclCoordinator::RunLink (pp_error=%" NACL_PRId32 ")\n", pp_error));
+  if (pp_error != PP_OK) {
+    ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_LD_SETUP,
+        "PnaclCoordinator: Linker process could not be created.");
+    return;
+  }
+  GetNaClInterface()->LogTranslateTime(
+      "NaCl.Perf.PNaClLoadTime.LoadLinker",
+      NaClGetTimeOfDayMicroseconds() - ld_load_start_time);
+  translate_thread_->RunLink();
 }
 
 }  // namespace plugin
