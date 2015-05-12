@@ -7,9 +7,10 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -83,7 +84,7 @@ class CloudPolicyValidatorTest : public testing::Test {
         public_key_bytes.size());
 
     UserCloudPolicyValidator* validator = UserCloudPolicyValidator::Create(
-        policy_response.Pass(), base::MessageLoopProxy::current());
+        policy_response.Pass(), base::ThreadTaskRunnerHandle::Get());
     validator->ValidateTimestamp(timestamp_, timestamp_,
                                  timestamp_option_);
     validator->ValidateUsername(PolicyBuilder::kFakeUsername, true);

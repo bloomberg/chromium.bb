@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "crypto/signature_verifier.h"
@@ -191,13 +192,13 @@ void CloudPolicyValidatorBase::PostValidationTask(
 // static
 void CloudPolicyValidatorBase::PerformValidation(
     scoped_ptr<CloudPolicyValidatorBase> self,
-    scoped_refptr<base::MessageLoopProxy> message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Closure& completion_callback) {
   // Run the validation activities on this thread.
   self->RunValidation();
 
-  // Report completion on |message_loop|.
-  message_loop->PostTask(
+  // Report completion on |task_runner|.
+  task_runner->PostTask(
       FROM_HERE,
       base::Bind(&CloudPolicyValidatorBase::ReportCompletion,
                  base::Passed(&self),

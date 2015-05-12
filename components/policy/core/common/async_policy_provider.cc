@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -38,7 +38,7 @@ void AsyncPolicyProvider::Init(SchemaRegistry* registry) {
 
   AsyncPolicyLoader::UpdateCallback callback =
       base::Bind(&AsyncPolicyProvider::LoaderUpdateCallback,
-                 base::MessageLoopProxy::current(),
+                 base::ThreadTaskRunnerHandle::Get(),
                  weak_factory_.GetWeakPtr());
   bool post = loader_->task_runner()->PostTask(
       FROM_HERE,
@@ -120,10 +120,10 @@ void AsyncPolicyProvider::OnLoaderReloaded(scoped_ptr<PolicyBundle> bundle) {
 
 // static
 void AsyncPolicyProvider::LoaderUpdateCallback(
-    scoped_refptr<base::MessageLoopProxy> loop,
+    scoped_refptr<base::SingleThreadTaskRunner> runner,
     base::WeakPtr<AsyncPolicyProvider> weak_this,
     scoped_ptr<PolicyBundle> bundle) {
-  loop->PostTask(FROM_HERE,
+  runner->PostTask(FROM_HERE,
                  base::Bind(&AsyncPolicyProvider::OnLoaderReloaded,
                             weak_this,
                             base::Passed(&bundle)));

@@ -7,12 +7,13 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -406,7 +407,7 @@ URLBlacklistManager::URLBlacklistManager(
       io_task_runner_(io_task_runner),
       segment_url_(segment_url),
       override_blacklist_(override_blacklist),
-      ui_task_runner_(base::MessageLoopProxy::current()),
+      ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       blacklist_(new URLBlacklist(segment_url)),
       ui_weak_ptr_factory_(this),
       io_weak_ptr_factory_(this) {

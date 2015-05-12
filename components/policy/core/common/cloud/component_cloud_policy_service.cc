@@ -11,8 +11,9 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
@@ -252,7 +253,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
   backend_.reset(
       new Backend(weak_ptr_factory_.GetWeakPtr(),
                   backend_task_runner_,
-                  base::MessageLoopProxy::current(),
+                  base::ThreadTaskRunnerHandle::Get(),
                   cache.Pass(),
                   external_policy_data_fetcher_backend_->CreateFrontend(
                       backend_task_runner_)));

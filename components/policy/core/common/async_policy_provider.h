@@ -14,7 +14,7 @@
 #include "components/policy/policy_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace policy {
@@ -50,11 +50,12 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
 
   // Callback passed to the loader that it uses to pass back the current policy
   // bundle to the provider. This is invoked on the background thread and
-  // forwards to OnLoaderReloaded() on the loop that owns the provider,
+  // forwards to OnLoaderReloaded() on the runner that owns the provider,
   // if |weak_this| is still valid.
-  static void LoaderUpdateCallback(scoped_refptr<base::MessageLoopProxy> loop,
-                                   base::WeakPtr<AsyncPolicyProvider> weak_this,
-                                   scoped_ptr<PolicyBundle> bundle);
+  static void LoaderUpdateCallback(
+                  scoped_refptr<base::SingleThreadTaskRunner> runner,
+                  base::WeakPtr<AsyncPolicyProvider> weak_this,
+                  scoped_ptr<PolicyBundle> bundle);
 
   // The |loader_| that does the platform-specific policy loading. It lives
   // on the background thread but is owned by |this|.

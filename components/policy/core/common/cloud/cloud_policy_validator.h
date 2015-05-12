@@ -23,7 +23,7 @@
 #endif
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace google {
@@ -227,7 +227,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // Performs validation, called on a background thread.
   static void PerformValidation(
       scoped_ptr<CloudPolicyValidatorBase> self,
-      scoped_refptr<base::MessageLoopProxy> message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const base::Closure& completion_callback);
 
   // Reports completion to the |completion_callback_|.
