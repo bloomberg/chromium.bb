@@ -21,7 +21,7 @@ from chromite.lib import partial_mock
 from chromite.lib import remote_access
 
 
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class TestNormalizePort(cros_test_lib.TestCase):
@@ -269,6 +269,21 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
     with remote_access.RemoteDeviceHandler('1.1.1.1', base_dir=None) as device:
       self.assertEqual(expected_output,
                        device.BaseRunCommand(['echo', 'foo']).output)
+
+  def testDelayedRemoteDirs(self):
+    """Tests the delayed creation of base_dir/work_dir."""
+    with remote_access.RemoteDeviceHandler('1.1.1.1', base_dir='/f') as device:
+      # Make sure we didn't talk to the remote yet.
+      self.assertEqual(self.rsh_mock.call_count, 0)
+
+      # The work dir will get automatically created when we use it.
+      self.rsh_mock.AddCmdResult(partial_mock.In('mkdir'))
+      self.rsh_mock.AddCmdResult(partial_mock.In('mktemp'))
+      _ = device.work_dir
+      self.assertEqual(self.rsh_mock.call_count, 2)
+
+      # Add a mock for the clean up logic.
+      self.rsh_mock.AddCmdResult(partial_mock.In('rm'))
 
 
 class USBDeviceTestCase(mdns_unittest.mDnsTestCase):

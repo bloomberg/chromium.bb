@@ -591,8 +591,8 @@ class RemoteDevice(object):
     self.private_key = private_key
     self.debug_level = debug_level
     # The temporary work directories on the device.
-    self.base_dir = base_dir
-    self.work_dir = None
+    self._base_dir = base_dir
+    self._work_dir = None
     # Use GetAgent() instead of accessing this directly for deferred connect.
     self._agent = None
     self.cleanup_cmds = []
@@ -625,23 +625,31 @@ class RemoteDevice(object):
     return self._agent
 
   def _Connect(self):
-    """Sets up the SSH connection and device work directories."""
+    """Sets up the SSH connection and internal state."""
     self._agent = RemoteAccess(self.hostname, self.tempdir.tempdir,
                                port=self.port, username=self.username,
                                private_key=self.private_key)
-    self._SetupRemoteWorkDir()
 
-  def _SetupRemoteWorkDir(self):
-    """Setup working directory on the remote device."""
-    if self.base_dir:
-      self.BaseRunCommand(['mkdir', '-p', self.base_dir])
-      self.work_dir = self.BaseRunCommand(
-          ['mktemp', '-d', '--tmpdir=%s' % self.base_dir],
+  @property
+  def work_dir(self):
+    """The work directory to create on the device.
+
+    This property exists so we can create the remote paths on demand.  For
+    some use cases, it'll never be needed, so skipping creation is faster.
+    """
+    if self._base_dir is None:
+      return None
+
+    if self._work_dir is None:
+      self.BaseRunCommand(['mkdir', '-p', self._base_dir])
+      self._work_dir = self.BaseRunCommand(
+          ['mktemp', '-d', '--tmpdir=%s' % self._base_dir],
           capture_output=True).output.strip()
-      logging.debug(
-          'The temporary working directory on the device is %s', self.work_dir)
+      logging.debug('The temporary working directory on the device is %s',
+                    self._work_dir)
+      self.RegisterCleanupCmd(['rm', '-rf', self._work_dir])
 
-      self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
+    return self._work_dir
 
   # Since this object is instantiated once per device, we can safely cache the
   # result of the rsync test.  We assume the remote side doesn't go and delete
