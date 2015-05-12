@@ -42,7 +42,7 @@ void NetworkServiceImpl::CreateWebSocket(InterfaceRequest<WebSocket> socket) {
 void NetworkServiceImpl::CreateTCPBoundSocket(
     NetAddressPtr local_address,
     InterfaceRequest<TCPBoundSocket> bound_socket,
-    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+    const CreateTCPBoundSocketCallback& callback) {
   scoped_ptr<TCPBoundSocketImpl> bound(new TCPBoundSocketImpl);
   int net_error = bound->Bind(local_address.Pass());
   if (net_error != net::OK) {
@@ -59,7 +59,7 @@ void NetworkServiceImpl::CreateTCPConnectedSocket(
     ScopedDataPipeConsumerHandle send_stream,
     ScopedDataPipeProducerHandle receive_stream,
     InterfaceRequest<TCPConnectedSocket> client_socket,
-    const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) {
+    const CreateTCPConnectedSocketCallback& callback) {
   // TODO(brettw) implement this. We need to know what type of socket to use
   // so we can create the right one (i.e. to pass to TCPSocket::Open) before
   // doing the connect.
@@ -69,6 +69,14 @@ void NetworkServiceImpl::CreateTCPConnectedSocket(
 void NetworkServiceImpl::CreateUDPSocket(InterfaceRequest<UDPSocket> request) {
   // The lifetime of this UDPSocketImpl is bound to that of the underlying pipe.
   new UDPSocketImpl(request.Pass());
+}
+
+void NetworkServiceImpl::CreateHttpServer(
+    NetAddressPtr local_address,
+    HttpServerDelegatePtr delegate,
+    const CreateHttpServerCallback& callback) {
+  // TODO(yzshen): implement this.
+  callback.Run(MakeNetworkError(net::ERR_NOT_IMPLEMENTED), nullptr);
 }
 
 }  // namespace mojo

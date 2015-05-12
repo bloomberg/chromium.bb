@@ -5,6 +5,7 @@
 module mojo;
 
 import "network/public/interfaces/cookie_store.mojom";
+import "network/public/interfaces/http_server.mojom";
 import "network/public/interfaces/net_address.mojom";
 import "network/public/interfaces/network_error.mojom";
 import "network/public/interfaces/tcp_bound_socket.mojom";
@@ -58,4 +59,17 @@ interface NetworkService {
           NetAddress? local_address);
 
   CreateUDPSocket(UDPSocket& socket);
+
+  // Starts an HTTP server running on the given local address. The delegate will
+  // be notified with incoming connections.
+  //
+  // The local address can specify 0 for the port to specify that the OS should
+  // pick an available port for the given address, or it can pass 0 for the
+  // address and port for the OS to pick both the local address and port. In
+  // all success cases, the resulting local address will be passed to the
+  // callback as bound_to.
+  CreateHttpServer(NetAddress local_address,
+                   HttpServerDelegate delegate)
+      => (NetworkError result,
+          NetAddress? bound_to);
 };

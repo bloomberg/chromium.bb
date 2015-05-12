@@ -8,6 +8,8 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "cookie_store.mojom",
+    "http_connection.mojom",
+    "http_server.mojom",
     "net_address.mojom",
     "network_error.mojom",
     "network_service.mojom",

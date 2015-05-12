@@ -27,14 +27,17 @@ class NetworkServiceImpl : public InterfaceImpl<NetworkService> {
   void CreateTCPBoundSocket(
       NetAddressPtr local_address,
       InterfaceRequest<TCPBoundSocket> bound_socket,
-      const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
+      const CreateTCPBoundSocketCallback& callback) override;
   void CreateTCPConnectedSocket(
       NetAddressPtr remote_address,
       ScopedDataPipeConsumerHandle send_stream,
       ScopedDataPipeProducerHandle receive_stream,
       InterfaceRequest<TCPConnectedSocket> client_socket,
-      const Callback<void(NetworkErrorPtr, NetAddressPtr)>& callback) override;
+      const CreateTCPConnectedSocketCallback& callback) override;
   void CreateUDPSocket(InterfaceRequest<UDPSocket> socket) override;
+  void CreateHttpServer(NetAddressPtr local_address,
+                        HttpServerDelegatePtr delegate,
+                        const CreateHttpServerCallback& callback) override;
 
  private:
   NetworkContext* context_;
