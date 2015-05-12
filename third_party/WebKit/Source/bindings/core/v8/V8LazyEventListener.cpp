@@ -51,7 +51,7 @@
 
 namespace blink {
 
-V8LazyEventListener::V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition& position, Node* node, v8::Isolate* isolate)
+V8LazyEventListener::V8LazyEventListener(v8::Isolate* isolate, const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition& position, Node* node)
     : V8AbstractEventListener(true, DOMWrapperWorld::mainWorld(), isolate)
     , m_functionName(functionName)
     , m_eventParameterName(eventParameterName)
