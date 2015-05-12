@@ -12,7 +12,8 @@
 
 namespace content {
 
-class ContentWebUIControllerFactory : public WebUIControllerFactory {
+class CONTENT_EXPORT ContentWebUIControllerFactory
+    : public WebUIControllerFactory {
  public:
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override;

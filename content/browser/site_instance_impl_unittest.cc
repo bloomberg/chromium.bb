@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -34,35 +35,17 @@ namespace {
 
 const char kPrivilegedScheme[] = "privileged";
 
-class SiteInstanceTestWebUIControllerFactory : public WebUIControllerFactory {
- public:
-  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
-                                               const GURL& url) const override {
-    return NULL;
-  }
-  WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                             const GURL& url) const override {
-    return WebUI::kNoWebUI;
-  }
-  bool UseWebUIForURL(BrowserContext* browser_context,
-                      const GURL& url) const override {
-    return HasWebUIScheme(url);
-  }
-  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
-    return HasWebUIScheme(url);
-  }
-};
-
 class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
  public:
   SiteInstanceTestBrowserClient()
       : privileged_process_id_(-1) {
-    WebUIControllerFactory::RegisterFactory(&factory_);
+    WebUIControllerFactory::RegisterFactory(
+        ContentWebUIControllerFactory::GetInstance());
   }
 
   ~SiteInstanceTestBrowserClient() override {
-    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
+    WebUIControllerFactory::UnregisterFactoryForTesting(
+        ContentWebUIControllerFactory::GetInstance());
   }
 
   bool IsSuitableHost(RenderProcessHost* process_host,
@@ -76,7 +59,6 @@ class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
   }
 
  private:
-  SiteInstanceTestWebUIControllerFactory factory_;
   int privileged_process_id_;
 };
 
@@ -625,12 +607,12 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 
   // Create some WebUI instances and make sure they share a process.
   scoped_refptr<SiteInstanceImpl> webui1_instance(CreateSiteInstance(
-      browser_context.get(), GURL(kChromeUIScheme + std::string("://newtab"))));
+      browser_context.get(), GURL(kChromeUIScheme + std::string("://gpu"))));
   policy->GrantWebUIBindings(webui1_instance->GetProcess()->GetID());
 
-  scoped_refptr<SiteInstanceImpl> webui2_instance(
-      CreateSiteInstance(browser_context.get(),
-                         GURL(kChromeUIScheme + std::string("://history"))));
+  scoped_refptr<SiteInstanceImpl> webui2_instance(CreateSiteInstance(
+      browser_context.get(),
+      GURL(kChromeUIScheme + std::string("://media-internals"))));
 
   scoped_ptr<RenderProcessHost> dom_host(webui1_instance->GetProcess());
   EXPECT_EQ(webui1_instance->GetProcess(), webui2_instance->GetProcess());
@@ -677,10 +659,10 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   EXPECT_FALSE(instance->HasWrongProcessForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://settings")));
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://gpu")));
 
   // Test that WebUI SiteInstances reject normal web URLs.
-  const GURL webui_url("chrome://settings");
+  const GURL webui_url("chrome://gpu");
   scoped_refptr<SiteInstanceImpl> webui_instance(static_cast<SiteInstanceImpl*>(
       SiteInstance::Create(browser_context.get())));
   webui_instance->SetSite(webui_url);
@@ -693,6 +675,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   EXPECT_TRUE(webui_instance->HasProcess());
   EXPECT_FALSE(webui_instance->HasWrongProcessForURL(webui_url));
   EXPECT_TRUE(webui_instance->HasWrongProcessForURL(GURL("http://google.com")));
+  EXPECT_TRUE(webui_instance->HasWrongProcessForURL(GURL("http://gpu")));
 
   // WebUI uses process-per-site, so another instance will use the same process
   // even if we haven't called GetProcess yet.  Make sure HasWrongProcessForURL
@@ -736,7 +719,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
   EXPECT_FALSE(instance->HasWrongProcessForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://settings")));
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://gpu")));
 
   DrainMessageLoops();
 }
@@ -755,7 +738,7 @@ TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
 
   // Simulate navigating to a WebUI URL in a process that does not have WebUI
   // bindings.  This already requires bypassing security checks.
-  const GURL webui_url("chrome://settings");
+  const GURL webui_url("chrome://gpu");
   instance->SetSite(webui_url);
   EXPECT_TRUE(instance->HasSite());
 

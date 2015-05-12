@@ -12,6 +12,7 @@
 #include "content/browser/media/audio_state_provider.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -41,39 +42,6 @@
 
 namespace content {
 namespace {
-
-const char kTestWebUIUrl[] = "chrome://blah";
-
-class WebContentsImplTestWebUIControllerFactory
-    : public WebUIControllerFactory {
- public:
-  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
-                                               const GURL& url) const override {
-    if (!UseWebUI(url))
-      return nullptr;
-    return new WebUIController(web_ui);
-  }
-
-  WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                             const GURL& url) const override {
-    return WebUI::kNoWebUI;
-  }
-
-  bool UseWebUIForURL(BrowserContext* browser_context,
-                      const GURL& url) const override {
-    return UseWebUI(url);
-  }
-
-  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
-    return UseWebUI(url);
-  }
-
- private:
-  bool UseWebUI(const GURL& url) const {
-    return url == GURL(kTestWebUIUrl);
-  }
-};
 
 class TestInterstitialPage;
 
@@ -262,16 +230,15 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    WebUIControllerFactory::RegisterFactory(&factory_);
+    WebUIControllerFactory::RegisterFactory(
+        ContentWebUIControllerFactory::GetInstance());
   }
 
   void TearDown() override {
-    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
+    WebUIControllerFactory::UnregisterFactoryForTesting(
+        ContentWebUIControllerFactory::GetInstance());
     RenderViewHostImplTestHarness::TearDown();
   }
-
- private:
-  WebContentsImplTestWebUIControllerFactory factory_;
 };
 
 class TestWebContentsObserver : public WebContentsObserver {
@@ -1092,7 +1059,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
 
 TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   // Start with a web ui page, which gets a new RVH with WebUI bindings.
-  const GURL url1("chrome://blah");
+  const GURL url1("chrome://gpu");
   controller().LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
@@ -1240,8 +1207,8 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationNotPreemptedByFrame) {
 // We should only preempt the cross-site navigation if the previous renderer
 // has started a new navigation.  See http://crbug.com/79176.
 TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
-  // Navigate to NTP URL.
-  const GURL url("chrome://blah");
+  // Navigate to WebUI URL.
+  const GURL url("chrome://gpu");
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry1_id = controller().GetPendingEntry()->GetUniqueID();
@@ -1260,7 +1227,7 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   // Suppose the first navigation tries to commit now, with a
   // FrameMsg_Stop in flight.  This should not cancel the pending navigation,
   // but it should act as if the beforeunload ack arrived.
-  orig_rfh->SendNavigate(1, entry1_id, true, GURL("chrome://blah"));
+  orig_rfh->SendNavigate(1, entry1_id, true, GURL("chrome://gpu"));
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
   EXPECT_FALSE(orig_rfh->IsWaitingForBeforeUnloadACK());
@@ -2805,8 +2772,12 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   contents->NavigateAndCommit(GURL("http://a.com"));
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
+  // Navigate to a URL which sort of looks like a chrome:// url.
+  contents->NavigateAndCommit(GURL("http://gpu"));
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+
   // Navigate to a URL with WebUI. This will change BrowsingInstances.
-  const GURL kWebUIUrl = GURL(kTestWebUIUrl);
+  const GURL kWebUIUrl = GURL("chrome://gpu");
   contents->GetController().LoadURL(kWebUIUrl,
                                     Referrer(),
                                     ui::PAGE_TRANSITION_TYPED,

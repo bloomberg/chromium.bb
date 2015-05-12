@@ -23,6 +23,9 @@ namespace content {
 
 WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       BrowserContext* browser_context, const GURL& url) const {
+  if (!url.SchemeIs(kChromeUIScheme))
+    return WebUI::kNoWebUI;
+
   if (url.host() == kChromeUIWebRTCInternalsHost ||
 #if !defined(OS_ANDROID)
       url.host() == kChromeUITracingHost ||
@@ -49,6 +52,9 @@ bool ContentWebUIControllerFactory::UseWebUIBindingsForURL(
 
 WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     WebUI* web_ui, const GURL& url) const {
+  if (!url.SchemeIs(kChromeUIScheme))
+    return nullptr;
+
   if (url.host() == kChromeUIGpuHost)
     return new GpuInternalsUI(web_ui);
   if (url.host() == kChromeUIIndexedDBInternalsHost)
@@ -69,7 +75,7 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     return new WebRTCInternalsUI(web_ui);
 #endif
 
-  return NULL;
+  return nullptr;
 }
 
 // static
