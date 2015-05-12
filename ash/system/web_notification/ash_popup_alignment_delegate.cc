@@ -55,7 +55,7 @@ void AshPopupAlignmentDelegate::StartObserving(gfx::Screen* screen,
   screen->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
   if (system_tray_height_ > 0)
-    UpdateWorkArea();
+    UpdateWorkArea(display, shelf_->auto_hide_state());
 }
 
 void AshPopupAlignmentDelegate::SetSystemTrayHeight(int height) {
@@ -134,19 +134,39 @@ gfx::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
       shelf_->shelf_widget()->GetNativeView());
 }
 
-void AshPopupAlignmentDelegate::UpdateWorkArea() {
-  work_area_ = shelf_->non_shelf_bounds();
+void AshPopupAlignmentDelegate::UpdateWorkArea(const gfx::Display& display,
+                                               ShelfAutoHideState new_state) {
+  work_area_ = display.work_area();
+  if (Shell::GetInstance()->display_manager()->IsInUnifiedMode()) {
+    gfx::Rect bounds = ScreenUtil::GetShelfDisplayBoundsInScreen(
+        shelf_->shelf_widget()->GetNativeView());
+    work_area_.Intersect(bounds);
+  }
+
+  int width = 0;
+  if (shelf_ && (shelf_->visibility_state() == SHELF_AUTO_HIDE) &&
+      new_state == SHELF_AUTO_HIDE_SHOWN) {
+    // Since the work_area is already reduced by kAutoHideSize, the inset width
+    // should be just the difference.
+    width = kShelfSize - ShelfLayoutManager::kAutoHideSize;
+  }
+  work_area_.Inset(shelf_->SelectValueForShelfAlignment(
+      gfx::Insets(0, 0, width, 0),
+      gfx::Insets(0, width, 0, 0),
+      gfx::Insets(0, 0, 0, width),
+      gfx::Insets(width, 0, 0, 0)));
+
   DoUpdateIfPossible();
 }
 
 void AshPopupAlignmentDelegate::OnDisplayWorkAreaInsetsChanged() {
   UpdateShelf();
-  UpdateWorkArea();
+  UpdateWorkArea(GetCurrentDisplay(), shelf_->auto_hide_state());
 }
 
 void AshPopupAlignmentDelegate::OnAutoHideStateChanged(
     ShelfAutoHideState new_state) {
-  UpdateWorkArea();
+  UpdateWorkArea(GetCurrentDisplay(), new_state);
 }
 
 void AshPopupAlignmentDelegate::OnDisplayAdded(
@@ -162,7 +182,7 @@ void AshPopupAlignmentDelegate::OnDisplayMetricsChanged(
     uint32_t metrics) {
   UpdateShelf();
   if (shelf_ && GetCurrentDisplay().id() == display.id())
-    UpdateWorkArea();
+    UpdateWorkArea(display, shelf_->auto_hide_state());
 }
 
 }  // namespace ash
