@@ -92,6 +92,11 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
 
     OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[1]);
     info[0] = toV8(node, m_scriptState->context()->Global(), isolate);
+    if (info[0].IsEmpty()) {
+        if (exceptionCatcher.HasCaught())
+            exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
+        return NodeFilter::FILTER_REJECT;
+    }
 
     v8::Local<v8::Value> result;
     if (!ScriptController::callFunction(m_scriptState->executionContext(), callback, receiver, 1, info.get(), isolate).ToLocal(&result)) {

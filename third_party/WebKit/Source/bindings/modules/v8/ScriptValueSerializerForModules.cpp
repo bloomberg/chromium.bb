@@ -345,7 +345,7 @@ bool SerializedScriptValueReaderForModules::readDOMFileSystem(v8::Local<v8::Valu
         return false;
     DOMFileSystem* fs = DOMFileSystem::create(scriptState()->executionContext(), name, static_cast<FileSystemType>(type), KURL(ParsedURLString, url));
     *value = toV8(fs, scriptState()->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 bool SerializedScriptValueReaderForModules::readCryptoKey(v8::Local<v8::Value>* value)
@@ -402,7 +402,7 @@ bool SerializedScriptValueReaderForModules::readCryptoKey(v8::Local<v8::Value>* 
     }
 
     *value = toV8(CryptoKey::create(key), scriptState()->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 bool SerializedScriptValueReaderForModules::doReadHmacKey(WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyType& type)

@@ -64,12 +64,15 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptState* scriptState, Eve
 
     // Get the V8 wrapper for the event object.
     v8::Local<v8::Value> jsEvent = toV8(event, scriptState->context()->Global(), isolate());
+    if (jsEvent.IsEmpty())
+        return;
 
     invokeEventHandler(scriptState, event, v8::Local<v8::Value>::New(isolate(), jsEvent));
 }
 
 v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
 {
+    ASSERT(!jsEvent.IsEmpty());
     v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
     v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())

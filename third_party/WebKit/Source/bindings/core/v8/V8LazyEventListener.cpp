@@ -75,6 +75,7 @@ v8::Local<v8::Object> toObjectWrapper(T* domObject, ScriptState* scriptState)
 
 v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
 {
+    ASSERT(!jsEvent.IsEmpty());
     v8::Local<v8::Object> listenerObject = getListenerObject(scriptState->executionContext());
     if (listenerObject.IsEmpty())
         return v8::Local<v8::Value>();

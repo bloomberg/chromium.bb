@@ -83,7 +83,10 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<
     bool isSameState = history->isSameAsCurrentState(event->serializedState());
 
     if (isSameState) {
-        v8::Local<v8::Object> v8History = toV8(history, info.Holder(), info.GetIsolate()).As<v8::Object>();
+        v8::Local<v8::Value> v8HistoryValue = toV8(history, info.Holder(), info.GetIsolate());
+        if (v8HistoryValue.IsEmpty())
+            return;
+        v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();
         if (!history->stateChanged()) {
             result = V8HiddenValue::getHiddenValue(info.GetIsolate(), v8History, V8HiddenValue::state(info.GetIsolate()));
             if (!result.IsEmpty()) {

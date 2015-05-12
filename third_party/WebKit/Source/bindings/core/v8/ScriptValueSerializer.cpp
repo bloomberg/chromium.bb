@@ -583,6 +583,8 @@ static v8::Local<v8::Object> toV8Object(MessagePort* impl, v8::Local<v8::Object>
     if (!impl)
         return v8::Local<v8::Object>();
     v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
+    if (wrapper.IsEmpty())
+        return v8::Local<v8::Object>();
     ASSERT(wrapper->IsObject());
     return wrapper.As<v8::Object>();
 }
@@ -592,6 +594,8 @@ static v8::Local<v8::ArrayBuffer> toV8Object(DOMArrayBuffer* impl, v8::Local<v8:
     if (!impl)
         return v8::Local<v8::ArrayBuffer>();
     v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
+    if (wrapper.IsEmpty())
+        return v8::Local<v8::ArrayBuffer>();
     ASSERT(wrapper->IsArrayBuffer());
     return wrapper.As<v8::ArrayBuffer>();
 }
@@ -1407,7 +1411,7 @@ bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
     memcpy(pixelArray->data(), m_buffer + m_position, pixelDataLength);
     m_position += pixelDataLength;
     *value = toV8(imageData, m_scriptState->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 bool SerializedScriptValueReader::readCompositorProxy(v8::Local<v8::Value>* value)
@@ -1421,7 +1425,7 @@ bool SerializedScriptValueReader::readCompositorProxy(v8::Local<v8::Value>* valu
 
     CompositorProxy* compositorProxy = CompositorProxy::create(element, attributes);
     *value = toV8(compositorProxy, m_scriptState->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 PassRefPtr<DOMArrayBuffer> SerializedScriptValueReader::doReadArrayBuffer()
@@ -1442,7 +1446,7 @@ bool SerializedScriptValueReader::readArrayBuffer(v8::Local<v8::Value>* value)
     if (!arrayBuffer)
         return false;
     *value = toV8(arrayBuffer.release(), m_scriptState->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 bool SerializedScriptValueReader::readArrayBufferView(v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)
@@ -1587,7 +1591,7 @@ bool SerializedScriptValueReader::readBlob(v8::Local<v8::Value>* value, bool isI
         blob = Blob::create(getOrCreateBlobDataHandle(uuid, type, size));
     }
     *value = toV8(blob, m_scriptState->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 bool SerializedScriptValueReader::readFile(v8::Local<v8::Value>* value, bool isIndexed)
@@ -1603,7 +1607,7 @@ bool SerializedScriptValueReader::readFile(v8::Local<v8::Value>* value, bool isI
     if (!file)
         return false;
     *value = toV8(file, m_scriptState->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 bool SerializedScriptValueReader::readFileList(v8::Local<v8::Value>* value, bool isIndexed)
@@ -1628,7 +1632,7 @@ bool SerializedScriptValueReader::readFileList(v8::Local<v8::Value>* value, bool
         fileList->append(file);
     }
     *value = toV8(fileList, m_scriptState->context()->Global(), isolate());
-    return true;
+    return !value->IsEmpty();
 }
 
 File* SerializedScriptValueReader::readFileHelper()
@@ -1848,7 +1852,7 @@ bool ScriptValueDeserializer::tryGetTransferredMessagePort(uint32_t index, v8::L
         return false;
     v8::Local<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
     *object = toV8(m_transferredMessagePorts->at(index).get(), creationContext, m_reader.scriptState()->isolate());
-    return true;
+    return !object->IsEmpty();
 }
 
 bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>* object)
@@ -1863,6 +1867,8 @@ bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::L
         v8::Isolate* isolate = m_reader.scriptState()->isolate();
         v8::Local<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
         result = toV8(buffer.get(), creationContext, isolate);
+        if (result.IsEmpty())
+            return false;
         m_arrayBuffers[index] = result;
     }
     *object = result;

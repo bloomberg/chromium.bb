@@ -75,6 +75,7 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptState* script
 
 v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
 {
+    ASSERT(!jsEvent.IsEmpty());
     v8::Local<v8::Function> handlerFunction = getListenerFunction(scriptState);
     v8::Local<v8::Object> receiver = getReceiverObject(scriptState, event);
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())

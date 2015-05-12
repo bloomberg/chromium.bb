@@ -153,9 +153,10 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Local<v8::Context> context = m_scriptState->context();
-    v8::Local<v8::Object> receiver = m_scriptState->world().domDataStore().get(element, isolate);
-    if (receiver.IsEmpty())
-        receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
+    v8::Local<v8::Value> receiverValue = toV8(element, context->Global(), isolate);
+    if (receiverValue.IsEmpty())
+        return;
+    v8::Local<v8::Object> receiver = receiverValue.As<v8::Object>();
 
     // Swizzle the prototype of the wrapper.
     v8::Local<v8::Object> prototype = m_prototype.newLocal(isolate);
@@ -196,8 +197,9 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();
     v8::Local<v8::Context> context = m_scriptState->context();
-    v8::Local<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
-    ASSERT(!receiver.IsEmpty());
+    v8::Local<v8::Value> receiver = toV8(element, context->Global(), isolate);
+    if (receiver.IsEmpty())
+        return;
 
     v8::Local<v8::Function> callback = m_attributeChanged.newLocal(isolate);
     if (callback.IsEmpty())
@@ -231,8 +233,9 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     if (callback.IsEmpty())
         return;
 
-    v8::Local<v8::Object> receiver = toV8(element, context->Global(), isolate).As<v8::Object>();
-    ASSERT(!receiver.IsEmpty());
+    v8::Local<v8::Value> receiver = toV8(element, context->Global(), isolate);
+    if (receiver.IsEmpty())
+        return;
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);

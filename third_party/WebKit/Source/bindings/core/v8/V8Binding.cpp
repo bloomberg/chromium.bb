@@ -100,9 +100,11 @@ PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value> callback, v
         return nullptr;
     RefPtrWillBeRawPtr<NodeFilter> filter = NodeFilter::create();
 
-    v8::Local<v8::Object> filterWrapper = toV8(filter.get(), creationContext, scriptState->isolate()).As<v8::Object>();
+    v8::Local<v8::Value> filterWrapper = toV8(filter.get(), creationContext, scriptState->isolate());
+    if (filterWrapper.IsEmpty())
+        return nullptr;
 
-    RefPtrWillBeRawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper, scriptState);
+    RefPtrWillBeRawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper.As<v8::Object>(), scriptState);
     filter->setCondition(condition.release());
 
     return filter.release();

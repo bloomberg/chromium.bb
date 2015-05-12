@@ -120,6 +120,8 @@ template<typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Local<v8::Object> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::holder(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     v8::Local<v8::Value> value = toV8(m_holder, creationContext, isolate);
+    if (value.IsEmpty())
+        return v8::Local<v8::Object>();
     return value.As<v8::Object>();
 }
 

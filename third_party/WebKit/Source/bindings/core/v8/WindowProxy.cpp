@@ -371,6 +371,8 @@ void WindowProxy::updateDocumentProperty()
     v8::Local<v8::Context> context = m_scriptState->context();
     LocalFrame* frame = toLocalFrame(m_frame);
     v8::Local<v8::Value> documentWrapper = toV8(frame->document(), context->Global(), context->GetIsolate());
+    if (documentWrapper.IsEmpty())
+        return;
     ASSERT(documentWrapper == m_document.newLocal(m_isolate) || m_document.isEmpty());
     if (m_document.isEmpty())
         updateDocumentWrapper(v8::Local<v8::Object>::Cast(documentWrapper));

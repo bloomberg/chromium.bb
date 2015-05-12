@@ -33,6 +33,8 @@ v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Isola
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     RefPtr<DOMArrayBuffer> buffer = this->buffer();
     v8::Local<v8::Value> v8Buffer = toV8(buffer.get(), creationContext, isolate);
+    if (v8Buffer.IsEmpty())
+        return v8::Handle<v8::Object>();
     ASSERT(v8Buffer->IsArrayBuffer());
 
     v8::Local<v8::Object> wrapper = V8TypedArray::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), length());

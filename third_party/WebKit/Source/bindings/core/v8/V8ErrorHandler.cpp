@@ -49,6 +49,7 @@ V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, Sc
 
 v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
 {
+    ASSERT(!jsEvent.IsEmpty());
     if (!event->hasInterface(EventNames::ErrorEvent))
         return V8EventListener::callListenerFunction(scriptState, jsEvent, event);
 

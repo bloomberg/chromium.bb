@@ -463,6 +463,8 @@ v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement()
         return v8::Local<v8::Object>();
 
     v8::Local<v8::Value> v8value = toV8(m_element.get(), scriptState->context()->Global(), scriptState->isolate());
+    if (v8value.IsEmpty())
+        return v8::Local<v8::Object>();
     ASSERT(v8value->IsObject());
 
     return v8::Local<v8::Object>::Cast(v8value);

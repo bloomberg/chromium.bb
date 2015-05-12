@@ -64,6 +64,11 @@ public:
 
             args[0] = toV8(value, creationContext, isolate);
             args[1] = toV8(key, creationContext, isolate);
+            if (args[0].IsEmpty() || args[1].IsEmpty()) {
+                if (tryCatch.HasCaught())
+                    exceptionState.rethrowV8Exception(tryCatch.Exception());
+                return;
+            }
 
             v8::Local<v8::Value> result;
             if (!V8ScriptRunner::callFunction(v8Callback, scriptState->executionContext(), v8ThisArg, 3, args, isolate).ToLocal(&result)) {
