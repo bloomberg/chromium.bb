@@ -60,7 +60,8 @@ namespace content {
 
 PresentationDispatcher::PresentationDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      controller_(nullptr) {
+      controller_(nullptr),
+      binding_(this) {
 }
 
 PresentationDispatcher::~PresentationDispatcher() {
@@ -80,21 +81,11 @@ void PresentationDispatcher::setController(
 }
 
 void PresentationDispatcher::updateAvailableChangeWatched(bool watched) {
-  GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
-  DoUpdateAvailableChangeWatched(presentation_url.spec(), watched);
-}
-
-void PresentationDispatcher::DoUpdateAvailableChangeWatched(
-    const std::string& presentation_url, bool watched) {
   ConnectToPresentationServiceIfNeeded();
-  if (watched) {
-    presentation_service_->ListenForScreenAvailability(
-        presentation_url,
-        base::Bind(&PresentationDispatcher::OnScreenAvailabilityChanged,
-                 base::Unretained(this)));
-  } else {
-    presentation_service_->RemoveScreenAvailabilityListener(presentation_url);
-  }
+  if (watched)
+    presentation_service_->ListenForScreenAvailability();
+  else
+    presentation_service_->StopListeningForScreenAvailability();
 }
 
 void PresentationDispatcher::startSession(
@@ -270,16 +261,9 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
   std::swap(message_request_queue_, empty);
 }
 
-void PresentationDispatcher::OnScreenAvailabilityChanged(
-    const std::string& presentation_url, bool available) {
-  if (!controller_)
-    return;
-
-  // Reset the callback to get the next event.
-  DoUpdateAvailableChangeWatched(presentation_url,
-                                 controller_->isAvailableChangeWatched());
-
-  controller_->didChangeAvailability(available);
+void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
+  if (controller_)
+    controller_->didChangeAvailability(available);
 }
 
 void PresentationDispatcher::OnDefaultSessionStarted(
@@ -360,6 +344,10 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
 
   render_frame()->GetServiceRegistry()->ConnectToRemoteService(
       &presentation_service_);
+  presentation::PresentationServiceClientPtr client_ptr;
+  binding_.Bind(GetProxy(&client_ptr));
+  presentation_service_->SetClient(client_ptr.Pass());
+
   // TODO(imcheng): Uncomment these once they are implemented on the browser
   // side. (crbug.com/459006)
   /*

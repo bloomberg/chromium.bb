@@ -22,7 +22,8 @@ namespace content {
 // Blink. It forwards the calls to the Mojo PresentationService.
 class CONTENT_EXPORT PresentationDispatcher
     : public RenderFrameObserver,
-      public NON_EXPORTED_BASE(blink::WebPresentationClient) {
+      public NON_EXPORTED_BASE(blink::WebPresentationClient),
+      public NON_EXPORTED_BASE(presentation::PresentationServiceClient) {
  public:
   explicit PresentationDispatcher(RenderFrame* render_frame);
   ~PresentationDispatcher() override;
@@ -59,9 +60,9 @@ class CONTENT_EXPORT PresentationDispatcher
       bool is_new_navigation,
       bool is_same_page_navigation) override;
 
-  void OnScreenAvailabilityChanged(
-      const std::string& presentation_url,
-      bool available);
+  // presentation::PresentationServiceClient
+  void OnScreenAvailabilityUpdated(bool available) override;
+
   void OnSessionCreated(
       blink::WebPresentationSessionClientCallbacks* callback,
       presentation::PresentationSessionInfoPtr session_info,
@@ -73,25 +74,23 @@ class CONTENT_EXPORT PresentationDispatcher
       presentation::PresentationSessionState session_state);
   void OnSessionMessagesReceived(
       mojo::Array<presentation::SessionMessagePtr> messages);
-
-  void ConnectToPresentationServiceIfNeeded();
-
-  void DoUpdateAvailableChangeWatched(
-      const std::string& presentation_url,
-      bool watched);
-
   void DoSendMessage(const presentation::SessionMessage& session_message);
   void HandleSendMessageRequests(bool success);
+
+  void ConnectToPresentationServiceIfNeeded();
 
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;
   presentation::PresentationServicePtr presentation_service_;
+  mojo::Binding<presentation::PresentationServiceClient> binding_;
 
   // Message requests are queued here and only one message at a time is sent
   // over mojo channel.
   using MessageRequestQueue =
       std::queue<linked_ptr<presentation::SessionMessage>>;
   MessageRequestQueue message_request_queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(PresentationDispatcher);
 };
 
 }  // namespace content

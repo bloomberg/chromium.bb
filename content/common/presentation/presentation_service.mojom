@@ -5,108 +5,111 @@
 module presentation;
 
 struct PresentationSessionInfo {
-    string url;
-    string id;
+  string url;
+  string id;
 };
 
 enum PresentationSessionState {
-    CONNECTED,
-    DISCONNECTED
+  CONNECTED,
+  DISCONNECTED
 };
 
 enum PresentationErrorType {
-    NO_AVAILABLE_SCREENS,
-    SESSION_REQUEST_CANCELLED,
-    NO_PRESENTATION_FOUND,
-    UNKNOWN,
+  NO_AVAILABLE_SCREENS,
+  SESSION_REQUEST_CANCELLED,
+  NO_PRESENTATION_FOUND,
+  UNKNOWN,
 };
 
 struct PresentationError {
-    PresentationErrorType error_type;
-    string message;
+  PresentationErrorType error_type;
+  string message;
 };
 
 enum PresentationMessageType {
-    TEXT,
-    ARRAY_BUFFER,
+  TEXT,
+  ARRAY_BUFFER,
 };
 
 struct SessionMessage {
-    string presentation_url;
-    string presentation_id;
-    PresentationMessageType type;
-    string? message;
-    array<uint8>? data;
+  string presentation_url;
+  string presentation_id;
+  PresentationMessageType type;
+  string? message;
+  array<uint8>? data;
 };
 
 interface PresentationService {
-    // Called when the frame sets or changes the default presentation URL or
-    // presentation ID.
-    SetDefaultPresentationURL(
-        string default_presentation_url,
-        string? default_presentation_id);
+  // Called when the frame sets or changes the default presentation URL or
+  // presentation ID.
+  SetDefaultPresentationURL(
+      string default_presentation_url,
+      string? default_presentation_id);
 
-    // Returns the last screen availability state if it’s changed since the last
-    // time the method was called. The client has to call this method again when
-    // handling the result (provided via Mojo callback) to get the next update
-    // about the availability status.
-    // May start discovery of the presentation screens. The implementation might
-    // stop discovery once there are no active calls to
-    // ListenForScreenAvailability. |presentation_url| can be specified to help
-    // the implementation to filter out incompatible screens.
-    ListenForScreenAvailability(string? presentation_url) =>
-        (string? presentation_url, bool available);
+  // Sets the PresentationServiceClient.
+  SetClient(PresentationServiceClient client);
 
-    // Called when the frame no longer listens to the |availablechange| event.
-    RemoveScreenAvailabilityListener(string? presentation_url);
+  // Starts listening for screen availability for the current default
+  // presentation URL. Availability results will be returned to the client
+  // via PresentationServiceClient::OnScreenAvailabilityUpdated.
+  ListenForScreenAvailability();
 
-    // Called when the renderer is ready to receive the browser initiated
-    // session. If the default session is started by the embedder before this
-    // call, the embedder may queue it and run the callback when the call is
-    // performed.
-    ListenForDefaultSessionStart()
-        => (PresentationSessionInfo? defaultSessionInfo);
+  // Stops listening for screen availability for the current default
+  // default presentation URL. The client will stop receiving availability
+  // updates.
+  StopListeningForScreenAvailability();
 
-    // Called when startSession() is called by the frame. The result callback
-    // will return a non-null and valid PresentationSessionInfo if starting the
-    // session succeeded, or null with a PresentationError if starting the
-    // session failed.
-    // The presentation id is always returned along with the initialized
-    // session on success.
-    // If the UA identifies a matching session (same presentation url and id),
-    // the user may choose this existing session and the page will join it
-    // rather than get a new one. An empty presentation id means that the
-    // UA will generate the presentation id.
-    StartSession(string presentation_url, string? presentation_id)
-        => (PresentationSessionInfo? sessionInfo, PresentationError? error);
+  // Called when the renderer is ready to receive the browser initiated
+  // session. If the default session is started by the embedder before this
+  // call, the embedder may queue it and run the callback when the call is
+  // performed.
+  ListenForDefaultSessionStart()
+      => (PresentationSessionInfo? defaultSessionInfo);
 
-    // Called when joinSession() is called by the frame. The result callback
-    // works the same as for the method above. JoinSession will join a known
-    // session (i.e. when the page navigates or the user opens another tab)
-    // silently and without user action.
-    JoinSession(string presentation_url, string? presentation_id)
-        => (PresentationSessionInfo? sessionInfo, PresentationError? error);
+  // Called when startSession() is called by the frame. The result callback
+  // will return a non-null and valid PresentationSessionInfo if starting the
+  // session succeeded, or null with a PresentationError if starting the
+  // session failed.
+  // The presentation id is always returned along with the initialized
+  // session on success.
+  // If the UA identifies a matching session (same presentation url and id),
+  // the user may choose this existing session and the page will join it
+  // rather than get a new one. An empty presentation id means that the
+  // UA will generate the presentation id.
+  StartSession(string presentation_url, string? presentation_id)
+      => (PresentationSessionInfo? sessionInfo, PresentationError? error);
 
-    // Called when send() is called by the frame. The true in the
-    // result callback notifies that the service is ready for next message.
-    // The false in the result callback notifies the renderer to stop sending
-    // the send requests and invalidate all pending requests. This occurs
-    // for eg., when frame is deleted or navigated away.
-    SendSessionMessage(SessionMessage message_request) => (bool success);
+  // Called when joinSession() is called by the frame. The result callback
+  // works the same as for the method above. JoinSession will join a known
+  // session (i.e. when the page navigates or the user opens another tab)
+  // silently and without user action.
+  JoinSession(string presentation_url, string? presentation_id)
+      => (PresentationSessionInfo? sessionInfo, PresentationError? error);
 
-    // Called when closeSession() is called by the frame.
-    CloseSession(string presentation_url, string presentation_id);
+  // Called when send() is called by the frame. The true in the
+  // result callback notifies that the service is ready for next message.
+  // The false in the result callback notifies the renderer to stop sending
+  // the send requests and invalidate all pending requests. This occurs
+  // for eg., when frame is deleted or navigated away.
+  SendSessionMessage(SessionMessage message_request) => (bool success);
+  
+  // Called when closeSession() is called by the frame.
+  CloseSession(string presentation_url, string presentation_id);
 
-    // Called when the frame is ready to process the next state change. Returns
-    // the last session state if it’s changed since the last time the callback
-    // was called. Might cause the event fired with the initial state change.
-    ListenForSessionStateChange()
-        => (PresentationSessionInfo sessionInfo,
-            PresentationSessionState newState);
+  // Called when the frame is ready to process the next state change. Returns
+  // the last session state if it’s changed since the last time the callback
+  // was called. Might cause the event fired with the initial state change.
+  ListenForSessionStateChange()
+      => (PresentationSessionInfo sessionInfo,
+          PresentationSessionState newState);
 
-    // Called when the frame is ready to process the next batch of messages.
-    // When the callback carries null messages, there is an error
-    // at the presentation service side.
-    ListenForSessionMessages()
-        => (array<SessionMessage>? messages);
+  // Called when the frame is ready to process the next batch of messages.
+  // When the callback carries null messages, there is an error
+  // at the presentation service side.
+  ListenForSessionMessages()
+      => (array<SessionMessage>? messages);
+};
+
+interface PresentationServiceClient {
+  OnScreenAvailabilityUpdated(bool available);
 };
