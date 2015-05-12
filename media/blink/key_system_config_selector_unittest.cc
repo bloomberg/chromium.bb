@@ -170,7 +170,7 @@ class KeySystemConfigSelectorTest : public testing::Test {
     succeeded_count_ = 0;
     not_supported_count_ = 0;
     KeySystemConfigSelector(key_systems_.get(), media_permission_.get())
-        .SelectConfig(key_system_, configs_, security_origin_,
+        .SelectConfig(key_system_, configs_, security_origin_, false,
                       base::Bind(&KeySystemConfigSelectorTest::OnSucceeded,
                                  base::Unretained(this)),
                       base::Bind(&KeySystemConfigSelectorTest::OnNotSupported,
@@ -209,7 +209,8 @@ class KeySystemConfigSelectorTest : public testing::Test {
     return (media_permission_->requests != 0 && not_supported_count_ != 0);
   }
 
-  void OnSucceeded(const blink::WebMediaKeySystemConfiguration& result) {
+  void OnSucceeded(const blink::WebMediaKeySystemConfiguration& result,
+                   bool are_secure_codecs_required) {
     succeeded_count_++;
     config_ = result;
   }

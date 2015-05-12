@@ -3587,6 +3587,11 @@ blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
 blink::WebEncryptedMediaClient* RenderFrameImpl::encryptedMediaClient() {
   if (!web_encrypted_media_client_) {
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
+        // base::Unretained(this) is safe because WebEncryptedMediaClientImpl
+        // is destructed before |this|, and does not give away ownership of the
+        // callback.
+        base::Bind(&RenderFrameImpl::AreSecureCodecsSupported,
+                   base::Unretained(this)),
         GetCdmFactory(), GetMediaPermission()));
   }
   return web_encrypted_media_client_.get();
@@ -4925,6 +4930,16 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
   if (!media_permission_dispatcher_)
     media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
   return media_permission_dispatcher_;
+}
+
+bool RenderFrameImpl::AreSecureCodecsSupported() {
+#if defined(OS_ANDROID)
+  // Hardware-secure codecs are only supported if secure surfaces are enabled.
+  return render_view_->renderer_preferences_
+      .use_video_overlay_for_embedded_encrypted_video;
+#else
+  return false;
+#endif  // defined(OS_ANDROID)
 }
 
 media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
