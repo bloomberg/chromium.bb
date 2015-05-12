@@ -681,29 +681,6 @@ system call NtCreateSection
 *!cc::ResourceProvider::CreateBitmap
 *!cc::ResourceProvider::Create*Resource
 
-UNADDRESSABLE ACCESS
-name=http://crbug.com/445836_a
-...
-content.dll!content::RenderFrameImpl::~RenderFrameImpl
-content.dll!content::RenderFrameImpl::`vector deleting destructor'
-content.dll!content::RenderViewImpl::~RenderViewImpl
-content.dll!content::RenderViewImpl::`vector deleting destructor'
-content.dll!base::internal::BindState<>::`scalar deleting destructor'
-base.dll!scoped_refptr<>::Release
-base.dll!base::internal::CallbackBase::~CallbackBase
-
-INVALID HEAP ARGUMENT
-name=http://crbug.com/445836_b
-drmemorylib.dll!replace_operator_delete
-ipc.dll!IPC::Listener::`vector deleting destructor'
-content.dll!content::RenderFrameImpl::~RenderFrameImpl
-content.dll!content::RenderFrameImpl::`vector deleting destructor'
-content.dll!content::RenderViewImpl::~RenderViewImpl
-content.dll!content::RenderViewImpl::`vector deleting destructor'
-content.dll!base::internal::BindState<>::`scalar deleting destructor'
-base.dll!scoped_refptr<>::Release
-base.dll!base::internal::CallbackBase::~CallbackBase
-
 HANDLE LEAK
 name=http://crbug.com/449989
 system call NtOpenProcess
