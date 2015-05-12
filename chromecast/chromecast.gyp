@@ -101,8 +101,12 @@
       'sources': [
         'net/connectivity_checker.cc',
         'net/connectivity_checker.h',
+        'net/network_change_notifier_factory_cast.cc',
+        'net/network_change_notifier_factory_cast.h',
         'net/net_switches.cc',
         'net/net_switches.h',
+        'net/net_util_cast.cc',
+        'net/net_util_cast.h',
       ],
     },
     {
