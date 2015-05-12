@@ -35,41 +35,43 @@ namespace test {
 namespace {
 
 // Mock results.
-const char kOneResult[] = "{"
+const char kOneResult[] =
+    "{"
     "\"search_url\": \"http://host/search\","
     "\"results\":["
-      "{"
-        "\"id\": \"app1_id\","
-        "\"localized_name\": \"app1 name\","
-        "\"icon_url\": \"http://host/icon\","
-        "\"is_paid\": false"
-      "}"
+    "  {"
+    "    \"id\": \"app1_id\","
+    "    \"localized_name\": \"app1 name\","
+    "    \"icon_url\": \"http://host/icon\","
+    "    \"is_paid\": false"
+    "  }"
     "]}";
 
-const char kThreeResults[] = "{"
+const char kThreeResults[] =
+    "{"
     "\"search_url\": \"http://host/search\","
     "\"results\":["
-      "{"
-        "\"id\": \"app1_id\","
-        "\"localized_name\": \"one\","
-        "\"icon_url\": \"http://host/icon1\","
-        "\"is_paid\": true,"
-        "\"item_type\": \"PLATFORM_APP\""
-      "},"
-      "{"
-        "\"id\": \"app2_id\","
-        "\"localized_name\": \"two\","
-        "\"icon_url\": \"http://host/icon2\","
-        "\"is_paid\": false,"
-        "\"item_type\": \"HOSTED_APP\""
-      "},"
-      "{"
-        "\"id\": \"app3_id\","
-        "\"localized_name\": \"three\","
-        "\"icon_url\": \"http://host/icon3\","
-        "\"is_paid\": false,"
-        "\"item_type\": \"LEGACY_PACKAGED_APP\""
-      "}"
+    "  {"
+    "    \"id\": \"app1_id\","
+    "    \"localized_name\": \"one\","
+    "    \"icon_url\": \"http://host/icon1\","
+    "    \"is_paid\": true,"
+    "    \"item_type\": \"PLATFORM_APP\""
+    "  },"
+    "  {"
+    "    \"id\": \"app2_id\","
+    "    \"localized_name\": \"two\","
+    "    \"icon_url\": \"http://host/icon2\","
+    "    \"is_paid\": false,"
+    "    \"item_type\": \"HOSTED_APP\""
+    "  },"
+    "  {"
+    "    \"id\": \"app3_id\","
+    "    \"localized_name\": \"three\","
+    "    \"icon_url\": \"http://host/icon3\","
+    "    \"is_paid\": false,"
+    "    \"item_type\": \"LEGACY_PACKAGED_APP\""
+    "  }"
     "]}";
 
 struct ParsedSearchResult {
@@ -81,17 +83,31 @@ struct ParsedSearchResult {
   size_t num_actions;
 };
 
-ParsedSearchResult kParsedOneResult[] = {{"app1_id", "app1 name",
-                                          "http://host/icon", false,
-                                          Manifest::TYPE_UNKNOWN, 1}};
+ParsedSearchResult kParsedOneResult[] = {{"app1_id",
+                                          "app1 name",
+                                          "http://host/icon",
+                                          false,
+                                          Manifest::TYPE_UNKNOWN,
+                                          1}};
 
-ParsedSearchResult kParsedThreeResults[] = {
-    {"app1_id", "one", "http://host/icon1", true, Manifest::TYPE_PLATFORM_APP,
-     1},
-    {"app2_id", "two", "http://host/icon2", false, Manifest::TYPE_HOSTED_APP,
-     1},
-    {"app3_id", "three", "http://host/icon3", false,
-     Manifest::TYPE_LEGACY_PACKAGED_APP, 1}};
+ParsedSearchResult kParsedThreeResults[] = {{"app1_id",
+                                             "one",
+                                             "http://host/icon1",
+                                             true,
+                                             Manifest::TYPE_PLATFORM_APP,
+                                             1},
+                                            {"app2_id",
+                                             "two",
+                                             "http://host/icon2",
+                                             false,
+                                             Manifest::TYPE_HOSTED_APP,
+                                             1},
+                                            {"app3_id",
+                                             "three",
+                                             "http://host/icon3",
+                                             false,
+                                             Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                             1}};
 
 }  // namespace
 
@@ -131,7 +147,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
                 const std::string& mock_server_response) {
     webstore_provider_->Start(false, base::UTF8ToUTF16(query));
 
-    if (webstore_provider_->webstore_search_ && !mock_server_response.empty()) {
+    if (webstore_provider_->query_pending_ && !mock_server_response.empty()) {
       mock_server_response_ = mock_server_response;
 
       DCHECK(!run_loop_);
@@ -163,7 +179,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     ASSERT_EQ(expected_result_size, webstore_provider_->results().size());
     for (size_t i = 0; i < expected_result_size; ++i) {
       const SearchResult* result = webstore_provider_->results()[i];
-      ASSERT_EQ(extensions::Extension::GetBaseURLFromExtensionId(
+      EXPECT_EQ(extensions::Extension::GetBaseURLFromExtensionId(
                     expected_results[i].id).spec(),
                 result->id());
       EXPECT_EQ(std::string(expected_results[i].title),
@@ -197,9 +213,9 @@ class WebstoreProviderTest : public InProcessBrowserTest {
     scoped_ptr<BasicHttpResponse> response(new BasicHttpResponse);
 
     if (request.relative_url.find("/jsonsearch?") != std::string::npos) {
-      if (mock_server_response_ == "404") {
+      if (mock_server_response_ == "ERROR_NOT_FOUND") {
         response->set_code(net::HTTP_NOT_FOUND);
-      } else if (mock_server_response_ == "500") {
+      } else if (mock_server_response_ == "ERROR_INTERNAL_SERVER_ERROR") {
         response->set_code(net::HTTP_INTERNAL_SERVER_ERROR);
       } else {
         response->set_code(net::HTTP_OK);
@@ -233,21 +249,29 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, Basic) {
     const ParsedSearchResult* expected_results;
     size_t expected_result_size;
   } kTestCases[] = {
-    // "Search in web store" result with query text itself is used for
-    // synchronous placeholder, bad server response etc.
-    {"synchronous", "", "synchronous", NULL, 0 },
-    {"404", "404", "404", NULL, 0 },
-    {"500", "500", "500", NULL, 0 },
-    {"bad json", "invalid json", "bad json", NULL, 0 },
-    // Good results.
-    {"1 result", kOneResult, "app1 name", kParsedOneResult, 1 },
-    {"3 result", kThreeResults, "one,two,three", kParsedThreeResults, 3 },
+      // Note: If a search results in an error, or returns 0 results, we expect
+      // the webstore provider to leave a placeholder "search in web store"
+      // result with the same title as the search query. So all cases where
+      // |expected_result_titles| == |query| means we are expecting an error.
+
+      // A search that returns 0 results.
+      {"synchronous", "", "synchronous", NULL, 0},
+      // Getting an error response from the server (note: the responses
+      // "ERROR_NOT_FOUND" and "ERROR_INTERNAL_SERVER_ERROR" are treated
+      // specially by HandleResponse).
+      {"404", "ERROR_NOT_FOUND", "404", NULL, 0},
+      {"500", "ERROR_INTERNAL_SERVER_ERROR", "500", NULL, 0},
+      // Getting bad JSON from the server.
+      {"bad json", "invalid json", "bad json", NULL, 0},
+      // Good results.
+      {"1 result", kOneResult, "app1 name", kParsedOneResult, 1},
+      {"3 result", kThreeResults, "one,two,three", kParsedThreeResults, 3},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     if (kTestCases[i].expected_result_titles) {
       RunQuery(kTestCases[i].query, kTestCases[i].mock_server_response);
-      ASSERT_EQ(kTestCases[i].expected_result_titles, GetResultTitles())
+      EXPECT_EQ(kTestCases[i].expected_result_titles, GetResultTitles())
           << "Case " << i << ": q=" << kTestCases[i].query;
 
       if (kTestCases[i].expected_results) {
@@ -262,17 +286,17 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForSensitiveData) {
   // None of the following input strings should be accepted because they may
   // contain private data.
   const char* inputs[] = {
-    // file: scheme is bad.
-    "file://filename",
-    "FILE://filename",
-    // URLs with usernames, ports, queries or refs are bad.
-    "http://username:password@hostname/",
-    "http://www.example.com:1000",
-    "http://foo:1000",
-    "http://hostname/?query=q",
-    "http://hostname/path#ref",
-    // A https URL with path is bad.
-    "https://hostname/path",
+      // file: scheme is bad.
+      "file://filename",
+      "FILE://filename",
+      // URLs with usernames, ports, queries or refs are bad.
+      "http://username:password@hostname/",
+      "http://www.example.com:1000",
+      "http://foo:1000",
+      "http://hostname/?query=q",
+      "http://hostname/path#ref",
+      // A https URL with path is bad.
+      "https://hostname/path",
   };
 
   for (size_t i = 0; i < arraysize(inputs); ++i) {

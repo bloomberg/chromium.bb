@@ -58,6 +58,9 @@ class WebstoreProvider : public WebserviceSearchProvider{
   // The current query.
   std::string query_;
 
+  // Whether there is currently a query pending.
+  bool query_pending_;
+
   DISALLOW_COPY_AND_ASSIGN(WebstoreProvider);
 };
 

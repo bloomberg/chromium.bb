@@ -54,8 +54,10 @@ extensions::Manifest::Type ParseItemType(const std::string& item_type_str) {
 
 WebstoreProvider::WebstoreProvider(Profile* profile,
                                    AppListControllerDelegate* controller)
-  :  WebserviceSearchProvider(profile),
-     controller_(controller){}
+    : WebserviceSearchProvider(profile),
+      controller_(controller),
+      query_pending_(false) {
+}
 
 WebstoreProvider::~WebstoreProvider() {}
 
@@ -84,6 +86,7 @@ void WebstoreProvider::Start(bool /*is_voice_query*/,
         profile_->GetRequestContext()));
   }
 
+  query_pending_ = true;
   StartThrottledQuery(base::Bind(&WebstoreProvider::StartQuery,
                                  base::Unretained(this)));
 
@@ -111,6 +114,7 @@ void WebstoreProvider::OnWebstoreSearchFetched(
     scoped_ptr<base::DictionaryValue> json) {
   ProcessWebstoreSearchResults(json.get());
   cache_->Put(WebserviceCache::WEBSTORE, query_, json.Pass());
+  query_pending_ = false;
 
   if (!webstore_search_fetched_callback_.is_null())
     webstore_search_fetched_callback_.Run();
