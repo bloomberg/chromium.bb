@@ -1941,3 +1941,7 @@ crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 crbug.com/486962 [ Win Debug ] svg/W3C-SVG-1.1/animate-elem-40-t.svg [ ImageOnlyFailure Pass ]
 crbug.com/486962 [ Win Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
 crbug.com/486962 [ Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
+
+crbug.com/487034 svg/animations/animate-restart-never.html [ Timeout ]
+crbug.com/487034 virtual/slimmingpaint/svg/animations/animate-restart-never.html [ Timeout ]
+
