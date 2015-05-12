@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "skia/ext/refptr.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/gfx/canvas.h"
 
 namespace cc {
 class DisplayItemList;
@@ -42,8 +43,8 @@ class COMPOSITOR_EXPORT PaintRecorder {
 
  private:
   const PaintContext& context_;
+  gfx::Canvas owned_canvas_;
   gfx::Canvas* canvas_;
-  scoped_ptr<gfx::Canvas> owned_canvas_;
   PaintCache* cache_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);

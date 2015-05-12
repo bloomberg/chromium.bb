@@ -747,10 +747,10 @@ void Layer::PaintContents(
     ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContents", "name", name_);
   ClearDamagedRects();
-  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
-      sk_canvas, device_scale_factor_));
-  if (delegate_)
-    delegate_->OnPaintLayer(PaintContext(canvas.get(), clip));
+  if (delegate_) {
+    gfx::Canvas canvas(sk_canvas, device_scale_factor_);
+    delegate_->OnPaintLayer(PaintContext(&canvas, clip));
+  }
 }
 
 void Layer::PaintContentsToDisplayList(

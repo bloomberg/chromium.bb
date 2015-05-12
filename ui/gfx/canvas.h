@@ -83,13 +83,12 @@ class GFX_EXPORT Canvas {
   // |image_rep|, and draws the |image_rep| into it.
   Canvas(const ImageSkiaRep& image_rep, bool is_opaque);
 
-  virtual ~Canvas();
-
   // Creates a Canvas backed by an |sk_canvas| with |image_scale_|.
   // |sk_canvas| is assumed to be already scaled based on |image_scale|
   // so no additional scaling is applied.
-  static Canvas* CreateCanvasWithoutScaling(SkCanvas* sk_canvas,
-                                            float image_scale);
+  Canvas(SkCanvas* sk_canvas, float image_scale);
+
+  virtual ~Canvas();
 
   // Recreates the backing platform canvas with DIP |size| and |image_scale_|.
   // If the canvas is not opaque, it is explicitly cleared.
@@ -413,8 +412,6 @@ class GFX_EXPORT Canvas {
   float image_scale() const { return image_scale_; }
 
  private:
-  Canvas(SkCanvas* canvas, float image_scale);
-
   // Test whether the provided rectangle intersects the current clip rect.
   bool IntersectsClipRectInt(int x, int y, int w, int h);
   bool IntersectsClipRect(const Rect& rect);

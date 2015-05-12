@@ -2798,8 +2798,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
 
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(
       SkSurface::NewRasterN32Premul(kCanvasSize.width(), kCanvasSize.height()));
-  scoped_ptr<Canvas> canvas(
-      Canvas::CreateCanvasWithoutScaling(surface->getCanvas(), 1.0f));
+  Canvas canvas(surface->getCanvas(), 1.0f);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
@@ -2819,7 +2818,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
     render_text->set_clip_to_display_rect(false);
     ASSERT_LE(string_size.width() + kTestSize * 2, kCanvasSize.width());
 
-    render_text->Draw(canvas.get());
+    render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
     const uint32* buffer =
         static_cast<const uint32*>(surface->peekPixels(nullptr, nullptr));
@@ -2881,8 +2880,7 @@ TEST_F(RenderTextTest, TextDoesClip) {
 
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(
       SkSurface::NewRasterN32Premul(kCanvasSize.width(), kCanvasSize.height()));
-  scoped_ptr<Canvas> canvas(
-      Canvas::CreateCanvasWithoutScaling(surface->getCanvas(), 1.0f));
+  Canvas canvas(surface->getCanvas(), 1.0f);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
@@ -2896,7 +2894,7 @@ TEST_F(RenderTextTest, TextDoesClip) {
     render_text->SetDisplayRect(
         Rect(kTestSize, kTestSize, fake_width, fake_height));
     render_text->set_clip_to_display_rect(true);
-    render_text->Draw(canvas.get());
+    render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
     const uint32* buffer =
         static_cast<const uint32*>(surface->peekPixels(nullptr, nullptr));

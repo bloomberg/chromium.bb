@@ -9,30 +9,36 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/compositor/paint_context.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
 
 PaintRecorder::PaintRecorder(const PaintContext& context, PaintCache* cache)
-    : context_(context), canvas_(context.canvas_), cache_(cache) {
+    : context_(context),
+      owned_canvas_(
+          // If the |context| has a canvas, we'll just point to it in |canvas_|
+          // so use anything here to initialize the gfx::Canvas without any
+          // allocations.
+          // The SkCanvas reference returned by beginRecording is shared with
+          // the recorder_ so no need to store a RefPtr to it on this class.
+          (context.canvas_
+               ? context.canvas_->sk_canvas()
+               : skia::SharePtr(
+                     context.recorder_->beginRecording(
+                         gfx::RectToSkRect(context.bounds_),
+                         nullptr /* no SkRTreeFactory */,
+                         SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag))
+                     .get()),
+          context.device_scale_factor_),
+      // In the case that we use a shared canvas from PaintContext, the user of
+      // PaintRecorder is expected to Save/Restore any changes made to the
+      // context while using PaintRecorder.
+      canvas_(context.canvas_ ? context.canvas_ : &owned_canvas_),
+      cache_(cache) {
 #if DCHECK_IS_ON()
   DCHECK(!context.inside_paint_recorder_);
   context.inside_paint_recorder_ = true;
 #endif
-
-  if (context.list_) {
-    SkRTreeFactory* no_factory = nullptr;
-    // This SkCancas is shared with the recorder_ so no need to store a RefPtr
-    // to it on this class.
-    skia::RefPtr<SkCanvas> skcanvas =
-        skia::SharePtr(context.recorder_->beginRecording(
-            gfx::RectToSkRect(context.bounds_), no_factory,
-            SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag));
-    owned_canvas_ = make_scoped_ptr(gfx::Canvas::CreateCanvasWithoutScaling(
-        skcanvas.get(), context.device_scale_factor_));
-    canvas_ = owned_canvas_.get();
-  }
 }
 
 PaintRecorder::PaintRecorder(const PaintContext& context)
