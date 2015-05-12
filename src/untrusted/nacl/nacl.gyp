@@ -74,6 +74,7 @@
       'sysconf.c',
       'tls.c',
       'truncate.c',
+      'uname.c',
       'unlink.c',
       'utime.c',
       'utimes.c',

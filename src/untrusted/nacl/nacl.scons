@@ -79,6 +79,7 @@ SRCS_NEWLIB_SYSCALL =  [
     'symlink.c',
     'sysconf.c',
     'truncate.c',
+    'uname.c',
     'unlink.c',
     'utime.c',
     'utimes.c',
@@ -255,6 +256,13 @@ libnacl_dyncode = env.NaClSdkLibrary('libnacl_dyncode', ['dyncode.c'])
 env.AddLibraryToSdk(libnacl_dyncode)
 env.AddHeaderToSdk(['nacl_dyncode.h'])
 env.ComponentLibrary('libnacl_dyncode_private', ['dyncode_private.c'])
+
+if not env.Bit('nacl_glibc'):
+  # Supplemental newlib headers. Required to support functions that libnacl
+  # implements, but newlib doesn't include. These could instead be added
+  # to newlib directly, but maintaining them here allows them to be changed
+  # in sync with the implementation.
+  env.AddHeaderToSdk(['include/sys/utsname.h'], subdir='sys')
 
 libnacl_exception = env.NaClSdkLibrary('libnacl_exception',
                                        ['nacl_exception.c'])

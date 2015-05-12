@@ -5,14 +5,12 @@
 
 Import('env')
 
-def AddLibcTest(env, src, exit_status='0', golden_file=None, test_suffix='',
-                is_broken=False, compile_env=None, link_env=None,
-                EXTRA_LIBS=[]):
+def AddLibcTest(env, src, golden_file=None, test_suffix='', is_broken=False,
+                compile_env=None, link_env=None, EXTRA_LIBS=[]):
   """Convenience function for adding new tests.
 
   src: name of the source file for the test. The test name is derived from it
        by removing the extension and appending the optional test_suffix.
-  exit_status: expected exit status, as a string
   golden_file: golden file for stdout, if applicable
   is_broken: is the test expected to be broken?
   compile_env, link_env: if passed, these are used as the envs for compiling and
@@ -30,34 +28,35 @@ def AddLibcTest(env, src, exit_status='0', golden_file=None, test_suffix='',
       name, obj, EXTRA_LIBS=['${NONIRT_LIBS}'] + EXTRA_LIBS)
   node = env.CommandSelLdrTestNacl(name + '.out',
                                    nexe,
-                                   exit_status=exit_status,
                                    stdout_golden=golden_file)
   env.AddNodeToTestSuite(node,
                          ['toolchain_tests', 'small_tests'],
                          'run_' + name + '_test',
                          is_broken=is_broken)
+
 for envtype in ['builtin', 'nobuiltin']:
   uenv = env.Clone()
   # Prevent the compiler from replacing or modifying calls to memcpy et al. so
   # we actually test the libc imlementation.
   if envtype == 'nobuiltin':
     uenv.Append(CFLAGS=['-fno-builtin'])
-  AddLibcTest(uenv, 'memcpy_move_set.c', '0', test_suffix='_' + envtype,
+  AddLibcTest(uenv, 'memcpy_move_set.c', test_suffix='_' + envtype,
               golden_file=env.File('memcpy_move_set.stdout'))
 
-AddLibcTest(env, 'malloc_realloc_calloc_free.c', '0')
+AddLibcTest(env, 'malloc_realloc_calloc_free.c')
 
-AddLibcTest(env, 'inet.c', '0')
-AddLibcTest(env, 'snprintf.c', '0', golden_file=env.File('snprintf.stdout'))
-AddLibcTest(env, 'strtoll.c', '0')
-AddLibcTest(env, 'strtoull.c', '0')
-AddLibcTest(env, 'wcstoll.c', '0', is_broken=env.Bit('nacl_glibc'))
+AddLibcTest(env, 'inet.c')
+AddLibcTest(env, 'uname.c')
+AddLibcTest(env, 'snprintf.c', golden_file=env.File('snprintf.stdout'))
+AddLibcTest(env, 'strtoll.c')
+AddLibcTest(env, 'strtoull.c')
+AddLibcTest(env, 'wcstoll.c', is_broken=env.Bit('nacl_glibc'))
 
 iconv_broken = (env.Bit('nacl_glibc') or
   # The PNaCl archived frontend tests use an archived newlib,
   # but the iconv test requires a new-enough newlib with fixes.
   (env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] < 3))
-AddLibcTest(env, 'iconv.c', '0', is_broken=iconv_broken)
+AddLibcTest(env, 'iconv.c', is_broken=iconv_broken)
 
 # Test that using link-time optimization does not convert calls to
 # library functions that were never linked in.
@@ -69,8 +68,7 @@ if env.Bit('bitcode'):
   opt_env.Append(CFLAGS=['-O3'])
   opt_env.Append(CCFLAGS=['-O3'])
   opt_env.Append(LINKFLAGS=['-O3'])
-  AddLibcTest(env, 'printf_to_puts.c', '0',
-              compile_env=unopt_env, link_env=opt_env)
+  AddLibcTest(env, 'printf_to_puts.c', compile_env=unopt_env, link_env=opt_env)
 
 # This was only made to compile without warnings/hacks after modifying newlib
 # headers, so the PNaCl archived frontend test with older headers can't
