@@ -644,7 +644,7 @@ def calculate_frame_progress(histogram, start, final):
                     target -= this_match
         total += channel_total
         matched += channel_matched
-    progress = (float(matched) / float(total))
+    progress = (float(matched) / float(total)) if total else 1
     return math.floor(progress * 100)
 
 
