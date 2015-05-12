@@ -29,8 +29,8 @@ set -o nounset
 set -o errexit
 
 DIST=${DIST:-precise}
-readonly SCRIPT_DIR=$(dirname $0)
-readonly NACL_ROOT=$(pwd)
+readonly SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE}) && pwd)
+readonly NACL_ROOT=$(cd ${SCRIPT_DIR}/../.. && pwd)
 # this where we create the sysroot image
 readonly INSTALL_ROOT=${NACL_ROOT}/toolchain/linux_x86/arm_trusted
 readonly TAR_ARCHIVE=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}.tgz
@@ -61,15 +61,6 @@ if [ ! -f ${BASE_DEP_LIST} ]; then
   exit 1
 fi
 readonly BASE_DEP_FILES="$(cat ${BASE_DEP_LIST})"
-
-# NOTE: the package listing here should be updated using the
-# GeneratePackageListXXX() functions below
-readonly EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.extra"
-if [ ! -f ${EXTRA_DEP_LIST} ]; then
-  echo "Missing file: ${EXTRA_DEP_LIST}"
-  exit 1
-fi
-readonly EXTRA_DEP_FILES="$(cat ${EXTRA_DEP_LIST})"
 
 readonly RAW_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.sh"
 
@@ -141,8 +132,7 @@ SanityCheck() {
 
 ChangeDirectory() {
   # Change direcotry to top 'native_client' directory.
-  cd $(dirname ${BASH_SOURCE})
-  cd ../..
+  cd ${NACL_ROOT}
 }
 
 
@@ -265,7 +255,7 @@ readonly QEMU_DIR=qemu-1.0.1
 #readonly QEMU_DIR=qemu-2.3.0
 
 readonly QEMU_URL=http://wiki.qemu-project.org/download/${QEMU_TARBALL}
-readonly QEMU_PATCH=$(readlink -f ../third_party/qemu/${QEMU_DIR}.patch_arm)
+readonly QEMU_PATCH=${NACL_ROOT}/../third_party/qemu/${QEMU_DIR}.patch_arm
 
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
@@ -343,8 +333,7 @@ BuildAndInstallQemu() {
 #@    Build everything and package it
 BuildSysroot() {
   ClearInstallDir
-  InstallMissingArmLibrariesAndHeadersIntoSysroot \
-    ${BASE_DEP_FILES} ${EXTRA_DEP_FILES}
+  InstallMissingArmLibrariesAndHeadersIntoSysroot ${BASE_DEP_FILES}
   CleanupSysrootSymlinks
   HacksAndPatches
   BuildAndInstallQemu
@@ -410,7 +399,6 @@ UpdatePackageLists() {
 
   . "${RAW_DEP_LIST}"
   GeneratePackageList ${BASE_DEP_LIST} "${BASE_PACKAGES}"
-  GeneratePackageList ${EXTRA_DEP_LIST} "${EXTRA_PACKAGES}"
 }
 
 if [[ $# -eq 0 ]] ; then
