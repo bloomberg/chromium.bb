@@ -1,4 +1,5 @@
 namespace="EventTarget"
+export="CORE_EXPORT"
 
 core/animation/AnimationPlayer
 core/css/FontFaceSet
