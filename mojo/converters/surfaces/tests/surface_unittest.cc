@@ -148,6 +148,9 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   mojo_texture_state->background_color = Color::New();
   mojo_texture_quad->texture_quad_state = mojo_texture_state.Pass();
   PassPtr mojo_pass = Pass::New();
+  mojo_pass->id = RenderPassId::New();
+  mojo_pass->id->layer_id = 1;
+  mojo_pass->id->index = 1;
   mojo_pass->quads.push_back(mojo_texture_quad.Pass());
   SharedQuadStatePtr mojo_sqs = SharedQuadState::New();
   mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
@@ -164,6 +167,9 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   mojo_texture_state->vertex_opacity = mojo::Array<float>::New(4);
   mojo_texture_quad->texture_quad_state = mojo_texture_state.Pass();
   PassPtr mojo_pass = Pass::New();
+  mojo_pass->id = RenderPassId::New();
+  mojo_pass->id->layer_id = 1;
+  mojo_pass->id->index = 1;
   mojo_pass->quads.push_back(mojo_texture_quad.Pass());
   SharedQuadStatePtr mojo_sqs = SharedQuadState::New();
   mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
