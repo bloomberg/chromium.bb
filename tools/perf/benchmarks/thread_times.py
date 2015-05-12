@@ -18,6 +18,11 @@ class _ThreadTimes(benchmark.Benchmark):
   def Name(cls):
     return 'thread_times'
 
+  @classmethod
+  def ValueCanBeAddedPredicate(cls, value, _):
+    # Default to only reporting per-frame metrics.
+    return 'per_second' not in value.name
+
   def CreatePageTest(self, options):
     return thread_times.ThreadTimes(options.report_silk_details)
 
