@@ -46,8 +46,8 @@ scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
 NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
                                  AvatarButtonStyle button_style,
                                  Browser* browser)
-    : AvatarBaseButton(browser),
-      LabelButton(listener, base::string16()),
+    : LabelButton(listener, base::string16()),
+      browser_(browser),
       has_auth_error_(false),
       suppress_mouse_released_action_(false) {
   set_triggerable_event_flags(
@@ -95,10 +95,12 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
         *rb->GetImageNamed(IDR_AVATAR_GLASS_BUTTON_AVATAR).ToImageSkia();
   }
 
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+
   // Subscribe to authentication error changes so that the avatar button can
   // update itself.  Note that guest mode profiles won't have a token service.
   SigninErrorController* error =
-      profiles::GetSigninErrorController(browser->profile());
+      profiles::GetSigninErrorController(browser_->profile());
   if (error) {
     error->AddObserver(this);
     OnErrorChanged();  // This calls Update().
@@ -109,8 +111,10 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
 }
 
 NewAvatarButton::~NewAvatarButton() {
+  g_browser_process->profile_manager()->
+      GetProfileInfoCache().RemoveObserver(this);
   SigninErrorController* error =
-      profiles::GetSigninErrorController(browser()->profile());
+      profiles::GetSigninErrorController(browser_->profile());
   if (error)
     error->RemoveObserver(this);
 }
@@ -128,6 +132,41 @@ void NewAvatarButton::OnMouseReleased(const ui::MouseEvent& event) {
     LabelButton::OnMouseReleased(event);
 }
 
+void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
+  Update();
+}
+
+void NewAvatarButton::OnProfileWasRemoved(
+      const base::FilePath& profile_path,
+      const base::string16& profile_name) {
+  // If deleting the active profile, don't bother updating the avatar
+  // button, as the browser window is being closed anyway.
+  if (browser_->profile()->GetPath() != profile_path)
+    Update();
+}
+
+void NewAvatarButton::OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) {
+  if (browser_->profile()->GetPath() == profile_path)
+    Update();
+}
+
+void NewAvatarButton::OnProfileSupervisedUserIdChanged(
+      const base::FilePath& profile_path) {
+  if (browser_->profile()->GetPath() == profile_path)
+    Update();
+}
+
+void NewAvatarButton::OnErrorChanged() {
+  // If there is an error, show an warning icon.
+  const SigninErrorController* error =
+      profiles::GetSigninErrorController(browser_->profile());
+  has_auth_error_ = error && error->HasError();
+
+  Update();
+}
+
 void NewAvatarButton::Update() {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -135,12 +174,12 @@ void NewAvatarButton::Update() {
   // If we have a single local profile, then use the generic avatar
   // button instead of the profile name. Never use the generic button if
   // the active profile is Guest.
-  bool use_generic_button = (!browser()->profile()->IsGuestSession() &&
+  bool use_generic_button = (!browser_->profile()->IsGuestSession() &&
                              cache.GetNumberOfProfiles() == 1 &&
                              !cache.ProfileIsAuthenticatedAtIndex(0));
 
   SetText(use_generic_button ? base::string16() :
-      profiles::GetAvatarButtonTextForProfile(browser()->profile()));
+      profiles::GetAvatarButtonTextForProfile(browser_->profile()));
 
   // If the button has no text, clear the text shadows to make sure the
   // image is centered correctly.
@@ -169,13 +208,4 @@ void NewAvatarButton::Update() {
   SetImageLabelSpacing(use_generic_button ? 0 : kDefaultImageTextSpacing);
 
   PreferredSizeChanged();
-}
-
-void NewAvatarButton::OnErrorChanged() {
-  // If there is an error, show a warning.
-  const SigninErrorController* error =
-      profiles::GetSigninErrorController(browser()->profile());
-  has_auth_error_ = error && error->HasError();
-
-  Update();
 }

@@ -35,8 +35,8 @@ static inline int Round(double x) {
 const char AvatarMenuButton::kViewClassName[] = "AvatarMenuButton";
 
 AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
-    : AvatarBaseButton(browser),
-      MenuButton(NULL, base::string16(), this, false),
+    : MenuButton(NULL, base::string16(), this, false),
+      browser_(browser),
       disabled_(disabled),
       is_rectangle_(false),
       old_height_(0),
@@ -46,8 +46,6 @@ AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
 
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
-
-  Update();
 }
 
 AvatarMenuButton::~AvatarMenuButton() {
@@ -146,24 +144,6 @@ bool AvatarMenuButton::GetAvatarImages(Profile* profile,
   return true;
 }
 
-void AvatarMenuButton::Update() {
-  // The browser can be null in tests.
-  if (!browser())
-    return;
-
-  const bool should_show_avatar_menu = AvatarMenu::ShouldShowAvatarMenu();
-  SetEnabled(should_show_avatar_menu);
-
-  gfx::Image avatar;
-  gfx::Image taskbar_badge_avatar;
-  bool is_rectangle = false;
-  if (AvatarMenuButton::GetAvatarImages(
-          browser()->profile(), should_show_avatar_menu, &avatar,
-          &taskbar_badge_avatar, &is_rectangle)) {
-    SetAvatarIcon(avatar, is_rectangle);
-  }
-}
-
 // views::ViewTargeterDelegate:
 bool AvatarMenuButton::DoesIntersectRect(const views::View* target,
                                          const gfx::Rect& rect) const {
@@ -176,5 +156,5 @@ bool AvatarMenuButton::DoesIntersectRect(const views::View* target,
 void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
   if (!disabled_)
-    chrome::ShowAvatarMenu(browser());
+    chrome::ShowAvatarMenu(browser_);
 }

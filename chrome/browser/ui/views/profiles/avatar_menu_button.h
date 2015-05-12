@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/views/profiles/avatar_base_button.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -26,8 +25,7 @@ class Profile;
 // A button used to show either the incognito avatar or the profile avatar.
 // The button can optionally have a menu attached to it.
 
-class AvatarMenuButton : public AvatarBaseButton,
-                         public views::MenuButton,
+class AvatarMenuButton : public views::MenuButton,
                          public views::MenuButtonListener,
                          public views::ViewTargeterDelegate {
  public:
@@ -63,9 +61,6 @@ class AvatarMenuButton : public AvatarBaseButton,
                               gfx::Image* avatar,
                               gfx::Image* taskbar_badge_avatar,
                               bool* is_rectangle);
- protected:
-  // AvatarBaseButton:
-  void Update() override;
 
  private:
   // views::ViewTargeterDelegate:
@@ -76,6 +71,7 @@ class AvatarMenuButton : public AvatarBaseButton,
   void OnMenuButtonClicked(views::View* source,
                            const gfx::Point& point) override;
 
+  Browser* browser_;
   bool disabled_;
   scoped_ptr<ui::MenuModel> menu_model_;
 

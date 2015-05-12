@@ -2312,8 +2312,6 @@
       'browser/ui/views/passwords/save_account_more_combobox_model.cc',
       'browser/ui/views/passwords/save_account_more_combobox_model.h',
       'browser/ui/views/process_singleton_dialog_linux.cc',
-      'browser/ui/views/profiles/avatar_base_button.cc',
-      'browser/ui/views/profiles/avatar_base_button.h',
       'browser/ui/views/profiles/avatar_menu_bubble_view.cc',
       'browser/ui/views/profiles/avatar_menu_bubble_view.h',
       'browser/ui/views/profiles/avatar_menu_button.cc',
