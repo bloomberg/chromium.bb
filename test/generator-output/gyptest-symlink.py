@@ -13,8 +13,7 @@ symlink.
 import TestGyp
 import os
 
-# Android doesn't support --generator-output.
-test = TestGyp.TestGyp(formats=['!android'])
+test = TestGyp.TestGyp()
 if not hasattr(os, 'symlink'):
   test.skip_test('Missing os.symlink -- skipping test.\n')
 

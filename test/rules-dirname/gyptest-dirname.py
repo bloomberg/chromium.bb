@@ -12,7 +12,7 @@ import TestGyp
 import os
 import sys
 
-test = TestGyp.TestGyp(formats=['make', 'ninja', 'android', 'xcode', 'msvs'])
+test = TestGyp.TestGyp(formats=['make', 'ninja', 'xcode', 'msvs'])
 
 test.run_gyp('actions.gyp', chdir='src')
 

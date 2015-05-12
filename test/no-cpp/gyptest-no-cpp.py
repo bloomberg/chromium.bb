@@ -16,9 +16,9 @@ import sys
 
 # set |match| to ignore build stderr output.
 test = TestGyp.TestGyp(match = lambda a, b: True)
-if sys.platform != 'win32' and test.format not in ('make', 'android'):
+if sys.platform != 'win32' and test.format != 'make':
   # TODO: This doesn't pass with make.
-  # TODO: Does a test like this make sense with Windows? Android?
+  # TODO: Does a test like this make sense with Windows?
 
   CHDIR = 'src'
   test.run_gyp('test.gyp', chdir=CHDIR)
