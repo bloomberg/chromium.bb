@@ -845,6 +845,10 @@ int SSLClientSocketOpenSSL::Init() {
                                ssl_config_.fastradio_padding_enabled &&
                                    ssl_config_.fastradio_padding_eligible);
 
+  // By default, renegotiations are rejected. After the initial handshake
+  // completes, some application protocols may re-enable it.
+  SSL_set_reject_peer_renegotiations(ssl_, 1);
+
   return OK;
 }
 
@@ -950,6 +954,9 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     size_t sct_list_len;
     SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list, &sct_list_len);
     set_signed_cert_timestamps_received(sct_list_len != 0);
+
+    if (IsRenegotiationAllowed())
+      SSL_set_reject_peer_renegotiations(ssl_, 0);
 
     // Verify the certificate.
     UpdateServerCert();
@@ -1885,6 +1892,18 @@ std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
     result.append("deprecated");
 
   return result;
+}
+
+bool SSLClientSocketOpenSSL::IsRenegotiationAllowed() const {
+  if (npn_status_ == kNextProtoUnsupported)
+    return ssl_config_.renego_allowed_default;
+
+  NextProto next_proto = NextProtoFromString(npn_proto_);
+  for (NextProto allowed : ssl_config_.renego_allowed_for_protos) {
+    if (next_proto == allowed)
+      return true;
+  }
+  return false;
 }
 
 scoped_refptr<X509Certificate>

@@ -161,6 +161,13 @@ struct NET_EXPORT SSLConfig {
   // requested by the client.
   NextProtoVector next_protos;
 
+  // True if renegotiation should be allowed for the default application-level
+  // protocol when the peer negotiates neither ALPN nor NPN.
+  bool renego_allowed_default;
+
+  // The list of application-level protocols to enable renegotiation for.
+  NextProtoVector renego_allowed_for_protos;
+
   scoped_refptr<X509Certificate> client_cert;
 
   // Information about how to proceed with fastradio padding.

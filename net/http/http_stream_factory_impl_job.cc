@@ -1266,15 +1266,29 @@ bool HttpStreamFactoryImpl::Job::IsSpdyAlternate() const {
 void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
                                                SSLConfig* ssl_config,
                                                bool is_proxy) const {
+  if (!is_proxy) {
+    // Prior to HTTP/2 and SPDY, some servers use TLS renegotiation to request
+    // TLS client authentication after the HTTP request was sent. Allow
+    // renegotiation for only those connections.
+    //
+    // Note that this does NOT implement the provision in
+    // https://http2.github.io/http2-spec/#rfc.section.9.2.1 which allows the
+    // server to request a renegotiation immediately before sending the
+    // connection preface as waiting for the preface would cost the round trip
+    // that False Start otherwise saves.
+    ssl_config->renego_allowed_default = true;
+    ssl_config->renego_allowed_for_protos.push_back(kProtoHTTP11);
+  }
+
   if (proxy_info_.is_https() && ssl_config->send_client_cert) {
     // When connecting through an HTTPS proxy, disable TLS False Start so
     // that client authentication errors can be distinguished between those
     // originating from the proxy server (ERR_PROXY_CONNECTION_FAILED) and
     // those originating from the endpoint (ERR_SSL_PROTOCOL_ERROR /
     // ERR_BAD_SSL_CLIENT_AUTH_CERT).
-    // TODO(rch): This assumes that the HTTPS proxy will only request a
-    // client certificate during the initial handshake.
-    // http://crbug.com/59292
+    //
+    // This assumes the proxy will only request certificates on the initial
+    // handshake; renegotiation on the proxy connection is unsupported.
     ssl_config->false_start_enabled = false;
   }
 

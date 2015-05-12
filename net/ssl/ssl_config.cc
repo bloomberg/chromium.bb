@@ -31,6 +31,7 @@ SSLConfig::SSLConfig()
       verify_ev_cert(false),
       version_fallback(false),
       cert_io_enabled(true),
+      renego_allowed_default(false),
       fastradio_padding_enabled(false),
       fastradio_padding_eligible(false) {
 }

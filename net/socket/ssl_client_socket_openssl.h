@@ -189,6 +189,9 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // this socket.
   std::string GetSessionCacheKey() const;
 
+  // Returns true if renegotiations are allowed.
+  bool IsRenegotiationAllowed() const;
+
   bool transport_send_busy_;
   bool transport_recv_busy_;
 

@@ -569,12 +569,14 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
                                          void* arg,
                                          PRBool* can_false_start);
 
-  // Called by NSS once the handshake has completed.
+  // Called by NSS each time a handshake completely finishes.
   // |arg| contains a pointer to the current SSLClientSocketNSS::Core.
   static void HandshakeCallback(PRFileDesc* socket, void* arg);
 
-  // Called once the handshake has succeeded.
-  void HandshakeSucceeded();
+  // Called once for each successful handshake. If the initial handshake false
+  // starts, it is called when it false starts and not when it completely
+  // finishes. is_initial is true if this is the initial handshake.
+  void HandshakeSucceeded(bool is_initial);
 
   // Handles an NSS error generated while handshaking or performing IO.
   // Returns a network error code mapped from the original NSS error.
@@ -635,6 +637,9 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   void UpdateNextProto();
   // Record TLS extension used for protocol negotiation (NPN or ALPN).
   void UpdateExtensionUsed();
+
+  // Returns true if renegotiations are allowed.
+  bool IsRenegotiationAllowed() const;
 
   ////////////////////////////////////////////////////////////////////////////
   // Methods that are ONLY called on the network task runner:
@@ -740,7 +745,8 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   bool channel_id_needed_;
   // True if the handshake state machine was interrupted for client auth.
   bool client_auth_cert_needed_;
-  // True if NSS has False Started.
+  // True if NSS has False Started in the initial handshake, but the initial
+  // handshake has not yet completely finished..
   bool false_started_;
   // True if NSS has called HandshakeCallback.
   bool handshake_callback_called_;
@@ -1279,6 +1285,7 @@ void SSLClientSocketNSS::Core::HandshakeCallback(
   Core* core = reinterpret_cast<Core*>(arg);
   DCHECK(core->OnNSSTaskRunner());
 
+  bool is_initial = !core->handshake_callback_called_;
   core->handshake_callback_called_ = true;
   if (core->false_started_) {
     core->false_started_ = false;
@@ -1295,10 +1302,10 @@ void SSLClientSocketNSS::Core::HandshakeCallback(
     // called HandshakeSucceeded(), so return now.
     return;
   }
-  core->HandshakeSucceeded();
+  core->HandshakeSucceeded(is_initial);
 }
 
-void SSLClientSocketNSS::Core::HandshakeSucceeded() {
+void SSLClientSocketNSS::Core::HandshakeSucceeded(bool is_initial) {
   DCHECK(OnNSSTaskRunner());
 
   PRBool last_handshake_resumed;
@@ -1316,6 +1323,22 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
   UpdateConnectionStatus();
   UpdateNextProto();
   UpdateExtensionUsed();
+
+  if (is_initial && IsRenegotiationAllowed()) {
+    // For compatibility, do not enforce RFC 5746 support. Per section 4.1,
+    // enforcement falls largely on the server.
+    //
+    // This is done in a callback rather than after SSL_ForceHandshake returns
+    // because SSL_ForceHandshake will otherwise greedly consume renegotiations
+    // before returning if Finished and HelloRequest are in the same
+    // record.
+    //
+    // Note that SSL_OptionSet should only be called for an initial
+    // handshake. See https://crbug.com/125299.
+    SECStatus rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_RENEGOTIATION,
+                                 SSL_RENEGOTIATE_TRANSITIONAL);
+    DCHECK_EQ(SECSuccess, rv);
+  }
 
   // Update the network task runners view of the handshake state whenever
   // a handshake has completed.
@@ -1447,7 +1470,7 @@ int SSLClientSocketNSS::Core::DoHandshake() {
   } else if (rv == SECSuccess) {
     if (!handshake_callback_called_) {
       false_started_ = true;
-      HandshakeSucceeded();
+      HandshakeSucceeded(true);
     }
   } else {
     PRErrorCode prerr = PR_GetError();
@@ -2118,6 +2141,20 @@ void SSLClientSocketNSS::Core::UpdateExtensionUsed() {
       nss_handshake_state_.negotiation_extension_ = kExtensionNPN;
     }
   }
+}
+
+bool SSLClientSocketNSS::Core::IsRenegotiationAllowed() const {
+  DCHECK(OnNSSTaskRunner());
+
+  if (nss_handshake_state_.next_proto_status == kNextProtoUnsupported)
+    return ssl_config_.renego_allowed_default;
+
+  NextProto next_proto = NextProtoFromString(nss_handshake_state_.next_proto);
+  for (NextProto allowed : ssl_config_.renego_allowed_for_protos) {
+    if (next_proto == allowed)
+      return true;
+  }
+  return false;
 }
 
 void SSLClientSocketNSS::Core::RecordChannelIDSupportOnNSSTaskRunner() {
@@ -2791,13 +2828,9 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
   if (rv != SECSuccess)
     LogFailedNSSFunction(net_log_, "SSL_OptionSet", "SSL_ENABLE_FALSE_START");
 
-  // We allow servers to request renegotiation. Since we're a client,
-  // prohibiting this is rather a waste of time. Only servers are in a
-  // position to prevent renegotiation attacks.
-  // http://extendedsubset.com/?p=8
-
-  rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_RENEGOTIATION,
-                     SSL_RENEGOTIATE_TRANSITIONAL);
+  // By default, renegotiations are rejected. After the initial handshake
+  // completes, some application protocols may re-enable it.
+  rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_RENEGOTIATION, SSL_RENEGOTIATE_NEVER);
   if (rv != SECSuccess) {
     LogFailedNSSFunction(
         net_log_, "SSL_OptionSet", "SSL_ENABLE_RENEGOTIATION");
