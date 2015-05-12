@@ -64,13 +64,12 @@ class VideoRendererAlgorithmTest : public testing::Test {
  public:
   VideoRendererAlgorithmTest()
       : tick_clock_(new base::SimpleTestTickClock()),
-        algorithm_(base::Bind(&WallClockTimeSource::GetWallClockTime,
+        algorithm_(base::Bind(&WallClockTimeSource::GetWallClockTimes,
                               base::Unretained(&time_source_))) {
     // Always start the TickClock at a non-zero value since null values have
     // special connotations.
     tick_clock_->Advance(base::TimeDelta::FromMicroseconds(10000));
-    time_source_.SetTickClockForTesting(
-        scoped_ptr<base::TickClock>(tick_clock_));
+    time_source_.set_tick_clock_for_testing(tick_clock_.get());
   }
   ~VideoRendererAlgorithmTest() override {}
 
@@ -301,8 +300,8 @@ class VideoRendererAlgorithmTest : public testing::Test {
 
  protected:
   VideoFramePool frame_pool_;
+  scoped_ptr<base::SimpleTestTickClock> tick_clock_;
   WallClockTimeSource time_source_;
-  base::SimpleTestTickClock* tick_clock_;  // Owned by |time_source_|.
   VideoRendererAlgorithm algorithm_;
 
  private:
@@ -606,7 +605,7 @@ TEST_F(VideoRendererAlgorithmTest, TimeIsStopped) {
   EXPECT_EQ(tg.interval(1), frame->timestamp());
   EXPECT_EQ(0u, frames_dropped);
   EXPECT_EQ(2u, frames_queued());
-  EXPECT_EQ(2u, algorithm_.EffectiveFramesQueued());
+  EXPECT_EQ(1u, algorithm_.EffectiveFramesQueued());
 }
 
 // Verify frames inserted out of order end up in the right spot and are rendered

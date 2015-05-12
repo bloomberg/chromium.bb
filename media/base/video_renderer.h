@@ -12,6 +12,7 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/time_source.h"
 
 namespace media {
 
@@ -23,9 +24,6 @@ class MEDIA_EXPORT VideoRenderer {
  public:
   // Used to paint VideoFrame.
   typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> PaintCB;
-
-  // Used to convert a media timestamp into a wall clock timestamp.
-  typedef base::Callback<base::TimeTicks(base::TimeDelta)> WallClockTimeCB;
 
   VideoRenderer();
 
@@ -62,7 +60,7 @@ class MEDIA_EXPORT VideoRenderer {
       const BufferingStateCB& buffering_state_cb,
       const base::Closure& ended_cb,
       const PipelineStatusCB& error_cb,
-      const WallClockTimeCB& wall_clock_time_cb,
+      const TimeSource::WallClockTimeCB& wall_clock_time_cb,
       const base::Closure& waiting_for_decryption_key_cb) = 0;
 
   // Discards any video data and stops reading from |stream|, executing

@@ -144,7 +144,7 @@ void VideoRendererImpl::Initialize(
     const BufferingStateCB& buffering_state_cb,
     const base::Closure& ended_cb,
     const PipelineStatusCB& error_cb,
-    const WallClockTimeCB& wall_clock_time_cb,
+    const TimeSource::WallClockTimeCB& wall_clock_time_cb,
     const base::Closure& waiting_for_decryption_key_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
@@ -346,7 +346,7 @@ void VideoRendererImpl::ThreadMain() {
     }
 
     base::TimeTicks target_paint_time =
-        wall_clock_time_cb_.Run(ready_frames_.front()->timestamp());
+        ConvertMediaTimestamp(ready_frames_.front()->timestamp());
 
     // If media time has stopped, don't attempt to paint any more frames.
     if (target_paint_time.is_null()) {
@@ -420,7 +420,7 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   scoped_refptr<VideoFrame> next_frame = ready_frames_.front();
   ready_frames_.pop_front();
 
-  last_media_time_ = wall_clock_time_cb_.Run(next_frame->timestamp());
+  last_media_time_ = ConvertMediaTimestamp(next_frame->timestamp());
 
   paint_cb_.Run(next_frame);
 
@@ -435,8 +435,7 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
 
   lock_.AssertAcquired();
 
-  last_media_time_ =
-      wall_clock_time_cb_.Run(ready_frames_.front()->timestamp());
+  last_media_time_ = ConvertMediaTimestamp(ready_frames_.front()->timestamp());
 
   ready_frames_.pop_front();
   frames_dropped_++;
@@ -734,6 +733,15 @@ size_t VideoRendererImpl::MaybeFireEndedCallback() {
   }
 
   return effective_frames;
+}
+
+base::TimeTicks VideoRendererImpl::ConvertMediaTimestamp(
+    base::TimeDelta media_time) {
+  std::vector<base::TimeDelta> media_times(1, media_time);
+  std::vector<base::TimeTicks> wall_clock_times;
+  if (!wall_clock_time_cb_.Run(media_times, &wall_clock_times))
+    return base::TimeTicks();
+  return wall_clock_times[0];
 }
 
 }  // namespace media

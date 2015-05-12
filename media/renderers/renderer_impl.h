@@ -5,6 +5,8 @@
 #ifndef MEDIA_RENDERERS_RENDERER_IMPL_H_
 #define MEDIA_RENDERERS_RENDERER_IMPL_H_
 
+#include <vector>
+
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -80,7 +82,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
     STATE_ERROR
   };
 
-  base::TimeTicks GetWallClockTime(base::TimeDelta time);
+  bool GetWallClockTimes(const std::vector<base::TimeDelta>& media_timestamps,
+                         std::vector<base::TimeTicks>* wall_clock_times);
 
   // Requests that this object notifies when a decryptor is ready through the
   // |decryptor_ready_cb| provided.

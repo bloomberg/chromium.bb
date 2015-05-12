@@ -65,7 +65,7 @@ class MEDIA_EXPORT VideoRendererImpl
                   const BufferingStateCB& buffering_state_cb,
                   const base::Closure& ended_cb,
                   const PipelineStatusCB& error_cb,
-                  const WallClockTimeCB& wall_clock_time_cb,
+                  const TimeSource::WallClockTimeCB& wall_clock_time_cb,
                   const base::Closure& waiting_for_decryption_key_cb) override;
   void Flush(const base::Closure& callback) override;
   void StartPlayingFrom(base::TimeDelta timestamp) override;
@@ -146,6 +146,9 @@ class MEDIA_EXPORT VideoRendererImpl
   // |received_end_of_stream_| is true.  Sets |rendered_end_of_stream_| if it
   // does so.  Returns algorithm_->EffectiveFramesQueued().
   size_t MaybeFireEndedCallback();
+
+  // Helper method for converting a single media timestamp to wall clock time.
+  base::TimeTicks ConvertMediaTimestamp(base::TimeDelta media_timestamp);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -229,7 +232,7 @@ class MEDIA_EXPORT VideoRendererImpl
   BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
-  WallClockTimeCB wall_clock_time_cb_;
+  TimeSource::WallClockTimeCB wall_clock_time_cb_;
 
   base::TimeDelta start_timestamp_;
 

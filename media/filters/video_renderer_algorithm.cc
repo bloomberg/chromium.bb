@@ -16,6 +16,7 @@ const int kMovingAverageSamples = 25;
 VideoRendererAlgorithm::ReadyFrame::ReadyFrame(
     const scoped_refptr<VideoFrame>& ready_frame)
     : frame(ready_frame),
+      has_estimated_end_time(true),
       ideal_render_count(0),
       render_count(0),
       drop_count(0) {
@@ -30,13 +31,13 @@ bool VideoRendererAlgorithm::ReadyFrame::operator<(
 }
 
 VideoRendererAlgorithm::VideoRendererAlgorithm(
-    const TimeConverterCB& time_converter_cb)
+    const TimeSource::WallClockTimeCB& wall_clock_time_cb)
     : cadence_estimator_(base::TimeDelta::FromSeconds(
           kMinimumAcceptableTimeBetweenGlitchesSecs)),
-      time_converter_cb_(time_converter_cb),
+      wall_clock_time_cb_(wall_clock_time_cb),
       frame_duration_calculator_(kMovingAverageSamples),
       frame_dropping_disabled_(false) {
-  DCHECK(!time_converter_cb_.is_null());
+  DCHECK(!wall_clock_time_cb_.is_null());
   Reset();
 }
 
@@ -393,31 +394,31 @@ void VideoRendererAlgorithm::AccountForMissedIntervals(
 }
 
 bool VideoRendererAlgorithm::UpdateFrameStatistics() {
-  // Figure out all current ready frame times at once so we minimize the drift
-  // relative to real time as the code below executes.
-  for (size_t i = 0; i < frame_queue_.size(); ++i) {
+  DCHECK(!frame_queue_.empty());
+
+  // Figure out all current ready frame times at once.
+  std::vector<base::TimeDelta> media_timestamps;
+  media_timestamps.reserve(frame_queue_.size());
+  for (const auto& ready_frame : frame_queue_)
+    media_timestamps.push_back(ready_frame.frame->timestamp());
+
+  // If time has stopped, we can bail out early.
+  std::vector<base::TimeTicks> wall_clock_times;
+  if (!wall_clock_time_cb_.Run(media_timestamps, &wall_clock_times))
+    return false;
+
+  // Transfer the converted wall clock times into our frame queue.
+  DCHECK_EQ(wall_clock_times.size(), frame_queue_.size());
+  for (size_t i = 0; i < frame_queue_.size() - 1; ++i) {
     ReadyFrame& frame = frame_queue_[i];
-    const bool new_frame = frame.start_time.is_null();
-    frame.start_time = time_converter_cb_.Run(frame.frame->timestamp());
-
-    // If time stops or never started, exit immediately.
-    if (frame.start_time.is_null()) {
-      frame.end_time = base::TimeTicks();
-      return false;
-    }
-
-    // TODO(dalecurtis): An unlucky tick of a playback rate change could cause
-    // this to skew so much that time goes backwards between calls.  Fix this by
-    // either converting all timestamps at once or with some retry logic.
-    if (i > 0) {
-      frame_queue_[i - 1].end_time = frame.start_time;
-      const base::TimeDelta delta =
-          frame.start_time - frame_queue_[i - 1].start_time;
-      CHECK_GT(delta, base::TimeDelta());
-      if (new_frame)
-        frame_duration_calculator_.AddSample(delta);
-    }
+    const bool new_sample = frame.has_estimated_end_time;
+    frame.start_time = wall_clock_times[i];
+    frame.end_time = wall_clock_times[i + 1];
+    frame.has_estimated_end_time = false;
+    if (new_sample)
+      frame_duration_calculator_.AddSample(frame.end_time - frame.start_time);
   }
+  frame_queue_.back().start_time = wall_clock_times.back();
 
   if (!frame_duration_calculator_.count())
     return false;

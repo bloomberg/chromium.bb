@@ -229,16 +229,21 @@ void RendererImpl::EnableClocklessVideoPlaybackForTesting() {
   clockless_video_playback_enabled_for_testing_ = true;
 }
 
-base::TimeTicks RendererImpl::GetWallClockTime(base::TimeDelta time) {
+bool RendererImpl::GetWallClockTimes(
+    const std::vector<base::TimeDelta>& media_timestamps,
+    std::vector<base::TimeTicks>* wall_clock_times) {
   // No BelongsToCurrentThread() checking because this can be called from other
   // threads.
   //
   // TODO(scherkus): Currently called from VideoRendererImpl's internal thread,
   // which should go away at some point http://crbug.com/110814
-  if (clockless_video_playback_enabled_for_testing_)
-    return base::TimeTicks::Now();
+  if (clockless_video_playback_enabled_for_testing_) {
+    *wall_clock_times = std::vector<base::TimeTicks>(media_timestamps.size(),
+                                                     base::TimeTicks::Now());
+    return true;
+  }
 
-  return time_source_->GetWallClockTime(time);
+  return time_source_->GetWallClockTimes(media_timestamps, wall_clock_times);
 }
 
 void RendererImpl::SetDecryptorReadyCallback(
@@ -336,7 +341,7 @@ void RendererImpl::InitializeVideoRenderer() {
                  &video_buffering_state_),
       base::Bind(&RendererImpl::OnVideoRendererEnded, weak_this_),
       base::Bind(&RendererImpl::OnError, weak_this_),
-      base::Bind(&RendererImpl::GetWallClockTime, base::Unretained(this)),
+      base::Bind(&RendererImpl::GetWallClockTimes, base::Unretained(this)),
       waiting_for_decryption_key_cb_);
 }
 

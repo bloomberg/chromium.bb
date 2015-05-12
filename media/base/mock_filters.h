@@ -129,7 +129,7 @@ class MockVideoRenderer : public VideoRenderer {
                     const BufferingStateCB& buffering_state_cb,
                     const base::Closure& ended_cb,
                     const PipelineStatusCB& error_cb,
-                    const WallClockTimeCB& wall_clock_time_cb,
+                    const TimeSource::WallClockTimeCB& wall_clock_time_cb,
                     const base::Closure& waiting_for_decryption_key_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta));
@@ -203,7 +203,9 @@ class MockTimeSource : public TimeSource {
   MOCK_METHOD1(SetPlaybackRate, void(double));
   MOCK_METHOD1(SetMediaTime, void(base::TimeDelta));
   MOCK_METHOD0(CurrentMediaTime, base::TimeDelta());
-  MOCK_METHOD1(GetWallClockTime, base::TimeTicks(base::TimeDelta));
+  MOCK_METHOD2(GetWallClockTimes,
+               bool(const std::vector<base::TimeDelta>&,
+                    std::vector<base::TimeTicks>*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTimeSource);

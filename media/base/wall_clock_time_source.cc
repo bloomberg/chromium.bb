@@ -5,14 +5,11 @@
 #include "media/base/wall_clock_time_source.h"
 
 #include "base/logging.h"
-#include "base/time/default_tick_clock.h"
 
 namespace media {
 
 WallClockTimeSource::WallClockTimeSource()
-    : tick_clock_(new base::DefaultTickClock()),
-      ticking_(false),
-      playback_rate_(1.0) {
+    : tick_clock_(&default_tick_clock_), ticking_(false), playback_rate_(1.0) {
 }
 
 WallClockTimeSource::~WallClockTimeSource() {
@@ -60,25 +57,27 @@ base::TimeDelta WallClockTimeSource::CurrentMediaTime() {
   return CurrentMediaTime_Locked();
 }
 
-base::TimeTicks WallClockTimeSource::GetWallClockTime(base::TimeDelta time) {
+bool WallClockTimeSource::GetWallClockTimes(
+    const std::vector<base::TimeDelta>& media_timestamps,
+    std::vector<base::TimeTicks>* wall_clock_times) {
   base::AutoLock auto_lock(lock_);
-  if (!ticking_ || playback_rate_ == 0.0)
-    return base::TimeTicks();
+  if (!ticking_ || !playback_rate_)
+    return false;
 
-  // See notes about |time| values less than |base_time_| in TimeSource header.
-  return reference_wall_ticks_ +
-         base::TimeDelta::FromMicroseconds(
-             (time - base_time_).InMicroseconds() / playback_rate_);
-}
-
-void WallClockTimeSource::SetTickClockForTesting(
-    scoped_ptr<base::TickClock> tick_clock) {
-  tick_clock_.swap(tick_clock);
+  DCHECK(wall_clock_times->empty());
+  wall_clock_times->reserve(media_timestamps.size());
+  for (const auto& media_timestamp : media_timestamps) {
+    wall_clock_times->push_back(
+        reference_wall_ticks_ +
+        base::TimeDelta::FromMicroseconds(
+            (media_timestamp - base_time_).InMicroseconds() / playback_rate_));
+  }
+  return true;
 }
 
 base::TimeDelta WallClockTimeSource::CurrentMediaTime_Locked() {
   lock_.AssertAcquired();
-  if (!ticking_ || playback_rate_ == 0.0)
+  if (!ticking_ || !playback_rate_)
     return base_time_;
 
   base::TimeTicks now = tick_clock_->NowTicks();

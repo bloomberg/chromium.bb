@@ -71,7 +71,9 @@ class MEDIA_EXPORT AudioRendererImpl
   void SetPlaybackRate(double rate) override;
   void SetMediaTime(base::TimeDelta time) override;
   base::TimeDelta CurrentMediaTime() override;
-  base::TimeTicks GetWallClockTime(base::TimeDelta time) override;
+  bool GetWallClockTimes(
+      const std::vector<base::TimeDelta>& media_timestamps,
+      std::vector<base::TimeTicks>* wall_clock_times) override;
 
   // AudioRenderer implementation.
   void Initialize(DemuxerStream* stream,

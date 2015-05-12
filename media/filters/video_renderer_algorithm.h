@@ -44,10 +44,8 @@ namespace media {
 // Combined these three approaches enforce optimal smoothness in many cases.
 class MEDIA_EXPORT VideoRendererAlgorithm {
  public:
-  // Used to convert a media timestamp into wall clock time.
-  using TimeConverterCB = base::Callback<base::TimeTicks(base::TimeDelta)>;
-
-  explicit VideoRendererAlgorithm(const TimeConverterCB& time_converter_cb);
+  explicit VideoRendererAlgorithm(
+      const TimeSource::WallClockTimeCB& wall_clock_time_cb);
   ~VideoRendererAlgorithm();
 
   // Chooses the best frame for the interval [deadline_min, deadline_max] based
@@ -162,6 +160,10 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
     base::TimeTicks start_time;
     base::TimeTicks end_time;
 
+    // True if this frame's end time is based on the average frame duration and
+    // not the time of the next frame.
+    bool has_estimated_end_time;
+
     int ideal_render_count;
     int render_count;
     int drop_count;
@@ -178,8 +180,8 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   // calculate an average frame duration.  Updates |cadence_estimator_|.
   //
   // Note: Wall clock time is recomputed each Render() call because it's
-  // expected that the TimeSource powering TimeConverterCB will skew slightly
-  // based on the audio clock.
+  // expected that the TimeSource powering TimeSource::WallClockTimeCB will skew
+  // slightly based on the audio clock.
   //
   // TODO(dalecurtis): Investigate how accurate we need the wall clock times to
   // be, so we can avoid recomputing every time (we would need to recompute when
@@ -259,7 +261,7 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
   bool have_rendered_frames_;
 
   // Callback used to convert media timestamps into wall clock timestamps.
-  const TimeConverterCB time_converter_cb_;
+  const TimeSource::WallClockTimeCB wall_clock_time_cb_;
 
   // The last |deadline_max| provided to Render(), used to predict whether
   // frames were rendered over cadence between Render() calls.

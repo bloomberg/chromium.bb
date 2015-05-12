@@ -166,27 +166,39 @@ base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
   return current_media_time;
 }
 
-base::TimeTicks AudioRendererImpl::GetWallClockTime(base::TimeDelta time) {
+bool AudioRendererImpl::GetWallClockTimes(
+    const std::vector<base::TimeDelta>& media_timestamps,
+    std::vector<base::TimeTicks>* wall_clock_times) {
   base::AutoLock auto_lock(lock_);
-  if (last_render_ticks_.is_null() || playback_rate_ == 0.0)
-    return base::TimeTicks();
+  if (last_render_ticks_.is_null() || !playback_rate_)
+    return false;
 
-  base::TimeDelta base_time;
-  if (time < audio_clock_->front_timestamp()) {
-    // See notes about |time| values less than |base_time| in TimeSource header.
-    base_time = audio_clock_->front_timestamp();
-  } else if (time > audio_clock_->back_timestamp()) {
-    base_time = audio_clock_->back_timestamp();
-  } else {
-    // No need to estimate time, so return the actual wallclock time.
-    return last_render_ticks_ + audio_clock_->TimeUntilPlayback(time);
+  DCHECK(wall_clock_times->empty());
+  wall_clock_times->reserve(media_timestamps.size());
+  for (const auto& media_timestamp : media_timestamps) {
+    base::TimeDelta base_time;
+    if (media_timestamp < audio_clock_->front_timestamp()) {
+      // See notes about |media_time| values less than |base_time| in TimeSource
+      // header.
+      base_time = audio_clock_->front_timestamp();
+    } else if (media_timestamp > audio_clock_->back_timestamp()) {
+      base_time = audio_clock_->back_timestamp();
+    } else {
+      // No need to estimate time, so return the actual wallclock time.
+      wall_clock_times->push_back(
+          last_render_ticks_ +
+          audio_clock_->TimeUntilPlayback(media_timestamp));
+      continue;
+    }
+
+    // In practice, most calls will be estimates given the relatively small
+    // window in which clients can get the actual time.
+    wall_clock_times->push_back(
+        last_render_ticks_ + audio_clock_->TimeUntilPlayback(base_time) +
+        base::TimeDelta::FromMicroseconds(
+            (media_timestamp - base_time).InMicroseconds() / playback_rate_));
   }
-
-  // In practice, most calls will be estimates given the relatively small window
-  // in which clients can get the actual time.
-  return last_render_ticks_ + audio_clock_->TimeUntilPlayback(base_time) +
-         base::TimeDelta::FromMicroseconds((time - base_time).InMicroseconds() /
-                                           playback_rate_);
+  return true;
 }
 
 TimeSource* AudioRendererImpl::GetTimeSource() {
