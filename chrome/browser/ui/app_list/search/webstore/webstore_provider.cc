@@ -178,17 +178,18 @@ scoped_ptr<SearchResult> WebstoreProvider::CreateResult(
   extensions::Manifest::Type item_type = ParseItemType(item_type_string);
 
   // Calculate the relevance score by matching the query with the title. Results
-  // with a match score of 0 are discarded.
-  // TODO(mgiuca): Set the tags to indicate the parts of the title that were
-  // matched.
+  // with a match score of 0 are discarded. This will also be used to set the
+  // title tags (highlighting which parts of the title matched the search
+  // query).
   TokenizedString title(base::UTF8ToUTF16(localized_name));
   TokenizedStringMatch match;
   if (!match.Calculate(query, title))
     return scoped_ptr<SearchResult>();
 
-  return make_scoped_ptr(new WebstoreResult(profile_, app_id, localized_name,
-                                            match.relevance(), icon_url,
-                                            is_paid, item_type, controller_));
+  scoped_ptr<SearchResult> result(new WebstoreResult(
+      profile_, app_id, icon_url, is_paid, item_type, controller_));
+  result->UpdateFromMatch(title, match);
+  return result;
 }
 
 }  // namespace app_list

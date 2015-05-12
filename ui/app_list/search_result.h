@@ -22,6 +22,8 @@ class MenuModel;
 namespace app_list {
 
 class SearchResultObserver;
+class TokenizedString;
+class TokenizedStringMatch;
 
 // SearchResult consists of an icon, title text and details text. Title and
 // details text can have tagged ranges that are displayed differently from
@@ -135,6 +137,11 @@ class APP_LIST_EXPORT SearchResult {
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
 
+  // Updates the result's relevance score, and sets its title and title tags,
+  // based on a string match result.
+  void UpdateFromMatch(const TokenizedString& title,
+                       const TokenizedStringMatch& match);
+
   // TODO(mukai): Remove this method and really simplify the ownership of
   // SearchResult. Ideally, SearchResult will be copyable.
   virtual scoped_ptr<SearchResult> Duplicate() const = 0;
@@ -146,6 +153,10 @@ class APP_LIST_EXPORT SearchResult {
   // no menu for the item (e.g. during install).
   // Note the returned menu model is owned by this item.
   virtual ui::MenuModel* GetContextMenuModel();
+
+  // Returns a string showing |text| marked up with brackets indicating the
+  // tag positions in |tags|. Useful for debugging and testing.
+  static std::string TagsDebugString(const std::string& text, const Tags& tags);
 
  protected:
   void set_id(const std::string& id) { id_ = id; }

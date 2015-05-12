@@ -41,7 +41,7 @@ const char kOneResult[] =
     "\"results\":["
     "  {"
     "    \"id\": \"app1_id\","
-    "    \"localized_name\": \"app1 name\","
+    "    \"localized_name\": \"Fun App\","
     "    \"icon_url\": \"http://host/icon\","
     "    \"is_paid\": false"
     "  }"
@@ -83,31 +83,48 @@ struct ParsedSearchResult {
   size_t num_actions;
 };
 
+// Expected results from a search for "fun" on kOneResult.
 ParsedSearchResult kParsedOneResult[] = {{"app1_id",
-                                          "app1 name",
+                                          "[Fun] App",
                                           "http://host/icon",
                                           false,
                                           Manifest::TYPE_UNKNOWN,
                                           1}};
 
-ParsedSearchResult kParsedThreeResults[] = {{"app1_id",
-                                             "Mystery App",
-                                             "http://host/icon1",
-                                             true,
-                                             Manifest::TYPE_PLATFORM_APP,
-                                             1},
-                                            {"app2_id",
-                                             "App Mystère",
-                                             "http://host/icon2",
-                                             false,
-                                             Manifest::TYPE_HOSTED_APP,
-                                             1},
-                                            {"app3_id",
-                                             "Mistero App",
-                                             "http://host/icon3",
-                                             false,
-                                             Manifest::TYPE_LEGACY_PACKAGED_APP,
-                                             1}};
+// Expected results from a search for "app" on kThreeResults.
+ParsedSearchResult kParsedThreeResultsApp[] = {
+    {"app1_id",
+     "Mystery [App]",
+     "http://host/icon1",
+     true,
+     Manifest::TYPE_PLATFORM_APP,
+     1},
+    {"app2_id",
+     "[App] Mystère",
+     "http://host/icon2",
+     false,
+     Manifest::TYPE_HOSTED_APP,
+     1},
+    {"app3_id",
+     "Mistero [App]",
+     "http://host/icon3",
+     false,
+     Manifest::TYPE_LEGACY_PACKAGED_APP,
+     1}};
+
+// Expected results from a search for "myst" on kThreeResults.
+ParsedSearchResult kParsedThreeResultsMyst[] = {{"app1_id",
+                                                 "[Myst]ery App",
+                                                 "http://host/icon1",
+                                                 true,
+                                                 Manifest::TYPE_PLATFORM_APP,
+                                                 1},
+                                                {"app2_id",
+                                                 "App [Myst]ère",
+                                                 "http://host/icon2",
+                                                 false,
+                                                 Manifest::TYPE_HOSTED_APP,
+                                                 1}};
 
 }  // namespace
 
@@ -183,7 +200,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
                     expected_results[i].id).spec(),
                 result->id());
       EXPECT_EQ(std::string(expected_results[i].title),
-                base::UTF16ToUTF8(result->title()));
+                app_list::SearchResult::TagsDebugString(
+                    base::UTF16ToUTF8(result->title()), result->title_tags()));
 
       // Ensure the number of action buttons is appropriate for the item type.
       EXPECT_EQ(expected_results[i].num_actions, result->actions().size());
@@ -265,18 +283,18 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, Basic) {
       {"bad json", "invalid json", "bad json", nullptr, 0},
       // Good results. Note that the search term appears in all of the result
       // titles.
-      {"app1", kOneResult, "app1 name", kParsedOneResult, 1},
+      {"fun", kOneResult, "Fun App", kParsedOneResult, 1},
       {"app",
        kThreeResults,
        "Mystery App,App Mystère,Mistero App",
-       kParsedThreeResults,
+       kParsedThreeResultsApp,
        3},
       // Search where one of the results does not include the query term. Only
       // the results with a title matching the query should be selected.
       {"myst",
        kThreeResults,
        "Mystery App,App Mystère",
-       kParsedThreeResults,
+       kParsedThreeResultsMyst,
        2},
   };
 
@@ -317,16 +335,16 @@ IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForSensitiveData) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, NoSearchForShortQueries) {
-  RunQueryAndVerify("a", kOneResult, nullptr, 0);
-  RunQueryAndVerify("ap", kOneResult, nullptr, 0);
-  RunQueryAndVerify("app", kOneResult, kParsedOneResult, 1);
+  RunQueryAndVerify("f", kOneResult, nullptr, 0);
+  RunQueryAndVerify("fu", kOneResult, nullptr, 0);
+  RunQueryAndVerify("fun", kOneResult, kParsedOneResult, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreProviderTest, SearchCache) {
-  RunQueryAndVerify("app", kOneResult, kParsedOneResult, 1);
+  RunQueryAndVerify("fun", kOneResult, kParsedOneResult, 1);
 
   // No result is provided but the provider gets the result from the cache.
-  RunQueryAndVerify("app", "", kParsedOneResult, 1);
+  RunQueryAndVerify("fun", "", kParsedOneResult, 1);
 }
 
 }  // namespace test

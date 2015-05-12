@@ -29,8 +29,6 @@ class ExtensionRegistry;
 namespace app_list {
 
 class AppContextMenu;
-class TokenizedString;
-class TokenizedStringMatch;
 
 class AppResult : public SearchResult,
                   public extensions::IconImage::Observer,
@@ -43,9 +41,6 @@ class AppResult : public SearchResult,
             AppListControllerDelegate* controller,
             bool is_recommendation);
   ~AppResult() override;
-
-  void UpdateFromMatch(const TokenizedString& title,
-                       const TokenizedStringMatch& match);
 
   void UpdateFromLastLaunched(const base::Time& current_time,
                               const base::Time& last_launched);

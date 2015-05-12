@@ -23,8 +23,6 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/search/tokenized_string.h"
-#include "ui/app_list/search/tokenized_string_match.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -63,20 +61,6 @@ AppResult::AppResult(Profile* profile,
 
 AppResult::~AppResult() {
   StopObservingExtensionRegistry();
-}
-
-void AppResult::UpdateFromMatch(const TokenizedString& title,
-                                const TokenizedStringMatch& match) {
-  const TokenizedStringMatch::Hits& hits = match.hits();
-
-  Tags tags;
-  tags.reserve(hits.size());
-  for (size_t i = 0; i < hits.size(); ++i)
-    tags.push_back(Tag(Tag::MATCH, hits[i].start(), hits[i].end()));
-
-  set_title(title.text());
-  set_title_tags(tags);
-  set_relevance(match.relevance());
 }
 
 void AppResult::UpdateFromLastLaunched(const base::Time& current_time,
@@ -129,6 +113,7 @@ scoped_ptr<SearchResult> AppResult::Duplicate() const {
                     display_type() == DISPLAY_RECOMMENDATION));
   copy->set_title(title());
   copy->set_title_tags(title_tags());
+  copy->set_relevance(relevance());
 
   return copy.Pass();
 }

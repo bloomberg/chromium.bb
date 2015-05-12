@@ -61,15 +61,12 @@ namespace app_list {
 
 WebstoreResult::WebstoreResult(Profile* profile,
                                const std::string& app_id,
-                               const std::string& localized_name,
-                               double relevance,
                                const GURL& icon_url,
                                bool is_paid,
                                extensions::Manifest::Type item_type,
                                AppListControllerDelegate* controller)
     : profile_(profile),
       app_id_(app_id),
-      localized_name_(localized_name),
       icon_url_(icon_url),
       is_paid_(is_paid),
       item_type_(item_type),
@@ -78,9 +75,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
       extension_registry_(NULL),
       weak_factory_(this) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
-  set_relevance(relevance);
 
-  set_title(base::UTF8ToUTF16(localized_name_));
   SetDefaultDetails();
 
   InitAndStartObserving();
@@ -128,9 +123,12 @@ void WebstoreResult::InvokeAction(int action_index, int event_flags) {
 }
 
 scoped_ptr<SearchResult> WebstoreResult::Duplicate() const {
-  return scoped_ptr<SearchResult>(
-      new WebstoreResult(profile_, app_id_, localized_name_, relevance(),
-                         icon_url_, is_paid_, item_type_, controller_));
+  scoped_ptr<SearchResult> copy(new WebstoreResult(
+      profile_, app_id_, icon_url_, is_paid_, item_type_, controller_));
+  copy->set_title(title());
+  copy->set_title_tags(title_tags());
+  copy->set_relevance(relevance());
+  return copy;
 }
 
 void WebstoreResult::InitAndStartObserving() {

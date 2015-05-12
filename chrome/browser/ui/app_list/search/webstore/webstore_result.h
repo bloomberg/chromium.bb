@@ -32,8 +32,6 @@ class WebstoreResult : public SearchResult,
  public:
   WebstoreResult(Profile* profile,
                  const std::string& app_id,
-                 const std::string& localized_name,
-                 double relevance,
                  const GURL& icon_url,
                  bool is_paid,
                  extensions::Manifest::Type item_type,
@@ -82,7 +80,6 @@ class WebstoreResult : public SearchResult,
 
   Profile* profile_;
   const std::string app_id_;
-  const std::string localized_name_;
   const GURL icon_url_;
   const bool is_paid_;
   extensions::Manifest::Type item_type_;
