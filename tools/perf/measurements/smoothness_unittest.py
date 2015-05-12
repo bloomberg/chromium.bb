@@ -59,7 +59,6 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     measurement = smoothness.Smoothness()
     measurement.WillStartBrowser(tab.browser.platform)
     measurement.WillNavigateToPage(test_page, tab)
-    measurement.WillRunActions(test_page, tab)
 
     expected_synthetic_delay = set([
         'DELAY(cc.BeginMainFrame;0.012000;static)',

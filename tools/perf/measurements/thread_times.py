@@ -26,7 +26,7 @@ class ThreadTimes(page_test.PageTest):
           tracing_category_filter.CreateNoOverheadFilter().filter_string
     self._timeline_controller.SetUp(page, tab)
 
-  def WillRunActions(self, page, tab):
+  def DidNavigateToPage(self, page, tab):
     self._timeline_controller.Start(tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
