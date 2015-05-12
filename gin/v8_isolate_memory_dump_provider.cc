@@ -53,7 +53,6 @@ void V8IsolateMemoryDumpProvider::DumpMemoryStatistics(
 
   size_t known_spaces_used_size = 0;
   size_t known_spaces_size = 0;
-  size_t known_spaces_available_size = 0;
   size_t number_of_spaces = isolate_holder_->isolate()->NumberOfHeapSpaces();
   for (size_t space = 0; space < number_of_spaces; space++) {
     v8::HeapSpaceStatistics space_statistics;
@@ -61,11 +60,9 @@ void V8IsolateMemoryDumpProvider::DumpMemoryStatistics(
                                                        space);
     const size_t space_size = space_statistics.space_size();
     const size_t space_used_size = space_statistics.space_used_size();
-    size_t space_available_size = space_statistics.space_available_size();
 
     known_spaces_size += space_size;
     known_spaces_used_size += space_used_size;
-    known_spaces_available_size += space_available_size;
 
     std::string allocator_name =
         base::StringPrintf("%s/%s_%p/%s/%s", kRootDumpName, kIsolateDumpName,
@@ -77,12 +74,14 @@ void V8IsolateMemoryDumpProvider::DumpMemoryStatistics(
         base::trace_event::MemoryAllocatorDump::kNameOuterSize,
         base::trace_event::MemoryAllocatorDump::kUnitsBytes, space_size);
 
+    // TODO(ssid): Fix crbug.com/481504 to get the objects count of live objects
+    // after the last GC.
     space_dump->AddScalar(
         base::trace_event::MemoryAllocatorDump::kNameInnerSize,
         base::trace_event::MemoryAllocatorDump::kUnitsBytes, space_used_size);
     space_dump->AddScalar(kAvailableSizeAttribute,
                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                          space_available_size);
+                          space_statistics.space_available_size());
   }
   // Compute the rest of the memory, not accounted by the spaces above.
   std::string allocator_name = base::StringPrintf(
@@ -103,8 +102,7 @@ void V8IsolateMemoryDumpProvider::DumpMemoryStatistics(
   // heap.
   other_spaces_dump->AddScalar(
       kAvailableSizeAttribute,
-      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-      heap_statistics.total_available_size() - known_spaces_available_size);
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes, 0);
 }
 
 }  // namespace gin
