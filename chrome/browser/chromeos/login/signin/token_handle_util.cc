@@ -15,8 +15,15 @@
 namespace {
 
 const char kTokenHandlePref[] = "PasswordTokenHandle";
+const char kTokenHandleStatusPref[] = "TokenHandleStatus";
+
+const char kHandleStatusValid[] = "valid";
+const char kHandleStatusInvalid[] = "invalid";
+const char* kDefaultHandleStatus = kHandleStatusValid;
+
 static const int kMaxRetries = 3;
-}
+
+}  // namespace
 
 TokenHandleUtil::TokenHandleUtil(user_manager::UserManager* user_manager)
     : user_manager_(user_manager), weak_factory_(this) {
@@ -37,15 +44,34 @@ bool TokenHandleUtil::HasToken(const user_manager::UserID& user_id) {
   return !token.empty();
 }
 
-void TokenHandleUtil::DeleteToken(const user_manager::UserID& user_id) {
+bool TokenHandleUtil::ShouldObtainHandle(const user_manager::UserID& user_id) {
+  const base::DictionaryValue* dict = nullptr;
+  std::string token;
+  if (!user_manager_->FindKnownUserPrefs(user_id, &dict))
+    return true;
+  if (!dict->GetString(kTokenHandlePref, &token))
+    return true;
+  if (token.empty())
+    return true;
+  std::string status(kDefaultHandleStatus);
+  dict->GetString(kTokenHandleStatusPref, &status);
+  return kHandleStatusInvalid == status;
+}
+
+void TokenHandleUtil::DeleteHandle(const user_manager::UserID& user_id) {
   const base::DictionaryValue* dict = nullptr;
   if (!user_manager_->FindKnownUserPrefs(user_id, &dict))
     return;
   scoped_ptr<base::DictionaryValue> dict_copy(dict->DeepCopy());
-  if (!dict_copy->Remove(kTokenHandlePref, nullptr))
-    return;
+  dict_copy->Remove(kTokenHandlePref, nullptr);
+  dict_copy->Remove(kTokenHandleStatusPref, nullptr);
   user_manager_->UpdateKnownUserPrefs(user_id, *dict_copy.get(),
                                       /* replace values */ true);
+}
+
+void TokenHandleUtil::MarkHandleInvalid(const user_manager::UserID& user_id) {
+  user_manager_->SetKnownUserStringPref(user_id, kTokenHandleStatusPref,
+                                        kHandleStatusInvalid);
 }
 
 void TokenHandleUtil::CheckToken(const user_manager::UserID& user_id,
@@ -78,6 +104,8 @@ void TokenHandleUtil::CheckToken(const user_manager::UserID& user_id,
 void TokenHandleUtil::StoreTokenHandle(const user_manager::UserID& user_id,
                                        const std::string& handle) {
   user_manager_->SetKnownUserStringPref(user_id, kTokenHandlePref, handle);
+  user_manager_->SetKnownUserStringPref(user_id, kTokenHandleStatusPref,
+                                        kHandleStatusValid);
 }
 
 void TokenHandleUtil::OnValidationComplete(const std::string& token) {

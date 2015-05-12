@@ -433,9 +433,7 @@ void UserSelectionScreen::OnUserStatusChecked(
     TokenHandleUtil::TokenHandleStatus status) {
   if (status == TokenHandleUtil::INVALID) {
     RecordReauthReason(user_id, ReauthReason::INVALID_TOKEN_HANDLE);
-    user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        user_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
-    token_handle_util_->DeleteToken(user_id);
+    token_handle_util_->MarkHandleInvalid(user_id);
     SetAuthType(user_id, ONLINE_SIGN_IN, base::string16());
   }
 }

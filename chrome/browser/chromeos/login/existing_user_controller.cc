@@ -1241,7 +1241,7 @@ void ExistingUserController::OnOAuth2TokensFetched(
       token_handle_util_.reset(
           new TokenHandleUtil(user_manager::UserManager::Get()));
     }
-    if (!token_handle_util_->HasToken(user_context.GetUserID())) {
+    if (token_handle_util_->ShouldObtainHandle(user_context.GetUserID())) {
       token_handle_util_->GetTokenHandle(
           user_context.GetUserID(), user_context.GetAccessToken(),
           base::Bind(&ExistingUserController::OnTokenHandleObtained,

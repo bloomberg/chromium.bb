@@ -40,7 +40,14 @@ class TokenHandleUtil {
   bool HasToken(const user_manager::UserID& user_id);
 
   // Removes token handle for |user_id| from UserManager storage.
-  void DeleteToken(const user_manager::UserID& user_id);
+  void DeleteHandle(const user_manager::UserID& user_id);
+
+  // Marks current handle as invalid, new one should be obtained at next sign
+  // in.
+  void MarkHandleInvalid(const user_manager::UserID& user_id);
+
+  // Indicates if token handle for |user_id| is missing or marked as invalid.
+  bool ShouldObtainHandle(const user_manager::UserID& user_id);
 
   // Performs token handle check for |user_id|. Will call |callback| with
   // corresponding result.
