@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
@@ -15,6 +17,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -285,6 +289,76 @@ TEST_F(PrefProxyConfigTrackerImplTest, ExplicitSystemSettings) {
   EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
             proxy_config_service_->GetLatestProxyConfig(&actual_config));
   EXPECT_EQ(GURL(kFixedPacUrl), actual_config.pac_url());
+}
+
+void CheckResolvedProxyMatches(net::ProxyConfig* config,
+                               const GURL& url,
+                               const std::string& result_string) {
+  net::ProxyInfo expected_result;
+  expected_result.UseNamedProxy(result_string);
+
+  net::ProxyInfo result;
+  config->proxy_rules().Apply(url, &result);
+
+  EXPECT_TRUE(expected_result.proxy_list().Equals(result.proxy_list()))
+      << "expected: " << expected_result.proxy_list().ToPacString()
+      << "\nactual: " << result.proxy_list().ToPacString();
+}
+
+TEST_F(PrefProxyConfigTrackerImplTest, ExcludeGooglezipDataReductionProxies) {
+  const std::string kDataReductionProxies =
+      "https://proxy.googlezip.net:443,compress.googlezip.net,"
+      "https://proxy-dev.googlezip.net:443,proxy-dev.googlezip.net,"
+      "quic://proxy.googlezip.net";
+
+  struct {
+    std::string initial_proxy_rules;
+    const char* http_proxy_info;
+    const char* https_proxy_info;
+    const char* ftp_proxy_info;
+  } test_cases[] = {
+      {"http=foopyhttp," + kDataReductionProxies +
+           ",direct://;https=foopyhttps," + kDataReductionProxies +
+           ",direct://;ftp=foopyftp," + kDataReductionProxies + ",direct://",
+       "foopyhttp;direct://",
+       "foopyhttps;direct://",
+       "foopyftp;direct://"},
+
+      {"foopy," + kDataReductionProxies + ",direct://",
+       "foopy;direct://",
+       "foopy;direct://",
+       "foopy;direct://"},
+
+      {"http=" + kDataReductionProxies + ";https=" + kDataReductionProxies +
+           ";ftp=" + kDataReductionProxies,
+       "direct://",
+       "direct://",
+       "direct://"},
+
+      {"http=" + kDataReductionProxies + ",foopy,direct://",
+       "foopy;direct://",
+       "direct://",
+       "direct://"},
+  };
+
+  // Test setting the proxy from a user pref.
+  for (const auto& test : test_cases) {
+    pref_service_->SetUserPref(prefs::kProxy,
+                               ProxyConfigDictionary::CreateFixedServers(
+                                   test.initial_proxy_rules, std::string()));
+    loop_.RunUntilIdle();
+
+    net::ProxyConfig config;
+    EXPECT_EQ(net::ProxyConfigService::CONFIG_VALID,
+              proxy_config_service_->GetLatestProxyConfig(&config));
+
+    CheckResolvedProxyMatches(&config, GURL("http://google.com"),
+                              test.http_proxy_info);
+    CheckResolvedProxyMatches(&config, GURL("https://google.com"),
+                              test.https_proxy_info);
+    CheckResolvedProxyMatches(&config, GURL("ftp://google.com"),
+                              test.ftp_proxy_info);
+  }
 }
 
 // Test parameter object for testing command line proxy configuration.
