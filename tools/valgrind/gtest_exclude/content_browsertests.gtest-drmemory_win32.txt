@@ -54,4 +54,4 @@ WebRtcBrowserTest.NegotiateOfferWithBLine
 WebRtcBrowserTest.CanMakeAudioCallAndThenRenegotiateToVideo
 
 # https://crbug.com/480750
-*_ClearKey/EncryptedMediaTest.Playback_*_WebM/0
+*_ClearKey/EncryptedMediaTest.Playback_*
