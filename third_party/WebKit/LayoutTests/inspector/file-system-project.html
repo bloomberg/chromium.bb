@@ -43,24 +43,6 @@ function test()
         }
     }
 
-    function fileSystemUISourceCodes()
-    {
-        var uiSourceCodes = [];
-        var fileSystemProjects = WebInspector.workspace.projectsForType(WebInspector.projectTypes.FileSystem);
-        for (var project of fileSystemProjects)
-            uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
-        return uiSourceCodes;
-    }
-
-    function refreshFileSystemProjects(callback)
-    {
-        var barrier = new CallbackBarrier();
-        var projects = WebInspector.workspace.projects();
-        for (var i = 0; i < projects.length; ++i)
-            projects[i].refresh("/", barrier.createCallback());
-        barrier.callWhenDone(callback);
-    }
-
     InspectorTest.runTestSuite([
         function testFileSystems(next)
         {
@@ -83,13 +65,13 @@ function test()
 
             fs2.root.addFile("baz.js", "<bazzz content>");
 
-            refreshFileSystemProjects(onProjectsRefreshed);
+            InspectorTest.refreshFileSystemProjects(onProjectsRefreshed);
 
             var uiSourceCodes;
 
             function onProjectsRefreshed()
             {
-                uiSourceCodes = fileSystemUISourceCodes();
+                uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
                 dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
             }
 
@@ -133,13 +115,13 @@ function test()
                 function dumpModifiedMetadata(modificationTime, size)
                 {
                     InspectorTest.addResult("New modificationTime=" + modificationTime.getTime() + ", size=" + size);
-                    var uiSourceCodesCount = fileSystemUISourceCodes().length;
+                    var uiSourceCodesCount = InspectorTest.fileSystemUISourceCodes().length;
                     InspectorTest.addResult("Removing second file system.");
                     fs1.removeFileSystem();
-                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + fileSystemUISourceCodes().length);
+                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + InspectorTest.fileSystemUISourceCodes().length);
                     InspectorTest.addResult("Removing first file system.");
                     fs2.removeFileSystem();
-                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + fileSystemUISourceCodes().length);
+                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + InspectorTest.fileSystemUISourceCodes().length);
                     next();
                 }
             }

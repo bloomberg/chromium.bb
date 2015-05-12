@@ -142,4 +142,22 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
     }
 }
 
+InspectorTest.fileSystemUISourceCodes = function()
+{
+    var uiSourceCodes = [];
+    var fileSystemProjects = WebInspector.workspace.projectsForType(WebInspector.projectTypes.FileSystem);
+    for (var project of fileSystemProjects)
+        uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
+    return uiSourceCodes;
+}
+
+InspectorTest.refreshFileSystemProjects = function(callback)
+{
+    var barrier = new CallbackBarrier();
+    var projects = WebInspector.workspace.projects();
+    for (var i = 0; i < projects.length; ++i)
+        projects[i].refresh("/", barrier.createCallback());
+    barrier.callWhenDone(callback);
+}
+
 };

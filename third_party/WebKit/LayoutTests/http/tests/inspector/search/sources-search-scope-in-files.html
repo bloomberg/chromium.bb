@@ -8,46 +8,46 @@
 <script>
 function test()
 {
-    var fileSystemPath = "/var/www";
+    var scope = new WebInspector.SourcesSearchScope();
     var names = ["search.html", "search.js", "search.css"];
-    var files = {};
-    for (var i = 0; i < names.length; ++i) {
-        var name = names[i];
-        files["/" + name] = loadResource(name);
+    var fs = new InspectorTest.TestFileSystem("/var/www");
+
+    var promises = [];
+    for (var name of names)
+        promises.push(populateFileSystem(name));
+
+    Promise.all(promises)
+        .then(onAllResourcesLoaded)
+        .catch(InspectorTest.completeTest.bind(InspectorTest));
+
+    function onAllResourcesLoaded()
+    {
+        WebInspector.inspectorView.showViewInDrawer("search");
+        fs.reportCreated();
+        InspectorTest.runTestSuite(testSuite);
     }
 
-    function loadResource(name)
+    function populateFileSystem(name)
     {
         var urlPrefix = InspectorTest.resourceTreeModel.inspectedPageURL().substr(0, InspectorTest.resourceTreeModel.inspectedPageURL().lastIndexOf("/") + 1);
         var url = urlPrefix + "resources/" + name;
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", url, false);
-        xhr.send(null);
-        return xhr.responseText;
+        return loadResourcePromise(url).then(function(text) {
+            fs.root.addFile(name, text);
+        });
     }
 
     InspectorFrontendHost.searchInPath = function(requestId, path, query)
     {
         setTimeout(reply);
-        
+
         function reply()
         {
             var paths = [];
             for (var i = 0; i < names.length; ++i)
                 paths.push("/var/www/" + names[i]);
-            manager.fileSystemWorkspaceBinding._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
+            WebInspector.fileSystemWorkspaceBinding._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
         }
     }
-    WebInspector.inspectorView.showViewInDrawer("search");
-
-    InspectorTest.createWorkspace();
-    manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
-    manager.addMockFileSystem(fileSystemPath);
-    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function(){}, 3);
-    manager.addFiles(fileSystemPath, files);
-
-    var scope = new WebInspector.SourcesSearchScope();
-    WebInspector.workspace = InspectorTest.testWorkspace;
 
     function runSearchAndDumpResults(searchConfig, callback)
     {
@@ -92,7 +92,7 @@ function test()
         }
     }
 
-    InspectorTest.runTestSuite([
+    var testSuite = [
         function testIgnoreCase(next)
         {
             var query = "searchTest" + "UniqueString";
@@ -197,7 +197,7 @@ function test()
             var query = "searchTest" + "Unique" + " file:www";
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, step2);
-            
+
             function step2()
             {
                 InspectorTest.addResult("Running a file query with non-existing project name now:");
@@ -210,7 +210,7 @@ function test()
         function testDirtyFiles(next)
         {
             var uiSourceCode;
-            var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+            var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
             for (var i = 0; i < uiSourceCodes.length; ++i) {
                 if (uiSourceCodes[i].name() === "search.js") {
                     uiSourceCode = uiSourceCodes[i];
@@ -223,13 +223,12 @@ function test()
             var searchConfig = new WebInspector.SearchConfig(query, true, false);
             runSearchAndDumpResults(searchConfig, next);
         }
-    ]);
+    ];
 }
 
 </script>
 </head>
 <body onload="runTest()">
-<iframe src="resources/search.html">
 <p>Tests that ScriptSearchScope performs search across all sources correctly.</p>
 See <a href="https://bugs.webkit.org/show_bug.cgi?id=41350">bug 41350</a>.
 </body>
