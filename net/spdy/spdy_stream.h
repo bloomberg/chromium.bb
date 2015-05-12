@@ -31,7 +31,6 @@ namespace net {
 class AddressList;
 class IPEndPoint;
 struct LoadTimingInfo;
-class SSLCertRequestInfo;
 class SSLInfo;
 class SpdySession;
 
@@ -377,10 +376,6 @@ class NET_EXPORT_PRIVATE SpdyStream {
   bool GetSSLInfo(SSLInfo* ssl_info,
                   bool* was_npn_negotiated,
                   NextProto* protocol_negotiated);
-
-  // Fills SSL Certificate Request info |cert_request_info| and returns
-  // true when SSL is in use.
-  bool GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
 
   // If the stream is stalled on sending data, but the session is not
   // stalled on sending data and |send_window_size_| is positive, then

@@ -358,10 +358,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                   bool* was_npn_negotiated,
                   NextProto* protocol_negotiated);
 
-  // Fills SSL Certificate Request info |cert_request_info| and returns
-  // true when SSL is in use.
-  bool GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
-
   // Send a WINDOW_UPDATE frame for a stream. Called by a stream
   // whenever receive window size is increased.
   void SendStreamWindowUpdate(SpdyStreamId stream_id,

@@ -1975,14 +1975,6 @@ bool SpdySession::GetSSLInfo(SSLInfo* ssl_info,
   return connection_->socket()->GetSSLInfo(ssl_info);
 }
 
-bool SpdySession::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {
-  if (!is_secure_)
-    return false;
-  GetSSLClientSocket()->GetSSLCertRequestInfo(cert_request_info);
-  return true;
-}
-
 void SpdySession::OnError(SpdyFramer::SpdyError error_code) {
   CHECK(in_io_loop_);
 

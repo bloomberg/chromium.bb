@@ -710,10 +710,6 @@ bool SpdyStream::GetSSLInfo(SSLInfo* ssl_info,
       ssl_info, was_npn_negotiated, protocol_negotiated);
 }
 
-bool SpdyStream::GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) {
-  return session_->GetSSLCertRequestInfo(cert_request_info);
-}
-
 void SpdyStream::PossiblyResumeIfSendStalled() {
   if (IsLocallyClosed()) {
     return;
