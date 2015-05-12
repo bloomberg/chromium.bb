@@ -170,6 +170,12 @@ InspectorTest.TestFileSystem.prototype = {
             fileSystem: { fileSystemPath: this.fileSystemPath,
                           fileSystemName: this.fileSystemPath }
         });
+    },
+
+    removeFileSystem: function()
+    {
+        delete InspectorTest.TestFileSystem._instances[this.fileSystemPath];
+        InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemRemoved, this.fileSystemPath);
     }
 }
 
@@ -179,12 +185,13 @@ InspectorTest.TestFileSystem.Entry = function(name, isDirectory)
     this._children = [];
     this._childrenMap = {};
     this.isDirectory = isDirectory;
+    this._timestamp = 1000000;
 }
 
 InspectorTest.TestFileSystem.Entry.prototype = {
     get fullPath()
     {
-        return (this.parent ? this.parent.fullPath : "") + "/" + this.name;
+        return this.parent ? this.parent.fullPath  + "/" + this.name : "";
     },
 
     mkdir: function(name)
@@ -208,6 +215,11 @@ InspectorTest.TestFileSystem.Entry.prototype = {
     createReader: function()
     {
         return new InspectorTest.TestFileSystem.Reader(this._children);
+    },
+
+    createWriter: function(success, failure)
+    {
+        success(new InspectorTest.TestFileSystem.Writer(this));
     },
 
     file: function(callback)
@@ -237,7 +249,15 @@ InspectorTest.TestFileSystem.Entry.prototype = {
         for (var token of path.split("/"))
             entry = entry._childrenMap[token];
         callback(entry);
-    }
+    },
+
+    getMetadata: function(success, failure)
+    {
+        success({
+            modificationTime: new Date(this._timestamp),
+            size: this.isDirectory ? 0 : this.content.size
+        });
+    },
 }
 
 InspectorTest.TestFileSystem.Reader = function(children)
@@ -251,6 +271,30 @@ InspectorTest.TestFileSystem.Reader.prototype = {
         var children = this._children;
         this._children = [];
         callback(children);
+    }
+}
+
+InspectorTest.TestFileSystem.Writer = function(entry)
+{
+    this._entry = entry;
+    this._modificationTimesDelta = 500;
+}
+
+InspectorTest.TestFileSystem.Writer.prototype = {
+    write: function(blob)
+    {
+        this._entry._timestamp += this._modificationTimesDelta;
+        this._entry.content = blob;
+        if (this.onwriteend)
+            this.onwriteend();
+    },
+
+    truncate: function(num)
+    {
+        this._entry._timestamp += this._modificationTimesDelta;
+        this._entry.content = this._entry.content.slice(0, num);
+        if (this.onwriteend)
+            this.onwriteend();
     }
 }
 

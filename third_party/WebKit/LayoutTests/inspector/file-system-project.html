@@ -7,7 +7,6 @@
 <script>
 function test()
 {
-
     function dumpUISourceCodes(uiSourceCodes, next)
     {
         innerDumpUISourceCodes(uiSourceCodes, 0, next);
@@ -44,28 +43,55 @@ function test()
         }
     }
 
+    function fileSystemUISourceCodes()
+    {
+        var uiSourceCodes = [];
+        var fileSystemProjects = WebInspector.workspace.projectsForType(WebInspector.projectTypes.FileSystem);
+        for (var project of fileSystemProjects)
+            uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
+        return uiSourceCodes;
+    }
+
+    function refreshFileSystemProjects(callback)
+    {
+        var barrier = new CallbackBarrier();
+        var projects = WebInspector.workspace.projects();
+        for (var i = 0; i < projects.length; ++i)
+            projects[i].refresh("/", barrier.createCallback());
+        barrier.callWhenDone(callback);
+    }
+
     InspectorTest.runTestSuite([
         function testFileSystems(next)
         {
-            InspectorTest.createWorkspace();
-            var manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
-            var uiSourceCodes = [];
-
-            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 3);
             InspectorTest.addResult("Adding first file system.");
-            manager.addMockFileSystem("/var/www");
+            var fs1 = new InspectorTest.TestFileSystem("/var/www");
+            var fs2 = new InspectorTest.TestFileSystem("/foo/bar");
             InspectorTest.addResult("Adding second file system.");
-            manager.addMockFileSystem("/foo/bar");
 
+            fs1.reportCreated();
+            fs2.reportCreated();
             InspectorTest.addResult("Adding file mappings.");
-            InspectorTest.testFileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
-            InspectorTest.testFileSystemMapping.addFileMapping("/foo/bar", "http://www.example.com/", "/");
+            WebInspector.isolatedFileSystemManager.mapping().addFileMapping("/var/www", "http://localhost/", "/localhost/");
+            WebInspector.isolatedFileSystemManager.mapping().addFileMapping("/foo/bar", "http://www.example.com/", "/");
 
             InspectorTest.addResult("Adding files to file systems.");
-            manager.addFiles("/var/www", {"/localhost/foo.js": "<foo content>", "/bar.js": "<bark content>"});
-            manager.addFiles("/foo/bar", {"/baz.js": "<bazzz content>"});
 
-            dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
+            var localhostDir = fs1.root.mkdir("localhost");
+            localhostDir.addFile("foo.js", "<foo content>");
+            fs1.root.addFile("bar.js", "<bark content>");
+
+            fs2.root.addFile("baz.js", "<bazzz content>");
+
+            refreshFileSystemProjects(onProjectsRefreshed);
+
+            var uiSourceCodes;
+
+            function onProjectsRefreshed()
+            {
+                uiSourceCodes = fileSystemUISourceCodes();
+                dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
+            }
 
             function uiSourceCodeAdded(uiSourceCode)
             {
@@ -77,20 +103,20 @@ function test()
                 dumpUISourceCodeLocations(uiSourceCodes, 5);
                 InspectorTest.addResult("UISourceCode uri to url mappings:");
                 for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    var url = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
+                    var url = WebInspector.networkMapping.networkURL(uiSourceCodes[i]);
                     if (!url)
                         continue;
                     InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + url);
                 }
                 InspectorTest.addResult("UISourceCode url to uri mappings:");
                 for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    var url = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
+                    var url = WebInspector.networkMapping.networkURL(uiSourceCodes[i]);
                     if (!url)
                         continue;
-                    var uri = InspectorTest.testNetworkMapping.uiSourceCodeForURLForAnyTarget(url).uri();
+                    var uri = WebInspector.networkMapping.uiSourceCodeForURLForAnyTarget(url).uri();
                     InspectorTest.addResult("    " + url + " -> " + uri);
                 }
-                InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, contentCommitted, this);
+                WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, contentCommitted, this);
                 uiSourceCodes[0].addRevision("<Modified UISourceCode content>");
             }
 
@@ -107,13 +133,13 @@ function test()
                 function dumpModifiedMetadata(modificationTime, size)
                 {
                     InspectorTest.addResult("New modificationTime=" + modificationTime.getTime() + ", size=" + size);
-                    var uiSourceCodesCount = InspectorTest.testWorkspace.uiSourceCodes().length;
+                    var uiSourceCodesCount = fileSystemUISourceCodes().length;
                     InspectorTest.addResult("Removing second file system.");
-                    manager.removeFileSystem("/var/www");
-                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
+                    fs1.removeFileSystem();
+                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + fileSystemUISourceCodes().length);
                     InspectorTest.addResult("Removing first file system.");
-                    manager.removeFileSystem("/foo/bar");
-                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
+                    fs2.removeFileSystem();
+                    InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + fileSystemUISourceCodes().length);
                     next();
                 }
             }
