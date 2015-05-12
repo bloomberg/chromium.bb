@@ -11,6 +11,7 @@ from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
 import base64
 import glob
+import httplib
 import json
 import logging
 import optparse
@@ -21,6 +22,8 @@ import stat
 import sys
 import tempfile
 import textwrap
+import time
+import traceback
 import urllib2
 import urlparse
 import webbrowser
@@ -31,8 +34,8 @@ try:
 except ImportError:
   pass
 
-
 from third_party import colorama
+from third_party import httplib2
 from third_party import upload
 import auth
 import breakpad  # pylint: disable=W0611
@@ -61,6 +64,9 @@ REFS_THAT_ALIAS_TO_OTHER_REFS = {
     'refs/remotes/origin/lkgr': 'refs/remotes/origin/master',
     'refs/remotes/origin/lkcr': 'refs/remotes/origin/master',
 }
+
+# Buildbucket-related constants
+BUILDBUCKET_HOST = 'cr-buildbucket.appspot.com'
 
 # Valid extensions for files we want to lint.
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
@@ -202,6 +208,115 @@ def add_git_similarity(parser):
   parser.parse_args = Parse
 
 
+def _prefix_master(master):
+  """Convert user-specified master name to full master name.
+
+  Buildbucket uses full master name(master.tryserver.chromium.linux) as bucket
+  name, while the developers always use shortened master name
+  (tryserver.chromium.linux) by stripping off the prefix 'master.'. This
+  function does the conversion for buildbucket migration.
+  """
+  prefix = 'master.'
+  if master.startswith(prefix):
+    return master
+  return '%s%s' % (prefix, master)
+
+
+def trigger_try_jobs(auth_config, changelist, options, masters, category):
+  rietveld_url = settings.GetDefaultServerUrl()
+  rietveld_host = urlparse.urlparse(rietveld_url).hostname
+  authenticator = auth.get_authenticator_for_host(rietveld_host, auth_config)
+  http = authenticator.authorize(httplib2.Http())
+  http.force_exception_to_status_code = True
+  issue_props = changelist.GetIssueProperties()
+  issue = changelist.GetIssue()
+  patchset = changelist.GetMostRecentPatchset()
+
+  buildbucket_put_url = (
+      'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
+          hostname=BUILDBUCKET_HOST))
+  buildset = 'patch/rietveld/{hostname}/{issue}/{patch}'.format(
+      hostname=rietveld_host,
+      issue=issue,
+      patch=patchset)
+
+  batch_req_body = {'builds': []}
+  print_text = []
+  print_text.append('Tried jobs on:')
+  for master, builders_and_tests in sorted(masters.iteritems()):
+    print_text.append('Master: %s' % master)
+    bucket = _prefix_master(master)
+    for builder, tests in sorted(builders_and_tests.iteritems()):
+      print_text.append('  %s: %s' % (builder, tests))
+      parameters = {
+          'builder_name': builder,
+          'changes': [
+              {'author': {'email': issue_props['owner_email']}},
+          ],
+          'properties': {
+              'category': category,
+              'issue': issue,
+              'master': master,
+              'patch_project': issue_props['project'],
+              'patch_storage': 'rietveld',
+              'patchset': patchset,
+              'reason': options.name,
+              'revision': options.revision,
+              'rietveld': rietveld_url,
+              'testfilter': tests,
+          },
+      }
+      if options.clobber:
+        parameters['properties']['clobber'] = True
+      batch_req_body['builds'].append(
+          {
+              'bucket': bucket,
+              'parameters_json': json.dumps(parameters),
+              'tags': ['builder:%s' % builder,
+                       'buildset:%s' % buildset,
+                       'master:%s' % master,
+                       'user_agent:git_cl_try']
+          }
+      )
+
+  for try_count in xrange(3):
+    response, content = http.request(
+        buildbucket_put_url,
+        'PUT',
+        body=json.dumps(batch_req_body),
+        headers={'Content-Type': 'application/json'},
+    )
+    content_json = None
+    try:
+      content_json = json.loads(content)
+    except ValueError:
+      pass
+
+    # Buildbucket could return an error even if status==200.
+    if content_json and content_json.get('error'):
+      msg = 'Error in response. Code: %d. Reason: %s. Message: %s.' % (
+          content_json['error'].get('code', ''),
+          content_json['error'].get('reason', ''),
+          content_json['error'].get('message', ''))
+      raise BuildbucketResponseException(msg)
+
+    if response.status == 200:
+      if not content_json:
+        raise BuildbucketResponseException(
+            'Buildbucket returns invalid json content: %s.\n'
+            'Please file bugs at crbug.com, label "Infra-BuildBucket".' %
+            content)
+      break
+    if response.status < 500 or try_count >= 2:
+      raise httplib2.HttpLib2Error(content)
+
+    # status >= 500 means transient failures.
+    logging.debug('Transient errors when triggering tryjobs. Will retry.')
+    time.sleep(0.5 + 1.5*try_count)
+
+  print '\n'.join(print_text)
+      
+
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   """Return the corresponding git ref if |base_url| together with |glob_spec|
   matches the full |url|.
@@ -267,6 +382,10 @@ def print_stats(similarity, find_copies, args):
       ['git',
        'diff', '--no-ext-diff', '--stat'] + similarity_options + args,
       stdout=stdout, env=env)
+
+
+class BuildbucketResponseException(Exception):
+  pass
 
 
 class Settings(object):
@@ -2764,6 +2883,9 @@ def CMDtry(parser, args):
            "server-side to define what default bot set to use")
   group.add_option(
       "-n", "--name", help="Try job name; default to current branch name")
+  group.add_option(
+      "--use-buildbucket", action="store_true", default=False,
+      help="Use buildbucket to trigger try jobs.")
   parser.add_option_group(group)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
@@ -2861,23 +2983,35 @@ def CMDtry(parser, args):
         '\nWARNING Mismatch between local config and server. Did a previous '
         'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
         'Continuing using\npatchset %s.\n' % patchset)
-  try:
-    cl.RpcServer().trigger_distributed_try_jobs(
-        cl.GetIssue(), patchset, options.name, options.clobber,
-        options.revision, masters)
-  except urllib2.HTTPError, e:
-    if e.code == 404:
-      print('404 from rietveld; '
-            'did you mean to use "git try" instead of "git cl try"?')
+  if options.use_buildbucket:
+    try:
+      trigger_try_jobs(auth_config, cl, options, masters, 'git_cl_try')
+    except BuildbucketResponseException as ex:
+      print 'ERROR: %s' % ex
       return 1
-  print('Tried jobs on:')
+    except Exception as e:
+      stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
+      print 'ERROR: Exception when trying to trigger tryjobs: %s\n%s' % (
+          e, stacktrace)
+      return 1
+  else:
+    try:
+      cl.RpcServer().trigger_distributed_try_jobs(
+          cl.GetIssue(), patchset, options.name, options.clobber,
+          options.revision, masters)
+    except urllib2.HTTPError as e:
+      if e.code == 404:
+        print('404 from rietveld; '
+              'did you mean to use "git try" instead of "git cl try"?')
+        return 1
+    print('Tried jobs on:')
 
-  for (master, builders) in masters.iteritems():
-    if master:
-      print 'Master: %s' % master
-    length = max(len(builder) for builder in builders)
-    for builder in sorted(builders):
-      print '  %*s: %s' % (length, builder, ','.join(builders[builder]))
+    for (master, builders) in sorted(masters.iteritems()):
+      if master:
+        print 'Master: %s' % master
+      length = max(len(builder) for builder in builders)
+      for builder in sorted(builders):
+        print '  %*s: %s' % (length, builder, ','.join(builders[builder]))
   return 0
 
 
