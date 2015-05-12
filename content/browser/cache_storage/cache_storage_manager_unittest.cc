@@ -29,7 +29,6 @@ class CacheStorageManagerTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         callback_bool_(false),
         callback_error_(CACHE_STORAGE_OK),
-        callback_cache_error_(CACHE_STORAGE_OK),
         origin1_("http://example1.com"),
         origin2_("http://example2.com") {}
 
@@ -91,7 +90,7 @@ class CacheStorageManagerTest : public testing::Test {
   }
 
   void CachePutCallback(base::RunLoop* run_loop, CacheStorageError error) {
-    callback_cache_error_ = error;
+    callback_error_ = error;
     run_loop->Quit();
   }
 
@@ -100,7 +99,7 @@ class CacheStorageManagerTest : public testing::Test {
       CacheStorageError error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
-    callback_cache_error_ = error;
+    callback_error_ = error;
     callback_cache_response_ = response.Pass();
     // Deliberately drop the data handle as only the url is being tested.
     run_loop->Quit();
@@ -152,8 +151,7 @@ class CacheStorageManagerTest : public testing::Test {
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_error_ != CACHE_STORAGE_OK;
-    return !error;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool StorageMatch(const GURL& origin,
@@ -169,8 +167,7 @@ class CacheStorageManagerTest : public testing::Test {
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != CACHE_STORAGE_OK;
-    return !error;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool StorageMatchAll(const GURL& origin, const GURL& url) {
@@ -184,8 +181,7 @@ class CacheStorageManagerTest : public testing::Test {
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != CACHE_STORAGE_OK;
-    return !error;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool CachePut(const scoped_refptr<CacheStorageCache>& cache,
@@ -207,8 +203,7 @@ class CacheStorageManagerTest : public testing::Test {
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != CACHE_STORAGE_OK;
-    return !error;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   bool CacheMatch(const scoped_refptr<CacheStorageCache>& cache,
@@ -223,8 +218,7 @@ class CacheStorageManagerTest : public testing::Test {
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
 
-    bool error = callback_cache_error_ != CACHE_STORAGE_OK;
-    return !error;
+    return callback_error_ == CACHE_STORAGE_OK;
   }
 
   CacheStorage* CacheStorageForOrigin(const GURL& origin) {
@@ -242,7 +236,6 @@ class CacheStorageManagerTest : public testing::Test {
   scoped_refptr<CacheStorageCache> callback_cache_;
   int callback_bool_;
   CacheStorageError callback_error_;
-  CacheStorageError callback_cache_error_;
   scoped_ptr<ServiceWorkerResponse> callback_cache_response_;
   std::vector<std::string> callback_strings_;
 
@@ -359,14 +352,14 @@ TEST_P(CacheStorageManagerTestP, StorageMatchNoEntry) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_FALSE(StorageMatch(origin1_, "foo", GURL("http://example.com/bar")));
-  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchNoCache) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_FALSE(StorageMatch(origin1_, "bar", GURL("http://example.com/foo")));
-  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExists) {
@@ -379,12 +372,12 @@ TEST_P(CacheStorageManagerTestP, StorageMatchAllNoEntry) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/bar")));
-  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchAllNoCaches) {
   EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
-  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_cache_error_);
+  EXPECT_EQ(CACHE_STORAGE_ERROR_NOT_FOUND, callback_error_);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
