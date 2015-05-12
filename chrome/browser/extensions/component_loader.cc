@@ -331,8 +331,11 @@ void ComponentLoader::AddGalleryExtension() {
 
 void ComponentLoader::AddWebstoreWidgetExtension() {
 #if defined(OS_CHROMEOS)
-  Add(IDR_CHROME_APPS_WEBSTORE_WIDGET_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("webstore_widget")));
+  AddWithNameAndDescription(
+      IDR_CHROME_APPS_WEBSTORE_WIDGET_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("webstore_widget")),
+      IDS_WEBSTORE_WIDGET_APP_NAME,
+      IDS_WEBSTORE_WIDGET_APP_DESC);
 #endif
 }
 

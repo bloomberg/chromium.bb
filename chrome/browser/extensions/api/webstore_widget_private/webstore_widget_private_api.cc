@@ -6,17 +6,28 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/api/webstore_widget_private/app_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/webstore_widget_private.h"
-
-namespace {
-const char kGoogleCastApiExtensionId[] = "mafeflapfdfljijmlienjedomfjfmhpd";
-}  // namespace
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace extensions {
 namespace api {
+
+namespace {
+
+const char kGoogleCastApiExtensionId[] = "mafeflapfdfljijmlienjedomfjfmhpd";
+
+void SetL10nString(base::DictionaryValue* dict, const std::string& string_id,
+                   int resource_id) {
+  dict->SetString(string_id, l10n_util::GetStringUTF16(resource_id));
+}
+
+}  // namespace
 
 WebstoreWidgetPrivateGetStringsFunction::
     WebstoreWidgetPrivateGetStringsFunction() {
@@ -29,6 +40,19 @@ WebstoreWidgetPrivateGetStringsFunction::
 ExtensionFunction::ResponseAction
 WebstoreWidgetPrivateGetStringsFunction::Run() {
   base::DictionaryValue* dict = new base::DictionaryValue();
+
+  SetL10nString(dict, "TITLE_PRINTER_PROVIDERS",
+                IDS_WEBSTORE_WIDGET_TITLE_PRINTER_PROVIDERS);
+  SetL10nString(dict, "DEFAULT_ERROR_MESSAGE",
+                IDS_WEBSTORE_WIDGET_DEFAULT_ERROR);
+  SetL10nString(dict, "OK_BUTTON", IDS_FILE_BROWSER_OK_LABEL);
+  SetL10nString(dict, "INSTALLATION_FAILED_MESSAGE",
+                IDS_FILE_BROWSER_SUGGEST_DIALOG_INSTALLATION_FAILED);
+  SetL10nString(dict, "LINK_TO_WEBSTORE",
+                IDS_FILE_BROWSER_SUGGEST_DIALOG_LINK_TO_WEBSTORE);
+
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
+  webui::SetLoadTimeDataDefaults(app_locale, dict);
   return RespondNow(OneArgument(dict));
 }
 

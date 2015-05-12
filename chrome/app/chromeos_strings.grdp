@@ -6346,4 +6346,18 @@ All users must sign out to continue.
     Read and write access to <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph> has been granted.
   </message>
 
+  <!-- Webstore widget app -->
+  <message name="IDS_WEBSTORE_WIDGET_APP_NAME" desc="App name for Webstore Gallery Widget app. The app shows a filtered list of extensions from Chrome Web Store. Extensions from the list can be installed directly from the app.">
+    Chrome Web Store Gallery
+  </message>
+  <message name="IDS_WEBSTORE_WIDGET_APP_DESC" desc="Description of Chrome Webstore Gallery Widget app.">
+    An app that shows a filtered list of extensions from Chrome Web Store. Extensions in the list can be installed directly from the app.
+  </message>
+  <message name="IDS_WEBSTORE_WIDGET_TITLE_PRINTER_PROVIDERS" desc="Title for Chrome Web Store Gallery Widget which lists all print driver apps from Chrome Web Store for a specific printer.">
+    Select a printer driver app
+  </message>
+  <message name="IDS_WEBSTORE_WIDGET_DEFAULT_ERROR" desc="Default message shown when Chrome Web Store Widget app window content fails to load (e.g. if it fails to load Chrome Web Store Gallery in a webview).">
+    Could not connect to the Chrome Web Store.
+  </message>
+
 </grit-part>
