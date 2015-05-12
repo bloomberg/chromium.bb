@@ -63,11 +63,13 @@ scoped_ptr<base::Value> ParseJson(const std::string& json);
 
 // Generate multipart body. If |predetermined_boundary| is not empty, it uses
 // the string as boundary. Otherwise it generates random boundary that does not
-// conflict with |parts|.
+// conflict with |parts|. If |data_offset| is not nullptr, it stores the
+// index of first byte of each part in multipart body.
 void GenerateMultipartBody(MultipartType multipart_type,
                            const std::string& predetermined_boundary,
                            const std::vector<ContentTypeAndData>& parts,
-                           ContentTypeAndData* output);
+                           ContentTypeAndData* output,
+                           std::vector<uint64>* data_offset);
 
 //======================= AuthenticatedRequestInterface ======================
 

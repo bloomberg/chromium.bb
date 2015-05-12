@@ -128,8 +128,8 @@ bool GetMultipartContent(const std::string& predetermined_boundary,
     return false;
 
   google_apis::ContentTypeAndData output;
-  GenerateMultipartBody(
-      google_apis::MULTIPART_RELATED, predetermined_boundary, parts, &output);
+  GenerateMultipartBody(google_apis::MULTIPART_RELATED, predetermined_boundary,
+                        parts, &output, nullptr);
   upload_content_type->swap(output.type);
   upload_content_data->swap(output.data);
   return true;
@@ -166,7 +166,8 @@ scoped_ptr<base::Value> ParseJson(const std::string& json) {
 void GenerateMultipartBody(MultipartType multipart_type,
                            const std::string& predetermined_boundary,
                            const std::vector<ContentTypeAndData>& parts,
-                           ContentTypeAndData* output) {
+                           ContentTypeAndData* output,
+                           std::vector<uint64>* data_offset) {
   std::string boundary;
   // Generate random boundary.
   if (predetermined_boundary.empty()) {
@@ -202,9 +203,13 @@ void GenerateMultipartBody(MultipartType multipart_type,
   }
 
   output->data.clear();
+  if (data_offset)
+    data_offset->clear();
   for (auto& part : parts) {
     output->data.append(base::StringPrintf(
         kMultipartItemHeaderFormat, boundary.c_str(), part.type.c_str()));
+    if (data_offset)
+      data_offset->push_back(output->data.size());
     output->data.append(part.data);
     output->data.append("\n");
   }

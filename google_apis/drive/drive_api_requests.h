@@ -1114,9 +1114,11 @@ class PermissionsInsertRequest : public EntryActionRequest {
 struct BatchUploadChildEntry {
   BatchUploadChildEntry() : request(NULL), prepared(false) {}
   explicit BatchUploadChildEntry(BatchableRequestBase* request)
-      : request(request), prepared(false) {}
+      : request(request), prepared(false), data_offset(0), data_size(0) {}
   BatchableRequestBase* request;
   bool prepared;
+  int64 data_offset;
+  int64 data_size;
 };
 
 class BatchUploadRequest : public UrlFetchRequestBase {
@@ -1155,6 +1157,11 @@ class BatchUploadRequest : public UrlFetchRequestBase {
   void ProcessURLFetchResults(const net::URLFetcher* source) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
 
+  // content::UrlFetcherDelegate overrides.
+  void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                int64 current,
+                                int64 total) override;
+
  private:
   typedef void* RequestID;
   // Obtains corresponding child entry of |request_id|. Returns NULL if the
@@ -1183,6 +1190,9 @@ class BatchUploadRequest : public UrlFetchRequestBase {
 
   // Multipart of child requests.
   ContentTypeAndData upload_content_;
+
+  // Last reported progress value.
+  int64 last_progress_value_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

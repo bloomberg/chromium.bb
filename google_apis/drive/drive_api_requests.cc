@@ -1168,6 +1168,7 @@ BatchUploadRequest::BatchUploadRequest(
       sender_(sender),
       url_generator_(url_generator),
       committed_(false),
+      last_progress_value_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -1252,7 +1253,7 @@ void BatchUploadRequest::MayCompletePrepare() {
 
   // Build multipart body here.
   std::vector<ContentTypeAndData> parts;
-  for (const auto& child : child_requests_) {
+  for (auto& child : child_requests_) {
     std::string type;
     std::string data;
     const bool result = child.request->GetContentData(&type, &data);
@@ -1272,16 +1273,26 @@ void BatchUploadRequest::MayCompletePrepare() {
         NOTREACHED();
         break;
     }
+    const std::string header = base::StringPrintf(
+        kBatchUploadRequestFormat, method.c_str(), url.path().c_str(),
+        url_generator_.GetBatchUploadUrl().host().c_str(), type.c_str());
+
+    child.data_offset = header.size();
+    child.data_size = data.size();
 
     parts.push_back(ContentTypeAndData());
     parts.back().type = kHttpContentType;
-    parts.back().data = base::StringPrintf(
-        kBatchUploadRequestFormat, method.c_str(), url.path().c_str(),
-        url_generator_.GetBatchUploadUrl().host().c_str(), type.c_str());
+    parts.back().data = header;
     parts.back().data.append(data);
   }
 
-  GenerateMultipartBody(MULTIPART_MIXED, boundary_, parts, &upload_content_);
+  std::vector<uint64> part_data_offset;
+  GenerateMultipartBody(MULTIPART_MIXED, boundary_, parts, &upload_content_,
+                        &part_data_offset);
+  DCHECK(part_data_offset.size() == child_requests_.size());
+  for (size_t i = 0; i < child_requests_.size(); ++i) {
+    child_requests_[i].data_offset += part_data_offset[i];
+  }
   prepare_callback_.Run(HTTP_SUCCESS);
 }
 
@@ -1348,5 +1359,21 @@ void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
   child_requests_.clear();
 }
 
+void BatchUploadRequest::OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                                  int64 current,
+                                                  int64 total) {
+  for (auto child : child_requests_) {
+    if (child.data_offset <= current &&
+        current <= child.data_offset + child.data_size) {
+      child.request->OnURLFetchUploadProgress(
+          source, current - child.data_offset, child.data_size);
+    } else if (last_progress_value_ < child.data_offset + child.data_size &&
+               child.data_offset + child.data_size < current) {
+      child.request->OnURLFetchUploadProgress(source, child.data_size,
+                                              child.data_size);
+    }
+  }
+  last_progress_value_ = current;
+}
 }  // namespace drive
 }  // namespace google_apis
