@@ -896,6 +896,8 @@ cr.define('options.network', function() {
 
       chrome.networkingPrivate.onNetworkListChanged.addListener(
           this.onNetworkListChanged_.bind(this));
+      chrome.networkingPrivate.onDeviceStateListChanged.addListener(
+          this.onNetworkListChanged_.bind(this));
 
       chrome.networkingPrivate.requestNetworkScan();
 
