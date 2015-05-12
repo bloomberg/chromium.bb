@@ -84,9 +84,10 @@ usage (char *program, int error)
     fprintf (file, "  -V, --version        display font config version and exit\n");
     fprintf (file, "  -h, --help           display this help and exit\n");
 #else
-    fprintf (file, "  -f FORMAT  (format)  use the given output format\n");
-    fprintf (file, "  -V         (version) display font config version and exit\n");
-    fprintf (file, "  -h         (help)    display this help and exit\n");
+    fprintf (file, "  -b         (ignore-blanks) ignore blanks to compute languages\n");
+    fprintf (file, "  -f FORMAT  (format)        use the given output format\n");
+    fprintf (file, "  -V         (version)       display font config version and exit\n");
+    fprintf (file, "  -h         (help)          display this help and exit\n");
 #endif
     exit (error);
 }
