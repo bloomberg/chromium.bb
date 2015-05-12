@@ -2688,3 +2688,36 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   strip_dst.CloseAllTabs();
   strip_src.CloseAllTabs();
 }
+
+// Verifies ordering of tabs opened via a link from a pinned tab with a
+// subsequent pinned tab.
+TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+
+  // Open two pages, pinned.
+  WebContents* page_a_contents = CreateWebContents();
+  strip.AddWebContents(page_a_contents, -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_PINNED);
+  WebContents* page_b_contents = CreateWebContents();
+  strip.AddWebContents(page_b_contents, -1,
+                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_PINNED);
+
+  // Activate the first tab (a).
+  strip.ActivateTabAt(0, true);
+
+  // Open two more tabs as link clicks. The first tab, c, should appear after
+  // the pinned tabs followed by the second tab (d).
+  WebContents* page_c_contents = CreateWebContents();
+  WebContents* page_d_contents = CreateWebContents();
+  strip.AddWebContents(page_c_contents, -1, ui::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+  strip.AddWebContents(page_d_contents, -1, ui::PAGE_TRANSITION_LINK,
+                       TabStripModel::ADD_NONE);
+
+  EXPECT_EQ(2, strip.GetIndexOfWebContents(page_c_contents));
+  EXPECT_EQ(3, strip.GetIndexOfWebContents(page_d_contents));
+  strip.CloseAllTabs();
+}

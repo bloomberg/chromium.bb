@@ -606,8 +606,12 @@ int TabStripModel::GetIndexOfLastWebContentsOpenedBy(const WebContents* opener,
   for (int i = start_index + 1; i < count(); ++i) {
     // Test opened by transitively, i.e. include tabs opened by tabs opened by
     // opener, etc. Stop when we find the first non-descendant.
-    if (!opener_and_descendants.count(contents_data_[i]->opener()))
+    if (!opener_and_descendants.count(contents_data_[i]->opener())) {
+      // Skip over pinned tabs as new tabs are added after pinned tabs.
+      if (contents_data_[i]->pinned())
+        continue;
       break;
+    }
     opener_and_descendants.insert(contents_data_[i]->web_contents());
     last_index = i;
   }
