@@ -113,6 +113,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   bool DoTransportIO();
   int DoHandshake();
+  int DoHandshakeComplete(int result);
   int DoChannelIDLookup();
   int DoChannelIDLookupComplete(int result);
   int DoVerifyCert(int result);
@@ -279,6 +280,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   enum State {
     STATE_NONE,
     STATE_HANDSHAKE,
+    STATE_HANDSHAKE_COMPLETE,
     STATE_CHANNEL_ID_LOOKUP,
     STATE_CHANNEL_ID_LOOKUP_COMPLETE,
     STATE_VERIFY_CERT,

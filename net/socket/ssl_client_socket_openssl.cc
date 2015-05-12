@@ -892,7 +892,6 @@ base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_first_run_completed =
 
 int SSLClientSocketOpenSSL::DoHandshake() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int net_error = OK;
 
   int rv;
 
@@ -914,52 +913,8 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     }
   }
 
-  if (rv == 1) {
-    if (ssl_config_.version_fallback &&
-        ssl_config_.version_max < ssl_config_.version_fallback_min) {
-      return ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION;
-    }
-
-    // SSL handshake is completed. If NPN wasn't negotiated, see if ALPN was.
-    if (npn_status_ == kNextProtoUnsupported) {
-      const uint8_t* alpn_proto = NULL;
-      unsigned alpn_len = 0;
-      SSL_get0_alpn_selected(ssl_, &alpn_proto, &alpn_len);
-      if (alpn_len > 0) {
-        npn_proto_.assign(reinterpret_cast<const char*>(alpn_proto), alpn_len);
-        npn_status_ = kNextProtoNegotiated;
-        set_negotiation_extension(kExtensionALPN);
-      }
-    }
-
-    RecordNegotiationExtension();
-    RecordChannelIDSupport(channel_id_service_, channel_id_sent_,
-                           ssl_config_.channel_id_enabled,
-                           crypto::ECPrivateKey::IsSupported());
-
-    // Only record OCSP histograms if OCSP was requested.
-    if (ssl_config_.signed_cert_timestamps_enabled ||
-        cert_verifier_->SupportsOCSPStapling()) {
-      const uint8_t* ocsp_response;
-      size_t ocsp_response_len;
-      SSL_get0_ocsp_response(ssl_, &ocsp_response, &ocsp_response_len);
-
-      set_stapled_ocsp_response_received(ocsp_response_len != 0);
-      UMA_HISTOGRAM_BOOLEAN("Net.OCSPResponseStapled", ocsp_response_len != 0);
-    }
-
-    const uint8_t* sct_list;
-    size_t sct_list_len;
-    SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list, &sct_list_len);
-    set_signed_cert_timestamps_received(sct_list_len != 0);
-
-    if (IsRenegotiationAllowed())
-      SSL_set_reject_peer_renegotiations(ssl_, 0);
-
-    // Verify the certificate.
-    UpdateServerCert();
-    GotoState(STATE_VERIFY_CERT);
-  } else {
+  int net_error = OK;
+  if (rv <= 0) {
     int ssl_error = SSL_get_error(ssl_, rv);
     if (ssl_error == SSL_ERROR_WANT_CHANNEL_ID_LOOKUP) {
       // The server supports channel ID. Stop to look one up before returning to
@@ -974,20 +929,72 @@ int SSLClientSocketOpenSSL::DoHandshake() {
 
     OpenSSLErrorInfo error_info;
     net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
-
-    // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
+      // If not done, stay in this state
       GotoState(STATE_HANDSHAKE);
-    } else {
-      LOG(ERROR) << "handshake failed; returned " << rv
-                 << ", SSL error code " << ssl_error
-                 << ", net_error " << net_error;
-      net_log_.AddEvent(
-          NetLog::TYPE_SSL_HANDSHAKE_ERROR,
-          CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+      return ERR_IO_PENDING;
+    }
+
+    LOG(ERROR) << "handshake failed; returned " << rv << ", SSL error code "
+               << ssl_error << ", net_error " << net_error;
+    net_log_.AddEvent(
+        NetLog::TYPE_SSL_HANDSHAKE_ERROR,
+        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
+  }
+
+  GotoState(STATE_HANDSHAKE_COMPLETE);
+  return net_error;
+}
+
+int SSLClientSocketOpenSSL::DoHandshakeComplete(int result) {
+  if (result < 0)
+    return result;
+
+  if (ssl_config_.version_fallback &&
+      ssl_config_.version_max < ssl_config_.version_fallback_min) {
+    return ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION;
+  }
+
+  // SSL handshake is completed. If NPN wasn't negotiated, see if ALPN was.
+  if (npn_status_ == kNextProtoUnsupported) {
+    const uint8_t* alpn_proto = NULL;
+    unsigned alpn_len = 0;
+    SSL_get0_alpn_selected(ssl_, &alpn_proto, &alpn_len);
+    if (alpn_len > 0) {
+      npn_proto_.assign(reinterpret_cast<const char*>(alpn_proto), alpn_len);
+      npn_status_ = kNextProtoNegotiated;
+      set_negotiation_extension(kExtensionALPN);
     }
   }
-  return net_error;
+
+  RecordNegotiationExtension();
+  RecordChannelIDSupport(channel_id_service_, channel_id_sent_,
+                         ssl_config_.channel_id_enabled,
+                         crypto::ECPrivateKey::IsSupported());
+
+  // Only record OCSP histograms if OCSP was requested.
+  if (ssl_config_.signed_cert_timestamps_enabled ||
+      cert_verifier_->SupportsOCSPStapling()) {
+    const uint8_t* ocsp_response;
+    size_t ocsp_response_len;
+    SSL_get0_ocsp_response(ssl_, &ocsp_response, &ocsp_response_len);
+
+    set_stapled_ocsp_response_received(ocsp_response_len != 0);
+    UMA_HISTOGRAM_BOOLEAN("Net.OCSPResponseStapled", ocsp_response_len != 0);
+  }
+
+  const uint8_t* sct_list;
+  size_t sct_list_len;
+  SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list, &sct_list_len);
+  set_signed_cert_timestamps_received(sct_list_len != 0);
+
+  if (IsRenegotiationAllowed())
+    SSL_set_reject_peer_renegotiations(ssl_, 0);
+
+  // Verify the certificate.
+  UpdateServerCert();
+  GotoState(STATE_VERIFY_CERT);
+  return OK;
 }
 
 int SSLClientSocketOpenSSL::DoChannelIDLookup() {
@@ -1297,6 +1304,9 @@ int SSLClientSocketOpenSSL::DoHandshakeLoop(int last_io_result) {
     switch (state) {
       case STATE_HANDSHAKE:
         rv = DoHandshake();
+        break;
+      case STATE_HANDSHAKE_COMPLETE:
+        rv = DoHandshakeComplete(rv);
         break;
       case STATE_CHANNEL_ID_LOOKUP:
         DCHECK_EQ(OK, rv);
