@@ -966,8 +966,8 @@ ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     ResourceProvider::ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_id_(resource_id),
-      texture_id_(resource_provider->LockForRead(resource_id)->gl_id) {
-  DCHECK(texture_id_);
+      resource_(resource_provider->LockForRead(resource_id)) {
+  DCHECK(resource_);
 }
 
 ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {

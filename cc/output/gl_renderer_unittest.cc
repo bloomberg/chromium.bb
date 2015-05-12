@@ -123,12 +123,6 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   }
 
   void TestShadersWithPrecision(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(renderer()->GetTextureProgram(precision));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetNonPremultipliedTextureProgram(precision));
-    EXPECT_PROGRAM_VALID(renderer()->GetTextureBackgroundProgram(precision));
-    EXPECT_PROGRAM_VALID(
-        renderer()->GetNonPremultipliedTextureBackgroundProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetTextureIOSurfaceProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVProgram(precision));
     EXPECT_PROGRAM_VALID(renderer()->GetVideoYUVAProgram(precision));
@@ -153,6 +147,15 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
       // This will likely be hit in tests due to usage of osmesa.
       return;
     }
+
+    EXPECT_PROGRAM_VALID(renderer()->GetTextureProgram(precision, sampler));
+    EXPECT_PROGRAM_VALID(
+        renderer()->GetNonPremultipliedTextureProgram(precision, sampler));
+    EXPECT_PROGRAM_VALID(
+        renderer()->GetTextureBackgroundProgram(precision, sampler));
+    EXPECT_PROGRAM_VALID(
+        renderer()->GetNonPremultipliedTextureBackgroundProgram(precision,
+                                                                sampler));
 
     EXPECT_PROGRAM_VALID(renderer()->GetTileProgram(precision, sampler));
     EXPECT_PROGRAM_VALID(renderer()->GetTileProgramOpaque(precision, sampler));

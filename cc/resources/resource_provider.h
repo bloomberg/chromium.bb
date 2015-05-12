@@ -223,14 +223,15 @@ class CC_EXPORT ResourceProvider {
                      ResourceProvider::ResourceId resource_id);
     virtual ~ScopedReadLockGL();
 
-    unsigned texture_id() const { return texture_id_; }
+    unsigned texture_id() const { return resource_->gl_id; }
+    GLenum target() const { return resource_->target; }
 
    protected:
     ResourceProvider* resource_provider_;
     ResourceProvider::ResourceId resource_id_;
 
    private:
-    unsigned texture_id_;
+    const ResourceProvider::Resource* resource_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
   };

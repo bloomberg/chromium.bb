@@ -2160,7 +2160,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
       draw_cache_.resource_id,
       draw_cache_.nearest_neighbor ? GL_NEAREST : GL_LINEAR);
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
-  gl_->BindTexture(GL_TEXTURE_2D, locked_quad.texture_id());
+  gl_->BindTexture(locked_quad.target(), locked_quad.texture_id());
 
   static_assert(sizeof(Float4) == 4 * sizeof(float),
                 "Float4 struct should be densely packed");
@@ -2222,20 +2222,24 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
       highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
+  ResourceProvider::ScopedReadLockGL lock(resource_provider_,
+                                          quad->resource_id);
+  const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
   // Choose the correct texture program binding
   TexTransformTextureProgramBinding binding;
   if (quad->premultiplied_alpha) {
     if (quad->background_color == SK_ColorTRANSPARENT) {
-      binding.Set(GetTextureProgram(tex_coord_precision));
+      binding.Set(GetTextureProgram(tex_coord_precision, sampler));
     } else {
-      binding.Set(GetTextureBackgroundProgram(tex_coord_precision));
+      binding.Set(GetTextureBackgroundProgram(tex_coord_precision, sampler));
     }
   } else {
     if (quad->background_color == SK_ColorTRANSPARENT) {
-      binding.Set(GetNonPremultipliedTextureProgram(tex_coord_precision));
-    } else {
       binding.Set(
-          GetNonPremultipliedTextureBackgroundProgram(tex_coord_precision));
+          GetNonPremultipliedTextureProgram(tex_coord_precision, sampler));
+    } else {
+      binding.Set(GetNonPremultipliedTextureBackgroundProgram(
+          tex_coord_precision, sampler));
     }
   }
 
@@ -3197,58 +3201,71 @@ const GLRenderer::TileProgramSwizzleAA* GLRenderer::GetTileProgramSwizzleAA(
 }
 
 const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
-    TexCoordPrecision precision) {
+    TexCoordPrecision precision,
+    SamplerType sampler) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  TextureProgram* program = &texture_program_[precision];
+  DCHECK_GE(sampler, 0);
+  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
+  TextureProgram* program = &texture_program_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
     program->Initialize(output_surface_->context_provider(), precision,
-                        SAMPLER_TYPE_2D);
+                        sampler);
   }
   return program;
 }
 
 const GLRenderer::NonPremultipliedTextureProgram*
-GLRenderer::GetNonPremultipliedTextureProgram(TexCoordPrecision precision) {
+GLRenderer::GetNonPremultipliedTextureProgram(TexCoordPrecision precision,
+                                              SamplerType sampler) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
   NonPremultipliedTextureProgram* program =
-      &nonpremultiplied_texture_program_[precision];
+      &nonpremultiplied_texture_program_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::NonPremultipliedTextureProgram::Initialize");
     program->Initialize(output_surface_->context_provider(), precision,
-                        SAMPLER_TYPE_2D);
+                        sampler);
   }
   return program;
 }
 
 const GLRenderer::TextureBackgroundProgram*
-GLRenderer::GetTextureBackgroundProgram(TexCoordPrecision precision) {
+GLRenderer::GetTextureBackgroundProgram(TexCoordPrecision precision,
+                                        SamplerType sampler) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  TextureBackgroundProgram* program = &texture_background_program_[precision];
+  DCHECK_GE(sampler, 0);
+  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
+  TextureBackgroundProgram* program =
+      &texture_background_program_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
     program->Initialize(output_surface_->context_provider(), precision,
-                        SAMPLER_TYPE_2D);
+                        sampler);
   }
   return program;
 }
 
 const GLRenderer::NonPremultipliedTextureBackgroundProgram*
 GLRenderer::GetNonPremultipliedTextureBackgroundProgram(
-    TexCoordPrecision precision) {
+    TexCoordPrecision precision,
+    SamplerType sampler) {
   DCHECK_GE(precision, 0);
   DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
+  DCHECK_GE(sampler, 0);
+  DCHECK_LE(sampler, LAST_SAMPLER_TYPE);
   NonPremultipliedTextureBackgroundProgram* program =
-      &nonpremultiplied_texture_background_program_[precision];
+      &nonpremultiplied_texture_background_program_[precision][sampler];
   if (!program->initialized()) {
     TRACE_EVENT0("cc",
                  "GLRenderer::NonPremultipliedTextureProgram::Initialize");
     program->Initialize(output_surface_->context_provider(), precision,
-                        SAMPLER_TYPE_2D);
+                        sampler);
   }
   return program;
 }
@@ -3336,10 +3353,12 @@ void GLRenderer::CleanupSharedObjects() {
       render_pass_color_matrix_program_aa_[i][j].Cleanup(gl_);
     }
 
-    texture_program_[i].Cleanup(gl_);
-    nonpremultiplied_texture_program_[i].Cleanup(gl_);
-    texture_background_program_[i].Cleanup(gl_);
-    nonpremultiplied_texture_background_program_[i].Cleanup(gl_);
+    for (int j = 0; j <= LAST_SAMPLER_TYPE; ++j) {
+      texture_program_[i][j].Cleanup(gl_);
+      nonpremultiplied_texture_program_[i][j].Cleanup(gl_);
+      texture_background_program_[i][j].Cleanup(gl_);
+      nonpremultiplied_texture_background_program_[i][j].Cleanup(gl_);
+    }
     texture_io_surface_program_[i].Cleanup(gl_);
 
     video_yuv_program_[i].Cleanup(gl_);
