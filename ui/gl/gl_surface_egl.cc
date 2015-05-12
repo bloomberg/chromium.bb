@@ -62,6 +62,12 @@ extern "C" {
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_REFERENCE_ANGLE 0x320C
 #endif /* EGL_ANGLE_platform_angle_d3d */
 
+#ifndef EGL_ANGLE_platform_angle_opengl
+#define EGL_ANGLE_platform_angle_opengl 1
+#define EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE 0x320D
+#define EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE 0x320E
+#endif /* EGL_ANGLE_platform_angle_opengl */
+
 using ui::GetLastEGLErrorString;
 
 namespace gfx {
@@ -140,18 +146,23 @@ void DeinitializeEgl() {
 
 EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
                                    EGLenum platform_type,
-                                   EGLenum device_type) {
-  const EGLint display_attribs[] = {EGL_PLATFORM_ANGLE_TYPE_ANGLE,
-                                    platform_type,
-                                    EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE,
-                                    device_type,
-                                    EGL_NONE};
+                                   bool warpDevice) {
+  std::vector<EGLint> display_attribs;
+
+  display_attribs.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
+  display_attribs.push_back(platform_type);
+
+  if (warpDevice) {
+    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE);
+  }
+
+  display_attribs.push_back(EGL_NONE);
+
   return eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE,
                                   reinterpret_cast<void*>(native_display),
-                                  display_attribs);
+                                  &display_attribs[0]);
 }
-
-enum DisplayType { DEFAULT, SWIFT_SHADER, ANGLE_WARP, ANGLE_D3D9, ANGLE_D3D11 };
 
 EGLDisplay GetDisplayFromType(DisplayType display_type,
                               EGLNativeDisplayType native_display) {
@@ -161,16 +172,19 @@ EGLDisplay GetDisplayFromType(DisplayType display_type,
       return eglGetDisplay(native_display);
     case ANGLE_WARP:
       return GetPlatformANGLEDisplay(native_display,
-                                     EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
-                                     EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE);
+                                     EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, true);
     case ANGLE_D3D9:
-      return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE,
-          EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE);
+      return GetPlatformANGLEDisplay(native_display,
+                                     EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, false);
     case ANGLE_D3D11:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
-          EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false);
+    case ANGLE_OPENGL:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE, false);
+    case ANGLE_OPENGLES:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE, false);
     default:
       NOTREACHED();
       return EGL_NO_DISPLAY;
@@ -189,47 +203,71 @@ const char* DisplayTypeString(DisplayType display_type) {
       return "D3D9";
     case ANGLE_D3D11:
       return "D3D11";
+    case ANGLE_OPENGL:
+      return "OpenGL";
+    case ANGLE_OPENGLES:
+      return "OpenGLES";
     default:
       NOTREACHED();
       return "Err";
   }
 }
 
-void GetInitDisplays(bool supports_angle_d3d,
-                     std::vector<DisplayType>* init_displays) {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  bool using_swift_shader =
-      command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader";
+}  // namespace
 
+void GetEGLInitDisplays(bool supports_angle_d3d,
+                        bool supports_angle_opengl,
+                        const base::CommandLine* command_line,
+                        std::vector<DisplayType>* init_displays) {
   // SwiftShader does not use the platform extensions
-  if (using_swift_shader) {
+  if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
+      kGLImplementationSwiftShaderName) {
     init_displays->push_back(SWIFT_SHADER);
     return;
   }
 
-  // If we're missing the ANGLE extensions, fall back to default.
-  if (!supports_angle_d3d) {
+  std::string requested_renderer =
+      command_line->GetSwitchValueASCII(switches::kUseANGLE);
+
+  if (supports_angle_d3d) {
+    bool use_angle_default =
+        !command_line->HasSwitch(switches::kUseANGLE) ||
+        requested_renderer == kANGLEImplementationDefaultName;
+
+    if (use_angle_default) {
+      // Default mode for ANGLE - try D3D11, else try D3D9
+      if (!command_line->HasSwitch(switches::kDisableD3D11)) {
+        init_displays->push_back(ANGLE_D3D11);
+      }
+      init_displays->push_back(ANGLE_D3D9);
+    } else {
+      if (requested_renderer == kANGLEImplementationD3D11Name) {
+        init_displays->push_back(ANGLE_D3D11);
+      }
+      if (requested_renderer == kANGLEImplementationD3D9Name) {
+        init_displays->push_back(ANGLE_D3D9);
+      }
+      if (requested_renderer == kANGLEImplementationWARPName) {
+        init_displays->push_back(ANGLE_WARP);
+      }
+    }
+  }
+
+  if (supports_angle_opengl) {
+    if (requested_renderer == kANGLEImplementationOpenGLName) {
+      init_displays->push_back(ANGLE_OPENGL);
+    }
+    if (requested_renderer == kANGLEImplementationOpenGLESName) {
+      init_displays->push_back(ANGLE_OPENGLES);
+    }
+  }
+
+  // If no displays are available due to missing angle extensions or invalid
+  // flags, request the default display.
+  if (init_displays->empty()) {
     init_displays->push_back(DEFAULT);
-    return;
   }
-
-  if (command_line->HasSwitch(switches::kUseWarp)) {
-    init_displays->push_back(ANGLE_WARP);
-    return;
-  }
-
-  if (command_line->HasSwitch(switches::kDisableD3D11)) {
-    init_displays->push_back(ANGLE_D3D9);
-    return;
-  }
-
-  // Default mode for ANGLE - try D3D11, else try D3D9
-  init_displays->push_back(ANGLE_D3D11);
-  init_displays->push_back(ANGLE_D3D9);
 }
-
-}  // namespace
 
 GLSurfaceEGL::GLSurfaceEGL() {
   ++g_num_surfaces;
@@ -418,15 +456,19 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay() {
       eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
   bool supports_angle_d3d = false;
+  bool supports_angle_opengl = false;
   // Check for availability of ANGLE extensions.
-  if (client_extensions) {
+  if (client_extensions &&
+      ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle")) {
     supports_angle_d3d =
-        ExtensionsContain(client_extensions, "ANGLE_platform_angle") &&
-        ExtensionsContain(client_extensions, "ANGLE_platform_angle_d3d");
+        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_d3d");
+    supports_angle_opengl =
+        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_opengl");
   }
 
   std::vector<DisplayType> init_displays;
-  GetInitDisplays(supports_angle_d3d, &init_displays);
+  GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
+                     base::CommandLine::ForCurrentProcess(), &init_displays);
 
   for (size_t disp_index = 0; disp_index < init_displays.size(); ++disp_index) {
     DisplayType display_type = init_displays[disp_index];

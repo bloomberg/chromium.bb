@@ -24,6 +24,17 @@
             '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+        ['OS in ("win", "android", "linux")', {
+          'sources': [
+            'test/egl_initialization_displays_unittest.cc',
+          ],
+          'dependencies': [
+            '<(DEPTH)/ui/gl/gl.gyp:gl',
+          ],
+          'include_dirs': [
+            '<(DEPTH)/third_party/khronos',
+          ],
+        }],
       ],
     }
   ],

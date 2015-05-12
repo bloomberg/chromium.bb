@@ -412,8 +412,10 @@ void GpuDataManagerImplPrivate::RegisterSwiftShaderPath(
 }
 
 bool GpuDataManagerImplPrivate::ShouldUseWarp() const {
-  return use_warp_ ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseWarp);
+  std::string angle_impl_flag =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseANGLE);
+  return use_warp_ || angle_impl_flag == gfx::kANGLEImplementationWARPName;
 }
 
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
@@ -680,8 +682,10 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   command_line->AppendSwitchASCII(switches::kGpuDriverVersion,
       gpu_info_.driver_version);
 
-  if (ShouldUseWarp())
-    command_line->AppendSwitch(switches::kUseWarp);
+  if (ShouldUseWarp() && !command_line->HasSwitch(switches::kUseANGLE)) {
+    command_line->AppendSwitchASCII(switches::kUseANGLE,
+                                    gfx::kANGLEImplementationWARPName);
+  }
 }
 
 void GpuDataManagerImplPrivate::AppendPluginCommandLine(

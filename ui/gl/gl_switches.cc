@@ -14,6 +14,13 @@ const char kGLImplementationEGLName[]         = "egl";
 const char kGLImplementationSwiftShaderName[] = "swiftshader";
 const char kGLImplementationMockName[]        = "mock";
 
+const char kANGLEImplementationDefaultName[]  = "default";
+const char kANGLEImplementationD3D9Name[]     = "d3d9";
+const char kANGLEImplementationD3D11Name[]    = "d3d11";
+const char kANGLEImplementationWARPName[]     = "warp";
+const char kANGLEImplementationOpenGLName[]   = "gl";
+const char kANGLEImplementationOpenGLESName[] = "gles";
+
 }  // namespace gfx
 
 namespace switches {
@@ -29,6 +36,16 @@ const char kEnableGPUServiceLogging[]       = "enable-gpu-service-logging";
 
 // Turns on calling TRACE for every GL call.
 const char kEnableGPUServiceTracing[]       = "enable-gpu-service-tracing";
+
+// Select which ANGLE backend to use. Options are:
+//  default: Attempts several ANGLE renderers until one successfully
+//           initializes, varying ES support by platform.
+//  d3d9: Legacy D3D9 renderer, ES2 only.
+//  d3d11: D3D11 renderer, ES2 and ES3.
+//  warp: D3D11 renderer using software rasterization, ES2 and ES3.
+//  gl: Desktop GL renderer, ES2 and ES3.
+//  gles: GLES renderer, ES2 and ES3.
+const char kUseANGLE[]                      = "use-angle";
 
 // Select which implementation of GL the GPU process should use. Options are:
 //  desktop: whatever desktop OpenGL the user has installed (Linux and Mac
@@ -55,9 +72,6 @@ const char kTestGLLib[]                     = "test-gl-lib";
 // Use hardware gpu, if available, for tests.
 const char kUseGpuInTests[] = "use-gpu-in-tests";
 
-// On Windows only: use the WARP software rasterizer in the GPU process.
-const char kUseWarp[] = "use-warp";
-
 // Enable OpenGL ES 3 APIs without proper service side validation.
 const char kEnableUnsafeES3APIs[] = "enable-unsafe-es3-apis";
 
@@ -81,7 +95,7 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
   kGpuNoContextLost,
   kDisableGLDrawingForTests,
   kOverrideUseGLWithOSMesaForTests,
-  kUseWarp,
+  kUseANGLE,
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);

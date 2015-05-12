@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,6 +23,21 @@ namespace gfx {
 
 // Get default EGL display for GLSurfaceEGL (differs by platform).
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay();
+
+enum DisplayType {
+  DEFAULT,
+  SWIFT_SHADER,
+  ANGLE_WARP,
+  ANGLE_D3D9,
+  ANGLE_D3D11,
+  ANGLE_OPENGL,
+  ANGLE_OPENGLES,
+};
+
+GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
+                                  bool supports_angle_opengl,
+                                  const base::CommandLine* command_line,
+                                  std::vector<DisplayType>* init_displays);
 
 // Interface for EGL surface.
 class GL_EXPORT GLSurfaceEGL : public GLSurface {
