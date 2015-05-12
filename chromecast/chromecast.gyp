@@ -103,6 +103,16 @@
         'net/connectivity_checker.h',
         'net/net_switches.cc',
         'net/net_switches.h',
+        'net/net_util_cast.cc',
+        'net/net_util_cast.h',
+      ],
+      'conditions': [
+        ['OS!="android"', {
+          'sources': [
+            'net/network_change_notifier_factory_cast.cc',
+            'net/network_change_notifier_factory_cast.h',
+          ],
+        }],
       ],
     },
     {

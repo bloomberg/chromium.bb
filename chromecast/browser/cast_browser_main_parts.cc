@@ -50,6 +50,7 @@
 #include "net/android/network_change_notifier_factory_android.h"
 #else
 #include "chromecast/browser/media/cast_browser_cdm_factory.h"
+#include "chromecast/net/network_change_notifier_factory_cast.h"
 #endif
 
 #if defined(USE_AURA)
@@ -227,6 +228,9 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
+#else
+  net::NetworkChangeNotifier::SetFactory(
+      new NetworkChangeNotifierFactoryCast());
 #endif  // defined(OS_ANDROID)
 }
 
