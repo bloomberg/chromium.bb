@@ -79,24 +79,22 @@ void EnsureUserTPMInitializedOnIOThread(
 }
 
 // Checks if a private RSA key associated with |public_key| can be found in
-// |slot|.
+// |slot|. |slot| must be non-null.
 // Must be called on a worker thread.
 crypto::ScopedSECKEYPrivateKey GetPrivateKeyOnWorkerThread(
     PK11SlotInfo* slot,
     const std::string& public_key) {
+  CHECK(slot);
+
   const uint8* public_key_uint8 =
       reinterpret_cast<const uint8*>(public_key.data());
   std::vector<uint8> public_key_vector(
       public_key_uint8, public_key_uint8 + public_key.size());
 
-  // TODO(davidben): This should be equivalent to calling
-  // FindNSSKeyFromPublicKeyInfoInSlot.
   crypto::ScopedSECKEYPrivateKey rsa_key(
-      crypto::FindNSSKeyFromPublicKeyInfo(public_key_vector));
-  if (!rsa_key || rsa_key->pkcs11Slot != slot ||
-      SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey) {
+      crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_vector, slot));
+  if (!rsa_key || SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey)
     return nullptr;
-  }
   return rsa_key.Pass();
 }
 
