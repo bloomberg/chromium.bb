@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -38,6 +39,17 @@ ScopedVector<HardwareDisplayControllerInfo> GetAvailableDisplayControllerInfos(
     int fd);
 
 bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs);
+
+DisplayMode_Params CreateDisplayModeParams(const drmModeModeInfo& mode);
+
+// |info| provides the DRM information related to the display, |fd| is the
+// connection to the DRM device and |index| provides a unique identifier for the
+// display. |index| will be used to generate the display id (it may be the id if
+// the monitor's EDID lacks the necessary identifiers).
+DisplaySnapshot_Params CreateDisplaySnapshotParams(
+    HardwareDisplayControllerInfo* info,
+    int fd,
+    size_t display_index);
 
 }  // namespace ui
 
