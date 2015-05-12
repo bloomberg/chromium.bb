@@ -265,6 +265,9 @@ struct PasswordForm {
   // If true, this form was parsed using Autofill predictions.
   bool was_parsed_using_autofill_predictions;
 
+  // TODO(vabr): Remove |is_alive| once http://crbug.com/486931 is fixed.
+  bool is_alive;  // Set on construction, reset on destruction.
+
   // Returns true if this match was found using public suffix matching.
   bool IsPublicSuffixMatch() const;
 

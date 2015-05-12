@@ -149,7 +149,8 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
 
 void ManagePasswordsState::OnPasswordAutofilled(
     const PasswordFormMap& password_form_map) {
-  DCHECK(!password_form_map.empty());
+  // TODO(vabr): Revert back to DCHECK once http://crbug.com/486931 is fixed.
+  CHECK(!password_form_map.empty());
   ClearData();
   if (password_form_map.begin()->second->IsPublicSuffixMatch()) {
     // Don't show the UI for PSL matched passwords. They are not stored for this

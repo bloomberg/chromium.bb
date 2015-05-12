@@ -76,13 +76,17 @@ PasswordForm::PasswordForm()
       generation_upload_status(NO_SIGNAL_SENT),
       skip_zero_click(false),
       layout(Layout::LAYOUT_OTHER),
-      was_parsed_using_autofill_predictions(false) {
+      was_parsed_using_autofill_predictions(false),
+      is_alive(true) {
 }
 
 PasswordForm::~PasswordForm() {
+  CHECK(is_alive);
+  is_alive = false;
 }
 
 bool PasswordForm::IsPublicSuffixMatch() const {
+  CHECK(is_alive);
   return !original_signon_realm.empty();
 }
 
