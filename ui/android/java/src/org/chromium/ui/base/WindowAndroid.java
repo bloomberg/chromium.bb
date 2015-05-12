@@ -7,16 +7,19 @@ package org.chromium.ui.base;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
@@ -34,6 +37,29 @@ import java.util.LinkedList;
 @JNINamespace("ui")
 public class WindowAndroid {
     private static final String TAG = "WindowAndroid";
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private class TouchExplorationMonitor {
+        // Listener that tells us when touch exploration is enabled or disabled.
+        private AccessibilityManager.TouchExplorationStateChangeListener mTouchExplorationListener;
+
+        TouchExplorationMonitor() {
+            mTouchExplorationListener =
+                    new AccessibilityManager.TouchExplorationStateChangeListener() {
+                public void onTouchExplorationStateChanged(boolean enabled) {
+                    mIsTouchExplorationEnabled =
+                            mAccessibilityManager.isTouchExplorationEnabled();
+                    refreshWillNotDraw();
+                }
+            };
+            mAccessibilityManager.addTouchExplorationStateChangeListener(mTouchExplorationListener);
+        }
+
+        void destroy() {
+            mAccessibilityManager.removeTouchExplorationStateChangeListener(
+                    mTouchExplorationListener);
+        }
+    }
 
     // Native pointer to the c++ WindowAndroid object.
     private long mNativeWindowAndroid = 0;
@@ -60,6 +86,15 @@ public class WindowAndroid {
     private ViewGroup mKeyboardAccessoryView;
 
     private boolean mIsKeyboardShowing = false;
+
+    // System accessibility service.
+    private final AccessibilityManager mAccessibilityManager;
+
+    // Whether touch exploration is enabled.
+    private boolean mIsTouchExplorationEnabled;
+
+    // On KitKat and higher, a class that monitors the touch exploration state.
+    private TouchExplorationMonitor mTouchExplorationMonitor;
 
     /**
      * An interface to notify listeners of changes in the soft keyboard's visibility.
@@ -99,6 +134,8 @@ public class WindowAndroid {
         mOutstandingIntents = new SparseArray<IntentCallback>();
         mIntentErrors = new HashMap<Integer, String>();
         mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
+        mAccessibilityManager = (AccessibilityManager)
+                context.getSystemService(Context.ACCESSIBILITY_SERVICE);
     }
 
     /**
@@ -317,6 +354,10 @@ public class WindowAndroid {
             nativeDestroy(mNativeWindowAndroid);
             mNativeWindowAndroid = 0;
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
+        }
     }
 
     /**
@@ -338,6 +379,14 @@ public class WindowAndroid {
      */
     public void setAnimationPlaceholderView(View view) {
         mAnimationPlaceholderView = view;
+
+        // The accessibility focus ring also gets clipped by the SurfaceView 'hole', so
+        // make sure the animation placeholder view is in place if touch exploration is on.
+        mIsTouchExplorationEnabled = mAccessibilityManager.isTouchExplorationEnabled();
+        refreshWillNotDraw();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mTouchExplorationMonitor = new TouchExplorationMonitor();
+        }
     }
 
     /**
@@ -410,9 +459,7 @@ public class WindowAndroid {
         animation.start();
 
         // When the first animation starts, make the placeholder 'draw' itself.
-        if (mAnimationPlaceholderView.willNotDraw()) {
-            mAnimationPlaceholderView.setWillNotDraw(false);
-        }
+        refreshWillNotDraw();
 
         // When the last animation ends, remove the placeholder view,
         // returning to the default optimized state.
@@ -421,11 +468,22 @@ public class WindowAndroid {
             public void onAnimationEnd(Animator animation) {
                 animation.removeListener(this);
                 mAnimationsOverContent.remove(animation);
-                if (mAnimationsOverContent.isEmpty()) {
-                    mAnimationPlaceholderView.setWillNotDraw(true);
-                }
+                refreshWillNotDraw();
             }
         });
+    }
+
+    /**
+     * Update whether the placeholder is 'drawn' based on whether an animation is running
+     * or touch exploration is enabled - if either of those are true, we call
+     * setWillNotDraw(false) to ensure that the animation is drawn over the SurfaceView,
+     * and otherwise we call setWillNotDraw(true).
+     */
+    private void refreshWillNotDraw() {
+        boolean willNotDraw = !mIsTouchExplorationEnabled && mAnimationsOverContent.isEmpty();
+        if (mAnimationPlaceholderView.willNotDraw() != willNotDraw) {
+            mAnimationPlaceholderView.setWillNotDraw(willNotDraw);
+        }
     }
 
     private native long nativeInit();
