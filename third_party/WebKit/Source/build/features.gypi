@@ -30,6 +30,13 @@
 
 {
   # The following defines turn WebKit features on and off.
+  #
+  # ====================================
+  #
+  #     Keep the GN version in Sync:
+  #     Source/config.gni
+  #
+  # ====================================
   'variables': {
     'feature_defines': [
       'ENABLE_LAYOUT_UNIT_IN_INLINE_BOXES=0',

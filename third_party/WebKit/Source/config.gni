@@ -47,7 +47,7 @@ use_concatenated_impulse_responses = true
 # feature_defines_list ---------------------------------------------------------
 
 feature_defines_list = [
-  "ENABLE_OPENTYPE_VERTICAL=1"
+  "ENABLE_LAYOUT_UNIT_IN_INLINE_BOXES=0",
 ]
 
 if (is_debug) {
