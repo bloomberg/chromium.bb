@@ -23,7 +23,7 @@ def _CreateAPIPermissionIDChecker(input_api, output_api):
 
   return StrictEnumValueChecker(input_api, output_api,
       start_marker='  enum ID {', end_marker='    // Last entry:',
-      path='extensions/common/api_permission.h')
+      path='extensions/common/permissions/api_permission.h')
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []
