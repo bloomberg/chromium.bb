@@ -1110,6 +1110,16 @@ TEST_F(SearchProviderTest, InlineMixedCaseMatches) {
   EXPECT_EQ(ASCIIToUTF16("FOO"), term_match.fill_into_edit);
   EXPECT_EQ(ASCIIToUTF16("OO"), term_match.inline_autocompletion);
   EXPECT_TRUE(term_match.allowed_to_be_default_match);
+  // Make sure the case doesn't affect the highlighting.
+  // (SearchProvider intentionally marks the new text as MATCH; that's why
+  // the tests below look backwards.)
+  ASSERT_EQ(2U, term_match.contents_class.size());
+  EXPECT_EQ(0U, term_match.contents_class[0].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::NONE,
+            term_match.contents_class[0].style);
+  EXPECT_EQ(1U, term_match.contents_class[1].offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::MATCH,
+            term_match.contents_class[1].style);
 }
 
 // Verifies AutocompleteControllers return results (including keyword

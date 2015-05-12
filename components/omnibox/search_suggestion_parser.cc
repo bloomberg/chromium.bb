@@ -4,6 +4,8 @@
 
 #include "components/omnibox/search_suggestion_parser.h"
 
+#include <algorithm>
+
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
@@ -152,8 +154,11 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
       lookup_text = input_text.substr(contents_index);
     }
   }
-  size_t lookup_position = match_contents_.find(lookup_text);
-  if (!allow_bolding_all && (lookup_position == base::string16::npos)) {
+  // Do a case-insensitive search for |lookup_text|.
+  base::string16::const_iterator lookup_position = std::search(
+      match_contents_.begin(), match_contents_.end(), lookup_text.begin(),
+      lookup_text.end(), base::CaseInsensitiveCompare<base::char16>());
+  if (!allow_bolding_all && (lookup_position == match_contents_.end())) {
     // Bail if the code below to update the bolding would bold the whole
     // string.  Note that the string may already be entirely bolded; if
     // so, leave it as is.
@@ -164,7 +169,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
   // will be highlighted, e.g. for input_text = "you" the suggestion may be
   // "youtube", so we'll bold the "tube" section: you*tube*.
   if (input_text != match_contents_) {
-    if (lookup_position == base::string16::npos) {
+    if (lookup_position == match_contents_.end()) {
       // The input text is not a substring of the query string, e.g. input
       // text is "slasdot" and the query string is "slashdot", so we bold the
       // whole thing.
@@ -176,13 +181,14 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
       // short as a single character highlighted in a query suggestion result,
       // e.g. for input text "s" and query string "southwest airlines", it
       // looks odd if both the first and last s are highlighted.
-      if (lookup_position != 0) {
+      const size_t lookup_index = lookup_position - match_contents_.begin();
+      if (lookup_index != 0) {
         match_contents_class_.push_back(
             ACMatchClassification(0, ACMatchClassification::MATCH));
       }
       match_contents_class_.push_back(
-          ACMatchClassification(lookup_position, ACMatchClassification::NONE));
-      size_t next_fragment_position = lookup_position + lookup_text.length();
+          ACMatchClassification(lookup_index, ACMatchClassification::NONE));
+      size_t next_fragment_position = lookup_index + lookup_text.length();
       if (next_fragment_position < match_contents_.length()) {
         match_contents_class_.push_back(ACMatchClassification(
             next_fragment_position, ACMatchClassification::MATCH));
