@@ -1305,8 +1305,14 @@ void SQLitePersistentCookieStore::Backend::SetForceKeepSessionState() {
 
 void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+  base::Time start_time = base::Time::Now();
   if (!db_->Execute("DELETE FROM cookies WHERE persistent != 1"))
     LOG(WARNING) << "Unable to delete session cookies.";
+
+  UMA_HISTOGRAM_TIMES("Cookie.Startup.TimeSpentDeletingCookies",
+                      base::Time::Now() - start_time);
+  UMA_HISTOGRAM_COUNTS("Cookie.Startup.NumberOfCookiesDeleted",
+                       db_->GetLastChangeCount());
 }
 
 void SQLitePersistentCookieStore::Backend::PostBackgroundTask(

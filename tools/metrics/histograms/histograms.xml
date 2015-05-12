@@ -3838,6 +3838,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cookie.Startup.NumberOfCookiesDeleted">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The number of session cookies deleted on startup. This metric is emitted
+    even if no cookies are deleted. This metric is not emitted if session
+    cookies are restored, rather than deleted on startup.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.Startup.TimeSpentDeletingCookies" units="ms">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time required to delete session cookies on startup. This
+    metric is emitted even if no cookies are deleted. This metric is not emitted
+    if session cookies are restored, rather than deleted on startup.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.TimeBlockedOnLoad" units="ms">
   <owner>erikwright@chromium.org</owner>
   <summary>
