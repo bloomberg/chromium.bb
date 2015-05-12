@@ -24,6 +24,7 @@ class WebstoreProviderTest;
 
 class JSONResponseFetcher;
 class SearchResult;
+class TokenizedString;
 
 // WebstoreProvider fetches search results from the web store server.
 // A "Search in web store" result will be returned if the server does not
@@ -45,7 +46,8 @@ class WebstoreProvider : public WebserviceSearchProvider{
 
   void OnWebstoreSearchFetched(scoped_ptr<base::DictionaryValue> json);
   void ProcessWebstoreSearchResults(const base::DictionaryValue* json);
-  scoped_ptr<SearchResult> CreateResult(const base::DictionaryValue& dict);
+  scoped_ptr<SearchResult> CreateResult(const TokenizedString& query,
+                                        const base::DictionaryValue& dict);
 
   void set_webstore_search_fetched_callback(const base::Closure& callback) {
     webstore_search_fetched_callback_ = callback;

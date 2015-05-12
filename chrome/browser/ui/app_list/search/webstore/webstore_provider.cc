@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
 #include "extensions/common/extension_urls.h"
+#include "ui/app_list/search/tokenized_string.h"
+#include "ui/app_list/search/tokenized_string_match.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -131,6 +133,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
   }
 
   bool first_result = true;
+  TokenizedString query(base::UTF8ToUTF16(query_));
   for (base::ListValue::const_iterator it = result_list->begin();
        it != result_list->end();
        ++it) {
@@ -138,7 +141,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
     if (!(*it)->GetAsDictionary(&dict))
       continue;
 
-    scoped_ptr<SearchResult> result(CreateResult(*dict));
+    scoped_ptr<SearchResult> result(CreateResult(query, *dict));
     if (!result)
       continue;
 
@@ -153,9 +156,8 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
 }
 
 scoped_ptr<SearchResult> WebstoreProvider::CreateResult(
+    const TokenizedString& query,
     const base::DictionaryValue& dict) {
-  scoped_ptr<SearchResult> result;
-
   std::string app_id;
   std::string localized_name;
   std::string icon_url_string;
@@ -164,25 +166,29 @@ scoped_ptr<SearchResult> WebstoreProvider::CreateResult(
       !dict.GetString(kKeyLocalizedName, &localized_name) ||
       !dict.GetString(kKeyIconUrl, &icon_url_string) ||
       !dict.GetBoolean(kKeyIsPaid, &is_paid)) {
-    return result.Pass();
+    return scoped_ptr<SearchResult>();
   }
 
   GURL icon_url(icon_url_string);
   if (!icon_url.is_valid())
-    return result.Pass();
+    return scoped_ptr<SearchResult>();
 
   std::string item_type_string;
   dict.GetString(kKeyItemType, &item_type_string);
   extensions::Manifest::Type item_type = ParseItemType(item_type_string);
 
-  result.reset(new WebstoreResult(profile_,
-                                  app_id,
-                                  localized_name,
-                                  icon_url,
-                                  is_paid,
-                                  item_type,
-                                  controller_));
-  return result.Pass();
+  // Calculate the relevance score by matching the query with the title. Results
+  // with a match score of 0 are discarded.
+  // TODO(mgiuca): Set the tags to indicate the parts of the title that were
+  // matched.
+  TokenizedString title(base::UTF8ToUTF16(localized_name));
+  TokenizedStringMatch match;
+  if (!match.Calculate(query, title))
+    return scoped_ptr<SearchResult>();
+
+  return make_scoped_ptr(new WebstoreResult(profile_, app_id, localized_name,
+                                            match.relevance(), icon_url,
+                                            is_paid, item_type, controller_));
 }
 
 }  // namespace app_list
