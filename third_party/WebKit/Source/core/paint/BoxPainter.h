@@ -43,7 +43,7 @@ private:
     static void paintRootBackgroundColor(LayoutObject&, const PaintInfo&, const LayoutRect&, const Color&);
     static FloatRoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(LayoutObject&, const LayoutRect&, BackgroundBleedAvoidance, InlineFlowBox*, const LayoutSize&, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
     static FloatRoundedRect getBackgroundRoundedRect(LayoutObject&, const LayoutRect&, InlineFlowBox*, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
-        bool includeLogicalLeftEdge, bool includeLogicalRightEdge, const FloatRectOutsets* insets = nullptr);
+        bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
     static bool isDocumentElementWithOpaqueBackground(LayoutObject&);
     static void applyBoxShadowForBackground(GraphicsContext*, LayoutObject&);
     static bool fixedBackgroundPaintsInLocalCoordinates(const LayoutObject&);

@@ -264,16 +264,14 @@ void BoxPainter::applyBoxShadowForBackground(GraphicsContext* context, LayoutObj
 
 FloatRoundedRect BoxPainter::getBackgroundRoundedRect(LayoutObject& obj, const LayoutRect& borderRect,
     InlineFlowBox* box, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
-    bool includeLogicalLeftEdge, bool includeLogicalRightEdge, const FloatRectOutsets* insets)
+    bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
-    FloatRoundedRect border = obj.style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge,
-        includeLogicalRightEdge, insets);
+    FloatRoundedRect border = obj.style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
     if (box && (box->nextLineBox() || box->prevLineBox())) {
         FloatRoundedRect segmentBorder = obj.style()->getRoundedBorderFor(LayoutRect(0, 0, inlineBoxWidth, inlineBoxHeight),
-            includeLogicalLeftEdge, includeLogicalRightEdge, insets);
+            includeLogicalLeftEdge, includeLogicalRightEdge);
         border.setRadii(segmentBorder.radii());
     }
-
     return border;
 }
 
@@ -305,8 +303,13 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(Layo
             -fractionalInset * edges[BSBottom].width,
             -fractionalInset * edges[BSLeft].width);
 
-        return getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(),
-            includeLogicalLeftEdge, includeLogicalRightEdge, &insets);
+        FloatRoundedRect backgroundRoundedRect = getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(),
+            includeLogicalLeftEdge, includeLogicalRightEdge);
+        FloatRect insetRect(backgroundRoundedRect.rect());
+        insetRect.expand(insets);
+        FloatRoundedRect::Radii insetRadii(backgroundRoundedRect.radii());
+        insetRadii.shrink(-insets.top(), -insets.bottom(), -insets.left(), -insets.right());
+        return FloatRoundedRect(insetRect, insetRadii);
     }
     if (bleedAvoidance == BackgroundBleedBackgroundOverBorder)
         return obj.style()->getRoundedInnerBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);

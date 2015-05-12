@@ -1010,18 +1010,11 @@ void ComputedStyle::setHorizontalBorderSpacing(short v) { SET_VAR(inherited, hor
 void ComputedStyle::setVerticalBorderSpacing(short v) { SET_VAR(inherited, vertical_border_spacing, v); }
 
 FloatRoundedRect ComputedStyle::getRoundedBorderFor(const LayoutRect& borderRect,
-    bool includeLogicalLeftEdge, bool includeLogicalRightEdge, const FloatRectOutsets* insets) const
+    bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
-    FloatRect rect(pixelSnappedIntRect(borderRect));
-    if (insets)
-        rect.expand(*insets);
-
-    FloatRoundedRect roundedRect(rect);
+    FloatRoundedRect roundedRect(pixelSnappedIntRect(borderRect));
     if (hasBorderRadius()) {
         FloatRoundedRect::Radii radii = calcRadiiFor(surround->border, borderRect.size());
-        if (insets)
-            radii.shrink(-insets->top(), -insets->bottom(), -insets->left(), -insets->right());
-
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
         roundedRect.constrainRadii();
     }
